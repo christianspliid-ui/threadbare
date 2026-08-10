@@ -5224,7 +5224,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         duration: 2,
         narrative: '{actor} follows {adj} directions to a {adj} room that smells of tallow and secrets. The broker is there. So, perhaps, is a watcher.',
         onSuccess: {
-          narrative: '{actor} arrives {adj}ly, reads the room, and signals in the right way. The broker {verb}s the goods out from under the table.',
+          narrative: '{actor} arrives {adj}ly, reads the room, and gives the signal the broker is waiting on. The broker {verb}s the goods out from under the table.',
           reputationDelta: 0.03,
         },
         onFailure: {
@@ -5249,7 +5249,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'Something {verb}s wrong. The goods are seized, or {actor} is marked as a buyer. The {adj} exposure will cost more than coin.',
+          narrative: 'The watcher was real. The goods are seized and {actor}\'s name {verb}s onto a list. The {adj} exposure will cost more than coin.',
           reputationDelta: -0.10,
           rewardPool: {
             categoryWeights: { possession: 0.7, condition: 0.3 },
@@ -5897,7 +5897,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: 'The prisoner{verb}s their secrets tight. {actor} leaves with nothing but a {adj} waste of time.',
+          narrative: 'The prisoner {verb}s their secrets tight. {actor} leaves with sore knuckles and a {adj} waste of an afternoon.',
           reputationDelta: -0.07,
         },
       },
@@ -6401,7 +6401,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         duration: 2,
         narrative: 'The hermit will not speak to just anyone. {actor} must show why {they} are {adj} worthy of what they seek.',
         onSuccess: {
-          narrative: '{actor} sits with the hermit through a night of {adj} honest conversation and receives something that cannot be taught.',
+          narrative: '{actor} sits with the hermit through a night of {adj} honest conversation and leaves holding a question that will not put itself down.',
           reputationDelta: 0.12,
           tierPromotionEligible: true,
           rewardPool: {
@@ -6410,7 +6410,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'The hermit finds {actor} {adj} unprepared. They share nothing of value. Perhaps another time.',
+          narrative: 'The hermit finds {actor} {adj} unprepared, and talks about the weather until the fire burns down. Perhaps another time.',
           reputationDelta: -0.03,
           rewardPool: {
             categoryWeights: { bestowed_power: 0.7, condition: 0.3 },
@@ -7322,7 +7322,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         duration: 1,
         narrative: 'Darkness settles. {actor} takes the watch, eyes adjusting to the {adj} shapes that move beyond the firelight.',
         onSuccess: {
-          narrative: '{actor} reads the night like a language — every sound placed, every shadow accounted for. Nothing slips past.',
+          narrative: '{actor} reads the night like a language — every sound placed, every shadow accounted for. What moves out there stays out there.',
           reputationDelta: 0.02,
         },
         onFailure: {
@@ -7338,7 +7338,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         duration: 1,
         narrative: 'Something stirs at the edge of camp. {actor} rises, hand on weapon, the {adj} tension of the unknown in every muscle.',
         onSuccess: {
-          narrative: 'A wild animal, a falling branch — nothing worse. {actor} handles it cleanly and the camp sleeps on.',
+          narrative: 'A wild animal, a falling branch — no more than that. {actor} handles it cleanly and the camp sleeps on.',
           reputationDelta: 0.03,
         },
         onFailure: {
@@ -8416,11 +8416,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         duration: 1,
         narrative: 'Hunger sharpens the eye. {actor} scans the terrain for anything edible, useful, or overlooked.',
         onSuccess: {
-          narrative: '{actor} spots what others miss — a cluster of roots, a clean spring, something to sustain {them} another day.',
+          narrative: '{actor} spots what others miss — a cluster of roots, a clean spring, enough to sustain {them} another day.',
           reputationDelta: 0.02,
         },
         onFailure: {
-          narrative: 'The land gives nothing. {actor} returns empty-handed, the {adj} search yielding only dust.',
+          narrative: 'The land gives up bitter root and bad water. {actor} returns empty-handed, the {adj} search yielding only dust.',
           reputationDelta: -0.01,
         },
       },
@@ -8440,7 +8440,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'Too heavy, too far. {actor} drops half the haul on the way back, the {adj} effort wasted.',
+          narrative: 'Too heavy, too far. {actor} drops half the haul walking it back, the {adj} effort wasted.',
           reputationDelta: -0.01,
         },
       },
@@ -8479,7 +8479,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           reputationDelta: 0.02,
         },
         onFailure: {
-          narrative: 'The land gives {actor} nothing today. The {adj} search turns up only disappointment.',
+          narrative: 'The land gives {actor} thin pickings today. The {adj} search turns up bitter root and little else.',
           reputationDelta: -0.01,
         },
       },
@@ -10903,7 +10903,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: 'Everything is cracked, warped, or {adj} ruined beyond saving. The rubble gives nothing back.',
+          narrative: 'Everything is cracked, warped, or {adj} ruined beyond saving. The rubble gives back broken stone and a wasted day.',
           reputationDelta: -0.02,
         },
       },
@@ -10915,7 +10915,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         duration: 2,
         narrative: 'The heavy work. {actor} lifts, drags, and stacks with {adj} endurance, turning chaos into cleared ground.',
         onSuccess: {
-          narrative: 'The site is clear. For the first time in years, the ground beneath the {adj} ruin sees daylight. Something could be built here.',
+          narrative: 'The site is clear. For the first time in years, the ground beneath the {adj} ruin sees daylight. A foundation could go down here.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
         },
@@ -10932,7 +10932,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         duration: 2,
         narrative: 'Beneath the rubble, the {adj} original foundation appears — and sometimes, things that were buried with intent.',
         onSuccess: {
-          narrative: '{actor} uncovers the foundation line, intact and {adj} true. And something else: a sealed compartment, still whole.',
+          narrative: '{actor} uncovers the foundation line, intact and {adj} true. And set into it, a sealed compartment, still whole.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
           rewardPool: {
@@ -10941,7 +10941,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'The foundation is too {adj} damaged to tell much. The rubble hid nothing but more rubble.',
+          narrative: 'The foundation is too {adj} damaged to tell much. Under the rubble was more rubble.',
           reputationDelta: -0.08,
         },
       },
@@ -11189,12 +11189,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         duration: 1,
         narrative: 'The loose brick. The hollow tree. The gap beneath the third step. {actor}\'s hands work with {adj} practiced speed.',
         onSuccess: {
-          narrative: 'Message left, message taken. {actor} walks away with something small and {adj} valuable — information, always information.',
+          narrative: 'Message left, message taken. {actor} walks away with a name and a date, small and {adj} valuable — information, always information.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: 'The drop is empty — already serviced, or the signal was wrong. {actor} leaves with {adj} nothing.',
+          narrative: 'The drop is empty — already serviced, or the signal was wrong. {actor} leaves with an {adj} empty hand and a route now burned.',
           reputationDelta: -0.03,
         },
       },
@@ -11215,7 +11215,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'Someone noticed. Nothing actionable, but a {adj} seed of suspicion planted. Sloppy.',
+          narrative: 'A face in a doorway held on {actor} a beat too long. No name taken, no arrest — but a {adj} seed of suspicion planted. Sloppy.',
           reputationDelta: -0.08,
         },
       },
@@ -12480,7 +12480,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         duration: 1,
         narrative: 'Nobody has drawn anything yet. {actor} steps out where the other side can count the company properly, and lets them.',
         onSuccess: {
-          narrative: '{actor} stands where they can be counted and does not shift, and the arithmetic on the other side starts going the wrong way for them.',
+          narrative: '{actor} stands where they can be counted and does not shift, and the arithmetic on the other side comes up short.',
           reputationDelta: 0.05,
         },
         onFailure: {
@@ -12496,12 +12496,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         duration: 1,
         narrative: 'Somebody has to say the thing that lets the other side leave. {actor} finds a way to say it that does not sound like mercy.',
         onSuccess: {
-          narrative: '{actor} gives them the road and they take it, and the whole thing is over without anyone having to be carried away from it.',
+          narrative: '{actor} gives them the road and they take it. Both companies walk off the field on their own feet.',
           reputationDelta: 0.12,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: '{actor} says it wrong, or says it to the wrong one. The other side holds the ground and the company is the one that gives way.',
+          narrative: '{actor} says it wrong, or says it to the wrong one. The other side holds the ground and the company backs off first.',
           reputationDelta: -0.08,
         },
       },

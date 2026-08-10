@@ -143,7 +143,7 @@ export const NPC_ACTION_TEMPLATES: readonly UnifiedActionTemplate[] = [
     narrativeTemplates: {
       initiation: 'You let something genuine through — or something close enough to it.',
       success: 'They warm to you. A small light behind the eyes, yours to cultivate.',
-      failure: 'The overture falls flat. They smile, but nothing takes root.',
+      failure: 'The overture falls flat. They smile, and the smile is where it ends.',
     },
   },
 
@@ -485,7 +485,7 @@ export const NPC_ACTION_TEMPLATES: readonly UnifiedActionTemplate[] = [
     motivations: [],
     narrativeTemplates: {
       initiation: 'You withdraw the light of your favour and replace it with something colder.',
-      success: 'The curse takes root. From here, the world will find new ways to be unkind to them.',
+      success: 'The curse takes root. From here, doors stick, milk sours, and friends arrive late.',
       failure: 'The curse rebounds or dissipates. Either they are protected, or you were not committed enough.',
     },
   },

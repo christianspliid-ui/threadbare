@@ -1712,7 +1712,7 @@ export const THIEVES_GUILD_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
           '{?no_faction}Independent, {name} trades with whoever has something useful and ' +
           'will accept what {they} offer{s}.{/no_faction}',
         successAfterimage: 'A useful tip surfaces. Opportunity is downstream.',
-        failureAfterimage: 'Stale gossip and old news. Nothing worth the investment.',
+        failureAfterimage: 'Stale gossip and old news, traded away at full price.',
       },
     ],
     narrativeTemplates: {
@@ -1720,7 +1720,7 @@ export const THIEVES_GUILD_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
         '{name} exchanges information in {location}\'s back-channel network — what {they} know{s} ' +
         'for what someone else knows. The guild economy runs on this.',
       success: 'A tip about a wealthy traveler, a patrol gap, a careless merchant. Opportunity.',
-      failure: 'The exchange produces nothing useful. Bad week for rumor.',
+      failure: 'The exchange produces two names already burned and a date that has passed. Bad week for rumor.',
     },
     aftermathConfig: {
       branchOnStep: 0,

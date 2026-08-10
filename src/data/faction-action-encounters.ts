@@ -222,8 +222,8 @@ export const FA_BOUNTY_HUNT_TEMPLATE: UnifiedActionTemplate = {
   motivations: ['honesty_cunning', 'mercy_ruthlessness'],
   narrativeTemplates: {
     initiation: 'takes a bounty commission from the faction',
-    success: 'the bounty is collected; someone pays a price they didn\'t know was coming',
-    failure: 'the target escapes, the faction is out its coin, and someone now knows they\'re being hunted',
+    success: 'the bounty is collected; the target pays a price they didn\'t know was coming',
+    failure: 'the target escapes, the faction is out its coin, and the target now knows they\'re being hunted',
   },
   steps: [
     {
@@ -241,7 +241,7 @@ export const FA_BOUNTY_HUNT_TEMPLATE: UnifiedActionTemplate = {
         'what the asking is for. This part of the work is patient and unglamorous and ' +
         'it is also the part where the job is won or lost.',
       successAfterimage: 'The target is located. The hunt is real now.',
-      failureAfterimage: 'The trail is cold. Someone moved the target, or the target moved themselves.',
+      failureAfterimage: 'The trail is cold. The target was moved, or moved themselves.',
     },
     {
       reach: 'shadow',
@@ -348,7 +348,7 @@ export const FA_RIVALRY_SUBTERFUGE_TEMPLATE: UnifiedActionTemplate = {
   narrativeTemplates: {
     initiation: 'infiltrates a rival faction\'s operations',
     success: 'extracts useful intelligence about the rival faction\'s plans',
-    failure: 'the operation is compromised — the rival faction now knows someone was looking',
+    failure: 'the operation is compromised — the rival faction now knows it was being watched',
   },
   steps: [
     {
@@ -379,7 +379,7 @@ export const FA_RIVALRY_SUBTERFUGE_TEMPLATE: UnifiedActionTemplate = {
         'members go and what they do when they get there. Learning that pattern is not dramatic. ' +
         'It is patient and methodical and it produces something useful when the patience holds.',
       successAfterimage: 'The intelligence is good. The rival faction is less opaque than it was.',
-      failureAfterimage: 'The operation burned. The rival faction knows someone was inside.',
+      failureAfterimage: 'The operation burned. The rival faction knows it had a watcher inside.',
     },
   ],
 };
