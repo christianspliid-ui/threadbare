@@ -1,5 +1,5 @@
 ---
-needsChristian: thr-907-slice-verdict, thr-974-consequence-verdict, aftermath-pops-recheck, thr-998-action-card-risk-word, thr-961-sound-feel, thr-962-sound-routing
+needsChristian: thr-1064-needs-close, thr-907-slice-verdict, thr-974-consequence-verdict, aftermath-pops-recheck, thr-998-action-card-risk-word, thr-961-sound-feel, thr-962-sound-routing
 queue: backed-up
 freshness: dirty
 deploy: deployed
@@ -9,11 +9,13 @@ ci: healthy
 ---
 # Briefing
 
-**Generated:** 2026-08-10 13:58 local (11:58 UTC) · by keep-work-flowing-cc
+**Generated:** 2026-08-10 14:58 local (12:58 UTC) · by keep-work-flowing-cc
 
 ## Needs Christian
 
-**Your one word cleared the stone ticket. What's left is the same five play-and-taste items — and every one of them is you sitting down with the game, not you reading anything.**
+**One new ten-second item, then the same five play-and-taste calls. Nothing new has been asked of your judgement since the last brief.**
+
+- **Ten seconds, not a decision: the stone ticket needs closing by hand.** ([THR-1064](https://linear.app/threadbare/issue/THR-1064/the-stone-sets-five-axiological-templates-are-inverted-against)) You settled it an hour ago — the stone reach's five trials stay as written, not a defect. The reasoning is recorded on the ticket and the corrected notes have shipped. **The last brief said a working session would close it. That was wrong, and this is the correction:** none of the automated sessions is permitted to mark a ticket finished — that write is deliberately reserved to you — so it will sit showing "in progress" until you close it. It is the only thing the board thinks is being worked on right now.
 
 - **Both play sessions are still ready, and they are still the same one sitting.** Two rulings over the same five encounters.
 
@@ -38,35 +40,27 @@ ci: healthy
 
 - **Two small yes/no decisions on encounter sound**, unchanged for several runs: [routing the sound cues to the new screen](https://linear.app/threadbare/issue/THR-962), and [how those cues actually feel](https://linear.app/threadbare/issue/THR-961).
 
-## From Christian
-
-**You replied *"go ahead"* at 11:24Z**, quoting the message that asked you to close the stone ticket as not-a-defect.
-
-- **Read as:** close [THR-1064](https://linear.app/threadbare/issue/THR-1064/the-stone-sets-five-axiological-templates-are-inverted-against) as *not a defect* — the stone reach's five trials stay exactly as written. That supersedes your *"flip the label"* from yesterday, which was answered on the wrong brief. **If you meant something else, one message reverses it.**
-- **Recorded on the ticket itself**, quoting you, so the decision survives — this briefing is rewritten every hour and would have erased it.
-- **Routed, not done here.** Actually marking the ticket closed is a board write, and this hourly brief is deliberately not allowed to make those — it reads and reports, it doesn't move work. A working session picks it up. **Nothing else waits on it**, so there is nothing for you to chase.
-
 ## Queue
 
-**Backed up — 34 ready for dev, one item in progress.** That one is the stone ticket you just cleared; it stops holding a slot the moment a session records the close.
+**Backed up — 34 ready for dev, one item in progress.** That one item is the stone ticket above; it stops showing as in-progress the moment you close it.
 
-**The shape of the shelf is the thing worth knowing, and it has not changed.** Of the 34 ready items, 31 are `Low`-priority cleanup — dead code, stale comments, prose-detector misses. **There is still no encounter content queued.** The thirty-four encounters dropped yesterday on your ruling have not re-entered as tickets; that work is folded into [the Encounter Factory](https://linear.app/threadbare/issue/THR-1043), which is still being designed. **If you would rather have some hand-written encounters in the meantime rather than waiting for the machine, say the word and it becomes a ticket** — noted as available, not asked as a question.
+**The shape of the shelf is the thing worth knowing, and it has not changed.** Of the 34 ready items, 31 are `Low`-priority cleanup — dead code, stale comments, prose-detector misses. **There is still no encounter content queued.** The thirty-four encounters dropped on your ruling have not re-entered as tickets; that work is folded into [the Encounter Factory](https://linear.app/threadbare/issue/THR-1043), which is still being designed. **If you would rather have some hand-written encounters in the meantime rather than waiting for the machine, say the word and it becomes a ticket** — noted as available, not asked as a question.
 
-**The one genuinely important repair is queued and does not need you:** [THR-1071](https://linear.app/threadbare/issue/THR-1071) — across 37 of the 40 converted encounters the merciful choice currently makes a character *more* ruthless. It sits at High with its own fix decision, waiting for a session rather than for a ruling.
+**The one genuinely important repair still does not need you:** [THR-1071](https://linear.app/threadbare/issue/THR-1071) — across 37 of the 40 converted encounters the merciful choice currently makes a character *more* ruthless. It is the board's only High-priority item, it carries its own fix decision, and it is waiting to be pulled into the ready queue on the next promotion sweep rather than waiting for a ruling. Correcting the last brief: it sits one step earlier in the pipeline than that brief implied — filed and prioritised, not yet queued.
 
 ## Freshness
 
 - **Home tree:** on `main`, fully up to date with the remote, nothing stranded. Two tracked config files are still modified (`.claude/settings.json`, `.claude/settings.local.json`) — harmless, but they will block the automatic sync the moment a change to those same files arrives. Clear whenever convenient: `git -C "C:/Users/chris/Dev/Projects/TheFantasyWorldSimulator" checkout -- .claude/settings.json .claude/settings.local.json` (only if you did not mean to change them).
 - **26 untracked report files** still piling up in the home tree's `Docs/ops/` and `Design/retros/`. Already filed as [THR-1056](https://linear.app/threadbare/issue/THR-1056) and queued — noted only because it is the shape that has stalled the sync before.
-- **Deploy:** the live site is serving the latest commit on `main` (`bbd2613b`). Green.
-- **Automated checks:** running normally. One open pull request, correctly held on purpose ([#1114](https://github.com/christianspliid-ui/threadbare/pull/1114)) — the branch behind the encounters you dropped; it wants closing rather than merging.
+- **Deploy:** the live site is serving the latest commit on `main` (`f042c335`). Green.
+- **Automated checks:** running normally. All nine scheduled jobs are on schedule.
 - **Overnight quiet:** the lane-silence probe again reports the last few nights as unexplained gaps (roughly 20:30→06:15 UTC). It is repeating a question **you already answered on 2026-08-08** — *"overnight quiet is normal"* — so it is not being raised to you again. Recorded here so the decline is visible rather than silent: the shape is nightly and machine-off-shaped, and the probe has no way to express "expected every night."
-- **Housekeeping:** the git reaper ran 18 minutes ago and is healthy — 49 worktrees, 64 branches, 2 needing a human call on whether their unmerged work is wanted.
+- **Housekeeping:** the git reaper ran 18 minutes ago and is healthy — 48 worktrees, 64 branches, 2 needing a human call on whether their unmerged work is wanted.
 
 ## What's moving
 
-- **The stone investigation is fully closed out** — the ticket that said the stone reach was broken now records that it isn't, the notes that claimed otherwise are corrected, and the real bug it uncovered is filed and prioritised.
-- **The backwards-mercy bug** ([THR-1071](https://linear.app/threadbare/issue/THR-1071)) is the board's one High-priority item and the most consequential thing found this week: it silently pointed thirty-seven encounters' moral outcomes the wrong way. It was found because a session checked a convention against the code instead of trusting the ticket that sent it.
+- **The stone investigation is finished bar the click.** The ticket that claimed the stone reach was broken now records that it isn't, the notes that said otherwise are corrected and merged, and the real bug it uncovered is filed at High.
+- **The backwards-mercy bug** ([THR-1071](https://linear.app/threadbare/issue/THR-1071)) remains the most consequential find this week: it silently pointed thirty-seven encounters' moral outcomes the wrong way. It surfaced because a session checked a convention against the code instead of trusting the ticket that sent it.
 - Still fresh from the last day: the veil's countdown bug fixed ([THR-1068](https://linear.app/threadbare/issue/THR-1068)), thirty-five encounters rewritten so the ending names what actually happened ([THR-929](https://linear.app/threadbare/issue/THR-929)), the Compulsion now planting a weight instead of pushing ([THR-886](https://linear.app/threadbare/issue/THR-886)), and all forty meeting tests finished ([THR-875](https://linear.app/threadbare/issue/THR-875)).
 
 ---

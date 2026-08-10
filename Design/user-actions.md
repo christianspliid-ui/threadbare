@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-10 13:58 local (2026-08-10 11:58 UTC), by the hourly `keep-work-flowing-cc` CC task.
+**Last updated:** 2026-08-10 14:58 local (2026-08-10 12:58 UTC), by the hourly `keep-work-flowing-cc` CC task.
 
 > **FILE-HEALTH FLAG — STANDING, NOT RE-COUNTED. FOR THE RETRO, NOT FOR CHRISTIAN.** The count was retired at the fifth flag; restating the measurement each hour was itself the drift. **The standing fact:** standing asks start two-thirds of the way down their own file, everything above them is run-by-run self-narration the skill forbids accreting here, and **the structural fix has never been filed as a ticket** — every flag routed it to "a session" no lane is scheduled to run. **The retro files it or it does not happen:** asks to the top, narration to a sibling file or to `git log -p` on `ops`, hard cap on the per-run measurement block. **Runs since the fifth flag have held the line by writing no narration**, which caps growth without reversing it; this run added nothing but the resolution of one ask.
 >
@@ -682,9 +682,18 @@ When an item resolves: delete it from this file, mark the corresponding impedime
 
 ## Standing asks
 
+**2026-08-10 12:58Z — SEVEN LIVE. ONE RE-ENTERS, BECAUSE LAST RUN CLOSED IT BY ROUTING IT SOMEWHERE THAT DOES NOT EXIST.** **`thr-1064-needs-close` ENTERS** (ask 11). Last run retired `thr-1064-ruling-reversed` as answered and routed the `Done` write "to an executor session" — **and no executor session may make that write either.** CLAUDE.md reserves `Done` to the merge-autoclose path or to Christian, and THR-1064 has no code left to change, so no PR will carry the keyword. **The route was empty, which means the item was closed into a hole.** It is re-raised as what it actually is: a ten-second manual close only he can perform. **Nothing else joined or left**; the other six are unchanged and still entirely play and taste. Digest rises **six → seven**; the step-6 ping fires. **This is closed question 23 paying out a third time, one level up** — the previous run correctly refused to call the authorisation a delivery, then discharged it to a lane that could not deliver it, which reads as handled just as effectively.
+
+<details>
+<summary>Standing-ask preamble, 2026-08-10 11:58Z run</summary>
+
 **2026-08-10 11:58Z — SIX LIVE. THE ASK THAT ENTERED LAST RUN WAS ANSWERED IN 86 MINUTES.** **`thr-1064-ruling-reversed` RESOLVED** — *"go ahead"* (11:24:32Z), a quote-reply to the ping carrying it, read as authorising closure as not-a-defect. **Nothing joined.** The remaining six are unchanged and entirely play and taste; for the third time the set contains nothing that blocks another ticket. Digest falls **seven → six**; the step-6 ping fires. **The closure is answered but not delivered** — marking the ticket `Done` is a state write this lane may not make, so it is routed and carried in open agent work, per closed question 23's rule that an authorisation reads as handled precisely because it was granted. Full verdict and the stated reading under Resolved this period.
 
 **THE SIX CARRIED ASKS WERE RE-PULLED FROM THE LIVE BOARD** rather than carried on last run's word — THR-907, THR-974, THR-961, THR-962 all confirmed `Todo` and unchanged; THR-998 pulled in full with `get_issue` (`Todo`, `Medium`, `completedAt: null`, all three options intact); THR-986 pulled with relations (`Todo`, still `blockedBy` thirteen). **Tenth consecutive run declining a verbatim sibling fold on per-item liveness:** `backlog-grooming-2026-08-10` and `orchestrator-2026-08-10g` both raise THR-907/974/986, already this file's lead ask; `weekly-hygiene-2026-08-09` is empty by its own words and its one FYI (THR-883 closing) is four days stale.
+
+</details>
+
+**THE SIX CARRIED ASKS WERE RE-PULLED FROM THE LIVE BOARD THIS RUN TOO** — THR-907, THR-974, THR-961, THR-962, THR-998 all confirmed `Todo` and unchanged in a fresh `Todo`-state scan; THR-1064 confirmed still `In Dev`, assignee null, `completedAt: null`, which is what re-raises ask 11. **Eleventh consecutive run declining a verbatim sibling fold on per-item liveness:** `orchestrator-2026-08-10h` raises only THR-974, already this file's lead ask; `weekly-hygiene-2026-08-09` is empty by its own words and its one FYI is four days stale. **The lane-silence probe again returned `recovered`/`needsChristian` and was again declined** — he answered *"overnight quiet is normal"* on 2026-08-08 and the four gaps it reports are all overnight-shaped.
 
 <details>
 <summary>Standing-ask preamble, 2026-08-10 09:58Z run</summary>
@@ -941,6 +950,17 @@ When an item resolves: delete it from this file, mark the corresponding impedime
 - **The lesson is logged as impediment #523** by the executor: when a ticket's evidence turns on a sign or ordering convention, re-derive the convention from code before implementing — *especially* when the ticket is specific and carries an approved decision, because a verdict inherits its brief's errors and then launders them.
 
 </details>
+
+---
+
+### 11. The stone ticket needs closing by hand — a board write, not a decision (THR-1064)
+
+- **ENTERED 2026-08-10 12:58Z, AS A CORRECTION TO LAST RUN'S CLOSURE ROUTE.** The decision is settled and recorded; what is outstanding is the mechanical act of marking [THR-1064](https://linear.app/threadbare/issue/THR-1064) finished. **Last run discharged that to "an executor session". No executor session may do it either** — CLAUDE.md reserves `Done` to the merge-autoclose path (`Fixes THR-XX` in a merged PR) or to Christian, and this ticket has **no code left to change**, so no PR will ever carry the keyword. PR #1383 shipped the note corrections deliberately *without* it.
+- **So the route was empty, and an item closed into an empty route reads as handled while nothing happens.** That is closed question 23's rule firing one level up from where it fired last run: the previous run was right that an authorisation is not a delivery, and then delivered it to a lane that cannot deliver.
+- **Verified live before re-raising, not carried on last run's word:** `In Dev`, assignee null, `completedAt: null`, `startedAt: 2026-08-10T09:02:59Z`. It is the **only** row in the in-progress column.
+- **The cost of not doing it is small and real:** the board reports work in progress that is finished, which is the one signal every lane and every brief reads to decide whether the executor is busy.
+- **Silence is not safe here** — unlike the six play-and-taste asks, nothing self-heals. It stays exactly as it is until someone clicks it.
+- **What is NOT being re-asked:** the decision itself. He answered *"go ahead"* at 11:24:32Z, that reading is recorded on the ticket with a one-line reversal attached, and re-asking it would be the ratification failure finding 7 names.
 
 ---
 
