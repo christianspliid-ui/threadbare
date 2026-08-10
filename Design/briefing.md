@@ -1,67 +1,35 @@
----
-needsChristian: thr-907-slice-verdict, thr-974-consequence-verdict, aftermath-pops-recheck, thr-998-action-card-risk-word, thr-961-sound-feel, thr-962-sound-routing
-queue: backed-up
-freshness: dirty
-deploy: deployed
-tasks: ok
-lanes: recovered
-ci: healthy
----
 # Briefing
 
-**Generated:** 2026-08-10 15:58 local (13:58 UTC) · by keep-work-flowing-cc
+**Generated:** 2026-08-10 17:20 local (15:20 UTC) · keep-work-flowing-cc
 
-## Needs Christian
+*Format changed today on your direction: one lead ask instead of six parallel ones. Everything else waits in [user-actions.md](user-actions.md), one line each below.*
 
-**You closed the stone ticket two minutes after the last ping — thank you, it's off the list. What's left is five things, and every one of them is you playing the game.** Nothing new has been asked of your judgement since the last brief.
+## The one thing
 
-- **Both play sessions are still ready, and they are still the same one sitting.** Two rulings over the same five encounters.
+**Sit down with the game once and play the five slice encounters — two rulings come out of the same sitting.** [THR-907](https://linear.app/threadbare/issue/THR-907): does the prose read clear, does the firing rhythm work, is the interface gamey enough, is deciding fun — *"needs another iteration"* is a valid answer on any. [THR-974](https://linear.app/threadbare/issue/THR-974): play a hand to its ending — is the change to the world visible, and does it feel like it happened in the world rather than being announced at you?
 
-  **Session A — the four-part verdict** ([THR-907](https://linear.app/threadbare/issue/THR-907)): does the prose read clear, does the firing rhythm work, is the interface gamey enough, and is deciding actually fun. *"Needs another iteration"* is a valid answer on any of the four.
+- [The bargain at the crossroads](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.bargain_at_crossroads)
+- [Riders behind the caravan](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.riders_behind_caravan)
+- [Snow on the pass](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.snow_on_the_pass)
+- [The swindled family](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.swindled_family)
+- [The unsafe bridge](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge)
 
-  **Session B — the consequence verdict** ([THR-974](https://linear.app/threadbare/issue/THR-974)): play a hand to its ending and say whether the change to the world is **visible**, and whether it feels like it **happened in the world** rather than being announced at you.
+Add `&outcome=critical_failure` (or any other band) to a link to jump straight to that ending. Everything downstream — including the [demo-ready call (THR-986)](https://linear.app/threadbare/issue/THR-986) — waits on this sitting; nothing waits on the items below.
 
-  - [The bargain at the crossroads](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.bargain_at_crossroads)
-  - [Riders behind the caravan](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.riders_behind_caravan)
-  - [Snow on the pass](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.snow_on_the_pass)
-  - [The swindled family](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.swindled_family)
-  - [The unsafe bridge](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge)
-  - For the firing-rhythm verdict, which needs natural play: [free play with everything firing](https://threadbare.vercel.app/?view=game&seeded&size=medium&testavatar&forceencounters)
+## Also waiting (4)
 
-  Add `&outcome=critical_failure` (or `success`, `failure`, `near_miss`, `success_at_cost`, `critical_success`) to any link to end it that way instead of replaying and hoping. Where nobody has written that ending yet you get the normal one — so two links reading the same means a gap in the writing, not a bug.
-
-  The [demo-ready checkpoint](https://linear.app/threadbare/issue/THR-986) rides on the same sitting — the "is this good enough to show someone" call, once A and B are answered. It is **not** ready yet: still blocked on its own thirteen named tickets, unchanged this run.
-
-- **A two-minute check, not a decision: does an encounter's ending now appear on its own when you play?** You reported on 2026-08-06 that it didn't — you had to click the badge on the agent's thread. Both halves of that cause shipped and were verified against your exact repro. **No reply needed if it works.** If it doesn't, say so and it gets a fresh ticket; a recurrence now would be a different bug. You'll pass through this naturally during the sessions above.
-
-- **Action cards are telling players a risk that isn't real.** ([THR-998](https://linear.app/threadbare/issue/THR-998)) Each card reads "a steady / uncertain / perilous working", but for 85% of castable cards the underlying number cannot move the odds at all — a "perilous" card and a "steady" card land exactly the same way. **(a)** make the word track the odds the cast will actually roll, so the same card reads differently for different gods; **(b)** stop printing a risk word where the odds are flat and say something else instead — what scale the working reaches, or what it costs; **(c)** lower the floors so the authored danger bites again, which also changes how mortals resolve everything. **Recommendation: (b).** If the danger genuinely doesn't vary, a danger word is the wrong thing to print.
-
-- **Two small yes/no decisions on encounter sound**, unchanged for several runs: [routing the sound cues to the new screen](https://linear.app/threadbare/issue/THR-962), and [how those cues actually feel](https://linear.app/threadbare/issue/THR-961).
+- While playing, notice whether the encounter ending pops on its own now — **no reply needed if it works** (your 2026-08-06 report; both causes shipped).
+- [THR-998](https://linear.app/threadbare/issue/THR-998): action cards print a risk word the odds can't back — recommendation is to print something true instead (details in user-actions.md).
+- [THR-962](https://linear.app/threadbare/issue/THR-962): route the encounter sound cues to the new screen — yes/no.
+- [THR-961](https://linear.app/threadbare/issue/THR-961): how those cues feel — needs your ears.
 
 ## Queue
 
-**Backed up — 34 ready for dev, and for the first time in three days nothing at all is in progress.** That is accurate rather than alarming: the stone ticket was the last thing showing as being worked on, and you closed it. The next hourly pickup will start something fresh.
+Backed up — 35 ready for dev, nothing in progress; the hourly pickup starts the next item on its own. 32 of the 35 are low-priority cleanup and **no encounter content is queued**: content re-enters through the [Encounter Factory](https://linear.app/threadbare/issue/THR-1043), still being designed. Standing offer: if you'd rather have hand-written encounters in the meantime, say the word and it becomes a ticket.
 
-**The shape of the shelf is the thing worth knowing, and it has not changed.** Of the 34 ready items, 31 are `Low`-priority cleanup — dead code, stale comments, prose-detector misses. **There is still no encounter content queued.** The thirty-four encounters dropped on your ruling have not re-entered as tickets; that work is folded into [the Encounter Factory](https://linear.app/threadbare/issue/THR-1043), which is still being designed. **If you would rather have some hand-written encounters in the meantime rather than waiting for the machine, say the word and it becomes a ticket** — noted as available, not asked as a question.
+## Health
 
-**The one genuinely important repair still does not need you:** [THR-1071](https://linear.app/threadbare/issue/THR-1071) — across 37 of the 40 converted encounters the merciful choice currently makes a character *more* ruthless. It is the board's only High-priority item, it carries its own fix decision, and it is still sitting one step before the ready queue, waiting on the next promotion sweep rather than on a ruling.
-
-## Freshness
-
-- **Home tree:** on `main`, fully up to date with the remote, nothing stranded. Two tracked config files are still modified (`.claude/settings.json`, `.claude/settings.local.json`) — harmless, but they will block the automatic sync the moment a change to those same files arrives. Clear whenever convenient: `git -C "C:/Users/chris/Dev/Projects/TheFantasyWorldSimulator" checkout -- .claude/settings.json .claude/settings.local.json` (only if you did not mean to change them).
-- **27 untracked report files** still piling up in the home tree's `Docs/ops/` and `Design/retros/`, one more than last run. Already filed as [THR-1056](https://linear.app/threadbare/issue/THR-1056) and queued — noted only because it is the shape that has stalled the sync before.
-- **Deploy:** the live site is serving the latest commit on `main` (`2b714aa6`). Green.
-- **Automated checks:** running normally. All nine scheduled jobs are on schedule.
-- **Overnight quiet:** the lane-silence probe again reports the last few nights as unexplained gaps (roughly 20:30→06:15 UTC). It is repeating a question **you already answered on 2026-08-08** — *"overnight quiet is normal"* — so it is not being raised to you again. Recorded here so the decline is visible rather than silent: the shape is nightly and machine-off-shaped, and the probe has no way to express "expected every night."
-- **Housekeeping:** the git reaper ran 16 minutes ago and is healthy — 48 worktrees, 63 branches, 2 needing a human call on whether their unmerged work is wanted.
-
-## What's moving
-
-- **The stone investigation is fully closed.** The ticket that claimed the stone reach was broken now records that it isn't, the corrected notes are merged, and the board no longer shows it as work in progress.
-- **The backwards-mercy bug** ([THR-1071](https://linear.app/threadbare/issue/THR-1071)) remains the most consequential find this week: it silently pointed thirty-seven encounters' moral outcomes the wrong way. It surfaced because a session checked a convention against the code instead of trusting the ticket that sent it.
-- Still fresh from the last day: the veil's countdown bug fixed ([THR-1068](https://linear.app/threadbare/issue/THR-1068)), thirty-five encounters rewritten so the ending names what actually happened ([THR-929](https://linear.app/threadbare/issue/THR-929)), the Compulsion now planting a weight instead of pushing ([THR-886](https://linear.app/threadbare/issue/THR-886)), and all forty meeting tests finished ([THR-875](https://linear.app/threadbare/issue/THR-875)).
+All green. The live site serves the latest `main`; checks, scheduled lanes and the reaper are on time; the one open PR ([#1114](https://github.com/christianspliid-ui/threadbare/pull/1114)) is paused on purpose. The setup itself was simplified today at your direction — briefing and standing-asks files restructured, the PM lane's rulebook cut to a quarter of its size, and a root rule added so the lanes stop filing process tickets at the machine ([THR-1077](https://linear.app/threadbare/issue/THR-1077), [THR-954](https://linear.app/threadbare/issue/THR-954)).
 
 ---
-*Standing asks live in `Design/user-actions.md`. This file is regenerated hourly by
-the `keep-work-flowing-cc` scheduled task; staleness is visible from the Generated
-timestamp above and the task's `lastRunAt` in `list_scheduled_tasks`.*
+*Standing asks: `Design/user-actions.md`. Regenerated hourly by `keep-work-flowing-cc`; staleness is visible from the timestamp above.*
