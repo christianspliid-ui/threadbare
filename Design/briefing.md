@@ -12,9 +12,9 @@ It is the oldest of your open rulings (idle since 08-06) and the one the most wo
 ## Also waiting (4)
 
 - [THR-974](https://linear.app/threadbare/issue/THR-974/consequence-verdict-session-christian-rules-on-world-graph-consequence) — same sitting, second ruling: is the world's change **visible**, and does it feel like it *happened* rather than being announced.
-- [THR-998](https://linear.app/threadbare/issue/THR-998) — action cards print a risk word that can't move for 85% of cards. Recommendation: **(b)** print something true instead.
+- While playing, notice whether the encounter ending pops up on its own now — **no reply needed if it works** (your 2026-08-06 report; both causes shipped and were verified against your repro).
+- [THR-998](https://linear.app/threadbare/issue/THR-998) — action cards print a risk word the odds can't back for 85% of cards. Recommendation: **(b)** print something true instead (three options in user-actions.md).
 - [THR-962](https://linear.app/threadbare/issue/THR-962) / [THR-961](https://linear.app/threadbare/issue/THR-961) — two sound decisions; both need your ears, not a screen.
-- A Tenacious-style trait — parked option, no urgency. Safe default is "stays parked."
 
 ## Queue
 
