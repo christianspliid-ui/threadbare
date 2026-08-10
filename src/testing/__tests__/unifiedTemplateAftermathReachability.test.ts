@@ -12,7 +12,10 @@
 
 import { describe, expect, it } from 'vitest';
 import { UNIFIED_ACTION_TEMPLATES } from '../../data/unified-action-templates';
-import { assertDecidedAftermathReachable } from '../contentInvariants';
+import {
+  assertAftermathVariantsProducible,
+  assertDecidedAftermathReachable,
+} from '../contentInvariants';
 import { isActionStepBranch, resolveAftermathVariant } from '../../types/unifiedAction';
 import type {
   UnifiedActionOutcome,
@@ -101,6 +104,132 @@ describe('decided-fork aftermath reachability (catalog-wide)', () => {
     };
 
     expect(() => assertDecidedAftermathReachable(misKeyed)).toThrow(/is unreachable/);
+  });
+});
+
+/**
+ * THR-989: an aftermath variant key nothing can produce is authored content
+ * rendered to nobody — checked across the entire catalog, for the same reason
+ * the suite above is.
+ *
+ * The sibling guard asks whether a decided fork points at the right step. This
+ * one asks whether *any* writer can emit the key at all, which is the question
+ * that went unasked while 30 of the 34 templates carrying aftermath variants sat
+ * unreachable behind a click handler that discarded the player's pick.
+ */
+describe('aftermath variant producibility (catalog-wide, THR-989)', () => {
+  it('every aftermath variant key is producible by a fork or an authored card', () => {
+    for (const template of UNIFIED_ACTION_TEMPLATES) {
+      assertAftermathVariantsProducible(template);
+    }
+  });
+
+  /**
+   * Population guard. A sweep over an empty set passes vacuously — pin that the
+   * catalog really does contain templates keyed to `authoredChoices`, which is
+   * the path the defect lived on and the one a refactor is most likely to drop.
+   */
+  it('inspects a non-empty population keyed on authoredChoices', () => {
+    const authoredKeyed = UNIFIED_ACTION_TEMPLATES.filter((t) => {
+      const cfg = t.aftermathConfig;
+      const keys = Object.keys(cfg?.variants ?? {});
+      if (!cfg || keys.length === 0) return false;
+      const ids = new Set((t.authoredChoices?.[cfg.branchOnStep] ?? []).map((c) => c.id));
+      return keys.every((k) => ids.has(k));
+    });
+
+    expect(authoredKeyed.length).toBeGreaterThanOrEqual(25);
+
+    // Enumerated, not counted (THR-688 rule A): the three mentorship templates
+    // are the set THR-989 was filed against under its literal predicate —
+    // aftermath variants, no fork of any kind.
+    expect(authoredKeyed.map((t) => t.id)).toEqual(
+      expect.arrayContaining([
+        'mentorship.graduation',
+        'mentorship.the-offer',
+        'mentorship.the-falling-out',
+      ]),
+    );
+  });
+
+  /**
+   * Falsification. A guard that cannot fail is not evidence — reconstruct the
+   * exact shape that shipped (variants keyed to ids no producer emits) and
+   * confirm the invariant rejects it.
+   */
+  it('rejects a variant key no fork and no authored card can emit', () => {
+    const real = UNIFIED_ACTION_TEMPLATES.find((t) => t.id === 'mentorship.the-offer');
+    expect(real).toBeDefined();
+
+    const orphaned: UnifiedActionTemplate = {
+      ...real!,
+      authoredChoices: undefined,
+    };
+
+    expect(() => assertAftermathVariantsProducible(orphaned)).toThrow(
+      /can be produced by nothing/,
+    );
+  });
+
+  /** And passes the same template untouched, so the rejection is about the defect. */
+  it('accepts the same template with its authored hand intact', () => {
+    const real = UNIFIED_ACTION_TEMPLATES.find((t) => t.id === 'mentorship.the-offer');
+    expect(() => assertAftermathVariantsProducible(real!)).not.toThrow();
+  });
+
+  /**
+   * End to end, and the assertion THR-989's Done-when actually asks for: a pick
+   * the player can now make resolves to the ending that was authored for it,
+   * rather than to the fallback every one of these returned before.
+   *
+   * Reproduces the recorded shape `recordUnifiedActionChoiceMemory` writes —
+   * `{ stepIndex: aftermathConfig.branchOnStep, choiceId: <card id> }` — which is
+   * exactly what was observed on the live build after the fix
+   * (`choiceHistory: [{ stepIndex: 0, choiceId: 'accept_trade', essenceSpent: 1 }]`).
+   */
+  it('resolves each authored pick to its own ending, not the fallback', () => {
+    const authoredKeyed = UNIFIED_ACTION_TEMPLATES.filter((t) => {
+      const cfg = t.aftermathConfig;
+      const keys = Object.keys(cfg?.variants ?? {});
+      if (!cfg || keys.length === 0) return false;
+      const ids = new Set((t.authoredChoices?.[cfg.branchOnStep] ?? []).map((c) => c.id));
+      return keys.every((k) => ids.has(k));
+    });
+
+    expect(authoredKeyed.length).toBeGreaterThanOrEqual(25);
+
+    let distinctFromFallback = 0;
+
+    for (const template of authoredKeyed) {
+      const cfg = template.aftermathConfig!;
+      const base = resolveAftermathVariant(cfg, undefined, undefined);
+
+      for (const [key, authored] of Object.entries(cfg.variants)) {
+        const picked = resolveAftermathVariant(
+          cfg,
+          [{ stepIndex: cfg.branchOnStep, choiceId: key } as never],
+          undefined,
+        );
+
+        // The precise claim: the recorded pick selects *the variant authored for
+        // that key*. Deliberately not "differs from the fallback" — a template
+        // may legitimately author `fallback` as a copy of one variant, which
+        // `broker.quest.rival_shrine_betrayal` does (its refusal is both the
+        // branch fallback and the aftermath fallback). Testing inequality there
+        // would fail on correct content and teach the next author to pad prose.
+        expect(
+          picked.overview,
+          `${template.id} pick '${key}' did not select its authored ending`,
+        ).toBe(authored.overview);
+
+        if (picked.overview !== base.overview) distinctFromFallback += 1;
+      }
+    }
+
+    // …but the suite would still pass vacuously if every variant equalled its
+    // fallback, so pin that picking genuinely changes the ending in the general
+    // case. This is the property that was false for all 30 templates before.
+    expect(distinctFromFallback).toBeGreaterThanOrEqual(25);
   });
 });
 
