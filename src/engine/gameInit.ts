@@ -46,6 +46,7 @@ import { AMBITION_TEMPLATES } from '../data/ambition-templates';
 import type { AmbitionAgentSnapshot } from './ambitionSelection';
 import { computeSphereAggregate, normalizeAggregate } from './phaseSphereAggregation';
 import { getDoomIdentityMatrix } from '../data/doom-identity-matrices';
+import { getOriginPortraitUrl } from '../data/avatar-portrait-assets';
 import { MEETING_SETTLED_LOCATION_SUBTYPES } from './meetingEncounter';
 
 /** PRNG offset for pre-worldgen culture identity generation. Unique prime — no collision with worldgen passes. */
@@ -428,6 +429,44 @@ export function initializeGameStateFromIdentity(
   // (timeSinceAscension, courtType, mortalTags, ascendantLens) are
   // available to downstream systems like Meet The First.
   result.state.ascendantIdentity = identity;
+
+  // THR-981: carry the remembrance origin onto the two graph NODES that render
+  // a face, not just onto state. `compatArchetype` above is an
+  // AscendantArchetype, which has no origin field, so the choice was dropped on
+  // the way into createAscendant and never reached the graph at all — which is
+  // why both slots fell through to a fallback letter tile even though the twelve
+  // origin portraits have shipped since 2026-04-07.
+  //
+  // Two nodes, two resolution paths, and they are NOT interchangeable:
+  //
+  //   - the ascendant node takes resolveEntityVisual's `avatar` branch, which
+  //     reads `originFragmentId` and maps it through getOriginPortraitUrl().
+  //   - the avatar node is `actorType: 'individual'`, so it takes the `agent`
+  //     branch, which only ever consults `portraitAssetPath` → archetype. It
+  //     cannot see `originFragmentId`, so it needs the resolved path stamped.
+  //
+  // The avatar is the one the review routes actually render: `?spawn=` stages on
+  // `@hero`, which resolves to the avatar, and NudgePhaseShell passes that id to
+  // EntityVisual with a hard-coded `kind: 'agent'`. Stamping only the ascendant
+  // would leave the reported symptom exactly as it was.
+  //
+  // An origin portrait is a mortal-looking face, which is precisely what the
+  // avatar — "the mortal vessel" — should wear. updateNode shallow-merges
+  // properties, so both writes are additive (NFP #6).
+  const originPortraitPath = getOriginPortraitUrl(identity.originFragmentId);
+  result.state.graph.updateNode(result.state.ascendantId, {
+    properties: { originFragmentId: identity.originFragmentId },
+  });
+  const avatarNodeId = result.state.graph.getNode(result.state.ascendantId)
+    ?.properties.avatarId;
+  if (typeof avatarNodeId === 'string' && result.state.graph.getNode(avatarNodeId)) {
+    result.state.graph.updateNode(avatarNodeId, {
+      properties: {
+        originFragmentId: identity.originFragmentId,
+        portraitAssetPath: originPortraitPath,
+      },
+    });
+  }
   const rememberedMandate = generateRememberedMandate({
     alignment: identity.sphereAlignment,
     aggregate: result.state.worldSoul.aggregate ?? computeSphereAggregate(result.state.graph),

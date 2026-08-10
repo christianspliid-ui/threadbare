@@ -212,6 +212,12 @@ export function createAscendantFromIdentity(
     domainAffinities: identity.domainAffinities,
     interventionHistory: {},
     avatarId,
+    // THR-981: carry the remembrance origin onto the node so the portrait is
+    // reachable from the graph, not just from the identity object. Without it
+    // resolveEntityVisual's `avatar` branch has no key to look up and returns
+    // the fallback letter tile — which read as "this entity has no art" when
+    // the twelve origin portraits had shipped all along.
+    originFragmentId: identity.originFragmentId,
   };
 
   // Create Ascendant node
