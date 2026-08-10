@@ -78,6 +78,27 @@ export function buildEncounterNotificationMeta(notif: EncounterNotification): st
  *
  * Resolved notifications are done. Viewed ones have been opened at least once —
  * including aftermath, which stays badged until it is read.
+ *
+ * **The badge is a reopen affordance at one tier and a redundant indicator at
+ * the other — by construction, not by defect (THR-943).** Which one it is falls
+ * out of `attentionMode`, so do not write a Done-when asserting "clicking the
+ * badge reopens the stage" without naming the tier it holds on:
+ *
+ * - `auto_resolve` — `buildEncounterNotification` stamps a non-null
+ *   `autoResolveTick`, `shouldAutoOpenEncounterNotification` reads that as "do
+ *   not open now", and the stage therefore never pops on its own. The badge is
+ *   the *only* route into the beat, and reopening is its whole job.
+ * - `pause` — the tick is null, so every beat auto-opens, and the veil's one
+ *   close route (`onDisregard`) marks the notification `resolved`. There is no
+ *   state in which the encounter is live, the stage is closed, and the badge is
+ *   present, so the reopen transition is unreachable here however correct the
+ *   click handler is.
+ *
+ * THR-934's clause 4 was written against `the_first`/`pause` and could not hold
+ * there for this reason. Verified live at tick 113 on
+ * `?view=game&seeded&size=medium`: Kael's `auto_resolve` row badged three
+ * pending notifications and a click opened the stage; Vara's `pause` row
+ * resolved its notification on Resume and retired the badge in the same frame.
  */
 export function isBadgeWorthy(notif: EncounterNotification): boolean {
   return !notif.resolved && !notif.viewed;
