@@ -2674,3 +2674,49 @@ does not.
 
 **The worked example is `swollen-ford-exemplar.ts`**, which passes every block.
 Copy its shape rather than re-deriving the contract from this table.
+
+## Your aftermath prose is linted now — and half that screen is not yours (THR-1083)
+
+Two things to know before you write an ending, because the second one decides
+which half of the screen you can actually fix.
+
+**1. The prose detectors can see `aftermathConfig`.** Until THR-1083 they could
+not: `collectClassedTemplateProse` — the single walk every detector reads
+through — stopped before the aftermath, so overviews, consequence `detail`
+strings, chip titles, reaction labels and intents were outside every prose gate
+we own. Measured when the walk was widened, that was ~59k authored words across
+295 templates, **36% of the corpus**, never once scored. The line that proved it
+shipped to production and into a director review: *"The bridge spent something
+on this crossing that it will not get back."* — `something` is the first term in
+`EVASIVE_VAGUENESS_TERMS`, and the detector built to catch exactly that word
+could not see the field it was written in.
+
+Field classes, which decide how strictly each field is read:
+
+| Field | Class | Why |
+|---|---|---|
+| `changes[].detail` | `outcome` | The chip **is** the only statement of its consequence, so the strict lexicon applies — indefinites included |
+| `overview` | `scene` | The closing paragraph sits above the chips, which name every consequence explicitly; an indefinite here has another source and is ordinary English |
+| `changes[].title`, `reactionPrompt`, `reactions[].label`/`.intent` | `interactive` | Labels and rules text, same as `nudge.name` |
+
+Evasive terms (`something`, `somehow`, `the situation`, …) are enforced at zero
+in **every** class, so `scene` is not a licence — it only spares the natural
+indefinites. Write "he shorted them nothing" freely; do not write "it cost them
+something".
+
+**2. The stat-delta chips are generated, and no prose gate can help them.**
+`src/engine/aftermathWords.ts` builds them from format strings —
+`growthSentence()` emits ``${actorName}'s ${name} grew ${word}.`` for every
+capability growth in every encounter in the game, and `traitGrantedSentence`,
+`reputationSentence`, `factionStandingSentence`, `reputationTallySentence`,
+`gateStateSentence` and `rewardSentence` are the same shape. They are engine
+code, not template content, so they are **deliberately outside** the walk: there
+is no authored prose there to lint, and flagging a format string would demand a
+fix no author owns.
+
+So when an aftermath screen reads like mad-libs, check which half you are
+looking at before reaching for the prose. Authored → fix it here. Generated →
+that is THR-1082, which replaces those chips with a typed icon + noun +
+direction, on Christian's 2026-08-10 ruling that consequence chips become
+authored and reserved. Once that lands the generated half stops feeding the
+surface and every consequence line the player reads is yours.
