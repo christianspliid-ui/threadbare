@@ -121,6 +121,7 @@ import { applyWhisperChoice, applyCompulsionChoice, dismissPremonition } from '.
 import { buildGateDutyEncounterStageModel } from './encounter-stage/adapters/buildGateDutyEncounterStageModel';
 import { buildUnifiedEncounterStageModel } from './encounter-stage/adapters/buildUnifiedEncounterStageModel';
 import { spendNudgeEssence } from './encounter-stage/nudgeCommit';
+import { resolveInterveneChoice } from './encounter-stage/resolveInterveneChoice';
 import { forecastWithNudges } from './encounter-stage/useNudgeHand';
 import { NUDGE_REJECT_TOAST_MS } from '../../data/nudge-stage-content';
 import { buildSimpleEncounterStageModel } from './encounter-stage/adapters/buildSimpleEncounterStageModel';
@@ -2952,7 +2953,15 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       agentId,
       encounter,
     } = tieredEncounterState;
-    const choice = notification.choices.find(c => c.id === choiceId);
+    // THR-989: the veil renders `authoredChoices` when the step carries them, so
+    // the clicked id is frequently not in `notification.choices` at all. Looking
+    // only there dropped the pick silently — see `resolveInterveneChoice`.
+    const choice = resolveInterveneChoice(
+      tieredEncounterState.template,
+      tieredEncounterState.activeActionSnapshot?.currentStep,
+      notification.choices,
+      choiceId,
+    );
     if (!choice) return;
 
     setGameState(prev => {

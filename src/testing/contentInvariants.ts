@@ -173,10 +173,9 @@ export function assertValidUnifiedTemplate(template: UnifiedActionTemplate): voi
  * so the Full Moon Collection could not be reached in live play at all.
  *
  * Scoped deliberately to templates carrying a `decidedBy` fork, because those
- * are the ones where a choice demonstrably *is* recorded. Templates with
- * aftermath variants and no fork at all (the `hod.*` and `mentorship.*` sets)
- * are dead for a different reason — an aftermath keyed on the retired
- * player-pick path — which is THR-989, not this invariant's business.
+ * are the ones where this *particular* mis-keying is possible. The wider
+ * question — whether anything at all can produce a given variant key — is
+ * {@link assertAftermathVariantsProducible} (THR-989).
  *
  * Exported so it can run over the **whole** catalog, not just the three content
  * sets `assertValidUnifiedTemplate` happens to be wired to. The slice templates
@@ -224,6 +223,66 @@ export function assertDecidedAftermathReachable(template: UnifiedActionTemplate)
       + `${cfg.branchOnStep} can only produce [${[...decidableKeys].join(', ')}].`,
     ).toBe(true);
   }
+}
+
+/**
+ * Every aftermath variant key must be producible by *something* (THR-989).
+ *
+ * `assertDecidedAftermathReachable` asks whether a decided fork points at the
+ * right step. This asks the question one level out, and the one that was never
+ * asked: is there **any** writer at all that can put this key into
+ * `choiceHistory`? There are exactly two, and a variant keyed to neither is
+ * unreachable by construction — authored, committed, and rendered to nobody.
+ *
+ * 1. **A `decidedBy` fork** — `applyAgentDecidedBranches` writes the pole key
+ *    (`positive`/`negative`) or the declared route key.
+ * 2. **`authoredChoices[branchOnStep]`** — the player picks a card and
+ *    `recordUnifiedActionChoiceMemory` writes its id. The card ids are required
+ *    to match the variant keys; see `UnifiedActionTemplate.authoredChoices`.
+ *
+ * The failure mode this closes is total and silent: `resolveAftermathVariant`
+ * finds no entry, returns `fallback`, and the tick loop's fail-soft envelope
+ * (NFP #4) means nothing is ever red. THR-989 was filed after 13 templates were
+ * spotted by hand; the real number was 30 of 34, and the cause turned out to be
+ * one un-wired click handler rather than the content — which is exactly why this
+ * belongs in a catalog-wide guard instead of a one-time sweep. A sweep fixes the
+ * templates that exist today; an invariant makes the class unable to return.
+ *
+ * Deliberately silent on templates with **no** variants: an aftermath that is
+ * single-track by design is a legitimate authorial choice, not a defect.
+ */
+export function assertAftermathVariantsProducible(template: UnifiedActionTemplate): void {
+  const cfg = template.aftermathConfig;
+  const variantKeys = Object.keys(cfg?.variants ?? {});
+  if (!cfg || variantKeys.length === 0) return;
+
+  const producible = new Set<string>();
+
+  for (const fork of template.steps.filter(isActionStepBranch)) {
+    if (!fork.decidedBy || fork.branchOnStep !== cfg.branchOnStep) continue;
+    if (isRouteDecision(fork.decidedBy)) {
+      for (const route of fork.decidedBy.routes) producible.add(route.key);
+    } else {
+      producible.add('positive');
+      producible.add('negative');
+    }
+  }
+
+  for (const card of template.authoredChoices?.[cfg.branchOnStep] ?? []) {
+    producible.add(card.id);
+  }
+
+  const orphaned = variantKeys.filter((key) => !producible.has(key));
+
+  expect(
+    orphaned,
+    `${template.id} aftermath variant(s) [${orphaned.join(', ')}] can be produced by nothing. `
+    + `Step ${cfg.branchOnStep} carries no decidedBy fork offering them and no authoredChoices `
+    + `card with that id — the writers are \`applyAgentDecidedBranches\` and the player's pick, `
+    + `and neither can emit these. \`resolveAftermathVariant\` returns \`fallback\` on every `
+    + `resolution, so the authored ending reaches nobody and nothing goes red (THR-989). `
+    + `Producible here: [${[...producible].join(', ') || 'nothing'}].`,
+  ).toEqual([]);
 }
 
 export function assertValidStep(step: ActionStepOrBranch, templateId: string): void {
