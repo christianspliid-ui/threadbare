@@ -2,6 +2,23 @@ import { useEffect, useCallback, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { IconButton } from './IconButton';
 
+/**
+ * Elements Tab cycles through inside the panel (Law 50). Named so widening the
+ * focus contract is a change to this list, not to the trap logic (NFP #1).
+ *
+ * Deliberately does not filter on visibility: `offsetParent` and
+ * `getClientRects()` both read empty under jsdom, so a visibility filter would
+ * make the trap untestable rather than more correct.
+ */
+const FOCUSABLE_SELECTOR = [
+  'a[href]',
+  'button:not([disabled])',
+  'input:not([disabled])',
+  'select:not([disabled])',
+  'textarea:not([disabled])',
+  '[tabindex]:not([tabindex="-1"])',
+].join(', ');
+
 interface ModalProps {
   open: boolean;
   onClose: () => void;
@@ -30,6 +47,7 @@ function ModalRoot({ open, onClose, maxWidth = 600, animation = 'anim-fade-up', 
   const [shouldRender, setShouldRender] = useState(open);
   const [animClass, setAnimClass] = useState('');
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const panelRef = useRef<HTMLDivElement | null>(null);
 
   const handleEscape = useCallback(
     (e: KeyboardEvent) => {
@@ -43,6 +61,64 @@ function ModalRoot({ open, onClose, maxWidth = 600, animation = 'anim-fade-up', 
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
   }, [open, handleEscape]);
+
+  /**
+   * Law 50 — focus follows the surface: opening moves focus into the panel,
+   * closing hands it back to whatever opened it.
+   *
+   * Gated on `shouldRender` as well as `open` because the panel does not exist
+   * on the render where `open` first flips true — the mount effect below sets
+   * `shouldRender` a render later, and focusing before that is a no-op.
+   */
+  useEffect(() => {
+    if (!open || !shouldRender) return;
+
+    const invoker = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+
+    const panel = panelRef.current;
+    if (panel) {
+      // The panel itself is the fallback target, so a modal with no controls
+      // still takes focus off the page behind it.
+      (panel.querySelector<HTMLElement>(FOCUSABLE_SELECTOR) ?? panel).focus();
+    }
+
+    return () => {
+      // Fail-soft (NFP #4): the invoker may have unmounted while we were open —
+      // a row that opened a sheet and was then filtered out of its list.
+      if (invoker?.isConnected) invoker.focus();
+    };
+  }, [open, shouldRender]);
+
+  /**
+   * Law 50 — Tab cycles within the overlay while modal. Scoped to the panel
+   * rather than the document so nested modals each trap their own subtree:
+   * both portal to `document.body`, so an outer panel is not an ancestor of an
+   * inner one and never sees its keystrokes.
+   */
+  const handlePanelKeyDown = useCallback((e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key !== 'Tab') return;
+    const panel = panelRef.current;
+    if (!panel) return;
+
+    const focusable = Array.from(panel.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR));
+    if (focusable.length === 0) {
+      // Nothing to cycle to; hold focus here rather than let it escape behind.
+      e.preventDefault();
+      return;
+    }
+
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    const active = document.activeElement;
+
+    if (e.shiftKey && (active === first || active === panel)) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && active === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  }, []);
 
   // Mount/unmount with animation — inline to avoid AnimateMount wrapper div
   useEffect(() => {
@@ -99,7 +175,14 @@ function ModalRoot({ open, onClose, maxWidth = 600, animation = 'anim-fade-up', 
       aria-modal="true"
       aria-label={ariaLabel}
     >
-      <div className={panelClassName} style={panel} onClick={(e) => e.stopPropagation()}>
+      <div
+        ref={panelRef}
+        className={panelClassName}
+        style={panel}
+        tabIndex={-1}
+        onKeyDown={handlePanelKeyDown}
+        onClick={(e) => e.stopPropagation()}
+      >
         {children}
       </div>
     </div>,
