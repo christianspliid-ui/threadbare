@@ -207,7 +207,9 @@ export const ACTION_TECHNICAL_EFFECTS: Readonly<Record<string, string>> = {
 
   // ─── artifact.* — attachment verbs ────────────────────────────────────────
   'artifact.enchant':
-    'Engine bridge (attachment-tier system): advances the target artifact one magical tier via the ENCHANT_TEMPLATE_ID path, upgrading its tier band and effect strength. Handled outside step ops by the attachment-tier resolver.',
+    "On success, advances the target artifact one attachment tier (Mundane→Storied→Mythic→Legendary) via the `advance_artifact_tier` step op, scaling its `stat_contribution` effects by TIER_MODIFIER_SCALE_FACTOR — clamped to ITEM_STAT_BAND_LEGENDARY — so the item really is mightier on the bearer's sheet. No-ops on an artifact already at Legendary.",
+  'artifact.empower':
+    "Enchant's martial counterpart, reached through Iron rather than Veil: the same `advance_artifact_tier` step op and the same authored tier costs, so a war-god can grow a blade without borrowing rune-craft.",
   'artifact.attune':
     'INTENDED: bind the artifact more tightly to its holder, strengthening its effects for that bearer. NOT YET WIRED — empty step ops, no engine bridge; deducts essence and narrates only (THR-605).',
   'artifact.nullify':

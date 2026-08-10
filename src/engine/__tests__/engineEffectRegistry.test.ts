@@ -12,6 +12,8 @@
 import { describe, it, expect } from 'vitest';
 import { ENGINE_EFFECT_TEMPLATE_IDS } from '../engineEffectRegistry';
 import { UNIFIED_ACTION_TEMPLATES } from '../../data/unified-action-templates';
+import { TIER_ADVANCEMENT_TEMPLATE_IDS } from '../../data/attachment-tier-content';
+import { effectSourceFor } from '../../data/actionEffectSource';
 
 describe('ENGINE_EFFECT_TEMPLATE_IDS', () => {
   const templateIds = new Set(UNIFIED_ACTION_TEMPLATES.map((t) => t.id));
@@ -27,15 +29,27 @@ describe('ENGINE_EFFECT_TEMPLATE_IDS', () => {
 
   it('covers each aggregated source (spot-check one id per module)', () => {
     // hexActionBridge (tile mutation), revelationResolver (observation),
-    // perceiveRelay, self-action post-processor, enchant attachment tier.
+    // perceiveRelay, self-action post-processor.
     for (const id of [
       'hex.bless_land',
       'hex.survey',
       'divine.perceive.cast_attention',
       'divine.self.stillness',
-      'artifact.enchant',
     ]) {
       expect(ENGINE_EFFECT_TEMPLATE_IDS.has(id)).toBe(true);
+    }
+  });
+
+  it('excludes the tier-advancement verbs — they are template-ops, not a bridge', () => {
+    // THR-996: `artifact.enchant` sat here claiming an engine bridge that was never
+    // written. Advancement now runs as a step GraphOp, so both verbs must classify
+    // `template-ops`. Pinned so a future re-add cannot silently re-mis-badge them.
+    for (const id of TIER_ADVANCEMENT_TEMPLATE_IDS) {
+      expect(ENGINE_EFFECT_TEMPLATE_IDS.has(id)).toBe(false);
+
+      const template = UNIFIED_ACTION_TEMPLATES.find((t) => t.id === id);
+      expect(template, `${id} must exist as a template`).toBeDefined();
+      expect(effectSourceFor(template!), `effect source for ${id}`).toBe('template-ops');
     }
   });
 });

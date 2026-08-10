@@ -20,6 +20,11 @@ import type {
 import type { ActorType } from '../types/graph';
 import { ACTION_TEMPLATES, type ActionTemplateData } from './action-template-content';
 import { REKINDLE_ESSENCE_COST } from './nudge-constants';
+import {
+  TIER_ADVANCEMENT_ESSENCE_COST,
+  TIER_ADVANCEMENT_DIFFICULTY,
+  TIER_ADVANCEMENT_DURATION,
+} from './attachment-tier-content';
 import { ACTION_TECHNICAL_EFFECTS } from './action-technical-effects';
 import { withDefaultSupportBundle } from './default-support-bundles';
 import {
@@ -2587,27 +2592,73 @@ const ATTACHMENT_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     rarityTier: 1,
     intrinsicTier: 'background',
     description: 'Traces runes of power upon an artifact\'s surface, binding divine intent into the object\'s physical form. The enchanted artifact becomes a vessel for ongoing magical effect that persists in the hands of whoever wields it. Poorly formed runes can destabilize the binding and render the artifact inert.',
+    reach: 'veil',
+    trayTier: 'core',
+    crudType: 'update',
+    scale: 'local',
+    // THR-996: the step's numbers are the authored tier-advancement constants, not
+    // literals (NFP #1). They are the *tier-1* entries because a template step is
+    // static — it cannot read the target artifact's current tier, so the authored
+    // per-tier cost/difficulty ramp (TIER_ADVANCEMENT_ESSENCE_COST[2..3] etc.) is
+    // not yet expressible. Ramping needs target-state-dependent step resolution;
+    // deferred to THR-1073 rather than hard-coded here.
+    steps: [{
+      reach: 'veil',
+      duration: TIER_ADVANCEMENT_DURATION[1],
+      difficulty: TIER_ADVANCEMENT_DIFFICULTY[1],
+      onSuccess: [
+        { op: 'advance_artifact_tier', nodeId: '$target' },
+      ],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: TIER_ADVANCEMENT_ESSENCE_COST[1],
+    actorAffinities: ['ascendant'],
+    // THR-843 precedent (attune/imbue/nullify/curse): both artifact tiers, so the
+    // offered target set stays consistent across the artifact verbs.
+    targetCategories: ['artifact', 'artifact_legendary'],
+    motivations: ['loyalty_ambition', 'tradition_novelty'],
+    narrativeTemplates: {
+      initiation: 'traces runes of power upon this artifact',
+      success: 'the enchantment sets — power flows through the object',
+      failure: 'the runes fade before they can bind',
+    },
+  },
+  {
+    // THR-996: Empower is Enchant's martial counterpart — the same tier advance
+    // (both ids are named by TIER_ADVANCEMENT_TEMPLATE_IDS), reached through Iron
+    // rather than Veil, so a war-god can grow a blade without borrowing rune-craft.
+    // Christian's verdict 2026-08-06: "Turn the enchantment system on."
+    id: 'artifact.empower',
+    name: 'Empower',
+    spellName: 'Forge Rite',
+    rarityTier: 1,
+    intrinsicTier: 'background',
+    description: 'Drives divine strength into an artifact\'s material grain — the temper of the steel, the heft of the haft, the set of the stone. The empowered artifact carries that weight for whoever bears it afterward. Force driven in too hard can split the very thing it was meant to strengthen.',
     reach: 'iron',
     trayTier: 'core',
     crudType: 'update',
     scale: 'local',
     steps: [{
       reach: 'iron',
-      duration: { min: 2, max: 3 },
-      difficulty: 0.30,
-      onSuccess: [],
+      duration: TIER_ADVANCEMENT_DURATION[1],
+      difficulty: TIER_ADVANCEMENT_DIFFICULTY[1],
+      onSuccess: [
+        { op: 'advance_artifact_tier', nodeId: '$target' },
+      ],
       onFailure: [],
       failBehavior: 'fail_action',
     }],
     apCost: 1,
-    essenceCost: 4,
+    essenceCost: TIER_ADVANCEMENT_ESSENCE_COST[1],
     actorAffinities: ['ascendant'],
-    targetCategories: ['artifact'],
+    targetCategories: ['artifact', 'artifact_legendary'],
     motivations: ['loyalty_ambition', 'tradition_novelty'],
     narrativeTemplates: {
-      initiation: 'traces runes of power upon this artifact',
-      success: 'the enchantment sets — power flows through the object',
-      failure: 'the runes fade before they can bind',
+      initiation: 'drives divine strength into this artifact\'s grain',
+      success: 'the temper holds — the object answers heavier in the hand',
+      failure: 'the grain refuses the force and settles back unchanged',
     },
   },
   {

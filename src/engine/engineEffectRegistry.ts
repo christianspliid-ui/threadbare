@@ -16,7 +16,13 @@
  *   • `TEMPLATE_REVELATION_MAP`      — hex observation actions that reveal layers
  *   • `PERCEIVE_RELAY_TEMPLATE_IDS`  — Ruins-layer Perceive/Relay divine actions
  *   • `SELF_ACTION_TEMPLATE_IDS`     — divine.self.* self-buff post-processors
- *   • `ENCHANT_TEMPLATE_ID`          — artifact.enchant attachment-tier advance
+ *
+ * NOTE (THR-996): `ENCHANT_TEMPLATE_ID` used to be listed here, on the premise that
+ * an engine bridge advanced the artifact's tier. No bridge ever existed. THR-996
+ * wired advancement as a step GraphOp (`advance_artifact_tier`) instead — the shape
+ * the artifact-trio siblings already use — so `artifact.enchant` and the new
+ * `artifact.empower` are shape (a), classified `template-ops` by `effectSourceFor`.
+ * Leaving them here would be a stale claim about a bridge that does not exist.
  *
  * No node types, edge types, tick phases, or runtime behavior — this is a
  * build-time / inspection surface only (NFP #6: additive). A unit test asserts
@@ -28,7 +34,6 @@ import { HEX_BRIDGE_TEMPLATE_IDS } from './hexActionBridge';
 import { TEMPLATE_REVELATION_MAP } from './revelationResolver';
 import { PERCEIVE_RELAY_TEMPLATE_IDS } from './ruins/perceiveRelay';
 import { SELF_ACTION_TEMPLATE_IDS } from './unifiedActionResolution';
-import { ENCHANT_TEMPLATE_ID } from '../data/attachment-tier-content';
 
 /**
  * Union of every template id the engine bridges implement outside the template's
@@ -40,5 +45,4 @@ export const ENGINE_EFFECT_TEMPLATE_IDS: ReadonlySet<string> = new Set<string>([
   ...Object.keys(TEMPLATE_REVELATION_MAP),
   ...PERCEIVE_RELAY_TEMPLATE_IDS,
   ...SELF_ACTION_TEMPLATE_IDS,
-  ENCHANT_TEMPLATE_ID,
 ]);
