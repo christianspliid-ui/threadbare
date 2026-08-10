@@ -152,6 +152,18 @@ export interface AscendantProperties {
   /** Avatar node ID. */
   avatarId: string;
   /**
+   * Remembrance origin fragment id, carried over from the AscendantIdentity
+   * (THR-981). The portrait key: `getOriginPortraitUrl()` maps it to the
+   * mortal-face layer of the two-layer portrait system, which is what
+   * `IdentityChip` has always rendered and what `resolveEntityVisual`'s
+   * `avatar` branch reads to reach the `art` tier.
+   *
+   * Optional because the identity-less quick-start path (`createAscendant`,
+   * reached by bare `?view=game`) makes no origin choice — there the fallback
+   * letter tile is the correct result, not a gap.
+   */
+  originFragmentId?: string;
+  /**
    * Home seat (throne) location id (THR-502). The location flagged as the
    * ascendant's seat — a named, higher-yield place of power. Set by a spine
    * beat (or the `setHomeSeat` debug helper). When it resolves to a live
