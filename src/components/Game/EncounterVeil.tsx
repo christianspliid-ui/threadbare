@@ -1369,9 +1369,17 @@ export function EncounterVeil({
     );
   }
 
-  // Derived values for lightly threaded timer
+  // Derived values for lightly threaded timer.
+  //
+  // THR-1068: clamped at zero. The raw difference goes negative once the
+  // deadline passes, and the label then read "auto-resolves in -37 ticks" — a
+  // countdown running backwards past a deadline that (until THR-1068 wired the
+  // engine-side consumer) never fired. The engine now retires these records at
+  // their deadline, so a negative is unreachable in a live run; the clamp holds
+  // regardless, because a surface that renders a lie whenever its upstream
+  // slips is a defect on its own terms. Zero reads as "now", not as a number.
   const ticksUntilAutoResolve =
-    autoResolveTick !== null ? autoResolveTick - tick : null;
+    autoResolveTick !== null ? Math.max(0, autoResolveTick - tick) : null;
 
   const selectedChoice = model.choices.find((c) => c.id === selectedChoiceId);
 
@@ -1456,8 +1464,9 @@ export function EncounterVeil({
               whiteSpace: 'nowrap' as const,
             }}
           >
-            auto-resolves in {ticksUntilAutoResolve} tick
-            {ticksUntilAutoResolve !== 1 ? 's' : ''}
+            {ticksUntilAutoResolve === 0
+              ? 'auto-resolving now'
+              : `auto-resolves in ${ticksUntilAutoResolve} tick${ticksUntilAutoResolve !== 1 ? 's' : ''}`}
           </div>
         </div>
       )}

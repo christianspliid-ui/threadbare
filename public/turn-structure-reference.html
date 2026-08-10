@@ -309,8 +309,14 @@
           <tr><td>TICKS_PER_DAY</td><td>12</td><td>Ticks per in-world day (1 tick = 2h) · <code>src/data/attention-constants.ts:14</code></td></tr>
           <tr><td>ATTENTION_BASE_CAPACITY</td><td>6</td><td>Base attention pool the Scan beat draws on · <code>src/data/attention-constants.ts:19</code></td></tr>
           <tr><td>Encounter density</td><td>player-authored + doom lean</td><td>Settled THR-603; never rationed · <code>CURATION_PHASE_MULTIPLIERS</code> in <code>branchingConstants.ts</code></td></tr>
+          <tr><td>RETINUE_VIGNETTE_TIMEOUT</td><td>8</td><td>Ticks an unattended <code>auto_resolve</code> beat waits before it resolves without you · <code>src/types/encounterVisibility.ts:13</code></td></tr>
+          <tr><td>NOTIFICATION_RETENTION_TICKS</td><td>50</td><td>Ticks a notification record survives before the tick's State Cleanup drops it · <code>src/engine/orchestrator.ts</code></td></tr>
         </tbody>
       </table>
+
+      <h3>An unattended moment expires; it does not queue <span class="flag impl">IMPL</span></h3>
+      <p>A thread set to <strong>auto-resolve</strong> is the player saying <em>do not stop the world for this one</em>. Such a beat therefore carries a deadline — <code>RETINUE_VIGNETTE_TIMEOUT</code> ticks — after which the offer to intervene lapses and the record stops asking for attention. What lapses is only the <em>offer</em>: the encounter itself advances and concludes in the tick pipeline regardless, so nothing about the world's outcome depends on whether anyone looked.</p>
+      <p>Until THR-1068 the deadline was written and never read, so nothing expired and the thread row's badge became a pile that only the 50-tick retention sweep drained — six times the authored deadline. Two records are deliberately exempt from expiry: an <strong>aftermath</strong> notification, because at this attention tier the badge is the player's only route into a concluded beat and expiring it would delete the sole surface reporting what happened; and legacy-pipeline steps, whose de-duplication would re-emit a retired record (THR-1069).</p>
 
       <h3>Canon &amp; terminology</h3>
       <ul>
