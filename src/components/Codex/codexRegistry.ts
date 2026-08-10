@@ -413,9 +413,20 @@ export function getAllCodexEntries(): CodexEntry[] {
   const artifactTemplates = UNIFIED_ACTION_TEMPLATES.filter(t => t.id.startsWith('artifact.'));
   for (const t of artifactTemplates) entries.push(mapTargetAction(t, 'artifact'));
 
-  // Thread & insight actions (thread-binding + agent observation)
+  // Company actions (THR-999) — the four verbs that act on a company of travelling
+  // mortals rather than on one agent. Their own category because this catalog is
+  // organised by what a verb acts *upon* (hex / place / artifact / thread), and a
+  // company is its own target class; folding them into Divine Actions would blur a
+  // category that otherwise reads as "what you do to a person".
+  const companyTemplates = UNIFIED_ACTION_TEMPLATES.filter(t => t.id.startsWith('company.'));
+  for (const t of companyTemplates) entries.push(mapTargetAction(t, 'company'));
+
+  // Thread & insight actions (thread-binding + agent observation + thread management).
+  // `thread.*` (dormant / reactivate) was uncatalogued alongside `company.*` until
+  // THR-999 — it manages an existing thread's court position, so it belongs with the
+  // binding verbs rather than in a category of its own.
   const threadTemplates = UNIFIED_ACTION_TEMPLATES.filter(t =>
-    t.id.startsWith('bind_thread_') || ['observe_agent', 'scry_agent', 'whisper_insight', 'dream_sending'].includes(t.id)
+    t.id.startsWith('bind_thread_') || t.id.startsWith('thread.') || ['observe_agent', 'scry_agent', 'whisper_insight', 'dream_sending'].includes(t.id)
   );
   for (const t of threadTemplates) entries.push(mapTargetAction(t, 'threads'));
 
@@ -455,11 +466,18 @@ export function getCodexCategories(): CodexCategory[] {
     { id: 'hex', label: 'Hex Actions', glyph: '\u2B21' },
     { id: 'location', label: 'Place Actions', glyph: '\u2302' },
     { id: 'artifact', label: 'Artifact Actions', glyph: '\u2726' },
+    // Asterism - three marks travelling together (THR-999).
+    { id: 'company', label: 'Company Actions', glyph: '\u2042' },
     { id: 'threads', label: 'Thread & Insight', glyph: '\u2058' },
     { id: 'actions', label: 'Mortal Actions', glyph: '\u2694' },
     { id: 'possessions', label: 'Possessions', glyph: '\u25C6' },
     { id: 'conditions', label: 'Conditions', glyph: '\u2715' },
     { id: 'agreements', label: 'Agreements', glyph: '\u260D' },
+    // Resource classes have been mapped to entries since the P3 economy work
+    // (92383535) but never had a tab, so the whole category was catalogued and
+    // unreachable - the same "no catalog arm" defect as company.* (THR-999),
+    // one layer further on. Scales: these entries are about trade value.
+    { id: 'resources', label: 'Resources', glyph: '\u2696' },
   ];
 
   return catDefs.map(cat => {

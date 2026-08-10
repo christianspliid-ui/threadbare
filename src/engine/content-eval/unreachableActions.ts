@@ -84,8 +84,13 @@ export interface UnreachableActionReport {
  * NOTE: `getTargetActionSlots` does not itself gate on `actorAffinities` — the unlock
  * gate (`isActionRevealed`) hides everything ungranted regardless. The affinity check
  * here is purely the universe boundary for THIS report, cited to the drawer source above.
+ *
+ * Exported since THR-999: the Codex catalog-coverage test asserts that every id prefix in
+ * THIS universe has a bucketing arm in `getAllCodexEntries()`. Both consumers must read
+ * "player-castable" from one definition — a second, hand-copied predicate is precisely how
+ * `company.*` and `thread.*` shipped castable but uncatalogued in the first place.
  */
-function isPlayerReachableTemplate(template: UnifiedActionTemplate): boolean {
+export function isPlayerReachableTemplate(template: UnifiedActionTemplate): boolean {
   return template.actorAffinities?.includes('ascendant') ?? false;
 }
 
