@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-10 17:20 local (15:20 UTC). Restructured to standing-asks-only per [THR-1077](https://linear.app/threadbare/issue/THR-1077/designuser-actionsmd-has-grown-into-a-run-by-run-diary-christians), directed by Christian in chat 2026-08-10. Everything this file used to carry — run measurements, findings, narration — lives in its history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-10 17:55 local (15:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077/designuser-actionsmd-has-grown-into-a-run-by-run-diary-christians). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
