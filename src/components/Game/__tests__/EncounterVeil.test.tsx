@@ -236,6 +236,32 @@ describe('lightly threaded', () => {
     render(<EncounterVeil {...lightProps} />);
     expect(screen.getByText(/Lightly Threaded/)).toBeInTheDocument();
   });
+
+  /**
+   * THR-1068: the countdown must never run backwards past its deadline.
+   *
+   * Measured before the fix: a notification 37 ticks overdue rendered
+   * "auto-resolves in -37 ticks". The engine now retires these records at their
+   * deadline, so an overdue veil is unreachable in a live run — the clamp is
+   * belt-and-braces on a surface that must not render a lie whenever its
+   * upstream slips.
+   */
+  it('reads "auto-resolving now" at the deadline rather than "in 0 ticks"', () => {
+    render(<EncounterVeil {...lightProps} tick={16} />);
+    expect(screen.getByText(/auto-resolving now/)).toBeInTheDocument();
+    expect(screen.queryByText(/auto-resolves in/)).not.toBeInTheDocument();
+  });
+
+  it('clamps past the deadline instead of counting negative', () => {
+    render(<EncounterVeil {...lightProps} tick={53} />);
+    expect(screen.getByText(/auto-resolving now/)).toBeInTheDocument();
+    expect(screen.queryByText(/-37/)).not.toBeInTheDocument();
+  });
+
+  it('still pluralises a live countdown', () => {
+    render(<EncounterVeil {...lightProps} tick={15} />);
+    expect(screen.getByText(/auto-resolves in 1 tick$/)).toBeInTheDocument();
+  });
 });
 
 describe('watched tier', () => {

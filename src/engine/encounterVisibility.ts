@@ -195,6 +195,102 @@ export function buildEncounterNotification(
   };
 }
 
+/**
+ * Retire `auto_resolve` step notifications whose deadline has passed (THR-1068).
+ *
+ * **The consumer `autoResolveTick` never had.** `buildEncounterNotification`
+ * has stamped the deadline on every `auto_resolve` notification since TB-035,
+ * and until now every reader treated it as a flag or a label — "do not open
+ * now" (`shouldAutoOpenEncounterNotification`), a countdown
+ * (`EncounterVeil`), a debug string. Nothing read it back as a deadline, so
+ * `RETINUE_VIGNETTE_TIMEOUT` named a timeout that had never fired. Measured on
+ * `?view=game&seeded&size=medium` at tick 113: three of Kael Thornweaver's
+ * notifications sat 32, 36 and 37 ticks past their deadline, all
+ * `viewed: false, resolved: false`, and the thread row's badge climbed 2 → 3
+ * and never fell.
+ *
+ * **Expire, not queue — this is a technical verdict, not a design call.** The
+ * intent is recorded in four places in the tree, and all four agree: the
+ * attention mode is named `auto_resolve`; `RETINUE_VIGNETTE_TIMEOUT` is
+ * documented "Ticks before retinue vignette auto-resolves"; `autoResolveTick`
+ * is documented "Tick when auto-resolve fires (null for pause mode)"; and
+ * THR-880's comment above describes forced visibility as popping the modal
+ * "rather than silently auto-resolving after RETINUE_VIGNETTE_TIMEOUT ticks."
+ * Nothing anywhere describes an unattended beat as queueing.
+ *
+ * **Flipping `resolved` IS the normal path — there is no consequence left to
+ * fire.** A notification is a player-facing record, never the mechanism by
+ * which an encounter resolves: the `UnifiedAction` advances and concludes in
+ * the tick pipeline whether or not anyone ever looks. Every existing resolve
+ * site — disregard, acknowledge-aftermath, intervention commit — writes this
+ * same single flag and mutates nothing else. So expiry costs the player the
+ * *offer to intervene* in a moment that has already passed, which is precisely
+ * what choosing `auto_resolve` means, and costs the world nothing.
+ *
+ * **Aftermath notifications are deliberately exempt.** At this tier the badge
+ * is the player's only route into a concluded beat (see `isBadgeWorthy`'s
+ * THR-943 note), so expiring the conclusion record 8 ticks after it appears
+ * would delete the only surface that reports what happened — narrative loss
+ * (NFP #5) at the tier that opted out of interrupts precisely so outcomes
+ * would be *reported* rather than shoved in front of them. An unread
+ * conclusion badging its row is the badge doing its job. Aftermath records
+ * still leave state via the orchestrator's `NOTIFICATION_RETENTION_TICKS`
+ * trim, so their fate is deterministic too — it is just a different deadline.
+ * They keep a non-null `autoResolveTick` because that field carries the
+ * "do not auto-open" meaning as well, and nulling it would make every
+ * aftermath interrupt at the one tier that must never be interrupted.
+ *
+ * **Scoped to `unified_action` because the legacy path's dedup would loop.**
+ * `generateEncounterNotifications` keeps resolved records in its dedup key set
+ * for `unified_action` and aftermath, so retiring one here is idempotent — the
+ * record stays suppressed. Resolved *legacy* step records drop out of that set
+ * by design, so expiring one while its `encounterProgress` is still active
+ * would re-emit a fresh notification the next tick, which would expire, which
+ * would re-emit: churn wearing a fix's clothes. THR-1069 tracks the legacy
+ * half.
+ *
+ * Pure and deterministic: same notifications and tick in, same array out. The
+ * input array is returned unchanged (by identity) when nothing expires, so the
+ * caller can skip the state write.
+ */
+export function expireOverdueEncounterNotifications(
+  notifications: readonly EncounterNotification[],
+  tick: number,
+): { notifications: readonly EncounterNotification[]; expiredIds: string[] } {
+  const expiredIds: string[] = [];
+
+  for (const notif of notifications) {
+    if (isEncounterNotificationOverdue(notif, tick)) expiredIds.push(notif.id);
+  }
+
+  if (expiredIds.length === 0) return { notifications, expiredIds };
+
+  const expired = new Set(expiredIds);
+  return {
+    notifications: notifications.map(notif =>
+      expired.has(notif.id) ? { ...notif, resolved: true } : notif,
+    ),
+    expiredIds,
+  };
+}
+
+/**
+ * Has this notification's auto-resolve deadline passed?
+ *
+ * Exported so the badge/veil side can ask the same question the engine asks,
+ * rather than re-deriving `tick >= autoResolveTick` with its own exemptions.
+ */
+export function isEncounterNotificationOverdue(
+  notif: Pick<EncounterNotification, 'kind' | 'sourceSystem' | 'resolved' | 'autoResolveTick'>,
+  tick: number,
+): boolean {
+  if (notif.resolved) return false;
+  if (notif.autoResolveTick === null) return false;
+  if (notif.kind === 'aftermath') return false;
+  if (notif.sourceSystem !== 'unified_action') return false;
+  return tick >= notif.autoResolveTick;
+}
+
 // ─── Encounter Intervention ────────────────────────────────────────
 
 /**

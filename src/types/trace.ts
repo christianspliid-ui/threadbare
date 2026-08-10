@@ -101,6 +101,8 @@ export type TraceCategory =
   | 'encounter_aftermath_effect'
   | 'encounter_seed_planted'
   | 'encounter_seed_triggered'
+  /** Auto-resolve deadline retiring an unattended notification (THR-1068). */
+  | 'encounter_notification'
   | 'hidden_mark_placed'
   | 'hidden_mark_revealed'
   | 'intelligence_granted'
@@ -465,6 +467,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'encounter_aftermath_effect',
   'encounter_seed_planted',
   'encounter_seed_triggered',
+  'encounter_notification',
   'hidden_mark_placed',
   'hidden_mark_revealed',
   'intelligence_granted',

@@ -174,7 +174,7 @@ import { phaseOmenAgenda, resetOmenCounter } from './phaseOmenAgenda';
 import { phaseComposition } from './phaseComposition';
 import { phaseAscendantBeatDirector } from './ascendantBeat';
 import { phaseAscendantProgression } from './phaseAscendantProgression';
-import { phaseEncounterVisibility } from './encounterVisibility';
+import { phaseEncounterVisibility, expireOverdueEncounterNotifications } from './encounterVisibility';
 import { phaseAscendantHandFilter } from './orchestrator/phaseAscendantHandFilter';
 import { phaseChoiceResolution } from './orchestrator/phaseChoiceResolution';
 import { phaseDetectionPressure } from './orchestrator/phaseDetectionPressure';
@@ -3686,6 +3686,32 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   });
 
   // ─── State Cleanup ─────────────────────────────────────────────
+
+  // THR-1068: retire auto_resolve step notifications past their deadline, BEFORE
+  // the retention trim below. Order matters only for the trace: expiring first
+  // means a record that is both overdue and beyond retention is reported as
+  // expired rather than silently vanishing, which is the difference between a
+  // deadline that fires and one that is merely outlived. `RETINUE_VIGNETTE_TIMEOUT`
+  // (8) is far inside NOTIFICATION_RETENTION_TICKS (50), so in practice every
+  // expiry happens here and the trim only ever sees already-retired records.
+  if (s.encounterNotifications && s.encounterNotifications.length > 0) {
+    const { notifications: afterExpiry, expiredIds } = expireOverdueEncounterNotifications(
+      s.encounterNotifications,
+      s.tick,
+    );
+    if (expiredIds.length > 0) {
+      s = { ...s, encounterNotifications: [...afterExpiry] };
+      // One aggregate trace per tick, never one per notification (trace-volume budget).
+      emitTrace({
+        category: 'encounter_notification',
+        type: 'encounter_notification_expiry',
+        tick: s.tick,
+        event: 'auto_resolve_deadline_passed',
+        expiredCount: expiredIds.length,
+        expiredIds,
+      } as unknown as TraceEntry);
+    }
+  }
 
   // Trim encounterNotifications older than NOTIFICATION_RETENTION_TICKS
   if (s.encounterNotifications && s.encounterNotifications.length > 0) {

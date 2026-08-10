@@ -9,7 +9,10 @@ import {
   generateEncounterProse,
   buildEncounterNotification,
   toggleAttentionMode,
+  expireOverdueEncounterNotifications,
+  isEncounterNotificationOverdue,
 } from '../encounterVisibility';
+import type { EncounterNotification } from '../../types/encounterVisibility';
 import {
   RETINUE_VIGNETTE_TIMEOUT,
   PAUSE_MODE_MIN_TIER,
@@ -254,5 +257,121 @@ describe('toggleAttentionMode', () => {
     const g = createTestGraph();
     const result = toggleAttentionMode(g, 'nonexistent', 'asc_1', 10);
     expect(result).toBeNull();
+  });
+});
+
+// ─── Auto-Resolve Expiry (THR-1068) ────────────────────────────────
+
+/**
+ * The consumer `autoResolveTick` never had.
+ *
+ * These tests pin the *exemptions* as hard as the happy path, because every one
+ * of them is a deliberate scope decision that a later "completeness" sweep would
+ * otherwise read as an oversight and helpfully remove. Each exemption's reason
+ * is on `expireOverdueEncounterNotifications`; the tests are here so removing
+ * one goes red rather than shipping.
+ */
+describe('expireOverdueEncounterNotifications', () => {
+  function makeNotif(overrides: Partial<EncounterNotification> = {}): EncounterNotification {
+    return {
+      id: 'n1',
+      agentId: 'agent_1',
+      agentName: 'Kira',
+      courtPosition: 'retinue',
+      encounterId: 'enc_1',
+      encounterName: 'a duel',
+      kind: 'encounter',
+      sourceSystem: 'unified_action',
+      prose: 'prose',
+      choices: [],
+      createdTick: 10,
+      autoResolveTick: 10 + RETINUE_VIGNETTE_TIMEOUT,
+      viewed: false,
+      resolved: false,
+      ...overrides,
+    };
+  }
+
+  it('retires a step notification once the tick reaches its deadline', () => {
+    const notif = makeNotif();
+    const { notifications, expiredIds } = expireOverdueEncounterNotifications([notif], 18);
+
+    expect(expiredIds).toEqual(['n1']);
+    expect(notifications[0].resolved).toBe(true);
+    // `viewed` stays false on purpose — the player genuinely never saw it, and
+    // claiming otherwise would corrupt the only honest record of that.
+    expect(notifications[0].viewed).toBe(false);
+  });
+
+  it('leaves a notification alone one tick before its deadline', () => {
+    const { notifications, expiredIds } = expireOverdueEncounterNotifications([makeNotif()], 17);
+
+    expect(expiredIds).toEqual([]);
+    expect(notifications[0].resolved).toBe(false);
+  });
+
+  it('retires the overdue backlog the defect actually produced', () => {
+    // The measured shape at tick 113: three of Kael's notifications 32, 36 and
+    // 37 ticks past their deadline, none viewed, none resolved.
+    const overdue = [
+      makeNotif({ id: 'n1', createdTick: 73, autoResolveTick: 81 }),
+      makeNotif({ id: 'n2', createdTick: 69, autoResolveTick: 77 }),
+      makeNotif({ id: 'n3', createdTick: 68, autoResolveTick: 76 }),
+    ];
+    const { notifications, expiredIds } = expireOverdueEncounterNotifications(overdue, 113);
+
+    expect(expiredIds).toEqual(['n1', 'n2', 'n3']);
+    expect(notifications.every(n => n.resolved)).toBe(true);
+  });
+
+  it('returns the input array by identity when nothing expires', () => {
+    // Lets the orchestrator skip the state write on the overwhelmingly common
+    // tick where no deadline has passed.
+    const input = [makeNotif({ autoResolveTick: 40 })];
+    const { notifications } = expireOverdueEncounterNotifications(input, 10);
+
+    expect(notifications).toBe(input);
+  });
+
+  it('is idempotent — a retired notification is not re-reported next tick', () => {
+    const first = expireOverdueEncounterNotifications([makeNotif()], 18);
+    const second = expireOverdueEncounterNotifications(first.notifications, 19);
+
+    expect(second.expiredIds).toEqual([]);
+  });
+
+  it('exempts pause-tier notifications, which carry no deadline at all', () => {
+    const { expiredIds } = expireOverdueEncounterNotifications(
+      [makeNotif({ autoResolveTick: null })],
+      999,
+    );
+    expect(expiredIds).toEqual([]);
+  });
+
+  it('exempts aftermath — the badge is the only route to a concluded beat at this tier', () => {
+    const { notifications, expiredIds } = expireOverdueEncounterNotifications(
+      [makeNotif({ kind: 'aftermath' })],
+      999,
+    );
+    expect(expiredIds).toEqual([]);
+    expect(notifications[0].resolved).toBe(false);
+  });
+
+  it('exempts legacy-sourced steps, whose dedup set would re-emit them (THR-1069)', () => {
+    const { expiredIds } = expireOverdueEncounterNotifications(
+      [makeNotif({ sourceSystem: 'legacy_encounter' })],
+      999,
+    );
+    expect(expiredIds).toEqual([]);
+  });
+
+  it('reports nothing for an empty queue', () => {
+    expect(expireOverdueEncounterNotifications([], 50).expiredIds).toEqual([]);
+  });
+
+  it('isEncounterNotificationOverdue agrees with the expiry it gates', () => {
+    expect(isEncounterNotificationOverdue(makeNotif(), 18)).toBe(true);
+    expect(isEncounterNotificationOverdue(makeNotif(), 17)).toBe(false);
+    expect(isEncounterNotificationOverdue(makeNotif({ resolved: true }), 999)).toBe(false);
   });
 });

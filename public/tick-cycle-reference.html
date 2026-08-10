@@ -534,7 +534,7 @@
       </div>
       <div class="post-tick-item">
         <strong>State Cleanup</strong>
-        <span>Prune old encounter notifications (&gt;50 ticks), stamp completedAtTick on resolved actions, remove stale actions (&gt;100 ticks).</span>
+        <span>Retire <code>auto_resolve</code> encounter notifications past their <code>autoResolveTick</code> deadline (THR-1068 — marks them resolved; aftermath and legacy-sourced records exempt), then prune old encounter notifications (&gt;50 ticks), stamp completedAtTick on resolved actions, remove stale actions (&gt;100 ticks). Expiry runs <em>before</em> the prune so a record that is both overdue and beyond retention reports as expired rather than silently vanishing; it emits one aggregate <code>encounter_notification</code> trace per tick, never one per record.</span>
       </div>
       <div class="post-tick-item">
         <strong>Health Validation</strong>

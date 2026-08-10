@@ -553,3 +553,99 @@ describe('Full game loop integration', () => {
     expect(state.chronicleEntries).toHaveLength(0); // reset for new cycle
   });
 });
+
+// ─── Encounter Notification Expiry (THR-1068) ──────────────────────
+
+/**
+ * The wiring test, not the logic test.
+ *
+ * `expireOverdueEncounterNotifications` is unit-tested in
+ * `encounterVisibility.test.ts`. What was actually missing for the life of this
+ * defect was a *caller*: the deadline was written on every `auto_resolve`
+ * notification and no tick phase ever read it back. So the thing worth pinning
+ * here is that `runTick` reaches it at all — a green unit test on an
+ * unreferenced function is exactly the shape this ticket was filed about.
+ *
+ * Built as a headless engine sweep rather than a browser one deliberately. The
+ * live route could not produce the population: on `?view=game&seeded&size=medium`
+ * the seeded First generated no encounter across 120 driven ticks, and
+ * `__DEBUG.inspectEncounterPipeline` reads a GameState snapshot that lags
+ * `__DEBUG.tick()` (it reported `tick: 0` while the engine stood at 120), so a
+ * browser reading of "zero overdue" there would have been an empty-population
+ * pass wearing a verdict's clothes.
+ */
+describe('THR-1068 — auto_resolve notification expiry runs inside runTick', () => {
+  function notif(over: Record<string, unknown>) {
+    return {
+      id: 'n',
+      agentId: 'agent_x',
+      agentName: 'Kael Thornweaver',
+      courtPosition: 'the_first',
+      encounterId: 'enc_x',
+      encounterName: 'a crossing',
+      kind: 'encounter',
+      sourceSystem: 'unified_action',
+      prose: 'p',
+      choices: [],
+      createdTick: 73,
+      autoResolveTick: 81,
+      viewed: false,
+      resolved: false,
+      ...over,
+    };
+  }
+
+  it('drains the measured backlog to zero and leaves the exempt records alone', () => {
+    const state = createTestGameState();
+    state.tick = 112;
+    // The shape measured live at tick 113: three step notifications 32, 36 and
+    // 37 ticks past their deadline, none viewed, none resolved. All three sit
+    // inside NOTIFICATION_RETENTION_TICKS, so the trim is not what retires them.
+    state.encounterNotifications = [
+      notif({ id: 'overdue_1', createdTick: 73, autoResolveTick: 81 }),
+      notif({ id: 'overdue_2', createdTick: 69, autoResolveTick: 77 }),
+      notif({ id: 'overdue_3', createdTick: 68, autoResolveTick: 76 }),
+      notif({ id: 'aftermath_1', kind: 'aftermath', createdTick: 70, autoResolveTick: 78 }),
+      notif({ id: 'legacy_1', sourceSystem: 'legacy_encounter', createdTick: 70, autoResolveTick: 78 }),
+      notif({ id: 'pause_1', createdTick: 110, autoResolveTick: null }),
+      notif({ id: 'live_1', createdTick: 110, autoResolveTick: 118 }),
+    ] as GameState['encounterNotifications'];
+
+    const next = runTick(state);
+    const byId = new Map((next.encounterNotifications ?? []).map(n => [n.id, n]));
+    const overdueRemaining = (next.encounterNotifications ?? []).filter(
+      n => n.autoResolveTick !== null
+        && !n.resolved
+        && n.kind !== 'aftermath'
+        && n.sourceSystem === 'unified_action'
+        && next.tick >= n.autoResolveTick,
+    );
+
+    // The headline: the overdue count returns to zero.
+    expect(overdueRemaining).toHaveLength(0);
+    expect(byId.get('overdue_1')?.resolved).toBe(true);
+    expect(byId.get('overdue_2')?.resolved).toBe(true);
+    expect(byId.get('overdue_3')?.resolved).toBe(true);
+
+    // Exemptions survive a real tick, not just a direct call.
+    expect(byId.get('aftermath_1')?.resolved).toBe(false);
+    expect(byId.get('legacy_1')?.resolved).toBe(false);
+    expect(byId.get('pause_1')?.resolved).toBe(false);
+
+    // A deadline still in the future is untouched — this is the guard against a
+    // fix that "drains the badge" by retiring everything in sight.
+    expect(byId.get('live_1')?.resolved).toBe(false);
+  });
+
+  it('leaves the queue untouched on a tick where no deadline has passed', () => {
+    const state = createTestGameState();
+    state.tick = 100;
+    state.encounterNotifications = [
+      notif({ id: 'live_1', createdTick: 99, autoResolveTick: 140 }),
+    ] as GameState['encounterNotifications'];
+
+    const next = runTick(state);
+
+    expect(next.encounterNotifications?.[0].resolved).toBe(false);
+  });
+});
