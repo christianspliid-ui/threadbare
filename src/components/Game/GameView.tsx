@@ -4459,7 +4459,14 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
           const onClose = () => setStubModalState(null);
           switch (stubModalState.category) {
             case 'location':
-              return <LocationProfileModal name={nodeName} onClose={onClose} />;
+              return (
+                <LocationProfileModal
+                  name={nodeName}
+                  locationId={nodeId}
+                  graph={gameState.graph}
+                  onClose={onClose}
+                />
+              );
             case 'faction':
               return (
                 <FactionSheet
@@ -4471,7 +4478,14 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                 />
               );
             case 'army':
-              return <ArmySheet name={nodeName} onClose={onClose} />;
+              return (
+                <ArmySheet
+                  name={nodeName}
+                  armyId={nodeId}
+                  graph={gameState.graph}
+                  onClose={onClose}
+                />
+              );
             case 'artifact':
               return (
                 <ArtifactSheet
