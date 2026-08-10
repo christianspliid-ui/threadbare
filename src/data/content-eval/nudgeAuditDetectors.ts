@@ -50,7 +50,7 @@
  * Plan: `Docs/plans/2026-07-26-nudge-model-encounter-system.md` § WS5
  */
 
-import type { UnifiedActionTemplate } from '../../types/unifiedAction';
+import type { AftermathVariant, UnifiedActionTemplate } from '../../types/unifiedAction';
 
 // ─── Thresholds (audit appendix table, verbatim) ─────────────────────
 
@@ -254,7 +254,97 @@ export function collectClassedTemplateProse(
 
   for (const variant of template.traitVariants ?? []) push(variant.factorLine, 'interactive');
 
+  // The aftermath is the last screen the player reads, and until THR-1083 no
+  // detector could see it. Swept LAST so every offset above is unchanged: a
+  // template without an `aftermathConfig` scores byte-identically to before,
+  // which is what keeps the pre-THR-1083 batch evidence comparable for the
+  // templates it was actually measured on.
+  const aftermath = template.aftermathConfig;
+  if (aftermath) {
+    for (const variant of [...Object.values(aftermath.variants ?? {}), aftermath.fallback]) {
+      if (variant) pushAftermathVariant(push, variant);
+    }
+  }
+
   return parts;
+}
+
+/**
+ * One authored aftermath variant's prose, plus every outcome band layered over
+ * it (THR-1083).
+ *
+ * **Only authored strings.** `EncounterAftermathChange.actorName` and the
+ * `visual*` fields are engine-populated display names, and the sibling builders
+ * in `src/engine/aftermathWords.ts` (`growthSentence`, `traitGrantedSentence`,
+ * `reputationSentence`, …) are format strings assembled at runtime — no author
+ * owns either, so linting them would report a defect nobody can fix. They stay
+ * out by construction: this walks the *template*, and generated details never
+ * appear there. See THR-1082 for the typed-chip replacement that retires the
+ * generated half of this surface entirely.
+ *
+ * ─── Why `overview` is `scene` and `detail` is `outcome` ─────────────
+ * THR-1083 specified both as `outcome`. Measured against the population that
+ * classification was wrong for one of them, so it is deliberately not what
+ * shipped — recorded here because the next author will reasonably expect the
+ * ticket's wording.
+ *
+ * The `outcome` lexicon adds the natural indefinites (`nothing`, `thing`,
+ * `way`, `whatever`) on one stated ground: after the roll, "it cost them
+ * something" is the writer withholding a consequence **and the player has no
+ * other source for it**. That test, not the field's position on screen, is what
+ * separates the two:
+ *
+ * - `change.detail` **is** the only statement of its consequence — the chip is
+ *   the source. Strict, and the reason "the bridge spent something" is now
+ *   catchable at all.
+ * - `overview` is the closing narrative paragraph, and it sits directly above
+ *   the change chips, which name every consequence explicitly and typed. The
+ *   player has another source, so an indefinite there is ordinary English, not
+ *   an evasion.
+ *
+ * Measured over 295 templates carrying an `aftermathConfig`: reading `overview`
+ * as `outcome` flags 165 fields on indefinites against 57 on genuinely evasive
+ * terms, and in the director-reviewed vertical slice every one of those
+ * indefinite flags is prose like "Nothing was promised. Nothing was taken." —
+ * the exact contortion-forcing THR-899 split the lexicon to end. Evasive terms
+ * are still enforced at zero in `scene`, which is what catches the real defect
+ * in that population (`somehow` in `encounter.slice.swindler_found`).
+ *
+ * `title` is a short authored chip label, so it reads as `interactive` exactly
+ * like `nudge.name` and a reaction's `label`.
+ */
+function pushAftermathVariant(
+  push: (v: unknown, fieldClass: ProseFieldClass) => void,
+  variant: AftermathVariant,
+): void {
+  // All four fields optional: a variant declares `overview`/`changes` as
+  // required and an `AftermathOutcomeOverride` declares every field optional,
+  // so the shape both satisfy is the weaker one.
+  const pushBody = (body: {
+    readonly overview?: string;
+    readonly changes?: AftermathVariant['changes'];
+    readonly reactionPrompt?: AftermathVariant['reactionPrompt'];
+    readonly reactions?: AftermathVariant['reactions'];
+  }): void => {
+    push(body.overview, 'scene');
+    for (const change of body.changes ?? []) {
+      push(change.title, 'interactive');
+      push(change.detail, 'outcome');
+    }
+    push(body.reactionPrompt, 'interactive');
+    for (const reaction of body.reactions ?? []) {
+      push(reaction.label, 'interactive');
+      push(reaction.intent, 'interactive');
+    }
+  };
+
+  pushBody(variant);
+  // Bands layer *over* the variant field by field, so an unauthored band field
+  // is the variant's own text and is already counted. Sweeping only what the
+  // band actually authors avoids double-counting the inherited fields.
+  for (const band of Object.values(variant.byOutcome ?? {})) {
+    if (band) pushBody(band);
+  }
 }
 
 export function collectTemplateText(template: UnifiedActionTemplate): string {
