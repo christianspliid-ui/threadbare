@@ -301,7 +301,7 @@ export const SLICE_UNSAFE_BRIDGE: UnifiedActionTemplate = {
               id: 'slice.bridge.a_plank_short',
               kind: 'shell_state',
               title: 'A Plank Short',
-              detail: 'The bridge spent something on this crossing that it will not get back.',
+              detail: 'A plank went into the river on this crossing, and the keeper has no timber to replace it.',
               polarity: 'loss',
             },
           ],
@@ -1521,7 +1521,7 @@ export const SLICE_BARGAIN_AT_CROSSROADS: UnifiedActionTemplate = {
                 id: 'slice.crossroads.the_wanting_named',
                 kind: 'trait',
                 title: 'The Wanting, Named',
-                detail: 'He never got the word — he got the thing the word was for, which he may find is enough.',
+                detail: 'He never got the word — he got the wanting it was for, which he may find is enough.',
                 polarity: 'loss',
               },
             ],
@@ -2401,7 +2401,7 @@ export const SLICE_SWINDLER_FOUND: UnifiedActionTemplate = {
             id: 'slice.swindler.the_ledger_way',
             kind: 'reputation_tally',
             title: 'By the Ledger',
-            detail: 'A stranger walked into a market, found the wardens, and made the case stand up. Markets remember that sort of thing.',
+            detail: 'A stranger walked into a market, found the wardens, and made the case stand up. Markets remember who does that.',
             polarity: 'gain',
           },
         ],
@@ -2424,7 +2424,7 @@ export const SLICE_SWINDLER_FOUND: UnifiedActionTemplate = {
             overview:
               'Taken mid-sentence, with the paper still up like a lamp — and the listening ' +
               'family got their coin back on the spot, in front of the whole square. The ' +
-              'wardens were unhurried about it. That was somehow the worst part for him.',
+              'wardens were unhurried about it. That was the worst part for him.',
             changes: [
               {
                 id: 'slice.swindler.coin_back_in_public',
@@ -2527,7 +2527,7 @@ export const SLICE_SWINDLER_FOUND: UnifiedActionTemplate = {
                 id: 'slice.swindler.the_market_talks',
                 kind: 'reputation_tally',
                 title: 'The Market’s Version',
-                detail: 'The square saw a stranger start something in an alley and lose it — that is the only version it needs.',
+                detail: 'The square saw a stranger swing first in an alley and come off worse — that is the only version it needs.',
                 polarity: 'loss',
               },
             ],
