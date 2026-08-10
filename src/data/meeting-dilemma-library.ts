@@ -13,6 +13,12 @@
  *   - Stone: humility_pride → preservation_transformation
  *   - Flesh reach and stoicism_passion pair: skipped entirely
  *
+ * The Stone rename inverted that pair's poles — humility is the *transforming*
+ * side, pride the *preserving* one — and the library-wide shift-sign inversion
+ * measured in THR-1071 inverts them back, so stone is the one reach whose
+ * `axiologicalShifts` land right. Do not "fix" stone on its own: see THR-1071
+ * before touching any `axiologicalShifts` sign or `test` pole letter here.
+ *
  * ── Formative-test conversion (THR-868, in progress) ──
  *
  * A template carrying a `test` field renders as a **formative test**: a trial
@@ -4021,14 +4027,22 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     },
     lensOverlays: [],
     artTags: [],
-    // ── Formative test (THR-875). Poles follow the authored `axiologicalShifts`
-    // and the existing choice texts, NOT the pair's names: pole `a` (the -shift)
-    // is laugh, admit it, and be taught; pole `b` (+shift) is refuse to be
-    // diminished and start again intact. Read against `preservation_transformation`
-    // that is backwards — pole `b` literally "keeps the self intact" — and the
-    // whole stone set inherits it from the humility_pride → preservation_transformation
-    // rename recorded in this file's header. Filed as TODO(THR-1064); the tests
-    // here are authored to the shifts, which is what actually moves the profile.
+    // ── Formative test (THR-875). Pole letters here follow the *choices*: the
+    // `poleLean: 'a'` cards argue for choice `a` (laugh, admit it, be taught) and
+    // `cleanA` is choice `a`'s prose. Note the engine binds the letters to the
+    // *profile* instead — `poleLean.ts` and `meetingEncounter.ts` both read `'a'`
+    // as the first-named pole, the `+1` direction — so on this template a played
+    // `'a'` hand writes `+preservation` while choice `a` writes `-0.3`. That
+    // disagreement is real, general (37 of 40 converted templates), and tracked in
+    // THR-1071; it is not stone-specific and must not be patched here alone.
+    //
+    // The stone *shifts* are correct as authored, which THR-1064 read the other
+    // way and which is worth stating plainly because it is counter-intuitive:
+    // choice `a` is humility and takes -0.3 = the second pole = transformation
+    // (being changed); choice `b` is pride and takes +0.3 = the first pole =
+    // preservation ("keeps the self intact", in its own words). Stone is the one
+    // reach where the humility_pride → preservation_transformation rename in this
+    // file's header and the library-wide sign inversion cancel each other out.
     test: {
       valuePair: 'preservation_transformation',
       purposeLine: 'What failure makes',
@@ -4156,8 +4170,9 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     lensOverlays: [],
     artTags: [],
     // ── Formative test (THR-875). Pole `a` (-shift) takes the arranged yield;
-    // pole `b` (+shift) refuses it and pays for the refusal. Same inherited
-    // naming mismatch as the rest of the stone set — see AX-STONE-01's note and TODO(THR-1064).
+    // pole `b` (+shift) refuses it and pays for the refusal. The shifts are right
+    // as authored — see AX-STONE-01's note — and the pole-letter binding they share
+    // with every converted template is THR-1071, not a stone defect.
     // The champion is not bluffing and no card may imply otherwise.
     test: {
       valuePair: 'preservation_transformation',
@@ -4286,8 +4301,9 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     lensOverlays: [],
     artTags: [],
     // ── Formative test (THR-875). Pole `a` (-shift) says where the method came
-    // from; pole `b` (+shift) keeps the credit and the water both. Same inherited
-    // naming mismatch as the rest of the stone set — see AX-STONE-01's note and TODO(THR-1064).
+    // from; pole `b` (+shift) keeps the credit and the water both. The shifts are
+    // right as authored — see AX-STONE-01's note — and the pole-letter binding they
+    // share with every converted template is THR-1071, not a stone defect.
     // Neither pole shuts off the filter: the water is clean either way, and a
     // card that threatens it is off-axis.
     test: {
@@ -4417,8 +4433,9 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     lensOverlays: [],
     artTags: [],
     // ── Formative test (THR-875). Pole `a` (-shift) refuses the mantle; pole `b`
-    // (+shift) stands where the light was and takes what follows. Same inherited
-    // naming mismatch as the rest of the stone set — see AX-STONE-01's note and TODO(THR-1064).
+    // (+shift) stands where the light was and takes what follows. The shifts are
+    // right as authored — see AX-STONE-01's note — and the pole-letter binding they
+    // share with every converted template is THR-1071, not a stone defect.
     // The sign is not explained here and must not be: the test is about what
     // {agent.name} does with it, and the god watching is not obliged to answer.
     test: {
@@ -4549,8 +4566,9 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     artTags: [],
     // ── Formative test (THR-875). Pole `a` (-shift) says thank you and lets the
     // work stand unargued; pole `b` (+shift) walks the teacher through it point
-    // by point. Same inherited naming mismatch as the rest of the stone set —
-    // see AX-STONE-01's note and TODO(THR-1064). The teacher is not being unkind and the work is
+    // by point. The shifts are right as authored — see AX-STONE-01's note — and
+    // the pole-letter binding they share with every converted template is
+    // THR-1071, not a stone defect. The teacher is not being unkind and the work is
     // genuinely excellent; both of those stay true whichever pole lands.
     test: {
       valuePair: 'preservation_transformation',
