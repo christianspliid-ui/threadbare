@@ -152,6 +152,57 @@ describe('phasePlayerReceipts', () => {
     expect(evt!.notification).toBeUndefined();
   });
 
+  // THR-1050 — reaction labels/intents shipped into the receipt raw, so `{cast:*}`
+  // reached DivineReceiptModal verbatim (Law 14) while the overview beside them was
+  // enriched. The context also omitted the template's supportBundle, without which
+  // `resolveSceneCastContext` returns undefined and every cast token strips instead
+  // of naming its actor — so both halves are needed for the name to render.
+  it('enriches `{cast:*}` in reaction labels and intents against the template support bundle', () => {
+    const bundleTemplate = UNIFIED_ACTION_TEMPLATES.find((t) =>
+      t.supportBundle?.some((s) => s.kind === 'actor'),
+    );
+    expect(bundleTemplate, 'expected some template to declare an actor support bundle').toBeTruthy();
+    const actorSpec = bundleTemplate!.supportBundle!.find((s) => s.kind === 'actor')!;
+
+    const state = makeState([
+      makeAction(bundleTemplate!.id, {
+        supportBindings: [
+          {
+            key: actorSpec.key,
+            nodeId: 'npc-cast-1',
+            kind: 'actor',
+            delivery: 'lazy-materialize-on-trigger',
+            persistence: 'must-persist',
+            reused: false,
+          },
+        ],
+        aftermathSummary: summary({
+          reactions: [
+            {
+              ...REACTION,
+              label: `Keep watching {cast:${actorSpec.key}}.`,
+              intent: `Track {cast:${actorSpec.key}} closely.`,
+            },
+          ],
+        }),
+      }),
+    ]);
+    state.graph.addNode({
+      id: 'npc-cast-1',
+      type: 'actor',
+      name: 'Tessaly the Broker',
+      properties: { actorType: 'individual' },
+    });
+
+    const next = processPlayerReceipts(state, {}) as GameState;
+    const reaction = (next.playerActionReceipts ?? [])[0].reactions![0];
+
+    expect(reaction.label).toBe('Keep watching Tessaly the Broker.');
+    expect(reaction.intent).toBe('Track Tessaly the Broker closely.');
+    expect(reaction.label).not.toContain('{');
+    expect(reaction.intent).not.toContain('{');
+  });
+
   it('promotes to the modal tier when a change kind is world-shifting', () => {
     const change: EncounterAftermathChange = {
       id: 'c1', kind: 'trait', title: 'A mark was left', detail: 'x', polarity: 'info',

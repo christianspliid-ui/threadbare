@@ -44,6 +44,7 @@ import type {
   EncounterAftermathChange,
   EncounterAftermathReaction,
 } from '../types/unifiedAction';
+import type { EncounterSupportBundle } from '../types/encounter';
 import type { SphereName } from '../types';
 import type { OutcomeBand } from './outcomeConsequences';
 import type { PlayerReceiptTrace } from '../types/trace';
@@ -131,11 +132,28 @@ function decidePresentation(
   return 'toast';
 }
 
-/** Enrich the overview only when a placeholder token is present; fail-soft to raw. */
-function enrichOverview(state: GameState, action: UnifiedAction, raw: string): string {
-  if (!raw || !raw.includes('{')) return raw ?? '';
+/** True when the text carries a `{placeholder:...}` token worth enriching. */
+function needsEnrichment(text: string | undefined): boolean {
+  return !!text && text.includes('{');
+}
+
+/**
+ * Gather the narrative context a receipt's authored prose resolves against.
+ * Returns undefined when it cannot be built, so callers fall soft to the raw string.
+ *
+ * THR-1050 — `supportBundle` is required for `{cast:*}` to resolve at all:
+ * `resolveSceneCastContext` returns undefined without it, so every cast token
+ * stripped instead of naming its actor. The bundle supplies the declared keys,
+ * the action's bindings supply who each key resolved to; the attended stage
+ * adapter has threaded both since THR-696 and this path had only the bindings.
+ */
+function receiptNarrativeContext(
+  state: GameState,
+  action: UnifiedAction,
+  supportBundle: EncounterSupportBundle | undefined,
+) {
   try {
-    const ctx = gatherNarrativeContext(
+    return gatherNarrativeContext(
       state.graph,
       action.actorId,
       undefined,
@@ -143,8 +161,20 @@ function enrichOverview(state: GameState, action: UnifiedAction, raw: string): s
       state.doomIdentityMatrix,
       state,
       state.tick,
-      { targetId: action.targetId, supportBindings: action.supportBindings },
+      { targetId: action.targetId, supportBundle, supportBindings: action.supportBindings },
     );
+  } catch {
+    return undefined;
+  }
+}
+
+/** Enrich one authored string against an already-gathered context; fail-soft to raw. */
+function enrichReceiptText(
+  raw: string,
+  ctx: ReturnType<typeof receiptNarrativeContext>,
+): string {
+  if (!needsEnrichment(raw) || !ctx) return raw ?? '';
+  try {
     return enrichProse(raw, ctx);
   } catch {
     return raw;
@@ -211,7 +241,24 @@ export function processPlayerReceipts(state: GameState, _ctx: PhaseContext): Pha
         : targetNode?.name ?? action.targetId;
 
     const rawOverview = summary?.overview ?? `Your ${template.name} ${outcomeBandWord(band)}.`;
-    const overview = enrichOverview(state, action, rawOverview);
+    // THR-1050 — the overview and every reaction label/intent share one context,
+    // gathered at most once per receipt and only when some field actually carries a
+    // placeholder (preserving the original overview-only fast path). Reactions used
+    // to ship raw, putting `{cast:*}` on screen in DivineReceiptModal (Law 14).
+    const anyPlaceholder =
+      needsEnrichment(rawOverview) ||
+      (reactions?.some((r) => needsEnrichment(r.label) || needsEnrichment(r.intent)) ?? false);
+    const proseCtx = anyPlaceholder
+      ? receiptNarrativeContext(state, action, template.supportBundle)
+      : undefined;
+    const overview = enrichReceiptText(rawOverview, proseCtx);
+    const enrichedReactions = proseCtx
+      ? reactions?.map((r) => ({
+          ...r,
+          label: enrichReceiptText(r.label, proseCtx),
+          intent: r.intent != null ? enrichReceiptText(r.intent, proseCtx) : r.intent,
+        }))
+      : reactions;
 
     const rarityTier = action.effectiveRarityTier ?? template.rarityTier;
     const presentation = decidePresentation(template.steps?.length ?? 1, rarityTier, changes, reactionCount);
@@ -231,7 +278,7 @@ export function processPlayerReceipts(state: GameState, _ctx: PhaseContext): Pha
       outcomeBand: band,
       overview,
       changes,
-      reactions: reactionCount > 0 ? reactions : undefined,
+      reactions: reactionCount > 0 ? enrichedReactions : undefined,
       presentation,
       acknowledged: false,
     };

@@ -684,6 +684,54 @@ describe('buildUnifiedEncounterStageModel', () => {
       expect(model.history).toHaveLength(2);
     });
 
+    // THR-1050 — authored reaction labels and intents carry `{cast:*}` tokens. The
+    // reaction mapper passed them through raw while the overview and change details
+    // beside it were enriched, so the token itself reached the player (Law 14).
+    it('enriches `{cast:*}` placeholders in aftermath reaction labels and intents', () => {
+      const graph = buildGraph();
+      // Borrow the branching template's support bundle (so `{cast:tessaly}` has a
+      // declared key to resolve against) without its aftermathConfig, whose authored
+      // variant would otherwise replace the reactions under test.
+      const template: UnifiedActionTemplate = {
+        ...RIVAL_SHRINE_BETRAYAL_TEMPLATE,
+        aftermathConfig: undefined,
+      };
+      const model = buildUnifiedEncounterStageModel({
+        template,
+        activeAction: {
+          ...buildBranchingAction(),
+          resolved: true,
+          outcome: 'success' as UnifiedActionOutcome,
+          aftermathSummary: {
+            encounterId: RIVAL_SHRINE_BETRAYAL_TEMPLATE.id,
+            outcome: 'success' as UnifiedActionOutcome,
+            overview: 'The ledger closed.',
+            changes: [],
+            reactions: [
+              {
+                id: 'watch',
+                label: 'Watch {cast:tessaly}.',
+                intent: 'Monitor {cast:tessaly} and {cast:carin_harken} both.',
+                effects: [],
+              },
+            ],
+          },
+        },
+        notification: buildBranchingNotification(),
+        agentName: 'Kael the Scout',
+        threadTier: 'strong',
+        graph,
+        essence: 10,
+      });
+
+      const reaction = model.aftermath?.reactions?.[0];
+      expect(reaction).toBeDefined();
+      expect(reaction!.label).toBe('Watch Tessaly the Broker.');
+      expect(reaction!.intent).toBe('Monitor Tessaly the Broker and Carin Harken both.');
+      expect(reaction!.label).not.toContain('{');
+      expect(reaction!.intent).not.toContain('{');
+    });
+
     it('uses template name for branching encounter header', () => {
       const graph = buildGraph();
       const model = buildUnifiedEncounterStageModel({
