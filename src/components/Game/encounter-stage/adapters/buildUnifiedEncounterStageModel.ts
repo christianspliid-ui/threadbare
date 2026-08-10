@@ -658,11 +658,14 @@ function buildAftermath(
   }
 
   const displayReactions = authoredVariant?.reactions ?? summary.reactions;
+  // THR-1050 — reaction prose runs through the same enricher as the overview and
+  // the change details above. Authored labels and intents carry `{cast:*}` tokens,
+  // and passing them through raw put the token itself on screen (Law 14).
   const reactions: EncounterStageAftermathReactionModel[] | undefined = displayReactions?.map(
     (reaction) => ({
       id: reaction.id,
-      label: reaction.label,
-      intent: reaction.intent,
+      label: enrichProse(reaction.label, ctx),
+      intent: reaction.intent != null ? enrichProse(reaction.intent, ctx) : undefined,
     }),
   );
 
