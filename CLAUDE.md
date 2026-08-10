@@ -484,7 +484,14 @@ Two skills form a feedback loop:
 1. **`impediment-reporter`** — Every agent logs friction as it happens → `Docs/impediments.md`
 2. **`retrospective`** — Periodically analyze the log, implement quick wins, backlog bigger fixes → `Design/retros/`
 
-Repetitive workflows → propose a skill. Use `anthropic-skills:skill-creator` to build and eval 
+Repetitive workflows → propose a skill. Use `anthropic-skills:skill-creator` to build and eval
+
+### Process-work throttle (Christian's direction, 2026-08-10)
+
+Measured 2026-08-10: 32 of 35 Ready-for-Dev items were Low-priority process cleanup, zero were feature or content work, and the lanes were still filing more. The materiality bar (2026-08-08, § Prioritization) governed what *qualified*; nothing governed *who files*. Two rules close that:
+
+- **Scheduled lanes do not file process/infrastructure tickets.** A lane that finds a defect in the delivery machinery logs it — an impediment-log row or a line in its own run report — and moves on. The **weekly retro is the single promotion point**: it batches the log and files the few tickets that clear the materiality bar, with the accumulated cost quoted. Sole exception: a loss actively corrupting work *right now* (a gate passing while broken, data being lost as it runs) may be filed immediately. A lane prompt that still says "file findings as tickets" is superseded by this rule.
+- **Probes, gates, and standing rules sunset by default.** Anything that has not caught a real defect in **six weeks** is presumed deletable; the weekly retro either renews it by citing the catch or deletes it. Keeping a dead rule requires evidence, not caution — the delivery machine's failure mode is accretion, not gaps (this file is the proof), so the burden of proof sits on *keeping*, never on removing.
 
 
 # Codesight — Codebase Intelligence
