@@ -761,3 +761,75 @@ describe('TB-048 control templates', () => {
     }
   });
 });
+
+describe('THR-1078: authoring metadata never reaches a player-facing prose field', () => {
+  /**
+   * `description` is player-facing by contract — the encounter stage renders it as
+   * `header.subtitle` (buildUnifiedEncounterStageModel), and the Codex renders it as
+   * an entry `summary`. All eight vertical-slice templates shipped authoring notes in
+   * it instead: a hook number, a Linear id, and — on three of them — the name of the
+   * follow-on the player had not yet chosen.
+   *
+   * The guard is pool-wide rather than slice-scoped on purpose: the defect was a
+   * habit of authoring, not a property of one file, so the predicate is "any template's
+   * player-facing prose", per the ticket's own membership rule.
+   *
+   * `technicalEffect` is deliberately NOT checked. It is wiki-facing by contract
+   * (types/unifiedAction.ts: "wiki-facing register", sourced from resolving code) and
+   * legitimately cites ticket ids — action-technical-effects.ts names THR-605 on the
+   * artifact verbs. Including it here would fail on correct content.
+   */
+  const AUTHORING_METADATA = [
+    { label: 'hook number', pattern: /Hook #\d+/ },
+    { label: 'Linear issue id', pattern: /THR-\d+/ },
+    { label: 'authoring-batch marker', pattern: /Vertical-slice encounter/i },
+  ];
+
+  /** Player-facing prose fields, as rendered by the encounter stage and the Codex. */
+  function playerFacingProse(t: UnifiedActionTemplate): Array<{ field: string; text: string }> {
+    const entries: Array<{ field: string; text: string }> = [];
+    if (t.description) entries.push({ field: 'description', text: t.description });
+    const n = t.narrativeTemplates;
+    if (n?.initiation) entries.push({ field: 'narrativeTemplates.initiation', text: n.initiation });
+    if (n?.success) entries.push({ field: 'narrativeTemplates.success', text: n.success });
+    if (n?.failure) entries.push({ field: 'narrativeTemplates.failure', text: n.failure });
+    return entries;
+  }
+
+  it('the population under test is non-empty', () => {
+    // Guards against the vacuous-pass shape: a filter that silently matches nothing
+    // makes every assertion below trivially true.
+    const withDescription = UNIFIED_ACTION_TEMPLATES.filter(t => Boolean(t.description));
+    expect(UNIFIED_ACTION_TEMPLATES.length).toBeGreaterThan(0);
+    expect(withDescription.length).toBeGreaterThan(0);
+  });
+
+  it('no template carries authoring metadata in player-facing prose', () => {
+    const offenders: string[] = [];
+
+    for (const template of UNIFIED_ACTION_TEMPLATES) {
+      for (const { field, text } of playerFacingProse(template)) {
+        for (const { label, pattern } of AUTHORING_METADATA) {
+          const match = text.match(pattern);
+          if (match) {
+            // Report the matched token, not the head of the string — the metadata is
+            // usually appended at the tail, so a leading slice hides the actual offender.
+            offenders.push(`${template.id} · ${field} · ${label} · "${match[0]}"`);
+          }
+        }
+      }
+    }
+
+    expect(offenders).toEqual([]);
+  });
+
+  it('the eight vertical-slice templates still author a description', () => {
+    // The fix was to rewrite these strings, not to delete them — a blank subtitle
+    // would be a different regression on the same surface.
+    const slice = UNIFIED_ACTION_TEMPLATES.filter(t => t.id.startsWith('encounter.slice.'));
+    expect(slice.length).toBe(8);
+    for (const t of slice) {
+      expect(t.description, `${t.id} lost its description`).toBeTruthy();
+    }
+  });
+});

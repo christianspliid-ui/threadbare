@@ -367,8 +367,9 @@ export const SLICE_UNSAFE_BRIDGE: UnifiedActionTemplate = {
     failure: 'The bridge could not be trusted, and the long ford cost the rest of the day.',
   },
   description:
-    'Single Test (Hook #205): cross a failing toll bridge or lose half a day to the ford. ' +
-    'Vertical-slice encounter, THR-883.',
+    'A failing toll bridge stands on the only crossing within a day’s walk, and the family ' +
+    'that keeps it swears it will hold. The traveler weighs a cheap crossing against a long ' +
+    'ford, and the god decides what that confidence is worth.',
 };
 
 // ═════════════════════════════════════════════════════════════════════
@@ -766,8 +767,9 @@ export const SLICE_SNOW_ON_THE_PASS: UnifiedActionTemplate = {
     failure: 'The mountain kept them longer than planned and charged for the stay.',
   },
   description:
-    'Test & Consequence (original): beat the snow to the pass hut, then pass the night on ' +
-    'whatever ground the race left. Carryover demo. Vertical-slice encounter, THR-883.',
+    'A mountain pass with the weather closing in behind it, and a shelter somewhere ahead ' +
+    'worth reaching first. Whatever the race costs is still owed when night falls, and the ' +
+    'god decides whether to spend the traveler’s strength on speed or on shelter.',
 };
 
 // ═════════════════════════════════════════════════════════════════════
@@ -1165,8 +1167,9 @@ export const SLICE_RIDERS_BEHIND_CARAVAN: UnifiedActionTemplate = {
     failure: 'The hunt closed on the column before the gates could.',
   },
   description:
-    'Puzzle–Investigation–Resolution (Hook #207): find which of thirty travelers is ' +
-    'hunted, then get them out of the column unseen. Vertical-slice encounter, THR-883.',
+    'Riders have shadowed a crowded column since the river, hunting one traveler among many. ' +
+    'The god decides whether the hunted is found and moved out unseen, or whether the road ' +
+    'settles it at the gates.',
 };
 
 // ═════════════════════════════════════════════════════════════════════
@@ -1553,9 +1556,9 @@ export const SLICE_BARGAIN_AT_CROSSROADS: UnifiedActionTemplate = {
     failure: 'The crossroads kept more of the evening than it gave back.',
   },
   description:
-    'Personality Fork (Hook #206): the mortal decides, by who they are and the god’s ' +
-    'lean, whether an uncanny bargain is taken. The accept path seeds The Full Moon ' +
-    'Collection. Vertical-slice encounter, THR-883.',
+    'A stranger at a crossroads knows the traveler’s name and offers a bargain priced in ' +
+    'promises rather than coin. Whether it is taken turns on who the traveler is — and on ' +
+    'how heavily the god leans.',
 };
 
 // ═════════════════════════════════════════════════════════════════════
@@ -1727,8 +1730,8 @@ export const SLICE_FULL_MOON_COLLECTION: UnifiedActionTemplate = {
     failure: 'The appointment was kept, and it cost more sleep than it should have.',
   },
   description:
-    'Seeded Sequel of A Bargain at the Crossroads: the promise falls due, and the gift is ' +
-    'collected. Vertical-slice encounter, THR-883.',
+    'A promise made at a crossroads falls due tonight, and the one who holds it has come to ' +
+    'collect. The god decides whether the debt is paid as agreed or contested in the dark.',
 };
 
 // ═════════════════════════════════════════════════════════════════════
@@ -2195,9 +2198,9 @@ export const SLICE_SWINDLED_FAMILY: UnifiedActionTemplate = {
     failure: 'The meeting went poorly, and both roads kept their troubles.',
   },
   description:
-    'Opt-in Complication (Hook #204): the mortal decides, from who they are, whether to ' +
-    'spend a day saving strangers from a swindle. The help path seeds The Swindler Found ' +
-    'and The Grateful Kin. Vertical-slice encounter, THR-883.',
+    'A cheerful family is walking into a salt fen carrying a worthless deed for a map. ' +
+    'Nothing obliges the traveler to stop them, and the god decides whether a day is spent ' +
+    'on strangers.',
 };
 
 // ═════════════════════════════════════════════════════════════════════
@@ -2574,8 +2577,8 @@ export const SLICE_SWINDLER_FOUND: UnifiedActionTemplate = {
     failure: 'The man and his satchel moved on to a town with no one watching.',
   },
   description:
-    'Seeded Sequel of The Swindled Family: the paper-seller resurfaces, and the mortal ' +
-    'decides what justice looks like. Vertical-slice encounter, THR-883.',
+    'The paper-seller has surfaced again, working the same lie a few markets from the fen ' +
+    'road. The god decides what justice looks like here — the warden’s hands, or the alley’s.',
 };
 
 // ═════════════════════════════════════════════════════════════════════
@@ -2761,8 +2764,9 @@ export const SLICE_GRATEFUL_KIN: UnifiedActionTemplate = {
     failure: 'The gratitude was fumbled, and the room let it drop politely.',
   },
   description:
-    'Seeded Sequel of The Swindled Family: the kindness is repaid, and the favor edge is ' +
-    'minted — the legitimate birth of history. Vertical-slice encounter, THR-883.',
+    'Word of the fen-road kindness has run ahead of the traveler, and the family means to ' +
+    'repay it in front of company. The god decides whether the thanks is taken gracefully ' +
+    'or fumbled.',
 };
 
 // ─── The slice, assembled ────────────────────────────────────────────
