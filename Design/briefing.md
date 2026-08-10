@@ -1,5 +1,5 @@
 ---
-needsChristian: thr-907-slice-verdict, thr-974-consequence-verdict, aftermath-pops-recheck, thr-998-action-card-risk-word, thr-961-sound-feel, thr-962-sound-routing
+needsChristian: thr-1064-ruling-reversed, thr-907-slice-verdict, thr-974-consequence-verdict, aftermath-pops-recheck, thr-998-action-card-risk-word, thr-961-sound-feel, thr-962-sound-routing
 queue: backed-up
 freshness: dirty
 deploy: deployed
@@ -9,11 +9,21 @@ ci: healthy
 ---
 # Briefing
 
-**Generated:** 2026-08-10 09:58 local (07:58 UTC) · by keep-work-flowing-cc
+**Generated:** 2026-08-10 11:58 local (09:58 UTC) · by keep-work-flowing-cc
 
 ## Needs Christian
 
-**You answered the shelf question and it is closed.** What is left is six items, and every one of them is play or taste — nothing on the board is waiting on any of them. **Both working slots are now empty**, so the machine is not blocked on you either.
+**One new thing, and it is a correction to something you were told by this brief.** The rest is the same five play-and-taste items. Nothing on the board is blocked on any of them.
+
+- **A ruling you gave yesterday was based on a wrong brief — mine. It needs one word from you to close.** ([THR-1064](https://linear.app/threadbare/issue/THR-1064/the-stone-sets-five-axiological-templates-are-inverted-against))
+
+  On Saturday you were told the stone reach's five trials say the opposite of their label, and asked which of three fixes to take. You answered *"flip the label"*, which was the sensible answer to the question as put.
+
+  **The question was wrong.** A working session went to implement your ruling, checked the underlying convention against the code before touching anything, and found the stone trials are correct as written. The evidence I quoted to you — *"one scene literally says pride preserved is a wall … filed under transformation"* — had the two poles the wrong way round. Pride-preserved is filed under **preservation**, which is right. I inherited that error from the ticket and passed it to you as though I had checked it.
+
+  **What it needs:** the ticket closed as *not a defect*. No lane here is allowed to mark something Done, so it sits in progress until you clear it. Nothing else waits on it.
+
+  **The real bug turned out to be much bigger, and it does not need you.** Across the other 40 converted encounters, 37 have the sign backwards — the merciful choice makes a person *more* ruthless, not less. Kneeling in the dirt to hold a cup to a dying boy's lips currently pushes that character toward Conqueror. It is filed as [THR-1071](https://linear.app/threadbare/issue/THR-1071/37-of-40-converted-dilemmas-write-the-axiological-profile-backwards) at High priority and carries its own fix decision, so it proceeds without you. Stone reads right only because two separate mistakes cancel each other out there.
 
 - **Both play sessions are still ready, and they are still the same one sitting.** Two rulings over the same five encounters.
 
@@ -38,36 +48,30 @@ ci: healthy
 
 - **Two small yes/no decisions on encounter sound**, unchanged for several runs: [routing the sound cues to the new screen](https://linear.app/threadbare/issue/THR-962), and [how those cues actually feel](https://linear.app/threadbare/issue/THR-961).
 
-## From Christian
-
-**You wrote `gogogo` at 09:01 local, twenty-four seconds after the brief asking whether "drop and re-author" covers the rest of the shelf.**
-
-**Read as: yes — extend it to the whole leftover pile.** That is the recommendation the message carried and the only question it asked. So the eight remaining batch tickets — roughly thirty-four encounters written to the old instructions — get dropped and re-authored under the locked format, exactly as the four capital-city seats did: [THR-848](https://linear.app/threadbare/issue/THR-848), [THR-855](https://linear.app/threadbare/issue/THR-855), [THR-856](https://linear.app/threadbare/issue/THR-856), [THR-858](https://linear.app/threadbare/issue/THR-858), [THR-859](https://linear.app/threadbare/issue/THR-859), [THR-861](https://linear.app/threadbare/issue/THR-861), [THR-863](https://linear.app/threadbare/issue/THR-863), [THR-864](https://linear.app/threadbare/issue/THR-864).
-
-**If that is not what you meant, one line fixes it** — say *"just the four"* and the other eight go back on hold. Nothing irreversible happens in the meantime: the old writing stays in its branches either way.
-
-**Routed onward, not done here.** This lane writes two files; it does not move tickets, drop branches or close pull requests. The next working session picks up: re-open the eight batch tickets under the re-author path, and finish closing out the four seats ([THR-860](https://linear.app/threadbare/issue/THR-860) is already back on the shelf, and its pull request [#1114](https://github.com/christianspliid-ui/threadbare/pull/1114) is still open and wants closing rather than merging).
-
 ## Queue
 
-**Backed up — 35 ready for dev, and for the first time in days nothing is in progress at all.** Both parked items cleared this morning: the meeting tests ([THR-875](https://linear.app/threadbare/issue/THR-875)) finished and closed, and the four civic seats ([THR-860](https://linear.app/threadbare/issue/THR-860)) went back to the shelf to be re-authored per your ruling. Nothing is stuck and nobody is blocked.
+**Backed up — 35 ready for dev, one item in progress.** That one is the stone ticket above, sitting in progress only because it is waiting on you to close it.
 
-**The shape of the shelf is the standing problem, and your answer this morning is what changes it.** Of the 35 ready items, **31 are `Low` priority** and almost all are small cleanup — dead code, stale comments, prose-detector misses. There is still no High or Urgent work queued. The thirty-four encounters you just unblocked are the real feature work, and they re-enter the pipeline as re-authoring passes rather than sitting frozen.
+**Your `gogogo` from this morning was applied to the board in full.** All ten encounter-batch tickets and their parent were dropped at 08:31Z, exactly as the ruling said. Roughly thirty-four encounters written to the old instructions are now off the board.
+
+**One correction to what I told you last hour.** I said those encounters would "re-enter the pipeline as re-authoring passes". They have not, and there is currently no ticket queued that will produce them. The work has been folded into a larger effort instead — [the Encounter Factory](https://linear.app/threadbare/issue/THR-1043), a machine for producing finished encounters at scale, which is still being designed. Three of its parts shipped over the weekend. That is a reasonable place for the work to go, but it means the honest picture today is: **no encounter content is queued, and the next batch of encounters arrives when the Factory does.** If you would rather have some hand-written ones in the meantime, that is a call worth making — say the word and it becomes a ticket.
+
+**The rest of the shelf is unchanged in shape:** of the 35 ready items, 31 are `Low` priority cleanup — dead code, stale comments, prose-detector misses. The one High-priority item on the board is the backwards-mercy bug found this morning, and it is a repair rather than new play.
 
 ## Freshness
 
 - **Home tree:** on `main`, fully up to date with the remote, nothing stranded. Two tracked config files are still modified (`.claude/settings.json`, `.claude/settings.local.json`) — harmless, but they will block the automatic sync the moment a change to those same files arrives. Clear whenever convenient: `git -C "C:/Users/chris/Dev/Projects/TheFantasyWorldSimulator" checkout -- .claude/settings.json .claude/settings.local.json` (only if you did not mean to change them).
 - **25 untracked report files** still piling up in the home tree's `Docs/ops/` and `Design/retros/`. Already filed as [THR-1056](https://linear.app/threadbare/issue/THR-1056) and queued — noted only because it is the shape that has stalled the sync before.
-- **Deploy:** the live site is serving the latest commit on `main` (`43269b23`). Green.
-- **Automated checks:** running normally; all nine scheduled jobs on time. One open pull request, correctly held on purpose ([#1114](https://github.com/christianspliid-ui/threadbare/pull/1114)) — held for a reason you have now decided, and being closed out rather than merged.
+- **Deploy:** the live site is serving the latest commit on `main` (`ef7658be`). Green.
+- **Automated checks:** running normally; all nine scheduled jobs on time. One open pull request, correctly held on purpose ([#1114](https://github.com/christianspliid-ui/threadbare/pull/1114)) — the branch behind the encounters you just dropped; it wants closing rather than merging.
 - **Overnight quiet:** the lane-silence probe again reports the last few nights as unexplained gaps (roughly 20:30→06:15 UTC). It is repeating a question **you already answered on 2026-08-06**, so it is not being raised to you again. Recorded here so the decline is visible rather than silent: the shape is nightly and machine-off-shaped, and the probe has no way to express "expected every night."
 - **Housekeeping:** the git reaper ran 18 minutes ago and is healthy — 48 worktrees, 63 branches, 2 needing a human call on whether their unmerged work is wanted.
 
 ## What's moving
 
-- **All forty meeting tests are done and the ticket is closed** ([THR-875](https://linear.app/threadbare/issue/THR-875)) — every one of the eight reaches now gives a mortal a real formative test the first time you meet them. The scope question that parked it was settled as an agent call, exactly as flagged.
-- **The four civic seats are released for re-authoring** ([THR-860](https://linear.app/threadbare/issue/THR-860)) — your ruling applied, ticket back on the shelf, old work left in its branch.
-- Still fresh from overnight: thirty-five encounters rewritten so the ending names what actually happened ([THR-929](https://linear.app/threadbare/issue/THR-929)), the Compulsion now plants a weight instead of pushing ([THR-886](https://linear.app/threadbare/issue/THR-886)), and joining a faction is now its own moment in the world ([THR-862](https://linear.app/threadbare/issue/THR-862)).
+- **The backwards-mercy bug was caught** ([THR-1071](https://linear.app/threadbare/issue/THR-1071)) — found because a session checked a convention against the code instead of trusting the ticket that sent it. It is the most consequential thing found this week: it silently pointed thirty-seven encounters' moral outcomes the wrong way.
+- **The veil's countdown bug is fixed** ([THR-1068](https://linear.app/threadbare/issue/THR-1068)) — encounters set to resolve on their own now actually do, instead of piling up a badge that counted downward past zero forever.
+- Still fresh from overnight: thirty-five encounters rewritten so the ending names what actually happened ([THR-929](https://linear.app/threadbare/issue/THR-929)), the Compulsion now plants a weight instead of pushing ([THR-886](https://linear.app/threadbare/issue/THR-886)), and all forty meeting tests finished ([THR-875](https://linear.app/threadbare/issue/THR-875)) — every one of the eight reaches now gives a mortal a real formative test the first time you meet them.
 
 ---
 *Standing asks live in `Design/user-actions.md`. This file is regenerated hourly by
