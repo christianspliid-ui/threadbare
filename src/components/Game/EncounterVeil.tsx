@@ -67,7 +67,7 @@ export interface EncounterVeilProps {
 // (`GOLD #d4af37` vs `--accent-gold #d4a040`), which is exactly the two-golds
 // drift the law names. `--veil-gold` now resolves to `--accent-gold`.
 const VOID = 'var(--veil-void)';
-const FONT_PROSE = "Georgia, 'Times New Roman', serif";
+const FONT_PROSE = 'var(--font-prose)';
 const FONT_DISPLAY = "'Palatino Linotype', 'Book Antiqua', Palatino, serif";
 const GOLD = 'var(--veil-gold)';
 const GOLD_DIM = 'var(--veil-gold-dim)';
@@ -106,28 +106,44 @@ const BOOST_PIP_DOT_PX = 12;
  */
 const REDUCED_MOTION_FADE_S = 0.15;
 
-/** Resolved-step outcome → step-dot colour. Success/failure at a glance (THR-636). */
+/**
+ * Resolved-step outcome → step-dot colour. Success/failure at a glance (THR-636).
+ *
+ * Law 30 (THR-1031): the polarity hues now come from `--veil-gain-rgb` /
+ * `--veil-loss-rgb`, so the veil and the nudge shell cannot drift apart again.
+ * The alphas are unchanged and still carry the ramp.
+ *
+ * `critical_failure` is the one value that moved. It was `#b91c1c`, a literal
+ * declared here *and* in the shell's forecast map, and it is not decoration:
+ * this map also colours the replay header's outcome **word** below, where
+ * #b91c1c measured 3.05:1 on `--veil-void` — under Law 45's 4.5:1 floor. Full
+ * loss red is 7.14:1 and makes the severity ramp symmetric with the success
+ * side (success 0.55 → critical_success 0.9; failure 0.6 → critical_failure 1).
+ */
 const OUTCOME_DOT_COLOR: Record<string, string> = {
-  critical_success: 'rgba(134, 239, 172, 0.9)',
-  success:          'rgba(134, 239, 172, 0.55)',
+  critical_success: 'rgb(var(--veil-gain-rgb) / 0.9)',
+  success:          'rgb(var(--veil-gain-rgb) / 0.55)',
   success_at_cost:  'rgb(var(--veil-gold-rgb) / 0.7)',
   near_miss:        'var(--accent-near-miss)',
-  failure:          'rgba(248, 113, 113, 0.6)',
-  critical_failure: '#b91c1c',
+  failure:          'rgb(var(--veil-loss-rgb) / var(--veil-loss-text-alpha))',
+  critical_failure: 'rgb(var(--veil-loss-rgb) / 1)',
 };
+
+/** Fallback step-dot tone for a resolved step whose outcome the map lacks. */
+const OUTCOME_DOT_FALLBACK = 'rgb(var(--veil-gain-rgb) / 0.5)';
 
 /** Type glow colors for choice top line */
 const TYPE_COLORS: Record<string, string> = {
-  supportive: 'rgba(134, 239, 172, 0.3)',
-  coercive: 'rgba(249, 115, 22, 0.3)',
-  withdrawn: 'rgba(160, 160, 170, 0.2)',
+  supportive: 'rgb(var(--veil-gain-rgb) / 0.3)',
+  coercive: 'rgb(var(--veil-coercive-rgb) / 0.3)',
+  withdrawn: 'rgb(var(--veil-neutral-rgb) / 0.2)',
 };
 
 /** Type label colors (slightly brighter for readability) */
 const TYPE_LABEL_COLORS: Record<string, string> = {
-  supportive: 'rgba(134, 239, 172, 0.7)',
-  coercive: 'rgba(249, 115, 22, 0.7)',
-  withdrawn: 'rgba(160, 160, 170, 0.5)',
+  supportive: 'rgb(var(--veil-gain-rgb) / 0.7)',
+  coercive: 'rgb(var(--veil-coercive-rgb) / 0.7)',
+  withdrawn: 'rgb(var(--veil-neutral-rgb) / 0.5)',
 };
 
 /** Thread tier display labels */
@@ -292,10 +308,15 @@ export function EncounterVeil({
   if (model.aftermath) {
     const aftermath = model.aftermath;
 
+    /**
+     * Edge-only tone: every caller below applies this to a `border`, never to
+     * text, so Law 45's floor does not bind it and the alphas stay as authored.
+     * `consequenceToneColor` is the text-bearing sibling and is not the same.
+     */
     const polarityColor = (polarity: 'gain' | 'loss' | 'mixed' | 'info') => {
-      if (polarity === 'gain') return 'rgba(134, 239, 172, 0.65)';
-      if (polarity === 'loss') return 'rgba(248, 113, 113, 0.65)';
-      if (polarity === 'mixed') return 'rgba(251, 191, 36, 0.65)';
+      if (polarity === 'gain') return 'rgb(var(--veil-gain-rgb) / 0.65)';
+      if (polarity === 'loss') return 'rgb(var(--veil-loss-rgb) / 0.65)';
+      if (polarity === 'mixed') return 'rgb(var(--veil-mixed-rgb) / 0.65)';
       return TEXT_WHISPER;
     };
 
@@ -303,11 +324,15 @@ export function EncounterVeil({
      * THR-971 — consequence chip toning. `seed` takes the veil's gold rather
      * than a gain/loss hue on purpose: a planted sequel is neither good news
      * nor bad, it is a debt the world now owes the story.
+     *
+     * Law 45 (THR-1031): this one colours the chip's *label*, not only its
+     * edge, so the loss side takes the measured text floor — at the 0.65 it
+     * shared with gain it painted 3.5:1.
      */
     const consequenceToneColor = (tone: 'gain' | 'loss' | 'seed' | 'info') => {
       if (tone === 'seed') return GOLD;
-      if (tone === 'gain') return 'rgba(134, 239, 172, 0.65)';
-      if (tone === 'loss') return 'rgba(248, 113, 113, 0.65)';
+      if (tone === 'gain') return 'rgb(var(--veil-gain-rgb) / 0.65)';
+      if (tone === 'loss') return 'rgb(var(--veil-loss-rgb) / var(--veil-loss-text-alpha))';
       return TEXT_WHISPER;
     };
 
@@ -1758,7 +1783,7 @@ export function EncounterVeil({
                     </span>
                   )}
                 </div>
-                <p style={{ fontFamily: 'Georgia, "Times New Roman", serif', fontStyle: 'italic', fontSize: 'var(--text-xs)', lineHeight: 1.7, color: 'rgb(var(--veil-gold-rgb) / 0.7)', margin: 0, maxWidth: 500 }}>
+                <p style={{ fontFamily: FONT_PROSE, fontStyle: 'italic', fontSize: 'var(--text-xs)', lineHeight: 1.7, color: 'rgb(var(--veil-gold-rgb) / 0.7)', margin: 0, maxWidth: 500 }}>
                   {mostRecentComplication.prose}
                 </p>
               </div>
@@ -1976,7 +2001,7 @@ function ResolutionCheckCard({ entry }: { entry: EncounterStageResolutionCheckMo
   return (
     <div
       style={{
-        borderLeft: `2px solid ${entry.state === 'pending' ? 'rgb(var(--veil-gold-rgb) / 0.35)' : 'rgba(134, 239, 172, 0.22)'}`,
+        borderLeft: `2px solid ${entry.state === 'pending' ? 'rgb(var(--veil-gold-rgb) / 0.35)' : 'rgb(var(--veil-gain-rgb) / 0.22)'}`,
         paddingLeft: 12,
       }}
     >
@@ -2548,7 +2573,7 @@ function StepNavigator({
         const dotColor = isReplaying || isCurrent
           ? GOLD
           : isResolved
-            ? (step.outcome ? (OUTCOME_DOT_COLOR[step.outcome] ?? 'rgba(134, 239, 172, 0.5)') : 'rgba(134, 239, 172, 0.5)')
+            ? (step.outcome ? (OUTCOME_DOT_COLOR[step.outcome] ?? OUTCOME_DOT_FALLBACK) : OUTCOME_DOT_FALLBACK)
             : TEXT_GHOST;
         const size = isCurrent || isReplaying ? 9 : 7;
         const title = isResolved

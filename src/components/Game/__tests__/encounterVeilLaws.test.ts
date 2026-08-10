@@ -47,6 +47,8 @@ const readCode = (rel: string): string =>
 
 const VEIL = 'components/Game/EncounterVeil.tsx';
 const SHELL = 'components/Game/encounter-stage/shells/NudgePhaseShell.tsx';
+const PREMONITION = 'components/Game/PremonitionModal.tsx';
+const EMERGENCE = 'components/ruins/EmergenceDilemmaModal.tsx';
 const CSS = 'index.css';
 
 // ── WCAG helpers ───────────────────────────────────────────────────
@@ -167,6 +169,104 @@ describe('Law 30 — the ceremonial palette is tokens, and there is one gold', (
   });
 });
 
+// ── Law 30 — the polarity half of the same migration (THR-1031) ────
+
+describe('Law 30 — polarity is one token set, not two declarations', () => {
+  it('declares the polarity channels in index.css', () => {
+    const css = read(CSS);
+    for (const token of [
+      'veil-gain-rgb',
+      'veil-loss-rgb',
+      'veil-mixed-rgb',
+      'veil-neutral-rgb',
+      'veil-coercive-rgb',
+    ]) {
+      expect(() => tokenValue(css, token)).not.toThrow();
+    }
+  });
+
+  it('keeps --veil-loss-rgb in step with the game-wide --negative', () => {
+    // The gain green is deliberately the veil's own lighter tone, so only this
+    // half is pinned. Law 30's sanctioned-variant clause covers the other.
+    const css = read(CSS);
+    const [r, g, b] = parseHex(tokenValue(css, 'negative'));
+    expect(tokenValue(css, 'veil-loss-rgb')).toBe(`${r} ${g} ${b}`);
+  });
+
+  it('leaves no literal polarity colour in the veil or the nudge shell', () => {
+    // The two hues each file used to declare for itself, plus the deep red both
+    // of them spelled out independently. Written as channel triples rather than
+    // whole `rgba(...)` strings so a re-introduction at any alpha still fails.
+    for (const file of [VEIL, SHELL]) {
+      const src = readCode(file);
+      expect(src, `${file} still has a raw gain green`).not.toMatch(/134,\s*239,\s*172/);
+      expect(src, `${file} still has a raw loss red`).not.toMatch(/248,\s*113,\s*113/);
+      expect(src, `${file} still declares the doomed red`).not.toMatch(/#b91c1c/i);
+    }
+  });
+
+  it('has no literal hex or rgba left in PremonitionModal', () => {
+    // The whole surface was six hexes and four rgba()s; this is the gate that
+    // keeps it from growing an eleventh.
+    const src = readCode(PREMONITION);
+    expect(src, 'a raw hex is back').not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
+    expect(src, 'a raw rgba() is back').not.toMatch(/rgba?\(\s*\d+\s*,/);
+  });
+});
+
+// ── Law 27 — one prose font stack, declared once ───────────────────
+
+describe('Law 27 — the ceremonial prose serif lives in the token layer', () => {
+  it('declares --font-prose in index.css', () => {
+    expect(() => tokenValue(read(CSS), 'font-prose')).not.toThrow();
+  });
+
+  it('leaves no inline Georgia stack in the interrupt family', () => {
+    for (const file of [VEIL, SHELL, PREMONITION]) {
+      expect(readCode(file), `${file} still spells the serif stack inline`)
+        .not.toMatch(/Georgia\s*,/);
+    }
+  });
+});
+
+// ── Laws 23/26/35 — the family composes Modal, it does not fork it ─
+
+describe('Laws 23/26 — no forked overlays in the interrupt family', () => {
+  it('EmergenceDilemmaModal composes Modal', () => {
+    const src = readCode(EMERGENCE);
+    expect(src).toMatch(/from '\.\.\/shared\/Modal'/);
+    expect(src).toMatch(/<Modal\b/);
+  });
+
+  it('no longer hand-rolls a dialog or invents a z-index (Law 35)', () => {
+    const src = readCode(EMERGENCE);
+    // The forked overlay set these itself; composing Modal is what supplies
+    // them, so their *absence* here is the assertion that the fork is gone.
+    expect(src, 'the hand-rolled dialog role is back').not.toMatch(/role="dialog"/);
+    expect(src, 'the hand-rolled aria-modal is back').not.toMatch(/aria-modal/);
+    expect(src, 'an invented z-index is back').not.toMatch(/zIndex/);
+  });
+
+  it('gives the close contract the same outcome the auto-fire timer has', () => {
+    // Escape/backdrop on a forced choice must not reach an ending that waiting
+    // could not. `phaseDelveEmergence` fires 'let' on timeout; this pins the
+    // modal to the same value so the two cannot drift apart silently.
+    const src = readCode(EMERGENCE);
+    const declared = /const CLOSE_RESOLVES_TO: EmergenceChoice = '(\w+)';/.exec(src);
+    expect(declared, 'CLOSE_RESOLVES_TO must be declared').not.toBeNull();
+    expect(declared![1]).toBe('let');
+    expect(readCode('engine/ruins/delveVariant.ts')).toMatch(/emergenceChoice: 'let'/);
+  });
+});
+
+// ── Law 17 — no raw-`title` hover explanations ─────────────────────
+
+describe('Law 17 — the emergence cards explain in place, not on hover', () => {
+  it('does not reinstate the retired title-attribute tooltip', () => {
+    expect(readCode(EMERGENCE)).not.toMatch(/title=\{reason/);
+  });
+});
+
 // ── Law 41 — no `transition: all`, anywhere ────────────────────────
 
 describe('Law 41 — transitions are property-scoped', () => {
@@ -214,6 +314,65 @@ describe('Law 45 — veil text tones meet WCAG AA against --veil-void', () => {
     const void_ = parseHex(tokenValue(css, 'veil-void'));
     const ratio = contrastRatio(composite(gold, Number(alpha![1]), void_), void_);
     expect(ratio, `--veil-gold-text measured ${ratio.toFixed(2)}:1`).toBeGreaterThanOrEqual(AA);
+  });
+
+  /**
+   * A `rgb(var(--<name>-rgb) / <alpha>)` tone, composited over `--veil-void`.
+   * The polarity colours are authored as channels precisely so that the alpha
+   * is chosen per call site, which means Law 45 has to be checked per alpha —
+   * the token alone cannot be pass or fail.
+   */
+  function polarityRatio(css: string, channelToken: string, alpha: number): number {
+    const void_ = parseHex(tokenValue(css, 'veil-void'));
+    const [r, g, b] = tokenValue(css, channelToken).split(/\s+/).map(Number) as
+      [number, number, number];
+    return contrastRatio(composite([r, g, b], alpha, void_), void_);
+  }
+
+  /**
+   * Every polarity alpha that colours *text* rather than an edge or a dot.
+   *
+   * Kept as an explicit list, and deliberately not derived by grepping the
+   * components: the point of the gate is that adding a new text site at a new
+   * alpha must be a conscious act with a measurement behind it. A derived list
+   * would silently absorb the next one.
+   */
+  /** `LOSS_TEXT` resolves from the token, so the gate moves if the token does. */
+  const LOSS_TEXT = Number(tokenValue(read(CSS), 'veil-loss-text-alpha'));
+
+  it.each([
+    ['forecast doomed',        'veil-loss-rgb', 1],
+    ['forecast perilous',      'veil-loss-rgb', 0.85],
+    ['forecast favorable',     'veil-gain-rgb', 0.8],
+    ['forecast fated',         'veil-gain-rgb', 1],
+    ['factor for',             'veil-gain-rgb', 0.75],
+    ['factor against',         'veil-loss-rgb', LOSS_TEXT],
+    ['blocked-card reason',    'veil-loss-rgb', LOSS_TEXT],
+    ['consequence chip gain',  'veil-gain-rgb', 0.65],
+    ['consequence chip loss',  'veil-loss-rgb', LOSS_TEXT],
+    ['replay outcome failure', 'veil-loss-rgb', LOSS_TEXT],
+    ['replay outcome success', 'veil-gain-rgb', 0.55],
+  ] as const)('%s clears AA on --veil-void', (_label, token, alpha) => {
+    const ratio = polarityRatio(read(CSS), token, alpha);
+    expect(ratio, `${_label} measured ${ratio.toFixed(2)}:1`).toBeGreaterThanOrEqual(AA);
+  });
+
+  it('routes every loss-red *text* site through the measured floor token', () => {
+    // Without this the table above is vacuous — it would assert that the alphas
+    // someone typed into a test clear AA, while the components shipped others.
+    // These four are the sites where loss red colours words; the edge-only
+    // `polarityColor` is deliberately absent and keeps its lighter alpha.
+    const T = String.raw`rgb\(var\(--veil-loss-rgb\) / var\(--veil-loss-text-alpha\)\)`;
+    const veil = readCode(VEIL);
+    const shell = readCode(SHELL);
+    expect(veil, 'replay outcome word').toMatch(new RegExp(`failure:\\s*'${T}'`));
+    expect(veil, 'consequence chip label').toMatch(
+      new RegExp(`tone === 'loss'\\) return '${T}'`),
+    );
+    expect(shell, 'factor sentence').toMatch(new RegExp(`against:\\s*'${T}'`));
+    expect(shell, 'blocked-card reason').toMatch(
+      /nudge-card-reason[\s\S]{0,240}--veil-loss-text-alpha/,
+    );
   });
 
   it('keeps --veil-text-atmosphere below the floor, so it cannot be mistaken for an AA tone', () => {

@@ -49,21 +49,38 @@ import type { EncounterStageNudgePhaseModel } from '../types';
 const GOLD = 'var(--veil-gold)';
 const TEXT_WARM = 'var(--veil-text-warm)';
 const TEXT_WHISPER = 'var(--veil-text-whisper)';
-const FONT_PROSE = "Georgia, 'Times New Roman', serif";
+const FONT_PROSE = 'var(--font-prose)';
 const FONT_DISPLAY = "'Palatino Linotype', 'Book Antiqua', Palatino, serif";
 
-/** Forecast tier → the colour the word carries. Tier classes, not new colours. */
+/**
+ * Forecast tier → the colour the word carries. Tier classes, not new colours.
+ *
+ * Law 30 (THR-1031): the hues are `--veil-loss-rgb` / `--veil-gain-rgb`, the
+ * same channels the veil composes with — this map and the veil's were the two
+ * independent declarations of the polarity pair, already disagreeing on alpha.
+ *
+ * `doomed` moved from a literal `#b91c1c`. This colour is applied to the
+ * forecast **word** below, so Law 45 binds it, and #b91c1c measured 3.05:1 on
+ * `--veil-void` — below the 4.5:1 floor. Full loss red is 7.14:1 and makes the
+ * ladder symmetric: perilous 0.85 → doomed 1.0 mirrors favorable 0.8 → fated
+ * 1.0, so severity still reads as intensity rather than as a different red.
+ */
 const FORECAST_TIER_COLORS: Record<string, string> = {
-  doomed: '#b91c1c',
-  perilous: 'rgba(248, 113, 113, 0.85)',
+  doomed: 'rgb(var(--veil-loss-rgb) / 1)',
+  perilous: 'rgb(var(--veil-loss-rgb) / 0.85)',
   uncertain: 'rgb(var(--veil-gold-rgb) / 0.85)',
-  favorable: 'rgba(134, 239, 172, 0.8)',
-  fated: 'rgba(134, 239, 172, 1)',
+  favorable: 'rgb(var(--veil-gain-rgb) / 0.8)',
+  fated: 'rgb(var(--veil-gain-rgb) / 1)',
 };
 
+/**
+ * Factor-sentence polarity. These colour whole sentences, so Law 45 binds both.
+ * `against` takes the measured loss-text floor — at 0.7, chosen to sit near the
+ * green's 0.75, it painted 3.95:1 against `--veil-void`.
+ */
 const FACTOR_POLARITY_COLORS: Record<string, string> = {
-  for: 'rgba(134, 239, 172, 0.75)',
-  against: 'rgba(248, 113, 113, 0.7)',
+  for: 'rgb(var(--veil-gain-rgb) / 0.75)',
+  against: 'rgb(var(--veil-loss-rgb) / var(--veil-loss-text-alpha))',
   neutral: TEXT_WARM,
 };
 
@@ -342,7 +359,7 @@ export function NudgeCard({
         {dimmed && card.blockedReason && (
           <span
             data-testid={`nudge-card-reason-${card.id}`}
-            style={{ fontSize: 'var(--text-xs)', color: 'rgba(248, 113, 113, 0.7)' }}
+            style={{ fontSize: 'var(--text-xs)', color: 'rgb(var(--veil-loss-rgb) / var(--veil-loss-text-alpha))' }}
           >
             {card.blockedReason}
           </span>

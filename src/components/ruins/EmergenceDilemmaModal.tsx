@@ -10,6 +10,7 @@
  */
 
 import React, { useMemo } from 'react';
+import { Modal } from '../shared/Modal';
 import type { GameState } from '../../types/gameState';
 import type { EmergenceChoice } from '../../engine/ruins/ruinTransformation';
 import {
@@ -22,26 +23,29 @@ interface Props {
   onResolve: (choice: EmergenceChoice) => void;
 }
 
-const OVERLAY: React.CSSProperties = {
-  position: 'fixed',
-  inset: 0,
-  background: 'rgba(8,6,4,0.78)',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  zIndex: 1200,
-  pointerEvents: 'auto',
-};
+/**
+ * Panel width. Was `min(720px, 92vw)` on the forked overlay; `Modal` takes the
+ * max width and applies its own `width: 90%` for the small-viewport half.
+ */
+const PANEL_MAX_WIDTH_PX = 720;
 
-const MODAL: React.CSSProperties = {
-  background: 'var(--bg-overlay, rgba(18,14,10,0.98))',
-  border: '1px solid var(--border-gold, #8b7355)',
-  borderRadius: '6px',
-  width: 'min(720px, 92vw)',
-  maxHeight: '85vh',
-  padding: '18px 20px 20px',
-  color: 'var(--text-primary, #e8dcc8)',
-  fontFamily: 'var(--font-body, sans-serif)',
+/**
+ * What Escape and a backdrop click resolve to (Laws 23, 48).
+ *
+ * This surface has no dismiss — it is a forced choice with a countdown — so
+ * `Modal`'s close contract had to be given a meaning rather than wired to a
+ * no-op. `let` is the right one and is not a judgement call: it is exactly what
+ * `phaseDelveEmergence` fires when `autoFiresTick` passes (`delveVariant.ts`,
+ * `emergenceChoice: 'let'`). So the keypress cannot reach an outcome that
+ * simply waiting would not, which is what keeps this clear of Law 48 — `let`
+ * is the decline path and spends nothing; the three options that *do* spend
+ * still require their own click.
+ */
+const CLOSE_RESOLVES_TO: EmergenceChoice = 'let';
+
+const BODY: React.CSSProperties = {
+  color: 'var(--text-primary)',
+  fontFamily: 'var(--font-body)',
   display: 'flex',
   flexDirection: 'column',
   gap: '14px',
@@ -175,43 +179,52 @@ export function EmergenceDilemmaModal({ gameState, onResolve }: Props) {
   }
 
   return (
-    <div style={OVERLAY} role="dialog" aria-modal="true" aria-label="Emergence Dilemma">
-      <div style={MODAL}>
-        <div style={HEADER}>
-          <span>Emergence Dilemma · {pending.consequenceRoll}</span>
-          <span style={TIMER}>Auto-fires in {ticksRemaining} ticks</span>
+    <Modal
+      open
+      onClose={() => onResolve(CLOSE_RESOLVES_TO)}
+      maxWidth={PANEL_MAX_WIDTH_PX}
+      aria-label="Emergence Dilemma"
+    >
+      <Modal.Body>
+        <div style={BODY}>
+          <div style={HEADER}>
+            <span>Emergence Dilemma · {pending.consequenceRoll}</span>
+            <span style={TIMER}>Auto-fires in {ticksRemaining} ticks</span>
+          </div>
+          <div style={{ fontFamily: 'var(--font-display, serif)', fontStyle: 'italic', fontSize: '13px', color: 'var(--text-primary, #e8dcc8)', lineHeight: 1.5 }}>
+            The delve has reached its last breath. What do you do with what remains?
+          </div>
+          <div style={GRID}>
+            {CHOICE_SPECS.map(spec => {
+              const enabled = isEnabled(spec.choice);
+              const reason = enabled ? '' : disabledReason(spec.choice);
+              const cardStyle: React.CSSProperties = {
+                ...CARD_BASE,
+                opacity: enabled ? 1 : 0.45,
+                cursor: enabled ? 'pointer' : 'not-allowed',
+                borderColor: enabled ? 'var(--border-subtle, rgba(255,255,255,0.12))' : 'rgba(255,255,255,0.06)',
+              };
+              return (
+                <button
+                  key={spec.choice}
+                  data-testid={`emergence-choice-${spec.choice}`}
+                  type="button"
+                  disabled={!enabled}
+                  onClick={() => enabled && onResolve(spec.choice)}
+                  style={cardStyle}
+                >
+                  <div style={CARD_TITLE}>{spec.label}</div>
+                  <div style={CARD_PROSE}>{spec.poet}</div>
+                  {/* Law 25 — disabled-with-reason: the card dims and says why,
+                      in place. This replaces a `title={reason}` hover tooltip,
+                      the pattern Law 17 retired; the text was always here. */}
+                  <div style={CARD_COST}>{enabled ? spec.costLabel : reason}</div>
+                </button>
+              );
+            })}
+          </div>
         </div>
-        <div style={{ fontFamily: 'var(--font-display, serif)', fontStyle: 'italic', fontSize: '13px', color: 'var(--text-primary, #e8dcc8)', lineHeight: 1.5 }}>
-          The delve has reached its last breath. What do you do with what remains?
-        </div>
-        <div style={GRID}>
-          {CHOICE_SPECS.map(spec => {
-            const enabled = isEnabled(spec.choice);
-            const reason = enabled ? '' : disabledReason(spec.choice);
-            const cardStyle: React.CSSProperties = {
-              ...CARD_BASE,
-              opacity: enabled ? 1 : 0.45,
-              cursor: enabled ? 'pointer' : 'not-allowed',
-              borderColor: enabled ? 'var(--border-subtle, rgba(255,255,255,0.12))' : 'rgba(255,255,255,0.06)',
-            };
-            return (
-              <button
-                key={spec.choice}
-                data-testid={`emergence-choice-${spec.choice}`}
-                type="button"
-                disabled={!enabled}
-                title={reason || undefined}
-                onClick={() => enabled && onResolve(spec.choice)}
-                style={cardStyle}
-              >
-                <div style={CARD_TITLE}>{spec.label}</div>
-                <div style={CARD_PROSE}>{spec.poet}</div>
-                <div style={CARD_COST}>{enabled ? spec.costLabel : reason}</div>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-    </div>
+      </Modal.Body>
+    </Modal>
   );
 }

@@ -38,6 +38,13 @@
     /* ── Typography ───────────────────────────────────────────── */
     --font-display: 'Cinzel', serif;
     --font-body: 'Alegreya Sans', 'Segoe UI', system-ui, sans-serif;
+    /* The ceremonial prose serif (Law 27, THR-1031). Declared here because the
+       interrupt family had it inline in four places — `EncounterVeil`, the
+       nudge shell, one stray `<p>` inside the veil, and `PremonitionModal` —
+       each spelling the same stack by hand. A font stack copied per component
+       is presentation logic living outside the shared layer, and it drifts the
+       way two golds did: the copies here already disagreed on quoting. */
+    --font-prose: Georgia, 'Times New Roman', serif;
 
     /* Type Scale — minimum 16px body, generous for readability */
     --text-xs: 1rem;        /* 16px — smallest readable size */
@@ -110,6 +117,72 @@
     --veil-text-whisper: #918a78;                 /* 5.7:1 on --veil-void */
     --veil-text-ghost: #887e74;                   /* 5.0:1 on --veil-void */
     --veil-text-atmosphere: rgba(160, 140, 130, 0.25); /* sub-floor: decoration only */
+
+    /* ── Polarity, in the veil's channel form (Law 30/31, THR-1031) ──────────
+       THR-1010 did exactly this for gold and left the green/red pair behind:
+       `EncounterVeil.tsx` and `NudgePhaseShell.tsx` each went on declaring
+       `rgba(134,239,172,…)` and `rgba(248,113,113,…)` independently, which is
+       the two-golds drift one colour-word over — and they had already drifted,
+       painting gain at 0.65 in one file and 0.75 in the other.
+
+       Channels rather than finished colours, because polarity here is a *ramp*
+       and the alpha carries meaning: the forecast ladder (perilous 0.85 →
+       doomed 1.0, favorable 0.8 → fated 1.0) and the factor lines (for 0.75 /
+       against 0.7) are distinctions, not drift. Flattening them to one finished
+       token would erase a reading rather than de-duplicate a value. One hue per
+       polarity, many sanctioned alphas — the `--veil-gold-rgb` pattern.
+
+       `--veil-loss-rgb` is `--negative`'s channels exactly. The gain green is
+       the veil's own lighter tone (#86efac) rather than `--positive` #4ade80,
+       kept deliberately: Law 30 sanctions the ceremonial set as a variant, both
+       clear AA comfortably, and changing it would be a visual edit this ticket
+       had no measurement to justify. `encounterVeilLaws.test.ts` locks the loss
+       channel to `--negative` so that half cannot drift. */
+    --veil-gain-rgb: 134 239 172;
+    --veil-loss-rgb: 248 113 113;   /* = --negative */
+    /* The floor alpha for loss red *carrying words* (Law 45). The two hues are
+       not interchangeable here: measured on `--veil-void`, gain clears AA from
+       0.55 (4.7:1) while loss does not clear until 0.8 (4.86:1) — 0.75 is
+       4.39:1, near enough to look fine and still under the floor. Four shipped
+       text sites sat at 0.6–0.7 (3.2–4.0:1) because they were authored to match
+       the green's alpha, which is the mistake this token exists to stop. Edges
+       and dots are unconstrained and keep their own lighter alphas. */
+    --veil-loss-text-alpha: 0.8;
+    --veil-mixed-rgb: 251 191 36;   /* = --warning */
+    --veil-neutral-rgb: 160 160 170;
+    --veil-coercive-rgb: 249 115 22;
+
+    /* ── Premonition — the two dream tones (Law 30/45, THR-1031) ─────────────
+       `PremonitionModal` built its whole surface from six inline hex values and
+       four inline rgba()s. Same treatment as the veil: a named variant set, not
+       a second design system, so the whisper/compulsion pair retunes in one
+       place. Channels, because each tone is used at more than one alpha.
+
+       Law 45 is the reason there are *two* text tones rather than one. The
+       shipped hexes were fine — 8.3:1 and 7.9:1 at full opacity — and the
+       defect was six Tailwind `opacity-40`/`-50`/`-70` utilities stacked on top
+       of them, dropping the agent name and the option footers to ~2.5:1. That
+       is invisible in the source (the colour reads as "the text token") and
+       only appears when the composed surface is measured, which is the same
+       shape THR-1010 found in the veil's gold.
+
+       0.75 is the dim tone because it is the first step that clears AA on the
+       *lighter* end of both gradients (5.3:1 whisper, 5.7:1 compulsion); 0.8 is
+       the header accent floor for the same reason (5.2:1 / 4.6:1). Below ~0.7
+       neither tone can carry text on these backgrounds at all.
+
+       Both backgrounds sit at or below `--bg-surface`, per Law 32. */
+    --premonition-whisper-rgb: 180 160 200;
+    --premonition-compulsion-rgb: 200 140 140;
+    --premonition-whisper-bg: linear-gradient(180deg, #1a1520 0%, #2a2035 100%);
+    --premonition-compulsion-bg: linear-gradient(180deg, #201518 0%, #302028 100%);
+    --premonition-whisper-text-rgb: 200 184 216;
+    --premonition-compulsion-text-rgb: 216 192 200;
+    /* Secondary tone — agent name, option footers, dismiss. Information, so AA. */
+    --premonition-text-dim-alpha: 0.75;
+    /* Header and rule accents. */
+    --premonition-accent-text-alpha: 0.8;
+    --premonition-accent-rule-alpha: 0.35;
 
     /* Borders — subtle warmth with gold threading */
     --border-subtle: #2a2520;
