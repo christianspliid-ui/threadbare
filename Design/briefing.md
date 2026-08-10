@@ -1,33 +1,31 @@
 # Briefing
-
-**Generated:** 2026-08-10 17:55 local (15:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-08-10 18:58 local (16:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**Sit down with the game once and play the five slice encounters — two rulings come out of the same sitting.** [THR-907](https://linear.app/threadbare/issue/THR-907): does the prose read clear, does the firing rhythm work, is the interface gamey enough, is deciding fun — *"needs another iteration"* is a valid answer on any of the four. [THR-974](https://linear.app/threadbare/issue/THR-974): play a hand through to its ending — is the change to the world **visible**, and does it feel like it **happened in the world** rather than being announced at you?
+**Play the five-encounter slice and give the four-part verdict** — [THR-907](https://linear.app/threadbare/issue/THR-907/slice-verdict-session-christian-rules-on-prose-firing-ui-and-game). Does the prose read clear, does the firing rhythm work, is the interface gamey enough, and is deciding actually fun. *"Needs another iteration"* is a valid answer on any of the four.
 
-- [The bargain at the crossroads](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.bargain_at_crossroads)
-- [Riders behind the caravan](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.riders_behind_caravan)
-- [Snow on the pass](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.snow_on_the_pass)
-- [The swindled family](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.swindled_family)
-- [The unsafe bridge](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge)
+Start here: [The bargain at the crossroads](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.bargain_at_crossroads) · [Riders behind the caravan](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.riders_behind_caravan) · [Snow on the pass](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.snow_on_the_pass) · [The swindled family](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.swindled_family) · [The unsafe bridge](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge)
 
-Add `&outcome=critical_failure` (or `success`, `failure`, `near_miss`, `success_at_cost`, `critical_success`) to any link to jump straight to that ending. Nothing below waits on you the way this does — and the [demo-ready call (THR-986)](https://linear.app/threadbare/issue/THR-986) sits behind this sitting plus thirteen of its own tickets.
+It is the oldest of your open rulings (idle since 08-06) and the one the most work sits behind — the consequence verdict and the demo-ready checkpoint both read as follow-ons to the same sitting. Both the orchestrator and the daily grooming lane named it independently this cycle.
 
 ## Also waiting (4)
 
-- While playing, notice whether the encounter ending pops up on its own now — **no reply needed if it works** (your 2026-08-06 report; both causes shipped and were verified against your repro).
-- [THR-998](https://linear.app/threadbare/issue/THR-998): action cards print a risk word the odds can't back — recommendation is to print something true instead (three options in user-actions.md).
-- [THR-962](https://linear.app/threadbare/issue/THR-962): route the encounter sound cues to the new screen — yes/no.
-- [THR-961](https://linear.app/threadbare/issue/THR-961): how those cues feel — needs your ears, not a screen.
+- [THR-974](https://linear.app/threadbare/issue/THR-974/consequence-verdict-session-christian-rules-on-world-graph-consequence) — same sitting, second ruling: is the world's change **visible**, and does it feel like it *happened* rather than being announced.
+- [THR-998](https://linear.app/threadbare/issue/THR-998) — action cards print a risk word that can't move for 85% of cards. Recommendation: **(b)** print something true instead.
+- [THR-962](https://linear.app/threadbare/issue/THR-962) / [THR-961](https://linear.app/threadbare/issue/THR-961) — two sound decisions; both need your ears, not a screen.
+- A Tenacious-style trait — parked option, no urgency. Safe default is "stays parked."
 
 ## Queue
 
-Backed up — **35 ready for dev, 0 in progress**; the hourly pickup lane takes the next item on its own at the top of each hour. 30 of the 35 are low-priority cleanup, one is a player-visible bug ([THR-1078](https://linear.app/threadbare/issue/THR-1078) — every slice encounter prints its own authoring note above the fiction), and **no new encounter content is queued**: content re-enters through the [Encounter Factory](https://linear.app/threadbare/issue/THR-1043), still in design. Standing offer unchanged — if you'd rather have hand-written encounters in the meantime, say the word and it becomes a ticket.
+Backed up — 36 ready, 0 in dev, none parked.
+
+- **Every one of the 36 is cleanup or process work.** No feature or content ticket is in the queue. The genuine feature work (Traits waves 2/3, card-grammar unification, the apotheosis.ascension redesign) is sitting in Todo, each gated on a design decision — so the fix is upstream supply, not another promotion. The orchestrator reached the same finding and deliberately held its promotion ceiling this run.
+- Only one item above Low priority: [THR-1083](https://linear.app/threadbare/issue/THR-1083) (High) — aftermath prose sits outside every prose detector, which is how "spent something" reached the deployed build.
+- Nothing stale beyond 7 days at the top of the queue; nothing parked in In Dev.
 
 ## Health
 
-All green. The live site serves the latest `main`; automated checks, all nine scheduled lanes and the branch reaper are on time. The lanes went quiet overnight again (roughly 21:30–06:15 last night) — declined standing per your 2026-08-08 call that overnight quiet is normal.
-
----
-*Standing asks: `Design/user-actions.md`. Regenerated hourly by `keep-work-flowing-cc`; staleness is visible from the timestamp above.*
+- **PR [#1114](https://github.com/christianspliid-ui/threadbare/pull/1114) is held on a reason that has expired.** Its hold says content migration is paused until the encounter-writing format locks — that format locked on 08-09 ([THR-883](https://linear.app/threadbare/issue/THR-883)). The PR is also conflicted on `Docs/project-status.md`, a file that stopped being tracked in THR-1016. Executor lane's to clear; no decision needed from you.
+- Scheduled lanes went quiet overnight again (~9.8 h, 08-09 22:31 → 08-10 08:17 local). Nightly-shaped, so declined per your 2026-08-08 ruling that overnight quiet is normal — noted for visibility only.
+- Everything else green: site is serving the latest commit on main, all checks running, both background jobs healthy, all 9 scheduled tasks on time, home tree current with `main`.
