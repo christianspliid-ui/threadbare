@@ -360,7 +360,9 @@ export const CONTRACTS: readonly Contract[] = [
     writeSites: ['src/engine/attachmentTierAdvancement.ts'],
     // Was `['src/engine/orchestrator.ts']` until THR-723 — a transcribed intention,
     // not a verified read. The orchestrator has never imported this module.
-    readSites: [],
+    // THR-996 supplied the real one: the `advance_artifact_tier` GraphOp, which
+    // `artifact.enchant` / `artifact.empower` fire on a successful step.
+    readSites: ['src/engine/graphOpExecutor.ts'],
     // Correction to the hand audit (THR-717 implementation, 2026-07-23): the canon
     // page badged this 🟠 PARTIAL on the assumption that advancement runs and merely
     // feeds the dead `modifiers` stat path. Tier 1 shows worse — the module's only
@@ -371,10 +373,14 @@ export const CONTRACTS: readonly Contract[] = [
     // THR-723 (2026-08-06) closed half of that: the resolver now scales the artifact's
     // `stat_contribution` effects — the live substrate `computeRawScore` reads — instead
     // of the dead edge `modifiers`, clamped to ITEM_STAT_BAND_LEGENDARY. So its *output*
-    // is no longer wasted. The row stays LEAKED because the remaining half is untouched:
-    // nothing calls it. Whether it should be wired at all is a design call, deferred to
-    // THR-996 rather than decided by an executor.
-    deferralTicket: 'THR-996',
+    // is no longer wasted.
+    //
+    // THR-996 (2026-08-10) closed the other half on Christian's verdict ("Turn the
+    // enchantment system on", 2026-08-06): `advance_artifact_tier` is the production
+    // caller, fired by `artifact.enchant` (Veil) and `artifact.empower` (Iron) on a
+    // successful step. Both ends of the contract are now live, so the row carries no
+    // deferral. The authored per-tier cost/difficulty ramp remains unexpressible in a
+    // static step — that is THR-1073, a tuning gap, not a broken contract.
   },
 
   // ── Attachments → inbound ─────────────────────────────────────────────────

@@ -16,6 +16,7 @@ import { getFortificationModifier } from './siegeResolution';
 import { FORTIFY_MULTIPLIER_BONUS, FORTIFY_MULTIPLIER_MAX } from '../types/battle';
 import type { AttachmentEffect } from '../types/effects';
 import { SPHERE_EFFECT_TABLE, isArtifactNode } from './ascendantPrimitives';
+import { advanceAttachmentTier } from './attachmentTierAdvancement';
 import { CURSE_QUINTESSENCE_DRAIN } from '../data/ascendant-expression-constants';
 import {
   deriveSourceTier,
@@ -222,6 +223,9 @@ function executeSingleOp(
 
       case 'nullify_artifact':
         return executeNullifyArtifact(graph, op, ctx);
+
+      case 'advance_artifact_tier':
+        return executeAdvanceArtifactTier(graph, op, ctx);
 
       case 'scry_sublocation':
         return executeScrySublocation(graph, op, ctx);
@@ -1011,6 +1015,41 @@ function executeNullifyArtifact(
   graph.updateNode(artifact.id, {
     properties: { effects: [], attunedSphere: undefined, cursed: false, curseConcealed: false },
   });
+  return { op, success: true };
+}
+
+/**
+ * Advance an artifact one attachment tier (THR-996) — the production caller
+ * `advanceAttachmentTier` never had. Enchant (magical) and Empower (martial) both
+ * route here; the resolver is shared because the mechanical move is identical and
+ * only the authored fiction differs.
+ *
+ * The resolver owns the substrate decision: it scales the artifact's
+ * `stat_contribution` effects — the live item→capability path `computeRawScore`
+ * reads (THR-718/THR-723) — clamped to `ITEM_STAT_BAND_LEGENDARY` so repeated
+ * bumps cannot become a back door around the authored power budget. This op only
+ * validates the target and translates the result into a GraphOpResult.
+ *
+ * Fail-soft, matching the artifact-trio siblings: a missing or non-artifact target
+ * is an error result (never a throw). An artifact already at `MAX_ATTACHMENT_TIER`
+ * is *also* an error result rather than a silent success — the essence has been
+ * spent by then, so a no-op that reported success would be indistinguishable from a
+ * real advance on every surface the player can see.
+ */
+function executeAdvanceArtifactTier(
+  graph: WorldGraph,
+  op: GraphOp,
+  ctx: GraphOpContext,
+): GraphOpResult {
+  const targetId = resolveRef(op.nodeId ?? op.target ?? '$target', ctx);
+  const artifact = graph.getNode(targetId);
+  if (!artifact) return { op, success: false, error: `advance_artifact_tier: artifact ${targetId} not found` };
+  if (!isArtifactNode(artifact)) return { op, success: false, error: `advance_artifact_tier: ${targetId} is not an artifact` };
+
+  const result = advanceAttachmentTier(graph, targetId);
+  if (!result.advanced) {
+    return { op, success: false, error: `advance_artifact_tier: ${result.reason ?? 'not_advanced'}` };
+  }
   return { op, success: true };
 }
 

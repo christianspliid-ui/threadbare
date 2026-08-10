@@ -1,10 +1,10 @@
 {
   "schemaVersion": 3,
   "totals": {
-    "total": 179,
+    "total": 180,
     "byCategory": {
       "action": 67,
-      "artifact": 4,
+      "artifact": 5,
       "company": 4,
       "divine": 20,
       "hex": 49,
@@ -15,7 +15,7 @@
       "iron": 12,
       "gold": 20,
       "shadow": 23,
-      "veil": 22,
+      "veil": 23,
       "heart": 29,
       "eye": 29,
       "stone": 10,
@@ -23,13 +23,13 @@
       "life": 1
     },
     "byBucket": {
-      "unlockable-generic": 176,
+      "unlockable-generic": 177,
       "generic": 3
     },
     "byEffectSource": {
-      "template-ops": 112,
+      "template-ops": 114,
       "control-spec": 17,
-      "engine-bridge": 44,
+      "engine-bridge": 43,
       "none": 2,
       "aftermath-only": 4
     },
@@ -1968,9 +1968,9 @@
       "effectSource": "template-ops"
     },
     {
-      "id": "artifact.enchant",
-      "name": "Enchant",
-      "spellName": "Rune Inscription",
+      "id": "artifact.empower",
+      "name": "Empower",
+      "spellName": "Forge Rite",
       "category": "artifact",
       "reach": "iron",
       "sphereAffinity": null,
@@ -1985,7 +1985,8 @@
       "hasControlSpec": false,
       "aftermathReactionCount": 0,
       "targetCategories": [
-        "artifact"
+        "artifact",
+        "artifact_legendary"
       ],
       "targetSubtypes": [],
       "requiresReach": null,
@@ -1993,9 +1994,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Traces runes of power upon an artifact's surface, binding divine intent into the object's physical form. The enchanted artifact becomes a vessel for ongoing magical effect that persists in the hands of whoever wields it. Poorly formed runes can destabilize the binding and render the artifact inert.",
-      "technicalEffect": "Engine bridge (attachment-tier system): advances the target artifact one magical tier via the ENCHANT_TEMPLATE_ID path, upgrading its tier band and effect strength. Handled outside step ops by the attachment-tier resolver.",
-      "effectSource": "engine-bridge"
+      "description": "Drives divine strength into an artifact's material grain — the temper of the steel, the heft of the haft, the set of the stone. The empowered artifact carries that weight for whoever bears it afterward. Force driven in too hard can split the very thing it was meant to strengthen.",
+      "technicalEffect": "Enchant's martial counterpart, reached through Iron rather than Veil: the same `advance_artifact_tier` step op and the same authored tier costs, so a war-god can grow a blade without borrowing rune-craft.",
+      "effectSource": "template-ops"
     },
     {
       "id": "artifact.curse",
@@ -2026,6 +2027,37 @@
       "bucketDeclared": false,
       "description": "Binds a curse of ill fortune and misfortune into the physical form of an artifact, ensuring the curse travels with whoever possesses it. The affliction activates on contact and spreads its effects to the bearer without their knowledge. Dispelling a well-crafted curse binding requires significant magical effort.",
       "technicalEffect": "Appends a concealed per-tick quintessence drain (CURSE_QUINTESSENCE_DRAIN, the inverse of the bestow regen boon) to the artifact's effects[] and sets cursed / curseConcealed. Consumed each tick by the effect walker for whoever holds it; the bearer is not told. Clamped at 0 quintessence, never negative.",
+      "effectSource": "template-ops"
+    },
+    {
+      "id": "artifact.enchant",
+      "name": "Enchant",
+      "spellName": "Rune Inscription",
+      "category": "artifact",
+      "reach": "veil",
+      "sphereAffinity": null,
+      "crudType": "update",
+      "scale": "local",
+      "rarityTier": 1,
+      "rarityName": "Mundane",
+      "intrinsicTier": "background",
+      "apCost": 1,
+      "essenceCost": 4,
+      "durationMode": "instant",
+      "hasControlSpec": false,
+      "aftermathReactionCount": 0,
+      "targetCategories": [
+        "artifact",
+        "artifact_legendary"
+      ],
+      "targetSubtypes": [],
+      "requiresReach": null,
+      "starter": false,
+      "beatGranted": false,
+      "bucket": "unlockable-generic",
+      "bucketDeclared": false,
+      "description": "Traces runes of power upon an artifact's surface, binding divine intent into the object's physical form. The enchanted artifact becomes a vessel for ongoing magical effect that persists in the hands of whoever wields it. Poorly formed runes can destabilize the binding and render the artifact inert.",
+      "technicalEffect": "On success, advances the target artifact one attachment tier (Mundane→Storied→Mythic→Legendary) via the `advance_artifact_tier` step op, scaling its `stat_contribution` effects by TIER_MODIFIER_SCALE_FACTOR — clamped to ITEM_STAT_BAND_LEGENDARY — so the item really is mightier on the bearer's sheet. No-ops on an artifact already at Legendary.",
       "effectSource": "template-ops"
     },
     {

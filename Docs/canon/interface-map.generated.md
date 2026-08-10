@@ -17,9 +17,9 @@ remediation ticket or the build fails.
 |---|---|
 | 🟢 LIVE | 45 |
 | 🟠 PARTIAL | 1 |
-| 🔴 LEAKED | 8 |
+| 🔴 LEAKED | 7 |
 | ⚫ UNWIRED | 0 |
-| 🔵 UNVERIFIED-OK | 7 |
+| 🔵 UNVERIFIED-OK | 8 |
 | **Total** | **61** |
 
 ## Contracts by producing subsystem
@@ -63,7 +63,7 @@ remediation ticket or the build fails.
 | `attachment-grants-trait-while-held` | Items grant traits while held, gating encounter eligibility (treasure-map, ruin_seeker). | node-prop: `grantsTraitWhileHeld` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `attachment-on-use-triggers` | Items break, deplete, or curse their bearer on use — authored consequence for carrying power. | node-prop: `action_trigger`, `checkAndFireActionTriggers`, `applyActionTriggerPayloads` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `attachment-slot-caps-suppress` | Slot caps suppress overflow attachments via a single suppression seam. | edge-prop: `attachmentSlotResolver` | Effects & Conditions | 🟢 LIVE | — |
-| `attachment-tier-advancement` | Tier advancement strengthens an item over time. | function: `advanceAttachmentTier`, `canAdvanceTier` | Attachments, Items & Possessions | 🔴 LEAKED | THR-996 |
+| `attachment-tier-advancement` | Tier advancement strengthens an item over time. | function: `advanceAttachmentTier`, `canAdvanceTier` | Attachments, Items & Possessions | 🔵 UNVERIFIED-OK | — |
 | `attachment-trait-grant-effects` | Items grant abilities to their bearer (e.g. cavalry_charge). | node-prop: `trait_grant`, `collectGrantedTraits` | Encounters & Dilemmas | 🟢 LIVE | — |
 
 ### Attention, Chronicle & Narrative
@@ -241,10 +241,10 @@ remediation ticket or the build fails.
 - **Intent:** Items raise Domain Capability tiers — a legendary blade makes its bearer mightier on the Prowess tab and in encounter eligibility.
 - **Producer → Consumer:** Attachments, Items & Possessions → Personality & Emergent Traits
 - **UL terms:** *Domain Capability*, *Attachment*
-- **Production hits:** 35 total — 4 write, 2 read, 29 unclassified
+- **Production hits:** 38 total — 4 write, 2 read, 32 unclassified
 - **Write sites:** `src/data/anomaly-reward-catalog.ts`, `src/data/artifact-templates.ts`, `src/data/reward-attachment-catalog.ts`, `src/data/starter-attachments.ts`
 - **Read sites:** `src/engine/domainCapability.ts`, `src/engine/effects/effectQueries.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/Codex/codexRegistry.ts`, `src/components/Game/AgentDetailPanel.tsx`, `src/data/attachment-tier-content.ts`, `src/data/choice-set-catalog.ts` +24 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/Codex/codexRegistry.ts`, `src/components/Game/AgentDetailPanel.tsx`, `src/data/action-technical-effects.ts`, `src/data/attachment-tier-content.ts` +27 more
 - **Verdict:** Verified 2026-07-24: THR-718 finished the effects[] migration: a `stat_contribution` primitive (effects.ts) is summed by `collectStatContributions` (effectQueries.ts) and added inside `computeRawScore`'s possesses/bonded_to artifact walk (domainCapability.ts). 9 catalog entries across all bands carry real contributions (artifact-templates ×3 legendary, starter ×4, anomaly ×2) — both-side symbol hits: `stat_contribution` on write (catalogs) + read (effectQueries), `collectStatContributions` on read (domainCapability + effectQueries). Legacy `domainContributions` node-prop read preserved for traits/resources. Unit + hook + content-band tests green.
 
 ### `attachment-edge-modifiers` — 🔴 LEAKED
@@ -319,15 +319,16 @@ remediation ticket or the build fails.
 - **Read sites:** `src/engine/conditionOverflow.ts`, `src/engine/phaseSlotCaps.ts`
 - **Verdict:** Verified 2026-07-23: effectWalker is the single suppression seam. Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified)
 
-### `attachment-tier-advancement` — 🔴 LEAKED
+### `attachment-tier-advancement` — 🔵 UNVERIFIED-OK
 
 - **Intent:** Tier advancement strengthens an item over time.
 - **Producer → Consumer:** Attachments, Items & Possessions → Attachments, Items & Possessions
-- **Module:** `src/engine/attachmentTierAdvancement.ts` — **no production importers**
-- **Production hits:** 1 total — 1 write, 0 read, 0 unclassified
+- **Module:** `src/engine/attachmentTierAdvancement.ts`
+- **Production hits:** 3 total — 1 write, 1 read, 1 unclassified
 - **Write sites:** `src/engine/attachmentTierAdvancement.ts`
-- **Read sites:** —
-- **Verdict:** Tier 1: `src/engine/attachmentTierAdvancement.ts` has zero production importers — the module is an orphan.
+- **Read sites:** `src/engine/graphOpExecutor.ts`
+- **Other hits:** `src/types/graphOp.ts`
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `attachment-trait-grant-effects` — 🟢 LIVE
 
@@ -685,10 +686,10 @@ remediation ticket or the build fails.
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 189 total — 1 write, 1 read, 187 unclassified
+- **Production hits:** 188 total — 1 write, 1 read, 186 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/ActionCard.tsx` +182 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/ActionCard.tsx` +181 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `reunion-reads-the-edges-not-the-roster` — 🟢 LIVE
