@@ -17,6 +17,7 @@ import {
   BADGE_GLYPH_ACTIVE,
   BADGE_GLYPH_AFTERMATH,
 } from '../encounterBadgeModel';
+import { shouldAutoOpenEncounterNotification } from '../encounterNotificationRuntime';
 
 function makeNotification(overrides: Partial<EncounterNotification> = {}): EncounterNotification {
   return {
@@ -49,6 +50,43 @@ describe('isBadgeWorthy', () => {
     expect(isBadgeWorthy(makeNotification({ viewed: true }))).toBe(false);
     expect(isBadgeWorthy(makeNotification({ kind: 'aftermath', viewed: true }))).toBe(false);
     expect(isBadgeWorthy(makeNotification({ kind: 'aftermath', viewed: false }))).toBe(true);
+  });
+});
+
+/**
+ * THR-943 — the badge's *role* is tier-dependent, and the tier is carried by
+ * `autoResolveTick`. This crosses into `encounterNotificationRuntime` on purpose:
+ * badge-worthiness and auto-open eligibility are two predicates over the same
+ * record, and the reopen affordance only exists where they disagree. Held as one
+ * assertion so a future edit cannot silently make the badge redundant at both
+ * tiers — which would kill THR-664's route into a live beat with every unit test
+ * still green.
+ */
+describe('badge role by attention tier (THR-943)', () => {
+  it('auto_resolve: the stage never auto-opens, so the badge is the only route in', () => {
+    const notif = makeNotification({ autoResolveTick: 45 });
+    expect(shouldAutoOpenEncounterNotification(notif)).toBe(false);
+    expect(isBadgeWorthy(notif)).toBe(true);
+  });
+
+  it('auto_resolve: an overdue tick neither opens the stage nor retires the badge', () => {
+    // Nothing consumes `autoResolveTick` — measured live at tick 113, three
+    // notifications sat 32-37 ticks past it, still pending (THR-1068).
+    const overdue = makeNotification({ autoResolveTick: 45, createdTick: 30 });
+    expect(shouldAutoOpenEncounterNotification(overdue)).toBe(false);
+    expect(isBadgeWorthy(overdue)).toBe(true);
+  });
+
+  it('pause: the stage auto-opens, and disregard resolves the record that badges it', () => {
+    const pending = makeNotification({ autoResolveTick: null });
+    expect(shouldAutoOpenEncounterNotification(pending)).toBe(true);
+    expect(isBadgeWorthy(pending)).toBe(true);
+
+    // The veil's only close route marks the notification resolved, which is what
+    // makes the reopen transition unreachable at this tier.
+    const afterDisregard = { ...pending, resolved: true };
+    expect(shouldAutoOpenEncounterNotification(afterDisregard)).toBe(false);
+    expect(isBadgeWorthy(afterDisregard)).toBe(false);
   });
 });
 
