@@ -16,6 +16,12 @@ interface DebugModalOpeners {
  *   agent    → AgentProfileModal for the first retinue agent (The First in seeded games)
  *   location → LocationProfileModal for the first location node
  *   faction  → FactionSheet for the first faction actor node
+ *
+ * No `army` target: armies are war-gated (a seed-42 medium world raises its first
+ * host around tick 45), so nothing exists at mount, and a wait-for-one variant
+ * tried under THR-1023 never opened the sheet even after driving 70 ticks. Until
+ * that is understood, verify `ArmySheet` by mounting it directly — see
+ * `__tests__/ArmySheet.test.tsx` and THR-1023's browser evidence.
  */
 export function useDebugOpenModal(
   gameStateRef: RefObject<GameState>,

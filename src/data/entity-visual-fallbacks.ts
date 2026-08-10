@@ -26,6 +26,7 @@ export type EntityVisualKind =
   | 'encounter'
   | 'faction'
   | 'artifact'
+  | 'army'
   | 'npc-role'
   | 'unknown';
 
@@ -106,6 +107,7 @@ const CATEGORY_GLYPHS: Partial<Record<EntityVisualKind, string>> = {
   encounter: '✦',   // ✦ four-pointed star — a moment
   faction: '⚜',     // ⚜ fleur-de-lis — a banner / sigil
   artifact: '◆',    // ◆ filled diamond — a made thing
+  army: '⚔',        // ⚔ crossed swords — a force in the field (THR-1023)
   unknown: '◇',     // ◇ white diamond
 };
 
