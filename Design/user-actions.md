@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-10 18:58 local (16:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077/designuser-actionsmd-has-grown-into-a-run-by-run-diary-christians). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-10 19:58 local (17:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077/designuser-actionsmd-has-grown-into-a-run-by-run-diary-christians). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -33,8 +33,8 @@ Open option, explicitly not urgent. Safe default is "stays parked."
 ## Resolved this period
 
 - 2026-08-10: [THR-1064](https://linear.app/threadbare/issue/THR-1064) closed not-a-defect — you closed it 116 seconds after the re-ask.
-- 2026-08-10: "drop and re-author" ruling applied to the whole paused content shelf (THR-848/855/856/858/859/861/863/864).
-- 2026-08-09: the encounter-writing format locked ([THR-883](https://linear.app/threadbare/issue/THR-883)) — the eleven paused content tickets unblocked.
+- 2026-08-10: "drop and re-author" ruling applied to the whole paused content shelf (THR-848/855/856/858/859/861/863/864), and the WS5 batch tickets are now canceled on the board.
+- 2026-08-09: the encounter-writing format locked ([THR-883](https://linear.app/threadbare/issue/THR-883)).
 - 2026-08-09: the process-ticket rule confirmed binding forward ([THR-871](https://linear.app/threadbare/issue/THR-871)).
 - 2026-08-08: "overnight quiet is normal" — the lane-silence probe's nightly gaps are declined standing.
 
