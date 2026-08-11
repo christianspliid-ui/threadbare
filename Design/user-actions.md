@@ -1,23 +1,21 @@
 # User Action Required
 
-**Last updated:** 2026-08-11 22:55 local (20:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077/designuser-actionsmd-has-grown-into-a-run-by-run-diary-christians). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-11 23:55 local (21:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077/designuser-actionsmd-has-grown-into-a-run-by-run-diary-christians). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
 ### 1. Did you switch the two work lanes off?
 
-At 21:57 local, nine scheduled jobs were enabled. Two are now off:
+Two of the nine scheduled jobs are off, and have now missed every slot since:
 
-- **`tb-opus-pickup`** — the executor lane. Last ran 22:01, shipped THR-1071, and is now disabled.
-- **`tb-orchestrator`** — decides what gets promoted next. Last ran 21:26; its 22:25 slot did not fire.
+- **`tb-opus-pickup`** — the executor lane. Last ran 22:01, shipped THR-1071, skipped 23:01.
+- **`tb-orchestrator`** — decides what gets promoted next. Last ran 21:26, skipped 22:25 and 23:25.
 
-No pause marker records it (the marker on disk is an expired historical one from 2026-08-03). **While the executor lane is off, nothing on the board moves** — including work your other rulings would create.
+No pause marker records it (the marker on disk is an expired historical one from 2026-08-03). **While the executor lane is off, nothing on the board moves** — including work your other rulings would create. The queue has sat unchanged at 21 ready / 0 in flight for two hours.
 
 **If you turned them off: just say so** and a marker gets dropped, which also closes the overnight question below. It would be a coherent follow-through on your 2026-08-10 direction to stop the lanes filing cleanup work — switching off the lane that drains it is the same instinct. **If you didn't:** say that, and it gets investigated as a real stoppage.
 
-**Same question also covers the overnight silence.** No lane wrote anything 2026-08-10 21:57 → 2026-08-11 18:32 local (~20.6h). Most of that is the machine asleep, but it was demonstrably up 07:26–12:40 local with nothing firing — the usage-limit pattern rather than a fault. The probe verdict, verbatim:
-
-> "The scheduled lanes went silent for 20.6h (2026-08-10T19:57:52.000Z → 2026-08-11T16:32:43.000Z) and have since resumed, with no pause marker covering that window. If that was a deliberate pause, nothing recorded it; if it was not, this is the outage no lane reported at the time."
+**Same question also covers the overnight silence.** No lane wrote anything 2026-08-10 21:57 → 2026-08-11 18:32 local (~20.6h). Most of that is the machine asleep, but it was demonstrably up 07:26–12:40 local with nothing firing — the usage-limit pattern rather than a fault.
 
 ### 2. The play sitting — two rulings over the same five encounters
 
@@ -27,7 +25,7 @@ No pause marker records it (the marker on disk is an expired historical one from
 
 - [The bargain at the crossroads](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.bargain_at_crossroads) · [Riders behind the caravan](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.riders_behind_caravan) · [Snow on the pass](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.snow_on_the_pass) · [The swindled family](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.swindled_family) · [The unsafe bridge](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge)
 
-Every encounter in the game now runs the format you locked ([THR-1086](https://linear.app/threadbare/issue/THR-1086), 2026-08-11). Add `&outcome=critical_failure` (or `success`, `failure`, `near_miss`, `success_at_cost`, `critical_success`) to any link to reach that ending directly; where nobody has written that ending yet you get the normal one. **This is the only ask that refills the shelf with real work** — the board is now 21 cleanup items and zero feature or content work.
+Every encounter in the game now runs the format you locked ([THR-1086](https://linear.app/threadbare/issue/THR-1086), 2026-08-11). Add `&outcome=critical_failure` (or `success`, `failure`, `near_miss`, `success_at_cost`, `critical_success`) to any link to reach that ending directly; where nobody has written that ending yet you get the normal one. **This is the only ask that refills the shelf with real work** — the board is 21 cleanup items and zero feature or content work.
 
 ### 3. Action cards print a risk that isn't real ([THR-998](https://linear.app/threadbare/issue/THR-998))
 
