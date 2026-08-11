@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-11 23:55 local (21:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077/designuser-actionsmd-has-grown-into-a-run-by-run-diary-christians). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-12 00:55 local (2026-08-11 22:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077/designuser-actionsmd-has-grown-into-a-run-by-run-diary-christians). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -8,10 +8,10 @@
 
 Two of the nine scheduled jobs are off, and have now missed every slot since:
 
-- **`tb-opus-pickup`** — the executor lane. Last ran 22:01, shipped THR-1071, skipped 23:01.
-- **`tb-orchestrator`** — decides what gets promoted next. Last ran 21:26, skipped 22:25 and 23:25.
+- **`tb-opus-pickup`** — the executor lane. Last ran 22:01, shipped THR-1071, has since skipped 23:01 and 00:01.
+- **`tb-orchestrator`** — decides what gets promoted next. Last ran 21:26, has since skipped 22:25, 23:25 and 00:25.
 
-No pause marker records it (the marker on disk is an expired historical one from 2026-08-03). **While the executor lane is off, nothing on the board moves** — including work your other rulings would create. The queue has sat unchanged at 21 ready / 0 in flight for two hours.
+No pause marker records it (the marker on disk is an expired historical one from 2026-08-03). **While the executor lane is off, nothing on the board moves** — including work your other rulings would create. The queue has sat unchanged at 21 ready / 0 in flight for three hours.
 
 **If you turned them off: just say so** and a marker gets dropped, which also closes the overnight question below. It would be a coherent follow-through on your 2026-08-10 direction to stop the lanes filing cleanup work — switching off the lane that drains it is the same instinct. **If you didn't:** say that, and it gets investigated as a real stoppage.
 
@@ -49,7 +49,7 @@ Open option, explicitly not urgent. Safe default is "stays parked."
 - 2026-08-11: **the cleanup shelf pruned 36 → 21** — ~16 sub-bar process tickets canceled and folded into [THR-1089](https://linear.app/threadbare/issue/THR-1089) and [THR-1090](https://linear.app/threadbare/issue/THR-1090). Your 2026-08-10 materiality bar applied retroactively.
 - 2026-08-11: [THR-1086](https://linear.app/threadbare/issue/THR-1086) shipped — the Apotheosis converted off authored choices. **Every encounter in the game now runs the locked format**; the WS5 conversion program is complete.
 - 2026-08-11: [THR-866](https://linear.app/threadbare/issue/THR-866) closed — the design look at the apex Ascension encounter, which produced THR-1086 above.
-- 2026-08-11: **Linear signed back in** — the connector outage that locked every lane out of the board cleared within the hour.
+- 2026-08-11: **Linear signed back in** — the connector outage that locked every lane out of the board cleared within the hour, and has stayed closed since.
 - 2026-08-10: [THR-1083](https://linear.app/threadbare/issue/THR-1083) shipped — the last screen an encounter shows you was outside every prose check; it is now inside one.
 - 2026-08-10: [THR-1064](https://linear.app/threadbare/issue/THR-1064) closed not-a-defect. The investigation behind it is what found the mercy bug above.
 - 2026-08-10: "drop and re-author" ruling applied to the whole paused content shelf (THR-848/855/856/858/859/861/863/864).
