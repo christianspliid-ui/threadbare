@@ -1,36 +1,37 @@
 # Briefing
-**Generated:** 2026-08-12 00:55 local (2026-08-11 22:55 UTC) · keep-work-flowing-cc
+
+**Generated:** 2026-08-12 01:55 local (2026-08-11 23:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**Did you switch the two work lanes off?** Still the only thing I need from you, and one word either way closes it.
+**Did you switch the two work lanes off?** [`tb-opus-pickup`](https://linear.app/threadbare) (the executor — picks up and ships tickets) and `tb-orchestrator` (decides what gets promoted next) are both **disabled**, not merely quiet. Between them they have now skipped nine consecutive slots: pickup last ran 22:01 and has missed 23:01 / 00:01 / 01:01; the orchestrator last ran 21:26 and has missed 22:25 / 23:25 / 00:25 / 01:25.
 
-**`tb-opus-pickup`** (the lane that builds things) and **`tb-orchestrator`** (the lane that decides what gets built next) are both switched off. Since the last brief the orchestrator has missed 00:25 as well — three slots now — and the build lane has missed 00:01, its second. Nothing on the board has moved in three hours.
+**Nothing on the board moves while the executor is off** — the queue has sat unchanged at 21 ready / 0 in flight for four hours, including work your other rulings below would create.
 
-- **If you turned them off** — say so, it gets written down, and the overnight-silence question closes with it. You told the lanes on 2026-08-10 to stop filing cleanup work; switching off the lane that drains it is a coherent thing to have done on purpose.
-- **If you didn't** — the machine stopped on its own, and it gets investigated as a real stoppage rather than sitting here being asked about every hour.
+- **If you turned them off:** just say so, a marker gets dropped, and this stops being asked. It would be a coherent follow-through on your 2026-08-10 direction to stop the lanes filing cleanup work.
+- **If you didn't:** say that, and it gets investigated as a real stoppage.
 
-This stays above everything else because **while the build lane is off, nothing on the board moves** — including whatever your verdicts below turn into. The same question also covers the ~20.6h silence of 2026-08-10 21:57 → 2026-08-11 18:32 local: same two candidate answers, you paused it or you hit plan limits.
+Same answer also settles the overnight gap — no lane wrote anything 2026-08-10 21:57 → 2026-08-11 18:32 local (~20.6 h), with no pause marker covering it.
 
-## Also waiting (6)
+## Also waiting (7)
 
-- **[THR-907](https://linear.app/threadbare/issue/THR-907) / [THR-974](https://linear.app/threadbare/issue/THR-974) — the play sitting, two verdicts over the same five encounters.** The highest-value *creative* thing you can do, and the only thing that refills the shelf with real work. [Bargain at the crossroads](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.bargain_at_crossroads) · [Riders behind the caravan](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.riders_behind_caravan) · [Snow on the pass](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.snow_on_the_pass) · [The swindled family](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.swindled_family) · [The unsafe bridge](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge)
-- **[THR-998](https://linear.app/threadbare/issue/THR-998) — action cards print a risk that isn't real.** Three options; the recommendation is (b), stop printing a danger word where the danger can't vary.
-- **[THR-962](https://linear.app/threadbare/issue/THR-962) / [THR-961](https://linear.app/threadbare/issue/THR-961) — two small sound decisions.** Need your ears, not a screen.
-- **Does the encounter ending appear on its own now?** **No reply needed if it works.**
-- **A Tenacious-style trait** — parked option, no urgency. Safe default is "stays parked."
-
-Detail on all of these: [user-actions.md](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md).
+- **[THR-907](https://linear.app/threadbare/issue/THR-907)** — the four-part play verdict on five encounters: prose, rhythm, interface, and whether deciding is fun. Links in [user-actions.md](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md).
+- **[THR-974](https://linear.app/threadbare/issue/THR-974)** — play one hand to its ending: is the change to the world *visible*, and does it feel like it happened rather than being announced. Fully unblocked; the orchestrator has re-confirmed it on each of its last five runs.
+- **[THR-998](https://linear.app/threadbare/issue/THR-998)** — action cards print "steady / uncertain / perilous" where 85% of the time the number behind the word can't move the odds. Recommendation: stop printing a risk word where the risk is flat.
+- **[THR-962](https://linear.app/threadbare/issue/THR-962)** — where the encounter sound cues should be routed. Needs your ears.
+- **[THR-961](https://linear.app/threadbare/issue/THR-961)** — how those cues should feel. Needs your ears.
+- **Encounter endings** — you reported on 2026-08-06 that the aftermath didn't pop on its own. Both halves shipped; **no reply needed if it works now.**
+- **Tenacious-style trait** — parked option, no urgency. Safe default is "stays parked."
 
 ## Queue
 
-**21 ready, 0 in flight, nothing parked** — unchanged for three hours, which is exactly what a switched-off build lane looks like.
+**Backed up — 21 ready, 0 in flight.** Every one of the 21 is cleanup: infrastructure, deferrals, prose/UI tidying. **Zero feature or content work on the shelf.** THR-907 / THR-974 above are the only asks that refill it with real work.
 
-**All 21 are cleanup; none is feature or content work.** Last night's hard prune (36 → 21, your materiality bar applied retroactively) fixed the *shape* of the shelf, not its emptiness — [THR-1089](https://linear.app/threadbare/issue/THR-1089) and [THR-1090](https://linear.app/threadbare/issue/THR-1090) now carry what sixteen sub-bar tickets used to. The shelf refills from your verdicts above, not from the board. Only [THR-991](https://linear.app/threadbare/issue/THR-991) is past 7 days untouched (9), and it blocks nothing.
+- Stale: [THR-991](https://linear.app/threadbare/issue/THR-991) — untouched 9 days.
+- No parked In-Dev issues (nothing is In Dev at all).
 
 ## Health
 
-- **The two switched-off lanes are the only non-green signal** — the lead ask above. All seven still-enabled timed jobs are within schedule.
-- Deploy, GitHub Actions and the scheduled workflows are green; the live site is serving the newest commit (`eabbc173`). Linear read the board normally this run — the connector outage earlier today has stayed closed.
-- The home tree is clean and current with `main`. The worktree reaper ran at 00:40.
-- Two abandoned worktrees still flagged for disposition. Standing housekeeping, no action.
+- **Home tree's `node_modules` is damaged** — `.bin` has no esbuild. The reaper has flagged it on every run since 00:40 and will not auto-install. Repair is `npm install` in the home tree; an executor session's job, not yours.
+- **Two stale worktrees need disposition** — `hopeful-shaw-3150f4` (23 d) and `jovial-mcnulty-37a4c9` (24 d), both unmerged. The reaper will not delete unmerged work on its own.
+- Deploy, CI checks, scheduled workflows and task heartbeats: all green. One open PR ([#1114](https://github.com/christianspliid-ui/threadbare/pull/1114)) is held on purpose.
