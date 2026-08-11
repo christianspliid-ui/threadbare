@@ -128,7 +128,7 @@ Defaults are left to the implementation pass on purpose: they are tuning, they a
 
 ## Tracing
 
-No new trace type. The conversion emits what the shipped machinery already emits — the branch decision (pole, profile lean, card lean, `decidedBy: 'conviction' | 'coin'`), the step resolutions, and `aspect_attained` on a grant. A new trace here would duplicate an existing one, which is worse than none.
+N/A — no new trace type. The conversion emits what the shipped machinery already emits: the branch decision (pole, profile lean, card lean, `decidedBy: 'conviction' | 'coin'`), the step resolutions, and `aspect_attained` on a grant. A new trace here would duplicate an existing one, which is worse than none.
 
 ## Fail-soft table
 
@@ -152,9 +152,22 @@ No new trace type. The conversion emits what the shipped machinery already emits
 - [x] This plan does not contradict any Vision premise. It closes the last contradiction of one: the north star's *"intervention shifted the odds, not the outcome"* was false of this template by construction, and is true of it after.
 - [x] Player-as-god framing strengthens — the god acts on the scene's physics and never on the mortal's ending.
 
+## Interface impact
+
+The conversion consumes existing contracts and retires one. No contract is added, so `scripts/interface-contracts.ts` needs no new row — but the retirement does need its asserting tests repointed, which is the whole reason this section is not "none".
+
+| Contract | Action | Note |
+|---|---|---|
+| `ActionStepBranch.decidedBy` → `branchDecision` resolver | **preserve** | New consumer, unchanged contract. Three templates already read it |
+| Nudge hand resolution (`nudges.ts`, `useNudgeHand`, `nudgeCommit`) | **preserve** | Consumed as-is; no new field |
+| `AftermathVariant.byOutcome` (THR-969) | **preserve** | New consumer of an existing optional override path |
+| `grant_aspect` → `grantAspect` (`encounterAftermath.ts:3271` → `aspects.ts:80`) | **preserve** | Same effect, band-gated at the authoring layer rather than the engine |
+| `authoredChoices` on this template | **retire (per-template)** | The layer stays for the templates still using it — this is the last one, so the executor confirms whether any test asserts the *dead side* of this template's fork and deletes or repoints it. A green test on a retired contract is the pathology the interface map exists to kill |
+
 ## Rulebook impact
 
 - [x] **This plan changes a rule of play** — how the Aspect apex is reached is a rule of play. `Docs/canon/rulebook.md` (and the quick-reference, which names the apex) is updated in the implementation PR, not as a follow-up. `Docs/canon/encounters.md` gains a line noting the last `authoredChoices` template is converted.
+- [ ] The rulebook edit lands in the **implementation** PR (THR-1086), not this one — this document decides the rule change; it does not yet enact it, and a rulebook that describes an unshipped mechanic is worse than one that lags by a ticket.
 
 ## NFP-compliance table
 
@@ -183,7 +196,7 @@ No new trace type. The conversion emits what the shipped machinery already emits
 
 **Mutex with:** none — `src/data/encounters/apotheosis-ascension.ts` is scoped to this work alone, and the decision deliberately edits no shared type
 
-**Files to touch (implementation pass):**
+**Files to touch:** *(the implementation pass — THR-1086. This document itself touches only `Docs/`.)*
 - Edit: `src/data/encounters/apotheosis-ascension.ts` (the conversion)
 - Edit: `src/data/nudge-constants.ts` (three difficulty constants)
 - Edit: `Docs/canon/rulebook.md`, `Docs/canon/rulebook-quick-reference.md`, `Docs/canon/encounters.md`
@@ -194,4 +207,22 @@ No new trace type. The conversion emits what the shipped machinery already emits
 - **Verify the fork is reachable both ways before authoring the prose.** A `decidedBy` pole fork on a population whose `sacrifice_survival` all sits at one end is a branch that exists and never fires — the THR-844 shape wearing new clothes. The balanced test avatar (`?testavatar`) seeds neutral value axes precisely so THR-894 forks stay reachable in both directions; use it, and confirm with a real draw rather than by reading the schema.
 - **Both endings are provable from a URL without replaying for luck.** `?view=game&seeded&size=medium&spawn=encounter.apotheosis.ascension&outcome=<band>` pins the resolved band, and `await window.__DEBUG.getOutcomePinVerdict()` says whether you are actually looking at it — `unauthored_band` means nobody wrote that band and the base ending is on screen, which is exactly the failure this conversion's four new endings could ship with.
 - **Read `resolveAftermathVariant` before deciding where the grant sits** (`src/types/unifiedAction.ts:1426`). The override composes onto the base variant field by field; whether `changes` or `reactions` carries an irreversible write changes what a player can decline.
-- The re-offer loop is the one thing worth watching in playtest: a god who leans Survivor every time still faces a fresh decision each cooldown, and a strongly-Martyr mortal will eventually say yes. That is the fiction working as intended, but if it reads as attrition rather than inevitability, the fix is a lean-magnitude floor or a `requiresFavor` gate on the Martyr variant — a tuning change, not a redesign.
+- The re-offer loop is the one thing worth watching in playtest (see also the Forked-audit note below): a god who leans Survivor every time still faces a fresh decision each cooldown, and a strongly-Martyr mortal will eventually say yes. That is the fiction working as intended, but if it reads as attrition rather than inevitability, the fix is a lean-magnitude floor or a `requiresFavor` gate on the Martyr variant — a tuning change, not a redesign.
+
+## Forked-audit verdicts
+
+**Run inline, not forked — stated so the heading is not read as more assurance than it carries.** The design-audit-pipeline spawns three independent auditors; this was a single-pass self-audit against the same three rubrics, per design governance's "draft → audit → revise → summarize happen in a single internal pass, before the user sees anything." A scheduled execution run does not spawn subagents unless asked. What follows are that pass's verdicts.
+
+### NFP audit
+
+PASS — see the compliance table above. The one row worth restating: **NFP #1 is satisfied by naming the three difficulties, not by picking their values.** Defaults are deliberately deferred to the implementation pass, because a number chosen in a document from no playtest is a number that will be wrong and will be cited as decided.
+
+### Three-pillar audit
+
+PASS. Content is present and substantive. Engine and UI are `N/A` **with the substrate cited per capability** rather than asserted — every mechanism is named with its production reader (`branchDecision.ts`, `nudges.ts`, `byOutcome` resolution at `unifiedAction.ts:1426`, `encounterAftermath.ts:3271`), which is the check that distinguishes a real N/A from an unwritten pillar. The UI N/A additionally answers the ticket's own explicit "flag if so" instruction rather than passing over it in silence.
+
+### Vision audit
+
+PASS. The north star's *"intervention shifted the odds, not the outcome"* was **false of this template by construction** — the god pressed a button at `difficulty: 0` and received an ending — and is true of it after. No Vision premise is contradicted and none needs editing, which is the difference between this and THR-868, whose conversion knowingly retired the taste-profile's prose quality bar and carried that edit in scope.
+
+**One finding the audit raises and the design deliberately accepts:** an aspect *can* be granted against the player's lean, when a strongly-Martyr mortal outweighs a Survivor-leaning hand. That is THR-894's contract working as written — the mortal's choice is theirs to keep — and a god who spent the game making a Martyr does not get to be surprised by one. It is nonetheless the single place a reviewer should push back, because `aspect_of` is permanent where a soul value is not, so it is recorded here rather than buried: the kill criterion is a playtest reading of *attrition* rather than *inevitability*, and the fallback is a lean-magnitude floor or a `requiresFavor` gate — tuning, not redesign.
