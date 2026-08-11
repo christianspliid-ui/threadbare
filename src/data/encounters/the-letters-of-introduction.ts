@@ -197,7 +197,7 @@ const FORMAL_CHANNEL_AFTERMATH = {
       id: 'formal_letters_secured',
       kind: 'item' as const,
       title: 'Letters of Introduction',
-      detail: 'Three folded sheets, three wax seals. Show them once and doors open. The content_grant fires: Patron\'s Backing is active.',
+      detail: 'Three folded sheets, three wax seals. Show them once and doors open. Patron\'s Backing, now — {cast:patron}\'s name answering for the bearer at each tier the seals record.',
       polarity: 'gain' as const,
     },
     {
