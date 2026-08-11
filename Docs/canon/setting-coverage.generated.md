@@ -14,9 +14,9 @@ document fails a build. A thin cell is a scene not yet written.
 | | count |
 |---|---:|
 | templates in the pool | 683 |
-| drawable at ≥1 location subtype | 448 |
+| drawable at ≥1 location subtype | 449 |
 | drawable but at no *authorable* subtype | 22 |
-| declaring a setting envelope | 8 |
+| declaring a setting envelope | 9 |
 
 The third row counts templates placed only at worldgen overlay subtypes (wonders,
 lairs, anomalies) that no setting class claims — see the scope note on
@@ -31,13 +31,13 @@ be dealt?", not "how many templates exist".
 
 | setting | iron | gold | shadow | veil | heart | eye | stone | star | **total** |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| `rural` | 27 | 18 | 10 | 4 | 17 | 13 | 13 | 6 | **108** |
-| `urban` | 49 | 49 | 43 | 17 | 39 | 48 | 24 | 23 | **292** |
+| `rural` | 27 | 18 | 10 | 4 | 17 | 13 | 13 | 7 | **109** |
+| `urban` | 49 | 49 | 43 | 17 | 39 | 48 | 24 | 24 | **293** |
 | `stronghold` | 24 | 6 | 8 | 4 | 12 | 16 | 7 | 5 | **82** |
-| `sacred` | 8 | 9 | 3 | 17 | 11 | 9 | 6 | 22 | **85** |
+| `sacred` | 8 | 9 | 3 | 17 | 11 | 9 | 6 | 23 | **86** |
 | `arcane` | 6 | 5 | 5 | 20 | 7 | 28 | 5 | 11 | **87** |
 | `ruin` | 15 | 9 | 9 | 11 | 12 | 27 | 13 | 8 | **104** |
-| `wayside` | 26 | 15 | 10 | 6 | 15 | 29 | 12 | 11 | **124** |
+| `wayside` | 26 | 15 | 10 | 6 | 15 | 29 | 12 | 12 | **125** |
 | `battlefield` | 10 | 4 | 4 | 3 | 7 | 6 | 8 | 6 | **48** |
 
 ## Thin cells
@@ -58,6 +58,7 @@ more, else the first). That is a proxy for authorial grouping, not a curated tax
 |---|---:|---:|---|
 | `encounter` | 7 | 85 | push 15, rider 0, sphere 60, trait 10, free 0 |
 | `encounter.slice` | 6 | 40 | push 8, rider 3, sphere 29, trait 0, free 0 |
+| `encounter.apotheosis` | 1 | 7 | push 1, rider 1, sphere 5, trait 0, free 0 |
 
 **Hand monotony (advisory)** — one card kind dominates:
 

@@ -40,9 +40,24 @@ in data).
 - **Schema:** `StepNudge` (incl. `costs`, `grants`, `fictionBySetting`, `requiresGroup`/`requiresFavor`) / `ActionStep.nudges` / `TraitVariant` / template-level `settings` + `openings` (`src/types/unifiedAction.ts`); hand resolution in `src/engine/encounters/nudges.ts`, dispatch in `src/engine/encounters/nudgeDispatch.ts`, envelopes in `src/data/settingClasses.ts`.
 - **Program plan:** [2026-07-26-nudge-model-encounter-system.md](../plans/2026-07-26-nudge-model-encounter-system.md) (THR-772) · WS0 substrate [2026-07-26-nudge-model-ws0-engine-substrate.md](../plans/2026-07-26-nudge-model-ws0-engine-substrate.md) · WS1/WS2 [2026-07-27-nudge-encounter-experience-ws1-ws2.md](../plans/2026-07-27-nudge-encounter-experience-ws1-ws2.md) · frameworks [2026-07-30-encounter-authoring-frameworks.md](../plans/2026-07-30-encounter-authoring-frameworks.md) (THR-884/THR-885, both shipped 2026-07-30).
 
-**Migration state.** `authoredChoices` still *renders* — the stage branches on data
-presence, so the rollout is per-template and reversible, with no flag day. But no new
-encounter authors it. Conversion of the existing 28 branching encounters is WS5.
+**Migration state — WS5 is complete (THR-1086, 2026-08-11).** No shipped encounter
+authors `authoredChoices` any more. The last one was `encounter.apotheosis.ascension`,
+the Influence capstone, converted under the THR-866 design decision:
+[2026-08-11-thr-866-apotheosis-nudge-conversion.md](../plans/2026-08-11-thr-866-apotheosis-nudge-conversion.md).
+
+The **layer** still renders — the stage branches on data presence, so the rollout stayed
+per-template and reversible with no flag day, and that property is worth keeping. What
+changed is that nothing exercises it. Two consequences for an author:
+
+- Do not author `authoredChoices`. A fork the *player* picks is the rejected design
+  (see § Rejected, below); a fork the **mortal** picks is `ActionStepBranch.decidedBy`.
+- The apotheosis is the reference conversion for a two-pole fork whose branches carry
+  an irreversible world-write. Three things it settles, each the non-obvious half:
+  `variants` key exactly `'positive'` / `'negative'`; `aftermathConfig.branchOnStep`
+  names the **deciding** step, not the fork's own index (THR-979); and a permanent grant
+  rides the winning step's `successMetadata.effects` (THR-783) rather than an aftermath
+  reaction — a reaction is a click, and `applyAftermathOutcomeBand` replaces `reactions`
+  wholesale, so a band that authored its own would drop the grant by omission.
 
 **Terminology.** A **rider** (`no_crit_fail`, `floor_at_cost`) is a mechanical remap of
 the resolved band. A **band fragment** (`bandProse[outcome]`) is prose appended when a

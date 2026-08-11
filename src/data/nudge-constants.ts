@@ -316,3 +316,50 @@ export const ROUTE_DECISION_TIE_EPSILON = 0.02;
  * rather than shipping a fork nobody can reason about.
  */
 export const MAX_BRANCH_ROUTES = 6;
+
+// ─── The Apotheosis (THR-1086) ───────────────────────────────────────
+//
+// `encounter.apotheosis.ascension` ran both its steps at `difficulty: 0` for as
+// long as the player picked the ending: the file's own comment said "the choice
+// is the point, not a roll". Once the mortal makes that choice (THR-894 pole
+// mode), the roll is free to carry what the button was carrying — and what it
+// carries is the branch the original director verdict named and the first
+// implementation could not afford: whether the frame *holds*.
+//
+// Three numbers, one per question the encounter actually asks. They read as
+// three different difficulty words (`fair`, `steep`, `gentle`) on the surface,
+// which is the whole point of separating them — see `DIFFICULTY_WORD_BANDS`.
+//
+// `NUDGE_OFF_REACH_MAX_DIFFICULTY` (0.45) does not bind here. It governs
+// `OPEN_DRAW_ATTENTION_TIER` content — ambient encounters a mortal draws by
+// standing somewhere. This is a `story_beat` seeded onto one hand-picked mortal
+// who has held tier-4 devotion for `ASPECT_ELIGIBILITY_TICKS`, so the audience is
+// author-chosen and a `steep` step is authorable against it.
+
+/**
+ * Step 0 — can the god hold the doorway open long enough for the mortal to answer.
+ *
+ * `fair`. The god is not fighting anything here; it is keeping a thin place thin
+ * while a worn soul finds its own answer. A stumble costs the clean ending
+ * (`computeFinalActionOutcome` folds any failed step into `success_at_cost`) and
+ * never the decision itself — the pole is recorded before the action resolves.
+ */
+export const APOTHEOSIS_THRESHOLD_DIFFICULTY = 0.35;
+
+/**
+ * Martyr variant — does the mortal frame hold what is poured into it.
+ *
+ * `steep`, and the highest of the three on purpose: this is the encounter's real
+ * risk, and the one the pre-conversion template had no way to express. A failure
+ * here is the **unmade** ending — the aspect is not granted, because the grant
+ * rides `successMetadata` on this step and a failed step fires `failureMetadata`.
+ */
+export const APOTHEOSIS_VESSEL_DIFFICULTY = 0.50;
+
+/**
+ * Survivor variant — does the doorway close gently, or is the withdrawal felt.
+ *
+ * `gentle`. Letting go is the easier act, and the band still decides whether the
+ * mortal is left whole or left aching — a low difficulty is not a free pass.
+ */
+export const APOTHEOSIS_WITHDRAWAL_DIFFICULTY = 0.25;
