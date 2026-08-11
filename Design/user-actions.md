@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-10 21:56 local (19:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077/designuser-actionsmd-has-grown-into-a-run-by-run-diary-christians). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-11 18:33 local (16:33 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077/designuser-actionsmd-has-grown-into-a-run-by-run-diary-christians). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -14,19 +14,31 @@
 
 Add `&outcome=critical_failure` (or `success`, `failure`, `near_miss`, `success_at_cost`, `critical_success`) to any link to reach that ending directly; where nobody has written that ending yet you get the normal one. The [demo-ready checkpoint (THR-986)](https://linear.app/threadbare/issue/THR-986) rides on this same sitting, but is still blocked on thirteen of its own tickets either way.
 
-### 2. While you play: does the encounter ending appear on its own now?
-
-You reported on 2026-08-06 that it didn't — you had to click the badge on the agent's thread. Both halves of that cause shipped and were verified against your repro. **No reply needed if it works.** If it doesn't, say so and it gets a fresh ticket — a recurrence now would be a different bug.
-
-### 3. Action cards print a risk that isn't real ([THR-998](https://linear.app/threadbare/issue/THR-998))
+### 2. Action cards print a risk that isn't real ([THR-998](https://linear.app/threadbare/issue/THR-998))
 
 Cards read "a steady / uncertain / perilous working", but for 85% of castable cards the number behind the word cannot move the odds at all. **(a)** make the word track the odds the cast will actually roll; **(b)** stop printing a risk word where the odds are flat and print something true instead — scale or cost; **(c)** lower the floors so authored danger bites again (also changes how mortals resolve everything). **Recommendation: (b)** — if the danger doesn't vary, a danger word is the wrong thing to print.
 
-### 4. Two small sound decisions ([THR-962](https://linear.app/threadbare/issue/THR-962), [THR-961](https://linear.app/threadbare/issue/THR-961))
+### 3. Two small sound decisions ([THR-962](https://linear.app/threadbare/issue/THR-962), [THR-961](https://linear.app/threadbare/issue/THR-961))
 
 Routing the encounter sound cues to the new screen, and how those cues feel. Both need your ears, not a screen.
 
-### 5. Parked option, no urgency: a Tenacious-style trait
+### 4. Was the overnight automation pause deliberate?
+
+No scheduled Claude Code lane wrote anything between 2026-08-10 21:57 and 2026-08-11 18:29 local (~20.5h). Everything except the orchestrator has resumed on its own. Most of the gap is the machine being asleep, but it was demonstrably up 07:26–12:40 local with still no lane firing — which matches the usage-limit pattern rather than a fault.
+
+**If you paused it (or hit plan limits): no action needed beyond saying so** — a pause marker gets dropped and the probe stops flagging it. If you didn't, say that and it gets investigated as a real stoppage. The two probe verdicts, verbatim:
+
+> "No scheduled Claude Code lane has written to origin/main or origin/ops since 2026-08-10T19:57:52.000Z — 20.5h of fleet-wide silence, past the 6h threshold, and no pause marker is set. Either the lanes are broken, or this is a deliberate pause that was never declared."
+
+> "tb-orchestrator has not run since 2026-08-10T19:27:00.020Z — 21+ hourly slots behind, while tb-opus-pickup kept firing. The lane is stalled, not idle."
+
+(The second one's "while tb-opus-pickup kept firing" is a known artefact — that witness lane didn't fire through the gap either; its clock just reset on wake.)
+
+### 5. While you play: does the encounter ending appear on its own now?
+
+You reported on 2026-08-06 that it didn't — you had to click the badge on the agent's thread. Both halves of that cause shipped and were verified against your repro. **No reply needed if it works.** If it doesn't, say so and it gets a fresh ticket — a recurrence now would be a different bug.
+
+### 6. Parked option, no urgency: a Tenacious-style trait
 
 Open option, explicitly not urgent. Safe default is "stays parked."
 

@@ -1,36 +1,36 @@
 # Briefing
-**Generated:** 2026-08-10 21:56 local (19:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-08-11 18:33 local (16:33 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**Play the five-encounter slice and give the verdict — [THR-907](https://linear.app/threadbare/issue/THR-907/slice-verdict-session-christian-rules-on-prose-firing-ui-and-game).** Does the prose read clear, does the firing rhythm work, is the interface gamey enough, and is deciding actually fun. *"Needs another iteration"* is a valid answer on any of the four.
+**Play the five-encounter slice and give the verdict.** Two rulings, one sitting, same five encounters.
 
-New this run: the second ruling in the same sitting — [THR-974, the consequence verdict](https://linear.app/threadbare/issue/THR-974/consequence-verdict-session-christian-rules-on-world-graph-consequence) (does a resolved encounter's change to the world look like it *happened*, or like it was announced at you) — is now **confirmed fully unblocked**. It had been reported as still-blocked for several runs; both its blockers actually cleared on 08-02 and 08-08. Same five encounters, same sitting, so you can take both in one go.
+- [**THR-907**](https://linear.app/threadbare/issue/THR-907) — does the prose read clear, does the firing rhythm work, is the interface gamey enough, is deciding actually fun. *"Needs another iteration"* is a fine answer on any of the four.
+- [**THR-974**](https://linear.app/threadbare/issue/THR-974) — does the world-change look like it *happened*, or like it was announced at you.
 
-- [The bargain at the crossroads](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.bargain_at_crossroads) · [Riders behind the caravan](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.riders_behind_caravan) · [Snow on the pass](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.snow_on_the_pass) · [The swindled family](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.swindled_family) · [The unsafe bridge](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge)
+Start here: [**The unsafe bridge**](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge) · the other four and the ending-picker trick are in [user-actions.md](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md).
 
-Add `&outcome=critical_failure` (or `success`, `failure`, `near_miss`, `success_at_cost`, `critical_success`) to any link to reach that ending directly.
+Why this and not the backlog: the board's last known state was 35 items deep with **zero** feature or content work in it — every one a Deferral or process cleanup. No agent pickup changes that. Your verdict is the supply the pipeline is short of.
 
-**Why this one and not the queue:** the board is 36 items deep and every single one is cleanup — no feature or content work anywhere in it. Nothing an agent can pick up changes that. Your verdict on this slice is the upstream supply the pipeline is short of.
+## Also waiting (5)
 
-## Also waiting (4)
-
-- **While you play:** does the encounter's ending appear on its own now? You reported on 08-06 that it didn't. Both fixes shipped — **no reply needed if it works**.
-- [THR-998](https://linear.app/threadbare/issue/THR-998) — action cards print a risk word that can't move the odds for 85% of cards; three options on the table, recommendation is **(b) print something true instead**.
-- [THR-962](https://linear.app/threadbare/issue/THR-962) / [THR-961](https://linear.app/threadbare/issue/THR-961) — two sound decisions; needs your ears, not a screen.
-- A Tenacious-style trait — parked option, no urgency, safe default is "stays parked."
+- [**THR-998**](https://linear.app/threadbare/issue/THR-998) — action cards print a risk word that can't move the odds for 85% of castable cards. Recommendation: print something true instead (scale or cost).
+- [**THR-962**](https://linear.app/threadbare/issue/THR-962) / [**THR-961**](https://linear.app/threadbare/issue/THR-961) — two sound decisions; needs your ears, not a screen.
+- **Was last night's automation pause deliberate?** ~20.5h with no lane running. If it was usage limits, a pause marker stops the probe asking. Detail below.
+- **Does the encounter ending appear on its own now?** Your 2026-08-06 repro was fixed and verified — no reply needed if it works.
+- **Parked, no urgency:** the Tenacious-style trait. Safe default is "stays parked."
 
 ## Queue
 
-**Backed up — 36 Ready for Dev, 0 In Dev.** All 36 are Deferral / Infrastructure / Improvement cleanup; 33 are Low priority, 3 Medium ([THR-1058](https://linear.app/threadbare/issue/THR-1058), [THR-1060](https://linear.app/threadbare/issue/THR-1060), [THR-1056](https://linear.app/threadbare/issue/THR-1056)), zero High or Urgent, zero feature or content work.
+⚠️ **Stale — Linear was unreachable this run** (the connector isn't authorised in this session). Figures below are from the [orchestrator's 2026-08-10 ~21:30 local run](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-08-10o.md), ~21h old.
 
-- This is the starved-shelf condition your 08-10 process-work throttle was written for — the lanes have stopped filing process tickets, so the pile is now draining rather than growing, but it can only drain into more cleanup until new work enters upstream.
-- No parked In-Dev issues. Nothing stale past 7 days at the top of the queue.
-- *— from tb-orchestrator (run o, 19:30Z):* "every item left in Ready for Dev is a Deferral or an Infrastructure/Improvement ticket — zero feature/content work… The fix is upstream supply (a design session, or Christian playing the slice), not another promotion from this lane."
-- *— from daily-backlog-grooming (08-10):* "Three verdict sessions are queued on you and nothing downstream moves without them… **Recommendation:** take THR-907 first — it is the oldest and the other two read as follow-ons to it."
+- Last known: **35 Ready for Dev** — backed up (threshold 15). 9 non-Deferral items, all process/infrastructure.
+- Headline finding, unchanged for several runs: **no feature or content work anywhere in the ready queue.** Every genuine candidate in Todo needs a design decision or your verdict first.
+- One held PR: [#1114](https://github.com/christianspliid-ui/threadbare/pull/1114) — paused on purpose behind the locked encounter format. Correctly parked, no action.
 
 ## Health
 
-- **All green on the machinery.** Live site is serving the latest commit on `main` (`f976bdc5`); automated checks, scheduled background jobs and all 9 scheduled lanes are running on time. Home tree is on `main`, current, clean. Autosync and the worktree reaper both ran within the hour.
-- Scheduled lanes were quiet overnight (9.8h, 08-09 22:31 → 08-10 08:17 local). Declined per your 2026-08-08 ruling that overnight quiet is normal — noted for visibility only.
-- Two stale worktrees (22 and 23 days, unmerged branches) are flagged by the reaper as needing disposition. An executor-session job, not yours.
+- **~20.5h fleet-wide lane silence** (2026-08-10 21:57 → 2026-08-11 18:29 local). Resolved on its own: this run, the pickup lane and backlog grooming all fired together at 18:29. The host slept overnight and again midday, but there was a ~5h window (07:26–12:40 local) with the machine demonstrably up and no lane firing — that part is unexplained, hence the ask above.
+- **tb-orchestrator is 21 hourly slots behind** — the only lane that hasn't re-fired. Next due 19:26 local; next brief confirms whether it does. (The heartbeat probe's "while tb-opus-pickup kept firing" is a wake-boundary artefact — that witness didn't fire through the gap either.)
+- **Git worktree reaper** last ran 12:40 local, ~6h ago; its gap tracks the same host sleep. Two worktrees flagged for disposition (23 days stale, unmerged) — executor's job, not yours.
+- Deploy green (live site serving `f976bdc5`), CI green, both scheduled GitHub jobs healthy.
