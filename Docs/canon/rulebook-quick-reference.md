@@ -43,7 +43,8 @@ Reaches and Spheres are **orthogonal**. The same Reach at different Sphere align
 
 - **Influence Essence** — per-sphere pools. Regenerates from worshippers / places of power / portfolio depth. Spent on actions, sustained on Control.
 - **Control slots** — sustained-effect cap, scales with Domain Capability tier [DESIGN — no cap in code; nothing gates how many you hold (THR-936)].
-- **Influence Tiers** — depth of a thread (0–4 in code; five narrative names — Unaware → Curious → Recognized → Devoted → Enthralled — plus 'Aspect' as a separate apex milestone).
+- **Influence Tiers** — depth of a thread (0–4 in code; five narrative names — Unaware → Curious → Recognized → Devoted → Enthralled — plus 'Aspect' as a separate apex milestone). **The apex is not bought and not chosen by you**: the Apotheosis asks the mortal *sacrifice vs survival*, you lean with cards, and the roll decides whether the frame holds — failing it is the "unmade" ending, not a retry (THR-1086).
+- **Forks are decided by the mortal, never by you** — `decidedBy` reads their standing on the fork's value axis plus the lean of the cards you committed, and taking a fork drifts them toward that pole. A god with no cards in play still gets a decision; only a genuine tie falls to a coin.
 - **Court positions** — `the_first`, `retinue`, `watched`, `dormant`.
 - **Stealth** — detection profile against two audiences: mortals (whose disbelief turns to faith) and rival gods (who scan for divine signatures).
 

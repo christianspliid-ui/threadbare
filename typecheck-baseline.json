@@ -1,5 +1,5 @@
 {
-  "total": 3450,
+  "total": 3447,
   "command": "npx tsc -b --force --pretty false",
   "perFile": {
     "scripts/lint-encounter-content.ts": 2,
@@ -206,7 +206,6 @@
     "src/data/encounters/__tests__/road-ambush.test.ts": 10,
     "src/data/encounters/__tests__/soul-ferryman.test.ts": 8,
     "src/data/encounters/__tests__/wandering-healer-shrine-access.test.ts": 8,
-    "src/data/encounters/apotheosis-ascension.ts": 3,
     "src/data/encounters/flawed-steel.ts": 2,
     "src/data/encounters/pilgrims-offering.ts": 1,
     "src/data/encounters/rival-shrine-betrayal.ts": 2,
