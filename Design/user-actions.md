@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-11 21:05 local (19:05 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077/designuser-actionsmd-has-grown-into-a-run-by-run-diary-christians). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-11 21:57 local (19:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077/designuser-actionsmd-has-grown-into-a-run-by-run-diary-christians). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -8,21 +8,22 @@
 
 **Session A — the four-part verdict** ([THR-907](https://linear.app/threadbare/issue/THR-907)): does the prose read clear, does the firing rhythm work, is the interface gamey enough, and is deciding actually fun. *"Needs another iteration"* is a valid answer on any of the four.
 
-**Session B — the consequence verdict** ([THR-974](https://linear.app/threadbare/issue/THR-974)): play a hand to its ending and say whether the change to the world is **visible**, and whether it feels like it **happened in the world** rather than being announced at you. Both gating tickets shipped; the orchestrator has re-confirmed it fully unblocked on each of its last three runs.
+**Session B — the consequence verdict** ([THR-974](https://linear.app/threadbare/issue/THR-974)): play a hand to its ending and say whether the change to the world is **visible**, and whether it feels like it **happened in the world** rather than being announced at you. Both gating tickets shipped; the orchestrator has re-confirmed it fully unblocked on each of its last four runs.
 
 - [The bargain at the crossroads](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.bargain_at_crossroads) · [Riders behind the caravan](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.riders_behind_caravan) · [Snow on the pass](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.snow_on_the_pass) · [The swindled family](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.swindled_family) · [The unsafe bridge](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge)
 
-Add `&outcome=critical_failure` (or `success`, `failure`, `near_miss`, `success_at_cost`, `critical_success`) to any link to reach that ending directly; where nobody has written that ending yet you get the normal one. The [demo-ready checkpoint (THR-986)](https://linear.app/threadbare/issue/THR-986) rides on this same sitting, but is still blocked on five of its own tickets either way.
+As of 2026-08-11 every encounter in the game runs the format you locked — the last authored-choices template converted this hour ([THR-1086](https://linear.app/threadbare/issue/THR-1086)). Add `&outcome=critical_failure` (or `success`, `failure`, `near_miss`, `success_at_cost`, `critical_success`) to any link to reach that ending directly; where nobody has written that ending yet you get the normal one. The [demo-ready checkpoint (THR-986)](https://linear.app/threadbare/issue/THR-986) rides on this same sitting, but is still blocked on five of its own tickets either way.
 
 ### 2. Mercy currently makes people crueller ([THR-1071](https://linear.app/threadbare/issue/THR-1071))
 
 In 37 of the 40 converted dilemmas, the choice that is merciful *by its own text* writes a shift **toward** ruthlessness. Kneeling in the dirt to hold a cup to a dying boy's lips moves the character toward Conqueror. It is live on every converted template, it is High priority, and it reads correctly from either code path alone — which is why it shipped.
 
-Your own note is why it sits in Todo rather than the dev queue: the remedy has to be picked before anyone rewrites. Three parts to the call:
+**It moved into the dev queue at 21:10 today, so the shape of this ask changed.** An executor can now claim it, and for the unambiguous half it will simply pick the remedy and record it. Two candidate remedies:
 
 - **Flip the 37 authored shift signs** so the merciful choice writes the merciful direction. Clean fix for the meaning; but the stone set currently reads right *by accident* (two inversions cancelling), so flipping breaks stone.
 - **Re-bind the pole letters** in the test blocks so the two paths stop disagreeing with each other. Touches no prose and no values, but leaves the mercy-reads-as-ruthlessness problem alone.
-- **Both, in a stated order** — probably what's wanted — plus whether the stone set is exempted or its value pair gets renamed instead.
+
+Both are probably wanted, in that order. **The part that is actually yours is the tail:** whether the stone set is exempted from the flip, or whether its value pair gets renamed instead. That is game vocabulary, not a bug fix. If you say nothing, an executor will choose and record one — which is a legitimate outcome, just not your call.
 
 ### 3. Action cards print a risk that isn't real ([THR-998](https://linear.app/threadbare/issue/THR-998))
 
@@ -50,7 +51,8 @@ Open option, explicitly not urgent. Safe default is "stays parked."
 
 ## Resolved this period
 
-- 2026-08-11: [THR-866](https://linear.app/threadbare/issue/THR-866) closed — the design look at the apex Ascension encounter, which produced [THR-1086](https://linear.app/threadbare/issue/THR-1086), the last encounter still on the old authored-choices format.
+- 2026-08-11: [THR-1086](https://linear.app/threadbare/issue/THR-1086) shipped — the Apotheosis converted off authored choices. **Every encounter in the game now runs the locked format**; the WS5 conversion program is complete.
+- 2026-08-11: [THR-866](https://linear.app/threadbare/issue/THR-866) closed — the design look at the apex Ascension encounter, which produced THR-1086 above.
 - 2026-08-11: **Linear signed back in** — the connector outage that locked every lane out of the board cleared within the hour.
 - 2026-08-11: the ~20.6h lane silence ended and **tb-orchestrator re-fired** after 21 missed slots — all 9 scheduled tasks back within 2 slots. Only the "was it deliberate?" question remains open.
 - 2026-08-10: [THR-1083](https://linear.app/threadbare/issue/THR-1083) shipped — the last screen an encounter shows you was outside every prose check; it is now inside one.

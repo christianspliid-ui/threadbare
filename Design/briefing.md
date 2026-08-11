@@ -1,9 +1,9 @@
 # Briefing
-**Generated:** 2026-08-11 21:05 local (19:05 UTC) · keep-work-flowing-cc
+**Generated:** 2026-08-11 21:57 local (19:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**Play the five encounters and give the two verdicts.** Unchanged from last hour and still the highest-value thing you can do: nothing else on the board refills the shelf, and a promotion cannot substitute for a ruling.
+**Play the five encounters and give the two verdicts.** Unchanged, still the highest-value thing you can do — and as of ten minutes ago it is a verdict on a *finished* thing: the last encounter still using the old authored-choices format converted this hour, so every encounter in the game now runs the format you locked on 2026-08-09.
 
 - [The bargain at the crossroads](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.bargain_at_crossroads) · [Riders behind the caravan](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.riders_behind_caravan) · [Snow on the pass](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.snow_on_the_pass) · [The swindled family](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.swindled_family) · [The unsafe bridge](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge)
 
@@ -15,7 +15,7 @@
 
 ## Also waiting (6)
 
-- **[THR-1071](https://linear.app/threadbare/issue/THR-1071) — mercy currently makes people crueller. New on this list.** In 37 of 40 converted dilemmas the merciful choice pushes the character *toward* ruthlessness — the sign is backwards. It is High priority and sitting still because your own note says the remedy has to be chosen before anyone rewrites: flip the signs, re-bind the test poles, or both in a stated order — and whether the stone set is exempted. Detail in [user-actions.md](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md#2-mercy-currently-makes-people-crueller-thr-1071).
+- **[THR-1071](https://linear.app/threadbare/issue/THR-1071) — mercy currently makes people crueller, and it entered the dev queue this hour.** In 37 of 40 converted dilemmas the merciful choice pushes the character *toward* ruthlessness. It moved from Todo into the dev queue at 21:10, which changes the shape of this ask: if you don't rule, an executor will pick a remedy itself and record it — that is the standing rule for unambiguous bug fixes. The part that is genuinely yours is the tail: whether the stone set is exempted, or its value pair gets renamed instead. Detail in [user-actions.md](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md#2-mercy-currently-makes-people-crueller-thr-1071).
 - **[THR-998](https://linear.app/threadbare/issue/THR-998) — action cards print a risk that isn't real.** Three options; the recommendation is (b), stop printing a danger word where the danger can't vary.
 - **[THR-962](https://linear.app/threadbare/issue/THR-962) / [THR-961](https://linear.app/threadbare/issue/THR-961) — two small sound decisions.** Need your ears, not a screen.
 - **Was last night's automation pause deliberate?** One line either way — if you paused it or hit plan limits, a marker gets dropped and the probe stops asking.
@@ -24,12 +24,13 @@
 
 ## Queue
 
-**Backed up — 36 ready, 0 in flight, nothing parked.** One thing improved since last hour: [THR-866](https://linear.app/threadbare/issue/THR-866) (the design look at the apex Ascension encounter) closed, and it produced [THR-1086](https://linear.app/threadbare/issue/THR-1086) — converting the *last* encounter off the old authored-choices format. That is the first real content work on the shelf in days; everything else queued is Low-priority cleanup.
+**Backed up — 36 ready, 0 in flight, nothing parked.** [THR-1086](https://linear.app/threadbare/issue/THR-1086) shipped this hour ([PR #1400](https://github.com/christianspliid-ui/threadbare/pull/1400)): the Apotheosis — the apex ascension beat — converted off authored choices, which completes the WS5 conversion program. I checked the claim rather than taking the ticket's word for it: no encounter template authors that field any more.
 
-The orchestrator promoted [THR-1085](https://linear.app/threadbare/issue/THR-1085) this hour and corrected its own earlier read of THR-1071 — it is not blocked by another ticket, it is waiting on your remedy call, which is why it now appears above rather than in this section. Six items have sat untouched more than 7 days, the oldest ([THR-847](https://linear.app/threadbare/issue/THR-847)) for 13; all are low-priority dead-code cleanup and none blocks anything.
+**That also empties the shelf again.** THR-1086 was the only real content work on it, and it is now Done. What remains is [THR-1071](https://linear.app/threadbare/issue/THR-1071) (waiting on the call above) and 35 Low-priority cleanup items. **The feature pipeline needs design input or you** — the fix for an empty shelf is upstream supply, not more cleanup. Six items have sat untouched more than 7 days, oldest [THR-847](https://linear.app/threadbare/issue/THR-847) at 13; all dead-code cleanup, none blocking anything.
 
 ## Health
 
-- **The home tree's `node_modules` is still missing entirely** — not just a damaged `.bin`; the directory is empty, so no build or test tooling runs in the repo root at all. Scheduled lanes work around it in their own worktrees, so nothing is stopped, but every lane pays for it. A session needs to run `npm install` there. Executor-side, not yours.
-- Deploy, GitHub Actions, scheduled workflows and all 9 scheduled tasks are green. The one open PR ([#1114](https://github.com/christianspliid-ui/threadbare/pull/1114)) is on hold on purpose, per your content-migration pause.
+- **The home tree's `node_modules` is still empty** — no build or test tooling runs in the repo root at all. Lanes work around it in their own worktrees so nothing is stopped, but every lane pays for it, and the reaper flags it on every pass. A session needs to run `npm install` there. Executor-side, not yours.
+- Deploy, GitHub Actions, scheduled workflows and all 9 scheduled tasks are green; the live site is serving the newest commit. The one open PR ([#1114](https://github.com/christianspliid-ui/threadbare/pull/1114)) is on hold on purpose, per your content-migration pause.
+- The Linear connector, which locked every lane out of the board this morning, is working again — this run read the board normally.
 - Two abandoned worktrees are still flagged for disposition by the reaper. Standing housekeeping, no action.
