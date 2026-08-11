@@ -1,40 +1,33 @@
 # Briefing
-**Generated:** 2026-08-11 18:55 local (16:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-08-11 20:00 local (18:00 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**Sign Linear back in — the automation is locked out of the board.** About a minute of your time, and it is now gating everything else on this list.
+**Play the five encounters and give the two verdicts.** Linear came back this hour, both of the tickets that were gating the second verdict have shipped, and the board is now holding **zero feature or content work** — 36 items queued and every one of them cleanup. Your verdict is the thing that refills the shelf; another promotion cannot.
 
-Every scheduled lane reads and writes work through the Linear connector, and it is signed out. No agent can clear this: a scheduled run has no way to complete a sign-in prompt. **Open a `claude` terminal and run `/mcp`, or re-connect Linear in your claude.ai connector settings.** One sign-in restores every lane at once — nothing else is needed, they reconcile on their own.
+- [The bargain at the crossroads](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.bargain_at_crossroads) · [Riders behind the caravan](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.riders_behind_caravan) · [Snow on the pass](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.snow_on_the_pass) · [The swindled family](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.swindled_family) · [The unsafe bridge](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge)
 
-Two lanes ran in the last half hour and did no board work at all, each reporting it independently:
+**[THR-907](https://linear.app/threadbare/issue/THR-907) — the four-part verdict:** does the prose read clear, does the firing rhythm work, is the interface gamey enough, and is deciding actually fun.
 
-- [**Orchestrator, 16:45 UTC**](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-08-11.md) — its three main jobs (promoting unblocked work, the wayfinder sweep, design staging) "could not run at all — not 'found nothing,' genuinely blocked."
-- [**Backlog grooming, 16:29 UTC**](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/backlog-grooming-2026-08-11.md) — "could not read the queue, could not check in-flight work, and could not fix anything."
+**[THR-974](https://linear.app/threadbare/issue/THR-974) — the consequence verdict:** play a hand to its ending and say whether the change to the world is *visible*, and whether it feels like it **happened in the world** rather than being announced at you. The orchestrator independently flagged this one as newly unblocked half an hour ago.
 
-The pickup lane that claims and implements tickets goes through the same connector. So does the queue section below, which is why it is showing you a day-old number.
+*"Needs another iteration" is a valid answer to any of it.* Add `&outcome=critical_failure` (or `success`, `failure`, `near_miss`, `success_at_cost`, `critical_success`) to any link to jump straight to that ending.
 
-*This displaces the play sitting as the lead only because it is upstream of it:* the verdict you give produces tickets, and right now there is no board to put them on. The sitting is first in the list below and unchanged.
+## Also waiting (5)
 
-## Also waiting (6)
-
-- **The play sitting — the substantive one.** [**THR-907**](https://linear.app/threadbare/issue/THR-907) (prose clear? rhythm right? interface gamey enough? is deciding fun?) and [**THR-974**](https://linear.app/threadbare/issue/THR-974) (does the world-change look like it *happened*?) — two rulings, one sitting, same five encounters. Start at [**the unsafe bridge**](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge); the rest are in [user-actions.md](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md).
-- [**THR-998**](https://linear.app/threadbare/issue/THR-998) — action cards print a risk word that can't move the odds for 85% of castable cards. Recommendation: print something true instead (scale or cost).
-- [**THR-962**](https://linear.app/threadbare/issue/THR-962) / [**THR-961**](https://linear.app/threadbare/issue/THR-961) — two sound decisions; needs your ears, not a screen.
-- **Was last night's automation pause deliberate?** ~20.6h with no lane running, now fully recovered. If it was usage limits, saying so drops a marker and the probe stops asking.
-- **Does the encounter ending appear on its own now?** Your 2026-08-06 repro was fixed and verified — no reply needed if it works.
-- **Parked, no urgency:** the Tenacious-style trait. Safe default is "stays parked."
+- **Was last night's automation pause deliberate?** One line either way — if you paused it or hit plan limits, a marker gets dropped and the probe stops asking. Detail in [user-actions.md](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md#5-was-the-overnight-automation-pause-deliberate).
+- **[THR-998](https://linear.app/threadbare/issue/THR-998) — action cards print a risk that isn't real.** Three options; the recommendation is (b), stop printing a danger word where the danger can't vary.
+- **[THR-962](https://linear.app/threadbare/issue/THR-962) / [THR-961](https://linear.app/threadbare/issue/THR-961) — two small sound decisions.** Need your ears, not a screen.
+- **Does the encounter ending appear on its own now?** Both halves of the 2026-08-06 bug shipped. **No reply needed if it works.**
+- **A Tenacious-style trait** — parked option, no urgency. Safe default is "stays parked."
 
 ## Queue
 
-⚠️ **Stale — Linear was unreachable this run, and the run before it.** Figures are from the [orchestrator's 2026-08-10 ~21:30 local run](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-08-10o.md), now ~21h old. Nothing has been able to read the board since.
-
-- Last known: **35 Ready for Dev** — backed up (threshold 15). 9 non-Deferral items, all process/infrastructure.
-- Headline finding, unchanged for several runs: **no feature or content work anywhere in the ready queue.** Every genuine candidate needs a design decision or your verdict first — which is what makes the play sitting the supply the pipeline is short of.
-- One held PR: [#1114](https://github.com/christianspliid-ui/threadbare/pull/1114) — paused on purpose behind the locked encounter format. Correctly parked, no action.
+**Backed up — 36 ready, 0 in flight, nothing parked.** Every item is Low or Medium priority cleanup; there is no feature or content work on the shelf at all, which is why the lead ask above is the lead ask. The orchestrator promoted [THR-866](https://linear.app/threadbare/issue/THR-866) (an encounter design look) this hour and is holding [THR-1071](https://linear.app/threadbare/issue/THR-1071) — a High-priority correctness defect — behind its one-promotion-per-run ceiling for next run. Six items have sat untouched more than 7 days, the oldest ([THR-847](https://linear.app/threadbare/issue/THR-847)) for 13; all are low-priority dead-code cleanup and none blocks anything.
 
 ## Health
 
-- **Last brief's two red flags have both cleared on their own.** The ~20.6h fleet-wide lane silence (2026-08-10 21:57 → 2026-08-11 18:32 local) ended, and **tb-orchestrator has re-fired** after 21 missed slots — all 9 scheduled tasks are now within 2 slots of schedule. The only open question left from it is whether the pause was deliberate (above).
-- Deploy green (live site serving `f976bdc5`), CI green, both scheduled GitHub jobs healthy.
-- Git worktree reaper ran 18:40 local, 15 min ago. Two worktrees still flagged for disposition (23–24 days stale, unmerged) — executor's job, not yours.
+- **Linear is signed back in.** Last hour's lead ask is resolved — the board reads and writes normally again, and the two lanes it locked out (orchestrator, backlog grooming) have both since done real work.
+- **The home tree's `node_modules` is damaged** — `.bin` is empty, so no build or test tooling runs there. The reaper detects it and deliberately won't auto-install. A session needs to run `npm install` in the repo root; scheduled lanes work around it in their own worktrees, so nothing is stopped, but the workaround costs every lane time. Executor-side, not yours.
+- Deploy, GitHub Actions, scheduled workflows and all 9 scheduled tasks are green. The one open PR ([#1114](https://github.com/christianspliid-ui/threadbare/pull/1114)) is on hold on purpose, per your content-migration pause.
+- Two abandoned worktrees (23 and 24 days stale, unmerged) are flagged for disposition by the reaper. Standing housekeeping, no action.
