@@ -1,7 +1,7 @@
 ---
 name: keep-work-flowing-cc
 description: Hourly headless Claude Code PM brief — reads Christian's Discord replies, scans the Linear queue, runs the health probes, and rewrites Design/briefing.md + Design/user-actions.md on the ops branch. The briefing leads with ONE ask. Simplified 2026-08-10 on Christian's direction (THR-1077, THR-954); rule rationale lives in this file's git history and the tickets it names.
-last_validated_against: 2026-08-10
+last_validated_against: 2026-08-11
 ---
 
 # Keep Work Flowing (CC)
@@ -84,6 +84,8 @@ If nothing needs him: "Nothing needs you right now — the queue is draining on 
 
 The discipline is the single lead ask: six parallel asks read as a chore list and none of them happens. Tie-break: the ask that unblocks the most downstream work. No frontmatter digest — that existed for the retired publish gate.
 
+**Write down the ask keys as you compose.** Every ask — the lead and each also-waiting line — gets one stable kebab-case key naming the *ask*, not its wording: `thr-998-action-card-risk-word`, `lane-silence-pause-deliberate`, `tenacious-trait-parked`. Same ask next hour ⇒ same key, however the paragraph is rewritten; rank is not identity, so promoting an ask to the lead does not change its key. Step 7 consumes exactly this list, and it is the only input the doorbell gate reads.
+
 ### 5. Refresh `Design/user-actions.md`
 
 **Hard shape (THR-1077):** `## Standing asks` first — each ask ≤10 lines including its links; then `## Resolved this period` — ≤10 entries, one line each, oldest dropped first; then a two-line footer pointing at history. **Nothing else.** No measurements, no findings, no run narration, no nested `<details>` archaeology — all of that lives in `git log -p origin/ops -- Design/user-actions.md`. Target ≤150 lines; when over, cut (don't compress) the oldest resolved entries. Preserve Christian's own edits to still-open items.
@@ -101,7 +103,22 @@ The substantive-change gate is **retired for this lane** (THR-954, 2026-08-10): 
 
 ### 7. Discord ping (change-gated)
 
-SHA-256 the normalized ask lines (lead + also-waiting items — never the timestamp) against `~/.claude/channels/discord/kwf-last-ping.hash`. Changed **and** non-empty → one DM via the discord plugin `reply` tool (`chat_id: 1530183488333152287`), ≤10 short plain-language lines ending `Full brief: Design/briefing.md`. REST fallback: `POST /channels/<id>/messages` with the bot token. Update the hash after every run — except after a failed send, so the next run retries.
+**The gate is code — do not compute it by hand, and do not hash the brief's prose.** Pass step 4's ask keys to `check:ping-gate`, which owns the comparison, the state file and the rule:
+
+```bash
+npm run check:ping-gate --silent -- --keys "<comma-separated ask keys>" --json
+```
+
+Read `needsPing`. It is `true` only when an ask **joined** the set since the last DM that actually sent — that is the whole rule, and the removal-only and unchanged cases fall out of it rather than needing to be remembered. Then:
+
+- `needsPing: true` → one DM via the discord plugin `reply` tool (`chat_id: 1530183488333152287`), ≤10 short plain-language lines ending `Full brief: Design/briefing.md`. REST fallback: `POST /channels/<id>/messages` with the bot token. **After the send is accepted**, record it: `... --keys "<same keys>" --record pinged`.
+- `needsPing: false` (verdict `silent` / `unchanged` / `empty`) → send nothing, then `... --keys "<same keys>" --record silent`.
+
+Recording is a separate call on purpose: a send that throws leaves the baseline untouched, so the next run still sees the arrival and retries. Never run `--record pinged` for a DM that did not go out.
+
+To force a doorbell when a live ask's *substance* changes (not its wording), rotate its key — `thr-998-risk-word` → `thr-998-risk-word-v2`. That reads as a departure plus an arrival and rings. The judgment stays yours; the mechanism stays in the script.
+
+Superseded: `kwf-last-ping.hash` and the hand-maintained `.method` / `.derivation` notes beside it. State now lives in `~/.claude/channels/discord/kwf-ping-state.json`; those files are kept only as the incident record that motivated this (THR-1087).
 
 ## Fail-soft (applies everywhere)
 
@@ -113,7 +130,7 @@ Linear unreachable → brief carries a loud stale-queue banner, rest of the run 
 |---|---|
 | Discord chat id | `1530183488333152287` |
 | Inbox cursor | `~/.claude/channels/discord/kwf-last-read.id` |
-| Ping hash | `~/.claude/channels/discord/kwf-last-ping.hash` |
+| Ping gate state | `~/.claude/channels/discord/kwf-ping-state.json` (owned by `npm run check:ping-gate` — never hand-edit) |
 | Allowlist | `~/.claude/channels/discord/access.json` (`allowFrom`) |
 | Stale Ready-for-Dev item | 7 days |
 | Queue starved / backed up | ≤1 / >15 ready |
