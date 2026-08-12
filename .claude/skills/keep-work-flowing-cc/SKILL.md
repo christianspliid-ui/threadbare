@@ -1,7 +1,7 @@
 ---
 name: keep-work-flowing-cc
 description: Hourly headless Claude Code PM brief — reads Christian's Discord replies, scans the Linear queue, runs the health probes, and rewrites Design/briefing.md + Design/user-actions.md on the ops branch. The briefing leads with ONE ask. Simplified 2026-08-10 on Christian's direction (THR-1077, THR-954); rule rationale lives in this file's git history and the tickets it names.
-last_validated_against: 2026-08-11
+last_validated_against: 2026-08-12
 ---
 
 # Keep Work Flowing (CC)
@@ -12,7 +12,7 @@ Hourly PM run. Output: two files on the `ops` branch — `Design/briefing.md` (t
 
 - **PM, not executor.** Never claim or implement issues, never `save_issue(state:...)`, never touch `src/`. The only repo files this lane writes are the two Design files, published via `ops-publish.sh`.
 - **Do not file tickets.** Findings about the delivery machinery go to the impediment log or this run's output; the weekly retro is the promotion point (CLAUDE.md § Process-work throttle). Exception: a loss actively corrupting work right now.
-- **Plain language for Christian (THR-608), links always (Rule Zero).** Only creative/design decisions and switches only he can flip go to him. Technical verdicts — CI state, merge mechanics, not-a-defect calls — are the agent's; routing them to him is mislabelling.
+- **Plain language for Christian (THR-608), links always (Rule Zero).** Only creative/design decisions and switches only he can flip go to him. Technical verdicts — CI state, merge mechanics, not-a-defect calls — are the agent's; routing them to him is mislabelling. **So are gate/test calibration and the *how* of an agreed design** (canon `process.md` § User review interface, rule 4 — Christian, 2026-08-12): a ticket that self-labels "needs a decision" becomes an ask only when it is a genuine creative fork — a fork in what the game should *mean*, with no agreed outcome to test against. Otherwise the brief notes the decision an agent should make (or has made, with a veto window), and never queues it on him. The THR-1092/THR-998 pair is the calibration example: both were briefed as his calls; his ruling was that neither should have been.
 - **Never fabricate asks.** "Nothing needs you right now" is a correct brief.
 - **No `Fixes/Closes/Resolves THR-XX` keyword** in any commit or message from this lane (line-anchored auto-close, impediment #140).
 - **Home tree is read-only** (THR-672): `git -C` queries and file reads only. All writing happens in this session's own worktree.
