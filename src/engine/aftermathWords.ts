@@ -32,7 +32,12 @@
  */
 
 import type { ReachDomain } from '../types/traits';
-import type { EncounterAftermathConceptRef } from '../types/unifiedAction';
+import type {
+  EncounterAftermathConceptRef,
+  EncounterAftermathDirection,
+  EncounterAftermathMagnitude,
+  EncounterAftermathStoryWeight,
+} from '../types/unifiedAction';
 
 // ─── Reach vocabulary ────────────────────────────────────────────────
 
@@ -142,6 +147,27 @@ export function magnitudeWord(value: number, bands: readonly MagnitudeBand[]): s
   return bandWord(value, bands);
 }
 
+/**
+ * THR-1082 — the same banding, kept as a number the surface can draw with.
+ *
+ * `magnitudeWord` spends the band on an English word and the rung is gone; a
+ * delta cluster needs the rung itself. This returns it as an **ascending** index
+ * — 0 is the faintest rung, `bands.length - 1` the strongest — which is the
+ * reverse of the array's own order, since ladders are declared highest-first so
+ * `bandWord` can read them top-down. The flip lives here, once, rather than in
+ * every consumer that would otherwise have to remember which way the array runs.
+ *
+ * No numeral escapes: this is an index into a named ladder, not the delta. The
+ * raw value stays on the trace, exactly as before (Law 13).
+ */
+export function magnitudeBandIndex(value: number, bands: readonly MagnitudeBand[]): number {
+  const magnitude = Math.abs(Number.isFinite(value) ? value : 0);
+  for (let i = 0; i < bands.length; i++) {
+    if (magnitude >= bands[i].min) return bands.length - 1 - i;
+  }
+  return 0;
+}
+
 // ─── Counting ────────────────────────────────────────────────────────
 
 /**
@@ -215,6 +241,36 @@ export interface DerivedSentence {
   readonly concepts: readonly EncounterAftermathConceptRef[];
 }
 
+/**
+ * THR-1082 — a derived sentence that also keeps the structure it was built from.
+ *
+ * Every builder below already knows the state noun, the direction and the band —
+ * it computes all three and then spends them on an English sentence, leaving the
+ * surface a finished string it cannot draw an icon or a cluster from. That is
+ * why "Vara's Stone grew steadily" was unreadable: not because the words were
+ * wrong, but because by the time the chip saw it, `Stone`, `up` and `rung 2` had
+ * ceased to exist as data.
+ *
+ * So the builders return both halves. The sentence keeps being built and keeps
+ * being shipped — on a derived chip it becomes the tooltip and the aria text —
+ * which is what keeps THR-1004's numeral gate a real gate over one address
+ * rather than a rule the new fields could quietly route around.
+ */
+export interface DerivedChange extends DerivedSentence {
+  /** The one concept that *is* the changed state — drives the icon tile and the tag. */
+  readonly stateNoun: EncounterAftermathConceptRef;
+  readonly direction: EncounterAftermathDirection;
+  /** Absent when the change has no scale (an item changing hands, a gate opening). */
+  readonly magnitude?: EncounterAftermathMagnitude;
+  /**
+   * Whether this change is worth a sentence on screen. `incidental` renders as a
+   * compact icon-first row; `beat` keeps its full chip. Only the producer can
+   * tell the difference — a capability drifting up is incidental, the same
+   * capability crossing a tier is a beat.
+   */
+  readonly storyWeight: EncounterAftermathStoryWeight;
+}
+
 /** Direction word for a signed delta, given the pair of verbs for this quantity. */
 function directionWord(delta: number, rose: string, fell: string): string {
   return delta >= 0 ? rose : fell;
@@ -229,13 +285,21 @@ export function growthSentence(args: {
   readonly domain: string;
   readonly applied: number;
   readonly tierCrossed: boolean;
-}): DerivedSentence {
+}): DerivedChange {
   const name = reachDisplayName(args.domain);
   const word = magnitudeWord(args.applied, GROWTH_MAGNITUDE_BANDS);
   const tierClause = args.tierCrossed ? ' The work crossed into a new tier of mastery.' : '';
+  const noun: EncounterAftermathConceptRef = { text: name, tooltipId: reachTooltipId(args.domain) };
   return {
     detail: `${args.actorName}'s ${name} grew ${word}.${tierClause}`,
-    concepts: [{ text: name, tooltipId: reachTooltipId(args.domain) }],
+    concepts: [noun],
+    stateNoun: noun,
+    direction: 'gain',
+    magnitude: { ladder: 'growth', band: magnitudeBandIndex(args.applied, GROWTH_MAGNITUDE_BANDS) },
+    // A tier turning over is the one time this change is a story beat rather
+    // than the drift that happens every single encounter — Christian's ruling
+    // (2026-08-10) is that the drift itself takes the story's place on screen.
+    storyWeight: args.tierCrossed ? 'beat' : 'incidental',
   };
 }
 
@@ -243,12 +307,18 @@ export function growthSentence(args: {
 export function traitGrantedSentence(args: {
   readonly actorName: string;
   readonly traitLabel: string;
-}): DerivedSentence {
+}): DerivedChange {
   // A trait is a concept, not an entity with art — it takes emphasis and a
   // tooltip where one resolves, never an entity tile that would be a guess.
+  const noun: EncounterAftermathConceptRef = { text: args.traitLabel };
   return {
     detail: `${args.actorName} came away carrying ${args.traitLabel}.`,
-    concepts: [{ text: args.traitLabel }],
+    concepts: [noun],
+    stateNoun: noun,
+    direction: 'gain',
+    // A trait has no ladder — it is held or it is not. Per the fail-soft table
+    // that draws a single triangle: noun plus direction is legible with no scale.
+    storyWeight: 'beat',
   };
 }
 
@@ -261,18 +331,23 @@ export function reputationSentence(args: {
   readonly actorName: string;
   readonly delta: number;
   readonly flavour: 'authored' | 'branch' | 'residual';
-}): DerivedSentence {
+}): DerivedChange {
   const word = magnitudeWord(args.delta, REPUTATION_MAGNITUDE_BANDS);
   const verb = directionWord(args.delta, 'rose', 'fell');
   const tail = args.flavour === 'branch'
     ? ' as the checkpoint\'s judgement landed'
     : '';
+  // THR-1033 — `ui.standing` is the id the registry actually holds. This read
+  // `ui.reputation`, which has never existed in `ui-content.ts`, so every
+  // STANDING chip in the game carried an unresolvable tooltip.
+  const noun: EncounterAftermathConceptRef = { text: 'standing', tooltipId: 'ui.standing' };
   return {
     detail: `${args.actorName}'s standing ${verb} ${word}${tail}.`,
-    // THR-1033 — `ui.standing` is the id the registry actually holds. This read
-    // `ui.reputation`, which has never existed in `ui-content.ts`, so every
-    // STANDING chip in the game carried an unresolvable tooltip.
-    concepts: [{ text: 'standing', tooltipId: 'ui.standing' }],
+    concepts: [noun],
+    stateNoun: noun,
+    direction: args.delta >= 0 ? 'gain' : 'loss',
+    magnitude: { ladder: 'reputation', band: magnitudeBandIndex(args.delta, REPUTATION_MAGNITUDE_BANDS) },
+    storyWeight: 'incidental',
   };
 }
 
@@ -284,20 +359,25 @@ export function factionStandingSentence(args: {
   readonly delta: number;
   readonly beforeRole?: string;
   readonly afterRole?: string;
-}): DerivedSentence {
+}): DerivedChange {
   const rankChanged = args.beforeRole !== args.afterRole;
-  const concepts: EncounterAftermathConceptRef[] = [{
+  const noun: EncounterAftermathConceptRef = {
     text: args.factionName,
     entityId: args.factionId,
     visualKind: 'faction',
     visualName: args.factionName,
-  }];
+  };
+  const concepts: EncounterAftermathConceptRef[] = [noun];
 
   if (Math.abs(args.delta) <= 0) {
     // Rank moved without the score moving — say the thing that actually changed.
     return {
       detail: `${args.factionName} now names ${args.actorName} ${humanizeKeySegment(args.afterRole ?? 'a member')}.`,
       concepts,
+      stateNoun: noun,
+      // A title changing hands is not a magnitude — it is the thing itself.
+      direction: 'gain',
+      storyWeight: 'beat',
     };
   }
 
@@ -309,6 +389,12 @@ export function factionStandingSentence(args: {
   return {
     detail: `${args.actorName}'s standing with ${args.factionName} ${verb} ${word}.${rankClause}`,
     concepts,
+    stateNoun: noun,
+    direction: args.delta >= 0 ? 'gain' : 'loss',
+    magnitude: { ladder: 'reputation', band: magnitudeBandIndex(args.delta, REPUTATION_MAGNITUDE_BANDS) },
+    // A faction *renaming* you is a beat worth a sentence; the score drifting
+    // under an unchanged title is the same incidental noise as reach growth.
+    storyWeight: rankChanged ? 'beat' : 'incidental',
   };
 }
 
@@ -317,13 +403,19 @@ export function reputationTallySentence(args: {
   readonly actorName: string;
   readonly key: string;
   readonly delta: number;
-}): DerivedSentence {
+}): DerivedChange {
   const { phrase, concept } = describeTallyKey(args.key);
   const word = magnitudeWord(args.delta, TALLY_MAGNITUDE_BANDS);
   const verb = directionWord(args.delta, 'deepened', 'thinned');
   return {
     detail: `${args.actorName}'s ${phrase} ${verb} ${word}.`,
     concepts: concept ? [concept] : [],
+    // A free-form tally has no reach concept behind it; the humanised phrase is
+    // the only noun there is, and naming it beats naming nothing.
+    stateNoun: concept ?? { text: phrase },
+    direction: args.delta >= 0 ? 'gain' : 'loss',
+    magnitude: { ladder: 'tally', band: magnitudeBandIndex(args.delta, TALLY_MAGNITUDE_BANDS) },
+    storyWeight: 'incidental',
   };
 }
 
@@ -331,18 +423,28 @@ export function reputationTallySentence(args: {
 export function gateStateSentence(args: {
   readonly beforeState: string;
   readonly afterState: string;
-}): DerivedSentence {
+}): DerivedChange {
+  const noun: EncounterAftermathConceptRef = { text: 'the gate' };
   return {
     detail: `The gate shifted from ${humanizeKeySegment(args.beforeState)} to ${humanizeKeySegment(args.afterState)}.`,
     concepts: [],
+    stateNoun: noun,
+    // A gate turning over neither costs nor grants — it changes what is
+    // reachable, which is what PATH's `opens` direction is for.
+    direction: 'opens',
+    storyWeight: 'beat',
   };
 }
 
 /** A follow-on tag the gate leaves behind. */
-export function gateFollowOnSentence(tag: string): DerivedSentence {
+export function gateFollowOnSentence(tag: string): DerivedChange {
+  const label = humanizeKeySegment(tag.replace(/^#/, ''));
   return {
-    detail: `The gate leaves behind ${humanizeKeySegment(tag.replace(/^#/, ''))}.`,
+    detail: `The gate leaves behind ${label}.`,
     concepts: [],
+    stateNoun: { text: label },
+    direction: 'opens',
+    storyWeight: 'beat',
   };
 }
 
@@ -359,17 +461,22 @@ export function rewardSentence(args: {
   readonly rewardName: string;
   readonly rewardId?: string;
   readonly gained: boolean;
-}): DerivedSentence {
+}): DerivedChange {
+  const noun: EncounterAftermathConceptRef = {
+    text: args.rewardName,
+    entityId: args.rewardId,
+    visualKind: 'artifact',
+    visualName: args.rewardName,
+  };
   return {
     detail: args.gained
       ? `${args.actorName} gained ${args.rewardName}.`
       : `${args.actorName} came away marked by ${args.rewardName}.`,
-    concepts: [{
-      text: args.rewardName,
-      entityId: args.rewardId,
-      visualKind: 'artifact',
-      visualName: args.rewardName,
-    }],
+    concepts: [noun],
+    stateNoun: noun,
+    direction: args.gained ? 'gain' : 'loss',
+    // An item is held or it is not — no ladder, and none is wanted.
+    storyWeight: 'beat',
   };
 }
 

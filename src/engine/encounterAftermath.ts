@@ -1262,6 +1262,57 @@ export function applyEncounterAftermathReaction(
         break;
       }
 
+      case 'quintessence_shift': {
+        // THR-1082 — an authored existential cost ("loss of confidence"). This
+        // applier deliberately does no arithmetic of its own: it queues the same
+        // `QuintessenceEvent` shape every other producer queues, so clamping,
+        // dissolution and loss-prevention stay in `phaseQuintessence` and an
+        // encounter cannot invent a second set of rules for the same quantity.
+        const resolvedId = target.kind === 'agent' ? target.id : actorAgentId;
+        if (!resolvedId) {
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'quintessence_shift', effectDetail: { delta: effect.delta },
+            success: false, failReason: 'no_actor_id',
+            effectiveTargetId: '', effectiveTargetKind: 'actor_fallback',
+            summary: `quintessence_shift[${i}] skipped: no actorId`,
+          });
+          break;
+        }
+        if (!state.graph.getNode(resolvedId)) {
+          emitTrace({
+            tick, category: 'aftermath_target_invalid', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'quintessence_shift', attemptedTargetId: resolvedId,
+            attemptedTargetKind: target.kind !== 'actor_fallback' ? target.kind : 'agent',
+            reason: 'target_node_missing',
+            summary: `quintessence_shift[${i}] skipped: target node not found (${resolvedId})`,
+          });
+          break;
+        }
+        // Fail-soft (NFP #4): the queue is lazily created everywhere else it is
+        // written, and a missing one must not throw inside the tick loop.
+        if (!state.pendingQuintessenceEvents) state.pendingQuintessenceEvents = [];
+        state.pendingQuintessenceEvents.push({
+          targetNodeId: resolvedId,
+          delta: effect.delta,
+          source: `encounter_aftermath:${effect.source ?? reaction.id}`,
+          tick,
+        });
+        mutationSummary.touchedWorld = true;
+        emitTrace({
+          tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+          encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+          effectKind: 'quintessence_shift',
+          effectDetail: { targetId: resolvedId, delta: effect.delta },
+          success: true,
+          effectiveTargetId: resolvedId, effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'actor_fallback',
+          summary: `quintessence_shift[${i}]: ${resolvedId} ${effect.delta >= 0 ? '+' : ''}${effect.delta.toFixed(2)}`,
+        });
+        break;
+      }
+
       case 'hidden_mark': {
         // hidden_mark supports targetAgentId; faction/sublocation rejected in v1
         if (target.kind === 'faction' || target.kind === 'sublocation') {

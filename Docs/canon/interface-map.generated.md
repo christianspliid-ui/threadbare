@@ -19,8 +19,8 @@ remediation ticket or the build fails.
 | 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 7 |
 | ⚫ UNWIRED | 0 |
-| 🔵 UNVERIFIED-OK | 8 |
-| **Total** | **61** |
+| 🔵 UNVERIFIED-OK | 9 |
+| **Total** | **62** |
 
 ## Contracts by producing subsystem
 
@@ -97,6 +97,7 @@ remediation ticket or the build fails.
 | `ascendant-affinity-cast-capability` | The ascendant's persisted reach affinities become its capability for a cast — the god's innate aptitude is not on the raw scale `computeRawScore` walks, so a literal read left every cast at capability 0.02 and one reachable outcome band. | node-prop: `domainAffinities`, `computeCapabilityWithRawBonus` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `attachment-encounter-rewards` | Encounters grant rewards, which become possessions. | function: `assembleRewardPool` | Attachments, Items & Possessions | 🟢 LIVE | — |
 | `authored-nudge-hand-reaches-resolution` | A god may bend the odds of an attended encounter step with authored, essence-priced cards — the mechanical form of "the intervention shifted the odds, not the outcome". Without this read, an attended encounter offers the player nothing to do but watch. | function: `collectNudgeModifiers`, `selectActiveRider`, `applyRider`, `buildNudgeHand` | Encounters & Dilemmas | 🔴 LEAKED | THR-774 |
+| `authored-quintessence-shift` | An encounter can finally author an existential price — what the trial cost a mortal in spirit rather than in coin or reputation. | function: `quintessence_shift`, `pendingQuintessenceEvents` | Spheres & Quintessence | 🔵 UNVERIFIED-OK | — |
 | `authored-step-difficulty-player-resolution` | Authored step difficulty finally prices a player cast. 82 of 136 ascendant-castable templates carried difficulties 0.1–0.6 that the player branch discarded before this contract existed; the same value now feeds the shared capability-vs-difficulty roll, floored at success-at-cost. | function: `resolveUncontestedStep`, `difficulty` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `branch-decision-writes-archetype-drift` | A fork the mortal took becomes part of who they are: taking the cunning branch drifts them cunning, so a mortal the player keeps leaning one way visibly becomes that person instead of resetting each encounter. | function: `applyAgentDecidedBranches`, `decideBranchPole`, `decideBranchRoute`, `driftAxisIdForValuePair` | Personality & Emergent Traits | 🔴 LEAKED | THR-883 |
 | `compulsion-card-plants-agent-decision-bias` | A god can steer one mortal without seizing them: the card plants an urge, and that mortal's own next decision leans toward it — you steered them, they still chose. | function: `derivePlantedCompulsionEncounterBias`, `phasePlantedCompulsionDecay` | Encounters & Dilemmas | 🔴 LEAKED | THR-883 |
@@ -362,6 +363,18 @@ remediation ticket or the build fails.
 - **Read sites:** `src/debug-bridge.ts`, `src/engine/unifiedActionResolution.ts`
 - **Other hits:** `src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts`, `src/components/Game/encounter-stage/nudgeCommit.ts`, `src/components/Game/encounter-stage/types.ts`, `src/engine/encounters/nudgeDispatch.ts`, `src/engine/encounters/nudges.ts` +2 more
 - **Verdict:** Tier 2: read sites present, declared write sites empty — nothing produces this contract. — or the declared symbol does not appear at the declared site: grep 'collectNudgeModifiers' src/types/unifiedAction.ts before treating this as a leak.
+
+### `authored-quintessence-shift` — 🔵 UNVERIFIED-OK
+
+- **Intent:** An encounter can finally author an existential price — what the trial cost a mortal in spirit rather than in coin or reputation.
+- **Producer → Consumer:** Encounters & Dilemmas → Spheres & Quintessence
+- **UL terms:** *Quintessence*, *Aftermath*
+- **Module:** `src/engine/encounterAftermath.ts`
+- **Production hits:** 10 total — 1 write, 1 read, 8 unclassified
+- **Write sites:** `src/engine/encounterAftermath.ts`
+- **Read sites:** `src/engine/phaseQuintessence.ts`
+- **Other hits:** `src/engine/complicationEffects.ts`, `src/engine/encounter.ts`, `src/engine/orchestrator.ts`, `src/engine/phaseSpherePressure.ts`, `src/engine/quintessenceActions.ts` +3 more
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `authored-step-difficulty-player-resolution` — 🟢 LIVE
 

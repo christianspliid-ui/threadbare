@@ -215,6 +215,63 @@ export interface EncounterAftermathConceptRef {
   readonly visualName?: string;
 }
 
+/**
+ * THR-1082 — the four story-first consequence categories.
+ *
+ * These replace the six *display* kinds (`EncounterStageConsequenceKind`) as the
+ * player-facing taxonomy. The wire `kind` union above is untouched: it says what
+ * the engine changed, this says what the change *means to the character*.
+ *
+ * - `scar` — what the trial cost them, on body or spirit.
+ * - `bond` — who now stands with or against them.
+ * - `boon` — what they earned, and why.
+ * - `path` — a way that has opened.
+ *
+ * There is deliberately no fifth "everything else" member: a bucket named that
+ * can never be story-legible, which is why MARK was retired. An unclassifiable
+ * change folds by polarity instead (see `buildAftermathConsequences.ts`).
+ */
+export type EncounterAftermathCategory = 'scar' | 'bond' | 'boon' | 'path';
+
+/**
+ * THR-1082 — which way the state moved, stated rather than inferred from prose.
+ * `opens` is PATH's direction: a way opening has no gain/loss axis.
+ */
+export type EncounterAftermathDirection = 'gain' | 'loss' | 'opens';
+
+/**
+ * THR-1082 — a banded magnitude as *data*, so the surface can draw it.
+ *
+ * `band` is an **ascending rung index**: 0 is the faintest rung of the named
+ * ladder, `length - 1` the strongest. Note this is the reverse of the literal
+ * array order in `engine/aftermathWords.ts`, where ladders are declared
+ * highest-first so `bandWord` can read them top-down. Ascending is the order a
+ * display wants ("bigger index, bigger cluster"), so the conversion happens once
+ * at the producer rather than at every consumer.
+ *
+ * The raw delta is not carried here and never should be — it stays on the trace
+ * (Law 13). This is the banding the words were already built from, kept instead
+ * of being thrown away once the sentence was assembled.
+ */
+export interface EncounterAftermathMagnitude {
+  readonly ladder: 'growth' | 'reputation' | 'tally';
+  readonly band: number;
+}
+
+/**
+ * THR-1082 — how much narrative weight a derived change carries.
+ *
+ * The surface renders `incidental` changes as a compact icon-first row (tag +
+ * delta cluster, sentence demoted to the tooltip) and `beat` changes as a full
+ * chip with its sentence. The distinction is the producer's to make because only
+ * the producer knows whether anything notable happened: a capability that merely
+ * drifted upward is incidental, the same capability *crossing a tier* is a beat.
+ *
+ * Absent ⇒ `beat`. Authored consequences never set this: an author who wrote a
+ * sentence meant it to be read.
+ */
+export type EncounterAftermathStoryWeight = 'incidental' | 'beat';
+
 export interface EncounterAftermathChange {
   readonly id: string;
   readonly kind: EncounterAftermathChangeKind;
@@ -229,6 +286,38 @@ export interface EncounterAftermathChange {
    * and carry their entity links through the narrative linker instead.
    */
   readonly concepts?: readonly EncounterAftermathConceptRef[];
+  /**
+   * THR-1082 — the structured half of a consequence, all optional and additive.
+   *
+   * Before this, a producer computed the state noun, the direction and the
+   * magnitude, spent them on an English sentence, and handed the surface a
+   * finished string — so the chip could not draw an icon, an arrow or a
+   * cluster, because none of them existed as data any more. These fields keep
+   * that structure alive to the surface. The sentence is still built and still
+   * shipped: on a derived chip it becomes the tooltip and the aria text, which
+   * is what keeps THR-1004's numeral gate a real gate.
+   *
+   * Every field is optional, so all pre-existing authored content renders
+   * exactly as it did (NFP #6) — the adapter derives `category` from
+   * `kind` + `polarity` when the producer declared none.
+   */
+  readonly category?: EncounterAftermathCategory;
+  /**
+   * The one concept that *is* the changed state — the reach that grew, the
+   * faction whose measure moved, the item that changed hands. Distinct from
+   * `concepts`, which decorates the sentence: this one drives the icon tile and
+   * the `CATEGORY · NOUN` tag.
+   */
+  readonly stateNoun?: EncounterAftermathConceptRef;
+  readonly direction?: EncounterAftermathDirection;
+  readonly magnitude?: EncounterAftermathMagnitude;
+  readonly storyWeight?: EncounterAftermathStoryWeight;
+  /**
+   * Authored chips only — the clause naming *why* this happened, drawn from the
+   * scene. Rendered before the change ("Caught at the rail by a passing
+   * wanderer — Jorun walks with her now"). Enriched like `detail`.
+   */
+  readonly causeClause?: string;
 }
 
 // ─── World-shaping aftermath supporting types (THR-115) ─────────────────────
@@ -313,6 +402,36 @@ export type EncounterAftermathReactionEffect =
      * false: the follow-up self-targets (today's behavior).
      */
     readonly inheritContext?: boolean;
+    readonly when?: EffectPredicate;
+  }
+  | {
+    /**
+     * THR-1082 — an authored shift in the target's quintessence: the "loss of
+     * confidence" shape of consequence, where what the trial cost was existential
+     * rather than material.
+     *
+     * The engine has moved quintessence since TB-075, but only ever *itself* —
+     * overchannel, encounter failure, doom. No encounter could author the shift
+     * as a consequence of its own fiction, so a scene that should have shaken
+     * someone had to spend a reputation delta or an item instead. This member
+     * closes that gap and reuses the existing write path exactly: the effect
+     * queues a `QuintessenceEvent` onto `pendingQuintessenceEvents`, and
+     * `phaseQuintessence` applies it next tick with all its clamping, dissolution
+     * checks and loss-prevention intact.
+     *
+     * Surfaces as a SCAR when negative and a BOON when positive. Never renders a
+     * number — `delta` is designer data and stays on the trace (Law 13).
+     */
+    readonly kind: 'quintessence_shift';
+    /** Negative = erosion, positive = recovery. Designer-facing only. */
+    readonly delta: number;
+    /** Shift a specific agent's quintessence (not the actor's). */
+    readonly targetAgentId?: string;
+    /**
+     * Trace/debug provenance, appended to `encounter_aftermath:` so a shift is
+     * attributable to the encounter that authored it. Defaults to the reaction id.
+     */
+    readonly source?: string;
     readonly when?: EffectPredicate;
   }
   | {

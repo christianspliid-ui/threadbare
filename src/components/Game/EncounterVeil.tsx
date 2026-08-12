@@ -2,6 +2,13 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { EntityVisual } from '../shared/EntityVisual';
 import { Tooltip } from '../shared/Tooltip';
+import { DeltaCluster } from '../shared/DeltaCluster';
+import { ReachIcon, REACH_TO_SPHERE } from '../icons';
+import {
+  CONSEQUENCE_CATEGORY_GLYPHS,
+  CONSEQUENCE_CATEGORY_LABELS,
+  CONSEQUENCE_LEGEND_STORE_KEY,
+} from './encounter-stage/adapters/buildAftermathConsequences';
 import type {
   EncounterStageModel,
   EncounterStageChoiceModel,
@@ -10,8 +17,10 @@ import type {
   EncounterStageHeaderModel,
   EncounterStageHistoryModel,
   EncounterStageCastModel,
+  EncounterStageConsequenceCategory,
   EncounterStageFalloutModel,
 } from './encounter-stage/types';
+import type { ReachDomain } from '../../types/traits';
 import { tooltipResolves } from '../../engine/tooltipResolver';
 import { usePrefersReducedMotion } from '../../hooks/usePrefersReducedMotion';
 import { NudgePhaseShell } from './encounter-stage/shells/NudgePhaseShell';
@@ -67,6 +76,52 @@ export interface EncounterVeilProps {
 // local hex constants these replaced had drifted from the game-wide token
 // (`GOLD #d4af37` vs `--accent-gold #d4a040`), which is exactly the two-golds
 // drift the law names. `--veil-gold` now resolves to `--accent-gold`.
+// ── Consequence chip anatomy (THR-1082) ────────────────────────────
+
+/** Icon-tile edge for a consequence chip — matches `EntityVisual size="chip"`. */
+const CONSEQUENCE_TILE_PX = 40;
+
+/**
+ * Delta-cluster glyph size. Above the Law 11 floor of 14 because the cluster is
+ * the *headline* reading of a compact chip — it carries the meaning with no text
+ * beside it, which is the case Law 11 says sizes up.
+ */
+const CONSEQUENCE_DELTA_PX = 15;
+
+/**
+ * Law 12 — the first-contact legend for the four categories.
+ *
+ * Ordered as the story reads them: what it cost, who it changed, what was
+ * earned, what it opened. Each entry is a hover into the same tooltip registry
+ * the chips themselves use (Law 17), so the legend teaches and the tooltip
+ * explains without a second copy of the words.
+ */
+const CONSEQUENCE_LEGEND_ENTRIES: readonly {
+  category: EncounterStageConsequenceCategory;
+  glyph: string;
+  label: string;
+  tooltipId: string;
+}[] = (['scar', 'bond', 'boon', 'path'] as const).map((category) => ({
+  category,
+  glyph: CONSEQUENCE_CATEGORY_GLYPHS[category],
+  label: CONSEQUENCE_CATEGORY_LABELS[category],
+  tooltipId: `ui.consequence.${category}`,
+}));
+
+/**
+ * A reach state-noun draws the shared reach glyph — but only where one exists.
+ *
+ * `REACH_TO_SPHERE` holds eight reaches; the tooltip registry backs nine
+ * (`flesh` has an entry and no icon). Guarding on the icon set rather than on
+ * the tooltip id is what keeps `reach.flesh` from rendering a glyph with an
+ * undefined sphere colour — it falls through to the category tile instead,
+ * which is a designed fallback rather than a broken one (Law 4).
+ */
+function consequenceReach(domain: string | undefined): ReachDomain | undefined {
+  if (!domain) return undefined;
+  return domain in REACH_TO_SPHERE ? (domain as ReachDomain) : undefined;
+}
+
 const VOID = 'var(--veil-void)';
 const FONT_PROSE = 'var(--font-prose)';
 const FONT_DISPLAY = "'Palatino Linotype', 'Book Antiqua', Palatino, serif";
@@ -223,6 +278,31 @@ export function EncounterVeil({
   // THR-636 — index of the resolved step being replayed, or null for "the present".
   const [replayStepIndex, setReplayStepIndex] = useState<number | null>(null);
 
+  /**
+   * THR-1082 / Law 51 — the consequence legend is shown until the player says
+   * they have it, and that dismissal outlives the session. Read lazily so the
+   * storage hit happens once per mount rather than per render.
+   *
+   * Fail-soft (NFP #4): private browsing throws on `localStorage`, and the
+   * designed failure is to *show* the legend rather than hide it — Law 12 says
+   * a new vocabulary is introduced at first contact, so noisy beats missing.
+   */
+  const [legendDismissed, setLegendDismissed] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem(CONSEQUENCE_LEGEND_STORE_KEY) === 'true';
+    } catch {
+      return false;
+    }
+  });
+  const dismissConsequenceLegend = useCallback(() => {
+    setLegendDismissed(true);
+    try {
+      localStorage.setItem(CONSEQUENCE_LEGEND_STORE_KEY, 'true');
+    } catch {
+      // Quota or private browsing — the dismissal still holds for this session.
+    }
+  }, []);
+
   // Trigger entrance animation after mount
   useEffect(() => {
     if (open) {
@@ -308,6 +388,9 @@ export function EncounterVeil({
   // ── Aftermath rendering path ───────────────────────────────────
   if (model.aftermath) {
     const aftermath = model.aftermath;
+    // Law 12 — introduce the category vocabulary on first contact, and only
+    // where there is something to introduce it against.
+    const showConsequenceLegend = !legendDismissed && (aftermath.consequences?.length ?? 0) > 0;
 
     /**
      * Edge-only tone: every caller below applies this to a `border`, never to
@@ -660,11 +743,15 @@ export function EncounterVeil({
                   key={chip.id}
                   data-testid={`consequence-chip-${chip.kind}`}
                   data-consequence-kind={chip.kind}
+                  data-consequence-category={chip.category}
+                  data-consequence-compact={chip.compact ? 'true' : 'false'}
                   style={{
                     display: 'flex',
                     // THR-1004 — the tile sets the row's height, so the row
                     // centres on it rather than sitting on the text baseline.
-                    alignItems: chip.icon ? 'center' : 'baseline',
+                    // THR-1082 — a compact chip is a single line of tag and
+                    // cluster, so it centres regardless of whether art resolved.
+                    alignItems: chip.icon || chip.compact ? 'center' : 'baseline',
                     gap: 12,
                     // A hairline, not a card — the ending stays dissolved into
                     // the void rather than resolving into a grid of boxes.
@@ -674,8 +761,15 @@ export function EncounterVeil({
                 >
                   {/* THR-1004 — the UI Law's image half. A chip that names an
                       entity opens with that entity's picture, the same way
-                      every other detail surface does. */}
-                  {chip.icon && (
+                      every other detail surface does.
+
+                      THR-1082 — three tiers, in order of how much they know:
+                      the entity's own art, then the reach glyph when the changed
+                      state is a reach (Law 9 — one icon vocabulary per element
+                      class, and `ReachIcon` is the encounter surface's own), then
+                      the category glyph. The third is a designed fallback, not a
+                      broken one (Law 4). */}
+                  {chip.icon ? (
                     <EntityVisual
                       size="chip"
                       entity={{
@@ -689,7 +783,43 @@ export function EncounterVeil({
                       title={chip.icon.name}
                       onClick={openEntity(chip.icon.entityId, chip.icon.kind)}
                     />
+                  ) : consequenceReach(chip.reachDomain) ? (
+                    <span
+                      data-testid={`consequence-chip-reach-${chip.category}`}
+                      style={{ display: 'inline-flex', flexShrink: 0 }}
+                    >
+                      <ReachIcon
+                        reach={consequenceReach(chip.reachDomain)!}
+                        size={CONSEQUENCE_TILE_PX}
+                      />
+                    </span>
+                  ) : (
+                    <span
+                      data-testid={`consequence-chip-glyph-${chip.category}`}
+                      aria-hidden="true"
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: CONSEQUENCE_TILE_PX,
+                        height: CONSEQUENCE_TILE_PX,
+                        flexShrink: 0,
+                        fontSize: 'var(--text-sm)',
+                        color: consequenceToneColor(chip.tone),
+                        border: `1px solid ${consequenceToneColor(chip.tone)}`,
+                        borderRadius: 3,
+                        opacity: 0.85,
+                      }}
+                    >
+                      {chip.categoryGlyph}
+                    </span>
                   )}
+                  {/* THR-1082 — `CATEGORY · NOUN`. The noun is the half that was
+                      missing: "the bridge spent something" named no game state at
+                      all, and a chip that cannot say *what* changed is unreadable
+                      however well its magnitude is drawn. Law 31 — the category
+                      colour never carries polarity alone; the category word rides
+                      with it, and direction lives in the cluster. */}
                   <span
                     style={{
                       fontFamily: FONT_DISPLAY,
@@ -698,9 +828,16 @@ export function EncounterVeil({
                       color: consequenceToneColor(chip.tone),
                       flexShrink: 0,
                       minWidth: 74,
+                      maxWidth: 190,
                     }}
                   >
-                    {chip.kindLabel}
+                    {chip.categoryLabel}
+                    {chip.nounLabel && (
+                      <span style={{ color: TEXT_WHISPER }}>
+                        {' · '}
+                        <span style={{ color: TEXT_WARM }}>{chip.nounLabel}</span>
+                      </span>
+                    )}
                   </span>
                   <span
                     style={{
@@ -709,9 +846,15 @@ export function EncounterVeil({
                       fontSize: 'var(--text-xs)',
                       lineHeight: 1.7,
                       color: TEXT_WARM,
+                      flex: 1,
                     }}
                   >
-                    {chip.sentence.segments.map((seg, i) => {
+                    {/* THR-1082 — Christian's ruling, 2026-08-10: incidental
+                        drift "takes away from the encounter story", so a compact
+                        chip draws no sentence at all. The sentence is not lost —
+                        it is the cluster's hover text and its aria label, so the
+                        banded word ("grew steadily") is still one hover away. */}
+                    {chip.compact ? null : chip.sentence.segments.map((seg, i) => {
                       // Clickable only where a page actually exists: a resolved
                       // node id plus a host that wired a handler for *that kind*.
                       // Anything else stays emphasised text — fail-open, never
@@ -770,8 +913,78 @@ export function EncounterVeil({
                       );
                     })}
                   </span>
+                  {/* THR-1082 — the magnitude idiom, right-aligned so the eye can
+                      run down the column and read every change's size without
+                      reading a word. On a compact chip this *is* the reading; on
+                      an authored one it annotates the sentence rather than
+                      replacing it (Law 15). */}
+                  {chip.delta && (
+                    <DeltaCluster
+                      direction={chip.delta.direction}
+                      count={chip.delta.count}
+                      // The compact chip's sentence lives here — the ladder's
+                      // banded word stays one hover away rather than vanishing.
+                      label={chip.compact && chip.sentenceText
+                        ? `${chip.delta.label}. ${chip.sentenceText}`
+                        : chip.delta.label}
+                      color={consequenceToneColor(chip.tone)}
+                      size={CONSEQUENCE_DELTA_PX}
+                    />
+                  )}
                 </div>
               ))}
+              {/* THR-1082 / Law 12 — a vocabulary new to the player is
+                  introduced at first contact, never inferred from context. The
+                  THR-972 hand legend is the pattern; Law 51 keeps the dismissal
+                  across sessions rather than re-teaching it every ending. */}
+              {showConsequenceLegend && (
+                <div
+                  data-testid="consequence-legend"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    flexWrap: 'wrap',
+                    gap: 14,
+                    paddingLeft: 14,
+                    marginTop: 2,
+                    fontFamily: FONT_DISPLAY,
+                    fontSize: 'var(--text-2xs)',
+                    letterSpacing: '0.12em',
+                    color: TEXT_WHISPER,
+                  }}
+                >
+                  {CONSEQUENCE_LEGEND_ENTRIES.map((entry) => (
+                    <Tooltip key={entry.category} id={entry.tooltipId}>
+                      <span
+                        className="focus-ring"
+                        tabIndex={0}
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}
+                      >
+                        <span aria-hidden="true">{entry.glyph}</span>
+                        {entry.label}
+                      </span>
+                    </Tooltip>
+                  ))}
+                  <button
+                    className="focus-ring"
+                    type="button"
+                    onClick={dismissConsequenceLegend}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      // Law 46 — the mark stays small, the hit area does not.
+                      padding: '6px 8px',
+                      margin: '-6px -8px',
+                      font: 'inherit',
+                      color: TEXT_WHISPER,
+                      borderBottom: `1px solid ${GOLD_DIM}`,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    got it
+                  </button>
+                </div>
+              )}
             </div>
           )}
 

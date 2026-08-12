@@ -26,6 +26,7 @@ import { RarityBorderBox } from '../shared/RarityBorderBox';
 import { SphereIcon } from '../shared/SphereIcon';
 import { CardKeywordChip } from '../shared/CardKeywordChip';
 import { CostPips, OddsPips } from '../shared/OddsPips';
+import { DeltaCluster } from '../shared/DeltaCluster';
 import {
   PIP_ODDS_TIERS,
   PIP_PENALTY_TIER,
@@ -138,6 +139,7 @@ const SECTIONS = [
   { id: 'rarity', label: 'Rarity' },
   { id: 'spheres', label: 'SphereIcon' },
   { id: 'odds-pips', label: 'OddsPips / CostPips (THR-890)' },
+  { id: 'delta-cluster', label: 'DeltaCluster (THR-1082)' },
   { id: 'card-keyword-chip', label: 'CardKeywordChip (THR-890)' },
   { id: 'rivalicon', label: 'RivalIcon' },
   { id: 'sectionheading', label: 'SectionHeading' },
@@ -989,6 +991,48 @@ export default function StyleGuide() {
                 <Label>CostPips — emphasised (an unaffordable card)</Label>
                 <Row>
                   <CostPips cost={3} emphasised />
+                </Row>
+              </GameErrorBoundary>
+            </div>
+          </section>
+
+          {/* ── DeltaCluster (THR-1082) ────────────────────────── */}
+          <section id="section-delta-cluster" style={{ marginBottom: SECTION_GAP }}>
+            <SectionHeading ornamental>DeltaCluster — how much a state changed</SectionHeading>
+            <div style={{ marginTop: '1.25rem' }}>
+              <GameErrorBoundary>
+                <Label>
+                  The aftermath's magnitude idiom. Same triangle family as the encounter
+                  hand's setback marker — a separate component from `OddsPips`, because
+                  pips mean effect on the odds and these mean realised change (Law 10).
+                </Label>
+                <Row>
+                  {([1, 2, 3] as const).map((count) => (
+                    <span key={`gain-${count}`} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <DeltaCluster
+                        direction="gain"
+                        count={count}
+                        label={`Stone rose, ${['a slight', 'a clear', 'a great'][count - 1]} amount`}
+                      />
+                      <code style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>gain ×{count}</code>
+                    </span>
+                  ))}
+                </Row>
+                <Row>
+                  {([1, 2, 3] as const).map((count) => (
+                    <span key={`loss-${count}`} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <DeltaCluster
+                        direction="loss"
+                        count={count}
+                        label={`Standing fell, ${['a slight', 'a clear', 'a great'][count - 1]} amount`}
+                      />
+                      <code style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>loss ×{count}</code>
+                    </span>
+                  ))}
+                </Row>
+                <Label>PATH — a way opening has no scale, so it never draws a run</Label>
+                <Row>
+                  <DeltaCluster direction="opens" count={1} label="A way opens" />
                 </Row>
               </GameErrorBoundary>
             </div>

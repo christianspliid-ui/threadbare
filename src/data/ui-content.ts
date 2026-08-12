@@ -342,6 +342,28 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     desc: 'Something this ending set in motion. A seed is a debt the world now owes the story: it will surface later as an encounter, not as a number on a sheet.',
   },
 
+  // ─── Consequence categories (THR-1082) ────────────────────────────
+  // The four words every ending is now read through. A player who learns these
+  // once can read any aftermath in the game, which is why they are introduced
+  // by the first-contact legend (Law 12) and explained here rather than in
+  // copy written inline on the chip.
+  'ui.consequence.scar': {
+    label: 'Scar',
+    desc: 'What the trial cost them, written on body or spirit — a wound, a debt, a confidence spent. Scars heal or they linger; either way the world remembers.',
+  },
+  'ui.consequence.bond': {
+    label: 'Bond',
+    desc: 'Who now stands with them, or against them. A name learned, a debt owed, a house that has taken their measure and decided.',
+  },
+  'ui.consequence.boon': {
+    label: 'Boon',
+    desc: 'What they earned, and why they earned it — a thing carried away, a hand grown surer, a door held open by someone who owes them.',
+  },
+  'ui.consequence.path': {
+    label: 'Path',
+    desc: 'A way that has opened. Nothing is held yet: this is the world turning to face a direction it was not facing before.',
+  },
+
   // ─── Threads panel (THR-1008) ─────────────────────────────────
   // Concepts the thread rows reach for. Registered here rather than written
   // inline on the row, so the copy has one home and can chain (Law 17).

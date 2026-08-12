@@ -10,9 +10,11 @@
 import { describe, it, expect } from 'vitest';
 import {
   buildAftermathConsequences,
+  categoryForKind,
   classifyChangeKind,
   CONSEQUENCE_KIND_LABELS,
 } from '../buildAftermathConsequences';
+import { DELTA_CLUSTER_MAX } from '../../../../shared/DeltaCluster';
 import type {
   EncounterAftermathChange,
   EncounterAftermathReaction,
@@ -35,6 +37,15 @@ function change(
     polarity: over.polarity,
     // THR-1004 — forwarded, so a test can declare the concepts a producer named.
     concepts: over.concepts,
+    // THR-1082 — the structured half, forwarded the same way. Every field is
+    // optional, so a case that omits them is exercising the pre-THR-1082
+    // authored-content path rather than a degenerate one.
+    category: over.category,
+    stateNoun: over.stateNoun,
+    direction: over.direction,
+    magnitude: over.magnitude,
+    storyWeight: over.storyWeight,
+    causeClause: over.causeClause,
   };
 }
 
@@ -384,5 +395,307 @@ describe('concept decorations (THR-1004)', () => {
 
     expect(chips).toHaveLength(1);
     expect(chips[0].icon).toBeUndefined();
+  });
+});
+
+// ─── THR-1082 — the four story categories, and the magnitude idiom ────
+
+describe('story categories (THR-1082)', () => {
+  it('folds every wire kind onto one of exactly four categories', () => {
+    const seen = new Set<string>();
+    for (const kind of ['prize', 'standing', 'toll', 'wound', 'seed', 'mark'] as const) {
+      for (const polarity of ['gain', 'loss', 'mixed', 'info'] as const) {
+        seen.add(categoryForKind(kind, polarity));
+      }
+    }
+    // Four and only four — the taxonomy's whole claim is that a player learns
+    // these once and can then read any ending in the game.
+    expect([...seen].sort()).toEqual(['bond', 'boon', 'path', 'scar']);
+  });
+
+  it('MARK has no successor — an unclassifiable change folds by polarity', () => {
+    // The bucket named "everything else" is what made the old surface
+    // unreadable, so there is deliberately no fifth category to fall into.
+    expect(categoryForKind('mark', 'gain')).toBe('boon');
+    expect(categoryForKind('mark', 'loss')).toBe('scar');
+    expect(categoryForKind('mark', 'mixed')).toBe('scar');
+    expect(categoryForKind('mark', 'info')).toBe('path');
+  });
+
+  it('never renders the retired MARK label on any chip', () => {
+    const chips = buildAftermathConsequences({
+      // `shell_state` + info is the combination that used to classify as `mark`.
+      changes: [
+        change({ kind: 'shell_state', polarity: 'info' }),
+        change({ kind: 'trait', polarity: 'gain', id: 'c2' }),
+      ],
+      ...passthrough,
+    });
+    expect(chips.map(c => c.categoryLabel)).not.toContain('MARK');
+    for (const chip of chips) {
+      expect(['SCAR', 'BOND', 'BOON', 'PATH']).toContain(chip.categoryLabel);
+    }
+  });
+
+  it("a producer's declared category wins over the derived one", () => {
+    const chips = buildAftermathConsequences({
+      changes: [change({ kind: 'growth', polarity: 'gain', category: 'scar' })],
+      ...passthrough,
+    });
+    expect(chips[0].category).toBe('scar');
+    expect(chips[0].categoryLabel).toBe('SCAR');
+  });
+
+  it('pre-THR-1082 content renders unchanged — no noun, no cluster, no compaction', () => {
+    // The identity assertion. Every authored change in the game today carries
+    // none of the new fields, and must keep rendering exactly as it did.
+    const chips = buildAftermathConsequences({
+      changes: [change({ kind: 'item', polarity: 'gain', detail: 'A parcel changed hands.' })],
+      ...passthrough,
+    });
+    expect(chips).toHaveLength(1);
+    expect(chips[0].nounLabel).toBeUndefined();
+    expect(chips[0].delta).toBeUndefined();
+    expect(chips[0].compact).toBe(false);
+    expect(chips[0].sentence.segments.map(s => s.text).join('')).toBe('A parcel changed hands.');
+    // And it still lands in a category, because the fallback derives one.
+    expect(chips[0].category).toBe('boon');
+  });
+});
+
+describe('the state noun (THR-1082)', () => {
+  it('names the changed state on the tag, so no chip says "something"', () => {
+    const chips = buildAftermathConsequences({
+      changes: [change({
+        kind: 'growth',
+        polarity: 'gain',
+        stateNoun: { text: 'Stone', tooltipId: 'reach.stone' },
+        direction: 'gain',
+      })],
+      ...passthrough,
+    });
+    expect(chips[0].nounLabel).toBe('STONE');
+  });
+
+  it('routes a reach noun to the reach glyph, read from the declared tooltip id', () => {
+    const chips = buildAftermathConsequences({
+      changes: [change({
+        kind: 'growth',
+        polarity: 'gain',
+        stateNoun: { text: 'Stone', tooltipId: 'reach.stone' },
+        direction: 'gain',
+      })],
+      ...passthrough,
+    });
+    expect(chips[0].reachDomain).toBe('stone');
+  });
+
+  it('leaves reachDomain unset for a non-reach noun', () => {
+    const chips = buildAftermathConsequences({
+      changes: [change({
+        kind: 'reputation',
+        polarity: 'gain',
+        stateNoun: { text: 'standing', tooltipId: 'ui.standing' },
+        direction: 'gain',
+      })],
+      ...passthrough,
+    });
+    expect(chips[0].reachDomain).toBeUndefined();
+  });
+
+  it('prefers the state noun over a decorating concept for the icon tile', () => {
+    // `concepts` decorates the sentence; `stateNoun` *is* the thing that changed.
+    const chips = buildAftermathConsequences({
+      changes: [change({
+        kind: 'faction_reputation',
+        polarity: 'gain',
+        stateNoun: {
+          text: 'The Mason Guild', entityId: 'f1',
+          visualKind: 'faction', visualName: 'The Mason Guild',
+        },
+        concepts: [{ text: 'Vara', entityId: 'a1', visualKind: 'agent', visualName: 'Vara' }],
+        direction: 'gain',
+      })],
+      ...passthrough,
+      resolveIcon: (concept) => ({
+        entityId: concept.entityId ?? concept.text,
+        kind: concept.visualKind as 'agent' | 'faction' | 'artifact',
+        name: concept.text,
+      }),
+    });
+    expect(chips[0].icon?.entityId).toBe('f1');
+  });
+});
+
+describe('the delta cluster (THR-1082)', () => {
+  const growth = (band: number, direction: 'gain' | 'loss' = 'gain') =>
+    buildAftermathConsequences({
+      changes: [change({
+        kind: 'growth',
+        polarity: direction === 'gain' ? 'gain' : 'loss',
+        stateNoun: { text: 'Stone' },
+        direction,
+        magnitude: { ladder: 'growth', band },
+      })],
+      ...passthrough,
+    })[0].delta;
+
+  it('grows the cluster with the band, so a bigger change reads bigger', () => {
+    expect(growth(0)?.count).toBe(1);
+    expect(growth(2)?.count).toBe(2);
+    expect(growth(4)?.count).toBe(3);
+  });
+
+  it('never draws more than the maximum, whatever the ladder says', () => {
+    for (let band = 0; band < 8; band++) {
+      const count = growth(band)?.count ?? 0;
+      expect(count).toBeGreaterThanOrEqual(1);
+      expect(count).toBeLessThanOrEqual(DELTA_CLUSTER_MAX);
+    }
+  });
+
+  it('clamps an out-of-range band rather than blanking the chip', () => {
+    // A ladder that grows a rung without this map following must degrade, not
+    // erase the change (NFP #4).
+    expect(growth(99)?.count).toBe(3);
+    expect(growth(-5)?.count).toBe(1);
+  });
+
+  it('draws a single mark when the change has a direction but no scale', () => {
+    // The Eldritch Horror "impair" case: noun + direction is legible with no
+    // magnitude at all. An item was gained or it was not.
+    const chips = buildAftermathConsequences({
+      changes: [change({
+        kind: 'item',
+        polarity: 'gain',
+        stateNoun: { text: 'Meditation Stones' },
+        direction: 'gain',
+      })],
+      ...passthrough,
+    });
+    expect(chips[0].delta).toEqual({
+      direction: 'gain',
+      count: 1,
+      label: 'Meditation Stones rose, a slight amount',
+    });
+  });
+
+  it('states the reading in words, for the aria label (Law 11)', () => {
+    expect(growth(4)?.label).toBe('Stone rose, a great amount');
+    expect(growth(4, 'loss')?.label).toBe('Stone fell, a great amount');
+  });
+
+  it('gives a PATH its scale-less marker rather than a run', () => {
+    const chips = buildAftermathConsequences({
+      changes: [change({
+        kind: 'future_hook',
+        polarity: 'info',
+        stateNoun: { text: 'the gate' },
+        direction: 'opens',
+      })],
+      ...passthrough,
+    });
+    expect(chips[0].delta).toEqual({
+      direction: 'opens', count: 1, label: 'the gate — a way opens',
+    });
+  });
+
+  it('omits the cluster entirely when no producer declared a direction', () => {
+    const chips = buildAftermathConsequences({
+      changes: [change({ kind: 'item', polarity: 'gain' })],
+      ...passthrough,
+    });
+    expect(chips[0].delta).toBeUndefined();
+  });
+});
+
+describe('incidental drift versus story beat (THR-1082)', () => {
+  it('renders incidental drift compact, with the sentence kept for the hover tier', () => {
+    // Christian's ruling, 2026-08-10: the drift the engine noticed every single
+    // encounter "takes away from the encounter story", so it loses its sentence
+    // on screen — but the words are not destroyed, only demoted.
+    const chips = buildAftermathConsequences({
+      changes: [change({
+        kind: 'growth',
+        polarity: 'gain',
+        detail: "Vara's Stone grew steadily.",
+        stateNoun: { text: 'Stone' },
+        direction: 'gain',
+        magnitude: { ladder: 'growth', band: 2 },
+        storyWeight: 'incidental',
+      })],
+      ...passthrough,
+    });
+    expect(chips[0].compact).toBe(true);
+    expect(chips[0].sentenceText).toBe("Vara's Stone grew steadily.");
+  });
+
+  it('keeps a story beat full, sentence and all', () => {
+    const chips = buildAftermathConsequences({
+      changes: [change({
+        kind: 'growth',
+        polarity: 'gain',
+        stateNoun: { text: 'Stone' },
+        direction: 'gain',
+        storyWeight: 'beat',
+      })],
+      ...passthrough,
+    });
+    expect(chips[0].compact).toBe(false);
+  });
+
+  it('an authored cause clause always overrides compactness', () => {
+    // An author who wrote a cause meant it to be read.
+    const chips = buildAftermathConsequences({
+      changes: [change({
+        kind: 'growth',
+        polarity: 'gain',
+        storyWeight: 'incidental',
+        causeClause: 'Hauling the beam across the span',
+        detail: 'her hands learned the weight of stone',
+      })],
+      ...passthrough,
+    });
+    expect(chips[0].compact).toBe(false);
+  });
+});
+
+describe('the causality rule (THR-1082)', () => {
+  it('leads with the cause, so a consequence never appears divorced from it', () => {
+    const chips = buildAftermathConsequences({
+      changes: [change({
+        kind: 'trait',
+        polarity: 'gain',
+        causeClause: 'Caught at the rail by a passing wanderer',
+        detail: 'Jorun the Wayfarer walks with her now',
+      })],
+      ...passthrough,
+    });
+    expect(chips[0].sentenceText)
+      .toBe('Caught at the rail by a passing wanderer — Jorun the Wayfarer walks with her now');
+  });
+
+  it('renders the change alone when no cause was authored', () => {
+    const chips = buildAftermathConsequences({
+      changes: [change({ kind: 'trait', polarity: 'gain', detail: 'She came away steadier.' })],
+      ...passthrough,
+    });
+    expect(chips[0].sentenceText).toBe('She came away steadier.');
+  });
+});
+
+describe('planted seeds are PATH (THR-1082)', () => {
+  it('tags a planted sequel PATH with the scale-less marker', () => {
+    const reactions: EncounterAftermathReaction[] = [{
+      id: 'r1',
+      label: 'Let it lie',
+      effects: [{ kind: 'encounter_seed', delayTicks: 5, seedLabel: 'A debt falls due at the full moon.' }],
+    }];
+    const chips = buildAftermathConsequences({ changes: [], reactions, ...passthrough });
+    expect(chips[0].category).toBe('path');
+    expect(chips[0].categoryLabel).toBe('PATH');
+    expect(chips[0].delta).toEqual({ direction: 'opens', count: 1, label: 'A way opens' });
+    // A seed is pure story — it never loses its sentence.
+    expect(chips[0].compact).toBe(false);
   });
 });

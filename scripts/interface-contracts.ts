@@ -1222,6 +1222,29 @@ export const CONTRACTS: readonly Contract[] = [
     deferralTicket: 'THR-883',
   },
   {
+    id: 'authored-quintessence-shift',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: QUINTESSENCE,
+    intent:
+      'An encounter can finally author an existential price — what the trial cost a mortal in spirit rather than in coin or reputation.',
+    ulTerms: ['Quintessence', 'Aftermath'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['quintessence_shift', 'pendingQuintessenceEvents'],
+      module: 'src/engine/encounterAftermath.ts',
+    },
+    writeSites: ['src/engine/encounterAftermath.ts'],
+    readSites: ['src/engine/phaseQuintessence.ts'],
+    // THR-1082. The engine has moved quintessence since TB-075 but only ever
+    // *itself* — overchannel, encounter failure, doom — so a scene that should
+    // have shaken someone had to spend a reputation delta as a stand-in. The
+    // applier deliberately does no arithmetic: it queues the same
+    // `QuintessenceEvent` shape every other producer queues, so clamping,
+    // dissolution and loss-prevention stay in `phaseQuintessence` and an
+    // encounter cannot invent a second set of rules for one quantity. Because
+    // `StepNudge.grants` reuses this effect union (THR-885), cards inherit it.
+  },
+  {
     id: 'nudge-hand-runtime-filters-and-sphere-discount',
     producerSystem: QUINTESSENCE,
     consumerSystem: ENCOUNTERS,
