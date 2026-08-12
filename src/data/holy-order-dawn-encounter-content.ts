@@ -149,6 +149,80 @@ export const HOLY_ORDER_DAWN_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           },
         ],
         byOutcome: {
+          success: {
+            overview:
+              'The candle burns down to its socket and nothing comes for the reliquary. '
+              + '{name} signs the temple log in the second hand and steps out into a grey that is only weather.',
+            changes: [
+              {
+                id: 'vigil_held',
+                kind: 'faction_reputation',
+                title: 'The vigil was kept.',
+                detail: 'The Dawn enters the night in its record. The reliquary sits where it sat.',
+                polarity: 'gain',
+                concepts: [
+                  { text: 'The Dawn', visualKind: 'faction', visualName: 'Holy Order of the Dawn' },
+                ],
+              },
+            ],
+            reactionPrompt: 'What does the god do with a night that held?',
+          },
+          success_at_cost: {
+            overview:
+              'The reliquary is untouched and {name} is not. The intruder went out through the sanctum window '
+              + 'and left a cut along the forearm that the rite has no words for. '
+              + 'The log records a vigil kept. It does not record the arm.',
+            changes: [
+              {
+                id: 'vigil_held_at_cost',
+                kind: 'faction_reputation',
+                title: 'The vigil was kept, and paid for.',
+                detail:
+                  'The Dawn records the reliquary safe. What the night took from {name} is not the order\'s to record.',
+                polarity: 'mixed',
+                concepts: [
+                  { text: 'The Dawn', visualKind: 'faction', visualName: 'Holy Order of the Dawn' },
+                ],
+              },
+            ],
+            reactionPrompt: 'The relic is safe and the one who kept it is cut. Where does the god put its hand?',
+            reactions: [
+              {
+                id: 'hod.vigil.cost.tend',
+                label: 'Tend the arm before the order tends the record.',
+                intent:
+                  'You close what the night opened. The order will read the log and know nothing of this, '
+                  + 'which is how {name} would want it read.',
+                effects: [
+                  { kind: 'reputation_tally' as const, key: 'star.positive', delta: 1 },
+                ],
+                closeAfterSelection: true,
+              },
+              {
+                id: 'hod.vigil.cost.mark',
+                label: 'Keep the face that went out the window.',
+                intent:
+                  'The intruder was seen, briefly, in candlelight. You hold the face where {name} will find it again.',
+                effects: [
+                  {
+                    kind: 'hidden_mark' as const,
+                    category: 'secret_knowledge',
+                    severity: FACTION_PROSE_HIDDEN_MARK_DEFAULT_SEVERITY,
+                    label: 'Saw the one who came for the reliquary and did not take it',
+                    revealFamilies: ['investigation', 'holy_order'],
+                  },
+                ],
+                closeAfterSelection: false,
+              },
+              {
+                id: 'hod.vigil.cost.withdraw',
+                label: 'Withdraw. The arm heals or it does not.',
+                intent: 'You let the temple keep its own weather, and {name} keep the cut.',
+                effects: [],
+                closeAfterSelection: true,
+              },
+            ],
+          },
           failure: {
             overview:
               'The reliquary is lighter by one relic. The loss reads, in the second hand, as {name}\'s.',
@@ -347,6 +421,96 @@ export const HOLY_ORDER_DAWN_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
               },
             ],
           },
+          failure: {
+            overview:
+              'The rite is spoken true and the stone does not answer it. Whatever sits beneath the foundation '
+              + 'has roots the words do not reach. {name} closes the rite properly, because a rite left open is worse than a rite that failed.',
+            changes: [
+              {
+                id: 'shrine_uncleansed',
+                kind: 'faction_reputation',
+                title: 'The shrine is still wrong.',
+                detail: 'The Dawn will send a voice with more years behind it. The road past the shrine stays cold.',
+                polarity: 'loss',
+                concepts: [
+                  { text: 'The Dawn', visualKind: 'faction', visualName: 'Holy Order of the Dawn' },
+                ],
+              },
+            ],
+            reactionPrompt: 'The rite held and the stone did not. What does the god do at a shrine that stayed cold?',
+          },
+          critical_failure: {
+            overview:
+              'The rite reaches the thing beneath the foundation and the thing reaches back. '
+              + 'The stone goes warm under {name}\'s hand — warm, which is the wrong direction entirely — '
+              + 'and the cold that leaves the shrine goes out along the pilgrim road instead of dying in the ground.',
+            changes: [
+              {
+                id: 'shrine_corruption_spread',
+                kind: 'faction_reputation',
+                title: 'The corruption moved.',
+                detail:
+                  'The shrine at {location} is emptier and the road is worse. The Dawn will read this as a rite that woke what it meant to end.',
+                polarity: 'loss',
+                concepts: [
+                  { text: 'The Dawn', visualKind: 'faction', visualName: 'Holy Order of the Dawn' },
+                ],
+              },
+              {
+                id: 'shrine_rite_recoil',
+                kind: 'shell_state',
+                title: 'The rite recoiled.',
+                detail: '{name} spoke the words true and the words came back. That will sit in the hand for a long while.',
+                polarity: 'loss',
+                concepts: [
+                  { text: 'the words', tooltipId: 'reach.star' },
+                ],
+              },
+            ],
+            reactionPrompt: 'The cleansing moved the rot instead of ending it. What does the god do with a rite that turned?',
+            reactions: [
+              {
+                id: 'hod.shrine.critfail.follow',
+                label: 'Follow the cold down the road. It went somewhere.',
+                intent:
+                  'You track what left the shrine. It is travelling, and travelling things arrive.',
+                effects: [
+                  {
+                    kind: 'encounter_seed' as const,
+                    templateId: 'hod.senior.cleanse_corruption',
+                    delayTicks: FACTION_PROSE_SEED_DELAY_QUEST_TICKS,
+                    priority: 1.6,
+                    seedLabel: 'What the failed rite at {location} drove out of the shrine is moving along the pilgrim road.',
+                    inheritContext: true, // the SAME corruption, relocated
+                  },
+                ],
+                closeAfterSelection: true,
+              },
+              {
+                id: 'hod.shrine.critfail.bear',
+                label: 'Let {name} carry what the rite did. Do not soften it.',
+                intent:
+                  'You leave the knowledge where it landed. The faithful do not admit doubt aloud — but a hand that felt the stone go warm remembers.',
+                effects: [
+                  {
+                    kind: 'hidden_mark' as const,
+                    category: 'secret_knowledge',
+                    severity: FACTION_PROSE_HIDDEN_MARK_DEFAULT_SEVERITY + 0.15,
+                    label: 'Spoke the rite of cleansing at {location} and felt it answered from the wrong side',
+                    revealFamilies: ['investigation', 'holy_order', 'arcane'],
+                  },
+                ],
+                closeAfterSelection: false,
+              },
+              {
+                id: 'hod.shrine.critfail.withdraw',
+                label: 'Withdraw. The order will find the road on its own.',
+                intent: 'You take your hand off the shrine. What was loosed there is the order\'s to meet.',
+                effects: [],
+                closeAfterSelection: true,
+              },
+            ],
+          },
         },
       },
     },
@@ -458,6 +622,97 @@ export const HOLY_ORDER_DAWN_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           },
         ],
         byOutcome: {
+          success: {
+            overview:
+              'Every pilgrim who left the gate at {location} walks through the high temple gate at the other end. '
+              + 'The slowest of them arrives last and arrives whole, which is the whole of the work.',
+            changes: [
+              {
+                id: 'pilgrims_delivered',
+                kind: 'faction_reputation',
+                title: 'The pilgrims arrived whole.',
+                detail: 'The arrival log at the high temple carries every name that left. The Dawn walked the road.',
+                polarity: 'gain',
+                concepts: [
+                  { text: 'The Dawn', visualKind: 'faction', visualName: 'Holy Order of the Dawn' },
+                ],
+              },
+            ],
+            reactionPrompt: 'The road gave nothing up. What does the god leave at the high temple gate?',
+          },
+          critical_success: {
+            overview:
+              'The shadows on the road break before the blade is dry, and they break loudly. '
+              + 'By the time the pilgrims reach the high temple the story is already ahead of them: '
+              + 'the road past {location} is a road the Dawn walks. The next pilgrims will hear that before they set out.',
+            changes: [
+              {
+                id: 'pilgrim_road_secured',
+                kind: 'faction_reputation',
+                title: 'The road itself is safer.',
+                detail:
+                  'What broke on this road will not re-form quickly. The Dawn gains a road, not only an escort.',
+                polarity: 'gain',
+                concepts: [
+                  { text: 'The Dawn', visualKind: 'faction', visualName: 'Holy Order of the Dawn' },
+                ],
+              },
+              {
+                id: 'pilgrim_escort_renown',
+                kind: 'reputation',
+                title: 'The faithful will ask for {name} by name.',
+                detail: 'Pilgrims tell the story of who stood at the front of the road. Iron is what they saw and Iron is what they name.',
+                polarity: 'gain',
+                concepts: [
+                  { text: 'Iron', tooltipId: 'reach.iron' },
+                ],
+              },
+            ],
+            reactionPrompt: 'The road is broken open and the story is already walking. What does the god do with it?',
+            reactions: [
+              {
+                id: 'hod.pilgrims.crit.consecrate',
+                label: 'Consecrate the road while the story is still true.',
+                intent:
+                  'You put weight behind the telling. A road the faithful believe is safe becomes a road they will walk, '
+                  + 'and a road they walk stays clear.',
+                effects: [
+                  { kind: 'reputation_tally' as const, key: 'star.positive', delta: 2 },
+                  {
+                    kind: 'recent_event' as const,
+                    eventType: 'ripple_consequence',
+                    message: 'The pilgrim road past {location} is spoken of as the Dawn\'s road now. {name} made it so on foot.',
+                    significance: 0.6,
+                  },
+                ],
+                closeAfterSelection: true,
+              },
+              {
+                id: 'hod.pilgrims.crit.mark',
+                label: 'Keep what the attackers gave away when they broke.',
+                intent:
+                  'Men who run leave their sign behind them — a badge, a direction, a name shouted at the wrong moment. {name} was watching.',
+                effects: [
+                  {
+                    kind: 'hidden_mark' as const,
+                    category: 'secret_knowledge',
+                    severity: FACTION_PROSE_HIDDEN_MARK_DEFAULT_SEVERITY,
+                    label: 'Knows who sent the men who broke on the pilgrim road near {location}',
+                    revealFamilies: ['investigation', 'holy_order'],
+                  },
+                  { kind: 'reputation_tally' as const, key: 'star.positive', delta: 1 },
+                ],
+                closeAfterSelection: false,
+              },
+              {
+                id: 'hod.pilgrims.crit.pass',
+                label: 'Withdraw. Let the faithful own the road they walked.',
+                intent: 'You take nothing. The pilgrims will remember it as theirs, and it was.',
+                effects: [],
+                closeAfterSelection: true,
+              },
+            ],
+          },
           failure: {
             overview:
               'The attack on the road cost someone. The pilgrims arrived — most of them — but the wound from the road travels with them.',
@@ -658,6 +913,97 @@ export const HOLY_ORDER_DAWN_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
               },
             ],
           },
+          failure: {
+            overview:
+              '{name} comes back up out of the lair carrying a wound and no head. '
+              + 'The thing is still down there, and it knows now what the order sends. '
+              + 'The rite of a failed hunt is spoken at the mouth of the place, briefly, and without witnesses.',
+            changes: [
+              {
+                id: 'abomination_endures',
+                kind: 'faction_reputation',
+                title: 'The creature is still in {location}.',
+                detail: 'The Dawn will send a heavier hand. Until it does, the gutters stay wrong.',
+                polarity: 'loss',
+                concepts: [
+                  { text: 'The Dawn', visualKind: 'faction', visualName: 'Holy Order of the Dawn' },
+                ],
+              },
+            ],
+            reactionPrompt: 'The hunt closed with the thing still breathing. What does the god keep from it?',
+          },
+          critical_failure: {
+            overview:
+              'The thing in the dark does not merely hold — it takes the hunt away from {name} entirely. '
+              + 'The retreat is not a withdrawal in good order; it is a run, up through the wrong-smelling passages, '
+              + 'with the blade left where it fell. And the creature does not stay in its lair afterward. It follows the noise out into {location}.',
+            changes: [
+              {
+                id: 'abomination_loosed',
+                kind: 'faction_reputation',
+                title: 'The creature left the lair.',
+                detail:
+                  'It is in the streets of {location} now, not under them. The Dawn will be answering for this hunt for a long season.',
+                polarity: 'loss',
+                concepts: [
+                  { text: 'The Dawn', visualKind: 'faction', visualName: 'Holy Order of the Dawn' },
+                ],
+              },
+              {
+                id: 'abomination_blade_lost',
+                kind: 'item',
+                title: 'The blade stayed in the dark.',
+                detail: 'A blade of the order is down there with the thing that took it. Iron does not forgive being left.',
+                polarity: 'loss',
+                concepts: [
+                  { text: 'Iron', tooltipId: 'reach.iron' },
+                ],
+              },
+            ],
+            reactionPrompt: 'The hunter is running and the hunted is out. Where does the god put its hand?',
+            reactions: [
+              {
+                id: 'hod.slay.critfail.raise',
+                label: 'Raise the alarm through the faithful before it reaches the houses.',
+                intent:
+                  'You push the warning ahead of the thing. The order will meet it in the open, which is not where it wanted to be met.',
+                effects: [
+                  {
+                    kind: 'encounter_seed' as const,
+                    templateId: 'hod.senior.lead_crusade',
+                    delayTicks: FACTION_PROSE_SEED_DELAY_QUEST_TICKS,
+                    priority: 1.7,
+                    seedLabel: 'The creature that broke the hunt is loose in {location} and the order knows it.',
+                    inheritContext: true, // the SAME creature, now in the open
+                  },
+                ],
+                closeAfterSelection: true,
+              },
+              {
+                id: 'hod.slay.critfail.steady',
+                label: 'Steady the one who ran. The running is not the sin.',
+                intent:
+                  'You take the shame out of the retreat and leave the fear, which is the useful half. {name} will go back down there one day.',
+                effects: [
+                  {
+                    kind: 'recent_event' as const,
+                    eventType: 'ripple_consequence',
+                    message: 'The Dawn steadied {name} after the lair. The blade is gone; the hand is not.',
+                    significance: 0.5,
+                  },
+                  { kind: 'reputation_tally' as const, key: 'star.positive', delta: 1 },
+                ],
+                closeAfterSelection: true,
+              },
+              {
+                id: 'hod.slay.critfail.withdraw',
+                label: 'Withdraw. Let the order count what this cost.',
+                intent: 'You stand back. The faithful will speak of the hunt in the quiet way, and the quiet way lasts.',
+                effects: [],
+                closeAfterSelection: true,
+              },
+            ],
+          },
         },
       },
     },
@@ -809,6 +1155,82 @@ export const HOLY_ORDER_DAWN_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                 label: 'Withdraw. The verdict stands on its own.',
                 intent: 'You withdraw. Justice is a human thing — it does not require the god\'s hand to hold it upright.',
                 effects: [],
+                closeAfterSelection: true,
+              },
+            ],
+          },
+          success_at_cost: {
+            overview:
+              'The verdict is spoken and it holds — and the testimony that made it hold belonged to a witness who will not be '
+              + 'able to stay in {location} now. The assembled accept the judgment. They also watch the witness leave. '
+              + 'Both of those things happened, and the record keeps only the first.',
+            changes: [
+              {
+                id: 'judgment_held_at_cost',
+                kind: 'faction_reputation',
+                title: 'The judgment held. A witness paid for it.',
+                detail:
+                  'The Dawn enters a verdict upheld. What upholding it cost the one who testified goes in no hand at all.',
+                polarity: 'mixed',
+                concepts: [
+                  { text: 'The Dawn', visualKind: 'faction', visualName: 'Holy Order of the Dawn' },
+                ],
+              },
+              {
+                id: 'judgment_witness_exposed',
+                kind: 'future_hook',
+                title: 'The witness is known.',
+                detail: 'Everyone in the hall heard who spoke. The Eye of it is that {name} knew that before asking.',
+                polarity: 'loss',
+                concepts: [
+                  { text: 'Eye', tooltipId: 'reach.eye' },
+                ],
+              },
+            ],
+            reactionPrompt: 'The verdict stands and the one who made it stand is exposed. What does the god do?',
+            reactions: [
+              {
+                id: 'hod.judgment.cost.shield',
+                label: 'Put your hand between the witness and what comes next.',
+                intent:
+                  'You cover the one who spoke. The order asked for truth and did not ask what truth costs; you can answer the second part.',
+                effects: [
+                  {
+                    kind: 'hidden_mark' as const,
+                    category: 'reputation_note',
+                    severity: FACTION_PROSE_HIDDEN_MARK_DEFAULT_SEVERITY - 0.1,
+                    label: 'Testified in the judgment at {location} and was not left to stand alone',
+                    revealFamilies: ['holy_order', 'investigation'],
+                  },
+                  { kind: 'reputation_tally' as const, key: 'star.positive', delta: 1 },
+                ],
+                closeAfterSelection: true,
+              },
+              {
+                id: 'hod.judgment.cost.let_stand',
+                label: 'Let the cost stand where it fell. Justice is not free and should not look free.',
+                intent:
+                  'You leave it. A verdict that cost nobody anything teaches the faithful the wrong thing about verdicts.',
+                effects: [
+                  { kind: 'reputation_tally' as const, key: 'eye.positive', delta: 1 },
+                ],
+                closeAfterSelection: true,
+              },
+              {
+                id: 'hod.judgment.cost.seed',
+                label: 'The one who brought the charge has not been examined. Plant that.',
+                intent:
+                  'You turn the order\'s eye around. A charge that needed a ruined witness to prove is a charge worth looking at from the other end.',
+                effects: [
+                  {
+                    kind: 'encounter_seed' as const,
+                    templateId: 'hod.senior.inquisition',
+                    delayTicks: FACTION_PROSE_SEED_DELAY_QUEST_TICKS * 2,
+                    priority: 1.2,
+                    seedLabel: 'The accuser at the {location} judgment was never examined. The order has not asked why the charge was brought.',
+                    inheritContext: true, // the SAME accuser
+                  },
+                ],
                 closeAfterSelection: true,
               },
             ],
@@ -1001,6 +1423,103 @@ export const HOLY_ORDER_DAWN_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
               },
             ],
           },
+          failure: {
+            overview:
+              'The full rite is spoken to its end in the dark beneath {location}, and the dark takes it the way a deep well takes a stone. '
+              + '{name} climbs back up into the temple with the rite complete and nothing to show that it was.',
+            changes: [
+              {
+                id: 'deep_corruption_endures',
+                kind: 'faction_reputation',
+                title: 'The corruption at the root endures.',
+                detail: 'The Dawn will need more rites than one throat carries. The under-temple stays shut.',
+                polarity: 'loss',
+                concepts: [
+                  { text: 'The Dawn', visualKind: 'faction', visualName: 'Holy Order of the Dawn' },
+                ],
+              },
+            ],
+            reactionPrompt: 'The rite was whole and the dark was wider. What does the god carry up out of it?',
+          },
+          critical_failure: {
+            overview:
+              'The rite breaks in the middle, below ground, with no one else on the stair. '
+              + 'What was rooted under the temple at {location} comes up through the break — not at {name}, past {name} — '
+              + 'and the light that finally fills the under-temple is the light of the order burning what it cannot cleanse.',
+            changes: [
+              {
+                id: 'deep_corruption_surfaced',
+                kind: 'faction_reputation',
+                title: 'The root came up.',
+                detail:
+                  'The temple at {location} is a fire and a closed door. The Dawn loses a house to keep a city.',
+                polarity: 'loss',
+                concepts: [
+                  { text: 'The Dawn', visualKind: 'faction', visualName: 'Holy Order of the Dawn' },
+                ],
+              },
+              {
+                id: 'deep_rite_broken',
+                kind: 'shell_state',
+                title: 'The rite broke in the mouth that spoke it.',
+                detail: 'A full purging left unfinished sits in the one who left it. Star does not close what it half-opens.',
+                polarity: 'loss',
+                concepts: [
+                  { text: 'Star', tooltipId: 'reach.star' },
+                ],
+              },
+            ],
+            reactionPrompt: 'The under-temple is burning and the rite is unfinished in {name}. What does the god do?',
+            reactions: [
+              {
+                id: 'hod.cleanse.critfail.close',
+                label: 'Close the rite yourself. Finish what the throat could not.',
+                intent:
+                  'You speak the last of it where {name} could not. The order will never know a god finished its rite — and the rite is finished.',
+                effects: [
+                  { kind: 'reputation_tally' as const, key: 'star.positive', delta: 2 },
+                  {
+                    kind: 'recent_event' as const,
+                    eventType: 'ripple_consequence',
+                    message: 'The purging beneath {location} was closed after the fire. No hand in the order can say by whom.',
+                    significance: 0.7,
+                  },
+                ],
+                closeAfterSelection: true,
+              },
+              {
+                id: 'hod.cleanse.critfail.mark',
+                label: 'Keep what came up the stair. It had a shape.',
+                intent:
+                  'You hold the shape of the thing that passed. It went somewhere, and things that go somewhere arrive.',
+                effects: [
+                  {
+                    kind: 'hidden_mark' as const,
+                    category: 'secret_knowledge',
+                    severity: FACTION_PROSE_HIDDEN_MARK_DEFAULT_SEVERITY + 0.2,
+                    label: 'Saw what came up the stair when the purging broke beneath {location}',
+                    revealFamilies: ['investigation', 'holy_order', 'arcane'],
+                  },
+                  {
+                    kind: 'encounter_seed' as const,
+                    templateId: 'hod.senior.inquisition',
+                    delayTicks: FACTION_PROSE_SEED_DELAY_QUEST_TICKS * 2,
+                    priority: 1.5,
+                    seedLabel: 'What came up the stair beneath {location} when the purging broke has not been found.',
+                    inheritContext: true, // the SAME root, now above ground
+                  },
+                ],
+                closeAfterSelection: true,
+              },
+              {
+                id: 'hod.cleanse.critfail.withdraw',
+                label: 'Withdraw. Let the order burn its own house.',
+                intent: 'You stand back from the fire. The faithful built that temple and the faithful will decide what it was worth.',
+                effects: [],
+                closeAfterSelection: true,
+              },
+            ],
+          },
         },
       },
     },
@@ -1150,6 +1669,79 @@ export const HOLY_ORDER_DAWN_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
                 effects: [
                   { kind: 'reputation_tally' as const, key: 'star.positive', delta: 1 },
                 ],
+                closeAfterSelection: true,
+              },
+            ],
+          },
+          critical_success: {
+            overview:
+              'The gates do not hold long enough to be called a siege. What breaks inside the stronghold is not only the wall — '
+              + 'the cause breaks with it, in front of its own people, and the ones who carried it put the banner down '
+              + 'rather than carry it another day. {name} walks in through a gate nobody is defending.',
+            changes: [
+              {
+                id: 'crusade_cause_broken',
+                kind: 'faction_reputation',
+                title: 'The enemy cause broke, not only its house.',
+                detail:
+                  'The Dawn takes a stronghold and the belief that held it. The second is the one the order will still have next season.',
+                polarity: 'gain',
+                concepts: [
+                  { text: 'The Dawn', visualKind: 'faction', visualName: 'Holy Order of the Dawn' },
+                ],
+              },
+              {
+                id: 'crusade_banner_raised',
+                kind: 'reputation',
+                title: 'The faithful know who opened the gate.',
+                detail: 'A crusade ends the way its first hand ended it. Iron opened that gate and the order counted the hand.',
+                polarity: 'gain',
+                concepts: [
+                  { text: 'Iron', tooltipId: 'reach.iron' },
+                ],
+              },
+            ],
+            reactionPrompt: 'The house and the cause both fell. What does the god do at an open gate?',
+            reactions: [
+              {
+                id: 'hod.crusade.crit.mercy',
+                label: 'Stay the hand at the open gate. They put the banner down.',
+                intent:
+                  'You hold {name} at the threshold. The ones inside surrendered a belief, which is harder than surrendering a wall, '
+                  + 'and the order does not need to kill them to have won.',
+                effects: [
+                  { kind: 'reputation_tally' as const, key: 'heart.positive', delta: 2 },
+                  {
+                    kind: 'recent_event' as const,
+                    eventType: 'ripple_consequence',
+                    message: 'The crusade at {location} ended at an open gate without a sack. The story of that will travel further than the victory.',
+                    significance: 0.7,
+                  },
+                ],
+                closeAfterSelection: true,
+              },
+              {
+                id: 'hod.crusade.crit.claim',
+                label: 'Take the stronghold\'s records before the order takes inventory.',
+                intent:
+                  'You reach the archive first. What a broken cause wrote down about itself is worth more than its walls.',
+                effects: [
+                  {
+                    kind: 'hidden_mark' as const,
+                    category: 'secret_knowledge',
+                    severity: FACTION_PROSE_HIDDEN_MARK_DEFAULT_SEVERITY + 0.2,
+                    label: 'Read the enemy\'s own records at {location} before the order inventoried them',
+                    revealFamilies: ['holy_order', 'investigation', 'intrigue'],
+                  },
+                  { kind: 'reputation_tally' as const, key: 'star.positive', delta: 2 },
+                ],
+                closeAfterSelection: false,
+              },
+              {
+                id: 'hod.crusade.crit.pass',
+                label: 'Withdraw. The victory is the order\'s and should look like it.',
+                intent: 'You take nothing from the gate. The faithful carried this, and a god at the front of it would make it smaller.',
+                effects: [],
                 closeAfterSelection: true,
               },
             ],
@@ -1367,6 +1959,93 @@ export const HOLY_ORDER_DAWN_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
               },
             ],
           },
+          success_at_cost: {
+            overview:
+              'The cult in {location} is broken and two of the names taken were not cult at all. '
+              + 'They were in the wrong house on the wrong evening and the documents read as though they were not. '
+              + 'The order files the inquisition as complete. {name} files it the same way, in the same hand, and knows the difference.',
+            changes: [
+              {
+                id: 'cult_broken_at_cost',
+                kind: 'faction_reputation',
+                title: 'The cult is broken. Two names were wrong.',
+                detail:
+                  'The Dawn records an inquisition closed. Two of the taken will not be un-taken by a record.',
+                polarity: 'mixed',
+                concepts: [
+                  { text: 'The Dawn', visualKind: 'faction', visualName: 'Holy Order of the Dawn' },
+                ],
+              },
+              {
+                id: 'inquisition_wrong_names',
+                kind: 'future_hook',
+                title: 'The wrong names have families.',
+                detail: 'People in {location} who were faithful last month are counting who the order took. That count does not stop.',
+                polarity: 'loss',
+                concepts: [
+                  { text: 'the order', visualKind: 'faction', visualName: 'Holy Order of the Dawn' },
+                ],
+              },
+            ],
+            reactionPrompt: 'The rite worked and it took two who were clean. What does the god do with that?',
+            reactions: [
+              {
+                id: 'hod.inquisition.cost.correct',
+                label: 'Put the error in front of {name} where it cannot be filed away.',
+                intent:
+                  'You will not let the second hand smooth this. An inquisitor who can lose two clean names without feeling it '
+                  + 'will lose more of them next time.',
+                effects: [
+                  {
+                    kind: 'hidden_mark' as const,
+                    category: 'soul_diminishment',
+                    severity: FACTION_PROSE_HIDDEN_MARK_DEFAULT_SEVERITY,
+                    label: 'Took two clean names in the inquisition at {location} and was not allowed to forget it',
+                    revealFamilies: ['holy_order', 'investigation'],
+                  },
+                  { kind: 'reputation_tally' as const, key: 'eye.positive', delta: 1 },
+                ],
+                closeAfterSelection: false,
+              },
+              {
+                id: 'hod.inquisition.cost.shield',
+                label: 'Reach the two families before the order\'s record does.',
+                intent:
+                  'You get there first. What the order took cannot be given back, but the ones left behind can be found by a hand that is not the order\'s.',
+                effects: [
+                  { kind: 'reputation_tally' as const, key: 'heart.positive', delta: 2 },
+                ],
+                closeAfterSelection: true,
+              },
+              {
+                id: 'hod.inquisition.cost.let_close',
+                label: 'Let the file close. The cult is broken and that was the work.',
+                intent:
+                  'You let it stand as written. The rite asked for a network ended, and a network ended.',
+                effects: [],
+                closeAfterSelection: true,
+              },
+            ],
+          },
+          failure: {
+            overview:
+              'The cult hears the order coming — a day early, which is all it needs. '
+              + 'The house at {location} is emptied of everything but furniture by the time {name} reaches it. '
+              + 'The rite for a failed inquisition is spoken without witnesses, which is the order\'s mercy.',
+            changes: [
+              {
+                id: 'cult_scattered',
+                kind: 'faction_reputation',
+                title: 'The cult scattered before the rite.',
+                detail: 'The Dawn takes no names. What was in that house is in a dozen houses now.',
+                polarity: 'loss',
+                concepts: [
+                  { text: 'The Dawn', visualKind: 'faction', visualName: 'Holy Order of the Dawn' },
+                ],
+              },
+            ],
+            reactionPrompt: 'The house was empty a day too early. What does the god keep from it?',
+          },
         },
       },
     },
@@ -1541,6 +2220,90 @@ export const HOLY_ORDER_DAWN_ELITE_TEMPLATES: UnifiedActionTemplate[] = [
                 effects: [
                   { kind: 'reputation_tally' as const, key: 'star.positive', delta: 2 },
                 ],
+                closeAfterSelection: true,
+              },
+            ],
+          },
+          critical_failure: {
+            overview:
+              'This is not a retreat. The line does not bend and then hold somewhere behind itself — it opens, '
+              + 'and the holy war ends in the field at {location} in an afternoon. '
+              + '{name} comes out of it with a banner and no host to carry it. '
+              + 'There is no rite for this because the order has never needed one twice.',
+            changes: [
+              {
+                id: 'holy_war_host_broken',
+                kind: 'faction_reputation',
+                title: 'The host is broken.',
+                detail:
+                  'The Dawn does not have an army in this region any more. It has survivors, and a road home.',
+                polarity: 'loss',
+                concepts: [
+                  { text: 'The Dawn', visualKind: 'faction', visualName: 'Holy Order of the Dawn' },
+                ],
+              },
+              {
+                id: 'holy_war_faith_shaken',
+                kind: 'shell_state',
+                title: 'The faithful watched the light lose.',
+                detail:
+                  'Belief that has seen its own banner go down in open field is a different belief. {name} carries that back with the banner.',
+                polarity: 'loss',
+                concepts: [
+                  { text: 'the banner', visualKind: 'faction', visualName: 'Holy Order of the Dawn' },
+                ],
+              },
+            ],
+            reactionPrompt: 'The host is gone and the banner came home. What does the god do with a faith that lost in the open?',
+            reactions: [
+              {
+                id: 'hod.war.critfail.hold_faith',
+                label: 'Hold the belief up while it is falling. It is the only thing left standing.',
+                intent:
+                  'You take the weight of the field. The order will rebuild a host in a decade; it rebuilds a faith '
+                  + 'only if someone holds it through the season after a day like this.',
+                effects: [
+                  { kind: 'reputation_tally' as const, key: 'star.positive', delta: 3 },
+                  {
+                    kind: 'recent_event' as const,
+                    eventType: 'ripple_consequence',
+                    message: 'The Dawn lost its host at {location} and did not lose its faithful. {name} walked the road home at the front.',
+                    significance: 0.9,
+                  },
+                ],
+                closeAfterSelection: true,
+              },
+              {
+                id: 'hod.war.critfail.mark_field',
+                label: 'Keep the field exactly as it was. Every part of it.',
+                intent:
+                  'You hold the whole afternoon where {name} can reach it — the ground, the order of the enemy\'s lines, '
+                  + 'the moment the flank went. A defeat carried in full is the only thing a second attempt can be built on.',
+                effects: [
+                  {
+                    kind: 'hidden_mark' as const,
+                    category: 'secret_knowledge',
+                    severity: FACTION_PROSE_HIDDEN_MARK_DEFAULT_SEVERITY + 0.25,
+                    label: 'Carries the whole of the day the holy war broke at {location}',
+                    revealFamilies: ['holy_order', 'investigation'],
+                  },
+                  {
+                    kind: 'encounter_seed' as const,
+                    templateId: 'hod.elite.holy_war',
+                    delayTicks: FACTION_PROSE_SEED_DELAY_QUEST_TICKS * 4,
+                    priority: 1.8,
+                    seedLabel: 'The host broke at {location}. The enemy holds the field and knows the order will come back to it.',
+                    inheritContext: true, // the SAME enemy, the same field
+                  },
+                ],
+                closeAfterSelection: true,
+              },
+              {
+                id: 'hod.war.critfail.withdraw',
+                label: 'Withdraw. Let the faithful bury this without a god in the room.',
+                intent:
+                  'You stand away from it. Grief on this scale belongs to the ones who were there, and a god at the graveside would take it from them.',
+                effects: [],
                 closeAfterSelection: true,
               },
             ],
@@ -1759,6 +2522,105 @@ export const HOLY_ORDER_DAWN_ELITE_TEMPLATES: UnifiedActionTemplate[] = [
                 effects: [
                   { kind: 'reputation_tally' as const, key: 'star.positive', delta: 2 },
                 ],
+                closeAfterSelection: true,
+              },
+            ],
+          },
+          failure: {
+            overview:
+              '{name} stands in the inner sanctum at {location} until the order opens the door again, and the light does not answer. '
+              + 'Not refusal — silence. The sanctum says nothing at all, which the order has words for and {name} does not.',
+            changes: [
+              {
+                id: 'trial_unanswered',
+                kind: 'faction_reputation',
+                title: 'The light did not answer.',
+                detail: 'The Dawn enters a trial attempted. There is no second line in the record for why.',
+                polarity: 'loss',
+                concepts: [
+                  { text: 'The Dawn', visualKind: 'faction', visualName: 'Holy Order of the Dawn' },
+                ],
+              },
+            ],
+            reactionPrompt: 'The sanctum stayed silent. What does the god do at a door that opened on nothing?',
+          },
+          critical_failure: {
+            overview:
+              'The light answers, and what it answers is no. '
+              + '{name} comes out of the inner sanctum at {location} before the order expects the door to open, '
+              + 'and the ones waiting outside see the face and stop asking. '
+              + 'The order will call this a trial deferred. The sanctum was not deferring.',
+            changes: [
+              {
+                id: 'trial_refused',
+                kind: 'faction_reputation',
+                title: 'The trial refused the one who entered.',
+                detail:
+                  'The Dawn does not write refusals down. Everyone who stood at that door knows the record is short a line.',
+                polarity: 'loss',
+                concepts: [
+                  { text: 'The Dawn', visualKind: 'faction', visualName: 'Holy Order of the Dawn' },
+                ],
+              },
+              {
+                id: 'trial_refusal_carried',
+                kind: 'shell_state',
+                title: 'The refusal came out with {name}.',
+                detail:
+                  'A sanctum that speaks once speaks for a long time afterward. Star answered, and the answer stays in the ear.',
+                polarity: 'loss',
+                concepts: [
+                  { text: 'Star', tooltipId: 'reach.star' },
+                ],
+              },
+            ],
+            reactionPrompt: 'The Dawn refused its own. Where does the god stand at that door?',
+            reactions: [
+              {
+                id: 'hod.trial.critfail.stand',
+                label: 'Stand with the one the sanctum turned away.',
+                intent:
+                  'You take the side the order cannot take. The Dawn refused {name}; you did not, and {name} will know which of those came first.',
+                effects: [
+                  { kind: 'reputation_tally' as const, key: 'heart.positive', delta: 3 },
+                  {
+                    kind: 'recent_event' as const,
+                    eventType: 'ripple_consequence',
+                    message: 'The sanctum at {location} refused {name}. Something else did not.',
+                    significance: 0.8,
+                  },
+                ],
+                closeAfterSelection: true,
+              },
+              {
+                id: 'hod.trial.critfail.mark',
+                label: 'Keep what the light actually said. The order will not.',
+                intent:
+                  'You hold the refusal exactly as it was given, in its own words. A mandate denied for a reason is a reason someone can go and answer.',
+                effects: [
+                  {
+                    kind: 'hidden_mark' as const,
+                    category: 'secret_knowledge',
+                    severity: FACTION_PROSE_HIDDEN_MARK_DEFAULT_SEVERITY + 0.2,
+                    label: 'Knows what the sanctum at {location} said when it refused the mandate',
+                    revealFamilies: ['holy_order', 'divine', 'investigation'],
+                  },
+                  {
+                    kind: 'encounter_seed' as const,
+                    templateId: 'hod.elite.divine_trial',
+                    delayTicks: FACTION_PROSE_SEED_DELAY_QUEST_TICKS * 4,
+                    priority: 1.4,
+                    seedLabel: 'The sanctum at {location} refused {name} for a reason. The reason has not been answered.',
+                    inheritContext: true, // the SAME refusal, unanswered
+                  },
+                ],
+                closeAfterSelection: true,
+              },
+              {
+                id: 'hod.trial.critfail.withdraw',
+                label: 'Withdraw. The trial is between the faithful and the Dawn.',
+                intent: 'You leave the door. Whatever passed in that room was not addressed to you.',
+                effects: [],
                 closeAfterSelection: true,
               },
             ],

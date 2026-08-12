@@ -359,18 +359,27 @@ describe('aftermath resolution across the real corpus (THR-1038)', () => {
 describe('aftermath variant shape across the real corpus (THR-1054)', () => {
   const withAftermath = UNIFIED_ACTION_TEMPLATES.filter((t) => t.aftermathConfig);
 
-  /** The ten templates the defect was found on, with the bands each authored. */
+  /**
+   * The ten templates the defect was found on, with the bands each authors.
+   *
+   * THR-1055 raised all ten to the Encounter Factory floor of three bands
+   * (`COMPOSITION_BYOUTCOME_MIN_BANDS`) including one extreme. The extremes are
+   * the reason this table is pinned rather than counted: `critical_success`,
+   * `critical_failure` and `success_at_cost` are the bands a playthrough rolls
+   * least often, so a regression that unhooked one would be invisible in play
+   * for a long time and visible here immediately.
+   */
   const REKEYED_HOD_BANDS: ReadonlyArray<readonly [string, readonly UnifiedActionOutcome[]]> = [
-    ['hod.quest.temple_vigil', ['failure']],
-    ['hod.quest.purify_shrine', ['success']],
-    ['hod.quest.escort_pilgrims', ['failure']],
-    ['hod.quest.slay_abomination', ['success']],
-    ['hod.quest.deliver_judgment', ['success', 'failure']],
-    ['hod.senior.cleanse_corruption', ['success']],
-    ['hod.senior.lead_crusade', ['success', 'failure']],
-    ['hod.senior.inquisition', ['success']],
-    ['hod.elite.holy_war', ['success', 'failure']],
-    ['hod.elite.divine_trial', ['success']],
+    ['hod.quest.temple_vigil', ['success', 'success_at_cost', 'failure']],
+    ['hod.quest.purify_shrine', ['success', 'failure', 'critical_failure']],
+    ['hod.quest.escort_pilgrims', ['success', 'critical_success', 'failure']],
+    ['hod.quest.slay_abomination', ['success', 'failure', 'critical_failure']],
+    ['hod.quest.deliver_judgment', ['success', 'success_at_cost', 'failure']],
+    ['hod.senior.cleanse_corruption', ['success', 'failure', 'critical_failure']],
+    ['hod.senior.lead_crusade', ['success', 'critical_success', 'failure']],
+    ['hod.senior.inquisition', ['success', 'success_at_cost', 'failure']],
+    ['hod.elite.holy_war', ['success', 'critical_failure', 'failure']],
+    ['hod.elite.divine_trial', ['success', 'failure', 'critical_failure']],
   ];
 
   it('every variants entry is an AftermathVariant, not a nested band map', () => {
