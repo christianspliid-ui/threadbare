@@ -1,14 +1,16 @@
 # Briefing
 
-**Generated:** 2026-08-12 19:57 local (2026-08-12 17:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-08-12 20:58 local (2026-08-12 18:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**Nothing needs you right now — and the thing you asked for on 10 August just became buildable.**
+**Nothing needs you right now — the thing you asked for on 10 August is built and in review.**
 
-The consequence-language design session finished at 19:31 and handed off. [THR-1082](https://linear.app/threadbare/issue/THR-1082/consequence-icon-language-aftermath-must-show-what-changed-and-roughly) is now top of the queue at High, with its plan doc merged: [`2026-08-12-thr-1082-consequence-language.md`](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-08-12-thr-1082-consequence-language.md) ([PR #1413](https://github.com/christianspliid-ui/threadbare/pull/1413)). Everything it needed from you, it already has — the four categories, the ▲/▼ delta cluster as the magnitude idiom, the palette rule, and the Law 13/15 amendments were all settled with you in chat today. The executor picks it up at 20:00.
+[THR-1082](https://linear.app/threadbare/issue/THR-1082/consequence-icon-language-aftermath-must-show-what-changed-and-roughly) went from handoff to working code in about forty minutes. The executor claimed it at 20:02, and [PR #1415](https://github.com/christianspliid-ui/threadbare/pull/1415) — *"the aftermath names what changed, instead of reporting a die roll"* — has been open since roughly 20:37. It is clean, it is not conflicted, and no decision of yours is holding it.
 
-Nothing is asked of you until there is something on screen to look at.
+It is not merged yet, and that is deliberate: the change moves layout, so it owes a screenshot at the contractual size before it ships, and the executor judged the automated route insufficient for a layout change. That is a gate call, which is ours to make — not a question for you. It merges without you.
+
+Nothing is asked of you until there is something on a deployed screen to look at.
 
 ## Also waiting (1)
 
@@ -16,21 +18,19 @@ Nothing is asked of you until there is something on screen to look at.
 
 ## Queue
 
-**Backed up — 24 ready, 0 in flight.** The zero is clean: the executor closed out and the next pickup fires at 20:00.
+**Backed up — 25 ready, 1 in flight.** The one in flight is THR-1082 above.
 
-- **The "shelf is entirely cleanup" finding is over.** That session spawned four product tickets in an hour: [THR-1082](https://linear.app/threadbare/issue/THR-1082/consequence-icon-language-aftermath-must-show-what-changed-and-roughly) (High, ready now), [THR-1097](https://linear.app/threadbare/issue/THR-1097/consequence-content-pass-every-vertical-slice-ending-rewritten-as) (High — every slice ending rewritten as cause → change), [THR-1096](https://linear.app/threadbare/issue/THR-1096/companion-attachments-a-person-in-the-retinue-granting-bonuses-who-is) (High — companion attachments, the new category from your palette ruling) and [THR-1098](https://linear.app/threadbare/issue/THR-1098/ul-proposal-scar-bond-boon-path-the-four-consequence-categories) (the SCAR/BOND/BOON/PATH naming). Three of the four sit in `Todo` waiting on the orchestrator's promotion sweep at 20:26 — no action from you.
-- **Shipped this hour:** [THR-1033](https://linear.app/threadbare/issue/THR-1033/aftermath-consequence-chips-markstandingtollwound-render-inert-no) — the aftermath chips now explain their own concept words instead of naming them inertly ([PR #1412](https://github.com/christianspliid-ui/threadbare/pull/1412)).
-- **[THR-907](https://linear.app/threadbare/issue/THR-907/slice-verdict-session-christian-rules-on-prose-firing-ui-and-game) and [THR-974](https://linear.app/threadbare/issue/THR-974/consequence-verdict-session-christian-rules-on-world-graph-consequence) are being re-listed as needing you for the fifth hour running.** They still don't. Both carry your 2026-08-10 rulings and both still sit in `Todo`, which is why every lane keeps finding them. It repeats hourly until an executor moves the two states.
-- **What will genuinely come back to you, and when:** THR-974 is the re-play of the consequence verdict. You ruled "not yet — surfaced but not legible" on it; THR-1082 and THR-1097 are precisely the legibility fix. When those two ship, that re-play is worth your time — and it will be the ask in this slot.
+- **The consequence work is moving as a chain, and the chain is intact.** [THR-1098](https://linear.app/threadbare/issue/THR-1098/ul-proposal-scar-bond-boon-path-the-four-consequence-categories) (the SCAR/BOND/BOON/PATH naming) was promoted to Ready for Dev at 20:29 and [THR-1096](https://linear.app/threadbare/issue/THR-1096/companion-attachments-a-person-in-the-retinue-granting-bonuses-who-is) (companion attachments) is queued at High with its [plan doc](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-08-12-thr-1096-companion-attachments.md) merged ([PR #1414](https://github.com/christianspliid-ui/threadbare/pull/1414)). [THR-1097](https://linear.app/threadbare/issue/THR-1097/consequence-content-pass-every-vertical-slice-ending-rewritten-as) — every slice ending rewritten as cause → change — is correctly held until THR-1082 lands, because it needs those fields to exist first.
+- **For the executor, not for you: the attended-capture hold on PR #1415 is worth one look before it becomes a habit.** The project's own rules name an automated browser route as valid for unattended runs, so "wait for an attended session" should be a considered choice each time rather than the default. The next session that picks this up should either use that route or record why it does not.
+- **[THR-907](https://linear.app/threadbare/issue/THR-907/slice-verdict-session-christian-rules-on-prose-firing-ui-and-game) and [THR-974](https://linear.app/threadbare/issue/THR-974/consequence-verdict-session-christian-rules-on-world-graph-consequence) were re-listed as needing you for the sixth hour running.** They still don't — you ruled both on 2026-08-10. They keep resurfacing because the rulings live in comments while the tickets sit in `Todo`; an executor moving two states ends it. THR-974 genuinely does come back to you later, once THR-1082 and THR-1097 have shipped and there is something legible to judge.
+- **This morning's grooming report asked you to switch the two work lanes back on.** Already done — both the executor and the orchestrator have been running all afternoon and shipped four merges. Folded in only so the stale ask is visibly closed.
 - Stale: [THR-991](https://linear.app/threadbare/issue/THR-991/ul-shards-can-record-a-term-as-rejected-only-by-mislabelling-it), untouched 9 days.
-- No parked In-Dev issues.
 
 ## Health
 
-**All green, with two executor items and one correction to last hour's brief.**
+**All green.** Two standing executor chores, unchanged from last hour.
 
-- **Correction: the home copy's packages are fine.** Last hour reported them missing for a fifth day; both the test runner and the bundler are present and working. That line was wrong and is withdrawn.
-- **Auto-sync is healthy** — three clean runs at 17:50, 18:50 and 19:50, home copy level with `main` at [`e9f3b161`](https://github.com/christianspliid-ui/threadbare/commit/e9f3b161). Two edits are still parked in it (`.claude/settings.json`, `.claude/settings.local.json`); harmless now, but they will stall it again the moment a commit touches either file. Executor's job to clear or commit them.
-- **Two stale worktrees still need disposition** — `hopeful-shaw-3150f4` (24d) and `jovial-mcnulty-37a4c9` (25d), both carrying unmerged work the housekeeping job refuses to delete on its own. It otherwise ran 17 minutes ago and is healthy.
-- **The lane-silence probe still flags the 20.6 h gap on 10–11 Aug.** Declined again as machine-off per your 2026-08-08 ruling. Noted only so it is not read as a new outage.
-- Deploy, CI checks, scheduled workflows and all nine task heartbeats: green. The live site is serving the latest commit on `main`. One open PR ([#1114](https://github.com/christianspliid-ui/threadbare/pull/1114)) is on hold on purpose.
+- **Auto-sync recovered on its own and is clean** — the three skipped runs at 16:50–18:50 cleared, and the last four hours are green with the home copy level with `main` at [`e9f3b161`](https://github.com/christianspliid-ui/threadbare/commit/e9f3b161). Two edits are still parked in it (`.claude/settings.json`, `.claude/settings.local.json`); harmless today, but they are exactly what caused those three skips and will do it again the moment a commit touches either file. Executor's job to clear or commit them.
+- **Two stale worktrees still need disposition** — `hopeful-shaw-3150f4` (24d) and `jovial-mcnulty-37a4c9` (25d), both holding unmerged work the housekeeping job will not delete on its own. It ran 18 minutes ago and is otherwise healthy.
+- **The lane-silence probe still flags the 20.6 h gap on 10–11 Aug.** Declined again as machine-off per your 2026-08-08 ruling. Noted so it is not misread as a new outage.
+- Deploy, CI checks, scheduled workflows and all nine task heartbeats: green. The live site is serving the latest commit on `main`. Two open PRs, both on hold on purpose ([#1415](https://github.com/christianspliid-ui/threadbare/pull/1415) above, [#1114](https://github.com/christianspliid-ui/threadbare/pull/1114) waiting on the encounter-writing format).
