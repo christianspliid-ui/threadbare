@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-12 01:55 local (2026-08-11 23:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077/designuser-actionsmd-has-grown-into-a-run-by-run-diary-christians). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-12 02:57 local (2026-08-12 00:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077/designuser-actionsmd-has-grown-into-a-run-by-run-diary-christians). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -8,20 +8,20 @@
 
 Two of the nine scheduled jobs are off — disabled, not merely quiet — and have missed every slot since:
 
-- **`tb-opus-pickup`** — the executor lane. Last ran 22:01, shipped THR-1071, has since skipped 23:01, 00:01 and 01:01.
-- **`tb-orchestrator`** — decides what gets promoted next. Last ran 21:26, has since skipped 22:25, 23:25, 00:25 and 01:25.
+- **`tb-opus-pickup`** — the executor lane. Last ran 22:01, shipped THR-1071, has since skipped 23:01, 00:01, 01:01 and 02:01.
+- **`tb-orchestrator`** — decides what gets promoted next. Last ran 21:26, has since skipped 22:25, 23:25, 00:25, 01:25 and 02:25.
 
-No pause marker records it (the marker on disk is an expired historical one from 2026-08-03). **While the executor lane is off, nothing on the board moves** — including work your other rulings would create. The queue has sat unchanged at 21 ready / 0 in flight for four hours.
+No pause marker records it (the marker on disk is an expired historical one from 2026-08-03). **While the executor lane is off, nothing on the board moves** — including work your other rulings would create. The queue has sat unchanged at 21 ready / 0 in flight for five hours.
 
 **If you turned them off: just say so** and a marker gets dropped, which also closes the overnight question below. It would be a coherent follow-through on your 2026-08-10 direction to stop the lanes filing cleanup work — switching off the lane that drains it is the same instinct. **If you didn't:** say that, and it gets investigated as a real stoppage.
 
-**Same question also covers the overnight silence.** No lane wrote anything 2026-08-10 21:57 → 2026-08-11 18:32 local (~20.6 h). Most of that is the machine asleep, but it was demonstrably up 07:26–12:40 local with nothing firing — the usage-limit pattern rather than a fault.
+**Same question also covers the overnight silence.** No lane wrote anything 2026-08-10 21:57 → 2026-08-11 18:32 local (~20.6 h), with no pause marker covering it.
 
 ### 2. The play sitting — two rulings over the same five encounters
 
 **Session A — the four-part verdict** ([THR-907](https://linear.app/threadbare/issue/THR-907)): does the prose read clear, does the firing rhythm work, is the interface gamey enough, and is deciding actually fun. *"Needs another iteration"* is a valid answer on any of the four.
 
-**Session B — the consequence verdict** ([THR-974](https://linear.app/threadbare/issue/THR-974)): play a hand to its ending and say whether the change to the world is **visible**, and whether it feels like it **happened in the world** rather than being announced at you. Both gating tickets shipped; fully unblocked on each of the orchestrator's last five runs.
+**Session B — the consequence verdict** ([THR-974](https://linear.app/threadbare/issue/THR-974)): play a hand to its ending and say whether the change to the world is **visible**, and whether it feels like it **happened in the world** rather than being announced at you. Both gating tickets shipped; fully unblocked.
 
 - [The bargain at the crossroads](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.bargain_at_crossroads) · [Riders behind the caravan](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.riders_behind_caravan) · [Snow on the pass](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.snow_on_the_pass) · [The swindled family](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.swindled_family) · [The unsafe bridge](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge)
 
