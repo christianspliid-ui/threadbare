@@ -380,11 +380,11 @@ const LEGACY_FACTION_QUEST_TEMPLATES: FactionEntry[] = [
       {
         id: 'ag.senior.deep_expedition.1',
         name: 'Assemble the Team',
-        narrative: 'The guild entrusts you with leading an expedition into uncharted depths.',
+        narrative: 'The guild entrusts one of its sergeants with an expedition into uncharted depths.',
         reach: 'heart',
         difficulty: FACTION_SENIOR_BASE,
         duration: 2,
-        onSuccess: { narrative: 'A capable team rallies to your banner.' },
+        onSuccess: { narrative: 'A capable team rallies to the banner.' },
         onFailure: { narrative: 'Few volunteers step forward. The expedition is undermanned.' },
       },
       {
@@ -394,7 +394,7 @@ const LEGACY_FACTION_QUEST_TEMPLATES: FactionEntry[] = [
         reach: 'iron',
         difficulty: FACTION_SENIOR_BASE + FACTION_DIFFICULTY_STEP,
         duration: 3,
-        onSuccess: { narrative: 'Your leadership holds the team together through the worst of it.' },
+        onSuccess: { narrative: 'Steady command holds the team together through the worst of it.' },
         onFailure: { narrative: 'Morale breaks. The team refuses to go deeper.' },
       },
       {
