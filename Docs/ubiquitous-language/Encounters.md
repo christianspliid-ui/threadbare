@@ -54,6 +54,66 @@ A player or agent choice presented during the Aftermath phase. Each Reaction has
 
 ---
 
+### SCAR
+
+**Aliases:** SCAR chip, scar consequence
+**Also see:** `[[BOND]]`, `[[BOON]]`, `[[PATH]]`, `[[Aftermath]]`, `[[Hidden Mark]]`
+**Status:** canonical
+
+A consequence category: **what the encounter cost the character**, written on body or spirit — an injury, a loss, a weight carried away from the scene.
+
+SCAR is one of **four** consequence categories — SCAR, `[[BOND]]`, `[[BOON]]`, `[[PATH]]` — that replace the six display kinds the aftermath used before (`TOLL`, `MARK`, `SEED`, `PRIZE`, `STANDING`, `WOUND`). The four are story-first: each names something that happened *to the character*, where the old six named the engine's own bookkeeping. SCAR absorbs the retired `TOLL` and `WOUND`. Specified in `Docs/plans/2026-08-12-thr-1082-consequence-language.md` § Design decisions 1; the display labels live in `CONSEQUENCE_CATEGORY_LABELS`.
+
+**The words are author-facing, not just display copy.** Encounter authors declare a consequence's `category` per the nudge authoring spec, so the vocabulary crosses engine payload, authoring spec, and UI at once — which is why the four are seated here rather than left as UI strings.
+
+**`MARK` was deleted rather than renamed, and that is the load-bearing part of the taxonomy.** It was the "everything else" bucket, and a bucket named *everything else* can never be story-legible. There is deliberately no fifth catch-all: a change whose kind cannot be classified folds **by polarity** — `loss` and `mixed` become SCAR, `gain` becomes `[[BOON]]`, `info` becomes `[[PATH]]` — never a blank and never a new bucket. A fifth category may be added later only as a design decision with a plan-doc note, never by resurrecting MARK.
+
+**The retired `MARK` display kind is not `[[Hidden Mark]]`.** They share a word and nothing else: `[[Hidden Mark]]` is a live engine concept (a concealed encounter seed on an agent), as are curse marks. Only the aftermath *display* kind retired.
+
+---
+
+### BOND
+
+**Aliases:** BOND chip, bond consequence
+**Also see:** `[[SCAR]]`, `[[BOON]]`, `[[PATH]]`, `[[Bond Reception]]`, `[[Aftermath]]`
+**Status:** canonical
+
+A consequence category: **who now stands with or against the character** — a companion joining them, faction standing, personal reputation. Absorbs the retired `STANDING` display kind. See `[[SCAR]]` for the taxonomy the four categories belong to.
+
+BOND is the category a companion attachment renders as when an encounter grants one (THR-1096), which is what makes "saved by a passing wanderer, who now walks with you" a single readable consequence rather than an inventory line.
+
+**Not `[[Bond Reception]]`, and not `bondQuality`.** Three different senses of *bond* now coexist and the disambiguation is load-bearing: BOND is a consequence category covering a mortal's ties to other people; `[[Bond Reception]]` is how a mortal receives the *god* at the Meet-The-First climax; `bondQuality` (Agents shard) is the health of a mentorship edge. A BOND chip never reports the god↔mortal `[[Thread]]`.
+
+---
+
+### BOON
+
+**Aliases:** BOON chip, boon consequence
+**Also see:** `[[SCAR]]`, `[[BOND]]`, `[[PATH]]`, `[[Aftermath]]`, `[[Domain Capability]]`
+**Status:** canonical
+
+A consequence category: **what the character earned, and the story of why** — capability growth with its cause, prizes taken. Absorbs the retired `PRIZE` display kind and the ungrouped growth chips. See `[[SCAR]]` for the taxonomy the four categories belong to.
+
+The second clause is the requirement. A BOON that reports growth without its cause is the defect this taxonomy exists to remove: *"Vara's Stone grew steadily"* named a real change and no reason for it, because the engine generated the sentence and nobody authored the fiction. Authored chips render **cause → change** in that order; engine-derived chips drop the sentence entirely and render as a compact icon-first row, with the step that was rolled as their implicit cause.
+
+---
+
+### PATH
+
+**Aliases:** PATH chip, path consequence
+**Also see:** `[[SCAR]]`, `[[BOND]]`, `[[BOON]]`, `[[Encounter Seed]]`, `[[Thread]]`
+**Status:** canonical
+
+A consequence category: **a way that has opened** — a plot hook the ending sets in motion. Absorbs the retired `SEED` display kind. See `[[SCAR]]` for the taxonomy the four categories belong to.
+
+PATH is the one category that carries **no magnitude**. Gains and losses render a delta cluster of one to three triangles; a way either opened or it did not, so PATH draws a single scale-less marker (`PATH_MARKER_GLYPH`). An unclassifiable change with `info` polarity folds here.
+
+**Not `[[Encounter Seed]]`.** PATH is the display category; `[[Encounter Seed]]` is the engine object a PATH chip usually reports the planting of. The chip is how the player learns a road opened; the seed is what actually matures into the encounter at the far end of it.
+
+**`THREAD` was considered for this category and rejected.** The UL already owns *thread* as the god↔mortal bond (`[[Thread]]`, Agents shard), and a second referent on a player-facing surface would have collided with the game's most load-bearing word. Recorded here so it is not reintroduced from the design brainstorm, where it reads well.
+
+---
+
 ### Encounter Seed
 
 **Aliases:** Pending Seed, Seed
