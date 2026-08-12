@@ -571,6 +571,58 @@ describe('aftermath mode', () => {
     expect(screen.queryByRole('button', { name: 'Vasara' })).not.toBeInTheDocument();
   });
 
+  // ── Concept words on chips (THR-1033) ────────────────────────────
+  //
+  // The chip draws the "this word explains itself" underline, while the
+  // explanation lives in the registry. Deciding on the *presence* of a tooltip
+  // id rather than on whether it resolves is how every STANDING chip shipped
+  // looking live and doing nothing — Law 21's named anti-pattern.
+  describe('concept words (THR-1033)', () => {
+    const conceptChipModel = (tooltipId: string): EncounterStageModel => ({
+      ...aftermathModel,
+      aftermath: {
+        ...aftermathModel.aftermath!,
+        consequences: [
+          {
+            id: 'c-standing',
+            kind: 'standing',
+            kindLabel: 'STANDING',
+            sentence: {
+              id: 'c-standing',
+              segments: [
+                { text: "Vara's " },
+                { text: 'standing', emphasis: 'accent', tooltipId },
+                { text: ' rose sharply.' },
+              ],
+            },
+            tone: 'gain',
+          },
+        ],
+      },
+    });
+
+    it('LAW 17: a resolvable concept word is keyboard-reachable so its tooltip can open', () => {
+      render(<EncounterVeil {...defaultProps} model={conceptChipModel('ui.standing')} />);
+      const word = screen.getByText('standing', { selector: 'span' });
+      expect(word).toHaveAttribute('tabindex', '0');
+    });
+
+    it('LAW 21: an unresolvable concept id renders as plain prose, not a dead underline', () => {
+      // `ui.reputation` is the exact id that shipped dangling.
+      render(<EncounterVeil {...defaultProps} model={conceptChipModel('ui.reputation')} />);
+      const word = screen.getByText('standing', { selector: 'span' });
+      // Not focusable, and not styled as though hovering it would explain it.
+      expect(word).not.toHaveAttribute('tabindex');
+      expect(word.style.borderBottom).toBe('');
+    });
+
+    it('the word itself survives either way — fail-open never drops content', () => {
+      render(<EncounterVeil {...defaultProps} model={conceptChipModel('ui.reputation')} />);
+      expect(screen.getByText(/rose sharply/)).toBeInTheDocument();
+      expect(screen.getByText('standing', { selector: 'span' })).toBeInTheDocument();
+    });
+  });
+
   // ── Aftermath reactions (THR-1029) ───────────────────────────────
   //
   // Director review of `encounter.slice.unsafe_bridge`: a prompt asking which
