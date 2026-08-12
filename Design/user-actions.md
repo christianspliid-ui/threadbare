@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-12 02:57 local (2026-08-12 00:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077/designuser-actionsmd-has-grown-into-a-run-by-run-diary-christians). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-12 03:55 local (2026-08-12 01:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077/designuser-actionsmd-has-grown-into-a-run-by-run-diary-christians). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -8,10 +8,10 @@
 
 Two of the nine scheduled jobs are off — disabled, not merely quiet — and have missed every slot since:
 
-- **`tb-opus-pickup`** — the executor lane. Last ran 22:01, shipped THR-1071, has since skipped 23:01, 00:01, 01:01 and 02:01.
-- **`tb-orchestrator`** — decides what gets promoted next. Last ran 21:26, has since skipped 22:25, 23:25, 00:25, 01:25 and 02:25.
+- **`tb-opus-pickup`** — the executor lane. Last ran 22:01, shipped THR-1071, has since skipped 23:01, 00:01, 01:01, 02:01 and 03:01.
+- **`tb-orchestrator`** — decides what gets promoted next. Last ran 21:26, has since skipped 22:25, 23:25, 00:25, 01:25, 02:25 and 03:25.
 
-No pause marker records it (the marker on disk is an expired historical one from 2026-08-03). **While the executor lane is off, nothing on the board moves** — including work your other rulings would create. The queue has sat unchanged at 21 ready / 0 in flight for five hours.
+No pause marker records it (the marker on disk is an expired historical one from 2026-08-03). **While the executor lane is off, nothing on the board moves** — including work your other rulings would create. The queue has sat at 22 ready / 0 in flight for six hours.
 
 **If you turned them off: just say so** and a marker gets dropped, which also closes the overnight question below. It would be a coherent follow-through on your 2026-08-10 direction to stop the lanes filing cleanup work — switching off the lane that drains it is the same instinct. **If you didn't:** say that, and it gets investigated as a real stoppage.
 
@@ -25,7 +25,7 @@ No pause marker records it (the marker on disk is an expired historical one from
 
 - [The bargain at the crossroads](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.bargain_at_crossroads) · [Riders behind the caravan](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.riders_behind_caravan) · [Snow on the pass](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.snow_on_the_pass) · [The swindled family](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.swindled_family) · [The unsafe bridge](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge)
 
-Every encounter in the game now runs the format you locked ([THR-1086](https://linear.app/threadbare/issue/THR-1086), 2026-08-11). Add `&outcome=critical_failure` (or `success`, `failure`, `near_miss`, `success_at_cost`, `critical_success`) to any link to reach that ending directly; where nobody has written that ending yet you get the normal one. **This is the only ask that refills the shelf with real work** — the board is 21 cleanup items and zero feature or content work.
+Every encounter in the game now runs the format you locked ([THR-1086](https://linear.app/threadbare/issue/THR-1086), 2026-08-11). Add `&outcome=critical_failure` (or `success`, `failure`, `near_miss`, `success_at_cost`, `critical_success`) to any link to reach that ending directly; where nobody has written that ending yet you get the normal one. **This is the only ask that refills the shelf with real work** — the board is 22 cleanup items and zero feature or content work.
 
 ### 3. Action cards print a risk that isn't real ([THR-998](https://linear.app/threadbare/issue/THR-998))
 
