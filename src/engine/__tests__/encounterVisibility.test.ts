@@ -357,7 +357,11 @@ describe('expireOverdueEncounterNotifications', () => {
     expect(notifications[0].resolved).toBe(false);
   });
 
-  it('exempts legacy-sourced steps, whose dedup set would re-emit them (THR-1069)', () => {
+  it('exempts legacy-sourced steps, a population production never produces (THR-1069)', () => {
+    // The guard holds for a stronger reason than THR-1068 claimed: no production path
+    // writes `state.encounterProgress`, so no legacy notification is ever built. It is
+    // kept because the branch is cheaply resurrectable — `legacyEncounterBranchUnreachable`
+    // pins the one fallback the unreachability rests on.
     const { expiredIds } = expireOverdueEncounterNotifications(
       [makeNotif({ sourceSystem: 'legacy_encounter' })],
       999,

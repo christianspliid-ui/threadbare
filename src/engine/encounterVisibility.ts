@@ -240,14 +240,28 @@ export function buildEncounterNotification(
  * "do not auto-open" meaning as well, and nulling it would make every
  * aftermath interrupt at the one tier that must never be interrupted.
  *
- * **Scoped to `unified_action` because the legacy path's dedup would loop.**
- * `generateEncounterNotifications` keeps resolved records in its dedup key set
- * for `unified_action` and aftermath, so retiring one here is idempotent — the
- * record stays suppressed. Resolved *legacy* step records drop out of that set
- * by design, so expiring one while its `encounterProgress` is still active
- * would re-emit a fresh notification the next tick, which would expire, which
- * would re-emit: churn wearing a fix's clothes. THR-1069 tracks the legacy
- * half.
+ * **Scoped to `unified_action`, and the legacy half has no records to expire
+ * (THR-1069).** THR-1068 excluded legacy steps defensively: resolved *legacy*
+ * records drop out of `generateEncounterNotifications`' dedup key set by design,
+ * so expiring one while its `encounterProgress` is still active would re-emit a
+ * fresh notification next tick, which would expire, which would re-emit — churn
+ * wearing a fix's clothes. That reasoning is sound but it left the prior question
+ * unasked, so THR-1069 asked it: **the legacy branch cannot fire at all.**
+ * `phaseAgentDecision` reaches its legacy arm only on `template && !unifiedTemplate`,
+ * and `getUnifiedTemplateById` is `index.get(id) ?? getAnyEncounterById(id)` — a
+ * strict superset of the `getAnyEncounterById` that produced `template`. The first
+ * arm therefore always wins. Confirmed empirically: a 60-tick CLI sweep (`--seed 42
+ * --map medium`) ran 52 unified actions across 33 distinct templates and produced
+ * zero `encounterProgress` entries. The other two writers are inert too —
+ * `initiateEncounter` has no production caller, and `debugEncounterTools`' `legacy`
+ * mode is gated on the same impossible condition.
+ *
+ * So the guard below stays, now for the stronger reason: it excludes a population
+ * that is empty. It is **not** dead weight to prune, because the superset relation
+ * rests on one trailing `??` fallback that 36 pool ids depend on — delete it and the
+ * legacy arm goes live for exactly those, and the churn loop becomes real. That
+ * fragility is pinned by `legacyEncounterBranchUnreachable.test.ts`, which fails the
+ * moment the branch becomes reachable again.
  *
  * Pure and deterministic: same notifications and tick in, same array out. The
  * input array is returned unchanged (by identity) when nothing expires, so the
@@ -287,6 +301,8 @@ export function isEncounterNotificationOverdue(
   if (notif.resolved) return false;
   if (notif.autoResolveTick === null) return false;
   if (notif.kind === 'aftermath') return false;
+  // Legacy-sourced steps: an empty population in production (THR-1069 — see the
+  // expiry doc above), kept as a guard because the branch is cheaply resurrectable.
   if (notif.sourceSystem !== 'unified_action') return false;
   return tick >= notif.autoResolveTick;
 }
@@ -482,6 +498,13 @@ export function phaseEncounterVisibility(
   // choice on an intermediate step resolves the notification, it drops out of the dedup
   // set, and the next tick generates a fresh notification for the same step — re-emitting
   // the modal on every tick until the step duration elapses).
+  //
+  // Legacy records are deliberately NOT retained, and THR-1069 settled why that is safe
+  // rather than merely untested: the loop below reads `state.encounterProgress`, which
+  // no production path writes (see `expireOverdueEncounterNotifications`' doc and
+  // `legacyEncounterBranchUnreachable.test.ts`). So the omission has no live population
+  // to mis-handle. It would matter again the moment the legacy arm became reachable —
+  // which is exactly what that test exists to catch.
   const existingNotifKeys = new Set(
     (state.encounterNotifications ?? [])
       .filter(n => !n.resolved || n.kind === 'aftermath' || n.sourceSystem === 'unified_action')
