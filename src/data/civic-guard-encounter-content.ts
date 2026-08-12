@@ -617,8 +617,8 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           'Prisoner secured and moving. {name} keeps {their} pace steady — ' +
           'not slow enough to seem uncertain, not fast enough to seem afraid.',
         failureAfterimage:
-          'The manacles are on, but the prisoner knows something {name} does not. ' +
-          'The tension of it fills the walk before the first corner.',
+          'The manacles are on, but the prisoner keeps glancing at side streets {name} has not thought about. ' +
+          'That look fills the walk before the first corner.',
       },
       {
         reach: 'iron',
@@ -649,7 +649,7 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           '{name} files a supplementary report on what the ambush implied.',
         failureAfterimage:
           'Chaos in the street, and the prisoner dissolves into it. ' +
-          'Someone planned for this outcome better than the watch planned against it.',
+          'Whoever planned this planned it better than the watch planned against it.',
       },
     ],
     narrativeTemplates: {
@@ -658,9 +658,9 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         'The prisoner is calm. That is the part to watch.',
       success:
         'Delivered. The ambush failed. The question of who organized it ' +
-        'belongs to someone else\'s investigation now.',
+        'belongs to another desk now.',
       failure:
-        'The prisoner is free. Somewhere in {location}, plans are being adjusted.',
+        'The prisoner is free. In {location}, plans are being adjusted tonight.',
     },
     aftermathConfig: {
       branchOnStep: 0,
@@ -677,7 +677,7 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
             title: 'Organized Rescue Attempt',
             detail:
               'Three people, pre-positioned, implies a command structure and prior knowledge. ' +
-              'The prisoner knows something worth that kind of protection.',
+              'The prisoner is worth a rescue on that scale to whoever sent them.',
             polarity: 'info',
           },
         ],
@@ -1840,9 +1840,9 @@ export const CIVIC_GUARD_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
           'The response will be attributed to the guard anyway.{/no_faction}',
         successAfterimage:
           'The citizen leaves with an answer, a referral, or the plain acknowledgment ' +
-          'that someone heard them — which, for this person, was the most necessary of the three.',
+          'of having been heard — which, for this person, was the most necessary of the three.',
         failureAfterimage:
-          'The citizen storms off having received something that satisfied neither of them. ' +
+          'The citizen storms off with an answer that satisfied neither of them. ' +
           'Another complaint will be filed. It will reach the captain with {name}\'s name adjacent to it.',
       },
     ],
@@ -1852,9 +1852,9 @@ export const CIVIC_GUARD_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
         'The complaint is the version the citizen will tell. ' +
         'The truth is a related document.',
       success:
-        'The citizen left with something. What it was matters less than that they had something to carry away.',
+        'The citizen left with an answer. What it was matters less than that they had one to carry away.',
       failure:
-        'The citizen left without it. Whatever they needed was not what they received.',
+        'The citizen left without it. What they needed was not what they received.',
     },
     aftermathConfig: {
       branchOnStep: 0,

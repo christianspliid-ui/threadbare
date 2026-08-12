@@ -1813,11 +1813,11 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           '{?has_faction}Faction backing means there is a known consequence for the mark ' +
           'if they make noise about this — which is itself a kind of leverage.{/has_faction}',
         successAfterimage:
-          'And {target} freezes. The moment of decision — fight, flight, comply — ' +
-          'resolves in the direction {name} needed. The gap opens.',
+          'And {target} freezes. Fight, flight, comply — the choice resolves in the direction ' +
+          '{name} needed. The gap opens.',
         failureAfterimage:
           'But {target} does not freeze — they react, loudly, in a direction {name} did not model. ' +
-          'The confrontation has become something else.',
+          'The confrontation is now a scene with witnesses.',
       },
       {
         reach: 'shadow',
@@ -1859,7 +1859,7 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
       success:
         'The robbery was quick and precise. {name} is gone before {target} has fully processed it.',
       failure:
-        'Something in the location or the mark\'s response went outside the plan.',
+        'The location or the mark\'s response went outside the plan.',
     },
     aftermathConfig: {
       branchOnStep: 0,

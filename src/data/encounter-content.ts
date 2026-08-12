@@ -4834,7 +4834,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         duration: 2,
         narrative: 'As the fires are lit and the crowd thins, {actor} has a chance to {verb} on the acquaintances the day has made — follow up, leave a mark, or let the moment pass.',
         onSuccess: {
-          narrative: '{actor} {verb}s the right words at the right moment. A stranger becomes a contact; a contact becomes something more.',
+          narrative: '{actor} {verb}s the right words at the right moment. A stranger becomes a contact; a contact becomes a name that will answer when called.',
           reputationDelta: 0.09,
           tierPromotionEligible: true,
           rewardPool: {
@@ -4842,7 +4842,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: '{actor} {verb}s too {adj}ly and the connection {verb}s into awkward silence. The festival ends without its promise kept.',
+          narrative: '{actor} {verb}s too {adj}ly and the stranger {verb}s back into the crowd. The festival ends without its promise kept.',
           reputationDelta: -0.03,
           rewardPool: {
             categoryWeights: { possession: 0.9, condition: 0.1 },
@@ -6060,7 +6060,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         duration: 3,
         narrative: 'Days of {adj} painstaking work. The language bends meaning around concepts that do not exist in living tongues.',
         onSuccess: {
-          narrative: '{actor} breaks the {adj} code. The inscription reveals something about the civilization that built this place — something that rewrites history.',
+          narrative: '{actor} breaks the {adj} code. The inscription names the people who raised this place, and the year they walked away from it — a century before any record says they existed.',
           reputationDelta: 0.16,
           tierPromotionEligible: true,
           rewardPool: {
@@ -6568,7 +6568,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         duration: 2,
         narrative: 'The final approach to the {adj} holy site. The veil is thin here. {actor} must be entirely present — no deception, no guard, no mask.',
         onSuccess: {
-          narrative: 'The shrine {verb}s with quiet recognition. {actor} is received. Something has changed in them.',
+          narrative: 'The shrine {verb}s with quiet recognition. {actor} is received, and walks out carrying a stillness {they} did not bring in.',
           reputationDelta: 0.12,
           tierPromotionEligible: true,
           rewardPool: {
@@ -7221,7 +7221,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         duration: 1,
         narrative: '{actor} approaches with something to trade — a skill, a trinket, a day of labor. The {adj} art of exchange begins.',
         onSuccess: {
-          narrative: 'A nod, a handshake. {actor} gives something of value and receives something needed. Fair dealing.',
+          narrative: 'A nod, a handshake. What {actor} carried in is worth what {they} carry out. Fair dealing.',
           reputationDelta: 0.02,
         },
         onFailure: {
@@ -7237,7 +7237,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         duration: 1,
         narrative: 'Trust is the final currency. {actor} meets the trader\'s eyes, each measuring the other\'s {adj} intent.',
         onSuccess: {
-          narrative: 'The exchange is done. Both parties walk away satisfied — a rare thing, and worth remembering.',
+          narrative: 'The exchange is done. Both parties walk away satisfied — rare enough to be worth remembering.',
           reputationDelta: 0.03,
           rewardPool: {
             categoryWeights: { possession: 1.0 },
@@ -9453,7 +9453,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         duration: 2,
         narrative: 'Understanding the {adj} anomaly means going beyond what the eye reports. {actor} must feel for the cause beneath the surface.',
         onSuccess: {
-          narrative: '{actor} traces the anomaly to its {adj} root. Something unusual has passed through here — or is still present.',
+          narrative: '{actor} traces the anomaly to its {adj} root. A presence passed through here and left its shape in the air behind it.',
           reputationDelta: 0.12,
           tierPromotionEligible: true,
           rewardPool: {
@@ -9462,7 +9462,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'The {adj} cause remains opaque. {actor} knows something happened here, but not what.',
+          narrative: 'The {adj} cause remains opaque. {actor} can name the hour it happened, and not one detail more.',
           reputationDelta: -0.05,
           rewardPool: {
             categoryWeights: { bestowed_power: 0.6, condition: 0.4 },
@@ -9718,10 +9718,10 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: HARD_DIFFICULTY_BASE + HARD_DIFFICULTY_STEP,
         duration: 2,
         narrative: 'There is no clever approach. The {adj} thing requires direct confrontation — will against will, presence against presence.',
-        criticalSuccessAfterimage: '{actor} does not merely outlast the thing — {they} name it, and the naming undoes it. Where it stood, the air closes like a wound healing clean.',
-        criticalFailureAfterimage: 'The unknown takes something {actor} cannot name in return. {They} walk out whole in body, but a door was left open behind {their} eyes, and it does not shut.',
+        criticalSuccessAfterimage: '{actor} does not merely outlast it — {they} name it, and the naming undoes it. Where it stood, the air closes like a wound healing clean.',
+        criticalFailureAfterimage: 'The unknown takes a piece {actor} cannot name in return. {They} walk out whole in body, but a door was left open behind {their} eyes, and it does not shut.',
         onSuccess: {
-          narrative: '{actor} does not flinch. The {adj} unknown meets someone it cannot unsettle and withdraws.',
+          narrative: '{actor} does not flinch. The {adj} unknown finds no purchase in them, and withdraws.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
           rewardPool: {
@@ -10626,7 +10626,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         duration: 1,
         narrative: 'Not all the dead rest well. {actor} walks the {adj} killing ground, listening for the whispers of those who linger.',
         onSuccess: {
-          narrative: '{actor} finds them — not ghosts, not yet, but {adj} echoes of pain caught between world and whatever comes after.',
+          narrative: '{actor} finds them — not ghosts, not yet, but {adj} echoes of pain caught between the world and the door out of it.',
           reputationDelta: 0.05,
         },
         onFailure: {
@@ -10642,12 +10642,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         duration: 2,
         narrative: '{actor} does not know the proper rites for every faith, every culture, every fallen soul. But grief is a {adj} universal language.',
         onSuccess: {
-          narrative: 'The words are imperfect. The intent is not. Something in the {adj} air eases, and the ground feels lighter underfoot.',
+          narrative: 'The words are imperfect. The intent is not. The {adj} air eases, and the ground feels lighter underfoot.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: '{actor}\'s words fall flat. The dead require something {they} cannot give — perhaps a name, a kin, a {adj} truth.',
+          narrative: '{actor}\'s words fall flat. The dead want a name, a kin, a {adj} truth — and {they} carry none of the three.',
           reputationDelta: -0.03,
         },
       },
@@ -10659,7 +10659,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         duration: 2,
         narrative: 'The last duty: mark the place so others know. A cairn. A carved stone. Something that says: here, people {adj} mattered.',
         onSuccess: {
-          narrative: '{actor} raises a cairn that will outlast the season. Passers-by will know that someone cared enough to mark the {adj} spot.',
+          narrative: '{actor} raises a cairn that will outlast the season. Passers-by will stop at the {adj} spot, and know the dead here were counted.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
           rewardPool: {

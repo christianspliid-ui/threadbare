@@ -390,8 +390,8 @@ export const NPC_ACTION_TEMPLATES: readonly UnifiedActionTemplate[] = [
     motivations: [],
     narrativeTemplates: {
       initiation: 'You ask for what the road has spent — a bed, warmth, a door between you and the dark.',
-      success: 'The innkeeper finds room. You are, for a while, somewhere.',
-      failure: 'No vacancy, or something in your manner has put them off. The cold waits outside.',
+      success: 'The innkeeper finds room. For a while, there is a door between you and the dark.',
+      failure: 'No vacancy — or your manner has put them off. The cold waits outside.',
     },
   },
 
@@ -455,7 +455,7 @@ export const NPC_ACTION_TEMPLATES: readonly UnifiedActionTemplate[] = [
     narrativeTemplates: {
       initiation: 'You lay your attention on them like a hand on a shoulder — steady, unmistakable.',
       success: 'The blessing settles. They will carry it without knowing, a small warmth against the cold.',
-      failure: 'The blessing does not take. Something in them resists grace, or something else has already claimed them.',
+      failure: 'The blessing does not take. They resist grace, or another claim on them came first.',
     },
   },
 

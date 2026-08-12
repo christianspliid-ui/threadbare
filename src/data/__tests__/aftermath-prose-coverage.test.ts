@@ -215,22 +215,27 @@ describe('the vertical slice reads clean on the widened walk (THR-1083)', () => 
  * to **re-derive** the predicate rather than trust its filed list — which,
  * after this change, would return 15 and silently drop these three.
  *
- * So they are pinned by id here rather than left to a density that no longer
- * sees them. This is deliberately a *defect* assertion: it passes while the
- * defect exists and fails when someone fixes the prose, at which point the
- * right move is to delete the entry — the list may only shrink. Filed as its
- * own ticket for the general problem (a density denominator that grows when
- * coverage widens can only ever weaken the gate).
+ * So they were pinned by id here rather than left to a density that no longer
+ * sees them. That was deliberately a *defect* assertion: it passed while the
+ * defect existed and failed once someone fixed the prose.
+ *
+ * **THR-1067 fixed all three** (2026-08-12), so the defect assertion has been
+ * inverted rather than deleted. The polarity flipped; the coverage must not.
+ * These three remain the corpus's clearest case of a template whose outcome
+ * prose the density gate **cannot see** — all three sit near 1.6–1.9/100w
+ * against a 2.0 threshold, so re-introducing `something` into any of their
+ * afterimages would trip no gate at all. Deleting the block on the grounds that
+ * the list "may only shrink" would restore exactly the blind spot THR-1083
+ * opened and this block was written to cover.
+ *
+ * The general problem — a density denominator that grows when coverage widens
+ * can only ever weaken the gate — remains open under its own ticket.
  */
-describe('dilution did not lose a known defect (THR-1083 → THR-1067)', () => {
-  const DILUTED_BUT_STILL_DEFECTIVE = [
-    'cg.social.citizen_petition',
-    'social.rob',
-    'tavern.the_warning',
-  ] as const;
+describe('the density-invisible three stay clean (THR-1083 → THR-1067)', () => {
+  const DENSITY_INVISIBLE = ['cg.social.citizen_petition', 'social.rob', 'tavern.the_warning'] as const;
 
-  it.each(DILUTED_BUT_STILL_DEFECTIVE)(
-    '%s still carries outcome-class vagueness hits despite passing the density gate',
+  it.each(DENSITY_INVISIBLE)(
+    '%s carries no outcome-class vagueness hit, which its density alone would not catch',
     id => {
       const template = (UNIFIED_ACTION_TEMPLATES as readonly UnifiedActionTemplate[]).find(
         t => t.id === id,
@@ -240,8 +245,9 @@ describe('dilution did not lose a known defect (THR-1083 → THR-1067)', () => {
       const scores = auditTemplate(template as UnifiedActionTemplate);
       expect(
         scores.vaguenessByClass.outcome,
-        `${id} is now clean — delete it from DILUTED_BUT_STILL_DEFECTIVE and from THR-1067`,
-      ).toBeGreaterThan(0);
+        `${id} regressed: an evasive or indefinite term is back in its outcome prose. ` +
+          'Its vagueness density is below the failure threshold, so no other gate will catch this.',
+      ).toBe(0);
     },
   );
 });

@@ -1331,10 +1331,10 @@ export const TAVERN_UNIFIED_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           'The crowd thins after the late bell; the light is down to hearth and a single lamp. Now the watcher rises and crosses.',
         successAfterimage:
           '{name} read{s} it correctly on the first step — not a threat, not a challenge. ' +
-          'The watcher slides into the seat opposite and waits to be heard. The thing being brought is a gift of sorts.',
+          'The watcher slides into the seat opposite and waits to be heard. What they carry is a gift of sorts.',
         failureAfterimage:
-          '{name} misreads the approach — hand near a hilt, shoulders set. The watcher pauses at the table, reads the tension, and does not sit. ' +
-          'Whatever they came to say goes home with them.',
+          '{name} misreads the approach — hand near a hilt, shoulders set. The watcher pauses at the table, reads the set of those shoulders, and does not sit. ' +
+          'What they came to say goes home with them.',
       },
       {
         reach: 'heart',
@@ -1358,10 +1358,10 @@ export const TAVERN_UNIFIED_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           '{?has_ally}{ally:strongest} would recognise one of the names the watcher used. That alone suggests the warning is not random.{/has_ally}',
         successAfterimage:
           '{name} thank{s} the watcher with the specific care a real gift calls for — no questions, no names asked in return. ' +
-          'The watcher leaves by the side door. In a week the warning will have saved {name} something specific.',
+          'The watcher leaves by the side door. In a week the warning will have kept {name} off the road east on the wrong night.',
         failureAfterimage:
-          '{name} shrug{s} the warning off, and the watcher\'s face does not change — the politeness of someone who expected this.' +
-          'They stand, finish their drink, and leave. In a week, the thing they warned of will happen anyway.',
+          '{name} shrug{s} the warning off, and the watcher\'s face does not change — the politeness of a person who expected this. ' +
+          'They stand, finish their drink, and leave. In a week, what they warned of will happen anyway.',
       },
     ],
     narrativeTemplates: {
