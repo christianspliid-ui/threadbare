@@ -434,7 +434,14 @@ factor — it is clutter, and the difficulty word already said it.** The one aut
 surface that remains is `TraitVariant.factorLine` (variance by construction: it only
 renders for the trait-holder) — and pick the trait that best *fits the step's action*
 from the live trait set; a better-fitting trait that does not exist yet is a content
-proposal, not an authoring-session invention.
+proposal, not an authoring-session invention. **Minting that missing continuum is
+pre-authorized (Christian's ruling, chat 2026-08-12, recorded on THR-883):** the first
+time an author reaches for a grit/persistence-style trait (the "Tenacious over True for
+a river crossing" case) — or any other continuum the 5-entry core registry cannot
+serve — file the design ticket and mint it *as part of that encounter's work*, rather
+than shipping the second-best trait or parking the idea as a standing ask. The design
+ticket still does the real work (poles, seeding, registry wiring); the ruling removes
+the "may we?" gate, not the design.
 
 **Canon rule 1 still binds every line that does render — a factor names its source in
 the sentence.** "Being True, they will not turn back at midstream", not
