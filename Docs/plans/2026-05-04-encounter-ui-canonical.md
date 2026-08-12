@@ -100,6 +100,8 @@ When the player commits an encounter choice, the world resolves through a five-b
 
 ### 3.3 Sound design
 
+> **Retired surface — no live consumer (Christian's ruling, chat 2026-08-12, THR-962).** This section describes the D1/D2 encounter screen, which the Nudge Model stage superseded (THR-775); the cues are implemented (`src/audio/encounterSoundDesign.ts`, mounted only in the StyleGuide) but deliberately **not routed** to the live encounter stage — Christian ruled "no sound for now" when offered the re-route. Revival path: reopen THR-962 (routing) first, then a feel pass (was THR-961, canceled alongside). Keep this spec as the cue design of record; do not wire it anywhere without that reopen.
+
 Three layered cues, total cue length ≤ visual sequence so the prose log lands in silence:
 
 | Cue | Timing | Specification |
@@ -132,6 +134,8 @@ Implementation lives in a single `<ThreadOverlay>` SVG component drawn over the 
 When the encounter resolves, **changes crystallise visually inside the protagonist's hero panel** — *not* as a banner, *not* as a list. Each effect lands where the eye already is. Source spec: `Docs/plans/v7-design-pass/parts/moment2-aftermath.jsx`.
 
 ### 4.1 Nine effect kinds — landing specification
+
+> **Retired surface — same ruling as §3.3 (Christian, chat 2026-08-12, THR-962).** The `EffectRegistration` landings this table specifies live under `src/components/Game/Encounter/`, whose only importer is the StyleGuide; the live game mounts the Nudge Model's `encounter-stage` instead. The registration *sound* cues are likewise unrouted by decision. Reopen THR-962 before wiring any of this to a live surface.
 
 | Effect kind | Sphere coding | Lands in | Motion |
 |---|---|---|---|
