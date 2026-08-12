@@ -235,6 +235,26 @@ export function resolveTooltip(id: string, context?: TooltipResolverContext): To
 }
 
 /**
+ * True when `id` resolves to something a tooltip can actually show (THR-1033).
+ *
+ * A surface needs this *before* it decides how to draw a concept word, because
+ * the underline that marks "this word explains itself" is drawn by the surface
+ * while the explanation is owned by the registry. Deciding on the mere presence
+ * of a tooltip id is how a dangling id becomes a dead link that looks live —
+ * Law 21's named anti-pattern, and the defect THR-1033 was filed for.
+ *
+ * Deliberately mirrors `Tooltip`'s own `hasContent` gate (`!!finalLabel`) for
+ * the id-only case, so a word is styled as explainable exactly when hovering it
+ * would explain something. Context-bearing prefixes (`agent.*`) resolve to null
+ * without a context here — which is also what `Tooltip` does, since it calls
+ * `resolveTooltip(id)` with no context of its own.
+ */
+export function tooltipResolves(id: string | undefined, context?: TooltipResolverContext): boolean {
+  if (!id) return false;
+  return !!resolveTooltip(id, context)?.label;
+}
+
+/**
  * Knowledge level tooltip content — describes what each tier reveals and how to progress.
  */
 function getKnowledgeLevelTooltip(level: string): TooltipContent | null {

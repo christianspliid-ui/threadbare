@@ -47,19 +47,42 @@ export const REACH_DISPLAY_NAMES: Record<string, string> = {
   flesh: 'Flesh', time: 'Time', life: 'Life',
 };
 
-/** True when `raw` names one of the reaches the tooltip registry can resolve. */
+/** True when `raw` names a reach this module has a display word for. */
 export function isReachName(raw: string): raw is ReachDomain {
   return Object.prototype.hasOwnProperty.call(REACH_DISPLAY_NAMES, raw);
 }
+
+/**
+ * The reaches the tooltip registry can actually resolve — the nine `reach.*`
+ * nodes in `world-model.json` (THR-1033).
+ *
+ * This is deliberately *narrower* than `REACH_DISPLAY_NAMES`, which also holds
+ * `time` and `life`. Those two have display words but no world-model node, so
+ * `reach.time` / `reach.life` resolved to nothing while still being emitted as
+ * concept ids — and a chip renders the "concept word" underline on the mere
+ * *presence* of a tooltip id, so they drew a dead link that looked live (Law
+ * 21). Fail-open is the designed state: a reach with no registry entry is
+ * plain styled text, not an underline that explains nothing on hover.
+ *
+ * Pinned against the live resolver by `tooltipValidation.test.ts`, so this set
+ * cannot drift away from the registry the way the implicit one did.
+ */
+export const TOOLTIP_BACKED_REACHES: readonly string[] = [
+  'iron', 'gold', 'shadow', 'veil', 'heart', 'eye', 'stone', 'star', 'flesh',
+];
 
 /** Reach → display name, falling back to a humanised form of an unknown key. */
 export function reachDisplayName(raw: string): string {
   return REACH_DISPLAY_NAMES[raw] ?? humanizeKeySegment(raw);
 }
 
-/** Tooltip concept id for a reach, or undefined when the word is not a reach. */
+/**
+ * Tooltip concept id for a reach, or undefined when the registry cannot explain
+ * it. An id that resolves to nothing is worse than no id at all — see
+ * `TOOLTIP_BACKED_REACHES`.
+ */
 export function reachTooltipId(raw: string): string | undefined {
-  return isReachName(raw) ? `reach.${raw}` : undefined;
+  return TOOLTIP_BACKED_REACHES.includes(raw) ? `reach.${raw}` : undefined;
 }
 
 // ─── Magnitude banding ───────────────────────────────────────────────
@@ -246,7 +269,10 @@ export function reputationSentence(args: {
     : '';
   return {
     detail: `${args.actorName}'s standing ${verb} ${word}${tail}.`,
-    concepts: [{ text: 'standing', tooltipId: 'ui.reputation' }],
+    // THR-1033 — `ui.standing` is the id the registry actually holds. This read
+    // `ui.reputation`, which has never existed in `ui-content.ts`, so every
+    // STANDING chip in the game carried an unresolvable tooltip.
+    concepts: [{ text: 'standing', tooltipId: 'ui.standing' }],
   };
 }
 

@@ -12,6 +12,7 @@ import type {
   EncounterStageCastModel,
   EncounterStageFalloutModel,
 } from './encounter-stage/types';
+import { tooltipResolves } from '../../engine/tooltipResolver';
 import { usePrefersReducedMotion } from '../../hooks/usePrefersReducedMotion';
 import { NudgePhaseShell } from './encounter-stage/shells/NudgePhaseShell';
 import { NudgeMotiveIntro } from './encounter-stage/shells/NudgeMotiveIntro';
@@ -716,6 +717,12 @@ export function EncounterVeil({
                       // Anything else stays emphasised text — fail-open, never
                       // a dead link.
                       const open = openEntity(seg.entityId, seg.entityKind);
+                      // THR-1033 — and the same test for the *hover* tier: a
+                      // concept word earns its underline only if the registry
+                      // can explain it. Drawing it on the presence of an id
+                      // alone is what made every STANDING chip look live and do
+                      // nothing (Law 21).
+                      const explains = tooltipResolves(seg.tooltipId);
                       const body = open ? (
                         <button
                           className="focus-ring"
@@ -735,8 +742,14 @@ export function EncounterVeil({
                         </button>
                       ) : (
                         <span
+                          // Focusable only when it has something to say, so the
+                          // hover tier is reachable from the keyboard too — a
+                          // tooltip nobody can open is inert by another name
+                          // (Laws 17/23).
+                          className={explains ? 'focus-ring' : undefined}
+                          tabIndex={explains ? 0 : undefined}
                           style={
-                            seg.referenceId || seg.tooltipId
+                            seg.referenceId || explains
                               ? { color: TEXT_WARM, borderBottom: `1px solid ${GOLD_DIM}` }
                               : undefined
                           }
@@ -747,8 +760,8 @@ export function EncounterVeil({
 
                       // THR-1004 — the UI Law's tooltip half. A concept word
                       // explains itself where it is named; a segment with no
-                      // concept id renders exactly as before.
-                      return seg.tooltipId ? (
+                      // resolvable concept id renders as plain prose.
+                      return explains ? (
                         <Tooltip key={i} id={seg.tooltipId}>
                           {body}
                         </Tooltip>

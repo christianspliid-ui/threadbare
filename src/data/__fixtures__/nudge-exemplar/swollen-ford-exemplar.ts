@@ -790,7 +790,11 @@ export const NUDGE_GOLDEN_EXEMPLAR: UnifiedActionTemplate = {
               title: 'What the river took',
               detail: 'The current stripped what was carried and left an exhaustion that will not walk off.',
               polarity: 'loss',
-              concepts: [{ text: 'exhaustion', tooltipId: 'condition.exhausted' }],
+              // THR-1033 — `condition.*` is not one of the registry's prefixes
+              // (Law 17), so an id here would render as a dead underline. The
+              // word stays; it is plain prose until conditions become a tooltip
+              // class (THR-1094).
+              concepts: [{ text: 'exhaustion' }],
             },
           ],
         },
