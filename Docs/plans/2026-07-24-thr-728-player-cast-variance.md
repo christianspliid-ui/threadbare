@@ -64,6 +64,10 @@ None modified structurally. A **difficulty audit pass** over the 82 positive-dif
 | 3 (Mythic) | 0.30–0.50 |
 | 4 | 0.40–0.65 |
 
+> **THR-998 (2026-08-12) — this table is cosmetic for most of the slot list, and was already cosmetic when it was written.** `applyScaleDifficultyAdjust` caps authored difficulty at `capability − MIN_PROBABILITY_BY_SCALE[scale]`, which for a fresh god is **0** at `personal` and `local` — 85% of the actor-target slot list. Every band above therefore resolves identically there: pricing a tier-4 card at 0.65 rather than 0.10 changes nothing a player can observe. The bands do bite at `regional` and `cosmic`, and they progressively bite at `local` as `reachPractice` walks a god's capability up, so this is **advisory guidance for authored intent and for the deepened-god end of the curve — not a lever on a fresh god's odds**.
+>
+> This is left as guidance rather than re-grounded on the new signal deliberately. Re-pricing templates to chase the effective number would burn authored intent for no mechanical gain (the THR-736 anti-pattern), and the effective number is not a per-template property at all — it is a function of the reading god's capability, so no static table can express it. THR-998 fixed the *card* (it now reports the difficulty that reaches the roll, and names the scale where the floor capped the price away) and changed no template price and no cut-point.
+
 ### Prose tables
 
 None. `RECEIPT_FRAME_LINES` covers all six bands already (verified). `OUTCOME_BAND_WORDS` covers all bands. Success-at-cost consequence prose rides the existing consequence machinery.
@@ -85,6 +89,7 @@ New constants file `src/data/player-cast-constants.ts` (table below). Rulebook: 
 The rule change must be legible **before** the cast, not discovered in the receipt:
 
 1. **Risk hint on the focused card** — when a player-castable template's max step difficulty > 0, the focused-card effect block (THR-610 surface in `ActionDrawer.tsx`) gains one line rendering the risk qualitatively via `RISK_HINT_THRESHOLDS`: difficulty < 0.25 → "steady working", < 0.45 → "uncertain working", else "perilous working" — plain-register words per THR-609, no percentages (taste profile: data in prose). Zero-difficulty cards show nothing (unchanged face).
+   > **Superseded by THR-998 (2026-08-12).** The cut-points and words are unchanged, but they are applied to the **effective** difficulty (`effectiveCastDifficulty`, `src/engine/playerCastReadout.ts`) rather than the authored one, and where the per-scale floor has capped the authored price away the card names the template's scale instead of claiming a risk (`SCALE_HINT_LINES`). Bucketing the authored number made two cards with identical odds read "steady" and "perilous". Zero-difficulty cards still show nothing.
 2. **Receipt** — no changes; bands flow automatically, `strained` receipts now occur and read "It held, but the world charged you for the holding."
 3. **Chronicle/toast** — band accents flow automatically via the THR-727 plumbing.
 

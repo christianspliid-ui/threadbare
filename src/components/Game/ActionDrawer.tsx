@@ -5,7 +5,7 @@ import { Tooltip } from '../shared/Tooltip';
 import { Button } from '../shared/Button';
 import { renderProseWithIPK } from '../ProseKeyword';
 import { effectLabel, EFFECT_SOURCE_BADGE_COLORS } from '../../data/actionEffectSource';
-import { riskHintLine } from '../../data/player-cast-constants';
+import { castHintLine } from '../../data/player-cast-constants';
 
 // ─── Layer Filter Types ───────────────────────────────────────────────────
 
@@ -307,10 +307,20 @@ export const ActionDrawer: React.FC<ActionDrawerProps> = React.memo(
                   >
                     {focusedSlot.technicalEffect}
                   </p>
-                  {/* Risk line (THR-728) — a positive-difficulty casting rolls the
-                      outcome ladder, so say so before the cast, in prose. Guaranteed
-                      castings show nothing and keep their unchanged face. */}
-                  {riskHintLine(focusedSlot.maxStepDifficulty) && (
+                  {/* Cast line (THR-728, corrected THR-998) — a positive-difficulty
+                      casting rolls the outcome ladder, so say so before the cast, in
+                      prose. The word is bucketed on the difficulty that actually
+                      reaches the roll, never the authored price: the per-scale floor
+                      caps that price away for 85% of the slot list, and bucketing it
+                      made two cards with identical odds read "steady" and "perilous".
+                      Where the floor has capped it away the card names the scale
+                      instead — at that point scale is the term setting the odds.
+                      Guaranteed castings show nothing and keep their unchanged face. */}
+                  {castHintLine(
+                    focusedSlot.maxStepDifficulty,
+                    focusedSlot.effectiveStepDifficulty,
+                    focusedSlot.scale,
+                  ) && (
                     <p
                       data-testid="action-risk-hint"
                       style={{
@@ -321,7 +331,11 @@ export const ActionDrawer: React.FC<ActionDrawerProps> = React.memo(
                         margin: '0.35rem 0 0',
                       }}
                     >
-                      {riskHintLine(focusedSlot.maxStepDifficulty)}
+                      {castHintLine(
+                        focusedSlot.maxStepDifficulty,
+                        focusedSlot.effectiveStepDifficulty,
+                        focusedSlot.scale,
+                      )}
                     </p>
                   )}
                 </div>

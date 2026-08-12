@@ -31,23 +31,61 @@ import { effectSourceFor } from '../data/actionEffectSource';
 import { actionEffectsProse } from '../data/actionEffectsProse';
 import { emitTrace } from './traceBuffer';
 import { isActionStepBranch } from '../types/unifiedAction';
+import { effectiveCastDifficulty } from './playerCastReadout';
 
 /**
- * The hardest step difficulty a template can present (THR-728).
+ * The hardest step a template can present, with the reach it is rolled in
+ * (THR-728; reach added THR-998).
  *
- * Player casts now roll against these, so the focused card states the risk before
- * the cast rather than leaving it to be discovered in the receipt. Branch steps
- * are skipped: only branching encounters use them, and none is player-castable —
- * fail-soft, a template made entirely of branches simply reads as guaranteed.
+ * Player casts roll against this difficulty, so the focused card states the risk
+ * before the cast rather than leaving it to be discovered in the receipt. Branch
+ * steps are skipped: only branching encounters use them, and none is player-castable
+ * — fail-soft, a template made entirely of branches simply reads as guaranteed.
+ *
+ * The reach matters because capability is per-reach and the floor cap is
+ * `capability - MIN_PROBABILITY_BY_SCALE[scale]` — so how much of the authored price
+ * survives depends on which reach the *hardest* step is rolled in, not on the
+ * template's headline reach. Falls back to the template reach when no priced step
+ * exists, which keeps the return total for a guaranteed casting.
  */
-function maxStepDifficulty(template: UnifiedActionTemplate): number {
+function hardestStep(template: UnifiedActionTemplate): { difficulty: number; reach: ReachDomain } {
   let max = 0;
+  let reach = template.reach;
   for (const step of template.steps) {
     if (isActionStepBranch(step)) continue;
     const difficulty = step.difficulty ?? 0;
-    if (Number.isFinite(difficulty) && difficulty > max) max = difficulty;
+    if (Number.isFinite(difficulty) && difficulty > max) {
+      max = difficulty;
+      reach = step.reach ?? template.reach;
+    }
   }
-  return max;
+  return { difficulty: max, reach };
+}
+
+/**
+ * The three difficulty-shaped fields a slot carries for the focused card (THR-998).
+ *
+ * `effectiveStepDifficulty` is omitted — not zeroed — when no capability map was
+ * supplied, so the card can tell "the floor capped this away" (0) apart from "nobody
+ * told me" (absent) and stay conservative in the second case.
+ */
+function castDifficultyFields(
+  template: UnifiedActionTemplate,
+  capabilities: Partial<Record<ReachDomain, number>> | undefined,
+): Pick<WheelSlot, 'maxStepDifficulty' | 'effectiveStepDifficulty' | 'scale'> {
+  const { difficulty, reach } = hardestStep(template);
+  const fields: Pick<WheelSlot, 'maxStepDifficulty' | 'effectiveStepDifficulty' | 'scale'> = {
+    maxStepDifficulty: difficulty,
+    scale: template.scale ?? null,
+  };
+  if (capabilities) {
+    fields.effectiveStepDifficulty = effectiveCastDifficulty(
+      difficulty,
+      capabilities[reach],
+      template.scale,
+    );
+  }
+  return fields;
 }
 
 // ─── Constants ──────────────────────────────────────────────────────────────
@@ -96,6 +134,21 @@ export interface TargetActionParams {
    * (fail-open — contexts without an ascendant, e.g. tests, see all reach cards).
    */
   ascendantDomainAffinities?: Partial<Record<ReachDomain, number>>;
+  /**
+   * The ascendant's cast capability per reach (THR-998), from
+   * `castCapabilityByReach(graph, ascendantId)`.
+   *
+   * Drives `effectiveStepDifficulty` — how much of a template's authored price
+   * survives the per-scale probability floor and actually reaches the roll — which
+   * is the only number the focused card may differentiate its risk line on.
+   *
+   * Omit to skip the computation (tests, and any surface with no ascendant in
+   * scope). Fail-soft and deliberately conservative: a slot built without this
+   * carries no `effectiveStepDifficulty`, and the card then names the template's
+   * scale rather than asserting a risk it cannot substantiate. Never falls back to
+   * the authored difficulty — that fallback is the defect THR-998 removed.
+   */
+  ascendantCastCapabilities?: Partial<Record<ReachDomain, number>>;
 }
 
 // ─── Filter result (for trace) ──────────────────────────────────────────────
@@ -134,6 +187,7 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
     existingThreadTier,
     unlockedActionIds,
     ascendantDomainAffinities,
+    ascendantCastCapabilities,
   } = params;
 
   const counts: FilterCounts = {
@@ -347,7 +401,7 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
       effectSource: effectSourceFor(template),
       narrativeLayer: template.narrativeLayer as WheelSlot['narrativeLayer'],
       rarityTier: template.rarityTier,
-      maxStepDifficulty: maxStepDifficulty(template),
+      ...castDifficultyFields(template, ascendantCastCapabilities),
     });
   }
 

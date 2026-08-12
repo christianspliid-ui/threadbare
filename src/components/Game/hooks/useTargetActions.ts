@@ -5,6 +5,7 @@ import type { AscendantArchetype } from '../../../types/influence';
 import type { WheelSlot } from '../../../engine/wheel';
 import { getTargetActionSlots } from '../../../engine/targetActions';
 import { getAscendantDomainAffinities } from '../../../engine/ascendant';
+import { castCapabilityByReach } from '../../../engine/playerCastReadout';
 import { getAvatarHexPosition } from '../../../engine/visibility';
 import { UNIFIED_ACTION_TEMPLATES } from '../../../data/unified-action-templates';
 
@@ -51,6 +52,9 @@ export function useTargetActions({
       existingThreadTier,
       unlockedActionIds: gameState.unlockedActionIds,
       ascendantDomainAffinities: getAscendantDomainAffinities(gameState.graph, gameState.ascendantId),
+      // THR-998: lets each slot carry the difficulty that actually reaches the roll,
+      // so the focused card's line tracks the odds instead of the authored price.
+      ascendantCastCapabilities: castCapabilityByReach(gameState.graph, gameState.ascendantId),
     });
   }, [
     target,
