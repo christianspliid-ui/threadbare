@@ -263,3 +263,70 @@ describe('ActionDrawer', () => {
     expect(screen.getByTestId('action-card-coincidence')).toBeInTheDocument();
   });
 });
+
+// ─── THR-998: the focused card's cast line ──────────────────────────────────
+
+/**
+ * DOM-level evidence for THR-998 — the rendered card face, not just the helper.
+ *
+ * The helper contract is pinned in `src/engine/__tests__/playerCastReadout.test.ts`;
+ * these assert that `ActionDrawer` actually renders it, i.e. that the fix reached the
+ * surface rather than stopping at the data layer. Both cards below carry the same
+ * `scale` and differ only in authored price — the exact pair the ticket was filed on.
+ */
+describe('ActionDrawer — cast line (THR-998)', () => {
+  /** A focusable target-action card. `technicalEffect` is required: it gates the block the line lives in. */
+  function castSlot(overrides: Partial<WheelSlot>): WheelSlot {
+    return {
+      id: 'ta:hex.test_working', label: 'Test Working', type: 'target_action', angleDeg: 0,
+      available: true, lockedReason: null, essenceCost: 3, detectionRisk: 0,
+      sphere: null, interventionType: null, rangeStatus: 'in_range', hexDistance: 1,
+      description: 'A test working', technicalEffect: 'Marks the target.',
+      ...overrides,
+    } as WheelSlot;
+  }
+
+  function focusedLineFor(slot: WheelSlot): string | null {
+    const { unmount } = render(
+      <ActionDrawer open={true} slots={[slot]} targetName="The Hollow" targetLabel="Location"
+        onSlotClick={vi.fn()} onClose={vi.fn()} />
+    );
+    fireEvent.click(screen.getByTestId(`action-card-${slot.id}`));
+    const line = screen.queryByTestId('action-risk-hint')?.textContent ?? null;
+    unmount();
+    return line;
+  }
+
+  it('renders the same line for two prices the scale floor capped away', () => {
+    // effectiveStepDifficulty 0 on both — the floor is speaking, so the authored
+    // 0.20 / 0.50 split must not reach the card face. Pre-fix this rendered
+    // "A steady working." and "A perilous working." for these two slots.
+    const easy = focusedLineFor(castSlot({ maxStepDifficulty: 0.20, effectiveStepDifficulty: 0, scale: 'local' }));
+    const hard = focusedLineFor(castSlot({ maxStepDifficulty: 0.50, effectiveStepDifficulty: 0, scale: 'local' }));
+
+    expect(easy).toBe(hard);
+    expect(easy).toBe('A working the size of one place.');
+  });
+
+  it('renders a risk word where the authored price survives to the roll', () => {
+    // effectiveStepDifficulty > 0 — difficulty genuinely moves the odds, so the card
+    // is entitled to name the risk, and does.
+    expect(focusedLineFor(castSlot({ maxStepDifficulty: 0.50, effectiveStepDifficulty: 0.50, scale: 'regional' })))
+      .toBe('A perilous working.');
+    expect(focusedLineFor(castSlot({ maxStepDifficulty: 0.10, effectiveStepDifficulty: 0.10, scale: 'regional' })))
+      .toBe('A steady working.');
+  });
+
+  it('keeps a guaranteed casting silent, with no empty line left behind', () => {
+    // The unchanged face — certainty on the soul-verbs is a design statement. Asserts
+    // absence of the element, not an empty string, so a stray blank <p> would fail.
+    expect(focusedLineFor(castSlot({ maxStepDifficulty: 0, effectiveStepDifficulty: 0, scale: 'local' })))
+      .toBeNull();
+  });
+
+  it('never prints an internal scale key to the player (Law 14)', () => {
+    const line = focusedLineFor(castSlot({ maxStepDifficulty: 0.4, effectiveStepDifficulty: 0, scale: 'cosmic' }));
+    expect(line).toBe('A working the size of the world.');
+    expect(line?.toLowerCase()).not.toContain('cosmic');
+  });
+});

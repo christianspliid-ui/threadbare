@@ -211,10 +211,10 @@ remediation ticket or the build fails.
 - **Intent:** The ascendant's persisted reach affinities become its capability for a cast — the god's innate aptitude is not on the raw scale `computeRawScore` walks, so a literal read left every cast at capability 0.02 and one reachable outcome band.
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Domain Capability*, *Reach*
-- **Production hits:** 17 total — 1 write, 1 read, 15 unclassified
+- **Production hits:** 18 total — 1 write, 1 read, 16 unclassified
 - **Write sites:** `src/engine/ascendant.ts`
 - **Read sites:** `src/engine/unifiedActionResolution.ts`
-- **Other hits:** `src/App.tsx`, `src/components/Remembrance/RemembranceFlow.tsx`, `src/data/__fixtures__/ascendant-reach-fixtures.ts`, `src/data/ascendant-beat-content.ts`, `src/data/hunger-catalog.ts` +10 more
+- **Other hits:** `src/App.tsx`, `src/components/Remembrance/RemembranceFlow.tsx`, `src/data/__fixtures__/ascendant-reach-fixtures.ts`, `src/data/ascendant-beat-content.ts`, `src/data/hunger-catalog.ts` +11 more
 - **Verdict:** Verified 2026-07-25: THR-728: `createAscendant` writes `domainAffinities` (2–5 per reach); `resolveUncontestedStep` reads it via `getAscendantDomainAffinities` and maps it onto the raw scale with `ascendantCastRawBonus` before `computeCapabilityWithRawBonus`. Deliberately NOT wired into `computeRawScore`, so THR-613's Deepening tier-crossings keep reading the score they were tuned against (pinned by a test).
 
 ### `attachment-activated-effects` — 🔴 LEAKED
@@ -369,10 +369,10 @@ remediation ticket or the build fails.
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Domain Capability*, *UnifiedActionTemplate*
 - **Module:** `src/engine/unifiedActionResolution.ts`
-- **Production hits:** 141 total — 1 write, 2 read, 138 unclassified
+- **Production hits:** 143 total — 1 write, 2 read, 140 unclassified
 - **Write sites:** `src/data/unified-action-templates.ts`
 - **Read sites:** `src/engine/targetActions.ts`, `src/engine/unifiedActionResolution.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/ActionDrawer.tsx` +133 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/ActionDrawer.tsx` +135 more
 - **Verdict:** Verified 2026-07-25: THR-728: `unified-action-templates.ts` authors `steps[].difficulty`; `resolveUncontestedStep` reads it for `source === 'player'` (the auto-success early-return is now gated behind `PLAYER_CAST_VARIANCE_ENABLED`), and `targetActions.ts` reads the same field via `maxStepDifficulty` to render the focused card's risk line. Measured over 400 seeds: the outcome set for a positive-difficulty cast is >1 band.
 
 ### `band-opposition-pairs-contested-resolution` — 🟢 LIVE

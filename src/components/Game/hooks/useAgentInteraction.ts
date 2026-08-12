@@ -17,6 +17,7 @@ import { preparePlayerCast, commitPlayerCast } from '../../../engine/playerCastD
 import { getUnifiedTemplateById, AGENT_INTERVENTION_TEMPLATES } from '../../../data/unified-action-templates';
 import { templateIdFromSlotId, getTargetActionSlots } from '../../../engine/targetActions';
 import { getAscendantDomainAffinities } from '../../../engine/ascendant';
+import { castCapabilityByReach } from '../../../engine/playerCastReadout';
 import { buildActorTargetContext } from '../../../engine/targetContextBuilders';
 import { getAvatarHexPosition } from '../../../engine/visibility';
 import type { ToastItem } from '../../../types/notification';
@@ -155,6 +156,9 @@ export function useAgentInteraction({
           hexRevelation: gameState.hexRevelation,
           unlockedActionIds: gameState.unlockedActionIds,
           ascendantDomainAffinities: getAscendantDomainAffinities(gameState.graph, gameState.ascendantId),
+          // THR-998 — see useTargetActions: the focused card's line must track the
+          // odds, and intervention cards reach the same ActionDrawer face.
+          ascendantCastCapabilities: castCapabilityByReach(gameState.graph, gameState.ascendantId),
         })
       : [];
 

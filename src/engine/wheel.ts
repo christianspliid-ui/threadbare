@@ -9,6 +9,7 @@
 import type { SphereName } from '../types/index';
 import type { EssencePool, InfluenceTier } from '../types/influence';
 import type { RarityTier } from '../types/rarity';
+import type { ActionScale } from '../types/unifiedAction';
 import type { EffectSource } from '../data/actionEffectSource';
 import type { InterventionType } from '../types/dream';
 import { INTERVENTION_DEFINITIONS } from '../types/dream';
@@ -80,9 +81,20 @@ export interface WheelSlot {
    * NOTE: Slots built via getAgentWheelSlots (legacy radial wheel) do not populate rarityTier.
    * If that path is still active, add rarityTier pass-through matching targetActions.ts:263. */
   rarityTier?: RarityTier;
-  /** Highest step difficulty in the template (THR-728). Drives the focused card's
-   * qualitative risk line. 0 or absent → a guaranteed casting, no hint shown. */
+  /** Highest step difficulty in the template (THR-728). 0 or absent → a guaranteed
+   * casting, no hint shown. NOTE (THR-998): this is the *authored* price and is no
+   * longer what picks the risk word — the floor caps it away for 85% of the slot
+   * list. It survives as the "was this priced at all?" bit. Use
+   * `effectiveStepDifficulty` for anything that claims something about the odds. */
   maxStepDifficulty?: number;
+  /** The difficulty that actually reaches the roll for this ascendant, at this
+   * template's scale (THR-998) — `effectiveCastDifficulty` in playerCastReadout.ts.
+   * 0 means the per-scale floor capped the authored price away, so the card names
+   * the scale instead of claiming a risk. Absent when the slot was built without a
+   * capability map (fail-soft: the card then names the scale rather than guessing). */
+  effectiveStepDifficulty?: number;
+  /** Template scale, carried for the focused card's honest-line fallback (THR-998). */
+  scale?: ActionScale | null;
 }
 
 // ─── Wheel Layout ─────────────────────────────────────────────────────────

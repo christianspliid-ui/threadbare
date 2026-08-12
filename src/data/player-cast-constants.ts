@@ -13,6 +13,7 @@
  * User verdict (chat, 2026-07-24): "Yes, with a safety floor."
  */
 import type { OutcomeType } from '../types/resolution';
+import type { ActionScale } from '../types/unifiedAction';
 
 /**
  * Master switch (NFP #1). `false` restores the pre-THR-728 auto-success
@@ -111,11 +112,18 @@ export function ascendantCastRawBonus(affinity: number | undefined): number {
  * spread assertion in `playerCastBalance.test.ts` guards its own population size
  * for exactly this reason.
  *
- * Known limit — see THR-998: this word is computed from authored difficulty, which
- * the per-scale probability floor clamps away at `local` and `personal` (85% of the
- * slot list). The line is therefore truthful about the template and silent about
- * the player's odds. Re-pricing templates or moving these cut-points changes only
- * which word prints, never the roll, which is why THR-766 changed neither.
+ * **THR-998 changed what these cut-points are applied to, not their values.** They
+ * now bucket the *effective* difficulty — the number that survives the scale offset
+ * and the per-scale floor and actually reaches the roll (`effectiveCastDifficulty`
+ * in `src/engine/playerCastReadout.ts`) — instead of the raw authored difficulty the
+ * floor clamps away for 85% of the slot list. The values are inherited from THR-766's
+ * measurement rather than re-measured against the new referent, which is deliberate:
+ * effective difficulty is bounded above by `capability - MIN_PROBABILITY_BY_SCALE`,
+ * so the reachable band widens as a god deepens and any re-tune measured on a fresh
+ * god would be measuring one point of a moving range. `perilous` is correspondingly
+ * unreachable for a fresh god and opens up with progression — that is the intended
+ * shape, not a gap. Re-pricing templates still changes only which word prints, never
+ * the roll, which is why THR-766 changed neither and THR-998 changed neither.
  */
 export const RISK_HINT_THRESHOLDS: readonly [number, number] = [0.25, 0.45];
 
@@ -123,21 +131,84 @@ export const RISK_HINT_THRESHOLDS: readonly [number, number] = [0.25, 0.45];
 export const RISK_HINT_WORDS: readonly [string, string, string] = ['steady', 'uncertain', 'perilous'];
 
 /**
- * The focused card's risk line for a template whose hardest step is `maxDifficulty`.
+ * The focused card's risk line for a casting whose effective difficulty is `difficulty`.
  *
- * Returns null for a zero-difficulty (guaranteed) template — those cards keep an
- * unchanged face, because certainty on the soul-verbs is a design statement, not
- * an omission. Fail-soft: a non-finite or negative difficulty also reads as no hint.
+ * **Feed this the effective difficulty, never the authored one** (THR-998). The
+ * authored number is capped away by the per-scale probability floor for most of the
+ * slot list, so bucketing it produces words that differ while the odds do not. Use
+ * `castHintLine` unless you specifically want the word in isolation.
+ *
+ * Returns null for a zero-difficulty casting — those cards keep an unchanged face,
+ * because certainty on the soul-verbs is a design statement, not an omission.
+ * Fail-soft: a non-finite or negative difficulty also reads as no hint.
  */
-export function riskHintLine(maxDifficulty: number | undefined): string | null {
-  if (typeof maxDifficulty !== 'number' || !Number.isFinite(maxDifficulty) || maxDifficulty <= 0) {
+export function riskHintLine(difficulty: number | undefined): string | null {
+  if (typeof difficulty !== 'number' || !Number.isFinite(difficulty) || difficulty <= 0) {
     return null;
   }
-  const word = maxDifficulty < RISK_HINT_THRESHOLDS[0]
+  const word = difficulty < RISK_HINT_THRESHOLDS[0]
     ? RISK_HINT_WORDS[0]
-    : maxDifficulty < RISK_HINT_THRESHOLDS[1]
+    : difficulty < RISK_HINT_THRESHOLDS[1]
       ? RISK_HINT_WORDS[1]
       : RISK_HINT_WORDS[2];
   const article = /^[aeiou]/i.test(word) ? 'An' : 'A';
   return `${article} ${word} working.`;
+}
+
+/**
+ * What the card says when the authored price is silent — the honest line (THR-998).
+ *
+ * When the scale floor has capped the authored difficulty to nothing, the odds are
+ * set by scale and by scale alone. So the card names the scale. This is not a
+ * consolation line standing in for a risk word: at that point scale *is* the term
+ * that moves the outcome, which makes it the one true thing the card can say.
+ *
+ * Prose, never the enum key — `local` and `regional` are internal vocabulary and a
+ * player surface may not speak them (Law 14). The shape deliberately matches the
+ * risk line ("A … working.") so the two never read as different kinds of card.
+ */
+export const SCALE_HINT_LINES: Readonly<Record<ActionScale, string>> = {
+  personal: 'A working the size of one soul.',
+  local:    'A working the size of one place.',
+  regional: 'A working the size of a region.',
+  cosmic:   'A working the size of the world.',
+};
+
+/** Fail-soft line when a template carries no scale at all. Matches the resolver's `scale ?? 'regional'`. */
+export const DEFAULT_SCALE_HINT_LINE: string = SCALE_HINT_LINES.regional;
+
+/**
+ * The focused card's one line about how a casting will go (THR-998).
+ *
+ * The single entry point the UI should call. Takes the difficulty that actually
+ * reaches the roll — `effectiveCastDifficulty` — and the template's scale, and
+ * returns exactly one of three faces:
+ *
+ * | effective difficulty | face | why |
+ * | -- | -- | -- |
+ * | authored 0 (guaranteed casting) | no line | certainty on the soul-verbs is a design statement |
+ * | 0, but the template was priced | the scale line | the floor is speaking, so name the floor's term |
+ * | > 0 | the risk word | the price genuinely moves the odds, so state the risk |
+ *
+ * **The line is a function of `effectiveDifficulty` alone, and that is the guarantee.**
+ * Two castings that resolve to the same probability have the same effective difficulty
+ * and therefore read the same line — the card cannot differentiate on a price the roll
+ * ignored, which is what THR-998 was filed on. `authoredDifficulty` is consulted for
+ * one bit only (was this template priced at all?) and never to choose a word.
+ */
+export function castHintLine(
+  authoredDifficulty: number | undefined,
+  effectiveDifficulty: number | undefined,
+  scale: ActionScale | null | undefined,
+): string | null {
+  const authored = typeof authoredDifficulty === 'number' && Number.isFinite(authoredDifficulty)
+    ? authoredDifficulty
+    : 0;
+  // A guaranteed casting keeps its unchanged face — the pre-THR-998 behaviour, verbatim.
+  if (authored <= 0) return null;
+
+  const risk = riskHintLine(effectiveDifficulty);
+  if (risk) return risk;
+
+  return scale ? (SCALE_HINT_LINES[scale] ?? DEFAULT_SCALE_HINT_LINE) : DEFAULT_SCALE_HINT_LINE;
 }

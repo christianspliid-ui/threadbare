@@ -14,9 +14,19 @@
  * narrow enough to catch a real move — see each test for what breaks it.
  *
  * Companion finding: THR-998. Authored step difficulty does not reach the roll
- * for 85% of the slot list, so the risk word describes a number that cannot move
- * the player's odds. `difficulty is inert …` below pins that property deliberately;
- * it is the assertion that must go red when THR-998 lands.
+ * for 85% of the slot list, so the risk word described a number that could not move
+ * the player's odds. `difficulty is inert …` below pins that engine property.
+ *
+ * **THR-998 shipped 2026-08-12 and that assertion stays green — deliberately.** This
+ * header used to say it "must go red when THR-998 lands", which assumed the fix would
+ * be direction 3 (lower `MIN_PROBABILITY_BY_SCALE` so authored difficulty bites again).
+ * Direction 3 was ruled out: those floors govern mortal resolution too, so it is not a
+ * player-cast-local change. The shipped fix is direction 2 — the engine property is
+ * left exactly as it is and the *card* stops claiming otherwise, naming the scale
+ * where the floor has capped the price away. So "difficulty is inert" is still a true
+ * statement about this engine and is still worth pinning; what changed is that nothing
+ * now reports it to the player as a per-template risk. The card-face contract lives in
+ * `playerCastReadout.test.ts`.
  */
 import { describe, it, expect, beforeEach } from 'vitest';
 import { resolveUncontestedStep } from '../unifiedActionResolution';
@@ -305,6 +315,16 @@ describe('THR-766 — risk words: keep RISK_HINT_THRESHOLDS [0.25, 0.45]', () =>
     // The Done-when: a spread, asserted by re-reading the slot list rather than
     // assumed. Measured at the verdict: steady 19% / uncertain 50% / perilous 30%.
     //
+    // THR-998 note — read what this measures. It buckets **authored** difficulty, which
+    // since THR-998 is no longer what the focused card renders (the card buckets the
+    // effective difficulty, and names the scale where the floor capped the price away —
+    // `playerCastReadout.test.ts` owns that contract). This assertion survives as the
+    // calibration of `RISK_HINT_THRESHOLDS` against the corpus, which is not idle: the
+    // floor cap is `capability - MIN_PROBABILITY_BY_SCALE[scale]`, so as a god deepens
+    // more of the authored price passes through intact and the corpus spread becomes
+    // the card spread. A cut-point set that is degenerate here is degenerate for a
+    // deepened god's cards. It is simply no longer a statement about a fresh god's.
+    //
     // The ticket's motivating sample ("7 of 10 read perilous") does not reproduce —
     // it was drawn when the pool held ~84 positive-difficulty templates, before the
     // WS5 migration grew it to 519. Every widening candidate tested made the spread
@@ -350,9 +370,13 @@ describe('THR-766 — authored difficulty is inert where players actually cast (
     // authored difficulty resolves identically. Together these two scales are 85%
     // of the slot list.
     //
-    // This asserts a defect on purpose: it is the property THR-998 exists to remove,
-    // and this is the test that should go red when it does. Do not relax it to keep
-    // it green — delete it, and say so in the commit that fixes THR-998.
+    // This asserts a real property of the engine, and THR-998 (shipped 2026-08-12)
+    // deliberately did not change it — see the file header. The defect was never the
+    // flatness; it was the *card* differentiating on a price the flatness had already
+    // discarded. So keep this green and keep it honest: if a future change makes
+    // authored difficulty bite at these scales, this test should go red and be
+    // re-verdicted, because that is a balance change to `MIN_PROBABILITY_BY_SCALE`
+    // (direction 3) reaching mortal resolution as well.
     //
     // THR-1000: the probability read is pre-roll, so each cell needs one resolution
     // rather than 400. The assertion is unchanged — same four difficulties, same two
