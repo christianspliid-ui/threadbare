@@ -14,6 +14,7 @@ import { ENRICHED_DILEMMA_LIBRARY } from '../../../data/meeting-dilemma-library'
 import { MEETING_BOND_TEST } from '../../../data/meeting-bond-test';
 import {
   BOND_RECEPTION_BY_BAND,
+  MEETING_POOL_MIN_CONVERTED,
   MEETING_TEST_ACTOR_ID,
   MEETING_TEST_CAPABILITY,
   MEETING_TEST_REACH,
@@ -33,7 +34,20 @@ describe('THR-868 — converted population', () => {
   it('every converted template satisfies the authoring contract', () => {
     for (const template of CONVERTED) {
       const test = template.test as FormativeTest;
-      expect(test.valuePair, `${template.id} valuePair`).toBe(template.targetValuePair);
+      // THR-1062, director verdict 2026-08-09 (option 2, "loosen the rule").
+      // A template that *declares* a target pair must still agree with its test —
+      // that is the guard against a mis-keyed axiological conversion, and it
+      // holds over all 40 `axiological` conversions, every one of which sets
+      // `targetValuePair`. A `reach_specific` template declares only a
+      // `targetReach` and never a pair, so it is free to name the axis its own
+      // scenario actually tests: the weapons master offering blade or shield is
+      // `courage_prudence`, not the `mercy_ruthlessness` that iron maps to.
+      // Forcing the reach's pair on it would make the declared axis a lie about
+      // the fiction, and `poleLean` cards would then argue an axis the scene
+      // never raises.
+      if (template.targetValuePair !== undefined) {
+        expect(test.valuePair, `${template.id} valuePair`).toBe(template.targetValuePair);
+      }
       expect(test.purposeLine.trim().split(/\s+/).length, `${template.id} purposeLine ≤4 words`)
         .toBeLessThanOrEqual(4);
       expect(test.difficulty, `${template.id} difficulty`).toBeGreaterThanOrEqual(0);
@@ -71,6 +85,35 @@ describe('THR-868 — converted population', () => {
       // Card ids unique within the hand — duplicates make toggle state ambiguous.
       const ids = test.nudges.map((n) => n.id);
       expect(new Set(ids).size, `${template.id} card ids unique`).toBe(ids.length);
+    }
+  });
+
+  // ── Slot-2 pool coverage (THR-1062) ────────────────────────────────
+  //
+  // `selectDilemmas` fills slot 2 from `reach_specific` templates matching the
+  // primary *or* secondary reach. Below `MEETING_POOL_MIN_CONVERTED` converted
+  // candidates a reach draws the same test every run, which reads worse than
+  // the legacy choice scene — so this is the assertion the slot-2 half of
+  // Batch A exists to satisfy.
+  //
+  // Predicate, not a snapshot count (THR-688 rule A): every reach must clear
+  // the bar. Adding a ninth reach makes this fail until that reach is authored,
+  // which is the intended behaviour.
+  it(`every reach has ≥${MEETING_POOL_MIN_CONVERTED} converted slot-2 candidates`, () => {
+    const reachSpecific = ENRICHED_DILEMMA_LIBRARY.filter((t) => t.category === 'reach_specific');
+    // Guard against a vacuous pass over an empty population.
+    expect(reachSpecific.length).toBeGreaterThan(0);
+
+    const reaches = [...new Set(reachSpecific.map((t) => t.targetReach))];
+    expect(reaches.length, 'every reach_specific template declares a targetReach').toBe(
+      [...new Set(reachSpecific.filter((t) => t.targetReach != null).map((t) => t.targetReach))].length,
+    );
+
+    for (const reach of reaches) {
+      const converted = reachSpecific.filter((t) => t.targetReach === reach && t.test != null);
+      expect(converted.length, `${reach} converted slot-2 candidates`).toBeGreaterThanOrEqual(
+        MEETING_POOL_MIN_CONVERTED,
+      );
     }
   });
 });
