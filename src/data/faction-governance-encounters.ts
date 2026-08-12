@@ -213,7 +213,7 @@ export const FACTION_DOUBTER_CHOOSES_TEMPLATE: UnifiedActionTemplate = {
   narrativeTemplates: {
     initiation: 'feels themselves seen by something larger than the faction',
     success: 'they speak the doubt openly — there is no path back',
-    failure: 'they hold the doubt closer — and let it harden into something they will carry alone',
+    failure: 'they hold the doubt closer — and let it harden into a grief they will carry alone',
   },
   steps: [
     {
@@ -251,7 +251,7 @@ export const FACTION_DOUBTER_CHOOSES_TEMPLATE: UnifiedActionTemplate = {
         'the faction continue around them, wait. Either choice is final in its own way: ' +
         'the doubt cannot be unfelt.',
       successAfterimage: 'They speak. The faction must answer.',
-      failureAfterimage: 'They hold their silence. Something hardens in them.',
+      failureAfterimage: 'They hold their silence. The doubt hardens where it sits.',
     },
   ],
 };

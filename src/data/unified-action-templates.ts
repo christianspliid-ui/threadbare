@@ -674,8 +674,8 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     motivations: [],
     narrativeTemplates: {
       initiation: 'reaches for a thread gone slack and pours warmth back down it',
-      success: 'the guttered fire catches again, burning with something borrowed',
-      failure: 'the thread will not take the warmth; whatever is left in them refuses it',
+      success: 'the guttered fire catches again, burning on borrowed warmth',
+      failure: 'the thread will not take the warmth; what is left in them refuses it',
     },
   },
 
@@ -782,8 +782,8 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     targetCategories: ['agent'] as unknown as readonly import('../types/targetContext').TargetCategory[],
     narrativeTemplates: {
       initiation: 'breathes a truth into the space between agents',
-      success: 'the secret surfaces — someone now knows what they were never meant to know',
-      failure: 'the truth finds no purchase; the moment passes unheard',
+      success: 'the secret surfaces, and the room divides into those who knew and those who did not',
+      failure: 'the truth finds no purchase; it passes unheard',
     },
   },
 
@@ -1057,7 +1057,7 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     requiredNodeProperties: { hasDoubter: true },
     narrativeTemplates: {
       initiation: 'lets a name rise in the room — the one whose silence has been speaking',
-      success: 'the doubter feels themselves seen by something larger than the faction',
+      success: 'the doubter feels themselves seen by a power larger than the faction',
       failure: 'no one inside this faction carries the silence that would answer',
     },
   },
@@ -1611,7 +1611,7 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     narrativeTemplates: {
       initiation: 'strips away the veils of immanence — the true face is about to show',
       success: 'those nearby witness raw divine presence; they cannot un-see it',
-      failure: 'the moment of revelation collapses before it can fully form',
+      failure: 'the true face begins to show, then folds back behind the veil',
     },
   },
 ];
