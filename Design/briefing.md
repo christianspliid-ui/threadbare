@@ -1,37 +1,34 @@
 # Briefing
 
-**Generated:** 2026-08-12 17:54 local (2026-08-12 15:54 UTC) · keep-work-flowing-cc
+**Generated:** 2026-08-12 18:59 local (2026-08-12 16:59 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**Nothing needs you right now — and the work is moving again.**
+**Nothing needs you right now — three tickets shipped this afternoon and a fourth is now in design.**
 
-Two tickets shipped in the last forty minutes, both of them the ones you ruled on this afternoon:
+- **[THR-1069](https://linear.app/threadbare/issue/THR-1069)** — a notification branch that could never fire now provably cannot. Merged as [PR #1411](https://github.com/christianspliid-ui/threadbare/pull/1411) at 18:29.
+- **[THR-998](https://linear.app/threadbare/issue/THR-998)** (17:41) and **[THR-1067](https://linear.app/threadbare/issue/THR-1067)** (17:15) — both from your rulings earlier today, both landed without coming back to you.
 
-- **[THR-998](https://linear.app/threadbare/issue/THR-998)** — the focused card no longer claims odds the roll will not deliver. Merged as [PR #1410](https://github.com/christianspliid-ui/threadbare/pull/1410) at 17:41.
-- **[THR-1067](https://linear.app/threadbare/issue/THR-1067)** — eighteen templates stopped naming the result instead of showing it. Merged as [PR #1406](https://github.com/christianspliid-ui/threadbare/pull/1406) at 17:15.
-
-Your rulings went in, the executor picked between the options you delegated, and both landed without coming back to you. That is the new canon rule working the first time it was tested.
+The more interesting move: **[THR-1082](https://linear.app/threadbare/issue/THR-1082) — the consequence icon language — went into design at 17:14.** That is the ticket carrying your 2026-08-10 direction about `"Vara's stone grew steadily"` being ungaugeable, and it is the one thing standing between you and re-playing the consequence verdict. It is being written up now; nothing is asked of you until there is something to look at.
 
 ## Also waiting (1)
 
-- **A Tenacious-style trait** — a parked design option, no ticket, no urgency. It stays parked unless you want it opened. Detail: `Design/user-actions.md`.
+- **A Tenacious-style trait** — a parked design option, no ticket, no urgency. It stays parked unless you say otherwise. Detail: [`Design/user-actions.md`](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md).
 
 ## Queue
 
-**Backed up — 24 ready, 0 in flight.** The empty in-flight count is the good kind: the executor finished both its claims and the next pickup fires at 18:01. Nothing is stuck.
+**Backed up — 24 ready, 0 in flight.** The zero is the good kind again: the executor cleared its claim and the next pickup fires at 19:01.
 
-- **The shelf is still all cleanup.** Every one of the 24 is infrastructure, deferral, prose or UI tidying — there is no feature or content work queued at all. That has been the shape of the week.
-- **What would change that is two design sessions, not a decision from you.** [THR-1082](https://linear.app/threadbare/issue/THR-1082) (consequence icon language) and [THR-1043](https://linear.app/threadbare/issue/THR-1043) (the Encounter Factory) each need a plan doc written before an executor can touch either. On THR-1082 you have already answered most of the design in chat — that session is largely writing down what you said.
-- **[THR-907](https://linear.app/threadbare/issue/THR-907) and [THR-974](https://linear.app/threadbare/issue/THR-974) are being re-listed as needing you again** by the orchestrator. They don't — you ruled both on 2026-08-10. Suppressed here for the third hour running; it will repeat every hour until an executor moves the two ticket states.
+- **The shelf is still entirely cleanup.** All 24 are infrastructure, deferral, prose or UI-defect tidying — no feature or content work is queued. Unchanged all week, and still not a decision you need to make.
+- **What changes it is design capacity, and some of it just arrived.** [THR-1082](https://linear.app/threadbare/issue/THR-1082) is now In Design. [THR-1043](https://linear.app/threadbare/issue/THR-1043) (the Encounter Factory) still needs its own session before an executor can touch it.
+- **[THR-907](https://linear.app/threadbare/issue/THR-907) and [THR-974](https://linear.app/threadbare/issue/THR-974) are being re-listed as needing you for the fourth hour running.** They don't. I re-checked both ticket histories directly this hour rather than trusting the earlier suppression: THR-907 carries all four verdicts you gave on 2026-08-10, THR-974 carries your "not yet — the change is surfaced but it is not legible". Both are answered and both are still sitting in `Todo`, which is why the lanes keep finding them. It repeats every hour until an executor moves the two states.
 - Stale: [THR-991](https://linear.app/threadbare/issue/THR-991), untouched 9 days.
 - No parked In-Dev issues.
 
 ## Health
 
-- **The auto-sync stoppage from last hour's brief is fixed.** It skipped three hours and drifted 10 commits behind; at 17:50 it fast-forwarded cleanly and the home copy is level with `main` again. Two of the three blocking edits are still sitting there (`.claude/settings.json`, `.claude/settings.local.json`) — harmless right now, but they will stall it again the moment a commit touches either file. An executor should clear or commit them; not yours.
-- **The home copy still has no working packages** (`node_modules/.bin` has no esbuild, day four). Anything shelling out to the test runner there fails. Repair is `npm install`; the housekeeping job refuses to run it itself. Executor's job.
-- **Two stale worktrees still need disposition** — `hopeful-shaw-3150f4` (24d) and `jovial-mcnulty-37a4c9` (25d), both carrying unmerged work. The housekeeping job will not delete unmerged branches on its own. It otherwise ran 14 minutes ago and is healthy.
-- **[PR #1114](https://github.com/christianspliid-ui/threadbare/pull/1114) is on hold on purpose** and has a conflict — the paused WS5 content migration. Not a fault; noted so it is not mistaken for one.
+- **Auto-sync is fixed and has stayed fixed** — two clean runs at 17:50 and 18:50, and the home copy is level with `main`. Two edits are still parked in it (`.claude/settings.json`, `.claude/settings.local.json`); harmless today, but they will stall it again the moment a commit touches either file. Executor's job to clear or commit them.
+- **The home copy still has no working packages** — `node_modules` is missing both the test runner and the bundler, day five. Anything shelling out to tests there fails. One `npm install` fixes it; the housekeeping job will not run it itself. Executor's job.
+- **Two stale worktrees still need disposition** — `hopeful-shaw-3150f4` (24d) and `jovial-mcnulty-37a4c9` (25d), both carrying unmerged work that the housekeeping job refuses to delete on its own. It otherwise ran 19 minutes ago and is healthy.
 - **The lane-silence probe still flags the 20.6 h gap on 10–11 Aug.** Declined again as machine-off per your 2026-08-08 ruling. Noted only so it is not read as a new outage.
-- Deploy, CI checks, scheduled workflows and all nine task heartbeats: green. The live site is serving the latest commit on `main` ([`b7c0ea3a`](https://github.com/christianspliid-ui/threadbare/commit/b7c0ea3a)).
+- Deploy, CI checks, scheduled workflows and all nine task heartbeats: green. The live site is serving the latest commit on `main` ([`942bf1a0`](https://github.com/christianspliid-ui/threadbare/commit/942bf1a0)).
