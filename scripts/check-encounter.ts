@@ -15,8 +15,13 @@
  *                            cast, rewards, aftermath, systems quota, images.
  *                            Delegates hand → `checkNudgeHand` and setting →
  *                            `validateSettingEnvelope` rather than restating them.
- *   2. Register detectors    `auditTemplate` — vagueness, abstraction, second
- *                            person, not-X-but-Y, intensifiers.
+ *   2. Register detectors    `auditTemplate().failures` — vagueness, not-X-but-Y,
+ *                            thin premise, second person. Abstraction and
+ *                            intensifiers report into `warnings` and are
+ *                            deliberately not read here (THR-1092): the
+ *                            abstract-noun measure is a suffix proxy that counts
+ *                            domain vocabulary against a template, so it ranks
+ *                            rather than gates.
  *   3. Reference liveness    `validateNudgeGrantRefs` — every id a card grants
  *                            resolves against built content. This is the
  *                            per-template sibling of `validateTraitRefs`, which
