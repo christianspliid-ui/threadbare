@@ -1022,6 +1022,34 @@ aftermathConfig: {
 
 ---
 
+### Capability 20: Target-Derived Price — A Card That Costs What the Target Is Worth (THR-1073)
+
+Two optional markers let a template price itself from the *state of the thing it targets*, instead of the one number it wrote down at authoring time.
+
+```ts
+// On the template — the price
+essenceCost: TIER_ADVANCEMENT_ESSENCE_COST[1],   // the declared baseline
+essenceCostContext: 'target_tier_scaled',
+
+// On the step — the roll
+difficulty: TIER_ADVANCEMENT_DIFFICULTY[1],
+difficultyContext: 'target_tier_scaled',
+```
+
+With the markers, `artifact.enchant` / `artifact.empower` charge 4 essence at difficulty 0.20 to advance a Mundane artifact and 14 at 0.50 to advance a Mythic one, reading the authored ramp in `src/data/attachment-tier-content.ts`. Without them nothing changes — the scaling is strictly opt-in, and every other template in the catalog resolves its authored number unchanged.
+
+**Both markers or neither.** They sit at two levels because the two numbers do (price is per-template, difficulty is per-step). Declaring only the cost marker gives you the dearest advancement at the easiest roll, which no authored content means.
+
+**Why it is an enum and not a function.** The obvious shape — `difficultyFrom: (target) => …` — cannot be used. Templates are serialized into `public/action-catalog.generated.json`, where a function field silently becomes `undefined`, so the catalog and the running game would disagree about the price. A declarative marker survives serialization and keeps behaviour out of a data file (NFP #3).
+
+**What an author must know:** the *declared* `essenceCost` / `difficulty` stay meaningful — they are the tier-1 baseline, and they are what any surface reading the template statically (the generated catalog, the Codex) will show. The drawer, the affordability gate, and the roll all resolve the real number.
+
+**Not yet scaled:** duration. `TIER_ADVANCEMENT_DURATION[2..3]` is still unconsumed because the draw happens in `createUnifiedAction`, which has no graph handle — tracked as THR-1100.
+
+**Where to find the implementation:** `src/engine/targetTierScaling.ts` (the only reader of the tables), wired at three seams — `targetActions.ts` (card price + affordability + displayed risk), `playerCastDispatch.ts` (what the pool is charged), `unifiedActionResolution.ts` (what the roll uses).
+
+---
+
 ## Part 3: The Wiring Checklist — Ask These Before You Write
 
 Before writing any encounter, answer these questions. If the answer to most of them is "not applicable," you may be writing a book page, not game content.

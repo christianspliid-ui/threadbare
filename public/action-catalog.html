@@ -184,6 +184,7 @@
   <header class="catalog-hero">
     <h1>Action Catalog</h1>
     <p>Every ascendant-facing action template in the live registry — spheres, reaches, costs, and real availability buckets. Generated from code (<code>UNIFIED_ACTION_TEMPLATES</code> + <code>ASCENDANT_ACTION_BUCKETS</code>), so it always reflects what actually ships, including the Ascendant Beats verbs.</p>
+    <p><strong>One caveat on the essence column (THR-1073):</strong> for most templates the listed cost is the cost. A template declaring <code>essenceCostContext: 'target_tier_scaled'</code> prices itself from the <em>target's</em> current attachment tier instead, and this catalog necessarily shows the tier-1 baseline the template literally declares — a static catalog has no target to price against. <code>artifact.enchant</code> and <code>artifact.empower</code> are the two: listed at 4 essence, they cost 8 to advance a Storied artifact and 14 a Mythic one, from the ramp in <code>src/data/attachment-tier-content.ts</code>. The in-game drawer resolves the real number before it offers the card.</p>
     <p class="catalog-stats" id="stats">Loading the grimoire…</p>
   </header>
 
