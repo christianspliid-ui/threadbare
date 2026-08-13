@@ -191,6 +191,7 @@ import {
 import { applyActionTriggerPayloads } from './effects/actionTriggerPayloads';
 import type { ActionTriggerEvent, EffectRuntimeState } from '../types/effects';
 import { collectAttachmentEffects } from './effects/effectWalker';
+import { tierScaledDifficulty } from './targetTierScaling';
 import {
   PLAYER_CAST_VARIANCE_ENABLED,
   PLAYER_CAST_OUTCOME_FLOOR,
@@ -321,6 +322,13 @@ export function resolveUncontestedStep(
   }
 
   let effectiveDifficulty = step.difficulty;
+  // THR-1073: a step may price its difficulty from the target's attachment tier,
+  // so advancing Mythic→Legendary rolls against the authored hard number rather
+  // than the tier-1 one every advancement used to share. The table lives in
+  // `attachment-tier-content.ts` (NFP #1) — nothing numeric is decided here.
+  if (step.difficultyContext === 'target_tier_scaled') {
+    effectiveDifficulty = tierScaledDifficulty(step, state.graph.getNode(action.targetId)?.properties);
+  }
   if (step.difficultyContext === 'intel_sensitive') {
     const targetNode = state.graph.getNode(action.targetId);
     const locationId = targetNode?.type === 'location'

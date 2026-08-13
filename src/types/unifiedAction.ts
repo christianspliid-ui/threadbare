@@ -1193,8 +1193,18 @@ export interface ActionStep {
   readonly reach: ReachDomain;
   readonly duration: { readonly min: number; readonly max: number };
   readonly difficulty: number; // 0-1
-  /** Opt-in for intel-derived difficulty reduction during resolution. */
-  readonly difficultyContext?: 'intel_sensitive';
+  /**
+   * Opt-in for state-derived difficulty during resolution. Declarative by
+   * design — a serializable enum rather than a function, so the generated action
+   * catalog and the running game cannot disagree about a step's price.
+   *
+   * - `'intel_sensitive'` — actionable intelligence eases the roll.
+   * - `'target_tier_scaled'` (THR-1073) — difficulty *and* duration come from the
+   *   authored per-tier ramp in `attachment-tier-content.ts`, indexed by the
+   *   target artifact's current tier. Pair with `essenceCostContext` on the
+   *   template so the price ramps alongside the difficulty.
+   */
+  readonly difficultyContext?: 'intel_sensitive' | 'target_tier_scaled';
   readonly onSuccess: readonly GraphOp[];
   readonly onFailure: readonly GraphOp[];
   readonly failBehavior: StepFailBehavior;
@@ -1521,6 +1531,22 @@ export interface UnifiedActionTemplate {
   // Costs
   readonly apCost: number; // typically 1
   readonly essenceCost?: number; // divine actions only
+  /**
+   * Opt-in for a target-derived price (THR-1073). Absent → `essenceCost` is the
+   * price, as it is for every other card in the catalog.
+   *
+   * `'target_tier_scaled'` reads the authored ramp in `attachment-tier-content.ts`
+   * indexed by the target artifact's current tier, so advancing Mythic→Legendary
+   * costs more than Mundane→Storied. Declarative rather than a function for the
+   * reason given on {@link ActionStep.difficultyContext}: the template is
+   * serialized into the generated action catalog, where a function would vanish.
+   *
+   * Pair it with `difficultyContext: 'target_tier_scaled'` on the step — the
+   * markers sit at two levels because the two numbers do (price is per-template,
+   * difficulty is per-step). Resolved through `tierScaledEssenceCost`, which is
+   * the only reader; see `src/engine/targetTierScaling.ts`.
+   */
+  readonly essenceCostContext?: 'target_tier_scaled';
 
   // Filtering
   readonly actorAffinities: readonly ActorType[];
