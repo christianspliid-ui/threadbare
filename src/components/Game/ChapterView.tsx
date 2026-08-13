@@ -10,6 +10,7 @@
 
 import type { ChapterRecord } from '../../types/chapterRecord';
 import type { StepOutcome, UnifiedActionOutcome } from '../../types/unifiedAction';
+import { outcomePhrase } from '../../engine/aftermathWords';
 
 interface ChapterViewProps {
   chapter: ChapterRecord;
@@ -42,16 +43,12 @@ const OUTCOME_TONE: Record<StepOutcome, string> = {
  * THR-571 U1: the chapter's FINAL outcome band, named in the lexicon (never the raw enum).
  * At-cost is the world's texture ("won, at a price"); the crit bands get the rare-tier
  * gold/red accent so a player's eye catches the outcomes a god notices.
+ *
+ * THR-1035 moved the words themselves to `engine/aftermathWords` so the Chapter
+ * Ledger row can say the same thing this header does — it previously could not
+ * reach them and rendered the raw key. The tone map below stays here: colour is
+ * this surface's business, vocabulary is not.
  */
-const FINAL_OUTCOME_LABEL: Record<UnifiedActionOutcome, string> = {
-  critical_success: 'a triumph',
-  success: 'it held',
-  success_at_cost: 'won, at a price',
-  contested_won: 'won, contested',
-  contested_lost: 'lost, contested',
-  failure: 'it faltered',
-  critical_failure: 'it broke',
-};
 
 const FINAL_OUTCOME_TONE: Record<UnifiedActionOutcome, string> = {
   critical_success: 'var(--accent-gold, #d4af37)',
@@ -123,7 +120,11 @@ export function ChapterView({ chapter, onOpenEntity, onBack }: ChapterViewProps)
   const finalOutcome = chapter.resolved ? chapter.outcome : undefined;
   const outcomeBand = finalOutcome
     ? {
-        label: FINAL_OUTCOME_LABEL[finalOutcome] ?? finalOutcome,
+        // THR-1035 — this read `FINAL_OUTCOME_LABEL[...] ?? finalOutcome`, whose
+        // fallback was the raw key. `outcomePhrase` humanises and warns once
+        // instead (Law 14's fallback clause), and returns null only for an
+        // absent outcome — which this branch has already excluded.
+        label: outcomePhrase(finalOutcome) ?? '',
         tone: FINAL_OUTCOME_TONE[finalOutcome] ?? 'var(--text-secondary, #9a8f80)',
         rare: RARE_OUTCOMES.has(finalOutcome),
       }
