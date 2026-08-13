@@ -19,9 +19,19 @@
  *   • For the genuine no-ops (empty step ops, no controlSpec, no engine bridge) the
  *     text states the *intended* effect; the catalog's `none` badge marks it
  *     unimplemented. Text + badge together are honest. (THR-605 tracks wiring them.)
+ *   • NEVER AUTHOR AN ENTRY FOR A TEMPLATE THAT ALREADY CARRIES ITS OWN
+ *     `technicalEffect` (THR-1075). The assembly transform prefers the template's
+ *     field, so such an entry reaches no consumer — it is invisible, and being
+ *     invisible it rots. That is not hypothetical: THR-605 wired six verbs and
+ *     wrote correct strings onto the templates, and all six stale "NOT YET WIRED"
+ *     entries survived here for months, telling the player the exact inverse of
+ *     what the action did. When you wire a verb, either update its entry here or
+ *     move the text onto the template — never both. `action-technical-effects-wiring.test.ts`
+ *     pins both halves: no shadowed entry, and no unwired disclaimer on a wired verb.
  *
  * Keyed by template id. An id absent from this map renders "—" + `unauthored` in
- * the catalog — a visible gap, not a crash.
+ * the catalog — a visible gap, not a crash. An id whose template authors its own
+ * `technicalEffect` belongs absent for exactly that reason.
  */
 
 export const ACTION_TECHNICAL_EFFECTS: Readonly<Record<string, string>> = {
@@ -210,12 +220,9 @@ export const ACTION_TECHNICAL_EFFECTS: Readonly<Record<string, string>> = {
     "On success, advances the target artifact one attachment tier (Mundane→Storied→Mythic→Legendary) via the `advance_artifact_tier` step op, scaling its `stat_contribution` effects by TIER_MODIFIER_SCALE_FACTOR — clamped to ITEM_STAT_BAND_LEGENDARY — so the item really is mightier on the bearer's sheet. No-ops on an artifact already at Legendary.",
   'artifact.empower':
     "Enchant's martial counterpart, reached through Iron rather than Veil: the same `advance_artifact_tier` step op and the same authored tier costs, so a war-god can grow a blade without borrowing rune-craft.",
-  'artifact.attune':
-    'INTENDED: bind the artifact more tightly to its holder, strengthening its effects for that bearer. NOT YET WIRED — empty step ops, no engine bridge; deducts essence and narrates only (THR-605).',
-  'artifact.nullify':
-    'INTENDED: suppress or strip an artifact’s magical effects. NOT YET WIRED — empty step ops, no engine bridge; deducts essence and narrates only (THR-605).',
-  'artifact.curse':
-    'INTENDED: lay a harmful effect on the artifact that afflicts its holder. NOT YET WIRED — empty step ops, no engine bridge; deducts essence and narrates only (THR-605).',
+  // artifact.attune / artifact.nullify / artifact.curse: THR-605 wired all three,
+  // and each template now authors its own code-sourced `technicalEffect`. Removed
+  // here (THR-1075) rather than rewritten — see the no-shadowing rule above.
 
   // ─── loc.* / sub.* — location & sublocation property mutations ────────────
   'loc.ward':
@@ -224,8 +231,8 @@ export const ACTION_TECHNICAL_EFFECTS: Readonly<Record<string, string>> = {
     "On success, raises the target location's `magicalSaturation` by a larger named delta, seeding it toward Place-of-Power status.",
   'loc.incite_unrest':
     "On success, raises the target location's `unrest` by a named delta, pushing it toward defection/sacking thresholds read elsewhere.",
-  'loc.fortify':
-    'INTENDED: harden a settlement against attack, raising its defensive standing. NOT YET WIRED — empty step ops, no engine bridge; deducts essence and narrates only (THR-605).',
+  // loc.fortify: THR-605 wired it (`fortify_location`); the template authors its
+  // own `technicalEffect`. Removed here (THR-1075) — see the no-shadowing rule.
   'loc.bless_harvest':
     "On success, raises the location's `prosperity` and `populationHealth` by named deltas (LOC_BLESS_HARVEST_*) for LOC_BLESS_HARVEST_DURATION_TICKS, and swells every staple resource's stock toward Glut (LOC_BLESS_HARVEST_STOCK_DELTA) — the coarse stock tier re-derives next tick.",
   'loc.blight':
@@ -248,10 +255,9 @@ export const ACTION_TECHNICAL_EFFECTS: Readonly<Record<string, string>> = {
     "On success, raises the location's `unrest` by a named delta (LOC_CURSE_ROADS_UNREST_DELTA) for LOC_CURSE_ROADS_DURATION_TICKS.",
   'sub.sanctify':
     'INTENDED: consecrate a sublocation into a lasting point of divine presence that draws the faithful and repels hostiles. NOT YET WIRED — empty step ops, no engine bridge (only a sphere-alignment availability gate); deducts essence and narrates only (THR-605).',
-  'sub.trap':
-    'INTENDED: lay a hidden snare in a sublocation that triggers on the intended victim. NOT YET WIRED — empty step ops, no engine bridge; deducts essence and narrates only (THR-605).',
-  'sub.vision':
-    'INTENDED: read a sublocation’s history and hidden nature. NOT YET WIRED — empty step ops, no engine bridge; deducts essence and narrates only (THR-605).',
+  // sub.trap / sub.vision: THR-605 wired both (`plant_trap` via
+  // unifiedActionResolution, `scry_sublocation` via graphOpExecutor); each
+  // template authors its own `technicalEffect`. Removed here (THR-1075).
   'sub.sanctify_tavern':
     'INTENDED: bless a tavern to concentrate social energy — drawing agents from neighbouring hexes and amplifying the local social-encounter rate. NOT YET WIRED — empty step ops, no engine bridge; deducts essence and narrates only (THR-605).',
 
