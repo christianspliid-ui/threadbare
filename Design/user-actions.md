@@ -1,16 +1,16 @@
 # User Action Required
 
-**Last updated:** 2026-08-13 18:58 local (2026-08-13 16:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-13 19:56 local (2026-08-13 17:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
 ### 1. One attended look at the new aftermath — on the preview build, not the live site
 
-[PR #1415](https://github.com/christianspliid-ui/threadbare/pull/1415) builds [THR-1082](https://linear.app/threadbare/issue/THR-1082/consequence-icon-language-aftermath-must-show-what-changed-and-roughly) — your 10 August direction that the aftermath should name what changed rather than report a die roll. Every automated gate is green. The only thing left is a human looking at it at 1920×1080, and unattended runs structurally cannot do that ([impediment #546](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/impediments.md)): the browser refuses to render with nobody present, and the change moves layout, so the cheaper substitute was correctly refused. Held **22 hours** as of this refresh; it will not clear on its own.
+[PR #1415](https://github.com/christianspliid-ui/threadbare/pull/1415) builds [THR-1082](https://linear.app/threadbare/issue/THR-1082/consequence-icon-language-aftermath-must-show-what-changed-and-roughly) — your 10 August direction that the aftermath should name what changed rather than report a die roll. Every automated gate is green. The only thing left is a human looking at it at 1920×1080, and unattended runs structurally cannot do that ([impediment #546](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/impediments.md)): the browser refuses to render with nobody present, and the change moves layout, so the cheaper substitute was correctly refused. Held **23 hours** as of this refresh; it will not clear on its own.
 
 **→ [Open the new aftermath (PR preview build)](https://threadbare-git-claude-thr-1082-consequence-language-spliid.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge)** — the branch's own preview address, read off the PR's Vercel record. Protected preview, so it may ask you to sign in to Vercel first. Add `&outcome=critical_failure` to the same link for a second ending. **Not** `threadbare.vercel.app` — that is the live site, built from `main`, and this PR is not merged, so it shows the *old* aftermath.
 
-**What to do:** open it, look at two encounters across two outcome bands, and say whether it reads right. Your Law 13/15 ratification is already recorded — this is a look, not a decision.
+**What to do:** open it, look at two encounters across two outcome bands, and say whether it reads right. Your Law 13/15 ratification is already recorded — this is a look, not a decision. What is being asked of you is your presence, not a judgment call.
 
 **Note:** the branch conflicts with `main` in `src/engine/aftermathWords.ts`, its test and the generated interface map — ordinary executor merge work, nothing from you. Nothing merged since 12 August touches the consequence chips, so the preview still shows what you need to see.
 
