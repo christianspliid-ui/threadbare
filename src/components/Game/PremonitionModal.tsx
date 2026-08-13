@@ -15,6 +15,7 @@ import type { PremonitionEvent, WhisperNudge, CompulsionCandidate } from '../../
 import type { EssencePool } from '../../types/influence';
 import type { SphereName } from '../../types';
 import { SPHERE_COLORS, QUINTESSENCE_COLOR } from '../../data/premonition-constants';
+import { formatEssence } from '../shared/formatEssence';
 
 // ─── Props ──────────────────────────────────────────────────────
 
@@ -108,7 +109,7 @@ function WhisperOptionRow({
           {nudge.prose}
         </span>
         <span className="text-xs ml-2 whitespace-nowrap" style={{ color }}>
-          {nudge.essenceCost} essence
+          {formatEssence(nudge.essenceCost)} essence
         </span>
       </div>
       {/* Law 45: was `opacity-50` over the gradient (~2.9:1). The flavour line
@@ -157,7 +158,7 @@ function CompulsionOptionRow({
           {candidate.hexDistance > 0 ? ` · ${candidate.hexDistance} hex away` : ''}
         </span>
         <span className="text-xs whitespace-nowrap" style={{ color }}>
-          {candidate.essenceCost} essence
+          {formatEssence(candidate.essenceCost)} essence
         </span>
       </div>
     </button>

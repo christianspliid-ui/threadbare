@@ -4,6 +4,7 @@ import type { SphereName } from '../../types/index';
 import { getSphereColor } from '../../data/sphereIcons';
 import { SphereIcon } from '../icons';
 import { Button } from '../shared/Button';
+import { formatEssence, formatEssencePool } from '../shared/formatEssence';
 
 export interface InterventionConfirmProps {
   interventionType: InterventionType;
@@ -205,7 +206,7 @@ export function InterventionConfirm(props: InterventionConfirmProps) {
                 Cost
               </span>
               <span style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' }}>
-                {Math.round(essenceCost)} {sphere} essence
+                {formatEssence(essenceCost)} {sphere} essence
               </span>
             </div>
             <div>
@@ -265,7 +266,7 @@ export function InterventionConfirm(props: InterventionConfirmProps) {
               className="mb-4 italic"
               style={{ color: 'var(--negative)', fontSize: 'var(--text-sm)' }}
             >
-              Insufficient {sphere} essence (need {Math.round(essenceCost)}, have {Math.round(props.availableEssence ?? 0)})
+              Insufficient {sphere} essence (need {formatEssence(essenceCost)}, have {formatEssencePool(props.availableEssence ?? 0)})
             </p>
           )}
 
