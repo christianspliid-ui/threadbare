@@ -267,6 +267,19 @@ export interface EncounterStageAftermathReactionModel {
   label: string;
   intent?: string;
   disabled?: boolean;
+  /**
+   * THR-1084 — the label pre-segmented so any named entity in it links to its
+   * page, exactly as the consequence chips beside it already do. Additive on
+   * purpose (NFP #6): `label` stays the plain string, so the Gate Duty adapter
+   * and the debug-bridge reaction listing keep working untouched, and a
+   * renderer without segments draws the string as before.
+   *
+   * Absent ⇒ render `label`. A sentence naming nothing linkable still arrives
+   * as a single plain segment — fail-open, never a dead link.
+   */
+  labelSegments?: EncounterStageNarrativeParagraph;
+  /** As `labelSegments`, for `intent`. Absent ⇒ render `intent`. */
+  intentSegments?: EncounterStageNarrativeParagraph;
 }
 
 /**
