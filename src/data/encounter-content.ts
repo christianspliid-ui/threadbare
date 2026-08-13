@@ -11,6 +11,11 @@ import { ENCOUNTER_TYPE_MOTIVATIONS } from '../types/encounter';
 import type { LocationSubtype } from '../types/index';
 import type { UnifiedActionTemplate } from '../types/unifiedAction';
 import { compileOpeningEnvelope, expandSettings, type SettingClass } from './settingClasses';
+import {
+  ENCOUNTER_TONE_ADJECTIVES,
+  encounterToneTierForThreat,
+  resolveWordPoolTokens,
+} from './encounter-words';
 import { getSocialEncounterById } from './social-encounter-content';
 import { getFactionEncounterById } from './faction-encounter-content';
 import { getMercenaryEncounterById } from './mercenary-encounter-content';
@@ -96,17 +101,19 @@ export const RICH_VEIN_COLLAPSE_PENALTY = 10;
  * Used to flavor prose and adjust difficulty multipliers for encounter steps.
  */
 export const ENCOUNTER_DIFFICULTY_TIERS: Record<string, EncounterDifficultyTier> = {
+  // Tone adjectives are owned by `encounter-words.ts` (THR-1036) so the enrichment path
+  // and this table cannot drift apart — the drift is what let the tokens leak.
   early: {
     difficultyMultiplier: 0.8,
-    toneAdjectives: ['uncertain', 'tentative', 'green', 'unsteady', 'fledgling'],
+    toneAdjectives: ENCOUNTER_TONE_ADJECTIVES.early,
   },
   mid: {
     difficultyMultiplier: 1.0,
-    toneAdjectives: ['determined', 'tested', 'hardened', 'resolute', 'seasoned'],
+    toneAdjectives: ENCOUNTER_TONE_ADJECTIVES.mid,
   },
   late: {
     difficultyMultiplier: 1.3,
-    toneAdjectives: ['desperate', 'legendary', 'harrowed', 'transcendent', 'final'],
+    toneAdjectives: ENCOUNTER_TONE_ADJECTIVES.late,
   },
 };
 
@@ -2650,13 +2657,16 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'heart',
         difficulty: DIFFICULTY_BASE,
         duration: 1,
-        narrative: '{actor} is accused of {adj} crime. Trial by combat is {their} only defense.',
+        // THR-1036: authored out of the `{adj}`/`{verb}` mad-lib shape. The word pools now
+        // resolve corpus-wide, but a template the player was reported reading deserves
+        // written prose, not a substitution that happens to be grammatical.
+        narrative: 'The charge is read twice — once in law, once in plain words — so nobody can claim they misheard it. {actor} is offered the old remedy: answer it in court, or answer it with a blade.',
         onSuccess: {
-          narrative: '{actor}\'s {adj} response to the accusation {verb}s the court\'s {adj} attention.',
+          narrative: '{actor} answers without raising {their} voice. The court had prepared for shouting, and the quiet unsettles it more.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: '{actor}\'s response is {adj}. The court {verb}s {their} guilt, and the trial begins {adj}.',
+          narrative: '{actor} says too much, and the wrong parts of it. By the time {they} stop, half the room has already decided, and the trial is a formality with swords in it.',
           reputationDelta: -0.02,
         },
       },
@@ -2666,14 +2676,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'iron',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 1,
-        narrative: '{actor} faces {their} {adj} accuser in {adj} mortal combat. The court watches {adj}.',
+        narrative: 'The floor is cleared and sanded for grip. The accuser has fought on these boards before and knows which ones give. {actor} learns them at speed.',
         onSuccess: {
-          narrative: '{actor}\'s {adj} skill {verb}s the accuser {adj} to the ground. Victory {verb}s {actor}\'s innocence.',
+          narrative: '{actor} ends it in three exchanges. The accuser stays down, still breathing — which the court notes, and the crowd resents.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: '{actor}\'s combat is {adj}. The accuser {verb}s {actor} {adj} and {actor} {verb}s {adj}.',
+          narrative: 'The accuser is patient and {actor} is not. A shoulder gives, then a knee, and the sand takes the rest. {actor} is still alive when it stops, which the room reads as its own verdict.',
           reputationDelta: -0.03,
         },
       },
@@ -2683,9 +2693,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'heart',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 1,
-        narrative: 'The court must {adj} rule on {actor}\'s fate. Is {their} {adj} victory enough?',
+        narrative: 'Winning the fight is not the same as winning the case, and the court takes its time making that clear. The judges confer behind a screen while {actor} waits in the sand.',
         onSuccess: {
-          narrative: '{actor}\'s {adj} victory {verb}s the court\'s {adj} judgment. {They} are declared innocent and {adj} freed.',
+          narrative: 'The verdict comes back innocent. Nobody uses the word proven. {actor} is free to go, and free to notice who will not meet {their} eye on the way out.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
           rewardPool: {
@@ -2693,7 +2703,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'The court {verb}s {actor}\'s {adj} victory as {adj}. {They} {verb} a {adj} sentence for {their} crimes.',
+          narrative: 'The court rules the victory a technicality and sentences {actor} anyway. The law is satisfied. Nobody in the room pretends justice is.',
           reputationDelta: -0.08,
           rewardPool: {
             categoryWeights: { condition: 0.6, possession: 0.4 },
@@ -2754,7 +2764,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         duration: 1,
         narrative: '{actor} and the {adj} noble {verb} in {adj} duel before {adj} witnesses. {Their} honor rests on {adj} outcome.',
         onSuccess: {
-          narrative: '{actor}\'s {adj} skill {verb}s the noble {adj} down. {Their} honor is {adj} restored, and {the} court {verb}s in {adj} approval.',
+          narrative: '{actor}\'s {adj} skill {verb}s the noble {adj} down. {Their} honor is {adj} restored, and the court {verb}s in {adj} approval.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
           rewardPool: {
@@ -3372,7 +3382,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         duration: 2,
         narrative: '{actor} must negotiate {adj} terms with a {adj} ruler whose {adj} demands are {adj} and steep.',
         onSuccess: {
-          narrative: '{actor} {verb}s {adj} terms that both {can} accept. The ruler {verb}s with {adj} satisfaction.',
+          narrative: '{actor} {verb}s {adj} terms that both can accept. The ruler {verb}s with {adj} satisfaction.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
         },
@@ -4276,7 +4286,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: '{actor}\'s {adj} leadership {verb}s {adj}. The group {verb}s scattered, {adj} and {defeated}.',
+          narrative: '{actor}\'s {adj} leadership {verb}s {adj}. The group {verb}s scattered, {adj} and defeated.',
           reputationDelta: -0.08,
         },
       },
@@ -12668,42 +12678,7 @@ export const ENCOUNTER_SYSTEM_CONNECTIONS: {
   ],
 };
 
-// ─── Encounter Verb/Action/Noun Pools ────────────────────────────
-
-/** Verbs for encounter narratives (base form — 's' is appended for 3rd person) */
-const ENCOUNTER_VERB_POOL = [
-  'stir', 'pulse', 'howl', 'surge', 'seethe', 'coil', 'groan',
-  'tremble', 'shift', 'crack', 'burn', 'ring', 'echo', 'flash',
-  'waver', 'flicker', 'twist', 'shatter', 'bloom', 'fade',
-];
-
-/** Action phrases for {action} placeholder */
-const ENCOUNTER_ACTION_POOL = [
-  'practiced hands', 'iron will', 'careful deliberation',
-  'raw instinct', 'patient skill', 'fierce focus',
-  'quiet precision', 'desperate strength', 'steady rhythm',
-];
-
-/** Nouns for {noun} placeholder */
-const ENCOUNTER_NOUN_POOL = [
-  'purpose', 'strength', 'resolve', 'shadow', 'faith',
-  'devotion', 'silence', 'defiance', 'memory', 'ruin',
-  'ambition', 'cunning', 'valor', 'wisdom', 'fury',
-];
-
 // ─── Narrative Resolver ──────────────────────────────────────────
-
-/**
- * Simple deterministic hash from a string seed → number.
- * Used to pick words consistently for the same encounter step.
- */
-function simpleHash(str: string): number {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    hash = ((hash << 5) - hash + str.charCodeAt(i)) | 0;
-  }
-  return Math.abs(hash);
-}
 
 /**
  * Resolve template placeholders in an encounter narrative string.
@@ -12713,6 +12688,12 @@ function simpleHash(str: string): number {
  *
  * Multiple occurrences of {adj} in the same string get different adjectives
  * by cycling through the pool with an incrementing offset.
+ *
+ * **The word-pool half of this now lives in `encounter-words.ts` (THR-1036),** because
+ * this function had zero callers while `enrichProse()` — the path that actually renders
+ * encounter prose — did not know the tokens, so all 153 templates using them leaked raw
+ * `{adj}` / `{verb}s` to the player. The pools moved to a shared module rather than being
+ * duplicated; this signature is unchanged and delegates.
  */
 export function resolveEncounterNarrative(
   narrative: string,
@@ -12720,15 +12701,6 @@ export function resolveEncounterNarrative(
   stepId: string,
   threatRating: string = 'moderate',
 ): string {
-  const seed = simpleHash(stepId);
-
-  // Pick adjective tier based on threat rating
-  const tierKey =
-    threatRating === 'trivial' || threatRating === 'easy' ? 'early'
-    : threatRating === 'hard' || threatRating === 'deadly' ? 'late'
-    : 'mid';
-  const adjPool = ENCOUNTER_DIFFICULTY_TIERS[tierKey].toneAdjectives;
-
   let text = narrative;
 
   // Replace {actor} globally
@@ -12745,42 +12717,7 @@ export function resolveEncounterNarrative(
   // Replace {target} with generic (no target context in display)
   text = text.replace(/\{target\}/g, 'their opponent');
 
-  // Replace {verb}s first (before {verb}) — base form + 's'
-  let verbIdx = seed;
-  text = text.replace(/\{verb\}s/g, () => {
-    const verb = ENCOUNTER_VERB_POOL[verbIdx % ENCOUNTER_VERB_POOL.length];
-    verbIdx++;
-    return verb + 's';
-  });
-  // Replace remaining {verb} — also conjugated 3rd person
-  text = text.replace(/\{verb\}/g, () => {
-    const verb = ENCOUNTER_VERB_POOL[verbIdx % ENCOUNTER_VERB_POOL.length];
-    verbIdx++;
-    return verb + 's';
-  });
-
-  // Replace {adj} — cycle through pool for variety
-  let adjIdx = seed;
-  text = text.replace(/\{adj\}/g, () => {
-    const adj = adjPool[adjIdx % adjPool.length];
-    adjIdx++;
-    return adj;
-  });
-
-  // Replace {action}
-  text = text.replace(/\{action\}/g, () => {
-    return ENCOUNTER_ACTION_POOL[seed % ENCOUNTER_ACTION_POOL.length];
-  });
-
-  // Replace {noun}
-  let nounIdx = seed;
-  text = text.replace(/\{noun\}/g, () => {
-    const noun = ENCOUNTER_NOUN_POOL[nounIdx % ENCOUNTER_NOUN_POOL.length];
-    nounIdx++;
-    return noun;
-  });
-
-  return text;
+  return resolveWordPoolTokens(text, stepId, encounterToneTierForThreat(threatRating));
 }
 
 // ─── Lookup Functions ───────────────────────────────────────────
