@@ -994,7 +994,7 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     description:
       'You loose a thread of memory — older than any living member, older than the faction\'s current name. ' +
       'Somewhere, a forgotten teaching surfaces in the minds of those who never knew they were waiting for it. ' +
-      'A recovered_doctrine clue you gathered from delving the ruins now lands inside the faction that lost it.',
+      'The doctrine you carried out of the ruins now lands inside the faction that lost it.',
     reach: 'star',
     crudType: 'update',
     scale: 'regional',
@@ -1426,7 +1426,7 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     spellName: 'Divine Whisper',
     rarityTier: 2,
     intrinsicTier: 'background',
-    description: 'Composes a direct clue from divine knowledge and deposits it into a bonded agent\'s awareness — a certainty about a ruin the god already perceives, bypassing any need for investigation. The agent gains a knows_clue_of edge without experiencing any discovery encounter. A divine mark is left on the agent, discoverable by rival gods via Taste the Wake.',
+    description: 'Composes a direct clue from divine knowledge and deposits it into a bonded agent\'s awareness — a certainty about a ruin the god already perceives, bypassing any need for investigation. The agent simply knows where the place lies, and never learns how. A divine mark is left on the agent, discoverable by rival gods via Taste the Wake.',
     reach: 'heart',
     crudType: 'create',
     scale: 'cosmic',
@@ -2213,7 +2213,7 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     spellName: 'The Old Name Spoken',
     rarityTier: 3,
     intrinsicTier: 'shaping',
-    description: 'Stirs the spirit of the settlement itself into present awareness. The place remembers — its founders, its lost laws, its half-forgotten customs. v1 raises divine presence sharply and marks the place; spawning the embodied place_spirit actor is filed as a follow-up.',
+    description: 'Stirs the spirit of the settlement itself into present awareness. The place remembers — its founders, its lost laws, its half-forgotten customs. Your presence settles hard into the streets, and the ground keeps the mark of it.',
     reach: 'heart',
     crudType: 'create',
     scale: 'regional',
