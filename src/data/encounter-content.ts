@@ -794,13 +794,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'iron',
         difficulty: DIFFICULTY_BASE,
         duration: 1,
-        narrative: '{actor} faces a {adj} opponent in single combat. The fortress watches, breath held.',
+        // THR-1101: authored out of the `{adj}`/`{verb}` mad-lib shape (duel-family batch).
+        narrative: 'The garrison clears a square in the courtyard and lines the walls to watch. {actor} is handed a blade with another man\'s notches worn into the grip.',
         onSuccess: {
-          narrative: '{actor} defeats {their} foe with {adj} skill, and the crowd erupts in {adj} acclaim.',
+          narrative: '{actor} ends it with a turn of the wrist and a step back. The walls make a noise the fort has not made in years.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: '{actor} stumbles. {Their} opponent presses {their} advantage, and {actor} is forced to yield.',
+          narrative: '{actor} plants a foot on loose gravel and the fight decides itself there. The yielding is quick, and the walls stay quiet about it.',
           reputationDelta: -0.02,
         },
       },
@@ -810,14 +811,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'stone',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 1,
-        narrative: '{actor} must lead a {adj} garrison against a {adj} siege. The fort\'s survival rests on {their} choices.',
+        narrative: 'The siege arrives before the bruises fade. {actor} is given a garrison that has buried two captains this season and told to hold the gate.',
         onSuccess: {
-          narrative: '{actor} orchestrates a {adj} defense. The enemy breaks against walls, and morale soars.',
+          narrative: '{actor} spends the archers early and the reserves late, and the enemy breaks on the wall instead of through it. The garrison starts using {their} name for orders.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: '{actor}\'s strategy {verb}s. The gates are breached, and {their} command shatters.',
+          narrative: '{actor} holds the reserves too long. The gate goes in the third hour, and the fighting moves indoors, where plans do not reach.',
           reputationDelta: -0.03,
         },
       },
@@ -827,9 +828,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'iron',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 1,
-        narrative: 'The warlord arrives in {adj} fury. {actor} must defeat {them} to claim the fortress and title.',
+        narrative: 'The warlord comes through the smoke without an escort, which is the whole message. The fortress and the title go to whoever is standing at the end of it.',
         onSuccess: {
-          narrative: '{actor} stands victorious over the {adj} warlord, the fortress now {their} own, {adj} and glorious.',
+          narrative: '{actor} is the one left standing. The fortress changes hands in the time it takes a body to fall, and the garrison decides, quietly, that this is acceptable.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
           rewardPool: {
@@ -837,7 +838,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: '{actor} is cast down. The warlord {verb}s and they are cast into chains, {adj} and defeated.',
+          narrative: '{actor} is put down in front of the garrison and dragged out in chains. The warlord does not bother to learn the name.',
           reputationDelta: -0.08,
           rewardPool: {
             categoryWeights: { condition: 0.6, possession: 0.4 },
@@ -2377,13 +2378,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'iron',
         difficulty: DIFFICULTY_BASE,
         duration: 1,
-        narrative: 'A {adj} drunk at the tavern insults {actor} with {adj} words. A fight looms.',
+        // THR-1101: authored out of the `{adj}`/`{verb}` mad-lib shape (duel-family batch).
+        narrative: 'A drunk at the long table has decided {actor} is worth insulting, and has an audience for it. The room quiets by half, the way rooms do.',
         onSuccess: {
-          narrative: '{actor} stands with {adj} presence. The drunk shrinks back, {their} friends uncertain.',
+          narrative: '{actor} says almost nothing and does not move. The drunk runs out of material, and his friends develop an interest in their drinks.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: '{actor}\'s response is {adj}. The drunk {verb}s in rage and throws the first punch.',
+          narrative: '{actor} answers in kind, which is the one reply that could not be walked back. The drunk swings before the sentence lands.',
           reputationDelta: -0.02,
         },
       },
@@ -2393,14 +2395,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'gold',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 1,
-        narrative: '{actor} must fight the {adj} drunk and {their} {adj} friends in the tavern\'s {adj} chaos.',
+        narrative: 'The table goes over. The drunk has three friends, the room has no room, and every one of them stands between {actor} and the door.',
         onSuccess: {
-          narrative: '{actor}\'s fists {verb} {adj} and {adj}. {They} leave the drunk and friends on the floor, {adj} but victorious.',
+          narrative: '{actor} works close, where numbers matter less. All four end up on the boards, and {actor} is bleeding from the ear and still upright.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: '{actor} is overwhelmed. {They} are thrown from the tavern {adj} and bleeding.',
+          narrative: '{actor} goes under the weight of them. The night ends face down on the cobbles with the door shut behind {them}.',
           reputationDelta: -0.03,
         },
       },
@@ -2410,11 +2412,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'iron',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 1,
-        narrative: 'The tavern keeper appears, {adj} with rage. {actor} must face {adj} consequences.',
+        narrative: 'The keeper comes out of the back with a ledger and a look. Broken furniture is a number, and the number is coming to {actor}.',
         criticalSuccessAfterimage: '{actor} not only settles the keeper\'s rage but leaves the tavern better than {they} found it — the broken table replaced, a song started, {their} name buying a round it did not pay for. This becomes the house\'s favorite story about the night everything nearly went wrong.',
         criticalFailureAfterimage: 'The keeper\'s anger finds a footing {actor} cannot argue past, and by morning the whole town has the tale — the stranger who broke the place and could not make it right. The doors that matter here shut before {they} reach them.',
         onSuccess: {
-          narrative: '{actor} {verb}s the tavern keeper\'s anger with {adj} words. {They} pay for damages and leave {adj} and respected.',
+          narrative: '{actor} pays the number without arguing it, then pays a little past it. The keeper puts the ledger away and pours {them} one on the house.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
           rewardPool: {
@@ -2422,7 +2424,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: '{actor} cannot appease the keeper. {They} are thrown out, banned from the tavern {adj} and ashamed.',
+          narrative: '{actor} has no coin and no argument the keeper wants to hear. The banning is done at volume, in front of everyone who watched the fight.',
           reputationDelta: -0.08,
           rewardPool: {
             categoryWeights: { condition: 0.6, possession: 0.4 },
@@ -2448,13 +2450,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'eye',
         difficulty: DIFFICULTY_BASE,
         duration: 1,
-        narrative: 'A {adj} mage challenges {actor} to a {adj} duel of magic. {actor} must accept or lose face.',
+        // THR-1101: authored out of the `{adj}`/`{verb}` mad-lib shape (duel-family batch).
+        narrative: 'A mage lays a challenge down in front of witnesses, phrased so that refusing it is also an answer. The room waits to see which one {actor} gives.',
         onSuccess: {
-          narrative: '{actor} accepts the challenge with {adj} grace. The mage nods, seeing {adj} confidence.',
+          narrative: '{actor} accepts flatly, without dressing it up. The mage reconsiders the shape of his afternoon.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: '{actor}\'s acceptance is {adj}. The mage laughs, sensing {adj} uncertainty.',
+          narrative: '{actor} accepts a beat too late and a word too carefully. The mage smiles at the pause, having already learned what he came to learn.',
           reputationDelta: -0.02,
         },
       },
@@ -2464,14 +2467,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'veil',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 1,
-        narrative: '{actor} and the mage {verb} spells against each other. Each {adj} spell tests will and wit.',
+        narrative: 'It is not a contest of force. Each of them shapes the air and waits to see what the other does about it, and the cost is paid in attention.',
         onSuccess: {
-          narrative: '{actor}\'s spells {verb} {adj} and true. The mage {verb}s back, struggling against {actor}\'s {adj} power.',
+          narrative: '{actor} holds the working longer than the mage expects and turns it back on him. He gives ground across the flagstones, one careful step at a time.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: '{actor}\'s spells are {adj}. The mage\'s power {verb}s through, and {actor} is forced to retreat.',
+          narrative: '{actor}\'s working comes apart at the seam. What the mage sends after it does not miss, and {actor} gives up the floor to keep {their} feet.',
           reputationDelta: -0.03,
         },
       },
@@ -2481,9 +2484,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'eye',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 1,
-        narrative: 'One final spell will decide the duel. {actor} must cast {their} {adj} power against the mage\'s last defense.',
+        narrative: 'Both of them are down to one working apiece, and both know it. The next thing either of them does will be the last thing.',
         onSuccess: {
-          narrative: '{actor}\'s final spell {verb}s {adj} and unstoppable. The mage {verb}s defeated, acknowledging {actor}\'s {adj} mastery.',
+          narrative: '{actor} goes first and goes through. The mage\'s guard folds, and he says the word for surrender in the old form, which costs him more than the duel did.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
           rewardPool: {
@@ -2492,7 +2495,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: '{actor}\'s final spell {verb}s away. The mage\'s counterattack {verb}s true, and {actor} {verb}s defeated.',
+          narrative: '{actor} goes first and comes up short by a hand\'s breadth. The counter lands clean, and the flagstones arrive faster than expected.',
           reputationDelta: -0.08,
           rewardPool: {
             categoryWeights: { condition: 0.6, possession: 0.4 },
@@ -2519,13 +2522,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'star',
         difficulty: DIFFICULTY_BASE,
         duration: 1,
-        narrative: '{actor} enters the {adj} arena. A {adj} crowd watches, hungry for blood and glory.',
+        // THR-1101: authored out of the `{adj}`/`{verb}` mad-lib shape (duel-family batch).
+        narrative: 'The gate lifts onto sand that has been raked and does not look it. The crowd has been drinking since noon and wants a name to shout.',
         onSuccess: {
-          narrative: '{actor} strides in with {adj} bearing. The crowd {verb}s in approval, sensing {adj} destiny.',
+          narrative: '{actor} walks the sand slowly and gives them the pause before giving them the name. By the far wall the noise has turned into a chant.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: '{actor}\'s entry is {adj}. The crowd {verb}s in mockery, and doubt whispers through the stands.',
+          narrative: '{actor} comes out too fast, and the crowd reads it as nerves. The chant that starts is not the one {actor} wanted.',
           reputationDelta: -0.02,
         },
       },
@@ -2535,14 +2539,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'iron',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 1,
-        narrative: '{actor} faces {adj} opponents in the {adj} arena. Victory must be {adj} and decisive.',
+        narrative: 'Two of them, sent in staggered so the second arrives while {actor} is busy. The sand is deep along the wall, and everyone in the stands knows it.',
         onSuccess: {
-          narrative: '{actor}\'s blades {verb} {adj} and true. Opponents {verb} {adj} before {their} might.',
+          narrative: '{actor} takes the first at the edge of the deep sand and the second before he finishes turning. It ends quickly enough that the crowd feels cheated and cheers regardless.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: '{actor}\'s combat is {adj}. The opponents {verb} {actor} back, and victory {verb}s away.',
+          narrative: '{actor} is worked toward the deep sand and spends the whole bout staying out of it. Both of them are still standing when the horn goes.',
           reputationDelta: -0.03,
         },
       },
@@ -2552,9 +2556,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'star',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 1,
-        narrative: '{actor} stands alone, {adj} amid the arena\'s blood and dust. The crowd roars—will {they} celebrate or condemn?',
+        narrative: '{actor} is the last one upright, which in this place is a question rather than an answer. The crowd decides what it saw, and the crowd is not reliable.',
         onSuccess: {
-          narrative: '{actor} raises {their} arms {adj} in victory. The crowd {verb}s in {adj} celebration—a legend is born.',
+          narrative: '{actor} raises a hand and the stands come apart. By evening there are three versions of the fight in the wine shops, and all of them are generous.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
           rewardPool: {
@@ -2562,7 +2566,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: '{actor}\'s {adj} collapse {verb}s the crowd\'s cheers. {They} drag {actor} {adj} from the arena.',
+          narrative: '{actor}\'s legs go on the walk back, and the noise turns before {they} reach the gate. Two attendants carry {them} out under it.',
           reputationDelta: -0.08,
           rewardPool: {
             categoryWeights: { condition: 0.6, possession: 0.4 },
@@ -2588,13 +2592,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'shadow',
         difficulty: DIFFICULTY_BASE,
         duration: 1,
-        narrative: '{actor} senses {adj} movement in the shadows. An assassin stalks {them} with {adj} intent.',
+        // THR-1101: authored out of the `{adj}`/`{verb}` mad-lib shape (duel-family batch).
+        narrative: 'A stone turns over somewhere behind and to the left, and then does not turn over again, which is worse. Someone has been walking in {actor}\'s footsteps for a while.',
         onSuccess: {
-          narrative: '{actor}\'s {adj} awareness {verb}s the killer\'s presence. {They} turn to face {their} foe.',
+          narrative: '{actor} stops walking and turns before the killer expects it. The advantage he bought over the last mile is gone in one step.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: '{actor} {verb}s {adj} and {their} ambusher {verb}s from darkness {adj} upon {them}.',
+          narrative: '{actor} keeps walking. The first {actor} knows of him is a hand on the shoulder and a blade already moving.',
           reputationDelta: -0.02,
         },
       },
@@ -2604,14 +2609,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'iron',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 1,
-        narrative: '{actor} duels the {adj} assassin in {adj} combat. {Their} blades {verb} in the shadows.',
+        narrative: 'He fights the way ambushers do once the ambush is gone — close, fast, and already looking for the exit. There is no ground here that favors either of them.',
         onSuccess: {
-          narrative: '{actor}\'s {adj} blades {verb} true. The assassin {verb}s away {adj} and wounded.',
+          narrative: '{actor} gets inside his reach and stays there. He breaks off with a ruined arm and takes the dark with him.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: '{actor}\'s defense is {adj}. The assassin {verb}s and {actor} {verb}s {adj} and bleeding.',
+          narrative: '{actor} covers the wrong line twice. The second cut goes deep along the ribs, and the dark is suddenly all his.',
           reputationDelta: -0.03,
         },
       },
@@ -2621,9 +2626,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'shadow',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 1,
-        narrative: '{actor} pursues the {adj} assassin into {adj} shadows. Will {they} catch {their} foe?',
+        narrative: 'He is wounded and running, and wounded men leave a line to follow. Following it into the ruins is exactly what he would want.',
         onSuccess: {
-          narrative: '{actor}\'s {adj} pursuit {verb}s the assassin {adj} to ground. {They} emerge {adj} and victorious.',
+          narrative: '{actor} follows the blood and does not follow it into the obvious place. He is waiting in the second-most obvious one, and it goes badly for him.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
           rewardPool: {
@@ -2631,7 +2636,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: '{actor}\'s pursuit {verb}s into {adj} darkness. The assassin {verb}s away {adj}, escaping into {adj} night.',
+          narrative: '{actor} loses the line at the treeline and casts about until the light goes. The assassin is clear, and he has {actor}\'s face now.',
           reputationDelta: -0.08,
           rewardPool: {
             categoryWeights: { condition: 0.6, possession: 0.4 },
@@ -2729,13 +2734,16 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'heart',
         difficulty: DIFFICULTY_BASE,
         duration: 1,
-        narrative: 'A {adj} noble insults {actor}\'s {adj} honor. A duel is {adj} demanded.',
+        // THR-1101: authored out of the `{adj}`/`{verb}` mad-lib shape (duel-family batch).
+        // Sits directly beside `encounter.trial_by_combat`, the THR-1036 exemplar, so the
+        // register is calibrated against it rather than derived independently.
+        narrative: 'The noble makes it loud enough to carry and light enough to deny, which is the craft of it. The room turns to see whether {actor} knows the difference.',
         onSuccess: {
-          narrative: '{actor}\'s {adj} response to the insult {verb}s the court {adj}. {They} accept the duel with {adj} dignity.',
+          narrative: '{actor} answers in the same register and no louder, and the denial stops being available. The seconds are named before the wine is finished.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: '{actor}\'s response is {adj}. {Their} honor {verb}s {adj}, and the insult stands undefended.',
+          narrative: '{actor} answers too plainly for a room that runs on the other thing. The insult is left standing, and the court agrees, without discussing it, that it heard no such remark.',
           reputationDelta: -0.02,
         },
       },
@@ -2745,14 +2753,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'iron',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 1,
-        narrative: '{actor} prepares for the {adj} duel against the {adj} noble. {Their} seconds ensure {adj} readiness.',
+        narrative: 'A day to prepare — enough time to get ready, and far too much time to think. {actor}\'s seconds settle the ground, the hour, and the blades.',
         onSuccess: {
-          narrative: '{actor} prepares with {adj} discipline. {Their} weapons are {adj} and {their} mind is {adj}.',
+          narrative: '{actor} sleeps, eats, and works the wrist until it stops complaining. By dawn the waiting has been spent rather than endured.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: '{actor}\'s preparation is {adj}. {Their} doubts {verb}, and {their} readiness {verb}s {adj}.',
+          narrative: '{actor} spends the night rehearsing the duel and arrives having already lost it several times. The wrist is ready. {actor} is not.',
           reputationDelta: -0.03,
         },
       },
@@ -2762,9 +2770,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'heart',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 1,
-        narrative: '{actor} and the {adj} noble {verb} in {adj} duel before {adj} witnesses. {Their} honor rests on {adj} outcome.',
+        narrative: 'Frost on the grass, and a surgeon standing well back with a bag he expects to open. The noble has done this before and is in no hurry.',
         onSuccess: {
-          narrative: '{actor}\'s {adj} skill {verb}s the noble {adj} down. {Their} honor is {adj} restored, and the court {verb}s in {adj} approval.',
+          narrative: '{actor} takes the noble\'s arm on the third pass and stops there, which is a choice every witness can see being made. The court will talk about the stopping, not the cut.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
           rewardPool: {
@@ -2772,7 +2780,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: '{actor} is {adj} defeated. {Their} honor {verb}s even {adj}, and {they} {verb} {adj} and {adj} shamed.',
+          narrative: '{actor} is put on the grass in under a minute. The surgeon does his work while the noble accepts congratulations a polite distance away.',
           reputationDelta: -0.08,
           rewardPool: {
             categoryWeights: { condition: 0.6, possession: 0.4 },
@@ -5057,13 +5065,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'gold',
         difficulty: DIFFICULTY_BASE,
         duration: 1,
-        narrative: 'Sails on the horizon, wrong colours. {actor} has minutes to rally the harbor guards and coordinate a {adj} defence before the raiders make land.',
+        // THR-1101: authored out of the `{adj}`/`{verb}` mad-lib shape (duel-family batch).
+        narrative: 'Sails on the horizon, wrong colours. {actor} has minutes to rally the harbor guards and get a defence onto the quay before the raiders make land.',
         onSuccess: {
-          narrative: '{actor}\'s {adj} organisation pays off — harbor chains drawn, archers in position. The raiders {verb} the {adj} wall of readiness.',
+          narrative: '{actor} gets the chains up and the archers onto the warehouse roofs with time to spare. The first boat comes in under arrow fire and thinks better of the second.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: '{actor}\'s orders {verb} in the {adj} chaos. The docks are unprepared when the first hull scrapes stone.',
+          narrative: '{actor}\'s orders arrive out of sequence and half of them not at all. The docks are still arguing when the first hull scrapes stone.',
           reputationDelta: -0.04,
         },
       },
@@ -5075,12 +5084,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         duration: 1,
         narrative: 'Raiders pour across the gangplanks. {actor} is in the thick of it — defend the cargo sheds or let them burn.',
         onSuccess: {
-          narrative: '{actor} holds the line with {adj} resolve. The raiders {verb}, taking too many losses for the prize. They pull back.',
+          narrative: '{actor} holds the line at the shed doors and makes them pay for every yard of it. They take more losses than the cargo is worth and pull back to the boats.',
           reputationDelta: 0.09,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: '{actor} is pushed back. The sheds burn. Cargo is lost, and the harbor bears {adj} scars long after the ships depart.',
+          narrative: '{actor} is pushed off the quay. The sheds go up, and the harbor smells of burnt pitch and grain for a week after the ships depart.',
           reputationDelta: -0.07,
         },
       },
@@ -5092,7 +5101,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         duration: 1,
         narrative: 'The raiders are rallying for a second push. {actor} must lead the counterattack before they regroup.',
         onSuccess: {
-          narrative: '{actor} drives them into the water with {adj} fury. The harbor will not be struck again this season.',
+          narrative: '{actor} takes them while they are still forming up and drives them into the water. The harbor will not be struck again this season.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
           rewardPool: {
@@ -5101,7 +5110,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'The {adj} second wave crashes over the defences. {actor} survives, but the raid leaves the harbor {adj} gutted.',
+          narrative: 'The second wave comes in wider, and the defence is not there to meet it. {actor} survives. The harbor is stripped back to the stone.',
           reputationDelta: -0.12,
           rewardPool: {
             categoryWeights: { condition: 0.6, possession: 0.4 },
@@ -6451,13 +6460,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'iron',
         difficulty: HARD_DIFFICULTY_BASE,
         duration: 1,
-        narrative: 'The ambush is {adj} perfectly positioned — rocks above, trees on both sides, the road channeling {actor} into the kill zone.',
+        // THR-1101: authored out of the `{adj}`/`{verb}` mad-lib shape (duel-family batch).
+        narrative: 'The ambush was set by someone who knew the road — rocks above, trees on both sides, and the track narrowing exactly where it should not.',
         onSuccess: {
-          narrative: '{actor} breaks the killing ground immediately, {adj} instinct overriding the shock.',
+          narrative: '{actor} is moving before the first arrow lands, out of the channel and into the rocks. The plan was a good one and it lasted four seconds.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: '{actor} hesitates a half-second too long. The {adj} bandits press their advantage.',
+          narrative: '{actor} stops to look, which is the half-second the whole ambush was built around. They close from three sides.',
           reputationDelta: -0.05,
         },
       },
@@ -6467,9 +6477,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'shadow',
         difficulty: HARD_DIFFICULTY_BASE + HARD_DIFFICULTY_STEP,
         duration: 2,
-        narrative: 'Outnumbered but not outmaneuvered. {actor} must use the terrain against the {adj} bandits who set it.',
+        narrative: 'Outnumbered, but the terrain does not care who set it. {actor} works uphill through the rocks the bandits left unwatched, because nobody comes that way.',
         onSuccess: {
-          narrative: '{actor} collapses the {adj} ambush from within — the ambushers become the ambushed.',
+          narrative: '{actor} comes down on them from their own high ground. Two run, one is not given the chance, and the road is quiet inside a minute.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
           rewardPool: {
@@ -6478,7 +6488,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'The bandits hold the {adj} ground. {actor} escapes, but not without cost.',
+          narrative: 'The bandits hold the rocks and the road both. {actor} gets clear down the streambed, lighter by a pack and a good deal of blood.',
           reputationDelta: -0.08,
           rewardPool: {
             categoryWeights: { possession: 0.5, condition: 0.5 },
@@ -9718,13 +9728,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'eye',
         difficulty: HARD_DIFFICULTY_BASE,
         duration: 1,
-        narrative: 'Something {verb}s here that should not. {actor} must determine what {they} are actually facing before committing to any course of action.',
+        // THR-1101: authored out of the `{adj}`/`{verb}` mad-lib shape (duel-family batch).
+        narrative: 'The place is wrong in a way that does not survive being looked at directly. {actor} works out what is actually here before deciding what to do about it.',
         onSuccess: {
-          narrative: '{actor} identifies the {adj} nature of the threat. It is still dangerous — but now known.',
+          narrative: '{actor} puts a shape to it — old, patient, and bound here by an arrangement that has outlived the ones who made it. Still dangerous. No longer strange.',
           reputationDelta: 0.06,
         },
         onFailure: {
-          narrative: 'The threat eludes {adj} classification. {actor} must act on incomplete understanding.',
+          narrative: 'It fits none of the categories {actor} brought. Acting on half an understanding is the only route left, and half an understanding is how people end up inside the walls.',
           reputationDelta: -0.05,
         },
       },
@@ -9734,11 +9745,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'iron',
         difficulty: HARD_DIFFICULTY_BASE + HARD_DIFFICULTY_STEP,
         duration: 2,
-        narrative: 'There is no clever approach. The {adj} thing requires direct confrontation — will against will, presence against presence.',
+        narrative: 'There is no clever approach left. It has to be met head on — will against will, and whoever stops first loses more than the argument.',
         criticalSuccessAfterimage: '{actor} does not merely outlast it — {they} name it, and the naming undoes it. Where it stood, the air closes like a wound healing clean.',
         criticalFailureAfterimage: 'The unknown takes a piece {actor} cannot name in return. {They} walk out whole in body, but a door was left open behind {their} eyes, and it does not shut.',
         onSuccess: {
-          narrative: '{actor} does not flinch. The {adj} unknown finds no purchase in them, and withdraws.',
+          narrative: '{actor} does not flinch and does not look away. It finds no purchase, and withdraws the way cold leaves a room — slowly, and without apology.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
           rewardPool: {
@@ -9747,7 +9758,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'The {adj} confrontation goes badly. {actor} survives but is marked by it.',
+          narrative: 'It goes badly, and it goes badly quietly. {actor} walks out under {their} own power, carrying a mark {they} will find later.',
           reputationDelta: -0.08,
           rewardPool: {
             categoryWeights: { bestowed_power: 0.6, condition: 0.4 },
@@ -11049,13 +11060,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'eye',
         difficulty: DIFFICULTY_BASE,
         duration: 1,
-        narrative: 'A stranger in the yard. Good stance. Calm eyes. {actor} watches {them} move and reads the {adj} story their body tells.',
+        // THR-1101: authored out of the `{adj}`/`{verb}` mad-lib shape (duel-family batch).
+        narrative: 'A stranger in the yard. Good stance, calm eyes, blunt steel on the rack behind {them}. {actor} watches {them} move and reads the story the body tells.',
         onSuccess: {
-          narrative: 'Left-handed, favors the riposte, drops the shoulder before striking. {actor} has the {adj} measure of them.',
+          narrative: 'Left-handed, favors the riposte, drops the shoulder before striking. {actor} has the measure of them before the first touch.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: '{actor} misjudges the stranger\'s reach. The first exchange will be {adj} educational.',
+          narrative: '{actor} misjudges the stranger\'s reach by a hand. The first exchange will teach it properly.',
           reputationDelta: -0.02,
         },
       },
@@ -11065,14 +11077,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'iron',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 2,
-        narrative: 'The first touch. Blunt steel rings in the {adj} morning air. {actor} tests, feints, and learns.',
+        narrative: 'The first touch. Blunt steel rings in the cold morning air. {actor} tests, feints, and learns.',
         onSuccess: {
-          narrative: 'Three exchanges, and {actor} finds the rhythm. The stranger grins — they\'ve found someone {adj} worth the practice.',
+          narrative: 'Three exchanges, and {actor} finds the rhythm. The stranger grins — they have found a morning worth getting up for.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: 'The stranger is faster than expected. {actor} catches a {adj} bruising hit and adjusts. Learning hurts.',
+          narrative: 'The stranger is faster than advertised. {actor} takes one across the forearm that will be purple by noon, and adjusts. Learning hurts.',
           reputationDelta: -0.03,
         },
       },
@@ -11082,9 +11094,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'iron',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 1,
-        narrative: 'A sparring match ends when someone {verb}s well enough to earn respect. {actor} presses for the {adj} final exchange.',
+        narrative: 'A sparring match ends when one of them does enough to be worth acknowledging. {actor} presses for the last exchange.',
         onSuccess: {
-          narrative: 'The stranger lowers their blade and offers a {adj} nod. No words needed — steel speaks its own language.',
+          narrative: 'The stranger lowers the blade and nods once. No words are offered and none are needed — steel says it plainly enough.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
           rewardPool: {
@@ -11093,7 +11105,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'The stranger wins the last exchange cleanly. {actor} bows, {adj} and bruised. There is always someone better.',
+          narrative: 'The stranger takes the last exchange cleanly and does not make a show of it. {actor} bows, bruised, and files the lesson.',
           reputationDelta: -0.08,
         },
       },
