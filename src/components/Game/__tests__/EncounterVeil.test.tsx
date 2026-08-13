@@ -229,7 +229,7 @@ describe('lightly threaded', () => {
 
   it('displays auto-resolve timer', () => {
     render(<EncounterVeil {...lightProps} />);
-    expect(screen.getByText(/auto-resolves in 4 tick/)).toBeInTheDocument();
+    expect(screen.getByText(/auto-resolves shortly/)).toBeInTheDocument();
   });
 
   it('shows Lightly Threaded label', () => {
@@ -249,7 +249,7 @@ describe('lightly threaded', () => {
   it('reads "auto-resolving now" at the deadline rather than "in 0 ticks"', () => {
     render(<EncounterVeil {...lightProps} tick={16} />);
     expect(screen.getByText(/auto-resolving now/)).toBeInTheDocument();
-    expect(screen.queryByText(/auto-resolves in/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/auto-resolves /)).not.toBeInTheDocument();
   });
 
   it('clamps past the deadline instead of counting negative', () => {
@@ -258,9 +258,58 @@ describe('lightly threaded', () => {
     expect(screen.queryByText(/-37/)).not.toBeInTheDocument();
   });
 
-  it('still pluralises a live countdown', () => {
+  it('words the nearest band rather than counting the last tick', () => {
     render(<EncounterVeil {...lightProps} tick={15} />);
-    expect(screen.getByText(/auto-resolves in 1 tick$/)).toBeInTheDocument();
+    expect(screen.getByText(/auto-resolves in a moment/)).toBeInTheDocument();
+  });
+
+  /**
+   * THR-1070: the strip was the last surface rendering a raw tick numeral, and
+   * every routine review URL misses it — it needs `threadTier === 'light'` AND
+   * a non-null `autoResolveTick`, which the `?spawn=` route never produces.
+   * So the guard is a sweep of the whole live range rather than a spot check:
+   * `RETINUE_VIGNETTE_TIMEOUT` is 8, so 0–8 is every state a player can reach.
+   */
+  it('renders no numeral anywhere in the strip across the full 0–8 tick range', () => {
+    const deadline = 16;
+    for (let remaining = 0; remaining <= 8; remaining++) {
+      const { unmount } = render(
+        <EncounterVeil {...lightProps} autoResolveTick={deadline} tick={deadline - remaining} />,
+      );
+      // The veil portals into document.body, so query via `screen`, not the
+      // render container — the container is empty for a portalled tree.
+      const label = screen.getByText(/auto-resolv/);
+      expect(label.textContent).not.toMatch(/\d/);
+      unmount();
+    }
+  });
+
+  /**
+   * THR-1070 browser-verify substitution (impediment #546 — `preview_start` is
+   * refused in unattended runs, so the contractual 1920×1080 capture has no
+   * reachable route this pass). #546's scope test allows a jsdom substitution
+   * for a change that does not move layout, and pins that claim here rather
+   * than asserting it in a commit message:
+   *
+   * The strip is `[flex:1 bar][gap][nowrap label]`, so the label's width is the
+   * only thing that can move — and the widest wording the new scale can produce
+   * ("auto-resolves before long") is one character wider than the widest the
+   * numeral could ("auto-resolves in 8 ticks"). A one-character delta in a
+   * `nowrap` label inside a self-sizing flex row cannot wrap, overflow, or
+   * breach the viewport contract.
+   */
+  it('keeps the strip composition and nowrap label the numeral wording had', () => {
+    render(<EncounterVeil {...lightProps} tick={10} />);
+    const label = screen.getByText(/auto-resolves before long/);
+    expect(label).toHaveStyle({ whiteSpace: 'nowrap' });
+
+    const widestNew = 'auto-resolves before long'.length;
+    const widestOld = 'auto-resolves in 8 ticks'.length;
+    expect(Math.abs(widestNew - widestOld)).toBeLessThanOrEqual(1);
+
+    // The timer bar still shares the row — the label did not displace it.
+    const strip = label.parentElement!;
+    expect(strip.children).toHaveLength(2);
   });
 });
 

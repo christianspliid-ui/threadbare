@@ -18,6 +18,7 @@ import { NudgePhaseShell } from './encounter-stage/shells/NudgePhaseShell';
 import { NudgeMotiveIntro } from './encounter-stage/shells/NudgeMotiveIntro';
 import { ProseTtsButton } from './Encounter/ProseTtsButton';
 import { formatEssence, formatEssencePool } from '../shared/formatEssence';
+import { getDurationWord } from '../../data/domain-words';
 
 // ── Thread tier types ──────────────────────────────────────────────
 type ThreadTier = 'strong' | 'light' | 'watched';
@@ -1504,7 +1505,7 @@ export function EncounterVeil({
           >
             {ticksUntilAutoResolve === 0
               ? 'auto-resolving now'
-              : `auto-resolves in ${ticksUntilAutoResolve} tick${ticksUntilAutoResolve !== 1 ? 's' : ''}`}
+              : `auto-resolves ${getDurationWord(ticksUntilAutoResolve)}`}
           </div>
         </div>
       )}
