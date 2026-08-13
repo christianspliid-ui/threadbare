@@ -49,6 +49,12 @@ import {
   OUTCOME_BAND_Q_FLAVOR,
   OUTCOME_BAND_PHRASE_HISTORY_WINDOW,
 } from '../data/outcome-band-content';
+import {
+  resolveWordPoolTokens,
+  hashWordSeed,
+  DEFAULT_ENCOUNTER_TONE_TIER,
+  type EncounterToneTier,
+} from '../data/encounter-words';
 import { pickWithRepetitionGuard } from './proseSelection';
 import { emitTrace } from './traceBuffer';
 import { resolveEconomicMood } from './economicContext';
@@ -144,8 +150,10 @@ export interface NarrativeContext {
   doomAdj?: string;
   doomAtmosphere?: string;
 
-  /** Gendered pronouns. Default: they/them/their */
-  pronouns: { they: string; them: string; their: string; s: string };
+  /** Gendered pronouns. Default: they/them/their.
+   * `themselves` is optional (THR-1036) — absent falls back to the they/them reflexive,
+   * so existing callers need no change. */
+  pronouns: { they: string; them: string; their: string; s: string; themselves?: string };
 
   /** Intelligence records held by the agent (THR-113).
    * When present, enables `{intel:*}` placeholders and `{?knows_*}` / `{?no_*}`
@@ -159,6 +167,12 @@ export interface NarrativeContext {
   /** Causal predecessor — populated when this encounter was seeded by another (THR-116).
    * Enables `{cause:label}` and `{cause:ticksAgo}` placeholders. */
   cause?: { label: string; ticksAgo: number };
+
+  /** Tone tier for the `{adj}` word pool (THR-1036). Callers holding an encounter
+   * template derive it from `threatRating` via `encounterToneTierForThreat()`, so a
+   * deadly trial reads "harrowed" where a trivial one reads "tentative". Absent →
+   * the neutral `mid` tier, which is grammatical for every sentence in the corpus. */
+  encounterToneTier?: EncounterToneTier;
 
   /** Outcome band for band-flavored phrase injection (THR-460).
    * Enables `{outcome_phrase}` and `{q_flavor}` placeholders.
@@ -575,6 +589,10 @@ export function enrichProse(
   result = result.replace(/{they}/g, ctx.pronouns.they);
   result = result.replace(/{them}/g, ctx.pronouns.them);
   result = result.replace(/{their}/g, ctx.pronouns.their);
+  // THR-1036 — the encounter corpus uses `{themselves}`, which the dead
+  // `resolveEncounterNarrative` knew and this enricher did not, so it leaked raw.
+  // Reflexive of `them`; the they/them default makes "themselves" the right form.
+  result = result.replace(/{themselves}/g, ctx.pronouns.themselves ?? 'themselves');
   result = result.replace(/{s}/g, ctx.pronouns.s);
   result = result.replace(/{They}/g, capitalize(ctx.pronouns.they));
   result = result.replace(/{Them}/g, capitalize(ctx.pronouns.them));
@@ -715,6 +733,25 @@ export function enrichProse(
   }
   // Residual strip: {cause:*} tokens when no cause context — never leak raw tokens.
   result = result.replace(/\{cause:[^}]+\}/g, '');
+
+  // Word-pool placeholders (THR-1036) — {adj}, {verb}/{verb}s, {noun}, {action}.
+  // 153 of the 168 encounter templates are authored with these; a resolver for them
+  // existed but was never called by anything, and this enricher — the path that
+  // actually renders encounter prose — had never learned the tokens, so they reached
+  // the player raw (Law 43). Same class as THR-933's `{actor}`: the corpus adopted a
+  // token the enricher did not know.
+  //
+  // Runs after fragments and cast so tokens spliced in by those resolvers are covered
+  // too, and before conditionals so a *kept* block's word tokens resolve.
+  //
+  // The seed is the untouched source template plus the agent, so the words are stable
+  // across re-renders of the same line for the same agent (NFP #3) and still differ
+  // between agents sharing a template.
+  result = resolveWordPoolTokens(
+    result,
+    hashWordSeed(template + ctx.agentId),
+    ctx.encounterToneTier ?? DEFAULT_ENCOUNTER_TONE_TIER,
+  );
 
   // Conditional blocks: {?has_X}...{/has_X} and {?no_X}...{/no_X}
   result = resolveConditionals(result, ctx);
