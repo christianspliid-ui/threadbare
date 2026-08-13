@@ -126,6 +126,26 @@ describe('ActionCard — focused layout (MTG frame)', () => {
     expect(card.querySelector('img')).toBeNull();
   });
 
+  // THR-1074. `artifact.empower` shipped in THR-996 with no ACTION_ART row, so it took
+  // the fallback branch above — the sphere-glyph card, not an arted one. Asserting the
+  // rendered <img> rather than getActionArt() is deliberate: the defect was entirely
+  // about what reached the surface, and a registry-level assertion would pass unchanged
+  // if the card resolved the right path and painted something else (impediment #546).
+  it('focused card renders the Forge Rite plate for artifact.empower', () => {
+    const empowerSlot: WheelSlot = {
+      ...baseSlot,
+      id: 'artifact.empower',
+      label: 'Empower',
+      type: 'target_action',
+      interventionType: null,
+      sphere: 'force', // Iron reach -> Force, so the frame and the plate agree
+    };
+    render(<ActionCard slot={empowerSlot} onClick={vi.fn()} size="focused" />);
+    const img = screen.getByTestId('action-card-artifact.empower').querySelector('img');
+    expect(img, 'artifact.empower must take the art branch, not the glyph fallback').toBeTruthy();
+    expect(img!.getAttribute('src')).toBe('/assets/actions/forge-rite.jpg');
+  });
+
   it('focused card renders type line with reach and CRUD type', () => {
     const targetActionSlot: WheelSlot = {
       ...baseSlot,

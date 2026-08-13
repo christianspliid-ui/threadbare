@@ -57,6 +57,10 @@ export const ACTION_ART: Record<string, string> = {
 
   // ─── Artifact actions (artifact.*) ─────────────────────────────────
   'artifact.enchant': '/assets/actions/rune-inscription.jpg',
+  // THR-1074. Empower is Enchant's martial counterpart — Iron reach, so the plate
+  // carries Force crimson where Enchant's carries Veil. Filename derives from the
+  // template's spellName ("Forge Rite"), not its id.
+  'artifact.empower': '/assets/actions/forge-rite.jpg',
   'artifact.attune': '/assets/actions/sphere-resonance.jpg',
   'artifact.nullify': '/assets/actions/void-unraveling.jpg',
   'artifact.curse': '/assets/actions/malediction-bound.jpg',
