@@ -2,9 +2,9 @@
  * PlaceOfPowerInspector — compact info panel shown inside LocationView when the
  * location's subtype is `place_of_power` (THR-153). Reports:
  *   - Holder (actor / faction / god)
- *   - Essence per tick + sphere alignment
- *   - Stream decay countdown (ticks until absence dies the stream)
- *   - Transformed-from lineage (original ruin id + tick)
+ *   - Stream strength + sphere alignment, as words
+ *   - How long the stream has left before absence kills it, as words
+ *   - Transformed-from lineage (the original ruin, by name)
  *
  * Data comes straight from graph properties and the incoming
  * `holds_place_of_power` edge. Fail-soft on missing fields — every row is
@@ -14,6 +14,8 @@
 import React, { useMemo } from 'react';
 import type { GraphNode } from '../../types/graph';
 import type { WorldGraph } from '../../engine/graph';
+import { getStreamYieldWord } from '../../data/ruin-words';
+import { getDurationWord } from '../../data/domain-words';
 
 interface Props {
   location: GraphNode;
@@ -54,7 +56,6 @@ export function PlaceOfPowerInspector({ location, graph, tick }: Props) {
   const countdown = props.popStreamDecayCountdown as number | undefined;
   const streamDead = props.popStreamDead === true;
   const transformedFrom = props.transformedFromRuinId as string | undefined;
-  const transformedAt = props.transformedAtTick as number | undefined;
 
   const holder = useMemo(() => {
     if (!graph) return null;
@@ -76,13 +77,22 @@ export function PlaceOfPowerInspector({ location, graph, tick }: Props) {
         <span>Holder</span>
         <span>{holder ? `${holder.node.name} (${holder.holderType})` : 'unclaimed'}</span>
       </div>
+      {/* Law 13 — both rows carried raw magnitudes on a surface that is not
+          persistent chrome, so the ratified pool-balance exception does not
+          reach them: a per-tick rate (`2 spirit / tick`) and a tick countdown
+          (`7 ticks of grace`). The rate bands through the three-value engine
+          range; the countdown adopts THR-1070's duration scale. */}
       <div style={ROW}>
         <span>Stream</span>
-        <span>{streamDead ? 'dormant' : `${essencePerTick ?? 0} ${sphere ?? 'spirit'} / tick`}</span>
+        <span>
+          {streamDead
+            ? 'dormant'
+            : `${getStreamYieldWord(essencePerTick ?? 0)} of ${sphere ?? 'spirit'}`}
+        </span>
       </div>
       <div style={ROW}>
         <span>Decay</span>
-        <span>{streamDead ? '—' : `${countdown ?? 0} ticks of grace`}</span>
+        <span>{streamDead ? '—' : `fades ${getDurationWord(countdown ?? 0)}`}</span>
       </div>
       {holder?.edgeProps?.corruptMark === true && (
         <div style={{ ...ROW, color: 'var(--accent-red, #a44)' }}>
@@ -95,7 +105,12 @@ export function PlaceOfPowerInspector({ location, graph, tick }: Props) {
       {transformedFrom && (
         <div style={ROW}>
           <span>Origin</span>
-          <span>ruin {transformedFrom} · tick {transformedAt ?? '?'}</span>
+          {/* Law 14 — this printed the raw ruin node id and the raw tick it
+              transformed on. The id resolves to the ruin's name and fails open
+              to plain English; the tick is designer data and belongs on the
+              trace, not on a player surface, so it is dropped rather than
+              banded — "which tick" is not a question the player is asking. */}
+          <span>{graph?.getNode(transformedFrom)?.name ?? 'a fallen ruin'}</span>
         </div>
       )}
     </div>
