@@ -64,6 +64,22 @@ A `thread` edge type connecting an Ascendant to a mortal agent. Threads are the 
 
 ---
 
+### Retinue
+
+**Aliases:** the ascendant's retinue, the `'retinue'` `[[Court Position]]`
+**Also see:** `[[Thread]]`, `[[Court Position]]`, `[[Ascendant]]`, `[[Portfolio Pin]]`, `[[Companion]]`
+**Status:** canonical
+
+The mortals an Ascendant holds close — the agents on the far end of a `[[Thread]]` whose `[[Court Position]]` is `'retinue'` — and, by extension, the panel listing everyone the god currently influences. It is a **divine-court** word: it names a god's hold on people it does not own, and it never names anyone travelling alongside a mortal.
+
+**Arbitrated 2026-08-13 (THR-1099): the word means this and only this.** A second candidate sense arrived with `[[Companion]]` — the companion direction used "retinue" colloquially for the people who walk beside one mortal ("just a part of the retinue that gives a bonus"). That sense is **rejected for the word, not for the mechanic**; the mechanic ships as `[[Companion]]`. The court sense keeps the word on three counts: it is already what the player reads (the `Retinue` section heading in `RetinuePanel`), it is already a schema value (`CourtPosition`), and it is already documented in the rulebook — while the companion sense had a better word available and no surface committed to this one. Either assignment was display-vocabulary only, so the tie broke on incumbency, not on schema risk.
+
+Prose therefore never says "retinue" for a mortal's companions, and never says "companions" for the god's threaded mortals.
+
+Code anchors: `src/engine/retinue.ts` (`getRetinueAgents`, `RetinueAgent`), `src/types/influence.ts` (`CourtPosition`), `src/components/Game/RetinuePanel.tsx`.
+
+---
+
 ### Faction
 
 **Aliases:** Organization, Group (formal)
@@ -262,6 +278,22 @@ Code anchors: `src/data/group-constants.ts` (header note), `src/engine/groups/gr
 
 ---
 
+### Companion
+
+**Aliases:** companion attachment, the `'companion'` `AttachmentCategory`
+**Also see:** `[[Company]]`, `[[Retinue]]`, `[[BOND]]`, `[[Group]]`, `[[Agent]]`
+**Status:** canonical
+
+A person-shaped attachment: a named individual who travels with **one** mortal and grants small, always-on bonuses. A companion is explicitly **not** an `[[Agent]]` — no actor node, no decisions, no movement, no encounter participation. They are gained and lost only through story, and surface as a `[[BOND]]` consequence when an encounter grants or removes one.
+
+The reference frame is Eldritch Horror's Ally cards: a face and a name that travel with you and quietly change what you can do, never a second character to run. Bonuses reach the roll through the ordinary attachment stat-contribution path, so a companion appears as a factor line like any other modifier.
+
+**Not a `[[Company]]`, despite the shared root — this pair is the one to keep straight.** A Company is 2–10 *simulated* agents travelling together, each deciding for themselves; a Companion is one *unsimulated* person riding on a single mortal's sheet. A mortal in a company may also carry companions, and the two never merge into one another. Player surfaces say **"Companions"** for this and never `[[Retinue]]` — see that entry for the 2026-08-13 arbitration that settled the word.
+
+Design: `Docs/plans/2026-08-12-thr-1096-companion-attachments.md`. Code anchors land with the implementation (THR-1096): `NodeType` `companion`, `EdgeType` `accompanies`, `src/engine/companions.ts`.
+
+---
+
 ### Group Cohesion
 
 **Aliases:** Cohesion (group-scoped)
@@ -286,7 +318,7 @@ Code anchors: `src/engine/groups/groupQueries.ts` (`getCohesionState`, `Cohesion
 
 The Ascendant action (`company.draw_together`, Heart reach, 4 essence) that spends essence to make scattered threaded mortals converge until a company forms among them. It targets one threaded mortal — the convergence *anchor* — and stamps a convergence pull on the anchor plus every living, ungrouped, threaded mortal within `DRAW_TOGETHER_RADIUS_HEXES` (currently 8).
 
-While the window holds (`DRAW_TOGETHER_DURATION_TICKS`, currently 36), each pulled mortal's own encounter candidates are boosted by up to `DRAW_TOGETHER_PULL_WEIGHT` in inverse proportion to hex distance from the anchor. It is a **tilt on their own choices, never a command**: the mortals bend their roads without quite knowing why, and a company that then forms among them records `cause: 'draw_together'`. Fail-soft on a missing, non-mortal, or unthreaded anchor; it fires without refund even when no companions are in range.
+While the window holds (`DRAW_TOGETHER_DURATION_TICKS`, currently 36), each pulled mortal's own encounter candidates are boosted by up to `DRAW_TOGETHER_PULL_WEIGHT` in inverse proportion to hex distance from the anchor. It is a **tilt on their own choices, never a command**: the mortals bend their roads without quite knowing why, and a company that then forms among them records `cause: 'draw_together'`. Fail-soft on a missing, non-mortal, or unthreaded anchor; it fires without refund even when no eligible mortals are in range. (That clause said "no companions are in range" until THR-1099 seated `[[Companion]]`; it always meant *other threaded mortals to form a company with*, never companion attachments.)
 
 Code anchors: `src/data/unified-action-templates.ts` (`company.draw_together`), `src/engine/graphOpExecutor.ts` (`draw_together` op), `src/engine/encounterScoring.ts` (`computeConvergenceBonus`).
 
