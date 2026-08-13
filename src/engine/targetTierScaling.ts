@@ -6,6 +6,7 @@
  *
  *   TIER_ADVANCEMENT_ESSENCE_COST = { 1: 4,    2: 8,    3: 14 }
  *   TIER_ADVANCEMENT_DIFFICULTY   = { 1: 0.20, 2: 0.35, 3: 0.50 }
+ *   TIER_ADVANCEMENT_DURATION     = { 1: 2–3,  2: 3–4,  3: 4–6 }   (THR-1100)
  *
  * Until this module, only the tier-1 entries had a consumer. A
  * `UnifiedActionTemplate` step is static — it cannot read the *target's* current
@@ -28,8 +29,9 @@
  * (`'intel_sensitive'`) is a declarative enum the resolver reads to make a step's
  * difficulty depend on world state. `'target_tier_scaled'` joins it, and
  * `essenceCostContext` mirrors it one level up — the two markers sit at different
- * levels because the two numbers do: `difficulty` is per-step, `essenceCost` is
- * per-template.
+ * levels because the two numbers do: `difficulty` and `duration` are per-step,
+ * `essenceCost` is per-template. THR-1100 added the duration reader under the
+ * per-step marker rather than minting a third one; see {@link tierScaledDuration}.
  *
  * ## NFP #1 — no tuning number lives here
  *
@@ -42,6 +44,7 @@
 import {
   TIER_ADVANCEMENT_ESSENCE_COST,
   TIER_ADVANCEMENT_DIFFICULTY,
+  TIER_ADVANCEMENT_DURATION,
 } from '../data/attachment-tier-content';
 import type { ActionStep, UnifiedActionTemplate } from '../types/unifiedAction';
 
@@ -117,15 +120,30 @@ export function tierScaledDifficulty(
   return TIER_ADVANCEMENT_DIFFICULTY[sourceTierOf(targetProperties)];
 }
 
-// ─── Not scaled here: duration ──────────────────────────────────
-//
-// `TIER_ADVANCEMENT_DURATION[2..3]` is still unconsumed, so a Mythic→Legendary
-// rite takes the same 2–3 ticks a Mundane one does. It is deliberately out of
-// scope for THR-1073, whose Done-when names cost and difficulty only.
-//
-// The reason it is not a one-line addition: duration is drawn in
-// `createUnifiedAction` (`unifiedActionLifecycle.ts`), which receives the
-// template and a target *id* but no graph, and the same is true of the
-// next-step draw. Scaling it means threading target state through a constructor
-// with call sites across the engine — a wider change than this ticket, and one
-// that wants its own pass. Tracked as THR-1100.
+/**
+ * Duration range of `step` against a target with `targetProperties` (THR-1100).
+ *
+ * Returns the step's authored `duration` unchanged unless the step opts in via
+ * `difficultyContext: 'target_tier_scaled'` — the *same* marker that scales the
+ * difficulty roll, not a third one. That is deliberate: `ActionStep.difficultyContext`
+ * has documented itself as covering "difficulty *and* duration" since THR-1073,
+ * because both numbers are per-step and both are indexed by the same source tier.
+ * Only the duration half was never implemented, so this closes a doc/behaviour
+ * drift rather than widening the vocabulary a template author has to learn.
+ *
+ * THR-1073 deferred this because the draw happens in `createUnifiedAction`, which
+ * took a target *id* and no graph. The fix was to give it the target's properties
+ * — the same `graph.getNode(targetId)?.properties` the cost and difficulty seams
+ * already read — rather than to thread a whole `WorldGraph` through a constructor.
+ *
+ * Fail-soft (NFP #4): an absent `targetProperties` clamps to the ramp's first
+ * entry via {@link sourceTierOf}, so a caller with no graph in reach draws the
+ * tier-1 range — exactly today's behaviour, never a throw or a `NaN` duration.
+ */
+export function tierScaledDuration(
+  step: Pick<ActionStep, 'duration' | 'difficultyContext'>,
+  targetProperties: Readonly<Record<string, unknown>> | undefined,
+): { readonly min: number; readonly max: number } {
+  if (!isTierScaledDifficulty(step)) return step.duration;
+  return TIER_ADVANCEMENT_DURATION[sourceTierOf(targetProperties)];
+}

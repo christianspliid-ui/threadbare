@@ -1870,8 +1870,13 @@ export function executeStepResult(
   state.archetypeDrift = branchDecision.archetypeDrift;
   const decidedAction = branchDecision.action;
 
-  // Advance step or complete action
-  let finalAction = advanceStep(decidedAction, outcome, template, rng);
+  // Advance step or complete action. THR-1100: the next step's duration ramps
+  // off the target's tier under the same marker that scaled `effectiveDifficulty`
+  // above, so a multi-step tier-scaled template stays scaled past step 0.
+  let finalAction = advanceStep(
+    decidedAction, outcome, template, rng,
+    state.graph.getNode(action.targetId)?.properties,
+  );
 
   // Partial_progress complication: give the next step a head start (THR-119).
   // Read fraction directly from the ComplicationResult effects — no transient node property needed.

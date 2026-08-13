@@ -737,19 +737,20 @@ export const CONTRACTS: readonly Contract[] = [
     producerSystem: ENCOUNTERS,
     consumerSystem: ENCOUNTERS,
     intent:
-      'The authored per-tier advancement ramp reaches the player. `TIER_ADVANCEMENT_ESSENCE_COST` / `TIER_ADVANCEMENT_DIFFICULTY` author a 3-row ladder, but only row 1 had a consumer — a static template step cannot read its target\'s tier — so advancing a Mundane artifact and a Mythic one both cost 4 essence at difficulty 0.20.',
+      'The authored per-tier advancement ramp reaches the player. `TIER_ADVANCEMENT_ESSENCE_COST` / `TIER_ADVANCEMENT_DIFFICULTY` / `TIER_ADVANCEMENT_DURATION` author a 3-row ladder, but only row 1 had a consumer — a static template step cannot read its target\'s tier — so advancing a Mundane artifact and a Mythic one both cost 4 essence at difficulty 0.20, and both took 2–3 ticks.',
     ulTerms: ['UnifiedActionTemplate', 'Attachment Tier'],
-    mechanism: { kind: 'function', symbols: ['tierScaledEssenceCost', 'tierScaledDifficulty', 'essenceCostContext'], module: 'src/engine/targetTierScaling.ts' },
+    mechanism: { kind: 'function', symbols: ['tierScaledEssenceCost', 'tierScaledDifficulty', 'tierScaledDuration', 'essenceCostContext'], module: 'src/engine/targetTierScaling.ts' },
     writeSites: ['src/data/attachment-tier-content.ts', 'src/data/unified-action-templates.ts'],
     readSites: [
       'src/engine/targetActions.ts',
       'src/engine/playerCastDispatch.ts',
       'src/engine/unifiedActionResolution.ts',
+      'src/engine/unifiedActionLifecycle.ts',
     ],
     verifiedLive: {
       date: '2026-08-13',
       evidence:
-        'THR-1073: `attachment-tier-content.ts` authors the ramp and `unified-action-templates.ts` opts `artifact.enchant`/`artifact.empower` in via `essenceCostContext` + `difficultyContext: \'target_tier_scaled\'`. Three read sites resolve it — `targetActions.ts` (card price, affordability gate, displayed risk), `playerCastDispatch.ts` (essence actually charged, with the buff discount applied to the resolved price), `unifiedActionResolution.ts` (the difficulty rolled against). Falsified by removing the marker from `artifact.enchant`: exactly three assertions go red including `expected 4 to be greater than 4`, while `artifact.empower` stays green. `targetTierScaling.test.ts`, 15 assertions.',
+        'THR-1073: `attachment-tier-content.ts` authors the ramp and `unified-action-templates.ts` opts `artifact.enchant`/`artifact.empower` in via `essenceCostContext` + `difficultyContext: \'target_tier_scaled\'`. Three read sites resolve it — `targetActions.ts` (card price, affordability gate, displayed risk), `playerCastDispatch.ts` (essence actually charged, with the buff discount applied to the resolved price), `unifiedActionResolution.ts` (the difficulty rolled against). Falsified by removing the marker from `artifact.enchant`: exactly three assertions go red including `expected 4 to be greater than 4`, while `artifact.empower` stays green. `targetTierScaling.test.ts`, 15 assertions. THR-1100 completed the third row of the ramp — `tierScaledDuration` under the *same* per-step marker, read by `unifiedActionLifecycle.ts` at both duration draws (`createUnifiedAction` and `advanceStep`), which now take the target\'s properties from the five production call sites that hold the graph. Falsified by neutering the helper to return the authored range: 7 of 10 assertions go red including `expected 2 to be greater than 2`. `targetTierScalingDuration.test.ts`, 10 assertions.',
     },
   },
   {

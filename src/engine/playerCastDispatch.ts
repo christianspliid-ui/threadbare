@@ -145,6 +145,10 @@ export function preparePlayerCast(params: PreparePlayerCastParams): PreparedPlay
     template,
     rng,
     essencePaid: essenceCost,
+    // THR-1100: the step's duration ramps off the same target tier the price
+    // above already read. This is the seam THR-1073 lacked — the player cast is
+    // the only route to `artifact.enchant`/`empower` (both are ascendant-only).
+    targetProperties: graph.getNode(targetId)?.properties,
     ...(buffsConsumed && buffResult
       ? { effectiveRarityTier: buffResult.effectiveRarityTier }
       : {}),
