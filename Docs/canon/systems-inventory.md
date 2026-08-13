@@ -365,7 +365,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `sublocation` (1) | `sublocation.ts` | — |
 | `support` (1) | `supportRoleWords.ts` | `THR-1041` |
 | `survey` (1) | `surveyProseComposer.ts` | `THR-415` |
-| `target` (2) | `targetActions.ts`, `targetContextBuilders.ts` | — |
+| `target` (3) | `targetActions.ts`, `targetContextBuilders.ts`, `targetTierScaling.ts` | `THR-1073`, `THR-996` |
 | `taxonomy` (1) | `taxonomy.ts` | — |
 | `temporal` (1) | `temporal.ts` | — |
 | `terrain` (1) | `terrain.ts` | — |
@@ -392,4 +392,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 26 registered subsystems (1 dormant) · 100 tick phases · 173 engine domains · 492 modules._
+_Counts: 26 registered subsystems (1 dormant) · 100 tick phases · 173 engine domains · 493 modules._

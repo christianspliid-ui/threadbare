@@ -2596,16 +2596,19 @@ const ATTACHMENT_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     trayTier: 'core',
     crudType: 'update',
     scale: 'local',
-    // THR-996: the step's numbers are the authored tier-advancement constants, not
-    // literals (NFP #1). They are the *tier-1* entries because a template step is
-    // static — it cannot read the target artifact's current tier, so the authored
-    // per-tier cost/difficulty ramp (TIER_ADVANCEMENT_ESSENCE_COST[2..3] etc.) is
-    // not yet expressible. Ramping needs target-state-dependent step resolution;
-    // deferred to THR-1073 rather than hard-coded here.
+    // THR-996 authored these as the tier-advancement constants rather than literals
+    // (NFP #1); THR-1073 made the *whole ramp* reachable. The tier-1 entries stay
+    // here as the declared baseline — what an untiered or Mundane artifact costs,
+    // and what any surface reading the template statically (the generated action
+    // catalog, the Codex) shows. `essenceCostContext` / `difficultyContext` opt
+    // this template into target-derived pricing, so a cast against a Storied or
+    // Mythic artifact resolves TIER_ADVANCEMENT_ESSENCE_COST[2..3] and
+    // TIER_ADVANCEMENT_DIFFICULTY[2..3] instead. See engine/targetTierScaling.ts.
     steps: [{
       reach: 'veil',
       duration: TIER_ADVANCEMENT_DURATION[1],
       difficulty: TIER_ADVANCEMENT_DIFFICULTY[1],
+      difficultyContext: 'target_tier_scaled',
       onSuccess: [
         { op: 'advance_artifact_tier', nodeId: '$target' },
       ],
@@ -2614,6 +2617,7 @@ const ATTACHMENT_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     }],
     apCost: 1,
     essenceCost: TIER_ADVANCEMENT_ESSENCE_COST[1],
+    essenceCostContext: 'target_tier_scaled',
     actorAffinities: ['ascendant'],
     // THR-843 precedent (attune/imbue/nullify/curse): both artifact tiers, so the
     // offered target set stays consistent across the artifact verbs.
@@ -2640,10 +2644,14 @@ const ATTACHMENT_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     trayTier: 'core',
     crudType: 'update',
     scale: 'local',
+    // Tier-scaled on the same terms as Enchant (THR-1073) — the two verbs share
+    // TIER_ADVANCEMENT_TEMPLATE_IDS and must share the ramp, or the martial route
+    // to Legendary would be the cheap one.
     steps: [{
       reach: 'iron',
       duration: TIER_ADVANCEMENT_DURATION[1],
       difficulty: TIER_ADVANCEMENT_DIFFICULTY[1],
+      difficultyContext: 'target_tier_scaled',
       onSuccess: [
         { op: 'advance_artifact_tier', nodeId: '$target' },
       ],
@@ -2652,6 +2660,7 @@ const ATTACHMENT_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     }],
     apCost: 1,
     essenceCost: TIER_ADVANCEMENT_ESSENCE_COST[1],
+    essenceCostContext: 'target_tier_scaled',
     actorAffinities: ['ascendant'],
     targetCategories: ['artifact', 'artifact_legendary'],
     motivations: ['loyalty_ambition', 'tradition_novelty'],

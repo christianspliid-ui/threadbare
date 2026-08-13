@@ -37,6 +37,7 @@ import type {
 } from '../types/unifiedAction';
 import { createUnifiedAction } from './unifiedActionLifecycle';
 import { applyAscendantBuffs } from './ascendantBuffs';
+import { tierScaledEssenceCost } from './targetTierScaling';
 import { appendEvent } from './encounterTimeline';
 import { touchWorld } from './simulationRuntime';
 import { mulberry32 } from '../lib/prng';
@@ -113,12 +114,23 @@ export function preparePlayerCast(params: PreparePlayerCastParams): PreparedPlay
     scale, applyBuffs = true, essencePaid, runtime,
   } = params;
 
+  // THR-1073: a template may price itself from the target's attachment tier
+  // (`essenceCostContext`). Resolve that first, then let the buff pass discount
+  // the *real* price — Recede taking its cut off the tier-1 price while the pool
+  // was charged the tier-3 one would be the same mismatch this ticket removes.
+  // Untouched for every template without the marker: `tierScaledEssenceCost`
+  // returns the authored `essenceCost` unchanged.
+  const scaledBaseCost = tierScaledEssenceCost(template, graph.getNode(targetId)?.properties);
+  const pricedTemplate = scaledBaseCost === (template.essenceCost ?? 0)
+    ? template
+    : { ...template, essenceCost: scaledBaseCost };
+
   const buffResult = applyBuffs
-    ? applyAscendantBuffs(template, graph, ascendantId, tick)
+    ? applyAscendantBuffs(pricedTemplate, graph, ascendantId, tick)
     : null;
   if (buffResult?.buffsConsumed && runtime) touchWorld(runtime);
 
-  const essenceCost = essencePaid ?? buffResult?.effectiveEssenceCost ?? template.essenceCost ?? 0;
+  const essenceCost = essencePaid ?? buffResult?.effectiveEssenceCost ?? scaledBaseCost;
   const buffsConsumed = buffResult?.buffsConsumed ?? false;
 
   const rng = mulberry32(seed + tick * PLAYER_CAST_RNG_TICK_STRIDE);
