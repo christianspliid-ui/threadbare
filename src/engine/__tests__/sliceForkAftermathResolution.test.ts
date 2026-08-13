@@ -64,7 +64,7 @@ function buildState(profileValue: number): GameState {
 }
 
 /** An action parked on the deciding step, as it stands when that step resolves. */
-function buildAction(): UnifiedAction {
+function buildAction(playedNudgeIds: readonly string[] = []): UnifiedAction {
   return {
     actionId: 'ua_crossroads_1',
     actorId: ACTOR,
@@ -78,6 +78,7 @@ function buildAction(): UnifiedAction {
     stepDuration: 1,
     resolved: false,
     stepOutcomes: [],
+    activeNudges: playedNudgeIds,
   } as unknown as UnifiedAction;
 }
 
@@ -85,18 +86,27 @@ function buildAction(): UnifiedAction {
  * Run the real decision, then the real variant lookup. `profileValue` picks the
  * side: the fork reads the mortal's standing on its own axis, so a conviction
  * strong enough to clear the neutral band decides without consuming the coin.
+ *
+ * `playedNudgeIds` are the cards the god committed on the deciding step, and
+ * `rng` is the coin — both real inputs to `applyAgentDecidedBranches`, so a card
+ * that decides the fork is proved to decide it *against* a coin pointing the
+ * other way rather than merely alongside one that agrees.
  */
-function resolveEnding(profileValue: number) {
+function resolveEnding(
+  profileValue: number,
+  playedNudgeIds: readonly string[] = [],
+  rng: () => number = () => 0.5,
+) {
   const state = buildState(profileValue);
   const decidingStep = SLICE_BARGAIN_AT_CROSSROADS.steps[FORK.branchOnStep] as ActionStep;
 
   const applied = applyAgentDecidedBranches(
     state,
-    buildAction(),
+    buildAction(playedNudgeIds),
     SLICE_BARGAIN_AT_CROSSROADS,
     decidingStep,
     TICK,
-    () => 0.5,
+    rng,
   );
 
   const variant = resolveAftermathVariant(
@@ -105,7 +115,18 @@ function resolveEnding(profileValue: number) {
     'success',
   );
 
-  return { choiceHistory: applied.action.choiceHistory ?? [], variant };
+  return {
+    choiceHistory: applied.action.choiceHistory ?? [],
+    variant,
+    decision: applied.decision!,
+  };
+}
+
+/** Seeds planted by a variant's reactions — the Full Moon payload, or nothing. */
+function seedsOf(variant: { reactions?: readonly { effects: readonly { kind: string }[] }[] }) {
+  return (variant.reactions ?? [])
+    .flatMap((reaction) => reaction.effects)
+    .filter((effect) => effect.kind === 'encounter_seed');
 }
 
 const FALLBACK_OVERVIEW = SLICE_BARGAIN_AT_CROSSROADS.aftermathConfig!.fallback.overview;
@@ -158,5 +179,91 @@ describe('THR-979 — the crossroads fork reaches its authored endings', () => {
   it('the two poles resolve to different endings', () => {
     expect(resolveEnding(-0.9).variant.overview)
       .not.toBe(resolveEnding(0.9).variant.overview);
+  });
+});
+
+/**
+ * THR-1037: the same fork, reached the way a *player* reaches it.
+ *
+ * The suite above proves both endings reachable from the mortal's own standing,
+ * with no cards in play. That is the wrong half for the question THR-1037 asked
+ * — "is the accept branch reachable by a god's nudge choices?" — and asking only
+ * the profile half is what let the gap survive THR-979's fix.
+ *
+ * It matters because the sanctioned review avatar makes the profile half
+ * *unusable*: `applyBalancedTestAvatar` zeroes every value axis by design, so a
+ * reviewer on `?spawn=`/`?testavatar` has `profileLean === 0` and the fork can
+ * only be steered by cards or settled by the coin. THR-1037 reported four
+ * playthroughs landing on the refuse branch with byte-identical prose; a neutral
+ * profile plus no counted card leaves `netLean === 0`, which is the coin, and a
+ * seeded coin drawn at the same point of an identical call sequence returns the
+ * same side every run. The last test here is that observation, pinned.
+ */
+describe('THR-1037 — the god’s hand can decide the crossroads fork', () => {
+  /** The two cards in the deciding step's hand that argue on the fork's axis. */
+  const ACCEPT_CARD = 'slice.crossroads.a_taste_for_wonders'; // poleLean toward 'negative'
+  const REFUSE_CARD = 'slice.crossroads.old_stories'; // poleLean toward 'positive'
+
+  /** Coins that would settle an undecided fork the *opposite* way to the card. */
+  const COIN_SAYS_POSITIVE = () => 0.1;
+  const COIN_SAYS_NEGATIVE = () => 0.9;
+
+  it('one committed card strikes the bargain on a neutral mortal, and plants the seed', () => {
+    // Neutral profile — the balanced test avatar's exact standing — and a coin
+    // pointing at 'positive', so only the card can produce this result.
+    const { decision, variant } = resolveEnding(0, [ACCEPT_CARD], COIN_SAYS_POSITIVE);
+
+    expect(decision.profileLean).toBe(0);
+    expect(decision.cardLean).toBeLessThan(0);
+    expect(decision.pole).toBe('negative');
+    expect(decision.decidedBy).toBe('conviction');
+
+    expect(variant.overview).toContain('The bargain is struck');
+    expect(seedsOf(variant)).toMatchObject([
+      { kind: 'encounter_seed', templateId: 'encounter.slice.full_moon_collection' },
+    ]);
+  });
+
+  it('the opposing card refuses on the same neutral mortal, and plants nothing', () => {
+    const { decision, variant } = resolveEnding(0, [REFUSE_CARD], COIN_SAYS_NEGATIVE);
+
+    expect(decision.cardLean).toBeGreaterThan(0);
+    expect(decision.pole).toBe('positive');
+    expect(decision.decidedBy).toBe('conviction');
+
+    expect(variant.overview).toContain('so was the refusal');
+    // Falsification half: a hand that always found a seed would prove nothing above.
+    expect(seedsOf(variant)).toHaveLength(0);
+  });
+
+  it('a card argues loudly enough to overturn the mortal’s own standing', () => {
+    // The card's weight (0.35) exceeds a mild conviction, so the god genuinely
+    // moves the mortal rather than only breaking ties.
+    const unled = resolveEnding(0.2, [], COIN_SAYS_POSITIVE);
+    const led = resolveEnding(0.2, [ACCEPT_CARD], COIN_SAYS_POSITIVE);
+
+    expect(unled.decision.pole).toBe('positive');
+    expect(led.decision.pole).toBe('negative');
+  });
+
+  it('a card that argues on another axis abstains, leaving the fork to the coin', () => {
+    // `second_sight` carries no poleLean at all. Counting an unrelated card
+    // would be the plausible-and-wrong sum `signedLeanWeight`'s axis check exists
+    // to prevent, and it would silently make every hand a steering hand.
+    const { decision } = resolveEnding(0, ['slice.crossroads.second_sight'], COIN_SAYS_POSITIVE);
+
+    expect(decision.cardLean).toBe(0);
+    expect(decision.decidedBy).toBe('coin');
+  });
+
+  it('with no card counted, a neutral mortal leaves the fork to the coin — THR-1037’s four identical runs', () => {
+    // Not a defect: the coin is seeded, so an identical call sequence returns an
+    // identical side. Both sides are reachable; the draw is what varies.
+    expect(resolveEnding(0, [], COIN_SAYS_POSITIVE).decision).toMatchObject({
+      netLean: 0, pole: 'positive', decidedBy: 'coin',
+    });
+    expect(resolveEnding(0, [], COIN_SAYS_NEGATIVE).decision).toMatchObject({
+      netLean: 0, pole: 'negative', decidedBy: 'coin',
+    });
   });
 });
