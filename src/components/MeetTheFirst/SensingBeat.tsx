@@ -108,7 +108,7 @@ export function SensingBeat({ candidates, openingProse, onSelect }: SensingBeatP
           top: '7vh',
           color: 'rgba(160,140,180,0.5)',
           fontStyle: 'italic',
-          fontFamily: 'Georgia, "Times New Roman", serif',
+          fontFamily: 'var(--font-prose)',
           fontSize: '1.3rem',
           letterSpacing: '0.06em',
           opacity: confirmedIdx !== null ? 0 : focusedIdx !== null ? 0.4 : 1,
@@ -169,7 +169,7 @@ export function SensingBeat({ candidates, openingProse, onSelect }: SensingBeatP
             >
               <p
                 style={{
-                  fontFamily: 'Georgia, "Times New Roman", serif',
+                  fontFamily: 'var(--font-prose)',
                   fontStyle: 'italic',
                   fontSize: 'var(--text-xs)',
                   lineHeight: 1.7,

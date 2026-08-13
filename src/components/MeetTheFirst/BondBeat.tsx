@@ -26,7 +26,7 @@ interface BondBeatProps {
 
 const SCENE_BG = '#0a0a0f';
 const GOLD = '#d4af37';
-const FONT_PROSE = 'Georgia, "Times New Roman", serif';
+const FONT_PROSE = 'var(--font-prose)';
 
 /** The bond test is the last test of the run — it follows the formative ones. */
 const BOND_STEP_INDEX = MEETING_FORMATIVE_TEST_COUNT;
@@ -230,7 +230,7 @@ export function BondBeat({
       {/* Bond prose */}
       <p
         style={{
-          fontFamily: 'Georgia, "Times New Roman", serif',
+          fontFamily: FONT_PROSE,
           fontStyle: 'italic',
           fontSize: '1.2rem',
           color: `${sphereColor}99`,
@@ -285,7 +285,7 @@ export function BondBeat({
         )}
         <p
           style={{
-            fontFamily: 'Georgia, "Times New Roman", serif',
+            fontFamily: FONT_PROSE,
             fontStyle: 'italic',
             fontSize: 'var(--text-xs)',
             color: 'rgba(200,190,170,0.6)',
@@ -304,7 +304,7 @@ export function BondBeat({
         style={{
           ...lineStyle(4),
           marginTop: '4vh',
-          fontFamily: 'Georgia, "Times New Roman", serif',
+          fontFamily: FONT_PROSE,
           fontStyle: 'italic',
           fontSize: '1rem',
           color: `${sphereColor}88`,

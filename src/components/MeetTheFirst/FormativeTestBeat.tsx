@@ -38,7 +38,7 @@ import {
 
 const SCENE_BG = '#0a0a0f';
 const GOLD = '#d4af37';
-const FONT_PROSE = 'Georgia, "Times New Roman", serif';
+const FONT_PROSE = 'var(--font-prose)';
 
 /** Milliseconds the opening line holds before the first test appears. */
 const TRANSITION_IN_MS = 1500;
