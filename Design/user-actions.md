@@ -1,16 +1,16 @@
 # User Action Required
 
-**Last updated:** 2026-08-13 09:56 local (2026-08-13 07:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-13 10:55 local (2026-08-13 08:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
 ### 1. One attended session: look at the new aftermath, then say go
 
-[PR #1415](https://github.com/christianspliid-ui/threadbare/pull/1415) builds [THR-1082](https://linear.app/threadbare/issue/THR-1082/consequence-icon-language-aftermath-must-show-what-changed-and-roughly) — your 10 August direction that the aftermath should name what changed rather than report a die roll. Every automated gate is green. The only thing left is a human looking at it at 1920×1080, and unattended runs structurally cannot do that ([impediment #546](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/impediments.md), third occurrence): the browser refuses to render with nobody present, and the change moves layout, so the cheaper substitute was correctly refused.
+[PR #1415](https://github.com/christianspliid-ui/threadbare/pull/1415) builds [THR-1082](https://linear.app/threadbare/issue/THR-1082/consequence-icon-language-aftermath-must-show-what-changed-and-roughly) — your 10 August direction that the aftermath should name what changed rather than report a die roll. Every automated gate is green. The only thing left is a human looking at it at 1920×1080, and unattended runs structurally cannot do that ([impediment #546](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/impediments.md)): the browser refuses to render with nobody present, and the change moves layout, so the cheaper substitute was correctly refused.
 
-**What to do:** open the seeded build in an attended session, look at two encounters across two outcome bands, and say whether it reads right. If yes, the executor clears the one trivial merge conflict and arms the merge. Your Law 13/15 ratification is already recorded — this is a look, not a decision.
+**What to do:** open the [seeded build](https://threadbare.vercel.app/?view=game&seeded&size=medium&forceencounters) in an attended session, look at two encounters across two outcome bands, and say whether it reads right. If yes, the executor clears the one trivial conflict in a generated file and arms the merge. Your Law 13/15 ratification is already recorded — this is a look, not a decision.
 
-**Cost of waiting:** [THR-1096](https://linear.app/threadbare/issue/THR-1096/companion-attachments-a-person-in-the-retinue-granting-bonuses-who-is) (companion attachments, the board's top product item) and [THR-1097](https://linear.app/threadbare/issue/THR-1097/) are both High and both blocked behind it; THR-1096 is additionally burning the pickup lane's one product slot every hour ([impediment #551](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/impediments.md)).
+**Cost of waiting:** [THR-1096](https://linear.app/threadbare/issue/THR-1096/companion-attachments-a-person-in-the-retinue-granting-bonuses-who-is) (companion attachments, the board's top product item) and [THR-1097](https://linear.app/threadbare/issue/THR-1097) are both High and both blocked behind it. The hourly spin loop this was causing on THR-1096 is fixed as of 07:04 today — the ticket now waits quietly in `Todo` instead of burning a pickup slot every hour.
 
 ### 2. Parked option, no urgency: a Tenacious-style trait
 
