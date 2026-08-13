@@ -26,6 +26,7 @@ import { getSphereColor } from '../../data/sphereIcons';
 import { DOMAIN_COLORS, DEFAULT_AGENT_COLOR } from '../../data/agent-visual-content';
 import { useScryContext } from './contexts/ScryContext';
 import { Tooltip } from '../shared/Tooltip';
+import { formatEssencePool } from '../shared/formatEssence';
 
 type PickerMode = 'closed' | 'agent' | 'title';
 
@@ -513,7 +514,7 @@ const TitlePickerPanel = memo(function TitlePickerPanel({
         {!canAfford && (
           <div className="mt-4 text-xs" style={{ color: 'var(--negative)' }}>
             Insufficient {primarySphere} essence. Required: {Math.ceil(reassignmentCost)}, Available:{' '}
-            {Math.floor(essencePool[primarySphere])}
+            {formatEssencePool(essencePool[primarySphere])}
           </div>
         )}
       </div>

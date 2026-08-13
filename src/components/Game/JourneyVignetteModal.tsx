@@ -9,6 +9,7 @@ import { memo, useState, useCallback } from 'react';
 import { Modal } from '../shared/Modal';
 import type { JourneyVignetteData, BeatChoice } from '../../types/journeyEngine';
 import { formatPhaseName } from '../../engine/journeyEngine';
+import { formatEssence } from '../shared/formatEssence';
 
 // ─── Props ──────────────────────────────────────────────────────────
 
@@ -117,7 +118,7 @@ function ChoiceButton({
           fontSize: 'var(--text-xs)',
           marginTop: '4px',
         }}>
-          Cost: {essenceCost} essence
+          Cost: {formatEssence(essenceCost)} essence
         </div>
       )}
     </button>
