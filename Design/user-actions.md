@@ -1,18 +1,24 @@
 # User Action Required
 
-**Last updated:** 2026-08-13 08:54 local (2026-08-13 06:54 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-13 09:56 local (2026-08-13 07:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
-### 1. Parked option, no urgency: a Tenacious-style trait
+### 1. One attended session: look at the new aftermath, then say go
+
+[PR #1415](https://github.com/christianspliid-ui/threadbare/pull/1415) builds [THR-1082](https://linear.app/threadbare/issue/THR-1082/consequence-icon-language-aftermath-must-show-what-changed-and-roughly) — your 10 August direction that the aftermath should name what changed rather than report a die roll. Every automated gate is green. The only thing left is a human looking at it at 1920×1080, and unattended runs structurally cannot do that ([impediment #546](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/impediments.md), third occurrence): the browser refuses to render with nobody present, and the change moves layout, so the cheaper substitute was correctly refused.
+
+**What to do:** open the seeded build in an attended session, look at two encounters across two outcome bands, and say whether it reads right. If yes, the executor clears the one trivial merge conflict and arms the merge. Your Law 13/15 ratification is already recorded — this is a look, not a decision.
+
+**Cost of waiting:** [THR-1096](https://linear.app/threadbare/issue/THR-1096/companion-attachments-a-person-in-the-retinue-granting-bonuses-who-is) (companion attachments, the board's top product item) and [THR-1097](https://linear.app/threadbare/issue/THR-1097/) are both High and both blocked behind it; THR-1096 is additionally burning the pickup lane's one product slot every hour ([impediment #551](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/impediments.md)).
+
+### 2. Parked option, no urgency: a Tenacious-style trait
 
 An open design option with no ticket behind it. Explicitly not urgent — the safe default is that it stays parked, and nothing downstream is waiting on it. Listed only so it is not silently forgotten; say the word if you want it opened, and it will be given a ticket and a design pass.
 
-*Nothing else is waiting on you.* The four asks this list carried through the week were all closed on 2026-08-12 — see below.
-
 ## Resolved this period
 
-- 2026-08-12: **your 10 August aftermath direction is now working code.** The consequence-language design session settled the four categories, the ▲/▼ delta cluster as the magnitude idiom, the palette rule and the Law 13/15 amendments with you in chat, then handed [THR-1082](https://linear.app/threadbare/issue/THR-1082) to the queue with its [plan doc](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-08-12-thr-1082-consequence-language.md) merged; the executor built it the same evening ([PR #1415](https://github.com/christianspliid-ui/threadbare/pull/1415), in review). Three further product tickets came out of it — [THR-1096](https://linear.app/threadbare/issue/THR-1096), [THR-1097](https://linear.app/threadbare/issue/THR-1097), [THR-1098](https://linear.app/threadbare/issue/THR-1098). Nothing further is owed by you.
+- 2026-08-12: **your 10 August aftermath direction became working code.** The consequence-language design session settled the four categories, the ▲/▼ delta cluster as the magnitude idiom, the palette rule and the Law 13/15 amendments with you in chat, then handed [THR-1082](https://linear.app/threadbare/issue/THR-1082) to the queue with its [plan doc](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-08-12-thr-1082-consequence-language.md) merged; the executor built it the same evening. Three further product tickets came out of it — [THR-1096](https://linear.app/threadbare/issue/THR-1096), [THR-1097](https://linear.app/threadbare/issue/THR-1097), [THR-1098](https://linear.app/threadbare/issue/THR-1098). The design is settled; only the look-at-it step above remains.
 - 2026-08-12: **today's rulings have shipped, and a third ticket followed them.** [THR-998](https://linear.app/threadbare/issue/THR-998) (the card risk word) merged as [PR #1410](https://github.com/christianspliid-ui/threadbare/pull/1410), [THR-1067](https://linear.app/threadbare/issue/THR-1067) (18 templates naming the result instead of showing it) as [PR #1406](https://github.com/christianspliid-ui/threadbare/pull/1406), and [THR-1069](https://linear.app/threadbare/issue/THR-1069) as [PR #1411](https://github.com/christianspliid-ui/threadbare/pull/1411) — the executor picked between the delegated options without coming back to you.
 - 2026-08-12: **[THR-998](https://linear.app/threadbare/issue/THR-998) ruled — the card risk word.** You delegated the pick between (a) track the real odds and (b) stop printing a risk word where the odds are flat, with "the card never claims odds that are not real" as the outcome the executor must keep sacred; (c) stays ruled out.
 - 2026-08-12: **[THR-1092](https://linear.app/threadbare/issue/THR-1092) ruled — the prose checker.** The abstraction detector drops from hard gate to warning, the four sharper checks stay gates, and the executor may sharpen the check further with open eyes. Failing encounters 209 → 81.

@@ -1,12 +1,21 @@
 # Briefing
 
-**Generated:** 2026-08-13 08:54 local (2026-08-13 06:54 UTC) · keep-work-flowing-cc
+**Generated:** 2026-08-13 09:56 local (2026-08-13 07:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**Nothing needs you right now.** The machine woke up — three changes merged in the last hour, and the live site is serving the newest commit on `main` ([`aecb19ef`](https://github.com/christianspliid-ui/threadbare/commit/aecb19ef07a69c1d5d3a9660554e656f253b0e41)).
+**One attended session — ten minutes, looking at the screen — lands your aftermath direction and unblocks the two biggest items on the board.**
 
-One thing is worth knowing rather than deciding: your 10 August aftermath direction is still not on screen. [PR #1415](https://github.com/christianspliid-ui/threadbare/pull/1415) — *"the aftermath names what changed, instead of reporting a die roll"* — has now been open **12 hours** with every check green, held by a merge conflict in one generated file and by a screenshot nobody has taken. Both are ours to clear, and the project's own rules already name the route. It has been said in two briefs running and not acted on, so it is called out here as a delivery problem, not a question for you.
+[PR #1415](https://github.com/christianspliid-ui/threadbare/pull/1415) builds [THR-1082](https://linear.app/threadbare/issue/THR-1082/consequence-icon-language-aftermath-must-show-what-changed-and-roughly), the consequence icon language you directed on 10 August — the aftermath naming what changed instead of reporting a die roll. Tests, build, typecheck and the engine smoke are all green. The one thing it still owes is a look at the actual pixels at 1920×1080, and **no unattended run can produce that** — the browser pane refuses to render when nobody is present ([impediment #546](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/impediments.md), now its third occurrence). The executor deliberately refused the cheaper substitute because this change *moves layout* — a new icon column, a tag column, a right-aligned cluster, a legend row — and that is exactly the case where only real pixels can tell you it looks right.
+
+Three briefs running have called this "ours to clear." That was wrong, and this one corrects it: the hold is structural, not neglect. It will not clear on its own no matter how many hours pass.
+
+**What it costs to wait:** [THR-1096](https://linear.app/threadbare/issue/THR-1096/companion-attachments-a-person-in-the-retinue-granting-bonuses-who-is) (companion attachments) and [THR-1097](https://linear.app/threadbare/issue/THR-1097/) are both High priority and both blocked behind it. THR-1096 is the top product item on the board, and the pickup lane has now claimed and bounced it **twice, an hour apart**, burning its one product slot each time on a ticket that cannot start.
+
+**What to do:** in your next attended session, open the seeded build, look at two encounters across two outcome bands, and if it reads right, say so — the executor arms the merge. Your Law 13/15 ratification is already recorded; nothing else on this waits on you.
+
+> Folded in verbatim — *from daily-backlog-grooming, 2026-08-13:*
+> **One attended pixel pass unblocks two High-priority tickets and lands a built feature.** […] **Recommendation:** in your next attended session, open the seeded build, look at two encounters across two outcome bands, and if it reads right, arm auto-merge. Your Law 13/15 ratification is already recorded — nothing else waits on you.
 
 ## Also waiting (1)
 
@@ -14,21 +23,19 @@ One thing is worth knowing rather than deciding: your 10 August aftermath direct
 
 ## Queue
 
-**Backed up — 24 ready, 1 in flight.**
+**Backed up — 21 ready, 1 in flight (parked).**
 
-- **The lanes are moving again after the overnight quiet.** [PR #1417](https://github.com/christianspliid-ui/threadbare/pull/1417) and [PR #1418](https://github.com/christianspliid-ui/threadbare/pull/1418) merged within the hour, and two fresh items entered the shelf: [THR-1099](https://linear.app/threadbare/issue/THR-1099/ul-proposal-companion-and-arbitration-of-retinue-which-now-has-two) and [THR-1100](https://linear.app/threadbare/issue/THR-1100/tier-advancement-duration-does-not-ramp-tier-advancement-duration23-is).
-- **The shelf leads with product work, not cleanup.** [THR-1096](https://linear.app/threadbare/issue/THR-1096/companion-attachments-a-person-in-the-retinue-granting-bonuses-who-is) (companion attachments) sits at High with its [plan doc](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-08-12-thr-1096-companion-attachments.md) merged and is claimable now.
-- **The one in-flight item has been parked 12.5 hours and no lane will trip over it.** [THR-1082](https://linear.app/threadbare/issue/THR-1082/consequence-icon-language-aftermath-must-show-what-changed-and-roughly) reads In Dev with nobody holding it, which puts it outside the Ready-for-Dev queue the pickup lane reads — so it is not waiting to be noticed, it has to be deliberately fetched. That is what PR #1415 above needs.
-- **[THR-1043](https://linear.app/threadbare/issue/THR-1043/the-encounter-factory-agentic-workflow-for-composition-complete) (the Encounter Factory)** is the one High item still needing a design session before an executor can touch it. Design capacity, not direction.
-- **The orchestrator listed [THR-907](https://linear.app/threadbare/issue/THR-907/slice-verdict-session-christian-rules-on-prose-firing-ui-and-game) and [THR-974](https://linear.app/threadbare/issue/THR-974/consequence-verdict-session-christian-rules-on-world-graph-consequence) as needing you again** — declined for the eighth hour. You ruled both on 2026-08-10, and the [12 August grooming report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/backlog-grooming-2026-08-12.md) independently confirms it. They resurface because the rulings live in comments while the tickets sit in `Todo`; moving two states ends it permanently.
+- **[THR-1096](https://linear.app/threadbare/issue/THR-1096/companion-attachments-a-person-in-the-retinue-granting-bonuses-who-is) is stuck in an hourly spin loop.** The pickup lane claims it, re-derives the mutex against THR-1082, writes a verdict, and releases it — then does the identical thing the next hour. Logged as [impediment #551](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/impediments.md), occurrence 2, with the fix named (route it to `Todo` and let the native blocked-by relation promote it automatically). Executor's job, not yours — but it is a second, independent cost of the same hold.
+- **The one in-flight item is [THR-1082](https://linear.app/threadbare/issue/THR-1082/consequence-icon-language-aftermath-must-show-what-changed-and-roughly)**, In Dev with nobody holding it, parked 13.9 hours. That is the PR above.
+- **The shelf is 21 items and cleanup-heavy**, but it is not starved and nothing on it is blocked on you.
 - Stale: [THR-991](https://linear.app/threadbare/issue/THR-991/ul-shards-can-record-a-term-as-rejected-only-by-mislabelling-it), untouched 10 days.
+- The orchestrator's [07:30 run](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-08-13c.md) promoted nothing and correctly declined every candidate; [THR-907](https://linear.app/threadbare/issue/THR-907/slice-verdict-session-christian-rules-on-prose-firing-ui-and-game) and [THR-974](https://linear.app/threadbare/issue/THR-974/consequence-verdict-session-christian-rules-on-world-graph-consequence) surfaced again and are declined again — you ruled both on 10 August.
 
 ## Health
 
-**All green.** Three standing executor chores, unchanged.
+**All green on the automated checks.** Deploy is serving the newest commit on `main` ([`1a952b94`](https://github.com/christianspliid-ui/threadbare/commit/1a952b941fba2d8ca080ac3b7d268df353aa5774)); CI, the two scheduled workflows and all nine task heartbeats are healthy. Four standing executor chores, none needing you:
 
-- **The silence probe flagged the 20.6-hour stoppage of 10→11 August.** Not new: that is the outage already recorded as resolved on 12 August and handed to Friday's retro. Declined here rather than re-raised as an open question.
-- **Overnight quiet, declined as normal.** No lane wrote to `main` or `ops` between 21:14 and 08:00 — 10.8 h, the same shape as every night this week, and per your 2026-08-08 ruling that is the machine being off rather than broken.
-- **Two edits are still parked in the home copy of the repo** (`.claude/settings.json`, `.claude/settings.local.json`). Harmless today, but they are what stalls auto-sync the moment a commit touches either file. Executor's job to clear or commit them.
-- **Two stale worktrees still need disposition** (24 and 25 days, both holding unmerged work the housekeeping job will not delete on its own). The job itself ran 14 minutes ago and is healthy.
-- Deploy, CI checks, scheduled workflows and all nine task heartbeats: green. Two open PRs, both unarmed on purpose — [#1415](https://github.com/christianspliid-ui/threadbare/pull/1415) above, and [#1114](https://github.com/christianspliid-ui/threadbare/pull/1114) waiting on the encounter-writing format.
+- **[PR #1415](https://github.com/christianspliid-ui/threadbare/pull/1415) also has a merge conflict** in one generated file (`Docs/canon/interface-map.generated.md`). Trivial and entirely ours — but it needs clearing in the same pass as the screenshot, or the merge still will not go through.
+- **The 20.6-hour lane stoppage of 10→11 August** is flagged by the silence probe again. Not new and not open: recorded as resolved on 12 August and handed to Friday's retro. Declined rather than re-raised.
+- **Overnight quiet, declined as normal** — 10.8 h with no lane writing between 21:14 and 06:00, the same shape as every night this week, per your 2026-08-08 ruling.
+- **Two stale worktrees still need disposition** (24 and 25 days, both holding unmerged work the housekeeping job will not delete on its own), and **two edits sit uncommitted in the home copy of the repo** (`.claude/settings.json`, `.claude/settings.local.json`). The housekeeping job itself ran 16 minutes ago and is healthy.
