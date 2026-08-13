@@ -13,7 +13,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 
@@ -44,6 +44,24 @@ const readCode = (rel: string): string =>
       return !t.startsWith('//') && !t.startsWith('*');
     })
     .join('\n');
+
+/**
+ * Every `.ts`/`.tsx` file under `src/`, as paths `read`/`readCode` accept.
+ *
+ * Tests are excluded because a source-shape gate necessarily *names* the literal
+ * it forbids, so a sweep that included itself could never go green.
+ */
+function sourceFilesUnderSrc(dir = '', acc: string[] = []): string[] {
+  for (const entry of readdirSync(resolve(repoSrc, dir), { withFileTypes: true })) {
+    const rel = dir ? `${dir}/${entry.name}` : entry.name;
+    if (entry.isDirectory()) {
+      if (entry.name !== '__tests__' && entry.name !== 'node_modules') sourceFilesUnderSrc(rel, acc);
+    } else if (/\.tsx?$/.test(entry.name) && !/\.test\.tsx?$/.test(entry.name)) {
+      acc.push(rel);
+    }
+  }
+  return acc;
+}
 
 const VEIL = 'components/Game/EncounterVeil.tsx';
 const SHELL = 'components/Game/encounter-stage/shells/NudgePhaseShell.tsx';
@@ -226,6 +244,27 @@ describe('Law 27 — the ceremonial prose serif lives in the token layer', () =>
       expect(readCode(file), `${file} still spells the serif stack inline`)
         .not.toMatch(/Georgia\s*,/);
     }
+  });
+
+  /**
+   * THR-1081 widened this gate from a file list to the ticket's own membership
+   * predicate. A list goes stale the moment a component is added — the interrupt
+   * family was migrated by THR-1031 and the identical stack was still sitting in
+   * eleven MeetTheFirst/Remembrance files, which a three-entry list could never
+   * have caught. Sweeping the tree instead means the next copy fails a test
+   * wherever it lands.
+   *
+   * The pattern is deliberately the *full* stack `--font-prose` names, not a bare
+   * `Georgia,`. Narrower serif stacks elsewhere (the CMS package blocks, the
+   * TaxonomyViewer stylesheets) are a different declaration this token does not
+   * claim, and folding them in here would assert a migration nobody has agreed.
+   */
+  it('leaves no component anywhere under src/ respelling the --font-prose stack', () => {
+    const offenders = sourceFilesUnderSrc().filter((rel) =>
+      /Georgia\s*,\s*['"]Times New Roman/.test(readCode(rel)),
+    );
+    expect(offenders, `these respell the stack --font-prose already holds: ${offenders.join(', ')}`)
+      .toEqual([]);
   });
 });
 

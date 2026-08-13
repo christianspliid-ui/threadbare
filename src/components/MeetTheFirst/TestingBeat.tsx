@@ -85,7 +85,7 @@ export function TestingBeat({ candidate, dilemmas, locationName, godVoiceOverrid
         <div className="absolute inset-0 flex items-center justify-center">
           <p
             style={{
-              fontFamily: 'Georgia, "Times New Roman", serif',
+              fontFamily: 'var(--font-prose)',
               fontStyle: 'italic',
               fontSize: '1.3rem',
               color: 'rgba(200,180,140,0.6)',
@@ -123,7 +123,7 @@ export function TestingBeat({ candidate, dilemmas, locationName, godVoiceOverrid
               {/* God voice */}
               <p
                 style={{
-                  fontFamily: 'Georgia, "Times New Roman", serif',
+                  fontFamily: 'var(--font-prose)',
                   fontStyle: 'italic',
                   fontSize: 'var(--text-xs)',
                   color: 'rgba(212,168,122,0.7)',
@@ -137,7 +137,7 @@ export function TestingBeat({ candidate, dilemmas, locationName, godVoiceOverrid
               {/* Setup prose */}
               <p
                 style={{
-                  fontFamily: 'Georgia, "Times New Roman", serif',
+                  fontFamily: 'var(--font-prose)',
                   fontSize: '1rem',
                   color: 'rgba(200,190,170,0.85)',
                   marginBottom: '24px',
@@ -157,7 +157,7 @@ export function TestingBeat({ candidate, dilemmas, locationName, godVoiceOverrid
                     data-testid={`dilemma-choice-${choice.id}`}
                     className="text-left cursor-pointer transition-all duration-300"
                     style={{
-                      fontFamily: 'Georgia, "Times New Roman", serif',
+                      fontFamily: 'var(--font-prose)',
                       fontStyle: 'italic',
                       fontSize: 'var(--text-xs)',
                       color: 'rgba(180,170,160,0.7)',
@@ -189,7 +189,7 @@ export function TestingBeat({ candidate, dilemmas, locationName, godVoiceOverrid
           <div
             className="absolute top-6 right-8"
             style={{
-              fontFamily: 'Georgia, "Times New Roman", serif',
+              fontFamily: 'var(--font-prose)',
               fontSize: 'var(--text-xs)',
               color: 'rgba(160,140,180,0.3)',
               letterSpacing: '0.1em',
@@ -205,7 +205,7 @@ export function TestingBeat({ candidate, dilemmas, locationName, godVoiceOverrid
         <div className="absolute inset-0 flex items-center justify-center">
           <p
             style={{
-              fontFamily: 'Georgia, "Times New Roman", serif',
+              fontFamily: 'var(--font-prose)',
               fontStyle: 'italic',
               fontSize: '1.2rem',
               color: 'rgba(200,180,140,0.5)',

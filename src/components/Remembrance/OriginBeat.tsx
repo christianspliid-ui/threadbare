@@ -66,7 +66,7 @@ export function OriginBeat({ fragments, onSelect }: OriginBeatProps) {
       <p className="absolute left-0 right-0 text-center transition-all duration-1000"
          style={{
            top: '5vh',
-           fontFamily: 'Georgia, "Times New Roman", serif',
+           fontFamily: 'var(--font-prose)',
            fontStyle: 'italic',
            fontSize: '1.5rem',
            color: focusedId ? 'rgba(160,140,180,0.5)' : 'rgba(155,196,169,0.58)',
@@ -132,7 +132,7 @@ export function OriginBeat({ fragments, onSelect }: OriginBeatProps) {
             }}
           >
             <p style={{
-              fontFamily: 'Georgia, "Times New Roman", serif',
+              fontFamily: 'var(--font-prose)',
               fontStyle: 'italic',
               fontSize: '1.5rem',
               lineHeight: '1.85',
@@ -146,7 +146,7 @@ export function OriginBeat({ fragments, onSelect }: OriginBeatProps) {
             </p>
             {!selectedFragment && (
               <p style={{
-                fontFamily: 'Georgia, "Times New Roman", serif',
+                fontFamily: 'var(--font-prose)',
                 fontStyle: 'italic',
                 fontSize: '1.1rem',
                 color: 'rgba(160,140,130,0.38)',
@@ -190,7 +190,7 @@ export function OriginBeat({ fragments, onSelect }: OriginBeatProps) {
       >
         <p className="mb-4"
            style={{
-             fontFamily: 'Georgia, "Times New Roman", serif',
+             fontFamily: 'var(--font-prose)',
              fontStyle: 'italic',
              fontSize: '1.1rem',
              color: 'rgba(155,180,160,0.58)',
@@ -213,7 +213,7 @@ export function OriginBeat({ fragments, onSelect }: OriginBeatProps) {
             borderBottom: '1px solid rgba(155,196,169,0.2)',
             padding: '12px 0',
             color: '#d0e8d8',
-            fontFamily: 'Georgia, "Times New Roman", serif',
+            fontFamily: 'var(--font-prose)',
             fontStyle: 'italic',
             fontSize: '1.1rem',
             letterSpacing: '0.04em',
@@ -229,7 +229,7 @@ export function OriginBeat({ fragments, onSelect }: OriginBeatProps) {
             background: 'transparent',
             border: 'none',
             padding: '8px 0',
-            fontFamily: 'Georgia, "Times New Roman", serif',
+            fontFamily: 'var(--font-prose)',
             fontStyle: 'italic',
             fontSize: '1rem',
             color: selectedFragment ? 'rgba(155,196,169,0.6)' : 'rgba(155,196,169,0.15)',

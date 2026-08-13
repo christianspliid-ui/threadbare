@@ -108,7 +108,7 @@ export function SparkBeat({ visions, primarySphere, onSelect }: SparkBeatProps) 
         className="absolute left-0 right-0 text-center transition-all duration-1000"
         style={{
           top: '7vh',
-          fontFamily: 'Georgia, "Times New Roman", serif',
+          fontFamily: 'var(--font-prose)',
           fontStyle: 'italic',
           fontSize: '1.3rem',
           letterSpacing: '0.06em',
@@ -188,7 +188,7 @@ export function SparkBeat({ visions, primarySphere, onSelect }: SparkBeatProps) 
             >
               <p
                 style={{
-                  fontFamily: 'Georgia, "Times New Roman", serif',
+                  fontFamily: 'var(--font-prose)',
                   fontStyle: 'italic',
                   fontSize: 'var(--text-xs)',
                   lineHeight: 1.7,
