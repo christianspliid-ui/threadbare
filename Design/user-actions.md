@@ -1,16 +1,16 @@
 # User Action Required
 
-**Last updated:** 2026-08-13 10:55 local (2026-08-13 08:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-13 11:56 local (2026-08-13 09:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
 ### 1. One attended session: look at the new aftermath, then say go
 
-[PR #1415](https://github.com/christianspliid-ui/threadbare/pull/1415) builds [THR-1082](https://linear.app/threadbare/issue/THR-1082/consequence-icon-language-aftermath-must-show-what-changed-and-roughly) — your 10 August direction that the aftermath should name what changed rather than report a die roll. Every automated gate is green. The only thing left is a human looking at it at 1920×1080, and unattended runs structurally cannot do that ([impediment #546](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/impediments.md)): the browser refuses to render with nobody present, and the change moves layout, so the cheaper substitute was correctly refused.
+[PR #1415](https://github.com/christianspliid-ui/threadbare/pull/1415) builds [THR-1082](https://linear.app/threadbare/issue/THR-1082/consequence-icon-language-aftermath-must-show-what-changed-and-roughly) — your 10 August direction that the aftermath should name what changed rather than report a die roll. Every automated gate is green. The only thing left is a human looking at it at 1920×1080, and unattended runs structurally cannot do that ([impediment #546](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/impediments.md)): the browser refuses to render with nobody present, and the change moves layout, so the cheaper substitute was correctly refused. Held ~16 hours as of this refresh; it will not clear on its own.
 
 **What to do:** open the [seeded build](https://threadbare.vercel.app/?view=game&seeded&size=medium&forceencounters) in an attended session, look at two encounters across two outcome bands, and say whether it reads right. If yes, the executor clears the one trivial conflict in a generated file and arms the merge. Your Law 13/15 ratification is already recorded — this is a look, not a decision.
 
-**Cost of waiting:** [THR-1096](https://linear.app/threadbare/issue/THR-1096/companion-attachments-a-person-in-the-retinue-granting-bonuses-who-is) (companion attachments, the board's top product item) and [THR-1097](https://linear.app/threadbare/issue/THR-1097) are both High and both blocked behind it. The hourly spin loop this was causing on THR-1096 is fixed as of 07:04 today — the ticket now waits quietly in `Todo` instead of burning a pickup slot every hour.
+**Cost of waiting:** [THR-1096](https://linear.app/threadbare/issue/THR-1096/companion-attachments-a-person-in-the-retinue-granting-bonuses-who-is) (companion attachments, the board's top product item) and [THR-1097](https://linear.app/threadbare/issue/THR-1097) are both High and both blocked behind it.
 
 ### 2. Parked option, no urgency: a Tenacious-style trait
 
@@ -18,6 +18,7 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
+- 2026-08-13: **the Crossroads bug was not a bug.** [THR-1037](https://linear.app/threadbare/issue/THR-1037) — the Full Moon path that looked unreachable — was worked and the verdict is that the reported failure was an unlucky roll, not a broken path. A test now proves the branch is reachable ([PR #1421](https://github.com/christianspliid-ui/threadbare/pull/1421)). No decision was needed from you.
 - 2026-08-12: **your 10 August aftermath direction became working code.** The consequence-language design session settled the four categories, the ▲/▼ delta cluster as the magnitude idiom, the palette rule and the Law 13/15 amendments with you in chat, then handed [THR-1082](https://linear.app/threadbare/issue/THR-1082) to the queue with its [plan doc](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-08-12-thr-1082-consequence-language.md) merged; the executor built it the same evening. Three further product tickets came out of it — [THR-1096](https://linear.app/threadbare/issue/THR-1096), [THR-1097](https://linear.app/threadbare/issue/THR-1097), [THR-1098](https://linear.app/threadbare/issue/THR-1098). The design is settled; only the look-at-it step above remains.
 - 2026-08-12: **today's rulings have shipped, and a third ticket followed them.** [THR-998](https://linear.app/threadbare/issue/THR-998) (the card risk word) merged as [PR #1410](https://github.com/christianspliid-ui/threadbare/pull/1410), [THR-1067](https://linear.app/threadbare/issue/THR-1067) (18 templates naming the result instead of showing it) as [PR #1406](https://github.com/christianspliid-ui/threadbare/pull/1406), and [THR-1069](https://linear.app/threadbare/issue/THR-1069) as [PR #1411](https://github.com/christianspliid-ui/threadbare/pull/1411) — the executor picked between the delegated options without coming back to you.
 - 2026-08-12: **[THR-998](https://linear.app/threadbare/issue/THR-998) ruled — the card risk word.** You delegated the pick between (a) track the real odds and (b) stop printing a risk word where the odds are flat, with "the card never claims odds that are not real" as the outcome the executor must keep sacred; (c) stays ruled out.
@@ -27,7 +28,6 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 - 2026-08-12: **the two work lanes are back on** and shipping — [PR #1404](https://github.com/christianspliid-ui/threadbare/pull/1404), [#1402](https://github.com/christianspliid-ui/threadbare/pull/1402) and [#1403](https://github.com/christianspliid-ui/threadbare/pull/1403) merged. No cause recorded for the ~15 h stoppage; Friday's retro has it.
 - 2026-08-12: **the play verdicts were already yours — the ask was stale, and that was our error.** You ruled all four on [THR-907](https://linear.app/threadbare/issue/THR-907) and "not yet" on [THR-974](https://linear.app/threadbare/issue/THR-974) on 2026-08-10; both tickets stayed open with the rulings only in comments, so the lanes kept re-asking.
 - 2026-08-11: [THR-1071](https://linear.app/threadbare/issue/THR-1071) shipped — mercy no longer makes people crueller. **Your tail question was decided without you, legitimately: stone was exempted from the flip** and given the opposite remedy rather than its value pair renamed. Say the word if you'd rather it had been renamed.
-- 2026-08-11: **the cleanup shelf pruned 36 → 21** — ~16 sub-bar process tickets canceled and folded into [THR-1089](https://linear.app/threadbare/issue/THR-1089) and [THR-1090](https://linear.app/threadbare/issue/THR-1090). Your 2026-08-10 materiality bar applied retroactively.
 
 ---
 *Refreshed hourly by `keep-work-flowing-cc`. Full history of every prior version: `git log -p origin/ops -- Design/user-actions.md`.*
