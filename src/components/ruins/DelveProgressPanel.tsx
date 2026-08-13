@@ -16,6 +16,8 @@ import type { WorldGraph } from '../../engine/graph';
 import type { ActiveDelve } from '../../engine/ruins/delveTypes';
 import { abortDelve } from '../../engine/ruins/delveVariant';
 import { EMERGENCE_DECISION_HINT_TICKS, EMERGENCE_DECISION_TIMEOUT_TICKS } from '../../engine/ruins/constants';
+import { getDelveScaleWord } from '../../data/ruin-words';
+import { getDurationWord } from '../../data/domain-words';
 
 // ── Styles (inline — consistent with existing overlay panels) ─────────────────
 
@@ -139,9 +141,20 @@ export function DelveProgressPanel({ gameState, graph, ascendantId, onStateUpdat
           <div style={{ color: '#a78bfa', fontSize: 'var(--text-xs)', fontWeight: 600, marginBottom: '3px' }}>
             Emergence — awaiting your choice
           </div>
+          {/* Law 14 — this line used to print two truncated node ids
+              (`agentId.slice(0, 14)`), which is the raw-internal-key defect in
+              its most literal form: the player was shown a sliced uuid. Names
+              come from the graph, and fail open to plain English rather than
+              to the id (NFP #4). Law 13 — the deadline reads in words. */}
           <div style={{ color: 'var(--text-muted)', fontSize: '10px' }}>
-            {pendingEmergence.agentId.slice(0, 14)} · {pendingEmergence.ruinId.slice(0, 14)}
-            {' '}· auto-resolves as <em>Let</em> in {Math.max(0, pendingEmergence.autoFiresTick - gameState.tick)} ticks
+            {graph.getNode(pendingEmergence.agentId)?.name ?? 'One of yours'}
+            {' at '}
+            {graph.getNode(pendingEmergence.ruinId)?.name ?? 'a ruin'}
+            {' · auto-resolves as '}<em>Let</em>{' '}
+            {(() => {
+              const ticksLeft = Math.max(0, pendingEmergence.autoFiresTick - gameState.tick);
+              return ticksLeft === 0 ? 'now' : getDurationWord(ticksLeft);
+            })()}
           </div>
         </div>
       )}
@@ -191,7 +204,7 @@ function DelveCard({
           borderRadius: '3px', padding: '1px 5px',
           fontSize: '10px', fontWeight: 600,
         }}>
-          {delve.delveScale}
+          {getDelveScaleWord(delve.delveScale)}
         </span>
         <span style={{ color: 'var(--text-muted)', fontSize: '10px', fontWeight: 600, flex: 1 }}>
           {agentName} → {ruinName}
@@ -204,7 +217,7 @@ function DelveCard({
       {/* Next beat countdown */}
       {delve.beatIndex < delve.totalBeats && (
         <div style={{ color: 'var(--text-muted)', fontSize: '10px', marginTop: '3px' }}>
-          {ticksUntilNext === 0 ? 'Resolving…' : `Next beat in ${ticksUntilNext} tick${ticksUntilNext !== 1 ? 's' : ''}`}
+          {ticksUntilNext === 0 ? 'Resolving…' : `Next beat ${getDurationWord(ticksUntilNext)}`}
         </div>
       )}
 
