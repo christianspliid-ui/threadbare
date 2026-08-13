@@ -20,6 +20,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import {
+  ABSTRACT_DENSITY_WARN,
   auditTemplate,
   collectClassedTemplateProse,
   collectTemplateTextByClass,
@@ -185,12 +186,36 @@ describe('the vertical slice reads clean on the widened walk (THR-1083)', () => 
     expect(offenders).toEqual([]);
   });
 
-  it('trips no vagueness or abstraction threshold', () => {
+  it('trips no vagueness threshold', () => {
     for (const template of slice) {
-      const failures = auditTemplate(template).failures.filter(
-        f => f.startsWith('vagueness') || f.startsWith('abstraction'),
-      );
+      const failures = auditTemplate(template).failures.filter(f => f.startsWith('vagueness'));
       expect(failures, template.id).toEqual([]);
+    }
+  });
+
+  /**
+   * Abstraction moved from `failures` to `warnings` in THR-1092, so the filter
+   * above would have gone vacuous if it had kept its `abstraction` clause —
+   * silently asserting nothing while still reading as a two-detector guard.
+   *
+   * It is repointed rather than dropped because the slice is the
+   * director-reviewed vertical slice: whatever the corpus-wide base rate is
+   * (129 of 683 templates warn), *these* templates are the worked examples and
+   * are expected to sit under the threshold. Asserted against `warnings` so a
+   * regression here is still caught, without the detector gating the other 683.
+   */
+  it('stays under the abstraction warn threshold, now that it no longer gates', () => {
+    for (const template of slice) {
+      const scores = auditTemplate(template);
+      expect(
+        scores.failures.filter(f => f.startsWith('abstraction')),
+        `${template.id} — abstraction must not gate; it is a warning (THR-1092)`,
+      ).toEqual([]);
+      expect(
+        scores.warnings.filter(w => w.startsWith('abstraction')),
+        `${template.id} — abstraction density ${scores.abstractDensity}/100w crossed ` +
+          `${ABSTRACT_DENSITY_WARN}. Advisory corpus-wide, but the reviewed slice is the exemplar.`,
+      ).toEqual([]);
     }
   });
 });
