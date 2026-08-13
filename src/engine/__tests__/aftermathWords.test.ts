@@ -9,7 +9,7 @@
  * escape this test, which is exactly why the module header forbids it.
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import {
   GROWTH_MAGNITUDE_BANDS,
   REPUTATION_MAGNITUDE_BANDS,
@@ -29,7 +29,11 @@ import {
   reputationTallySentence,
   rewardSentence,
   traitGrantedSentence,
+  OUTCOME_PHRASES,
+  outcomePhrase,
+  resetOutcomeWarnings,
 } from '../aftermathWords';
+import type { UnifiedActionOutcome } from '../../types/unifiedAction';
 
 describe('magnitude banding', () => {
   it('bands reputation deltas by magnitude, ignoring sign', () => {
@@ -235,5 +239,64 @@ describe('every derived sentence builder is numeral-free', () => {
     }
 
     expect(offenders).toEqual([]);
+  });
+});
+
+/**
+ * THR-1035 — the Chapter Ledger put `success_at_cost` on a player surface.
+ *
+ * The gate below is the vocabulary half: every band in the union resolves to
+ * words, and no resolved phrase is ever the key it came from. The composed
+ * ledger label is pinned separately in `components/Game/__tests__/ChapterLedger`.
+ */
+describe('action outcome vocabulary (THR-1035)', () => {
+  /**
+   * Enumerated rather than derived from `Object.keys(OUTCOME_PHRASES)`, so the
+   * assertions below cannot be satisfied by an empty or shrinking population —
+   * a map that lost an entry fails here instead of quietly testing less.
+   */
+  const ALL_OUTCOMES: readonly UnifiedActionOutcome[] = [
+    'success', 'failure', 'contested_won', 'contested_lost',
+    'critical_success', 'critical_failure', 'success_at_cost',
+  ];
+
+  it('covers every band in the union', () => {
+    expect(ALL_OUTCOMES).toHaveLength(7);
+    expect(Object.keys(OUTCOME_PHRASES).sort()).toEqual([...ALL_OUTCOMES].sort());
+  });
+
+  it('never renders a band as its own key', () => {
+    const offenders: string[] = [];
+    for (const outcome of ALL_OUTCOMES) {
+      const phrase = outcomePhrase(outcome);
+      if (phrase === null) { offenders.push(`${outcome}: null`); continue; }
+      if (phrase === outcome) offenders.push(`${outcome}: rendered raw`);
+      if (phrase.includes('_')) offenders.push(`${outcome}: '${phrase}' carries an underscore`);
+    }
+    expect(offenders).toEqual([]);
+  });
+
+  it('resolves the band from the bug report to prose, not the key', () => {
+    expect(outcomePhrase('success_at_cost')).toBe('won, at a price');
+  });
+
+  it('says nothing for an outcome that is absent — an unresolved chapter is a real state', () => {
+    expect(outcomePhrase(undefined)).toBeNull();
+    expect(outcomePhrase(null)).toBeNull();
+    expect(outcomePhrase('')).toBeNull();
+  });
+
+  it('humanises an unknown band instead of leaking it, and warns exactly once', () => {
+    resetOutcomeWarnings();
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      expect(outcomePhrase('pyrrhic_reversal')).toBe('pyrrhic reversal');
+      expect(outcomePhrase('pyrrhic_reversal')).toBe('pyrrhic reversal');
+      // DEV-gated, so assert "never more than once" rather than "exactly once".
+      expect(warn.mock.calls.length).toBeLessThanOrEqual(1);
+    } finally {
+      warn.mockRestore();
+      resetOutcomeWarnings();
+    }
   });
 });
