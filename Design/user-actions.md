@@ -1,12 +1,12 @@
 # User Action Required
 
-**Last updated:** 2026-08-13 17:57 local (2026-08-13 15:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-13 18:58 local (2026-08-13 16:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
 ### 1. One attended look at the new aftermath — on the preview build, not the live site
 
-[PR #1415](https://github.com/christianspliid-ui/threadbare/pull/1415) builds [THR-1082](https://linear.app/threadbare/issue/THR-1082/consequence-icon-language-aftermath-must-show-what-changed-and-roughly) — your 10 August direction that the aftermath should name what changed rather than report a die roll. Every automated gate is green. The only thing left is a human looking at it at 1920×1080, and unattended runs structurally cannot do that ([impediment #546](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/impediments.md)): the browser refuses to render with nobody present, and the change moves layout, so the cheaper substitute was correctly refused. Held **21 hours** as of this refresh; it will not clear on its own.
+[PR #1415](https://github.com/christianspliid-ui/threadbare/pull/1415) builds [THR-1082](https://linear.app/threadbare/issue/THR-1082/consequence-icon-language-aftermath-must-show-what-changed-and-roughly) — your 10 August direction that the aftermath should name what changed rather than report a die roll. Every automated gate is green. The only thing left is a human looking at it at 1920×1080, and unattended runs structurally cannot do that ([impediment #546](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/impediments.md)): the browser refuses to render with nobody present, and the change moves layout, so the cheaper substitute was correctly refused. Held **22 hours** as of this refresh; it will not clear on its own.
 
 **→ [Open the new aftermath (PR preview build)](https://threadbare-git-claude-thr-1082-consequence-language-spliid.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge)** — the branch's own preview address, read off the PR's Vercel record. Protected preview, so it may ask you to sign in to Vercel first. Add `&outcome=critical_failure` to the same link for a second ending. **Not** `threadbare.vercel.app` — that is the live site, built from `main`, and this PR is not merged, so it shows the *old* aftermath.
 
@@ -22,6 +22,7 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
+- 2026-08-13: **a seventh demo-path fix shipped without you.** Action cards stopped naming the graph and the backlog at the player ([THR-1085](https://linear.app/threadbare/issue/THR-1085), [PR #1428](https://github.com/christianspliid-ui/threadbare/pull/1428)).
 - 2026-08-13: **a sixth demo-path fix shipped without you.** The ruins surfaces stopped speaking schema to the player ([THR-1080](https://linear.app/threadbare/issue/THR-1080), [PR #1427](https://github.com/christianspliid-ui/threadbare/pull/1427)).
 - 2026-08-13: **a fifth demo-path fix shipped without you.** The Codex stopped speaking CRUD to the player ([THR-1076](https://linear.app/threadbare/issue/THR-1076), [PR #1426](https://github.com/christianspliid-ui/threadbare/pull/1426)).
 - 2026-08-13: **a fourth demo-path fix shipped without you.** Three artifact verbs stopped telling the player they are "NOT YET WIRED" ([THR-1075](https://linear.app/threadbare/issue/THR-1075), [PR #1425](https://github.com/christianspliid-ui/threadbare/pull/1425)).
