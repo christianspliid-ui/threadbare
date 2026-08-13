@@ -19,6 +19,7 @@ import type {
 } from '../types/unifiedAction';
 import type { EncounterSupportBinding, EncounterChoiceMemory } from '../types/encounter';
 import { SCALE_PRIORITY, isStepSuccess, isStepFailure, isActionStepBranch } from '../types/unifiedAction';
+import { tierScaledDuration } from './targetTierScaling';
 
 // ─── Counter for deterministic IDs ──────────────────────────────
 
@@ -69,19 +70,34 @@ export interface CreateUnifiedActionParams {
   readonly clearanceGateIds?: readonly string[];
   /** Rarity tier after Focus buff was applied (THR-416). Omit if no buff was active. */
   readonly effectiveRarityTier?: import('../types/rarity').RarityTier;
+  /**
+   * Properties of the target node, for steps whose duration is target-derived
+   * (THR-1100). Only read when the step carries
+   * `difficultyContext: 'target_tier_scaled'`; every other template ignores it.
+   *
+   * This is the whole reason THR-1073 could not scale duration: the draw happens
+   * here, and this constructor had a target *id* but nothing to resolve it
+   * against. Passing the properties — not a `WorldGraph` — keeps the lifecycle
+   * free of graph traversal, and every caller that needs it already holds the
+   * node (`graph.getNode(targetId)?.properties`). Omitting it is fail-soft: the
+   * ramp clamps to its first entry, which is the pre-THR-1100 behaviour.
+   */
+  readonly targetProperties?: Readonly<Record<string, unknown>>;
 }
 
 /**
  * Create a new unified action from a template.
- * Computes initial stepDuration from the first step's duration range using rng.
+ * Computes initial stepDuration from the first step's duration range using rng,
+ * scaled by the target's attachment tier when the step opts in (THR-1100).
  */
 export function createUnifiedAction(params: CreateUnifiedActionParams): UnifiedAction {
   const {
     actorId, templateId, targetId, scale, source, tick, template, rng,
     essencePaid, supportBindings, clearanceGateIds, effectiveRarityTier,
+    targetProperties,
   } = params;
   const firstStep = resolveStepDefinition(template, 0);
-  const stepDuration = computeStepDuration(firstStep.duration, rng);
+  const stepDuration = computeStepDuration(tierScaledDuration(firstStep, targetProperties), rng);
 
   return {
     actionId: `ua_${++actionCounter}`,
@@ -139,6 +155,13 @@ export function isStepComplete(action: UnifiedAction): boolean {
  * @param outcome The outcome of the just-completed step
  * @param template The action's template (needed for step definitions)
  * @param rng Random number generator for computing next step duration
+ * @param targetProperties Target node properties, for a next step whose duration
+ *   is target-derived (THR-1100). Same contract as
+ *   {@link CreateUnifiedActionParams.targetProperties}: read only under
+ *   `difficultyContext: 'target_tier_scaled'`, fail-soft when omitted. Threaded
+ *   here as well as at creation so the scaling is a property of the *step*, not
+ *   of being step 0 — no tier-scaled template is multi-step today, and a later
+ *   one must not silently draw the tier-1 range from step 1 onward.
  * @returns Updated action
  */
 export function advanceStep(
@@ -146,6 +169,7 @@ export function advanceStep(
   outcome: StepOutcome,
   template: UnifiedActionTemplate,
   rng: () => number,
+  targetProperties?: Readonly<Record<string, unknown>>,
 ): UnifiedAction {
   const currentStepDef = resolveStepDefinition(template, action.currentStep, action.choiceHistory);
   const newStepOutcomes = [...action.stepOutcomes, outcome];
@@ -181,7 +205,7 @@ export function advanceStep(
 
   // Advance to next step
   const nextStep = resolveStepDefinition(template, nextStepIndex, action.choiceHistory);
-  const nextDuration = computeStepDuration(nextStep.duration, rng);
+  const nextDuration = computeStepDuration(tierScaledDuration(nextStep, targetProperties), rng);
 
   return {
     ...action,

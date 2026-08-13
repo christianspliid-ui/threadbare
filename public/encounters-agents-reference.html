@@ -896,17 +896,17 @@ const CHAPTERS = [
       },
       {
         name: 'Tier Advancement',
-        desc: 'Possessions can be upgraded via Enchant/Empower actions, advancing their tier and scaling all numeric modifiers.',
+        desc: 'Possessions can be upgraded via Enchant/Empower actions, advancing their tier and scaling all numeric modifiers. All three columns below are indexed by the tier being advanced FROM and are authored in src/data/attachment-tier-content.ts. Duration only became reachable at THR-1100: THR-1073 wired cost and difficulty, and until duration joined them every rite took the tier-1 2–3 ticks no matter how dear it was.',
         formula: 'Modifier scaling: TIER_MODIFIER_SCALE_FACTOR = 1.5\u00d7 per tier (stacks multiplicatively)',
         table: {
-          headers: ['Upgrade', 'Essence Cost', 'Difficulty'],
+          headers: ['Upgrade', 'Essence Cost', 'Difficulty', 'Duration (ticks)'],
           rows: [
-            ['Mundane \u2192 Storied', '<span class="num">4</span>', '<span class="num">0.20</span> (Easy)'],
-            ['Storied \u2192 Mythic', '<span class="num">8</span>', '<span class="num">0.35</span> (Moderate)'],
-            ['Mythic \u2192 Legendary', '<span class="num">14</span>', '<span class="num">0.50</span> (Hard)']
+            ['Mundane \u2192 Storied', '<span class="num">4</span>', '<span class="num">0.20</span> (Easy)', '<span class="num">2\u20133</span>'],
+            ['Storied \u2192 Mythic', '<span class="num">8</span>', '<span class="num">0.35</span> (Moderate)', '<span class="num">3\u20134</span>'],
+            ['Mythic \u2192 Legendary', '<span class="num">14</span>', '<span class="num">0.50</span> (Hard)', '<span class="num">4\u20136</span>']
           ]
         },
-        tags: ['tier advancement', 'essence cost']
+        tags: ['tier advancement', 'essence cost', 'duration']
       },
       {
         name: 'On-Use Triggers',

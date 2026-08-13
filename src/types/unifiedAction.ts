@@ -1202,7 +1202,11 @@ export interface ActionStep {
    * - `'target_tier_scaled'` (THR-1073) — difficulty *and* duration come from the
    *   authored per-tier ramp in `attachment-tier-content.ts`, indexed by the
    *   target artifact's current tier. Pair with `essenceCostContext` on the
-   *   template so the price ramps alongside the difficulty.
+   *   template so the price ramps alongside the difficulty. The duration half
+   *   was unimplemented until THR-1100 — this line described it from the start,
+   *   and `tierScaledDuration` is what finally made the sentence true; the
+   *   marker stayed one enum rather than splitting, because both numbers are
+   *   per-step and both index off the same source tier.
    */
   readonly difficultyContext?: 'intel_sensitive' | 'target_tier_scaled';
   readonly onSuccess: readonly GraphOp[];

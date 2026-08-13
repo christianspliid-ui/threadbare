@@ -285,6 +285,8 @@ export function evaluateEncounterSeeds(state: GameState, tick: number, rng: () =
         tick,
         template,
         rng,
+        // THR-1100: target-derived step duration for tier-scaled templates.
+        targetProperties: state.graph.getNode(inherit.targetId)?.properties,
       });
       const withCausation = seed.sourceEventNodeId
         ? {
