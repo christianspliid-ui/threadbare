@@ -522,13 +522,15 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'veil',
         difficulty: DIFFICULTY_BASE,
         duration: 1,
-        narrative: 'The veil thins here. {actor} feels {adj} presences gathering, watching from the other side.',
+        // THR-1101: authored out of the `{adj}`/`{verb}` mad-lib shape (batch 12,
+        // divination slice). Register: reading what was not written for you.
+        narrative: 'The veil is thin at this shrine, and thinner after dark. The watchers on the far side turn toward {actor} the way a room goes quiet when a stranger walks in.',
         onSuccess: {
-          narrative: '{actor} centers their breath and {verb}s past the watchers into communion.',
+          narrative: '{actor} slows {their} breathing until the watching stops mattering, and walks through it.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: 'The presences {verb} and press, and {actor} is thrown back into the physical realm, shaken.',
+          narrative: 'They crowd in all at once. {actor} comes back to the shrine floor with cold hands and no memory of having sat down.',
           reputationDelta: -0.02,
         },
       },
@@ -538,14 +540,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'heart',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 2,
-        narrative: '{actor} meets a {adj} spirit — ancient, protective, testing the depth of their faith.',
+        narrative: 'One of them comes forward. It is old, and it is patient, and it has come to find out how much of {actor}\'s faith is habit.',
         onSuccess: {
-          narrative: '{actor} offers {their} heart to the spirit\'s knowing gaze and receives a {adj} blessing.',
+          narrative: '{actor} gives the honest answer instead of the creditable one. What the spirit leaves behind sits warm under the breastbone for three days and is then gone.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: '{actor} flinches from the spirit\'s truth. The connection shatters, leaving them {adj} and alone.',
+          narrative: '{actor} looks away first. The spirit does not follow, and the shrine is a room again — cold stone, a guttering wick, nobody in it.',
           reputationDelta: -0.03,
         },
       },
@@ -555,9 +557,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'veil',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 3,
-        narrative: 'The veil parts entirely. {actor} glimpses the unmaking and remaking of worlds in {adj} flux.',
+        narrative: 'The veil does not thin this time. It opens, and behind it the world is being taken apart and put back together, and has been all along.',
         onSuccess: {
-          narrative: '{actor} touches infinity and returns {adj}, forever changed, carrying the weight of eternity.',
+          narrative: '{actor} holds it as long as a person can, then lets go before it lets go of {them}. What walks back out of the shrine is mostly {actor}.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
           rewardPool: {
@@ -566,7 +568,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'The vision overwhelms {actor}. They stumble back into flesh and breath, {adj} and diminished.',
+          narrative: 'Too much, too fast. {actor} is on the flagstones again, breathing hard, already losing the shape of what was shown.',
           reputationDelta: -0.08,
           rewardPool: {
             categoryWeights: { condition: 0.4, bestowed_power: 0.4, possession: 0.2 },
@@ -1016,13 +1018,16 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'star',
         difficulty: DIFFICULTY_BASE,
         duration: 1,
-        narrative: '{actor} climbs to {adj} heights to witness the stars align. {They} must remain {adj} through the long night.',
+        // THR-1101: authored out of the `{adj}`/`{verb}` mad-lib shape (batch 12,
+        // divination slice). The failure line also carried THR-1107's `{they}`
+        // + bare-verb defect ("she descend"), fixed here by rephrasing.
+        narrative: '{actor} climbs above the roofline before dusk and settles in. The alignment lasts a quarter of an hour, near dawn, and there is no second showing.',
         onSuccess: {
-          narrative: '{actor}\'s patience is rewarded. The constellations {verb} and speak, and {actor} receives a {adj} sign.',
+          narrative: '{actor} is still awake when the constellations close. What they spell out is short, and legible, and not addressed to anyone in particular.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: '{actor}\'s resolve falters. {They} descend before the alignment, and the moment is forever lost.',
+          narrative: 'Sleep takes {actor} an hour before dawn. The alignment happens on schedule, unobserved, and will not repeat in {their} lifetime.',
           reputationDelta: -0.02,
         },
       },
@@ -1032,14 +1037,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'veil',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 2,
-        narrative: 'The stars reveal {actor}\'s fate. {They} must confront a {adj} truth about {their} future.',
+        narrative: 'The pattern is about {actor}. That much is plain inside a minute. What it says about the next few years takes longer, and gets worse.',
         onSuccess: {
-          narrative: '{actor} accepts the {adj} revelation and {verb}s to fulfill the stars\' design with {adj} purpose.',
+          narrative: '{actor} reads it through to the end without looking away. Knowing the shape of a life is not the same as being able to bend it, and {actor} takes both.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: '{actor} rejects the fate the stars have named. {They} descend {adj}, running from destiny.',
+          narrative: '{actor} decides the pattern means less than it means, and climbs down. The reading keeps. It always keeps.',
           reputationDelta: -0.03,
         },
       },
@@ -1049,9 +1054,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'star',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 3,
-        narrative: 'The stars open a {adj} door. {actor} stands between worlds, and must choose which path to walk.',
+        narrative: 'Near the end of the night the pattern stops describing and starts offering. There is a passage through it, and it is open now, and it will not be open at sunrise.',
         onSuccess: {
-          narrative: '{actor} steps through the {adj} door, transformed and {adj}, bearing the stars\' blessing.',
+          narrative: '{actor} goes through. What comes back down the tower stairs at dawn answers to the name, and takes the steps two at a time in the dark without once looking down.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
           rewardPool: {
@@ -1060,7 +1065,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: '{actor} falters in the liminal space. The door closes, and {they} return {adj} but incomplete.',
+          narrative: '{actor} hesitates one breath too long. The sky closes over, ordinary again. {actor} comes down the stairs a breath short of a different life.',
           reputationDelta: -0.08,
           rewardPool: {
             categoryWeights: { condition: 0.4, bestowed_power: 0.4, possession: 0.2 },
@@ -5756,13 +5761,15 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'veil',
         difficulty: MODERATE_DIFFICULTY_BASE - 5,
         duration: 1,
-        narrative: 'The Festival draws pilgrims from every road. {actor} must navigate the {adj} ritual protocols without giving offense.',
+        // THR-1101: authored out of the `{adj}`/`{verb}` mad-lib shape (batch 12,
+        // divination slice).
+        narrative: 'The Festival draws pilgrims from every road, and every road brought its own version of the rite. {actor} has to get through the first hour without performing the wrong one.',
         onSuccess: {
-          narrative: '{actor} moves through the rites with {adj} grace, earning nods from the officiants.',
+          narrative: '{actor} watches the woman in front and copies her half a beat late all evening. The officiants take it for reverence.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: 'A {adj} misstep in the rites draws whispers. {actor} finishes the ceremony under {adj} scrutiny.',
+          narrative: '{actor} kneels on the beat the others rise. Nobody says a word, and everybody adjusts to leave a little more room.',
           reputationDelta: -0.03,
         },
       },
@@ -5772,9 +5779,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'heart',
         difficulty: MODERATE_DIFFICULTY_BASE + MODERATE_DIFFICULTY_STEP - 5,
         duration: 2,
-        narrative: 'The climax of the Festival: a communal offering where each participant gives something of genuine worth. {actor} must choose {their} offering.',
+        narrative: 'The last rite is the offering. Each pilgrim gives up one item they would rather keep, and the crowd watches to see how long the choosing takes.',
         onSuccess: {
-          narrative: '{actor}\'s offering {verb}s from {their} heart and is received with {adj} reverence.',
+          narrative: '{actor} chooses fast and gives up more than the rite asks for. The officiant holds it a second longer than the others before setting it down.',
           reputationDelta: 0.12,
           tierPromotionEligible: true,
           rewardPool: {
@@ -5783,7 +5790,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: '{actor}\'s offering is received politely, but the {adj} moment passes without connection.',
+          narrative: '{actor} gives up the least of what {they} carried in. It is accepted, thanked for, and set at the back of the table.',
           reputationDelta: -0.02,
           rewardPool: {
             categoryWeights: { bestowed_power: 0.5, condition: 0.5 },
@@ -7762,13 +7769,16 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'veil',
         difficulty: UNIVERSAL_DIFFICULTY_BASE,
         duration: 1,
-        narrative: 'Beneath the visible lies something older. {actor} opens {their} senses to the {adj} currents beneath the surface.',
+        // THR-1101: authored out of the `{adj}` mad-lib shape (batch 12, divination
+        // slice). The failure line was also character-identical to
+        // `study_surroundings` (impediment #571) — the duplicate is resolved here.
+        narrative: 'Older channels run under this ground the way water runs under limestone. {actor} sits down on the dirt and stops trying to see.',
         onSuccess: {
           narrative: 'There — a pull, faint but unmistakable. The land remembers its channels, and {actor} begins to read them.',
           reputationDelta: 0.02,
         },
         onFailure: {
-          narrative: 'Nothing stirs. The {adj} silence holds, and {actor} learns only that some places guard their secrets well.',
+          narrative: 'The ground stays ground. {actor} sits long enough to be certain of it, and being certain is worth the hour.',
           reputationDelta: -0.01,
         },
       },
@@ -7778,7 +7788,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'eye',
         difficulty: UNIVERSAL_DIFFICULTY_BASE + UNIVERSAL_DIFFICULTY_STEP,
         duration: 1,
-        narrative: 'Sensing a current is one thing. Understanding where it flows — and why — demands {adj} clarity of mind.',
+        narrative: 'Feeling the pull is the easy half. Following it to where it goes, and working out what put it there, takes the rest of the daylight.',
         onSuccess: {
           narrative: 'The ley line resolves into a path {actor} can follow. Where it leads, the magic runs stronger.',
           reputationDelta: 0.03,
@@ -9536,13 +9546,16 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'eye',
         difficulty: MODERATE_DIFFICULTY_BASE,
         duration: 1,
-        narrative: 'Something is {adj} wrong here — not dangerously, not obviously, but persistently. {actor} traces the edges of what does not fit.',
+        // THR-1101: authored out of the `{adj}` mad-lib shape (batch 12, divination
+        // slice). The failure line also carried THR-1107's `{they} are` defect
+        // ("she are"), which `{s}` cannot reach — fixed by rephrasing.
+        narrative: 'Everything in this room is where it should be, and the room is still wrong. {actor} walks the edges of it, looking for the seam.',
         onSuccess: {
-          narrative: '{actor} isolates the {adj} anomaly from the background. It is real, not imagined.',
+          narrative: '{actor} finds the seam: a corner where the light arrives a half-second late. Real, then, and not a trick of tiredness.',
           reputationDelta: 0.04,
         },
         onFailure: {
-          narrative: 'The {adj} anomaly resists easy observation. {actor} is not sure what {they} are even looking at.',
+          narrative: 'The wrongness moves whenever {actor} looks at it directly. After an hour {actor} cannot say what {they} came in here to find.',
           reputationDelta: -0.03,
         },
       },
@@ -9552,9 +9565,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'veil',
         difficulty: MODERATE_DIFFICULTY_BASE + MODERATE_DIFFICULTY_STEP,
         duration: 2,
-        narrative: 'Understanding the {adj} anomaly means going beyond what the eye reports. {actor} must feel for the cause beneath the surface.',
+        narrative: 'The eye has taken this as far as it goes. The cause left through the other side, and only the veil keeps that record.',
         onSuccess: {
-          narrative: '{actor} traces the anomaly to its {adj} root. A presence passed through here and left its shape in the air behind it.',
+          narrative: '{actor} follows it down to the cause. What passed through this room did not touch the floor, and the air has been holding its shape ever since.',
           reputationDelta: 0.12,
           tierPromotionEligible: true,
           rewardPool: {
@@ -9563,7 +9576,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'The {adj} cause remains opaque. {actor} can name the hour it happened, and not one detail more.',
+          narrative: 'The cause stays behind the veil. {actor} can name the hour it happened and not one detail past that.',
           reputationDelta: -0.05,
           rewardPool: {
             categoryWeights: { bestowed_power: 0.6, condition: 0.4 },
@@ -9932,13 +9945,15 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'veil',
         difficulty: HARD_DIFFICULTY_BASE,
         duration: 2,
-        narrative: 'Every place carries a {adj} trace of what has occurred there — the residue of acts and intentions layered in the walls and ground. {actor} opens to it.',
+        // THR-1101: authored out of the `{adj}`/`{verb}` mad-lib shape (batch 12,
+        // divination slice).
+        narrative: 'Rooms keep what is done in them. It settles into plaster and floorboard and stays there, thinning by the year. {actor} stops moving and lets it come.',
         onSuccess: {
-          narrative: '{actor} attunes to the {adj} resonance. A picture assembles itself from feeling and impression.',
+          narrative: 'It arrives as feeling before it arrives as picture. {actor} waits through the first and the second assembles on its own.',
           reputationDelta: 0.06,
         },
         onFailure: {
-          narrative: 'The resonance {verb}s in fragments. {actor} receives impressions but cannot {adj} assemble them.',
+          narrative: 'It comes in pieces and refuses to be more. {actor} holds a shout, a smell of cut wood, and a door closing, and cannot put them in order.',
           reputationDelta: -0.05,
         },
       },
@@ -9948,11 +9963,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'eye',
         difficulty: HARD_DIFFICULTY_BASE + HARD_DIFFICULTY_STEP,
         duration: 2,
-        narrative: 'The {adj} raw impression must be interpreted — turned from feeling into {adj} knowledge that can be acted upon.',
+        narrative: 'Feeling is not yet knowledge. Turning one into the other is a separate skill, and the one that fails more often.',
         criticalSuccessAfterimage: 'The impressions do not just resolve — they open. {actor} reads not only what happened in this place but the shape of what it wanted, and the knowing settles in like a language {they} always spoke.',
-        criticalFailureAfterimage: 'The interpretation turns on {actor}. For a moment {they} hold every layer of the place at once — every act, every intention — and the weight of it leaves a ringing that follows {them} into other rooms, other days.',
+        // THR-1107: `{they} hold` rendered "she hold" in the he/she arm. `{s}` is
+        // the present-tense agreement suffix and reaches this one in place.
+        criticalFailureAfterimage: 'The interpretation turns on {actor}. For a breath {they} hold{s} every layer of the place at once — every act, every intention — and the weight of it leaves a ringing that follows {them} into other rooms, other days.',
         onSuccess: {
-          narrative: '{actor} makes the {adj} translation successfully. What was felt becomes known.',
+          narrative: '{actor} gets it across into words. The room gave up a quarrel, a decision, and the name of the person who lost.',
           reputationDelta: 0.14,
           tierPromotionEligible: true,
           rewardPool: {
@@ -9961,7 +9978,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'The {adj} interpretation {verb}s into confusion. The feeling was real — the meaning remains beyond reach.',
+          narrative: 'The translation comes apart in {actor}\'s hands. The feeling was real and stays real, and will not resolve into a sentence.',
           reputationDelta: -0.06,
           rewardPool: {
             categoryWeights: { bestowed_power: 0.7, condition: 0.3 },
@@ -10002,11 +10019,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         duration: 1,
         narrative: 'The stones here hum with old protections. {actor} places a palm flat against the wall and listens with senses beyond hearing.',
         onSuccess: {
-          narrative: 'The ward-pattern blooms in {actor}\'s mind — layers of intention, each {adj} and deliberate. Someone cared enough to weave this well.',
+          // THR-1101: authored out of the `{adj}`/`{verb}` mad-lib shape (batch 12,
+          // divination slice).
+          narrative: 'The pattern opens in {actor}\'s mind, layer on layer, each one laid deliberately over the last. Whoever built this was not in a hurry.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: '{actor} feels the hum but cannot parse the pattern. The wards remain a {adj} murmur without meaning.',
+          narrative: '{actor} feels the hum and gets no further. It stays a sound in the teeth, steady, and closed.',
           reputationDelta: -0.02,
         },
       },
@@ -10016,14 +10035,17 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'eye',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 2,
-        narrative: 'Understanding the ward\'s shape is one thing. Understanding what it {verb}s against — that requires a {adj} different kind of knowing.',
+        narrative: 'Reading the shape of a ward is straightforward work. Reading what it was built to keep out is a different trade entirely.',
         onSuccess: {
-          narrative: '{actor} traces the ward to its anchor and reads its intent: protection against something specific. Knowledge worth having.',
+          // THR-1101 batch 12: pre-existing `something` in outcome prose — evasive
+          // set, enforced at zero in every field class. Carried no `{adj}` token,
+          // so no token scan would ever have found it.
+          narrative: '{actor} traces the ward to its anchor and reads its intent. It was raised against one named threat, and the name is still legible.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: 'The ward\'s purpose slips away like smoke. {actor} knows something is protected, but not from what.',
+          narrative: 'The purpose slips away like smoke. {actor} can tell the ward is guarding, and not what it is guarding against.',
           reputationDelta: -0.03,
         },
       },
@@ -10033,7 +10055,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'veil',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 2,
-        narrative: '{actor} attempts to map every ward, every {adj} binding, every sleeping glyph — a complete census of magical defence.',
+        narrative: '{actor} starts at the gate and works inward: every ward, every binding, every glyph still asleep in the mortar. A full census, or none.',
         onSuccess: {
           narrative: 'The full ward-map settles into {actor}\'s memory like a diagram drawn in light. Every vulnerability, every strength, known.',
           reputationDelta: 0.15,
@@ -10044,7 +10066,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'Too many layers. {actor}\'s survey is {adj} incomplete — good enough for caution, not for certainty.',
+          narrative: 'Too many layers, laid by too many hands. {actor} finishes with a survey good enough to be careful by and not good enough to trust.',
           reputationDelta: -0.08,
         },
       },
@@ -10204,13 +10226,15 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'veil',
         difficulty: DIFFICULTY_BASE,
         duration: 1,
-        narrative: 'Something was sealed here — not by lock and key but by will and sigil. {actor} feels the {adj} pressure of it from ten paces.',
+        // THR-1101: authored out of the `{adj}`/`{verb}` mad-lib shape (batch 12,
+        // divination slice).
+        narrative: 'A door in the ruin was shut with will and sigil rather than lock and key. {actor} feels the pressure of it from ten paces out.',
         onSuccess: {
-          narrative: '{actor} identifies the seal\'s tradition — old, deliberate, and still {adj} angry at intrusion.',
+          narrative: '{actor} places the tradition: old work, careful work, and still bad-tempered about visitors.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: 'The seal\'s pressure pushes {actor} back a step. Its {adj} warning is clear enough without comprehension.',
+          narrative: 'The pressure moves {actor} back a pace without touching {them}. The warning lands. The language it is written in does not.',
           reputationDelta: -0.02,
         },
       },
@@ -10220,14 +10244,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'iron',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 2,
-        narrative: 'Testing a seal means finding where it yields — if it yields. {actor} presses against its {adj} boundaries with careful force.',
+        narrative: 'Testing a seal means finding where it gives, if it gives at all. {actor} leans on the edges of it, a little at a time.',
         onSuccess: {
           narrative: 'A hairline weakness. The seal holds, but {actor} knows where it could be opened — or reinforced.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: 'The seal {verb}s back. {actor} withdraws with singed fingers and a {adj} newfound respect.',
+          narrative: 'The seal pushes back harder than it was pushed. {actor} withdraws with two burnt fingers and a better estimate of the work.',
           reputationDelta: -0.03,
         },
       },
@@ -10239,7 +10263,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         duration: 2,
         narrative: 'Knowledge of a seal — its strength, its age, its purpose — is valuable to those who know what to do with it.',
         onSuccess: {
-          narrative: '{actor} commits the seal\'s full schema to memory: age, tradition, strength, and the {adj} thing it contains.',
+          narrative: '{actor} fixes the whole schema in memory: age, tradition, strength, and a fair guess at what is on the other side of it.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
           rewardPool: {
@@ -10248,7 +10272,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'The details blur. {actor} remembers the seal exists but not what it guards. {adj} and frustrating.',
+          narrative: 'The detail goes soft within the hour. {actor} keeps the location and loses the reading, which is the worse half to lose.',
           reputationDelta: -0.08,
         },
       },
@@ -10667,13 +10691,15 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'eye',
         difficulty: DIFFICULTY_BASE,
         duration: 1,
-        narrative: 'Clear sky, no moon. {actor} lies back on cold ground and maps the {adj} familiar patterns — the Forge, the Wanderer, the Broken Crown.',
+        // THR-1101: authored out of the `{adj}` mad-lib shape (batch 12, divination
+        // slice).
+        narrative: 'Clear sky, no moon. {actor} lies back on cold ground and finds the old markers first — the Forge, the Wanderer, the Broken Crown.',
         onSuccess: {
-          narrative: 'The stars are where they should be. {actor} marks the season, the direction, and the omens with {adj} precision.',
+          narrative: 'The stars are where they should be. {actor} takes the season off them, and the north, and one reading that will keep until morning.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: 'Cloud cover rolls in. {actor} catches half the sky before the {adj} darkness swallows the rest.',
+          narrative: 'Cloud comes in off the west. {actor} gets half the sky and loses the half that mattered.',
           reputationDelta: -0.02,
         },
       },
@@ -10683,14 +10709,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'star',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 2,
-        narrative: 'Stars tell time and direction to anyone. They tell fate only to those with the {adj} patience to listen.',
+        narrative: 'Stars give time and direction to anybody who looks up. The rest of it they give to whoever is still lying there at the third hour.',
         onSuccess: {
-          narrative: 'Something in the pattern speaks. {actor} cannot say exactly what, but {their} next three decisions carry a {adj} certainty they didn\'t before.',
+          narrative: 'The pattern says one clear word and no more. {actor} could not repeat it aloud, and makes the next three decisions faster than {they} would have.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: 'The stars are just stars tonight. {actor} rises, brushing dew from {their} back. Tomorrow may speak {adj} more clearly.',
+          narrative: 'The stars are only stars tonight. {actor} gets up, brushes the dew off {their} back, and allows that the fault may be the reader.',
           reputationDelta: -0.03,
         },
       },
@@ -10700,9 +10726,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'star',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 1,
-        narrative: 'An omen is not a command. It is a {adj} weight on the scales of what might happen next.',
+        narrative: 'An omen does not instruct. It puts weight on one side of a scale that was already tipping, and leaves the walking to the walker.',
         onSuccess: {
-          narrative: '{actor} carries the sky\'s message forward: a warning, a promise, or a {adj} question that demands answering.',
+          narrative: '{actor} takes the reading down off the hill intact: a warning, or a promise, or a question that will need answering before winter.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
           rewardPool: {
@@ -10711,7 +10737,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'The omen slips away like a dream at dawn. {actor} knows something was offered and {adj} lost.',
+          narrative: 'It fades like a dream at first light. {actor} keeps the certainty of having been told, and not one word of what.',
           reputationDelta: -0.08,
         },
       },
