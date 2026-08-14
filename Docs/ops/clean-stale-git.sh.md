@@ -7,7 +7,7 @@ Because it is not tracked, a disk loss takes it with it. This file is a **copy f
 recoverability and review**, not the source of truth. When you change the script, update
 this mirror in the same PR (as THR-753 does).
 
-Last synced: 2026-07-26 (THR-797 — live-session-safe worktree reaping).
+Last synced: 2026-08-15 (THR-1115 — donor `node_modules` auto-repair, liveness-gated and single-flighted).
 
 ## Full script body
 
@@ -147,15 +147,39 @@ sever_node_modules_reparse() {
 }
 
 # Home-tree node_modules integrity check (THR-753). If a junction-follow ever slips
-# through and empties the real install, surface it LOUDLY so a human repairs it. The
-# reaper NEVER auto-installs (that is a dev action) — it only names the repair.
+# through and empties the real install, surface it LOUDLY. Detection only — the repair
+# is a separate, gated pass at the end of the run (see repair_home_node_modules).
 check_home_node_modules() {
   local bin="$REPO/node_modules/.bin" n
   if [ -e "$bin/esbuild.exe" ] || [ -e "$bin/esbuild" ]; then
     return 0
   fi
   n=$(ls "$bin" 2>/dev/null | wc -l | tr -d ' ')
-  echo "!!!!! HOME-TREE node_modules DAMAGED: $bin has no esbuild (entries: ${n:-0}). REPAIR: run 'npm install' in $REPO (reaper will NOT auto-install)."
+  echo "!!!!! HOME-TREE node_modules DAMAGED: $bin has no esbuild (entries: ${n:-0}). REPAIR: run 'npm install' in $REPO (auto-repair will attempt this at end of run)."
+}
+
+# Donor node_modules auto-repair (THR-1115). POLICY REVERSAL, recorded here because this
+# is where the old policy was written: this script used to say "the reaper NEVER
+# auto-installs (that is a dev action)". That policy is what converted a ~4-minute
+# problem into an 18-hour outage — the damage streaks in this very log run 12, 16 and 18
+# consecutive hourly runs, and every session starting inside one of those windows found a
+# dead donor (impediments #501/#502/#503/#506 hit it four times in one day). Detection
+# without repair just documented the outage hourly while it continued.
+#
+# What makes reversing it safe is that the decision is NOT made here. All of it —
+# liveness gate, single-flight lock, re-probe under the lock — lives in the tracked,
+# tested `scripts/repair-donor-node-modules.ts`, so the concurrency-critical logic goes
+# through the PR gate even though this script does not. This call site is deliberately
+# one line with no policy of its own.
+#
+# Three properties worth knowing without reading the script: it only ever acts on an
+# ALREADY-DAMAGED donor (a working session implies a healthy donor implies no install);
+# it refuses while any worktree or the donor's own node_modules shows recent activity;
+# and it needs no node_modules itself, so it still runs on the tree it is repairing.
+# Never `set -e` around it — a repair failure must not abort the sweep.
+repair_home_node_modules() {
+  command -v node >/dev/null 2>&1 || { echo "donor-repair: skipped (node not on PATH)"; return 0; }
+  node --experimental-strip-types "$REPO/scripts/repair-donor-node-modules.ts" 2>&1 || true
 }
 
 # ---- 1. remove merged, work-free worktrees -------------------------------
@@ -270,6 +294,13 @@ git for-each-ref --format='%(refname:short)|%(upstream:track)' refs/heads/ \
       case "$b" in claude/*|pickup/*|resume/*) del=1;; esac          # ephemeral session branches
       [ "$del" = 1 ] && git branch -D "$b" >/dev/null 2>&1 && echo "deleted branch: $b"
     done
+
+# ---- 3.5 repair a damaged donor (THR-1115) -------------------------------
+# Runs last among the working passes: the two check_home_node_modules calls above have
+# already reported the shape, and the worktree/orphan sweeps have finished touching
+# trees, so the liveness probe inside the repair sees a settled machine rather than this
+# script's own churn.
+repair_home_node_modules
 
 # ---- 4. summary ----------------------------------------------------------
 # Single machine-readable line. keep-work-flowing-cc tails this into the hourly
