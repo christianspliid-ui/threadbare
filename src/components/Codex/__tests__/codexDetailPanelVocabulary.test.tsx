@@ -165,3 +165,110 @@ describe('THR-1103 — the rendered Codex detail panel speaks no raw keys', () =
     expect(long.map(d => `${d.id}: ${d.label} = "${d.value}"`)).toEqual([]);
   });
 });
+
+/**
+ * THR-1113 — the agreement, resource and magnitude rows, on the composed surface.
+ *
+ * **This block is the browser-verify substitution for THR-1113** (THR-754 route 3; impediments
+ * #546 ×10, #574). `preview_start` was verified refused in this run — *"Dev servers can't be
+ * started from unattended sessions"* — so the contractual 1920×1080 capture has no reachable
+ * route, and the Playwright fallback presumes the same dev server.
+ *
+ * **Why the substitution is honest for this change specifically.** Two kinds of edit ship here,
+ * and neither adds layout pressure. Most are string substitutions inside a row or chip that
+ * already rendered, exactly the THR-1103 case above. The one structural change *removes* rows —
+ * twelve blank `Domain Effects` rows stop rendering — and removing entries from a vertical list
+ * strictly reduces the pressure the pixel classes (overflow, off-viewport paint) need in order to
+ * exist. Nothing is added, resized or repositioned.
+ *
+ * The honest residue, stated rather than waived: values got **longer** in two rows
+ * (`+0.04 Gold, +0.02 Heart` → `a slight edge in Gold, a faint edge in Heart`, and the joined
+ * effect phrases), and only pixels can confirm the reflow *looks* right. The length bound below
+ * checks the property a render test can actually see; THR-1109 is the standing precedent that an
+ * owed pixel pass is filed, not waived, if one is later judged necessary here.
+ */
+describe('THR-1113 — the rendered panel speaks no agreement, resource or magnitude key', () => {
+  it('paints a timed agreement in days, with resolved type and effect phrases', () => {
+    const e = pick(x => x.id === 'agreement.debt.minor', 'agreement.debt.minor');
+    render(<CodexDetailPanel entry={e} onClose={() => {}} />);
+
+    // Positive assertions first — an absence check alone cannot tell a resolved row from a
+    // deleted one, which is the failure mode these suites exist to catch.
+    expect(screen.getByText('Type')).toBeTruthy();
+    expect(screen.getAllByText('Debt').length).toBeGreaterThan(0);   // subtitle + Type row
+    expect(screen.getByText('Duration')).toBeTruthy();
+    expect(screen.getByText('four days')).toBeTruthy();              // was `48 ticks`
+    expect(screen.getByText('Effects')).toBeTruthy();
+    expect(screen.getByText('shifts standing')).toBeTruthy();        // was `social_modifier`
+
+    // And the raw forms are gone from the composed surface.
+    for (const raw of ['debt', '48 ticks', 'social_modifier']) {
+      expect(screen.queryByText(raw), `panel still paints raw '${raw}'`).toBeNull();
+    }
+  });
+
+  it('paints a permanent agreement without inventing a duration', () => {
+    // The other branch of the duration decision — `Permanent` must survive the tick conversion.
+    const e = pick(x => x.id === 'agreement.oath.service', 'agreement.oath.service');
+    render(<CodexDetailPanel entry={e} onClose={() => {}} />);
+
+    expect(screen.getByText('Permanent')).toBeTruthy();
+    expect(screen.getByText('sways behaviour, opens or bars actions')).toBeTruthy();
+    expect(screen.queryByText('oath')).toBeNull();
+  });
+
+  it('paints a resource class resolved in the subtitle, the chip and the row', () => {
+    const e = pick(x => x.id === 'resource.arcane_crystal', 'resource.arcane_crystal');
+    render(<CodexDetailPanel entry={e} onClose={() => {}} />);
+
+    expect(screen.getByText('Class')).toBeTruthy();
+    // Three faces of the same key: subtitle, tag chip, `Class` row — all resolved now.
+    expect(screen.getAllByText(/Arcane/).length).toBeGreaterThan(1);
+    expect(screen.queryByText('arcane'), 'panel still paints the raw category').toBeNull();
+  });
+
+  it('paints a banded domain contribution, with no numeral on the surface', () => {
+    // The one entry in the catalog carrying a populated `domainContributions`.
+    const e = pick(x => x.id === 'reward_bestowed_patrons_backing', 'the bestowed patron entry');
+    const { container } = render(<CodexDetailPanel entry={e} onClose={() => {}} />);
+
+    expect(screen.getByText('Domain Effects')).toBeTruthy();
+    expect(screen.getByText('a slight edge in Gold, a faint edge in Heart')).toBeTruthy();
+
+    // Scoped to the row rather than the whole panel: authored prose elsewhere may legitimately
+    // contain a digit, and sweeping the container would fail on English rather than on a leak.
+    const row = Array.from(container.querySelectorAll('*'))
+      .find(el => el.textContent === 'a slight edge in Gold, a faint edge in Heart');
+    expect(row, 'the banded row did not render').toBeTruthy();
+    expect(/\d/.test(row!.textContent ?? '')).toBe(false);
+  });
+
+  it('renders no blank-valued row on a condition that carries an empty contribution record', () => {
+    // Twelve conditions author `domainContributions: {}`, which passed the old truthiness guard
+    // and painted a `Domain Effects` label with nothing after it. The row must now be absent —
+    // not present-and-empty.
+    const e = pick(
+      x => x.id === 'reward_condition_gale_touched',
+      'a condition with an empty domainContributions record',
+    );
+    render(<CodexDetailPanel entry={e} onClose={() => {}} />);
+
+    expect(screen.queryByText('Domain Effects'), 'blank row still renders its label').toBeNull();
+    // Guard the guard: the panel must still have painted something.
+    expect(screen.getByText(e.name)).toBeTruthy();
+  });
+
+  it('keeps the lengthened values inside the 360px panel', () => {
+    // The rows this change touches are the ones that grew. The banded contribution is the longest
+    // the catalog can produce; the bound is set above it with headroom for a two-reach condition,
+    // and the panel's rows are flex `<div>`s that wrap rather than clip.
+    const grown = getAllCodexEntries()
+      .flatMap(e => e.details.map(d => ({ id: e.id, label: d.label, value: d.value })))
+      .filter(d => ['Domain Effects', 'Reach Bonus', 'Duration', 'Type', 'Effects', 'Class'].includes(d.label));
+
+    expect(grown.length).toBeGreaterThan(80);
+    expect(grown.filter(d => d.value.length > 60).map(d => `${d.id}: ${d.label} = "${d.value}"`)).toEqual([]);
+    // No row may go empty, which is the defect this ticket also repaired.
+    expect(grown.filter(d => d.value.trim() === '').map(d => `${d.id}: ${d.label}`)).toEqual([]);
+  });
+});
