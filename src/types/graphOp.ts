@@ -82,6 +82,7 @@ export type GraphOpType =
   | 'anoint_successor' // THR-432: anoint the target agent as their faction's next heir (creates will_succeed edge)
   | 'imbue_item'     // THR-508: append a sphere-flavored power to a target artifact node
   | 'bestow_power'   // THR-512: grant a threaded agent a divine-gift artifact (reach bonus + quintessence regen)
+  | 'grant_companion' // THR-1096: mint a companion from `companionTemplateId` and attach them to the target
   | 'anoint_faction' // THR-513: flag a target faction as the ascendant's chosen — grants a domain-keyed chosen power (consumed by phaseChosenFactionPowers)
   | 'consecrate_source' // THR-611: turn the target host into a typed essence source (Build/Create leg) + ensure a controls edge
   | 'sanctify_source' // THR-611: raise a typed source's sanctity toward flowering (Build leg)
@@ -187,6 +188,14 @@ export interface GraphOp {
   factionVerbKind?: string;
   /** For `op: 'faction_verb'` with kind 'whisper_leader': the chosen pole. */
   factionVerbPreferredPole?: string;
+
+  // ─ THR-1096 companions ─
+
+  /**
+   * For `op: 'grant_companion'`: which companion template to mint from
+   * `src/data/companion-templates.ts`. An unknown id warns and grants nothing.
+   */
+  companionTemplateId?: string;
 
   // ─ THR-430 schism plant ─
 

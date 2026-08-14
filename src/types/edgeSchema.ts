@@ -72,6 +72,19 @@ export const EDGE_SCHEMA: Record<EdgeType, EdgeSchema> = {
     description: 'Actor, location, or sublocation has a trait. Edge properties: level, tick, decay, appliedAt, ticksRemaining, durationTicks, intensity, sourceEncounterId. ticksRemaining is the live countdown decayConditions decrements (absent = never expires); durationTicks is the authored total kept as provenance (THR-761).',
   },
 
+  // ── Companions (THR-1096) ──────────────────────────────────
+  accompanies: {
+    type: 'accompanies',
+    sourceNodeType: 'actor',
+    targetNodeType: 'companion',
+    direction: 'directed',
+    // One-to-many from the bearer's side; a companion has exactly one bearer,
+    // enforced at mint by `mintCompanion` rather than by the schema.
+    cardinality: 'one-to-many',
+    requiredProperties: ['sinceTick', 'source'],
+    description: 'Bearer (actor) is accompanied by a companion. Edge properties: sinceTick, source, and — for contracted companions only — ticksRemaining/totalTicks, which expireCompanions counts down (absent = stays until a story removes them).',
+  },
+
   // ── Possession ─────────────────────────────────────────────
   possesses: {
     type: 'possesses',

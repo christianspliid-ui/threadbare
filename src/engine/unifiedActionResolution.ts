@@ -162,6 +162,7 @@ import {
 } from './rewardPool';
 import { recordReward } from './rewardHistory';
 import { mulberry32 } from '../lib/prng';
+import { mintCompanion } from './companions';
 import { buildPredicateContext, collectTestShapers } from './effectResolver';
 import { applyClearanceGateStepOutcome, summarizeClearanceGateUpdates } from './clearanceGate';
 import { applyFlipTableTriggerWithConfig, matchesStepOutcomeTrigger } from './effectShellRuntime';
@@ -1440,6 +1441,10 @@ export function executeStepResult(
     const anointSuccessorOps: GraphOp[] = [];
     const imbueItemOps: GraphOp[] = [];
     const bestowPowerOps: GraphOp[] = [];
+    // THR-1096: companions are minted through the engine module (name generation,
+    // single-bearer invariant, trace) rather than by the generic node executor,
+    // which has no way to do any of those.
+    const grantCompanionOps: GraphOp[] = [];
     const anointFactionOps: GraphOp[] = [];
     const plantTrapOps: GraphOp[] = [];
     // THR-724: `reveal_secret` needs full GameState (chronicle events + tick), not just
@@ -1464,6 +1469,7 @@ export function executeStepResult(
       else if (op.op === 'anoint_successor') anointSuccessorOps.push(op);
       else if (op.op === 'imbue_item') imbueItemOps.push(op);
       else if (op.op === 'bestow_power') bestowPowerOps.push(op);
+      else if (op.op === 'grant_companion') grantCompanionOps.push(op);
       else if (op.op === 'anoint_faction') anointFactionOps.push(op);
       else if (op.op === 'plant_trap') plantTrapOps.push(op);
       else if (op.op === 'quintessence_restore') quintessenceRestoreOps.push(op);
@@ -1571,6 +1577,33 @@ export function executeStepResult(
           applyBestowPower(state.graph, action.actorId, resolvedAgentId, tick);
         } catch {
           // Fail-soft per NFP #4: log nothing, never crash the tick.
+        }
+      }
+    }
+
+    if (grantCompanionOps.length > 0) {
+      // THR-1096 — the hire-mercenaries migration and any later action that
+      // brings a person along. The bearer is the acting agent unless the op
+      // names a target. Seeded from the action id + tick so a replay of the same
+      // seed hires the same captain.
+      for (const op of grantCompanionOps) {
+        const bearerRef = op.nodeId ?? op.target ?? '$actor';
+        const resolvedBearerId = bearerRef === '$actor' ? action.actorId
+          : bearerRef === '$target' ? action.targetId
+            : bearerRef;
+        const templateId = op.companionTemplateId;
+        if (!templateId || !resolvedBearerId) continue;
+        try {
+          mintCompanion(
+            state.graph,
+            templateId,
+            resolvedBearerId,
+            tick,
+            mulberry32((state.seed + tick * 977 + hashString(action.actionId)) >>> 0),
+            { source: action.templateId, respectCap: false },
+          );
+        } catch {
+          // Fail-soft per NFP #4: never crash the tick over a companion.
         }
       }
     }

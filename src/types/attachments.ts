@@ -141,7 +141,9 @@ export interface AgreementProperties {
 
 export type AttachmentCategory =
   | 'possession' | 'condition' | 'blessing' | 'curse'
-  | 'bestowed_power' | 'agreement' | 'spell';
+  | 'bestowed_power' | 'agreement' | 'spell'
+  /** A named person who walks with the bearer, granting small always-on bonuses (THR-1096). */
+  | 'companion';
 
 /**
  * Template-level reward recipe — what encounter templates specify.

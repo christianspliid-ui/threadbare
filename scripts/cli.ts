@@ -84,6 +84,8 @@ import { getUnifiedTemplateById, UNIFIED_ACTION_TEMPLATES } from '../src/data/un
 import { createUnifiedAction } from '../src/engine/unifiedActionLifecycle';
 import { REWARD_POSSESSIONS, REWARD_CONDITIONS, REWARD_BESTOWED_POWERS } from '../src/data/reward-attachment-catalog';
 import { STARTER_POSSESSIONS, STARTER_CONDITIONS } from '../src/data/starter-attachments';
+import { getCompanions } from '../src/engine/companions';
+import { COMPANION_MAX } from '../src/data/companion-templates';
 import {
   getAllGroups,
   getGroupCohesion,
@@ -303,6 +305,21 @@ function printAgent(partialId: string): void {
   // Sphere alignment
   if (match.properties.sphereAlignment) {
     console.log(`  Sphere:    ${JSON.stringify(match.properties.sphereAlignment)}`);
+  }
+
+  // Companions (THR-1096) — who walks with them, and what that is worth
+  const companions = getCompanions(state.graph, match.id);
+  if (companions.length > 0) {
+    console.log(`  Companions (${companions.length}/${COMPANION_MAX}):`);
+    for (const c of companions) {
+      const bonus = Object.entries(c.domainContributions)
+        .filter(([, v]) => typeof v === 'number' && v !== 0)
+        .map(([reach, v]) => `${(v as number) > 0 ? '+' : ''}${v} ${reach}`)
+        .join(' ');
+      const duration = c.ticksRemaining != null ? `, ${c.ticksRemaining} ticks left` : '';
+      console.log(`    ${c.name} — ${c.profession} [${bonus || 'no bonus'}${duration}]`);
+      console.log(`      ${c.goodFor}`);
+    }
   }
 }
 

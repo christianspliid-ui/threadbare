@@ -255,6 +255,25 @@ export const CONTRACTS: readonly Contract[] = [
     },
   },
   {
+    id: 'companion-capability-contribution',
+    producerSystem: ATTACHMENTS,
+    consumerSystem: 'Encounters & Dilemmas',
+    intent:
+      'A companion travelling with a mortal raises that mortal\'s per-Reach raw score, and earns a factor line under their own name.',
+    mechanism: {
+      kind: 'edge-prop',
+      symbols: ['accompanies', 'domainContributions', 'getCompanions'],
+      module: 'src/engine/companions.ts',
+    },
+    writeSites: ['src/engine/companions.ts', 'src/data/companion-templates.ts'],
+    readSites: ['src/engine/domainCapability.ts', 'src/engine/agentDetail.ts', 'scripts/cli.ts'],
+    verifiedLive: {
+      date: '2026-08-14',
+      evidence:
+        'THR-1096: `computeRawScore` and `getTopContributors` both walk `accompanies` alongside `possesses`/`bonded_to`. Proven against the real pipeline (initializeGameState → runTick ×3, seed 42) in companionsIntegration.test.ts: minting `companion.wayfarer` raises the bearer\'s stone raw score by exactly the template\'s +2 and adds a contributor row under the minted personal name; `companion.sellsword-band` raises iron — the bonus `hire-mercenaries` never granted before this ticket, when it minted an off-schema `attachment` node carrying an unread `ironCapability: 30`. Removal returns the score. Both-side symbol hits: `accompanies` on write (companions.ts) + read (domainCapability.ts); `getCompanions` on read (agentDetail.ts, cli.ts).',
+    },
+  },
+  {
     id: 'attachment-edge-modifiers',
     producerSystem: ATTACHMENTS,
     consumerSystem: 'Personality & Emergent Traits',

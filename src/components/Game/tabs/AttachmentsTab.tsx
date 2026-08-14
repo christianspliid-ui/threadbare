@@ -10,6 +10,10 @@ import { getAttachmentGlyph } from '../attachmentGlyphs';
 import { resolveAttachmentTooltip } from '../../../engine/attachmentTooltip';
 import { SLOT_CAPS, CONDITION_CAPS, SLOT_TAG_DISPLAY_NAMES } from '../../../data/attachment-slot-constants';
 import { getAttachmentArtUrl } from '../../../data/artifact-category-art';
+import { EntityVisual } from '../../shared/EntityVisual';
+import { getUITooltip } from '../../../data/ui-content';
+import { COMPANION_MAX } from '../../../data/companion-templates';
+import type { CompanionEntry } from '../../../engine/companions';
 
 interface AttachmentsTabProps {
   card: AgentInfoCardData;
@@ -30,7 +34,67 @@ function getSlotCap(slotTag: string): number | undefined {
   return SLOT_CAPS[slotTag] ?? CONDITION_CAPS[slotTag];
 }
 
+/** Reach glyphs for a companion's always-on bonus — the same vocabulary the sheet uses elsewhere. */
+function contributionLine(contributions: Record<string, number>): string {
+  const parts = Object.entries(contributions)
+    .filter(([, v]) => typeof v === 'number' && v !== 0)
+    .sort(([, a], [, b]) => b - a)
+    .map(([reach, v]) => `${v > 0 ? '+' : ''}${v} ${reach}`);
+  return parts.length > 0 ? parts.join(' · ') : 'No bonus — just company.';
+}
+
 export function AttachmentsTab({ card, onAttachmentClick }: AttachmentsTabProps) {
+  const companions = card.companions ?? [];
+  const companionsTooltip = getUITooltip('ui.companions')
+    ?? { label: 'Companions', desc: 'Those who travel with them.' };
+
+  const renderCompanion = (companion: CompanionEntry) => (
+    <div
+      key={companion.id}
+      className="flex gap-3 py-2 items-start"
+      style={{ borderBottom: '1px solid var(--border-subtle)' }}
+      data-testid={`companion-${companion.templateId}`}
+    >
+      <EntityVisual
+        size="chip"
+        entity={{ id: companion.id, kind: 'companion', name: companion.name }}
+        aria-label={companion.name}
+        title={companion.name}
+      />
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+            {getAttachmentGlyph('companion')} {companion.name}
+          </span>
+          <span className="text-xs uppercase tracking-wider" style={{ color: 'var(--text-tertiary)' }}>
+            {companion.profession}
+          </span>
+        </div>
+        <p className="text-sm italic mb-1" style={{ color: 'var(--text-secondary)' }}>
+          {companion.goodFor}
+        </p>
+        <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+          {contributionLine(companion.domainContributions as Record<string, number>)}
+        </p>
+        {companion.ticksRemaining != null && companion.totalTicks != null && companion.totalTicks > 0 && (
+          <div className="flex items-center gap-2 mt-1">
+            <div style={{ width: '200px' }}>
+              <ProgressBar
+                progress={companion.ticksRemaining / companion.totalTicks}
+                color="var(--text-secondary)"
+                className="h-1.5"
+                glow={false}
+              />
+            </div>
+            <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+              {'⏳'} {companion.ticksRemaining} ticks remaining
+            </span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
   const possessions = card.possessions ?? [];
   const conditions = card.afflictions ?? [];
   const powers = (card.giftsAndBurdens ?? []).filter(g => g.subcategory === 'bestowed_power');
@@ -163,16 +227,29 @@ export function AttachmentsTab({ card, onAttachmentClick }: AttachmentsTabProps)
     );
   };
 
-  if (!hasAny) {
+  if (!hasAny && companions.length === 0) {
     return (
       <p className="text-sm italic" style={{ color: 'var(--text-tertiary)' }}>
-        {card.name} carries no known possessions, conditions, powers, or agreements.
+        {card.name} carries no known possessions, conditions, powers, or agreements,
+        and travels alone.
       </p>
     );
   }
 
   return (
     <div className="space-y-4">
+      {/* Companions (THR-1096) — people, so they lead, and they are ungated. */}
+      {companions.length > 0 && (
+        <section data-testid="attachments-companions">
+          <Tooltip label={companionsTooltip.label} desc={companionsTooltip.desc}>
+            <SectionHeading as="h2">
+              Companions ({companions.length}/{COMPANION_MAX})
+            </SectionHeading>
+          </Tooltip>
+          {companions.map(renderCompanion)}
+        </section>
+      )}
+
       {/* Grouped slot sections */}
       {SLOT_GROUP_ORDER.map(slotTag => {
         const items = slotGroups.get(slotTag);

@@ -34,7 +34,8 @@ const SUBCATEGORY_GLYPHS: Record<string, string> = {
   favour: '\u2696',           // ⚖ Scales (alias)
   treaty: '\u260D',           // ☍ Opposition (alias)
   bargain: '\u2696',          // ⚖ Scales (alias)
-  retainer: '\u265F',         // ♟ Chess pawn
+  retainer: '\u265F',         // Chess pawn
+  companion: '\u265F',         // ♟ Chess pawn
 
   // Spells
   spell: '\u2728',            // ✨ Sparkles

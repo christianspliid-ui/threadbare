@@ -123,6 +123,8 @@ function deriveKind(node: GraphNode | null): EntityVisualKind {
     case 'artifact_legendary':
     case 'resource':
       return 'artifact';
+    case 'companion':
+      return 'companion';
     default:
       return 'unknown';
   }
@@ -147,6 +149,10 @@ function resolveSource(
     case 'agent':
     case 'npc-role':
       // Bespoke portrait path → archetype portrait (both handled by the helper).
+      return getAgentPortraitUrlFromProperties(node?.properties);
+    case 'companion':
+      // A template may ship a portrait; most do not, and the initials tile is
+      // the designed result rather than a gap (THR-1096).
       return getAgentPortraitUrlFromProperties(node?.properties);
     case 'avatar': {
       const props = node?.properties ?? {};

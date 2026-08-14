@@ -87,6 +87,18 @@ export function computeRawScore(
     }
   }
 
+  // Walk companion edges (accompanies) — THR-1096. A companion contributes
+  // exactly the way an artifact does, so their bonus reaches the roll through
+  // this same walk and shows up in derived factor lines by construction.
+  for (const edge of graph.getOutgoingEdges(nodeId, 'accompanies')) {
+    const companionNode = graph.getNode(edge.target);
+    if (!companionNode) continue;
+    const contributions = companionNode.properties.domainContributions as DomainContributions | undefined;
+    if (contributions) {
+      total += contributions[domain] ?? 0;
+    }
+  }
+
   // Walk resource edges (controls)
   const controlEdges = graph.getOutgoingEdges(nodeId, 'controls');
   for (const edge of controlEdges) {
@@ -214,6 +226,18 @@ export function getTopContributors(
       if (contribution > 0) {
         contributors.push({ name: artifactNode.name, sourceId: artifactNode.id, contribution });
       }
+    }
+  }
+
+  // Companion contributions (THR-1096) — a companion earns a factor line under
+  // their own name, so "why did that go well?" can answer with a person.
+  for (const edge of graph.getOutgoingEdges(nodeId, 'accompanies')) {
+    const companionNode = graph.getNode(edge.target);
+    if (!companionNode) continue;
+    const contributions = companionNode.properties.domainContributions as DomainContributions | undefined;
+    const contribution = contributions?.[domain] ?? 0;
+    if (contribution > 0) {
+      contributors.push({ name: companionNode.name, sourceId: companionNode.id, contribution });
     }
   }
 

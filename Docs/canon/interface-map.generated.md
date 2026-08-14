@@ -15,12 +15,12 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 46 |
+| 🟢 LIVE | 47 |
 | 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 7 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 9 |
-| **Total** | **63** |
+| **Total** | **64** |
 
 ## Contracts by producing subsystem
 
@@ -65,6 +65,7 @@ remediation ticket or the build fails.
 | `attachment-slot-caps-suppress` | Slot caps suppress overflow attachments via a single suppression seam. | edge-prop: `attachmentSlotResolver` | Effects & Conditions | 🟢 LIVE | — |
 | `attachment-tier-advancement` | Tier advancement strengthens an item over time. | function: `advanceAttachmentTier`, `canAdvanceTier` | Attachments, Items & Possessions | 🔵 UNVERIFIED-OK | — |
 | `attachment-trait-grant-effects` | Items grant abilities to their bearer (e.g. cavalry_charge). | node-prop: `trait_grant`, `collectGrantedTraits` | Encounters & Dilemmas | 🟢 LIVE | — |
+| `companion-capability-contribution` | A companion travelling with a mortal raises that mortal's per-Reach raw score, and earns a factor line under their own name. | edge-prop: `accompanies`, `domainContributions`, `getCompanions` | Encounters & Dilemmas | 🟢 LIVE | — |
 
 ### Attention, Chronicle & Narrative
 
@@ -243,10 +244,10 @@ remediation ticket or the build fails.
 - **Intent:** Items raise Domain Capability tiers — a legendary blade makes its bearer mightier on the Prowess tab and in encounter eligibility.
 - **Producer → Consumer:** Attachments, Items & Possessions → Personality & Emergent Traits
 - **UL terms:** *Domain Capability*, *Attachment*
-- **Production hits:** 38 total — 4 write, 2 read, 32 unclassified
+- **Production hits:** 41 total — 4 write, 2 read, 35 unclassified
 - **Write sites:** `src/data/anomaly-reward-catalog.ts`, `src/data/artifact-templates.ts`, `src/data/reward-attachment-catalog.ts`, `src/data/starter-attachments.ts`
 - **Read sites:** `src/engine/domainCapability.ts`, `src/engine/effects/effectQueries.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/Codex/codexRegistry.ts`, `src/components/Game/AgentDetailPanel.tsx`, `src/data/action-technical-effects.ts`, `src/data/attachment-tier-content.ts` +27 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/Codex/codexRegistry.ts`, `src/components/Game/AgentDetailPanel.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx`, `src/data/action-technical-effects.ts` +30 more
 - **Verdict:** Verified 2026-07-24: THR-718 finished the effects[] migration: a `stat_contribution` primitive (effects.ts) is summed by `collectStatContributions` (effectQueries.ts) and added inside `computeRawScore`'s possesses/bonded_to artifact walk (domainCapability.ts). 9 catalog entries across all bands carry real contributions (artifact-templates ×3 legendary, starter ×4, anomaly ×2) — both-side symbol hits: `stat_contribution` on write (catalogs) + read (effectQueries), `collectStatContributions` on read (domainCapability + effectQueries). Legacy `domainContributions` node-prop read preserved for traits/resources. Unit + hook + content-band tests green.
 
 ### `attachment-edge-modifiers` — 🔴 LEAKED
@@ -424,6 +425,17 @@ remediation ticket or the build fails.
 - **Read sites:** —
 - **Other hits:** `src/data/encounters/apotheosis-ascension.ts`, `src/engine/encounters/branchDecision.ts`, `src/testing/contentInvariants.ts`
 - **Verdict:** Tier 2: write sites present, declared read sites empty — the consumer is starving. — or the declared symbol does not appear at the declared site: grep 'applyAgentDecidedBranches' src/engine/encounters/driftAccumulator.ts before treating this as a leak.
+
+### `companion-capability-contribution` — 🟢 LIVE
+
+- **Intent:** A companion travelling with a mortal raises that mortal's per-Reach raw score, and earns a factor line under their own name.
+- **Producer → Consumer:** Attachments, Items & Possessions → Encounters & Dilemmas
+- **Module:** `src/engine/companions.ts`
+- **Production hits:** 38 total — 2 write, 2 read, 34 unclassified
+- **Write sites:** `src/data/companion-templates.ts`, `src/engine/companions.ts`
+- **Read sites:** `src/engine/agentDetail.ts`, `src/engine/domainCapability.ts`
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/Codex/codexRegistry.ts`, `src/components/Game/AgentDetailPanel.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx`, `src/data/anomaly-reward-catalog.ts` +29 more
+- **Verdict:** Verified 2026-08-14: THR-1096: `computeRawScore` and `getTopContributors` both walk `accompanies` alongside `possesses`/`bonded_to`. Proven against the real pipeline (initializeGameState → runTick ×3, seed 42) in companionsIntegration.test.ts: minting `companion.wayfarer` raises the bearer's stone raw score by exactly the template's +2 and adds a contributor row under the minted personal name; `companion.sellsword-band` raises iron — the bonus `hire-mercenaries` never granted before this ticket, when it minted an off-schema `attachment` node carrying an unread `ironCapability: 30`. Removal returns the score. Both-side symbol hits: `accompanies` on write (companions.ts) + read (domainCapability.ts); `getCompanions` on read (agentDetail.ts, cli.ts).
 
 ### `company-assist-shapes-resolution` — 🟢 LIVE
 
@@ -712,10 +724,10 @@ remediation ticket or the build fails.
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 193 total — 1 write, 1 read, 191 unclassified
+- **Production hits:** 195 total — 1 write, 1 read, 193 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/ActionCard.tsx` +186 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/ActionCard.tsx` +188 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `reunion-reads-the-edges-not-the-roster` — 🟢 LIVE

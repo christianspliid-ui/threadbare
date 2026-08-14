@@ -1050,6 +1050,39 @@ With the markers, `artifact.enchant` / `artifact.empower` charge 4 essence at di
 
 ---
 
+### Capability 21: Companions — Handing a Mortal a Person (THR-1096)
+
+**What it does:** an aftermath can give a mortal someone to travel with. A **companion** is a named person with a profession, a one-line *good for*, and a small always-on bonus — Eldritch Horror's ally cards, not an NPC. They are explicitly **not agents**: no decisions, no movement, no encounters of their own. They ride on one bearer's sheet and make that bearer better at something for as long as they stay.
+
+**Why you want it:** before this, no encounter could answer *"who did you meet on the road?"* with a game object. A rescue could grant a wound, a coin, or a reputation tick — but not a person. Companions are the BOND category's flagship content: the gain and the loss are both story beats with a face on them.
+
+**How to author it.** Two effect kinds, both in the ordinary `EncounterAftermathReactionEffect` vocabulary, so they work anywhere effects work — reaction `effects[]`, step `successMetadata.effects`, nudge card `grants`:
+
+```ts
+// A wanderer catches them on the bridge, and stays.
+{ kind: 'grant_companion', companionTemplateId: 'companion.wayfarer' }
+
+// Someone makes them a better offer.
+{ kind: 'remove_companion', companionTemplateId: 'companion.shadow-broker', reason: 'lured_away' }
+```
+
+`targetAgentId` directs either at someone other than the actor; `when` gates them like any other effect.
+
+**The library** is `src/data/companion-templates.ts` — 8 professions across the setting classes (road / settlement / wilds / court) plus one unique. Each template carries its reach contributions, tier, loss condition, tags, and a **join/depart sentence pair** written to the cause→change rule, with `{name}` substituted at mint time. Add a template there rather than inventing one inline; a library test asserts every contribution against `COMPANION_CONTRIBUTION_RANGE` (raw 1–3), which is the guardrail keeping companions a nudge rather than a decision.
+
+**What an author must know — four things that will otherwise surprise you:**
+
+1. **The name is generated, the profession is not.** A template is *"Wayfarer"*; the instance the player meets is a person with a name drawn from the same generator worldgen uses, seeded by the caller's PRNG. Do not write prose that assumes a specific name — use the sentence pair's `{name}` slot.
+2. **The cap binds the pool, not you.** `COMPANION_MAX` (3) stops the *reward pool* offering more companions to a full bearer. An authored `grant_companion` deliberately ignores it: an encounter that promised someone delivers them, and the surface shows the crowd honestly. There is no auto-eviction — taking someone's companion is a story event you write, never bookkeeping.
+3. **Uniques are once per world.** A template with `unique: true` carries a fixed name and can never be instanced twice, on any bearer. The pool never offers one; only a named `grant_companion` can. A second grant no-ops with a warning.
+4. **Nobody vanishes silently.** Every removal — authored, lured, or a contract running out on the condition-expiry beat — emits `companion_departed` with a named reason and returns the template's departure sentence for the surface to show. If you find yourself wanting a companion to just disappear, write the line instead.
+
+**Pool grants** work too: `companion` is a `RewardPoolRecipe.categoryWeights` key, so a roadside-rescue recipe can weight companions while a tomb raid does not. The pool applies the cap and the unique filter; a direct grant does not.
+
+**Where to find the implementation:** `src/engine/companions.ts` (`mintCompanion` / `removeCompanion` / `getCompanions` / `expireCompanions`), the `accompanies` walk in `src/engine/domainCapability.ts`, the `companion` case in `src/engine/rewardPool.ts`, the two effect cases in `src/engine/encounterAftermath.ts`, and the `grant_companion` GraphOp intercept in `src/engine/unifiedActionResolution.ts` (which `action.gold.hire-mercenaries` is the first caller of).
+
+---
+
 ## Part 3: The Wiring Checklist — Ask These Before You Write
 
 Before writing any encounter, answer these questions. If the answer to most of them is "not applicable," you may be writing a book page, not game content.

@@ -15,6 +15,10 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'Doom Clock',
     desc: 'Tracks the world\'s descent toward the Unmaking. Each stage escalates {{sphere.entropy}} effects.',
   },
+  'ui.companions': {
+    label: 'Companions',
+    desc: 'Those who travel with them — companions grant their bonuses while they stay.',
+  },
   'ui.essence_panel': {
     label: 'Divine Essence',
     desc: 'Your power reserve. Spent on {{ui.avatar_wheel}} interventions, replenished by {{ui.mandate_tracker}} completion.',

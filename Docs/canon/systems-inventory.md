@@ -98,6 +98,7 @@ complete. (These phases still appear in the full wiring table below; they just l
 | `2a.61` | Choice Resolution — process pending player choice commits | `THR-323` |
 | `2.34` | Companies | `THR-74` |
 | `3b` | Notable Agendas | `THR-630` |
+| `6.625b` | Companion expiry | `THR-1096` |
 | `6.637` | Unrest | — |
 | `end` | Drift Decay — passive per-tick decay toward zero | `THR-323` |
 
@@ -164,6 +165,7 @@ registry. The wiring ground truth: if it is on the tick path, it is here.
 | `6.715` | Divine Proximity Importance | `THR-25` | orchestrator |
 | `6.62` | Trade Route Decay | — | orchestrator |
 | `6.625` | Condition Decay | — | orchestrator |
+| `6.625b` | Companion expiry | `THR-1096` | orchestrator |
 | `6.626` | Mastery Trait Decay | — | orchestrator |
 | `6.63` | Settlement Prosperity | — | orchestrator |
 | `6.632` | Economic Traits | — | orchestrator |
@@ -243,6 +245,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `clearance` (1) | `clearanceGate.ts` | — |
 | `coastline` (1) | `coastline.ts` | — |
 | `color` (1) | `color.ts` | — |
+| `companions` (1) | `companions.ts` | `THR-1096` |
 | `complication` (2) | `complicationEffects.ts`, `complicationSelection.ts` | `THR-20` |
 | `condition` (2) | `conditionDecay.ts`, `conditionOverflow.ts` | — |
 | `content-eval` (6) | `content-eval/collectAuthoredProse.ts`, `content-eval/detectors.ts`, `content-eval/proseQualityScore.ts`, `content-eval/registerCompliance.ts`, `content-eval/surfaceFragmentReport.ts`, `content-eval/unreachableActions.ts` | `THR-490`, `THR-472`, `THR-609`, `THR-573`, `THR-659`, `THR-501`, `THR-523` |
@@ -343,7 +346,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `retinue` (1) | `retinue.ts` | — |
 | `return` (1) | `returnEngine.ts` | `TB-035`, `Phase 3` |
 | `revelation` (3) | `revelationEmitter.ts`, `revelationHooks.ts`, `revelationResolver.ts` | `THR-853`, `TB-043` |
-| `reward` (2) | `rewardHistory.ts`, `rewardPool.ts` | — |
+| `reward` (2) | `rewardHistory.ts`, `rewardPool.ts` | `THR-1096` |
 | `rival` (3) | `rival.ts`, `rivalInfluenceMarkers.ts`, `rivalSourceContestation.ts` | `THR-66`, `THR-621`, `THR-611` |
 | `river` (1) | `riverGeneration.ts` | — |
 | `road` (1) | `roadNetwork.ts` | — |
@@ -392,4 +395,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 26 registered subsystems (1 dormant) · 100 tick phases · 173 engine domains · 493 modules._
+_Counts: 26 registered subsystems (1 dormant) · 101 tick phases · 174 engine domains · 494 modules._

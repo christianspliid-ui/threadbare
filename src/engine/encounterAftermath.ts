@@ -68,6 +68,7 @@ import type {
   EncounterAftermathEffectTrace,
 } from '../types/trace';
 import { mulberry32 } from '../lib/prng';
+import { mintCompanion, removeCompanion, getCompanions } from './companions';
 import { generateSecret, createSecretEdge, createFavorEdge } from './secretGeneration';
 import { spawnClueFromEvent, findAnyRuinId } from './ruins/clueLifecycle';
 import { applyFactionReputationGain } from './factionReputation';
@@ -1573,6 +1574,113 @@ export function applyEncounterAftermathReaction(
           effectiveTargetId: targetAgentId, effectiveTargetKind: 'agent',
           summary: `intel_referenced_prose[${i}]: ${targetAgentId} ${effect.category}/${band} → "${proseLine.slice(0, 60)}${proseLine.length > 60 ? '…' : ''}"`,
         });
+        break;
+      }
+
+      case 'grant_companion': {
+        // THR-1096. An authored grant deliberately ignores COMPANION_MAX —
+        // the encounter promised this person, so they arrive.
+        const resolvedId = target.kind !== 'actor_fallback' ? target.id : actorAgentId;
+        if (!resolvedId) {
+          emitTrace({
+            tick, category: 'aftermath_target_invalid', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'grant_companion', reason: 'no_actor_id',
+            summary: `grant_companion[${i}] skipped: no actor id`,
+          } as unknown as TraceEntry);
+          break;
+        }
+        const companionSalt = `${encounterId}_${reaction.id}_${i}_${effect.companionTemplateId}`;
+        let companionSeed = state.seed;
+        for (let c = 0; c < companionSalt.length; c++) {
+          companionSeed = (companionSeed ^ companionSalt.charCodeAt(c)) >>> 0;
+        }
+        companionSeed = (companionSeed + tick * 31337) >>> 0;
+        const minted = mintCompanion(
+          state.graph,
+          effect.companionTemplateId,
+          resolvedId,
+          tick,
+          mulberry32(companionSeed),
+          { source: encounterId, respectCap: false },
+        );
+        if (!minted) {
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'grant_companion',
+            effectDetail: { targetId: resolvedId, companionTemplateId: effect.companionTemplateId },
+            success: false, failReason: 'companion_grant_refused',
+            effectiveTargetId: resolvedId,
+            effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'actor_fallback',
+            summary: `grant_companion[${i}] skipped: template unknown, unique already instanced, or bearer missing (${effect.companionTemplateId})`,
+          } as unknown as TraceEntry);
+          break;
+        }
+        mutationSummary.touchedStructure = true;
+        emitTrace({
+          tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+          encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+          effectKind: 'grant_companion',
+          effectDetail: {
+            targetId: resolvedId,
+            companionTemplateId: effect.companionTemplateId,
+            companionId: minted.companionId,
+            companionName: minted.name,
+          },
+          success: true,
+          effectiveTargetId: resolvedId,
+          effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'actor_fallback',
+          summary: `grant_companion[${i}]: ${minted.name} (${minted.template.profession}) joins ${resolvedId}`,
+        } as unknown as TraceEntry);
+        break;
+      }
+
+      case 'remove_companion': {
+        // THR-1096. Loss is a story event, never bookkeeping — the departure
+        // trace fires inside removeCompanion so nobody vanishes silently.
+        const resolvedId = target.kind !== 'actor_fallback' ? target.id : actorAgentId;
+        if (!resolvedId) {
+          emitTrace({
+            tick, category: 'aftermath_target_invalid', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'remove_companion', reason: 'no_actor_id',
+            summary: `remove_companion[${i}] skipped: no actor id`,
+          } as unknown as TraceEntry);
+          break;
+        }
+        const held = getCompanions(state.graph, resolvedId)
+          .find(c => c.templateId === effect.companionTemplateId);
+        if (!held) {
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'remove_companion',
+            effectDetail: { targetId: resolvedId, companionTemplateId: effect.companionTemplateId },
+            success: false, failReason: 'companion_not_held',
+            effectiveTargetId: resolvedId,
+            effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'actor_fallback',
+            summary: `remove_companion[${i}] skipped: bearer has no ${effect.companionTemplateId}`,
+          } as unknown as TraceEntry);
+          break;
+        }
+        const gone = removeCompanion(state.graph, held.id, effect.reason ?? 'story', tick);
+        mutationSummary.touchedStructure = true;
+        emitTrace({
+          tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+          encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+          effectKind: 'remove_companion',
+          effectDetail: {
+            targetId: resolvedId,
+            companionTemplateId: effect.companionTemplateId,
+            companionId: held.id,
+            reason: effect.reason ?? 'story',
+          },
+          success: true,
+          effectiveTargetId: resolvedId,
+          effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'actor_fallback',
+          summary: `remove_companion[${i}]: ${gone?.companionName ?? held.name} leaves ${resolvedId} (${effect.reason ?? 'story'})`,
+        } as unknown as TraceEntry);
         break;
       }
 
