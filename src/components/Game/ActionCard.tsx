@@ -14,7 +14,7 @@
  * - playing: pulse/glow burst animation with spent overlay
  */
 
-import React, { useMemo, useCallback, useState, useRef } from 'react';
+import React, { useMemo, useCallback, useState, useRef, useEffect } from 'react';
 import type { WheelSlot } from '../../engine/wheel';
 import { getWheelSlotGlyph, getSphereColor } from '../../data/sphereIcons';
 import { SphereIcon } from '../icons';
@@ -22,6 +22,13 @@ import { RarityBadge } from '../shared/RarityBadge';
 import type { RarityTier } from '../../types/rarity';
 import type { SphereName } from '../../types/index';
 import { getActionArt } from './actionArt';
+
+/**
+ * How long the "you can't play this" shake runs before the card settles back.
+ * Must stay in step with the `anim-shake-no` keyframe duration in the stylesheet —
+ * this timer is what clears the class, not the animation's own end event.
+ */
+const SHAKE_DURATION_MS = 400;
 
 // ─── Sizing Constants ──────────────────────────────────────────────────────
 
@@ -153,9 +160,17 @@ export const ActionCard = React.memo(function ActionCard({
     } else if (!isAvailable && !playing) {
       setShaking(true);
       if (shakeTimer.current) clearTimeout(shakeTimer.current);
-      shakeTimer.current = setTimeout(() => setShaking(false), 400);
+      shakeTimer.current = setTimeout(() => setShaking(false), SHAKE_DURATION_MS);
     }
   }, [interactive, isAvailable, playing, onClick, slot.id]);
+
+  // Clear the shake timer on unmount (THR-1106). Clearing it only on the re-entry
+  // path above leaves it armed when the card goes away inside the shake window —
+  // the drawer closing on a locked-card click is exactly that, and the callback
+  // then calls setShaking on a torn-down component.
+  useEffect(() => () => {
+    if (shakeTimer.current) clearTimeout(shakeTimer.current);
+  }, []);
 
   // ── Hand layout ─────────────────────────────────────────────────
   if (size === 'hand') {

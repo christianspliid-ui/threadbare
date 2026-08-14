@@ -311,3 +311,32 @@ describe('ActionCard — spent overlay', () => {
     expect(screen.queryByTestId('action-card-spent-overlay')).toBeNull();
   });
 });
+
+// THR-1106: the shake timer was cleared only on the re-entry path (a subsequent
+// click), so a card unmounted inside the 400 ms shake window left it armed and the
+// callback ran setShaking on a torn-down component. In jsdom that surfaces as
+// `ReferenceError: window is not defined` from React's resolveUpdatePriority —
+// reported as an unhandled error, which vitest counts separately from test
+// failures, so the suite reads "all passing" and still exits 1.
+describe('ActionCard — shake timer lifecycle (THR-1106)', () => {
+  it('clears the shake timer on unmount instead of firing into a torn-down card', () => {
+    vi.useFakeTimers();
+    try {
+      const locked: WheelSlot = { ...baseSlot, available: false, lockedReason: 'Requires tier 2' };
+      const { unmount } = render(<ActionCard slot={locked} onClick={vi.fn()} size="hand" />);
+
+      fireEvent.click(screen.getByTestId('action-card-dream'));
+      // Guard against a vacuous pass: the click must actually arm the shake, or
+      // the unmount assertion below would hold for the wrong reason.
+      expect(screen.getByTestId('action-card-dream').className).toContain('anim-shake-no');
+      expect(vi.getTimerCount()).toBe(1);
+
+      unmount();
+
+      expect(vi.getTimerCount()).toBe(0);
+      expect(() => vi.advanceTimersByTime(1_000)).not.toThrow();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});
