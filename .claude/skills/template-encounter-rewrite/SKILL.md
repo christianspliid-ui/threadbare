@@ -9,7 +9,7 @@ description: >
   quality", "social encounter rewrite", "tavern encounter rewrite", "template
   encounter", "encounter quality pass", "prose quality pass", "write encounter".
 model: opus
-last_validated_against: 2026-07-30
+last_validated_against: 2026-08-12
 ---
 
 > **Load before authoring:** `Docs/canon/rulebook-quick-reference.md` (always — the synthesis layer for rules of play). Load `Docs/canon/rulebook.md` (full rulebook) when the work touches a specific rule of play and you need depth, status flags, or source citations.
@@ -286,6 +286,27 @@ Each guild has a distinct voice AND a natural affinity for certain systemic capa
 **Example tone:** "The audience chamber is three levels below the street, and the air tastes of stone and tallow and the particular staleness that comes from rooms where windows have never existed. The Underking does not look up when {name} enters. Permission to approach is granted by the absence of objection."
 
 ---
+
+## Consequences are authored, reserved, and welded to the scene (THR-1082)
+
+**Full rule: `.claude/skills/encounter-pipeline/reference/nudge-authoring-spec.md` §
+"Consequences — cause → change".** Read it before writing an `aftermathConfig`; the
+short version binds here too:
+
+A consequence chip is one of the few things this encounter was *written* to have happen —
+never a report of every state the engine touched. Incidental capability drift no longer
+renders as a chip at all (Christian's ruling, 2026-08-10: it *"takes away from the
+encounter story"*), so do not author it. What you do write obeys **cause → change in one
+sentence**, names its **state noun**, declares its **`category`** (`scar` / `bond` /
+`boon` / `path`) and **`direction`** as structured fields, and draws from the full
+palette — all seven attachment categories, conditions, quintessence shifts, standing,
+hooks — rather than defaulting to an item or a reputation delta.
+
+The anti-example, quoted because it shipped:
+
+> ❌ *"The bridge spent something on this crossing that it will not get back."*
+
+No noun, no direction, no cause from the scene. "Something" is not a consequence.
 
 ## Editorial Checklist (Run After Writing)
 

@@ -29,6 +29,7 @@ import type {
 import type { ActionStepOutcomeMetadata } from '../types/unifiedAction';
 import { applyEncounterAftermathReaction } from './encounterAftermath';
 import {
+  type DerivedChange,
   factionStandingSentence,
   gateFollowOnSentence,
   gateStateSentence,
@@ -2042,6 +2043,19 @@ export function executeStepResult(
   // THR-1004 — every derived sentence below is built by `engine/aftermathWords.ts`,
   // never assembled here. That is what keeps the words-never-numerals rule
   // testable at one address instead of at eleven template literals.
+  //
+  // THR-1082 — and every builder now returns the *structure* it spent on that
+  // sentence too. `derivedFields` copies it onto the change verbatim, so the
+  // chip surface can draw an icon, a direction and a cluster instead of parsing
+  // English back out of a finished string. One helper rather than four repeated
+  // property lists, so a builder gaining a field cannot reach some call sites
+  // and miss others.
+  const derivedFields = (sentence: DerivedChange) => ({
+    stateNoun: sentence.stateNoun,
+    direction: sentence.direction,
+    magnitude: sentence.magnitude,
+    storyWeight: sentence.storyWeight,
+  });
   if (growthApplied > 0 && growthDomain) {
     const sentence = growthSentence({
       actorName,
@@ -2055,6 +2069,7 @@ export function executeStepResult(
       title: `${reachDisplayName(growthDomain)} grew`,
       detail: sentence.detail,
       concepts: sentence.concepts,
+      ...derivedFields(sentence),
       polarity: 'gain',
       actorId: action.actorId,
       actorName,
@@ -2068,6 +2083,7 @@ export function executeStepResult(
       title: 'A new trait surfaced',
       detail: sentence.detail,
       concepts: sentence.concepts,
+      ...derivedFields(sentence),
       polarity: 'gain',
       actorId: action.actorId,
       actorName,
@@ -2087,6 +2103,7 @@ export function executeStepResult(
       title: 'Your standing shifted',
       detail: sentence.detail,
       concepts: sentence.concepts,
+      ...derivedFields(sentence),
       polarity: metadataReputationDelta > 0 ? 'gain' : 'loss',
       actorId: action.actorId,
       actorName,
@@ -2104,6 +2121,7 @@ export function executeStepResult(
       title: 'The checkpoint judged the intervention',
       detail: sentence.detail,
       concepts: sentence.concepts,
+      ...derivedFields(sentence),
       polarity: branchConsequence.reputationDelta > 0 ? 'gain' : 'loss',
       actorId: action.actorId,
       actorName,
@@ -2303,6 +2321,7 @@ export function executeStepResult(
       title: isStepSuccess(outcome) ? 'A reward changed hands' : 'The scene cost something tangible',
       detail: sentence.detail,
       concepts: sentence.concepts,
+      ...derivedFields(sentence),
       polarity: isStepSuccess(outcome) ? 'gain' : 'loss',
       actorId: action.actorId,
       actorName: currentActorName,
@@ -2323,6 +2342,7 @@ export function executeStepResult(
       title: 'Personal reputation shifted',
       detail: sentence.detail,
       concepts: sentence.concepts,
+      ...derivedFields(sentence),
       polarity: reputationDelta > 0 ? 'gain' : 'loss',
       actorId: action.actorId,
       actorName: currentActorName,
@@ -2349,6 +2369,7 @@ export function executeStepResult(
       title: `${afterMembership.factionName} changed its measure`,
       detail: sentence.detail,
       concepts: sentence.concepts,
+      ...derivedFields(sentence),
       polarity: delta > 0 ? 'gain' : delta < 0 ? 'loss' : 'mixed',
       actorId: action.actorId,
       actorName: currentActorName,
@@ -2371,6 +2392,7 @@ export function executeStepResult(
       title: 'Reputation memory deepened',
       detail: sentence.detail,
       concepts: sentence.concepts,
+      ...derivedFields(sentence),
       polarity: delta > 0 ? 'gain' : 'loss',
       actorId: action.actorId,
       actorName: currentActorName,
@@ -2381,24 +2403,28 @@ export function executeStepResult(
     const beforeGate = beforeSnapshot.clearanceGates.get(runtimeId);
     if (!beforeGate) continue;
     if (afterGate.state !== beforeGate.state) {
+      const sentence = gateStateSentence({
+        beforeState: beforeGate.state,
+        afterState: afterGate.state,
+      });
       aftermathChanges.push({
         id: `${action.actionId}:step:${action.currentStep}:gate:${runtimeId}:state`,
         kind: 'shell_state',
         title: 'The checkpoint changed state',
-        detail: gateStateSentence({
-          beforeState: beforeGate.state,
-          afterState: afterGate.state,
-        }).detail,
+        detail: sentence.detail,
+        ...derivedFields(sentence),
         polarity: 'info',
       });
     }
     const newTags = afterGate.followOnTags.filter(tag => !beforeGate.followOnTags.includes(tag));
     for (const tag of newTags) {
+      const sentence = gateFollowOnSentence(tag);
       aftermathChanges.push({
         id: `${action.actionId}:step:${action.currentStep}:gate:${runtimeId}:tag:${tag}`,
         kind: 'future_hook',
         title: 'A follow-on thread was seeded',
-        detail: gateFollowOnSentence(tag).detail,
+        detail: sentence.detail,
+        ...derivedFields(sentence),
         polarity: 'info',
       });
     }

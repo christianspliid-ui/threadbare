@@ -862,6 +862,59 @@ This one is a judgement call, not a regex. Run it by hand.
 
 ---
 
+## Consequences — cause → change (THR-1082)
+
+An aftermath's consequence chips are **authored and reserved**. They are not a report of
+everything the engine noticed; they are the handful of things this encounter was written
+to have happen. Christian's ruling, 2026-08-10: incidental stat drift *"takes away from
+the encounter story"* and no longer renders as a chip at all — the engine demotes it to
+an icon and a delta cluster automatically, and you never author it.
+
+So every chip you *do* write obeys four rules.
+
+**1. Cause → change, in that order, in one sentence.** The consequence never appears
+divorced from what caused it. Write the beat from the scene that produced it, then what
+it did:
+
+> *"Caught at the rail by a passing wanderer — Jorun the Wayfarer walks with her now."*
+
+The anti-example is a real line that shipped, and it is what this rule exists to prevent:
+
+> ❌ *"The bridge spent something on this crossing that it will not get back."*
+
+That sentence names no game state, no direction, and no cause a player watched happen.
+"Something" is not a consequence. A chip whose sentence could be pasted into any other
+encounter in the game is not a consequence either — it is filler wearing a chip's frame.
+
+**2. Name the state noun, and declare it.** Every chip declares `stateNoun`,
+`direction`, and `category` as structured fields — not as English for the surface to
+parse back out (Law 2). The noun is what appears on the tag: `SCAR · TWISTED ANKLE`.
+If you cannot name the noun, you do not yet have a consequence.
+
+**3. Pick the category the *character* would recognise**, not the mechanism:
+
+| Category | What it means |
+|---|---|
+| `scar` | What the trial cost them, on body or spirit — a wound, a debt, a confidence spent |
+| `bond` | Who now stands with them, or against them |
+| `boon` | What they earned, and *why* they earned it |
+| `path` | A way that has opened — nothing held yet, but the world has turned |
+
+There is no fifth bucket, and no "other". If a consequence fits none of the four, that is
+a signal the consequence is not personal enough to be one — not a signal the taxonomy
+needs widening. (A genuinely new category is a design decision with a plan-doc note, per
+CLAUDE.md's load-bearing rule on new types — never an ad-hoc addition.)
+
+**4. Draw from the whole palette.** All seven attachment categories (`possession`,
+`condition`, `blessing`, `curse`, `bestowed_power`, `agreement`, `spell`) are legitimate
+consequence material, alongside quintessence shifts (`quintessence_shift` — the "loss of
+confidence" shape), faction standing, and planted hooks. An injury is a `condition`
+attachment with a duration edge and a negative reach modifier; that is expressible today
+and needs no engine work. A corpus where every consequence is an item or a reputation
+delta is under-using the substrate, and the machine gates count palette breadth.
+
+---
+
 ## Reusable card faces, bespoke hands
 
 Pre-pivot, ruling 3 made every card per-encounter authored content with a narrow shared

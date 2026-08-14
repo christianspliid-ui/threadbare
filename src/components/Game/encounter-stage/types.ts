@@ -306,20 +306,86 @@ export type EncounterStageConsequenceKind =
 
 export type EncounterStageConsequenceTone = 'gain' | 'loss' | 'seed' | 'info';
 
+/**
+ * THR-1082 — the four story-first categories the player actually reads.
+ *
+ * This is the *display* truth; `EncounterStageConsequenceKind` above stays the
+ * wire truth and keeps its six members. Both survive on the model on purpose:
+ * renaming the wire kinds would mean a big-bang sweep of every test fixture in
+ * the aftermath suite for no gain, since the surface reads `category` and
+ * nothing reads `mark` any more.
+ *
+ * Mirrors `EncounterAftermathCategory` (`types/unifiedAction.ts`), which is what
+ * a producer declares. The adapter derives one when a producer declared none.
+ */
+export type EncounterStageConsequenceCategory = 'scar' | 'bond' | 'boon' | 'path';
+
+/**
+ * THR-1082 — the magnitude idiom: a small run of triangles, right-aligned.
+ *
+ * Replaces the adverb ("grew steadily") as the *headline* reading of how much
+ * changed. The adverb is not deleted — it moves into `sentenceText`, which
+ * becomes the chip's tooltip and aria text, so the word ladder still explains
+ * itself on hover while the glance-level answer is visual.
+ */
+export interface EncounterStageConsequenceDeltaModel {
+  /** `gain`/`loss` draw triangles; `opens` draws the scale-less PATH marker. */
+  direction: 'gain' | 'loss' | 'opens';
+  /** Triangles drawn — 1..`DELTA_CLUSTER_MAX`. Never 0: a change that happened draws at least one. */
+  count: number;
+  /**
+   * The whole reading in words, for `aria-label` and the hover tier — "Stone
+   * grew, a clear amount". Law 11: shape is the accessibility channel, colour
+   * the secondary one, and every glyph row states its reading in words.
+   */
+  label: string;
+}
+
 export interface EncounterStageConsequenceChipModel {
   id: string;
   kind: EncounterStageConsequenceKind;
   /** Short kind tag drawn on the chip (PRIZE / TOLL / STANDING / WOUND / SEED). */
   kindLabel: string;
+  /** THR-1082 — the story-first category the chip renders under. */
+  category: EncounterStageConsequenceCategory;
+  /** The category word drawn on the tag (SCAR / BOND / BOON / PATH). */
+  categoryLabel: string;
+  /**
+   * THR-1082 — the changed state, named. `SCAR · TWISTED ANKLE`. Absent when no
+   * producer declared a state noun, in which case the tag shows the category
+   * alone — the designed fallback, never a blank and never "something".
+   */
+  nounLabel?: string;
+  /** Icon-tile fallback glyph when neither an entity nor a reach resolves. */
+  categoryGlyph: string;
+  /**
+   * THR-1082 — the reach whose glyph tiles this chip, when the changed state is
+   * a reach. Drawn with `ReachIcon`, the encounter surface's own reach
+   * vocabulary (Law 9: one icon vocabulary per element class).
+   */
+  reachDomain?: string;
   /**
    * One sentence, pre-segmented so any named entity in it links to its page.
    * A sentence naming nothing linkable is a single plain segment — fail-open,
    * never a dead link.
    *
-   * Always authored prose. The chip surface never prints a magnitude: a toll is
-   * stated in words, per the nudge-model surface rules.
+   * The chip surface never prints a magnitude: a toll is stated in words, per
+   * the nudge-model surface rules.
    */
   sentence: EncounterStageNarrativeParagraph;
+  /**
+   * THR-1082 — plain text of `sentence`, for the compact chip's hover tier and
+   * aria text. The sentence is never destroyed, only demoted.
+   */
+  sentenceText: string;
+  /**
+   * THR-1082 — true when this change is incidental drift the engine noticed
+   * rather than a beat the encounter meant. Compact chips draw the tag and the
+   * cluster and *no sentence*, because "Vara's Stone grew steadily" on every
+   * ending is what pushed the actual story off the screen (Christian, 2026-08-10).
+   */
+  compact: boolean;
+  delta?: EncounterStageConsequenceDeltaModel;
   tone: EncounterStageConsequenceTone;
   /**
    * THR-1004 — the chip's entity image, per the UI Law. Present when the chip

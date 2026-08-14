@@ -511,6 +511,17 @@
   </div>
 
   <div class="section">
+    <h2>Spotlight — What the trial cost in spirit
+      <span class="lead">Audited 2026-08-12 (audit-on-touch, THR-1082). A quantity the engine had moved for four months and no encounter could ever spend.</span>
+    </h2>
+
+    <ul class="contracts">
+      <li class="live"><span class="flow">Authored consequence <span class="arrow">⟶</span> Quintessence — an encounter can finally charge a price in spirit rather than in coin</span><span class="chip live">LIVE</span>
+        <span class="note">THR-1082. Quintessence has moved since TB-075, but only ever under the engine's own hand — overchannel, encounter failure, doom, passive regen. <strong>No encounter could author a shift</strong>, so a scene written to shake someone had to spend a reputation delta or hand over an item as a stand-in for the thing that actually happened to them, which is how a consequence system ends up with a vocabulary narrower than its fiction. The new <code>quintessence_shift</code> aftermath effect closes that, and the load-bearing choice is what the applier <em>does not</em> do: <strong>it performs no arithmetic of its own.</strong> It queues the same <code>QuintessenceEvent</code> shape every other producer queues onto <code>pendingQuintessenceEvents</code>, and <code>phaseQuintessence</code> applies it next tick with its clamping, its dissolution check and its loss-prevention pass fully intact. Writing the property directly would have been faster and would have given encounters a second, subtly different set of rules for one quantity — the parallel-path failure this map exists to catch, and the exact shape of the <code>assignAmbitionToActor</code> error. Badged <strong>LIVE</strong> rather than LEAKED, which is a real distinction and not optimism: the effect member is dispatched by the shipped applier and reaches the shipped consumer, so a template authoring one today produces the behaviour. It is <em>reachable</em>, unlike its <code>grants</code> siblings above, which are wired to a card vocabulary no shipped card yet uses. Because <code>StepNudge.grants</code> reuses this same effect union (THR-885), nudge cards inherit the channel for free the moment card authoring begins. Surfaces as a SCAR when negative and a BOON when positive, and never as a number — <code>delta</code> is designer data and stays on the trace (Law 13).</span></li>
+    </ul>
+  </div>
+
+  <div class="section">
     <h2>How this map stays true
       <span class="lead">A hand-drawn diagram is a lie waiting to happen. This one is designed to become a projection.</span>
     </h2>

@@ -21,6 +21,7 @@ import {
   gateFollowOnSentence,
   gateStateSentence,
   growthSentence,
+  magnitudeBandIndex,
   magnitudeWord,
   overviewHighlightPhrase,
   reachDisplayName,
@@ -29,11 +30,43 @@ import {
   reputationTallySentence,
   rewardSentence,
   traitGrantedSentence,
+  type DerivedChange,
   OUTCOME_PHRASES,
   outcomePhrase,
   resetOutcomeWarnings,
 } from '../aftermathWords';
 import type { UnifiedActionOutcome } from '../../types/unifiedAction';
+
+describe('magnitude banding as an index (THR-1082)', () => {
+  it('runs ascending — rung 0 is the faintest, not the strongest', () => {
+    // The ladders are declared highest-first so `bandWord` can read them
+    // top-down; the index a display wants runs the other way. If this flip
+    // ever inverts, every cluster on the aftermath surface draws backwards
+    // while every sentence stays correct — a silent, plausible-looking bug.
+    expect(magnitudeBandIndex(0.9, GROWTH_MAGNITUDE_BANDS)).toBe(4);
+    expect(magnitudeBandIndex(0.005, GROWTH_MAGNITUDE_BANDS)).toBe(0);
+    expect(magnitudeBandIndex(0.05, GROWTH_MAGNITUDE_BANDS)).toBe(2);
+  });
+
+  it('agrees with the word ladder rung for rung', () => {
+    for (const bands of [GROWTH_MAGNITUDE_BANDS, REPUTATION_MAGNITUDE_BANDS, TALLY_MAGNITUDE_BANDS]) {
+      for (const [i, band] of bands.entries()) {
+        // `bands` is descending, so array index i is ascending rung length-1-i.
+        expect(magnitudeBandIndex(band.min, bands)).toBe(bands.length - 1 - i);
+        expect(magnitudeWord(band.min, bands)).toBe(band.word);
+      }
+    }
+  });
+
+  it('ignores sign, exactly as the word ladder does', () => {
+    expect(magnitudeBandIndex(-0.9, GROWTH_MAGNITUDE_BANDS))
+      .toBe(magnitudeBandIndex(0.9, GROWTH_MAGNITUDE_BANDS));
+  });
+
+  it('fails soft on a non-finite delta rather than returning NaN', () => {
+    expect(magnitudeBandIndex(Number.NaN, GROWTH_MAGNITUDE_BANDS)).toBe(0);
+  });
+});
 
 describe('magnitude banding', () => {
   it('bands reputation deltas by magnitude, ignoring sign', () => {
@@ -239,6 +272,108 @@ describe('every derived sentence builder is numeral-free', () => {
     }
 
     expect(offenders).toEqual([]);
+  });
+});
+
+// ─── THR-1082 — the structure survives the sentence ──────────────────
+
+describe('every derived builder returns the structure it spent on the sentence', () => {
+  /**
+   * The whole defect this ticket exists to fix is a builder computing the noun,
+   * the direction and the band, spending all three on English, and handing the
+   * surface a string it cannot draw. So the contract is asserted over the same
+   * enumerated builder set the numeral gate uses — a new builder that returns a
+   * bare sentence fails here rather than shipping a chip with no icon.
+   */
+  const BUILDERS: ReadonlyArray<readonly [string, DerivedChange]> = [
+    ['growth', growthSentence({ actorName: 'Vara', domain: 'star', applied: 0.2, tierCrossed: false })],
+    ['growth-tier', growthSentence({ actorName: 'Vara', domain: 'star', applied: 0.6, tierCrossed: true })],
+    ['trait', traitGrantedSentence({ actorName: 'Vara', traitLabel: 'Steady Hands' })],
+    ['reputation', reputationSentence({ actorName: 'Vara', delta: 0.05, flavour: 'authored' })],
+    ['faction', factionStandingSentence({
+      actorName: 'Vara', factionId: 'f1', factionName: 'The Mason Guild',
+      delta: 0.2, beforeRole: 'member', afterRole: 'member',
+    })],
+    ['faction-rank', factionStandingSentence({
+      actorName: 'Vara', factionId: 'f1', factionName: 'The Mason Guild',
+      delta: 0.2, beforeRole: 'member', afterRole: 'journeyman',
+    })],
+    ['tally', reputationTallySentence({ actorName: 'Vara', key: 'star.positive', delta: 2 })],
+    ['tally-authored', reputationTallySentence({ actorName: 'Vara', key: 'ac.guild_work', delta: 1 })],
+    ['reward', rewardSentence({ actorName: 'Vara', rewardName: 'Meditation Stones', gained: true })],
+    ['gate-state', gateStateSentence({ beforeState: 'closed_watchful', afterState: 'open' })],
+    ['gate-follow-on', gateFollowOnSentence('#witness_story_followed')],
+  ];
+
+  it('names a state noun with non-empty text', () => {
+    for (const [label, change] of BUILDERS) {
+      expect(change.stateNoun, label).toBeDefined();
+      expect(change.stateNoun.text.trim(), label).not.toBe('');
+    }
+  });
+
+  it('declares a direction rather than leaving it to be read out of the prose', () => {
+    for (const [label, change] of BUILDERS) {
+      expect(['gain', 'loss', 'opens'], label).toContain(change.direction);
+    }
+  });
+
+  it('keeps the sign of the delta in the direction', () => {
+    expect(reputationSentence({ actorName: 'Vara', delta: -0.2, flavour: 'authored' }).direction).toBe('loss');
+    expect(reputationSentence({ actorName: 'Vara', delta: 0.2, flavour: 'authored' }).direction).toBe('gain');
+    expect(rewardSentence({ actorName: 'Vara', rewardName: 'a scar', gained: false }).direction).toBe('loss');
+  });
+
+  it('bands magnitude into an ascending rung index of the named ladder', () => {
+    // Ascending: rung 0 is the faintest. This is the reverse of the array's own
+    // declaration order, and getting it backwards would silently draw the
+    // biggest changes as the smallest clusters.
+    const faint = growthSentence({ actorName: 'Vara', domain: 'star', applied: 0.005, tierCrossed: false });
+    const leap = growthSentence({ actorName: 'Vara', domain: 'star', applied: 0.9, tierCrossed: false });
+    expect(faint.magnitude).toEqual({ ladder: 'growth', band: 0 });
+    expect(leap.magnitude).toEqual({ ladder: 'growth', band: GROWTH_MAGNITUDE_BANDS.length - 1 });
+    expect(leap.magnitude!.band).toBeGreaterThan(faint.magnitude!.band);
+  });
+
+  it('bands each ladder against its own rungs', () => {
+    expect(reputationSentence({ actorName: 'Vara', delta: 0.5, flavour: 'authored' }).magnitude)
+      .toEqual({ ladder: 'reputation', band: REPUTATION_MAGNITUDE_BANDS.length - 1 });
+    expect(reputationTallySentence({ actorName: 'Vara', key: 'star.positive', delta: 9 }).magnitude)
+      .toEqual({ ladder: 'tally', band: TALLY_MAGNITUDE_BANDS.length - 1 });
+  });
+
+  it('omits magnitude where the change genuinely has no scale', () => {
+    // A trait is held or it is not; an item changed hands or it did not. The
+    // fail-soft table draws a single triangle for these rather than inventing
+    // a rung — EH's "impair" case: noun plus direction is legible with no scale.
+    expect(traitGrantedSentence({ actorName: 'Vara', traitLabel: 'Steady Hands' }).magnitude).toBeUndefined();
+    expect(rewardSentence({ actorName: 'Vara', rewardName: 'Stones', gained: true }).magnitude).toBeUndefined();
+    expect(gateStateSentence({ beforeState: 'closed', afterState: 'open' }).magnitude).toBeUndefined();
+  });
+
+  it('marks incidental drift incidental and story beats beats', () => {
+    // Christian's ruling, 2026-08-10: the drift that happens every encounter
+    // takes the story's place on screen, so it renders compact. A tier crossing
+    // or a faction renaming you is the encounter actually meaning something.
+    expect(growthSentence({ actorName: 'Vara', domain: 'star', applied: 0.2, tierCrossed: false }).storyWeight)
+      .toBe('incidental');
+    expect(growthSentence({ actorName: 'Vara', domain: 'star', applied: 0.2, tierCrossed: true }).storyWeight)
+      .toBe('beat');
+    expect(reputationSentence({ actorName: 'Vara', delta: 0.2, flavour: 'residual' }).storyWeight)
+      .toBe('incidental');
+    expect(factionStandingSentence({
+      actorName: 'Vara', factionId: 'f1', factionName: 'The Mason Guild',
+      delta: 0.2, beforeRole: 'member', afterRole: 'journeyman',
+    }).storyWeight).toBe('beat');
+    expect(rewardSentence({ actorName: 'Vara', rewardName: 'Stones', gained: true }).storyWeight)
+      .toBe('beat');
+  });
+
+  it('keeps the sentence, so the numeral gate still has one address', () => {
+    for (const [label, change] of BUILDERS) {
+      expect(change.detail.trim(), label).not.toBe('');
+      expect(containsNumeral(change.detail), label).toBe(false);
+    }
   });
 });
 

@@ -28,6 +28,7 @@ export {
 } from './Medallion';
 export { Modal } from './Modal';
 export { OddsPips, CostPips } from './OddsPips';
+export { DeltaCluster } from './DeltaCluster';
 export {
   RevealCard,
   REVEAL_CARD_MAX_WIDTH,

@@ -89,8 +89,13 @@ import type {
   EncounterAftermathConceptRef,
   EncounterAftermathReaction,
 } from '../../../../types/unifiedAction';
+// The bound lives with the component that draws the marks, so the adapter's
+// clamp and the renderer's clamp cannot drift to different numbers.
+import { DELTA_CLUSTER_MAX } from '../../../shared/DeltaCluster';
 import type {
+  EncounterStageConsequenceCategory,
   EncounterStageConsequenceChipModel,
+  EncounterStageConsequenceDeltaModel,
   EncounterStageConsequenceIconModel,
   EncounterStageConsequenceKind,
   EncounterStageConsequenceTone,
@@ -108,6 +113,150 @@ export const CONSEQUENCE_KIND_LABELS: Record<EncounterStageConsequenceKind, stri
   mark: 'MARK',
 };
 
+// ─── THR-1082 — the four story-first categories ──────────────────────
+
+/** The category word drawn on the tag. NFP #1: the vocabulary is data. */
+export const CONSEQUENCE_CATEGORY_LABELS: Record<EncounterStageConsequenceCategory, string> = {
+  scar: 'SCAR',
+  bond: 'BOND',
+  boon: 'BOON',
+  path: 'PATH',
+};
+
+/**
+ * Icon-tile fallback, drawn only when neither an entity nor a reach resolves.
+ *
+ * Keyed on the category union, so a fifth category added without a glyph is a
+ * *type error* rather than a blank tile (Law 9 — a new card type without an icon
+ * is a build failure, THR-890). Drawn from the card-glyph family already on the
+ * encounter surfaces rather than a new set.
+ */
+export const CONSEQUENCE_CATEGORY_GLYPHS: Record<EncounterStageConsequenceCategory, string> = {
+  scar: '✕',
+  bond: '◈',
+  boon: '✦',
+  path: '◆',
+};
+
+/**
+ * Band rung → triangles, per ladder.
+ *
+ * The ladders are 4–5 rungs deep and the display is three steps, so this is a
+ * deliberate collapse, not a mapping bug: the ladders stay full-depth as *data*
+ * (other systems band against them) and only the drawn cluster is coarsened.
+ * Index is the **ascending** rung `magnitudeBandIndex` returns — 0 is faintest.
+ */
+export const DELTA_CLUSTER_BAND_MAP: Record<'growth' | 'reputation' | 'tally', readonly number[]> = {
+  growth: [1, 1, 2, 3, 3],
+  reputation: [1, 1, 2, 3, 3],
+  tally: [1, 1, 2, 3],
+};
+
+/** Law 51 — the legend's dismissal outlives the session. */
+export const CONSEQUENCE_LEGEND_STORE_KEY = 'threadbare.ui.consequenceLegendSeen';
+
+/**
+ * Words for how big a drawn cluster reads. Law 11 requires every glyph row to
+ * state its reading in words; this is that reading, and it is deliberately
+ * *coarser* than the five-rung ladder because it describes the cluster the
+ * player can see, not the band the engine computed.
+ */
+export const DELTA_CLUSTER_WORDS: Record<number, string> = {
+  1: 'a slight amount',
+  2: 'a clear amount',
+  3: 'a great amount',
+};
+
+/**
+ * Fold a wire chip kind into its story category.
+ *
+ * The six display kinds were mechanical buckets; these four are what the change
+ * means to the character. MARK has no successor by design — "everything else"
+ * can never be story-legible, which is the whole reason it read as noise — so an
+ * unclassifiable change folds by **polarity** instead, and can never land in a
+ * fifth bucket.
+ */
+export function categoryForKind(
+  kind: EncounterStageConsequenceKind,
+  polarity: EncounterAftermathChangePolarity,
+): EncounterStageConsequenceCategory {
+  switch (kind) {
+    case 'prize':
+      return 'boon';
+    case 'standing':
+      return 'bond';
+    case 'toll':
+    case 'wound':
+      return 'scar';
+    case 'seed':
+      return 'path';
+    case 'mark':
+    default:
+      // The polarity rule inherits MARK's fail-soft duty.
+      if (polarity === 'gain') return 'boon';
+      if (isCost(polarity)) return 'scar';
+      return 'path';
+  }
+}
+
+/**
+ * Derive the drawn cluster from a change's declared direction and magnitude.
+ *
+ * Returns `undefined` only when the producer declared no direction at all —
+ * pre-THR-1082 authored content, which keeps rendering exactly as it did.
+ *
+ * Fail-soft (NFP #4): a change with a direction but *no* magnitude draws a
+ * single triangle rather than nothing. That is the Eldritch Horror "impair"
+ * case the design leans on — a noun plus a direction is legible with no scale,
+ * and an item either changed hands or it did not.
+ */
+export function deltaClusterFor(
+  change: EncounterAftermathChange,
+  nounText: string | undefined,
+): EncounterStageConsequenceDeltaModel | undefined {
+  if (!change.direction) return undefined;
+
+  if (change.direction === 'opens') {
+    return {
+      direction: 'opens',
+      count: 1,
+      label: nounText ? `${nounText} — a way opens` : 'A way opens',
+    };
+  }
+
+  let count = 1;
+  if (change.magnitude) {
+    const map = DELTA_CLUSTER_BAND_MAP[change.magnitude.ladder];
+    // Clamp rather than throw: a band index outside its ladder means a ladder
+    // grew a rung without this map following, which must not blank the chip.
+    const clamped = Math.max(0, Math.min(map.length - 1, Math.round(change.magnitude.band)));
+    if (!Number.isFinite(change.magnitude.band) || change.magnitude.band !== clamped) {
+      warnOnceOutOfRange(change.magnitude.ladder, change.magnitude.band);
+    }
+    count = map[clamped] ?? 1;
+  }
+  count = Math.max(1, Math.min(DELTA_CLUSTER_MAX, count));
+
+  const verb = change.direction === 'gain' ? 'rose' : 'fell';
+  const amount = DELTA_CLUSTER_WORDS[count] ?? DELTA_CLUSTER_WORDS[1];
+  return {
+    direction: change.direction,
+    count,
+    label: nounText ? `${nounText} ${verb}, ${amount}` : `${verb}, ${amount}`,
+  };
+}
+
+/** One warning per ladder, not one per chip — a broken map must not flood the console. */
+const warnedLadders = new Set<string>();
+function warnOnceOutOfRange(ladder: string, band: number): void {
+  if (warnedLadders.has(ladder)) return;
+  warnedLadders.add(ladder);
+  console.warn(
+    `[consequence] magnitude band ${band} is outside the '${ladder}' cluster map; clamped. `
+    + 'DELTA_CLUSTER_BAND_MAP has fallen behind its ladder in engine/aftermathWords.ts.',
+  );
+}
+
 /** A change polarity that means the bearer gave something up. */
 function isCost(polarity: EncounterAftermathChangePolarity): boolean {
   return polarity === 'loss' || polarity === 'mixed';
@@ -122,6 +271,37 @@ function toneFor(
   if (polarity === 'gain') return 'gain';
   if (isCost(polarity)) return 'loss';
   return 'info';
+}
+
+/** Flatten a segmented sentence back to text, for the compact chip's hover tier. */
+function paragraphText(paragraph: EncounterStageNarrativeParagraph): string {
+  return paragraph.segments.map(s => s.text).join('');
+}
+
+/**
+ * The tag's noun half, uppercased to sit beside the category word.
+ *
+ * Law 14: a key never reaches the player. The state noun arrives already
+ * resolved through the engine's display vocabularies (`reachDisplayName`,
+ * `describeTallyKey`), so this only cases it.
+ */
+function nounLabelFor(text: string | undefined): string | undefined {
+  const trimmed = text?.trim();
+  return trimmed ? trimmed.toUpperCase() : undefined;
+}
+
+/**
+ * A reach state-noun tiles with the reach glyph rather than an entity picture.
+ *
+ * Detected from the declared `reach.*` tooltip id, not by matching the display
+ * name against a word list — the producer already said what this concept is
+ * (Law 2), so reading it back out of English would be exactly the guess that
+ * law forbids.
+ */
+const REACH_TOOLTIP_PREFIX = 'reach.';
+function reachDomainFor(concept: EncounterAftermathConceptRef | undefined): string | undefined {
+  if (!concept?.tooltipId?.startsWith(REACH_TOOLTIP_PREFIX)) return undefined;
+  return concept.tooltipId.slice(REACH_TOOLTIP_PREFIX.length) || undefined;
 }
 
 /**
@@ -276,17 +456,42 @@ export function buildAftermathConsequences(
 
   for (const change of changes) {
     const kind = classifyChangeKind(change.kind, change.polarity);
+    // THR-1082 — the producer's declared category wins; absent, it is derived
+    // from the wire kind exactly as the display always did. That is what lets
+    // every pre-existing authored change render unmodified (NFP #6).
+    const category = change.category ?? categoryForKind(kind, change.polarity);
     const id = `consequence-${change.id}`;
     // THR-1004 — the UI Law. Concepts the producer declared get their tooltip
     // and their link in the sentence; the first that names an entity with art
     // becomes the chip's tile.
-    const sentence = applyConceptDecorations(link(id, enrich(change.detail)), change.concepts);
-    const iconConcept = change.concepts?.find(c => c.visualKind);
+    //
+    // THR-1082 — the cause clause leads when an author wrote one, because the
+    // consequence must never appear divorced from what caused it. One sentence,
+    // cause first: "Caught at the rail by a passing wanderer — Jorun walks with
+    // her now."
+    const causeClause = change.causeClause?.trim();
+    const body = causeClause ? `${causeClause} — ${change.detail}` : change.detail;
+    const sentence = applyConceptDecorations(link(id, enrich(body)), change.concepts);
+    // The state noun is the changed state itself and takes precedence for the
+    // tile; `concepts` merely decorates the sentence, so it is the fallback.
+    const iconConcept = (change.stateNoun?.visualKind ? change.stateNoun : undefined)
+      ?? change.concepts?.find(c => c.visualKind);
+    const nounText = change.stateNoun?.text;
     chips.push({
       id,
       kind,
       kindLabel: CONSEQUENCE_KIND_LABELS[kind],
+      category,
+      categoryLabel: CONSEQUENCE_CATEGORY_LABELS[category],
+      nounLabel: nounLabelFor(nounText),
+      categoryGlyph: CONSEQUENCE_CATEGORY_GLYPHS[category],
+      reachDomain: reachDomainFor(change.stateNoun),
       sentence,
+      sentenceText: paragraphText(sentence),
+      // Incidental drift renders as tag + cluster with no sentence. An author
+      // who wrote a cause clause meant it to be read, so it always overrides.
+      compact: change.storyWeight === 'incidental' && !causeClause,
+      delta: deltaClusterFor(change, nounText),
       tone: toneFor(kind, change.polarity),
       icon: iconConcept && resolveIcon ? resolveIcon(iconConcept) : undefined,
     });
@@ -304,11 +509,20 @@ export function buildAftermathConsequences(
       if (!label || seenSeedLabels.has(label)) continue;
       seenSeedLabels.add(label);
       const id = `consequence-seed-${reaction.id}-${seenSeedLabels.size}`;
+      const sentence = link(id, enrich(label));
       chips.push({
         id,
         kind: 'seed',
         kindLabel: CONSEQUENCE_KIND_LABELS.seed,
-        sentence: link(id, enrich(label)),
+        category: 'path',
+        categoryLabel: CONSEQUENCE_CATEGORY_LABELS.path,
+        categoryGlyph: CONSEQUENCE_CATEGORY_GLYPHS.path,
+        sentence,
+        sentenceText: paragraphText(sentence),
+        // A planted sequel is authored prose — it is the one thing on the
+        // surface that is purely story, so it always keeps its sentence.
+        compact: false,
+        delta: { direction: 'opens', count: 1, label: 'A way opens' },
         tone: 'seed',
       });
     }

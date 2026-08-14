@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { EncounterVeil } from '../EncounterVeil';
 import type { EncounterStageModel } from '../encounter-stage/types';
 
@@ -546,13 +546,21 @@ describe('aftermath mode', () => {
           id: 'c-prize',
           kind: 'prize',
           kindLabel: 'PRIZE',
+          category: 'boon',
+          categoryLabel: 'BOON',
+          categoryGlyph: '✦',
           sentence: { id: 'c-prize', segments: [{ text: 'A wrapped parcel changed hands.' }] },
+          sentenceText: 'A wrapped parcel changed hands.',
+          compact: false,
           tone: 'gain',
         },
         {
           id: 'c-seed',
           kind: 'seed',
           kindLabel: 'SEED',
+          category: 'path',
+          categoryLabel: 'PATH',
+          categoryGlyph: '◆',
           sentence: {
             id: 'c-seed',
             segments: [
@@ -561,19 +569,114 @@ describe('aftermath mode', () => {
               { text: ' falls due at the full moon.' },
             ],
           },
+          sentenceText: 'A promise made by Vasara falls due at the full moon.',
+          compact: false,
           tone: 'seed',
         },
       ],
     },
   };
 
-  it('renders a chip per consequence, tagged with its kind', () => {
+  it('renders a chip per consequence, tagged with its story category (THR-1082)', () => {
     render(<EncounterVeil {...defaultProps} model={chipModel} />);
     expect(screen.getByTestId('aftermath-consequences')).toBeInTheDocument();
+    // The wire kind still keys the testid — it is the engine's word for what
+    // changed, and the plan keeps it rather than sweeping every fixture.
     expect(screen.getByTestId('consequence-chip-prize')).toBeInTheDocument();
     expect(screen.getByTestId('consequence-chip-seed')).toBeInTheDocument();
-    expect(screen.getByText('PRIZE')).toBeInTheDocument();
-    expect(screen.getByText('SEED')).toBeInTheDocument();
+    // What the *player* reads is the story category. PRIZE/SEED were mechanical
+    // buckets; BOON/PATH say what the change meant to the character. Scoped to
+    // the chip because the first-contact legend names all four words too.
+    expect(within(screen.getByTestId('consequence-chip-prize')).getByText('BOON')).toBeInTheDocument();
+    expect(within(screen.getByTestId('consequence-chip-seed')).getByText('PATH')).toBeInTheDocument();
+    expect(screen.queryByText('PRIZE')).not.toBeInTheDocument();
+    expect(screen.queryByText('SEED')).not.toBeInTheDocument();
+  });
+
+  it('LAW 12: introduces the category vocabulary on first contact (THR-1082)', () => {
+    render(<EncounterVeil {...defaultProps} model={chipModel} />);
+    const legend = screen.getByTestId('consequence-legend');
+    expect(legend).toBeInTheDocument();
+    // All four words, so the player learns the vocabulary once rather than
+    // inferring it from whichever two categories this ending happened to use.
+    for (const word of ['SCAR', 'BOND', 'BOON', 'PATH']) {
+      expect(within(legend).getByText(word)).toBeInTheDocument();
+    }
+  });
+
+  // THR-1082 — the compact row. These assert the *surface*, not the adapter:
+  // that the veil actually draws a tag and a cluster and withholds the sentence
+  // for incidental drift, which is the change Christian's ruling asked for.
+  const compactModel: EncounterStageModel = {
+    ...aftermathModel,
+    aftermath: {
+      ...aftermathModel.aftermath!,
+      consequences: [
+        {
+          id: 'c-growth',
+          // `mark` is the *display* kind capability growth used to classify as —
+          // the retired bucket. Kept as the fixture's wire kind precisely so
+          // these assertions prove MARK no longer reaches the screen.
+          kind: 'mark',
+          kindLabel: 'MARK',
+          category: 'boon',
+          categoryLabel: 'BOON',
+          nounLabel: 'STONE',
+          categoryGlyph: '✦',
+          reachDomain: 'stone',
+          sentence: { id: 'c-growth', segments: [{ text: "Vara's Stone grew steadily." }] },
+          sentenceText: "Vara's Stone grew steadily.",
+          compact: true,
+          delta: { direction: 'gain', count: 2, label: 'Stone rose, a clear amount' },
+          tone: 'gain',
+        },
+      ],
+    },
+  };
+
+  it('names the changed state on the tag, so no chip says "something" (THR-1082)', () => {
+    render(<EncounterVeil {...defaultProps} model={compactModel} />);
+    const chip = screen.getByTestId('consequence-chip-mark');
+    expect(within(chip).getByText('BOON')).toBeInTheDocument();
+    expect(within(chip).getByText('STONE')).toBeInTheDocument();
+  });
+
+  it('withholds the sentence on a compact chip, keeping it in the hover tier (THR-1082)', () => {
+    render(<EncounterVeil {...defaultProps} model={compactModel} />);
+    // The adverb Christian called ungaugeable is off the screen...
+    expect(screen.queryByText(/grew steadily/)).not.toBeInTheDocument();
+    // ...but not destroyed: it rides the cluster's label, one hover away.
+    const cluster = screen.getByTestId('delta-cluster');
+    expect(cluster.getAttribute('aria-label')).toContain('Stone rose, a clear amount');
+    expect(cluster.getAttribute('aria-label')).toContain('grew steadily');
+  });
+
+  it('draws the magnitude as marks the eye can count, never a numeral (THR-1082)', () => {
+    render(<EncounterVeil {...defaultProps} model={compactModel} />);
+    const cluster = screen.getByTestId('delta-cluster');
+    expect(cluster).toHaveAttribute('data-count', '2');
+    expect(cluster.textContent).toBe('▲▲');
+    expect(cluster.textContent).not.toMatch(/\d/);
+  });
+
+  it('tiles a reach consequence with the shared reach glyph, not a guessed entity (THR-1082)', () => {
+    render(<EncounterVeil {...defaultProps} model={compactModel} />);
+    expect(screen.getByTestId('consequence-chip-reach-boon')).toBeInTheDocument();
+  });
+
+  it('falls back to the category glyph when neither entity nor reach resolves (THR-1082)', () => {
+    // `flesh` is tooltip-backed but has no icon in REACH_TO_SPHERE — the exact
+    // case that would render a glyph with an undefined sphere colour.
+    const fleshModel: EncounterStageModel = {
+      ...compactModel,
+      aftermath: {
+        ...compactModel.aftermath!,
+        consequences: [{ ...compactModel.aftermath!.consequences![0], reachDomain: 'flesh' }],
+      },
+    };
+    render(<EncounterVeil {...defaultProps} model={fleshModel} />);
+    expect(screen.queryByTestId('consequence-chip-reach-boon')).not.toBeInTheDocument();
+    expect(screen.getByTestId('consequence-chip-glyph-boon')).toBeInTheDocument();
   });
 
   it('names the planted follow-up in the seed chip', () => {
@@ -636,6 +739,9 @@ describe('aftermath mode', () => {
             id: 'c-standing',
             kind: 'standing',
             kindLabel: 'STANDING',
+            category: 'bond',
+            categoryLabel: 'BOND',
+            categoryGlyph: '◈',
             sentence: {
               id: 'c-standing',
               segments: [
@@ -644,6 +750,10 @@ describe('aftermath mode', () => {
                 { text: ' rose sharply.' },
               ],
             },
+            sentenceText: "Vara's standing rose sharply.",
+            // Not compact: this fixture exists to prove the sentence's concept
+            // words stay keyboard-reachable, which a compact chip has none of.
+            compact: false,
             tone: 'gain',
           },
         ],
