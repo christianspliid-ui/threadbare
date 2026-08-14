@@ -1,12 +1,12 @@
 # User Action Required
 
-**Last updated:** 2026-08-14 05:56 local (2026-08-14 03:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-14 06:58 local (2026-08-14 04:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
 ### 1. One attended session to finish the aftermath work — [THR-1082](https://linear.app/threadbare/issue/THR-1082) / [PR #1415](https://github.com/christianspliid-ui/threadbare/pull/1415)
 
-**Open a Claude Code session on the repo and say "finish THR-1082".** The session resolves the branch conflict, takes the full-size screenshot, and merges. Open 33 hours as of this update; the wait has since added a merge conflict in three files (two code, one generated), which the session also handles.
+**Open a Claude Code session on the repo and say "finish THR-1082".** The session resolves the branch conflict, takes the full-size screenshot, and merges. Open 34 hours as of this update; the wait has since added a merge conflict in three files (two code, one generated), which the session also handles.
 
 This is not a design or taste question — the new consequence chips are already built and your Law 13/15 sign-off is recorded. What is owed is the mechanical check that the new layout does not overflow or render off-screen, on two encounters across two outcome bands.
 
@@ -20,7 +20,7 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
-- 2026-08-14: **the mad-lib encounters are getting written, seven families deep.** Batches 6 and 7 drained **lead** (14 templates) and **acquire** (13) overnight ([THR-1101](https://linear.app/threadbare/issue/THR-1101), PRs [#1439](https://github.com/christianspliid-ui/threadbare/pull/1439)–[#1440](https://github.com/christianspliid-ui/threadbare/pull/1440)), on top of the deadly story beats, duel, build, trade and assist. 61 templates remain across four families; the ticket stays open for them.
+- 2026-08-14: **the mad-lib encounters are getting written, eight families deep and past the two-thirds mark.** Batch 8 drained **create** (13 templates, [PR #1441](https://github.com/christianspliid-ui/threadbare/pull/1441)), on top of lead, acquire, the deadly story beats, duel, build, trade and assist. **120 of 168 templates are now authored prose — 71%.** 48 remain across three families ([THR-1101](https://linear.app/threadbare/issue/THR-1101)); the ticket stays open for them.
 - 2026-08-13: **a ninth fix shipped without you.** Rites now take longer at higher tiers — a Legendary rite is no longer as quick as a Mundane one ([THR-1100](https://linear.app/threadbare/issue/THR-1100), [PR #1433](https://github.com/christianspliid-ui/threadbare/pull/1433)).
 - 2026-08-13: **an eighth demo-path fix shipped without you.** The prose abstraction detector stopped gating and started ranking ([THR-1092](https://linear.app/threadbare/issue/THR-1092), [PR #1432](https://github.com/christianspliid-ui/threadbare/pull/1432)).
 - 2026-08-13: **the aftermath *review* ask is withdrawn, under your own new rule.** Your ruling — *"i cannot evaluate gameplay before all elements of a system has been brought up to the same level. data, ui, content, logic"* — landed as [canon rule 5](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/canon/process.md) ([PR #1431](https://github.com/christianspliid-ui/threadbare/pull/1431)). The gameplay look stays withdrawn until [THR-1097](https://linear.app/threadbare/issue/THR-1097)'s content pass lands with it. (The *screenshot* half is a separate, mechanical gate and is now standing ask 1 above.)
