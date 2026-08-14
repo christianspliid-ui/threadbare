@@ -743,13 +743,16 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'eye',
         difficulty: DIFFICULTY_BASE,
         duration: 1,
-        narrative: '{actor} stands before a {adj} library. {They} must find a single answer hidden in {adj} volumes.',
+        // THR-1101: authored out of the `{adj}`/`{verb}` mad-lib shape (batch 13,
+        // scholarship-and-hearsay slice). Register: knowledge held by other
+        // people, with a price of admission.
+        narrative: 'The library runs four floors and has no catalogue anyone will admit to keeping. One answer is in it. The examiners have declined to say which floor.',
         onSuccess: {
-          narrative: '{actor}\'s intellect {verb}s through the stacks, finding the truth in a {adj} margin.',
+          narrative: 'It is not in the text. {actor} finds it in a margin, in a second hand, arguing with the author.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: '{actor} searches in vain. The answer remains hidden, and frustration echoes in the {adj} silence.',
+          narrative: 'The lamps are trimmed twice while {actor} reads. By dawn {they} can name eleven books that do not hold the answer, and the examiners write that down without comment.',
           reputationDelta: -0.02,
         },
       },
@@ -759,14 +762,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'veil',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 2,
-        narrative: 'A {adj} scholar poses a riddle that has confounded seekers for ages. {actor} must solve it.',
+        narrative: 'The scholar recites the riddle without looking up from the desk. It has been answered twice in sixty years, and both answers were accepted before anyone found the fault in them.',
         onSuccess: {
-          narrative: '{actor} unravels the {adj} knot of language and meaning, and the scholar nods with {adj} respect.',
+          narrative: '{actor} takes it apart at the joint where the grammar lies about the meaning. The scholar writes the answer down, which {actor} understands to be the larger compliment.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: '{actor}\'s answer rings false. The scholar shakes {their} head, and the riddle remains {adj} and unsolved.',
+          narrative: '{actor} gives an answer that holds for three clauses and then does not. The scholar calls it a good failure and does not write it down.',
           reputationDelta: -0.03,
         },
       },
@@ -776,9 +779,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'eye',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 3,
-        narrative: '{actor} must weave together {adj} theories into a coherent whole, creating new understanding from chaos.',
+        narrative: 'Four schools have argued this for a century without any of them being wrong. {actor} is asked to say what shape the argument has, which no one has done.',
         onSuccess: {
-          narrative: '{actor} achieves a {adj} insight that reshapes the academy\'s understanding of reality itself.',
+          narrative: '{actor} finds the assumption all four schools share and had never thought to name. The argument does not end. It moves, for the first time in a century, and the academy will be a long while forgiving that.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
           rewardPool: {
@@ -786,7 +789,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: '{actor}\'s synthesis collapses into {adj} contradiction. The academy rejects the work.',
+          narrative: 'The synthesis holds until the third reading, when two of its supports turn out to be the same support. The academy files the work politely. It will be useful to whoever tries this again in forty years.',
           reputationDelta: -0.08,
           rewardPool: {
             categoryWeights: { condition: 0.4, bestowed_power: 0.4, possession: 0.2 },
@@ -6132,13 +6135,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'eye',
         difficulty: HARD_DIFFICULTY_BASE,
         duration: 1,
-        narrative: 'The {adj} inscriptions are everywhere — walls, floors, lintels. But only some carry meaning. {actor} must find the {adj} primary text.',
+        // THR-1101 (batch 13, scholarship slice).
+        narrative: 'The carving covers walls, floors and lintels, and most of it was cut by masons who could not read it either. One surface is the text. The rest is border.',
         onSuccess: {
-          narrative: '{actor} isolates the {adj} main inscription beneath centuries of grime. The language is archaic but legible.',
+          narrative: '{actor} finds it by the spacing — the one panel where the carver left room for the words to be wrong. Under the grime the letters are sharp enough to argue with.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: '{actor} wastes hours on secondary texts. The {adj} primary inscription eludes them.',
+          narrative: '{actor} spends two days on a lintel and comes away with a clean, confident reading of a decorative border. It says the same four words forty-one times.',
           reputationDelta: -0.04,
         },
       },
@@ -6148,9 +6152,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'veil',
         difficulty: HARD_DIFFICULTY_BASE + HARD_DIFFICULTY_STEP,
         duration: 3,
-        narrative: 'Days of {adj} painstaking work. The language bends meaning around concepts that do not exist in living tongues.',
+        narrative: 'The grammar has a case for things done to you by the dead. No living tongue has needed one, so every rendering {actor} writes is a little bit of a lie.',
         onSuccess: {
-          narrative: '{actor} breaks the {adj} code. The inscription names the people who raised this place, and the year they walked away from it — a century before any record says they existed.',
+          narrative: '{actor} breaks it on the numerals. The inscription names the people who raised this place, and the year they walked away from it — a century before any record says they existed.',
           reputationDelta: 0.16,
           tierPromotionEligible: true,
           rewardPool: {
@@ -6159,7 +6163,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'The translation {verb}s beyond {actor}\'s reach. {They} capture fragments — {adj} tantalizing, incomplete.',
+          narrative: '{actor} gets four clauses out of nine. They are the four describing what was done — the subject and the reason both sit in the five that will not come.',
           reputationDelta: -0.06,
           rewardPool: {
             categoryWeights: { bestowed_power: 0.6, possession: 0.4 },
@@ -6475,13 +6479,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'eye',
         difficulty: MODERATE_DIFFICULTY_BASE - 5,
         duration: 1,
-        narrative: 'The hermit has lived {adj} alone in the wilderness for years. Finding them requires knowing which {adj} silence to listen to.',
+        // THR-1101 (batch 13, scholarship slice).
+        narrative: 'The hermit has been out here long enough to be good at it. Nobody keeps a camp this quiet by accident, and that is the first true thing anyone learns about the hermit.',
         onSuccess: {
-          narrative: '{actor} follows the {adj} signs — an old campfire, a tended grave — and finds the hermit at last.',
+          narrative: '{actor} follows the wrong signs for a day, then the right ones: a cold fire ring, a grave someone still weeds. The hermit is sitting where the smoke would not show.',
           reputationDelta: 0.04,
         },
         onFailure: {
-          narrative: 'The wilderness offers no {adj} trail. {actor} returns without finding the hermit.',
+          narrative: '{actor} walks four days of good country and finds only what the weather put there. The hermit may well have watched {them} go.',
           reputationDelta: -0.02,
         },
       },
@@ -6491,9 +6496,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'heart',
         difficulty: MODERATE_DIFFICULTY_BASE + MODERATE_DIFFICULTY_STEP - 5,
         duration: 2,
-        narrative: 'The hermit will not speak to just anyone. {actor} must show why {they} are {adj} worthy of what they seek.',
+        narrative: 'The hermit puts water on and asks nothing at all. The silence is the examination, and it runs as long as {actor} lets it run.',
         onSuccess: {
-          narrative: '{actor} sits with the hermit through a night of {adj} honest conversation and leaves holding a question that will not put itself down.',
+          narrative: '{actor} gives the true reason instead of the presentable one, and the night goes long. What {actor} carries back out is a question, not an answer, and it will not put itself down.',
           reputationDelta: 0.12,
           tierPromotionEligible: true,
           rewardPool: {
@@ -6502,7 +6507,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'The hermit finds {actor} {adj} unprepared, and talks about the weather until the fire burns down. Perhaps another time.',
+          narrative: 'The hermit talks about the weather until the fire burns down, kindly and at length. Walking back, {actor} works out that the examination ended early.',
           reputationDelta: -0.03,
           rewardPool: {
             categoryWeights: { bestowed_power: 0.7, condition: 0.3 },
@@ -6644,13 +6649,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'heart',
         difficulty: MODERATE_DIFFICULTY_BASE,
         duration: 2,
-        narrative: 'The pilgrimage demands {adj} genuine sacrifice — not just physical hardship, but something surrendered willingly. {actor} must decide what to offer.',
+        // THR-1101 (batch 13, scholarship slice).
+        narrative: 'The road is not the hard part. Custom is that a pilgrim gives up what they would rather keep, chooses it alone, and is never asked afterward what it was.',
         onSuccess: {
-          narrative: '{actor} makes the {adj} offering and feels the sacred path acknowledge them.',
+          narrative: '{actor} gives up the one {they} had been hoping would not count. The road afterwards is the same road and walks differently.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: '{actor}\'s offering {verb}s hollow against the {adj} demand of the sacred path.',
+          narrative: '{actor} offers up what was already spent. The road takes it, because the road takes everything, and the walk afterwards is exactly the walk before.',
           reputationDelta: -0.03,
         },
       },
@@ -6660,9 +6666,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'veil',
         difficulty: MODERATE_DIFFICULTY_BASE + MODERATE_DIFFICULTY_STEP,
         duration: 2,
-        narrative: 'The final approach to the {adj} holy site. The veil is thin here. {actor} must be entirely present — no deception, no guard, no mask.',
+        narrative: 'The last mile is walked without company. The veil is thin at the shrine, and thin things are poor at telling a guard apart from a lie.',
         onSuccess: {
-          narrative: 'The shrine {verb}s with quiet recognition. {actor} is received, and walks out carrying a stillness {they} did not bring in.',
+          narrative: 'The shrine does not do anything. {actor} is received all the same, and walks back out carrying a stillness {they} did not bring in.',
           reputationDelta: 0.12,
           tierPromotionEligible: true,
           rewardPool: {
@@ -6671,7 +6677,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'The shrine {verb}s silence. {actor} stands before it {adj} unrecognized, the pilgrimage incomplete.',
+          narrative: '{actor} stands in the doorway for an hour. The threshold does for {them} what it does for strangers, which is to stay a doorway, and there is no one to appeal to about it.',
           reputationDelta: -0.05,
           rewardPool: {
             categoryWeights: { bestowed_power: 0.6, condition: 0.4 },
@@ -6699,13 +6705,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'heart',
         difficulty: HARD_DIFFICULTY_BASE,
         duration: 1,
-        narrative: 'The texts are {adj} sacred and guarded. {actor} must persuade the custodians that their purpose is worthy of access.',
+        // THR-1101 (batch 13, scholarship slice).
+        narrative: 'The custodians do not refuse outright. They ask what {actor} intends to do with what is written there, and they have been asked that before by people who lied well.',
         onSuccess: {
-          narrative: 'The custodians grant {actor} access with {adj} cautious approval.',
+          narrative: '{actor} answers smaller than expected — one question, honestly bounded. A custodian unlocks the case and then stays in the room.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: 'The custodians find {actor}\'s purpose {adj} insufficient. Access is refused.',
+          narrative: '{actor} answers too well. The senior custodian thanks {them} for the interest and recommends the copies kept for visitors, which are accurate and say little.',
           reputationDelta: -0.04,
         },
       },
@@ -6715,9 +6722,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'eye',
         difficulty: HARD_DIFFICULTY_BASE + HARD_DIFFICULTY_STEP,
         duration: 4,
-        narrative: 'Days in the {adj} archive. The texts are layered — each reading {verb}s another meaning loose from the one before.',
+        narrative: 'Four days in a room with no window, by design. The text is layered, and each layer was written for a reader who had already survived the one above it.',
         onSuccess: {
-          narrative: '{actor} penetrates the {adj} outer doctrine and finds the deeper truth the texts were written to preserve.',
+          narrative: 'On the fourth day the outer doctrine stops being the point and becomes the lock. What it was keeping shut is shorter than {actor} expected, and worse.',
           reputationDelta: 0.14,
           tierPromotionEligible: true,
           rewardPool: {
@@ -6726,7 +6733,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'The {adj} depth of the texts defeats {actor}. They leave knowing only the surface doctrine.',
+          narrative: '{actor} leaves with the doctrine word-perfect and no sense of what it is for. The custodians are pleased. It is what most readers take away.',
           reputationDelta: -0.06,
           rewardPool: {
             categoryWeights: { bestowed_power: 0.7, condition: 0.3 },
@@ -7464,7 +7471,8 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'shadow',
         difficulty: UNIVERSAL_DIFFICULTY_BASE,
         duration: 1,
-        narrative: '{actor} lingers where voices gather — a well, a hearth, a crossroads. The {adj} art of seeming disinterested.',
+        // THR-1101 (batch 13, hearsay slice).
+        narrative: '{actor} takes up position where voices gather — a well, a hearth, a crossroads. The trick is having a reason to be there that nobody has to ask about.',
         onSuccess: {
           narrative: 'Fragments reach {their} ears — a name dropped carelessly, a warning half-whispered. {actor} files it all away.',
           reputationDelta: 0.02,
@@ -7480,7 +7488,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'eye',
         difficulty: UNIVERSAL_DIFFICULTY_BASE + UNIVERSAL_DIFFICULTY_STEP,
         duration: 1,
-        narrative: 'Rumor is a river of mud. {actor} pans for the {adj} glint of truth beneath the silt.',
+        narrative: 'Most of it is repeated, and repetition is not evidence. {actor} sorts for the detail nobody would have bothered to invent.',
         onSuccess: {
           narrative: 'One thread holds up. {actor} has learned something real — where to go, whom to trust, what to avoid.',
           reputationDelta: 0.03,
@@ -7991,7 +7999,8 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'eye',
         difficulty: UNIVERSAL_DIFFICULTY_BASE,
         duration: 1,
-        narrative: 'Old stones bear old marks — trade signs, boundary carvings, warnings worn {adj} by weather. {actor} searches for them.',
+        // THR-1101 (batch 13, scholarship slice).
+        narrative: 'Old stones carry old marks — trade signs, boundary cuts, warnings weathered down to a suggestion. {actor} works along the wall with a thumb.',
         onSuccess: {
           narrative: '{actor} finds what time almost erased — scratches in rock, paint faded to ghosts. Something was written here.',
           reputationDelta: 0.02,
@@ -8007,7 +8016,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'gold',
         difficulty: UNIVERSAL_DIFFICULTY_BASE + UNIVERSAL_DIFFICULTY_STEP,
         duration: 1,
-        narrative: 'Letters are meaningless without context. {actor} pieces the symbols together, drawing on {adj} memory and intuition.',
+        narrative: 'The letters mean little on their own. {actor} works out who cut them, and what such a person would have needed to say in a place like this.',
         onSuccess: {
           narrative: 'The markings resolve — a trader\'s waypoint, a miner\'s claim, a warning from another age. Knowledge earned.',
           reputationDelta: 0.03,
@@ -8890,13 +8899,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'heart',
         difficulty: AGNOSTIC_DIFFICULTY_BASE,
         duration: 1,
-        narrative: 'Every place has its gossips — the {adj} unofficial historians of the mundane. {actor} needs only find them and be worth talking to.',
+        // THR-1101 (batch 13, hearsay slice).
+        narrative: 'Every place keeps its own historians, and they are not the ones with the records. {actor} has to find them and then be worth the telling.',
         onSuccess: {
-          narrative: '{actor} is {adj} warmly received. The gossips talk freely, the words coming faster than expected.',
+          narrative: '{actor} is handed a stool before asking for one. The talk gets ahead of itself inside ten minutes.',
           reputationDelta: 0.02,
         },
         onFailure: {
-          narrative: '{actor} cannot find anyone {adj} willing to talk. The locals are close-mouthed today.',
+          narrative: 'The talk goes on around {actor} and never once toward {them}. It is not hostility. The locals simply have not decided yet.',
           reputationDelta: -0.01,
         },
       },
@@ -8906,9 +8916,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'shadow',
         difficulty: AGNOSTIC_DIFFICULTY_BASE + AGNOSTIC_DIFFICULTY_STEP,
         duration: 1,
-        narrative: 'Gossip is {adj} half-true at best. {actor} must parse what is real from what is wishful thinking or {adj} malicious invention.',
+        narrative: 'Half of it is wishful, a quarter is spite, and the rest has been improved in the retelling. {actor} works out which parts nobody had a motive to alter.',
         onSuccess: {
-          narrative: '{actor} finds the grain of {adj} truth in the grain of gossip. Something useful emerges.',
+          narrative: 'One account carries a detail that flatters none of the people repeating it. {actor} takes that one and leaves the rest where it lies.',
           reputationDelta: 0.03,
           rewardPool: {
             categoryWeights: { possession: 1.0 },
@@ -8916,7 +8926,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'The {adj} gossip is pure noise. {actor} leaves knowing only what people want to be true.',
+          narrative: 'Every account agrees, which is the trouble with them. {actor} leaves knowing what this place would prefer to be the case.',
           reputationDelta: -0.01,
         },
       },
@@ -11928,13 +11938,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'heart',
         difficulty: DIFFICULTY_BASE,
         duration: 1,
-        narrative: 'The mess hall after dark. {actor} nurses a cup and listens to the {adj} soldiers talk — complaints, boasts, rumours.',
+        // THR-1101 (batch 13, hearsay slice).
+        narrative: 'The mess hall after dark. {actor} nurses a cup and lets the talk go past — complaints, boasts, the same three stories the garrison tells about itself.',
         onSuccess: {
-          narrative: 'Between the grumbling and the lies, {actor} hears the {adj} truth: who commands respect, who commands fear, and what keeps the garrison awake.',
+          narrative: 'The complaints are the useful part. By the third round {actor} knows who is obeyed, who is only feared, and which watch nobody volunteers for.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: 'The soldiers clam up when {actor} sits down. Outsider. {adj} Trust takes longer than one night.',
+          narrative: 'The table goes quiet when {actor} sits, then starts up again on the weather. They are not unfriendly. They are simply not going to do this tonight.',
           reputationDelta: -0.02,
         },
       },
@@ -11944,14 +11955,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'shadow',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 1,
-        narrative: 'A casual question, a {adj} sympathetic nod. {actor} nudges the talk toward what {they} actually want to know.',
+        narrative: 'A question with the weight taken out of it, set down at the right moment. {actor} steers by agreeing with the wrong man at the right time.',
         onSuccess: {
-          narrative: 'Without realising it, the soldiers tell {actor} exactly what {they} need: troop strength, supply levels, the {adj} commander\'s weaknesses.',
+          narrative: 'Nobody notices doing it. Between them the table gives up troop strength, how long the stores last, and precisely which of the commander\'s orders get quietly rounded off.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: 'Too obvious. Someone changes the subject. {actor} drinks {their} cup and {adj} lets the silence stretch.',
+          narrative: 'One question too many, and a sergeant changes the subject with some skill. {actor} drinks the rest of the cup and lets it go. The table will remember the question longer than the answer.',
           reputationDelta: -0.03,
         },
       },
@@ -11961,9 +11972,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'heart',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 1,
-        narrative: 'Information is only as {adj} useful as the mind that holds it. {actor} organises what was overheard into patterns.',
+        narrative: 'Overheard talk is not intelligence until it has been arranged. {actor} sits with it afterwards and works out which pieces contradict each other.',
         onSuccess: {
-          narrative: '{actor} leaves the mess hall knowing more about this garrison than most of its {adj} officers. Knowledge is leverage.',
+          narrative: 'The contradictions are where the useful part was hiding. {actor} walks out understanding this garrison better than the officers who file reports on it.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
           rewardPool: {
@@ -11972,7 +11983,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'Too much noise, not enough signal. {actor} has {adj} gossip, not intelligence. There\'s a difference.',
+          narrative: 'It will not arrange. {actor} comes away with forty true statements and no idea which three matter, which is worse company than an empty notebook.',
           reputationDelta: -0.08,
         },
       },
