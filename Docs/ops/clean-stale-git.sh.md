@@ -178,8 +178,15 @@ check_home_node_modules() {
 # and it needs no node_modules itself, so it still runs on the tree it is repairing.
 # Never `set -e` around it — a repair failure must not abort the sweep.
 repair_home_node_modules() {
+  local script="$REPO/scripts/repair-donor-node-modules.ts"
   command -v node >/dev/null 2>&1 || { echo "donor-repair: skipped (node not on PATH)"; return 0; }
-  node --experimental-strip-types "$REPO/scripts/repair-donor-node-modules.ts" 2>&1 || true
+  # The script is tracked, so it arrives in this tree only once its PR has merged AND
+  # autosync has fast-forwarded. Between those two moments a bare call would print a
+  # Node stack trace every hour — and if autosync is itself stalled (THR-937), forever.
+  # Check for it rather than swallowing the failure, so the log says which of the two
+  # is missing instead of showing a resolver dump.
+  [ -f "$script" ] || { echo "donor-repair: skipped (script not in tree yet — merged and synced?)"; return 0; }
+  node --experimental-strip-types "$script" 2>&1 || true
 }
 
 # ---- 1. remove merged, work-free worktrees -------------------------------
