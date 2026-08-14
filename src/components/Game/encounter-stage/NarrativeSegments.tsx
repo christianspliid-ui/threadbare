@@ -37,11 +37,10 @@
  *   entity's own name — one small, gold-underlined, visually-marked exception
  *   rather than an ambiguous surface.
  *
- * `EncounterVeil`'s consequence-chip block renders the same three tiers inline
- * and should adopt this component, collapsing the two sites into one. It is not
- * done here because that block is inside the diff of held PR #1415 (THR-1082),
- * and rewriting it now would conflict with a PR that cannot merge until an
- * attended session runs its pixel pass. Tracked as THR-1105.
+ * `EncounterVeil`'s consequence-chip block adopted this component in THR-1105,
+ * once PR #1415 (THR-1082) landed and stopped the rewrite from conflicting.
+ * There is now one implementation of the three-tier rule and no second site;
+ * a surface that needs these tiers renders this rather than copying it.
  */
 
 import type { CSSProperties } from 'react';
