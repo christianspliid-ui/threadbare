@@ -195,10 +195,26 @@ describe('Law 43 regression lock — no encounter template leaks a word-pool tok
   it('the corpus does carry these tokens — the sweep is not vacuous', () => {
     // Guards against the empty-population pass: if the corpus ever stops using the
     // tokens, this assertion fails loudly rather than the sweep below passing on nothing.
+    //
+    // THR-1101 batch 8 (2026-08-14): the bound was `> 50`, and the `create` family's
+    // rewrite took the population 61 → 48. The ticket asks for this to be "lowered or
+    // retired deliberately" at that moment, so: lowered, and lowered to the contract
+    // rather than to the next snapshot.
+    //
+    // The contract is the sentence in the test name — at least one template carries a
+    // token, so the sweeps below have something to sweep. `50` was never that; it was
+    // the population on the day the guard was written, and a bound set to a population
+    // that is deliberately shrinking has to be re-argued every batch (a further four
+    // times, on the families still queued). `> 0` is the honest form of the same check.
+    //
+    // It also fails at the right moment. This campaign is driving the population to
+    // zero; when it lands there this assertion goes red and the guard is retired
+    // together with the corpus it guards, which is the correct end for it. Do not
+    // pre-emptively soften it to `>= 0` — that is the vacuous pass it exists to catch.
     const withTokens = ENCOUNTER_TEMPLATES.filter(t =>
       proseFields(t).some(f => WORD_POOL_TOKEN.test(f)),
     );
-    expect(withTokens.length).toBeGreaterThan(50);
+    expect(withTokens.length).toBeGreaterThan(0);
   });
 
   it('no enriched prose field in any encounter template contains a raw word-pool token', () => {
