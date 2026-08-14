@@ -1,12 +1,12 @@
 # User Action Required
 
-**Last updated:** 2026-08-14 17:56 local (2026-08-14 15:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-14 18:57 local (2026-08-14 16:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
 ### 1. Play the slice once and rule it — both verdict sessions are level
 
-One play session, two tickets, five verdicts. Every element of the system — data, logic, content, UI — is shipped and deployed, which is the bar your own rule 5 sets.
+One play session, two tickets, five verdicts. Every element of the system — data, logic, content, UI — is shipped and deployed, which is the bar your own rule 5 sets. Re-verified 2026-08-14 16:57 UTC against the live build, not inherited.
 
 - [**THR-907**](https://linear.app/threadbare/issue/THR-907/slice-verdict-session-christian-rules-on-prose-firing-ui-and-game) — prose, firing, UI, game feel. Cleared by [THR-1107](https://linear.app/threadbare/issue/THR-1107) ([PR #1450](https://github.com/christianspliid-ui/threadbare/pull/1450)), the 21 lines that read *"she stop"* for a he/she agent, `trial_by_combat` among them; and by the 13-batch mad-lib campaign [THR-1101](https://linear.app/threadbare/issue/THR-1101).
 - [**THR-974**](https://linear.app/threadbare/issue/THR-974/consequence-verdict-session-christian-rules-on-world-graph-consequence) — consequence. Cleared by logic ([THR-969](https://linear.app/threadbare/issue/THR-969)), data ([THR-1082](https://linear.app/threadbare/issue/THR-1082)), UI ([THR-971](https://linear.app/threadbare/issue/THR-971)) and content ([THR-1097](https://linear.app/threadbare/issue/THR-1097)).
@@ -23,6 +23,7 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
+- 2026-08-14: **the Codex stopped contradicting itself.** [THR-1103](https://linear.app/threadbare/issue/THR-1103) ([PR #1454](https://github.com/christianspliid-ui/threadbare/pull/1454)) — the browsable catalog at [`?view=codex`](https://threadbare.vercel.app/?view=codex) showed two different spellings of the same word. The residue it deliberately left — raw agreement and resource keys, three raw magnitudes — is filed as [THR-1113](https://linear.app/threadbare/issue/THR-1113) rather than quietly dropped.
 - 2026-08-14: **an engine ticket was closed by measuring instead of building.** [THR-1102](https://linear.app/threadbare/issue/THR-1102) (encounter tone tier) — the executor implemented the change as specified, then found zero live readers across all 683 templates and reverted it rather than add a field to a 278-importer type for nobody. The mad-lib campaign had already drained the tokens it was meant to feed. Awaiting a close, blocking nothing.
 - 2026-08-14: **the crossroads promise became a real thing the person holds.** [THR-1110](https://linear.app/threadbare/issue/THR-1110) ([PR #1451](https://github.com/christianspliid-ui/threadbare/pull/1451)) — an aftermath could name only two of the seven consequence categories; it can now grant all seven, so `agreement`, `blessing`, `curse`, `bestowed_power` and `spell` all became authorable. The granting machinery had been built and unused since the attachment-slot design; what was missing was an aftermath's ability to ask for it.
 - 2026-08-14: **the last thing standing between you and the full slice review is gone.** [THR-1107](https://linear.app/threadbare/issue/THR-1107) ([PR #1450](https://github.com/christianspliid-ui/threadbare/pull/1450)) — 21 encounter lines that rendered ungrammatically for a he/she agent, invisible to the token scan, invisible in the source, and green in the test suite. It shipped with a regression guard written to fail first. **This unblocked THR-907**, so both verdict sessions are now open together.
@@ -32,7 +33,6 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 - 2026-08-14: **the mad-lib encounters are all written — the campaign is complete.** Thirteen batches, closed by [PR #1446](https://github.com/christianspliid-ui/threadbare/pull/1446) ([THR-1101](https://linear.app/threadbare/issue/THR-1101)); the corpus check returns zero and the finished prose is deployed.
 - 2026-08-14: **the consequence icon language shipped, and the dam broke.** [PR #1415](https://github.com/christianspliid-ui/threadbare/pull/1415) ([THR-1082](https://linear.app/threadbare/issue/THR-1082)) — the ask you cleared with *"Finish thr-1082."* Two High tickets released behind it: [THR-1096](https://linear.app/threadbare/issue/THR-1096) and [THR-1097](https://linear.app/threadbare/issue/THR-1097).
 - 2026-08-13: **a ninth fix shipped without you.** Rites now take longer at higher tiers ([THR-1100](https://linear.app/threadbare/issue/THR-1100), [PR #1433](https://github.com/christianspliid-ui/threadbare/pull/1433)).
-- 2026-08-13: **the aftermath *review* ask was withdrawn, under your own new rule.** Your ruling — *"i cannot evaluate gameplay before all elements of a system has been brought up to the same level. data, ui, content, logic"* — landed as [canon rule 5](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/canon/process.md) ([PR #1431](https://github.com/christianspliid-ui/threadbare/pull/1431)). It is why both verdict sessions were held until they were level, and why they are being asked together now rather than one at a time.
 
 ---
 *Refreshed hourly by `keep-work-flowing-cc`. Full history of every prior version: `git log -p origin/ops -- Design/user-actions.md`.*
