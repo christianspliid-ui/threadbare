@@ -782,6 +782,31 @@ describe('aftermath mode', () => {
     });
   });
 
+  // ── Chip segments render through NarrativeSegments (THR-1105) ────
+  //
+  // All three tiers were already pinned before this block existed, and those
+  // assertions pass unchanged through the substitution — which is the evidence
+  // that matters: the click tier by `getByRole('button', { name: 'Vasara' })`
+  // (line ~700), which would *not* match had the chips been handed `nested`,
+  // since that draws a `role="link"` span rather than a button; the hover and
+  // plain tiers by the Law 17/21 cases just above. What is genuinely new is the
+  // per-segment test ids the shared renderer emits, so pin only that rather
+  // than restating coverage that already holds.
+  describe('chip segments through the shared renderer (THR-1105)', () => {
+    it('emits per-segment test ids so a chip sentence is inspectable (NFP #2)', () => {
+      render(<EncounterVeil {...defaultProps} model={chipModel} />);
+      const chip = screen.getByTestId('consequence-chip-seed');
+      expect(within(chip).getByTestId('consequence-chip-seed-seg-0')).toBeInTheDocument();
+      expect(within(chip).getByTestId('consequence-chip-seed-seg-1')).toHaveTextContent('Vasara');
+      expect(within(chip).getByTestId('consequence-chip-seed-seg-2')).toBeInTheDocument();
+    });
+
+    it('emits no segment ids for a compact chip, which draws no sentence (THR-1082 held)', () => {
+      render(<EncounterVeil {...defaultProps} model={compactModel} />);
+      expect(screen.queryByTestId('consequence-chip-mark-seg-0')).not.toBeInTheDocument();
+    });
+  });
+
   // ── Aftermath reactions (THR-1029) ───────────────────────────────
   //
   // Director review of `encounter.slice.unsafe_bridge`: a prompt asking which

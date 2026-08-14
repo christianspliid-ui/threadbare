@@ -21,7 +21,6 @@ import type {
   EncounterStageFalloutModel,
 } from './encounter-stage/types';
 import type { ReachDomain } from '../../types/traits';
-import { tooltipResolves } from '../../engine/tooltipResolver';
 import { usePrefersReducedMotion } from '../../hooks/usePrefersReducedMotion';
 import { NarrativeSegments } from './encounter-stage/NarrativeSegments';
 import { NudgePhaseShell } from './encounter-stage/shells/NudgePhaseShell';
@@ -862,64 +861,24 @@ export function EncounterVeil({
                         chip draws no sentence at all. The sentence is not lost —
                         it is the cluster's hover text and its aria label, so the
                         banded word ("grew steadily") is still one hover away. */}
-                    {chip.compact ? null : chip.sentence.segments.map((seg, i) => {
-                      // Clickable only where a page actually exists: a resolved
-                      // node id plus a host that wired a handler for *that kind*.
-                      // Anything else stays emphasised text — fail-open, never
-                      // a dead link.
-                      const open = openEntity(seg.entityId, seg.entityKind);
-                      // THR-1033 — and the same test for the *hover* tier: a
-                      // concept word earns its underline only if the registry
-                      // can explain it. Drawing it on the presence of an id
-                      // alone is what made every STANDING chip look live and do
-                      // nothing (Law 21).
-                      const explains = tooltipResolves(seg.tooltipId);
-                      const body = open ? (
-                        <button
-                          className="focus-ring"
-                          type="button"
-                          onClick={open}
-                          style={{
-                            background: 'none',
-                            border: 'none',
-                            padding: 0,
-                            font: 'inherit',
-                            color: GOLD,
-                            borderBottom: `1px solid ${GOLD_DIM}`,
-                            cursor: 'pointer',
-                          }}
-                        >
-                          {seg.text}
-                        </button>
-                      ) : (
-                        <span
-                          // Focusable only when it has something to say, so the
-                          // hover tier is reachable from the keyboard too — a
-                          // tooltip nobody can open is inert by another name
-                          // (Laws 17/23).
-                          className={explains ? 'focus-ring' : undefined}
-                          tabIndex={explains ? 0 : undefined}
-                          style={
-                            seg.referenceId || explains
-                              ? { color: TEXT_WARM, borderBottom: `1px solid ${GOLD_DIM}` }
-                              : undefined
-                          }
-                        >
-                          {seg.text}
-                        </span>
-                      );
-
-                      // THR-1004 — the UI Law's tooltip half. A concept word
-                      // explains itself where it is named; a segment with no
-                      // resolvable concept id renders as plain prose.
-                      return explains ? (
-                        <Tooltip key={i} id={seg.tooltipId}>
-                          {body}
-                        </Tooltip>
-                      ) : (
-                        <span key={i}>{body}</span>
-                      );
-                    })}
+                    {/* THR-1105 — the three-tier segment rule (click where a page
+                        exists, hover where the registry can explain, plain
+                        otherwise) is one rule, so it is drawn by one component.
+                        This block held a second inline copy until PR #1415 landed
+                        and freed it; the rules and the reasoning behind them now
+                        live in `NarrativeSegments.tsx` (Law 27). These chips sit
+                        outside any outer click target, so they take the default
+                        `nested={false}` and keep real `<button>` links. */}
+                    {chip.compact ? null : (
+                      <NarrativeSegments
+                        paragraph={chip.sentence}
+                        openEntity={openEntity}
+                        linkColor={GOLD}
+                        underlineColor={GOLD_DIM}
+                        plainColor={TEXT_WARM}
+                        testIdPrefix={`consequence-chip-${chip.kind}`}
+                      />
+                    )}
                   </span>
                   {/* THR-1082 — the magnitude idiom, right-aligned so the eye can
                       run down the column and read every change's size without
