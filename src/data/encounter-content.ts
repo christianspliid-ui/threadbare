@@ -2004,13 +2004,17 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'heart',
         difficulty: DIFFICULTY_BASE,
         duration: 1,
-        narrative: '{actor} seeks to recruit {adj} fighters for a militia. {They} must identify who has {adj} potential.',
+        // THR-1101: authored out of the `{adj}`/`{verb}` mad-lib shape (hire-family batch).
+        // Register: a hire buys a promise, and the promise is only priced when keeping it
+        // costs the hired party something. Calibrated against `encounter.trial_by_combat`
+        // (THR-1036). Militia are the family's cheapest contract and its least enforceable.
+        narrative: 'The call goes out at the mill and again at the well. {actor} watches who comes: a smith\'s daughter with a cooper\'s forearms, two brothers who arrive already arguing, an old man who fought once and wants to be asked again. Half of them are here because the harvest is in and the winter is long.',
         onSuccess: {
-          narrative: '{actor} spots {adj} candidates with {adj} promise. The selection begins with {adj} enthusiasm.',
+          narrative: '{actor} takes eleven and turns away nine, and does it in the open so the reasons are on the record. The nine grumble. The eleven stand straighter for having been chosen in front of witnesses.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: '{actor}\'s recruitment call falls {adj}. Few answer, and those who do seem {adj} and uncertain.',
+          narrative: 'Six come forward, and two of those are boys lying about their age. {actor} takes the four who are not, and does not say aloud that four is not a militia.',
           reputationDelta: -0.02,
         },
       },
@@ -2020,14 +2024,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'iron',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 2,
-        narrative: '{actor} must train the {adj} recruits into {adj} fighters, pushing them beyond {their} limits.',
+        narrative: 'A militia is not made of willing people. It is made of people who will hold a line on the third bad day. {actor} drills them in the stubble field until the shapes stop being instructions and start being habits.',
         onSuccess: {
-          narrative: '{actor}\'s training {verb}s the recruits into {adj} warriors. They move with {adj} discipline.',
+          narrative: 'By the eighth day they form up without being told twice, and the brothers have stopped arguing where the others can hear. It is not discipline yet. It is the habit that discipline is built out of.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: '{actor}\'s methods are {adj}. The recruits {verb} away, and the militia {verb}s apart.',
+          narrative: '{actor} pushes past what farmers will take from an outsider. Three stop coming. The rest keep coming and keep their hands in their pockets, which is worse than the three.',
           reputationDelta: -0.03,
         },
       },
@@ -2037,14 +2041,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'heart',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 1,
-        narrative: '{actor} must secure the militia\'s commitment to {adj} purpose. Will they follow unto {adj} battle?',
+        narrative: 'Drill is cheap. {actor} asks them to swear to muster when the horn goes — in weather, at night, with the crop standing in the field. Every face in the line does the arithmetic.',
         onSuccess: {
-          narrative: '{actor}\'s oath {verb}s {adj} and true. The militia kneel, {their} loyalty now {adj} and absolute.',
+          narrative: 'They swear one at a time rather than together, which takes most of an afternoon and means more for taking it. The old man swears last and holds {actor}\'s wrist a moment afterward, a soldier\'s habit older than the oath.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: '{actor}\'s oath rings {adj}. The militia {verb}s and scatters, refusing to commit.',
+          narrative: 'The oath asks for the crop, and they will not give the crop. They will muster if the fighting reaches their own fields and not a mile past, and they say so to {actor}\'s face without shame. It is a fence, not a militia.',
           reputationDelta: -0.08,
         },
       },
@@ -2068,13 +2072,16 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'gold',
         difficulty: DIFFICULTY_BASE,
         duration: 1,
-        narrative: '{actor} seeks a {adj} mercenary band. {They} must approach with the {adj} offer.',
+        // THR-1101: authored out of the mad-lib shape (hire-family batch). Mercenaries are
+        // the family thesis at its plainest — coin buys attendance, and the contract is
+        // tested on the day walking away pays better than staying.
+        narrative: 'The band is camped where the road forks, which is a decision about tolls as much as water. {actor} comes in daylight, alone, with the coin visible and the terms short. The captain lets {them} stand a while before a stool is pushed out with a boot.',
         onSuccess: {
-          narrative: '{actor}\'s offer catches {their} interest. The captain leans forward with {adj} curiosity.',
+          narrative: 'The captain hears the number and does not laugh, which is the whole of the first hurdle. A cup is filled without being asked for. The talking starts.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: '{actor}\'s offer is {adj}. The captain dismisses {them} with a {adj} laugh.',
+          narrative: 'The number is low enough to be an insult, and {actor} learns this from the captain\'s face before the sentence is finished. The stool stays where it is. The camp goes back to its business around {them}.',
           reputationDelta: -0.02,
         },
       },
@@ -2084,14 +2091,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'iron',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 2,
-        narrative: '{actor} must negotiate with the {adj} captain, proving {their} worth and {their} cause.',
+        narrative: 'The captain has forty swords and a reputation for delivering exactly what was paid for, no less and never more. {actor} argues over the line where the contract ends, which is where the argument always is.',
         onSuccess: {
-          narrative: '{actor} {verb}s the captain\'s doubts. The mercenaries agree to serve, {adj} and willing.',
+          narrative: 'They settle it in writing: what the band will do, what it will not, and what happens if the fighting outlasts the coin. The captain signs, and remarks that most employers skip the third clause and are surprised later.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: '{actor}\'s negotiation {verb}s into {adj} conflict. The mercenaries refuse and turn {their} blades.',
+          narrative: '{actor} presses for a clause the captain will not sell — an obligation that outlasts the payment. The captain stands. Two of the band drift in behind {actor}\'s shoulder, unhurried, and the terms of the conversation change.',
           reputationDelta: -0.03,
         },
       },
@@ -2101,14 +2108,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'gold',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 1,
-        narrative: '{actor} must ensure the mercenaries\' loyalty will hold through {adj} trials. Will {they} betray?',
+        narrative: 'The band takes half in advance, which is standard, and half on completion, which is where employers get clever and mercenaries get careful. {actor} has to decide how much of the second payment to hold back.',
         onSuccess: {
-          narrative: '{actor} seals the pact with {adj} payment and {adj} purpose. The mercenaries are {their}s, {adj} and true.',
+          narrative: '{actor} pays a third of the remainder early and unasked. The captain does the arithmetic aloud — the band now loses more by leaving than by staying — and grins at having been handled well. Loyalty is not what the coin buys. The price of walking is.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: '{actor}\'s loyalty falls {adj}. The mercenaries take the payment and {verb} into the night.',
+          narrative: '{actor} holds the entire balance to the end, which is prudent and reads as distrust. The band honours the letter of the contract for eleven days. On the twelfth a better offer arrives from the other side, and the letter of the contract has no clause about that.',
           reputationDelta: -0.08,
         },
       },
@@ -2132,13 +2139,16 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'heart',
         difficulty: DIFFICULTY_BASE,
         duration: 1,
-        narrative: '{actor} must present {themselves} to a {adj} noble and make a {adj} first impression.',
+        // THR-1101: authored out of the mad-lib shape (hire-family batch). The court is the
+        // family run backwards — here the noble is the buyer, and the price is quoted in
+        // obligations rather than coin.
+        narrative: 'The audience runs the length of a candle-mark and {actor} is fourth in a line of six. The three ahead are all asking for money. {actor} spends the wait learning what boredom looks like on this particular face, so as to recognise it later.',
         onSuccess: {
-          narrative: '{actor}\'s presentation is {adj}. The noble\'s eyes glimmer with {adj} interest.',
+          narrative: '{actor} states the case in under a minute and stops talking while the noble is still interested. The candle has barely moved. The noble asks a question — the first real one of the afternoon — and the steward reaches for a pen.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: '{actor}\'s presentation is {adj}. The noble\'s gaze turns to {adj} disinterest.',
+          narrative: '{actor} talks well past the point where the case was already made. The noble\'s attention withdraws in stages, politely, and by the end is being performed for the room. The steward\'s pen does not move.',
           reputationDelta: -0.02,
         },
       },
@@ -2148,14 +2158,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'gold',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 2,
-        narrative: '{actor} must demonstrate {their} worth to the noble, {adj} and without doubt.',
+        narrative: 'Claims are cheap in a hall built to receive them. The noble sets {actor} a real problem out of the estate\'s own accounts — a mill that has lost money for two years under three different managers — and allows until evening.',
         onSuccess: {
-          narrative: '{actor}\'s demonstration {verb}s the noble\'s {adj} expectations. {They} nod with {adj} approval.',
+          narrative: '{actor} has it by supper: the mill is sound, and the cartage contract is the theft. The noble reads the page twice, then looks up with the expression of a person revising an estimate upward.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: '{actor}\'s demonstration is {adj}. The noble finds {them} {adj} and unworthy.',
+          narrative: '{actor} presents an answer that is tidy, plausible, and about the wrong half of the ledger. The noble declines to correct {them} in front of the room, which is a courtesy, and asks no second question, which is the verdict.',
           reputationDelta: -0.03,
         },
       },
@@ -2165,14 +2175,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'heart',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 1,
-        narrative: 'The noble offers {actor} a {adj} position, but at a {adj} price. Will {actor} accept {their} terms?',
+        narrative: 'The offer, when it comes, is generous, and it is a leash. Retainer, lodging, the house\'s name standing behind {actor}\'s own — and the house\'s enemies inherited entire, and the expectation that {they} will be in this hall whenever the hall calls.',
         onSuccess: {
-          narrative: '{actor} accepts the position with {adj} grace. The noble binds {them} to service, {adj} and honored.',
+          narrative: '{actor} takes the position and negotiates two days a month that belong to no one but {them}. The noble allows it, amused, and has it entered in the book. Both parties understand that being written down is what makes it real.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: '{actor} cannot accept the {adj} price. The noble {verb}s in rage, and {their} patron is forever lost.',
+          narrative: '{actor} will not hand over the calendar, and the noble will not pay a retainer to a servant who keeps a door open. The refusal is received courteously and remembered precisely. The house\'s name goes to a candidate with fewer conditions attached.',
           reputationDelta: -0.08,
         },
       },
@@ -2195,13 +2205,16 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'spirit',
         difficulty: DIFFICULTY_BASE,
         duration: 1,
-        narrative: '{actor} seeks to summon a {adj} spirit and bind it to {their} service. The ritual begins.',
+        // THR-1101: authored out of the mad-lib shape (hire-family batch). Same arithmetic as
+        // the mercenary contract, with a counterparty that reads the terms more carefully
+        // than the employer does. Uncanny, not pyrotechnic — the register canon's hard rule.
+        narrative: '{actor} sets the circle in the old manner: salt, iron filings, and the name spoken once and not repeated. The temple is cold when {they} begin{s} and stays exactly as cold. Calling is the easy half. Being worth an answer is the other.',
         onSuccess: {
-          narrative: '{actor}\'s summoning {verb}s {adj} through the veil. A spirit answers, {adj} and present.',
+          narrative: 'The candle flames lean in toward the circle against the draught, and go on leaning. What has come does not show itself. It waits to hear why it was disturbed.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: '{actor}\'s summoning is {adj}. No spirit answers, and only {adj} silence replies.',
+          narrative: 'The circle holds and the room stays as it was. {actor} speaks the name a second time, which the old manner forbids, and the silence that follows has the quality of having been considered and declined.',
           reputationDelta: -0.02,
         },
       },
@@ -2211,14 +2224,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'veil',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 2,
-        narrative: '{actor} must negotiate with the {adj} spirit, offering what it desires in exchange for service.',
+        narrative: 'The spirit wants what it cannot reach unaided, and it will not name that until {actor} has offered first. Every offer teaches it more about {actor} than {they} learn{s} in return.',
         onSuccess: {
-          narrative: '{actor}\'s offer {verb}s the spirit\'s {adj} heart. It agrees to serve with {adj} binding words.',
+          narrative: 'They settle on years — a count of {actor}\'s own, paid at the end rather than the beginning. The spirit accepts with an eagerness that {actor} files away to examine later.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: '{actor}\'s offer is {adj}. The spirit laughs and {verb}s back through the veil.',
+          narrative: '{actor} offers memory, then blood, then service, and each is declined with the patience of a creature that has nowhere else to be. The last refusal comes with a suggestion of what would be accepted instead. {actor} has not the stomach for it.',
           reputationDelta: -0.03,
         },
       },
@@ -2228,14 +2241,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'spirit',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 1,
-        narrative: '{actor} must seal the binding with a {adj} oath, tying the spirit to {their} will.',
+        narrative: 'The binding is one sentence and every word of it bears load. {actor} must say what the spirit will do, for how long, and on what release — aloud, once, with no correction permitted afterward.',
         onSuccess: {
-          narrative: '{actor}\'s oath {verb}s eternal. The spirit is bound, {adj} and obedient, forever in {actor}\'s service.',
+          narrative: '{actor} names the terms cleanly and leaves no clause to lean on. The cold goes out of the room all at once. What remains is bound, and attends, and is not tame.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: 'The binding {verb}s. The spirit breaks free and flees, leaving {actor} {adj} and powerless.',
+          narrative: '{actor} says "until I have no further need of you" and hears the flaw in it a heartbeat too late. The binding takes. It will hold for precisely as long as the spirit agrees the need is real, and the spirit is now the judge of that.',
           reputationDelta: -0.08,
         },
       },
@@ -2259,13 +2272,15 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'spirit',
         difficulty: DIFFICULTY_BASE,
         duration: 1,
-        narrative: '{actor} preaches to the {adj} faithful, stirring {their} {adj} hearts.',
+        // THR-1101: authored out of the mad-lib shape (hire-family batch). The unpaid hire —
+        // belief is the currency here, which makes it cheap to raise and impossible to bank.
+        narrative: 'The temple seats ninety and about sixty come, most of them out of habit rather than heat. {actor} has one sermon in which to turn attendance into intent, and this congregation has sat through a great many sermons.',
         onSuccess: {
-          narrative: '{actor}\'s sermon {verb}s {adj} and true. The faithful rise, {their} faith {adj} and absolute.',
+          narrative: '{actor} stops preaching about the god and starts preaching about the road outside, and the room changes temperature. Afterward nobody leaves promptly. They stand in the aisle asking what happens next.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: '{actor}\'s sermon rings {adj}. The faithful remain {adj}, unconvinced.',
+          narrative: 'The sermon is correct in every particular and moves no one. The congregation files out on time and kindly, the manner of a room emptying after a duty has been discharged.',
           reputationDelta: -0.02,
         },
       },
@@ -2275,14 +2290,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'heart',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 2,
-        narrative: '{actor} must organize the faithful into {adj} followers, giving {their} fervor {adj} direction.',
+        narrative: 'Fervour keeps badly. {actor} has until the week takes the heat out of them to give sixty willing people specific work with names written against it.',
         onSuccess: {
-          narrative: '{actor}\'s organization {verb}s the faithful into {adj} unity. They move as one, {adj} and devoted.',
+          narrative: 'By the third day there is a roster, a store of grain in the undercroft, and an argument about who holds the keys — which {actor} counts as the best of the three signs. People argue about keys once the work has become theirs.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: '{actor}\'s organization is {adj}. The faithful scatter, {their} fervor {verb}s into dissent.',
+          narrative: '{actor} keeps every decision in {their} own hands, and sixty people stand about waiting to be told. Willingness does not survive going unused. By the week\'s end it is thirty, and the thirty have come to watch.',
           reputationDelta: -0.03,
         },
       },
@@ -2292,14 +2307,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'spirit',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 1,
-        narrative: '{actor} must send the faithful on a {adj} mission. Will {they} follow unto {adj} trials?',
+        narrative: 'The ask is real now: a fortnight\'s walk, at their own cost, to a place with a reputation. {actor} puts it to them plainly rather than beautifully, because they will be a long distance from the beautiful version by the time it gets hard.',
         onSuccess: {
-          narrative: '{actor}\'s mission {verb}s {adj} devotion. The faithful march, {their} faith {adj} and unbreakable.',
+          narrative: 'Twenty-two go, and they are not the twenty-two {actor} expected — the loudest stay home and the quiet ones pack. They leave before dawn to avoid a send-off. Faith that declines an audience is the kind that arrives.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: '{actor}\'s mission asks too much. The faithful {verb} and scatter, {their} devotion {adj} and broken.',
+          narrative: '{actor} asks for the fortnight and the room finds its reasons: the season, the children, a duty at home. None of the reasons are lies. The congregation keeps its faith, and keeps it here, where it costs a morning a week.',
           reputationDelta: -0.08,
         },
       },
@@ -2323,13 +2338,16 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'star',
         difficulty: DIFFICULTY_BASE,
         duration: 1,
-        narrative: '{actor} seeks a {adj} guide who knows the {adj} terrain. {They} must find someone {adj} and trustworthy.',
+        // THR-1101: authored out of the mad-lib shape (hire-family batch). The family's
+        // cheapest contract and the one whose counterparty is hardest to test before the
+        // money is spent — competence here is only demonstrable once it is too late to shop.
+        narrative: 'Four people at the waystation claim the route, and three of them claim it confidently. {actor} listens for the one who mentions the dull parts — which water is reliable, which stretch takes two days rather than the one it looks like.',
         onSuccess: {
-          narrative: '{actor} finds a {adj} guide with {adj} knowledge. {They} agree to meet.',
+          narrative: 'The guide {actor} settles on is the one who talked about grass: where it fails in a dry year, and what that does to the timing. It is knowledge a person only gets by having been out there in one.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: '{actor}\'s search yields only {adj} guides. Their knowledge is {adj} and unreliable.',
+          narrative: '{actor} hires the confident one. The confidence survives the first day, which is flat and well-marked and contains no test at all.',
           reputationDelta: -0.02,
         },
       },
@@ -2339,14 +2357,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'gold',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 2,
-        narrative: '{actor} must negotiate a {adj} price with the guide. Both parties must find {adj} terms.',
+        narrative: 'The guide asks a flat fee, half in advance. {actor} counters with less in advance and a bonus on arrival — the same coin, arranged so that some of it still matters on the fourth day.',
         onSuccess: {
-          narrative: '{actor} negotiates {adj} deal. The guide agrees to serve with {adj} enthusiasm.',
+          narrative: 'They settle slightly above what {actor} wanted and comfortably short of insult, with the bonus tied to the day of arrival rather than the fact of it. The guide starts talking about the route unprompted, which is the first work done for free.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: '{actor}\'s negotiation is {adj}. The guide demands {adj} price or refuses to serve.',
+          narrative: 'The haggling runs three rounds past where it should have stopped, and {actor} wins the rate. The guide takes the job at a price {they} resent{s} being offered, and resentment is a poor navigator.',
           reputationDelta: -0.03,
         },
       },
@@ -2356,14 +2374,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'star',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 1,
-        narrative: '{actor} travels with the guide through {adj} terrain. Will {they} stay the course?',
+        narrative: 'On the fourth day the route stops matching the ground under it. {actor} has to judge whether the guide is wrong or the season has moved the water since the last crossing — and the guide is the only source of either answer.',
         onSuccess: {
-          narrative: '{actor}\'s journey {verb}s {adj}. The guide proves {adj} and {their} knowledge {adj}.',
+          narrative: 'The guide admits to being uncertain before the uncertainty gets expensive. They lose half a day locating the crossing instead of two days committing to the wrong one. {actor} pays the bonus at the gate and asks about the return leg.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: '{actor}\'s journey becomes {adj}. The guide {verb}s away or proves {adj} and unreliable.',
+          narrative: 'The guide holds to the described route for another day and a half rather than own a bad turn. They arrive four days late and short of water, and the fee is the smallest part of what the delay costs {actor}.',
           reputationDelta: -0.08,
         },
       },
@@ -5217,13 +5235,15 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'gold',
         difficulty: DIFFICULTY_BASE,
         duration: 1,
-        narrative: 'The agreement is past due. {actor} presents the ledger to the debtor, who {verb}s a {adj} excuse and {adj} stalling. Every word is a delay.',
+        // THR-1101: wedged tokens removed (hire-family batch). The authored bones were sound;
+        // the `{adj}`/`{verb}` slots sat inside otherwise working sentences.
+        narrative: 'The agreement is past due. {actor} presents the ledger to the debtor, who has an explanation ready and a second one waiting behind it. Every word is a delay wearing the manners of cooperation.',
         onSuccess: {
-          narrative: '{actor} lays out the terms without {adj} apology. The debtor {verb}s under the {adj} clarity and begins to negotiate in good faith.',
+          narrative: '{actor} lays out the terms without apology and without heat, and reads the total aloud twice. The debtor stops explaining and starts proposing dates.',
           reputationDelta: 0.04,
         },
         onFailure: {
-          narrative: '{actor}\'s approach {verb}s too {adj}. The debtor takes it as weakness and {verb}s the debt further into dispute.',
+          narrative: '{actor} allows one further week as a courtesy. The debtor hears a precedent rather than a courtesy, and by the next visit the debt has become a matter for lawyers.',
           reputationDelta: -0.03,
         },
       },
@@ -5233,14 +5253,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'iron',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 2,
-        narrative: 'Words have failed. {actor} must enforce the agreement — not with violence, but with the {adj} authority of consequence.',
+        narrative: 'Words have failed. What remains to {actor} is consequence rather than violence: the guild notified, the credit withdrawn, the debtor\'s name read out where the suppliers can hear it.',
         onSuccess: {
-          narrative: '{actor}\'s {adj} resolve closes the matter. Payment arrives, and the agreement is honoured, if {adj}ly.',
+          narrative: '{actor} files the notice and takes no further step. Payment arrives inside four days, in full, delivered by a clerk who will not meet {their} eye.',
           reputationDelta: 0.10,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: 'The debtor walks. {actor} is left holding a {adj} broken agreement and a lesson in the limits of paper contracts.',
+          narrative: 'The debtor is gone before the notice takes effect — house emptied, counting-house lease signed over to a cousin. {actor} holds a contract that is entirely valid and entirely uncollectable.',
           reputationDelta: -0.08,
         },
       },
@@ -5426,13 +5446,15 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'gold',
         difficulty: DIFFICULTY_BASE,
         duration: 1,
-        narrative: 'A merchant needs {adj} swords for a {adj} route known to attract attention. {actor} negotiates the rate and terms before the caravan leaves.',
+        // THR-1101: wedged tokens removed (hire-family batch). Here {actor} is the hired party
+        // rather than the employer — the same contract read from the other side of the table.
+        narrative: 'A merchant needs six swords for a route that has attracted attention twice this season. {actor} settles the rate and the terms at the caravan-rest, before the wagons are loaded and the merchant\'s need turns into leverage.',
         onSuccess: {
-          narrative: '{actor} agrees {adj} terms: fair pay, clear expectations, and a bonus if the goods arrive {adj} intact. The merchant {verb}s with relief.',
+          narrative: '{actor} agrees plain terms: pay by the day, a bonus on undamaged delivery, and a written line on who decides when to run. The merchant signs gladly, having been robbed once already by an ambiguity.',
           reputationDelta: 0.03,
         },
         onFailure: {
-          narrative: '{actor}\'s terms {verb} badly. The merchant {verb}s away for cheaper swords, and the {adj} coin goes with them.',
+          narrative: '{actor} holds out for the higher rate. The merchant hires four cheaper swords instead and leaves a day early, and the coin leaves with them.',
           reputationDelta: -0.02,
         },
       },
@@ -5442,14 +5464,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'iron',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 2,
-        narrative: 'Three days on the road. On the second, riders {verb} on the horizon. {actor} must position the guards and read whether this is {adj} threat or {adj} coincidence.',
+        narrative: 'Three days on the road. On the second, riders hold the ridge line for an hour without closing. {actor} has to place the guards and decide whether that is a count being taken or a herd being moved.',
         onSuccess: {
-          narrative: '{actor}\'s {adj} positioning {verb}s. The riders veer off, unwilling to test a {adj} prepared escort. The caravan arrives {adj} whole.',
+          narrative: '{actor} puts two swords forward where they can be counted and keeps four out of sight. The riders take the count, find the sum unwelcome, and are gone by dusk. Nobody draws.',
           reputationDelta: 0.10,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: '{actor}\'s guard is {adj} caught flat. The ambush strips the caravan of a {adj} portion of its cargo. The merchant {verb}s in {adj} fury.',
+          narrative: '{actor} reads the riders as drovers and keeps the guard bunched at the front. They come in at the third wagon from the ditch side and are away with the bolt-cloth inside two minutes. The merchant does not shout, which is worse than shouting.',
           reputationDelta: -0.08,
         },
       },
@@ -5459,14 +5481,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'iron',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 1,
-        narrative: 'The road\'s last stretch is the {adj} hardest. Rumour of a second ambush {verb}s the merchants\' nerves. {actor} must hold the guard together.',
+        narrative: 'The last stretch is the one the guards have already been paid for and the one they are most tempted to hurry. Word comes up the road of a second party waiting at the ford. {actor} has to keep six tired swords moving at the pace that keeps them useful.',
         onSuccess: {
-          narrative: '{actor}\'s {adj} steadiness {verb} through to the gates. The bonus is paid; the merchant {verb}s a name worth remembering.',
+          narrative: '{actor} holds the pace and takes the long route around the ford, which costs half a day and no cargo at all. The bonus is paid at the gate, and the merchant asks for {actor} by name on the next run.',
           reputationDelta: 0.14,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: 'The {adj} final stretch costs too much. Cargo lost, guards shaken. {actor} delivers what {they} can, but the contract {verb}s in failure.',
+          narrative: 'The ford is precisely what the rumour said. {actor} gets the wagons through and two of the six swords do not come out with them. The cargo arrives; the bonus does not; and the merchant pays the day-rate in full without being asked, which is its own verdict.',
           reputationDelta: -0.10,
         },
       },
@@ -5499,13 +5521,15 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'iron',
         difficulty: MODERATE_DIFFICULTY_BASE,
         duration: 1,
-        narrative: 'The guild masters watch from the gallery as {actor} steps onto the trial floor. Every {adj} eye measures them for weakness.',
+        // THR-1101: wedged tokens removed (hire-family batch). The two crit-band afterimages
+        // below were already authored and are left untouched.
+        narrative: 'The guild masters watch from the gallery as {actor} steps onto the trial floor. The sand has not been swept since the last candidate, which is not an oversight.',
         onSuccess: {
-          narrative: '{actor} meets the first challenge with {adj} composure. The gallery murmurs in approval.',
+          narrative: '{actor} takes the first exchange without hurrying and without decorating it. Up in the gallery, two masters stop talking to each other.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: '{actor}\'s first move {verb}s under scrutiny. The masters make {adj} notes.',
+          narrative: '{actor} opens well and then adds a flourish nobody asked for. A master writes one short line and does not look up again.',
           reputationDelta: -0.03,
         },
       },
@@ -5515,16 +5539,19 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'heart',
         difficulty: MODERATE_DIFFICULTY_BASE + MODERATE_DIFFICULTY_STEP,
         duration: 2,
-        narrative: 'The final test is not skill — it is allegiance. {actor} must declare what {they} stand for before the assembled guild.',
-        criticalSuccessAfterimage: '{actor} says something the guild did not know it was waiting to hear. The masters offer not just the oath but a place near the center of things — and a few of the older ones watch {them} the way you watch a successor.',
+        // THR-1101: the bare `{they} stand` below rendered as "she stand" and predates this
+        // batch — it sits on a line carrying no word-pool token, so the campaign's own scan
+        // could never have flagged it (impediment #567). Found by rendering the family.
+        narrative: 'The final test is not skill — it is allegiance. {actor} must declare what {they} stand{s} for before the assembled guild.',
+        criticalSuccessAfterimage: '{actor} says the one sentence the guild did not know it was waiting to hear. The masters offer the oath and a place near the centre of the room with it — and a few of the older ones begin watching {them} as an inheritance rather than an applicant.',
         criticalFailureAfterimage: 'The declaration lands wrong before the whole assembled guild — not merely hollow but revealing, a glimpse of {actor} that the masters will not unsee. Membership is not withheld this once. It is closed.',
         onSuccess: {
-          narrative: '{actor}\'s words ring {adj} and true. The guild offers the oath of membership.',
+          narrative: '{actor} names the one order {they} would refuse, and names it ahead of everything the guild came to hear. The oath is offered before the sentence is done.',
           reputationDelta: 0.10,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: 'The guild finds {actor}\'s declaration {adj} and hollow. Membership is withheld — for now.',
+          narrative: 'The declaration is the one the guild hears most often, in the words it usually hears it in. Membership is withheld rather than refused, and the masters take care to say so aloud.',
           reputationDelta: -0.05,
         },
       },
