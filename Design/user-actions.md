@@ -1,18 +1,18 @@
 # User Action Required
 
-**Last updated:** 2026-08-14 03:55 local (2026-08-14 01:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-14 04:56 local (2026-08-14 02:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
 ### 1. One attended session to finish the aftermath work — [THR-1082](https://linear.app/threadbare/issue/THR-1082) / [PR #1415](https://github.com/christianspliid-ui/threadbare/pull/1415)
 
-**Open a Claude Code session on the repo and say "finish THR-1082".** The session resolves the branch conflict, takes the full-size screenshot, and merges.
+**Open a Claude Code session on the repo and say "finish THR-1082".** The session resolves the branch conflict, takes the full-size screenshot, and merges. Open 32 hours as of this update; the wait has since added a merge conflict in three files (two code, one generated), which the session also handles.
 
 This is not a design or taste question — the new consequence chips are already built and your Law 13/15 sign-off is recorded. What is owed is the mechanical check that the new layout does not overflow or render off-screen, on two encounters across two outcome bands.
 
-**Why it needs you specifically:** the automated hourly runs cannot start the game — the command that launches it needs someone present to approve it, so there is no running build for any agent to photograph. This was mis-briefed as an agent obligation from 13 August through the 02:56 brief today; that recommendation assumed a route that does not exist in unattended runs, and is withdrawn.
+**Why it needs you specifically:** the automated hourly runs cannot start the game — the command that launches it needs someone present to approve it, so there is no running build for any agent to photograph.
 
-**Cost of waiting:** two High-priority tickets are blocked behind the merge — [THR-1096](https://linear.app/threadbare/issue/THR-1096) (companion attachments) and [THR-1097](https://linear.app/threadbare/issue/THR-1097) (the content pass that rewrites the endings the chips summarise). THR-1097 is why the aftermath read half-finished when you looked on the 13th, and it cannot start until this lands.
+**Cost of waiting:** two High-priority tickets are blocked behind the merge — [THR-1096](https://linear.app/threadbare/issue/THR-1096) (companion attachments) and [THR-1097](https://linear.app/threadbare/issue/THR-1097) (the content pass that rewrites the endings the chips summarise). Both are still in Todo, and THR-1097 is why the aftermath read half-finished when you looked on the 13th.
 
 ### 2. Parked option, no urgency: a Tenacious-style trait
 
