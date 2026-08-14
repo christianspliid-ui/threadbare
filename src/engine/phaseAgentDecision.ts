@@ -1004,6 +1004,10 @@ export function phaseAgentDecision(
                   rng,
                   supportBindings,
                   clearanceGateIds: gateInit.gateIds,
+                  // THR-1100: target-derived step duration for tier-scaled templates.
+                  targetProperties: state.graph.getNode(
+                    sel.entry.targetAgentId ?? sel.entry.locationId,
+                  )?.properties,
                 }),
                 effectiveTier: uaEffectiveTier,
               };

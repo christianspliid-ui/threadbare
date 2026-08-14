@@ -46,7 +46,7 @@ export function RevealBeat({
   const primaryColor = getSphereColor(hunger.sphereAlignment.primary);
 
   const lineStyle = (idx: number, color: string) => ({
-    fontFamily: 'Georgia, "Times New Roman", serif' as const,
+    fontFamily: 'var(--font-prose)' as const,
     fontStyle: 'italic' as const,
     color,
     opacity: phase >= idx ? 1 : 0,
@@ -112,7 +112,7 @@ export function RevealBeat({
              }}>
           <p className="mb-4"
              style={{
-               fontFamily: 'Georgia, "Times New Roman", serif',
+               fontFamily: 'var(--font-prose)',
                fontStyle: 'italic',
                fontSize: '1.15rem',
                color: 'rgba(168,152,184,0.75)',
@@ -134,7 +134,7 @@ export function RevealBeat({
               borderBottom: `1px solid ${primaryColor}30`,
               padding: '12px 0',
               color: '#e8e0f0',
-              fontFamily: 'Georgia, "Times New Roman", serif',
+              fontFamily: 'var(--font-prose)',
               fontStyle: 'italic',
               fontSize: '1.3rem',
               letterSpacing: '0.04em',
@@ -148,7 +148,7 @@ export function RevealBeat({
             style={{
               background: 'transparent',
               border: 'none',
-              fontFamily: 'Georgia, "Times New Roman", serif',
+              fontFamily: 'var(--font-prose)',
               fontStyle: 'italic',
               fontSize: '1.3rem',
               color: primaryColor,

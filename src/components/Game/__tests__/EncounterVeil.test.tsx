@@ -229,7 +229,7 @@ describe('lightly threaded', () => {
 
   it('displays auto-resolve timer', () => {
     render(<EncounterVeil {...lightProps} />);
-    expect(screen.getByText(/auto-resolves in 4 tick/)).toBeInTheDocument();
+    expect(screen.getByText(/auto-resolves shortly/)).toBeInTheDocument();
   });
 
   it('shows Lightly Threaded label', () => {
@@ -249,7 +249,7 @@ describe('lightly threaded', () => {
   it('reads "auto-resolving now" at the deadline rather than "in 0 ticks"', () => {
     render(<EncounterVeil {...lightProps} tick={16} />);
     expect(screen.getByText(/auto-resolving now/)).toBeInTheDocument();
-    expect(screen.queryByText(/auto-resolves in/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/auto-resolves /)).not.toBeInTheDocument();
   });
 
   it('clamps past the deadline instead of counting negative', () => {
@@ -258,9 +258,58 @@ describe('lightly threaded', () => {
     expect(screen.queryByText(/-37/)).not.toBeInTheDocument();
   });
 
-  it('still pluralises a live countdown', () => {
+  it('words the nearest band rather than counting the last tick', () => {
     render(<EncounterVeil {...lightProps} tick={15} />);
-    expect(screen.getByText(/auto-resolves in 1 tick$/)).toBeInTheDocument();
+    expect(screen.getByText(/auto-resolves in a moment/)).toBeInTheDocument();
+  });
+
+  /**
+   * THR-1070: the strip was the last surface rendering a raw tick numeral, and
+   * every routine review URL misses it — it needs `threadTier === 'light'` AND
+   * a non-null `autoResolveTick`, which the `?spawn=` route never produces.
+   * So the guard is a sweep of the whole live range rather than a spot check:
+   * `RETINUE_VIGNETTE_TIMEOUT` is 8, so 0–8 is every state a player can reach.
+   */
+  it('renders no numeral anywhere in the strip across the full 0–8 tick range', () => {
+    const deadline = 16;
+    for (let remaining = 0; remaining <= 8; remaining++) {
+      const { unmount } = render(
+        <EncounterVeil {...lightProps} autoResolveTick={deadline} tick={deadline - remaining} />,
+      );
+      // The veil portals into document.body, so query via `screen`, not the
+      // render container — the container is empty for a portalled tree.
+      const label = screen.getByText(/auto-resolv/);
+      expect(label.textContent).not.toMatch(/\d/);
+      unmount();
+    }
+  });
+
+  /**
+   * THR-1070 browser-verify substitution (impediment #546 — `preview_start` is
+   * refused in unattended runs, so the contractual 1920×1080 capture has no
+   * reachable route this pass). #546's scope test allows a jsdom substitution
+   * for a change that does not move layout, and pins that claim here rather
+   * than asserting it in a commit message:
+   *
+   * The strip is `[flex:1 bar][gap][nowrap label]`, so the label's width is the
+   * only thing that can move — and the widest wording the new scale can produce
+   * ("auto-resolves before long") is one character wider than the widest the
+   * numeral could ("auto-resolves in 8 ticks"). A one-character delta in a
+   * `nowrap` label inside a self-sizing flex row cannot wrap, overflow, or
+   * breach the viewport contract.
+   */
+  it('keeps the strip composition and nowrap label the numeral wording had', () => {
+    render(<EncounterVeil {...lightProps} tick={10} />);
+    const label = screen.getByText(/auto-resolves before long/);
+    expect(label).toHaveStyle({ whiteSpace: 'nowrap' });
+
+    const widestNew = 'auto-resolves before long'.length;
+    const widestOld = 'auto-resolves in 8 ticks'.length;
+    expect(Math.abs(widestNew - widestOld)).toBeLessThanOrEqual(1);
+
+    // The timer bar still shares the row — the label did not displace it.
+    const strip = label.parentElement!;
+    expect(strip.children).toHaveLength(2);
   });
 });
 
@@ -812,6 +861,137 @@ describe('aftermath mode', () => {
     render(<EncounterVeil {...defaultProps} model={reactionModel([{ id: 'r1', label: 'Move on' }])} />);
     expect(screen.getByTestId('aftermath-reaction-label-r1')).toHaveTextContent('Move on');
     expect(screen.queryByTestId('aftermath-reaction-intent-r1')).not.toBeInTheDocument();
+  });
+
+  // ── Reaction entity links (THR-1084) ─────────────────────────────
+  //
+  // The defect: one modal named the same person twice — gold and clickable in
+  // the SEED change-detail line, flat text in the reaction directly beneath it
+  // (Laws 1, 21). Every assertion below fails on the pre-THR-1084 veil, which
+  // rendered `reaction.label` as a bare string and had nowhere to put a link.
+  //
+  // The nested-interaction decision under test: the entity is a `role="link"`
+  // span that stops propagation, so the button's own pick still fires on every
+  // other pixel of the option. A nested `<button>` would be invalid HTML.
+
+  const LINKED_LABEL = {
+    id: 'reaction-r1-label',
+    segments: [
+      { text: 'Deepen the connection to ' },
+      { text: 'Councilor Maevis Drent', entityId: 'agent-maevis', entityKind: 'agent' as const },
+      { text: '.' },
+    ],
+  };
+
+  const linkedReaction = [{ id: 'r1', label: 'Deepen the connection to Councilor Maevis Drent.', labelSegments: LINKED_LABEL }];
+
+  it('renders an entity named in a reaction label as a link routed by kind', () => {
+    render(
+      <EncounterVeil
+        {...defaultProps}
+        model={reactionModel(linkedReaction)}
+        onSelectAgent={vi.fn()}
+      />,
+    );
+    const link = screen.getByTestId('aftermath-reaction-label-r1-seg-1');
+    expect(link).toHaveAttribute('role', 'link');
+    expect(link).toHaveTextContent('Councilor Maevis Drent');
+    // Keyboard-reachable, per Law 17/23 — a link nobody can focus is inert.
+    expect(link).toHaveAttribute('tabindex', '0');
+    // NOT a nested <button>: that is invalid HTML inside the reaction button.
+    expect(link.tagName).toBe('SPAN');
+  });
+
+  it('opens the entity on click WITHOUT also firing the reaction pick', () => {
+    const onSelectAgent = vi.fn();
+    const onAftermathReaction = vi.fn();
+    render(
+      <EncounterVeil
+        {...defaultProps}
+        model={reactionModel(linkedReaction)}
+        onSelectAgent={onSelectAgent}
+        onAftermathReaction={onAftermathReaction}
+      />,
+    );
+    fireEvent.click(screen.getByTestId('aftermath-reaction-label-r1-seg-1'));
+    expect(onSelectAgent).toHaveBeenCalledWith('agent-maevis');
+    // The whole point of `nested`: the pick must not fire alongside it.
+    expect(onAftermathReaction).not.toHaveBeenCalled();
+  });
+
+  it('opens the entity on Enter WITHOUT also firing the reaction pick', () => {
+    const onSelectAgent = vi.fn();
+    const onAftermathReaction = vi.fn();
+    render(
+      <EncounterVeil
+        {...defaultProps}
+        model={reactionModel(linkedReaction)}
+        onSelectAgent={onSelectAgent}
+        onAftermathReaction={onAftermathReaction}
+      />,
+    );
+    fireEvent.keyDown(screen.getByTestId('aftermath-reaction-label-r1-seg-1'), { key: 'Enter' });
+    expect(onSelectAgent).toHaveBeenCalledWith('agent-maevis');
+    expect(onAftermathReaction).not.toHaveBeenCalled();
+  });
+
+  it('KEEPS the button as the pick target — a click on non-entity prose still picks', () => {
+    const onSelectAgent = vi.fn();
+    const onAftermathReaction = vi.fn();
+    render(
+      <EncounterVeil
+        {...defaultProps}
+        model={reactionModel(linkedReaction)}
+        onSelectAgent={onSelectAgent}
+        onAftermathReaction={onAftermathReaction}
+      />,
+    );
+    fireEvent.click(screen.getByTestId('aftermath-reaction-label-r1-seg-0'));
+    expect(onAftermathReaction).toHaveBeenCalledWith('r1');
+    expect(onSelectAgent).not.toHaveBeenCalled();
+  });
+
+  it('FAIL-OPEN: an entity the host cannot open stays plain text, never a dead link', () => {
+    // No `onSelectAgent` wired ⇒ no page to route to ⇒ no affordance drawn.
+    render(<EncounterVeil {...defaultProps} model={reactionModel(linkedReaction)} />);
+    const seg = screen.getByTestId('aftermath-reaction-label-r1-seg-1');
+    expect(seg).not.toHaveAttribute('role', 'link');
+    expect(seg).not.toHaveAttribute('tabindex');
+    expect(seg).toHaveTextContent('Councilor Maevis Drent');
+  });
+
+  it('links an entity named in the reaction INTENT too', () => {
+    const onSelectAgent = vi.fn();
+    render(
+      <EncounterVeil
+        {...defaultProps}
+        model={reactionModel([
+          {
+            id: 'r1',
+            label: 'Move on',
+            intent: 'Councilor Maevis Drent remembers the favour.',
+            intentSegments: {
+              id: 'reaction-r1-intent',
+              segments: [
+                { text: 'Councilor Maevis Drent', entityId: 'agent-maevis', entityKind: 'agent' as const },
+                { text: ' remembers the favour.' },
+              ],
+            },
+          },
+        ])}
+        onSelectAgent={onSelectAgent}
+      />,
+    );
+    fireEvent.click(screen.getByTestId('aftermath-reaction-intent-r1-seg-0'));
+    expect(onSelectAgent).toHaveBeenCalledWith('agent-maevis');
+  });
+
+  it('FALLBACK: a reaction with no segments renders its plain label unchanged', () => {
+    render(<EncounterVeil {...defaultProps} model={reactionModel(loneReaction)} />);
+    expect(screen.getByTestId('aftermath-reaction-label-slice.bridge.walk_on'))
+      .toHaveTextContent('Walk on');
+    expect(screen.queryByTestId('aftermath-reaction-label-slice.bridge.walk_on-seg-0'))
+      .not.toBeInTheDocument();
   });
 });
 

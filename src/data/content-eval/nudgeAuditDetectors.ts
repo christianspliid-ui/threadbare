@@ -54,8 +54,16 @@ import type { AftermathVariant, UnifiedActionTemplate } from '../../types/unifie
 
 // ─── Thresholds (audit appendix table, verbatim) ─────────────────────
 
-/** Abstract nouns per 100 words at or above which a template fails. */
-export const ABSTRACT_DENSITY_FAIL = 4.5;
+/**
+ * Abstract nouns per 100 words at or above which a template is **warned**.
+ *
+ * Named `_WARN`, not `_FAIL`, since THR-1092: the value is unchanged from the
+ * audit appendix's 4.5, but what it produces is a ranking signal rather than a
+ * verdict. A constant named `_FAIL` that no longer fails anything is the same
+ * class of defect THR-1092 was filed to fix — code contradicting its own
+ * documentation — so the name moved with the behaviour.
+ */
+export const ABSTRACT_DENSITY_WARN = 4.5;
 /** Hedges / stand-ins per 100 words at or above which a template fails. */
 export const VAGUENESS_DENSITY_FAIL = 2.0;
 /** not-X-but-Y occurrences per template at or above which it fails. */
@@ -74,6 +82,10 @@ export const SECOND_PERSON_FAIL = 2;
  * Suffix-based, so domain vocabulary (`devotion`, `judgement`, `settlement`)
  * counts against a template. That is a known limit, recorded in the audit: this
  * is a **ranking** signal, not a verdict on any single line.
+ *
+ * Until THR-1092 that sentence was true of the docstring and false of the code,
+ * which pushed the result to `failures`. See {@link auditTemplate} for the
+ * measurement that settled it.
  */
 export const ABSTRACT_NOUN_PATTERN =
   /\b[a-z]{4,}(?:ness|ity|tion|sion|ment|ance|ence|ism|hood|ship)\b/gi;
@@ -454,9 +466,15 @@ export interface NudgeAuditScores {
   readonly vaguenessByClass: Readonly<Record<ProseFieldClass, number>>;
   /** True when the template is mortal-drawn, i.e. `actorAffinities` omits `ascendant`. */
   readonly mortalDrawn: boolean;
-  /** Which thresholds this template trips. Empty ⇒ clean. */
+  /**
+   * Which *gating* thresholds this template trips. Empty ⇒ clean.
+   *
+   * Four detectors only, since THR-1092: vagueness, not-X-but-Y, thin premise
+   * and second person. Abstraction reports into {@link warnings} — a caller that
+   * filters this array for `abstraction` is asserting nothing.
+   */
   readonly failures: readonly string[];
-  /** Advisory signals that do not fail the template. */
+  /** Advisory signals that do not fail the template: abstraction, intensifiers. */
   readonly warnings: readonly string[];
 }
 
@@ -502,9 +520,34 @@ export function auditTemplate(template: UnifiedActionTemplate): NudgeAuditScores
   const mortalDrawn = !(template.actorAffinities ?? []).includes('ascendant');
 
   const failures: string[] = [];
-  if (abstractDensity >= ABSTRACT_DENSITY_FAIL) {
-    failures.push(`abstraction ${abstractDensity}/100w (>= ${ABSTRACT_DENSITY_FAIL})`);
-  }
+  // Abstraction is deliberately NOT here — it is a warning (THR-1092). The four
+  // lexicon/structure detectors below stay hard gates; the one *proxy* detector
+  // does not.
+  //
+  // Measured over all 683 templates before the change: 196 failed some detector,
+  // and 129 of those failed abstraction and nothing else — 18.9% of the shipped,
+  // reviewed corpus. The worst offenders are core templates whose subject noun
+  // simply *is* the abstraction (`action.stone.build`, `action.heart.forge-alliance`,
+  // `hod.promotion`, whose hits are 10-of-14 `ascension`/`devotion` — the House of
+  // Devotion's own vocabulary). A gate that 1-in-5 reviewed templates fails is not
+  // discriminating defects; it is measuring the base rate of English prose about
+  // institutions, magic and politics.
+  //
+  // Class-scoping it to the narrative classes — the obvious fix, mirroring
+  // THR-1045's `countSecondPerson` carve-out — was measured and rejected: the
+  // interactive density (2.88/100w) is barely above narrative (2.66), so there is
+  // no outlier class to carve out, and scoping churned the corpus for a net 7
+  // templates while making 8 *newly* fail. Do not retry it.
+  //
+  // Decision: Christian, chat review 2026-08-12 (recorded on THR-1092).
+  //
+  // Demoted, NOT deleted, and the measurement is why: the eight director-reviewed
+  // `encounter.slice.*` templates score 0.33–1.56/100w, while the templates this
+  // threshold caught run 4.98–7.58. The signal separates the worked examples from
+  // the rest by roughly an order of magnitude, so it is worth reporting and
+  // sorting on. What it cannot do is decide, per template, whether a high score
+  // is bad prose or a subject that happens to be an abstraction — which is the
+  // difference between a ranking signal and a gate.
   if (vaguenessDensity >= VAGUENESS_DENSITY_FAIL) {
     failures.push(`vagueness ${vaguenessDensity}/100w (>= ${VAGUENESS_DENSITY_FAIL})`);
   }
@@ -519,6 +562,15 @@ export function auditTemplate(template: UnifiedActionTemplate): NudgeAuditScores
   }
 
   const warnings: string[] = [];
+  // Reported, sortable, and never gating — which is what "ranking signal" means.
+  // `abstractDensity` is on NudgeAuditScores regardless, so a batch can still sort
+  // the corpus by it; this line is what makes the threshold visible to a reader
+  // who is not reading the raw number.
+  if (abstractDensity >= ABSTRACT_DENSITY_WARN) {
+    warnings.push(
+      `abstraction ${abstractDensity}/100w (>= ${ABSTRACT_DENSITY_WARN}, warn — suffix proxy, ranking signal only)`,
+    );
+  }
   if (intensifiers > 0) {
     warnings.push(`intensifiers x${intensifiers} (warn — weak words, not a failure)`);
   }

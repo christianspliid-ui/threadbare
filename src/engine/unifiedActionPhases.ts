@@ -136,6 +136,8 @@ export function phaseIdleSelection(
               tick: state.tick,
               template,
               rng,
+              // THR-1100: target-derived step duration for tier-scaled templates.
+              targetProperties: state.graph.getNode(result.selected.targetId)?.properties,
             });
 
             newActions.push(action);

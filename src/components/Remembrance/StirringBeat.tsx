@@ -49,7 +49,7 @@ export function StirringBeat({ images, onSelect }: StirringBeatProps) {
            top: '5vh',
            color: 'rgba(160,140,180,0.45)',
            fontStyle: 'italic',
-           fontFamily: 'Georgia, "Times New Roman", serif',
+           fontFamily: 'var(--font-prose)',
            fontSize: '1.5rem',
            letterSpacing: '0.06em',
            opacity: confirmedId ? 0 : focusedId ? 0.35 : 1,
@@ -164,7 +164,7 @@ export function StirringBeat({ images, onSelect }: StirringBeatProps) {
             {focusedPlaceholder.label}
           </span>
           <p style={{
-            fontFamily: 'Georgia, "Times New Roman", serif',
+            fontFamily: 'var(--font-prose)',
             fontStyle: 'italic',
             fontSize: '1.1rem',
             color: 'rgba(160,140,130,0.25)',

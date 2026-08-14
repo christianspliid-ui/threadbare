@@ -658,15 +658,42 @@ function buildAftermath(
   }
 
   const displayReactions = authoredVariant?.reactions ?? summary.reactions;
+
+  // Hoisted above the reaction mapper (THR-1084): the reactions need the same
+  // link entries the consequence chips use, and they are built from the support
+  // bundle, so nothing below this point depends on the old ordering.
+  const { linkEntries: aftermathLinkEntries } = collectSupportBundleEntities(
+    graph,
+    template.supportBundle ?? [],
+    bindings,
+    activeAction.targetId,
+  );
+
   // THR-1050 — reaction prose runs through the same enricher as the overview and
   // the change details above. Authored labels and intents carry `{cast:*}` tokens,
   // and passing them through raw put the token itself on screen (Law 14).
+  //
+  // THR-1084 — and through the same *linker*, so an entity the change-detail line
+  // above renders as a link is a link here too. Before this, one modal named the
+  // same person twice: gold and clickable in the SEED line, flat text in the
+  // reaction directly beneath it (Laws 1, 21). `label`/`intent` keep the plain
+  // enriched string; the segments ride alongside (NFP #6), so the Gate Duty
+  // adapter and the debug-bridge reaction listing are untouched.
   const reactions: EncounterStageAftermathReactionModel[] | undefined = displayReactions?.map(
-    (reaction) => ({
-      id: reaction.id,
-      label: enrichProse(reaction.label, ctx),
-      intent: reaction.intent != null ? enrichProse(reaction.intent, ctx) : undefined,
-    }),
+    (reaction) => {
+      const label = enrichProse(reaction.label, ctx);
+      const intent = reaction.intent != null ? enrichProse(reaction.intent, ctx) : undefined;
+      return {
+        id: reaction.id,
+        label,
+        intent,
+        labelSegments: autoLinkNarrative(`reaction-${reaction.id}-label`, label, aftermathLinkEntries),
+        intentSegments:
+          intent != null
+            ? autoLinkNarrative(`reaction-${reaction.id}-intent`, intent, aftermathLinkEntries)
+            : undefined,
+      };
+    },
   );
 
   const actorMomentArray = Array.from(actorMoments.values());
@@ -676,12 +703,6 @@ function buildAftermath(
   // plants (reachable only through the reaction effects). The stage renders
   // these instead of highlights/changes; both are kept on the model so a
   // consumer that has not adopted chips still gets the old shape.
-  const { linkEntries: aftermathLinkEntries } = collectSupportBundleEntities(
-    graph,
-    template.supportBundle ?? [],
-    bindings,
-    activeAction.targetId,
-  );
   const consequences = buildAftermathConsequences({
     changes: displayChanges,
     reactions: displayReactions,

@@ -58,7 +58,7 @@ export function DriveBeat({ fragments, onSelect }: DriveBeatProps) {
       <p className="absolute left-0 right-0 text-center transition-all duration-1000"
          style={{
            top: '5vh',
-           fontFamily: 'Georgia, "Times New Roman", serif',
+           fontFamily: 'var(--font-prose)',
            fontStyle: 'italic',
            fontSize: '1.5rem',
            color: focusedId ? 'rgba(160,140,180,0.35)' : 'rgba(196,155,171,0.45)',
@@ -124,7 +124,7 @@ export function DriveBeat({ fragments, onSelect }: DriveBeatProps) {
               }}
             >
               <p style={{
-                fontFamily: 'Georgia, "Times New Roman", serif',
+                fontFamily: 'var(--font-prose)',
                 fontStyle: 'italic',
                 fontSize: '1.5rem',
                 lineHeight: '1.85',
@@ -136,7 +136,7 @@ export function DriveBeat({ fragments, onSelect }: DriveBeatProps) {
                 {activeFragment.prose}
               </p>
               <p style={{
-                fontFamily: 'Georgia, "Times New Roman", serif',
+                fontFamily: 'var(--font-prose)',
                 fontStyle: 'italic',
                 fontSize: '1.1rem',
                 color: 'rgba(160,140,130,0.25)',

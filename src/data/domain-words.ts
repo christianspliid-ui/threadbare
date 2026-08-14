@@ -145,3 +145,53 @@ export function getBondStrengthWord(value: number): string {
   const tier = Math.min(4, Math.floor(clamped * 5));
   return BOND_STRENGTH_WORDS[tier];
 }
+
+/**
+ * 3-band duration scale — how long until something the player is watching
+ * comes due (THR-1070).
+ *
+ * The other scales here band a *stat*; this one bands a *wait*. It exists
+ * because the light-tier auto-resolve strip in `EncounterVeil` was the last
+ * surface rendering a raw tick numeral — "auto-resolves in 4 ticks" — which
+ * Law 13 forbids on any mortal-facing surface. The ratified Law 13 exception
+ * (THR-890) covers resource-pool balances in persistent chrome; a countdown
+ * inside an encounter is neither, so it needs words like everything else.
+ *
+ * **Why three bands and not five.** The live range is 1–8 ticks
+ * (`RETINUE_VIGNETTE_TIMEOUT` is 8), and a 12-tick game day means the whole
+ * scale fits inside one day. Five bands over eight ticks would give the player
+ * distinctions they cannot act on — the strip is a "this is slipping away"
+ * signal, not a schedule. Three bands is the coarsest split that still
+ * separates "look now" from "you have a little time".
+ *
+ * The phrases complete the sentence "auto-resolves ___", so they are lowercase
+ * and prepositional rather than Title-case adjectives like the scales above.
+ * The zero case is worded by the caller as "auto-resolving now" (THR-1068) —
+ * a different verb inflection, so it is deliberately not a band here.
+ */
+export const DURATION_WORDS = [
+  'in a moment', // band 0: 1–2 ticks
+  'shortly',     // band 1: 3–5 ticks
+  'before long', // band 2: 6+ ticks
+] as const;
+
+/**
+ * Inclusive upper tick bound of each duration band except the last, which is
+ * open-ended. Tune the feel of the countdown by moving these, not by editing
+ * the branching in the caller.
+ */
+export const DURATION_BAND_MAX_TICKS = [2, 5] as const;
+
+/**
+ * Convert a whole-tick wait to a word.
+ *
+ * Fail-soft: a caller that forgets its own zero case gets the nearest band
+ * rather than a numeral or a throw — this surface must never render a number,
+ * and NFP #4 says the tick loop never crashes on missing data.
+ */
+export function getDurationWord(ticks: number): string {
+  for (let band = 0; band < DURATION_BAND_MAX_TICKS.length; band++) {
+    if (ticks <= DURATION_BAND_MAX_TICKS[band]) return DURATION_WORDS[band];
+  }
+  return DURATION_WORDS[DURATION_WORDS.length - 1];
+}

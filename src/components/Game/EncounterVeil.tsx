@@ -23,10 +23,12 @@ import type {
 import type { ReachDomain } from '../../types/traits';
 import { tooltipResolves } from '../../engine/tooltipResolver';
 import { usePrefersReducedMotion } from '../../hooks/usePrefersReducedMotion';
+import { NarrativeSegments } from './encounter-stage/NarrativeSegments';
 import { NudgePhaseShell } from './encounter-stage/shells/NudgePhaseShell';
 import { NudgeMotiveIntro } from './encounter-stage/shells/NudgeMotiveIntro';
 import { ProseTtsButton } from './Encounter/ProseTtsButton';
 import { formatEssence, formatEssencePool } from '../shared/formatEssence';
+import { getDurationWord } from '../../data/domain-words';
 
 // ── Thread tier types ──────────────────────────────────────────────
 type ThreadTier = 'strong' | 'light' | 'watched';
@@ -1161,8 +1163,29 @@ export function EncounterVeil({
                     e.currentTarget.style.background = 'rgb(var(--veil-gold-rgb) / 0.03)';
                   }}
                 >
+                  {/*
+                    THR-1084 — the entity named in a reaction links to its page,
+                    the way the change-detail lines above it in this same modal
+                    already do (Laws 1, 21). The label sits inside this button,
+                    so the link is a `role="link"` span that stops propagation
+                    rather than a nested `<button>` (invalid HTML) — the pick
+                    still fires on every other pixel of the option. The full
+                    decision is recorded in `NarrativeSegments.tsx`.
+                  */}
                   <div data-testid={`aftermath-reaction-label-${reaction.id}`}>
-                    {reaction.label}
+                    {reaction.labelSegments ? (
+                      <NarrativeSegments
+                        paragraph={reaction.labelSegments}
+                        openEntity={openEntity}
+                        linkColor={GOLD}
+                        underlineColor={GOLD_DIM}
+                        plainColor={TEXT_WARM}
+                        nested
+                        testIdPrefix={`aftermath-reaction-label-${reaction.id}`}
+                      />
+                    ) : (
+                      reaction.label
+                    )}
                   </div>
                   {/*
                     THR-1029 §1 — the authored `intent` is what the pick means, and
@@ -1184,7 +1207,19 @@ export function EncounterVeil({
                         marginTop: 6,
                       }}
                     >
-                      {reaction.intent}
+                      {reaction.intentSegments ? (
+                        <NarrativeSegments
+                          paragraph={reaction.intentSegments}
+                          openEntity={openEntity}
+                          linkColor={GOLD}
+                          underlineColor={GOLD_DIM}
+                          plainColor={TEXT_WHISPER}
+                          nested
+                          testIdPrefix={`aftermath-reaction-intent-${reaction.id}`}
+                        />
+                      ) : (
+                        reaction.intent
+                      )}
                     </div>
                   )}
                 </button>
@@ -1717,7 +1752,7 @@ export function EncounterVeil({
           >
             {ticksUntilAutoResolve === 0
               ? 'auto-resolving now'
-              : `auto-resolves in ${ticksUntilAutoResolve} tick${ticksUntilAutoResolve !== 1 ? 's' : ''}`}
+              : `auto-resolves ${getDurationWord(ticksUntilAutoResolve)}`}
           </div>
         </div>
       )}

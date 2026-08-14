@@ -27,6 +27,7 @@ import {
   getChapterTemplateName,
   CHAPTER_LEDGER_PAGE_SIZE,
 } from '../../engine/chapterArchive';
+import { outcomePhrase } from '../../engine/aftermathWords';
 
 interface ChapterLedgerProps {
   gameState: GameState;
@@ -60,6 +61,19 @@ function isThreaded(gameState: GameState, actorId: string): boolean {
   } catch {
     return false;
   }
+}
+
+/**
+ * THR-1035 — the status label for a resolved chapter.
+ *
+ * The band is routed through the shared aftermath vocabulary rather than
+ * interpolated, which is what put `success_at_cost` on a player surface (Law
+ * 14). A chapter archived without an outcome says only "resolved": the absence
+ * is a real state, and the old `?? 'unknown'` answered a question nobody asked.
+ */
+export function resolvedStatusLabel(outcome?: string | null): string {
+  const phrase = outcomePhrase(outcome);
+  return phrase ? `resolved · ${phrase}` : 'resolved';
 }
 
 function matchesAgent(
@@ -97,7 +111,7 @@ export function ChapterLedger({
         actorId: r.actorId,
         actorName: r.actorName,
         templateName: r.templateName,
-        statusLabel: `resolved · ${r.outcome ?? 'unknown'}`,
+        statusLabel: resolvedStatusLabel(r.outcome),
         sortTick: r.resolvedTick,
         threaded: r.threaded,
       }));

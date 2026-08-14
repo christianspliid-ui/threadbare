@@ -37,6 +37,7 @@ import type {
   EncounterAftermathDirection,
   EncounterAftermathMagnitude,
   EncounterAftermathStoryWeight,
+  UnifiedActionOutcome,
 } from '../types/unifiedAction';
 
 // ─── Reach vocabulary ────────────────────────────────────────────────
@@ -497,6 +498,69 @@ export function overviewHighlightPhrase(counts: {
   if (counts.growth > 0) parts.push(`${countWord(counts.growth)} skill shift${counts.growth === 1 ? '' : 's'}`);
   if (counts.hooks > 0) parts.push(`${countWord(counts.hooks)} lasting consequence${counts.hooks === 1 ? '' : 's'}`);
   return parts.length > 0 ? parts.join(', ') : null;
+}
+
+// ─── Action outcome vocabulary ───────────────────────────────────────
+
+/**
+ * THR-571 U1's outcome lexicon, hoisted here by THR-1035 so it has one owner.
+ *
+ * These exact words were authored for the Chapter *detail* header and lived as a
+ * component-local map in `ChapterView.tsx`. The Chapter *Ledger* row — the thing
+ * you click to open that header — could not reach them, so it interpolated
+ * `r.outcome` raw and put `success_at_cost` on a player surface (Law 14).
+ *
+ * Hoisting rather than re-authoring is deliberate on two counts. The row and the
+ * header now say the same words about the same chapter, which a second parallel
+ * vocabulary would have quietly broken; and this module already declares itself
+ * the only place the "what word does a mortal see" question is answered (rule 1
+ * at the top of this file). A third copy is what produced the bug.
+ *
+ * Typed as a total `Record` over the union on purpose: a new outcome band fails
+ * the typecheck here instead of silently reaching a player surface as its key.
+ */
+export const OUTCOME_PHRASES: Record<UnifiedActionOutcome, string> = {
+  critical_success: 'a triumph',
+  success: 'it held',
+  success_at_cost: 'won, at a price',
+  contested_won: 'won, contested',
+  contested_lost: 'lost, contested',
+  failure: 'it faltered',
+  critical_failure: 'it broke',
+};
+
+/** Warn-once memo, so an unknown band cannot flood the console per render. */
+const warnedOutcomes = new Set<string>();
+
+/** Test seam: clears the warn-once memo. */
+export function resetOutcomeWarnings(): void {
+  warnedOutcomes.clear();
+}
+
+/**
+ * An outcome band as a player-facing phrase, or `null` when the chapter has not
+ * resolved yet (an absent outcome is a real state, not a failure to resolve one).
+ *
+ * Law 14's fallback clause, exactly: a key the vocabulary cannot resolve renders
+ * as its best plain-English form and warns once — **never** as the key. So an
+ * outcome band added upstream without a phrase here degrades to
+ * `success at cost` rather than `success_at_cost`, and says so in DEV.
+ */
+export function outcomePhrase(outcome?: string | null): string | null {
+  if (!outcome) return null;
+
+  const known = OUTCOME_PHRASES[outcome as UnifiedActionOutcome];
+  if (known) return known;
+
+  if (!warnedOutcomes.has(outcome)) {
+    warnedOutcomes.add(outcome);
+    if (import.meta.env?.DEV) {
+      console.warn(
+        `[aftermathWords] no phrase for outcome '${outcome}' — falling back to humanised text. Add it to OUTCOME_PHRASES.`,
+      );
+    }
+  }
+  return humanizeKeySegment(outcome);
 }
 
 // ─── The rule, as a predicate ────────────────────────────────────────

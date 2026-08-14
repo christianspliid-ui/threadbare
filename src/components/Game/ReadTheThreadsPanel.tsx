@@ -19,6 +19,7 @@
 import { useState, useMemo } from 'react';
 import { Modal } from '../shared/Modal';
 import { Button } from '../shared/Button';
+import { formatEssence, formatEssencePool } from '../shared/formatEssence';
 import type { DigestEntry } from '../../types/attention';
 import type { ReachDomain } from '../../types/traits';
 import { queryDigest } from '../../engine/digestBuffer';
@@ -280,7 +281,7 @@ function PreReadState({
                     marginTop: '2px',
                   }}
                 >
-                  {opt.cost} essence
+                  {formatEssence(opt.cost)} essence
                 </div>
               </button>
             );
@@ -290,7 +291,7 @@ function PreReadState({
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 'var(--space-1)' }}>
         <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
-          Available: <span style={{ color: canAfford ? 'var(--accent-gold)' : 'var(--negative)' }}>{essenceAvailable} essence</span>
+          Available: <span style={{ color: canAfford ? 'var(--accent-gold)' : 'var(--negative)' }}>{formatEssencePool(essenceAvailable)} essence</span>
         </span>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 'var(--space-1)' }}>
           <Button

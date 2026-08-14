@@ -192,6 +192,7 @@ import {
 import { applyActionTriggerPayloads } from './effects/actionTriggerPayloads';
 import type { ActionTriggerEvent, EffectRuntimeState } from '../types/effects';
 import { collectAttachmentEffects } from './effects/effectWalker';
+import { tierScaledDifficulty } from './targetTierScaling';
 import {
   PLAYER_CAST_VARIANCE_ENABLED,
   PLAYER_CAST_OUTCOME_FLOOR,
@@ -322,6 +323,13 @@ export function resolveUncontestedStep(
   }
 
   let effectiveDifficulty = step.difficulty;
+  // THR-1073: a step may price its difficulty from the target's attachment tier,
+  // so advancing Mythic→Legendary rolls against the authored hard number rather
+  // than the tier-1 one every advancement used to share. The table lives in
+  // `attachment-tier-content.ts` (NFP #1) — nothing numeric is decided here.
+  if (step.difficultyContext === 'target_tier_scaled') {
+    effectiveDifficulty = tierScaledDifficulty(step, state.graph.getNode(action.targetId)?.properties);
+  }
   if (step.difficultyContext === 'intel_sensitive') {
     const targetNode = state.graph.getNode(action.targetId);
     const locationId = targetNode?.type === 'location'
@@ -1863,8 +1871,13 @@ export function executeStepResult(
   state.archetypeDrift = branchDecision.archetypeDrift;
   const decidedAction = branchDecision.action;
 
-  // Advance step or complete action
-  let finalAction = advanceStep(decidedAction, outcome, template, rng);
+  // Advance step or complete action. THR-1100: the next step's duration ramps
+  // off the target's tier under the same marker that scaled `effectiveDifficulty`
+  // above, so a multi-step tier-scaled template stays scaled past step 0.
+  let finalAction = advanceStep(
+    decidedAction, outcome, template, rng,
+    state.graph.getNode(action.targetId)?.properties,
+  );
 
   // Partial_progress complication: give the next step a head start (THR-119).
   // Read fraction directly from the ComplicationResult effects — no transient node property needed.

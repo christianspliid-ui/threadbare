@@ -769,6 +769,8 @@ Both detectors are pure functions over the concatenated authored text of a templ
 | `THIN_PREMISE_WORDS` | 45 | total authored words below which no hand can hang |
 | `SECOND_PERSON_FAIL` | 2 | second-person pronouns tolerated on a mortal-drawn template |
 
+> **Amended 2026-08-13 (THR-1092).** The abstract-noun measure is now a **warning**, not a failure, and its constant was renamed `ABSTRACT_DENSITY_FAIL` → `ABSTRACT_DENSITY_WARN`. The threshold value (4.5) and the pattern are unchanged; only the classification moved. Measured over all 683 templates: 129 failed abstraction *and nothing else* — 18.9% of the shipped, reviewed corpus, dominated by templates whose subject noun simply is the abstraction. Corpus failures 196 → 67. Class-scoping to the narrative classes was measured and rejected. Decision: Christian, chat review 2026-08-12. The row above is left as the audit originally specified it.
+
 **Abstract-noun proxy** — `/\b[a-z]{4,}(?:ness|ity|tion|sion|ment|ance|ence|ism|hood|ship)\b/gi`. A standard concreteness measure: nominalised abstractions displace the concrete nouns a nudge needs to act on.
 
 **Vagueness lexicon** — hedges (`somehow`, `somewhat`, `seems to`, `appears to`, `a kind of`, `a sort of`, `something like`, `in some way`), abstract stand-ins (`something`, `someone`, `somewhere`, `things`, `stuff`), nominalised placeholders (`the situation`, `the matter`, `the moment`, `the atmosphere`, `the tension`, `the dynamic`, `the connection`, `the understanding`, `the balance`, `the energy`, `the presence`, `the experience`, `the process`), and vague intensifiers (`very`, `really`, `quite`, `rather`, `truly`, `deeply`, `profoundly`, `utterly`).

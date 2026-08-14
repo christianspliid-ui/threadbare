@@ -8,7 +8,11 @@ import {
   getReputationWord,
   BOND_STRENGTH_WORDS,
   getBondStrengthWord,
+  DURATION_WORDS,
+  DURATION_BAND_MAX_TICKS,
+  getDurationWord,
 } from '../domain-words';
+import { RETINUE_VIGNETTE_TIMEOUT } from '../../types/encounterVisibility';
 import { REACH_DOMAINS, type ReachDomain } from '../../types/traits';
 import type { ValuePair } from '../../types/agent';
 
@@ -386,5 +390,60 @@ describe('getBondStrengthWord', () => {
     expect(getBondStrengthWord(0.4)).toBe(BOND_STRENGTH_WORDS[2]); // tier 2
     expect(getBondStrengthWord(0.6)).toBe(BOND_STRENGTH_WORDS[3]); // tier 3
     expect(getBondStrengthWord(0.8)).toBe(BOND_STRENGTH_WORDS[4]); // tier 4
+  });
+});
+
+/**
+ * THR-1070 — the duration scale that replaced the light-tier tick numeral.
+ *
+ * The band words are prose and may be retuned freely; what these pin is the
+ * structure, because the failure this scale exists to prevent is a numeral
+ * reaching a mortal-facing surface (Law 13), not a particular adjective.
+ */
+describe('getDurationWord', () => {
+  it('bands the live range without ever yielding a numeral', () => {
+    for (let ticks = 1; ticks <= RETINUE_VIGNETTE_TIMEOUT; ticks++) {
+      const word = getDurationWord(ticks);
+      expect(DURATION_WORDS).toContain(word);
+      expect(word).not.toMatch(/\d/);
+    }
+  });
+
+  it('maps each band at its boundaries', () => {
+    expect(getDurationWord(1)).toBe(DURATION_WORDS[0]);
+    expect(getDurationWord(2)).toBe(DURATION_WORDS[0]);
+    expect(getDurationWord(3)).toBe(DURATION_WORDS[1]);
+    expect(getDurationWord(5)).toBe(DURATION_WORDS[1]);
+    expect(getDurationWord(6)).toBe(DURATION_WORDS[2]);
+    expect(getDurationWord(RETINUE_VIGNETTE_TIMEOUT)).toBe(DURATION_WORDS[2]);
+  });
+
+  it('is open-ended above the timeout rather than falling off the scale', () => {
+    expect(getDurationWord(RETINUE_VIGNETTE_TIMEOUT * 10)).toBe(
+      DURATION_WORDS[DURATION_WORDS.length - 1],
+    );
+  });
+
+  /**
+   * The caller owns the zero case ("auto-resolving now" — THR-1068), so zero
+   * and below are out of contract. Fail-soft per NFP #4: the nearest band, not
+   * a throw and never `undefined` rendering as a blank strip.
+   */
+  it('fail-softs at and below zero instead of throwing', () => {
+    expect(getDurationWord(0)).toBe(DURATION_WORDS[0]);
+    expect(getDurationWord(-37)).toBe(DURATION_WORDS[0]);
+  });
+
+  it('keeps one threshold per band boundary so no word is unreachable', () => {
+    expect(DURATION_BAND_MAX_TICKS.length).toBe(DURATION_WORDS.length - 1);
+    const ascending = [...DURATION_BAND_MAX_TICKS].every(
+      (max, i) => i === 0 || max > DURATION_BAND_MAX_TICKS[i - 1],
+    );
+    expect(ascending).toBe(true);
+    // Every band is actually reachable from some tick in the live range.
+    const reached = new Set(
+      Array.from({ length: RETINUE_VIGNETTE_TIMEOUT }, (_, i) => getDurationWord(i + 1)),
+    );
+    expect(reached.size).toBe(DURATION_WORDS.length);
   });
 });

@@ -191,6 +191,20 @@ function mapCondition(node: GraphNode): CodexEntry {
   };
 }
 
+/**
+ * The three action mappers below deliberately omit `template.crudType` (THR-1076).
+ *
+ * It is an internal taxonomy for how a template mutates the graph, and it used to reach the
+ * player three ways per entry: in the card subtitle, in a detail row labelled `CRUD`, and as a
+ * tag chip. Law 14 (`Docs/design-system/laws.md`) forbids raw internal keys on a player surface,
+ * and `CRUD` is worse than the enum — a database term used as a player-facing label.
+ *
+ * It was dropped rather than given a display vocabulary because the axis is not player-meaningful:
+ * `update` covers everything from blessing a company to scorching a hex, so no honest single word
+ * exists for it, and a word the player cannot act on is chrome. The field stays on the template
+ * for the engine; it simply has no player-facing rendering. Do not reintroduce it here —
+ * `codexPlayerVocabulary.test.ts` pins its absence across the whole catalog.
+ */
 function mapDivineAction(template: typeof UNIFIED_ACTION_TEMPLATES[number]): CodexEntry {
   const tier = (template.rarityTier ?? 1) as RarityTier;
   const reach = template.reach as string;
@@ -211,13 +225,12 @@ function mapDivineAction(template: typeof UNIFIED_ACTION_TEMPLATES[number]): Cod
     effectSource: effectSourceFor(template),
     requiresReach: template.requiresReach,
     isAscendantAction: true,
-    tags: [reach, template.sphereAffinity ?? '', template.crudType].filter(Boolean),
+    tags: [reach, template.sphereAffinity ?? ''].filter(Boolean),
     isStarter: template.starter === true || isStarterActionId(template.id),
     details: [
       { label: 'Reach', value: REACH_DISPLAY[reach] ?? reach },
       { label: 'Sphere', value: template.sphereAffinity ?? 'none' },
       { label: 'Essence Cost', value: String(template.essenceCost) },
-      { label: 'CRUD', value: template.crudType },
       { label: 'Scale', value: template.scale },
     ],
   };
@@ -236,16 +249,15 @@ function mapMortalAction(template: typeof UNIFIED_ACTION_TEMPLATES[number]): Cod
     tierColor: RARITY_TIER_COLORS[tier] ?? '#888',
     category: 'actions',
     subcategory: reach,
-    subtitle: `${REACH_DISPLAY[reach] ?? reach} \u00B7 ${template.crudType}`,
+    subtitle: REACH_DISPLAY[reach] ?? reach,
     summary: template.description ?? '',
     flavorText: template.narrativeTemplates?.initiation,
     technicalEffect: template.technicalEffect,
     effectSource: effectSourceFor(template),
-    tags: [reach, template.crudType, template.scale, template.sphereAffinity ?? ''].filter(Boolean),
+    tags: [reach, template.scale, template.sphereAffinity ?? ''].filter(Boolean),
     isStarter: template.starter === true || isStarterActionId(template.id),
     details: [
       { label: 'Reach', value: REACH_DISPLAY[reach] ?? reach },
-      { label: 'CRUD', value: template.crudType },
       { label: 'Scale', value: template.scale },
       { label: 'Essence Cost', value: String(template.essenceCost) },
       ...(template.sphereAffinity ? [{ label: 'Sphere', value: template.sphereAffinity }] : []),
@@ -270,18 +282,17 @@ function mapTargetAction(
     tierColor: RARITY_TIER_COLORS[tier] ?? '#888',
     category,
     subcategory: reach,
-    subtitle: `${REACH_DISPLAY[reach] ?? reach} \u00B7 ${template.crudType}`,
+    subtitle: REACH_DISPLAY[reach] ?? reach,
     summary: template.description ?? '',
     flavorText: template.narrativeTemplates?.initiation,
     technicalEffect: template.technicalEffect,
     effectSource: effectSourceFor(template),
     requiresReach: template.requiresReach,
     isAscendantAction: true,
-    tags: [reach, template.crudType, template.scale, template.sphereAffinity ?? ''].filter(Boolean),
+    tags: [reach, template.scale, template.sphereAffinity ?? ''].filter(Boolean),
     isStarter: template.starter === true || isStarterActionId(template.id),
     details: [
       { label: 'Reach', value: REACH_DISPLAY[reach] ?? reach },
-      { label: 'CRUD', value: template.crudType },
       { label: 'Scale', value: template.scale },
       { label: 'Essence Cost', value: String(template.essenceCost) },
       ...(template.sphereAffinity ? [{ label: 'Sphere', value: template.sphereAffinity }] : []),

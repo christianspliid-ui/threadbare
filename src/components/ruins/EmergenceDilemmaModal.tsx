@@ -2,9 +2,13 @@
  * EmergenceDilemmaModal — blocking decision surface when a delve completes
  * (THR-153, PR 5). Renders four choice cards in a 2×2 grid: Let, Claim,
  * Bargain, Corrupt. Inviable options (when consequenceRoll is not 'transformed')
- * render greyed with a tooltip. Cost previews compare against current pool;
- * unaffordable cards render greyed. A countdown pip shows auto-fire ticks
- * remaining.
+ * render greyed with the reason in place. Cost previews compare against current
+ * pool; unaffordable cards render greyed. A countdown says, in words, how long
+ * is left before the choice auto-fires.
+ *
+ * Every player-facing string here routes through a display vocabulary
+ * (`data/ruin-words.ts` for the fate, `getDurationWord` for the wait) rather
+ * than interpolating engine values — THR-1080.
  *
  * 1920×1080 compliant: max-height 85vh, no internal overflow.
  */
@@ -17,6 +21,8 @@ import {
   POP_CLAIM_COST_MULTIPLIER,
   POP_CORRUPT_UP_FRONT_COST,
 } from '../../engine/ruins/constants';
+import { getRuinFateWord, getRuinFateClause } from '../../data/ruin-words';
+import { getDurationWord } from '../../data/domain-words';
 
 interface Props {
   gameState: GameState;
@@ -114,7 +120,17 @@ interface ChoiceSpec {
   choice: EmergenceChoice;
   label: string;
   poet: string;
-  costLabel: string;
+  /**
+   * The card's price as a sentence.
+   *
+   * A function rather than a string because Claim's price is not knowable at
+   * module scope — it scales with the ruin's magnitude, which is why the card
+   * used to read `Essence: magnitude × 20` and hand the player the algebra
+   * while the component already held the answer (`claimCost`, computed at the
+   * render site to decide affordability). Law 16 also retires the `key: value`
+   * strip these all shared, so each one is now a sentence.
+   */
+  costSentence: (claimCost: number) => string;
 }
 
 const CHOICE_SPECS: ChoiceSpec[] = [
@@ -122,25 +138,25 @@ const CHOICE_SPECS: ChoiceSpec[] = [
     choice: 'let',
     label: 'Let It Be',
     poet: 'Walk away. Let the ruin decide what it becomes.',
-    costLabel: 'No cost',
+    costSentence: () => 'Costs you nothing.',
   },
   {
     choice: 'claim',
     label: 'Claim',
     poet: 'Plant your own banner in the stone. The Place will answer to you.',
-    costLabel: 'Essence: magnitude × 20',
+    costSentence: claimCost => `Costs ${claimCost} essence.`,
   },
   {
     choice: 'bargain',
     label: 'Bargain',
     poet: 'Let the agent keep it. Owe them a favor that will ripen in time.',
-    costLabel: 'Costs a favor owed',
+    costSentence: () => 'Costs a favor you will owe.',
   },
   {
     choice: 'corrupt',
     label: 'Corrupt',
     poet: 'Mark the holder. Skim the stream. They will not know.',
-    costLabel: `Essence: ${POP_CORRUPT_UP_FRONT_COST} (darkness)`,
+    costSentence: () => `Costs ${POP_CORRUPT_UP_FRONT_COST} darkness essence.`,
   },
 ];
 
@@ -171,7 +187,7 @@ export function EmergenceDilemmaModal({ gameState, onResolve }: Props) {
 
   function disabledReason(c: EmergenceChoice): string {
     if (!isTransformed && c !== 'let') {
-      return `This outcome cannot be claimed — the ruin was ${pending.consequenceRoll}.`;
+      return `This outcome cannot be claimed — the ruin was ${getRuinFateClause(pending.consequenceRoll)}.`;
     }
     if (c === 'claim' && !claimAffordable) return 'Not enough essence.';
     if (c === 'corrupt' && !corruptAffordable) return 'Not enough darkness essence.';
@@ -188,8 +204,15 @@ export function EmergenceDilemmaModal({ gameState, onResolve }: Props) {
       <Modal.Body>
         <div style={BODY}>
           <div style={HEADER}>
-            <span>Emergence Dilemma · {pending.consequenceRoll}</span>
-            <span style={TIMER}>Auto-fires in {ticksRemaining} ticks</span>
+            <span>Emergence Dilemma · {getRuinFateWord(pending.consequenceRoll)}</span>
+            {/* Law 13 — the wait reads in words. `getDurationWord` is THR-1070's
+                scale, adopted rather than restated: the two tickets were made
+                mutex so the game would not grow a second phrasing for a wait.
+                The zero case keeps the caller's own verb inflection, matching
+                the `auto-resolving now` shape THR-1068 landed on the veil. */}
+            <span style={TIMER}>
+              {ticksRemaining === 0 ? 'Auto-firing now' : `Auto-fires ${getDurationWord(ticksRemaining)}`}
+            </span>
           </div>
           <div style={{ fontFamily: 'var(--font-display, serif)', fontStyle: 'italic', fontSize: '13px', color: 'var(--text-primary, #e8dcc8)', lineHeight: 1.5 }}>
             The delve has reached its last breath. What do you do with what remains?
@@ -218,7 +241,7 @@ export function EmergenceDilemmaModal({ gameState, onResolve }: Props) {
                   {/* Law 25 — disabled-with-reason: the card dims and says why,
                       in place. This replaces a `title={reason}` hover tooltip,
                       the pattern Law 17 retired; the text was always here. */}
-                  <div style={CARD_COST}>{enabled ? spec.costLabel : reason}</div>
+                  <div style={CARD_COST}>{enabled ? spec.costSentence(claimCost) : reason}</div>
                 </button>
               );
             })}

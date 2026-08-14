@@ -32,6 +32,7 @@ import { actionEffectsProse } from '../data/actionEffectsProse';
 import { emitTrace } from './traceBuffer';
 import { isActionStepBranch } from '../types/unifiedAction';
 import { effectiveCastDifficulty } from './playerCastReadout';
+import { tierScaledEssenceCost, tierScaledDifficulty } from './targetTierScaling';
 
 /**
  * The hardest step a template can present, with the reach it is rolled in
@@ -48,12 +49,19 @@ import { effectiveCastDifficulty } from './playerCastReadout';
  * template's headline reach. Falls back to the template reach when no priced step
  * exists, which keeps the return total for a guaranteed casting.
  */
-function hardestStep(template: UnifiedActionTemplate): { difficulty: number; reach: ReachDomain } {
+function hardestStep(
+  template: UnifiedActionTemplate,
+  targetProperties?: Readonly<Record<string, unknown>>,
+): { difficulty: number; reach: ReachDomain } {
   let max = 0;
   let reach = template.reach;
   for (const step of template.steps) {
     if (isActionStepBranch(step)) continue;
-    const difficulty = step.difficulty ?? 0;
+    // THR-1073: a tier-scaled step's authored `difficulty` is only its tier-1
+    // entry, so reading it raw would state a risk the roll will not use. Resolved
+    // against the same table the resolver reads; a step without the marker
+    // returns its authored difficulty unchanged.
+    const difficulty = tierScaledDifficulty(step, targetProperties) ?? 0;
     if (Number.isFinite(difficulty) && difficulty > max) {
       max = difficulty;
       reach = step.reach ?? template.reach;
@@ -72,8 +80,9 @@ function hardestStep(template: UnifiedActionTemplate): { difficulty: number; rea
 function castDifficultyFields(
   template: UnifiedActionTemplate,
   capabilities: Partial<Record<ReachDomain, number>> | undefined,
+  targetProperties?: Readonly<Record<string, unknown>>,
 ): Pick<WheelSlot, 'maxStepDifficulty' | 'effectiveStepDifficulty' | 'scale'> {
-  const { difficulty, reach } = hardestStep(template);
+  const { difficulty, reach } = hardestStep(template, targetProperties);
   const fields: Pick<WheelSlot, 'maxStepDifficulty' | 'effectiveStepDifficulty' | 'scale'> = {
     maxStepDifficulty: difficulty,
     scale: template.scale ?? null,
@@ -334,7 +343,13 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
     }
 
     // 5. Essence gate
-    const essenceCost = template.essenceCost ?? 0;
+    // THR-1073: templates marked `essenceCostContext: 'target_tier_scaled'` price
+    // themselves from the focused target's attachment tier. Resolved here as well
+    // as at the charge (`preparePlayerCast`) so the card never advertises a price
+    // the pool will not be charged — a card reading 4 while the cast takes 14
+    // would be a worse defect than the flat price it replaces. Every other
+    // template gets its authored `essenceCost` back unchanged.
+    const essenceCost = tierScaledEssenceCost(template, target.properties);
     const sphere = template.sphereAffinity ?? primarySphere;
     const currentEssence = (pool as Record<string, number>)[sphere] ?? 0;
     const canAffordEssence = essenceCost === 0 || currentEssence >= essenceCost;
@@ -401,7 +416,7 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
       effectSource: effectSourceFor(template),
       narrativeLayer: template.narrativeLayer as WheelSlot['narrativeLayer'],
       rarityTier: template.rarityTier,
-      ...castDifficultyFields(template, ascendantCastCapabilities),
+      ...castDifficultyFields(template, ascendantCastCapabilities, target.properties),
     });
   }
 

@@ -443,6 +443,8 @@ export function prepareDebugEncounterSpawn(
       rng,
       supportBindings,
       clearanceGateIds: gateInit.gateIds,
+      // THR-1100: target-derived step duration for tier-scaled templates.
+      targetProperties: state.graph.getNode(locationId)?.properties,
     });
 
     // Rebuild notification with unified_action metadata so the dedup key matches
