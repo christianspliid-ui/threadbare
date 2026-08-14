@@ -49,7 +49,7 @@ import { Tooltip } from '../../shared/Tooltip';
 import { tooltipResolves } from '../../../engine/tooltipResolver';
 import type { EncounterStageNarrativeParagraph } from './types';
 
-export type NarrativeEntityKind = 'agent' | 'faction' | 'artifact';
+export type NarrativeEntityKind = 'agent' | 'faction' | 'artifact' | 'companion';
 
 export interface NarrativeSegmentsProps {
   paragraph: EncounterStageNarrativeParagraph;

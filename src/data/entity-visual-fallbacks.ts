@@ -28,6 +28,7 @@ export type EntityVisualKind =
   | 'artifact'
   | 'army'
   | 'npc-role'
+  | 'companion'
   | 'unknown';
 
 /** Person-like kinds render an initial (or silhouette) rather than a category glyph. */
@@ -35,6 +36,9 @@ const PERSON_KINDS: ReadonlySet<EntityVisualKind> = new Set<EntityVisualKind>([
   'agent',
   'avatar',
   'npc-role',
+  // A companion is a person before they are a bonus — they get an initials tile,
+  // never a category glyph (THR-1096, Law 4).
+  'companion',
 ]);
 
 /** True when a kind's fallback tile shows a name initial / silhouette. */

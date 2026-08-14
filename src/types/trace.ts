@@ -368,6 +368,8 @@ export type TraceCategory =
   | 'bond_change_applied'
   | 'branch_decided'
   | 'chain_progress'
+  | 'companion_departed'
+  | 'companion_joined'
   | 'choice_set_player_dismissed'
   | 'choice_set_player_resolved'
   | 'complication_partial_progress'
@@ -718,6 +720,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'bond_change_applied',
   'branch_decided',
   'chain_progress',
+  'companion_departed',
+  'companion_joined',
   'complication_partial_progress',
   'consequence_applied',
   'death_site_spirit_pressure',
@@ -2169,6 +2173,9 @@ export type TraceEntry =
   // Scene-targeting aftermath sentinels + bond_change (THR-695, Slice B)
   | AftermathSentinelBoundTrace
   | BondChangeAppliedTrace
+  // Companions (THR-1096)
+  | CompanionJoinedTrace
+  | CompanionDepartedTrace
   // Seed system v2: family matching + context inheritance (THR-697, Slice D)
   | SeedFamilyMatchedTrace
   | SeedContextInheritedTrace
@@ -3608,4 +3615,33 @@ export interface GroupDissolvedTrace extends TraceBase {
   reason: 'cohesion_floor' | 'goal_complete' | 'leader_death' | 'betrayal' | 'undersize';
   finalCohesion: number;
   ticksActive: number;
+}
+
+// ─── Companions (THR-1096) ──────────────────────────────────────
+
+/** Trace: a companion joined a bearer's side. Raw contributions, never banded. */
+export interface CompanionJoinedTrace extends TraceBase {
+  category: 'companion_joined';
+  bearerId: string;
+  companionId: string;
+  companionName: string;
+  templateId: string;
+  /** Encounter or action id that brought them. */
+  source: string;
+  /** Raw capability points — traces keep numbers. */
+  contributions: Record<string, number>;
+  /** Present for contracted companions only. */
+  ticksRemaining?: number | null;
+}
+
+/** Trace: a companion left. Never silent — every departure has a named reason. */
+export interface CompanionDepartedTrace extends TraceBase {
+  category: 'companion_departed';
+  bearerId: string;
+  companionId: string;
+  companionName: string;
+  templateId: string;
+  reason: 'contract_ended' | 'lured_away' | 'story' | 'bearer_missing';
+  /** Ticks the companion spent at the bearer's side. */
+  ticksAccompanied: number;
 }

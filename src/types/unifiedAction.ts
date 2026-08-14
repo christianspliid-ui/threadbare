@@ -210,7 +210,7 @@ export interface EncounterAftermathConceptRef {
    * the aftermath can produce. A trait is a concept, not an entity with art —
    * it takes a tooltip and no tile rather than a wrong one.
    */
-  readonly visualKind?: 'agent' | 'faction' | 'artifact';
+  readonly visualKind?: 'agent' | 'faction' | 'artifact' | 'companion';
   /** Display name for the visual's alt text and fallback tile. */
   readonly visualName?: string;
 }
@@ -524,6 +524,31 @@ export type EncounterAftermathReactionEffect =
     readonly targetAgentId?: string;
     readonly targetFactionId?: string;
     readonly targetSublocationId?: string;
+    readonly when?: EffectPredicate;
+  }
+  | {
+    /**
+     * Grant a named companion (THR-1096) — a person who joins the bearer and
+     * grants their small always-on bonus until a story removes them.
+     *
+     * Authored grants deliberately ignore `COMPANION_MAX`: an encounter that
+     * promised someone delivers them, and the surface shows the crowd honestly.
+     */
+    readonly kind: 'grant_companion';
+    /** Companion template id from `src/data/companion-templates.ts`. */
+    readonly companionTemplateId: string;
+    /** Grant to a specific agent; defaults to the encounter's actor. */
+    readonly targetAgentId?: string;
+    readonly when?: EffectPredicate;
+  }
+  | {
+    /** Remove a companion the bearer currently has (THR-1096). */
+    readonly kind: 'remove_companion';
+    /** Companion template id — the instance minted from it is the one that leaves. */
+    readonly companionTemplateId: string;
+    /** Why they left — every departure names a reason; defaults to 'story'. */
+    readonly reason?: 'lured_away' | 'story';
+    readonly targetAgentId?: string;
     readonly when?: EffectPredicate;
   }
   | {

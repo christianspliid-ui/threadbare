@@ -21,12 +21,16 @@ import { applyResourceDelta } from './effects/resourceDelta';
 import { emitTrace } from './traceBuffer';
 import type { TraceEntry } from '../types/trace';
 import { filterAgreementTemplates, type AgreementRewardTemplate } from '../data/agreement-reward-catalog';
+import { filterCompanionTemplates, getCompanionTemplate } from '../data/companion-templates';
+import { mintCompanion, isAtCompanionCap, isUniqueAlreadyInstanced } from './companions';
 
 export interface PoolEntry {
   nodeId: string;
   weight: number;
   /** For agreement entries: the agreement template ID (nodeId will be the template ID). */
   isAgreement?: boolean;
+  /** For companion entries: the companion template ID (THR-1096; registry-backed, not a graph node). */
+  isCompanion?: boolean;
 }
 
 /**
@@ -90,11 +94,34 @@ function getCandidateNodes(
 export function assembleRewardPool(
   graph: WorldGraph,
   recipe: ResolvedRewardRecipe,
+  /**
+   * The agent who would receive the reward. Required for companion candidates —
+   * the cap and unique filters are per-bearer, so without it companions are
+   * simply not offered rather than offered wrongly (THR-1096).
+   */
+  bearerId?: string,
 ): PoolEntry[] {
   const pool: PoolEntry[] = [];
 
   for (const [category, categoryWeight] of Object.entries(recipe.categoryWeights)) {
     if (!categoryWeight || categoryWeight <= 0) continue;
+
+    // Companion candidates come from the template registry, not the graph, and
+    // are filtered per-bearer: nothing is offered at the cap, and a unique that
+    // already exists in the world is never offered again.
+    if (category === 'companion') {
+      if (!bearerId) continue;
+      if (isAtCompanionCap(graph, bearerId)) continue;
+      for (const template of filterCompanionTemplates(recipe.tagFilters)) {
+        if (template.unique && isUniqueAlreadyInstanced(graph, template.id)) continue;
+        const tierWeight = recipe.tierCurve[template.tier as AttachmentTier] ?? 0;
+        const weight = categoryWeight * tierWeight;
+        if (weight > 0) {
+          pool.push({ nodeId: template.id, weight, isCompanion: true });
+        }
+      }
+      continue;
+    }
 
     // Agreement candidates come from the catalog, not the graph
     if (category === 'agreement') {
@@ -220,8 +247,8 @@ export function resolveRewardRecipe(
 export interface InstantiateRewardResult {
   instanceId: string;
   edgeId: string;
-  /** 'possession' | 'condition' | 'bestowed' | 'service' — determines edge type/runtime handling */
-  category: 'possession' | 'condition' | 'bestowed' | 'service';
+  /** 'possession' | 'condition' | 'bestowed' | 'service' | 'companion' — determines edge type/runtime handling */
+  category: 'possession' | 'condition' | 'bestowed' | 'service' | 'companion';
   /** Human-readable reward name for timeline/debug surfaces */
   displayName: string;
 }
@@ -307,6 +334,25 @@ function instantiateRewardInternal(
   depth: number,
 ): InstantiateRewardResult | null {
   if (depth > REWARD_SERVICE_MAX_DEPTH) return null;
+
+  // Companion templates are registry-backed, not graph nodes — check the
+  // registry before the node lookup, which would otherwise return null (THR-1096).
+  if (getCompanionTemplate(templateNodeId)) {
+    const prng = mulberry32(
+      tick * 149 + hashString(recipientAgentId) + hashString(templateNodeId),
+    );
+    const minted = mintCompanion(graph, templateNodeId, recipientAgentId, tick, prng, {
+      source: REWARD_EDGE_SOURCE,
+      respectCap: true,
+    });
+    if (!minted) return null;
+    return {
+      instanceId: minted.companionId,
+      edgeId: minted.edgeId,
+      category: 'companion',
+      displayName: minted.name,
+    };
+  }
 
   const template = graph.getNode(templateNodeId);
   if (!template) return null;

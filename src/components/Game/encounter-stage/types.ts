@@ -148,7 +148,7 @@ export interface EncounterStageNarrativeSegment {
    * linker's cast scan and was opened through the agent handler, so an absent
    * kind must keep meaning exactly that.
    */
-  entityKind?: 'agent' | 'faction' | 'artifact';
+  entityKind?: 'agent' | 'faction' | 'artifact' | 'companion';
 }
 
 export interface EncounterStageNarrativeParagraph {
@@ -403,7 +403,7 @@ export interface EncounterStageConsequenceChipModel {
 export interface EncounterStageConsequenceIconModel {
   /** Stable id — graph lookup key when the entity is a node, gradient seed always. */
   entityId: string;
-  kind: 'agent' | 'faction' | 'artifact';
+  kind: 'agent' | 'faction' | 'artifact' | 'companion';
   name: string;
   /** Art the adapter resolved, when any exists. Absent ⇒ the designed fallback tile. */
   src?: string;

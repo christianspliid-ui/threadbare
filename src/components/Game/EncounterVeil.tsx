@@ -432,7 +432,7 @@ export function EncounterVeil({
      */
     const openEntity = (
       entityId: string | undefined,
-      kind: 'agent' | 'faction' | 'artifact' | undefined,
+      kind: 'agent' | 'faction' | 'artifact' | 'companion' | undefined,
     ): (() => void) | undefined => {
       if (!entityId) return undefined;
       // Absent kind = the narrative linker's cast scan, which has always been
@@ -440,6 +440,12 @@ export function EncounterVeil({
       if (!kind || kind === 'agent') {
         return onSelectAgent ? () => onSelectAgent(entityId) : undefined;
       }
+      // A companion is a person, but not an agent node and not a thread — the
+      // agent drawer and the stub-modal path would both open the wrong sheet
+      // (THR-1096; `ThreadCategory` is the divine-court vocabulary THR-1099
+      // ruled off-limits for companions). Their tile renders; their sheet is the
+      // Companions row on the bearer's own surface. Non-interactive beats wrong.
+      if (kind === 'companion') return undefined;
       return onSelectEntity ? () => onSelectEntity(entityId, kind) : undefined;
     };
 

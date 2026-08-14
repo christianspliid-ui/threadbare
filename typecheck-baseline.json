@@ -1,5 +1,5 @@
 {
-  "total": 3450,
+  "total": 3448,
   "command": "npx tsc -b --force --pretty false",
   "perFile": {
     "scripts/lint-encounter-content.ts": 2,
@@ -187,7 +187,7 @@
     "src/data/__tests__/starter-attachments.test.ts": 29,
     "src/data/__tests__/strand-content.test.ts": 17,
     "src/data/__tests__/unified-action-templates.test.ts": 12,
-    "src/data/action-template-content.ts": 18,
+    "src/data/action-template-content.ts": 17,
     "src/data/ambition-templates.ts": 1,
     "src/data/anomaly-reward-catalog.ts": 38,
     "src/data/arcane-circle-encounter-content.ts": 6,
@@ -618,7 +618,7 @@
     "src/engine/movementExecution.ts": 4,
     "src/engine/narrative.ts": 4,
     "src/engine/npcSeeding.ts": 1,
-    "src/engine/orchestrator.ts": 46,
+    "src/engine/orchestrator.ts": 45,
     "src/engine/orchestrator/__tests__/phaseAscendantHandFilter.test.ts": 3,
     "src/engine/orchestrator/__tests__/phaseChoiceResolution.test.ts": 10,
     "src/engine/orchestrator/__tests__/phaseDetectionPressure.test.ts": 4,

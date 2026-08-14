@@ -391,18 +391,14 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     motivations: ['asceticism_extravagance', 'courage_prudence', 'loyalty_ambition'],
     minWealthRequired: 10, // WEALTH_MERCENARY_COST
     onSuccess: [
+      // THR-1096: was an `add_node` of type `attachment` — a node type outside
+      // `NodeType` entirely — carrying `ironCapability: 30` that no reader ever
+      // consumed. This mints a real companion instead, so the Iron bonus starts
+      // existing for the first time. Behaviour-correcting, and that is the point.
       {
-        op: 'add_node',
-        nodeType: 'attachment',
-        nodeName: 'Mercenary Band',
-        properties: {
-          category: 'retainer',
-          ironCapability: 30,
-          source: 'action.gold.hire-mercenaries',
-          hiredBy: '$actor',
-          durationTicks: 10,
-          tier: 1,
-        },
+        op: 'grant_companion',
+        companionTemplateId: 'companion.sellsword-band',
+        nodeId: '$actor',
       },
       // WEALTH_MERCENARY_COST = 10 (represented as 0.10 on 0–100 scale)
       { op: 'update_node', nodeId: '$actor', changes: { wealth: -0.10 } },

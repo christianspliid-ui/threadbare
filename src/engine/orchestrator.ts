@@ -141,6 +141,8 @@ import { phaseQuintessence } from './phaseQuintessence';
 import { QUINTESSENCE_ENCOUNTER_FAILURE_EROSION } from '../types/quintessence';
 import { phaseEconomicTraits } from './phaseEconomicTraits';
 import { decayConditions } from './conditionDecay';
+import { expireCompanions } from './companions';
+import { getCompanionTemplate } from '../data/companion-templates';
 import { processTraitDecay } from './traits';
 import { phaseReputationTraits, processReputationTally } from './phaseReputationTraits';
 import { processEncounterMastery, processEncounterConditions } from './phaseEncounterTraits';
@@ -738,7 +740,9 @@ export function phaseEncounterProgressionV2(state: GameState, runtime?: Simulati
         ? { ...resolved, categoryWeights: BAD_OUTCOME_CATEGORY_WEIGHTS, tagFilters: undefined }
         : resolved;
 
-      const pool = assembleRewardPool(state.graph, effectiveRecipe);
+      // bearerId feeds the companion cap/unique filters (THR-1096); other
+      // categories ignore it.
+      const pool = assembleRewardPool(state.graph, effectiveRecipe, progress.actorId);
       const agentNameForReward = state.graph.getNode(progress.actorId)?.name ?? '?';
 
       if (pool.length > 0) {
@@ -751,9 +755,13 @@ export function phaseEncounterProgressionV2(state: GameState, runtime?: Simulati
           if (instantiation) {
             rewardInstanceId = instantiation.instanceId;
             rewardName = instantiation.displayName;
+            // Companion templates live in the registry, not the graph, so the
+            // node lookup misses them — read the registry for name and tier.
+            const companionTemplate = getCompanionTemplate(templateId);
             const templateNode = state.graph.getNode(templateId);
-            const tier = (templateNode?.properties?.tier as number) ?? 1;
-            const traceRewardName = instantiation.displayName || templateNode?.name || '?';
+            const tier = companionTemplate?.tier ?? (templateNode?.properties?.tier as number) ?? 1;
+            const templateDisplayName = companionTemplate?.profession ?? templateNode?.name ?? '?';
+            const traceRewardName = instantiation.displayName || templateDisplayName;
 
             emitTrace({
               category: 'encounter',
@@ -763,13 +771,13 @@ export function phaseEncounterProgressionV2(state: GameState, runtime?: Simulati
               event: isBadOutcome ? 'reward_bad_outcome' : 'reward_drawn',
               templateId,
               instanceId: instantiation.instanceId,
-              templateName: templateNode?.name ?? '?',
+              templateName: templateDisplayName,
               tier,
               attachmentCategory: instantiation.category,
               poolSize: pool.length,
               roll: drawRoll,
               summary: `${agentNameForReward} ${isBadOutcome ? 'suffered' : 'earned'} ${traceRewardName} (T${tier} ${instantiation.category})`,
-            } as TraceEntry);
+            } as unknown as TraceEntry);
 
             recordReward({
               tick: state.tick,
@@ -777,7 +785,7 @@ export function phaseEncounterProgressionV2(state: GameState, runtime?: Simulati
               agentName: agentNameForReward,
               encounterId: progress.encounterId,
               templateId,
-              templateName: templateNode?.name ?? '?',
+              templateName: templateDisplayName,
               instanceId: instantiation.instanceId,
               category: instantiation.category,
               tier,
@@ -3426,6 +3434,15 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
     timeInlinePhase('condition_decay', s, () => decayConditions(s.graph, s.tick));
   } catch {
     // fail-soft: condition decay failure is non-fatal
+  }
+
+  // Phase 6.625b: Companion expiry (THR-1096). Rides the condition-expiry beat
+  // rather than adding a phase — permanent companions carry no counter, so this
+  // costs nothing for them.
+  try {
+    timeInlinePhase('companion_expiry', s, () => expireCompanions(s.graph, s.tick));
+  } catch {
+    // fail-soft: a departing companion must never take the tick loop with them
   }
 
   // Phase 6.626: Mastery Trait Decay (mastery traits lose levels without reinforcement)

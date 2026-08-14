@@ -27,6 +27,7 @@ import type { BackstoryResult } from '../types/prose';
 import { findAmbitionTemplateById } from '../data/ambition-templates';
 import { COMPLETED_AMBITIONS_MAX_DISPLAY } from '../types/agentKnowledge';
 import { getAgentPortraitUrlFromProperties } from '../data/portrait-assets';
+import { getCompanions, type CompanionEntry } from './companions';
 import { getOriginVignetteById } from '../data/origin-vignettes';
 import { getAxisByReach, getAxisById } from '../types/axisRegistry';
 import { getDivineInfluences } from './interventionEffects';
@@ -277,6 +278,11 @@ export interface AgentInfoCardData {
   influenceTier?: InfluenceTier;
   /** Tiered backstory — set when knowledge >= 'recognised' AND influenceTier >= 1 */
   backstory?: BackstoryResult;
+  /**
+   * Companions travelling with this agent (THR-1096). Ungated — unlike the
+   * attachment fields below, which need intimate+ knowledge.
+   */
+  companions?: CompanionEntry[];
   /** Attachment data for Tier 3 modal (intimate+ knowledge) */
   possessions?: AttachmentFullEntry[];
   afflictions?: AttachmentFullEntry[];
@@ -937,6 +943,14 @@ export function getAgentInfoCard(
     rarityTier,
     gender: agentGender,
   };
+
+  // Companions — deliberately ungated (THR-1096 decision 8). Person-knowledge
+  // gating does not apply: a mortal's companions belong to the bearer, and the
+  // bearer's god sees the people around their own threads. Fail-open by design.
+  const companions = getCompanions(graph, agentId);
+  if (companions.length > 0) {
+    card.companions = companions;
+  }
 
   // Intent data — always visible in prototype
   // TODO(THR-22): gate by familiarity tier when PROTOTYPE_INTENT_VISIBLE = false

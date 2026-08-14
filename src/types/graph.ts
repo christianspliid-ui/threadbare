@@ -27,7 +27,8 @@ export type NodeType =
   | 'region'             // geographic region clusters (terrain gen Phase 2)
   | 'ambition'           // ambition template instances assigned to actors
   | 'encounter_template' // encounter template graph node (design plan §3.8, B5)
-  | 'relationship';      // reified relationship between two actors (design plan §3.9, B5)
+  | 'relationship'       // reified relationship between two actors (design plan §3.9, B5)
+  | 'companion';         // a named person who walks with a mortal (THR-1096) — NOT an actor
 
 /** Actor subtypes stored in properties.actorType */
 export type ActorType = 'god' | 'ascendant' | 'faction' | 'culture' | 'group' | 'individual' | 'place_spirit';
@@ -61,6 +62,7 @@ export type EdgeType =
   // Possession
   | 'possesses'        // actor possesses common artifact
   | 'bonded_to'        // actor bonded to legendary artifact
+  | 'accompanies'      // bearer (actor) → companion (THR-1096, AccompaniesEdgeProperties)
   | 'controls'         // faction/actor controls resource
   // Social
   | 'relates_to'       // inter-actor relationship (sentiment, strength, basis)
@@ -173,6 +175,29 @@ export interface MentorsEdgeProperties {
   initiativeId?: string;
   /** Set to true by the Sever the Bond divine action so the next tick runs Falling Out. */
   severedByDivineWill?: boolean;
+}
+
+/**
+ * Typed properties for `accompanies` edges (THR-1096).
+ * Directed bearer (actor) → companion. A companion has exactly one bearer:
+ * `mintCompanion` refuses a second incoming edge, and `getCompanions` reads
+ * this direction only.
+ *
+ * Callers must call touchWorld(runtime) after creating or mutating these edges.
+ */
+export interface AccompaniesEdgeProperties {
+  /** Tick the companion joined — inspectability, and the age shown on the card. */
+  sinceTick: number;
+  /**
+   * Remaining ticks for a hired/contracted companion, decremented by the
+   * condition-expiry phase. `null`/absent means they stay until a story event
+   * removes them — the common case.
+   */
+  ticksRemaining?: number | null;
+  /** Total contracted ticks, for the duration progress bar. */
+  totalTicks?: number | null;
+  /** Encounter or action id that brought them — every companion has a why. */
+  source: string;
 }
 
 /** Result type for graph mutations */
