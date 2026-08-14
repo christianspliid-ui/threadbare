@@ -1323,9 +1323,18 @@ export const LocationView = memo(function LocationView({
                 </p>
               ))}
             </div>
-            {/* Place of Power inspector (THR-153) — stream rate, holder, decay */}
+            {/* Place of Power inspector (THR-153) — holder, stream, decay, origin.
+                THR-1104: the panel names two entities, and both of this view's
+                existing handlers are what give them their pages (Laws 21/22) —
+                the holder opens the agent surface, the origin ruin zooms the map. */}
             {locationSubtype === 'place_of_power' && (
-              <PlaceOfPowerInspector location={location} graph={graph} tick={tick ?? 0} />
+              <PlaceOfPowerInspector
+                location={location}
+                graph={graph}
+                tick={tick ?? 0}
+                onOpenHolder={onAgentClick}
+                onNavigateToRuin={onNavigateToRuin}
+              />
             )}
           </div>
           {/* Hero landscape — Entity Visual Header primitive (THR-637).
