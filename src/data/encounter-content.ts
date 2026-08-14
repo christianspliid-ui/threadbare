@@ -2457,7 +2457,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         duration: 1,
         narrative: 'The keeper comes out of the back with a ledger and a look. Broken furniture is a number, and the number is coming to {actor}.',
         criticalSuccessAfterimage: '{actor} not only settles the keeper\'s rage but leaves the tavern better than {they} found it — the broken table replaced, a song started, {their} name buying a round it did not pay for. This becomes the house\'s favorite story about the night everything nearly went wrong.',
-        criticalFailureAfterimage: 'The keeper\'s anger finds a footing {actor} cannot argue past, and by morning the whole town has the tale — the stranger who broke the place and could not make it right. The doors that matter here shut before {they} reach them.',
+        criticalFailureAfterimage: 'The keeper\'s anger finds a footing {actor} cannot argue past, and by morning the whole town has the tale — the stranger who broke the place and could not make it right. The doors that matter here shut ahead of {them}.',
         onSuccess: {
           narrative: '{actor} pays the number without arguing it, then pays a little past it. The keeper puts the ledger away and pours {them} one on the house.',
           reputationDelta: 0.15,
@@ -2609,7 +2609,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: '{actor}\'s legs go on the walk back, and the noise turns before {they} reach the gate. Two attendants carry {them} out under it.',
+          narrative: '{actor}\'s legs go on the walk back, and the noise turns while the gate is still ahead of {them}. Two attendants carry {them} out under it.',
           reputationDelta: -0.08,
           rewardPool: {
             categoryWeights: { condition: 0.6, possession: 0.4 },
@@ -2714,7 +2714,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: '{actor} says too much, and the wrong parts of it. By the time {they} stop, half the room has already decided, and the trial is a formality with swords in it.',
+          narrative: '{actor} says too much, and the wrong parts of it. By the time {they} stop{s}, half the room has already decided, and the trial is a formality with swords in it.',
           reputationDelta: -0.02,
         },
       },
@@ -6325,7 +6325,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: 'An anchor slips at the third recitation and the rite comes apart in {actor}\'s hands. {They} are thrown clear with scorched palms and ringing ears. The breach is wider than it was, and now it has been touched.',
+          narrative: 'An anchor slips at the third recitation and the rite comes apart in {actor}\'s hands. The recoil throws {them} clear with scorched palms and ringing ears. The breach is wider than it was, and now it has been touched.',
           reputationDelta: -0.08,
         },
       },
@@ -6335,7 +6335,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'iron',
         difficulty: DEADLY_DIFFICULTY_BASE + DEADLY_DIFFICULTY_STEP * 2,
         duration: 3,
-        narrative: 'The last of it is will and not craft. {actor} has to drive the seal home against a pressure that has spent three days learning what {they} are afraid of.',
+        narrative: 'The last of it is will and not craft. {actor} has to drive the seal home against a pressure that has spent three days learning what frightens {them}.',
         onSuccess: {
           narrative: 'The breach shuts with a sound like the world letting out a breath it had been holding. {actor} stays kneeling in the quiet for longer than is dignified.',
           reputationDelta: 0.20,
@@ -6806,7 +6806,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'The knowledge dissolves in {actor}\'s hands at the crossing. {They} return with the outline of it and none of the content, and the outline will not leave {them} alone.',
+          narrative: 'The knowledge dissolves in {actor}\'s hands at the crossing. {They} return{s} with the outline of it and none of the content, and the outline will not leave {them} alone.',
           reputationDelta: -0.10,
           rewardPool: {
             categoryWeights: { bestowed_power: 0.8, condition: 0.2 },
@@ -6843,7 +6843,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           reputationDelta: 0.07,
         },
         onFailure: {
-          narrative: 'The dragon has {actor} placed before {they} finish crossing the scree, and lets {them} hear the sound it keeps for creatures it has already dismissed.',
+          narrative: 'The dragon has {actor} placed before the scree is crossed, and lets {them} hear the sound it keeps for creatures it has already dismissed.',
           reputationDelta: -0.06,
         },
       },
@@ -6854,7 +6854,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: DEADLY_DIFFICULTY_BASE + DEADLY_DIFFICULTY_STEP,
         duration: 3,
         narrative: 'The dragon names the terms itself: will, cunning, endurance, in that order and with no stated end. Most who accept do not walk away from it. {actor} accepts.',
-        criticalSuccessAfterimage: '{actor} does not merely endure the contest — {they} turn it, and set the dragon a question it has not been asked in an age. The creature goes still, then answers. What passes between them is not victory but recognition. The dragon keeps few names. It keeps this one.',
+        criticalSuccessAfterimage: '{actor} does not merely endure the contest — {they} turn{s} it, and set{s} the dragon a question it has not been asked in an age. The creature goes still, then answers. What passes between them is not victory but recognition. The dragon keeps few names. It keeps this one.',
         criticalFailureAfterimage: '{actor} fails the contest in a way the dragon finds genuinely interesting, which is worse than losing. It lets {them} go with a parting word that will not stop echoing — a truth about {actor} that {they} would have paid the dragon to keep to itself.',
         onSuccess: {
           narrative: '{actor} lasts to the end of the contest. The dragon acknowledges it out loud, once, and does not repeat itself. The acknowledgement is the whole prize, and both parties know it.',
@@ -6949,7 +6949,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           reputationDelta: 0.06,
         },
         onFailure: {
-          narrative: '{actor} goes out in the qualifiers. The gallery has moved on to the next pairing before {they} are off the sand.',
+          narrative: '{actor} goes out in the qualifiers. The gallery has moved on to the next pairing before the sand is behind {them}.',
           reputationDelta: -0.05,
         },
       },
@@ -6959,7 +6959,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'iron',
         difficulty: DEADLY_DIFFICULTY_BASE + DEADLY_DIFFICULTY_STEP - 5,
         duration: 2,
-        narrative: 'The semifinal draw is the one nobody wanted. The opponent has been fighting these rounds since before {actor} could hold a blade, and every competitor {they} have put down came away having learned one specific, expensive lesson.',
+        narrative: 'The semifinal draw is the one nobody wanted. The opponent has been fighting these rounds since before {actor} could hold a blade, and every competitor {they} put down came away having learned one specific, expensive lesson.',
         onSuccess: {
           narrative: '{actor} takes the semifinal on a move the opponent has apparently never had used against {them}. The crowd is slow to react, and then very loud.',
           reputationDelta: 0.12,
@@ -7230,7 +7230,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 1,
             forecastDelta: 0.06,
             imageTag: 'generic.focus',
-            fiction: 'The stroke settles into a count {they} stop having to keep. The arm does it without {them}.',
+            fiction: 'The stroke settles into a count {they} stop{s} having to keep. The arm does it without {them}.',
             effectLine: 'A small, reliable push toward keeping at it.',
             bandProse: {
               success: 'The count kept itself, and the edge came up under it stroke by stroke.',
@@ -7672,7 +7672,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         purposeLine: 'Give it a root',
         factorLines: [
           { text: 'The sky is open and the stars are out to be read.', polarity: 'for' },
-          { text: 'A drawn circle wants a weight, and {they} carry little.', polarity: 'against' },
+          { text: 'A drawn circle wants a weight, and there is little in the pack.', polarity: 'against' },
         ],
         narrative: 'A traced circle fades by dawn unless it is tied to a heavier thing. {actor} kneels at the north of the line and reaches past the camp for a hold — a star, a vow, the slow turn the sky makes over a sleeping road.',
         successAtCostAfterimage: 'The ward took root, and {they} gave up the ring off {their} hand to root it.',
@@ -8329,7 +8329,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 0,
             forecastDelta: 0.08,
             imageTag: 'generic.oath',
-            fiction: 'It does not occur to {them} that the road might be empty. {They} kneel the way a caller knocks at a door with a light behind it.',
+            fiction: 'It does not occur to {them} that the road might be empty. {They} kneel{s} the way a caller knocks at a door with a light behind it.',
             effectLine: 'A steady help, and it costs no essence.',
             bandProse: {
               critical_failure: 'They knelt certain of an answer, and built one out of the wind rather than get up without.',
@@ -8353,11 +8353,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         duration: 1,
         purposeLine: 'Wait without filling it',
         factorLines: [
-          { text: '{They} have waited before and know it runs longer than it feels.', polarity: 'for' },
+          { text: 'This is not the first wait, and it runs longer than it feels.', polarity: 'for' },
           { text: 'There is work left undone, and it has an hour on it.', polarity: 'against' },
         ],
         narrative: 'Half of praying is shutting up afterward. {actor} stays down, hands still flat, and lets the wait run past the point where it starts to itch.',
-        successAtCostAfterimage: 'An answer came. {They} were still on {their} knee when the rain started, and stayed there through it.',
+        successAtCostAfterimage: 'An answer came. The rain started with {them} still on {their} knee, and did not move {them}.',
         criticalSuccessAfterimage: 'The wait paid. {actor} came up off {their} knee knowing which fork to take, and could not have said who told {them}.',
         criticalFailureAfterimage: 'They waited long enough to build an answer out of {their} own voice, and walked off certain of it.',
         nudges: [
@@ -8408,11 +8408,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.11,
             imageTag: 'generic.order',
-            fiction: 'The wait takes the shape of a rite with a beginning and an end, and {they} know where in it {they} stand.',
+            fiction: 'The wait takes the shape of a rite with a beginning and an end, and {they} know{s} where in it {they} stand{s}.',
             effectLine: 'Strong help. The waiting has edges.',
             bandProse: {
               failure: 'The hour kept itself to the last beat, and the last beat came and went unanswered.',
-              critical_failure: 'They kept the hour so exactly that {they} were counting it instead of listening through it.',
+              critical_failure: 'The hour was kept so exactly that the counting replaced the listening.',
             },
           },
           {
@@ -8437,7 +8437,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 0,
             forecastDelta: 0.08,
             imageTag: 'generic.oath',
-            fiction: 'The wait does not curdle. {They} go on holding the gap open past where a harder head would fold it up.',
+            fiction: 'The wait does not curdle. {They} keep{s} the gap open past where a harder head would fold it up.',
             effectLine: 'A steady help, and it costs no essence.',
             bandProse: {
               critical_success: 'They waited past the sensible hour, and the hour past sensible was the one that answered.',
@@ -8679,7 +8679,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           { text: 'Their boots have not come off in three days.', polarity: 'against' },
           { text: 'Every noise past the firelight sounds like a horse.', polarity: 'against' },
         ],
-        narrative: '{actor} has walked since before light. The road is still in {their} legs when {they} sit down against the wall, and the fire is close enough to dry one boot at a time.',
+        narrative: '{actor} has walked since before light. The road is still in {their} legs when {they} sit{s} down against the wall, and the fire is close enough to dry one boot at a time.',
         successAtCostAfterimage: 'They slept, and woke with the wall\'s cold worked into one shoulder.',
         criticalSuccessAfterimage: 'They went down at dusk and did not move again until birds.',
         criticalFailureAfterimage: 'They sat up all night with {their} back to the wall, watching the dark past the fire.',
@@ -8775,7 +8775,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           reputationDelta: 0.02,
         },
         onFailure: {
-          narrative: '{actor} cannot stay down. {they} are up twice before midnight and rise stiffer than {they} lay down.',
+          narrative: '{actor} cannot stay down. Twice before midnight the bed gives {them} up, and {they} rise{s} stiffer than {they} lay down.',
           reputationDelta: -0.01,
         },
       },
@@ -8788,9 +8788,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         purposeLine: 'Count the road back',
         factorLines: [
           { text: 'A whole night of firelight and no one asking for {them}.', polarity: 'for' },
-          { text: 'Most of the last month happened while {they} were tired.', polarity: 'against' },
+          { text: 'Most of the last month happened on no sleep.', polarity: 'against' },
         ],
-        narrative: 'Where has {actor} actually been? {they} walk the last month back in {their} head, one stop at a time, starting from the fire and going backward.',
+        narrative: 'Where has {actor} actually been? {they} walk{s} the last month back in {their} head, one stop at a time, starting from the fire and going backward.',
         successAtCostAfterimage: 'They found the turn where it went wrong, and knew whose turn it was.',
         criticalSuccessAfterimage: 'The whole month laid itself out end to end, and the pattern in it was plain.',
         criticalFailureAfterimage: 'They went back over it until the order came apart and the days would not stay in sequence.',
@@ -8844,7 +8844,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.11,
             imageTag: 'generic.settling',
-            fiction: 'The parts {they} keep turning over stop turning. What is heavy goes to the bottom and stays there.',
+            fiction: 'The parts {they} keep{s} turning over stop turning. What is heavy goes to the bottom and stays there.',
             effectLine: 'Strong help. The small grievances sink out of the way.',
             bandProse: {
               near_miss: 'The small grievances sank. The big one sat on top where it always had.',
@@ -8961,7 +8961,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         traitId: 'trait.core.core_warmth.virtue',
         forecastDelta: 0.05,
         difficultyDelta: -0.02,
-        factorLine: 'Warm, they get a hand on the man before {they} ask him anything.',
+        factorLine: 'Warm, {they} get{s} a hand on the man before asking him anything.',
         addNudgeIds: ['tend_wounds.hold_them_still'],
       },
     ],
@@ -9017,7 +9017,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 3,
             forecastDelta: 0.14,
             imageTag: 'generic.warmth',
-            fiction: 'The flow out of the arm drops to a seep. The cloth under it stops darkening while {they} look at it.',
+            fiction: 'The flow out of the arm drops to a seep. The cloth under it stops darkening while {they} look{s} at it.',
             effectLine: 'A large help. There is time to look properly.',
             bandProse: {
               success_at_cost: 'The bleeding held off long enough to work. It came back the moment {they} moved him.',
@@ -9228,7 +9228,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           { text: 'Thorn scrub covers the whole eastern slope to head height.', polarity: 'against' },
           { text: 'Light goes off the western wall an hour before dusk.', polarity: 'against' },
         ],
-        narrative: '{actor} walks the outside edge of the place, hand on the wall where there is wall. Where a man could come up unseen, {they} stop and look back at the roofs to see what he would see.',
+        narrative: '{actor} walks the outside edge of the place, hand on the wall where there is wall. Where a man could come up unseen, {they} stop{s} and look{s} back at the roofs to see what he would see.',
         successAtCostAfterimage: 'They finished the circuit, and finished it limping off the thorn slope.',
         criticalSuccessAfterimage: 'One pass, every approach, and the two nobody had ever marked.',
         criticalFailureAfterimage: 'They lost the wall in the scrub and came out on the wrong side of the ditch after dark.',
@@ -9285,7 +9285,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             fiction: 'Noise from the far side of the wall arrives as if it were made at {their} shoulder — a bucket, a latch, a cough.',
             effectLine: 'Good help. The far side of the wall stops being quiet.',
             bandProse: {
-              near_miss: 'They heard the latch on the far gate. They heard it as {they} were already past it.',
+              near_miss: 'The latch on the far gate came through late. It came through with the gate already behind {them}.',
               critical_failure: 'Every sound came to {them} at once, from every side, and {they} stopped being able to place any of it.',
             },
           },
@@ -9296,7 +9296,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.09,
             imageTag: 'generic.stillness',
-            fiction: 'The dry ditch stops smoking under {their} boots. What {they} kick up drops straight back down.',
+            fiction: 'The dry ditch stops smoking under {their} boots. What {they} kick{s} up drops straight back down.',
             effectLine: 'Good help. Nothing announces where they are walking.',
             bandProse: {
               failure: 'No dust went up behind {them} at all. The dogs had them by the second corner regardless.',
@@ -9848,8 +9848,8 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: HARD_DIFFICULTY_BASE + HARD_DIFFICULTY_STEP,
         duration: 2,
         narrative: 'There is no clever approach left. It has to be met head on — will against will, and whoever stops first loses more than the argument.',
-        criticalSuccessAfterimage: '{actor} does not merely outlast it — {they} name it, and the naming undoes it. Where it stood, the air closes like a wound healing clean.',
-        criticalFailureAfterimage: 'The unknown takes a piece {actor} cannot name in return. {They} walk out whole in body, but a door was left open behind {their} eyes, and it does not shut.',
+        criticalSuccessAfterimage: '{actor} does not merely outlast it — {they} name{s} it, and the naming undoes it. Where it stood, the air closes like a wound healing clean.',
+        criticalFailureAfterimage: 'The unknown takes a piece {actor} cannot name in return. {They} walk{s} out whole in body, but a door was left open behind {their} eyes, and it does not shut.',
         onSuccess: {
           narrative: '{actor} does not flinch and does not look away. It finds no purchase, and withdraws the way cold leaves a room — slowly, and without apology.',
           reputationDelta: 0.15,
@@ -10333,7 +10333,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         traitId: 'trait.core.core_integrity.virtue',
         forecastDelta: 0.04,
         difficultyDelta: -0.01,
-        factorLine: 'What {they} bring to the stones is what {they} would bring unwatched.',
+        factorLine: 'What {they} bring{s} to the stones is what {they} would bring unwatched.',
         addNudgeIds: ['shrine.give_the_good_one', 'shrine.mean_it_going_down'],
       },
       {
@@ -10356,10 +10356,10 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         duration: 1,
         purposeLine: 'Weigh what to give',
         factorLines: [
-          { text: '{They} have carried the same coin since spring, keeping it for this.', polarity: 'for' },
+          { text: 'The same coin has been in the pack since spring, kept for this.', polarity: 'for' },
           { text: 'The pack holds three days of food and one knife, both spoken for.', polarity: 'against' },
         ],
-        narrative: 'A god is owed better than the cheapest item in the pack. {actor} turns out what {they} carry onto a flat stone and looks at it: coin, a comb, dried meat, a ring off a dead man\'s hand.',
+        narrative: 'A god is owed better than the cheapest item in the pack. {actor} turns the pack out onto a flat stone and looks at it: coin, a comb, dried meat, a ring off a dead man\'s hand.',
         successAtCostAfterimage: 'They gave the ring. It had been meant to settle a debt, and the debt is still standing.',
         criticalSuccessAfterimage: 'They set down the coin carried since spring without weighing it against the others, because it had always been the one.',
         criticalFailureAfterimage: 'They picked out the comb with its teeth gone, told themselves it was humble, and knew better while doing it.',
@@ -10371,7 +10371,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 1,
             forecastDelta: 0.06,
             imageTag: 'generic.focus',
-            fiction: 'The pack empties onto the stone and {they} look at each item for what it would cost to walk on without it.',
+            fiction: 'The pack empties onto the stone and {they} look{s} at each item for what it would cost to walk on without it.',
             effectLine: 'A small, reliable push toward an honest count.',
             bandProse: {
               success: 'Laid out honestly, one item was plainly worth more to give up than the rest.',
@@ -10389,7 +10389,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             effectLine: 'Strong help. The gift is judged by loss.',
             bandProse: {
               success_at_cost: 'They felt exactly what the ring was worth to keep, and gave it anyway.',
-              failure: 'Every item on the stone weighed the same, which meant {they} were not touching any of them.',
+              failure: 'Every item on the stone weighed the same, which meant nothing on it was being given up.',
             },
           },
           {
@@ -10441,7 +10441,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 0,
             forecastDelta: 0.08,
             imageTag: 'generic.oath',
-            fiction: 'The cheap option is on the stone with the rest and {they} do not pick it up. It was never going to be picked up.',
+            fiction: 'The cheap option is on the stone with the rest and stays there. It was never going to be picked up.',
             effectLine: 'A steady help, and it costs no essence.',
             bandProse: {
               near_miss: 'They gave the good one and spent the walk out counting what it had cost.',
@@ -10511,7 +10511,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             fiction: 'The worn dish in the stone shows itself under the moss, exactly where a hundred hands put it.',
             effectLine: 'Good help. There is a right place for it.',
             bandProse: {
-              near_miss: 'The hollow lay under moss where {they} were not looking, and the gift went down beside it.',
+              near_miss: 'The hollow lay under moss outside the search, and the gift went down beside it.',
             },
           },
           {
@@ -10535,7 +10535,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.09,
             imageTag: 'generic.luck',
-            fiction: '{They} stop aiming. The gift goes down where the hand was already going.',
+            fiction: '{They} stop{s} aiming. The gift goes down where the hand was already going.',
             effectLine: 'A steady help. Aim stops being the trouble.',
             bandProse: {
               critical_success: '{They} did not aim, and it went dead centre of the hollow, where no amount of practice puts it.',
@@ -10575,11 +10575,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         duration: 2,
         purposeLine: 'Stay past the rite',
         factorLines: [
-          { text: '{They} have no one waiting and no bed to reach by dark.', polarity: 'for' },
+          { text: 'No one is waiting, and there is no bed to reach by dark.', polarity: 'for' },
           { text: 'Most who wait at these stones hear the wind and go home.', polarity: 'against' },
         ],
         narrative: 'The faithful stay on after the gift is down. {actor} keeps the knee on wet stone and listens through the wind for whatever sits behind it.',
-        successAtCostAfterimage: 'An answer came, and by then {they} were too cold to stand without hauling on the stones.',
+        successAtCostAfterimage: 'An answer came, and by then the cold had set in too deep to stand without hauling on the stones.',
         criticalSuccessAfterimage: 'What arrived was a heading — plain as a hand laid on the shoulder, turning {them} to face the right road.',
         criticalFailureAfterimage: 'The wind did all the talking and {they} took it for an answer, and set off the way it happened to be blowing.',
         nudges: [
@@ -10660,7 +10660,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 0,
             forecastDelta: 0.08,
             imageTag: 'generic.oath',
-            fiction: 'The hour where a sensible person stands up and goes comes and goes, and {they} are still down on the stone.',
+            fiction: 'The hour where a sensible person stands up and goes comes and goes, and finds {them} still down on the stone.',
             effectLine: 'A steady help, and it costs no essence.',
             bandProse: {
               near_miss: 'They waited an hour past sense, and got a cold knee and the wind for it.',
