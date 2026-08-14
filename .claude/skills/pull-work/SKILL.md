@@ -1,7 +1,7 @@
 ---
 name: pull-work
 description: Canonical Claude Code pickup workflow for claiming Linear work safely from Ready for Dev.
-last_validated_against: 2026-08-07
+last_validated_against: 2026-08-14
 ---
 
 # Pull Work
@@ -397,8 +397,10 @@ So spend one `get_issue` on the partner and branch on its state — never on the
 | Partner state | Verdict | Action |
 |---|---|---|
 | `Done` (merged PR confirmed) | Reason inapplicable | Claim past it; record the reversal per THR-688 Rule B above |
-| `In Dev` / `Ready for Dev` | Genuinely live and moving | Honour the mutex — serialize, bounce, continue to the next candidate |
+| `In Dev` / `Ready for Dev` | Genuinely live and moving | Honour the mutex — route the candidate to `Todo` per the paragraph below, then continue to the next candidate |
 | `Todo` / `Backlog` | **Deadlock, not a queue** | Resolve per the paragraph below — do not bounce on this alone |
+
+**Honouring a mutex is a bounce, and a bounce removes the candidate from the queue (impediment #551 ×2).** The row above used to read "serialize, bounce, continue" without saying where the *candidate* goes, and the natural release back to `Ready for Dev` re-offers it as the top pickup candidate every hour: THR-1096 was claimed, mutex-verified against THR-1082's held PR, and released on 2026-08-12 — then re-claimed and re-verified to the identical verdict on 08-13, ~4 min per run with no path to progress, consuming the run's product-work slot each time. Instead: confirm the candidate carries a `blockedBy` relation on the mutex partner (`get_issue` with `includeRelations: true`; add it with `save_issue(id, blockedBy: [partnerId])` if missing), then `save_issue(id, state: "Todo")`, verify-after-write, and comment naming the partner and what clears it. `Todo` is routed, not stranded: `tb-orchestrator` T1 reads exactly that relation and promotes the ticket back to `Ready for Dev` when the partner clears — the THR-846 rule that every park must name the lane that reads the destination.
 
 On a `Todo`/`Backlog` partner, check whether the partner's *own* blocker has shipped — `git log origin/main --grep="Fixes THR-YYY" --regexp-ignore-case --extended-regexp --oneline`, or `get_issue` on the blocker:
 

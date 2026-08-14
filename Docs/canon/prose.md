@@ -131,6 +131,15 @@ The player is a god who observes through threads and intervenes indirectly. They
 
 If a draft has the player choosing what the mortal does, it is wrong even if the prose is gorgeous. Reframe the choice as god intervention or reject it.
 
+## Verification probes over the corpus (hard rules, 2026-08-14)
+
+The THR-1101 rewrite campaign logged ~13 false-signal impediments in one week from sweep probes that looked right and measured the wrong thing (impediments #552, #559 ×2, #560 ×2, #563 ×2, #565, #568, #569, #571–#573, #575, #577). Before writing any corpus sweep or render probe:
+
+- **Probe the converted corpus, never the authored shape.** Sweeps run over the exported `ENCOUNTER_TEMPLATES` (post-converter). The converter is a field *allowlist*: raw authored field names silently cover ~half the corpus and read as a clean pass (#552, #559, #565, #572). The converter also mirrors step prose onto `narrativeTemplates.*`, so per-string duplicate checks double-count (#573).
+- **Pronoun tokens are actor-bound.** `{they}`/`{their}` always resolve to the *actor* — using one for any other subject renders the actor's pronoun for someone else (#563 ×2). `{es}` is not a token; there is no verb-agreement token to reach for (#569). Build `NarrativeContext.pronouns` from the real field names or `enrichProse` throws (#560).
+- **A removal pass needs a baseline diff.** A pass whose purpose is removing a pattern can add new hits of it invisibly; run the same detector before and after and diff the *sets*, not the counts (#575). Prefer generic-rule detectors over hand-written allowlists — the allowlist reported zero and was wrong (#568).
+- **CLI `aftermath pick` double-applies** any reaction that already auto-applied during `tick`, duplicating every effect kind — treat duplicate edges/seeds in a pick-driven run as tool-induced until proven otherwise (#553, #577).
+
 ## Active design plans
 
 - [2026-03-09-prose-generator-framework-design.md](../plans/2026-03-09-prose-generator-framework-design.md) — the four-system pipeline architecture. Status: `current` (de-facto; pre-frontmatter convention).
@@ -160,4 +169,4 @@ If a draft has the player choosing what the mortal does, it is wrong even if the
 
 ## Last-reviewed
 
-2026-08-01 by Claude Code (THR-899 — recorded the scoped vagueness model: evasive terms everywhere, natural indefinites in outcome prose only, intensifiers at warn; `nudgeAuditDetectors.ts` named the single authority). Previous edit: 2026-07-05 by Claude Code (THR-609 — added the register model section). Review trigger: monthly, or when any linked plan moves to `superseded`, or when the systemic wiring guide gains a new capability that prose authors must respect.
+2026-08-14 by Claude Code (weekly retro — added the corpus-verification-probe rules distilled from the THR-1101 campaign's false-signal cluster). Previous: 2026-08-01 by Claude Code (THR-899 — recorded the scoped vagueness model: evasive terms everywhere, natural indefinites in outcome prose only, intensifiers at warn; `nudgeAuditDetectors.ts` named the single authority). Previous edit: 2026-07-05 by Claude Code (THR-609 — added the register model section). Review trigger: monthly, or when any linked plan moves to `superseded`, or when the systemic wiring guide gains a new capability that prose authors must respect.
