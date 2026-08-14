@@ -152,8 +152,46 @@ export interface ResolvedAftermathContext {
   readonly reaction: EncounterAftermathReaction;
 }
 
-interface ResolveAftermathContextError {
+export interface ResolveAftermathContextError {
   readonly error: string;
+  /**
+   * THR-1112: set when the refusal is "the tick loop already applied this", not
+   * "there is nothing here". Carries the tick the autonomous phase consumed the
+   * aftermath at, when that was recorded (`tick: undefined` for a flag written
+   * before `autonomousAftermathAppliedTick` existed).
+   *
+   * Deliberately an *optional field on the existing error shape* rather than a third
+   * union member: every caller already branches on `'error' in resolved` and so
+   * refuses correctly without being touched, while a caller that wants to phrase the
+   * refusal as a notice rather than a failure can read this.
+   */
+  readonly alreadyApplied?: { readonly tick: number | undefined };
+}
+
+/**
+ * Refuse a manual re-application of an aftermath the tick loop already consumed (THR-1112).
+ *
+ * `phaseAutonomousAftermath` flags the action once it applies its reaction, and that
+ * flag was previously read only by the phase's own re-scan. Every other entry point —
+ * CLI `aftermath pick`, the debug bridge — resolved the same action again and applied
+ * every effect a second time: duplicate agreement edges, duplicate encounter seeds with
+ * byte-identical ids (impediments #553, #577). Since those runs are exactly the ones
+ * hunting real engine defects, a tool-induced duplicate reads as an idempotency bug in
+ * whatever was just built.
+ *
+ * Returns null when the action is free to apply.
+ */
+function alreadyAppliedRefusal(
+  action: UnifiedAction,
+  agentId: string,
+): ResolveAftermathContextError | null {
+  if (!action.autonomousAftermathApplied) return null;
+  const tick = action.autonomousAftermathAppliedTick;
+  const when = tick === undefined ? 'autonomously' : `autonomously at tick ${tick}`;
+  return {
+    error: `Aftermath for '${action.templateId}' (action ${action.actionId}, agent '${agentId}') was already applied ${when}. Nothing to apply.`,
+    alreadyApplied: { tick },
+  };
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -323,6 +361,8 @@ export function resolveAftermathContextForAgent(
   const notificationSelectedAction = resolveActionFromNotification(state, candidateActions, agentId);
   if (notificationSelectedAction === undefined) {
     const fallbackAction = sortAftermathCandidates(candidateActions)[0];
+    const fallbackRefusal = alreadyAppliedRefusal(fallbackAction, agentId);
+    if (fallbackRefusal) return fallbackRefusal;
     const reactions = fallbackAction.aftermathSummary?.reactions;
     if (!reactions || reactions.length === 0) {
       return { error: `Pending aftermath for agent '${agentId}' has no authored reactions.` };
@@ -342,6 +382,9 @@ export function resolveAftermathContextForAgent(
   if (notificationSelectedAction === null) {
     return { error: `No unresolved aftermath notification for agent '${agentId}'.` };
   }
+
+  const notificationRefusal = alreadyAppliedRefusal(notificationSelectedAction, agentId);
+  if (notificationRefusal) return notificationRefusal;
 
   const reactions = notificationSelectedAction.aftermathSummary?.reactions;
   if (!reactions || reactions.length === 0) {

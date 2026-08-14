@@ -94,13 +94,23 @@ function buildHeroSet(state: GameState): ReadonlySet<string> {
   return ids;
 }
 
-/** Mark a single action's aftermath as autonomously applied (idempotency). */
+/**
+ * Mark a single action's aftermath as autonomously applied (idempotency).
+ *
+ * Records the tick alongside the flag (THR-1112) so the manual paths — CLI
+ * `aftermath pick`, the debug bridge — can refuse a second application *and* name
+ * when this phase already ran it. The flag alone was enough for this phase's own
+ * re-scan; it was not enough for anyone downstream to explain the refusal.
+ */
 function markApplied(
   actions: readonly UnifiedAction[],
   actionId: string,
+  tick: number,
 ): UnifiedAction[] {
   return actions.map((a) =>
-    a.actionId === actionId ? { ...a, autonomousAftermathApplied: true } : a,
+    a.actionId === actionId
+      ? { ...a, autonomousAftermathApplied: true, autonomousAftermathAppliedTick: tick }
+      : a,
   );
 }
 
@@ -183,7 +193,7 @@ export function processAutonomousAftermath(state: GameState, ctx: PhaseContext):
     s = {
       ...next,
       archetypeDrift: nextDrift,
-      unifiedActions: markApplied(next.unifiedActions, action.actionId),
+      unifiedActions: markApplied(next.unifiedActions, action.actionId, s.tick),
     };
 
     if (mutationSummary.touchedStructure) touchStructure(runtime);

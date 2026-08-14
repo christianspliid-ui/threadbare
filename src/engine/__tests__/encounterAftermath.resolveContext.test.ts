@@ -192,6 +192,109 @@ describe('resolveAftermathContextForAgent', () => {
     expect(result).toEqual({ action: second, reaction: REACTION_B });
   });
 
+  // ─── THR-1112: pick-after-auto-resolve ──────────────────────────────────────
+  //
+  // `phaseAutonomousAftermath` flags an action once it applies the aftermath, but
+  // that flag used to be read only by the phase's own re-scan. A later manual pick
+  // (CLI `aftermath pick`, the debug bridge) resolved the same action again and
+  // re-ran every effect — duplicate agreement edges, duplicate seeds with
+  // byte-identical ids (impediments #553, #577), in exactly the runs that hunt real
+  // engine defects.
+  describe('refuses an aftermath the tick loop already applied (THR-1112)', () => {
+    it('refuses on the notification path, naming the tick it was applied at', () => {
+      const state = createMinimalState();
+      const action = {
+        ...makeAction('ua-1', 'enc.alpha', 1, [REACTION_A, REACTION_B]),
+        autonomousAftermathApplied: true,
+        autonomousAftermathAppliedTick: 7,
+      };
+      state.unifiedActions = [action];
+      state.encounterNotifications = [makeNotification('ua-1', 'enc.alpha')];
+
+      const result = resolveAftermathContextForAgent(state, 'actor-1', 'reaction-b');
+      expect(result).toEqual({
+        error: "Aftermath for 'enc.alpha' (action ua-1, agent 'actor-1') was already applied autonomously at tick 7. Nothing to apply.",
+        alreadyApplied: { tick: 7 },
+      });
+    });
+
+    it('refuses on the no-notification fallback path — the path the CLI repro takes', () => {
+      const state = createMinimalState();
+      state.unifiedActions = [{
+        ...makeAction('ua-1', 'enc.alpha', 1, [REACTION_A]),
+        autonomousAftermathApplied: true,
+        autonomousAftermathAppliedTick: 2,
+      }];
+      state.encounterNotifications = [];
+
+      const result = resolveAftermathContextForAgent(state, 'actor-1');
+      expect(result).toEqual({
+        error: "Aftermath for 'enc.alpha' (action ua-1, agent 'actor-1') was already applied autonomously at tick 2. Nothing to apply.",
+        alreadyApplied: { tick: 2 },
+      });
+    });
+
+    // Fail-soft (NFP #4): a flag written before `autonomousAftermathAppliedTick`
+    // existed still refuses — it just cannot say when.
+    it('still refuses when the applied-tick was never recorded', () => {
+      const state = createMinimalState();
+      state.unifiedActions = [{
+        ...makeAction('ua-1', 'enc.alpha', 1, [REACTION_A]),
+        autonomousAftermathApplied: true,
+      }];
+      state.encounterNotifications = [makeNotification('ua-1', 'enc.alpha')];
+
+      const result = resolveAftermathContextForAgent(state, 'actor-1');
+      expect(result).toEqual({
+        error: "Aftermath for 'enc.alpha' (action ua-1, agent 'actor-1') was already applied autonomously. Nothing to apply.",
+        alreadyApplied: { tick: undefined },
+      });
+    });
+
+    // The guard must not swallow live work: a flagged action alongside an unflagged
+    // one leaves the unflagged one pickable.
+    it('still resolves an unflagged action when a sibling action is flagged', () => {
+      const state = createMinimalState();
+      const applied = {
+        ...makeAction('ua-1', 'enc.alpha', 4, [REACTION_A]),
+        autonomousAftermathApplied: true,
+        autonomousAftermathAppliedTick: 3,
+      };
+      const pending = makeAction('ua-2', 'enc.beta', 3, [REACTION_B]);
+      state.unifiedActions = [applied, pending];
+      state.encounterNotifications = [makeNotification('ua-2', 'enc.beta')];
+
+      const result = resolveAftermathContextForAgent(state, 'actor-1');
+      expect(result).toEqual({ action: pending, reaction: REACTION_B });
+    });
+
+    // The defect as the impediments recorded it: the second application re-ran the
+    // effects. Proven by state, not by the error string.
+    it('leaves the world untouched where a second application would have mutated it', () => {
+      const state = createMinimalState();
+      const action = makeAction('ua-1', 'enc.alpha', 1, [REACTION_A]);
+      state.unifiedActions = [action];
+      state.encounterNotifications = [makeNotification('ua-1', 'enc.alpha')];
+
+      // First application — the tick loop's, standing in for phaseAutonomousAftermath.
+      const firstRun = applyEncounterAftermathReaction(
+        state, action, REACTION_A, state.tick, createSimulationRuntime(),
+      );
+      const afterFirst: GameState = {
+        ...firstRun.state,
+        unifiedActions: firstRun.state.unifiedActions.map(a =>
+          a.actionId === 'ua-1'
+            ? { ...a, autonomousAftermathApplied: true, autonomousAftermathAppliedTick: firstRun.state.tick }
+            : a),
+      };
+
+      // The manual pick that used to re-apply.
+      const second = resolveAftermathContextForAgent(afterFirst, 'actor-1', 'reaction-a');
+      expect('error' in second).toBe(true);
+      expect((second as { alreadyApplied?: unknown }).alreadyApplied).toBeDefined();
+    });
+  });
+
   it('resolver selection produces the same aftermath mutation as direct reaction application', () => {
     const fromResolverState = createMinimalState();
     const directState = createMinimalState();
