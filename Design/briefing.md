@@ -1,30 +1,29 @@
 # Briefing
-**Generated:** 2026-08-14 09:02 local (07:02 UTC) · keep-work-flowing-cc
+**Generated:** 2026-08-14 09:56 local (07:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**Nothing needs you right now.** You cleared the only open ask yourself this morning, and the machine took it from there.
+**Nothing needs you right now — and the thing that was damming the queue has cleared itself.**
 
-At 07:59 you wrote *"Finish thr-1082."* Within the hour a session had done exactly that: resolved the merge conflict in three files, took the four full-size screenshots — two encounters across two outcome bands, each one verified as the ending it claimed to be — and armed the merge at 08:48. [PR #1415](https://github.com/christianspliid-ui/threadbare/pull/1415) is now waiting on its last green check and will merge itself with nobody present.
+[PR #1415](https://github.com/christianspliid-ui/threadbare/pull/1415) merged at 08:59 this morning, closing [THR-1082](https://linear.app/threadbare/issue/THR-1082) (consequence icon language). That was the last piece you touched — you wrote *"Finish thr-1082"* yesterday evening and have not needed to say anything since.
 
-When it lands, the two High-priority tickets dammed behind it release on their own: [THR-1096](https://linear.app/threadbare/issue/THR-1096) (companion attachments) and [THR-1097](https://linear.app/threadbare/issue/THR-1097) (the content pass that rewrites the endings). Neither needs you to start.
+Two High-priority pieces of **real game work** were released behind it and are now sitting claimable: [THR-1096](https://linear.app/threadbare/issue/THR-1096) (companion attachments — a person in your retinue who grants bonuses without being an agent) and [THR-1097](https://linear.app/threadbare/issue/THR-1097) (the content pass that rewrites every vertical-slice ending as cause → change). Neither needs you to start; both will be picked up by the hourly executor.
 
 ## Also waiting (1)
 
 - [Parked option: a Tenacious-style trait](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md) — no ticket, no urgency, nothing downstream waiting. Listed so it is not silently forgotten.
 
-## From Christian
-
-- **07:59 local — "Finish thr-1082."** Acted on, and it is done bar the check. Detail above; a short receipt went back to you on Discord.
-
 ## Queue
 
-Ten items ready for pickup — healthy by count, and **still every one Low or Medium process cleanup**, now the seventh consecutive run. But the drought has a visible end this time: [THR-1096](https://linear.app/threadbare/issue/THR-1096) and [THR-1097](https://linear.app/threadbare/issue/THR-1097) unblock on the merge above, and a genuinely player-visible content ticket was filed this morning without you — [THR-1107](https://linear.app/threadbare/issue/THR-1107): 21 encounter lines render ungrammatically for he/she agents (*"she stand for"*), including the one worked example every prose batch has been calibrating itself against.
+**Fifteen items ready, and for the first time in seven runs the shelf is not all process cleanup.** The drought called out in every recent brief broke this morning: three of the fifteen are High, and two of those three ([THR-1096](https://linear.app/threadbare/issue/THR-1096), [THR-1097](https://linear.app/threadbare/issue/THR-1097)) are player-visible game work rather than machinery tidying. The third is a real defect — [THR-1106](https://linear.app/threadbare/issue/THR-1106), an action-card animation timer that keeps firing after its card is gone and fails the required check on unrelated pull requests.
 
-- [THR-1082](https://linear.app/threadbare/issue/THR-1082) — In Dev, merge armed, no longer parked. Nothing owed by anyone.
-- [THR-1101](https://linear.app/threadbare/issue/THR-1101) — the mad-lib rewrite drained a tenth family overnight: **hire** ([PR #1443](https://github.com/christianspliid-ui/threadbare/pull/1443)). **138 of 168 templates now read as written prose — 82%.** One family left, `explore` (30), and it is a two-run job.
+- **The verdict sessions are not ready for you yet, and I have deliberately not asked.** The orchestrator lane flagged [THR-907](https://linear.app/threadbare/issue/THR-907) (prose, firing, UI, game feel) and [THR-974](https://linear.app/threadbare/issue/THR-974) (does a resolved nudge visibly change the world) as waiting on you this morning. Under [your own rule from yesterday](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/canon/process.md) — no gameplay review until data, logic, content and UI are all at the same level — neither is level yet, so this is a status line and not an invitation:
+  - **THR-907 is 18 encounters away.** Judging "does the firing rhythm work" means free play across the whole encounter pool, and 18 of 168 templates still read as mad-libs. That is two more automated runs, likely done today.
+  - **THR-974 is further out** — it waits on [THR-1097](https://linear.app/threadbare/issue/THR-1097), the ending-rewrite content pass, which was only unblocked an hour ago and has not started.
+  - You will get **one** ask, once, when the last piece lands.
+- [THR-1101](https://linear.app/threadbare/issue/THR-1101) — the mad-lib rewrite ran two more batches overnight: **hire** ([PR #1443](https://github.com/christianspliid-ui/threadbare/pull/1443)) and the survey half of **explore** ([PR #1444](https://github.com/christianspliid-ui/threadbare/pull/1444)). **150 of 168 encounter templates now read as written prose — 89%.** The remaining 18 split into two batches with distinct voices: reading the stars, and hearing rumours in a garrison.
 
 ## Health
 
-- **Lane silence — visibility only, no action.** The gap checker still reports the same 20.6-hour quiet spell from 10–11 August. It is four days old, the lanes resumed on their own, and there is nothing left to do about it. The smaller gaps in its list are all overnight-shaped and declined under your 2026-08-08 ruling.
-- Everything else is green. The live site is serving the latest commit on `main` ([13a1a9c3](https://github.com/christianspliid-ui/threadbare/commit/13a1a9c3)), automated checks and both scheduled background jobs are running normally, all nine scheduled lanes are within schedule, and the home tree is current. The worktree reaper ran 20 minutes ago; the broken toolchain install it flagged earlier this morning has been repaired and its latest pass is clean.
+- **Lane silence — visibility only, no action.** The gap checker still reports the same 20.6-hour quiet spell from 10–11 August. It is four days old, the lanes came back on their own, and there is nothing left to do about it. The smaller gaps in its list are all overnight-shaped and declined under your 2026-08-08 ruling.
+- Everything else is green. The live site is serving the newest commit on `main` ([fa1edf71](https://github.com/christianspliid-ui/threadbare/commit/fa1edf71)), no pull requests are stuck waiting to merge, automated checks and both background jobs are running normally, all nine scheduled lanes are on schedule, the home tree is current, and the worktree reaper ran cleanly 16 minutes ago.
