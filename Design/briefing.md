@@ -1,19 +1,18 @@
 # Briefing
 
-**Generated:** 2026-08-14 02:56 local (2026-08-14 00:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-08-14 03:55 local (2026-08-14 01:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**Nothing needs you right now.** Seventh brief running. The campaign carrying the last four of them landed batch 4 half an hour ago.
+**Open one attended session and finish the aftermath work — and I owe you a correction, because six briefs running told you this was not yours. It is.**
 
-**The trade family stops reading as mad-libs** ([THR-1101](https://linear.app/threadbare/issue/THR-1101), [PR #1437](https://github.com/christianspliid-ui/threadbare/pull/1437), merged 02:30). All 15 token-carrying `trade` templates authored out of the `{adj}`/`{verb}`/`{noun}` shape — 109 token lines, in a Merchant-Consortium voice: the caravan deal, the guild negotiation, the smuggler's pact, the haggle, market day, the dead drop. **Remaining: 103 templates**, down from 118 an hour ago.
+[THR-1082](https://linear.app/threadbare/issue/THR-1082) is built. [PR #1415](https://github.com/christianspliid-ui/threadbare/pull/1415) has been sitting **31 hours**, and its last remaining requirement is a screenshot of the new aftermath at full size. Every brief since yesterday morning has said an agent could take that screenshot unattended and should stop handing it to you. **That was wrong**, and reading the impediment log properly is what settled it: the automated runs cannot start the game at all — not "cannot photograph it", cannot *start* it. Nobody is present to approve the command that launches it, so there is nothing to point a camera at. The route I kept recommending assumed a running game and there never was one.
 
-Two findings worth keeping, both of which only appear by doing the work:
+So this genuinely needs you present, and it is not a design question — nobody is asking you to judge whether the new consequence chips read well. It is the mechanical check that the new layout does not overflow or land off-screen, which is the one thing the automated substitute cannot see.
 
-- **Last hour's "two failure shapes" finding replicated, and is now a rule.** `trade` split **7 true mad-libs to 8 already-authored sentences with tokens wedged in** — near-identical to `build`'s 7/9. The wedged half again produced the worse readings, because a parasite on a good sentence is more conspicuous than uniform noise: a merchant leaving a stall *"{adj}-handed"* where the sentence plainly wanted *empty*-handed; a failure opening *"Something {verb}s in translation"*. The scoping consequence is now written down — **grep the lines, then read a sample before committing to a slice**, because 109 lines here cost what 82 did two batches ago and 123 did last batch.
-- **Third batch running that rendering caught grammar reading could not.** `{They}` resolves to a *singular* pronoun, so a bare verb after it renders *"Knowing what she hold matters less than knowing what she need"*. One of the three was introduced by this batch; the rest were already sitting in the corpus.
+**What it unblocks:** two High-priority tickets are stuck behind that merge — [THR-1096](https://linear.app/threadbare/issue/THR-1096) (companion attachments) and [THR-1097](https://linear.app/threadbare/issue/THR-1097), the content pass that rewrites the endings themselves. THR-1097 is the reason the aftermath looked half-done when you opened it on the 13th: new chips over old writing. It cannot start until this merges.
 
-*Nothing here is queued on you.*
+**What to do:** open a Claude Code session on the repo and say *"finish THR-1082"*. The session can do the rest itself — the branch has also drifted into conflict with `main` in three files, and an attended session can resolve that, run the capture, and merge in one pass. Expect it to take one look, not a review.
 
 ## Also waiting (1)
 
@@ -21,19 +20,20 @@ Two findings worth keeping, both of which only appear by doing the work:
 
 ## Queue
 
-**Healthy — 10 ready, 2 in flight. Nothing blocked on you.**
+**Healthy — 10 ready, 2 in flight.**
 
-- **[THR-1101](https://linear.app/threadbare/issue/THR-1101) is four batches deep and still running**, correctly staying In Dev. Four families drained in about six hours (story beats, duel, build, trade); 103 templates left. This is the live content pipeline and it is feeding itself without a single handoff.
-- **[THR-1082](https://linear.app/threadbare/issue/THR-1082) is the other item in flight**, parked ~32 hours with nobody holding it — deliberate and documented, so the WIP slot is correctly free. Its [PR #1415](https://github.com/christianspliid-ui/threadbare/pull/1415) still has not moved and still conflicts with `main` in three files, two of them the engine file it rewrites (`aftermathWords.ts` and its test). Every hour it sits, the merge gets more expensive. Still an executor problem, not yours.
-- **Yesterday's warning comes due tonight.** I said that if that merge were still stuck by *this evening* it stops being a merge problem and becomes a supply problem worth your attention. It is 3 a.m., not evening — so this is a note that the clock is running, not the ask itself. Work is flowing in the meantime: four content merges since the line was written.
-- **Three player-facing items remain on the shelf**: the encounter tone tier that is wired but never fed ([THR-1102](https://linear.app/threadbare/issue/THR-1102)), and two surfaces still showing raw key:value labels ([THR-1103](https://linear.app/threadbare/issue/THR-1103), [THR-1104](https://linear.app/threadbare/issue/THR-1104)). The other seven are process tidying. None of it needs you.
+- **[THR-1101](https://linear.app/threadbare/issue/THR-1101) is now five families deep and still running.** The `assist` family drained since the last brief ([PR #1438](https://github.com/christianspliid-ui/threadbare/pull/1438), merged 03:36) — 15 templates, 107 token lines, in a duty-and-mundane-care register. **88 templates left**, down from 103 an hour ago. Five families in about seven hours, no handoff needed.
+  - The half-and-half split held a third time (6 true mad-libs to 9 authored-sentences-with-tokens-wedged-in). Three families clustering near the same ratio makes it predictive, so the next batch can scope from it instead of re-sampling.
+  - Two more grammar defects fixed, **both pre-existing** — *"before she are prepared"*, *"and she carry none of the three"*. They only exist after the words get substituted in, so they are invisible in the source. The batch found them because removing a token puts your eye on a line whose other half may have been broken all along.
+- **[THR-1082](https://linear.app/threadbare/issue/THR-1082) is the other item in flight** and is the ask above. Parked ~33 hours with nobody holding it, which is correct — the WIP slot stays free while it waits for you.
+- **Three player-facing items on the shelf**: the encounter tone tier that is wired but never fed ([THR-1102](https://linear.app/threadbare/issue/THR-1102)), and two surfaces still showing raw key:value labels ([THR-1103](https://linear.app/threadbare/issue/THR-1103), [THR-1104](https://linear.app/threadbare/issue/THR-1104)). The other seven are process tidying.
 - Stale: [THR-991](https://linear.app/threadbare/issue/THR-991), untouched 11 days.
 
 ## Health
 
-**Deploy, CI, both scheduled workflows and all nine task heartbeats are green**, and the copy of the repo on your machine is current with `main`. Three executor-side items, none of them yours:
+**All green.** Deploy is serving the latest commit, CI is running normally, both scheduled workflows are healthy, all nine task heartbeats are on schedule, the housekeeping job ran clean at 03:40, and the copy of the repo on your machine is current with `main`.
 
-- **[PR #1415](https://github.com/christianspliid-ui/threadbare/pull/1415)'s hold still needs re-judging by an agent, and this lane still has no way to reach one.** The hold cites only the capture route that fails in unattended runs; [CLAUDE.md](https://github.com/christianspliid-ui/threadbare/blob/main/CLAUDE.md) sanctions a second one that works there. That recommendation has now sat in six briefs unread, because the executor lane reads Linear and not this file. **The structural finding stands: this lane can recommend to you and cannot recommend to an agent.** Logged for Friday's retro rather than handed to you.
-- **Last night's orchestrator run and yesterday's grooming run both still label that pixel pass as needing you** — grooming's words: *"in your next attended session, open the seeded build, look at two encounters across two outcome bands, and if it reads right, arm auto-merge."* Holding the line: gate calibration is an agent verdict under [rule 4](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/canon/process.md), your 2026-08-12 ruling, and [rule 5](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/canon/process.md) independently disqualifies the look while [THR-1097](https://linear.app/threadbare/issue/THR-1097)'s content pass is still `Todo`. Flagged so you know the disagreement exists, not to hand it back.
-- **Two stale worktrees still need disposition**, both holding unmerged work the housekeeping job will not delete on its own. That job ran healthy at 02:40.
+Two notes, neither needing you:
+
+- **Two stale worktrees still need disposition**, both holding unmerged work the housekeeping job will not delete on its own.
 - **Overnight quiet, declined as normal** — the same nightly shape as every night this week, per your 2026-08-08 ruling. The older 20.6-hour stoppage of 10→11 August is re-flagged by the probe every run; it was recorded resolved on 12 August and handed to Friday's retro, so it stays declined rather than re-raised.
