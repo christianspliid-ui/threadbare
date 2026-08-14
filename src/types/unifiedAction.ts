@@ -604,6 +604,61 @@ export type EncounterAftermathReactionEffect =
     readonly stackCount?: number;
     readonly when?: EffectPredicate;
   }
+  | {
+    /**
+     * THR-1110 — grant any catalog attachment as an authored consequence.
+     *
+     * THR-1082's palette rule names all seven attachment categories as legitimate
+     * consequence material, but this vocabulary could reach only two of them:
+     * `condition` (via `condition_attachment` / `apply_condition`) and `possession`
+     * (via `spawn_artifact`). An aftermath that wanted to hand over a blessing, a
+     * curse, a bestowed power, a spell or an agreement had no member to say it with,
+     * so the author's only options were to fake it in prose — a chip claiming state
+     * nothing wrote, the pathology THR-971's single-sourcing rule exists to stop —
+     * or drop the consequence. Measured on THR-1097: A Bargain at the Crossroads is
+     * literally an agreement and shipped carried by an `encounter_seed` instead.
+     *
+     * This is a **dispatcher, not a new system** (Law 3 / THR-658). Both write paths
+     * already existed and are called unchanged:
+     *   • node-backed (`blessing`, `curse`, `bestowed_power`, `spell`, and the two
+     *     already-covered categories) → `instantiateReward`, which clones the
+     *     template node and writes the `possesses` / `has_trait` edge.
+     *   • edge-backed (`agreement`) → `instantiateAgreementReward`, which had been
+     *     fully built since the attachment-slot design and had **zero callers** —
+     *     a dormant path, the THR-614 shape.
+     *
+     * Category is never declared: it is a property of the template, resolved by the
+     * same lookup the reward pool uses. An author names a thing, not a taxonomy.
+     */
+    readonly kind: 'attachment_grant';
+    /**
+     * Attachment template id. Either an agreement catalog id
+     * (`AGREEMENT_REWARD_TEMPLATES[].id`) or a graph template node id from the
+     * reward/starter catalogs. Pinned live by the grant-liveness sweep.
+     */
+    readonly templateId: string;
+    /** Who receives it. Defaults to the encounter's actor. Accepts scene sentinels. */
+    readonly targetAgentId?: string;
+    /**
+     * The other party — **agreements only, and required for them**.
+     *
+     * An agreement is a claim *between* two entities, unlike a condition which sits
+     * on one, so it is edge-backed (`relates_to` with `agreement: true`) and needs
+     * both ends. Accepts scene sentinels (`$actor`, `$target`, `$cast:<key>`) and
+     * may name an agent, faction or location. An agreement grant whose counterparty
+     * does not resolve to a real node no-ops with a trace rather than writing a
+     * dangling edge (NFP #4) — a promise needs someone on the other end of it.
+     *
+     * Ignored by node-backed grants.
+     */
+    readonly counterpartyId?: string;
+    /**
+     * Duration override in ticks; `null` makes it permanent. When omitted the
+     * template's own duration stands.
+     */
+    readonly durationOverride?: number | null;
+    readonly when?: EffectPredicate;
+  }
   // ─── World-shaping effects (THR-115) ──────────────────────────────────────
   | {
     readonly kind: 'spawn_artifact';

@@ -97,6 +97,29 @@ export const AGREEMENT_REWARD_TEMPLATES: AgreementRewardTemplate[] = [
     ticksRemaining: null,
   },
   {
+    /**
+     * THR-1110 — the crossroads promise. A gift accepted in advance, with the
+     * collection named: come back here when the moon is full. The bearer holds a
+     * claim against them, not an injury, which is why the chip reads BOND.
+     *
+     * `ticksRemaining` is `null` — a promise does not lapse on its own. The scene
+     * that schedules the collection sets the real term with the effect's
+     * `durationOverride`, so the one number lives with the encounter that means it
+     * (the vertical slice passes `SLICE_FULL_MOON_DELAY_TICKS`) rather than being
+     * copied here where it would drift.
+     */
+    id: 'agreement.bargain.promise_given',
+    name: 'A Promise Given',
+    agreementType: 'bargain',
+    tier: 2,
+    tags: ['#relic', '#veil', '#eye'],
+    terms: 'A word given at a crossroads, to be collected in person at the next full moon.',
+    effects: [
+      { type: 'social_modifier', targetFilter: 'any', cooperationBias: 0.05 },
+    ],
+    ticksRemaining: null,
+  },
+  {
     id: 'agreement.treaty.trade',
     name: 'Trade Treaty',
     agreementType: 'treaty',

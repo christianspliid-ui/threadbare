@@ -350,7 +350,8 @@
     </h2>
 
     <ul class="contracts">
-      <li class="live"><span class="flow">Encounters <span class="arrow">⟶</span> Attachments — victories and disasters grant items, blessings, wounds, debts</span><span class="chip live">LIVE</span></li>
+      <li class="live"><span class="flow">Encounters <span class="arrow">⟶</span> Attachments — victories and disasters grant items, blessings, wounds, debts</span><span class="chip live">LIVE</span>
+        <span class="note">Second entry point added 2026-08-14 (THR-1110). The contract had one route — <code>assembleRewardPool</code>, a weighted random draw — so an aftermath could weight a <em>category</em> but never name the thing. <code>attachment_grant</code> lets an authored consequence call <code>instantiateReward</code> / <code>instantiateAgreementReward</code> directly from <code>encounterAftermath.ts</code>, which is a new <em>read site</em> on this contract, not a new write path. The agreement half of the promise in this row's own description ("debts") had in fact been severed all along: <code>instantiateAgreementReward</code> was fully built and had <strong>zero callers</strong>, so no encounter could ever grant one. Agreements bind two parties, so the effect requires a <code>counterpartyId</code> and refuses to write a dangling edge when it does not resolve.</span></li>
       <li class="live"><span class="flow">Attachment <span class="arrow">⟶</span> Action resolution — what you carry shapes the dice when you act</span><span class="chip live">LIVE</span></li>
       <li class="live"><span class="flow">Attachment <span class="arrow">⟶</span> Traits while held — a treasure map makes you a ruin-seeker</span><span class="chip live">LIVE</span></li>
       <li class="live"><span class="flow">Attachment <span class="arrow">⟶</span> Character sheet — the Attachments tab shows what an agent carries</span><span class="chip live">LIVE</span></li>

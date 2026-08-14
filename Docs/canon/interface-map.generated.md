@@ -96,7 +96,7 @@ remediation ticket or the build fails.
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
 | `ascendant-affinity-cast-capability` | The ascendant's persisted reach affinities become its capability for a cast — the god's innate aptitude is not on the raw scale `computeRawScore` walks, so a literal read left every cast at capability 0.02 and one reachable outcome band. | node-prop: `domainAffinities`, `computeCapabilityWithRawBonus` | Encounters & Dilemmas | 🟢 LIVE | — |
-| `attachment-encounter-rewards` | Encounters grant rewards, which become possessions. | function: `assembleRewardPool` | Attachments, Items & Possessions | 🟢 LIVE | — |
+| `attachment-encounter-rewards` | Encounters grant rewards, which become possessions — by random draw from the pool, or as an authored consequence naming one template. | function: `assembleRewardPool`, `instantiateReward`, `instantiateAgreementReward` | Attachments, Items & Possessions | 🟢 LIVE | — |
 | `authored-nudge-hand-reaches-resolution` | A god may bend the odds of an attended encounter step with authored, essence-priced cards — the mechanical form of "the intervention shifted the odds, not the outcome". Without this read, an attended encounter offers the player nothing to do but watch. | function: `collectNudgeModifiers`, `selectActiveRider`, `applyRider`, `buildNudgeHand` | Encounters & Dilemmas | 🔴 LEAKED | THR-774 |
 | `authored-quintessence-shift` | An encounter can finally author an existential price — what the trial cost a mortal in spirit rather than in coin or reputation. | function: `quintessence_shift`, `pendingQuintessenceEvents` | Spheres & Quintessence | 🔵 UNVERIFIED-OK | — |
 | `authored-step-difficulty-player-resolution` | Authored step difficulty finally prices a player cast. 82 of 136 ascendant-castable templates carried difficulties 0.1–0.6 that the player branch discarded before this contract existed; the same value now feeds the shared capability-vs-difficulty roll, floored at success-at-cost. | function: `resolveUncontestedStep`, `difficulty` | Encounters & Dilemmas | 🟢 LIVE | — |
@@ -283,13 +283,14 @@ remediation ticket or the build fails.
 
 ### `attachment-encounter-rewards` — 🟢 LIVE
 
-- **Intent:** Encounters grant rewards, which become possessions.
+- **Intent:** Encounters grant rewards, which become possessions — by random draw from the pool, or as an authored consequence naming one template.
 - **Producer → Consumer:** Encounters & Dilemmas → Attachments, Items & Possessions
 - **Module:** `src/engine/rewardPool.ts`
-- **Production hits:** 4 total — 2 write, 2 read, 0 unclassified
+- **Production hits:** 9 total — 2 write, 3 read, 4 unclassified
 - **Write sites:** `src/engine/rewardPool.ts`, `src/types/attachments.ts`
-- **Read sites:** `src/engine/orchestrator.ts`, `src/engine/unifiedActionResolution.ts`
-- **Verdict:** Verified 2026-07-23: possesses edges grow 7→82 over 120 ticks (seed 42, medium). Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified)
+- **Read sites:** `src/engine/encounterAftermath.ts`, `src/engine/orchestrator.ts`, `src/engine/unifiedActionResolution.ts`
+- **Other hits:** `src/engine/debugWorldSpawnTools.ts`, `src/engine/nudgeGrantLiveness.ts`, `src/engine/phaseDoom.ts`, `src/types/unifiedAction.ts`
+- **Verdict:** Verified 2026-08-14: possesses edges grow 7→82 over 120 ticks (seed 42, medium). Authored arm (THR-1110): the crossroads accept path writes one agreement edge binding the actor to the materialized stranger, 132-tick term (seed 42, medium, CLI). Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified)
 
 ### `attachment-grants-trait-while-held` — 🟢 LIVE
 
@@ -349,9 +350,10 @@ remediation ticket or the build fails.
 - **Intent:** Worldgen seeds starting possessions so agents begin already carrying history.
 - **Producer → Consumer:** Agent Lifecycle → Attachments, Items & Possessions
 - **Module:** `src/engine/seedAttachments.ts`
-- **Production hits:** 2 total — 1 write, 1 read, 0 unclassified
+- **Production hits:** 3 total — 1 write, 1 read, 1 unclassified
 - **Write sites:** `src/engine/seedAttachments.ts`
 - **Read sites:** `src/engine/worldSeed.ts`
+- **Other hits:** `src/engine/nudgeGrantLiveness.ts`
 - **Verdict:** Verified 2026-07-23: 7 possesses edges present at tick 0. Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified)
 
 ### `authored-nudge-hand-reaches-resolution` — 🔴 LEAKED

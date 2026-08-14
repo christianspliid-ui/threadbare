@@ -39,6 +39,11 @@ import type {
   StepNudge,
   UnifiedActionTemplate,
 } from '../../types/unifiedAction';
+import type {
+  EncounterSupportActorSpec,
+  EncounterSupportBundle,
+} from '../../types/encounter';
+import { DEFAULT_SETTING_SUPPORT_BUNDLES } from '../default-support-bundles';
 import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
 
 // ─── Slice tuning (NFP #1) ───────────────────────────────────────────
@@ -1402,6 +1407,47 @@ export const SLICE_RIDERS_BEHIND_CARAVAN: UnifiedActionTemplate = {
 // Promise→payoff: what the man is — deliberately deferred into the seeded
 // sequel; the Eye step's bands give partial truth only.
 
+/**
+ * THR-1110 — the stranger is cast, not just narrated.
+ *
+ * An agreement is a claim *between* two parties, so the promise cannot be written
+ * to the graph without someone standing on the other end of it. He also has to
+ * outlive the scene: the accept path's seed already carries `inheritContext: true`,
+ * whose whole purpose is to make the follow-up "star the same people" — and with no
+ * support bundle there were no bindings to inherit, so The Full Moon Collection was
+ * inheriting an empty cast while its prose says "The stranger is there before the
+ * light finishes arriving, same coat, same clean boots." Casting him honours what
+ * that seed was already written to do.
+ *
+ * `must-persist` for the same reason: a promise whose holder is garbage-collected
+ * at scene end is not a promise. He reuses no existing NPC role — nothing already
+ * in the world is this — and the spawn name keeps the register of the scene, which
+ * never tells you what he is.
+ */
+const CROSSROADS_STRANGER_SPEC: EncounterSupportActorSpec = {
+  kind: 'actor',
+  key: 'stranger',
+  delivery: 'lazy-materialize-on-trigger',
+  persistence: 'must-persist',
+  supportRole: 'crossroads_stranger',
+  spawnNpcRole: 'wanderer',
+  spawnName: 'The Stranger at the Crossroads',
+};
+
+/**
+ * Composed, not replaced. `withDefaultSupportBundle` returns early on any template
+ * that declares a bundle of its own, so naming only the stranger would have
+ * silently dropped the wayside setting-class default (THR-1044) this encounter has
+ * been staged with — its ambient keeper and traveler. The stranger is appended
+ * rather than prepended so the ambient cast keeps the binding order the rest of the
+ * slice is staged and asserted against; he is the scene's subject, not its scenery,
+ * and is addressed by key.
+ */
+const CROSSROADS_SUPPORT_BUNDLE: EncounterSupportBundle = [
+  ...DEFAULT_SETTING_SUPPORT_BUNDLES.wayside,
+  CROSSROADS_STRANGER_SPEC,
+];
+
 const CROSSROADS_HAND: readonly StepNudge[] = [
   {
     // Type: Boost — common; the old tales as a measuring stick. Leans toward
@@ -1577,6 +1623,10 @@ export const SLICE_BARGAIN_AT_CROSSROADS: UnifiedActionTemplate = {
       'traveler’s own quiet wanting, or he is guessing well.',
   },
   locationSubtypes: expandSettings(['wayside']),
+  // THR-1110 — casts the stranger so the promise has a second party to bind to,
+  // and so the accept path's `inheritContext: true` has bindings to carry into
+  // The Full Moon Collection.
+  supportBundle: CROSSROADS_SUPPORT_BUNDLE,
   traitVariants: [
     {
       // A True mortal treats a promise as a real object before giving one away.
@@ -1615,7 +1665,12 @@ export const SLICE_BARGAIN_AT_CROSSROADS: UnifiedActionTemplate = {
             polarity: 'info',
             category: 'bond',
             direction: 'loss',
-            stateNoun: { text: 'the promise at the crossroads' },
+            // THR-1110 — the noun now names a thing the bearer actually holds: the
+            // `agreement.bargain.promise_given` edge the reaction below writes. It
+            // took a `tooltipId` rather than a `visualKind` because an agreement has
+            // no art, and the type's rule is that a concept with no tile takes a
+            // tooltip instead of a wrong one.
+            stateNoun: { text: 'the promise at the crossroads', tooltipId: 'ui.agreement' },
           },
         ],
         reactions: [
@@ -1624,6 +1679,22 @@ export const SLICE_BARGAIN_AT_CROSSROADS: UnifiedActionTemplate = {
             label: 'Carry the promise',
             intent: 'The road goes on, with an appointment at the end of it.',
             effects: [
+              {
+                // THR-1110 — the promise is a real claim the bearer holds, not only
+                // a scheduled encounter. Before the `attachment_grant` member existed
+                // the seed below was the sole durable write, so nothing read the bond,
+                // nothing gated on it, and it could not be inspected on the bearer.
+                // Both writes ride the base reaction deliberately: the bands on this
+                // path author `overview` + `changes` only, because
+                // `applyAftermathOutcomeBand` replaces reactions wholesale and a band
+                // that authored its own would drop everything here.
+                kind: 'attachment_grant',
+                templateId: 'agreement.bargain.promise_given',
+                targetAgentId: '$actor',
+                counterpartyId: '$cast:stranger',
+                // The bond falls due exactly when the collection does.
+                durationOverride: SLICE_FULL_MOON_DELAY_TICKS,
+              },
               {
                 kind: 'encounter_seed',
                 templateId: SLICE_TEMPLATE_IDS.fullMoon,
@@ -1651,7 +1722,7 @@ export const SLICE_BARGAIN_AT_CROSSROADS: UnifiedActionTemplate = {
                 polarity: 'info',
                 category: 'bond',
                 direction: 'loss',
-                stateNoun: { text: 'the promise at the crossroads' },
+                stateNoun: { text: 'the promise at the crossroads', tooltipId: 'ui.agreement' },
               },
             ],
           },
