@@ -13,12 +13,14 @@ import { STARTER_POSSESSIONS, STARTER_CONDITIONS } from '../../data/starter-atta
 import { AGREEMENT_REWARD_TEMPLATES } from '../../data/agreement-reward-catalog';
 import { SLOT_TAG_DISPLAY_NAMES, SUBCATEGORY_TO_SLOT_TAG } from '../../data/attachment-slot-constants';
 import { RARITY_TIER_NAMES, RARITY_TIER_COLORS } from '../../types/rarity';
+import { SPHERE_NAMES } from '../../types/index';
 import type { RarityTier } from '../../types/rarity';
 import type { GraphNode } from '../../types/graph';
 import { getAttachmentGlyph } from '../Game/attachmentGlyphs';
 import { ACTION_ART } from '../Game/actionArt';
 import { isStarterActionId } from '../../engine/actionUnlock';
 import { effectSourceFor, type EffectSource } from '../../data/actionEffectSource';
+import { formatEssenceLabel } from '../shared/formatEssence';
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -104,6 +106,113 @@ const REACH_DISPLAY: Record<string, string> = {
   flesh: 'Flesh', time: 'Time', life: 'Life',
 };
 
+/**
+ * `ActionScale` in display form (THR-1103).
+ *
+ * The scale axis reached the player raw — `regional` in a detail row and again as a tag chip —
+ * while the reach two lines above it resolved through {@link REACH_DISPLAY}, so one panel showed
+ * a resolved key and an unresolved one side by side. Unlike `crudType` (dropped outright by
+ * THR-1076 because no honest player-facing word exists for it), scale *is* player-meaningful:
+ * it says how far the verb reaches, which is exactly the kind of thing a player weighs before
+ * spending on it. So this one is resolved rather than deleted.
+ */
+const SCALE_DISPLAY: Record<string, string> = {
+  personal: 'Personal', local: 'Local', regional: 'Regional', cosmic: 'Cosmic',
+};
+
+/**
+ * The twelve Spheres in display form (THR-1103), derived from the canonical list so it cannot drift.
+ *
+ * **Why this is inside THR-1103 rather than filed after it.** The ticket scopes reach, scale and
+ * visibility — but three sphere keys (`life`, `time`, `shadow`) are *also* reach keys, so a raw
+ * sphere tag is indistinguishable on the panel from the raw reach tag this ticket exists to fix,
+ * and the invariant test cannot pin one without the other. `Star · life sphere` shows the two
+ * spellings side by side, which is the precise defect the ticket describes.
+ *
+ * Note the corpus also carries `shadow` / `star` / `void` as `sphereAffinity`, none of which are
+ * Spheres — they are reach names in a sphere field. Those fall to `resolveDisplay`'s plain-English
+ * fallback and warn once, which is Law 14's prescribed miss behaviour and surfaces the content
+ * defect instead of hiding it behind a hand-written row. Filed separately; not repaired here,
+ * because correcting authored content is a content call, not a display one.
+ */
+const SPHERE_DISPLAY: Record<string, string> = Object.fromEntries(
+  SPHERE_NAMES.map(s => [s, s.charAt(0).toUpperCase() + s.slice(1)]),
+);
+
+/**
+ * Attachment `visibility` in display form (THR-1103).
+ *
+ * `divine_only` is the member that makes this unambiguous — a `snake_case` enum named by Law 14
+ * verbatim. The rest read as English by luck, not by resolution, which is why they route through
+ * the same vocabulary rather than being left to chance.
+ */
+const VISIBILITY_DISPLAY: Record<string, string> = {
+  public: 'Public', known: 'Known', hidden: 'Hidden',
+  discoverable: 'Discoverable', divine_only: 'Divine only',
+};
+
+/** Vocabulary misses already warned about, so the warning fires once per key, not once per entry. */
+const _warnedDisplayKeys = new Set<string>();
+
+/**
+ * Resolve an internal key through a display vocabulary — Law 14's required shape.
+ *
+ * The law is specific about the miss case: *"A key the vocabulary cannot resolve renders as its
+ * best plain-English fallback and warns once, never as the key."* The `VOCAB[key] ?? key` idiom
+ * this replaces satisfies neither half — it renders the raw key and says nothing, so a newly
+ * added enum member reaches the player silently and looks deliberate. Fail-soft per NFP #4: a
+ * missing vocabulary row degrades the wording, never the render.
+ */
+function resolveDisplay(
+  vocabulary: Record<string, string>,
+  key: string | undefined | null,
+  vocabularyName: string,
+): string {
+  if (!key) return '';
+  const resolved = vocabulary[key];
+  if (resolved) return resolved;
+
+  const warnKey = `${vocabularyName}:${key}`;
+  if (!_warnedDisplayKeys.has(warnKey)) {
+    _warnedDisplayKeys.add(warnKey);
+    console.warn(
+      `[codexRegistry] ${vocabularyName} has no display row for '${key}' — ` +
+      `rendering a plain-English fallback. Add the row (UI Law 14).`,
+    );
+  }
+  // Best plain-English fallback: separators to spaces, leading capital. `divine_only` would
+  // read `Divine only` even with no vocabulary row at all.
+  return key.replace(/[_.]+/g, ' ').replace(/^./, c => c.toUpperCase());
+}
+
+/**
+ * An action's price, in the shared essence display vocabulary (THR-1103).
+ *
+ * **The Law 13 call, made and recorded** — the one judgment this ticket asked for. Law 13 bans raw
+ * magnitudes on mortal-facing surfaces, with a ratified exception (2026-08-06, THR-890) for
+ * *resource-pool balances in persistent chrome*. A Codex detail row is neither a pool balance nor
+ * persistent chrome, so on a plain reading that exception does not reach it — and the conclusion
+ * still is that **the numeral stays**, for a reason the exception clause is not the source of.
+ *
+ * Essence is separately and deliberately exempt *as a price*: `shared/formatEssence.ts` (THR-1006)
+ * states it outright — "Essence is the one resource the nudge model shows the player as a numeral
+ * on purpose … a price you pay has to be countable" — and every cost surface in the game already
+ * quotes it that way. Banding this one to a word ("slight" / "steep") would make the Codex the
+ * only surface whose price cannot be weighed against the counter the player pays it from, which
+ * is the failure the Law 13 amendment of 2026-08-12 describes: an adverb carries no scale a reader
+ * can place against the adverb above it.
+ *
+ * So the defect here was never the numeral — it was `String(template.essenceCost)`, which is the
+ * exact raw interpolation THR-1006 exists to prevent: no unit, and seventeen digits of IEEE-754
+ * noise for an authored fractional price like `0.05`. Routing through {@link formatEssenceLabel}
+ * makes the Codex quote the same pool the same way as the hand and the nudge stage. `0` renders
+ * `Free`, matching `ActionCard`.
+ */
+function essenceCostLabel(cost: number | undefined): string {
+  const value = cost ?? 0;
+  return value === 0 ? 'Free' : formatEssenceLabel(value);
+}
+
 // ─── Data Mappers ────────────────────────────────────────────────
 
 function resolveSlotTag(node: GraphNode): string {
@@ -186,7 +295,9 @@ function mapCondition(node: GraphNode): CodexEntry {
       { label: 'Type', value: displaySlot },
       { label: 'Tier', value: RARITY_TIER_NAMES[tier] },
       ...(p.domainContributions ? [{ label: 'Domain Effects', value: formatDomainContributions(p.domainContributions as Record<string, number>) }] : []),
-      ...(p.visibility ? [{ label: 'Visibility', value: p.visibility as string }] : []),
+      // THR-1103 filed this row against `mapPossession`; it lives here in `mapCondition` —
+      // `mapPossession` has no Visibility row at all. Fixed where it actually renders.
+      ...(p.visibility ? [{ label: 'Visibility', value: resolveDisplay(VISIBILITY_DISPLAY, p.visibility as string, 'VISIBILITY_DISPLAY') }] : []),
     ],
   };
 }
@@ -218,20 +329,23 @@ function mapDivineAction(template: typeof UNIFIED_ACTION_TEMPLATES[number]): Cod
     tierColor: RARITY_TIER_COLORS[tier] ?? '#888',
     category: 'divine',
     subcategory: 'divine',
-    subtitle: `${REACH_DISPLAY[reach] ?? reach} \u00B7 ${template.sphereAffinity ?? 'unknown'} sphere`,
+    subtitle: `${resolveDisplay(REACH_DISPLAY, reach, 'REACH_DISPLAY')} \u00B7 ${resolveDisplay(SPHERE_DISPLAY, template.sphereAffinity, 'SPHERE_DISPLAY') || 'Unknown'} sphere`,
     summary: template.description ?? '',
     flavorText: template.narrativeTemplates?.initiation,
     technicalEffect: template.technicalEffect,
     effectSource: effectSourceFor(template),
     requiresReach: template.requiresReach,
     isAscendantAction: true,
-    tags: [reach, template.sphereAffinity ?? ''].filter(Boolean),
+    tags: [
+      resolveDisplay(REACH_DISPLAY, reach, 'REACH_DISPLAY'),
+      resolveDisplay(SPHERE_DISPLAY, template.sphereAffinity, 'SPHERE_DISPLAY'),
+    ].filter(Boolean),
     isStarter: template.starter === true || isStarterActionId(template.id),
     details: [
-      { label: 'Reach', value: REACH_DISPLAY[reach] ?? reach },
-      { label: 'Sphere', value: template.sphereAffinity ?? 'none' },
-      { label: 'Essence Cost', value: String(template.essenceCost) },
-      { label: 'Scale', value: template.scale },
+      { label: 'Reach', value: resolveDisplay(REACH_DISPLAY, reach, 'REACH_DISPLAY') },
+      { label: 'Sphere', value: resolveDisplay(SPHERE_DISPLAY, template.sphereAffinity, 'SPHERE_DISPLAY') || 'None' },
+      { label: 'Cost', value: essenceCostLabel(template.essenceCost) },
+      { label: 'Scale', value: resolveDisplay(SCALE_DISPLAY, template.scale, 'SCALE_DISPLAY') },
     ],
   };
 }
@@ -249,18 +363,22 @@ function mapMortalAction(template: typeof UNIFIED_ACTION_TEMPLATES[number]): Cod
     tierColor: RARITY_TIER_COLORS[tier] ?? '#888',
     category: 'actions',
     subcategory: reach,
-    subtitle: REACH_DISPLAY[reach] ?? reach,
+    subtitle: resolveDisplay(REACH_DISPLAY, reach, 'REACH_DISPLAY'),
     summary: template.description ?? '',
     flavorText: template.narrativeTemplates?.initiation,
     technicalEffect: template.technicalEffect,
     effectSource: effectSourceFor(template),
-    tags: [reach, template.scale, template.sphereAffinity ?? ''].filter(Boolean),
+    tags: [
+      resolveDisplay(REACH_DISPLAY, reach, 'REACH_DISPLAY'),
+      resolveDisplay(SCALE_DISPLAY, template.scale, 'SCALE_DISPLAY'),
+      resolveDisplay(SPHERE_DISPLAY, template.sphereAffinity, 'SPHERE_DISPLAY'),
+    ].filter(Boolean),
     isStarter: template.starter === true || isStarterActionId(template.id),
     details: [
-      { label: 'Reach', value: REACH_DISPLAY[reach] ?? reach },
-      { label: 'Scale', value: template.scale },
-      { label: 'Essence Cost', value: String(template.essenceCost) },
-      ...(template.sphereAffinity ? [{ label: 'Sphere', value: template.sphereAffinity }] : []),
+      { label: 'Reach', value: resolveDisplay(REACH_DISPLAY, reach, 'REACH_DISPLAY') },
+      { label: 'Scale', value: resolveDisplay(SCALE_DISPLAY, template.scale, 'SCALE_DISPLAY') },
+      { label: 'Cost', value: essenceCostLabel(template.essenceCost) },
+      ...(template.sphereAffinity ? [{ label: 'Sphere', value: resolveDisplay(SPHERE_DISPLAY, template.sphereAffinity, 'SPHERE_DISPLAY') }] : []),
     ],
   };
 }
@@ -282,20 +400,24 @@ function mapTargetAction(
     tierColor: RARITY_TIER_COLORS[tier] ?? '#888',
     category,
     subcategory: reach,
-    subtitle: REACH_DISPLAY[reach] ?? reach,
+    subtitle: resolveDisplay(REACH_DISPLAY, reach, 'REACH_DISPLAY'),
     summary: template.description ?? '',
     flavorText: template.narrativeTemplates?.initiation,
     technicalEffect: template.technicalEffect,
     effectSource: effectSourceFor(template),
     requiresReach: template.requiresReach,
     isAscendantAction: true,
-    tags: [reach, template.scale, template.sphereAffinity ?? ''].filter(Boolean),
+    tags: [
+      resolveDisplay(REACH_DISPLAY, reach, 'REACH_DISPLAY'),
+      resolveDisplay(SCALE_DISPLAY, template.scale, 'SCALE_DISPLAY'),
+      resolveDisplay(SPHERE_DISPLAY, template.sphereAffinity, 'SPHERE_DISPLAY'),
+    ].filter(Boolean),
     isStarter: template.starter === true || isStarterActionId(template.id),
     details: [
-      { label: 'Reach', value: REACH_DISPLAY[reach] ?? reach },
-      { label: 'Scale', value: template.scale },
-      { label: 'Essence Cost', value: String(template.essenceCost) },
-      ...(template.sphereAffinity ? [{ label: 'Sphere', value: template.sphereAffinity }] : []),
+      { label: 'Reach', value: resolveDisplay(REACH_DISPLAY, reach, 'REACH_DISPLAY') },
+      { label: 'Scale', value: resolveDisplay(SCALE_DISPLAY, template.scale, 'SCALE_DISPLAY') },
+      { label: 'Cost', value: essenceCostLabel(template.essenceCost) },
+      ...(template.sphereAffinity ? [{ label: 'Sphere', value: resolveDisplay(SPHERE_DISPLAY, template.sphereAffinity, 'SPHERE_DISPLAY') }] : []),
     ],
   };
 }
@@ -328,13 +450,13 @@ function mapAgreement(template: typeof AGREEMENT_REWARD_TEMPLATES[number]): Code
 
 function formatReachBonus(bonus: Record<string, number>): string {
   return Object.entries(bonus)
-    .map(([reach, val]) => `${val >= 0 ? '+' : ''}${val} ${REACH_DISPLAY[reach] ?? reach}`)
+    .map(([reach, val]) => `${val >= 0 ? '+' : ''}${val} ${resolveDisplay(REACH_DISPLAY, reach, 'REACH_DISPLAY')}`)
     .join(', ');
 }
 
 function formatDomainContributions(contributions: Record<string, number>): string {
   return Object.entries(contributions)
-    .map(([domain, val]) => `${val >= 0 ? '+' : ''}${val.toFixed(2)} ${REACH_DISPLAY[domain] ?? domain}`)
+    .map(([domain, val]) => `${val >= 0 ? '+' : ''}${val.toFixed(2)} ${resolveDisplay(REACH_DISPLAY, domain, 'REACH_DISPLAY')}`)
     .join(', ');
 }
 
@@ -376,13 +498,16 @@ function mapResourceClass(resourceId: string): CodexEntry {
     tierColor: RARITY_TIER_COLORS[tier] ?? '#888',
     category: 'resources',
     subcategory: cls.category,
-    subtitle: `${cls.category} · ${cls.primarySphere}`,
+    // Sphere resolves here too — a resource's `primarySphere` is the same key vocabulary as an
+    // action's `sphereAffinity`, and it reached the player raw in the subtitle, a tag chip and a
+    // detail row (THR-1103). `cls.category` is left alone deliberately: it is filed, not fixed.
+    subtitle: `${cls.category} · ${resolveDisplay(SPHERE_DISPLAY, cls.primarySphere, 'SPHERE_DISPLAY')}`,
     summary: getResourceTierProse(resourceId, 'scarce'),
     flavorText: getResourceTierProse(resourceId, 'surplus'),
-    tags: [cls.category, cls.primarySphere],
+    tags: [cls.category, resolveDisplay(SPHERE_DISPLAY, cls.primarySphere, 'SPHERE_DISPLAY')],
     details: [
       { label: 'Class', value: cls.category },
-      { label: 'Sphere affinity', value: cls.primarySphere },
+      { label: 'Sphere affinity', value: resolveDisplay(SPHERE_DISPLAY, cls.primarySphere, 'SPHERE_DISPLAY') },
       { label: 'Trade value', value: cls.baseValue >= 1.2 ? 'high' : cls.baseValue >= 0.9 ? 'solid' : 'modest' },
       { label: 'Scarcity bite', value: cls.scarcitySensitivity >= 1.0 ? 'sharp' : 'gentle' },
     ],
