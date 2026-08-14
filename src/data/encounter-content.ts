@@ -372,13 +372,18 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'iron',
         difficulty: DIFFICULTY_BASE,
         duration: 1,
-        narrative: 'The mouth of the deep yawns before {actor}. Darkness coils within, and the first step demands resolve.',
+        // THR-1101: authored out of the `{adj}`/`{verb}` mad-lib shape (explore-family
+        // batch, survey slice). Register: survey work is measurement under conditions
+        // that do not care about you — the place answers or it does not, and the only
+        // question is whether you read it right before the light or the weather turns.
+        // Calibrated against `encounter.trial_by_combat` (THR-1036).
+        narrative: 'The stair goes down further than the lamp reaches. {actor} counts the first twenty steps aloud. A count keeps its shape after the light stops being useful.',
         onSuccess: {
-          narrative: '{actor} descends with {adj} purpose, the weight of stone parting before their footfalls.',
+          narrative: '{actor} keeps the count past a hundred, then stops needing it. The air turns cold and stops moving, which is the good sign: the passage ahead has not fallen in.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: '{actor} falters at the threshold. The {adj} pull of the depths proves too much; they withdraw.',
+          narrative: '{actor} gets forty steps down and feels the stair shift underfoot. Turning back takes about a second to decide. Saying so at the surface takes considerably longer.',
           reputationDelta: -0.02,
         },
       },
@@ -388,14 +393,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'shadow',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 2,
-        narrative: 'The passages twist and fork endlessly. {actor} navigates the {adj} maze, shadows shifting with every choice.',
+        narrative: 'Below the stair the passages fork, and fork again, and none of the forks are marked. {actor} keeps a hand on the left wall — the old rule, imperfect, better than the alternative.',
         onSuccess: {
-          narrative: '{actor} reads the stone\'s whisper, finding the true path through the labyrinth\'s heart.',
+          narrative: '{actor} finds the draught instead: a thread of moving air that has to be coming from an opening. It arrives where the left wall would have, four hours sooner.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: 'Lost in the dark, {actor} circles back upon {themselves}, the passage\'s {adj} logic defeating them.',
+          narrative: 'The left-wall rule returns {actor} to {their} own chalk mark. Then it does it again. The passages are a loop that has been dressed up as a maze.',
           reputationDelta: -0.03,
         },
       },
@@ -405,9 +410,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'iron',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 3,
-        narrative: 'The descent ends at a chasm that {verb} with ancient hunger. {actor} stands at the precipice of ruin.',
+        narrative: 'The passage ends at an edge. {actor} drops a stone and counts four before the water answers. What lies below was never meant to be reached from this side.',
         onSuccess: {
-          narrative: '{actor} crosses the abyss with {adj} determination, claiming the artifact that rests in shadow below.',
+          narrative: '{actor} crosses on the old span, which holds, and lifts what is on the far ledge without examining it closely. The crossing back is worse — {their} hands are full now, and the span has been tested once already.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
           rewardPool: {
@@ -416,7 +421,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'The abyss {verb} and {actor} is cast back, {adj} and broken, to the light above.',
+          narrative: 'The span gives on the third step. {actor} reaches the near ledge instead of the far one, which is the difference between a bad week and a last one. The ledge below keeps what it has.',
           reputationDelta: -0.08,
           rewardPool: {
             categoryWeights: { condition: 0.4, bestowed_power: 0.4, possession: 0.2 },
@@ -6047,13 +6052,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'eye',
         difficulty: MODERATE_DIFFICULTY_BASE,
         duration: 1,
-        narrative: 'The ruin\'s surface level has been picked clean. {actor} searches for the {adj} lower levels — the untouched places where the past still breathes.',
+        // THR-1101: authored out of the mad-lib shape (explore-family batch, survey slice).
+        narrative: 'The upper floors were stripped a generation ago; the scavengers left the marks of their own tools on the doorframes. {actor} looks instead for a floor that has fallen through, which is how the lower levels are usually found.',
         onSuccess: {
-          narrative: '{actor} discovers a {adj} collapse-blocked stair and clears the debris. The depths open below.',
+          narrative: '{actor} finds a stair under a fallen ceiling and spends the afternoon moving rubble one block at a time. The gap it opens is narrow enough to argue about, and wide enough.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: 'Every passage {actor} finds is blocked beyond clearing. The {adj} depths stay sealed.',
+          narrative: 'Every stair {actor} finds ends in packed fill. It was poured deliberately, and poured from below — this place was shut by the people who lived in it.',
           reputationDelta: -0.03,
         },
       },
@@ -6063,14 +6069,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'eye',
         difficulty: MODERATE_DIFFICULTY_BASE + MODERATE_DIFFICULTY_STEP,
         duration: 2,
-        narrative: 'The lower levels are {adj} treacherous — floors that crumble, chambers that have not breathed fresh air in centuries.',
+        narrative: 'The lower levels have been shut long enough that the first lamp burns badly. {actor} moves along the walls, where the floor is still carried by the joists.',
         onSuccess: {
-          narrative: '{actor} reads the ruin\'s {adj} logic and moves through it safely, mapping as {they} go.',
+          narrative: '{actor} works out the building\'s plan from three rooms and stops guessing after that. Storerooms below kitchens, kitchens below halls. The map fills in ahead of {their} feet.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: 'The ruin {verb}s against {actor}\'s advance. A partial collapse nearly buries them.',
+          narrative: 'A floor lets go under {actor} and takes a room\'s worth of ceiling down with it. The dust clears on the wrong side of the drop. The lamp is still lit, which is more luck than {actor} will admit to later.',
           reputationDelta: -0.05,
         },
       },
@@ -6080,9 +6086,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'iron',
         difficulty: MODERATE_DIFFICULTY_BASE + MODERATE_DIFFICULTY_STEP * 2,
         duration: 2,
-        narrative: 'Something waits at the lowest level — artifact, archive, or {adj} horror. {actor} must take what they came for and get out.',
+        narrative: 'The lowest floor is dry, which is the first surprise, and occupied, which is the second. {actor} came for one item and has a decision to make about how long to stay.',
         onSuccess: {
-          narrative: '{actor} emerges into daylight carrying {adj} evidence of what once was. The ruin has given up one of its secrets.',
+          narrative: '{actor} comes up into daylight carrying a sealed case and a lungful of dust that will take a week to clear. The ruin gave up one floor of the several it has.',
           reputationDelta: 0.14,
           tierPromotionEligible: true,
           rewardPool: {
@@ -6091,7 +6097,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: '{actor} retreats empty-handed, the {adj} ruin\'s deepest places still jealously kept.',
+          narrative: '{actor} goes back up with empty hands and an accurate memory of the route. The bottom floor is still down there, and now {actor} knows exactly how far.',
           reputationDelta: -0.07,
           rewardPool: {
             categoryWeights: { possession: 0.4, bestowed_power: 0.4, condition: 0.2 },
@@ -6406,13 +6412,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'eye',
         difficulty: MODERATE_DIFFICULTY_BASE,
         duration: 2,
-        narrative: 'The land holds wealth, but only for those who can read its {adj} signs. {actor} walks the ground for days, looking for what lies beneath.',
+        // THR-1101: authored out of the mad-lib shape (explore-family batch, survey slice).
+        narrative: 'Ore leaves signs on the surface for anyone holding the list: stained water, a slope where one plant will not grow, a ridge of rock running against the grain of the rest. {actor} walks the ground for nine days with that list in mind.',
         onSuccess: {
-          narrative: 'The {adj} geological signs align. {actor} marks a site worth developing.',
+          narrative: 'Three of the signs turn up inside a half-mile of each other, which is more than coincidence usually pays for. {actor} drives a stake and writes down the bearing from two hills.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: 'The terrain {verb}s its secrets. {actor} finds only {adj} marginal deposits.',
+          narrative: 'The signs turn up one at a time, miles apart, each with an innocent explanation. {actor} comes back with a notebook full of maybes and boots worth less than at the start.',
           reputationDelta: -0.03,
         },
       },
@@ -6422,9 +6429,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'stone',
         difficulty: MODERATE_DIFFICULTY_BASE + MODERATE_DIFFICULTY_STEP,
         duration: 2,
-        narrative: '{actor} drives test shafts into the {adj} promising sites. Each one is a gamble on instinct and experience.',
+        narrative: '{actor} sinks test shafts at the three best marks. Each shaft costs a week and tells the truth exactly once, at the bottom.',
         onSuccess: {
-          narrative: 'The vein is {adj} real and rich. {actor} has found something worth mining.',
+          narrative: 'The second shaft strikes ore at eleven feet and keeps finding it for another six. {actor} has a mine here, given ground held long enough to dig it.',
           reputationDelta: 0.12,
           tierPromotionEligible: true,
           rewardPool: {
@@ -6433,7 +6440,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'The test shafts find only {adj} dry rock. The expedition ends in expensive failure.',
+          narrative: 'All three shafts bottom out in dry rock. The expedition cost a season and four hired backs, and produced an accurate map of where the ore is not.',
           reputationDelta: -0.06,
           rewardPool: {
             categoryWeights: { possession: 0.7, bestowed_power: 0.3 },
@@ -6572,13 +6579,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'stone',
         difficulty: HARD_DIFFICULTY_BASE,
         duration: 2,
-        narrative: 'The geological formation {verb}s deep into the {adj} mountain. {actor} must decide how far to follow it and when to stop.',
+        // THR-1101: authored out of the mad-lib shape (explore-family batch, survey slice).
+        narrative: 'The seam runs into the mountain at an angle that says it goes a long distance. Following it is straightforward. Deciding where to stop is the part that costs money.',
         onSuccess: {
-          narrative: '{actor} reads the {adj} rock\'s story correctly. The formation deepens into something extraordinary.',
+          narrative: '{actor} reads the fracture pattern right and keeps going past where a careful person would have turned around. At two hundred feet the seam widens instead of pinching.',
           reputationDelta: 0.07,
         },
         onFailure: {
-          narrative: 'The formation {verb}s into barren rock. {actor} has followed a {adj} false lead into the mountain.',
+          narrative: 'At ninety feet the seam thins to a finger\'s width and then to a stain. {actor} has spent three weeks proving that the mountain is mostly mountain.',
           reputationDelta: -0.05,
         },
       },
@@ -6588,9 +6596,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'gold',
         difficulty: HARD_DIFFICULTY_BASE + HARD_DIFFICULTY_STEP,
         duration: 3,
-        narrative: 'The vein is {adj} real. Now {actor} must assess its true extent — the difference between a {adj} fortune and a minor deposit.',
+        narrative: 'The vein is real. What it is worth depends on how far it runs, and the only honest answer comes from measuring it rather than hoping at it.',
         onSuccess: {
-          narrative: '{actor} maps the vein accurately. It is {adj} richer than anything found here in a generation.',
+          narrative: '{actor} maps it end to end and checks the figures twice before saying the number out loud. No one has taken this much out of this mountain in forty years.',
           reputationDelta: 0.16,
           tierPromotionEligible: true,
           rewardPool: {
@@ -6599,7 +6607,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'The vein is {adj} smaller than first appeared. Worth developing, but not the {adj} treasure {actor} had hoped for.',
+          narrative: 'Measured properly, the vein is a third of what it looked like from the face. Worth digging. Not worth what {actor} has already told people it was worth.',
           reputationDelta: -0.06,
           rewardPool: {
             categoryWeights: { possession: 0.6, bestowed_power: 0.4 },
@@ -7916,13 +7924,17 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'eye',
         difficulty: UNIVERSAL_DIFFICULTY_BASE,
         duration: 1,
-        narrative: '{actor} climbs to a vantage point and studies the lay of the land. Every path, every shadow, every {adj} detail.',
+        // THR-1101: authored out of the mad-lib shape (explore-family batch, survey slice).
+        // The two failure lines also carried pre-existing `nothing` (a natural indefinite,
+        // enforced at zero in outcome prose) on untokened lines — fixed here per the
+        // batch-5 rule that a template being authored gets its whole prose read.
+        narrative: '{actor} climbs to the highest ground within an hour\'s walk and sits down to look properly. Paths, water, smoke, and where the shadows fall at this hour.',
         onSuccess: {
           narrative: 'Patterns emerge — trade routes, game trails, places where the land folds inward. {actor} maps it all.',
           reputationDelta: 0.02,
         },
         onFailure: {
-          narrative: 'Haze and distance defeat the eye. {actor} sees only what anyone could see — nothing of use.',
+          narrative: 'Haze and distance defeat the eye. {actor} comes back down knowing what any traveller on the road already knew.',
           reputationDelta: -0.01,
         },
       },
@@ -7932,7 +7944,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'veil',
         difficulty: UNIVERSAL_DIFFICULTY_BASE + UNIVERSAL_DIFFICULTY_STEP,
         duration: 1,
-        narrative: 'The visible terrain tells one story. {actor} looks for what the land is hiding — the {adj} signs beneath.',
+        narrative: 'The visible terrain tells one story. {actor} sits still long enough to hear the other one — where the birds will not settle, where the frost holds past noon.',
         onSuccess: {
           narrative: 'The land whispers back. {actor} feels the pull of ley and root — this place has secrets worth knowing.',
           reputationDelta: 0.03,
@@ -7942,7 +7954,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'Nothing stirs. The {adj} silence holds, and {actor} learns only that some places guard their secrets well.',
+          narrative: 'The silence holds all afternoon. {actor} learns only that this place keeps its own counsel, which is itself a fact about the place.',
           reputationDelta: -0.01,
           rewardPool: {
             categoryWeights: { condition: 0.3, bestowed_power: 0.5, possession: 0.2 },
@@ -8501,13 +8513,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'eye',
         difficulty: AGNOSTIC_DIFFICULTY_BASE,
         duration: 1,
-        narrative: 'Hunger sharpens the eye. {actor} scans the terrain for anything edible, useful, or overlooked.',
+        // THR-1101: authored out of the mad-lib shape (explore-family batch, survey slice).
+        narrative: 'Hunger sharpens the eye. {actor} works the ground with a forager\'s list: what can be eaten raw, what needs boiling twice, what is best left where it grows.',
         onSuccess: {
           narrative: '{actor} spots what others miss — a cluster of roots, a clean spring, enough to sustain {them} another day.',
           reputationDelta: 0.02,
         },
         onFailure: {
-          narrative: 'The land gives up bitter root and bad water. {actor} returns empty-handed, the {adj} search yielding only dust.',
+          narrative: 'The land gives up bitter root and water that has stood too long. {actor} comes back with an empty satchel and the day spent.',
           reputationDelta: -0.01,
         },
       },
@@ -8517,7 +8530,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'stone',
         difficulty: AGNOSTIC_DIFFICULTY_BASE + AGNOSTIC_DIFFICULTY_STEP,
         duration: 1,
-        narrative: 'What the eye found, the body must carry. {actor} bends to the {adj} work of gathering.',
+        narrative: 'What the eye found, the back has to carry. {actor} bends to it — digging, cutting, and tying the load so it rides high enough to walk with.',
         onSuccess: {
           narrative: 'Arms full, {actor} hauls {their} findings back. Not a feast — but enough. Always enough.',
           reputationDelta: 0.03,
@@ -8527,7 +8540,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'Too heavy, too far. {actor} drops half the haul walking it back, the {adj} effort wasted.',
+          narrative: 'Too heavy and too far. The load shifts at the second ford, and {actor} arrives with half of what {they} dug and a shoulder that will complain for a week.',
           reputationDelta: -0.01,
         },
       },
@@ -8560,13 +8573,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'eye',
         difficulty: AGNOSTIC_DIFFICULTY_BASE,
         duration: 1,
-        narrative: 'Even the most {adj} exhausted land gives something to those who know where to look. {actor} reads the ground for what it offers.',
+        // THR-1101: authored out of the mad-lib shape (explore-family batch, survey slice).
+        narrative: 'Even worked-out land keeps a little back for anyone who knows the order to look in. {actor} reads the ground: low places first, then edges, then the north side of stone.',
         onSuccess: {
           narrative: '{actor} reads the terrain correctly — water, roots, shelter material. The land is never entirely empty.',
           reputationDelta: 0.02,
         },
         onFailure: {
-          narrative: 'The land gives {actor} thin pickings today. The {adj} search turns up bitter root and little else.',
+          narrative: 'Thin pickings. {actor} works until the light goes and carries back bitter root, a nest robbed too late in the season, and little else.',
           reputationDelta: -0.01,
         },
       },
@@ -8576,9 +8590,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'stone',
         difficulty: AGNOSTIC_DIFFICULTY_BASE + AGNOSTIC_DIFFICULTY_STEP,
         duration: 1,
-        narrative: '{actor} puts {their} back into the {adj} work of extraction — digging, cutting, hauling what the land gives up.',
+        narrative: '{actor} puts {their} back into it — digging, cutting, hauling. The finding was the clever part; this part is only work.',
         onSuccess: {
-          narrative: '{actor} gathers more than expected. The {adj} physical work pays off.',
+          narrative: '{actor} gathers half again what the survey promised, because the digging turned up a second root run beside the first. The labour pays for itself before dark.',
           reputationDelta: 0.03,
           rewardPool: {
             categoryWeights: { possession: 1.0 },
@@ -8586,7 +8600,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'The {adj} effort yields little. {actor} has not yet learned to work with this land.',
+          narrative: 'The ground is harder than it looked and the roots break instead of lifting. {actor} has not yet learned this soil, and it costs a day to find out.',
           reputationDelta: -0.01,
         },
       },
@@ -11204,13 +11218,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'eye',
         difficulty: DIFFICULTY_BASE,
         duration: 1,
-        narrative: '{actor} finds a shadow with a view and settles in. How many guards. What hours. Which door doesn\'t quite {adj} close.',
+        // THR-1101: authored out of the mad-lib shape (explore-family batch, survey slice).
+        narrative: '{actor} finds a doorway with a view and settles in for the evening. How many guards, on what hours, and which of the doors does not quite sit in its frame.',
         onSuccess: {
-          narrative: 'The pattern emerges: shift changes, blind spots, the {adj} servant who props the kitchen door open for a smoke.',
+          narrative: 'The pattern comes clear by the second night: the shift changes late, the north corner is unwatched for the length of it, and a kitchen boy props the side door with a boot to smoke.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: '{actor} watches, but the picture stays {adj} incomplete. Too many variables, not enough patience.',
+          narrative: 'Three nights, and the pattern refuses to settle. The guard rota turns on a schedule {actor} cannot find from the outside, which is either good practice or bad luck.',
           reputationDelta: -0.02,
         },
       },
@@ -11220,14 +11235,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'shadow',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 2,
-        narrative: 'Knowing the layout is not enough. {actor} walks the approaches — alleys, rooftops, drainage — with {adj} professional interest.',
+        narrative: 'Knowing the inside is half of it. {actor} walks the outside — alleys, rooftops, the drain that runs under the yard — at hours when walking there is unremarkable.',
         onSuccess: {
-          narrative: 'Three ways in, two ways out, one that nobody would think to watch. {actor} commits the {adj} map to memory.',
+          narrative: 'Three routes in, two out, and a third out through a cooper\'s yard that no one has thought to watch since the cooper died. {actor} commits all six to memory and writes down none of them.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: 'A watchman spots {actor} loitering. Time to leave and try from a {adj} different angle tomorrow.',
+          narrative: 'A watchman marks {actor} standing too long at the same corner and says so, pleasantly, which is worse than shouting. That corner is spent now, and so is that face for a fortnight.',
           reputationDelta: -0.03,
         },
       },
@@ -11237,9 +11252,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'shadow',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 1,
-        narrative: 'Every job has a price in risk. {actor} weighs the {adj} odds: what\'s inside versus what it costs to get caught.',
+        narrative: 'Every job carries a price that is only ever paid on failure. {actor} sets what is inside against what the magistrate here does to people caught inside, and the second figure is the easier one to learn.',
         onSuccess: {
-          narrative: '{actor} knows the place like they built it. The {adj} risk is calculated, the reward assessed. Decision time.',
+          narrative: '{actor} knows the building better than the people sleeping in it. The risk has a number now, and the number is survivable. The decision stops being a guess and becomes a choice.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
           rewardPool: {
@@ -11248,7 +11263,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'The risk is unclear. {actor} can\'t tell if the {adj} prize is worth the price. Uncertainty kills more thieves than guards.',
+          narrative: 'The figures will not come out. {actor} cannot price the strongroom without opening it, and cannot open it without paying the price first. Uncertainty has buried more thieves than watchmen have.',
           reputationDelta: -0.08,
         },
       },
@@ -11343,13 +11358,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'gold',
         difficulty: DIFFICULTY_BASE,
         duration: 1,
-        narrative: '{actor} walks the racks — swords, spears, shields, bows. How many fit for use. How many rusted past {adj} saving.',
+        // THR-1101: authored out of the mad-lib shape (explore-family batch, survey slice).
+        narrative: '{actor} walks the racks with a slate: swords, spears, shields, bows. Two columns only — fit for use, and rusted past a smith\'s help.',
         onSuccess: {
-          narrative: 'The inventory is precise: forty-three serviceable blades, eleven shields, and a crossbow that needs {adj} restringing. Enough.',
+          narrative: 'The count comes out at forty-three serviceable blades, eleven shields, and a crossbow wanting a string. Enough to arm a wall, and not enough to lose any of it.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: 'The count is interrupted. {actor} estimates — probably enough, probably — but {adj} estimates lose wars.',
+          narrative: 'A messenger takes {actor} away at the second rack and the count never resumes. The figure that goes in the ledger is an estimate, and estimates have a habit of becoming the number everyone plans around.',
           reputationDelta: -0.02,
         },
       },
@@ -11359,14 +11375,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'iron',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 2,
-        narrative: '{actor} draws a blade at random and tests the edge, the balance, the {adj} temper. The armoury tells the truth about a garrison.',
+        narrative: '{actor} draws a blade at random and tries the edge, the weight in the hand, the temper against a thumbnail. An armoury says more about a garrison than its commander does.',
         onSuccess: {
-          narrative: 'Good steel, properly oiled. Whoever runs this armoury takes {adj} pride in their work. The garrison can fight.',
+          narrative: 'Good steel under clean oil, and the racks arranged so the worst blades are drawn first at drill. The quartermaster is doing the job unwatched, which is the only test worth running.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: 'Pitted blades, warped shields. The armoury is a {adj} disgrace. Someone hasn\'t been doing their job.',
+          narrative: 'Pitted edges, shields warped where they were stacked wet, and a rack of spears with the heads gone loose. The armoury has been signed off every month by a name {actor} can read on the ledger.',
           reputationDelta: -0.03,
         },
       },
@@ -11376,9 +11392,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'iron',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 1,
-        narrative: 'An inspection without a report is a {adj} walk through a weapons shed. {actor} commits the findings to record.',
+        narrative: 'An inspection without a report is a walk through a shed. {actor} sits down with the slate and turns four days of counting into a page a commander will actually read.',
         onSuccess: {
-          narrative: 'The report is {adj} thorough and actionable: what to repair, what to replace, what to requisition. The garrison commander will know.',
+          narrative: 'The report runs to one page and a schedule: what to repair this month, what to replace before winter, what to requisition and from whom. The commander reads it twice and signs the requisition that evening.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
           rewardPool: {
@@ -11387,7 +11403,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'The report is {adj} incomplete. Key details are missing — which rack, which smithy, which budget line. Not useful enough.',
+          narrative: 'The report says the armoury needs attention and stops there. No rack numbers, no smith named, no line to draw the money against. It will be filed, and the racks will look the same in spring.',
           reputationDelta: -0.08,
           rewardPool: {
             categoryWeights: { condition: 0.80, possession: 0.20 },
@@ -11477,13 +11493,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'eye',
         difficulty: DIFFICULTY_BASE,
         duration: 1,
-        narrative: '{actor} scratches a chalk mark at the entrance and begins. Left hand on the wall, {adj} counting paces.',
+        // THR-1101: authored out of the mad-lib shape (explore-family batch, survey slice).
+        narrative: '{actor} scratches a chalk mark at the entrance and starts the tally. Left hand on the wall, paces counted under the breath, a knot in a cord at every hundred.',
         onSuccess: {
-          narrative: 'The first junction is mapped — three passages, two blind ends, one that {adj} descends. A good start.',
+          narrative: 'The first junction goes down on the slate: three passages, two of them blind within twenty paces, one that drops. The cord has four knots in it.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: '{actor} loses the count at the second turning. Chalk marks on {adj} damp stone smear and fade.',
+          narrative: '{actor} loses the count at the second turning and will not admit which side of it. Chalk does not hold on wet stone; by the return trip the marks are grey smears at knee height.',
           reputationDelta: -0.02,
         },
       },
@@ -11493,14 +11510,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'stone',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 2,
-        narrative: 'Deeper now. {actor} reads the {adj} rock strata, the air currents, the way water runs. The underground has its own geography.',
+        narrative: 'Deeper, the rock changes and starts giving useful answers. {actor} reads the strata, the draught, and where the water chooses to run. Underground has a geography of its own, and it is not the surface one.',
         onSuccess: {
-          narrative: 'A rough but {adj} accurate map takes shape — distances, elevations, and the all-important way out.',
+          narrative: 'The chart comes together rough and correct: distances paced, elevations guessed within a fathom, and the route back marked in a heavier hand than the rest.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: 'The passages loop. {actor}\'s map contradicts itself. The {adj} underground is more complex than expected.',
+          narrative: 'Two of the passages meet where the chart says they cannot. {actor} has drawn a map of a place that does not exist, using measurements taken from one that does.',
           reputationDelta: -0.03,
         },
       },
@@ -11510,9 +11527,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'eye',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 2,
-        narrative: 'The final passages. {actor} pushes past fatigue to {adj} complete the chart — every dead end, every promising opening.',
+        narrative: 'The last passages, and the lamp oil is a real number now. {actor} walks the remaining branches on tired legs, marking each dead end so the next surveyor need not walk it twice.',
         onSuccess: {
-          narrative: 'The map is done. Not beautiful, but {adj} reliable. Anyone following this chart will find their way in and — more importantly — out.',
+          narrative: 'The map is finished. It is ugly and it is right. Anyone carrying a copy gets in, and — the part that matters — gets back out.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
           rewardPool: {
@@ -11521,7 +11538,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'Exhaustion wins. {actor} maps the {adj} upper levels but leaves the deepest passages as blank white space.',
+          narrative: 'The oil runs low before the legs do, which settles it. {actor} hands over a chart of the upper levels with the bottom third left blank, and marks the blank honestly rather than guessing at it.',
           reputationDelta: -0.08,
         },
       },
@@ -11544,13 +11561,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'eye',
         difficulty: DIFFICULTY_BASE,
         duration: 1,
-        narrative: 'Dust, cobwebs, and the {adj} smell of old vellum. {actor} begins at the bottom shelf and works upward, counting spines.',
+        // THR-1101: authored out of the mad-lib shape (explore-family batch, survey slice).
+        narrative: 'Dust, cobwebs, and the smell of vellum that has been damp at least once. {actor} starts at the bottom shelf and works upward, counting spines and writing the number at the end of each run.',
         onSuccess: {
-          narrative: 'Two hundred and thirty texts, fourteen scrolls, and three {adj} sealed cases. {actor} has the scope of it.',
+          narrative: 'Two hundred and thirty texts, fourteen scrolls, and three cases still sealed with wax that has a sigil pressed into it. {actor} now knows the size of the job.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: 'The shelving system is {adj} chaotic. {actor} counts the same section twice and misses another entirely.',
+          narrative: 'The shelving follows no order {actor} can find — not subject, not age, not size. One section gets counted twice, and an alcove behind the stair gets missed until the light moves.',
           reputationDelta: -0.02,
         },
       },
@@ -11560,14 +11578,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'veil',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 3,
-        narrative: 'Not all texts are mundane. {actor} feels for the {adj} ones that hum — the ones with power woven into the binding.',
+        narrative: 'Not every book in a tower is only a book. {actor} goes along the shelves with a palm out, feeling for the ones warmer than the room has any reason to make them.',
         onSuccess: {
-          narrative: 'Seven are enchanted. Three are warded. One is warm to the touch. {actor} handles each with {adj} appropriate respect.',
+          narrative: 'Seven answer the hand. Three of those are warded on top of it, and one is warm enough to read by. {actor} moves each with a cloth and does not open the warm one.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: '{actor} cannot distinguish the {adj} mundane from the magical. The tower keeps its library\'s true value hidden.',
+          narrative: 'The whole room reads the same to {actor}\'s hand — faintly wrong, and uniformly so. The tower is either hiding which books matter, or the honest answer is all of them.',
           reputationDelta: -0.03,
         },
       },
@@ -11577,9 +11595,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'eye',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 2,
-        narrative: 'A catalogue is only as good as its accuracy. {actor} records title, condition, subject, and {adj} magical signature for each text.',
+        narrative: 'A catalogue is worth exactly its accuracy. {actor} writes title, condition, subject, and — where the hand felt one — the signature, for every text on the shelves.',
         onSuccess: {
-          narrative: 'The catalogue is {adj} complete. Future scholars will owe {actor} a debt they\'ll never know about.',
+          narrative: 'The catalogue is complete down to the water damage on the third shelf. Scholars will use it for a century, and none of them will learn whose winter it cost.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
           rewardPool: {
@@ -11588,7 +11606,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'The catalogue is {adj} partial. Good enough to avoid duplicating effort, not good enough to find anything specific.',
+          narrative: 'The catalogue covers two walls of the four. Good enough that the next reader does not repeat the work, not good enough to find one named book without walking the shelves.',
           reputationDelta: -0.08,
           rewardPool: {
             categoryWeights: { condition: 0.80, possession: 0.20 },
@@ -11682,13 +11700,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'stone',
         difficulty: DIFFICULTY_BASE,
         duration: 1,
-        narrative: '{actor} chips at the rock face with a {adj} geologist\'s hammer, examining the grain, the colour, the way the stone fractures.',
+        // THR-1101: authored out of the mad-lib shape (explore-family batch, survey slice).
+        narrative: '{actor} takes a hammer to the face and works along it, a sample every few paces. Grain, colour, and how the stone breaks — three questions, asked over and over.',
         onSuccess: {
-          narrative: 'Promising. The {adj} vein structure runs deep and the mineral content is right. Worth digging further.',
+          narrative: 'The breaks come away clean and heavy, and the colour holds through six samples running. The seam goes back into the hill rather than along it. Worth the next week.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: 'Surface ore only. The {adj} seam pinches out a handspan beneath the face. Not worth a mine.',
+          narrative: 'The good rock stops a handspan behind the face. What looked like a seam is a skin over ordinary stone — the find that has ruined every prospector who stopped sampling early.',
           reputationDelta: -0.02,
         },
       },
@@ -11698,14 +11717,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'gold',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 2,
-        narrative: '{actor} calculates: depth of seam, richness of ore, cost of extraction. The {adj} mathematics of whether it pays to dig.',
+        narrative: '{actor} does the arithmetic on a board: depth, richness, the cost of hauling it to a road. A seam that pays at the face can still lose money by the time it reaches a buyer.',
         onSuccess: {
-          narrative: 'The numbers work. The seam could yield enough to justify the dig, the labour, the {adj} risk. It\'s a real find.',
+          narrative: 'The numbers come out on the right side, with room left over for the winter the figures do not know about yet. {actor} checks them once more and lets {themselves} believe it.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: 'Too thin, too deep, too much overburden. The {adj} economics don\'t support a mine here.',
+          narrative: 'Too deep, too much rock on top, and forty miles to a road that carries a cart. The ore is there. Getting it out costs more than it sells for.',
           reputationDelta: -0.03,
         },
       },
@@ -11715,9 +11734,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'gold',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 2,
-        narrative: 'A find is only a find if you hold it. {actor} marks the claim with {adj} cairns and cuts the trees to the boundary.',
+        narrative: 'A find is only a find if it can be held. {actor} builds cairns at the corners and blazes the trees along the boundary, which is the law here and also the argument.',
         onSuccess: {
-          narrative: 'The claim is staked, recorded, and {adj} defensible. {actor} owns a piece of the mountain now.',
+          narrative: 'The claim is staked, the boundary walked with a witness, and the entry made at the assay office before dark. {actor} owns a piece of the mountain on paper, which is the only place ownership has ever lived.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
           rewardPool: {
@@ -11726,7 +11745,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'A rival stake is already planted. {actor} arrived {adj} second. The seam belongs to someone else.',
+          narrative: 'There is a cairn at the north corner already, weathered by one winter. {actor} did the survey work and another prospector did the paperwork, and only the second of those counts.',
           reputationDelta: -0.08,
         },
       },
