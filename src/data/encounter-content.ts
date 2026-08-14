@@ -444,13 +444,17 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'iron',
         difficulty: DIFFICULTY_BASE,
         duration: 3,
-        narrative: 'The forge roars to life before {actor}, heat warping the air into {adj} shimmer. The first metal waits.',
+        // THR-1101 batch 8: the `create` family authored out of the `{adj}`/`{verb}`/
+        // `{action}` mad-lib shape. Register for the family — the material has an
+        // opinion, and craft is finding out what it is before it tells you the
+        // expensive way. Calibrated against `encounter.trial_by_combat` (THR-1036).
+        narrative: 'The forge comes up slow and then all at once. Heat rolls off the coals hard enough to bend the air behind it. The first billet waits on the anvil, cold and unimpressed.',
         onSuccess: {
-          narrative: '{actor} strikes the anvil with {adj} precision, shape flowing from {action}.',
+          narrative: '{actor} finds the rhythm by the third strike. After that the steel goes where it is put.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: '{actor}\'s hammer falters. The {adj} metal cracks under their inexact blow.',
+          narrative: '{actor} swings half a beat early. The billet splits along a line nobody had seen, and the split runs its whole length.',
           reputationDelta: -0.02,
         },
       },
@@ -460,9 +464,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'stone',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 4,
-        narrative: 'The forge demands submission. {actor} must plunge the {adj} blade into ice, testing will against instinct.',
+        narrative: 'The blade comes out the colour of a sunset and has to go into the ice at once. Every instinct says wait. Waiting ruins it.',
         onSuccess: {
-          narrative: '{actor} emerges with a weapon tempered in wisdom, {adj} and true.',
+          narrative: '{actor} counts the quench and pulls at the right moment. The blade rings once when it comes clear, one clean note.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
         },
@@ -477,9 +481,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'iron',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 5,
-        narrative: 'The master smith arrives. {actor} must remake a legendary weapon from a {adj} ruin of metal and myth.',
+        narrative: 'The master smith arrives with a bundle of rust and a name attached to it. What is left of the weapon is more story than steel. {actor} is asked to make it a weapon again.',
         onSuccess: {
-          narrative: '{actor} transforms base material into legend, and the master nods in {adj} approval.',
+          narrative: 'The reforged blade comes off the stone with an edge that holds. The master turns it twice and sets it down without comment. That is the whole verdict.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
           rewardPool: {
@@ -487,7 +491,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'The forge rejects {actor}\'s touch. The metal {verb}s away, and mastery recedes.',
+          narrative: 'The old metal will not take the new. It crumbles at the weld and keeps crumbling, and what is left fits in one hand.',
           reputationDelta: -0.08,
           rewardPool: {
             categoryWeights: { possession: 1.0 },
@@ -1638,13 +1642,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'gold',
         difficulty: DIFFICULTY_BASE,
         duration: 3,
-        narrative: '{actor} must gather {adj} ingredients for a {adj} potion—herbs that only grow in {adj} places.',
+        narrative: 'The recipe calls for three herbs that grow nowhere convenient — one in standing water, one in deep shade, one only where a tree has fallen and rotted. {actor} goes out with a basket and a long afternoon.',
         onSuccess: {
-          narrative: '{actor} forages with {adj} skill, finding the {adj} ingredients needed.',
+          narrative: '{actor} comes back with all three, and the third one twice, because the first was picked too young.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: '{actor}\'s gathering is {adj}. Key ingredients are {adj} or missing.',
+          narrative: 'Two of the three, and the third replaced with a cousin close enough to argue about. The recipe will notice.',
           reputationDelta: -0.02,
         },
       },
@@ -1654,14 +1658,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'veil',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 4,
-        narrative: '{actor} must blend the ingredients with {adj} intent, asking the magic to answer {their} will.',
+        narrative: 'The blend goes in in order and at heat, and the asking is done aloud. {actor} keeps {their} voice level and adds the shade-herb last.',
         onSuccess: {
-          narrative: '{actor} stirs the cauldron with {adj} precision. The potion {verb}s with {adj} power.',
+          narrative: 'The surface goes still, and stays still when the pot is knocked. The asking was answered.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: '{actor}\'s brewing fails. The mixture {verb}s into {adj} uselessness.',
+          narrative: 'The mixture separates and stays separated. Oil on top, grit at the bottom, and no magic in either.',
           reputationDelta: -0.03,
         },
       },
@@ -1671,9 +1675,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'gold',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 5,
-        narrative: 'The potion must be distilled to {adj} potency. {actor} must refine it without losing the magic.',
+        narrative: 'What is in the pot is a cauldron of medicine. What is wanted is one vial. The reduction takes hours, and the magic burns off before the water does.',
         onSuccess: {
-          narrative: '{actor} bottles a {adj} potion, {adj} and alive with power, a masterwork of the brewer\'s art.',
+          narrative: '{actor} stops the reduction one breath before the colour turns, and bottles it warm. One vial, holding everything the cauldron held.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
           rewardPool: {
@@ -1682,7 +1686,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'The potion {verb}s during distillation. {actor} is left with only {adj} residue.',
+          narrative: 'It reduces past the point of return while {actor}\'s back is turned. What is left in the pot is a black ring, and the ring is all of it.',
           reputationDelta: -0.08,
           rewardPool: {
             categoryWeights: { possession: 1.0 },
@@ -1709,13 +1713,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'eye',
         difficulty: DIFFICULTY_BASE,
         duration: 3,
-        narrative: '{actor} seeks to inscribe a {adj} protective ward. {They} must first learn its {adj} design from ancient texts.',
+        narrative: 'The ward is old enough that nobody living has drawn it correctly. {actor} starts where anyone would: with the books, and with the three of them that disagree.',
         onSuccess: {
-          narrative: '{actor}\'s study {verb}s with {adj} revelation. The ward\'s design becomes {adj} clear.',
+          narrative: 'The disagreement turns out to be the answer. Two of the books copied a mistake; the third copied the ward. {actor} can draw it now.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: '{actor}\'s study yields only {adj} understanding. The design remains {adj} and incomplete.',
+          narrative: 'The books agree on the outer ring and part company after that. {actor} closes them knowing the shape and not the sequence, which is the half that matters.',
           reputationDelta: -0.02,
         },
       },
@@ -1725,14 +1729,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'veil',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 4,
-        narrative: '{actor} must inscribe the ward with {adj} precision, every symbol {adj} and exact.',
+        narrative: 'Forty-one marks, and the ward reads them in the order they were cut. {actor} works from the outside in, one mark to a sitting, hand braced against the stone.',
         onSuccess: {
-          narrative: '{actor}\'s hand {verb}s with {adj} control. The ward {verb}s to life, {adj} and complete.',
+          narrative: 'The last mark closes the ring, and the whole inscription settles half a hair deeper into the stone. The ward is awake.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: '{actor}\'s hand slips. A symbol {verb}s wrong, and the ward {verb}s inert.',
+          narrative: 'The thirty-second mark runs long. It is a finger\'s width of extra line, and it makes the ward a decoration.',
           reputationDelta: -0.03,
         },
       },
@@ -1742,9 +1746,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'eye',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 5,
-        narrative: '{actor} must activate the {adj} ward with a {adj} ritual, binding it to the place\'s very essence.',
+        narrative: 'A cut ward is a drawing until it is tied to the ground it sits on. The tying is done at night, out loud, and cannot be attempted twice.',
         onSuccess: {
-          narrative: '{actor}\'s ritual {verb}s and the ward {verb}s {adj} and eternal, protection secured.',
+          narrative: 'The air over the stone goes cold and stays cold. What comes at this place from now on will have to be invited.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
           rewardPool: {
@@ -1753,7 +1757,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'The activation {verb}s the ward\'s structure. {actor}\'s work {verb}s into {adj} ruin.',
+          narrative: 'The binding takes hold of the ground instead of the ward. The marks go grey from the centre outward, and by morning the stone is only stone.',
           reputationDelta: -0.08,
           rewardPool: {
             categoryWeights: { possession: 1.0 },
@@ -1780,13 +1784,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'heart',
         difficulty: DIFFICULTY_BASE,
         duration: 3,
-        narrative: '{actor} seeks to compose a {adj} saga that will move hearts. First, {they} must find {adj} inspiration.',
+        narrative: 'A saga needs a spine — one true detail the rest can hang from. {actor} spends three days looking for it in other people\'s stories.',
         onSuccess: {
-          narrative: '{actor}\'s heart {verb}s with {adj} inspiration. The story\'s shape becomes {adj} clear.',
+          narrative: 'It turns up in the part nobody thought was the point: a man who went back for a dog. The saga arranges itself around that.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: '{actor}\'s inspiration remains {adj}. The story will not {verb}.',
+          narrative: 'Every story {actor} turns up belongs to whoever told it first, and they told it better. Three days, and no spine.',
           reputationDelta: -0.02,
         },
       },
@@ -1796,14 +1800,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'eye',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 4,
-        narrative: '{actor} must weave the inspiration into a {adj} narrative, crafting every word with {adj} care.',
+        narrative: 'The spine is the easy part. What it needs now is four hundred lines that scan, in a meter a drunk room can still follow.',
         onSuccess: {
-          narrative: '{actor}\'s pen {verb}s across parchment, the saga {verb}s into {adj} being.',
+          narrative: 'It comes out in one long sitting and needs almost no cutting. {actor} reads it back at a whisper, and the meter holds from the first line to the last.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: '{actor}\'s words ring {adj}. The saga fails to capture the {adj} vision.',
+          narrative: 'The lines scan and land flat. {actor} has written four hundred of them about a man and a dog, and left out why he went back.',
           reputationDelta: -0.03,
         },
       },
@@ -1813,9 +1817,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'heart',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 5,
-        narrative: '{actor} must perform the saga before a {adj} crowd. Can {their} words move hearts?',
+        narrative: 'A hall with too many people in it and the beer already sold. {actor} has one verse to make them stop talking.',
         onSuccess: {
-          narrative: '{actor}\'s voice {verb}s through the crowd. The saga becomes {adj} legend, and the people {verb} in tears.',
+          narrative: 'The room goes quiet at the fourth line and stays quiet. When it ends nobody claps for a moment, which is better than clapping.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
           rewardPool: {
@@ -1823,7 +1827,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: '{actor}\'s performance is {adj}. The crowd grows {adj} and silent, the saga forgotten.',
+          narrative: 'The room never stops talking. {actor} finishes it anyway, to the front two tables, and the landlord does not ask for a second night.',
           reputationDelta: -0.08,
           rewardPool: {
             categoryWeights: { possession: 1.0 },
@@ -1849,13 +1853,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'spirit',
         difficulty: DIFFICULTY_BASE,
         duration: 3,
-        narrative: '{actor} seeks to craft a {adj} talisman. First, {they} must commune with the spirit that will inhabit it.',
+        narrative: 'A talisman is a house with a tenant, and the tenant is asked first. {actor} sits down where the spirit already lives and waits to be noticed.',
         onSuccess: {
-          narrative: '{actor}\'s spirit {verb}s with the other. The communion is {adj} and true.',
+          narrative: 'It comes close enough to be felt on the skin, and it stays. The tenant has agreed.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: '{actor}\'s communion is {adj}. The spirit refuses to answer.',
+          narrative: '{actor} sits until the light goes. The spirit is present the entire time and does not answer.',
           reputationDelta: -0.02,
         },
       },
@@ -1865,14 +1869,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'veil',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 4,
-        narrative: '{actor} must shape the talisman\'s material form, binding the spirit into {adj} reality.',
+        narrative: 'The house has to be built to fit. Bone, wire, and a stone the spirit picked out, worked small enough to hang from a neck.',
         onSuccess: {
-          narrative: '{actor}\'s hands {verb} with {adj} precision. The talisman takes shape, the spirit {adj} within.',
+          narrative: 'The pieces close around the stone and the weight changes in {actor}\'s palm. Heavier than it was, and warmer.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: '{actor}\'s shaping is {adj}. The spirit grows {adj} and the talisman {verb}s apart.',
+          narrative: 'The wire is set a hair too tight. The stone cracks, the tenant leaves, and the rest comes apart in {actor}\'s hands.',
           reputationDelta: -0.03,
         },
       },
@@ -1882,9 +1886,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'spirit',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 5,
-        narrative: '{actor} must complete the binding, sealing the spirit into the talisman with a {adj} oath.',
+        narrative: 'The last of it is an oath, said once, with terms on both sides. {actor} names what the spirit is given and what it is owed.',
         onSuccess: {
-          narrative: '{actor}\'s oath {verb}s and the talisman becomes {adj} and alive, ready to serve.',
+          narrative: 'The oath closes. The talisman goes quiet against the skin, and stays warm long after it should have cooled.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
           rewardPool: {
@@ -1893,7 +1897,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'The binding {verb}s. The spirit flees, and {actor} is left with an {adj} husk.',
+          narrative: '{actor} names a term the spirit will not take. It is gone before the sentence finishes, and what is left is bone, wire, and a cold stone.',
           reputationDelta: -0.08,
           rewardPool: {
             categoryWeights: { possession: 1.0 },
@@ -1920,13 +1924,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'star',
         difficulty: DIFFICULTY_BASE,
         duration: 3,
-        narrative: '{actor} must design a {adj} monument to {adj} significance. The design must be {adj} and lasting.',
+        narrative: 'The commission is a monument. The argument is what it is a monument to. {actor} draws until the drawing answers that, then draws it again in stone thicknesses.',
         onSuccess: {
-          narrative: '{actor}\'s vision {verb}s {adj} and eternal. The design is {adj} and inspiring.',
+          narrative: 'The final drawing is plainer than the first six and reads from across a square. It will still read in two hundred years.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: '{actor}\'s design is {adj}. The vision lacks {adj} and power.',
+          narrative: 'The drawing is busy and clever and makes four points at once. From across the square it will make none of them.',
           reputationDelta: -0.02,
         },
       },
@@ -1936,14 +1940,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'stone',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 4,
-        narrative: '{actor} must oversee the construction, gathering {adj} workers and {adj} materials.',
+        narrative: 'Forty hands, two seasons, and a quarry that ships short. {actor} spends more days arguing about stone than standing over it.',
         onSuccess: {
-          narrative: '{actor}\'s leadership {verb}s {adj} completion. The monument {verb}s {adj} toward the sky.',
+          narrative: 'The courses go up square, and the quarry is shamed into honest loads. It stands finished a week before the frost.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: '{actor}\'s oversight is {adj}. The construction {verb}s into {adj} and the workers scatter.',
+          narrative: 'The base is laid on ground nobody tested. It settles unevenly over the winter, and by spring the crew has taken other work.',
           reputationDelta: -0.03,
         },
       },
@@ -1953,9 +1957,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'star',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 5,
-        narrative: '{actor} must dedicate the {adj} monument before a {adj} crowd, binding it to memory and myth.',
+        narrative: 'A monument becomes a monument when a crowd agrees it is one. The dedication is short, public, and cannot be given twice.',
         onSuccess: {
-          narrative: '{actor}\'s dedication {verb}s true. The monument becomes {adj} legend, standing against time itself.',
+          narrative: '{actor} keeps it to four sentences and names the dead correctly. People come back to it the next day without being told to.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
           rewardPool: {
@@ -1963,7 +1967,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: '{actor}\'s dedication falls {adj}. The monument {verb}s under its own weight, incomplete.',
+          narrative: 'The speech runs long and names the wrong family first. The stone is standing. Nobody stops at it.',
           reputationDelta: -0.08,
           rewardPool: {
             categoryWeights: { possession: 1.0 },
@@ -5533,9 +5537,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'stone',
         difficulty: HARD_DIFFICULTY_BASE,
         duration: 2,
-        narrative: 'A wealthy patron offers a commission no other craftsman will accept. {actor} examines the {adj} design and feels something awaken in {their} hands.',
+        narrative: 'A wealthy patron offers a commission every other craftsman has turned down. {actor} reads the drawing twice and finds the reason: it calls for a joint that should not hold.',
         onSuccess: {
-          narrative: '{actor} grasps the commission\'s hidden logic and begins with {adj} certainty.',
+          narrative: 'The joint will hold if it is cut in the wrong order. {actor} starts cutting.',
           reputationDelta: 0.06,
         },
         onFailure: {
@@ -5549,11 +5553,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'gold',
         difficulty: HARD_DIFFICULTY_BASE + HARD_DIFFICULTY_STEP,
         duration: 3,
-        narrative: 'Days of work, each piece {adj} and precise. The patron visits to inspect progress, asking questions that probe {actor}\'s every decision.',
+        narrative: 'Days of work, each piece cut to a tolerance nobody will ever see. The patron visits to inspect progress, asking questions that probe {actor}\'s every decision.',
         criticalSuccessAfterimage: 'The patron sets down every objection prepared in advance and simply looks. Word of the piece travels faster than {actor} can follow it, and other patrons begin to arrive before the varnish has dried.',
         criticalFailureAfterimage: 'The work fails at the unveiling — a flaw {actor} had talked past surfaces under the patron\'s hand. The commission is refused, the fee withheld, and the story reaches the guild before {actor} does.',
         onSuccess: {
-          narrative: 'The patron {verb}s with delight. {Actor} has produced something remarkable — a piece that will outlast them both.',
+          narrative: 'The patron pays without haggling, which is not the habit of a lifetime. The piece will outlast them both.',
           reputationDelta: 0.14,
           tierPromotionEligible: true,
           rewardPool: {
@@ -5562,7 +5566,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'The patron is unmoved. {Actor}\'s work is {adj} competent but not {adj} extraordinary. The commission is paid — and not renewed.',
+          narrative: 'The patron is unmoved. The work is competent, and competent was not the commission. It is paid for, and not renewed.',
           reputationDelta: -0.06,
           rewardPool: {
             categoryWeights: { possession: 0.6, bestowed_power: 0.4 },
@@ -7769,13 +7773,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'heart',
         difficulty: UNIVERSAL_DIFFICULTY_BASE,
         duration: 1,
-        narrative: 'Every place has stories. {actor} sits among those who know this land and listens with {adj} attention.',
+        narrative: 'Every place has stories. {actor} sits among the people who know this land and lets them talk.',
         onSuccess: {
           narrative: 'Words flow freely. {actor} earns a fragment of history — a name, a warning, a half-remembered song.',
           reputationDelta: 0.02,
         },
         onFailure: {
-          narrative: 'Suspicion closes mouths. {actor} hears only silence and the {adj} rustle of turned backs.',
+          narrative: 'Suspicion closes mouths. {actor} hears the room resume its own conversation, one table over.',
           reputationDelta: -0.01,
         },
       },
@@ -7787,7 +7791,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         duration: 1,
         narrative: 'Details fade fast. {actor} fixes the tales in mind — names, places, the shape of truth beneath the telling.',
         onSuccess: {
-          narrative: 'The story takes root. {actor} carries something worth more than coin — knowledge of what came before.',
+          narrative: 'The story takes root. {actor} carries knowledge of what came before, which is worth more than coin.',
           reputationDelta: 0.03,
           rewardPool: {
             categoryWeights: { condition: 0.6, bestowed_power: 0.2, possession: 0.2 },
@@ -7795,7 +7799,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'The {adj} details blur and tangle. {actor} remembers the shape of it, but not the substance.',
+          narrative: 'The details blur and tangle overnight. {actor} keeps the shape of it and loses the names.',
           reputationDelta: -0.01,
           rewardPool: {
             categoryWeights: { condition: 0.6, bestowed_power: 0.2, possession: 0.2 },
@@ -8082,13 +8086,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'star',
         difficulty: UNIVERSAL_DIFFICULTY_BASE,
         duration: 1,
-        narrative: 'When the sky clears, {actor} turns {their} face upward. The constellations wheel in {adj} silence overhead.',
+        narrative: 'When the sky clears, {actor} turns {their} face upward. The constellations have moved since the last clear night, and moved exactly as far as they should have.',
         onSuccess: {
           narrative: 'The stars speak to those who know how to listen. {actor} reads an omen — faint, but unmistakable.',
           reputationDelta: 0.02,
         },
         onFailure: {
-          narrative: 'Clouds gather, or the mind wanders. {actor} sees only cold light, {adj} and indifferent.',
+          narrative: 'Cloud comes in from the west, or the mind wanders. {actor} sees cold light and no sign in it.',
           reputationDelta: -0.01,
         },
       },
@@ -8098,7 +8102,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'veil',
         difficulty: UNIVERSAL_DIFFICULTY_BASE + UNIVERSAL_DIFFICULTY_STEP,
         duration: 1,
-        narrative: 'An omen means nothing without understanding. {actor} reaches beyond the visible, seeking the {adj} meaning beneath.',
+        narrative: 'An omen means little until it is read against what is already known. {actor} sets the two side by side and looks for the place they disagree.',
         onSuccess: {
           narrative: 'The pattern resolves. {actor} glimpses a thread of fate — where it leads, only time will tell.',
           reputationDelta: 0.03,
@@ -8108,7 +8112,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'The meaning slips away like smoke. {actor} is left with questions and the {adj} weight of things unseen.',
+          narrative: 'The meaning slips away like smoke. {actor} is left holding a sign with no sentence around it.',
           reputationDelta: -0.01,
           rewardPool: {
             categoryWeights: { condition: 0.3, bestowed_power: 0.5, possession: 0.2 },
@@ -9689,13 +9693,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'eye',
         difficulty: HARD_DIFFICULTY_BASE,
         duration: 2,
-        narrative: 'Every place has a {adj} craft tradition — a way of making things that carries local knowledge in its techniques. {actor} must learn it properly.',
+        narrative: 'Every place makes one thing better than anywhere else, and the reason is usually two hundred years old and never written down. {actor} sets out to learn it properly.',
         onSuccess: {
-          narrative: '{actor} absorbs the {adj} tradition with respect and patience. The masters acknowledge a serious student.',
+          narrative: '{actor} learns it in the order they teach it and suggests no improvements. The masters start leaving the workshop unlocked.',
           reputationDelta: 0.06,
         },
         onFailure: {
-          narrative: '{actor} skims the {adj} surface of the tradition. Real mastery requires more time than was given.',
+          narrative: '{actor} learns the steps and not the reasons. The steps are the part the masters do not mind sharing.',
           reputationDelta: -0.04,
         },
       },
@@ -9705,11 +9709,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'stone',
         difficulty: HARD_DIFFICULTY_BASE + HARD_DIFFICULTY_STEP,
         duration: 3,
-        narrative: 'The {adj} final test: produce something in the local tradition that the masters cannot dismiss.',
+        narrative: 'The last test is simple to state: make one thing in the local tradition that the masters cannot dismiss.',
         criticalSuccessAfterimage: 'The masters do not praise the work. They go quiet, and one of them takes it apart to understand how {actor} did in a single season what should not be done at all. The tradition changes shape around the piece.',
-        criticalFailureAfterimage: 'The piece fails in front of the assembled masters — a seam splits as it is lifted, in the one way the tradition warns against. The story of it outlives the shame, a cautionary example handed to every apprentice after.',
+        criticalFailureAfterimage: 'The piece fails in front of the assembled masters — a seam splits as it is lifted, along the exact line the tradition warns about. The story of it outlives the shame, a cautionary example handed to every apprentice after.',
         onSuccess: {
-          narrative: '{actor}\'s work {verb}s the masters. The craft tradition has a new practitioner — and a new direction.',
+          narrative: 'The masters cannot dismiss it. The tradition has a new practitioner, and — quietly, unwillingly — a new direction.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
           rewardPool: {
@@ -9718,7 +9722,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'The work is {adj} competent but not mastered. The tradition still holds its deeper secrets.',
+          narrative: 'The work is competent. Competent is what the tradition looks like from outside, and outside is where {actor} still stands.',
           reputationDelta: -0.07,
           rewardPool: {
             categoryWeights: { possession: 0.5, bestowed_power: 0.5 },
@@ -10006,7 +10010,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'veil',
         difficulty: DIFFICULTY_BASE,
         duration: 1,
-        narrative: 'A quiet corner. A steady breath. {actor} traces a {adj} sigil in the air with one finger, willing the smallest thread of power into being.',
+        narrative: 'A quiet corner. A steady breath. {actor} traces a three-stroke sigil in the air with one finger, willing the smallest thread of power into being.',
         onSuccess: {
           narrative: 'Light gathers at {actor}\'s fingertip — faint, trembling, but real. The sigil holds.',
           reputationDelta: 0.05,
@@ -10022,14 +10026,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'star',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 1,
-        narrative: 'Casting is easy. Holding is hard. The cantrip {verb}s against {actor}\'s will, wanting to unravel.',
+        narrative: 'Casting is easy. Holding is hard. The cantrip pulls against {actor}\'s attention the whole time, wanting to come apart.',
         onSuccess: {
-          narrative: 'Three heartbeats. Five. Ten. The cantrip persists, obedient and {adj}. Small magic, but magic nonetheless.',
+          narrative: 'Three heartbeats. Five. Ten. The cantrip holds, obedient and unremarkable. Small magic is still magic.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: 'The working collapses after two breaths. {actor} lets it go with a {adj} sigh. Tomorrow, then.',
+          narrative: 'The working collapses after two breaths. {actor} lets it go and shakes out {their} hand. Tomorrow, then.',
           reputationDelta: -0.03,
         },
       },
@@ -10039,9 +10043,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'veil',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 1,
-        narrative: 'The cantrip completes when released properly — not dropped, but placed, like setting a {adj} stone into mortar.',
+        narrative: 'The cantrip completes when released properly — not dropped, but set down, like a stone pressed into wet mortar.',
         onSuccess: {
-          narrative: 'The cantrip settles into the world with a soft click, like a key turning. {actor} feels the {adj} satisfaction of craft done right.',
+          narrative: 'The cantrip settles into the world with a soft click, like a key turning. A small piece of work done exactly right, and {actor} notices.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
           rewardPool: {
@@ -10073,9 +10077,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'eye',
         difficulty: DIFFICULTY_BASE,
         duration: 1,
-        narrative: '{actor} combs the {adj} undergrowth for the right leaves, the right bark, the right fungus. Folk medicine begins with knowing where to look.',
+        narrative: '{actor} combs the undergrowth for the right leaves, the right bark, the right fungus. Folk medicine begins with knowing where to look.',
         onSuccess: {
-          narrative: 'Yarrow, willow bark, and something with no name that grows only in shadow. {actor} has what {they} need{they}.',
+          // THR-1101 batch 8: was `{actor} has what {they} need{they}.` — a mangled `{s}`
+          // suffix that rendered as "she has what she needshe". Pre-existing, unrelated to
+          // the mad-lib rewrite, fixed here because the line was being rewritten anyway.
+          narrative: 'Yarrow, willow bark, and a nameless grey fungus that grows only in shadow. {actor} has all three by dusk.',
           reputationDelta: 0.05,
         },
         onFailure: {
@@ -10089,14 +10096,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'veil',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 2,
-        narrative: 'The line between herbalism and magic blurs in the mortar. {actor} grinds with {adj} intent, whispering the old words.',
+        narrative: 'The line between herbalism and magic blurs in the mortar. {actor} grinds steadily and says the old words under {their} breath.',
         onSuccess: {
-          narrative: 'The poultice warms under {actor}\'s hands — not quite mundane, not quite magical. The {adj} remedy works.',
+          narrative: 'The poultice warms under {actor}\'s hands, which yarrow does not do on its own. The remedy works.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: 'The mixture turns {adj} and wrong. {actor} discards it before it does more harm than the wound.',
+          narrative: 'The mixture turns grey and smells of iron. {actor} discards it before it does more harm than the wound.',
           reputationDelta: -0.03,
         },
       },
@@ -10106,9 +10113,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'veil',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 1,
-        narrative: 'Healing is the gentlest magic and the most {adj} demanding. {actor} lays the remedy on flesh and wills it to take.',
+        narrative: 'Healing is the gentlest magic and the most exacting. {actor} lays the remedy on flesh and wills it to take.',
         onSuccess: {
-          narrative: 'The wound closes, the fever breaks, the cough eases. {actor} wipes {their} hands and says nothing — the remedy speaks.',
+          narrative: 'The wound closes, the fever breaks, the cough eases. {actor} wipes {their} hands and keeps quiet. The remedy speaks for itself.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
           rewardPool: {
@@ -10117,7 +10124,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'The remedy helps, but not enough. {actor} knows the limits of hedge magic and {adj} accepts them.',
+          narrative: 'The remedy helps, and stops helping short of enough. {actor} knows the limits of hedge magic and does not pretend otherwise.',
           reputationDelta: -0.08,
         },
       },
@@ -10741,13 +10748,16 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'star',
         difficulty: DIFFICULTY_BASE,
         duration: 1,
-        narrative: 'Travelers deserve safe roads. {actor} gathers salt, water, and a {adj} word of protection from whatever faith {they} carry.',
+        // THR-1101 batch 8: `{they} carry` was the pronoun-plus-bare-verb defect batches
+        // 3–7 each met — `{s}` cannot reach a verb inside a subordinate clause, so a
+        // gendered render read "she carry". Pronoun subject dropped rather than patched.
+        narrative: 'Travelers deserve safe roads. {actor} gathers salt, water, and one word of protection, taken from whatever faith is close to hand.',
         onSuccess: {
-          narrative: 'The materials are simple and the faith is sincere. {actor} is ready to lay a {adj} blessing on the road ahead.',
+          narrative: 'The materials are simple and the faith is sincere. Both are what the work needs, and {actor} has both.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: 'The faith falters before it reaches {actor}\'s hands. Doubt is the {adj} enemy of all blessing.',
+          narrative: 'The faith falters before it reaches {actor}\'s hands. A blessing said in doubt is a sentence said out loud.',
           reputationDelta: -0.02,
         },
       },
@@ -10757,14 +10767,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'veil',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 2,
-        narrative: '{actor} walks the road\'s edge, scattering salt at crossroads, touching each boundary stone. The {adj} words come unbidden.',
+        narrative: '{actor} walks the road\'s edge, scattering salt at the crossroads and touching each boundary stone. The words come without being reached for.',
         onSuccess: {
-          narrative: 'The road feels different underfoot — lighter, {adj}, as if the earth itself relaxes beneath the blessing\'s weight.',
+          narrative: 'The road feels different underfoot — lighter, less grudging, as if the ground has stopped bracing against being walked on.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: 'The road absorbs the effort without change. {actor} cannot tell if the blessing took or merely {adj} evaporated.',
+          narrative: 'The road takes the effort and does not change. {actor} cannot tell whether the blessing set or ran off into the dirt.',
           reputationDelta: -0.03,
         },
       },
@@ -10774,9 +10784,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'star',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 1,
-        narrative: 'The final word is the hardest. It must carry enough {adj} conviction to last until the next traveler passes.',
+        narrative: 'The final word is the hardest. It has to carry far enough to still be there when the next traveler comes through.',
         onSuccess: {
-          narrative: 'Done. The road carries a blessing that travelers will feel without knowing — a {adj} lightness in their step, a lucky turn in the weather.',
+          narrative: 'Done. Travelers will feel it without knowing what it is — an easier mile, and weather that turns kind at the right hour.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
           rewardPool: {
@@ -10785,7 +10795,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'The blessing is thin and {adj}. It will fade before the next rain. But for one day, the road was safer.',
+          narrative: 'The blessing is thin. It will fade before the next rain. But for one day, the road was safer.',
           reputationDelta: -0.08,
           rewardPool: {
             categoryWeights: { condition: 0.80, possession: 0.20 },
