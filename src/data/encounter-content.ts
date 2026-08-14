@@ -658,13 +658,18 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'shadow',
         difficulty: DIFFICULTY_BASE,
         duration: 2,
-        narrative: '{actor} pursues {their} quarry through {adj} terrain, every step a whisper against discovery.',
+        // THR-1101: authored out of the `{adj}`/`{verb}` mad-lib shape (steal-family batch).
+        // Register: theft is bookkeeping with consequences — a job is measured in what it
+        // leaves behind, and the bill is presented later. Calibrated against
+        // `encounter.trial_by_combat` (THR-1036). The prior prose also carried the retired
+        // lyrical register ("glides through shadow like water"), removed with the tokens.
+        narrative: 'The quarry keeps to broken ground, where a footfall carries and a silhouette does not. {actor} works the low line and pays for it in speed.',
         onSuccess: {
-          narrative: '{actor} glides through shadow like water, {adj} and unseen, tracking the prey to ground.',
+          narrative: 'The quarry never checks the back trail. {actor} follows it to a shuttered mill and marks the door that stays unbarred.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: 'A twig snaps beneath {actor}. The quarry flees, and the hunt collapses into {adj} chaos.',
+          narrative: 'Wet timber gives under {actor}\'s heel with a sound like a shot. The quarry is moving before the echo returns, and the trail after that is all guesswork.',
           reputationDelta: -0.02,
         },
       },
@@ -674,14 +679,16 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'star',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 1,
-        narrative: '{actor} must wait in {adj} stillness while the target passes by. Hours compress into heartbeats.',
+        narrative: 'The mill has one window worth watching and no cover within forty paces of it. {actor} takes the ditch and settles in for as long as it takes.',
         onSuccess: {
-          narrative: '{actor} remains {adj} as stone until the moment is right, then strikes with {adj} precision.',
+          // The bare `{They} move` here rendered as "she move" before this batch — the
+          // {they}-plus-bare-verb class met in every batch since 3. Pronoun subject dropped.
+          narrative: '{actor} lets three good chances pass because none of them are the fourth. The fourth comes at the turn of the watch, and {they} take{s} it.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: '{actor}\'s nerve fails. {They} move too soon, and the prey escapes into the dark.',
+          narrative: '{actor} moves at the third chance instead of the fourth. The ditch gives up {their} outline, and the quarry is gone into the treeline.',
           reputationDelta: -0.03,
         },
       },
@@ -691,9 +698,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'shadow',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 1,
-        narrative: '{actor}\'s prey reaches a {adj} stronghold. {They} must infiltrate, strike, and vanish like smoke.',
+        narrative: 'The quarry goes to ground in a walled compound with one gate and a dog. {actor} has until the dog is fed.',
         onSuccess: {
-          narrative: '{actor} becomes shadow itself, {adj} and deadly, claiming {their} prize and leaving no trace.',
+          narrative: '{actor} is over the wall while the dog is still eating, and out again before the bowl is empty. The gate stays barred all night, which is what the household will remember.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
           rewardPool: {
@@ -702,7 +709,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'The stronghold erupts. {actor} flees {adj} and wounded, the job left incomplete.',
+          narrative: 'The dog finishes early. {actor} goes back over the wall with a torn sleeve and a shout following, and the compound doubles its watch by morning.',
           reputationDelta: -0.08,
           rewardPool: {
             categoryWeights: { possession: 0.7, condition: 0.3 },
@@ -2814,13 +2821,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'shadow',
         difficulty: DIFFICULTY_BASE,
         duration: 2,
-        narrative: '{actor} hunts for a {adj} mark in the {adj} marketplace. Someone carries what {actor} needs.',
+        narrative: 'The market runs on habit. {actor} finds a post by the cloth-seller where two lanes cross, and watches which purses ride loose and which ride under a hand.',
         onSuccess: {
-          narrative: '{actor}\'s {adj} eye spots the {adj} target, laden with wealth and distracted.',
+          narrative: 'A wool-buyer counts coin twice and puts it away once. {actor} marks the pocket, and the shoulder that guards it.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: '{actor}\'s selection is {adj}. The mark is too {adj} or the crowd too thin.',
+          narrative: 'The crowd thins before {actor} settles on a mark, and the ones left are the ones who have been robbed before. They all walk with a hand on the seam.',
           reputationDelta: -0.02,
         },
       },
@@ -2830,14 +2837,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'gold',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 1,
-        narrative: '{actor} must slip through the {adj} crowd and position {themselves} beside the {adj} mark.',
+        narrative: '{actor} needs to arrive at the wool-buyer\'s elbow without appearing to have crossed the square to get there. The trick is to be carried, not to walk.',
         onSuccess: {
-          narrative: '{actor} {verb}s {adj} through the crowd, positioning {themselves} {adj} beside the mark.',
+          narrative: '{actor} joins a knot of people arguing over dye prices and steps out of it at the right elbow. Nobody notices an arrival that came with a crowd.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: '{actor}\'s approach is {adj}. The mark shifts, and the opportunity {verb}s away.',
+          narrative: '{actor} closes a half-step too directly, and the wool-buyer turns to see who is standing there. The pocket goes under an arm and stays there.',
           reputationDelta: -0.03,
         },
       },
@@ -2847,9 +2854,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'shadow',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 1,
-        narrative: '{actor} must extract the prize with {adj} fingers, leaving no trace of {their} presence.',
+        narrative: 'The purse sits four inches down, and the cloth is stiff enough to hold its shape once the weight is gone. {actor} has the length of one transaction to work in.',
         onSuccess: {
-          narrative: '{actor}\'s fingers {verb} {adj} and {adj}. The prize is {their}s, and the mark {verb}s nothing.',
+          narrative: 'Two fingers, a wrist turn, and the weight is gone before the cloth remembers it. {actor} is three stalls away before the wool-buyer reaches for coin that is no longer there.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
           rewardPool: {
@@ -2857,7 +2864,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: '{actor}\'s fingers slip. The mark feels {their} touch and {verb}s in anger.',
+          narrative: '{actor}\'s knuckle catches the seam. The wool-buyer has hold of {their} wrist before the purse clears the pocket, and the shouting brings the whole lane around.',
           reputationDelta: -0.08,
           rewardPool: {
             categoryWeights: { possession: 0.7, condition: 0.3 },
@@ -2883,13 +2890,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'eye',
         difficulty: DIFFICULTY_BASE,
         duration: 2,
-        narrative: '{actor} must plan the {adj} heist of a heavily {adj} vault. Knowledge is the key.',
+        narrative: 'The vault sits under the counting-house, with one stair down and no other opening anyone will admit to. {actor} spends the week learning the building\'s habits instead of its locks.',
         onSuccess: {
-          narrative: '{actor}\'s {adj} mind {verb}s the vault\'s secrets. A {adj} plan forms.',
+          narrative: 'The night clerk drinks at the eighth bell and the relief comes at the ninth. That hour is the whole plan, and {actor} writes the rest of it backwards from there.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: '{actor}\'s planning is {adj}. Critical details remain {adj} and unknown.',
+          narrative: '{actor} learns the stair, the clerk, and the bell, and never learns what the second key opens. The plan has a hole in it shaped like a door.',
           reputationDelta: -0.02,
         },
       },
@@ -2899,14 +2906,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'shadow',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 1,
-        narrative: '{actor} must slip past {adj} guards and {adj} wards to reach the vault\'s heart.',
+        narrative: 'The stair is stone and carries every step to the room above it. {actor} goes down it in the ten breaths between the bell and the relief arriving.',
         onSuccess: {
-          narrative: '{actor} {verb}s the {adj} defenses with {adj} precision. The vault {verb}s before {them}.',
+          narrative: '{actor} is past the clerk\'s empty chair and through the inner door with four breaths to spare. The vault opens quietly, on hinges that have been kept oiled.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: '{actor}\'s infiltration {verb}s. An alarm {verb}s, and {they} must flee.',
+          narrative: 'The relief clerk comes early and finds the inner door standing open. The bell goes up before {actor} reaches the strongbox, and the stair fills from the top.',
           reputationDelta: -0.03,
         },
       },
@@ -2916,9 +2923,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'eye',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 1,
-        narrative: '{actor} claims the prize but must escape through {adj} territory with {adj} pursuers on {their} heels.',
+        narrative: 'The strongbox gives up its contents. Carrying them out is the other half of the job, and the counting-house stands on a square with four exits, all of them watched by morning.',
         onSuccess: {
-          narrative: '{actor} {verb}s the {adj} guards and {verb}s into the {adj} night with the prize {adj} in {their} hands.',
+          narrative: '{actor} leaves by the coal chute, which is on nobody\'s list of doors, and crosses the square while it is still quiet.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
           rewardPool: {
@@ -2926,7 +2933,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: '{actor}\'s escape {verb}s. The prize is reclaimed, and {they} barely escape with {their} life.',
+          narrative: 'The coal chute is barred from the outside. {actor} drops the strongbox to climb faster, and gets over the wall with a hand full of splinters and none of the money.',
           reputationDelta: -0.08,
           rewardPool: {
             categoryWeights: { possession: 0.7, condition: 0.3 },
@@ -2952,13 +2959,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'shadow',
         difficulty: DIFFICULTY_BASE,
         duration: 2,
-        narrative: '{actor} seeks a {adj} grave rumored to hold {adj} treasures. {They} must find it.',
+        narrative: 'The barrow field has forty mounds and one of them is worth opening. {actor} works from the old grave-tax rolls, which record what was buried with whom and were never meant to be read this closely.',
         onSuccess: {
-          narrative: '{actor}\'s {adj} search {verb}s the {adj} grave, hidden beneath {adj} earth and stone.',
+          narrative: 'The rolls name a captain buried in harness. {actor} finds the mound by its frost, which lies thinner where the stone sits close under the turf.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: '{actor}\'s search yields only {adj} graves and {adj} remains.',
+          narrative: '{actor} opens two mounds and finds a child and a horse. The rolls were copied badly a century ago, and the captain is under one of the other thirty-eight.',
           reputationDelta: -0.02,
         },
       },
@@ -2968,14 +2975,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'gold',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 1,
-        narrative: '{actor} must open the {adj} grave without disturbing {adj} spirits that might guard it.',
+        narrative: 'The capstone is set dry, without mortar, which means it can be lifted and will speak while it is lifted. {actor} works at it with a bar and a folded coat.',
         onSuccess: {
-          narrative: '{actor} opens the grave with {adj} care. The spirits remain {adj} and placid.',
+          narrative: 'The stone comes up onto the coat with barely a grind. The dark below it stays where it is, and the cold coming out of the hole is only cold.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: '{actor}\'s disturbance {verb}s the grave\'s guardian. A {adj} spirit {verb}s and {verb}s at {actor}.',
+          narrative: 'The bar slips and the capstone drops back hard. The sound goes down into the ground rather than out of it, and what answers does not sound like an echo.',
           reputationDelta: -0.03,
         },
       },
@@ -2985,9 +2992,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'shadow',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 1,
-        narrative: '{actor} must claim the treasures and flee before the grave\'s curse {verb}s them.',
+        narrative: 'The captain is still in harness, and the harness is still worth money. {actor} has as long as the air in the chamber stays breathable, which is not long.',
         onSuccess: {
-          narrative: '{actor} seizes the treasures and {verb}s from the grave {adj}, escaping {their} curses.',
+          narrative: '{actor} takes the gorget and the rings and leaves the blade, which is bedded into the ribs and would need cutting free. The capstone goes back square, which is the part nobody bothers with.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
           rewardPool: {
@@ -2996,7 +3003,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: '{actor} is caught by the curse. {They} flee {adj} and cursed, the treasures left behind.',
+          narrative: '{actor} gets a hand on the gorget and then cannot make the hand let go of the barrow wall. The climb out costs the gorget, and the cold follows {them} across the field.',
           reputationDelta: -0.08,
           rewardPool: {
             categoryWeights: { possession: 0.7, condition: 0.3 },
@@ -3023,13 +3030,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'gold',
         difficulty: DIFFICULTY_BASE,
         duration: 2,
-        narrative: '{actor} must acquire {adj} goods on the {adj} black market without alerting authorities.',
+        narrative: 'The goods are three crates of untaxed salt in a yard behind a tannery, where the smell keeps honest people from lingering. {actor} has to buy them without leaving a name.',
         onSuccess: {
-          narrative: '{actor} finds {adj} goods at {adj} prices. A {adj} deal is struck.',
+          narrative: 'The seller wants coin and no conversation, which suits. {actor} pays over a barrel head, and the crates are loaded before the price is repeated aloud.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: '{actor}\'s acquisition is {adj}. The goods are {adj} or the prices too steep.',
+          narrative: 'Two crates are salt and the third is sand with salt laid over the top. {actor} finds out at the barrel head, and the seller is already through the tannery gate.',
           reputationDelta: -0.02,
         },
       },
@@ -3039,14 +3046,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'shadow',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 1,
-        narrative: '{actor} must transport the {adj} goods through {adj} checkpoints without discovery.',
+        narrative: 'The road has one checkpoint and the river has none, but the river has a ferryman who talks. {actor} takes the road, with the crates under a load of hides.',
         onSuccess: {
-          narrative: '{actor} {verb}s the {adj} checkpoints with {adj} stealth. The goods remain {adj} hidden.',
+          narrative: 'The hides do the work. The checkpoint guard lifts one corner, decides against lifting the rest, and waves the cart through with the back of his hand.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: '{actor}\'s transport is {adj}. Guards {verb} the contraband, and {actor} {verb}s.',
+          narrative: 'The guard lifts the third hide instead of the first. The salt is counted out onto the road in front of {actor}, crate by crate, and the tally is written down.',
           reputationDelta: -0.03,
         },
       },
@@ -3056,9 +3063,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'gold',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 1,
-        narrative: '{actor} must deliver the {adj} goods to the {adj} buyer without ambush or betrayal.',
+        narrative: 'The buyer wants the crates at a mill outside the walls, after dark, which is either caution or a plan. {actor} arrives early to find out which.',
         onSuccess: {
-          narrative: '{actor} completes the {adj} delivery with {adj} precision. The payment is {adj} received.',
+          narrative: 'The buyer comes alone and the coin is counted out on the millstone. {actor} leaves by a different road than the one {they} came in on.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
           rewardPool: {
@@ -3066,7 +3073,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: '{actor}\'s delivery {verb}s into ambush. The buyer {verb}s or authorities {verb}, and {actor} flees {adj} empty.',
+          narrative: 'There are four men at the mill and one of them is the buyer. {actor} leaves the crates in the yard and takes the road at a run, a mile off before the shouting stops.',
           reputationDelta: -0.08,
           rewardPool: {
             categoryWeights: { possession: 0.7, condition: 0.3 },
@@ -3092,13 +3099,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'shadow',
         difficulty: DIFFICULTY_BASE,
         duration: 2,
-        narrative: '{actor} must slip into a {adj} palace or tower to steal {adj} secrets.',
+        narrative: 'The tower keeps its correspondence on the third floor and its guards on the first and second. {actor} goes up the outside, where the stonework is old enough to have handholds and sound enough to hold weight.',
         onSuccess: {
-          narrative: '{actor} {verb}s inside with {adj} stealth. The palace\'s secrets lie within reach.',
+          narrative: '{actor} comes in through a window left open for the heat, and stands a while letting {their} eyes adjust. The floor below is loud with people who believe the stair is the only route up.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: '{actor}\'s infiltration is {adj}. Guards {verb} near, and {actor} must retreat.',
+          narrative: 'A shutter swings on its own two floors up, and a guard on the wall walk looks for the reason. {actor} spends an hour flat against the stone, and goes back down the stones {they} climbed.',
           reputationDelta: -0.02,
         },
       },
@@ -3108,14 +3115,16 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'eye',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 1,
-        narrative: '{actor} must find the {adj} chamber where secrets are kept and interpret {their} meaning.',
+        // The prior prose used `{their}` for the secrets' meaning, but the pronoun tokens
+        // resolve to the acting agent — it rendered as the actor's. Third parties get nouns.
+        narrative: 'The correspondence room is not locked, because a locked door on the third floor would tell everyone which door mattered. {actor} has to read enough to know what is worth taking.',
         onSuccess: {
-          narrative: '{actor}\'s {adj} intellect uncovers the secret\'s {adj} hiding place. {They} memorize {their} contents.',
+          narrative: 'The letters worth having are the ones filed under a dull heading and dated out of order. {actor} reads four of them twice, and puts every sheet back in the order it lay.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: '{actor}\'s search is {adj}. The secrets remain {adj} and hidden.',
+          narrative: '{actor} reads a season of grain contracts and a dispute about a fence line. The letters that matter are in the room, and the night is spent.',
           reputationDelta: -0.03,
         },
       },
@@ -3125,9 +3134,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'shadow',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 1,
-        narrative: '{actor} must escape the {adj} palace with {adj} knowledge burning in {their} mind, pursued by {adj} guards.',
+        narrative: 'Going down the outside in the dark is harder than coming up it was, and now there is a reason to hurry. The window has been shut and latched since {actor} came through it.',
         onSuccess: {
-          narrative: '{actor} {verb}s the palace {adj} and {adj}, the secrets {adj} in {their} grasp.',
+          narrative: '{actor} goes down the same stones with the letters copied and the originals back in their order. The tower will not know it was read until the knowledge is used against it.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
           rewardPool: {
@@ -3136,7 +3145,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: '{actor}\'s escape {verb}s. Guards {verb} {them} and {they} are {adj} captured, the secrets lost.',
+          narrative: '{actor} is out on the stonework when the shutter is thrown open above. Hands come down and take {their} wrists, and the letters go back on the desk with a guard standing over them.',
           reputationDelta: -0.08,
           rewardPool: {
             categoryWeights: { possession: 0.7, condition: 0.3 },
@@ -5257,13 +5266,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'shadow',
         difficulty: DIFFICULTY_BASE,
         duration: 2,
-        narrative: '{actor} follows {adj} directions to a {adj} room that smells of tallow and secrets. The broker is there. So, perhaps, is a watcher.',
+        narrative: '{actor} follows directions given twice and written down nowhere, to a back room that smells of tallow and wet wool. The broker is there. So, perhaps, is a watcher.',
         onSuccess: {
-          narrative: '{actor} arrives {adj}ly, reads the room, and gives the signal the broker is waiting on. The broker {verb}s the goods out from under the table.',
+          narrative: '{actor} arrives on the hour, reads the room, and gives the signal the broker is waiting on. The goods come out from under the table wrapped in sacking.',
           reputationDelta: 0.03,
         },
         onFailure: {
-          narrative: '{actor} {verb}s too {adj} conspicuously. Eyes {verb} in the room. The broker packs up and leaves without a word.',
+          narrative: '{actor} looks at the door twice and at the broker once too often. Two men by the wall stop talking. The broker packs up and leaves without a word.',
           reputationDelta: -0.03,
         },
       },
@@ -5273,9 +5282,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'gold',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 1,
-        narrative: 'The goods are real. The risk is real. {actor} must buy quickly, pay without haggling, and leave before the situation {verb}s complicated.',
+        // `the situation` is in the evasive set, which is enforced at zero in every field
+        // class — it went out with the tokens rather than surviving beside them.
+        narrative: 'The goods are real. The risk is real. {actor} has to buy quickly, pay without haggling, and be gone before anyone in the room decides {they} might be worth following.',
         onSuccess: {
-          narrative: '{actor} completes the exchange with {adj} economy of movement. No names. No receipts. The goods are worth the {adj} risk.',
+          narrative: '{actor} completes the exchange in under a minute. No names. No receipts. The sacking goes under a coat, and the coat goes out the door.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
           rewardPool: {
@@ -5284,7 +5295,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'The watcher was real. The goods are seized and {actor}\'s name {verb}s onto a list. The {adj} exposure will cost more than coin.',
+          narrative: 'The watcher was real. The goods are seized, and {actor}\'s name goes onto a list kept by people who do not lose lists. That will cost more than the coin did.',
           reputationDelta: -0.10,
           rewardPool: {
             categoryWeights: { possession: 0.7, condition: 0.3 },
@@ -5312,13 +5323,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'shadow',
         difficulty: DIFFICULTY_BASE,
         duration: 2,
-        narrative: '{actor} has goods that cannot be sold honestly. The fence names a price — {adj}, naturally. {actor} must take it, or try {their} luck elsewhere in this {adj} quarter.',
+        narrative: '{actor} has goods that cannot be sold honestly. The fence names a price worth about a third of them, which is the going insult. {They} can take it, or carry the risk to the next door down.',
         onSuccess: {
-          narrative: 'The exchange is made in {adj} silence. {actor} walks out lighter and richer, no record left behind.',
+          narrative: 'The exchange is made without either of them saying aloud what is being sold. {actor} walks out lighter and richer, and no ledger anywhere is the wiser.',
           reputationDelta: 0.04,
         },
         onFailure: {
-          narrative: 'The fence {verb}s the goods as {adj} too hot and waves {actor} off. Word {verb}s — the original owner is asking questions.',
+          narrative: 'The fence turns the goods over once, sets them down, and waves {actor} off without naming a price. Word travels from there: the original owner is asking after them by name.',
           reputationDelta: -0.08,
         },
       },
@@ -5328,9 +5339,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'shadow',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 1,
-        narrative: 'Coin in hand, {actor} must leave the {adj} quarter without attracting the wrong kind of interest. The streets here {verb} with {adj} memory.',
+        narrative: 'Coin in hand, {actor} has to leave the quarter without becoming interesting. The people on these streets remember faces for a living.',
         onSuccess: {
-          narrative: '{actor} {verb}s {adj}ly through the {adj} alleys and back into the light. No footprints. No witnesses.',
+          narrative: '{actor} takes the alleys at an unhurried pace and comes out onto the main road with the coin quiet in {their} coat. Nobody follows.',
           reputationDelta: 0.07,
           tierPromotionEligible: true,
           rewardPool: {
@@ -5338,7 +5349,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: '{actor}\'s departure {verb}s. A constable {verb}s a {adj} glance; a neighbour {verb}s {their} face. The coin was earned — the attention was not.',
+          narrative: '{actor} walks too fast for the hour. A constable marks the pace; a woman in a doorway marks the face. The coin was earned. The attention was not.',
           reputationDelta: -0.06,
           rewardPool: {
             categoryWeights: { possession: 0.7, condition: 0.3 },
@@ -9634,13 +9645,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'shadow',
         difficulty: MODERATE_DIFFICULTY_BASE + 5,
         duration: 1,
-        narrative: 'The night offers cover, but cover cuts both ways. {actor} moves through the {adj} dark, using every available shadow.',
+        narrative: 'The night offers cover, and cover works for whoever is already still. {actor} moves between the places where the dark sits deepest, and waits in each one long enough to be sure of the next.',
         onSuccess: {
-          narrative: '{actor} passes through {adj} undetected. The night holds, the shadows cooperate.',
+          narrative: '{actor} crosses the open ground in three moves instead of one. The night holds, and the dogs stay quiet.',
           reputationDelta: 0.04,
         },
         onFailure: {
-          narrative: 'A {adj} misstep, a creak, a silhouette at the wrong moment. {actor} is almost seen.',
+          narrative: 'A loose board, a creak, a silhouette against a lit window one beat too long. {actor} is not seen. It is closer than that sounds.',
           reputationDelta: -0.04,
         },
       },
@@ -9650,11 +9661,16 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'eye',
         difficulty: MODERATE_DIFFICULTY_BASE + MODERATE_DIFFICULTY_STEP + 5,
         duration: 2,
-        narrative: 'The objective is reached. {actor} must accomplish what {they} came for in the {adj} dark, with whatever time the shadows allow.',
-        criticalSuccessAfterimage: '{actor} takes what {they} came for and leaves something else in its place — a small rearrangement that will have the household blaming each other for weeks. No one hunts a thief who left the count unchanged.',
-        criticalFailureAfterimage: 'The task comes apart at the last reach, and {actor} leaves a mark {they} cannot take back — a print, a dropped thing, a face half-seen. The job is unfinished, and now someone is looking for the shape of {them} in the dark.',
+        narrative: 'The objective is reached. {actor} has to finish in the dark, working by touch, with the time the household\'s sleep allows and not a minute past it.',
+        // Both crit bands predate this batch and carried vagueness-lexicon hits on lines the
+        // token sweep never touched: `something` (evasive — enforced at zero in every field
+        // class, scope-independent) and `thing`/`someone` (natural indefinites, enforced in
+        // outcome prose, which an afterimage is). Fixed here rather than left beside authored
+        // prose, per the batch-5 rule that the pass covers every line a batch touches.
+        criticalSuccessAfterimage: '{actor} takes what {they} came for and leaves a rearrangement in its place — a drawer half-closed, a coin moved to the wrong shelf — that will have the household blaming each other for weeks. No one hunts a thief who left the count unchanged.',
+        criticalFailureAfterimage: 'The task comes apart at the last reach, and {actor} leaves a mark {they} cannot take back — a print, a dropped pick, a face half-seen. The job is unfinished, and there is a household now looking for the shape of {them} in the dark.',
         onSuccess: {
-          narrative: '{actor} completes the task with {adj} clean efficiency. Gone before the sun rises.',
+          narrative: '{actor} finishes and puts the room back as {they} found it. Gone before the sun, and before the household stirs.',
           reputationDelta: 0.12,
           tierPromotionEligible: true,
           rewardPool: {
@@ -9663,7 +9679,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'The {adj} objective proves beyond reach tonight. {actor} withdraws with the task unfinished.',
+          narrative: 'The lock is a better one than the report described. {actor} withdraws with the task unfinished, having learned the shape of the problem and paid a night for it.',
           reputationDelta: -0.06,
           rewardPool: {
             categoryWeights: { possession: 0.6, condition: 0.4 },
