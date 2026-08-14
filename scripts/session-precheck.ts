@@ -6,6 +6,12 @@ import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 
+import {
+  buildHealthReport,
+  formatHealthFingerprint,
+  type HealthReport,
+} from "./node-modules-health.ts";
+
 type ProbeStatus = "yes" | "no" | "unknown";
 
 type ProbeResult = {
@@ -252,6 +258,40 @@ function probeComputerUseGrantStatus(): ProbeResult {
   };
 }
 
+/**
+ * `node_modules` health for this tree and the home-tree donor it junctions to (THR-1111).
+ *
+ * This probe exists because the `test:` line above **passes green against a broken
+ * install** — it shells out to `npm test`, which resolves vitest through whichever
+ * path happens to work, so a stub or shim-stripped tree can still answer `yes`.
+ * CLAUDE.md § Known Sandbox Limitations says exactly that ("the session-precheck's
+ * `test:` line passes green against a stub, so it is not a signal for install
+ * health"), and until now nothing in the precheck answered the question it warns
+ * about. A session therefore learned its install was gone ~20 minutes later, from
+ * `'esbuild' is not recognized`, which reads as a missing dependency rather than as
+ * a deleted install.
+ *
+ * The donor half is the load-bearing one: 53 of 478 reaper runs found the home tree's
+ * install damaged, in streaks up to 18 hours, and every session starting inside such
+ * a streak has no healthy tree to junction from (impediments #501/#502/#503/#506).
+ */
+function probeNodeModulesHealth(): ProbeResult & { report: HealthReport } {
+  const startMs = Date.now();
+  const report = buildHealthReport(REPO_ROOT);
+  const durationMs = Date.now() - startMs;
+
+  return {
+    name: "nm",
+    // `unknown` stays unknown rather than failing: an unreadable probe is not
+    // evidence of damage, and a false alarm here sends a session into a needless
+    // ~4-minute reinstall (NFP #4).
+    status: report.degraded ? "no" : report.verdict === "unknown" ? "unknown" : "yes",
+    durationMs,
+    detail: report.summary,
+    report,
+  };
+}
+
 function defaultReadDotGit(): string | null {
   try {
     const gitPath = path.join(REPO_ROOT, ".git");
@@ -488,6 +528,7 @@ function main(): void {
     const gitDryRun = probeGitPushDryRun();
     const npmTestTiming = probeNpmSingleTestTiming();
     const computerUse = probeComputerUseGrantStatus();
+    const nodeModules = probeNodeModulesHealth();
     const branchStaleness = probeBranchStaleness();
 
     console.log("session-precheck summary");
@@ -495,20 +536,32 @@ function main(): void {
     printProbe(gitDryRun);
     printProbe(npmTestTiming);
     printProbe(computerUse);
+    printProbe(nodeModules);
     printProbe(branchStaleness);
+
+    // A degraded install is the one precheck finding that invalidates the run's
+    // later gates rather than merely colouring them, so it gets a line of its own
+    // with the repair spelled out — not a fingerprint token a reader has to decode.
+    if (nodeModules.report.degraded) {
+      for (const tree of [nodeModules.report.session, nodeModules.report.donor]) {
+        if (!tree || tree.verdict === "healthy" || tree.verdict === "unknown") continue;
+        console.log(`!!!!! node_modules ${tree.verdict.toUpperCase()} in the ${tree.role} tree: ${tree.detail}`);
+      }
+    }
 
     const fingerprint = [
       `rg=${ripgrep.status}`,
       `git=${gitDryRun.status}`,
       `test=${formatFingerprintTestValue(npmTestTiming)}`,
       `cu=${formatFingerprintComputerUse(computerUse)}`,
+      `nm=${formatHealthFingerprint(nodeModules.report)}`,
       `freshness=${branchStaleness.freshnessKey}`,
     ].join(" ");
     console.log(`fingerprint ${fingerprint}`);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     console.log(`session-precheck encountered an unexpected error: ${message}`);
-    console.log("fingerprint rg=unknown git=unknown test=unknown cu=unknown freshness=unknown");
+    console.log("fingerprint rg=unknown git=unknown test=unknown cu=unknown nm=unknown freshness=unknown");
   }
 
   process.exit(0);
