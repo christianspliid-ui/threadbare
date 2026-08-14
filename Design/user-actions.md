@@ -1,19 +1,21 @@
 # User Action Required
 
-**Last updated:** 2026-08-14 15:56 local (2026-08-14 13:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-14 16:57 local (2026-08-14 14:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
 ### 1. Play the slice once and rule it — both verdict sessions are level
 
-One play session, two tickets, five verdicts. As of 15:37 today every element of the system — data, logic, content, UI — is shipped and deployed, which is the bar your own rule 5 sets.
+One play session, two tickets, five verdicts. Every element of the system — data, logic, content, UI — is shipped and deployed, which is the bar your own rule 5 sets.
 
 - [**THR-907**](https://linear.app/threadbare/issue/THR-907/slice-verdict-session-christian-rules-on-prose-firing-ui-and-game) — prose, firing, UI, game feel. Cleared by [THR-1107](https://linear.app/threadbare/issue/THR-1107) ([PR #1450](https://github.com/christianspliid-ui/threadbare/pull/1450)), the 21 lines that read *"she stop"* for a he/she agent, `trial_by_combat` among them; and by the 13-batch mad-lib campaign [THR-1101](https://linear.app/threadbare/issue/THR-1101) closing this morning.
-- [**THR-974**](https://linear.app/threadbare/issue/THR-974/consequence-verdict-session-christian-rules-on-world-graph-consequence) — consequence. Cleared yesterday by logic ([THR-969](https://linear.app/threadbare/issue/THR-969)), data ([THR-1082](https://linear.app/threadbare/issue/THR-1082)), UI ([THR-971](https://linear.app/threadbare/issue/THR-971)) and content ([THR-1097](https://linear.app/threadbare/issue/THR-1097)).
+- [**THR-974**](https://linear.app/threadbare/issue/THR-974/consequence-verdict-session-christian-rules-on-world-graph-consequence) — consequence. Cleared by logic ([THR-969](https://linear.app/threadbare/issue/THR-969)), data ([THR-1082](https://linear.app/threadbare/issue/THR-1082)), UI ([THR-971](https://linear.app/threadbare/issue/THR-971)) and content ([THR-1097](https://linear.app/threadbare/issue/THR-1097)).
 
 **Free play** (what the firing verdict needs): [threadbare.vercel.app/?view=game&seeded&size=medium&forceencounters](https://threadbare.vercel.app/?view=game&seeded&size=medium&forceencounters) · **straight to any ending**: [the review table in THR-1097's closeout](https://linear.app/threadbare/issue/THR-1097/consequence-content-pass-every-vertical-slice-ending-rewritten-as), one link per encounter per ending.
 
-Two honest seams: no encounter authors a `success` band by design (the base text *is* the ordinary win, so `?outcome=success` reports `unauthored_band` correctly), and `agreement` consequences cannot be minted yet ([THR-1110](https://linear.app/threadbare/issue/THR-1110)) so the crossroads promise is carried by its seeded follow-up. "Needs another iteration" is a valid ruling on any of the five. When both close, the map ([THR-902](https://linear.app/threadbare/issue/THR-902)) closes with them.
+One honest seam remains, by design: no encounter authors a `success` band — the base text *is* the ordinary win, so `?outcome=success` reports `unauthored_band` correctly. The other seam closed at 16:29 today: `agreement` consequences are real now ([THR-1110](https://linear.app/threadbare/issue/THR-1110)), so the crossroads promise is a thing the bearer holds rather than a scheduled follow-up.
+
+"Needs another iteration" is a valid ruling on any of the five. When both close, the map ([THR-902](https://linear.app/threadbare/issue/THR-902)) closes with them.
 
 ### 2. Parked option, no urgency: a Tenacious-style trait
 
@@ -21,6 +23,7 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
+- 2026-08-14: **the crossroads promise became a real thing the person holds.** [THR-1110](https://linear.app/threadbare/issue/THR-1110) ([PR #1451](https://github.com/christianspliid-ui/threadbare/pull/1451), merged 16:42, deployed) — an aftermath could name only two of the seven consequence categories; it can now grant all seven, so `agreement`, `blessing`, `curse`, `bestowed_power` and `spell` all became authorable. The granting machinery had been built and unused since the attachment-slot design; what was missing was an aftermath's ability to ask for it.
 - 2026-08-14: **the last thing standing between you and the full slice review is gone.** [THR-1107](https://linear.app/threadbare/issue/THR-1107) ([PR #1450](https://github.com/christianspliid-ui/threadbare/pull/1450), claimed 15:02, merged 15:37, deployed) — 21 encounter lines that rendered ungrammatically for a he/she agent, invisible to the token scan, invisible in the source, and green in the test suite. It shipped with a regression guard written to fail first. **This unblocked THR-907**, so both verdict sessions are now open together.
 - 2026-08-14: **every slice ending now says what it cost the person who walked through it.** [THR-1097](https://linear.app/threadbare/issue/THR-1097) ([PR #1449](https://github.com/christianspliid-ui/threadbare/pull/1449), merged 14:40) — all 55 authored consequences rewritten as cause → change. The defect turned out to be *subject*, not writing quality: a third of the chips reported world state where the rule asks for a personal outcome. **This unblocked THR-974.**
 - 2026-08-14: **the ally card you described on Tuesday is in the game.** [THR-1096](https://linear.app/threadbare/issue/THR-1096) ([PR #1448](https://github.com/christianspliid-ui/threadbare/pull/1448)) — a named person with a portrait who rides along and grants a passive bonus, never simulated as an agent, arriving as an encounter consequence and rendering as a BOND chip. A pixel pass on the companions row is deferred to an attended session ([THR-1109](https://linear.app/threadbare/issue/THR-1109)).
