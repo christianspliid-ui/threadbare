@@ -407,11 +407,22 @@ export const CONTRACTS: readonly Contract[] = [
     id: 'attachment-encounter-rewards',
     producerSystem: ENCOUNTERS,
     consumerSystem: ATTACHMENTS,
-    intent: 'Encounters grant rewards, which become possessions.',
-    mechanism: { kind: 'function', symbols: ['assembleRewardPool'], module: 'src/engine/rewardPool.ts' },
+    intent: 'Encounters grant rewards, which become possessions — by random draw from the pool, or as an authored consequence naming one template.',
+    // Two entry points, one write path. `assembleRewardPool` is the draw; THR-1110's
+    // `attachment_grant` aftermath effect calls the instantiators directly, so an
+    // author can name the thing instead of weighting a category.
+    mechanism: {
+      kind: 'function',
+      symbols: ['assembleRewardPool', 'instantiateReward', 'instantiateAgreementReward'],
+      module: 'src/engine/rewardPool.ts',
+    },
     writeSites: ['src/engine/rewardPool.ts', 'src/types/attachments.ts'],
-    readSites: ['src/engine/orchestrator.ts', 'src/engine/unifiedActionResolution.ts'],
-    verifiedLive: { date: '2026-07-23', evidence: `possesses edges grow 7→82 over 120 ticks (seed 42, medium). ${AUDIT_EVIDENCE}` },
+    readSites: [
+      'src/engine/orchestrator.ts',
+      'src/engine/unifiedActionResolution.ts',
+      'src/engine/encounterAftermath.ts',
+    ],
+    verifiedLive: { date: '2026-08-14', evidence: `possesses edges grow 7→82 over 120 ticks (seed 42, medium). Authored arm (THR-1110): the crossroads accept path writes one agreement edge binding the actor to the materialized stranger, 132-tick term (seed 42, medium, CLI). ${AUDIT_EVIDENCE}` },
   },
   {
     id: 'attachment-worldgen-starters',

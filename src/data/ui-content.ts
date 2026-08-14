@@ -337,6 +337,10 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'Standing',
     desc: 'How the world reads a mortal — the sum of what they have been seen to do. Standing opens doors and closes them: it gates who will bargain, who will follow, and who remembers a grudge.',
   },
+  'ui.agreement': {
+    label: 'An Agreement',
+    desc: 'A claim standing between two parties — a debt, a favour, an oath, a bargain. Unlike a wound it sits on nobody alone: someone is always on the other end, and it holds until honoured, lapsed, or broken.',
+  },
   'ui.aftermath_toll': {
     label: 'A Toll',
     desc: 'Something the ending took. A toll is a price already paid, not a threat — the scene resolved, and this is what it cost the mortal to get there.',

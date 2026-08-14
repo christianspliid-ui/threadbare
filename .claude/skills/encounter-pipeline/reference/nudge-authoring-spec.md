@@ -913,6 +913,33 @@ attachment with a duration edge and a negative reach modifier; that is expressib
 and needs no engine work. A corpus where every consequence is an item or a reputation
 delta is under-using the substrate, and the machine gates count palette breadth.
 
+**How you write each one (THR-1110).** Until this shipped the rule was partly aspirational:
+the vocabulary could grant only `condition` (`condition_attachment` / `apply_condition`) and
+`possession` (`spawn_artifact`), so an author reaching for the other five had to fake the
+consequence in prose — a chip claiming state nothing wrote, the pathology THR-971's
+single-sourcing rule exists to stop — or drop it. The remaining five now have a member:
+
+| Category | Effect | Notes |
+|---|---|---|
+| `possession` | `spawn_artifact` *or* `attachment_grant` | `spawn_artifact` also places at a location |
+| `condition` | `condition_attachment` | Duration + stacks + the wound signal |
+| `blessing` / `curse` / `bestowed_power` / `spell` | `attachment_grant` | Names a template id; the category is the template's, never declared |
+| `agreement` | `attachment_grant` + `counterpartyId` | **Required** — see below |
+| `companion` | `grant_companion` | A person, not a thing (THR-1096) |
+
+```ts
+{ kind: 'attachment_grant', templateId: 'agreement.bargain.promise_given',
+  targetAgentId: '$actor', counterpartyId: '$cast:stranger', durationOverride: 132 }
+```
+
+**An agreement is the one category that needs two parties.** A condition sits on one person;
+an agreement is a claim *between* two, so it is edge-backed and `counterpartyId` is required.
+Bind it to someone the scene already cast (`$cast:<key>`) and make sure that cast member is
+`must-persist` — a promise whose holder is collected at scene end is not a promise. A grant
+whose counterparty does not resolve writes nothing and traces why, rather than leaving a
+dangling edge; so a missing cast declaration shows up as a consequence that silently never
+lands. `durationOverride` sets the term when the scene names one (`null` = permanent).
+
 ---
 
 ## Reusable card faces, bespoke hands

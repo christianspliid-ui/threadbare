@@ -25,9 +25,26 @@ import { isActionStepBranch } from '../types/unifiedAction';
 import { AMBITION_TEMPLATES } from '../data/ambition-templates';
 import { ARTIFACT_TEMPLATES } from '../data/artifact-templates';
 import { CONDITION_TRAIT_DEFINITIONS } from '../data/condition-trait-content';
+// THR-1110 — every catalog `attachment_grant` can name. This list mirrors the
+// sources `seedAttachments` puts in the graph plus the two registry-backed paths
+// (`getAgreementTemplate`, `getCompanionTemplate`), so the gate asks exactly the
+// question `instantiateReward` will ask at runtime.
+import { STARTER_POSSESSIONS, STARTER_CONDITIONS } from '../data/starter-attachments';
+import {
+  REWARD_POSSESSIONS,
+  REWARD_CONDITIONS,
+  REWARD_BESTOWED_POWERS,
+} from '../data/reward-attachment-catalog';
+import {
+  ANOMALY_SIGNATURE_ARTIFACTS,
+  ANOMALY_BESTOWED_POWERS,
+  ANOMALY_CONDITIONS,
+} from '../data/anomaly-reward-catalog';
+import { AGREEMENT_REWARD_TEMPLATES } from '../data/agreement-reward-catalog';
+import { COMPANION_TEMPLATES } from '../data/companion-templates';
 
 /** Content kinds a card grant can name. */
-export type NudgeGrantRefKind = 'ambition' | 'artifact' | 'condition';
+export type NudgeGrantRefKind = 'ambition' | 'artifact' | 'condition' | 'attachment';
 
 export interface DeadNudgeGrantRef {
   readonly templateId: string;
@@ -54,6 +71,19 @@ function buildLiveIndex(): Readonly<Record<NudgeGrantRefKind, ReadonlySet<string
     ambition: new Set(AMBITION_TEMPLATES.map((t) => t.id)),
     artifact: new Set(ARTIFACT_TEMPLATES.map((t) => t.id)),
     condition: new Set(CONDITION_TRAIT_DEFINITIONS.map((n) => n.id)),
+    attachment: new Set([
+      ...STARTER_POSSESSIONS.map((n) => n.id),
+      ...STARTER_CONDITIONS.map((n) => n.id),
+      ...REWARD_POSSESSIONS.map((n) => n.id),
+      ...REWARD_CONDITIONS.map((n) => n.id),
+      ...REWARD_BESTOWED_POWERS.map((n) => n.id),
+      ...ANOMALY_SIGNATURE_ARTIFACTS.map((n) => n.id),
+      ...ANOMALY_BESTOWED_POWERS.map((n) => n.id),
+      ...ANOMALY_CONDITIONS.map((n) => n.id),
+      ...CONDITION_TRAIT_DEFINITIONS.map((n) => n.id),
+      ...AGREEMENT_REWARD_TEMPLATES.map((t) => t.id),
+      ...COMPANION_TEMPLATES.map((t) => t.id),
+    ]),
   };
 }
 
@@ -80,6 +110,8 @@ function refsForEffect(
       return [{ kind: 'condition', ref: effect.conditionTraitId }];
     case 'condition_attachment':
       return [{ kind: 'condition', ref: effect.templateId }];
+    case 'attachment_grant':
+      return [{ kind: 'attachment', ref: effect.templateId }];
     default:
       return [];
   }

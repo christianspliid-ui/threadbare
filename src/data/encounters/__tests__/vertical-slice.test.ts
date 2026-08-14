@@ -373,6 +373,60 @@ describe('vertical slice — the April migration bar (THR-973)', () => {
   });
 });
 
+describe('vertical slice — the crossroads promise is a real claim (THR-1110)', () => {
+  const crossroads = VERTICAL_SLICE_TEMPLATES.find((t) => t.id === SLICE_TEMPLATE_IDS.crossroads)!;
+
+  /** The accept path — the fork's `negative` pole, where the word is given. */
+  const acceptVariant = crossroads.aftermathConfig?.variants?.negative;
+  const acceptEffects = (acceptVariant?.reactions ?? []).flatMap((r) => r.effects);
+
+  it('the accept path grants an agreement attachment, not only an encounter seed', () => {
+    const grant = acceptEffects.find((e) => e.kind === 'attachment_grant');
+    expect(
+      grant,
+      'the promise shipped carried by its seed alone until THR-1110 — the seed is a scheduled '
+      + 'encounter, not a thing the bearer holds',
+    ).toBeDefined();
+    expect((grant as { templateId?: string }).templateId).toBe('agreement.bargain.promise_given');
+  });
+
+  it('the agreement names a counterparty — a promise needs someone on the other end', () => {
+    const grant = acceptEffects.find((e) => e.kind === 'attachment_grant') as
+      { counterpartyId?: string } | undefined;
+    expect(grant?.counterpartyId).toBe('$cast:stranger');
+  });
+
+  it('the counterparty sentinel resolves against a cast member the template actually declares', () => {
+    const grant = acceptEffects.find((e) => e.kind === 'attachment_grant') as
+      { counterpartyId?: string } | undefined;
+    const key = grant!.counterpartyId!.replace('$cast:', '');
+    const cast = (crossroads.supportBundle ?? []).filter((s) => s.kind === 'actor');
+    expect(
+      cast.some((s) => s.key === key),
+      `the grant binds $cast:${key} but the template casts no such actor — the sentinel would `
+      + 'stay unbound and the grant would silently no-op',
+    ).toBe(true);
+  });
+
+  it('the stranger must persist — a promise whose holder is collected at scene end is not a promise', () => {
+    const stranger = (crossroads.supportBundle ?? []).find((s) => s.kind === 'actor' && s.key === 'stranger');
+    expect((stranger as { persistence?: string } | undefined)?.persistence).toBe('must-persist');
+  });
+
+  it('the bond and the collection fall due together', () => {
+    const grant = acceptEffects.find((e) => e.kind === 'attachment_grant') as
+      { durationOverride?: number | null } | undefined;
+    const seed = acceptEffects.find((e) => e.kind === 'encounter_seed') as
+      { delayTicks?: number } | undefined;
+    expect(grant?.durationOverride).toBe(seed?.delayTicks);
+  });
+
+  it('the chip names the promise as a resolvable concept rather than bare text', () => {
+    const chip = (acceptVariant?.changes ?? []).find((c) => c.id === 'slice.crossroads.the_word_given');
+    expect(chip?.stateNoun?.tooltipId).toBe('ui.agreement');
+  });
+});
+
 describe('vertical slice — registration', () => {
   it('all eight templates are in the live pool', () => {
     const poolIds = new Set(UNIFIED_ACTION_TEMPLATES.map((t) => t.id));

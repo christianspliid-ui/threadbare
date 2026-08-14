@@ -34,6 +34,7 @@ const KNOWN_AFTERMATH_EFFECT_KINDS = new Set<EncounterAftermathReactionEffect['k
   'apply_condition',
   'remove_condition',
   'condition_attachment',
+  'attachment_grant',
   'spawn_artifact',
   'emit_omen',
   'faction_splinter',

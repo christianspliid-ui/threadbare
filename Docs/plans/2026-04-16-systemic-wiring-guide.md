@@ -264,6 +264,8 @@ The following typed effects ARE callable from `aftermathConfig.reactions[].effec
 - `faction_declare_war` / `faction_force_peace` — faction sentiment edges (THR-115)
 - `intelligence` — writes `intelligenceRecords` on agent node (existing)
 - `apply_condition` / `remove_condition` / `condition_attachment` — condition edges + attachments (THR-114 / THR-117)
+- `attachment_grant` — any catalog attachment: blessing, curse, bestowed power, spell, or an **agreement** (edge-backed, needs a counterparty) (THR-1110)
+- `grant_companion` / `remove_companion` — a named person who walks with the bearer (THR-1096)
 - `hidden_mark` — discoverable secret on agent (existing)
 - `encounter_seed` — plants future encounter, creates `caused_by` edge (THR-116)
 
@@ -1080,6 +1082,35 @@ With the markers, `artifact.enchant` / `artifact.empower` charge 4 essence at di
 **Pool grants** work too: `companion` is a `RewardPoolRecipe.categoryWeights` key, so a roadside-rescue recipe can weight companions while a tomb raid does not. The pool applies the cap and the unique filter; a direct grant does not.
 
 **Where to find the implementation:** `src/engine/companions.ts` (`mintCompanion` / `removeCompanion` / `getCompanions` / `expireCompanions`), the `accompanies` walk in `src/engine/domainCapability.ts`, the `companion` case in `src/engine/rewardPool.ts`, the two effect cases in `src/engine/encounterAftermath.ts`, and the `grant_companion` GraphOp intercept in `src/engine/unifiedActionResolution.ts` (which `action.gold.hire-mercenaries` is the first caller of).
+
+---
+
+### Granting any attachment: `attachment_grant` (THR-1110)
+
+**What it does:** hands the bearer any catalog attachment as an authored consequence — a blessing, a curse, a bestowed power, a spell, or an **agreement**.
+
+**Why you want it:** the palette rule (THR-1082) has always said all seven attachment categories are legitimate consequence material. The vocabulary did not agree: it could grant `condition` (`condition_attachment`) and `possession` (`spawn_artifact`), and nothing else. Reaching for the other five left two bad options — fake the consequence in prose, which is a chip claiming state nothing wrote, or drop it. Measured on THR-1097: *A Bargain at the Crossroads* is literally an agreement and shipped carried by an `encounter_seed`, so the promise was a scheduled encounter rather than a thing the bearer held — nothing read it, nothing gated on it, and it could not be inspected.
+
+**How to author it:**
+
+```ts
+// A blessing that fades. The category comes from the template, never declared.
+{ kind: 'attachment_grant', templateId: 'reward.blessing.sunlit', durationOverride: 40 }
+
+// An agreement. This one needs a second party.
+{ kind: 'attachment_grant', templateId: 'agreement.bargain.promise_given',
+  targetAgentId: '$actor', counterpartyId: '$cast:stranger', durationOverride: 132 }
+```
+
+**What an author must know — three things:**
+
+1. **You name a thing, not a taxonomy.** There is no `category` field. `templateId` resolves against the agreement catalog first, then the graph's template nodes, and the template's own type/subcategory picks the edge. A dead id is caught at build time by the grant-liveness sweep, which now checks `attachment_grant` refs against every attachment catalog.
+2. **An agreement needs two parties, and this is the one category that does.** A condition sits on one person; an agreement is a claim *between* two, so it is edge-backed (`relates_to` with `agreement: true`) and `counterpartyId` is required. Bind it to a cast member (`$cast:<key>`) declared `must-persist` in the template's `supportBundle` — a promise whose holder is garbage-collected at scene end is not a promise. A counterparty that does not resolve writes **nothing** and traces why, rather than leaving a dangling edge, so a missing cast declaration surfaces as a consequence that silently never lands.
+3. **`durationOverride` beats the template default**, and `null` makes the grant permanent. Use it when the scene names the term — the crossroads promise passes `SLICE_FULL_MOON_DELAY_TICKS` so the bond and the encounter that collects it fall due together.
+
+**This is a dispatcher, not a new system.** Both write paths already existed: `instantiateReward` for node-backed categories and `instantiateAgreementReward` for agreements — the latter fully built since the attachment-slot design and, until this, with **zero callers**. Nothing about how an attachment is written changed; what changed is that an aftermath can now ask for it.
+
+**Where to find the implementation:** the `attachment_grant` case in `src/engine/encounterAftermath.ts`, the two instantiation paths in `src/engine/rewardPool.ts`, the catalog in `src/data/agreement-reward-catalog.ts`, and the `attachment` ref kind in `src/engine/nudgeGrantLiveness.ts`.
 
 ---
 

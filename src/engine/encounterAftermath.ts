@@ -69,6 +69,10 @@ import type {
 } from '../types/trace';
 import { mulberry32 } from '../lib/prng';
 import { mintCompanion, removeCompanion, getCompanions } from './companions';
+// THR-1110 — the two pre-existing attachment write paths the `attachment_grant`
+// dispatcher routes between. `instantiateAgreementReward` had no caller before this.
+import { instantiateReward, instantiateAgreementReward } from './rewardPool';
+import { getAgreementTemplate } from '../data/agreement-reward-catalog';
 import { generateSecret, createSecretEdge, createFavorEdge } from './secretGeneration';
 import { spawnClueFromEvent, findAnyRuinId } from './ruins/clueLifecycle';
 import { applyFactionReputationGain } from './factionReputation';
@@ -522,6 +526,11 @@ export const AFTERMATH_CAST_SENTINEL_LEGACY_PREFIX = 'role:';
 const SCENE_SENTINEL_FIELDS = {
   targetAgentId: 'agent',
   withAgentId: 'agent',
+  // THR-1110 — an `attachment_grant` agreement names its other party here, and the
+  // party is nearly always someone the scene already cast. Registered as 'agent' so
+  // `$cast:<key>` binds the person; a literal faction or location id is not a
+  // sentinel and passes through untouched, then is validated by the handler.
+  counterpartyId: 'agent',
   targetFactionId: 'faction',
   targetSublocationId: 'sublocation',
 } as const;
@@ -2041,6 +2050,144 @@ export function applyEncounterAftermathReaction(
           effectiveTargetId: resolvedId, effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'actor_fallback',
           summary: `condition_attachment[${i}]: ${effect.templateId} → ${resolvedId} ×${caStackCount}${caIsWound && caTargetsActor ? ' [woundApplied]' : ''}`,
         });
+        break;
+      }
+
+      case 'attachment_grant': {
+        // THR-1110. A dispatcher over two pre-existing write paths — never a third
+        // one. The template's own shape picks the path: an agreement catalog id is
+        // edge-backed, anything else is a graph template node.
+        const agKind = (target.kind === 'agent' || target.kind === 'faction' || target.kind === 'sublocation')
+          ? target.kind
+          : 'agent' as const;
+        const agRecipientId = target.kind !== 'actor_fallback' ? target.id : actorAgentId;
+        if (!agRecipientId) {
+          emitTrace({
+            tick, category: 'aftermath_target_invalid', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'attachment_grant', reason: 'no_actor_id',
+            summary: `attachment_grant[${i}] skipped: no recipient id`,
+          } as unknown as TraceEntry);
+          break;
+        }
+
+        const agAgreementTemplate = getAgreementTemplate(effect.templateId);
+
+        if (agAgreementTemplate) {
+          // Edge-backed. A promise needs someone on the other end of it, so an
+          // unresolvable counterparty no-ops rather than writing a dangling edge.
+          const agCounterpartyId = effect.counterpartyId;
+          if (!agCounterpartyId || agCounterpartyId.startsWith('$') || !state.graph.getNode(agCounterpartyId)) {
+            emitTrace({
+              tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+              encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+              effectKind: 'attachment_grant',
+              effectDetail: { templateId: effect.templateId, counterpartyId: agCounterpartyId ?? null, attachmentCategory: 'agreement' },
+              success: false,
+              failReason: agCounterpartyId ? 'counterparty_unresolved' : 'counterparty_missing',
+              effectiveTargetId: agRecipientId,
+              effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'actor_fallback',
+              summary: `attachment_grant[${i}] skipped: agreement '${effect.templateId}' needs a counterparty that resolves (${agCounterpartyId ?? 'none given'})`,
+            } as unknown as TraceEntry);
+            break;
+          }
+
+          const agAgreement = instantiateAgreementReward(
+            state.graph,
+            agRecipientId,
+            agCounterpartyId,
+            effect.durationOverride === undefined
+              ? agAgreementTemplate
+              : { ...agAgreementTemplate, ticksRemaining: effect.durationOverride },
+            tick,
+          );
+          if (!agAgreement) {
+            emitTrace({
+              tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+              encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+              effectKind: 'attachment_grant',
+              effectDetail: { templateId: effect.templateId, targetId: agRecipientId, attachmentCategory: 'agreement' },
+              success: false, failReason: 'recipient_missing',
+              effectiveTargetId: agRecipientId,
+              effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'actor_fallback',
+              summary: `attachment_grant[${i}] skipped: recipient node not found (${agRecipientId})`,
+            } as unknown as TraceEntry);
+            break;
+          }
+
+          mutationSummary.touchedStructure = true;
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'attachment_grant',
+            effectDetail: {
+              templateId: effect.templateId,
+              targetId: agRecipientId,
+              counterpartyId: agCounterpartyId,
+              attachmentCategory: 'agreement',
+              agreementType: agAgreementTemplate.agreementType,
+              edgeId: agAgreement.edgeId,
+              displayName: agAgreement.displayName,
+              targetKind: agKind,
+            },
+            success: true,
+            effectiveTargetId: agRecipientId,
+            effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'actor_fallback',
+            summary: `attachment_grant[${i}]: agreement '${agAgreement.displayName}' binds ${agRecipientId} to ${agCounterpartyId}`,
+          } as unknown as TraceEntry);
+          break;
+        }
+
+        // Node-backed: blessing, curse, bestowed_power, spell, and the two
+        // categories that already had dedicated members. `instantiateReward`
+        // resolves which edge to write from the template's own type/subcategory.
+        const agInstance = instantiateReward(state.graph, effect.templateId, agRecipientId, tick);
+        if (!agInstance) {
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'attachment_grant',
+            effectDetail: { templateId: effect.templateId, targetId: agRecipientId },
+            success: false, failReason: 'template_or_recipient_missing',
+            effectiveTargetId: agRecipientId,
+            effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'actor_fallback',
+            summary: `attachment_grant[${i}] skipped: no template or recipient for '${effect.templateId}'`,
+          } as unknown as TraceEntry);
+          break;
+        }
+
+        // Duration override rides the edge the reward path just wrote, so the
+        // authored value and the template default share one write (no parallel path).
+        if (effect.durationOverride !== undefined) {
+          const agEdge = state.graph.getEdge(agInstance.edgeId);
+          if (agEdge) {
+            const agProps = { ...agEdge.properties } as Record<string, unknown>;
+            agProps.ticksRemaining = effect.durationOverride;
+            if (effect.durationOverride !== null) agProps.totalTicks = effect.durationOverride;
+            state.graph.updateEdge(agInstance.edgeId, { properties: agProps });
+          }
+        }
+
+        mutationSummary.touchedStructure = true;
+        emitTrace({
+          tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+          encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+          effectKind: 'attachment_grant',
+          effectDetail: {
+            templateId: effect.templateId,
+            targetId: agRecipientId,
+            attachmentCategory: agInstance.category,
+            instanceId: agInstance.instanceId,
+            edgeId: agInstance.edgeId,
+            displayName: agInstance.displayName,
+            durationTicks: effect.durationOverride,
+            targetKind: agKind,
+          },
+          success: true,
+          effectiveTargetId: agRecipientId,
+          effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'actor_fallback',
+          summary: `attachment_grant[${i}]: ${agInstance.category} '${agInstance.displayName}' → ${agRecipientId}`,
+        } as unknown as TraceEntry);
         break;
       }
 
