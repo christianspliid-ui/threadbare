@@ -726,10 +726,10 @@ remediation ticket or the build fails.
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 195 total — 1 write, 1 read, 193 unclassified
+- **Production hits:** 196 total — 1 write, 1 read, 194 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/ActionCard.tsx` +188 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts` +189 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `reunion-reads-the-edges-not-the-roster` — 🟢 LIVE
@@ -778,10 +778,10 @@ remediation ticket or the build fails.
 
 - **Intent:** The god can plant and reveal secrets — the Eye identity’s signature verbs enter the hand via a beat grant (player-loop links 2–4).
 - **Producer → Consumer:** Ascendant Beats & Progression → Secrets & Favors
-- **Production hits:** 3 total — 1 write, 1 read, 1 unclassified
+- **Production hits:** 4 total — 1 write, 1 read, 2 unclassified
 - **Write sites:** `src/data/ascendant-beat-content.ts`
 - **Read sites:** `src/data/unified-action-templates.ts`
-- **Other hits:** `src/data/action-technical-effects.ts`
+- **Other hits:** `src/components/Codex/codexRegistry.ts`, `src/data/action-technical-effects.ts`
 - **Verdict:** Verified 2026-07-23: THR-724: `beat.pool.invest.the_unveiled_eye` grants both ids; `__DEBUG.listUnreachableActions()` no longer lists them. Link 3 verified rather than assumed — `plant_secret` writes a `knows_secret_of` edge via the existing graph-executor case, and `reveal_secret` now routes through the resolution intercept so it applies real consequences instead of only flipping the `revealed` flag.
 
 ### `seeded-opponent-survives-to-spawn` — 🟢 LIVE

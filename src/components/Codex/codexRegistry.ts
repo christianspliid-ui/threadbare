@@ -21,6 +21,8 @@ import { ACTION_ART } from '../Game/actionArt';
 import { isStarterActionId } from '../../engine/actionUnlock';
 import { effectSourceFor, type EffectSource } from '../../data/actionEffectSource';
 import { formatEssenceLabel } from '../shared/formatEssence';
+import { magnitudeWord, countWord, type MagnitudeBand } from '../../engine/aftermathWords';
+import { TICKS_PER_DAY } from '../../data/attention-constants';
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -129,11 +131,16 @@ const SCALE_DISPLAY: Record<string, string> = {
  * and the invariant test cannot pin one without the other. `Star · life sphere` shows the two
  * spellings side by side, which is the precise defect the ticket describes.
  *
- * Note the corpus also carries `shadow` / `star` / `void` as `sphereAffinity`, none of which are
- * Spheres — they are reach names in a sphere field. Those fall to `resolveDisplay`'s plain-English
- * fallback and warn once, which is Law 14's prescribed miss behaviour and surfaces the content
- * defect instead of hiding it behind a hand-written row. Filed separately; not repaired here,
- * because correcting authored content is a content call, not a display one.
+ * Note the corpus also carries non-Sphere values as `sphereAffinity`. Those fall to
+ * `resolveDisplay`'s plain-English fallback and warn once, which is Law 14's prescribed miss
+ * behaviour and surfaces the content defect instead of hiding it behind a hand-written row.
+ *
+ * **Tracked as THR-1114** (split from THR-1113 item 8). Measured against the built corpus on
+ * 2026-08-14 it is exactly **two** templates — `action.secrets.plant_secret` (`shadow`) and
+ * `artifact.nullify` (`void`); THR-1113's description also named `star`, which no template
+ * actually carries. Correcting the authored values is a content call, not a display one, so it is
+ * not repaired here — and specifically, **do not add `shadow`/`void` rows to this map** to silence
+ * the warning: that would make wrong data render prettily. The display layer is already right.
  */
 const SPHERE_DISPLAY: Record<string, string> = Object.fromEntries(
   SPHERE_NAMES.map(s => [s, s.charAt(0).toUpperCase() + s.slice(1)]),
@@ -149,6 +156,73 @@ const SPHERE_DISPLAY: Record<string, string> = Object.fromEntries(
 const VISIBILITY_DISPLAY: Record<string, string> = {
   public: 'Public', known: 'Known', hidden: 'Hidden',
   discoverable: 'Discoverable', divine_only: 'Divine only',
+};
+
+/**
+ * `AgreementRewardTemplate.agreementType` in display form (THR-1113).
+ *
+ * Six authored values, and every one of them is already an English noun a player knows — which is
+ * exactly why this reached the subtitle raw and looked deliberate: `debt · Mundane` reads as a
+ * design choice rather than as `template.agreementType` interpolated straight in. Routing it through
+ * the vocabulary buys the capital and, more to the point, the Law 14 miss behaviour: a seventh
+ * agreement type added later warns instead of quietly painting lowercase beside a capitalised tier.
+ */
+const AGREEMENT_TYPE_DISPLAY: Record<string, string> = {
+  bargain: 'Bargain', debt: 'Debt', favour: 'Favour',
+  oath: 'Oath', pact: 'Pact', treaty: 'Treaty',
+};
+
+/**
+ * Agreement effect kinds in display form (THR-1113).
+ *
+ * These are the plainest Law 14 violation on the panel — `social_modifier, behavior_weight` is a
+ * comma-joined list of internal `snake_case` enums, named by the law verbatim. Unlike `crudType`
+ * (dropped by THR-1076 because no honest player word exists for it), each of these *is* sayable:
+ * the player can act on knowing an oath bars actions rather than merely colouring opinion. So they
+ * resolve to short verb phrases rather than to capitalised enums — `Social Modifier` would be the
+ * key with better typography, not a reading.
+ */
+const AGREEMENT_EFFECT_DISPLAY: Record<string, string> = {
+  social_modifier: 'shifts standing',
+  behavior_weight: 'sways behaviour',
+  action_gate: 'opens or bars actions',
+  axiological_drift: 'shifts values',
+  passive: 'always in force',
+};
+
+/**
+ * `ResourceClass.category` in display form (THR-1113).
+ *
+ * Its sibling `primarySphere` was resolved by THR-1103 and the category deliberately left, so the
+ * subtitle read `arcane · Time` — one resolved key beside an unresolved one, the same side-by-side
+ * defect THR-1103 existed to fix, one field over. It also paints as a tag chip and a `Class` row.
+ */
+const RESOURCE_CATEGORY_DISPLAY: Record<string, string> = {
+  staple: 'Staple', strategic: 'Strategic', luxury: 'Luxury', arcane: 'Arcane',
+};
+
+/**
+ * Sidebar subcategory ids in display form (THR-1113) — the vocabulary of last resort.
+ *
+ * `getCodexCategories` labelled its subcategories `SLOT_TAG_DISPLAY_NAMES[id] ?? REACH_DISPLAY[id]
+ * ?? id`, so any id in neither vocabulary painted raw in the nav rail. Measured against the live
+ * catalog, nine did — more than the ticket named, and not the same nine: `agreement` resolves fine
+ * (it has a slot-tag row), while `intelligence`, `talisman` and `charm` leak and went unnoticed
+ * because nobody had enumerated the built sidebar rather than the data.
+ *
+ * Only ids that reach the rail belong here; everything else falls to `resolveDisplay`'s
+ * plain-English fallback, which capitalises and warns once. That is the self-healing half — a new
+ * slot tag renders `Reliquary` rather than `reliquary` on the day it is authored, and says so.
+ */
+const SUBCATEGORY_DISPLAY: Record<string, string> = {
+  ...SLOT_TAG_DISPLAY_NAMES,
+  ...REACH_DISPLAY,
+  ...RESOURCE_CATEGORY_DISPLAY,
+  divine: 'Divine',
+  condition: 'Afflictions',
+  intelligence: 'Intelligence',
+  talisman: 'Talismans',
+  charm: 'Charms',
 };
 
 /** Vocabulary misses already warned about, so the warning fires once per key, not once per entry. */
@@ -215,6 +289,21 @@ function essenceCostLabel(cost: number | undefined): string {
 
 // ─── Data Mappers ────────────────────────────────────────────────
 
+/**
+ * A numeric-record property, but only when it actually carries entries (THR-1113).
+ *
+ * Both magnitude rows were gated on plain truthiness, and `{}` is truthy — so a condition authored
+ * with an empty `domainContributions` emitted a `Domain Effects` row whose value was the empty
+ * string. Measured against the live catalog: **twelve of thirteen** such rows rendered as a label
+ * with nothing after it, which is a worse failure than the numeral the ticket was filed about and
+ * was not named by it. A row with no value is not information; it is a label pretending to be one.
+ */
+function nonEmptyRecord(value: unknown): Record<string, number> | null {
+  if (!value || typeof value !== 'object') return null;
+  const record = value as Record<string, number>;
+  return Object.keys(record).length > 0 ? record : null;
+}
+
 function resolveSlotTag(node: GraphNode): string {
   const props = node.properties as Record<string, unknown>;
   if (typeof props.slotTag === 'string') return props.slotTag;
@@ -251,7 +340,7 @@ function mapPossession(node: GraphNode): CodexEntry {
       { label: 'Slot', value: displaySlot },
       { label: 'Tier', value: RARITY_TIER_NAMES[tier] },
       ...(p.lossCondition ? [{ label: 'Loss Condition', value: p.lossCondition as string }] : []),
-      ...(p.reachBonus ? [{ label: 'Reach Bonus', value: formatReachBonus(p.reachBonus as Record<string, number>) }] : []),
+      ...(nonEmptyRecord(p.reachBonus) ? [{ label: 'Reach Bonus', value: formatReachBonus(nonEmptyRecord(p.reachBonus)!) }] : []),
     ],
   };
 }
@@ -294,7 +383,7 @@ function mapCondition(node: GraphNode): CodexEntry {
     details: [
       { label: 'Type', value: displaySlot },
       { label: 'Tier', value: RARITY_TIER_NAMES[tier] },
-      ...(p.domainContributions ? [{ label: 'Domain Effects', value: formatDomainContributions(p.domainContributions as Record<string, number>) }] : []),
+      ...(nonEmptyRecord(p.domainContributions) ? [{ label: 'Domain Effects', value: formatDomainContributions(nonEmptyRecord(p.domainContributions)!) }] : []),
       // THR-1103 filed this row against `mapPossession`; it lives here in `mapCondition` —
       // `mapPossession` has no Visibility row at all. Fixed where it actually renders.
       ...(p.visibility ? [{ label: 'Visibility', value: resolveDisplay(VISIBILITY_DISPLAY, p.visibility as string, 'VISIBILITY_DISPLAY') }] : []),
@@ -434,30 +523,128 @@ function mapAgreement(template: typeof AGREEMENT_REWARD_TEMPLATES[number]): Code
     tierColor: RARITY_TIER_COLORS[tier] ?? '#888',
     category: 'agreements',
     subcategory: 'agreement',
-    subtitle: `${template.agreementType} \u00B7 ${RARITY_TIER_NAMES[tier]}`,
+    subtitle: `${resolveDisplay(AGREEMENT_TYPE_DISPLAY, template.agreementType, 'AGREEMENT_TYPE_DISPLAY')} \u00B7 ${RARITY_TIER_NAMES[tier]}`,
     summary: template.terms,
     tags: template.tags,
     details: [
-      { label: 'Type', value: template.agreementType },
+      { label: 'Type', value: resolveDisplay(AGREEMENT_TYPE_DISPLAY, template.agreementType, 'AGREEMENT_TYPE_DISPLAY') },
       { label: 'Tier', value: RARITY_TIER_NAMES[tier] },
-      ...(template.ticksRemaining != null ? [{ label: 'Duration', value: `${template.ticksRemaining} ticks` }] : [{ label: 'Duration', value: 'Permanent' }]),
-      { label: 'Effects', value: template.effects.map(e => e.type).join(', ') },
+      ...(template.ticksRemaining != null ? [{ label: 'Duration', value: durationLabel(template.ticksRemaining) }] : [{ label: 'Duration', value: 'Permanent' }]),
+      { label: 'Effects', value: template.effects.map(e => resolveDisplay(AGREEMENT_EFFECT_DISPLAY, e.type, 'AGREEMENT_EFFECT_DISPLAY')).join(', ') },
     ],
   };
 }
 
 // ─── Formatters ──────────────────────────────────────────────────
 
-function formatReachBonus(bonus: Record<string, number>): string {
+/**
+ * A standing capability contribution, banded (THR-1113).
+ *
+ * **The Law 13 call, made and recorded.** THR-1103's `essenceCostLabel` kept a numeral, but only
+ * because `shared/formatEssence.ts` carries a ratified, written reason for essence-as-price to be
+ * countable. Nothing comparable exists for a domain contribution: it is not a price, the player
+ * never pays it from a counter, and there is no other surface quoting it as a number for this one
+ * to stay commensurate with. So the default answer applies and the numeral goes.
+ *
+ * **Why an adjective ladder and not `GROWTH_MAGNITUDE_BANDS`.** Those ladders band a *delta* — a
+ * change that just happened — and read as adverbs of motion (`steadily`, `in a leap`). A codex row
+ * describes a standing property of a condition the player may never have carried, so `grew steadily`
+ * is the wrong tense and the wrong claim. These are adjectives of size instead.
+ *
+ * **Scale anchor:** `capabilityGrowth.ts` builds a full-weight contribution as `{ [domain]: 1.0 }`,
+ * so 1.0 is the whole of a domain and the rungs descend from there. Measured against the live
+ * catalog the two authored values (0.04, 0.02) land on *different* rungs — `slight` and `faint` —
+ * which is deliberate: a ladder whose entire corpus collapses onto one rung is pinned by nothing.
+ */
+const CAPABILITY_CONTRIBUTION_BANDS: readonly MagnitudeBand[] = [
+  { min: 0.50, word: 'commanding' },
+  { min: 0.25, word: 'strong' },
+  { min: 0.10, word: 'solid' },
+  { min: 0.03, word: 'slight' },
+  { min: 0,    word: 'faint' },
+];
+
+/**
+ * A possession's reach bonus, banded (THR-1113) — same reasoning, different scale.
+ *
+ * Reach bonuses are raw reach points rather than a 0–1 weight; the capability sigmoid runs roughly
+ * 4–20 raw and saturates above that, so a whole-number bonus of 2 is modest rather than large.
+ *
+ * **This row has no population in the catalog today** — measured 2026-08-14, `reachBonus` is absent
+ * from all 119 possessions, so `mapPossession` never emits the row. It is fixed anyway, because the
+ * cost is one call and the alternative is that whoever authors the first possession carrying one
+ * ships `+2 Iron` to the player. But the ladder is pinned by a direct unit test on the formatter
+ * rather than by a catalog sweep: a sweep over zero rows passes while asserting nothing, and would
+ * read as coverage.
+ */
+const REACH_BONUS_BANDS: readonly MagnitudeBand[] = [
+  { min: 8, word: 'commanding' },
+  { min: 5, word: 'strong' },
+  { min: 3, word: 'solid' },
+  { min: 1, word: 'slight' },
+  { min: 0, word: 'faint' },
+];
+
+/**
+ * Band a signed contribution into a phrase that keeps its direction.
+ *
+ * Sign carries as much meaning as size here — a curse and a blessing are the same row with opposite
+ * numbers — so banding must not flatten it. `edge` / `drag` say which way it cuts in words the
+ * ladder can sit inside: `a slight edge in Gold`, `a solid drag on Iron`.
+ */
+function contributionPhrase(
+  value: number,
+  key: string,
+  bands: readonly MagnitudeBand[],
+): string {
+  const word = magnitudeWord(value, bands);
+  const reach = resolveDisplay(REACH_DISPLAY, key, 'REACH_DISPLAY');
+  return value >= 0 ? `a ${word} edge in ${reach}` : `a ${word} drag on ${reach}`;
+}
+
+/**
+ * Exported for direct testing (THR-1113), not for use outside this module.
+ *
+ * `formatReachBonus` has **no catalog population** — no possession authors a `reachBonus` — so a
+ * sweep over built entries would pass while asserting nothing about it, which is the vacuous-probe
+ * shape. Pinning it needs a direct call, and that needs an export. `formatDomainContributions` and
+ * `durationLabel` are exported alongside it so all three ladders are pinned the same way rather
+ * than one of them being pinned differently for a reason a later reader would have to reconstruct.
+ */
+export function formatReachBonus(bonus: Record<string, number>): string {
   return Object.entries(bonus)
-    .map(([reach, val]) => `${val >= 0 ? '+' : ''}${val} ${resolveDisplay(REACH_DISPLAY, reach, 'REACH_DISPLAY')}`)
+    .map(([reach, val]) => contributionPhrase(val, reach, REACH_BONUS_BANDS))
     .join(', ');
 }
 
-function formatDomainContributions(contributions: Record<string, number>): string {
+/** Exported for direct testing (THR-1113) — see {@link formatReachBonus}. */
+export function formatDomainContributions(contributions: Record<string, number>): string {
   return Object.entries(contributions)
-    .map(([domain, val]) => `${val >= 0 ? '+' : ''}${val.toFixed(2)} ${resolveDisplay(REACH_DISPLAY, domain, 'REACH_DISPLAY')}`)
+    .map(([domain, val]) => contributionPhrase(val, domain, CAPABILITY_CONTRIBUTION_BANDS))
     .join(', ');
+}
+
+/**
+ * An agreement's remaining term, in days rather than ticks (THR-1113).
+ *
+ * Ticks are an engine unit with no player-facing display anywhere else in the game, so `48 ticks`
+ * fails Law 14 as squarely as it fails Law 13. The conversion is the game's own — `TICKS_PER_DAY`,
+ * twelve — and the count is spelled out, so no numeral escapes.
+ *
+ * **Why a real unit rather than a band.** The Law 13 amendment of 2026-08-12 is explicit that a
+ * word ladder is the wrong answer to *"how much?"* — Christian's verdict on `grew steadily` was
+ * *"how can a player use that word to gage anything"*. `four days` is not an adverb: it is a
+ * quantity in a unit the player already reasons in, which is what the amendment asks for and what
+ * banding this to `brief` / `lasting` would have thrown away.
+ *
+ * Above the spelled-count ladder the reading steps up to weeks rather than growing a numeral, so
+ * an authored term of any length still renders in words. The live corpus is 48/72/96 ticks.
+ */
+export function durationLabel(ticks: number): string {
+  const days = Math.max(1, Math.round(ticks / TICKS_PER_DAY));
+  if (days <= 9) return `${countWord(days)} day${days === 1 ? '' : 's'}`;
+  const weeks = Math.max(1, Math.round(days / 7));
+  return `${countWord(weeks)} week${weeks === 1 ? '' : 's'}`;
 }
 
 // ─── Deduplication ───────────────────────────────────────────────
@@ -500,13 +687,17 @@ function mapResourceClass(resourceId: string): CodexEntry {
     subcategory: cls.category,
     // Sphere resolves here too — a resource's `primarySphere` is the same key vocabulary as an
     // action's `sphereAffinity`, and it reached the player raw in the subtitle, a tag chip and a
-    // detail row (THR-1103). `cls.category` is left alone deliberately: it is filed, not fixed.
-    subtitle: `${cls.category} · ${resolveDisplay(SPHERE_DISPLAY, cls.primarySphere, 'SPHERE_DISPLAY')}`,
+    // detail row (THR-1103). `cls.category` was left behind by that ticket and is resolved here
+    // (THR-1113) — until then the subtitle read `arcane · Time`, one resolved key beside a raw one.
+    subtitle: `${resolveDisplay(RESOURCE_CATEGORY_DISPLAY, cls.category, 'RESOURCE_CATEGORY_DISPLAY')} · ${resolveDisplay(SPHERE_DISPLAY, cls.primarySphere, 'SPHERE_DISPLAY')}`,
     summary: getResourceTierProse(resourceId, 'scarce'),
     flavorText: getResourceTierProse(resourceId, 'surplus'),
-    tags: [cls.category, resolveDisplay(SPHERE_DISPLAY, cls.primarySphere, 'SPHERE_DISPLAY')],
+    tags: [
+      resolveDisplay(RESOURCE_CATEGORY_DISPLAY, cls.category, 'RESOURCE_CATEGORY_DISPLAY'),
+      resolveDisplay(SPHERE_DISPLAY, cls.primarySphere, 'SPHERE_DISPLAY'),
+    ],
     details: [
-      { label: 'Class', value: cls.category },
+      { label: 'Class', value: resolveDisplay(RESOURCE_CATEGORY_DISPLAY, cls.category, 'RESOURCE_CATEGORY_DISPLAY') },
       { label: 'Sphere affinity', value: resolveDisplay(SPHERE_DISPLAY, cls.primarySphere, 'SPHERE_DISPLAY') },
       { label: 'Trade value', value: cls.baseValue >= 1.2 ? 'high' : cls.baseValue >= 0.9 ? 'solid' : 'modest' },
       { label: 'Scarcity bite', value: cls.scarcitySensitivity >= 1.0 ? 'sharp' : 'gentle' },
@@ -625,7 +816,10 @@ export function getCodexCategories(): CodexCategory[] {
 
     const subcategories = Array.from(subMap.entries()).map(([id, count]) => ({
       id,
-      label: SLOT_TAG_DISPLAY_NAMES[id] ?? REACH_DISPLAY[id] ?? id,
+      // Was `SLOT_TAG_DISPLAY_NAMES[id] ?? REACH_DISPLAY[id] ?? id` — the `?? id` tail painted nine
+      // measured ids raw in the nav rail (THR-1113). `SUBCATEGORY_DISPLAY` merges both vocabularies
+      // and adds the rest; anything still unlisted takes the plain-English fallback and warns.
+      label: resolveDisplay(SUBCATEGORY_DISPLAY, id, 'SUBCATEGORY_DISPLAY'),
       count,
     }));
 
