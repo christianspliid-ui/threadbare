@@ -34,6 +34,10 @@ import { UNIFIED_ACTION_TEMPLATES } from '../../unified-action-templates';
 import { CONDITION_TRAIT_DEFINITIONS } from '../../condition-trait-content';
 import { expandSettings, validateSettingEnvelope } from '../../settingClasses';
 import { checkNudgeHand, nudgeBearingSteps } from '../../content-eval/nudgeHandChecklist';
+import {
+  EVASIVE_VAGUENESS_TERMS,
+  NATURAL_INDEFINITE_TERMS,
+} from '../../content-eval/nudgeAuditDetectors';
 import { validateNudgeGrantRefs, formatDeadNudgeGrantRefs } from '../../../engine/nudgeGrantLiveness';
 
 /**
@@ -287,6 +291,68 @@ describe('vertical slice — the April migration bar (THR-973)', () => {
       }
     }
     expect(dropped, dropped.join('\n')).toEqual([]);
+  });
+
+  it.each(VERTICAL_SLICE_TEMPLATES.map((t) => [t.name, t] as const))(
+    '%s declares the consequence structure on every authored change (THR-1097)',
+    (_name, template) => {
+      // THR-1082 shipped `category` / `stateNoun` / `direction` / `causeClause`
+      // as optional so pre-existing content kept rendering; THR-1097 is the pass
+      // that fills them in on the slice. Optional at the type level, mandatory
+      // here — an undeclared chip falls back to deriving its category from
+      // `kind` + `polarity`, which is the adapter guessing at what the author
+      // knew, and it draws no icon tile because no state noun resolves.
+      const undeclared: string[] = [];
+      const changes = allVariants(template).flatMap(allChanges);
+      // Population guard: zero changes means the sweep stopped seeing them and
+      // the assertion below would pass vacuously.
+      expect(changes.length, `${template.id}: no authored changes found`).toBeGreaterThan(0);
+      for (const change of changes) {
+        const missing: string[] = [];
+        if (!change.category) missing.push('category');
+        if (!change.stateNoun?.text) missing.push('stateNoun');
+        if (!change.direction) missing.push('direction');
+        if (!change.causeClause) missing.push('causeClause');
+        if (missing.length > 0) undeclared.push(`${change.id} missing ${missing.join(', ')}`);
+      }
+      expect(undeclared, undeclared.join('\n')).toEqual([]);
+    },
+  );
+
+  it('no authored consequence prose uses its field class’s banned lexicon (THR-1097)', () => {
+    // The causality rule's machine-checkable half, enforced per half of the chip
+    // — because the two halves are different field classes and THR-899 settled
+    // that the lexicons are scoped, not flat:
+    //
+    //   `detail` is the CHANGE. Both lexicons are enforced at zero: "it cost
+    //   them something" and "they lost a thing" are the writer declining to
+    //   name the consequence, and the player has no other source for it.
+    //
+    //   `causeClause` is the SCENE beat that produced it. Only the evasive set
+    //   applies. Natural indefinites are ordinary English here — "the master
+    //   said nothing at the gates" is a concrete fact about a scene, and
+    //   banning it is what produced the contortions THR-899 removed.
+    const detailBanned = [...EVASIVE_VAGUENESS_TERMS, ...NATURAL_INDEFINITE_TERMS];
+    const hits: string[] = [];
+    let inspected = 0;
+    for (const template of VERTICAL_SLICE_TEMPLATES) {
+      for (const change of allVariants(template).flatMap(allChanges)) {
+        inspected += 1;
+        const scan = (prose: string, banned: readonly string[], field: string): void => {
+          for (const term of banned) {
+            if (new RegExp(`\\b${term}\\b`, 'i').test(prose)) {
+              hits.push(`${change.id}.${field}: "${term}"`);
+            }
+          }
+        };
+        scan(change.detail, detailBanned, 'detail');
+        if (change.causeClause) {
+          scan(change.causeClause, EVASIVE_VAGUENESS_TERMS, 'causeClause');
+        }
+      }
+    }
+    expect(inspected, 'no consequence prose inspected').toBeGreaterThan(0);
+    expect(hits, hits.join('\n')).toEqual([]);
   });
 
   it('every condition a band applies names a real condition trait', () => {

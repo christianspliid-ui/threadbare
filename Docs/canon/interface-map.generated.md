@@ -372,10 +372,10 @@ remediation ticket or the build fails.
 - **Producer → Consumer:** Encounters & Dilemmas → Spheres & Quintessence
 - **UL terms:** *Quintessence*, *Aftermath*
 - **Module:** `src/engine/encounterAftermath.ts`
-- **Production hits:** 10 total — 1 write, 1 read, 8 unclassified
+- **Production hits:** 11 total — 1 write, 1 read, 9 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`
 - **Read sites:** `src/engine/phaseQuintessence.ts`
-- **Other hits:** `src/engine/complicationEffects.ts`, `src/engine/encounter.ts`, `src/engine/orchestrator.ts`, `src/engine/phaseSpherePressure.ts`, `src/engine/quintessenceActions.ts` +3 more
+- **Other hits:** `src/data/encounters/vertical-slice.ts`, `src/engine/complicationEffects.ts`, `src/engine/encounter.ts`, `src/engine/orchestrator.ts`, `src/engine/phaseSpherePressure.ts` +4 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `authored-step-difficulty-player-resolution` — 🟢 LIVE
