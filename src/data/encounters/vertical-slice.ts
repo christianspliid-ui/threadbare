@@ -2215,7 +2215,7 @@ export const SLICE_FULL_MOON_COLLECTION: UnifiedActionTemplate = {
               title: 'The Ledger, Open',
               causeClause: 'He bowed, took the kept promise, and looked at them like unfinished business',
               detail:
-                'The promise is paid in full and they are still on his books. Whatever he is saving them for, it has a page.',
+                'The promise is paid in full and they are still on his books. The page he keeps them on is not full yet.',
               polarity: 'loss',
               category: 'bond',
               direction: 'loss',

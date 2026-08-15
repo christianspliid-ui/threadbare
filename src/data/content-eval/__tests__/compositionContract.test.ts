@@ -208,9 +208,13 @@ describe('Composition Contract — each block falsified from the passing exempla
 });
 
 describe('Composition Contract — red on shipped content', () => {
-  const bridge = UNIFIED_ACTION_TEMPLATES.find(t => t.id === 'encounter.slice.unsafe_bridge');
+  // THR-1131 retrofitted the bridge (and the rest of Batch 1), so the shipped
+  // red example moved to a template still on RETROFIT_PENDING. When the last
+  // batch drains the ratchet, this block needs a synthetic non-compliant
+  // fixture instead — there deliberately will be no shipped red left to point at.
+  const bridge = UNIFIED_ACTION_TEMPLATES.find(t => t.id === 'encounter.slice.snow_on_the_pass');
 
-  it('the slice bridge template resolves (population guard)', () => {
+  it('the red-example template resolves (population guard)', () => {
     // Without this, every assertion below passes vacuously on `undefined`.
     expect(bridge).toBeDefined();
   });

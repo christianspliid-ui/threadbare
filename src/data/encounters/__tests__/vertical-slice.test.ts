@@ -98,15 +98,13 @@ describe('vertical slice — the hand checklist', () => {
     expect(checkNudgeHand(template)).toEqual([]);
   });
 
-  it('the two no-hand sequels are deliberate opt-outs, not omissions', () => {
-    // The Full Moon Collection and The Grateful Kin are gentle scenes with no
-    // hand by design (spec fail-soft contract: a step without nudges is a
-    // supported authoring choice). Pin the population so a later edit that
-    // *accidentally* drops a hand elsewhere cannot hide in this bucket.
+  it('every slice encounter carries a hand (THR-1131 closed the two opt-outs)', () => {
+    // The Full Moon Collection and The Grateful Kin shipped hand-less by
+    // design in the pre-contract era; Retrofit Batch 1 authored their hands
+    // (KIN_HAND, FULL_MOON_HAND). Pin the population at zero so an edit that
+    // accidentally drops a hand anywhere in the slice fails here by name.
     const handless = VERTICAL_SLICE_TEMPLATES.filter((t) => nudgeBearingSteps(t).length === 0);
-    expect(handless.map((t) => t.id).sort()).toEqual(
-      [SLICE_TEMPLATE_IDS.fullMoon, SLICE_TEMPLATE_IDS.gratefulKin].sort(),
-    );
+    expect(handless.map((t) => t.id)).toEqual([]);
   });
 });
 
