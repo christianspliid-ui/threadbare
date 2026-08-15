@@ -153,7 +153,7 @@ const BRIDGE_HAND: readonly StepNudge[] = [
     sphere: 'force',
     essenceCost: 2,
     forecastDelta: 0.1,
-    imageTag: 'generic.force',
+    imageTag: 'generic.strength',
     effectLine: 'You brace the weakest beam while weight is on it, so the bridge carries more than it should. A real help.',
     fiction: 'What holds, holds.',
     bandProse: {
@@ -186,7 +186,7 @@ const BRIDGE_HAND: readonly StepNudge[] = [
     essenceCost: 3,
     forecastDelta: 0.04,
     rider: 'no_crit_fail',
-    imageTag: 'generic.balm',
+    imageTag: 'generic.ward',
     effectLine: 'Whatever fails tonight, the river gives them back. The worst end is taken off the table.',
     fiction: 'Not every fall is a sentence.',
     bandProse: {
@@ -200,7 +200,7 @@ const BRIDGE_HAND: readonly StepNudge[] = [
     sphere: 'time',
     essenceCost: 1,
     forecastDelta: 0.07,
-    imageTag: 'generic.time',
+    imageTag: 'generic.focus',
     effectLine: 'You stretch their patience, so the crossing takes the slow minute it needs instead of the fast one fear wants. A small, steady help.',
     fiction: 'Hurry is the heaviest load.',
     bandProse: {
@@ -227,7 +227,7 @@ const BRIDGE_STEP: ActionStep = {
   failureAfterimage: 'The bridge turned them back at the middle span, and the long ford ate half the day.',
   successAtCostAfterimage: 'They made the far bank as a plank went into the river behind them.',
   criticalSuccessAfterimage: 'They read the boards right and crossed as if the bridge were new.',
-  criticalFailureAfterimage: 'A beam gave under their full weight, and and the fall cost them a hard year.',
+  criticalFailureAfterimage: 'A beam gave under their full weight, and the fall cost them a hard year.',
   nudges: BRIDGE_HAND,
 };
 
@@ -268,7 +268,7 @@ export const SLICE_UNSAFE_BRIDGE: UnifiedActionTemplate = {
     fallback: {
       overview:
         'The river keeps moving under the bridge, and the keeper keeps taking coppers. ' +
-        'Every crossing is a vote on how long that lasts.',
+        'Neither can do it forever.',
       changes: [
         {
           id: 'slice.bridge.the_planking',
@@ -276,12 +276,13 @@ export const SLICE_UNSAFE_BRIDGE: UnifiedActionTemplate = {
           title: 'The Bridge, Measured',
           causeClause: 'They put their own weight on every plank between the two banks',
           detail:
-            'They know what this crossing is worth now — the river is a road they can take again, ' +
-            'and the ford upstream is a choice instead of a rumour.',
+            'They know what the crossing is worth now. The river can be crossed here again, ' +
+            'and the ford upstream is a real option, not a rumour.',
           polarity: 'info',
           category: 'path',
           direction: 'opens',
           stateNoun: { text: 'the river crossing' },
+          concepts: [{ text: 'the ford upstream' }],
         },
       ],
       reactions: [
@@ -295,9 +296,9 @@ export const SLICE_UNSAFE_BRIDGE: UnifiedActionTemplate = {
       byOutcome: {
         critical_success: {
           overview:
-            'They read the boards the way the keeper’s sons have never dared to, and crossed ' +
-            'like the bridge were new. The two of them watched the whole of it from the near ' +
-            'post, and neither has looked at their mother’s strongbox the same way since.',
+            'They read the boards and crossed as if the bridge were ten years younger. The ' +
+            'keeper’s sons watched the whole crossing from the near post, and neither has ' +
+            'looked at their mother’s strongbox the same way since.',
           changes: [
             {
               id: 'slice.bridge.read_the_boards',
@@ -306,11 +307,12 @@ export const SLICE_UNSAFE_BRIDGE: UnifiedActionTemplate = {
               causeClause:
                 'The keeper’s sons watched a stranger read their father’s bridge better than he ever has',
               detail:
-                'Their name runs ahead of them on this stretch of road now, and it runs upriver first.',
+                'Their name runs ahead of them on this stretch of road now.',
               polarity: 'gain',
               category: 'bond',
               direction: 'gain',
               stateNoun: { text: 'their name on this road', tooltipId: 'ui.standing' },
+              concepts: [{ text: 'Their name', tooltipId: 'ui.standing' }],
               magnitude: { ladder: 'reputation', band: 1 },
             },
             {
@@ -323,6 +325,7 @@ export const SLICE_UNSAFE_BRIDGE: UnifiedActionTemplate = {
               category: 'boon',
               direction: 'gain',
               stateNoun: { text: 'inspired', entityId: 'trait.condition.inspired', visualKind: 'attachment' },
+              concepts: [{ text: 'certain of their own footing' }],
             },
           ],
           reactions: [
@@ -343,22 +346,23 @@ export const SLICE_UNSAFE_BRIDGE: UnifiedActionTemplate = {
         },
         success_at_cost: {
           overview:
-            'The far bank, and behind them a plank going end over end into the water. The ' +
-            'keeper does not look at it. Whoever comes tomorrow will cross a bridge with one ' +
-            'less argument in its favour, and the same two coppers to pay.',
+            'They reach the far bank. Behind them a plank goes end over end into the river, ' +
+            'and the keeper does not turn to watch it go. Tomorrow the toll is the same two ' +
+            'coppers, for a bridge with one plank fewer.',
           changes: [
             {
               id: 'slice.bridge.a_plank_short',
               kind: 'reputation_tally',
               title: 'A Plank Short',
               causeClause:
-                'A board went end over end into the river under their step, and the keeper watched it go',
+                'A board dropped into the river under their step, and the keeper watched it fall',
               detail:
                 'The family that lives off this crossing knows whose weight took it, and says so to everyone who pays the toll after.',
               polarity: 'loss',
               category: 'bond',
               direction: 'loss',
               stateNoun: { text: 'their name on this road', tooltipId: 'ui.standing' },
+              concepts: [{ text: 'the toll' }],
               magnitude: { ladder: 'reputation', band: 1 },
             },
           ],
@@ -379,9 +383,9 @@ export const SLICE_UNSAFE_BRIDGE: UnifiedActionTemplate = {
         },
         failure: {
           overview:
-            'The middle span said no, and the ford is half a day upstream and every inch of ' +
-            'it wet. They make the far side eventually, in the dark, with a pack that has ' +
-            'been in the river and legs that have been in it longer.',
+            'The middle span refused their weight. The ford is half a day upstream and wet ' +
+            'the whole way, and they make the far side after dark, with a pack that has been ' +
+            'in the river and legs that have been in it longer.',
           changes: [
             {
               id: 'slice.bridge.the_long_ford',
@@ -390,11 +394,12 @@ export const SLICE_UNSAFE_BRIDGE: UnifiedActionTemplate = {
               causeClause:
                 'The middle span refused them and the ford upstream took the rest of the daylight',
               detail:
-                'They come out of the river wrung out — the legs will do tomorrow’s road, and complain about every mile of it.',
+                'They come out of the river wrung out. The legs will do tomorrow’s road, and complain about every mile of it.',
               polarity: 'loss',
               category: 'scar',
               direction: 'loss',
               stateNoun: { text: 'exhausted', entityId: 'trait.condition.exhausted', visualKind: 'attachment' },
+              concepts: [{ text: 'wrung out' }],
             },
           ],
           reactions: [
@@ -410,16 +415,16 @@ export const SLICE_UNSAFE_BRIDGE: UnifiedActionTemplate = {
         },
         critical_failure: {
           overview:
-            'The beam went at the worst step of the worst stride, and the river had them ' +
-            'before the shout did. The keeper’s sons pulled them out downstream without ' +
-            'being asked, which is the most honest thing anyone at that bridge did all day.',
+            'The beam gave out mid-stride, and the river took them before anyone could ' +
+            'shout. The keeper’s sons pulled them out downstream without being asked — the ' +
+            'one honest piece of work done at that bridge all day.',
           changes: [
             {
               id: 'slice.bridge.the_fall',
               kind: 'trait',
               title: 'The Fall',
-              causeClause: 'The beam went at the worst stride and the river had them before the shout did',
-              detail: 'The leg will carry them, and it will have opinions about stairs for a long while.',
+              causeClause: 'The beam gave out mid-stride and the river pulled them under',
+              detail: 'The leg holds. It will have opinions about stairs for a long while.',
               polarity: 'loss',
               category: 'scar',
               direction: 'loss',
@@ -431,17 +436,19 @@ export const SLICE_UNSAFE_BRIDGE: UnifiedActionTemplate = {
               // when the player picks, and the veil closes on the pick, so the
               // instance does not exist while the chip is on screen.
               stateNoun: { text: 'wounded', entityId: 'trait.condition.wounded', visualKind: 'attachment' },
+              concepts: [{ text: 'The leg' }],
             },
             {
               id: 'slice.bridge.the_water_underneath',
               kind: 'trait',
               title: 'What Was Under the Boards',
-              causeClause: 'They went under once and came up knowing how little of the crossing was theirs to decide',
-              detail: 'Deep water gets a wide berth from them now, and they will add miles to a road rather than cross it.',
+              causeClause: 'They went under once. The river decided when they came up, and they know it',
+              detail: 'Deep water gets a wide berth from them now. They will add miles to a road before they trust a crossing again.',
               polarity: 'loss',
               category: 'scar',
               direction: 'loss',
               stateNoun: { text: 'terrified', entityId: 'trait.condition.terrified', visualKind: 'attachment' },
+              concepts: [{ text: 'Deep water' }],
             },
           ],
           reactions: [
@@ -1479,7 +1486,7 @@ const CROSSROADS_HAND: readonly StepNudge[] = [
     sphere: 'mind',
     essenceCost: 2,
     forecastDelta: 0.08,
-    imageTag: 'generic.insight',
+    imageTag: 'generic.focus',
     effectLine: 'You sharpen their read of him — the hands, the coat, the patience — so whatever he is, less of it stays hidden. A real help.',
     fiction: 'Every mask fits badly at the edges.',
     bandProse: {
@@ -1496,7 +1503,7 @@ const CROSSROADS_HAND: readonly StepNudge[] = [
     essenceCost: 1,
     forecastDelta: 0.07,
     poleLean: { axis: 'tradition_novelty', toward: 'negative' },
-    imageTag: 'generic.spark',
+    imageTag: 'generic.energy',
     effectLine: 'You fan the wanting the stranger named, so the choice is made with open eyes about how much it is wanted. A small help, and it argues for the bargain.',
     fiction: 'Wanting is not a fault. Pretending not to want is.',
     bandProse: {
@@ -1511,7 +1518,7 @@ const CROSSROADS_HAND: readonly StepNudge[] = [
     sphere: 'time',
     essenceCost: 2,
     forecastDelta: 0.08,
-    imageTag: 'generic.time',
+    imageTag: 'generic.memory',
     effectLine: 'You count the promise forward — where the road leads, where the moon finds it — so the price is measured in days, and days are real. A real help.',
     fiction: 'Every promise has a calendar.',
     bandProse: {
@@ -1567,7 +1574,7 @@ const CROSSROADS_ACCEPT_STEP: ActionStep = {
   onFailure: [],
   failBehavior: 'fail_action',
   narrativeTemplate:
-    'The word is short to say and heavy to carry. The stranger accepts it with a nod, as if ' +
+    'The word is out fast, and it stays out. The stranger accepts it with a nod, as if ' +
     'signing for a delivery, and steps back under the dead tree. “The moon will find ' +
     'you,” he says. “It is better at that than I am.”',
   successAfterimage: 'The promise was given plainly, and the stranger treated it like currency.',
@@ -1587,7 +1594,7 @@ const CROSSROADS_REFUSE_STEP: ActionStep = {
   onFailure: [],
   failBehavior: 'fail_action',
   narrativeTemplate:
-    'The traveler keeps their word where it lives and walks. The stranger does not follow ' +
+    'The traveler says no and keeps walking. The stranger does not follow ' +
     'and does not frown. “A careful answer,” he says behind them, in the voice of a ' +
     'man closing a shop for the evening. The crossroads drops behind them at the treeline like any other stretch of road.',
   successAfterimage: 'They walked on with their word unspent, and the road stayed ordinary.',
@@ -1678,6 +1685,7 @@ export const SLICE_BARGAIN_AT_CROSSROADS: UnifiedActionTemplate = {
             // no art, and the type's rule is that a concept with no tile takes a
             // tooltip instead of a wrong one.
             stateNoun: { text: 'the promise at the crossroads', tooltipId: 'ui.agreement' },
+            concepts: [{ text: 'a claim', tooltipId: 'ui.agreement' }],
           },
         ],
         reactions: [
@@ -1716,9 +1724,9 @@ export const SLICE_BARGAIN_AT_CROSSROADS: UnifiedActionTemplate = {
         byOutcome: {
           critical_success: {
             overview:
-              'The word went out clean, with nothing hedged and nothing hidden behind it, and ' +
-              'for a heartbeat the crossroads felt like a signed ledger. He was pleased. ' +
-              'Whatever he is, he is the kind of thing that can be pleased by a plain answer.',
+              'The word went out clean, with nothing hedged and nothing hidden behind it. ' +
+              'He was pleased. Whatever he is, he is the kind of thing that can be pleased ' +
+              'by a plain answer.',
             changes: [
               {
                 id: 'slice.crossroads.given_clean',
@@ -1730,44 +1738,47 @@ export const SLICE_BARGAIN_AT_CROSSROADS: UnifiedActionTemplate = {
                 category: 'bond',
                 direction: 'loss',
                 stateNoun: { text: 'the promise at the crossroads', tooltipId: 'ui.agreement' },
+                concepts: [{ text: 'The claim', tooltipId: 'ui.agreement' }],
               },
             ],
           },
           success_at_cost: {
             overview:
-              'The promise was given, and it cost a night’s easy sleep on the spot. The road ' +
-              'east is the same road. The evening on it is not, and will not be until a ' +
-              'certain moon comes up.',
+              'The word is given and the stranger is gone. The first payment came due that ' +
+              'same night, in sleep. Every evening between here and the full moon has the ' +
+              'appointment in it.',
             changes: [
               {
                 id: 'slice.crossroads.a_nights_sleep',
                 kind: 'trait',
                 title: 'The Night After',
                 causeClause: 'The word left them and the evening road stopped being an ordinary evening road',
-                detail: 'They lie awake doing the arithmetic of what they agreed to, and the promise takes its first instalment in sleep.',
+                detail: 'They lie awake going over what they agreed to. The first night’s sleep is gone already.',
                 polarity: 'loss',
                 category: 'scar',
                 direction: 'loss',
                 stateNoun: { text: 'a night’s easy sleep' },
+                concepts: [{ text: 'The first night’s sleep' }],
               },
             ],
           },
           critical_failure: {
             overview:
-              'The promise left the traveler’s mouth and did not feel like theirs anymore. He ' +
-              'nodded as if a line had been entered somewhere, stepped back under the dead ' +
-              'tree, and the crossroads got on with being a crossroads.',
+              'He nodded as if a line had been entered somewhere, stepped back under the ' +
+              'dead tree, and the crossroads got on with being a crossroads. The traveler ' +
+              'walked east with less in their mouth than they had brought to it.',
             changes: [
               {
                 id: 'slice.crossroads.not_theirs_anymore',
                 kind: 'trait',
                 title: 'Spoken Away',
                 causeClause: 'The promise left their mouth and did not feel like theirs on the way out',
-                detail: 'The word no longer answers to the one who made it — the moon holds the other end of it now.',
+                detail: 'The promise is out of their keeping now, and it will not wait past the full moon.',
                 polarity: 'loss',
                 category: 'scar',
                 direction: 'loss',
                 stateNoun: { text: 'their own given word' },
+                concepts: [{ text: 'the full moon' }],
               },
             ],
           },
@@ -1784,11 +1795,12 @@ export const SLICE_BARGAIN_AT_CROSSROADS: UnifiedActionTemplate = {
             title: 'The Word Unspent',
             causeClause: 'They heard the offer out under the dead tree and still said no',
             detail:
-              'They leave the crossroads with no debt on them at all, and the road east will say so for them.',
+              'They leave the crossroads with no debt on them at all, and the story of the refusal walks ahead of them.',
             polarity: 'gain',
             category: 'bond',
             direction: 'gain',
             stateNoun: { text: 'their name on this road', tooltipId: 'ui.standing' },
+            concepts: [{ text: 'no debt' }],
             magnitude: { ladder: 'reputation', band: 1 },
           },
         ],
@@ -1809,9 +1821,9 @@ export const SLICE_BARGAIN_AT_CROSSROADS: UnifiedActionTemplate = {
         byOutcome: {
           critical_success: {
             overview:
-              'The refusal cost them not one copper, which was its own quiet answer about the ' +
-              'man. He did not follow and did not frown. The crossroads dropped behind at the ' +
-              'treeline like any other stretch of road, and that was the whole of it.',
+              'The refusal cost them not one copper. He did not follow and did not frown. The ' +
+              'crossroads dropped behind at the treeline like any other stretch of road, ' +
+              'and that was the whole of it.',
             changes: [
               {
                 id: 'slice.crossroads.refused_free',
@@ -1820,11 +1832,12 @@ export const SLICE_BARGAIN_AT_CROSSROADS: UnifiedActionTemplate = {
                 causeClause:
                   'The offer shaped itself to exactly what they wanted and they turned it down anyway, for nothing',
                 detail:
-                  'They walk east knowing what they can refuse, and it costs them not one copper to know it.',
+                  'They walk east knowing exactly what they can turn down.',
                 polarity: 'gain',
                 category: 'boon',
                 direction: 'gain',
                 stateNoun: { text: 'what they will not trade' },
+                concepts: [{ text: 'what they can turn down' }],
               },
             ],
           },
@@ -1839,13 +1852,14 @@ export const SLICE_BARGAIN_AT_CROSSROADS: UnifiedActionTemplate = {
                 kind: 'trait',
                 title: 'The Wanting, Named',
                 causeClause:
-                  'They refused, but not before he had a good long look at what they would have said yes to',
+                  'They said no — after the offer had been shaped to fit them exactly',
                 detail:
-                  'The stranger under the dead tree knows the shape of their wanting now, and they gave it to him for free.',
+                  'The stranger under the dead tree knows what they want most now, and they told him for free.',
                 polarity: 'loss',
                 category: 'scar',
                 direction: 'loss',
                 stateNoun: { text: 'what they want most' },
+                concepts: [{ text: 'what they want most' }],
               },
             ],
             reactions: [
@@ -1886,6 +1900,7 @@ export const SLICE_BARGAIN_AT_CROSSROADS: UnifiedActionTemplate = {
           category: 'path',
           direction: 'opens',
           stateNoun: { text: 'the crossroads under the dead tree' },
+          concepts: [{ text: 'that dead tree' }],
         },
       ],
       reactions: [
@@ -1923,6 +1938,84 @@ export const SLICE_BARGAIN_AT_CROSSROADS: UnifiedActionTemplate = {
 // Promise→payoff: the parent's "what is he?" pays what it can here — and
 // pays it the way the tales would: politely, and not entirely.
 
+const FULL_MOON_HAND: readonly StepNudge[] = [
+  {
+    // Type: Boost — shared focus family, the common option.
+    id: 'slice.fullmoon.steady_nerve',
+    name: 'Steady Nerve',
+    essenceCost: 1,
+    forecastDelta: 0.06,
+    imageTag: 'generic.focus',
+    effectLine: 'You keep their breathing even while the moonlight fills, so the meeting starts with a level head. A small help.',
+    fiction: 'Meet what comes standing still.',
+    bandProse: {
+      success: 'The appointment was kept with a level head, and it showed.',
+      failure: 'The nerve held through the greeting. The parcel’s weight undid it.',
+    },
+  },
+  {
+    // Type: Boost — mind, holding the bargain's exact words.
+    id: 'slice.fullmoon.read_the_coat',
+    name: 'Read the Coat',
+    sphere: 'mind',
+    essenceCost: 1,
+    forecastDelta: 0.06,
+    imageTag: 'generic.memory',
+    effectLine: 'You hold last month’s meeting sharp in their mind, so any word tonight that differs from the bargain stands out. A small help.',
+    fiction: 'The first telling is the contract.',
+    bandProse: {
+      near_miss: 'Every word matched the bargain. The look that came with the last one did not.',
+      critical_failure: 'The words matched the bargain exactly, and that exactness was its own warning.',
+    },
+  },
+  {
+    // Type: Boost — light, an honest meeting ground.
+    id: 'slice.fullmoon.moonlit_ground',
+    name: 'Moonlit Ground',
+    sphere: 'light',
+    essenceCost: 2,
+    forecastDelta: 0.06,
+    imageTag: 'generic.light',
+    effectLine: 'You keep the moonlight flat and even across the road, so nothing about the meeting hides in a shadow. A real help.',
+    fiction: 'Let the whole road be seen.',
+    bandProse: {
+      critical_success: 'Under that even light the exchange was exactly what it claimed to be, and both sides saw it.',
+      success: 'The whole exchange happened in plain light, and plain light kept it honest.',
+      failure: 'The light was even. What was wrong with the meeting was not standing in a shadow.',
+    },
+  },
+  {
+    // Type: Boost — order, the ritual of the exchange.
+    id: 'slice.fullmoon.the_old_forms',
+    name: 'The Old Forms',
+    sphere: 'order',
+    essenceCost: 2,
+    forecastDelta: 0.05,
+    imageTag: 'generic.oath',
+    effectLine: 'You steady the ritual of the exchange — greeting, parcel, parting — so the old forms carry it even if nerve does not. A small, steady help.',
+    fiction: 'Forms exist for nights like this.',
+    bandProse: {
+      success_at_cost: 'The forms carried the exchange to its end. The extra sentence came after the forms were done.',
+      failure: 'The greeting and the parcel went by the forms. The parting did not.',
+    },
+  },
+  {
+    // Type: Ward — spirit, closing the read he took at the crossroads.
+    id: 'slice.fullmoon.ward_against_wanting',
+    name: 'Ward Against Wanting',
+    sphere: 'spirit',
+    essenceCost: 1,
+    forecastDelta: 0.04,
+    imageTag: 'generic.ward',
+    effectLine: 'You quiet the wanting the stranger once read in them, so nothing tonight is priced off it. A small help.',
+    fiction: 'Want nothing at a bargain.',
+    bandProse: {
+      near_miss: 'The wanting stayed quiet. The stranger priced the night off something else.',
+      critical_failure: 'The wanting stayed quiet all night, and he noticed that too.',
+    },
+  },
+];
+
 const FULL_MOON_STEP: ActionStep = {
   reach: 'star',
   duration: { min: 1, max: 1 },
@@ -1934,7 +2027,7 @@ const FULL_MOON_STEP: ActionStep = {
   narrativeTemplate:
     'The full moon finds the traveler on open road, as promised. The stranger is there ' +
     'before the light finishes arriving, same coat, same clean boots, holding a wrapped ' +
-    'parcel the size of his promise. “You kept it,” he says, pleased, ' +
+    'parcel the size of the gift he described. “You kept it,” he says, pleased, ' +
     'as if promises were coin and this one had held its value. All that remains is to take ' +
     'the gift from his hands.',
   successAfterimage: 'The gift changed hands under the full moon, and the stranger bowed like a merchant after a fair sale.',
@@ -1942,6 +2035,7 @@ const FULL_MOON_STEP: ActionStep = {
   successAtCostAfterimage: 'The gift was given, and with it one more sentence than the traveler wanted to hear.',
   criticalSuccessAfterimage: 'The gift was everything he had described, and he left the moonlight first, which the tales say means the debt is closed for good.',
   criticalFailureAfterimage: 'The gift was real, and so was the look he gave the traveler after — the look of a man updating a ledger.',
+  nudges: FULL_MOON_HAND,
 };
 
 export const SLICE_FULL_MOON_COLLECTION: UnifiedActionTemplate = {
@@ -1972,8 +2066,8 @@ export const SLICE_FULL_MOON_COLLECTION: UnifiedActionTemplate = {
       // only. The gift is a `spawn_artifact` on this reaction, and a band that
       // authored its own reactions would replace the reaction the gift rides on.
       overview:
-        'The promise is spent and the gift is real. What the stranger banks in kept ' +
-        'promises, and what he buys with them, stays his side of the ledger.',
+        'The promise is spent and the gift is real. Whatever the stranger does with kept ' +
+        'promises, he does it somewhere else.',
       changes: [
         {
           id: 'slice.fullmoon.the_gift',
@@ -1985,13 +2079,14 @@ export const SLICE_FULL_MOON_COLLECTION: UnifiedActionTemplate = {
           category: 'boon',
           direction: 'gain',
           stateNoun: { text: 'the crossroads gift', visualKind: 'artifact', visualName: 'The Crossroads Gift' },
+          concepts: [{ text: 'The parcel' }],
         },
       ],
       reactions: [
         {
           id: 'slice.fullmoon.take_the_gift',
           label: 'Take the gift',
-          intent: 'The parcel is warm through the wrapping, or cold. It varies.',
+          intent: 'The parcel takes both hands, and the wrapping gives nothing away.',
           effects: [
             {
               kind: 'spawn_artifact',
@@ -2005,9 +2100,9 @@ export const SLICE_FULL_MOON_COLLECTION: UnifiedActionTemplate = {
       byOutcome: {
         critical_success: {
           overview:
-            'The gift was everything he had described, and he left the moonlight first — ' +
-            'which the tales say means the debt is closed for good. He did not look back at ' +
-            'the road, and the road did not feel watched after he had gone.',
+            'He left the moonlight first, which the tales say means the debt is closed for ' +
+            'good. He did not look back at the road, and the road did not feel watched ' +
+            'after he had gone.',
           changes: [
             {
               id: 'slice.fullmoon.the_gift_clean',
@@ -2019,6 +2114,7 @@ export const SLICE_FULL_MOON_COLLECTION: UnifiedActionTemplate = {
               category: 'boon',
               direction: 'gain',
               stateNoun: { text: 'the crossroads gift', visualKind: 'artifact', visualName: 'The Crossroads Gift' },
+              concepts: [{ text: 'theirs outright' }],
             },
             {
               id: 'slice.fullmoon.he_left_first',
@@ -2026,19 +2122,20 @@ export const SLICE_FULL_MOON_COLLECTION: UnifiedActionTemplate = {
               title: 'He Left First',
               causeClause: 'He walked out of the moonlight ahead of them and did not look back at the road',
               detail:
-                'No one at the crossroads holds a claim on them any more — the tales are firm about who leaves first.',
+                'No one at the crossroads holds a claim on them any more. The tales are firm about who leaves first.',
               polarity: 'gain',
               category: 'bond',
               direction: 'gain',
               stateNoun: { text: 'the promise at the crossroads' },
+              concepts: [{ text: 'a claim' }],
             },
           ],
         },
         success_at_cost: {
           overview:
-            'The gift was given, and with it one more sentence than the traveler wanted to ' +
-            'hear. He said it lightly, the way a man mentions a second appointment while ' +
-            'handing over the first parcel, and then the moonlight had nobody in it but them.',
+            'He said the extra sentence lightly, the way a man mentions a second ' +
+            'appointment while handing over the first parcel, and then the moonlight had ' +
+            'nobody in it but them.',
           // Two chips, not one mixed chip. A single `item`/`mixed` change
           // classifies as TOLL and quietly under-reports that the gift was in
           // fact handed over — the prize and the price are separate facts and
@@ -2054,26 +2151,51 @@ export const SLICE_FULL_MOON_COLLECTION: UnifiedActionTemplate = {
               category: 'boon',
               direction: 'gain',
               stateNoun: { text: 'the crossroads gift', visualKind: 'artifact', visualName: 'The Crossroads Gift' },
+              concepts: [{ text: 'The gift' }],
             },
             {
               id: 'slice.fullmoon.one_more_sentence',
               kind: 'shell_state',
               title: 'One More Sentence',
               causeClause:
-                'He mentioned a second appointment while handing over the first parcel, lightly, as if it were settled',
+                'He added one more sentence with the parcel already in their hands, and did not wait for an answer',
               detail: 'They walk away owing a meeting they never agreed to, to a creditor who does not forget.',
               polarity: 'loss',
               category: 'bond',
               direction: 'loss',
               stateNoun: { text: 'a second appointment' },
+              concepts: [{ text: 'a meeting they never agreed to' }],
+            },
+          ],
+          reactions: [
+            {
+              id: 'slice.fullmoon.take_the_gift_and_the_sentence',
+              label: 'Take the gift',
+              intent: 'The parcel changes hands. The extra sentence rides along with it.',
+              effects: [
+                {
+                  kind: 'spawn_artifact',
+                  category: 'talisman',
+                  targetAgentId: '$actor',
+                  messageOverride: 'The crossroads gift, collected under the full moon.',
+                },
+                {
+                  kind: 'encounter_seed',
+                  templateId: SLICE_TEMPLATE_IDS.crossroads,
+                  targetAgentId: '$actor',
+                  delayTicks: SLICE_FULL_MOON_DELAY_TICKS,
+                  seedLabel: 'The stranger mentioned a second appointment, and he keeps his appointments.',
+                  inheritContext: true,
+                },
+              ],
             },
           ],
         },
         critical_failure: {
           overview:
-            'The gift was real. So was the look he gave the traveler afterward — the look of ' +
-            'a man updating a ledger. He bowed. The promise was kept in every particular, and ' +
-            'the moonlight went on feeling occupied long after he was out of it.',
+            'He bowed over the exchange like a man updating a ledger. The promise was kept ' +
+            'in every particular, and the moonlight went on feeling occupied long after he ' +
+            'was out of it.',
           changes: [
             {
               id: 'slice.fullmoon.the_gift_ledgered',
@@ -2085,18 +2207,20 @@ export const SLICE_FULL_MOON_COLLECTION: UnifiedActionTemplate = {
               category: 'boon',
               direction: 'gain',
               stateNoun: { text: 'the crossroads gift', visualKind: 'artifact', visualName: 'The Crossroads Gift' },
+              concepts: [{ text: 'no clause' }],
             },
             {
               id: 'slice.fullmoon.the_ledger_open',
               kind: 'shell_state',
               title: 'The Ledger, Open',
-              causeClause: 'He bowed, and gave them the look of a man updating a page rather than closing one',
+              causeClause: 'He bowed, took the kept promise, and looked at them like unfinished business',
               detail:
-                'They kept the promise in every particular and are still on his books — the moonlight went on feeling occupied after he left it.',
+                'The promise is paid in full and they are still on his books. Whatever he is saving them for, it has a page.',
               polarity: 'loss',
               category: 'bond',
               direction: 'loss',
               stateNoun: { text: 'the ledger he keeps' },
+              concepts: [{ text: 'his books' }],
             },
           ],
         },
@@ -2142,7 +2266,7 @@ const FAMILY_MEETING_HAND: readonly StepNudge[] = [
     essenceCost: 1,
     forecastDelta: 0.07,
     poleLean: { axis: 'mercy_ruthlessness', toward: 'positive' },
-    imageTag: 'generic.balm',
+    imageTag: 'generic.warmth',
     effectLine: 'You let the children’s worn shoes land at full weight, so the choice is made feeling everything there is to feel. A small help, and it argues for stopping.',
     fiction: 'Pity is information.',
     bandProse: {
@@ -2157,7 +2281,7 @@ const FAMILY_MEETING_HAND: readonly StepNudge[] = [
     essenceCost: 1,
     forecastDelta: 0.05,
     poleLean: { axis: 'mercy_ruthlessness', toward: 'negative' },
-    imageTag: 'generic.road',
+    imageTag: 'generic.vigor',
     effectLine: 'You keep the traveler’s own road in view — the miles, the hour, the bed at the end — so the cost of stopping stays honest. A small help, and it argues for walking on.',
     fiction: 'Every kindness is paid for in miles.',
     bandProse: {
@@ -2172,7 +2296,7 @@ const FAMILY_MEETING_HAND: readonly StepNudge[] = [
     sphere: 'order',
     essenceCost: 2,
     forecastDelta: 0.06,
-    imageTag: 'generic.scroll',
+    imageTag: 'generic.light',
     effectLine: 'You line the words up before they are needed, so the truth about the paper can be said without cruelty and without softening. A real help.',
     fiction: 'Bad news wants short sentences.',
     bandProse: {
@@ -2188,9 +2312,9 @@ const FAMILY_MEETING_HAND: readonly StepNudge[] = [
     sphere: 'mind',
     essenceCost: 1,
     forecastDelta: 0.06,
-    imageTag: 'generic.insight',
+    imageTag: 'generic.focus',
     effectLine: 'You test the family’s tale as it is told, so the traveler knows the swindle is real before spending anything on it. A small help.',
-    fiction: 'Check the story before you carry it.',
+    fiction: 'Truth holds up to a second look.',
     bandProse: {
       near_miss: 'The story held everywhere except the one place it mattered.',
       failure: 'The tale checked out in every detail, which made it worse to hear.',
@@ -2203,7 +2327,7 @@ const FAMILY_MEETING_HAND: readonly StepNudge[] = [
     sphere: 'time',
     essenceCost: 2,
     forecastDelta: 0.07,
-    imageTag: 'generic.time',
+    imageTag: 'generic.memory',
     effectLine: 'You stretch the view down both roads — theirs into the fen, the other toward the river country — so the choice is made seeing where each one ends. A real help.',
     fiction: 'Roads are honest about their endings.',
     bandProse: {
@@ -2222,7 +2346,7 @@ const FAMILY_GUIDE_HAND: readonly StepNudge[] = [
     forecastDelta: 0.08,
     imageTag: 'generic.focus',
     effectLine: 'You keep their eye on the ground’s grammar — the drainage, the grass, the tree line — so the good turn shows itself. A real help.',
-    fiction: 'Land tells you what it is. Quietly.',
+    fiction: 'Land tells what it is. Quietly.',
     bandProse: {
       success: 'The land read true a mile at a time, all the long afternoon.',
       failure: 'The land read true, and the light ran out with the reading half done.',
@@ -2237,7 +2361,7 @@ const FAMILY_GUIDE_HAND: readonly StepNudge[] = [
     forecastDelta: 0.07,
     imageTag: 'generic.light',
     effectLine: 'You hold the light long and low, so the unmarked turn reads from a distance and no one has to find it by luck. A real help.',
-    fiction: 'A turn you can see is a turn you can teach.',
+    fiction: 'A turn once seen can be taught.',
     bandProse: {
       critical_success: 'The low light picked the turn out of the country like a thumb on a map.',
       near_miss: 'The light held to the turn and not a stride past it.',
@@ -2280,7 +2404,7 @@ const FAMILY_GUIDE_HAND: readonly StepNudge[] = [
     sphere: 'time',
     essenceCost: 1,
     forecastDelta: 0.05,
-    imageTag: 'generic.time',
+    imageTag: 'generic.blessing',
     effectLine: 'You stretch the useful part of the afternoon, so the detour fits inside the day it was given. A small help.',
     fiction: 'Some hours are wider than others.',
     bandProse: {
@@ -2348,7 +2472,7 @@ const FAMILY_PASS_STEP: ActionStep = {
   successAfterimage: 'The traveler made the town by dark, as planned.',
   failureAfterimage: 'The town came by dark, and the supper tasted like the word swindle.',
   successAtCostAfterimage: 'The road stayed easy. The evening did not.',
-  criticalSuccessAfterimage: 'The town, a bed, an early start — the road rewards the undelayed.',
+  criticalSuccessAfterimage: 'They made the town, the bed, and an early start, and owed nobody anything for any of it.',
   criticalFailureAfterimage: 'All evening the fen kept coming to mind, salt-grey and patient.',
 };
 
@@ -2399,9 +2523,8 @@ export const SLICE_SWINDLED_FAMILY: UnifiedActionTemplate = {
     variants: {
       positive: {
         overview:
-          'The family turns south with a marked road and a truer map of the world. What ' +
-          'was done on this stretch of road will travel: swindles have authors, and ' +
-          'kindnesses have kin.',
+          'The family turns south with a marked road and the truth about their paper. The ' +
+          'story of the turning travels with them.',
         changes: [
           {
             id: 'slice.family.a_road_that_exists',
@@ -2414,6 +2537,7 @@ export const SLICE_SWINDLED_FAMILY: UnifiedActionTemplate = {
             category: 'bond',
             direction: 'gain',
             stateNoun: { text: 'their name on this road', tooltipId: 'ui.standing' },
+            concepts: [{ text: 'water instead of salt' }],
             magnitude: { ladder: 'reputation', band: 2 },
           },
         ],
@@ -2448,11 +2572,34 @@ export const SLICE_SWINDLED_FAMILY: UnifiedActionTemplate = {
           },
         ],
         byOutcome: {
+          critical_success: {
+            overview:
+              'The turn came out of the country in the first hour — an old drover’s cut, ' +
+              'dry the whole way, on no paper anyone ever sold. The family fed the traveler ' +
+              'at their fire before the cart rolled, and the youngest drew the new road on ' +
+              'the back of the worthless deed.',
+            changes: [
+              {
+                id: 'slice.family.the_drovers_cut',
+                kind: 'reputation_tally',
+                title: 'The Drover’s Cut',
+                causeClause: 'The southern turn came out of the country in the first hour, dry the whole way',
+                detail:
+                  'Five people ride a found road south, and the story they tell about it has the stranger’s name in the first sentence.',
+                polarity: 'gain',
+                category: 'bond',
+                direction: 'gain',
+                stateNoun: { text: 'their name on this road', tooltipId: 'ui.standing' },
+                magnitude: { ladder: 'reputation', band: 2 },
+                concepts: [{ text: 'a found road' }],
+              },
+            ],
+          },
           success_at_cost: {
             overview:
-              'The turn was found late, and finding it late cost the traveler a day of their ' +
-              'own road. The cart went south anyway. Whether the day back is worth five ' +
-              'people not walking into a salt fen is not a question the road asks out loud.',
+              'The turn was found late, and finding it cost the traveler a day of their own ' +
+              'road. The cart went south anyway, and the fen goes hungry. The traveler’s ' +
+              'day does not come back.',
             changes: [
               {
                 id: 'slice.family.a_day_of_their_own',
@@ -2464,6 +2611,7 @@ export const SLICE_SWINDLED_FAMILY: UnifiedActionTemplate = {
                 category: 'scar',
                 direction: 'loss',
                 stateNoun: { text: 'a day of their own road' },
+                concepts: [{ text: 'a day behind' }],
               },
               {
                 id: 'slice.family.south_regardless',
@@ -2475,6 +2623,7 @@ export const SLICE_SWINDLED_FAMILY: UnifiedActionTemplate = {
                 category: 'bond',
                 direction: 'gain',
                 stateNoun: { text: 'their name on this road', tooltipId: 'ui.standing' },
+                concepts: [{ text: 'the road south' }],
                 magnitude: { ladder: 'reputation', band: 1 },
               },
             ],
@@ -2486,9 +2635,9 @@ export const SLICE_SWINDLED_FAMILY: UnifiedActionTemplate = {
             // not mint that word. The swindler seed survives — his face is
             // known either way, which was never the family's to give or withhold.
             overview:
-              'The country fought the reading all day and won it. The turn stayed hidden, the ' +
-              'light went, and by dusk the family’s faith in strangers had thinned to about ' +
-              'the thickness of their bread. They will find the river themselves or they will not.',
+              'The country fought the reading all day and won. The turn stayed hidden, the ' +
+              'light went, and by dusk the family had stopped asking the stranger questions. ' +
+              'They will find the river themselves or they will not.',
             changes: [
               {
                 id: 'slice.family.faith_thinned',
@@ -2501,6 +2650,7 @@ export const SLICE_SWINDLED_FAMILY: UnifiedActionTemplate = {
                 category: 'bond',
                 direction: 'loss',
                 stateNoun: { text: 'their name on this road', tooltipId: 'ui.standing' },
+                concepts: [{ text: 'a day a stranger cost them' }],
                 magnitude: { ladder: 'reputation', band: 1 },
               },
             ],
@@ -2531,8 +2681,8 @@ export const SLICE_SWINDLED_FAMILY: UnifiedActionTemplate = {
       },
       negative: {
         overview:
-          'The road east keeps the family, and the fen keeps the road. What happens ' +
-          'out there now happens without witnesses.',
+          'The family keeps the road east, and the traveler keeps their own. What happens ' +
+          'out in the fen now happens without witnesses.',
         changes: [
           {
             id: 'slice.family.east_is_theirs',
@@ -2540,11 +2690,12 @@ export const SLICE_SWINDLED_FAMILY: UnifiedActionTemplate = {
             title: 'East Is Theirs',
             causeClause: 'They let the handcart go east and kept walking their own road at their own pace',
             detail:
-              'Their day is still their own and the town is still reachable by dark — the fen does its work out of their sight.',
+              'Their day is still their own and the town is still reachable by dark. The fen does its work out of their sight.',
             polarity: 'info',
             category: 'path',
             direction: 'opens',
             stateNoun: { text: 'their own road' },
+            concepts: [{ text: 'the fen' }],
           },
         ],
         reactions: [
@@ -2558,18 +2709,18 @@ export const SLICE_SWINDLED_FAMILY: UnifiedActionTemplate = {
         byOutcome: {
           critical_failure: {
             overview:
-              'The town came by dark, as planned, and the bed was where it was meant to be. ' +
-              'All evening the fen kept coming to mind anyway — salt-grey and patient, with ' +
-              'three children’s shoes somewhere out on the road toward it.',
+              'The town came by dark and the bed was where it was meant to be. It did not ' +
+              'help. The fen sat at the edge of the evening, salt-grey and patient, with ' +
+              'three children’s shoes somewhere on the road toward it.',
             changes: [
               {
                 id: 'slice.family.the_fen_in_mind',
                 kind: 'trait',
                 title: 'The Fen, in Mind',
                 causeClause:
-                  'The bed was where it was meant to be, and all evening three children’s shoes kept walking toward salt-grey water',
+                  'The evening was quiet, and the quiet had the fen in it',
                 detail:
-                  'They made the town on schedule and cannot stop counting what it cost somebody else — it comes out of their sleep, and out of their certainty.',
+                  'They made the town on schedule and lie awake counting what it cost somebody else.',
                 // SCAR on the spirit. Nothing was taken from them by anyone
                 // else; they spent it themselves, which is the shape Christian's
                 // "loss of confidence" example names.
@@ -2577,6 +2728,7 @@ export const SLICE_SWINDLED_FAMILY: UnifiedActionTemplate = {
                 category: 'scar',
                 direction: 'loss',
                 stateNoun: { text: 'their own certainty' },
+                concepts: [{ text: 'lie awake counting' }],
               },
             ],
             reactions: [
@@ -2610,6 +2762,7 @@ export const SLICE_SWINDLED_FAMILY: UnifiedActionTemplate = {
           category: 'path',
           direction: 'opens',
           stateNoun: { text: 'the fen road east' },
+          concepts: [{ text: 'east of here' }],
         },
       ],
       reactions: [
@@ -2669,7 +2822,7 @@ const SWINDLER_MARK_HAND: readonly StepNudge[] = [
     sphere: 'spirit',
     essenceCost: 2,
     forecastDelta: 0.08,
-    imageTag: 'generic.bond',
+    imageTag: 'generic.rumor',
     effectLine: 'You read the market’s temper — who believes him, who wavers, who would turn — so the moment to act is chosen, never stumbled into. A real help.',
     fiction: 'A crowd is one animal with many opinions.',
     bandProse: {
@@ -2685,7 +2838,7 @@ const SWINDLER_MARK_HAND: readonly StepNudge[] = [
     essenceCost: 2,
     forecastDelta: 0.07,
     poleLean: { axis: 'mercy_ruthlessness', toward: 'positive' },
-    imageTag: 'generic.scroll',
+    imageTag: 'generic.focus',
     effectLine: 'You order what is known into a case a warden can act on, so the town’s own justice can carry the weight. A real help, and it argues for the law.',
     fiction: 'Anger fades. Records convict.',
     bandProse: {
@@ -2701,7 +2854,7 @@ const SWINDLER_MARK_HAND: readonly StepNudge[] = [
     essenceCost: 1,
     forecastDelta: 0.06,
     poleLean: { axis: 'mercy_ruthlessness', toward: 'negative' },
-    imageTag: 'generic.ember',
+    imageTag: 'generic.energy',
     effectLine: 'You let the memory of the children’s shoes burn at full heat, so the choice is made knowing exactly how angry the traveler is. A small help, and it argues for settling it here.',
     fiction: 'Some debts want a personal collector.',
     bandProse: {
@@ -2716,7 +2869,7 @@ const SWINDLER_MARK_HAND: readonly StepNudge[] = [
     sphere: 'time',
     essenceCost: 1,
     forecastDelta: 0.06,
-    imageTag: 'generic.time',
+    imageTag: 'generic.memory',
     effectLine: 'You hold the watching patient through one whole pitch, so the man’s pattern is learned before it is interrupted. A small help.',
     fiction: 'Habits outlast intentions.',
     bandProse: {
@@ -2741,7 +2894,7 @@ const SWINDLER_MARK_STEP: ActionStep = {
   successAfterimage: 'The man was marked, his patter noted, his exits counted.',
   failureAfterimage: 'The man worked the crowd like a professional, and professionals watch for watchers.',
   successAtCostAfterimage: 'He was marked, and once, briefly, he looked straight back.',
-  criticalSuccessAfterimage: 'Marked, mapped, and his next pitch predicted to the sentence.',
+  criticalSuccessAfterimage: 'He was marked and mapped, his next pitch predicted to the sentence.',
   criticalFailureAfterimage: 'He was gone from the scales between one look and the next, the market suddenly short one voice.',
   nudges: SWINDLER_MARK_HAND,
 };
@@ -2824,19 +2977,20 @@ export const SLICE_SWINDLER_FOUND: UnifiedActionTemplate = {
     variants: {
       positive: {
         overview:
-          'The town’s justice has the man, the paper, and the pattern. What the fen ' +
-          'road started, a lockup finishes — slower than anger, and it holds.',
+          'The town’s justice has the man, the paper, and the pattern. A lockup is ' +
+          'slower than anger, and it holds.',
         changes: [
           {
             id: 'slice.swindler.the_ledger_way',
             kind: 'reputation_tally',
             title: 'By the Ledger',
             causeClause: 'They took the case to the wardens instead of the alley, and made it stand up',
-            detail: 'This market knows them as a stranger who uses its own law, and markets remember that.',
+            detail: 'This market knows them as the stranger who used its own law instead of an alley.',
             polarity: 'gain',
             category: 'bond',
             direction: 'gain',
             stateNoun: { text: 'their name in this market', tooltipId: 'ui.standing' },
+            concepts: [{ text: 'its own law' }],
             magnitude: { ladder: 'reputation', band: 1 },
           },
         ],
@@ -2857,9 +3011,9 @@ export const SLICE_SWINDLER_FOUND: UnifiedActionTemplate = {
         byOutcome: {
           critical_success: {
             overview:
-              'Taken mid-sentence, with the paper still up like a lamp — and the listening ' +
-              'family got their coin back on the spot, in front of the whole square. The ' +
-              'wardens were unhurried about it. That was the worst part for him.',
+              'The wardens took him mid-sentence, the paper still up like a lamp, and the ' +
+              'listening family got their coin back on the spot in front of the whole ' +
+              'square. The wardens were unhurried about it. That was the worst part for him.',
             changes: [
               {
                 id: 'slice.swindler.coin_back_in_public',
@@ -2872,6 +3026,7 @@ export const SLICE_SWINDLER_FOUND: UnifiedActionTemplate = {
                 category: 'bond',
                 direction: 'gain',
                 stateNoun: { text: 'their name in this market', tooltipId: 'ui.standing' },
+                concepts: [{ text: 'The square' }],
                 magnitude: { ladder: 'reputation', band: 2 },
               },
             ],
@@ -2887,13 +3042,14 @@ export const SLICE_SWINDLER_FOUND: UnifiedActionTemplate = {
                 kind: 'trait',
                 title: 'Gone Before the Bell',
                 causeClause:
-                  'The wardens moved at the speed of paperwork and he moved at the speed of a man who has left markets before',
+                  'He packed up at the first sign of interest, and no warden had moved before the crowd closed over his pitch',
                 detail:
                   'He is a town away and still selling the same land, and he has had a good look at the face that came for him.',
                 polarity: 'loss',
                 category: 'scar',
                 direction: 'loss',
                 stateNoun: { text: 'a face he will know again' },
+                concepts: [{ text: 'the face that came for him' }],
               },
             ],
             reactions: [
@@ -2929,6 +3085,7 @@ export const SLICE_SWINDLER_FOUND: UnifiedActionTemplate = {
             category: 'bond',
             direction: 'loss',
             stateNoun: { text: 'their name in this market', tooltipId: 'ui.standing' },
+            concepts: [{ text: 'its own version' }],
             magnitude: { ladder: 'reputation', band: 1 },
           },
         ],
@@ -2951,18 +3108,19 @@ export const SLICE_SWINDLER_FOUND: UnifiedActionTemplate = {
             overview:
               'He paid in the alley, all of it, and the traveler carried the argument out of ' +
               'there on their own body. Behind the corn scales the market noise went on ' +
-              'exactly as before, which is what alleys are for.',
+              'exactly as before.',
             changes: [
               {
                 id: 'slice.swindler.the_argument',
                 kind: 'trait',
                 title: 'The Argument',
                 causeClause: 'He paid all of it in the alley and he did not pay quietly',
-                detail: 'They carried the argument out on their own body, and the bruises will outlast the satisfaction.',
+                detail: 'The satchel is back where it belongs. The bruises will outlast the satisfaction.',
                 polarity: 'loss',
                 category: 'scar',
                 direction: 'loss',
                 stateNoun: { text: 'wounded', entityId: 'trait.condition.wounded', visualKind: 'attachment' },
+                concepts: [{ text: 'the bruises' }],
               },
             ],
             reactions: [
@@ -2984,19 +3142,20 @@ export const SLICE_SWINDLER_FOUND: UnifiedActionTemplate = {
           critical_failure: {
             overview:
               'The alley went wrong. He had a knife, a friend waiting past the turn, and no ' +
-              'interest at all in a fair fight. The satchel left with them. What the market ' +
-              'found afterward was a stranger sitting down where they should not be sitting.',
+              'interest at all in a fair fight. The satchel left with them. The market ' +
+              'found them afterward, on the ground behind the scales and slow to get up.',
             changes: [
               {
                 id: 'slice.swindler.the_knife',
                 kind: 'trait',
                 title: 'The Knife',
-                causeClause: 'He had a knife, a friend past the turn, and no interest in a fair fight',
+                causeClause: 'He was readier for that alley than they were, and he was not alone in it',
                 detail: 'They were cut behind the corn scales for a satchel that walked away without them.',
                 polarity: 'loss',
                 category: 'scar',
                 direction: 'loss',
                 stateNoun: { text: 'wounded', entityId: 'trait.condition.wounded', visualKind: 'attachment' },
+                concepts: [{ text: 'cut behind the corn scales' }],
               },
               {
                 id: 'slice.swindler.the_market_talks',
@@ -3010,6 +3169,7 @@ export const SLICE_SWINDLER_FOUND: UnifiedActionTemplate = {
                 category: 'bond',
                 direction: 'loss',
                 stateNoun: { text: 'their name in this market', tooltipId: 'ui.standing' },
+                concepts: [{ text: 'the only version it will keep' }],
                 magnitude: { ladder: 'reputation', band: 2 },
               },
             ],
@@ -3045,6 +3205,7 @@ export const SLICE_SWINDLER_FOUND: UnifiedActionTemplate = {
           category: 'path',
           direction: 'opens',
           stateNoun: { text: 'the paper-seller’s circuit' },
+          concepts: [{ text: 'his pitch' }],
         },
       ],
       reactions: [
@@ -3080,6 +3241,83 @@ export const SLICE_SWINDLER_FOUND: UnifiedActionTemplate = {
 // pressed keepsake (item) · System: seeds (closing), favors (middling tier,
 // used once in the slice, deliberately), items.
 
+const KIN_HAND: readonly StepNudge[] = [
+  {
+    // Type: Boost — shared warmth family, the common option.
+    id: 'slice.kin.easy_grace',
+    name: 'Easy Grace',
+    essenceCost: 1,
+    forecastDelta: 0.04,
+    imageTag: 'generic.warmth',
+    effectLine: 'You loosen the knot in their chest, so the thanks lands on someone ready to receive it. A small help.',
+    fiction: 'Let it be given.',
+    bandProse: {
+      success: 'The thanks was met level, and the room liked both halves of it.',
+      failure: 'The ease held until the third retelling, and then the smile ran out.',
+    },
+  },
+  {
+    // Type: Boost — mind, keeping the reply in reach.
+    id: 'slice.kin.steady_voice',
+    name: 'A Steady Voice',
+    sphere: 'mind',
+    essenceCost: 1,
+    forecastDelta: 0.04,
+    imageTag: 'generic.focus',
+    effectLine: 'You keep their words in reach, so the reply comes out plain instead of mumbled. A small help.',
+    fiction: 'Say the true thing once.',
+    bandProse: {
+      near_miss: 'The words came out right. The pause before them ran a beat too long.',
+      failure: 'The voice held through the thanks, and then a toast asked more of it than it had.',
+    },
+  },
+  {
+    // Type: Boost — light, softening the attention.
+    id: 'slice.kin.warm_light',
+    name: 'Warm Light',
+    sphere: 'light',
+    essenceCost: 1,
+    forecastDelta: 0.04,
+    imageTag: 'generic.light',
+    effectLine: 'You soften the lamplight on the table, so the staring feels less like being weighed. A small help.',
+    fiction: 'Kind light makes kind faces.',
+    bandProse: {
+      critical_success: 'The whole table sat inside the same warm ring of light, and the story fit it.',
+      failure: 'The light was kind. The attention still had edges.',
+    },
+  },
+  {
+    // Type: Boost — spirit, tilting the room's temper.
+    id: 'slice.kin.rooms_good_humor',
+    name: 'The Room’s Good Humor',
+    sphere: 'spirit',
+    essenceCost: 2,
+    forecastDelta: 0.04,
+    imageTag: 'generic.rumor',
+    effectLine: 'You tilt the room toward laughing with them, not at them, so every retelling lands friendly. A small help.',
+    fiction: 'A room decides fast.',
+    bandProse: {
+      success_at_cost: 'The room stayed friendly through all three retellings. It cost the evening.',
+      critical_failure: 'The room’s warmth tipped into theater, and the traveler was the stage.',
+    },
+  },
+  {
+    // Type: Boost — time, one conversation instead of a performance.
+    id: 'slice.kin.unhurried_hour',
+    name: 'Unhurried Hour',
+    sphere: 'time',
+    essenceCost: 1,
+    forecastDelta: 0.03,
+    imageTag: 'generic.memory',
+    effectLine: 'You slow the evening’s pace, so the thanks can be one conversation instead of a performance. A small help.',
+    fiction: 'Nothing owed before morning.',
+    bandProse: {
+      near_miss: 'The evening kept an easy pace. The last toast still found them tired.',
+      failure: 'The slow hour helped until the letter came out, and the letter had its own schedule.',
+    },
+  },
+];
+
 const KIN_STEP: ActionStep = {
   reach: 'heart',
   duration: { min: 1, max: 1 },
@@ -3091,13 +3329,14 @@ const KIN_STEP: ActionStep = {
   narrativeTemplate:
     'The bowl arrives unasked and the coin is refused twice. The room has gone interested. ' +
     'There is a letter in her apron with the whole fen road in it, and the ' +
-    'traveler described down to the boots. Public gratitude is its own weather. It has to ' +
-    'be stood in graciously.',
+    'traveler described down to the boots. The thanks is being given in front of ' +
+    'everyone, and it has to be stood in graciously.',
   successAfterimage: 'The thanks was taken well, and the room warmed accordingly.',
   failureAfterimage: 'The thanks was shrugged at, and the shrug landed harder than meant.',
   successAtCostAfterimage: 'The thanks was taken, along with three retellings and a toast.',
-  criticalSuccessAfterimage: 'By the second bowl the whole room owned a piece of the story, and the traveler owned the room.',
-  criticalFailureAfterimage: 'The public gratitude curdled into public performance, and the traveler wore it all evening.',
+  criticalSuccessAfterimage: 'By the second bowl the whole room owned a piece of the story, and was glad of the teller.',
+  criticalFailureAfterimage: 'The thanks ran long in front of the whole room, and the traveler wore it all evening.',
+  nudges: KIN_HAND,
 };
 
 export const SLICE_GRATEFUL_KIN: UnifiedActionTemplate = {
@@ -3130,8 +3369,8 @@ export const SLICE_GRATEFUL_KIN: UnifiedActionTemplate = {
     variants: {},
     fallback: {
       overview:
-        'The kindness has kin, and the kin keep accounts. From tonight the traveler has a ' +
-        'roof in this family’s memory, which is a currency that holds its value.',
+        'The family keeps accounts, and tonight the traveler went into them. There is a ' +
+        'roof in this town that opens for them now.',
       changes: [
         {
           id: 'slice.kin.a_roof_remembered',
@@ -3143,6 +3382,7 @@ export const SLICE_GRATEFUL_KIN: UnifiedActionTemplate = {
           category: 'bond',
           direction: 'gain',
           stateNoun: { text: 'the fen-road family' },
+          concepts: [{ text: 'a bed and a hearing' }],
         },
       ],
       reactions: [
@@ -3162,20 +3402,21 @@ export const SLICE_GRATEFUL_KIN: UnifiedActionTemplate = {
       byOutcome: {
         critical_success: {
           overview:
-            'By the second bowl the whole room owned a piece of the story, and the traveler ' +
-            'owned the room. The letter came out of her apron and got read aloud. Half the ' +
-            'tables will carry some version of the fen road out of here tonight.',
+            'By the second bowl the letter was out of her apron and read aloud to the room. ' +
+            'Half the tables will carry some version of the fen road out of here tonight, ' +
+            'told at the good end.',
           changes: [
             {
               id: 'slice.kin.a_roof_remembered_well',
               kind: 'reputation',
               title: 'A Roof, Remembered',
               causeClause: 'They took the thanks graciously and let her read the letter out to the room',
-              detail: 'The family owes them a roof and is loud about owing it, which is the kind of debt that travels.',
+              detail: 'The family owes them a roof and says so to anyone who will listen.',
               polarity: 'gain',
               category: 'bond',
               direction: 'gain',
               stateNoun: { text: 'the fen-road family' },
+              concepts: [{ text: 'a roof' }],
             },
             {
               id: 'slice.kin.the_keepsake',
@@ -3187,17 +3428,19 @@ export const SLICE_GRATEFUL_KIN: UnifiedActionTemplate = {
               category: 'boon',
               direction: 'gain',
               stateNoun: { text: 'the pressed keepsake', visualKind: 'artifact', visualName: 'The Pressed Keepsake' },
+              concepts: [{ text: 'a small token of the fen road' }],
             },
             {
               id: 'slice.kin.the_room_carries_it',
               kind: 'reputation_tally',
               title: 'The Room Carries It',
               causeClause: 'By the second bowl the whole taproom had heard the fen road told properly',
-              detail: 'Half these tables will carry their name out of here tonight, at the good end of the story.',
+              detail: 'By morning their name is in three more taprooms, and it comes off well in every telling.',
               polarity: 'gain',
               category: 'bond',
               direction: 'gain',
               stateNoun: { text: 'their name on this road', tooltipId: 'ui.standing' },
+              concepts: [{ text: 'their name', tooltipId: 'ui.standing' }],
               magnitude: { ladder: 'reputation', band: 2 },
             },
           ],
@@ -3233,8 +3476,8 @@ export const SLICE_GRATEFUL_KIN: UnifiedActionTemplate = {
         success_at_cost: {
           overview:
             'The thanks was taken, and taken, and taken — three retellings and a toast, each ' +
-            'one a little further from what happened. The bowl went cold twice. The welcome ' +
-            'is real underneath all of it, which is the part worth keeping.',
+            'one a little further from what happened. The bowl went cold twice. Underneath ' +
+            'all of it the welcome is real.',
           changes: [
             {
               id: 'slice.kin.a_roof_and_an_evening',
@@ -3246,25 +3489,27 @@ export const SLICE_GRATEFUL_KIN: UnifiedActionTemplate = {
               category: 'bond',
               direction: 'gain',
               stateNoun: { text: 'the fen-road family' },
+              concepts: [{ text: 'a roof' }],
             },
           ],
         },
         critical_failure: {
           overview:
-            'Public gratitude curdled into public performance, and the traveler wore it all ' +
-            'evening. She meant every word and it landed like a bill. The welcome survives ' +
-            'the awkwardness — kin are stubborn that way — but it survives thinner.',
+            'The thanks ran long, in front of half the room, and the traveler stood in it all ' +
+            'evening. She meant every word of it. It still landed like a bill. The family ' +
+            'stays welcoming — kin are stubborn that way — just less than they were going to be.',
           changes: [
             {
               id: 'slice.kin.a_thinner_welcome',
               kind: 'reputation',
               title: 'A Thinner Welcome',
-              causeClause: 'She meant every word of it and they took it like a bill being presented',
-              detail: 'The family’s door stays open to them, and it is a narrower door than it was going to be.',
+              causeClause: 'The thanks was honest, public, and long, and they stood it badly',
+              detail: 'The family’s door stays open to them. It is a narrower door than it was going to be.',
               polarity: 'mixed',
               category: 'bond',
               direction: 'gain',
               stateNoun: { text: 'the fen-road family' },
+              concepts: [{ text: 'a narrower door' }],
             },
           ],
           reactions: [
