@@ -113,6 +113,16 @@ the strictest scope, so pass the real class.
 - **Baseline** — wrong: *"The merchant's ambit had grown parlous, freighted with the weight of unspoken covenants."* right: *"The merchant owed too many people too much. He'd started checking the door."*
 - **Peak** (allowed, doom transition): *"The bells stopped. Whatever had been holding its breath beneath the city let it out."*
 
+### The three plainness moves (THR-974 ruling, Christian, 2026-08-15)
+
+Prose that passed every detector still failed the director's read — the drift is *rhetorical habit*, not vocabulary. His standard, from a hand-edit of 10 live aftermath passages (recorded verbatim in [THR-974](https://linear.app/threadbare/issue/THR-974/consequence-verdict-session-christian-rules-on-world-graph-consequence)'s resolution comment): *"keep the rhythm but cut the inversions, the aphorisms, and the abstract nouns doing concrete work."* Apply as three moves, in editorial passes and critic loops alike:
+
+1. **Subject first — never open on a fragment.** *"The far bank, and behind them a plank going end over end…"* → *"They reach the far bank. Behind them, a plank tumbles end over end into the water."*
+2. **Swap abstract nouns for what actually happened.** *"Public gratitude curdled into public performance"* → *"The thanks went on too long, in front of too many people."*
+3. **One dry line carries the irony, not two.** Concrete dry closers earn their keep (*"it will have opinions about stairs"*); stacked ironic turns are drift.
+
+These bind every aftermath/encounter prose pass from 2026-08-15 on, including the Encounter Factory critic loop and the nudge-era retrofit.
+
 ## Per-template quality bar (5 questions, ask every time)
 
 Every prose line must answer yes to all five:
@@ -169,4 +179,4 @@ The THR-1101 rewrite campaign logged ~13 false-signal impediments in one week fr
 
 ## Last-reviewed
 
-2026-08-14 by Claude Code (weekly retro — added the corpus-verification-probe rules distilled from the THR-1101 campaign's false-signal cluster). Previous: 2026-08-01 by Claude Code (THR-899 — recorded the scoped vagueness model: evasive terms everywhere, natural indefinites in outcome prose only, intensifiers at warn; `nudgeAuditDetectors.ts` named the single authority). Previous edit: 2026-07-05 by Claude Code (THR-609 — added the register model section). Review trigger: monthly, or when any linked plan moves to `superseded`, or when the systemic wiring guide gains a new capability that prose authors must respect.
+2026-08-15 by Claude Code (THR-974 ruling — added the three plainness moves to the register model). Previous: 2026-08-14 by Claude Code (weekly retro — added the corpus-verification-probe rules distilled from the THR-1101 campaign's false-signal cluster). Previous: 2026-08-01 by Claude Code (THR-899 — recorded the scoped vagueness model: evasive terms everywhere, natural indefinites in outcome prose only, intensifiers at warn; `nudgeAuditDetectors.ts` named the single authority). Previous edit: 2026-07-05 by Claude Code (THR-609 — added the register model section). Review trigger: monthly, or when any linked plan moves to `superseded`, or when the systemic wiring guide gains a new capability that prose authors must respect.
