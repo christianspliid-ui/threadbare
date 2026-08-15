@@ -718,6 +718,26 @@ The older rules below still apply *inside* that frame — concrete beats abstrac
 beats told — but where any of them pushes a sentence away from plain readability, rule
 zero wins.
 
+### The three plainness moves (THR-974 ruling, Christian, 2026-08-15 — binds every draft and both critic passes)
+
+Prose that satisfies rule zero and every detector can still fail the director's read on
+*rhetorical habit*. His standard, from a hand-edit of 10 live aftermath passages
+(verbatim in THR-974's resolution comment): *"keep the rhythm but cut the inversions,
+the aphorisms, and the abstract nouns doing concrete work."*
+
+1. **Subject first — never open on a fragment.** *"The far bank, and behind them a
+   plank going end over end…"* → *"They reach the far bank. Behind them, a plank
+   tumbles end over end into the water."*
+2. **Swap abstract nouns for what actually happened.** *"Public gratitude curdled into
+   public performance"* → *"The thanks went on too long, in front of too many
+   people."*
+3. **One dry line carries the irony, not two.** A concrete dry closer earns its keep
+   (*"it will have opinions about stairs"*); a second ironic turn on the same beat is
+   drift — cut the weaker one.
+
+The editorial critic checks these by name; a draft that fails any of the three revises
+before the systems pass runs.
+
 1. **Concrete anchors by default.** Prefer sentences the reader can see. Plain
    functional sentences that move the scene along are fine — the anchor rule is a
    default, not a per-sentence quota.
