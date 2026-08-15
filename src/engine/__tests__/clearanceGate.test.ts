@@ -4,6 +4,7 @@ import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 import { DEFAULT_REPUTATION } from '../../types/disposition';
 import { WorldGraph } from '../graph';
 import { getUnifiedTemplateById } from '../../data/unified-action-templates';
+import { GATE_DUTY_NUDGE_IDS } from '../../data/civic-guard-encounter-content';
 import { prepareEncounterSupportBundle } from '../encounterSupportBundle';
 import { initializeClearanceGates } from '../clearanceGate';
 import { createUnifiedAction, resetUnifiedActionCounter } from '../unifiedActionLifecycle';
@@ -157,6 +158,19 @@ function makeGateDutyAction(
   return { action, gateId: gateInit.gateIds[0] };
 }
 
+/**
+ * Commit one nudge card onto the action's current step (THR-1123).
+ *
+ * The branch arms below used to preload a three-entry `choiceHistory` once and
+ * drive all three steps off it, because the consequence table keyed on the
+ * remembered `interventionType`. It keys on the played card now, read from
+ * `activeNudges` — which names the cards on the *current* step only — so the
+ * hand has to be committed per step, exactly as the stage commits it.
+ */
+function withHand<T extends { activeNudges?: readonly string[] }>(action: T, nudgeId: string): T {
+  return { ...action, activeNudges: [nudgeId] };
+}
+
 describe('clearanceGate Gate Duty proving slice', () => {
   it('initializes a persistent clearance shell for Gate Duty', () => {
     resetUnifiedActionCounter();
@@ -245,41 +259,7 @@ describe('clearanceGate Gate Duty proving slice', () => {
     const supportiveGraph = makeGateDutyGraph();
     const supportiveState = makeState(supportiveGraph);
     const supportivePrep = makeGateDutyAction(supportiveState, template!);
-    const supportiveAction = {
-      ...supportivePrep.action,
-      choiceHistory: [
-        {
-          stepIndex: 0,
-          stepId: template!.steps[0]!.id,
-          choiceId: 'choice-support-0',
-          choiceText: 'Steady the courier',
-          interventionType: 'supportive' as const,
-          essenceSpent: 0.05,
-          probabilityBoost: 0.08,
-          tick: supportiveState.tick,
-        },
-        {
-          stepIndex: 1,
-          stepId: template!.steps[1]!.id,
-          choiceId: 'choice-support-1',
-          choiceText: 'Guide the seizure into discipline',
-          interventionType: 'supportive' as const,
-          essenceSpent: 0.05,
-          probabilityBoost: 0.08,
-          tick: supportiveState.tick + 1,
-        },
-        {
-          stepIndex: 2,
-          stepId: template!.steps[2]!.id,
-          choiceId: 'choice-support-2',
-          choiceText: 'Cool the gate back into legitimacy',
-          interventionType: 'supportive' as const,
-          essenceSpent: 0.05,
-          probabilityBoost: 0.08,
-          tick: supportiveState.tick + 2,
-        },
-      ],
-    };
+    const supportiveAction = withHand(supportivePrep.action, GATE_DUTY_NUDGE_IDS[0].steady);
 
     const supportiveStep1 = executeStepResult(
       supportiveAction,
@@ -292,7 +272,7 @@ describe('clearanceGate Gate Duty proving slice', () => {
       { capability: 0.6, probability: 0.7, roll: 12 },
     );
     const supportiveStep2 = executeStepResult(
-      supportiveStep1.updatedAction,
+      withHand(supportiveStep1.updatedAction, GATE_DUTY_NUDGE_IDS[1].steady),
       template!,
       'success',
       template!.steps[1].onSuccess,
@@ -302,7 +282,7 @@ describe('clearanceGate Gate Duty proving slice', () => {
       { capability: 0.7, probability: 0.75, roll: 11 },
     );
     executeStepResult(
-      supportiveStep2.updatedAction,
+      withHand(supportiveStep2.updatedAction, GATE_DUTY_NUDGE_IDS[2].steady),
       template!,
       'success',
       template!.steps[2].onSuccess,
@@ -318,41 +298,7 @@ describe('clearanceGate Gate Duty proving slice', () => {
     const coerciveGraph = makeGateDutyGraph();
     const coerciveState = makeState(coerciveGraph);
     const coercivePrep = makeGateDutyAction(coerciveState, template!);
-    const coerciveAction = {
-      ...coercivePrep.action,
-      choiceHistory: [
-        {
-          stepIndex: 0,
-          stepId: template!.steps[0]!.id,
-          choiceId: 'choice-coercive-0',
-          choiceText: 'Force the captain',
-          interventionType: 'coercive' as const,
-          essenceSpent: 0.15,
-          probabilityBoost: 0.12,
-          tick: coerciveState.tick,
-        },
-        {
-          stepIndex: 1,
-          stepId: template!.steps[1]!.id,
-          choiceId: 'choice-coercive-1',
-          choiceText: 'Break the courier open before the crowd can invent worse',
-          interventionType: 'coercive' as const,
-          essenceSpent: 0.1,
-          probabilityBoost: 0.1,
-          tick: coerciveState.tick + 1,
-        },
-        {
-          stepIndex: 2,
-          stepId: template!.steps[2]!.id,
-          choiceId: 'choice-coercive-2',
-          choiceText: 'Consecrate authority',
-          interventionType: 'coercive' as const,
-          essenceSpent: 0.2,
-          probabilityBoost: 0.1,
-          tick: coerciveState.tick + 2,
-        },
-      ],
-    };
+    const coerciveAction = withHand(coercivePrep.action, GATE_DUTY_NUDGE_IDS[0].force);
 
     const coerciveStep1 = executeStepResult(
       coerciveAction,
@@ -365,7 +311,7 @@ describe('clearanceGate Gate Duty proving slice', () => {
       { capability: 0.6, probability: 0.7, roll: 12 },
     );
     const coerciveStep2 = executeStepResult(
-      coerciveStep1.updatedAction,
+      withHand(coerciveStep1.updatedAction, GATE_DUTY_NUDGE_IDS[1].force),
       template!,
       'success',
       template!.steps[1].onSuccess,
@@ -375,7 +321,7 @@ describe('clearanceGate Gate Duty proving slice', () => {
       { capability: 0.7, probability: 0.75, roll: 11 },
     );
     executeStepResult(
-      coerciveStep2.updatedAction,
+      withHand(coerciveStep2.updatedAction, GATE_DUTY_NUDGE_IDS[2].force),
       template!,
       'success',
       template!.steps[2].onSuccess,

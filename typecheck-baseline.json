@@ -1,5 +1,5 @@
 {
-  "total": 3190,
+  "total": 3184,
   "command": "npx tsc -b --force --pretty false",
   "perFile": {
     "scripts/lint-encounter-content.ts": 2,
@@ -281,7 +281,7 @@
     "src/engine/__tests__/battleAftermath.test.ts": 6,
     "src/engine/__tests__/battleResolution.test.ts": 1,
     "src/engine/__tests__/capabilityGrowth.test.ts": 2,
-    "src/engine/__tests__/clearanceGate.test.ts": 15,
+    "src/engine/__tests__/clearanceGate.test.ts": 9,
     "src/engine/__tests__/coastline-integration.test.ts": 6,
     "src/engine/__tests__/complicationSelection.test.ts": 2,
     "src/engine/__tests__/conditionAttachment.test.ts": 1,

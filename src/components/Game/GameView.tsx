@@ -187,6 +187,7 @@ import {
 } from '../../engine/debugWorldSpawnTools';
 import { pinAgent as pinAgentDebug, unpinAgent as unpinAgentDebug } from '../../engine/portfolioManager';
 import type { UnifiedAction } from '../../types/unifiedAction';
+import { isActionStepBranch } from '../../types/unifiedAction';
 import type { ClearanceGateRuntimeState } from '../../types/contentShells';
 import { touchStructure, touchWorld } from '../../engine/simulationRuntime';
 import { getEncounterForeshadowingById } from '../../engine/foreshadowing/encounterForeshadowing';
@@ -206,6 +207,7 @@ import {
   markUnifiedActionDisregarded,
   recordEncounterChoiceMemory,
   recordUnifiedActionChoiceMemory,
+  recordUnifiedActionNudgeMemory,
 } from '../../engine/encounterChoiceMemory';
 import { ReadTheThreadsPanel } from './ReadTheThreadsPanel';
 import { DelveProgressPanel } from '../ruins/DelveProgressPanel';
@@ -1302,6 +1304,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         activeAction: encounterStageActiveAction ?? undefined,
         clearanceGateState: gateDutyClearanceGateState,
         essence: SPHERE_NAMES.reduce((sum, s) => sum + gameState.essencePool[s], 0),
+        // THR-1123 — the authored nudge hand needs the per-sphere pool and the
+        // unlock list to decide what is playable; the summed `essence` above
+        // cannot answer that.
+        gameState,
       });
     }
 
@@ -3108,11 +3114,34 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         ...prev,
         essencePool: spend.pool,
         cardPlayTally: tally,
-        unifiedActions: (prev.unifiedActions ?? []).map(action =>
-          action.actionId === phase.actionId
-            ? { ...action, activeNudges: [...nudgeIds] }
-            : action,
-        ),
+        unifiedActions: (prev.unifiedActions ?? []).map(action => {
+          if (action.actionId !== phase.actionId) return action;
+          const withHand = { ...action, activeNudges: [...nudgeIds] };
+          // THR-1123 — also remember the hand per step. `activeNudges` is
+          // replaced when the next step commits, so it cannot answer "what was
+          // played on step 0" afterwards; retrospective surfaces (gate duty's
+          // history afterimages and aftermath echoes) need exactly that, and
+          // `choiceHistory` is the existing per-step channel for it.
+          const step = tieredEncounterState.template.steps[action.currentStep];
+          if (!step || isActionStepBranch(step)) return withHand;
+          // `ActionStep` declares no `id` even though every built template
+          // carries one — one of the THR-489 baseline's wrong types, which the
+          // two `step.id` reads above this function hit as well. Read through a
+          // narrow local shape rather than adding a third baseline entry; the
+          // fallback is the id convention the templates are built with, so a
+          // step that genuinely lacks one still records a usable key.
+          const stepId = (step as { id?: string }).id
+            ?? `${phase.templateId}.${action.currentStep + 1}`;
+          return recordUnifiedActionNudgeMemory(
+            withHand,
+            action.currentStep,
+            stepId,
+            nudgeIds,
+            nudgeIds.map(id => cardsById.get(id)?.name).filter(Boolean).join(', '),
+            prev.tick,
+            nudgeIds.reduce((sum, id) => sum + Math.max(0, cardsById.get(id)?.essenceCost ?? 0), 0),
+          );
+        }),
       };
     });
 

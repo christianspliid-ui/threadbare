@@ -22,6 +22,61 @@ const CG_ELITE_BASE = 55;
 const CG_JOIN_DIFFICULTY = 20;
 const CG_PROMOTION_DIFFICULTY = 35;
 
+// ─── Gate Duty nudge hand (THR-1123) ─────────────────────────────────────
+//
+// `cg.quest.gate_duty` used to *decorate* the engine's generic
+// supportive/coercive/withdrawn triple rather than author a hand: eight tables
+// in `buildGateDutyEncounterStageModel` and one in `unifiedActionResolution`
+// keyed on `EncounterChoiceMemory.interventionType`. THR-1121 retired the
+// generic producer and left the stances sourced locally as a stopgap
+// (`gateDutyStanceChoices`); this converts them into the encounter's own cards.
+//
+// The ids are exported because three surfaces must agree on them and none of
+// them may re-derive the set: the authored hands below, the engine's
+// `GATE_DUTY_BRANCH_CONSEQUENCES`, and the stage adapter's retrospective prose
+// tables. A card id typo'd in any one of them is the THR-844 failure — content
+// that type-checks, ships, and is unreachable forever — so they resolve from
+// here or not at all.
+//
+// Per-step rather than one stance triple reused three times because
+// `StepNudge.id` is unique within a template *and* because the three moves are
+// genuinely different moves at each beat: steadying a courier before the
+// seizure is not the same act as cooling the gate after it.
+export const GATE_DUTY_NUDGE_IDS = {
+  0: {
+    steady: 'gate_duty_steady_courier',
+    force: 'gate_duty_force_captain',
+    withhold: 'gate_duty_fold_your_hand',
+  },
+  1: {
+    steady: 'gate_duty_measure_the_seizure',
+    force: 'gate_duty_break_the_courier',
+    withhold: 'gate_duty_give_the_scene',
+  },
+  2: {
+    steady: 'gate_duty_cool_the_gate',
+    force: 'gate_duty_consecrate_authority',
+    withhold: 'gate_duty_leave_it_to_the_living',
+  },
+} as const;
+
+/**
+ * Essence prices, carried from the retired stance triple's shape rather than
+ * its numbers: steadying is the cheap thread, forcing is the expensive one, and
+ * withholding costs nothing because it *is* the absence of a purchase.
+ *
+ * The old triple priced `probabilityBoost` — a flat addition to the roll the
+ * card sold openly. THR-1121 zeroed that. These carry `forecastDelta` instead,
+ * the sanctioned nudge channel: it moves the forecast the player reads in
+ * words, never a number, and the withhold card moves it not at all.
+ */
+const GATE_DUTY_STEADY_COST = 1;
+const GATE_DUTY_FORCE_COST = 5;
+const GATE_DUTY_WITHHOLD_COST = 0;
+const GATE_DUTY_STEADY_DELTA = 0.08;
+const GATE_DUTY_FORCE_DELTA = 0.16;
+const GATE_DUTY_WITHHOLD_DELTA = 0;
+
 // ─── Faction Encounter Metadata Registry ─────────────────────────────────
 
 export const CIVIC_GUARD_ENCOUNTER_META: ReadonlyMap<string, FactionEncounterMeta> = new Map([
@@ -218,6 +273,41 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         failureAfterimage:
           '{their} eye skims the queue without mastering it. ' +
           'The crowd begins to write the scene for itself.',
+        nudges: [
+          {
+            id: GATE_DUTY_NUDGE_IDS[0].steady,
+            name: 'Steady the courier',
+            essenceCost: GATE_DUTY_STEADY_COST,
+            forecastDelta: GATE_DUTY_STEADY_DELTA,
+            fiction:
+              'Settle behind {cast:suspect_courier}\'s eyes and still the hand reaching for the reins. ' +
+              'Her composure holds long enough for the line to move.',
+            effectLine:
+              'Panic does not vanish when you soothe it. It flows somewhere else, and that somewhere may be you.',
+          },
+          {
+            id: GATE_DUTY_NUDGE_IDS[0].force,
+            name: 'Force the captain',
+            essenceCost: GATE_DUTY_FORCE_COST,
+            forecastDelta: GATE_DUTY_FORCE_DELTA,
+            fiction:
+              '{cast:gate_captain}\'s mind is a locked room. To move her you must press, ' +
+              'and force her hand before the crowd\'s silence curdles into judgment.',
+            effectLine:
+              'Clean is not the same as kind. The line may leave calling the watch decisive, then call it a fist.',
+          },
+          {
+            id: GATE_DUTY_NUDGE_IDS[0].withhold,
+            name: 'Keep your hand folded',
+            essenceCost: GATE_DUTY_WITHHOLD_COST,
+            forecastDelta: GATE_DUTY_WITHHOLD_DELTA,
+            fiction:
+              'Hold your essence and let the gate show its own nature. ' +
+              'Let {cast:gate_captain} hesitate, {cast:suspect_courier} fray, {cast:checkpoint_witness} watch.',
+            effectLine:
+              'You keep your strength. If you do not shape this moment, the witness will, and the story leaves as hers.',
+          },
+        ],
       },
       {
         reach: 'iron',
@@ -238,6 +328,41 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           '{cast:suspect_courier} is stopped, and the line sees discipline before it sees spectacle.',
         failureAfterimage:
           'The stop turns ugly enough that the crowd will remember force before proof.',
+        nudges: [
+          {
+            id: GATE_DUTY_NUDGE_IDS[1].steady,
+            name: 'Measure the seizure',
+            essenceCost: GATE_DUTY_STEADY_COST,
+            forecastDelta: GATE_DUTY_STEADY_DELTA,
+            fiction:
+              'Cool the hands of the watch into precision. No roughness, no triumph — ' +
+              'the taking of {cast:suspect_courier} reads as the hundredth sad duty of an orderly world.',
+            effectLine:
+              'If your touch slips, the restraint reads as eerie rather than humane, and the line trusts it less.',
+          },
+          {
+            id: GATE_DUTY_NUDGE_IDS[1].force,
+            name: 'Break the courier open',
+            essenceCost: GATE_DUTY_FORCE_COST,
+            forecastDelta: GATE_DUTY_FORCE_DELTA,
+            fiction:
+              'Sharpen {cast:suspect_courier}\'s fear instead of containing it. Let her betray the cart ' +
+              'with half an inch of panic, until the line stops imagining and starts believing.',
+            effectLine:
+              'A confession need not be spoken. You turn one mortal\'s worst second into the hinge of the evening.',
+          },
+          {
+            id: GATE_DUTY_NUDGE_IDS[1].withhold,
+            name: 'Give the witness the scene',
+            essenceCost: GATE_DUTY_WITHHOLD_COST,
+            forecastDelta: GATE_DUTY_WITHHOLD_DELTA,
+            fiction:
+              'Yield a heartbeat of control, and {cast:checkpoint_witness} and the queue name the danger ' +
+              'before the guards do. Public attention pins the moment in place.',
+            effectLine:
+              'Once the crowd starts authoring the event, even the captain becomes a reader of it.',
+          },
+        ],
       },
       {
         reach: 'heart',
@@ -276,6 +401,41 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         failureAfterimage:
           'The gatehouse keeps standing, but the district leaves with a harsher story ' +
           'than the watch can contain.',
+        nudges: [
+          {
+            id: GATE_DUTY_NUDGE_IDS[2].steady,
+            name: 'Cool the gate',
+            essenceCost: GATE_DUTY_STEADY_COST,
+            forecastDelta: GATE_DUTY_STEADY_DELTA,
+            fiction:
+              'Bleed heat from the moment until {cast:gate_captain}\'s next words feel like containment ' +
+              'rather than punishment, and the barrier remembers its purpose instead of its appetite.',
+            effectLine:
+              'The hardest mercy is not preventing harm but preventing harm from becoming the gate\'s identity.',
+          },
+          {
+            id: GATE_DUTY_NUDGE_IDS[2].force,
+            name: 'Consecrate authority',
+            essenceCost: GATE_DUTY_FORCE_COST,
+            forecastDelta: GATE_DUTY_FORCE_DELTA,
+            fiction:
+              'Draw the gatehouse taut around one idea: the watch is right because it acts. ' +
+              'Pour certainty through {cast:gate_captain} until hesitation burns away.',
+            effectLine:
+              'You preserve power at the cost of legitimacy. The certainty tastes more of dread than of trust.',
+          },
+          {
+            id: GATE_DUTY_NUDGE_IDS[2].withhold,
+            name: 'Leave it to the living',
+            essenceCost: GATE_DUTY_WITHHOLD_COST,
+            forecastDelta: GATE_DUTY_WITHHOLD_DELTA,
+            fiction:
+              'Withdraw at the last and most tempting hour. Let {cast:gate_captain} speak in her own voice, ' +
+              'and {cast:checkpoint_witness} shape the tale against no resistance but human doubt.',
+            effectLine:
+              'There is honesty in that, perhaps wisdom. There is also surrender: the story may not bear your shape at all.',
+          },
+        ],
       },
     ],
     narrativeTemplates: {
