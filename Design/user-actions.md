@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-15 18:00 local (2026-08-15 16:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-15 18:54 local (2026-08-15 16:54 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -21,7 +21,7 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 - 2026-08-15: **the Encounter Factory ask was this lane's error — withdrawn, nothing owed by you.** [THR-1043](https://linear.app/threadbare/issue/THR-1043) was briefed for several days as needing your attended session. In fact you approved the plan 2026-08-08, the authoring format locked 2026-08-09 ([THR-883](https://linear.app/threadbare/issue/THR-883)), and the three plan-doc sections your 2026-08-11 review asked for merged at 10:14 ([PR #1471](https://github.com/christianspliid-ui/threadbare/pull/1471)). What remains is running the retrofit batches — a lane's job; you enter only to sample 2 of 6 after a batch runs.
 - 2026-08-15: **the encounter veil stopped selling odds.** [THR-1121](https://linear.app/threadbare/issue/THR-1121) ([PR #1474](https://github.com/christianspliid-ui/threadbare/pull/1474)) — the stance purchases behind Intervene/Resume are gone from the veil and the fix is deployed.
 - 2026-08-15: **a consequence chip now links what it grants.** [THR-1120](https://linear.app/threadbare/issue/THR-1120) ([PR #1473](https://github.com/christianspliid-ui/threadbare/pull/1473)) — filed 10:00, live 10:39. The reward or penalty an ending hands out is reachable from the aftermath instead of merely named.
-- 2026-08-15: **the main working copy is syncing again.** [THR-1119](https://linear.app/threadbare/issue/THR-1119) — after 14 consecutive hourly refusals and 27 commits of drift, the three blocking edits were triaged and the tree fast-forwarded cleanly. Confirmed still healthy at 17:40.
+- 2026-08-15: **the main working copy is syncing again.** [THR-1119](https://linear.app/threadbare/issue/THR-1119) — after 14 consecutive hourly refusals and 27 commits of drift, the three blocking edits were triaged and the tree fast-forwarded cleanly. Confirmed still healthy at 18:54.
 
 ---
 *Refreshed hourly by `keep-work-flowing-cc`. Full history of every prior version: `git log -p origin/ops -- Design/user-actions.md`.*
