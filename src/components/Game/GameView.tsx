@@ -65,7 +65,6 @@ import { DoomClockDetail } from './DoomClockDetail';
 import { MandateDetail } from './MandateDetail';
 import { ActionDrawer } from './ActionDrawer';
 import { HarvestScreen } from './HarvestScreen';
-import { RetinuePanel } from './RetinuePanel';
 import { AgentInfoCard } from './AgentInfoCard';
 import { ThreadsPanel } from './ThreadsPanel';
 import { prepareEncounterHandoff } from './encounterHandoff';
@@ -2530,7 +2529,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     return map;
   }, [gameState.encounterProgress, gameState.tick, gameState.unifiedActions]);
 
-  /** Open the tiered encounter modal from RetinuePanel or EncounterLog click */
+  /** Open the tiered encounter modal from ThreadsPanel or EncounterLog click */
   const handleEncounterClick = useCallback((
     agentId: string,
     encounter: ActiveEncounterDisplay,

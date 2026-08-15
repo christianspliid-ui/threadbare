@@ -16,7 +16,7 @@ import { ENTITY_DIVERTED_CHANNELS, ROUTE_GLOBAL } from './notificationThreadingG
 /** Derive a navigation target from a TickEvent's entity references */
 export function deriveNavigationTarget(event: TickEvent): NavigationTarget | undefined {
   // Divine Receipt toast → open the receipt dialogue (THR-727). The receipt id equals
-  // the event id by construction (see phasePlayerReceipts).
+  // the event id by construction (see processPlayerReceipts).
   if (event.type === 'player_action_receipt') {
     return { kind: 'receipt', receiptId: event.id };
   }

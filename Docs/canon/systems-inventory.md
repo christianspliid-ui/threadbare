@@ -52,7 +52,7 @@ names like `TB-073`) a premise might use.
 | **Ascendant Beats & Progression** | 🟢 ACTIVE | beat, spine, director, ascendant progression, milestone | `ascendantbeat`, `ascendant` | `1.5`, `1.7`, `1.75` |
 | **Companies & Group Travel** | 🟠 DORMANT | company, companies, group, party, band, fellowship, companion, cohesion | `groups` | — |
 | **Movement & Colocation** | 🟢 ACTIVE | movement, travel, pathfinding, colocation, sublocation | `avatarmove`, `movement` | `2.35`, `2.352`, `2.36`, `2.361`, `2.37`, `2.4` |
-| **Reputation & Influence** | 🟢 ACTIVE | reputation, influence, renown, standing | `reputation`, `influence` | `6.55`, `6.6`, `6.64` |
+| **Reputation & Influence** | 🟢 ACTIVE | reputation, influence, renown, standing | `reputation`, `influence` | `6.55`, `6.6`, `6.634`, `6.64` |
 | **Secrets & Favors** | 🟢 ACTIVE | secret, secrets, favor, blackmail, leverage | `secrets`, `favor` | — |
 | **Effects & Conditions** | 🟢 ACTIVE | effect, condition, buff, debuff, status, possession, slot | `effect`, `effects`, `condition`, `conditiondecay`, `conditionoverflow` | `2a.4`, `2a.52`, `2a.85`, `6.625` |
 | **Agent Lifecycle** | 🟢 ACTIVE | lifecycle, birth, death, migration, graduation, apotheosis, npc | `agentlifecycle`, `agent`, `apotheosis`, `anointsuccessor` | `2a.78`, `2.33`, `2.38`, `6.75` |
@@ -169,7 +169,7 @@ registry. The wiring ground truth: if it is on the tick path, it is here.
 | `6.626` | Mastery Trait Decay | — | orchestrator |
 | `6.63` | Settlement Prosperity | — | orchestrator |
 | `6.632` | Economic Traits | — | orchestrator |
-| `6.64` | Reputation Traits | — | orchestrator |
+| `6.634` | Reputation Traits | — | orchestrator |
 | `6.635` | Settlement Tier Promotion/Demotion | — | orchestrator |
 | `6.636` | Settlement Genome Reassessment | — | orchestrator |
 | `6.637` | Unrest | — | orchestrator |
@@ -227,7 +227,6 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `anoint` (1) | `anointSuccessor.ts` | `THR-432`, `THR-74` |
 | `archetype` (1) | `archetypeEpithet.ts` | `Phase 12`, `TB-075` |
 | `army` (5) | `armyAttrition.ts`, `armyMovement.ts`, `armyNotifications.ts`, `armySpawning.ts`, `armySupply.ts` | `TB-073`, `Phase 2`, `Phase 7`, `Phase 1`, `THR-626` |
-| `art` (1) | `artSelection.ts` | — |
 | `ascendant` (9) | `ascendant.ts`, `ascendantBeat.ts`, `ascendantBeatSeeding.ts`, `ascendantBuffs.ts`, `ascendantExpression.ts`, `ascendantFeedback.ts`, `ascendantLens.ts`, `ascendantPrimitives.ts`, `ascendantTray.ts` | `THR-500`, `THR-520`, `THR-517`, `THR-509`, `THR-416`, `THR-508`, `THR-503`, `THR-184` |
 | `aspects` (1) | `aspects.ts` | `THR-479` |
 | `attachment` (3) | `attachmentSlotResolver.ts`, `attachmentTierAdvancement.ts`, `attachmentTooltip.ts` | `THR-996`, `THR-723`, `THR-718`, `THR-997`, `THR-719` |
@@ -244,7 +243,6 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `chronicle` (1) | `chronicle.ts` | `THR-21` |
 | `clearance` (1) | `clearanceGate.ts` | — |
 | `coastline` (1) | `coastline.ts` | — |
-| `color` (1) | `color.ts` | — |
 | `companions` (1) | `companions.ts` | `THR-1096` |
 | `complication` (2) | `complicationEffects.ts`, `complicationSelection.ts` | `THR-20` |
 | `condition` (2) | `conditionDecay.ts`, `conditionOverflow.ts` | — |
@@ -255,7 +253,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `control` (2) | `controlContestationResolver.ts`, `controlEffectSpawn.ts` | `TB-045`, `Phase 1`, `Phase 2`, `THR-518` |
 | `core` (2) | `core/coreConstants.ts`, `core/coreMechanics.ts` | `THR-542`, `THR-544` |
 | `cosmology` (1) | `cosmology.ts` | — |
-| `cultural` (5) | `culturalGravity.ts`, `culturalInsight.ts`, `culturalProse.ts`, `culturalTension.ts`, `culturalTraits.ts` | — |
+| `cultural` (4) | `culturalGravity.ts`, `culturalProse.ts`, `culturalTension.ts`, `culturalTraits.ts` | — |
 | `culture` (5) | `cultureDetail.ts`, `cultureFlag.ts`, `cultureGenerator.ts`, `cultureMores.ts`, `culturePhonetics.ts` | `M50`, `M30`, `M70`, `M20`, `THR-15` |
 | `curator` (1) | `curator.ts` | — |
 | `cycle` (1) | `cycleEnd.ts` | — |
@@ -290,11 +288,10 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `foreshadowing` (10) | `foreshadowing/attributeRecentInterventions.ts`, `foreshadowing/composeGeneric.ts`, `foreshadowing/composeReceipt.ts`, `foreshadowing/constants.ts`, `foreshadowing/encounterForeshadowing.ts`, `foreshadowing/genericFallback.ts`, `foreshadowing/motiveReceipt.ts`, `foreshadowing/realizer.ts`, `foreshadowing/receiptRead.ts`, `foreshadowing/types.ts` | `THR-389`, `Phase 1`, `Phase 3`, `THR-631`, `THR-642`, `THR-640` |
 | `fragment` (1) | `fragmentResolution.ts` | `THR-573`, `THR-475`, `THR-884` |
 | `game` (1) | `gameInit.ts` | — |
-| `ghost` (1) | `ghostDots.ts` | — |
 | `graph` (5) | `graph.ts`, `graphConditions.ts`, `graphOpExecutor.ts`, `graphQueries.ts`, `graphUtils.ts` | `THR-786`, `THR-822`, `THR-841` |
 | `groups` (15) | `groups/bandOpposition.ts`, `groups/bandSpawner.ts`, `groups/groupCohesion.ts`, `groups/groupDissolution.ts`, `groups/groupEligibility.ts`, `groups/groupFormation.ts`, `groups/groupFray.ts`, `groups/groupMovement.ts`, `groups/groupNames.ts`, `groups/groupParting.ts`, `groups/groupQueries.ts`, `groups/groupResolution.ts`, `groups/groupReunion.ts`, `groups/groupSeeking.ts`, `groups/phaseGroups.ts` | `THR-731`, `TB-044`, `THR-74`, `THR-732` |
 | `guild` (1) | `guildSeeding.ts` | — |
-| `hex` (8) | `hexActionBridge.ts`, `hexActorIndex.ts`, `hexGrid.ts`, `hexMovementPath.ts`, `hexRegion.ts`, `hexTooltipProse.ts`, `hexVignette.ts`, `hexZoom.ts` | `TB-046`, `THR-188` |
+| `hex` (7) | `hexActionBridge.ts`, `hexActorIndex.ts`, `hexGrid.ts`, `hexMovementPath.ts`, `hexRegion.ts`, `hexVignette.ts`, `hexZoom.ts` | `TB-046`, `THR-188` |
 | `hidden` (2) | `hiddenMarkProse.ts`, `hiddenMarks.ts` | `THR-132` |
 | `historical` (1) | `historicalCulture.ts` | — |
 | `idle` (1) | `idleBehavior.ts` | — |
@@ -395,4 +392,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 26 registered subsystems (1 dormant) · 101 tick phases · 174 engine domains · 494 modules._
+_Counts: 26 registered subsystems (1 dormant) · 101 tick phases · 171 engine domains · 489 modules._

@@ -1,7 +1,7 @@
 /**
  * Divine Receipt content + tuning (THR-727).
  *
- * When a player-sourced action resolves, `phasePlayerReceipts` builds a receipt and
+ * When a player-sourced action resolves, `processPlayerReceipts` builds a receipt and
  * decides whether it surfaces as a band-accented completion toast (minor casts) or a
  * full receipt dialogue (multi-step / rare / world-shifting casts). This module holds
  * both the tuning constants that gate that decision and the authored framing lines the

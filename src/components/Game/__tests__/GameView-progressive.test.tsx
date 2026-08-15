@@ -94,11 +94,11 @@ describe('GameView Progressive Disclosure (AgentInfoCard + AgentProfileModal)', 
     seed: 42,
   };
 
-  it('renders retinue panel by default (no agent selected)', () => {
+  it('renders the threads panel by default (no agent selected)', () => {
     const { container } = render(<GameView {...props} />);
     const rightSidebar = container.querySelector('[data-testid="right-sidebar"]');
     expect(rightSidebar).toBeInTheDocument();
-    // ThreadsPanel replaced RetinuePanel in Phase 16-01
+    // ThreadsPanel replaced RetinuePanel in Phase 16-01; the latter was deleted by THR-1089.
     expect(rightSidebar?.textContent).toMatch(/Threads|No agents|Agents/);
   });
 

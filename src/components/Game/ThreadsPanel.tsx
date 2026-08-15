@@ -177,8 +177,7 @@ interface CompactThreadRowProps {
 //
 // Fallout: `groupEncounterPoolCandidates` survives — ThreadDetailView now uses
 // it to collapse the ranked pool for normal play. `summarizeEncounterPoolDominance`
-// does not, and is left with no production caller — TODO(THR-1012): prune it or
-// wire it into the designer view.
+// did not, and was pruned with its tests by THR-1089's dead-code sweep.
 
 // ─── Sub-components ───────────────────────────────────────────────
 

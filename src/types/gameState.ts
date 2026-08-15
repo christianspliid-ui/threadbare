@@ -308,7 +308,7 @@ export interface GameState {
 
   /**
    * Divine Receipts — resolution-time outcome feedback for player-sourced actions
-   * (THR-727). Enqueued by `phasePlayerReceipts` when a player action resolves;
+   * (THR-727). Enqueued by `processPlayerReceipts` when a player action resolves;
    * consumed by `DivineReceiptModal` (modal tier) and the ToastStack click-through
    * (toast tier). Capped at RECEIPT_QUEUE_MAX (drop-oldest) so headless/CLI runs
    * where nothing acknowledges never grow unbounded. Optional/additive — old saves
