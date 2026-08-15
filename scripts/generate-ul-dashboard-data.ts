@@ -34,7 +34,19 @@ export type ULShardId =
   | 'coordination'
   | 'process';
 
-export type ULTermStatus = 'canonical' | 'proposed' | 'deprecated' | 'unknown';
+/**
+ * `rejected` and `deprecated` carry opposite histories and the same instruction:
+ * `deprecated` was canonical and has been retired (kept so historical records
+ * resolve), `rejected` was considered and refused and was never admitted. A
+ * rejected term is recorded precisely because it is tempting enough to be
+ * reintroduced by a later session reading an exploratory draft (THR-991).
+ */
+export type ULTermStatus =
+  | 'canonical'
+  | 'proposed'
+  | 'deprecated'
+  | 'rejected'
+  | 'unknown';
 
 export interface ULShard {
   id: ULShardId;
@@ -247,7 +259,12 @@ function parseTermBody(rawLines: string[]): ParsedTermBody {
       }
       if (statusMatch) {
         const raw = statusMatch[1].trim().toLowerCase();
-        if (raw === 'canonical' || raw === 'proposed' || raw === 'deprecated') {
+        if (
+          raw === 'canonical' ||
+          raw === 'proposed' ||
+          raw === 'deprecated' ||
+          raw === 'rejected'
+        ) {
           status = raw;
         } else {
           status = 'unknown';

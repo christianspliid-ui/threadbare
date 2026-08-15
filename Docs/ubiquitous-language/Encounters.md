@@ -356,7 +356,7 @@ Derived from the resolved band by `BOND_RECEPTION_BY_BAND` (`src/data/meeting-nu
 
 **Aliases:** unset-weave framing, still-settling past
 **Also see:** `[[Formative Test]]`, `[[Nudge]]`
-**Status:** deprecated
+**Status:** rejected
 
 *Rejected 2026-07-30 (THR-868 grill verdict 13; recorded in code at `src/types/meetingEncounter.ts`).* The framing in which the god nudges **inside a still-settling past** — the candidate's history not yet fixed, the player reaching back into it.
 
@@ -364,4 +364,4 @@ Rejected by Christian in favour of **present-tense trials**: the moment happens 
 
 Recorded here rather than left in the brainstorm doc because the rejected framing is *more* evocative than the one that shipped, which is exactly why a later session reading the exploratory draft would reintroduce it.
 
-**This term was never canonical — read the status field as "do not use", not as "retired from canon".** The shard vocabulary has no `rejected` value: `ULTermStatus` (`scripts/generate-ul-dashboard-data.ts`) is the closed set `canonical | proposed | deprecated`, and an unrecognised value degrades the entry to `unknown`, which renders as though nobody ever classified it. `deprecated` is the nearest supported value carrying the right affordance for a reader. Adding a real `rejected` status is tracked as THR-991.
+**This term was never canonical — `rejected` means "considered and refused", not "retired from canon".** That is the distinction `deprecated` cannot carry.

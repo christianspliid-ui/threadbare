@@ -63,6 +63,15 @@ Not content-adjacent.
 **Status:** weird-status
 
 Basic entity.
+
+---
+
+### Unset Weave
+
+**Aliases:** unset-weave framing
+**Status:** rejected
+
+A framing that was considered and refused; never admitted to canon.
 `;
 
 let tmpDir: string;
@@ -142,6 +151,24 @@ describe('buildDashboardData', () => {
     expect(missingStatus).toBeDefined();
     const node = data.terms.find((t) => t.slug === 'node');
     expect(node?.status).toBe('unknown');
+  });
+
+  // THR-991: `rejected` is a real status, not an unrecognized value degrading to
+  // `unknown`. Asserting the warning list is EMPTY rather than that the status
+  // parsed: the pre-fix failure emitted two warnings for one entry — the
+  // unrecognized-value one and, because the degraded status was `unknown`, the
+  // "No `**Status:**` line found" one. A test that only read `.status` would
+  // pass while the second warning still fired.
+  it('accepts `rejected` as a status without warning', () => {
+    const data = buildDashboardData({ sourceRoot: tmpDir });
+
+    const unsetWeave = data.terms.find((t) => t.slug === 'unset-weave');
+    expect(unsetWeave?.status).toBe('rejected');
+    expect(
+      data.warnings.filter(
+        (w) => w.kind === 'missing_status' && w.termSlug === 'unset-weave',
+      ),
+    ).toEqual([]);
   });
 
   // THR-714: byte-identical, not merely equal-modulo-a-timestamp. A per-run
