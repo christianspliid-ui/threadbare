@@ -13,6 +13,7 @@
  * - archetype.* → archetype-content.ts
  * - doom.* → doom-content.ts stage names or hardcoded definitions
  * - quintessence.* → ascendant-bar-content.ts band tooltips
+ * - attachment.* → attachmentTemplateIndex.ts shipped attachment templates
  */
 
 import type { TooltipContent } from '../types/tooltip';
@@ -28,6 +29,7 @@ import worldModel from '../data/world-model.json';
 import { MANDATE_TEMPLATES } from '../data/mandate-content';
 import { BAND_TOOLTIP } from '../data/ascendant-bar-content';
 import type { QuintessenceBand } from '../types/quintessence';
+import { resolveAttachmentTemplateTooltip } from './attachmentTemplateIndex';
 
 export interface TooltipResolverContext {
   graph: WorldGraph;
@@ -47,6 +49,7 @@ export interface TooltipResolverContext {
  * - doom.* → Doom stage or global doom definitions
  * - agent.* → Agent name + archetype/domain info, gated by familiarity (Tier 1)
  * - quintessence.* → Quintessence band (transcendent … dissolving)
+ * - attachment.* → Condition/blessing/curse/bestowed/possession template (THR-1122)
  * - mandate.* → Reserved for future implementation
  *
  * World-model descriptions longer than ~120 chars are truncated at
@@ -231,6 +234,19 @@ export function resolveTooltip(id: string, context?: TooltipResolverContext): To
       return { label: band.label, desc: band.body };
     }
     return null;
+  }
+
+  // ─── Attachment Template Lookup (THR-1122) ─────────────────────
+  // Conditions, blessings, curses, bestowed powers and possessions. The suffix
+  // is the template's own node id (`attachment.trait.condition.wounded`), which
+  // is why this reads `suffix` rather than re-joining a bare name: one prefix
+  // covers every attachment class instead of one prefix per subcategory.
+  //
+  // Context-free by construction — the templates are static literals, seeded
+  // *into* the graph rather than born there. That is what makes the prefix
+  // reachable from `Tooltip`, which calls this with no context at all.
+  if (prefix === 'attachment') {
+    return resolveAttachmentTemplateTooltip(suffix);
   }
 
   // ─── Knowledge Level Tooltips ────────────────────────────────────

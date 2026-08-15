@@ -229,7 +229,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `army` (5) | `armyAttrition.ts`, `armyMovement.ts`, `armyNotifications.ts`, `armySpawning.ts`, `armySupply.ts` | `TB-073`, `Phase 2`, `Phase 7`, `Phase 1`, `THR-626` |
 | `ascendant` (9) | `ascendant.ts`, `ascendantBeat.ts`, `ascendantBeatSeeding.ts`, `ascendantBuffs.ts`, `ascendantExpression.ts`, `ascendantFeedback.ts`, `ascendantLens.ts`, `ascendantPrimitives.ts`, `ascendantTray.ts` | `THR-500`, `THR-520`, `THR-517`, `THR-509`, `THR-416`, `THR-508`, `THR-503`, `THR-184` |
 | `aspects` (1) | `aspects.ts` | `THR-479` |
-| `attachment` (4) | `attachmentSlotResolver.ts`, `attachmentTemplateDetail.ts`, `attachmentTierAdvancement.ts`, `attachmentTooltip.ts` | `THR-1120`, `THR-974`, `THR-784`, `THR-996`, `THR-723`, `THR-718`, `THR-997`, `THR-719` |
+| `attachment` (5) | `attachmentSlotResolver.ts`, `attachmentTemplateDetail.ts`, `attachmentTemplateIndex.ts`, `attachmentTierAdvancement.ts`, `attachmentTooltip.ts` | `THR-1120`, `THR-974`, `THR-784`, `THR-1122`, `THR-996`, `THR-723`, `THR-718`, `THR-997`, `THR-719` |
 | `attention` (2) | `attentionPool.ts`, `attentionTier.ts` | — |
 | `avatar` (1) | `avatarMove.ts` | — |
 | `backstory` (2) | `backstoryGenerator.ts`, `backstoryResolvers.ts` | — |
@@ -392,4 +392,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 26 registered subsystems (1 dormant) · 101 tick phases · 171 engine domains · 490 modules._
+_Counts: 26 registered subsystems (1 dormant) · 101 tick phases · 171 engine domains · 491 modules._

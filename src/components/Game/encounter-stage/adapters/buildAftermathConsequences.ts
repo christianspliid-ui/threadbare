@@ -305,6 +305,30 @@ function reachDomainFor(concept: EncounterAftermathConceptRef | undefined): stri
 }
 
 /**
+ * THR-1122 — the tooltip id for a concept that named an attachment.
+ *
+ * A concept declaring `visualKind: 'attachment'` already carries the template's
+ * node id in `entityId` (THR-1120), so the registry id is a mechanical function
+ * of what the producer said — deriving it beats asking ~12 authored call sites
+ * to repeat the id in a second field, where it would drift the first time a
+ * template was renamed.
+ *
+ * The string is built, never resolved: this module is deliberately free of
+ * engine imports (see the header), so it says which id *would* explain this
+ * concept and the registry answers. A word whose id resolves to nothing is
+ * drawn as plain text by `NarrativeSegments`, which gates its underline on
+ * `tooltipResolves` — so an unshipped template cannot become a dead link.
+ */
+const ATTACHMENT_TOOLTIP_PREFIX = 'attachment.';
+function attachmentTooltipIdFor(
+  concept: EncounterAftermathConceptRef,
+): string | undefined {
+  if (concept.tooltipId) return concept.tooltipId;
+  if (concept.visualKind !== 'attachment' || !concept.entityId) return undefined;
+  return `${ATTACHMENT_TOOLTIP_PREFIX}${concept.entityId}`;
+}
+
+/**
  * Classify one authored change into its chip kind.
  *
  * Exported for direct unit testing: this table is the contract, and an
@@ -424,7 +448,7 @@ export function applyConceptDecorations(
       next.push({
         text: concept.text,
         emphasis: 'accent',
-        tooltipId: concept.tooltipId,
+        tooltipId: attachmentTooltipIdFor(concept),
         entityId: concept.entityId,
         // Routes the click to the right sheet. Omitted when the concept names
         // no visual kind, which leaves the segment on the agent path — the
@@ -484,6 +508,10 @@ export function buildAftermathConsequences(
       category,
       categoryLabel: CONSEQUENCE_CATEGORY_LABELS[category],
       nounLabel: nounLabelFor(nounText),
+      // THR-1122 — the noun is a concept word and owes its hover tier. Derived
+      // from the same declaration that already drives the tile, so no authored
+      // change has to repeat itself.
+      nounTooltipId: change.stateNoun ? attachmentTooltipIdFor(change.stateNoun) : undefined,
       categoryGlyph: CONSEQUENCE_CATEGORY_GLYPHS[category],
       reachDomain: reachDomainFor(change.stateNoun),
       sentence,

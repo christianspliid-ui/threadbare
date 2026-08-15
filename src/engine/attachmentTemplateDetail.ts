@@ -35,6 +35,7 @@
  */
 
 import type { WorldGraph } from './graph';
+import type { GraphNode } from '../types/graph';
 import type { AttachmentTier } from '../types/attachments';
 import type { ActionTriggerEffect, AttachmentEffect } from '../types/effects';
 import type { AttachmentDetailData } from '../components/Game/AttachmentDetailView';
@@ -92,7 +93,23 @@ export function resolveAttachmentTemplateDetail(
   templateNodeId: string | undefined,
 ): AttachmentDetailData | undefined {
   if (!templateNodeId) return undefined;
-  const node = graph.getNode(templateNodeId);
+  return attachmentDetailFromNode(graph.getNode(templateNodeId));
+}
+
+/**
+ * The classifier half of the resolver above, taking the node directly (THR-1122).
+ *
+ * Split out because the tooltip registry reaches the same templates through a
+ * *static* index rather than a live graph — `resolveTooltip` has no graph, and
+ * giving it one would put every `attachment.*` id behind a context the `Tooltip`
+ * component does not pass (the reason `agent.*` is unreachable from a chip
+ * today, and is excluded from `conceptTooltipIds.test.ts`'s sweep by hand).
+ * Sharing this function is what keeps the subcategory mapping single-sourced:
+ * a third copy of `#blessing → blessing` is exactly the drift Law 3 forbids.
+ */
+export function attachmentDetailFromNode(
+  node: GraphNode | undefined,
+): AttachmentDetailData | undefined {
   if (!node) return undefined;
 
   const props = node.properties as Record<string, unknown>;

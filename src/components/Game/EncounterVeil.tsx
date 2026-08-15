@@ -29,6 +29,7 @@ import { ProseTtsButton } from './Encounter/ProseTtsButton';
 import { formatEssence, formatEssencePool } from '../shared/formatEssence';
 import { CostPips } from '../shared/OddsPips';
 import { NUDGE_COMMIT_LABEL } from '../../data/nudge-stage-content';
+import { tooltipResolves } from '../../engine/tooltipResolver';
 import { getDurationWord } from '../../data/domain-words';
 
 // ── Thread tier types ──────────────────────────────────────────────
@@ -862,7 +863,33 @@ export function EncounterVeil({
                     {chip.nounLabel && (
                       <span style={{ color: TEXT_WHISPER }}>
                         {' · '}
-                        <span style={{ color: TEXT_WARM }}>{chip.nounLabel}</span>
+                        {/* THR-1122 — Law 17's hover tier for the chip's noun.
+                            The underline and the focus stop are drawn only when
+                            the registry can actually answer, so a concept with
+                            no shipped template stays plain rather than becoming
+                            a dead link that looks live (Law 21). */}
+                        {tooltipResolves(chip.nounTooltipId) ? (
+                          <Tooltip id={chip.nounTooltipId}>
+                            <span
+                              className="focus-ring"
+                              tabIndex={0}
+                              data-testid={`consequence-chip-noun-${chip.kind}`}
+                              style={{
+                                color: TEXT_WARM,
+                                borderBottom: `1px solid ${GOLD_DIM}`,
+                              }}
+                            >
+                              {chip.nounLabel}
+                            </span>
+                          </Tooltip>
+                        ) : (
+                          <span
+                            data-testid={`consequence-chip-noun-${chip.kind}`}
+                            style={{ color: TEXT_WARM }}
+                          >
+                            {chip.nounLabel}
+                          </span>
+                        )}
                       </span>
                     )}
                   </span>

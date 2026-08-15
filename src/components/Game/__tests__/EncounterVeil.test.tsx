@@ -696,6 +696,74 @@ describe('aftermath mode', () => {
     expect(chip.getByText('wounded')).toBeInTheDocument();
   });
 
+  // ── THR-1122 — the hover tier on the chip's concept words ──────────────
+  //
+  // Law 17 holds on the surface *as composed*. The noun (`SCAR · WOUNDED`) is
+  // the chip's most concentrated concept word and had neither tooltip nor link,
+  // because the sentence-decoration path only ever reached words inside prose.
+
+  const nounTooltipModel: EncounterStageModel = {
+    ...grantChipModel,
+    aftermath: {
+      ...grantChipModel.aftermath!,
+      consequences: [
+        {
+          ...grantChipModel.aftermath!.consequences![0],
+          nounLabel: 'WOUNDED',
+          nounTooltipId: 'attachment.trait.condition.wounded',
+        },
+      ],
+    },
+  };
+
+  it('gives the chip noun its hover tier when the registry can explain it', () => {
+    vi.useFakeTimers();
+    try {
+      render(<EncounterVeil {...defaultProps} model={nounTooltipModel} />);
+
+      const noun = screen.getByTestId('consequence-chip-noun-wound');
+      expect(noun).toHaveTextContent('WOUNDED');
+      // Focusable, so the hover tier is reachable from the keyboard too — a
+      // tooltip nobody can open is inert by another name (Laws 17/23).
+      expect(noun).toHaveAttribute('tabindex', '0');
+
+      fireEvent.pointerEnter(noun);
+      act(() => { vi.advanceTimersByTime(300); });
+
+      // The copy comes from the registry, not from inline chip copy — the whole
+      // point of routing it through `resolveTooltip`.
+      const tip = screen.getByRole('tooltip');
+      expect(tip).toHaveTextContent('Wounded');
+      expect(tip).toHaveTextContent('injuries');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('leaves the noun plain when the registry cannot explain it', () => {
+    // The falsification half. An id the registry cannot answer must render as
+    // plain text — never as an underline into nothing (Law 21), and never as
+    // the raw id (Law 14).
+    const unresolvable: EncounterStageModel = {
+      ...nounTooltipModel,
+      aftermath: {
+        ...nounTooltipModel.aftermath!,
+        consequences: [
+          {
+            ...nounTooltipModel.aftermath!.consequences![0],
+            nounTooltipId: 'attachment.no.such.template',
+          },
+        ],
+      },
+    };
+    render(<EncounterVeil {...defaultProps} model={unresolvable} />);
+
+    const noun = screen.getByTestId('consequence-chip-noun-wound');
+    expect(noun).toHaveTextContent('WOUNDED');
+    expect(noun).not.toHaveTextContent('no.such.template');
+    expect(noun).not.toHaveAttribute('tabindex');
+  });
+
   it('draws no control on a chip that granted nothing graph-real', () => {
     // The absence half of the Done-when. The pre-existing PRIZE chip names a
     // parcel and grants no node, so it must render exactly as it always did.

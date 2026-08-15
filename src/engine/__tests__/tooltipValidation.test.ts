@@ -9,6 +9,8 @@ import { describe, it, expect } from 'vitest';
 import { resolveTooltip } from '../tooltipResolver';
 import { UI_TOOLTIPS } from '../../data/ui-content';
 import { TOOLTIP_LINK_PATTERN } from '../../types/tooltip';
+import { ATTACHMENT_TEMPLATE_SOURCES } from '../attachmentTemplateIndex';
+import { attachmentDetailFromNode } from '../attachmentTemplateDetail';
 
 describe('tooltip content validation', () => {
   /**
@@ -139,6 +141,39 @@ describe('tooltip content validation', () => {
   });
 
   /**
+   * Test 3c: the same Law 18 gate for the `attachment.*` prefix (THR-1122).
+   *
+   * Same reasoning as 3b, and the same trap avoided: Test 3 walks `UI_TOOLTIPS`
+   * only, so copy behind any other prefix is outside it by construction. This
+   * walks the **shipped corpus** rather than a sample, so a template added later
+   * is measured the day it is authored. The per-entry Law 13/14 assertions live
+   * in `attachmentTemplateIndex.test.ts`; this is the length ceiling the rest of
+   * the registry is held to, applied here so one file states the whole gate.
+   */
+  it('no attachment template description exceeds 200 characters', () => {
+    const explainable = ATTACHMENT_TEMPLATE_SOURCES
+      .filter(node => attachmentDetailFromNode(node) !== undefined);
+
+    // Guard the population: an empty corpus would green this while proving nothing.
+    expect(explainable.length).toBeGreaterThan(20);
+
+    const problems: string[] = [];
+    for (const node of explainable) {
+      const resolved = resolveTooltip(`attachment.${node.id}`);
+      if (!resolved) {
+        problems.push(`attachment.${node.id}: does not resolve`);
+        continue;
+      }
+      if (!resolved.label?.trim()) problems.push(`attachment.${node.id}: empty label`);
+      if (resolved.desc && resolved.desc.length > 200) {
+        problems.push(`attachment.${node.id}: ${resolved.desc.length} chars`);
+      }
+    }
+
+    expect(problems.length, problems.join('\n')).toBe(0);
+  });
+
+  /**
    * Test 4: All UI tooltips must have both label and at least one of label/desc.
    * Ensures no empty or undefined tooltips slip through.
    */
@@ -174,6 +209,7 @@ describe('tooltip content validation', () => {
       'archetype',
       'doom',
       'quintessence', // THR-1118 — ascendant-bar band tooltips
+      'attachment', // THR-1122 — condition/blessing/curse/bestowed/possession templates
       'mandate', // Explicitly allowed even though not yet resolved
     ]);
 
