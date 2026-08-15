@@ -77,6 +77,14 @@ Enforce `CLAUDE.md § Skill Tree Layout`. **`.claude/skills/` is the only skill 
 - Verify the recorded fire times still match observed `nextRunAt`, and that no two Linear-MCP-using hourly tasks collide.
 - **On a mismatch, decide which side is wrong before "fixing" either.** The table records *deliberate* slot design — kwf-cc sits late in the hour so the brief reflects post-pickup state, not merely wherever it happens to fire. So when the registry disagrees with a documented slot whose rationale is stated, the **registry** is the drift: repair it with `update_scheduled_task`, do not edit the table to match. Only when the table has no stated rationale (or the change is clearly intentional and undocumented elsewhere) is amending the doc the right move. Precedent 2026-07-25: `keep-work-flowing-cc` was found on `0 * * * *` firing ~:08:13 — colliding to within ~7 min of `tb-opus-pickup` at :00:53, so the brief could run mid-pickup and report a half-finished picture. The cron was restored to `45 * * * *` (fires ~:53:13, as documented); the table was left untouched because it was right.
 
+- **Sweep for stray published reports left on disk** (THR-1056). Each lane now deletes its report after a successful `ops-publish.sh`; this check is what notices when one stops. Run it against the **home tree**, which is where they persist:
+
+  ```bash
+  git -C "C:\Users\chris\Dev\Projects\TheFantasyWorldSimulator" ls-files --others --ignored --exclude-standard -- Docs/ops/ Design/retros/
+  ```
+
+  Empty is healthy. Any hit names a lane that skipped its post-publish `rm` — say which, and confirm the content reached `origin/ops` before anyone deletes it. **Use this command, not `git status`:** those paths are gitignored as of 2026-08-15, so `git status -uall` reports clean no matter how many have piled up. The ignore rule is deliberate and worth keeping — an ignored file is expendable to git, so a fast-forward overwrites it silently instead of aborting on it, which is what closes the THR-937 autosync-deadlock vector — but it trades away exactly the visibility this bullet restores. `--others --ignored --exclude-standard` is the only listing that still sees them.
+
 ### 4. Documentation staleness scan
 
 - `Docs/project-status.md` — **generated and untracked** since THR-1016; do not hand-edit it and do not move entries out of it to hold the cap. The generator renders only the newest `Docs/status/` fragments that fit the ≤60-line budget, so overflow is normal and self-correcting. What is worth checking instead: every recent Linear Done issue has a `Docs/status/YYYY-MM-DD-thr-XXXX.md` fragment.
@@ -198,6 +206,7 @@ You are Claude Code and CAN commit — Cowork could not, which is why the origin
 
 - **Never run git state operations with the home tree as CWD** (THR-672). `C:\Users\chris\Dev\Projects\TheFantasyWorldSimulator` is a read-only mirror of `main` owned by `threadbare-autosync.ps1`. No `checkout`/`switch`/`commit`/`merge`/`rebase`/`reset` there. Work in this session's own worktree; branches are repo-global.
 - **The sweep report goes to the `ops` branch, not `main`** (THR-947, cutover 2026-08-02) — no branch, no PR, no CI, and `main`'s tip does not move. From this worktree's **repository root**: `bash scripts/ops-publish.sh -m "docs(ops): weekly hygiene sweep <date>" Docs/ops/weekly-hygiene-<date>.md`.
+- **Delete the local report file once the publish succeeds** — `rm Docs/ops/weekly-hygiene-<date>.md` (THR-1056). The publish leaves it behind by construction: checking nothing out is exactly what makes `ops-publish.sh` safe to call from any worktree, and the same property means the file it just published is still sitting in your working tree. Nothing else removes it, so the home tree accumulated 23 stray reports by 2026-08-09 and 38 by 08-14, ~3/day. **Only on a successful publish** — until it lands on `ops` the working-tree file is the sole copy, so a failed publish keeps it and the next run reconciles. This lane matters most: it runs with the home tree as its own CWD, so its strays are the ones that persist.
 - **Only the report moves.** Anything durable this sweep changes — a CLAUDE.md correction, a registry fix, a prompt mirror — is a normal `main` change: fetch first, branch off current `origin/main`, PR it. Do not publish durable edits to `ops`; it is not merged into anything.
 - Commit with **no** `Fixes`/`Closes`/`Resolves THR-XX` keyword — it would auto-close unrelated issues (impediment #140).
 - For those durable changes: queue with `gh pr merge --auto --merge`, do not poll-wait on CI (THR-675).
