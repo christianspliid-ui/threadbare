@@ -57,7 +57,7 @@ export interface EncounterVeilProps {
    * live one's clothes. A host that omits this leaves those names emphasised
    * and unclickable, which is the fail-open behaviour.
    */
-  onSelectEntity?: (entityId: string, kind: 'faction' | 'artifact') => void;
+  onSelectEntity?: (entityId: string, kind: 'faction' | 'artifact' | 'attachment') => void;
   /** THR-636 — "Show on map": close the veil and pan the camera to the encounter hex. */
   onShowOnMap?: (col: number, row: number) => void;
   /**
@@ -431,7 +431,7 @@ export function EncounterVeil({
      */
     const openEntity = (
       entityId: string | undefined,
-      kind: 'agent' | 'faction' | 'artifact' | 'companion' | undefined,
+      kind: 'agent' | 'faction' | 'artifact' | 'companion' | 'attachment' | undefined,
     ): (() => void) | undefined => {
       if (!entityId) return undefined;
       // Absent kind = the narrative linker's cast scan, which has always been
@@ -445,6 +445,11 @@ export function EncounterVeil({
       // ruled off-limits for companions). Their tile renders; their sheet is the
       // Companions row on the bearer's own surface. Non-interactive beats wrong.
       if (kind === 'companion') return undefined;
+      // THR-1120 — a granted condition/blessing/curse/power. `entityId` is the
+      // template node id (the grant itself is written by the reaction's effects,
+      // after this veil closes), and the host opens the same AttachmentDetailView
+      // the bearer's Attachments tab drills into. Fail-open like every kind above:
+      // a host that cannot open one leaves the name as emphasised text.
       return onSelectEntity ? () => onSelectEntity(entityId, kind) : undefined;
     };
 

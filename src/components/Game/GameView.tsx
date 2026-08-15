@@ -77,6 +77,9 @@ import { LocationProfileModal } from './LocationProfileModal';
 import { FactionSheet } from './FactionSheet';
 import { ArmySheet } from './ArmySheet';
 import { ArtifactSheet } from './ArtifactSheet';
+import { AttachmentDetailView } from './AttachmentDetailView';
+import { resolveAttachmentTemplateDetail } from '../../engine/attachmentTemplateDetail';
+import { Modal } from '../shared/Modal';
 import { AgentProfileModal } from './AgentProfileModal';
 import { ChapterLedger } from './ChapterLedger';
 import { StrandView } from './StrandView';
@@ -3219,6 +3222,14 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // ── Stub modal state for non-agent thread types (Plan 16-02) ──
   const [stubModalState, setStubModalState] = useState<{ nodeId: string; category: import('../../engine/retinue').ThreadCategory } | null>(null);
 
+  // ── Attachment sheet, opened from an aftermath consequence chip (THR-1120) ──
+  //
+  // Deliberately its own state rather than a fifth `stubModalState.category`:
+  // that field is a `ThreadCategory`, the divine-court vocabulary THR-1099 ruled
+  // off-limits for things that are not threads. A granted condition is not a
+  // thread the god holds — it is a thing that happened to someone.
+  const [attachmentSheetId, setAttachmentSheetId] = useState<string | null>(null);
+
   // ── Debug modal auto-opener (dev-only, tree-shaken in prod) ──
   useDebugOpenModal(_gameStateRef, {
     openAgentProfileForId,
@@ -3527,6 +3538,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       if (stubModalState.category === 'army') openModals.push('ArmySheet');
       if (stubModalState.category === 'artifact') openModals.push('ArtifactSheet');
     }
+    if (attachmentSheetId) openModals.push('AttachmentDetailView');
     if (tieredEncounterState && encounterVeilModel) openModals.push('EncounterVeil');
     if (meetingState && ascendantIdentity) openModals.push('MeetTheFirstFlow');
     if (activeVignette && !interruptsSuppressed) openModals.push('JourneyVignetteModal');
@@ -3552,6 +3564,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     agentInfoCard,
     ascendantIdentity,
     ascendantSheetOpen,
+    attachmentSheetId,
     debugPanelOpen,
     doomDetailOpen,
     drawerOpen,
@@ -4500,6 +4513,27 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         })()}
       </AnimateMount>
 
+      {/* Attachment sheet — the consequence chip's link half (THR-1120).
+          `Modal` sits at z-index 60 against the veil's 50, so the sheet opens
+          *over* the aftermath rather than behind it, and closing returns the
+          player to the ending they were reading. An id that resolves to no
+          attachment renders nothing: the chip that offered it was never
+          clickable, so this is belt-and-braces, not a silent failure path. */}
+      {attachmentSheetId && (() => {
+        const detail = resolveAttachmentTemplateDetail(gameState.graph, attachmentSheetId);
+        if (!detail) return null;
+        return (
+          <Modal open={true} onClose={() => setAttachmentSheetId(null)} maxWidth={720}>
+            <div data-testid="aftermath-attachment-sheet">
+              <AttachmentDetailView
+                attachment={detail}
+                onBack={() => setAttachmentSheetId(null)}
+              />
+            </div>
+          </Modal>
+        );
+      })()}
+
       {/* EncounterVeil — unified encounter display for all encounter types.
           Wrapped in `anim-encounter-handoff-fade-up` so the world view → encounter
           transition lands as a 400ms fade-up (THR-340 / design plan §5.8). */}
@@ -4519,13 +4553,21 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
             onAcknowledgeAftermath={handleEncounterAcknowledgeAftermath}
             onAftermathReaction={handleEncounterAftermathReaction}
             onSelectAgent={handleAgentSelect}
-            onSelectEntity={(entityId, kind) =>
+            onSelectEntity={(entityId, kind) => {
+              // THR-1120 — a granted condition/blessing/curse/power opens the
+              // attachment sheet. `entityId` is the template node id; see
+              // `engine/attachmentTemplateDetail.ts` for why a template and not
+              // the granted instance.
+              if (kind === 'attachment') {
+                setAttachmentSheetId(entityId);
+                return;
+              }
               // THR-1004 — the UI Law's link half for non-person entities named
               // on an aftermath chip. Routes to the same stub-modal path the
               // thread list uses, so a faction or a reward opens its own sheet
               // rather than the agent drawer.
-              setStubModalState({ nodeId: entityId, category: kind })
-            }
+              setStubModalState({ nodeId: entityId, category: kind });
+            }}
             onCommitNudges={handleCommitNudges}
             onShowOnMap={(col, row) => {
               if (hexMapRef.current) {
