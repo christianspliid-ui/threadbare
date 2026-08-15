@@ -102,6 +102,7 @@
         "src/engine/resolution*.ts",
         "src/engine/domainCapability.ts",
         "src/engine/hiddenMark*.ts",
+        "src/engine/groups/groupEligibility.ts",
         "src/data/*-encounter-content.ts",
         "src/types/unifiedAction.ts"
       ]
@@ -209,6 +210,7 @@
         "src/engine/socialLeverage.ts",
         "src/engine/phases/faction*.ts",
         "src/engine/phases/schism*.ts",
+        "src/engine/groups/band*.ts",
         "src/engine/cultur*.ts",
         "src/data/faction-constants.ts",
         "src/data/faction-definitions.ts",
@@ -285,6 +287,9 @@
         "src/engine/armyAttrition.ts",
         "src/engine/armySpawning.ts",
         "src/engine/armyNotifications.ts",
+        "src/engine/armySupply.ts",
+        "src/engine/phases/armySupply.ts",
+        "src/data/army-supply-config.ts",
         "src/engine/battleResolution.ts",
         "src/engine/battleAftermath.ts",
         "src/engine/battleSpotlights.ts",
@@ -405,5 +410,17 @@
       ]
     }
   ],
-  "backlog": []
+  "backlog": [
+    {
+      "id": "companies-reference",
+      "title": "Companies & the Travelling Band",
+      "blurb": "The mortal company as a first-class body: how a band forms out of mortals standing together, how cohesion holds it or frays it, how it moves, parts ways, and reunites, and what dissolves it. Today the wiki documents companies only where they touch something else — faction-raised NPC bands on the Factions page, and which encounters a company may take on the Encounters page — so the lifecycle itself (formation, cohesion, movement, parting, reunion, seeking, fray, dissolution) has no page of its own.",
+      "section": "Manual",
+      "sources": [
+        "src/engine/groups/group*.ts",
+        "src/engine/groups/phaseGroups.ts",
+        "src/data/group-constants.ts"
+      ]
+    }
+  ]
 }
