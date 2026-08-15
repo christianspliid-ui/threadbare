@@ -5,6 +5,11 @@ import type { BranchPoleKey } from '../unifiedAction';
 // `TraceEntry` members (THR-1065) while they extend its base. `import type` is
 // erased at build, so the cycle never reaches the module graph.
 import type { TraceBase } from '../trace';
+// Same rule, one layer further out (THR-1117): `HandFilteredTrace` declares the
+// prereq code its emitter actually sends, and that code is owned by the hand
+// filter. `import type` is erased at build, so the types → engine direction
+// never reaches the module graph either.
+import type { HandFilterPrereqCode } from '../../engine/encounters/handFilter';
 
 export type EncounterChoiceCost =
   | 'small_breath'
@@ -61,6 +66,14 @@ export interface ForecastComputedTrace extends TraceBase {
   baseProbability: number;
   modifiers: Array<{ source: string; delta: number }>;
   finalTier: ForecastTier;
+  /**
+   * Verified correct as declared (THR-1117). The emitter sends
+   * `computeForecast(...).factors`, and `OutcomeForecast.factors` is `string[]` —
+   * `sanitizeFactorPool` trims, de-duplicates and drops non-strings before
+   * `slice`. The authored beat field is the tuple `EncounterForecastFactors`,
+   * but that shape is consumed at the *call* to `computeForecast`, never emitted
+   * here, so the trace's own contract needed no change.
+   */
   factors: string[];
 }
 
@@ -73,6 +86,23 @@ export interface HandFilteredTrace extends TraceBase {
   dimmedCount: number;
   hiddenCount: number;
   rarePulses: string[];
+  /**
+   * Which cards, not merely how many (THR-1117, NFP #2 Inspectability). The
+   * emitter in `phaseAscendantHandFilter` has sent all three since the trace was
+   * authored while the interface declared only the counts; a cast at the
+   * `emitTrace` boundary kept that divergence from ever surfacing. Declaring
+   * them is the fix rather than dropping them — they answer *which* card was
+   * unplayable and *why*, which no count can.
+   */
+  playableTemplateIds: string[];
+  /** Dimmed cards carry the prereq stage-code that gated each one. */
+  dimmedTemplateIds: Array<{ templateId: string; prereq: HandFilterPrereqCode }>;
+  /**
+   * Hidden cards are target mismatches only (`HandFilterHiddenCode` has the
+   * single member `target_mismatch`), so the emitter sends bare ids — there is
+   * no varying reason to carry alongside them.
+   */
+  hiddenTemplateIds: string[];
 }
 
 export interface DriftThresholdCrossedTrace extends TraceBase {
