@@ -427,6 +427,97 @@ describe('vertical slice — the crossroads promise is a real claim (THR-1110)',
   });
 });
 
+/**
+ * THR-1120 — a consequence chip that names a granted attachment must link it.
+ *
+ * The link is only honest if the id the chip declares is the id the *same band*
+ * actually grants, and that pairing is the thing most likely to rot: an author
+ * retunes a band's reaction to grant `exhausted` instead of `wounded` and the
+ * chip goes on linking a condition nobody receives. Nothing else would catch it
+ * — the link still opens a real sheet, so it looks correct on screen.
+ *
+ * Note the direction of the assertion. It is deliberately *not* "every grant has
+ * a chip that links it": a band may grant a second condition it never claims in
+ * prose (the pass's `come_down_hurt` grants both `wounded` and `exhausted` while
+ * only one is a chip), and that is an authoring choice, not a defect.
+ */
+describe('vertical slice — a declared attachment grant is the one its band writes (THR-1120)', () => {
+  it.each(VERTICAL_SLICE_TEMPLATES.map((t) => [t.name, t] as const))(
+    '%s links only attachments its own band grants',
+    (_name, template) => {
+      const wrong: string[] = [];
+      let declared = 0;
+
+      const config = template.aftermathConfig;
+      const variants = config ? [...Object.values(config.variants), config.fallback] : [];
+
+      for (const variant of variants) {
+        for (const [outcome, band] of Object.entries(variant.byOutcome ?? {})) {
+          if (!band) continue;
+          // A band with no reactions of its own inherits the variant's, which is
+          // where its grants then live (the same rule the seed sweep uses).
+          const reactions = band.reactions ?? variant.reactions ?? [];
+          const granted = new Set(
+            reactions
+              .flatMap((r) => r.effects ?? [])
+              .map((e) => (e as { templateId?: string }).templateId)
+              .filter((id): id is string => Boolean(id)),
+          );
+
+          for (const change of band.changes ?? []) {
+            const noun = change.stateNoun;
+            if (noun?.visualKind !== 'attachment') continue;
+            declared += 1;
+            if (!noun.entityId) {
+              wrong.push(`${template.id}::${outcome}::${change.id} declares visualKind attachment with no entityId`);
+              continue;
+            }
+            if (!granted.has(noun.entityId)) {
+              wrong.push(
+                `${template.id}::${outcome}::${change.id} links ${noun.entityId}, `
+                + `which that band does not grant (grants: ${[...granted].join(', ') || 'nothing'})`,
+              );
+            }
+          }
+        }
+      }
+
+      expect(wrong, wrong.join('\n')).toEqual([]);
+      // Guards the vacuous pass: if the sweep stops finding declarations at all,
+      // the loop above proves nothing and would go green on an empty file.
+      if (template.id === SLICE_TEMPLATE_IDS.bridge) {
+        expect(declared, 'the bridge declares no attachment grants').toBeGreaterThan(0);
+      }
+    },
+  );
+
+  it('every linked attachment template exists as a condition definition', () => {
+    // The other rot direction: a live pairing that names a template nobody built
+    // would open an empty sheet, which reads as a broken game.
+    const known = new Set(CONDITION_TRAIT_DEFINITIONS.map((d) => d.id));
+    const missing: string[] = [];
+
+    for (const template of VERTICAL_SLICE_TEMPLATES) {
+      const config = template.aftermathConfig;
+      if (!config) continue;
+      for (const variant of [...Object.values(config.variants), config.fallback]) {
+        for (const band of Object.values(variant.byOutcome ?? {})) {
+          for (const change of band?.changes ?? []) {
+            const id = change.stateNoun?.visualKind === 'attachment'
+              ? change.stateNoun.entityId
+              : undefined;
+            if (id && id.startsWith('trait.') && !known.has(id)) {
+              missing.push(`${template.id}::${change.id} links unbuilt ${id}`);
+            }
+          }
+        }
+      }
+    }
+
+    expect(missing, missing.join('\n')).toEqual([]);
+  });
+});
+
 describe('vertical slice — registration', () => {
   it('all eight templates are in the live pool', () => {
     const poolIds = new Set(UNIFIED_ACTION_TEMPLATES.map((t) => t.id));

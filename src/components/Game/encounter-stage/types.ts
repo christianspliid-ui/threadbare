@@ -147,8 +147,12 @@ export interface EncounterStageNarrativeSegment {
    * compatibility**: every pre-THR-1004 `entityId` came from the narrative
    * linker's cast scan and was opened through the agent handler, so an absent
    * kind must keep meaning exactly that.
+   *
+   * THR-1120 — `attachment` names a granted condition/blessing/curse/power by
+   * its **template** node id. See `EncounterAftermathConceptRef.visualKind` for
+   * why a template rather than the granted instance.
    */
-  entityKind?: 'agent' | 'faction' | 'artifact' | 'companion';
+  entityKind?: 'agent' | 'faction' | 'artifact' | 'companion' | 'attachment';
 }
 
 export interface EncounterStageNarrativeParagraph {

@@ -204,13 +204,29 @@ export interface EncounterAftermathConceptRef {
   /** Graph node id behind the concept, when the entity has a page to open. */
   readonly entityId?: string;
   /**
-   * Entity-visual kind for the chip's icon. Absent ⇒ the chip draws no icon.
+   * What this concept *is*. Two consumers read it, each fail-open (NFP #4):
+   * the chip's **link** routes by it, and the chip's **icon** is resolved from
+   * it where an entity-visual family exists. Absent ⇒ neither is drawn.
    *
-   * Deliberately a subset of `EntityVisualKind`: only these three name things
-   * the aftermath can produce. A trait is a concept, not an entity with art —
-   * it takes a tooltip and no tile rather than a wrong one.
+   * Deliberately narrower than `EntityVisualKind`: only these name things the
+   * aftermath can produce. A trait is a concept, not an entity with art — it
+   * takes a tooltip and no tile rather than a wrong one.
+   *
+   * **`attachment` is the one member with a page and no tile (THR-1120).** The
+   * consequence of an ending is routinely a granted attachment — a condition, a
+   * blessing, a curse, a bestowed power — and until this member existed the chip
+   * could name that grant and never reach it. It carries no entity-visual family
+   * because an attachment's art lives on its own template node and
+   * `AttachmentDetailView` draws it; `resolveIcon` therefore skips this kind
+   * rather than resolving a wrong one, which the `EntityVisualKind` union
+   * enforces at compile time.
+   *
+   * `entityId` for an `attachment` is the **template** node id, never a granted
+   * instance: the grant is written by the reaction's effects, which apply after
+   * the player picks — at which point the veil closes. What the chip can honestly
+   * link is the thing being granted, not a node that does not exist yet.
    */
-  readonly visualKind?: 'agent' | 'faction' | 'artifact' | 'companion';
+  readonly visualKind?: 'agent' | 'faction' | 'artifact' | 'companion' | 'attachment';
   /** Display name for the visual's alt text and fallback tile. */
   readonly visualName?: string;
 }

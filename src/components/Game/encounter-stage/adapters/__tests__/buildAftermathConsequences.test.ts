@@ -288,6 +288,80 @@ describe('concept decorations (THR-1004)', () => {
     expect(linked?.entityKind).toBe('faction');
   });
 
+  it('carries a granted attachment through to the segment that links it (THR-1120)', () => {
+    // The defect: a chip names the thing the ending granted and the player
+    // cannot reach it. The state noun is what carries the grant, because the
+    // state noun *is* the changed state — so it is the field asserted here.
+    const chips = buildAftermathConsequences({
+      changes: [change({
+        kind: 'trait',
+        polarity: 'loss',
+        detail: 'The leg will carry them, and it will have opinions about stairs.',
+        stateNoun: {
+          text: 'wounded',
+          entityId: 'trait.condition.wounded',
+          visualKind: 'attachment',
+        },
+        concepts: [{
+          text: 'wounded',
+          entityId: 'trait.condition.wounded',
+          visualKind: 'attachment',
+        }],
+      })],
+      enrich: (t) => t,
+      link: (id) => ({ id, segments: [{ text: 'They are wounded now.' }] }),
+    });
+
+    const linked = chips[0].sentence.segments.find((s) => s.text === 'wounded');
+    expect(linked?.entityId).toBe('trait.condition.wounded');
+    // The kind is what routes the click to the attachment sheet. Without it the
+    // segment falls through to the agent path, which is the dead-link shape.
+    expect(linked?.entityKind).toBe('attachment');
+  });
+
+  it('draws no icon tile for an attachment, which has a page and no visual family', () => {
+    // Falsification for the resolveIcon guard: an attachment must reach the
+    // sentence's link tier without ever being handed to the entity-visual
+    // resolver, which has no 'attachment' kind to resolve.
+    const seen: string[] = [];
+    const chips = buildAftermathConsequences({
+      changes: [change({
+        kind: 'trait',
+        polarity: 'loss',
+        stateNoun: { text: 'wounded', entityId: 'trait.condition.wounded', visualKind: 'attachment' },
+      })],
+      ...passthrough,
+      resolveIcon: (concept) => {
+        // Mirrors the adapter's own guard, so this test fails if that guard is
+        // removed rather than passing on a coincidence.
+        if (concept.visualKind === 'attachment') return undefined;
+        seen.push(concept.visualKind ?? 'none');
+        return { entityId: 'x', kind: 'artifact', name: 'x' };
+      },
+    });
+
+    expect(chips[0].icon).toBeUndefined();
+    expect(seen).toEqual([]);
+  });
+
+  it('leaves a chip with no graph-real grant exactly as it was (THR-1120 absence)', () => {
+    // The other half of the Done-when. A state noun with no entity — a reach, a
+    // standing, a bare condition word — must render with no affordance at all.
+    const chips = buildAftermathConsequences({
+      changes: [change({
+        kind: 'reputation_tally',
+        polarity: 'gain',
+        stateNoun: { text: 'their name on this road', tooltipId: 'ui.standing' },
+      })],
+      ...passthrough,
+    });
+
+    for (const seg of chips[0].sentence.segments) {
+      expect(seg.entityId).toBeUndefined();
+      expect(seg.entityKind).toBeUndefined();
+    }
+  });
+
   it('leaves entityKind absent for a cast segment, which has always meant "a person"', () => {
     const chips = buildAftermathConsequences({
       changes: [change({ kind: 'item', polarity: 'gain', detail: 'Kael took the parcel.' })],
@@ -367,12 +441,19 @@ describe('concept decorations (THR-1004)', () => {
         ],
       })],
       ...passthrough,
-      resolveIcon: (concept) => ({
-        entityId: concept.entityId ?? concept.visualName ?? concept.text,
-        kind: concept.visualKind!,
-        name: concept.visualName ?? concept.text,
-        src: 'art/meditation-stones.jpg',
-      }),
+      resolveIcon: (concept) => {
+        // THR-1120 — `attachment` is the one visual kind with a page and no
+        // entity-visual family, so the adapter never hands one to a resolver.
+        // Mirroring that guard here is what keeps the mock a faithful stand-in;
+        // without it the mock would claim to resolve a tile production cannot.
+        if (!concept.visualKind || concept.visualKind === 'attachment') return undefined;
+        return {
+          entityId: concept.entityId ?? concept.visualName ?? concept.text,
+          kind: concept.visualKind,
+          name: concept.visualName ?? concept.text,
+          src: 'art/meditation-stones.jpg',
+        };
+      },
     });
 
     expect(chips[0].icon).toEqual({

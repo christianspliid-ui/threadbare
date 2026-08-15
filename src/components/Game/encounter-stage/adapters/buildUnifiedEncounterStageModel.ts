@@ -715,6 +715,12 @@ function buildAftermath(
     resolveIcon: (concept) => {
       const kind = concept.visualKind;
       if (!kind) return undefined;
+      // THR-1120 — an attachment has a page but no entity-visual family: its art
+      // lives on its own template node and `AttachmentDetailView` draws it. It
+      // takes the link tier and no tile, which is the documented fail-open path
+      // rather than a wrong glyph. `EntityVisualKind` excludes it, so removing
+      // this guard is a type error, not a silent regression.
+      if (kind === 'attachment') return undefined;
       const entityId = concept.entityId ?? concept.visualName ?? concept.text;
       const name = concept.visualName ?? concept.text;
       const descriptor = resolveEntityVisual({ id: entityId, kind, name }, graph);
