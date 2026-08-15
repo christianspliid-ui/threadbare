@@ -1,12 +1,12 @@
 # User Action Required
 
-**Last updated:** 2026-08-15 05:55 local (2026-08-15 03:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-15 06:54 local (2026-08-15 04:54 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
 ### 1. Rule the consequence verdict — play one encounter through to its aftermath
 
-[**THR-974**](https://linear.app/threadbare/issue/THR-974/consequence-verdict-session-christian-rules-on-world-graph-consequence) — the last verdict still open on the Encounter Experience map. You ruled it **"not yet"** on 2026-08-10 because the chips were unreadable (*"what does steadily even mean?"*). Everything you chartered against that ruling has now shipped and deployed: the icon vocabulary ([THR-1082](https://linear.app/threadbare/issue/THR-1082)) and the content rewrite of all 55 authored consequences ([THR-1097](https://linear.app/threadbare/issue/THR-1097)), on top of the logic ([THR-969](https://linear.app/threadbare/issue/THR-969)) and UI ([THR-971](https://linear.app/threadbare/issue/THR-971)) that were already in. Level re-checked against the live build 2026-08-15 03:55 UTC — the deployed artifact is current (`108c5a38`).
+[**THR-974**](https://linear.app/threadbare/issue/THR-974/consequence-verdict-session-christian-rules-on-world-graph-consequence) — the last verdict still open on the Encounter Experience map. You ruled it **"not yet"** on 2026-08-10 because the chips were unreadable (*"what does steadily even mean?"*). Everything you chartered against that ruling has now shipped and deployed: the icon vocabulary ([THR-1082](https://linear.app/threadbare/issue/THR-1082)) and the content rewrite of all 55 authored consequences ([THR-1097](https://linear.app/threadbare/issue/THR-1097)), on top of the logic ([THR-969](https://linear.app/threadbare/issue/THR-969)) and UI ([THR-971](https://linear.app/threadbare/issue/THR-971)) that were already in. Level re-checked against the live build 2026-08-15 04:54 UTC — the deployed artifact is current (`2945d010`).
 
 **The question:** after a hand resolves, does the consequence read as a real thing that happened to that person — noun, direction, rough magnitude — rather than an ungaugeable adverb?
 
@@ -16,7 +16,7 @@ One honest seam, by design: no encounter authors a `success` band — the base t
 
 ### 2. One command on your machine — the main working copy stopped updating
 
-The working copy at `C:\Users\chris\Dev\Projects\TheFantasyWorldSimulator` last synced at 20:50 — about 9 hours ago — and is now **21 commits behind, growing every hour** (19 an hour ago). Three locally-modified files block the automatic fast-forward, and per [THR-937](https://linear.app/threadbare/issue/THR-937) this shape never resumes on its own — every hourly attempt re-hits the same collision. No automated lane may run git operations there ([THR-672](https://linear.app/threadbare/issue/THR-672)), so it needs you or an attended session.
+The working copy at `C:\Users\chris\Dev\Projects\TheFantasyWorldSimulator` last synced at 20:50 yesterday — about 10 hours ago — and is now **23 commits behind, growing every hour** (21 an hour ago). Three locally-modified files block the automatic fast-forward, and per [THR-937](https://linear.app/threadbare/issue/THR-937) this shape never resumes on its own — every hourly attempt re-hits the same collision. No automated lane may run git operations there ([THR-672](https://linear.app/threadbare/issue/THR-672)), so it needs you or an attended session.
 
 ```
 cd 'C:\Users\chris\Dev\Projects\TheFantasyWorldSimulator'
@@ -24,16 +24,22 @@ git stash push -m home-tree-recovery
 git pull --ff-only origin main
 ```
 
-**Correction to what this file said last hour.** It claimed the `Docs/impediments.md` edit was "already redundant — row 582 is on `main`". That is wrong: `main`'s row 582 is a *different* impediment, and the local row records a genuine unfiled finding (a Linear auth failure that blocked an executor run). Nothing is destroyed — `git stash push` keeps all three edits and `git stash show -p` reads them back — but the row needs re-filing under a fresh id afterwards, which is an agent's job, not yours. The other two edits are local permission-allowlist entries in `.claude/settings*.json`, equally recoverable. **The command is unchanged and still safe to run.**
+Nothing is destroyed: `git stash push` keeps all three edits and `git stash show -p` reads them back. Two are local permission-allowlist entries in `.claude/settings*.json`; the third is an impediment row that needs re-filing under a fresh id afterwards — an agent's job, not yours. Nothing in the game is affected — worktrees fetch `main` directly. The risk is a future session branching off a stale copy.
 
-Nothing in the game is affected — worktrees fetch `main` directly. The risk is a future session branching off a stale copy.
+### 3. Nudge the Encounter Factory design when you next have a session
 
-### 3. Parked option, no urgency: a Tenacious-style trait
+[**THR-1043**](https://linear.app/threadbare/issue/THR-1043) has sat in "In Design" since 2026-08-08 — a week with no movement. Your note on 2026-08-11 asked for three missing sections to be backfilled into the plan doc before it can move toward Ready for Dev, and that hasn't happened. No automated lane can author a plan doc (the orchestrator deliberately runs on a cheaper model), so it is stuck until an attended design session picks it back up.
+
+*Raised by `tb-orchestrator`, 2026-08-15 run a.*
+
+### 4. Parked option, no urgency: a Tenacious-style trait
 
 An open design option with no ticket behind it. Explicitly not urgent — the safe default is that it stays parked, and nothing downstream is waiting on it. Listed only so it is not silently forgotten; say the word if you want it opened, and it will be given a ticket and a design pass.
 
 ## Resolved this period
 
+- 2026-08-15: **the documentation-freshness gate stopped having blind spots.** [THR-1061](https://linear.app/threadbare/issue/THR-1061) ([PR #1465](https://github.com/christianspliid-ui/threadbare/pull/1465)) — two reference pages did not watch their own source files, so those systems could change without the docs being flagged stale.
+- 2026-08-15: **the glossary can now say a word was rejected.** [THR-991](https://linear.app/threadbare/issue/THR-991) ([PR #1464](https://github.com/christianspliid-ui/threadbare/pull/1464)) — previously the only way to record a term we turned down was to mislabel it "deprecated", which reads as *was used, then dropped*.
 - 2026-08-15: **grooming now judges what a ticket is worth, not just whether it is well-formed.** [THR-1090](https://linear.app/threadbare/issue/THR-1090) ([PR #1462](https://github.com/christianspliid-ui/threadbare/pull/1462)) — your 2026-08-11 queue review found a third of the shelf below the materiality bar on a board three lanes scan daily, none of which was ever asked to judge worth. The daily grooming lane now runs a materiality sweep and cancels with its reason recorded.
 - 2026-08-15: **the lanes now clean up their own litter.** [THR-1056](https://linear.app/threadbare/issue/THR-1056) ([PR #1461](https://github.com/christianspliid-ui/threadbare/pull/1461)) — leftover files from scheduled runs had been jamming the sync that keeps the main working copy current. Workshop maintenance; nothing in the game changed.
 - 2026-08-15: **an aftermath can no longer be picked twice.** [THR-1112](https://linear.app/threadbare/issue/THR-1112) ([PR #1460](https://github.com/christianspliid-ui/threadbare/pull/1460)) — the pick now refuses an aftermath the tick loop has already run, instead of quietly resolving it a second time.
@@ -42,8 +48,6 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 - 2026-08-14: **one renderer now draws both halves of the aftermath.** [THR-1105](https://linear.app/threadbare/issue/THR-1105) ([PR #1457](https://github.com/christianspliid-ui/threadbare/pull/1457)) — the consequence chip and the reaction label each ran their own copy of the same link-and-tooltip rule. They now share one, with the chip tests passing unchanged.
 - 2026-08-14: **the Codex stopped naming its own enums.** [THR-1113](https://linear.app/threadbare/issue/THR-1113) ([PR #1456](https://github.com/christianspliid-ui/threadbare/pull/1456)) — the browsable catalog at [`?view=codex`](https://threadbare.vercel.app/?view=codex) still showed raw agreement and resource keys where it should read as English. This was the residue THR-1103 deliberately left behind rather than quietly dropping.
 - 2026-08-14: **withdrawn — the slice verdict session was never open.** [THR-907](https://linear.app/threadbare/issue/THR-907) was briefed as a live ask for three consecutive hours. It was not: you ruled all four verdicts on 2026-08-10 (prose *"this is the bar"*, firing *"rhythm works, prune later"*, UI *"the encounter view is good enough"*, game *"the decisions land"*). It stays open pending an agent-authored plan-doc carve-up, which is not your work. The ask is retired.
-- 2026-08-14: **the Place of Power panel stopped reading as a debug strip.** [THR-1104](https://linear.app/threadbare/issue/THR-1104) ([PR #1455](https://github.com/christianspliid-ui/threadbare/pull/1455)) — six `label: value` rows became sentences, on your standing direction that key:value labels are unfinished UX.
-- 2026-08-14: **the Codex stopped contradicting itself.** [THR-1103](https://linear.app/threadbare/issue/THR-1103) ([PR #1454](https://github.com/christianspliid-ui/threadbare/pull/1454)) — the browsable catalog showed two different spellings of the same word.
 
 ---
 *Refreshed hourly by `keep-work-flowing-cc`. Full history of every prior version: `git log -p origin/ops -- Design/user-actions.md`.*
