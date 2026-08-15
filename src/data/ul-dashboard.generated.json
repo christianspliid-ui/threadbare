@@ -2291,9 +2291,9 @@
         "unset-weave framing",
         "still-settling past"
       ],
-      "status": "deprecated",
+      "status": "rejected",
       "oneLiner": "**rejected** framing (nudging inside a still-settling past); recorded so it is not reintroduced from the brainstorm doc",
-      "body": "*Rejected 2026-07-30 (THR-868 grill verdict 13; recorded in code at `src/types/meetingEncounter.ts`).* The framing in which the god nudges **inside a still-settling past** — the candidate's history not yet fixed, the player reaching back into it.\n\nRejected by Christian in favour of **present-tense trials**: the moment happens now, while the god's attention rests on the mortal. `[[Formative Test]]` is the term that replaced it.\n\nRecorded here rather than left in the brainstorm doc because the rejected framing is *more* evocative than the one that shipped, which is exactly why a later session reading the exploratory draft would reintroduce it.\n\n**This term was never canonical — read the status field as \"do not use\", not as \"retired from canon\".** The shard vocabulary has no `rejected` value: `ULTermStatus` (`scripts/generate-ul-dashboard-data.ts`) is the closed set `canonical | proposed | deprecated`, and an unrecognised value degrades the entry to `unknown`, which renders as though nobody ever classified it. `deprecated` is the nearest supported value carrying the right affordance for a reader. Adding a real `rejected` status is tracked as THR-991.",
+      "body": "*Rejected 2026-07-30 (THR-868 grill verdict 13; recorded in code at `src/types/meetingEncounter.ts`).* The framing in which the god nudges **inside a still-settling past** — the candidate's history not yet fixed, the player reaching back into it.\n\nRejected by Christian in favour of **present-tense trials**: the moment happens now, while the god's attention rests on the mortal. `[[Formative Test]]` is the term that replaced it.\n\nRecorded here rather than left in the brainstorm doc because the rejected framing is *more* evocative than the one that shipped, which is exactly why a later session reading the exploratory draft would reintroduce it.\n\n**This term was never canonical — `rejected` means \"considered and refused\", not \"retired from canon\".** That is the distinction `deprecated` cannot carry.",
       "seeAlso": [
         {
           "raw": "Formative Test",

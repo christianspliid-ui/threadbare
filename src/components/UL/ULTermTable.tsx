@@ -17,6 +17,9 @@ const STATUS_COLOR: Record<ULTermStatus, string> = {
   canonical: '#7aa2a8',
   proposed: '#d4a040',
   deprecated: '#a85a5a',
+  // Violet, not a second red — `rejected` must be separable from `deprecated`
+  // at a glance, since the two carry opposite histories (THR-991).
+  rejected: '#9a6fb0',
   unknown: '#888',
 };
 

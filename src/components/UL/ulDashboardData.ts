@@ -21,7 +21,18 @@ export type ULShardId =
   | 'coordination'
   | 'process';
 
-export type ULTermStatus = 'canonical' | 'proposed' | 'deprecated' | 'unknown';
+/**
+ * Mirrors `ULTermStatus` in `scripts/generate-ul-dashboard-data.ts`. `rejected`
+ * marks a term that was considered and refused and was never admitted to canon
+ * — the opposite history to `deprecated`, which was canonical and has since
+ * been retired. Both mean "do not use" (THR-991).
+ */
+export type ULTermStatus =
+  | 'canonical'
+  | 'proposed'
+  | 'deprecated'
+  | 'rejected'
+  | 'unknown';
 
 export interface ULShard {
   id: ULShardId;
