@@ -3,7 +3,7 @@
  * Reads from the ascendant node's attachments in the world graph.
  * THR-184: Ascendant Bar
  */
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import type { GameState } from '../../../types/gameState';
 import styles from './styles.module.css';
 
@@ -40,6 +40,14 @@ function Chip({ chip, onOpen }: { chip: ChipData; onOpen?: (chip: ChipData) => v
     if (timerRef.current) clearTimeout(timerRef.current);
     setShow(false);
   };
+
+  // Clear the pending-tooltip timer on unmount (THR-1108). Clearing it only in
+  // onMouseLeave leaves it armed when the pointer leaves *because the chip went
+  // away* — a chip list changing inside the delay window is exactly that, and the
+  // callback would run setShow on a torn-down component. Matches Tooltip.tsx:330.
+  useEffect(() => () => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+  }, []);
 
   return (
     <div
