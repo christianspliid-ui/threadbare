@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { SphereIcon } from '../../shared/SphereIcon';
 import { getSphereColor } from '../../../data/sphereIcons';
 import { BAND_TOOLTIP, ARCHETYPE_COPY, SPHERE_COPY, quintessenceLine } from '../../../data/ascendant-bar-content';
@@ -21,6 +21,15 @@ function useDelayedHover(delayMs: number) {
     if (timerRef.current) clearTimeout(timerRef.current);
     setShow(false);
   };
+
+  // Clear the pending-tooltip timer on unmount (THR-1108). Clearing it only in
+  // onMouseLeave leaves it armed when the pointer leaves *because the element
+  // went away* — that handler never fires on unmount, so the callback would run
+  // setShow on a torn-down component. Matches src/components/shared/Tooltip.tsx:330.
+  useEffect(() => () => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+  }, []);
+
   return { show, onMouseEnter, onMouseLeave };
 }
 
