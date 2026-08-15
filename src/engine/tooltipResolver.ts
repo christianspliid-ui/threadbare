@@ -12,6 +12,7 @@
  * - terrain.* → world-model.json terrain biomes
  * - archetype.* → archetype-content.ts
  * - doom.* → doom-content.ts stage names or hardcoded definitions
+ * - quintessence.* → ascendant-bar-content.ts band tooltips
  */
 
 import type { TooltipContent } from '../types/tooltip';
@@ -25,6 +26,8 @@ import { getAgentDetail } from './agentDetail';
 import type { WorldGraph } from './graph';
 import worldModel from '../data/world-model.json';
 import { MANDATE_TEMPLATES } from '../data/mandate-content';
+import { BAND_TOOLTIP } from '../data/ascendant-bar-content';
+import type { QuintessenceBand } from '../types/quintessence';
 
 export interface TooltipResolverContext {
   graph: WorldGraph;
@@ -43,6 +46,7 @@ export interface TooltipResolverContext {
  * - archetype.* → Narrative archetype from archetype-content.ts
  * - doom.* → Doom stage or global doom definitions
  * - agent.* → Agent name + archetype/domain info, gated by familiarity (Tier 1)
+ * - quintessence.* → Quintessence band (transcendent … dissolving)
  * - mandate.* → Reserved for future implementation
  *
  * World-model descriptions longer than ~120 chars are truncated at
@@ -214,6 +218,19 @@ export function resolveTooltip(id: string, context?: TooltipResolverContext): To
       label: agentName,
       desc: `${archetypeName}.`,
     };
+  }
+
+  // ─── Quintessence Band Lookup ──────────────────────────────────
+  // The band is a game concept with authored copy of its own, so it routes here
+  // rather than being duplicated into ui-content.ts (that file's own rule) — and
+  // rather than staying inline in the ascendant bar, which is what it did until
+  // THR-1118. Pure passthrough: BAND_TOOLTIP already stores display-ready labels.
+  if (prefix === 'quintessence') {
+    const band = BAND_TOOLTIP[suffix as QuintessenceBand];
+    if (band) {
+      return { label: band.label, desc: band.body };
+    }
+    return null;
   }
 
   // ─── Knowledge Level Tooltips ────────────────────────────────────

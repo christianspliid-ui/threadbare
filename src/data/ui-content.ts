@@ -28,6 +28,21 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     desc: 'Divine objectives — complete them to gain essence and slow the {{ui.doom_bar}}.',
   },
 
+  // ─── Ascendant identity (THR-1118) ─────────────────────────────
+  // The bar hovers the *instance* — your divine name, your generated archetype title —
+  // and these explain the concept behind it. Both used to be inline copy in
+  // `IdentityStrip.tsx`, which put them outside Law 18's length gate and Law 19's
+  // chaining. Neither belongs in a game-entity package: a divine name is not an entity,
+  // and an archetype title is procedurally picked flavour with no per-title meaning.
+  'ui.ascendant_name': {
+    label: 'Divine Name',
+    desc: 'The name your ascension took. It carries the shape of what you were before you rose. Open the sheet for the whole of it.',
+  },
+  'ui.ascendant_archetype': {
+    label: 'Archetype',
+    desc: 'The title your ascension took, drawn from your primary sphere. It names the shape of how you meet the world.',
+  },
+
   // ─── Avatar Actions ────────────────────────────────────────────
   'ui.avatar_move': {
     label: 'Move Avatar',

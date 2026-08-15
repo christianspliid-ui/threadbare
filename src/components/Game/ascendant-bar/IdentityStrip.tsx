@@ -1,98 +1,26 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React from 'react';
 import { SphereIcon } from '../../shared/SphereIcon';
+import { Tooltip } from '../../shared/Tooltip';
 import { getSphereColor } from '../../../data/sphereIcons';
-import { BAND_TOOLTIP, ARCHETYPE_COPY, SPHERE_COPY, quintessenceLine } from '../../../data/ascendant-bar-content';
+import { quintessenceLine } from '../../../data/ascendant-bar-content';
 import type { QuintessenceBand } from '../../../types/quintessence';
-import type { SphereName } from '../../../types';
 import type { AscendantIdentityView, QuintessenceView } from './selectors';
 import styles from './styles.module.css';
 
 const PORTRAIT_SIZE = 68;
-const TOOLTIP_DELAY_MS = 450;
 
-function useDelayedHover(delayMs: number) {
-  const [show, setShow] = useState(false);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const onMouseEnter = () => {
-    timerRef.current = setTimeout(() => setShow(true), delayMs);
-  };
-  const onMouseLeave = () => {
-    if (timerRef.current) clearTimeout(timerRef.current);
-    setShow(false);
-  };
-
-  // Clear the pending-tooltip timer on unmount (THR-1108). Clearing it only in
-  // onMouseLeave leaves it armed when the pointer leaves *because the element
-  // went away* — that handler never fires on unmount, so the callback would run
-  // setShow on a torn-down component. Matches src/components/shared/Tooltip.tsx:330.
-  useEffect(() => () => {
-    if (timerRef.current) clearTimeout(timerRef.current);
-  }, []);
-
-  return { show, onMouseEnter, onMouseLeave };
-}
-
-interface TermTooltipProps {
-  eyebrow?: string;
-  title: string;
-  body: string;
-  tint?: string;
-}
-
-function TermTooltip({ eyebrow, title, body, tint }: TermTooltipProps) {
-  return (
-    <div style={{
-      position: 'absolute', top: 'calc(100% + 8px)', left: 0,
-      width: 260, padding: '10px 12px',
-      background: 'rgba(17,17,20,0.97)',
-      backdropFilter: 'blur(10px)',
-      border: '1px solid var(--border-subtle)',
-      borderLeft: `2px solid ${tint ?? 'var(--accent-gold)'}`,
-      borderRadius: 6,
-      boxShadow: '0 8px 32px rgba(0,0,0,0.7)',
-      zIndex: 40, pointerEvents: 'none',
-    }}>
-      {eyebrow && (
-        <div style={{
-          fontFamily: 'var(--font-display)', fontSize: 10, fontWeight: 600,
-          color: tint ?? 'var(--text-tertiary)', textTransform: 'uppercase',
-          letterSpacing: '0.18em', marginBottom: 4,
-        }}>{eyebrow}</div>
-      )}
-      <div style={{
-        fontFamily: 'var(--font-display)', fontSize: 14, fontWeight: 600,
-        letterSpacing: '0.06em', color: 'var(--text-primary)', marginBottom: 6,
-      }}>{title}</div>
-      <div style={{
-        fontFamily: 'var(--font-body)', fontStyle: 'italic',
-        fontSize: 13, lineHeight: 1.55, color: 'var(--text-secondary)',
-      }}>{body}</div>
-    </div>
-  );
-}
-
-interface HoveredTermProps {
-  children: React.ReactNode;
-  eyebrow?: string;
-  title: string;
-  body: string;
-  tint?: string;
-  style?: React.CSSProperties;
-}
-
-function HoveredTerm({ children, eyebrow, title, body, tint, style }: HoveredTermProps) {
-  const { show, onMouseEnter, onMouseLeave } = useDelayedHover(TOOLTIP_DELAY_MS);
-  return (
-    <span
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
-      style={{ position: 'relative', display: 'inline-block', ...style }}
-    >
-      {children}
-      {show && <TermTooltip eyebrow={eyebrow} title={title} body={body} tint={tint} />}
-    </span>
-  );
+/**
+ * Layout shim for a `Tooltip` trigger (THR-1118).
+ *
+ * The shared `Tooltip` wraps its children in a bare `display: inline-block` span and
+ * takes no style prop — deliberately, so callers cannot fork its trigger behaviour.
+ * The bespoke `HoveredTerm` this replaced *did* take one, and two sites here relied on
+ * it for flex layout (`flexShrink: 0` + `lineHeight: 0` on the portrait, `alignSelf`
+ * on the name). Dropping those silently would let the portrait shrink inside the strip
+ * row, so the layout moves onto an element we own and the tooltip keeps its own.
+ */
+function TooltipSlot({ style, children }: { style?: React.CSSProperties; children: React.ReactNode }) {
+  return <span style={style}>{children}</span>;
 }
 
 function bandColor(band: QuintessenceBand): string {
@@ -165,10 +93,6 @@ export function IdentityStrip({ identity, quintessence, treatment = 'breathe', o
   const spec = haloSpec(band, sphereColor);
   const isTranscendent = band === 'transcendent';
 
-  const sphereCopy = SPHERE_COPY[identity.primarySphere as SphereName];
-  const archCopy = ARCHETYPE_COPY[identity.archetypeTitle];
-  const bandInfo = BAND_TOOLTIP[band];
-
   return (
     <button
       className={styles.identityStrip}
@@ -176,97 +100,87 @@ export function IdentityStrip({ identity, quintessence, treatment = 'breathe', o
       type="button"
       aria-label="Open ascendant sheet"
     >
-      {/* Portrait: sphere sigil with band-responsive halo */}
-      <HoveredTerm
-        eyebrow={`Sphere · ${identity.primarySphere}`}
-        title={sphereCopy?.label ?? identity.primarySphere}
-        body={sphereCopy?.role ?? 'A sphere of essence — the substrate through which you act.'}
-        tint={sphereColor}
-        style={{ flexShrink: 0, lineHeight: 0 }}
-      >
-        <div className={styles.portraitFrame}>
-          {/* Radial glow */}
-          <div style={{
-            position: 'absolute', inset: -6, borderRadius: '50%',
-            background: `radial-gradient(circle, ${spec.color}, transparent 65%)`,
-            opacity: spec.opacity,
-            filter: `blur(${spec.blur}px)`,
-            pointerEvents: 'none',
-          }} className={haloAnimation(band)} />
-          {/* Sharp ring */}
-          <div style={{
-            position: 'absolute', inset: 0, borderRadius: '50%',
-            border: `${spec.ringWidth}px solid ${spec.color}`,
-            opacity: Math.min(1, spec.opacity + 0.3),
-            boxShadow: isTranscendent
-              ? `0 0 18px ${spec.color}, inset 0 0 10px ${spec.color}`
-              : `0 0 ${spec.blur / 2}px ${spec.color}`,
-            pointerEvents: 'none',
-          }} />
-          {/* Inner well */}
-          <div className={styles.portraitInner}>
-            {identity.portraitSrc ? (
-              <img
-                src={identity.portraitSrc}
-                alt={identity.divineName}
-                className={styles.portraitImg}
-                style={{ filter: portraitFilter(band) }}
-              />
-            ) : (
-              <div style={{ position: 'relative', lineHeight: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%' }}>
-                <SphereIcon sphere={identity.primarySphere} size={PORTRAIT_SIZE - 20} />
-              </div>
-            )}
+      {/* Portrait: sphere sigil with band-responsive halo.
+          The sphere is a registry concept, so the hover passes `sphere.<name>` and the
+          raw enum never reaches the surface — the eyebrow that printed `Sphere · mind`
+          went with the bespoke tooltip it belonged to (THR-1118, Laws 14 + 17). */}
+      <TooltipSlot style={{ flexShrink: 0, lineHeight: 0 }}>
+        <Tooltip id={`sphere.${identity.primarySphere}`}>
+          <div className={styles.portraitFrame}>
+            {/* Radial glow */}
+            <div style={{
+              position: 'absolute', inset: -6, borderRadius: '50%',
+              background: `radial-gradient(circle, ${spec.color}, transparent 65%)`,
+              opacity: spec.opacity,
+              filter: `blur(${spec.blur}px)`,
+              pointerEvents: 'none',
+            }} className={haloAnimation(band)} />
+            {/* Sharp ring */}
+            <div style={{
+              position: 'absolute', inset: 0, borderRadius: '50%',
+              border: `${spec.ringWidth}px solid ${spec.color}`,
+              opacity: Math.min(1, spec.opacity + 0.3),
+              boxShadow: isTranscendent
+                ? `0 0 18px ${spec.color}, inset 0 0 10px ${spec.color}`
+                : `0 0 ${spec.blur / 2}px ${spec.color}`,
+              pointerEvents: 'none',
+            }} />
+            {/* Inner well */}
+            <div className={styles.portraitInner}>
+              {identity.portraitSrc ? (
+                <img
+                  src={identity.portraitSrc}
+                  alt={identity.divineName}
+                  className={styles.portraitImg}
+                  style={{ filter: portraitFilter(band) }}
+                />
+              ) : (
+                <div style={{ position: 'relative', lineHeight: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%' }}>
+                  <SphereIcon sphere={identity.primarySphere} size={PORTRAIT_SIZE - 20} />
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      </HoveredTerm>
+        </Tooltip>
+      </TooltipSlot>
 
       {/* Name + archetype + quintessence word */}
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
-        <HoveredTerm
-          eyebrow="Name"
-          title={identity.divineName}
-          body="Your name carries the shape of what you were. Click to open the full sheet."
-          tint="var(--accent-gold)"
-          style={{ alignSelf: 'flex-start' }}
-        >
-          <span
-            className={styles.nameText}
-            style={{
-              textShadow: isTranscendent ? '0 0 14px rgba(244,241,232,0.35)' : undefined,
-            }}
-          >
-            {identity.divineName}
-          </span>
-        </HoveredTerm>
+        <TooltipSlot style={{ alignSelf: 'flex-start' }}>
+          <Tooltip id="ui.ascendant_name">
+            <span
+              className={styles.nameText}
+              style={{
+                textShadow: isTranscendent ? '0 0 14px rgba(244,241,232,0.35)' : undefined,
+              }}
+            >
+              {identity.divineName}
+            </span>
+          </Tooltip>
+        </TooltipSlot>
 
         <div style={{
           display: 'flex', alignItems: 'baseline', gap: 6, flexWrap: 'wrap',
           fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--text-tertiary)',
           marginTop: 1,
         }}>
-          <HoveredTerm
-            eyebrow="Archetype"
-            title={identity.archetypeTitle}
-            body={archCopy?.body ?? 'An archetype — the shape of how this ascendant meets the world.'}
-            tint="var(--accent-gold)"
-          >
+          {/* The archetype *title* is generated flavour (96 sphere-keyed strings in
+              ARCHETYPE_TITLES), not a concept with per-title meaning — so the concept
+              `ui.ascendant_archetype` explains it and the title stays the trigger text.
+              Routing `archetype.<title>` instead would dangle: that prefix resolves
+              *narrative* archetypes (`tragic_hero`), a different vocabulary. THR-1118. */}
+          <Tooltip id="ui.ascendant_archetype">
             <span>{identity.archetypeTitle}</span>
-          </HoveredTerm>
+          </Tooltip>
           <span style={{ color: 'var(--border-medium)' }}>·</span>
-          <HoveredTerm
-            eyebrow={`Quintessence · ${bandInfo.label}`}
-            title={lexiconWord}
-            body={bandInfo.body}
-            tint={bandColor(band)}
-          >
+          <Tooltip id={`quintessence.${band}`}>
             <span style={{
               fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 14,
               color: bandColor(band), letterSpacing: '0.06em', cursor: 'help',
             }} className={keywordAnimation(band, treatment)}>
               {lexiconWord}
             </span>
-          </HoveredTerm>
+          </Tooltip>
         </div>
 
         {identity.epithet && (
