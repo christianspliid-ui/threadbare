@@ -1,5 +1,5 @@
 {
-  "total": 3184,
+  "total": 3182,
   "command": "npx tsc -b --force --pretty false",
   "perFile": {
     "scripts/lint-encounter-content.ts": 2,
@@ -602,7 +602,7 @@
     "src/engine/orchestrator.ts": 39,
     "src/engine/orchestrator/__tests__/phaseChoiceResolution.test.ts": 5,
     "src/engine/orchestrator/__tests__/phaseDetectionPressure.test.ts": 2,
-    "src/engine/orchestrator/phaseAscendantHandFilter.ts": 4,
+    "src/engine/orchestrator/phaseAscendantHandFilter.ts": 2,
     "src/engine/orchestrator/phaseDetectionPressure.ts": 1,
     "src/engine/outcomeConsequences.ts": 1,
     "src/engine/pathfinding.ts": 1,
