@@ -1,6 +1,10 @@
 import type { ReachDomain } from '../traits';
 import type { ValuePair } from '../agent';
 import type { BranchPoleKey } from '../unifiedAction';
+// Type-only, and deliberately circular: `trace.ts` names these interfaces as
+// `TraceEntry` members (THR-1065) while they extend its base. `import type` is
+// erased at build, so the cycle never reaches the module graph.
+import type { TraceBase } from '../trace';
 
 export type EncounterChoiceCost =
   | 'small_breath'
@@ -26,7 +30,7 @@ export type DetectionThresholdBand = 'notice' | 'turn' | 'encounter';
 export type SpotlightTrigger = 'world_handoff' | 'manual_select' | 'beat_advancement';
 export type ArchetypePole = 'virtue' | 'flaw';
 
-export interface ChoiceResolvedTrace {
+export interface ChoiceResolvedTrace extends TraceBase {
   category: 'choice_resolved';
   tick: number;
   encounterId: string;
@@ -49,7 +53,7 @@ export interface ChoiceResolvedTrace {
   livePosition?: number;
 }
 
-export interface ForecastComputedTrace {
+export interface ForecastComputedTrace extends TraceBase {
   category: 'forecast_computed';
   tick: number;
   encounterId: string;
@@ -60,7 +64,7 @@ export interface ForecastComputedTrace {
   factors: string[];
 }
 
-export interface HandFilteredTrace {
+export interface HandFilteredTrace extends TraceBase {
   category: 'hand_filtered';
   tick: number;
   encounterId: string;
@@ -71,7 +75,7 @@ export interface HandFilteredTrace {
   rarePulses: string[];
 }
 
-export interface DriftThresholdCrossedTrace {
+export interface DriftThresholdCrossedTrace extends TraceBase {
   category: 'drift_threshold_crossed';
   tick: number;
   agentId: string;
@@ -90,7 +94,7 @@ export interface DriftThresholdCrossedTrace {
  * tick: where the mortal already stood, what the god argued for, and whether the
  * two together were decisive or the coin had to settle it.
  */
-export interface BranchDecidedTrace {
+export interface BranchDecidedTrace extends TraceBase {
   category: 'branch_decided';
   tick: number;
   agentId: string;
@@ -116,7 +120,7 @@ export interface BranchDecidedTrace {
   driftAxisId?: string;
 }
 
-export interface DetectionThresholdCrossedTrace {
+export interface DetectionThresholdCrossedTrace extends TraceBase {
   category: 'detection_threshold_crossed';
   tick: number;
   regionId: string;
@@ -125,7 +129,7 @@ export interface DetectionThresholdCrossedTrace {
   thresholdCrossed: DetectionThresholdBand;
 }
 
-export interface ItemConsumedByChoiceTrace {
+export interface ItemConsumedByChoiceTrace extends TraceBase {
   category: 'item_consumed_by_choice';
   tick: number;
   encounterId: string;
@@ -134,7 +138,7 @@ export interface ItemConsumedByChoiceTrace {
   itemId: string;
 }
 
-export interface SpotlightChangedTrace {
+export interface SpotlightChangedTrace extends TraceBase {
   category: 'spotlight_changed';
   tick: number;
   fromAgentId?: string;
@@ -142,7 +146,7 @@ export interface SpotlightChangedTrace {
   trigger: SpotlightTrigger;
 }
 
-export interface CallbackEligibilityComputedTrace {
+export interface CallbackEligibilityComputedTrace extends TraceBase {
   category: 'callback_eligibility_computed';
   tick: number;
   encounterId: string;

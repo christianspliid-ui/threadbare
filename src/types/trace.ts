@@ -1,4 +1,25 @@
 import type { SphereName } from './index';
+// THR-1065: these payload interfaces are `TraceEntry` members. Type-only and
+// circular — they extend `TraceBase` declared here — which `import type` erases.
+import type {
+  ChoiceResolvedTrace,
+  ForecastComputedTrace,
+  HandFilteredTrace,
+  DriftThresholdCrossedTrace,
+  BranchDecidedTrace,
+  DetectionThresholdCrossedTrace,
+  ItemConsumedByChoiceTrace,
+  SpotlightChangedTrace,
+  CallbackEligibilityComputedTrace,
+} from './traces/encounter-traces';
+import type {
+  MentorshipOfferedTrace,
+  MentorshipStartedTrace,
+  MentorshipLessonTrace,
+  MentorshipGraduatedTrace,
+  MentorshipSurpassedTrace,
+  MentorshipSeveredTrace,
+} from './traces/mentorship-traces';
 import type { ReachDomain } from './traits';
 import type { ValuePair } from './agent';
 import type { ModifierResolutionTrace } from './modifiers';
@@ -2315,7 +2336,71 @@ export type TraceEntry =
   | AgentMendedTrace
   // Nudge Model — WS6 Meet The First conversion (THR-868)
   | MeetingTestResolvedTrace
-  | MeetingBondResolvedTrace;
+  | MeetingBondResolvedTrace
+  // Retrofitted from the orphaned-payload set (THR-1065). Each declared a
+  // `category` literal and an authored payload, but was never a union member —
+  // so `trace.category === '<its literal>'` was a TS2367 "no overlap" error and
+  // every consumer laundered it through `as string`.
+  //
+  // Named one-by-one rather than via the `EncounterExperienceTraceEntry` /
+  // `MentorshipTraceEntry` aggregate aliases: the ratchet in
+  // `src/types/__tests__/trace-vocabulary.test.ts` scans this declaration at
+  // SOURCE level, deliberately, so an alias would satisfy the type checker while
+  // leaving the gate unable to see which interfaces are covered.
+  | TickHealthTrace
+  | TickCrashTrace
+  | SelfActionTrace
+  | SurveyProseComposedTrace
+  | KpiSnapshotTrace
+  | ChoiceResolvedTrace
+  | ForecastComputedTrace
+  | HandFilteredTrace
+  | DriftThresholdCrossedTrace
+  | BranchDecidedTrace
+  | DetectionThresholdCrossedTrace
+  | ItemConsumedByChoiceTrace
+  | SpotlightChangedTrace
+  | CallbackEligibilityComputedTrace
+  | MentorshipOfferedTrace
+  | MentorshipStartedTrace
+  | MentorshipLessonTrace
+  | MentorshipGraduatedTrace
+  | MentorshipSurpassedTrace
+  | MentorshipSeveredTrace;
+
+/**
+ * `Omit` that distributes over a union instead of collapsing it (THR-1065).
+ *
+ * Plain `Omit<A | B, K>` is not a union of omits — it resolves `keyof (A | B)` to
+ * the keys A and B *share*, producing ONE object type carrying only the common
+ * fields. Applied to `TraceEntry` that means every category-specific field
+ * (`encounterId`, `finalTier`, `channel`, …) becomes an excess property, and the
+ * only way to emit a faithful payload is `as unknown as`. That is the mechanism
+ * behind the 81 casts at emitTrace boundaries, and behind THR-1082 raising the
+ * typecheck baseline rather than dropping fields from a trace.
+ *
+ * The naked type parameter is what makes the conditional distributive — this is
+ * load-bearing, not stylistic. Inlining the body without `T extends unknown ?`
+ * silently restores the collapse.
+ */
+export type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never;
+
+/**
+ * What a caller passes to `emitTrace` (THR-1065).
+ *
+ * `id` and `timestamp` are assigned by the buffer. `summary` is optional *here
+ * and only here*: `normalizeTraceEntry` synthesizes one from `summary` →
+ * `message` → `type:action` → `trace:<category>` before the entry is stored, so
+ * the runtime has always tolerated its absence, while `TraceEntry` itself keeps
+ * `summary` required for every reader. Requiring it at the input boundary would
+ * force ~15 payload interfaces that never declared one to grow a field their
+ * emit sites do not supply.
+ */
+type TraceInputOf<T> = T extends unknown
+  ? Omit<T, 'id' | 'timestamp' | 'summary'> & { summary?: string }
+  : never;
+
+export type TraceEntryInput = TraceInputOf<TraceEntry>;
 
 /**
  * Trace: residence observed across every individual actor this interval (THR-822).

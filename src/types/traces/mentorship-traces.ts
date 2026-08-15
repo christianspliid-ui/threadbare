@@ -8,6 +8,10 @@
  */
 
 import type { ReachDomain } from '../traits';
+// Type-only, and deliberately circular: `trace.ts` names these interfaces as
+// `TraceEntry` members (THR-1065) while they extend its base. `import type` is
+// erased at build, so the cycle never reaches the module graph.
+import type { TraceBase } from '../trace';
 
 /** Reasons a mentorship can be severed. */
 export type MentorshipSeveredReason =
@@ -18,7 +22,7 @@ export type MentorshipSeveredReason =
   | 'failed'
   | 'divine_sever';
 
-export interface MentorshipOfferedTrace {
+export interface MentorshipOfferedTrace extends TraceBase {
   category: 'mentorship_offered';
   tick: number;
   agentId: string;       // apprentice (consistent with encounter-trace agentId convention)
@@ -29,7 +33,7 @@ export interface MentorshipOfferedTrace {
   summary: string;
 }
 
-export interface MentorshipStartedTrace {
+export interface MentorshipStartedTrace extends TraceBase {
   category: 'mentorship_started';
   tick: number;
   agentId: string;       // apprentice
@@ -39,7 +43,7 @@ export interface MentorshipStartedTrace {
   summary: string;
 }
 
-export interface MentorshipLessonTrace {
+export interface MentorshipLessonTrace extends TraceBase {
   category: 'mentorship_lesson';
   tick: number;
   agentId: string;       // apprentice
@@ -51,7 +55,7 @@ export interface MentorshipLessonTrace {
   summary: string;
 }
 
-export interface MentorshipGraduatedTrace {
+export interface MentorshipGraduatedTrace extends TraceBase {
   category: 'mentorship_graduated';
   tick: number;
   agentId: string;       // apprentice
@@ -63,7 +67,7 @@ export interface MentorshipGraduatedTrace {
   summary: string;
 }
 
-export interface MentorshipSurpassedTrace {
+export interface MentorshipSurpassedTrace extends TraceBase {
   category: 'mentorship_surpassed';
   tick: number;
   agentId: string;       // apprentice (the one who exceeded)
@@ -75,7 +79,7 @@ export interface MentorshipSurpassedTrace {
   summary: string;
 }
 
-export interface MentorshipSeveredTrace {
+export interface MentorshipSeveredTrace extends TraceBase {
   category: 'mentorship_severed';
   tick: number;
   agentId: string;       // apprentice

@@ -328,14 +328,15 @@ function driftTowardPole(
     : -BRANCH_DECISION_DRIFT_MAGNITUDE;
   const result = applyDriftMagnitude(drift, agentId, driftAxisId, signedMagnitude, tick);
 
-  // Same emission shape as `phaseChoiceResolution` — the encounter trace types are
-  // not members of the `TraceEntry` union, so every caller casts here.
+  // Same emission shape as `phaseChoiceResolution`. Both emit uncast as of
+  // THR-1065 — `DriftThresholdCrossedTrace` is a `TraceEntry` member and
+  // `emitTrace` takes a distributive input, so the payload type-checks as itself.
   for (const driftTrace of result.traces) {
     emitTrace({
       ...driftTrace,
       summary: `Drift threshold ${driftTrace.thresholdCrossed}: ${driftTrace.axisId} `
         + `${driftTrace.fromPosition.toFixed(2)} → ${driftTrace.toPosition.toFixed(2)} (${driftTrace.pole})`,
-    } as unknown as Parameters<typeof emitTrace>[0]);
+    });
   }
 
   return { drift: result.drift, driftAxisId };

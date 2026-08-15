@@ -1,5 +1,4 @@
 import type { GameState, PendingChoiceCommit } from '../../types/gameState';
-import type { TraceEntry } from '../../types/trace';
 import type { ReachDomain } from '../../types/traits';
 import type { EncounterChoiceCost, ArchetypePole } from '../../types/traces/encounter-traces';
 import {
@@ -104,7 +103,7 @@ export function phaseChoiceResolution(
         emitTrace({
           ...consumption.trace,
           summary: `Item consumed by choice: ${consumption.trace.itemId} by ${consumption.trace.agentId}`,
-        } as unknown as Omit<TraceEntry, 'id' | 'timestamp'>);
+        });
       }
     }
 
@@ -125,13 +124,13 @@ export function phaseChoiceResolution(
       rolledD100: outcome.rolledD100,
       effectiveProbability: outcome.effectiveProbability,
       livePosition,
-    } as unknown as Omit<TraceEntry, 'id' | 'timestamp'>);
+    });
 
     for (const driftTrace of driftResult.traces) {
       emitTrace({
         ...driftTrace,
         summary: `Drift threshold ${driftTrace.thresholdCrossed}: ${driftTrace.axisId} ${driftTrace.fromPosition.toFixed(2)} → ${driftTrace.toPosition.toFixed(2)} (${driftTrace.pole})`,
-      } as unknown as Omit<TraceEntry, 'id' | 'timestamp'>);
+      });
     }
 
     resolvedCount += 1;
