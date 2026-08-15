@@ -128,6 +128,41 @@ Design/*
 # produces it and that it stays untracked.
 Docs/project-status.md
 
+# Operational exhaust left behind in a working tree after publication (THR-1056).
+#
+# Every scheduled lane writes its dated report into its working tree and publishes it
+# with `scripts/ops-publish.sh`, which commits to the `ops` branch via git plumbing and
+# deliberately checks nothing out (THR-947). That is what makes it safe to call from any
+# worktree — and it is also why the local file always survives the publish. Nothing ever
+# deleted it, so the home tree accumulated 23 strays by 2026-08-09 and 38 by 08-14,
+# roughly 3/day. The producing prompts now delete their own file after a successful
+# publish; these rules are the backstop for whatever still slips through.
+#
+# The backstop is load-bearing, not cosmetic, and the reason is a git behaviour worth
+# stating: a fast-forward refuses to clobber an untracked file and aborts the whole
+# sync — THR-937's exact failure, measured at 11 consecutive skips and 88 commits
+# behind — but an *ignored* file is expendable, so git overwrites it silently and the
+# sync proceeds. Verified both directions in a scratch repo on 2026-08-15: the
+# non-ignored stray produced "untracked working tree files would be overwritten by
+# merge ... Aborting", while the ignored one was not named at all and was overwritten
+# in place. Ignoring these paths therefore converts a permanent autosync deadlock into
+# a no-op.
+#
+# These patterns cannot hide the pre-cutover archive: `.gitignore` has no effect on
+# already-tracked files, and the 55 report-shaped files committed under `Docs/ops/`
+# stay tracked and fully visible. Nor can they break publication — `ops-publish.sh`
+# stages with `hash-object`/`update-index --cacheinfo`, which do not consult
+# `.gitignore` the way `git add` would. Post-cutover reports belong only on `ops`, so
+# a report-shaped file under `Docs/ops/` in a working tree is debris by definition.
+Docs/ops/orchestrator-*.md
+Docs/ops/backlog-grooming-*.md
+Docs/ops/weekly-hygiene-*.md
+
+# The retrospective skill's intermediate "deterministic draft; revise into narrative
+# form" scratch file. The final `retro-<date>.md` is committed and is the artifact;
+# the draft is disposable and was never deleted, leaving one per weekly run.
+Design/retros/retro-*-draft.md
+
 # Python TTS server
 .venv/
 

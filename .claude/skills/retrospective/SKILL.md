@@ -1,7 +1,7 @@
 ---
 name: retrospective
 description: Review the impediment log (Docs/impediments.md) and conduct a structured retrospective. Reads this week's drift-scan Linear issues as the first input, then analyzes patterns, proposes concrete improvements to tools, skills, CLAUDE.md, and processes. Trigger with "/retrospective" or "run a retro" or "review impediments" or "continuous improvement review".
-last_validated_against: 2026-08-03
+last_validated_against: 2026-08-15
 ---
 
 # Retrospective
@@ -261,6 +261,14 @@ git ls-files --error-unmatch Design/retros/retro-YYYY-MM-DD.md
 ```
 
 Exit 0 means the citation is now falsifiable. **A non-zero exit means STOP** — fix the commit before proceeding to Step 9. Do not poll CI for the merge; auto-merge lands it without a session present.
+
+Once — and only once — that check exits 0, delete the Step 1 draft (THR-1056):
+
+```bash
+rm Design/retros/retro-YYYY-MM-DD-draft.md
+```
+
+`npm run retro-draft` writes an intermediate the final narrative report supersedes, and nothing ever removed it: one survived per weekly run (07-24, 07-31, 08-07, 08-14) as untracked debris in the home tree. Gate the deletion on the tracked-proof above rather than on having written the report, because until that exit 0 the draft is the only durable copy of the parsed impediment set — the same reason Step 8 exists at all. The draft is now gitignored, so a run that stops early leaves it recoverable on disk without it ever blocking an autosync fast-forward.
 
 If the run is out of context or otherwise cannot complete the commit, it must **not** file tickets citing the report. File them without the citation line, or leave them unfiled and say so — an unfiled ticket is recoverable, a ticket citing a phantom source is not.
 
