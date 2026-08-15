@@ -2,6 +2,20 @@
   "enabledPlugins": {
     "codex@openai-codex": true
   },
+  "permissions": {
+    "allow": [
+      "mcp__7aa97de8-78a2-4b5d-a6e0-0aabc5d0bb68__list_issues",
+      "mcp__7aa97de8-78a2-4b5d-a6e0-0aabc5d0bb68__get_issue",
+      "mcp__7aa97de8-78a2-4b5d-a6e0-0aabc5d0bb68__list_comments",
+      "mcp__7aa97de8-78a2-4b5d-a6e0-0aabc5d0bb68__list_projects",
+      "mcp__Claude_Browser__get_page_text",
+      "mcp__Claude_Browser__read_console_messages",
+      "mcp__Claude_Browser__read_page",
+      "mcp__Claude_Browser__find",
+      "mcp__scheduled-tasks__list_scheduled_tasks",
+      "PowerShell(Get-Content *)"
+    ]
+  },
   "hooks": {
     "SessionStart": [
       {
