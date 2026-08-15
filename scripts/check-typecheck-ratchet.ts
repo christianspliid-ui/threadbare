@@ -30,6 +30,22 @@
  * 3. A tsc invocation that fails without producing parseable errors (bad config,
  *    OOM, missing dep) is treated as UNVERIFIABLE and exits non-zero. Reading
  *    "0 errors parsed" as success is how gates rot back into theater.
+ * 4. The compiler is proven present BEFORE the run is scored (THR-1128).
+ *    `npx tsc` with TypeScript absent prints "Use `npm install typescript` to
+ *    first add TypeScript to your project." and exits ZERO — no diagnostics, and
+ *    no "error" substring, so property 3's guard (which keys on a non-clean run)
+ *    waves it through. Measured 2026-08-15, when node_modules was wiped out from
+ *    under a live session: the ratchet scored a 3184-error improvement against a
+ *    3184 baseline and printed the invitation to `--update`, which would have
+ *    committed a 0 baseline and turned the required check red for every PR.
+ *    A ratchet that cannot run must never report a floor.
+ * 5. An implausibly large drop is SUSPECT, not OK. Property 4 closes the
+ *    observed cause; this closes the class. Any path that yields zero parseable
+ *    diagnostics while looking clean — a warm .tsbuildinfo defeating --force, a
+ *    tsconfig that early-exits quietly, a future runner that stubs tsc — lands
+ *    as a huge DROP, and every guard this script had was on the increase side.
+ *    The escape hatch is `--allow-drop`, which is deliberately explicit: a real
+ *    halving of the baseline is a thing worth saying out loud in a commit body.
  *
  * The gate is the TOTAL only. The per-file map exists solely to make a failure
  * actionable — "3530 > 3529" is unactionable against a 3529-error baseline, so
@@ -45,6 +61,7 @@
 
 import { execSync } from "node:child_process";
 import fs from "node:fs";
+import { createRequire } from "node:module";
 import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
@@ -61,8 +78,112 @@ const BASELINE_PATH = "typecheck-baseline.json";
 /** Matches tsc's non-pretty diagnostic line: `path(line,col): error TSxxxx: msg`. */
 const ERROR_LINE = /^(.+?)\((\d+),(\d+)\): error (TS\d+):/;
 
+/**
+ * Specifiers that prove the compiler is installed (property 4). `bin/tsc` is
+ * what `npx tsc` actually executes, so resolving it is the strongest evidence.
+ * The package entry is a fallback in case a future TypeScript ships an
+ * `exports` map that blocks the deep path: this gate blocks every PR when it
+ * fails, so an ambiguous resolution failure must not be read as an absent
+ * compiler. Only an exhausted list means "not installed".
+ */
+export const COMPILER_SPECIFIERS = ["typescript/bin/tsc", "typescript"] as const;
+
+/**
+ * A drop of more than this fraction of the baseline is SUSPECT rather than OK
+ * (property 5). Normal work moves the baseline by single digits; halving it in
+ * one commit is far more often a broken toolchain than a fixed codebase.
+ */
+export const SUSPECT_DROP_RATIO = 0.5;
+
+/** Opt-in flag that accepts a suspect drop once the toolchain is verified. */
+export const ALLOW_DROP_FLAG = "--allow-drop";
+
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(SCRIPT_DIR, "..");
+
+const requireFromScript = createRequire(import.meta.url);
+
+/**
+ * Absolute path to the installed compiler, or null when none of
+ * `COMPILER_SPECIFIERS` resolves — i.e. TypeScript is genuinely not installed.
+ */
+export function findCompiler(): string | null {
+  for (const specifier of COMPILER_SPECIFIERS) {
+    try {
+      return requireFromScript.resolve(specifier);
+    } catch {
+      // Try the next specifier — see COMPILER_SPECIFIERS on why one miss is not
+      // enough to conclude the compiler is absent.
+    }
+  }
+  return null;
+}
+
+/** Everything the verdict depends on, so the decision is testable in isolation. */
+export interface RunFacts {
+  /** False when `findCompiler()` returned null. */
+  compilerFound: boolean;
+  /** Combined stdout+stderr of the typecheck command. */
+  output: string;
+  /** Total parsed error count. */
+  total: number;
+  /** Committed baseline total, or null when no baseline exists yet. */
+  baselineTotal: number | null;
+  /** True when `--allow-drop` was passed. */
+  allowDrop: boolean;
+}
+
+export type RatchetVerdict =
+  | { kind: "no-compiler" }
+  | { kind: "unverifiable"; detail: string }
+  | { kind: "suspect-drop"; total: number; baselineTotal: number }
+  | { kind: "increase"; total: number; baselineTotal: number }
+  | { kind: "decrease"; total: number; baselineTotal: number }
+  | { kind: "unchanged"; total: number }
+  | { kind: "no-baseline"; total: number };
+
+/** Verdicts that must never write a baseline or report a floor. */
+export function isBlocking(verdict: RatchetVerdict): boolean {
+  return (
+    verdict.kind === "no-compiler" ||
+    verdict.kind === "unverifiable" ||
+    verdict.kind === "suspect-drop"
+  );
+}
+
+/**
+ * The whole decision, as a pure function of the run's facts. `main()` does the
+ * I/O and the reporting; everything that decides whether the gate may report a
+ * floor lives here so a test can drive it with the outputs actually observed.
+ */
+export function classifyRun(facts: RunFacts): RatchetVerdict {
+  const { compilerFound, output, total, baselineTotal, allowDrop } = facts;
+
+  // Property 4 — checked first: with no compiler there is nothing to interpret,
+  // and every downstream number is an artifact of a run that never happened.
+  if (!compilerFound) return { kind: "no-compiler" };
+
+  // Property 3 — tsc ran, failed, and produced nothing parseable.
+  if (
+    total === 0 &&
+    !/\bFound 0 errors\b/.test(output) &&
+    output.trim() !== "" &&
+    /error/i.test(output)
+  ) {
+    return { kind: "unverifiable", detail: output.split("\n").slice(0, 10).join("\n  ") };
+  }
+
+  if (baselineTotal === null) return { kind: "no-baseline", total };
+
+  // Property 5 — an implausible drop outranks the comparison it would win.
+  if (!allowDrop && baselineTotal > 0 && total < baselineTotal * (1 - SUSPECT_DROP_RATIO)) {
+    return { kind: "suspect-drop", total, baselineTotal };
+  }
+
+  if (total > baselineTotal) return { kind: "increase", total, baselineTotal };
+  if (total < baselineTotal) return { kind: "decrease", total, baselineTotal };
+  return { kind: "unchanged", total };
+}
 
 interface Baseline {
   /** The gate: total error count across the whole project. */
@@ -157,22 +278,78 @@ function growthReport(perFile: Map<string, number>, baseline: Baseline): string[
     .map(({ file, from, to }) => `${file}: ${from} → ${to} (+${to - from})`);
 }
 
+/** Property 4's failure, stated once — it fires before the run and inside the switch. */
+function bailNoCompiler(update: boolean): never {
+  bail(
+    "the TypeScript compiler is not installed — cannot verify.",
+    `Resolved none of: ${COMPILER_SPECIFIERS.join(", ")}. Run \`npm install\` (or repair a ` +
+      `wiped node_modules) and re-run — ${BASELINE_PATH} was NOT ${update ? "written" : "compared"}.`,
+  );
+}
+
 function main(): void {
   const update = process.argv.includes("--update");
+  const allowDrop = process.argv.includes(ALLOW_DROP_FLAG);
+
+  // Property 4 — before running, so a missing compiler is named as such rather
+  // than inferred from the empty output of a command that never compiled. Also
+  // avoids handing `npx` an uninstalled binary, which it may try to fetch.
+  if (findCompiler() === null) bailNoCompiler(update);
 
   const output = runTypecheck();
   const perFile = parseErrors(output);
   const total = [...perFile.values()].reduce((sum, count) => sum + count, 0);
 
-  // Property 3: no parseable diagnostics AND a non-clean run means the compiler
-  // did not do what we asked. Scoring that as zero errors is a false pass.
-  if (total === 0 && !/\bFound 0 errors\b/.test(output) && output.trim() !== "") {
-    const looksClean = !/error/i.test(output);
-    if (!looksClean) {
-      bail(
-        `\`${TYPECHECK_COMMAND}\` reported failure but produced no parseable diagnostics — cannot verify.`,
-        output.split("\n").slice(0, 10).join("\n  "),
-      );
+  // On --update the baseline may legitimately not exist yet; on the check path a
+  // missing baseline is itself unverifiable, and readBaseline() bails.
+  const baseline = update
+    ? fs.existsSync(path.join(REPO_ROOT, BASELINE_PATH))
+      ? readBaseline()
+      : null
+    : readBaseline();
+
+  const verdict = classifyRun({
+    compilerFound: true,
+    output,
+    total,
+    baselineTotal: baseline?.total ?? null,
+    allowDrop,
+  });
+
+  // Blocking verdicts refuse BOTH paths — in particular --update must not write
+  // a floor measured by a run we cannot vouch for (THR-1128).
+  if (isBlocking(verdict)) {
+    switch (verdict.kind) {
+      case "no-compiler":
+        bailNoCompiler(update);
+        break;
+      case "unverifiable":
+        bail(
+          `\`${TYPECHECK_COMMAND}\` reported failure but produced no parseable diagnostics — cannot verify.`,
+          verdict.detail,
+        );
+        break;
+      case "suspect-drop":
+        console.error(
+          `check-typecheck-ratchet: SUSPECT — ${verdict.total} error(s) is a ` +
+            `${verdict.baselineTotal - verdict.total}-error drop from the ${verdict.baselineTotal} ` +
+            `baseline (more than ${SUSPECT_DROP_RATIO * 100}%). Refusing to report a floor.`,
+        );
+        console.error("");
+        console.error(
+          "A drop this size is far more often a broken toolchain than a fixed codebase, and the",
+        );
+        console.error(
+          "compiler resolving is not proof it ran over the whole project. Verify by running",
+        );
+        console.error(`  ${TYPECHECK_COMMAND}`);
+        console.error("and confirming it emits diagnostics for files you expect to be broken.");
+        console.error("");
+        console.error(
+          `If the drop is real, re-run with \`${ALLOW_DROP_FLAG}\` (plus \`--update\` to record the ` +
+            `new floor) and say why in the commit body.`,
+        );
+        process.exit(1);
     }
   }
 
@@ -185,13 +362,14 @@ function main(): void {
     return;
   }
 
-  const baseline = readBaseline();
+  // The check path always has a baseline — readBaseline() bails when it is absent.
+  const confirmed = baseline as Baseline;
 
-  if (total > baseline.total) {
+  if (total > confirmed.total) {
     console.error(
-      `check-typecheck-ratchet: FAIL — type errors increased: ${baseline.total} → ${total} (+${total - baseline.total}).`,
+      `check-typecheck-ratchet: FAIL — type errors increased: ${confirmed.total} → ${total} (+${total - confirmed.total}).`,
     );
-    const grew = growthReport(perFile, baseline);
+    const grew = growthReport(perFile, confirmed);
     if (grew.length > 0) {
       console.error("");
       console.error("Files whose error count rose (advisory — the gate is the total):");
@@ -200,7 +378,7 @@ function main(): void {
     console.error("");
     console.error(`Fix: resolve the net-new type errors. Reproduce locally with \`${TYPECHECK_COMMAND}\`.`);
     console.error(
-      `The ~${baseline.total}-error baseline is pre-existing (THR-489) and is NOT yours to fix — ` +
+      `The ~${confirmed.total}-error baseline is pre-existing (THR-489) and is NOT yours to fix — ` +
         `this gate only blocks making it worse.`,
     );
     console.error(
@@ -210,10 +388,10 @@ function main(): void {
     process.exit(1);
   }
 
-  if (total < baseline.total) {
+  if (total < confirmed.total) {
     console.log(
-      `check-typecheck-ratchet: OK — ${total} error(s), DOWN ${baseline.total - total} from the ` +
-        `${baseline.total} baseline. Please run \`npm run check:typecheck -- --update\` and commit ` +
+      `check-typecheck-ratchet: OK — ${total} error(s), DOWN ${confirmed.total - total} from the ` +
+        `${confirmed.total} baseline. Please run \`npm run check:typecheck -- --update\` and commit ` +
         `${BASELINE_PATH} so the ratchet holds the new floor.`,
     );
     return;
@@ -222,4 +400,8 @@ function main(): void {
   console.log(`check-typecheck-ratchet: OK — ${total} error(s), unchanged from baseline.`);
 }
 
-main();
+// Entry guard so the exported predicates above are importable by tests without
+// running the gate (the house idiom — see check-armed-prs.ts).
+if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1] ?? "")) {
+  main();
+}
