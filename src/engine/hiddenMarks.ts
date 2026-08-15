@@ -56,8 +56,8 @@ export const DECAY_EVENT_SIGNIFICANCE = 0.3;
  * byte-identical to the old raw `templateId.startsWith(family)` for every family that already
  * worked — the alias table only revives names that previously matched nothing.
  *
- * This is the single matching predicate: both the scoring-time query (`evaluateMarkReveals`)
- * and the family-level query (`checkMarkReveals`) route through it, so they cannot drift.
+ * This is the single matching predicate: the scoring-time query (`evaluateMarkReveals`) and
+ * every other match site route through it, so they cannot drift.
  */
 export function familyMatchesTemplate(family: string, templateId: string): boolean {
   return resolveRevealFamily(family).some(prefix => templateId.startsWith(prefix));
@@ -78,24 +78,6 @@ export function getHiddenMarksByCategory(state: GameState, category: HiddenMark[
 /** Check if an agent has any hidden mark in a given category. */
 export function hasHiddenMark(state: GameState, agentId: string, category: HiddenMark['category']): boolean {
   return (state.hiddenMarks ?? []).some(m => m.targetAgentId === agentId && m.category === category);
-}
-
-/**
- * Check whether any of an agent's hidden marks would be revealed by a given encounter.
- *
- * The parameter is a **template id**, not a family name — it was called `encounterFamily` and
- * matched by raw prefix, which let a caller pass either and get plausible-looking answers for
- * both. It now routes through `familyMatchesTemplate` like every other match site (THR-844).
- */
-export function checkMarkReveals(
-  state: GameState,
-  agentId: string,
-  templateId: string,
-): readonly HiddenMark[] {
-  return (state.hiddenMarks ?? []).filter(m =>
-    m.targetAgentId === agentId &&
-    m.revealFamilies?.some(f => familyMatchesTemplate(f, templateId)),
-  );
 }
 
 // ─── Mutation helpers ─────────────────────────────────────────────

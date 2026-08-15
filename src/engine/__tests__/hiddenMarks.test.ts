@@ -3,7 +3,6 @@ import {
   getAgentHiddenMarks,
   getHiddenMarksByCategory,
   hasHiddenMark,
-  checkMarkReveals,
   removeHiddenMark,
 } from '../hiddenMarks';
 import { applyEncounterAftermathReaction } from '../encounterAftermath';
@@ -110,50 +109,6 @@ describe('hasHiddenMark', () => {
   it('handles undefined hiddenMarks gracefully', () => {
     const state = makeState(undefined);
     expect(hasHiddenMark(state, 'agent-1', 'betrayal')).toBe(false);
-  });
-});
-
-describe('checkMarkReveals', () => {
-  // THR-844: these fixtures used to pair the family `investigation` with invented
-  // `investigation.*` template ids, so they passed on a raw prefix match between two strings
-  // that existed only in this file. `investigation` prefixes no real template. The ids below
-  // are real members of `UNIFIED_ACTION_TEMPLATES` that the alias layer resolves to, so the
-  // assertions now exercise a path the game can actually reach.
-  it('matches marks whose family resolves to the drawn template', () => {
-    const state = makeState([MARK_BETRAYAL, MARK_DEBT]);
-    const result = checkMarkReveals(state, 'agent-1', 'social.investigate_reputation');
-    expect(result).toHaveLength(1);
-    expect(result[0].markId).toBe('mark_001');
-  });
-
-  it('matches through a second family on the same mark', () => {
-    // MARK_BETRAYAL carries ['investigation', 'brinewall']; this id is reachable from
-    // `brinewall`'s alias but not from `investigation`'s.
-    const state = makeState([MARK_BETRAYAL]);
-    expect(checkMarkReveals(state, 'agent-1', 'mct.quest.settle_dispute')).toHaveLength(1);
-  });
-
-  it('returns empty for non-matching templates', () => {
-    const state = makeState([MARK_BETRAYAL]);
-    const result = checkMarkReveals(state, 'agent-1', 'encounter.gather_firewood');
-    expect(result).toEqual([]);
-  });
-
-  it('returns empty for marks without revealFamilies', () => {
-    const state = makeState([MARK_SECRET]);
-    const result = checkMarkReveals(state, 'agent-1', 'social.investigate_reputation');
-    expect(result).toEqual([]);
-  });
-
-  it('returns empty for wrong agent even when family matches', () => {
-    const state = makeState([MARK_BETRAYAL]);
-    const result = checkMarkReveals(state, 'agent-2', 'social.investigate_reputation');
-    expect(result).toEqual([]);
-  });
-
-  it('handles undefined hiddenMarks gracefully', () => {
-    const state = makeState(undefined);
-    expect(checkMarkReveals(state, 'agent-1', 'social.investigate_reputation')).toEqual([]);
   });
 });
 

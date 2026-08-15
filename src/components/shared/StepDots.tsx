@@ -7,7 +7,7 @@ interface StepDotsProps {
   size?: number;
   /**
    * 'progress' (default): completed dots + a glowing current dot + pending — the
-   *   sequence semantics used by RetinuePanel, EncounterVignetteModal, LocationView.
+   *   sequence semantics used by EncounterVignetteModal and LocationView.
    * 'magnitude' (THR-718): a level, not progress — the first `currentStepIndex`
    *   dots are filled, the rest dim, with NO current-dot glow. Used by DomainCard.
    */
@@ -16,7 +16,7 @@ interface StepDotsProps {
 
 /**
  * Shared step-progress dots — filled dots for completed/current, dim for upcoming.
- * Reused by RetinuePanel, EncounterVignetteModal, and LocationView. The optional
+ * Reused by EncounterVignetteModal and LocationView. The optional
  * `magnitude` variant renders a filled/dim level meter (no glow) for DomainCard.
  */
 export const StepDots = memo(function StepDots({

@@ -133,7 +133,7 @@
       "id": "interface-reference",
       "file": "interface-reference.html",
       "title": "Reading the Interface",
-      "blurb": "A guided tour of the game screen — the one-viewport, no-scroll contract; the always-on frame (essence, the two clocks, omens, attention, identity, rivals); the drill-in from hex to location to sublocation; the panels (threads, retinue, chronicle, narrative feed); the Action Drawer; the encounter surfaces and the deeper sheets; and a cross-reference from every other Manual page to the surface where its system shows its face. Source spine is the IA manifest (62 surfaces).",
+      "blurb": "A guided tour of the game screen — the one-viewport, no-scroll contract; the always-on frame (essence, the two clocks, omens, attention, identity, rivals); the drill-in from hex to location to sublocation; the panels (threads, chronicle, narrative feed); the Action Drawer; the encounter surfaces and the deeper sheets; and a cross-reference from every other Manual page to the surface where its system shows its face. Source spine is the IA manifest (63 surfaces).",
       "section": "Manual",
       "sources": [
         "src/data/ia-manifest.ts"

@@ -3490,7 +3490,7 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   }
   prevEventCount = s.tickEvents.length;
 
-  // Phase 6.64: Reputation Traits (reach-polarity reputation from encounter accumulation + power renown)
+  // Phase 6.634: Reputation Traits (reach-polarity reputation from encounter accumulation + power renown)
   {
     const r = runInlinePhase('reputation_traits', s, () => phaseReputationTraits(s));
     s = r.next;

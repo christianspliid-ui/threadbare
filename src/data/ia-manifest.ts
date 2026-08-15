@@ -546,24 +546,6 @@ export const IA_SURFACES: IASurface[] = [
     "notes": "In-place location drill (not the modal). Shows sublocations + inhabitants.\n"
   },
   {
-    "surface": "game.retinue-panel",
-    "view": "game",
-    "mount": "drillin",
-    "reads": [
-      {
-        "state_path": "graph",
-        "reader": "RetinuePanel",
-        "visible_when": "always"
-      },
-      {
-        "state_path": "unifiedActions",
-        "reader": "RetinuePanel",
-        "visible_when": "always"
-      }
-    ],
-    "notes": "Threaded (bonded) agents in player's retinue. Core portfolio-scan UI.\n"
-  },
-  {
     "surface": "game.threads-panel",
     "view": "game",
     "mount": "drillin",
