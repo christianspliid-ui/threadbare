@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useSyncExternalStore } from 'react';
 import { createPortal } from 'react-dom';
 import { EntityVisual } from '../shared/EntityVisual';
 import { Tooltip } from '../shared/Tooltip';
@@ -23,6 +23,10 @@ import type {
 import type { ReachDomain } from '../../types/traits';
 import { usePrefersReducedMotion } from '../../hooks/usePrefersReducedMotion';
 import { NarrativeSegments } from './encounter-stage/NarrativeSegments';
+import {
+  isNudgeDesignerViewEnabled,
+  subscribeNudgeDesignerView,
+} from './encounter-stage/designerView';
 import { NudgePhaseShell } from './encounter-stage/shells/NudgePhaseShell';
 import { NudgeMotiveIntro } from './encounter-stage/shells/NudgeMotiveIntro';
 import { ProseTtsButton } from './Encounter/ProseTtsButton';
@@ -2217,16 +2221,44 @@ function formatProbability(value: number): string {
   return `${Math.round(value * 100)}%`;
 }
 
+/**
+ * The resolution readout — **designer view only** (THR-1124).
+ *
+ * Every line this block renders is a raw magnitude: a capability and a
+ * projected-success percentage, a `50/100` difficulty label, a threshold, a
+ * roll and its margin. UI Law 13 puts all of that on the trace and the designer
+ * view, never on a surface the player is reading — and this one renders inside
+ * the veil, between the narrative and the complication prose.
+ *
+ * Gated rather than banded because the player already has this information in
+ * words: the nudge stage's forecast pips and difficulty word say the same thing
+ * in the register the veil speaks. Banding it here would be a second, quieter
+ * voice saying it again. What is left is the designer's question — *is the
+ * resolution math right?* — which is exactly what the designer view is for.
+ *
+ * The gate lives inside the block rather than at its one render site so that a
+ * future second caller inherits it. A readout that has to be remembered about
+ * is a readout that comes back.
+ */
 function ResolutionReadoutBlock({
   readout,
 }: {
   readout: NonNullable<EncounterStageModel['resolutionReadout']>;
 }) {
+  const designerView = useSyncExternalStore(
+    subscribeNudgeDesignerView,
+    isNudgeDesignerViewEnabled,
+    // Server snapshot — the veil never renders server-side, but the third
+    // argument keeps `useSyncExternalStore` quiet under test renderers.
+    isNudgeDesignerViewEnabled,
+  );
+
   const entries = [
     ...(readout.current ? [readout.current] : []),
     ...readout.previous,
   ];
 
+  if (!designerView) return null;
   if (entries.length === 0) return null;
 
   return (

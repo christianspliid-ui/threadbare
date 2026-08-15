@@ -3,6 +3,15 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { EncounterVeil } from '../EncounterVeil';
 import type { EncounterStageModel } from '../encounter-stage/types';
+import {
+  resetNudgeDesignerView,
+  setNudgeDesignerView,
+} from '../encounter-stage/designerView';
+import { buildSimpleEncounterStageModel } from '../encounter-stage/adapters/buildSimpleEncounterStageModel';
+import { WorldGraph } from '../../../engine/graph';
+import type { UnifiedActionTemplate } from '../../../types/unifiedAction';
+import type { EncounterNotification } from '../../../types/encounterVisibility';
+import type { ActiveEncounterDisplay } from '../encounterNotificationRuntime';
 
 vi.mock('../../../services/narration/useNarration', () => ({
   useNarration: () => ({
@@ -245,11 +254,29 @@ describe('EncounterVeil', () => {
     expect(screen.getByText(/1 of 2/)).toBeInTheDocument();
   });
 
-  it('renders the resolution readout when provided', () => {
+  /**
+   * THR-1124 — the readout is designer data, so the player must not receive it
+   * even when the model carries it. Falsified against the mock's own readout,
+   * which is fully populated: were the gate removed, `45/100`, `Roll 47 vs 50`
+   * and two percentages would all be back on screen.
+   */
+  it('withholds the resolution readout from the player', () => {
     render(<EncounterVeil {...defaultProps} />);
-    expect(screen.getByText('Resolution Readout')).toBeInTheDocument();
-    expect(screen.getByText(/Test: Iron vs 45\/100 difficulty/)).toBeInTheDocument();
-    expect(screen.getByText(/Roll 47 vs 50/)).toBeInTheDocument();
+    expect(screen.queryByText('Resolution Readout')).toBeNull();
+    expect(screen.queryByText(/Test: Iron vs 45\/100 difficulty/)).toBeNull();
+    expect(screen.queryByText(/Roll 47 vs 50/)).toBeNull();
+  });
+
+  it('reaches the resolution readout in the designer view', () => {
+    setNudgeDesignerView(true);
+    try {
+      render(<EncounterVeil {...defaultProps} />);
+      expect(screen.getByText('Resolution Readout')).toBeInTheDocument();
+      expect(screen.getByText(/Test: Iron vs 45\/100 difficulty/)).toBeInTheDocument();
+      expect(screen.getByText(/Roll 47 vs 50/)).toBeInTheDocument();
+    } finally {
+      resetNudgeDesignerView();
+    }
   });
 });
 
@@ -1332,5 +1359,133 @@ describe('EncounterVeil — fallout preview (THR-1041)', () => {
     );
     const preview = screen.getByTestId('veil-fallout-preview');
     expect(preview.textContent).not.toMatch(/[-+]?\d/);
+  });
+});
+
+/**
+ * THR-1124 — the ticket's Done-when, asserted against the *real* producer.
+ *
+ * The mock-model tests above pin the gate; these pin the thing the gate exists
+ * for. Deliberately built from `buildSimpleEncounterStageModel` — the only
+ * producer of `resolutionReadout` — rather than a fixture, because a
+ * hand-written model would let this test agree with itself while the adapter
+ * emitted anything at all. The assertion is a blanket sweep of the rendered
+ * dialog for a `%`: what Law 13 forbids, and what no restructuring inside the
+ * block may reintroduce.
+ *
+ * **Asserted at `strong`, not at `watched` as the ticket's Done-when said.**
+ * The ticket reasoned that THR-1121 left this adapter serving the `watched`
+ * tier, so `watched` is where a player meets it — true of the *model*, false of
+ * the *render*. `EncounterVeil` returns a peek shell for `watched` (the early
+ * return at the "Watched tier rendering path"), whose whole text is a threat
+ * word, a background line, a peek offer and an essence cost; it never reaches
+ * `ResolutionReadoutBlock` at all. A no-`%` sweep at `watched` therefore passes
+ * against the unfixed code too — a vacuous gate, and the exact failure this
+ * repo keeps logging. `strong` renders the full stage body, so it is the tier
+ * where the assertion can fail, which is the only kind worth committing. The
+ * `watched` case is pinned below as the peek shell it is, so the next reader
+ * inherits the finding rather than re-deriving it.
+ */
+describe('EncounterVeil — Law 13 on the simple adapter (THR-1124)', () => {
+  afterEach(() => resetNudgeDesignerView());
+
+  function buildAdapterModel(threadTier: 'strong' | 'watched'): EncounterStageModel {
+    const graph = new WorldGraph();
+    graph.addNode({ id: 'agent-1', name: 'Vasara the Unbowed', type: 'actor', properties: {} });
+
+    return buildSimpleEncounterStageModel({
+      notification: {
+        id: 'notif-1',
+        agentId: 'agent-1',
+        agentName: 'Vasara',
+        courtPosition: 'the_first',
+        encounterId: 'test.encounter',
+        encounterName: 'Test Encounter',
+        prose: 'A test encounter unfolds.',
+        choices: [],
+        createdTick: 10,
+        autoResolveTick: null,
+        viewed: false,
+        resolved: false,
+      } as EncounterNotification,
+      encounter: {
+        encounterId: 'test.encounter',
+        actorId: 'agent-1',
+        currentStepIndex: 0,
+        status: 'awaiting_choice',
+        history: [],
+        resolutionHistory: [],
+        startedTick: 10,
+        sourceSystem: 'legacy_encounter',
+      } as ActiveEncounterDisplay,
+      template: {
+        id: 'test.encounter',
+        name: 'Test Encounter',
+        intrinsicTier: 'background',
+        rarityTier: 2,
+        reach: 'iron',
+        crudType: 'read',
+        scale: 'local',
+        apCost: 1,
+        actorAffinities: ['individual'],
+        motivations: [],
+        locationSubtypes: [],
+        narrativeTemplates: {
+          initiation: 'A test encounter unfolds.',
+          success: 'You succeeded.',
+          failure: 'You failed.',
+        },
+        steps: [
+          {
+            reach: 'iron',
+            difficulty: 0.5,
+            duration: { min: 1, max: 1 },
+            onSuccess: [],
+            onFailure: [],
+            failBehavior: 'continue_weakened',
+          },
+        ],
+      } as UnifiedActionTemplate,
+      agentName: 'Vasara the Unbowed',
+      agentId: 'agent-1',
+      graph,
+      threadTier,
+      essence: 10,
+      tick: 12,
+    });
+  }
+
+  it('the adapter still produces the readout — the model is not what changed', () => {
+    expect(buildAdapterModel('strong').resolutionReadout).toBeDefined();
+  });
+
+  it('renders no percentage anywhere on the player-facing veil', () => {
+    render(
+      <EncounterVeil {...defaultProps} model={buildAdapterModel('strong')} threadTier="strong" />,
+    );
+    expect(screen.getByRole('dialog').textContent).not.toMatch(/%/);
+  });
+
+  it('renders the numbers again once the designer view is on', () => {
+    setNudgeDesignerView(true);
+    render(
+      <EncounterVeil {...defaultProps} model={buildAdapterModel('strong')} threadTier="strong" />,
+    );
+    expect(screen.getByRole('dialog').textContent).toMatch(/%/);
+  });
+
+  /**
+   * Why the sweep above runs at `strong`. This is the tier the ticket named,
+   * and it cannot carry the assertion: the peek shell has no stage body, so it
+   * shows no readout with the gate, without the gate, and in the designer view
+   * alike. Pinned so a future reader does not "fix" the test by moving it here.
+   */
+  it('watched tier is a peek shell that never reaches the readout, gate or no gate', () => {
+    setNudgeDesignerView(true);
+    render(
+      <EncounterVeil {...defaultProps} model={buildAdapterModel('watched')} threadTier="watched" />,
+    );
+    expect(screen.getByRole('dialog').textContent).toMatch(/Peer Through the Thread/);
+    expect(screen.queryByText('Resolution Readout')).toBeNull();
   });
 });
