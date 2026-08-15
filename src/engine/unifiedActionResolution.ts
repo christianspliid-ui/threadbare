@@ -78,6 +78,7 @@ import { applyImbueItem, applyBestowPower, applyAnointFaction, applyPlantTrap, a
 import { applyQuintessenceRestore } from './rekindleThread';
 import { revealBestSecret } from './secretsFavorsConsequences';
 import { SCHISM_PENDING_DURATION_TICKS } from '../data/game-config';
+import { GATE_DUTY_NUDGE_IDS } from '../data/civic-guard-encounter-content';
 import { emitTrace } from './traceBuffer';
 import { enrichProse, gatherNarrativeContext } from './proseEnrichment';
 import { stepOutcomeToOutcomeBand } from '../data/outcome-band-content';
@@ -1008,7 +1009,23 @@ function applyReputationScoreDelta(
   return delta;
 }
 
-type GateDutyBranch = 'supportive' | 'coercive' | 'withdrawn';
+/**
+ * Gate duty's per-step consequences, keyed by the **nudge card id** the god
+ * played (THR-1123).
+ *
+ * This used to key on `EncounterChoiceMemory.interventionType` — the generic
+ * supportive/coercive/withdrawn triple `generateInterventionChoices` produced
+ * for every encounter that authored nothing. THR-1121 retired that producer,
+ * and gate duty now authors its own hand, so the key is the card.
+ *
+ * Read off `action.activeNudges` rather than `choiceHistory`: the hand is
+ * committed to the action's *current* step and this runs at that step's
+ * resolution, which is exactly the window where `activeNudges` is the played
+ * hand. `choiceHistory` still carries the same id for the stage adapter's
+ * retrospective prose (see `recordUnifiedActionChoiceMemory` at commit), but
+ * reading it here would add a second lookup path to one fact.
+ */
+type GateDutyCardId = string;
 
 interface GateDutyBranchConsequence {
   successTags?: readonly string[];
@@ -1021,9 +1038,9 @@ interface GateDutyBranchConsequence {
   failureState?: ClearanceGateState;
 }
 
-const GATE_DUTY_BRANCH_CONSEQUENCES: Record<number, Record<GateDutyBranch, GateDutyBranchConsequence>> = {
+const GATE_DUTY_BRANCH_CONSEQUENCES: Record<number, Record<GateDutyCardId, GateDutyBranchConsequence>> = {
   0: {
-    supportive: {
+    [GATE_DUTY_NUDGE_IDS[0].steady]: {
       successTags: ['#courier_steadied'],
       failureTags: ['#borrowed_calm_slipped'],
       successDelta: 0.01,
@@ -1031,7 +1048,7 @@ const GATE_DUTY_BRANCH_CONSEQUENCES: Record<number, Record<GateDutyBranch, GateD
       successNarrative: 'The courier keeps moving as though held together by borrowed calm.',
       failureNarrative: 'The borrowed calm slips, and the line notices how close the panic was to breaking loose.',
     },
-    coercive: {
+    [GATE_DUTY_NUDGE_IDS[0].force]: {
       successTags: ['#captain_forced'],
       failureTags: ['#captain_shoved_too_hard'],
       successDelta: -0.005,
@@ -1039,7 +1056,7 @@ const GATE_DUTY_BRANCH_CONSEQUENCES: Record<number, Record<GateDutyBranch, GateD
       successNarrative: 'The captain acts quickly, but the line can taste the shove behind the order.',
       failureNarrative: 'The captain moves under pressure that no longer feels entirely her own.',
     },
-    withdrawn: {
+    [GATE_DUTY_NUDGE_IDS[0].withhold]: {
       successTags: ['#witness_primed'],
       failureTags: ['#witness_claimed_scene'],
       successDelta: 0,
@@ -1049,7 +1066,7 @@ const GATE_DUTY_BRANCH_CONSEQUENCES: Record<number, Record<GateDutyBranch, GateD
     },
   },
   1: {
-    supportive: {
+    [GATE_DUTY_NUDGE_IDS[1].steady]: {
       successTags: ['#measured_seizure'],
       failureTags: ['#discipline_turned_strange'],
       successDelta: 0.02,
@@ -1057,7 +1074,7 @@ const GATE_DUTY_BRANCH_CONSEQUENCES: Record<number, Record<GateDutyBranch, GateD
       successNarrative: 'The seizure lands as discipline rather than appetite.',
       failureNarrative: 'The restraint feels strange enough that the crowd mistrusts it anyway.',
     },
-    coercive: {
+    [GATE_DUTY_NUDGE_IDS[1].force]: {
       successTags: ['#public_break'],
       failureTags: ['#courier_shattered_publicly'],
       successDelta: -0.02,
@@ -1065,7 +1082,7 @@ const GATE_DUTY_BRANCH_CONSEQUENCES: Record<number, Record<GateDutyBranch, GateD
       successNarrative: 'The watch gains a harsher legitimacy by stepping through the courier’s public breaking.',
       failureNarrative: 'The courier’s collapse stains the checkpoint more deeply than the cargo ever could.',
     },
-    withdrawn: {
+    [GATE_DUTY_NUDGE_IDS[1].withhold]: {
       successTags: ['#crowd_authored'],
       failureTags: ['#checkpoint_story_escaped'],
       successDelta: -0.01,
@@ -1077,7 +1094,7 @@ const GATE_DUTY_BRANCH_CONSEQUENCES: Record<number, Record<GateDutyBranch, GateD
     },
   },
   2: {
-    supportive: {
+    [GATE_DUTY_NUDGE_IDS[2].steady]: {
       successTags: ['#watch_trusted', '#mercy_remembered'],
       failureTags: ['#mercy_failed_to_land'],
       successDelta: 0.03,
@@ -1085,7 +1102,7 @@ const GATE_DUTY_BRANCH_CONSEQUENCES: Record<number, Record<GateDutyBranch, GateD
       successNarrative: 'The line leaves remembering restraint.',
       failureNarrative: 'Mercy arrives too late to keep the checkpoint from feeling wounded.',
     },
-    coercive: {
+    [GATE_DUTY_NUDGE_IDS[2].force]: {
       successTags: ['#watch_feared', '#authority_consecrated'],
       failureTags: ['#authority_overreached'],
       successDelta: -0.03,
@@ -1093,7 +1110,7 @@ const GATE_DUTY_BRANCH_CONSEQUENCES: Record<number, Record<GateDutyBranch, GateD
       successNarrative: 'Order holds, but what remains of the evening tastes of dread.',
       failureNarrative: 'Authority wins the posture of command and loses the district’s confidence in the same breath.',
     },
-    withdrawn: {
+    [GATE_DUTY_NUDGE_IDS[2].withhold]: {
       successTags: ['#witness_story_spreads', '#official_story_thins'],
       failureTags: ['#story_escaped_the_gate'],
       successDelta: -0.01,
@@ -1119,22 +1136,26 @@ function applyGateDutyBranchConsequences(
     return { clearanceGateStates: nextStates, reputationDelta: 0, suffix: '' };
   }
 
-  const currentStep = resolveStepDefinition(template, action.currentStep, action.choiceHistory);
-  if (!currentStep) {
+  if (!resolveStepDefinition(template, action.currentStep, action.choiceHistory)) {
     return { clearanceGateStates: nextStates, reputationDelta: 0, suffix: '' };
   }
 
-  const rememberedChoice = getEffectiveUnifiedActionChoiceMemory(
-    action,
-    action.currentStep,
-    currentStep.id,
-  );
-  if (!rememberedChoice) {
+  const stepConsequences = GATE_DUTY_BRANCH_CONSEQUENCES[action.currentStep];
+  if (!stepConsequences) {
     return { clearanceGateStates: nextStates, reputationDelta: 0, suffix: '' };
   }
 
-  const branch = rememberedChoice.interventionType as GateDutyBranch;
-  const branchConfig = GATE_DUTY_BRANCH_CONSEQUENCES[action.currentStep]?.[branch];
+  // The god may commit several cards; gate duty's consequence table names one
+  // per step, so the first *committed* card that the table knows about is the
+  // branch. Playing no card at all — fate alone, or a disregarded encounter —
+  // is a real state, not a missing one: the step resolves with no branch
+  // consequence, exactly as an unchosen stance did before THR-1123.
+  const playedCardId = (action.activeNudges ?? []).find(id => id in stepConsequences);
+  if (!playedCardId) {
+    return { clearanceGateStates: nextStates, reputationDelta: 0, suffix: '' };
+  }
+
+  const branchConfig = stepConsequences[playedCardId];
   if (!branchConfig) {
     return { clearanceGateStates: nextStates, reputationDelta: 0, suffix: '' };
   }

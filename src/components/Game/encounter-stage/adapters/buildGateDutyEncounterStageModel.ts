@@ -1,4 +1,5 @@
 import type { WorldGraph } from '../../../../engine/graph';
+import type { GameState } from '../../../../types/gameState';
 import { getEffectiveUnifiedActionChoiceMemory } from '../../../../engine/encounterChoiceMemory';
 import { resolveAttachmentTooltip } from '../../../../engine/attachmentTooltip';
 import { getNarrativeLabel } from '../../../../engine/domainCapability';
@@ -11,15 +12,8 @@ import type {
   EncounterSupportBinding,
   EncounterSupportSpec,
 } from '../../../../types/encounter';
-import type {
-  EncounterNotification,
-  EncounterInterventionChoice,
-} from '../../../../types/encounterVisibility';
-import {
-  ENCOUNTER_BOOST_MIN,
-  ENCOUNTER_BOOST_MAX,
-} from '../../../../types/encounterVisibility';
-import { isStepSuccess, type UnifiedAction, type UnifiedActionTemplate } from '../../../../types/unifiedAction';
+import type { EncounterNotification } from '../../../../types/encounterVisibility';
+import { isActionStepBranch, isStepSuccess, type UnifiedAction, type UnifiedActionTemplate } from '../../../../types/unifiedAction';
 import { getRarityName } from '../../../../types/rarity';
 import type { ReachDomain } from '../../../../types/traits';
 import type { ThreadTier } from '../types';
@@ -30,7 +24,6 @@ import type {
   EncounterStageAftermathActorModel,
   EncounterStageAftermathHighlightModel,
   EncounterStageAftermathMarkModel,
-  EncounterStageChoiceModel,
   EncounterStageHistoryModel,
   EncounterStageModel,
   EncounterStageNarrativeParagraph,
@@ -38,7 +31,8 @@ import type {
   EncounterStageSignalModel,
 } from '../types';
 import { buildLinkedParagraph } from '../narrativeLinker';
-import { formatEssenceLabel } from '../../../shared/formatEssence';
+import { buildNudgePhaseModel } from './buildNudgePhaseModel';
+import { GATE_DUTY_NUDGE_IDS } from '../../../../data/civic-guard-encounter-content';
 
 interface BuildGateDutyEncounterStageModelArgs {
   template: UnifiedActionTemplate;
@@ -50,6 +44,18 @@ interface BuildGateDutyEncounterStageModelArgs {
   activeAction?: UnifiedAction;
   clearanceGateState?: ClearanceGateRuntimeState;
   essence: number;
+  /**
+   * THR-1123 — threaded through to `buildNudgePhaseModel`, which reads the
+   * sphere-partitioned `essencePool` and `unlockedActionIds` to decide which
+   * authored cards are playable, dimmed or withheld.
+   *
+   * Distinct from `essence` above, which is a single summed number for the
+   * stage's resource line and cannot answer an affordability question: essence
+   * is held per sphere and a card gated on one the god cannot pay is withheld,
+   * not merely priced. Without this every priced card renders dimmed, which
+   * reads to the player as "you cannot afford this" no matter how rich they are.
+   */
+  gameState?: GameState;
 }
 
 function titleCaseWords(raw: string): string {
@@ -127,23 +133,6 @@ function extractTrailingRewardName(detail: string): string | undefined {
   return undefined;
 }
 
-function isGenericEncounterRoleName(name: string | undefined): boolean {
-  if (!name) return true;
-  const normalized = name.trim().toLowerCase();
-  return normalized === 'gate captain'
-    || normalized === 'watch sergeant'
-    || normalized === 'gate guard'
-    || normalized === 'harried courier'
-    || normalized === 'courier'
-    || normalized === 'shaken witness'
-    || normalized === 'dock porter'
-    || normalized === 'witness';
-}
-
-function toNarrativeHandle(name: string, fallback: string): string {
-  return isGenericEncounterRoleName(name) ? fallback : name;
-}
-
 function getSupportSpec(template: UnifiedActionTemplate, key: string): EncounterSupportSpec | undefined {
   return template.supportBundle?.find(spec => spec.key === key);
 }
@@ -167,10 +156,48 @@ function describeRole(role: EncounterCastRole, name: string): string {
   }
 }
 
-type GateDutyBranch = EncounterChoiceMemory['interventionType'] | 'unknown';
+/**
+ * Which of gate duty's authored cards was played on a step — or `unplayed`
+ * (THR-1123).
+ *
+ * This was `interventionType | 'unknown'`, reading the generic
+ * supportive/coercive/withdrawn triple. The encounter authors its own hand now,
+ * so the branch is the card id, read off the per-step `choiceHistory` entry
+ * that `recordUnifiedActionNudgeMemory` writes at commit.
+ *
+ * `unplayed` is a real branch, not a defensive default: a step where the god
+ * committed nothing — fate alone, or a disregarded encounter — has authored
+ * prose of its own below, and it is the same prose the old `'unknown'` key
+ * carried. Only the name changed, because "unknown" described a lookup that
+ * failed and this describes a choice that was made.
+ */
+const GATE_DUTY_UNPLAYED = 'unplayed';
+
+/**
+ * Every branch-keyed table below is read as `table[branch] ?? table[UNPLAYED]`,
+ * never bare (NFP #4).
+ *
+ * The keys used to be a closed three-value union, so a lookup could not miss and
+ * the tables were read directly. Card ids are open strings, and two live inputs
+ * can carry one this file does not know: a save written before THR-1123, whose
+ * `choiceHistory` holds the retired `intervene_support` stance ids, and a step
+ * whose authored hand was later renamed. Both produce `undefined`, which
+ * `buildLinkedParagraph` then throws on — an encounter that opens and crashes
+ * the stage rather than one that reads a little less specifically.
+ *
+ * Falling back to the unplayed prose is honest in both cases: the file cannot
+ * say which card was played, so it says what it says when none was.
+ */
+
+type GateDutyBranch = string;
 
 function getGateDutyBranch(memory?: EncounterChoiceMemory): GateDutyBranch {
-  return memory?.interventionType ?? 'unknown';
+  return memory?.choiceId ?? GATE_DUTY_UNPLAYED;
+}
+
+/** The three cards authored on `stepIndex`, or undefined for an unknown step. */
+function gateDutyCardsForStep(stepIndex: number) {
+  return GATE_DUTY_NUDGE_IDS[stepIndex as keyof typeof GATE_DUTY_NUDGE_IDS];
 }
 
 function getChoiceMemoryForStep(
@@ -209,167 +236,6 @@ function getGateDutyHeaderSubtitle(currentStepIndex: number): string {
     default:
       return 'A checkpoint story is already unfolding without waiting for you.';
   }
-}
-
-/**
- * Gate duty's three stances, sourced locally (THR-1121).
- *
- * `cg.quest.gate_duty` is the one encounter that *decorates* the generic
- * intervention triple rather than authoring its own hand: every entry in
- * `stepCopy` below is keyed by `interventionType`, and so are its aftermath
- * paragraphs, its opening recaps and its consequence lines — roughly eight
- * keyed tables across this file. Retiring `generateInterventionChoices` would
- * therefore have deleted a fully-authored encounter's entire move set as a side
- * effect of removing a generic producer it happened to lean on.
- *
- * So the stances survive, sourced here instead of from the engine, and **stop
- * selling odds**: `probabilityBoost` is 0, matching every other choice path
- * after THR-1121. The essence prices stay — a stance still costs something and
- * still decides which authored ending is reached — they just no longer buy a
- * flat addition to the roll.
- *
- * The ids are the engine's originals (`intervene_support` / `intervene_force` /
- * `intervene_withdraw`) because choice memory, the aftermath keying and this
- * file's own `stepCopy` all index on them; renaming them here would be a
- * migration wearing a cleanup's clothes.
- *
- * Converting this encounter to authored nudge cards is real content work — the
- * fiction is good and wants carrying over, not deleting — and is tracked
- * separately rather than smuggled into this change.
- *
- * A notification that *does* arrive carrying choices (an authored hand, via
- * `phaseEncounterVisibility`'s override) wins: this is a fallback for the
- * now-empty generic set, never an override of authored content.
- */
-export function gateDutyStanceChoices(
-  fromNotification: readonly EncounterInterventionChoice[] = [],
-): readonly EncounterInterventionChoice[] {
-  if (fromNotification.length > 0) return fromNotification;
-  return [
-    {
-      id: 'intervene_support',
-      text: 'Tip the scales in their favor',
-      essenceCost: ENCOUNTER_BOOST_MIN,
-      probabilityBoost: 0,
-      interventionType: 'supportive',
-      godVoice: 'The thread hums with divine purpose.',
-    },
-    {
-      id: 'intervene_force',
-      text: 'Pour divine power into the encounter',
-      essenceCost: ENCOUNTER_BOOST_MAX,
-      probabilityBoost: 0,
-      interventionType: 'coercive',
-      godVoice: 'My will be done.',
-    },
-    {
-      id: 'intervene_withdraw',
-      text: 'Let it play out',
-      essenceCost: 0,
-      probabilityBoost: 0,
-      interventionType: 'withdrawn',
-    },
-  ];
-}
-
-function buildChoiceIntent(args: {
-  choice: EncounterNotification['choices'][number];
-  currentStepIndex: number;
-  captainName: string;
-  courierName: string;
-  witnessName: string;
-  essence: number;
-}): EncounterStageChoiceModel {
-  const { choice, currentStepIndex, captainName, courierName, witnessName, essence } = args;
-  const type = choice.interventionType;
-  const captainHandle = toNarrativeHandle(captainName, 'the gate captain');
-  const courierHandle = toNarrativeHandle(courierName, 'the courier');
-  const witnessHandle = toNarrativeHandle(witnessName, 'the witness');
-  const essenceCost = choice.essenceCost ?? 0;
-  const affordable = essence + 1e-9 >= essenceCost;
-
-  const stepCopy: Record<number, Record<EncounterChoiceMemory['interventionType'], {
-    label: string;
-    intent: string;
-    targetLabel: string;
-    likelyBurden: string;
-  }>> = {
-    0: {
-      supportive: {
-        label: 'Steady the courier',
-        intent: `${courierHandle[0] ? courierHandle[0].toUpperCase() + courierHandle.slice(1) : courierHandle} is the cheapest thread to take in hand — barely a breath of essence to steady her. Settle into the space behind her eyes, quiet the burning urgency, still the hand that wants to reach for the reins and force her way forward. Let her composure hold just long enough for the line to move, for the cart to pass without theatre, for the checkpoint to exhale. A small intervention. A gentle one. But panic does not vanish when you soothe it; it merely flows somewhere else, and that somewhere may be you.`,
-        targetLabel: courierName,
-        likelyBurden: 'Her panic may cling to you afterward as strain or the sour sense that someone noticed the touch.',
-      },
-      coercive: {
-        label: 'Force the captain',
-        intent: `${captainHandle[0] ? captainHandle[0].toUpperCase() + captainHandle.slice(1) : captainHandle} is the harder pull — five times the essence, and the thread fights you. Her mind is a locked room. To move her you must not soothe. You must press. Force her hand before the crowd’s silence curdles into judgment and the cart passes, the line moves, the moment breaks cleanly. But clean is not the same as kind, and the crowd may leave calling the watch decisive with one breath and a fist with the next.`,
-        targetLabel: captainName,
-        likelyBurden: 'You may win the gate while leaving the watch looking like power turned inward.',
-      },
-      withdrawn: {
-        label: 'Keep your hand folded',
-        intent: `Hold your essence. Keep your hands folded in the dark and let the scene unspool on its own terms. Let ${captainHandle} hesitate. Let ${courierHandle} fray. Let ${witnessHandle} watch. The gate will show its own nature when no god leans on the scales, and there is a terrible clarity in that. But if you do not shape this moment, ${witnessHandle} will, and the story that leaves the gate will be hers, not yours.`,
-        targetLabel: witnessName,
-        likelyBurden: 'You keep your strength, but you may lose authorship of the narrative entirely.',
-      },
-    },
-    1: {
-      supportive: {
-        label: 'Guide the seizure into discipline',
-        intent: `Enter the hands of the watch themselves — not to inflame them, but to cool them into precision. No roughness. No triumph. No unnecessary force. Guide the taking of ${courierHandle} until it reads as the hundredth sad duty of an orderly world rather than a rare chance to dominate the frightened. The line may still flinch, but it will have less reason to call what it saw hunger.`,
-        targetLabel: captainName,
-        likelyBurden: 'If your touch slips, the restraint may feel eerie instead of humane.',
-      },
-      coercive: {
-        label: 'Break the courier open before the crowd can invent worse',
-        intent: `Do not contain ${courierHandle}'s fear — sharpen it. Let the pressure crest. Let her move too fast, speak in the wrong tone, betray the cart with half an inch of panic, until the line stops imagining and starts believing. A confession need not be verbal to be complete. The watch may inherit legitimacy from her collapse before proof is ever named.`,
-        targetLabel: courierName,
-        likelyBurden: 'You may turn one mortal’s worst second into the hinge on which the evening swings.',
-      },
-      withdrawn: {
-        label: 'Give the witness the scene',
-        intent: `Yield a heartbeat of control so ${witnessHandle} and the queue begin naming the danger before the guards fully do. Let public attention become the force that pins the moment in place. Under that pressure, the captain will have to move — not because certainty has ripened, but because the crowd has begun to write the silence for her. It is a dangerous elegance: making the line itself seize the courier before the watch quite does.`,
-        targetLabel: witnessName,
-        likelyBurden: 'Once the crowd starts authoring the event, even the captain becomes a reader of it.',
-      },
-    },
-    2: {
-      supportive: {
-        label: 'Cool the gate back into legitimacy',
-        intent: `Lay your will lightly across the checkpoint and bleed heat from the moment. Not enough to erase what has happened — that is impossible now — but enough that ${captainHandle}'s next words and gestures feel like containment rather than punishment, enough that the barrier remembers its purpose instead of its appetite. This is the most difficult mercy: not preventing harm, but preventing harm from becoming identity.`,
-        targetLabel: captainName,
-        likelyBurden: 'You may keep the barrier humane by taking some of its tension into yourself.',
-      },
-      coercive: {
-        label: 'Consecrate authority',
-        intent: `Draw the whole gatehouse taut around a single idea: that the watch is right because it acts, and acts because it must. Pour certainty through ${captainHandle} until hesitation burns away and the whole barrier feels unassailable for one dangerous instant, even if that certainty arrives tasting more like dread than trust.`,
-        targetLabel: captainName,
-        likelyBurden: 'You may preserve power at the cost of quietly wounding legitimacy.',
-      },
-      withdrawn: {
-        label: 'Leave the story to the living',
-        intent: `Withdraw now, at the last and most tempting hour, and let the checkpoint keep only what mortal hands can hold. Let ${captainHandle} speak in her own voice. Let ${courierHandle} carry exactly what the evening has made of her. Let ${witnessHandle} shape the tale with no resistance but human uncertainty. There is honesty in that, perhaps even wisdom. There is also surrender.`,
-        targetLabel: witnessName,
-        likelyBurden: 'The story that leaves the gate may no longer bear your shape at all.',
-      },
-    },
-  };
-
-  const stepSpecific = stepCopy[currentStepIndex]?.[type];
-  return {
-    id: choice.id,
-    label: stepSpecific?.label ?? choice.text,
-    intent: stepSpecific?.intent ?? 'Shift the checkpoint pressure in your favor.',
-    targetLabel: stepSpecific?.targetLabel,
-    essenceCost,
-    affordable,
-    costLabel: essenceCost > 0 ? formatEssenceLabel(essenceCost) : undefined,
-    likelyBurden: stepSpecific?.likelyBurden,
-    interventionType: choice.interventionType,
-    godVoice: choice.godVoice,
-    probabilityBoost: choice.probabilityBoost,
-  };
 }
 
 function buildSignalModels(
@@ -486,52 +352,54 @@ function buildHistory(
 ): EncounterStageHistoryModel[] {
   const buildAfterimage = (stepIndex: number, choiceMemory: EncounterChoiceMemory | undefined, success: boolean): string | undefined => {
     const branch = getGateDutyBranch(choiceMemory);
+    const cards = gateDutyCardsForStep(stepIndex);
+    if (!cards) return undefined;
     if (stepIndex === 0) {
-      if (branch === 'supportive') {
+      if (branch === cards.steady) {
         return success
           ? 'You steadied the courier long enough for the danger to sharpen without bursting.'
           : 'You steadied the courier, but the line still learned how thin her composure had become.';
       }
-      if (branch === 'coercive') {
+      if (branch === cards.force) {
         return success
           ? 'You forced the captain into motion before hesitation could ripen into panic.'
           : 'You forced the captain’s hand, and the crowd felt the shove behind the order.';
       }
-      if (branch === 'withdrawn') {
+      if (branch === cards.withhold) {
         return success
           ? 'You kept your hand folded and let the gate reveal its own fault lines.'
           : 'You kept your hand folded, and the witness began owning the story before the watch did.';
       }
     }
     if (stepIndex === 1) {
-      if (branch === 'supportive') {
+      if (branch === cards.steady) {
         return success
           ? 'You guided the seizure into discipline, keeping force just this side of spectacle.'
           : 'You tried to guide the seizure cleanly, but the act still came away looking strange and hard.';
       }
-      if (branch === 'coercive') {
+      if (branch === cards.force) {
         return success
           ? 'You let the courier’s panic speak loudly enough that the line believed the watch.'
           : 'You pushed the courier toward collapse, and the checkpoint nearly broke with her.';
       }
-      if (branch === 'withdrawn') {
+      if (branch === cards.withhold) {
         return success
           ? 'You gave the witness the moment, and public attention pinned the scene in place.'
           : 'You yielded the moment to the crowd, and the gatehouse lost the right to narrate itself.';
       }
     }
     if (stepIndex === 2) {
-      if (branch === 'supportive') {
+      if (branch === cards.steady) {
         return success
           ? 'You cooled the gate back toward legitimacy before fear could harden into memory.'
           : 'You tried to soften the checkpoint, but the bruise of the evening still remained.';
       }
-      if (branch === 'coercive') {
+      if (branch === cards.force) {
         return success
           ? 'You consecrated authority and held the line by making order feel untouchable.'
           : 'You made authority absolute for a moment, and the crowd remembered the dread more than the order.';
       }
-      if (branch === 'withdrawn') {
+      if (branch === cards.withhold) {
         return success
           ? 'You left the story to the living and trusted mortal memory to carry what mattered.'
           : 'You let the story go, and it left the gate in shapes no captain could call back.';
@@ -592,7 +460,7 @@ function buildGateDutyFalloutPreview(args: {
   const secondBranch = getGateDutyBranch(args.secondChoice);
 
   if (args.currentStepIndex === 1) {
-    if (firstBranch === 'supportive') {
+    if (firstBranch === GATE_DUTY_NUDGE_IDS[0].steady) {
       return [
         { kind: 'reputation', label: 'Whether the courier’s borrowed calm reads as mercy or as something uncanny.' },
         { kind: 'suspicion', label: 'Whether suspicion clings to the papers alone or starts clinging to the watch as well.' },
@@ -601,7 +469,7 @@ function buildGateDutyFalloutPreview(args: {
         { kind: 'burden', label: 'Whether calming another mortal leaves part of her panic lodged in you afterward.' },
       ];
     }
-    if (firstBranch === 'coercive') {
+    if (firstBranch === GATE_DUTY_NUDGE_IDS[0].force) {
       return [
         { kind: 'reputation', label: 'Whether swift authority looks like competence or coercion once the line tells the story back to itself.' },
         { kind: 'suspicion', label: 'How much of the captain’s unnatural certainty the crowd notices and remembers.' },
@@ -610,7 +478,7 @@ function buildGateDutyFalloutPreview(args: {
         { kind: 'burden', label: 'Whether pressing a mortal mind this hard costs more than the essence you spend.' },
       ];
     }
-    if (firstBranch === 'withdrawn') {
+    if (firstBranch === GATE_DUTY_NUDGE_IDS[0].withhold) {
       return [
         { kind: 'reputation', label: 'Whether the crowd, not the watch, becomes the true author of the seizure.' },
         { kind: 'suspicion', label: 'How far witness-borne suspicion travels once the line starts narrating the scene for itself.' },
@@ -622,7 +490,7 @@ function buildGateDutyFalloutPreview(args: {
   }
 
   if (args.currentStepIndex === 2) {
-    if (secondBranch === 'supportive') {
+    if (secondBranch === GATE_DUTY_NUDGE_IDS[1].steady) {
       return [
         { kind: 'reputation', label: 'Whether the line leaves remembering restraint instead of appetite.' },
         { kind: 'suspicion', label: 'How much bruised mistrust still clings to the checkpoint even after you cool it.' },
@@ -631,7 +499,7 @@ function buildGateDutyFalloutPreview(args: {
         { kind: 'burden', label: 'Whether mercy leaves part of the checkpoint’s tension lodged in you when the scene is over.' },
       ];
     }
-    if (secondBranch === 'coercive') {
+    if (secondBranch === GATE_DUTY_NUDGE_IDS[1].force) {
       return [
         { kind: 'reputation', label: 'Whether order survives at the price of dread once the crowd remembers how absolute the gate felt.' },
         { kind: 'suspicion', label: 'How deeply overreach settles into checkpoint memory after authority hardens one final time.' },
@@ -640,7 +508,7 @@ function buildGateDutyFalloutPreview(args: {
         { kind: 'burden', label: 'Whether divine force makes the whole barrier feel touched by something no report can explain.' },
       ];
     }
-    if (secondBranch === 'withdrawn') {
+    if (secondBranch === GATE_DUTY_NUDGE_IDS[1].withhold) {
       return [
         { kind: 'reputation', label: 'Whether the official account survives the witness’s sharper version of the evening.' },
         { kind: 'suspicion', label: 'How completely the story escapes the gate once no one reins it back in.' },
@@ -683,7 +551,7 @@ function buildGateDutySceneFrame(args: {
       momentLine: string;
       noticeLines: string[];
     }> = {
-      supportive: {
+      [GATE_DUTY_NUDGE_IDS[0].steady]: {
         situationProse: `${args.locationLabel} has tipped from waiting into action, but the panic at its center is wearing a stranger mask now. ${args.courierName} remains upright by borrowed calm while the watch closes in, and that composure is almost as unsettling as a scream would have been.`,
         pressureProse: `${args.captainName} still needs the seizure to look like discipline rather than appetite, yet the very steadiness surrounding ${args.courierName} risks making the whole checkpoint feel touched by something no one can name cleanly.`,
         stakesProse: 'If the taking stays measured, the barrier may keep its dignity. If that measured calm turns eerie, the crowd may fear the watch and the unseen pressure moving through it in the same breath.',
@@ -693,7 +561,7 @@ function buildGateDutySceneFrame(args: {
           ...args.signalModels.map(signal => signal.observation),
         ],
       },
-      coercive: {
+      [GATE_DUTY_NUDGE_IDS[0].force]: {
         situationProse: `${args.locationLabel} moves at the pace of command now. The order to seize ${args.courierName} comes fast enough that everyone present can feel the shove of certainty behind it.`,
         pressureProse: `${args.captainName} has authority again, but it is authority edged with the memory of being pressed. The crowd is no longer asking whether the watch will act; it is deciding what that swiftness means.`,
         stakesProse: 'A clean seizure might still look decisive. A harsh one will teach the line that the barrier can harden faster than any ordinary judgment ought to.',
@@ -703,7 +571,7 @@ function buildGateDutySceneFrame(args: {
           ...args.signalModels.map(signal => signal.observation),
         ],
       },
-      withdrawn: {
+      [GATE_DUTY_NUDGE_IDS[0].withhold]: {
         situationProse: `${args.locationLabel} is no longer only a checkpoint. It is a public stage. By leaving the first beat untouched, you let the crowd gather into a single listening thing, and now the seizure begins inside that collective attention rather than outside it.`,
         pressureProse: `${args.witnessName} is not merely observing anymore. She is becoming the channel through which the whole line understands what it is seeing, and ${args.captainName} is being forced to act inside a story the watch did not start writing.`,
         stakesProse: 'If the watch does not reclaim the scene, the crowd will. Once that happens, every official word spoken afterward will feel like an answer to a story already abroad.',
@@ -713,7 +581,7 @@ function buildGateDutySceneFrame(args: {
           ...args.signalModels.map(signal => signal.observation),
         ],
       },
-      unknown: {
+      [GATE_DUTY_UNPLAYED]: {
         situationProse: `${args.locationLabel} is turning into a seizure instead of a stoppage, and everyone in the line knows it now.`,
         pressureProse: `${args.captainName}, ${args.courierName}, and ${args.witnessName} are all trying to survive the same public second for different reasons.`,
         stakesProse: 'Once the taking begins, the question is no longer whether the gate acts. It is what kind of authority the act teaches people to remember.',
@@ -721,7 +589,7 @@ function buildGateDutySceneFrame(args: {
         noticeLines: args.signalModels.map(signal => signal.observation),
       },
     };
-    return byFirstChoice[firstBranch];
+    return byFirstChoice[firstBranch] ?? byFirstChoice[GATE_DUTY_UNPLAYED]!;
   }
 
   if (args.currentStepIndex === 2) {
@@ -732,7 +600,7 @@ function buildGateDutySceneFrame(args: {
       momentLine: string;
       noticeLines: string[];
     }> = {
-      supportive: {
+      [GATE_DUTY_NUDGE_IDS[1].steady]: {
         situationProse: `${args.locationLabel} has survived the seizure without fully surrendering to spectacle, but the calm around it feels hand-built and fragile. The cart is stopped. The line is breathing again. The danger now lives in what kind of memory that breathing becomes.`,
         pressureProse: `${args.captainName} still has a chance to make the checkpoint feel like shelter rather than hunger, but only if the next orders land with restraint clean enough to seem human rather than merely controlled.`,
         stakesProse: 'If the evening cools, the watch may leave with room to act tomorrow. If mercy lands too late or too strangely, the barrier will keep its facts and lose its legitimacy.',
@@ -742,7 +610,7 @@ function buildGateDutySceneFrame(args: {
           ...args.signalModels.map(signal => signal.observation),
         ],
       },
-      coercive: {
+      [GATE_DUTY_NUDGE_IDS[1].force]: {
         situationProse: `${args.locationLabel} is quiet now in the worst way: the cart is stopped, the courier is broken open, and the checkpoint has bought silence with a taste of dread that still hangs in the dusk.`,
         pressureProse: `${args.captainName} can still turn that dread into durable authority if you let her, but every extra degree of certainty risks teaching the district that order and fear are the same thing.`,
         stakesProse: 'A hard finish will keep the barrier unassailable for one dangerous moment. It may also leave the watch feared exactly where it wanted to be trusted.',
@@ -752,7 +620,7 @@ function buildGateDutySceneFrame(args: {
           ...args.signalModels.map(signal => signal.observation),
         ],
       },
-      withdrawn: {
+      [GATE_DUTY_NUDGE_IDS[1].withhold]: {
         situationProse: `${args.locationLabel} no longer belongs wholly to the watch. The seizure happened, but too much of the evening now lives in mortal mouths outside the guardhouse, and every official word arrives late to a story already on the move.`,
         pressureProse: `${args.witnessName} is carrying the sharper version of the scene, ${args.captainName} knows it, and the checkpoint can still either answer that story or surrender the rest of the night to it.`,
         stakesProse: 'If you keep your distance now, the gate may retain the facts while losing the meaning. Once meaning leaves in a witness’s voice, no captain can recall it with a report.',
@@ -762,7 +630,7 @@ function buildGateDutySceneFrame(args: {
           ...args.signalModels.map(signal => signal.observation),
         ],
       },
-      unknown: {
+      [GATE_DUTY_UNPLAYED]: {
         situationProse: `${args.locationLabel} has survived the seizure, but the aftermath is still deciding what kind of evening this was.`,
         pressureProse: `${args.captainName}, ${args.courierName}, and ${args.witnessName} are all still shaping what memory survives the report.`,
         stakesProse: 'The seizure is only the middle of the night. What matters now is whether what leaves the gate feels like shelter, overreach, or dread.',
@@ -770,7 +638,7 @@ function buildGateDutySceneFrame(args: {
         noticeLines: args.signalModels.map(signal => signal.observation),
       },
     };
-    return bySecondChoice[secondBranch];
+    return bySecondChoice[secondBranch] ?? bySecondChoice[GATE_DUTY_UNPLAYED]!;
   }
 
   return {
@@ -893,14 +761,14 @@ function buildNarrativeModel(args: {
     ];
   } else if (args.currentStepIndex === 1) {
     const branchIntroByFirstChoice: Record<GateDutyBranch, string> = {
-      supportive: 'You have already touched {{courier}} once, easing the worst of her panic without ever fully freeing her from it, and that stolen composure changes the shape of the seizure. The moment breaks all at once, but it breaks with an eerie neatness. {{courier}} does not bolt, not quite. She locks. Her fear has been cupped rather than quenched, and now it sits inside her like a hidden bell still ringing. The line sees restraint first and danger second, which buys the watch a breath of legitimacy — but only a breath. What looks orderly can turn uncanny in an instant when the wrong body stays too still under pressure.',
-      coercive: 'You have already pressed {{captain}} once, setting weight on her judgment before she was ready to claim it as her own, and now the checkpoint is moving in the shape of that pressure. What had been hesitation becomes motion: a hand on the bridle, a barked order, the scrape of boots over grit. When the command comes to seize {{courier}}, it arrives too cleanly to be mistaken for hesitation. That is the gift and the danger of forcing a mortal into certainty: the scene breaks quickly, but everyone present can taste the shove behind the order.',
-      withdrawn: 'You kept your hand folded when the queue first drew taut, and in that untouched space the crowd began writing the scene for itself. So when the seizure comes, it is not merely the watch moving on {{courier}}. It is the whole line leaning inward, hungry to see whether hesitation will finally harden into force. {{witness}} has already made the checkpoint public in the oldest way possible: by paying perfect attention. By the time the guards close in, the story is half-born and looking for a shape to inhabit.',
-      unknown: 'The moment does not explode so much as snap into a new shape. A hand goes to the bridle, a barked order cuts through the held breath at the gate, and {{courier}}\'s body answers before her mind can.',
+      [GATE_DUTY_NUDGE_IDS[0].steady]: 'You have already touched {{courier}} once, easing the worst of her panic without ever fully freeing her from it, and that stolen composure changes the shape of the seizure. The moment breaks all at once, but it breaks with an eerie neatness. {{courier}} does not bolt, not quite. She locks. Her fear has been cupped rather than quenched, and now it sits inside her like a hidden bell still ringing. The line sees restraint first and danger second, which buys the watch a breath of legitimacy — but only a breath. What looks orderly can turn uncanny in an instant when the wrong body stays too still under pressure.',
+      [GATE_DUTY_NUDGE_IDS[0].force]: 'You have already pressed {{captain}} once, setting weight on her judgment before she was ready to claim it as her own, and now the checkpoint is moving in the shape of that pressure. What had been hesitation becomes motion: a hand on the bridle, a barked order, the scrape of boots over grit. When the command comes to seize {{courier}}, it arrives too cleanly to be mistaken for hesitation. That is the gift and the danger of forcing a mortal into certainty: the scene breaks quickly, but everyone present can taste the shove behind the order.',
+      [GATE_DUTY_NUDGE_IDS[0].withhold]: 'You kept your hand folded when the queue first drew taut, and in that untouched space the crowd began writing the scene for itself. So when the seizure comes, it is not merely the watch moving on {{courier}}. It is the whole line leaning inward, hungry to see whether hesitation will finally harden into force. {{witness}} has already made the checkpoint public in the oldest way possible: by paying perfect attention. By the time the guards close in, the story is half-born and looking for a shape to inhabit.',
+      [GATE_DUTY_UNPLAYED]: 'The moment does not explode so much as snap into a new shape. A hand goes to the bridle, a barked order cuts through the held breath at the gate, and {{courier}}\'s body answers before her mind can.',
     };
 
     paragraphs = [
-      buildLinkedParagraph('scene-1', branchIntroByFirstChoice[firstBranch], tokens),
+      buildLinkedParagraph('scene-1', branchIntroByFirstChoice[firstBranch] ?? branchIntroByFirstChoice[GATE_DUTY_UNPLAYED]!, tokens),
       buildLinkedParagraph(
         'scene-2',
         'Now the manifest is no longer only paper. It is accusation, theatre, omen. {{forged_papers}} glints in {{captain}}\'s hand like something already broken, and under the canvas the load seems to deepen into itself, becoming more real precisely because it is still unseen. Cloth bolts. Cured hides. Or something else entirely — something wrapped not merely from light but from naming, something unmanifested waiting to meet the dusk. You can feel {{checkpoint_public}} leaning without moving, each person lending a grain of attention until the scene grows heavy enough to collapse under it.',
@@ -914,21 +782,21 @@ function buildNarrativeModel(args: {
     ];
   } else {
     const firstChoiceEcho: Record<GateDutyBranch, string> = {
-      supportive: 'Because you first met the evening by steadying {{courier}}, the checkpoint never fully tipped into open panic. The fear remained, but it wore a quieter face, and that quiet now hangs over the gatehouse like steam that never found the air. People remember that the line almost held. They also remember how strangely controlled the moment felt.',
-      coercive: 'Because you first met the evening by forcing {{captain}} toward certainty, the whole checkpoint is still carrying the bruise of command. The line moved when it had to. The seizure happened before hesitation could ripen. But the crowd has not forgotten how quickly authority hardened under pressure, nor how thin the distance can be between discipline and appetite.',
-      withdrawn: 'Because you first met the evening by withholding your hand, the gatehouse belongs partly to mortal interpretation now. {{witness}} and the waiting line began authoring the scene before the watch could control it, and everything that followed has carried that public charge. Even now the checkpoint feels less like a sealed report than a story still being argued into shape.',
-      unknown: 'The seizure has happened. The line has seen enough to stop being innocent. What remains is not the fact of the checkpoint, but the meaning people will carry away from it.',
+      [GATE_DUTY_NUDGE_IDS[0].steady]: 'Because you first met the evening by steadying {{courier}}, the checkpoint never fully tipped into open panic. The fear remained, but it wore a quieter face, and that quiet now hangs over the gatehouse like steam that never found the air. People remember that the line almost held. They also remember how strangely controlled the moment felt.',
+      [GATE_DUTY_NUDGE_IDS[0].force]: 'Because you first met the evening by forcing {{captain}} toward certainty, the whole checkpoint is still carrying the bruise of command. The line moved when it had to. The seizure happened before hesitation could ripen. But the crowd has not forgotten how quickly authority hardened under pressure, nor how thin the distance can be between discipline and appetite.',
+      [GATE_DUTY_NUDGE_IDS[0].withhold]: 'Because you first met the evening by withholding your hand, the gatehouse belongs partly to mortal interpretation now. {{witness}} and the waiting line began authoring the scene before the watch could control it, and everything that followed has carried that public charge. Even now the checkpoint feels less like a sealed report than a story still being argued into shape.',
+      [GATE_DUTY_UNPLAYED]: 'The seizure has happened. The line has seen enough to stop being innocent. What remains is not the fact of the checkpoint, but the meaning people will carry away from it.',
     };
     const secondChoiceEcho: Record<GateDutyBranch, string> = {
-      supportive: 'Then you guided the seizure itself toward discipline, keeping the watch precise where it might easily have become hungry. That helped. It also made the whole scene feel almost too exact, as though order had arrived by way of some invisible correction. The crowd can forgive roughness more easily than it forgives strangeness.',
-      coercive: 'Then you broke {{courier}} toward the edge of public collapse, letting fear speak loudly enough that the line could stop imagining worse and start believing what it saw. It was effective. It was also intimate in its cruelty. The checkpoint now stands atop a mortal’s worst second, and everyone can feel that beneath the official story.',
-      withdrawn: 'Then you gave the moment further to {{witness}} and the crowd, letting public attention pin the event in place before the watch fully mastered it. That has left the gatehouse unstable in a different way. The official account still exists, but it no longer feels singular. The people present have begun to understand themselves as co-authors of the evening.',
-      unknown: 'The seizure is over, yet the checkpoint has not decided whether it means shelter, spectacle, or warning.',
+      [GATE_DUTY_NUDGE_IDS[1].steady]: 'Then you guided the seizure itself toward discipline, keeping the watch precise where it might easily have become hungry. That helped. It also made the whole scene feel almost too exact, as though order had arrived by way of some invisible correction. The crowd can forgive roughness more easily than it forgives strangeness.',
+      [GATE_DUTY_NUDGE_IDS[1].force]: 'Then you broke {{courier}} toward the edge of public collapse, letting fear speak loudly enough that the line could stop imagining worse and start believing what it saw. It was effective. It was also intimate in its cruelty. The checkpoint now stands atop a mortal’s worst second, and everyone can feel that beneath the official story.',
+      [GATE_DUTY_NUDGE_IDS[1].withhold]: 'Then you gave the moment further to {{witness}} and the crowd, letting public attention pin the event in place before the watch fully mastered it. That has left the gatehouse unstable in a different way. The official account still exists, but it no longer feels singular. The people present have begun to understand themselves as co-authors of the evening.',
+      [GATE_DUTY_UNPLAYED]: 'The seizure is over, yet the checkpoint has not decided whether it means shelter, spectacle, or warning.',
     };
 
     paragraphs = [
-      buildLinkedParagraph('scene-1', firstChoiceEcho[firstBranch], tokens),
-      buildLinkedParagraph('scene-2', secondChoiceEcho[secondBranch], tokens),
+      buildLinkedParagraph('scene-1', firstChoiceEcho[firstBranch] ?? firstChoiceEcho[GATE_DUTY_UNPLAYED]!, tokens),
+      buildLinkedParagraph('scene-2', secondChoiceEcho[secondBranch] ?? secondChoiceEcho[GATE_DUTY_UNPLAYED]!, tokens),
       buildLinkedParagraph(
         'scene-3',
         'After rupture comes burden. To hold the line now is not merely to keep the carts in order or the witness from stepping too close. It is to govern the meaning of the checkpoint after force has entered it. {{civic_guard}} must appear stern without becoming ravenous, certain without becoming eager, controlled without seeming cold. One wrong note and the whole barrier curdles in the public imagination. That is the poison that truly endures. Not fear of what passed through the gate, but fear of what stood guarding it. When {{location}} finally resumes its rhythms, what will remain is not the cart. It is the feeling that passed through the people who watched it. You can still influence that feeling. Perhaps that is all that has ever mattered.',
@@ -1191,6 +1059,7 @@ export function buildGateDutyEncounterStageModel({
   activeAction,
   clearanceGateState,
   essence,
+  gameState,
 }: BuildGateDutyEncounterStageModelArgs): EncounterStageModel {
   const gatehouseBinding = getSupportBinding(activeAction, 'gatehouse');
   const captainBinding = getSupportBinding(activeAction, 'gate_captain');
@@ -1339,6 +1208,16 @@ export function buildGateDutyEncounterStageModel({
     };
   }
 
+  // THR-1123 — the step whose authored hand the stage deals. Read off the
+  // template by index rather than through `resolveStepDefinition`: gate duty is
+  // a linear template (THR-191 forbids step branching in linear templates), so
+  // there is no variant to resolve and the index is the step. The branch guard
+  // is the type system's, not a live case — a branch here would mean gate duty
+  // stopped being linear, and the hand is simply not dealt rather than guessed.
+  const stepAtIndex = template.steps[currentStepIndex];
+  const gateDutyCurrentStep =
+    stepAtIndex && !isActionStepBranch(stepAtIndex) ? stepAtIndex : undefined;
+
   return {
     header: {
       title: template.name,
@@ -1362,16 +1241,24 @@ export function buildGateDutyEncounterStageModel({
     factions: factionModels,
     shellState: shellStateModel,
     signals: signalModels,
-      choices: gateDutyStanceChoices(notification.choices).map(choice =>
-        buildChoiceIntent({
-          choice,
-          currentStepIndex,
-          captainName,
-          courierName,
-          witnessName,
-          essence,
-        }),
-      ),
+    // THR-1123 — gate duty's moves are authored `nudges` on the template's
+    // steps now, so the legacy choice list is empty and the stage renders the
+    // nudge hand like every other encounter. The specialized adapter survives
+    // for everything the general one cannot produce here: the clearance-gate
+    // signals, the checkpoint cast, and the branch-keyed aftermath prose.
+    choices: [],
+    nudgePhase: gateDutyCurrentStep && activeAction
+      ? buildNudgePhaseModel({
+          // Fate-alone rather than a screen with no move on it, should a step
+          // ever lose its hand — the same fallback the general adapter takes.
+          allowEmptyHand: (gateDutyCurrentStep.nudges?.length ?? 0) === 0,
+          template,
+          activeAction,
+          step: gateDutyCurrentStep,
+          graph,
+          gameState,
+        })
+      : undefined,
     falloutPreview: [...falloutPreview],
     history,
     resourceSummary: {

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { GATE_DUTY_NUDGE_IDS } from '../../../../data/civic-guard-encounter-content';
 import { CIVIC_GUARD_ENCOUNTER_TEMPLATES } from '../../../../data/civic-guard-encounter-content';
 import type { ClearanceGateRuntimeState } from '../../../../types/contentShells';
 import type { EncounterNotification } from '../../../../types/encounterVisibility';
@@ -30,7 +31,7 @@ describe('buildGateDutyEncounterStageModel', () => {
         {
           stepIndex: 0,
           stepId: template.steps[0]!.id,
-          choiceId: 'choice-support',
+          choiceId: GATE_DUTY_NUDGE_IDS[0].steady,
           choiceText: 'Steady the courier',
           interventionType: 'supportive',
           essenceSpent: 0.05,
@@ -123,6 +124,9 @@ describe('buildGateDutyEncounterStageModel', () => {
         };
         return names[nodeId] ?? null;
       },
+      // THR-1123 — the nudge phase resolves card prose against the graph, so a
+      // stub that only answers getNode is no longer enough to build the stage.
+      getOutgoingEdges: () => [],
     } as const;
 
     const model = buildGateDutyEncounterStageModel({
@@ -176,11 +180,19 @@ describe('buildGateDutyEncounterStageModel', () => {
         observation: 'The witness has become part of the event itself; whatever happens now will leave the gate on other people’s tongues.',
       },
     ]);
-    expect(model.choices[0]?.essenceCost).toBe(0.05);
-    expect(model.choices[0]?.affordable).toBe(true);
-    expect(model.choices[0]?.costLabel).toBe('0.05 essence');
-    expect(model.choices[0]?.label).toBe('Guide the seizure into discipline');
-    expect(model.choices[0]?.targetLabel).toBe('Captain Merrow');
+    // THR-1123 — step 1's authored hand, dealt by the nudge phase. The old
+    // assertions here read the legacy `choices` list the generic stance triple
+    // produced; the encounter authors its own cards now, and the claim worth
+    // keeping is that step 1 deals *step 1's* cards rather than step 0's.
+    expect(model.choices).toEqual([]);
+    // Sorted, because the hand renders playable cards before dimmed ones and
+    // this fixture holds too little essence to afford two of the three. The
+    // claim is which cards step 1 deals, not what the god can pay for.
+    expect(model.nudgePhase?.cards.map(card => card.id).sort()).toEqual([
+      GATE_DUTY_NUDGE_IDS[1].steady,
+      GATE_DUTY_NUDGE_IDS[1].force,
+      GATE_DUTY_NUDGE_IDS[1].withhold,
+    ].sort());
     expect(model.falloutPreview[0]?.label).toMatch(/borrowed calm/i);
     expect(model.history[0]?.status).toBe('resolved');
     expect(model.history[0]?.afterimage).toMatch(/steadied the courier/i);
@@ -248,6 +260,9 @@ describe('buildGateDutyEncounterStageModel', () => {
         };
         return names[nodeId] ?? null;
       },
+      // THR-1123 — the nudge phase resolves card prose against the graph, so a
+      // stub that only answers getNode is no longer enough to build the stage.
+      getOutgoingEdges: () => [],
     } as const;
 
     const model = buildGateDutyEncounterStageModel({
@@ -268,8 +283,11 @@ describe('buildGateDutyEncounterStageModel', () => {
       'Courier Nessa',
       'Dock Porter',
     ]);
-    expect(model.choices[0]?.targetLabel).toBe('Courier Nessa');
-    expect(model.choices[0]?.label).toBe('Steady the courier');
+    // THR-1123 — no live unified action, so no hand is dealt: the nudge phase
+    // is built from the action's committed state and there is none here. The
+    // legacy choice list stays empty rather than falling back to a stance.
+    expect(model.choices).toEqual([]);
+    expect(model.nudgePhase).toBeUndefined();
     expect(model.scene.pressureProse).toMatch(/Captain Merrow/);
     expect(model.narrative.references.some(reference => reference.label === 'Dock Porter')).toBe(true);
   });
@@ -288,7 +306,7 @@ describe('buildGateDutyEncounterStageModel', () => {
         {
           stepIndex: 0,
           stepId: template.steps[0]!.id,
-          choiceId: 'choice-withdraw',
+          choiceId: GATE_DUTY_NUDGE_IDS[0].withhold,
           choiceText: 'Keep your hand folded',
           interventionType: 'withdrawn',
           essenceSpent: 0,
@@ -297,7 +315,7 @@ describe('buildGateDutyEncounterStageModel', () => {
         {
           stepIndex: 1,
           stepId: template.steps[1]!.id,
-          choiceId: 'choice-force',
+          choiceId: GATE_DUTY_NUDGE_IDS[1].force,
           choiceText: 'Break the courier open before the crowd can invent worse',
           interventionType: 'coercive',
           essenceSpent: 0,
@@ -371,6 +389,9 @@ describe('buildGateDutyEncounterStageModel', () => {
         };
         return names[nodeId] ?? null;
       },
+      // THR-1123 — the nudge phase resolves card prose against the graph, so a
+      // stub that only answers getNode is no longer enough to build the stage.
+      getOutgoingEdges: () => [],
     } as const;
 
     const model = buildGateDutyEncounterStageModel({
@@ -380,22 +401,43 @@ describe('buildGateDutyEncounterStageModel', () => {
       agentName: 'Sergeant Tal',
       threadTier: 'strong',
       graph: graph as never,
+      activeAction: {
+        actionId: 'ua_gate_duty_hold_the_line',
+        actorId: 'agent.guard',
+        templateId: template.id,
+        targetId: 'loc.gatehouse',
+        scale: 'personal',
+        source: 'agent',
+        startTick: 10,
+        currentStep: 2,
+        stepProgress: 0,
+        stepDuration: 1,
+        resolved: false,
+        stepOutcomes: ['failure', 'success'],
+      },
       clearanceGateState,
       essence: 0.34,
     });
 
     expect(paragraphText(model, 0)).toMatch(/withholding your hand/i);
     expect(paragraphText(model, 1)).toMatch(/broke Courier Nessa toward the edge of public collapse/i);
-    expect(model.choices.map(choice => choice.label)).toEqual([
-      'Cool the gate back into legitimacy',
+    // THR-1123 — step 2's authored hand. The names carry the retired stances'
+    // fiction; the ids are what the consequence tables key on.
+    expect(model.nudgePhase?.cards.map(card => card.name).sort()).toEqual([
+      'Cool the gate',
       'Consecrate authority',
-      'Leave the story to the living',
-    ]);
+      'Leave it to the living',
+    ].sort());
+    expect(model.nudgePhase?.cards.map(card => card.id).sort()).toEqual([
+      GATE_DUTY_NUDGE_IDS[2].steady,
+      GATE_DUTY_NUDGE_IDS[2].force,
+      GATE_DUTY_NUDGE_IDS[2].withhold,
+    ].sort());
     expect(model.history[0]?.afterimage).toMatch(/kept your hand folded/i);
     expect(model.history[1]?.afterimage).toMatch(/courier’s panic|courier's panic|pushed the courier/i);
   });
 
-  it('passes through interventionType, godVoice, and probabilityBoost on choices', () => {
+  it('renders no generic stance choices, even when the notification carries them', () => {
     const template = getGateDutyTemplate();
     const encounter: ActiveEncounterDisplay = {
       encounterId: template.id,
@@ -456,6 +498,9 @@ describe('buildGateDutyEncounterStageModel', () => {
         };
         return names[nodeId] ?? null;
       },
+      // THR-1123 — the nudge phase resolves card prose against the graph, so a
+      // stub that only answers getNode is no longer enough to build the stage.
+      getOutgoingEdges: () => [],
     } as const;
 
     const model = buildGateDutyEncounterStageModel({
@@ -465,13 +510,43 @@ describe('buildGateDutyEncounterStageModel', () => {
       agentName: 'Sergeant Tal',
       threadTier: 'strong',
       graph: graph as never,
+      activeAction: {
+        actionId: 'ua_gate_duty_stale_notification',
+        actorId: 'agent.guard',
+        templateId: template.id,
+        targetId: 'loc.gatehouse',
+        scale: 'personal',
+        source: 'agent',
+        startTick: 10,
+        currentStep: 0,
+        stepProgress: 0,
+        stepDuration: 2,
+        resolved: false,
+        stepOutcomes: [],
+      },
       clearanceGateState,
       essence: 0.34,
     });
 
-    expect(model.choices[0]?.interventionType).toBe('supportive');
-    expect(model.choices[0]?.godVoice).toBe('Hold the line without breaking it.');
-    expect(model.choices[0]?.probabilityBoost).toBe(0.12);
+    // THR-1123 — this used to assert the adapter passed a stance's
+    // `interventionType`, `godVoice` and `probabilityBoost` straight through to
+    // the stage. Gate duty authors nudge cards on its own steps now, so the
+    // legacy choice list is empty and the hand is dealt by the nudge phase.
+    //
+    // The notification above still carries a stance, deliberately: a stale
+    // notification is exactly what a save written before this change replays,
+    // and the claim worth pinning is that the adapter renders no generic stance
+    // label from it rather than that no such notification can exist.
+    expect(model.choices).toEqual([]);
+
+    // The three authored cards reach the stage, and they are gate duty's own —
+    // asserting the ids, not just a count, is what makes a renamed card fail
+    // here instead of silently unkeying the consequence tables.
+    expect(model.nudgePhase?.cards.map(card => card.id).sort()).toEqual([
+      GATE_DUTY_NUDGE_IDS[0].steady,
+      GATE_DUTY_NUDGE_IDS[0].force,
+      GATE_DUTY_NUDGE_IDS[0].withhold,
+    ].sort());
   });
 
   it('maps aftermath summary and reaction choices into the stage model', () => {
@@ -556,6 +631,9 @@ describe('buildGateDutyEncounterStageModel', () => {
         };
         return names[nodeId] ?? null;
       },
+      // THR-1123 — the nudge phase resolves card prose against the graph, so a
+      // stub that only answers getNode is no longer enough to build the stage.
+      getOutgoingEdges: () => [],
     } as const;
 
     const model = buildGateDutyEncounterStageModel({

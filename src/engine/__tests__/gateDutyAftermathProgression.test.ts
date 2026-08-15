@@ -1,15 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import type { GameState } from '../../types/gameState';
-import type { EncounterInterventionChoice } from '../../types/encounterVisibility';
 import type { UnifiedAction } from '../../types/unifiedAction';
 import { WorldGraph } from '../graph';
 import { prepareDebugEncounterSpawn } from '../debugEncounterTools';
-import { recordUnifiedActionChoiceMemory } from '../encounterChoiceMemory';
+import { recordUnifiedActionNudgeMemory } from '../encounterChoiceMemory';
 import { applyEncounterAftermathReaction } from '../encounterAftermath';
 import { runTick, resetDecisionCache, resetEventCounter } from '../orchestrator';
 import { createSimulationRuntime } from '../simulationRuntime';
 import { initializeGameState } from '../gameInit';
-import { gateDutyStanceChoices } from '../../components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel';
+import { GATE_DUTY_NUDGE_IDS } from '../../data/civic-guard-encounter-content';
 
 function addIndividual(
   graph: WorldGraph,
@@ -143,7 +142,7 @@ function makeGateDutyState(): GameState {
   return state;
 }
 
-function commitChoiceForCurrentStep(state: GameState, choice: EncounterInterventionChoice): GameState {
+function commitNudgeForCurrentStep(state: GameState, nudgeId: string): GameState {
   const action = state.unifiedActions.find(candidate => candidate.templateId === 'cg.quest.gate_duty');
   if (!action) throw new Error('Expected Gate Duty action to exist.');
   const step = action.currentStep;
@@ -153,13 +152,14 @@ function commitChoiceForCurrentStep(state: GameState, choice: EncounterIntervent
     ...state,
     unifiedActions: state.unifiedActions.map(candidate => {
       if (candidate.templateId !== 'cg.quest.gate_duty') return candidate;
-      return recordUnifiedActionChoiceMemory(
-        candidate,
+      return recordUnifiedActionNudgeMemory(
+        { ...candidate, activeNudges: [nudgeId] },
         step,
         stepId,
-        choice,
+        [nudgeId],
+        nudgeId,
         state.tick,
-        choice.essenceCost ?? 0,
+        0,
       );
     }),
     encounterNotifications: (state.encounterNotifications ?? []).map(notification =>
@@ -208,28 +208,32 @@ describe('Gate Duty aftermath progression', () => {
 
     const runtime = createSimulationRuntime();
 
-    // THR-1121 — gate duty's stances come from its own adapter now that the
-    // generic triple is retired, so every step's notification arrives with an
-    // empty hand and the stance is supplied here from the same production helper
-    // the stage renders. Asserted once, on the first step, rather than at each:
-    // one falsification of "the notification no longer carries choices" is the
-    // claim, and repeating it three times would just be louder.
+    // THR-1123 — gate duty's moves are authored nudge cards on the template's
+    // own steps now, so every step's notification arrives with no choices and
+    // the card is committed here the way the nudge stage commits it. Asserted
+    // once, on the first step rather than at each: one falsification of "the
+    // notification no longer carries choices" is the claim, and repeating it
+    // three times would just be louder.
+    //
+    // A different card per step, because the ids are per-step. Driving all three
+    // beats with one id would still pass — but only the step that owns that id
+    // would take a branch consequence, and the other two would resolve with none
+    // while the test read as though it had exercised them.
     expect(prepared.notification?.choices).toEqual([]);
-    const stanceChoice = gateDutyStanceChoices()[0]!;
 
-    state = commitChoiceForCurrentStep(state, stanceChoice);
+    state = commitNudgeForCurrentStep(state, GATE_DUTY_NUDGE_IDS[0].steady);
     state = runTick(state, [], runtime);
     state = runTick(state, [], runtime);
 
     const stepTwoNotification = getOpenNotification(state, 1);
     expect(stepTwoNotification).toBeDefined();
-    state = commitChoiceForCurrentStep(state, stanceChoice);
+    state = commitNudgeForCurrentStep(state, GATE_DUTY_NUDGE_IDS[1].steady);
     state = runTick(state, [], runtime);
     state = runTick(state, [], runtime);
 
     const stepThreeNotification = getOpenNotification(state, 2);
     expect(stepThreeNotification).toBeDefined();
-    state = commitChoiceForCurrentStep(state, stanceChoice);
+    state = commitNudgeForCurrentStep(state, GATE_DUTY_NUDGE_IDS[2].steady);
     state = runTick(state, [], runtime);
 
     const actionAfterResolution = state.unifiedActions.find(candidate => candidate.templateId === 'cg.quest.gate_duty');

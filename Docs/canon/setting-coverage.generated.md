@@ -58,6 +58,7 @@ more, else the first). That is a proxy for authorial grouping, not a curated tax
 |---|---:|---:|---|
 | `encounter` | 7 | 85 | push 15, rider 0, sphere 60, trait 10, free 0 |
 | `encounter.slice` | 6 | 40 | push 8, rider 3, sphere 29, trait 0, free 0 |
+| `cg.quest` | 1 | 9 | push 6, rider 0, sphere 0, trait 0, free 3 |
 | `encounter.apotheosis` | 1 | 7 | push 1, rider 1, sphere 5, trait 0, free 0 |
 
 **Hand monotony (advisory)** — one card kind dominates:

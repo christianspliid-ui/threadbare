@@ -1,14 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import type { GameState } from '../../types/gameState';
-import type { EncounterInterventionChoice } from '../../types/encounterVisibility';
 import { WorldGraph } from '../graph';
 import { prepareDebugEncounterSpawn } from '../debugEncounterTools';
-import { recordUnifiedActionChoiceMemory } from '../encounterChoiceMemory';
+import { recordUnifiedActionNudgeMemory } from '../encounterChoiceMemory';
 import { runTick, resetDecisionCache, resetEventCounter } from '../orchestrator';
 import { createSimulationRuntime } from '../simulationRuntime';
 import { initializeGameState } from '../gameInit';
 import { UNIFIED_ACTION_TEMPLATES } from '../../data/unified-action-templates';
-import { gateDutyStanceChoices } from '../../components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel';
+import { GATE_DUTY_NUDGE_IDS } from '../../data/civic-guard-encounter-content';
 
 function addIndividual(
   graph: WorldGraph,
@@ -146,19 +145,35 @@ function makeGateDutyState(): GameState {
   return state;
 }
 
-function commitFirstChoice(state: GameState, choice: EncounterInterventionChoice): GameState {
+/**
+ * Commit a nudge card on gate duty's first step, the way the player's stage
+ * does (THR-1123).
+ *
+ * Both writes matter and they answer different questions. `activeNudges` is what
+ * the engine reads at resolution — `applyGateDutyBranchConsequences` keys the
+ * step's consequences on the card played *now*. The choice-memory entry is what
+ * the stage adapter reads *afterwards*, for the history afterimage and the
+ * aftermath echo, once `activeNudges` has moved on to the next step.
+ *
+ * Driving from `GATE_DUTY_NUDGE_IDS` rather than a stance helper is the point of
+ * the conversion: the card ids come from the template's own authored hand, so a
+ * card renamed out from under this test fails it instead of silently resolving
+ * to no branch.
+ */
+function commitFirstNudge(state: GameState, nudgeId: string): GameState {
   return {
     ...state,
     unifiedActions: state.unifiedActions.map(action => {
       if (action.templateId !== 'cg.quest.gate_duty') return action;
       const stepId = 'cg.quest.gate_duty.1';
-      return recordUnifiedActionChoiceMemory(
-        action,
+      return recordUnifiedActionNudgeMemory(
+        { ...action, activeNudges: [nudgeId] },
         0,
         stepId,
-        choice,
+        [nudgeId],
+        nudgeId,
         state.tick,
-        choice.essenceCost ?? 0,
+        0,
       );
     }),
     encounterNotifications: (state.encounterNotifications ?? []).map(notification =>
@@ -201,15 +216,16 @@ describe('Gate Duty direct debug spawn progression', () => {
       encounterNotifications: prepared.notification ? [{ ...prepared.notification, viewed: true }] : [],
     };
 
-    // THR-1121 — the notification no longer carries the generic stance triple
-    // (`generateInterventionChoices` is retired), so gate duty's stances are
-    // sourced by its own adapter. Driving from that same production helper keeps
-    // this test committing a choice the player can actually be shown, rather
-    // than one invented here.
+    // THR-1123 — the notification carries no choices at all: gate duty's moves
+    // are authored `nudges` on the template's steps now, dealt by the nudge
+    // stage. Driving from the template's own hand keeps this committing a card
+    // the player can actually be shown.
     expect(prepared.notification?.choices).toEqual([]);
-    const choice = gateDutyStanceChoices()[0];
-    expect(choice).toBeDefined();
-    state = commitFirstChoice(state, choice!);
+    const stepOneHand = UNIFIED_ACTION_TEMPLATES
+      .find(t => t.id === 'cg.quest.gate_duty')?.steps[0];
+    expect(stepOneHand && 'nudges' in stepOneHand ? stepOneHand.nudges : undefined)
+      .toHaveLength(3);
+    state = commitFirstNudge(state, GATE_DUTY_NUDGE_IDS[0].steady);
 
     const runtime = createSimulationRuntime();
     state = runTick(state, [], runtime);

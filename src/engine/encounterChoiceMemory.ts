@@ -22,6 +22,69 @@ function buildChoiceMemoryEntry(
   };
 }
 
+/**
+ * `interventionType` written for a committed nudge hand (THR-1123).
+ *
+ * The field is a free string precisely so a writer can say what kind of record
+ * it is making; the sibling constant is `BRANCH_DECISION_INTERVENTION_TYPE`
+ * (`'agent_decided'`). It deliberately does **not** reuse one of the retired
+ * supportive/coercive/withdrawn values: a nudge is not a stance, and a reader
+ * keying on those three must find nothing here rather than a plausible lie.
+ *
+ * What consumers key on is `choiceId` — the played card's id.
+ */
+export const NUDGE_COMMIT_INTERVENTION_TYPE = 'nudge_committed';
+
+/**
+ * Record a committed nudge hand as this step's remembered choice (THR-1123).
+ *
+ * `activeNudges` names the cards played on the action's *current* step and is
+ * replaced when the next step commits, so it cannot answer "what did the god
+ * play on step 0" once the encounter has moved on. Retrospective surfaces need
+ * exactly that — gate duty's history afterimages and aftermath echoes are keyed
+ * on it — and `choiceHistory` is the existing per-step channel for the answer
+ * ("Remembered player-facing encounter interventions keyed by step").
+ *
+ * So this writes through the same upsert every other choice writer uses rather
+ * than adding a second per-step memory. The recorded `choiceId` is the first
+ * committed card; `essenceSpent` is the hand's total. `probabilityBoost` is 0
+ * and stays 0 — nudges move the forecast through `forecastDelta`, and the flat
+ * roll addition that field represents was retired with the stance triple
+ * (THR-1121).
+ *
+ * A commit of zero cards writes nothing: playing no card is not a choice to
+ * remember, and an empty entry would make "fate alone" indistinguishable from
+ * a card whose id no longer exists.
+ */
+export function recordUnifiedActionNudgeMemory(
+  action: UnifiedAction,
+  stepIndex: number,
+  stepId: string,
+  nudgeIds: readonly string[],
+  nudgeLabel: string,
+  tick: number,
+  essenceSpent: number,
+): UnifiedAction {
+  const firstCard = nudgeIds[0];
+  if (!firstCard) return action;
+
+  const nextEntry: EncounterChoiceMemory = {
+    stepIndex,
+    stepId,
+    choiceId: firstCard,
+    choiceText: nudgeLabel,
+    interventionType: NUDGE_COMMIT_INTERVENTION_TYPE,
+    essenceSpent,
+    probabilityBoost: 0,
+    tick,
+  };
+
+  return {
+    ...action,
+    choiceHistory: upsertChoiceHistory(action.choiceHistory, nextEntry),
+  };
+}
+
 function buildDisregardChoice(stepId: string): EncounterInterventionChoice {
   return {
     id: `disregard_${stepId}`,
