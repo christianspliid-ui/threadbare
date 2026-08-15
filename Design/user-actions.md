@@ -1,12 +1,12 @@
 # User Action Required
 
-**Last updated:** 2026-08-15 04:56 local (2026-08-15 02:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-15 05:55 local (2026-08-15 03:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
 ### 1. Rule the consequence verdict — play one encounter through to its aftermath
 
-[**THR-974**](https://linear.app/threadbare/issue/THR-974/consequence-verdict-session-christian-rules-on-world-graph-consequence) — the last verdict still open on the Encounter Experience map. You ruled it **"not yet"** on 2026-08-10 because the chips were unreadable (*"what does steadily even mean?"*). Everything you chartered against that ruling has now shipped and deployed: the icon vocabulary ([THR-1082](https://linear.app/threadbare/issue/THR-1082)) and the content rewrite of all 55 authored consequences ([THR-1097](https://linear.app/threadbare/issue/THR-1097)), on top of the logic ([THR-969](https://linear.app/threadbare/issue/THR-969)) and UI ([THR-971](https://linear.app/threadbare/issue/THR-971)) that were already in. Level re-checked against the live build 2026-08-15 02:56 UTC — the deployed artifact is current.
+[**THR-974**](https://linear.app/threadbare/issue/THR-974/consequence-verdict-session-christian-rules-on-world-graph-consequence) — the last verdict still open on the Encounter Experience map. You ruled it **"not yet"** on 2026-08-10 because the chips were unreadable (*"what does steadily even mean?"*). Everything you chartered against that ruling has now shipped and deployed: the icon vocabulary ([THR-1082](https://linear.app/threadbare/issue/THR-1082)) and the content rewrite of all 55 authored consequences ([THR-1097](https://linear.app/threadbare/issue/THR-1097)), on top of the logic ([THR-969](https://linear.app/threadbare/issue/THR-969)) and UI ([THR-971](https://linear.app/threadbare/issue/THR-971)) that were already in. Level re-checked against the live build 2026-08-15 03:55 UTC — the deployed artifact is current (`108c5a38`).
 
 **The question:** after a hand resolves, does the consequence read as a real thing that happened to that person — noun, direction, rough magnitude — rather than an ungaugeable adverb?
 
@@ -16,15 +16,15 @@ One honest seam, by design: no encounter authors a `success` band — the base t
 
 ### 2. One command on your machine — the main working copy stopped updating
 
-The working copy at `C:\Users\chris\Dev\Projects\TheFantasyWorldSimulator` last synced at 20:50 — about 8 hours ago — and is now **19 commits behind, growing every hour** (17 an hour ago). Three locally-modified files block the automatic fast-forward, and per [THR-937](https://linear.app/threadbare/issue/THR-937) this shape never resumes on its own — every hourly attempt re-hits the same collision. No automated lane may run git operations there ([THR-672](https://linear.app/threadbare/issue/THR-672)), so it needs you or an attended session.
-
-**The repair is loss-free.** The `Docs/impediments.md` edit is already redundant — row 582 is on `main`. The two `.claude/settings*.json` edits are local permission-allowlist entries, kept in the stash and recoverable with `git stash show -p` if you want them back.
+The working copy at `C:\Users\chris\Dev\Projects\TheFantasyWorldSimulator` last synced at 20:50 — about 9 hours ago — and is now **21 commits behind, growing every hour** (19 an hour ago). Three locally-modified files block the automatic fast-forward, and per [THR-937](https://linear.app/threadbare/issue/THR-937) this shape never resumes on its own — every hourly attempt re-hits the same collision. No automated lane may run git operations there ([THR-672](https://linear.app/threadbare/issue/THR-672)), so it needs you or an attended session.
 
 ```
 cd 'C:\Users\chris\Dev\Projects\TheFantasyWorldSimulator'
 git stash push -m home-tree-recovery
 git pull --ff-only origin main
 ```
+
+**Correction to what this file said last hour.** It claimed the `Docs/impediments.md` edit was "already redundant — row 582 is on `main`". That is wrong: `main`'s row 582 is a *different* impediment, and the local row records a genuine unfiled finding (a Linear auth failure that blocked an executor run). Nothing is destroyed — `git stash push` keeps all three edits and `git stash show -p` reads them back — but the row needs re-filing under a fresh id afterwards, which is an agent's job, not yours. The other two edits are local permission-allowlist entries in `.claude/settings*.json`, equally recoverable. **The command is unchanged and still safe to run.**
 
 Nothing in the game is affected — worktrees fetch `main` directly. The risk is a future session branching off a stale copy.
 
