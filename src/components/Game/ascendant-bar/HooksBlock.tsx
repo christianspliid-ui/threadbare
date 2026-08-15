@@ -3,8 +3,14 @@
  * Reads from the ascendant node's attachments in the world graph.
  * THR-184: Ascendant Bar
  */
-import React, { useEffect, useRef, useState } from 'react';
+import React from 'react';
 import type { GameState } from '../../../types/gameState';
+import { Tooltip } from '../../shared/Tooltip';
+import {
+  HOOK_LABEL_FALLBACK,
+  HOOK_DEF_FALLBACK,
+  type HookBucket,
+} from '../../../data/ascendant-bar-content';
 import styles from './styles.module.css';
 
 // ── Chip valence colors ──────────────────────────────────────────────────────
@@ -26,57 +32,76 @@ interface ChipData {
   valence: string;
 }
 
-const TOOLTIP_DELAY_MS = 600;
-
+/**
+ * Chip hover explanation (THR-1118).
+ *
+ * Routed through the shared `Tooltip` rather than the bespoke `styles.chipTooltip` div
+ * this replaced — Law 17: any hover *explanation* goes through `Tooltip`. Content comes
+ * in as an explicit label/desc rather than a registry id because it is instance data off
+ * the attachment node (this mark's own name and description), not a concept the registry
+ * could hold: the set of attachments is open and authored per-template.
+ *
+ * The primitive also brings viewport-aware placement, `aria-describedby`, escape-to-close
+ * and its own unmount timer cleanup — the last of which is the THR-1108 guarantee, now
+ * held by the primitive instead of a copy of it living here.
+ */
 function Chip({ chip, onOpen }: { chip: ChipData; onOpen?: (chip: ChipData) => void }) {
   const colors = VALENCE_COLORS[chip.valence] ?? VALENCE_COLORS.neutral;
-  const [show, setShow] = useState(false);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const onMouseEnter = () => {
-    timerRef.current = setTimeout(() => setShow(true), TOOLTIP_DELAY_MS);
-  };
-  const onMouseLeave = () => {
-    if (timerRef.current) clearTimeout(timerRef.current);
-    setShow(false);
-  };
-
-  // Clear the pending-tooltip timer on unmount (THR-1108). Clearing it only in
-  // onMouseLeave leaves it armed when the pointer leaves *because the chip went
-  // away* — a chip list changing inside the delay window is exactly that, and the
-  // callback would run setShow on a torn-down component. Matches Tooltip.tsx:330.
-  useEffect(() => () => {
-    if (timerRef.current) clearTimeout(timerRef.current);
-  }, []);
 
   return (
-    <div
-      className={styles.chip}
-      style={{
-        background: colors.bg, borderColor: colors.border, color: colors.text,
-      }}
-      onClick={() => onOpen?.(chip)}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => { if (e.key === 'Enter') onOpen?.(chip); }}
-    >
-      {chip.label}
-      {show && chip.def && (
-        <div className={styles.chipTooltip} style={{ borderLeftColor: colors.border }}>
-          <div style={{
-            fontFamily: 'var(--font-display)', fontSize: 13, fontWeight: 600,
-            color: 'var(--text-primary)', marginBottom: 4,
-          }}>{chip.label}</div>
-          <div style={{
-            fontFamily: 'var(--font-body)', fontStyle: 'italic',
-            fontSize: 12, lineHeight: 1.5, color: 'var(--text-secondary)',
-          }}>{chip.def}</div>
-        </div>
-      )}
-    </div>
+    <Tooltip label={chip.label} desc={chip.def || HOOK_DEF_FALLBACK}>
+      <div
+        className={styles.chip}
+        style={{
+          background: colors.bg, borderColor: colors.border, color: colors.text,
+        }}
+        onClick={() => onOpen?.(chip)}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => { if (e.key === 'Enter') onOpen?.(chip); }}
+      >
+        {chip.label}
+      </div>
+    </Tooltip>
   );
+}
+
+// ─── Law 14 — a missing name never renders as a node id ───────────────────────
+
+/** Ids already warned about, so an unnamed attachment warns once, not once per render. */
+const warnedMissingLabel = new Set<string>();
+
+/**
+ * The chip's visible label, or a plain-English stand-in when the node has no name.
+ *
+ * Law 14: "a key the vocabulary cannot resolve renders as its best plain-English
+ * fallback and warns once, never as the key". The previous fall-through ended at
+ * `node.id`, so an attachment authored without a `name` put `mark.hollow_touched.7f3a`
+ * on the bar as its label — fail-open straight to a raw key, warning nowhere.
+ *
+ * The warn is what makes this a fallback rather than a cover-up: the chip stays
+ * readable for the player (NFP #4) while the missing name stays findable for us.
+ */
+function resolveChipLabel(
+  node: { id: string; properties: Record<string, unknown> },
+  bucket: HookBucket,
+): string {
+  const raw = node.properties.name ?? node.properties.label;
+  if (typeof raw === 'string' && raw.trim()) return raw;
+
+  if (!warnedMissingLabel.has(node.id)) {
+    warnedMissingLabel.add(node.id);
+    console.warn(
+      `[HooksBlock] attachment '${node.id}' has no name or label — ` +
+      `rendering the '${bucket}' fallback instead of the node id.`,
+    );
+  }
+  return HOOK_LABEL_FALLBACK[bucket];
+}
+
+/** Test seam: the warn-once set is module state and would leak between cases. */
+export function __resetHookLabelWarnings(): void {
+  warnedMissingLabel.clear();
 }
 
 interface HooksBlockProps {
@@ -101,18 +126,28 @@ function extractChips(gameState: GameState): {
     const node = graph.getNode(edge.target);
     if (!node) continue;
     const p = node.properties;
-    const label = (p.name ?? p.label ?? node.id) as string;
     const def = (p.description ?? p.flavorText ?? '') as string;
     const category = (p.category ?? p.attachmentCategory ?? '') as string;
     const valence = (p.valence ?? 'neutral') as string;
 
+    // Bucket first, label second: the label's fallback names the *kind* of thing
+    // (THR-1118), so it cannot be resolved before we know which row this lands in.
+    // An attachment whose category matches no bucket is dropped, as it always was.
+    const bucket: HookBucket | null =
+      category === 'condition' || category === 'mark' ? 'condition'
+      : category === 'clue' || category === 'lore' ? 'clue'
+      : category === 'agreement' || category === 'vow' || category === 'pact' ? 'vow'
+      : null;
+    if (!bucket) continue;
+
+    const label = resolveChipLabel(node, bucket);
     const chip: ChipData = { id: node.id, label, def, valence };
 
-    if (category === 'condition' || category === 'mark') {
+    if (bucket === 'condition') {
       conditions.push(chip);
-    } else if (category === 'clue' || category === 'lore') {
+    } else if (bucket === 'clue') {
       clues.push({ ...chip, valence: 'clue' });
-    } else if (category === 'agreement' || category === 'vow' || category === 'pact') {
+    } else {
       vows.push({ ...chip, valence: valence === 'neutral' ? 'pact' : valence });
     }
   }

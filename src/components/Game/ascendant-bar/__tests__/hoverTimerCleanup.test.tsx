@@ -5,10 +5,21 @@
  * element unmounted*, so a component that went away inside the delay window left
  * the timer armed and its callback ran `setShow` on a torn-down component.
  *
- * Same defect shape as THR-1106 (`ActionCard`'s shake timer), and these tests
- * borrow its falsification discipline: each site gets a premise test proving the
- * timer we count is genuinely the tooltip's, so the post-unmount assertion cannot
- * pass for the wrong reason (e.g. against a hover that armed nothing at all).
+ * **Retargeted by THR-1118.** Both hand-rolled hovers were deleted when the two sites
+ * moved onto the shared `Tooltip` (Law 17 — hover explanations route through the one
+ * primitive). The defect shape is therefore unreachable *here* by construction, and
+ * the guarantee now lives in `Tooltip`'s own unmount cleanup. These tests survive the
+ * migration on purpose: they assert the invariant on the **composed surface**, so a
+ * future hand-rolled hover re-introduced into either component fails here rather than
+ * only in a primitive test that the new code would not be going through.
+ *
+ * The falsification discipline is unchanged — each site keeps a premise test proving
+ * the timer being counted is genuinely the tooltip's, so the post-unmount assertion
+ * cannot pass for the wrong reason (e.g. against a hover that armed nothing at all).
+ * That guard earns its keep across this rewrite: the shared `Tooltip` listens on
+ * `onPointerEnter`, not `onMouseEnter`, so the old `fireEvent.mouseEnter` calls now
+ * arm nothing — and without the premise assertions every unmount test here would
+ * still have passed, green and vacuous.
  */
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, act } from '@testing-library/react';
@@ -17,20 +28,18 @@ import { HooksBlock } from '../HooksBlock';
 import type { AscendantIdentityView, QuintessenceView } from '../selectors';
 import type { GameState } from '../../../../types/gameState';
 import type { WorldGraph } from '../../../../engine/graph';
+import { TOOLTIP_SHOW_DELAY } from '../../../../types/tooltip';
+import { UI_TOOLTIPS } from '../../../../data/ui-content';
 
 // ─── IdentityStrip fixtures ──────────────────────────────────────────────────
 
-/** Mirrors `TOOLTIP_DELAY_MS` in IdentityStrip.tsx (not exported). */
-const IDENTITY_DELAY_MS = 450;
-
-/** The Name tooltip's body copy — unique on the surface, so it marks "tooltip shown". */
-const NAME_TOOLTIP_BODY =
-  'Your name carries the shape of what you were. Click to open the full sheet.';
+/** The Name tooltip's body — now registry copy, so it is read from the registry. */
+const NAME_TOOLTIP_BODY = UI_TOOLTIPS['ui.ascendant_name'].desc!;
 
 const IDENTITY: AscendantIdentityView = {
   divineName: 'Vess of the Long Dark',
   mortalName: 'Vess',
-  archetypeTitle: 'The Witness',
+  archetypeTitle: 'The Unblinking',
   epithet: null,
   portraitSrc: null,
   primarySphere: 'mind',
@@ -49,18 +58,15 @@ function renderIdentityStrip() {
   );
 }
 
-/** The hover handlers sit on the `HoveredTerm` span wrapping the name text. */
+/** The hover handlers sit on the `Tooltip` span wrapping the name text. */
 function nameHoverTarget(): HTMLElement {
   const nameText = screen.getByText(IDENTITY.divineName);
   const target = nameText.parentElement;
-  if (!target) throw new Error('name text has no HoveredTerm parent — fixture drifted');
+  if (!target) throw new Error('name text has no Tooltip parent — fixture drifted');
   return target;
 }
 
 // ─── HooksBlock fixtures ─────────────────────────────────────────────────────
-
-/** Mirrors `TOOLTIP_DELAY_MS` in HooksBlock.tsx (not exported). */
-const HOOKS_DELAY_MS = 600;
 
 const CHIP_LABEL = 'Hollow-Marked';
 const CHIP_DEF = 'A thinning where something reached through and did not fully withdraw.';
@@ -95,7 +101,7 @@ function makeHooksState(): GameState {
 
 // ─── IdentityStrip ───────────────────────────────────────────────────────────
 
-describe('IdentityStrip — hover tooltip timer lifecycle (THR-1108)', () => {
+describe('IdentityStrip — hover tooltip timer lifecycle (THR-1108, via shared Tooltip)', () => {
   it('arms exactly one timer on hover, and that timer is what reveals the tooltip', () => {
     vi.useFakeTimers();
     try {
@@ -105,13 +111,13 @@ describe('IdentityStrip — hover tooltip timer lifecycle (THR-1108)', () => {
       expect(vi.getTimerCount()).toBe(0);
       expect(screen.queryByText(NAME_TOOLTIP_BODY)).toBeNull();
 
-      fireEvent.mouseEnter(nameHoverTarget());
+      fireEvent.pointerEnter(nameHoverTarget());
 
       expect(vi.getTimerCount()).toBe(1);
       // Still hidden — the reveal is the timer's job, not the hover's.
       expect(screen.queryByText(NAME_TOOLTIP_BODY)).toBeNull();
 
-      act(() => { vi.advanceTimersByTime(IDENTITY_DELAY_MS); });
+      act(() => { vi.advanceTimersByTime(TOOLTIP_SHOW_DELAY); });
 
       // Ties the counted timer to the tooltip: firing it is what shows the copy.
       expect(screen.getByText(NAME_TOOLTIP_BODY)).toBeInTheDocument();
@@ -125,7 +131,7 @@ describe('IdentityStrip — hover tooltip timer lifecycle (THR-1108)', () => {
     try {
       const { unmount } = renderIdentityStrip();
 
-      fireEvent.mouseEnter(nameHoverTarget());
+      fireEvent.pointerEnter(nameHoverTarget());
       // Guard against a vacuous pass: the hover must actually arm the timer, or
       // the post-unmount assertion below would hold for the wrong reason.
       expect(vi.getTimerCount()).toBe(1);
@@ -133,7 +139,7 @@ describe('IdentityStrip — hover tooltip timer lifecycle (THR-1108)', () => {
       unmount();
 
       expect(vi.getTimerCount()).toBe(0);
-      expect(() => vi.advanceTimersByTime(IDENTITY_DELAY_MS * 4)).not.toThrow();
+      expect(() => vi.advanceTimersByTime(TOOLTIP_SHOW_DELAY * 4)).not.toThrow();
     } finally {
       vi.useRealTimers();
     }
@@ -142,7 +148,7 @@ describe('IdentityStrip — hover tooltip timer lifecycle (THR-1108)', () => {
 
 // ─── HooksBlock ──────────────────────────────────────────────────────────────
 
-describe('HooksBlock chip — hover tooltip timer lifecycle (THR-1108)', () => {
+describe('HooksBlock chip — hover tooltip timer lifecycle (THR-1108, via shared Tooltip)', () => {
   it('arms exactly one timer on hover, and that timer is what reveals the tooltip', () => {
     vi.useFakeTimers();
     try {
@@ -153,12 +159,12 @@ describe('HooksBlock chip — hover tooltip timer lifecycle (THR-1108)', () => {
       expect(vi.getTimerCount()).toBe(0);
       expect(screen.queryByText(CHIP_DEF)).toBeNull();
 
-      fireEvent.mouseEnter(chip);
+      fireEvent.pointerEnter(chip);
 
       expect(vi.getTimerCount()).toBe(1);
       expect(screen.queryByText(CHIP_DEF)).toBeNull();
 
-      act(() => { vi.advanceTimersByTime(HOOKS_DELAY_MS); });
+      act(() => { vi.advanceTimersByTime(TOOLTIP_SHOW_DELAY); });
 
       expect(screen.getByText(CHIP_DEF)).toBeInTheDocument();
     } finally {
@@ -171,14 +177,14 @@ describe('HooksBlock chip — hover tooltip timer lifecycle (THR-1108)', () => {
     try {
       const { unmount } = render(<HooksBlock gameState={makeHooksState()} />);
 
-      fireEvent.mouseEnter(screen.getByText(CHIP_LABEL));
+      fireEvent.pointerEnter(screen.getByText(CHIP_LABEL));
       // Guard against a vacuous pass, as above.
       expect(vi.getTimerCount()).toBe(1);
 
       unmount();
 
       expect(vi.getTimerCount()).toBe(0);
-      expect(() => vi.advanceTimersByTime(HOOKS_DELAY_MS * 4)).not.toThrow();
+      expect(() => vi.advanceTimersByTime(TOOLTIP_SHOW_DELAY * 4)).not.toThrow();
     } finally {
       vi.useRealTimers();
     }

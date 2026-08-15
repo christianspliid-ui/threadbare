@@ -69,6 +69,10 @@ describe('tooltip content validation', () => {
       // Doom concepts
       'doom.unmaking',
       'doom.clock',
+      // Quintessence bands (THR-1118)
+      'quintessence.transcendent',
+      'quintessence.healthy',
+      'quintessence.dissolving',
     ];
 
     const emptyLabels: string[] = [];
@@ -102,6 +106,36 @@ describe('tooltip content validation', () => {
       longDescs.length,
       longDescs.length > 0 ? `Descriptions too long:\n${longDescs.join('\n')}` : ''
     ).toBe(0);
+  });
+
+  /**
+   * Test 3b: the same ≤200-char Law 18 gate, for the quintessence bands (THR-1118).
+   *
+   * Test 3 iterates `UI_TOOLTIPS` only, so copy behind a non-`ui.*` prefix is outside
+   * it by construction — which is how the ascendant bar's band copy sat unmeasured
+   * while it was inline in the component. Routing it into the registry only puts it
+   * under the gate if the gate is told to look, so this walks every band rather than
+   * a sample: the six are a closed set, and a seventh added later fails here first.
+   */
+  it('no quintessence band description exceeds 200 characters', () => {
+    const bands = [
+      'transcendent', 'healthy', 'strained', 'weakened', 'critical', 'dissolving',
+    ] as const;
+    const problems: string[] = [];
+
+    for (const band of bands) {
+      const resolved = resolveTooltip(`quintessence.${band}`);
+      if (!resolved) {
+        problems.push(`quintessence.${band}: does not resolve`);
+        continue;
+      }
+      if (!resolved.label?.trim()) problems.push(`quintessence.${band}: empty label`);
+      if (resolved.desc && resolved.desc.length > 200) {
+        problems.push(`quintessence.${band}: ${resolved.desc.length} chars`);
+      }
+    }
+
+    expect(problems.length, problems.join('\n')).toBe(0);
   });
 
   /**
@@ -139,6 +173,7 @@ describe('tooltip content validation', () => {
       'terrain',
       'archetype',
       'doom',
+      'quintessence', // THR-1118 — ascendant-bar band tooltips
       'mandate', // Explicitly allowed even though not yet resolved
     ]);
 

@@ -11,26 +11,20 @@
 import type { QuintessenceBand } from '../types/quintessence';
 import type { SphereName } from '../types';
 
-// ─── Archetype copy ──────────────────────────────────────────────────────────
-
-export interface ArchetypeCopy {
-  body: string;
-}
-
-export const ARCHETYPE_COPY: Record<string, ArchetypeCopy> = {
-  Witness: {
-    body: 'Those who watch, and whose watching changes what is watched. Witnesses tend the inward eye; they gather Mind and Spirit essence most readily, and their interventions carry weight because they were seen.',
-  },
-  Shaper: {
-    body: 'Those who make the world bend to their will. Shapers press upon the world and find it yields, given the right angle.',
-  },
-  Keeper: {
-    body: "Those who preserve what would otherwise be lost. A Keeper's presence is a quiet anchor, steadying what the world would sweep away.",
-  },
-  Breaker: {
-    body: 'Those who unmake what was fixed. Everything the Breaker touches carries the potential to come apart — which can be ruin, or release.',
-  },
-};
+// ─── Archetype copy — retired (THR-1118) ─────────────────────────────────────
+//
+// `ARCHETYPE_COPY` lived here keyed on `Witness` / `Shaper` / `Keeper` / `Breaker`
+// and was looked up by `IdentityStrip` as `ARCHETYPE_COPY[identity.archetypeTitle]`.
+// It could never hit: an ascendant's `archetypeTitle` comes from `ARCHETYPE_TITLES`
+// in `ascendant-content.ts` — 96 generated, sphere-keyed flavour strings, every one
+// of them prefixed "The " ('The Unblinking', 'The Thread-Singer'), and none of them
+// one of those four words. So the lookup returned `undefined` on every run the game
+// has ever had, and the component silently rendered its generic fallback instead.
+//
+// A per-title registry entry is not the fix either: the title is procedurally picked
+// flavour, not a concept with authored meaning. The *concept* is "archetype", and it
+// now lives in the one tooltip registry as `ui.ascendant_archetype` (Law 17), with the
+// generated title carried as the hover trigger's own text.
 
 // ─── Sphere copy ─────────────────────────────────────────────────────────────
 
@@ -56,29 +50,43 @@ export const SPHERE_COPY: Partial<Record<SphereName, SphereCopy>> = {
 
 // ─── Quintessence band tooltips ──────────────────────────────────────────────
 
+/**
+ * The six quintessence bands, as tooltip content.
+ *
+ * This is the content package behind the tooltip registry's `quintessence.*` prefix
+ * (`tooltipResolver.ts`) — the band is a game concept, so per Law 17 the surface passes
+ * `quintessence.<band>` as an id and never reaches in here for copy of its own.
+ *
+ * `label` is the display label the registry hands to `Tooltip`, so it is written
+ * Title-cased and carries its own concept name; the resolver is a pure passthrough
+ * rather than a place where labels get assembled. It used to be the bare lowercase
+ * band word, read only by `IdentityStrip`'s hand-rolled tooltip eyebrow — the eyebrow
+ * that rendered `Sphere · mind` beside it and cost the surface its Law 14 conformance
+ * (THR-1118). Bodies stay ≤200 chars for Law 18 / `tooltipValidation.test.ts`.
+ */
 export const BAND_TOOLTIP: Record<QuintessenceBand, { label: string; body: string }> = {
   transcendent: {
-    label: 'transcendent',
+    label: 'Quintessence — Transcendent',
     body: 'Your sphere holds you whole, and more. You act with uncommon clarity; essence gathers freely.',
   },
   healthy: {
-    label: 'healthy',
+    label: 'Quintessence — Healthy',
     body: 'You hold. What is you, is you; the wind has not yet found the crack. Your capacity is full.',
   },
   strained: {
-    label: 'strained',
+    label: 'Quintessence — Strained',
     body: 'Something pulls at the seams. Not broken — but you feel the strain of holding yourself together.',
   },
   weakened: {
-    label: 'weakened',
+    label: 'Quintessence — Weakened',
     body: 'Something is loose. The inward eye is slower to turn. Some verbs cost more than they should.',
   },
   critical: {
-    label: 'critical',
+    label: 'Quintessence — Critical',
     body: 'You are fraying. Every act bites. Without restoration you cannot long remain yourself.',
   },
   dissolving: {
-    label: 'dissolving',
+    label: 'Quintessence — Dissolving',
     body: 'You are barely you. The rings of the self smear when looked at directly. Unmaking is near.',
   },
 };
@@ -232,6 +240,32 @@ export const COVENANT_RELEASE_TITLE =
 
 /** Badge shown when a rival is contesting the covenant. */
 export const COVENANT_CONTESTED_COPY = 'Contested';
+
+// ─── Hooks block — chip label fallbacks (THR-1118) ────────────────────────────
+
+/**
+ * What a conditions/clues/vows chip is called when its attachment node carries no
+ * readable name.
+ *
+ * Law 14 — no raw internal keys, ever: "a key the vocabulary cannot resolve renders as
+ * its best plain-English fallback and warns once, never as the key". `HooksBlock` used
+ * to fall through `name ?? label ?? node.id`, so an unnamed attachment put a node id
+ * (`mark.hollow_touched.7f3a`) straight onto the bar as its visible label, silently.
+ *
+ * Keyed by the chip's own bucket so the fallback still says *what kind of thing* it is
+ * — a fallback that reads as an authored state rather than a broken one (Law 4). The
+ * bucket is always known: it is what routed the chip into its row.
+ */
+export const HOOK_LABEL_FALLBACK = {
+  condition: 'An unnamed mark',
+  clue: 'An unnamed clue',
+  vow: 'An unnamed vow',
+} as const;
+
+export type HookBucket = keyof typeof HOOK_LABEL_FALLBACK;
+
+/** Shown in the chip's tooltip when the attachment node carries no description. */
+export const HOOK_DEF_FALLBACK = 'Nothing is recorded of this yet.';
 
 /** Upkeep lines, keyed by whether the covenant costs, earns, or sustains itself. */
 export const COVENANT_UPKEEP_COPY = {
