@@ -8,6 +8,7 @@ import { runTick, resetDecisionCache, resetEventCounter } from '../orchestrator'
 import { createSimulationRuntime } from '../simulationRuntime';
 import { initializeGameState } from '../gameInit';
 import { UNIFIED_ACTION_TEMPLATES } from '../../data/unified-action-templates';
+import { gateDutyStanceChoices } from '../../components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel';
 
 function addIndividual(
   graph: WorldGraph,
@@ -200,7 +201,13 @@ describe('Gate Duty direct debug spawn progression', () => {
       encounterNotifications: prepared.notification ? [{ ...prepared.notification, viewed: true }] : [],
     };
 
-    const choice = prepared.notification?.choices[0];
+    // THR-1121 — the notification no longer carries the generic stance triple
+    // (`generateInterventionChoices` is retired), so gate duty's stances are
+    // sourced by its own adapter. Driving from that same production helper keeps
+    // this test committing a choice the player can actually be shown, rather
+    // than one invented here.
+    expect(prepared.notification?.choices).toEqual([]);
+    const choice = gateDutyStanceChoices()[0];
     expect(choice).toBeDefined();
     state = commitFirstChoice(state, choice!);
 

@@ -1244,21 +1244,26 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     if (tieredEncounterState.threadTier === 'watched') return null;
     const ut = getUnifiedTemplateById(tieredEncounterState.template.id);
     if (!ut) return null;
-    // Qualify if the template has support bundle, branching steps, aftermath config,
-    // or an authored nudge hand on any step.
+    // THR-1121 — every unified template qualifies. The old gate admitted only
+    // templates with a support bundle, branching, aftermath config or an authored
+    // nudge hand (THR-775's clause, load-bearing at the time: a nudge-bearing
+    // template is typically plain otherwise, and without it the hand was
+    // unreachable for exactly the templates WS1 authors it onto). Everything else
+    // fell through to `buildSimpleEncounterStageModel`.
     //
-    // THR-775: the nudge clause is load-bearing, not a nicety. A nudge-bearing
-    // template is typically plain otherwise — the golden exemplar has no bundle,
-    // no branching and no aftermath config — so without this it falls through to
-    // the simple adapter, which builds no nudge phase, and the hand is unreachable
-    // for exactly the templates WS1 authors it onto.
-    const hasSupportBundle = !!ut.supportBundle && ut.supportBundle.length > 0;
-    const hasBranching = ut.steps.some(step => 'branchOnStep' in step);
-    const hasAftermath = !!ut.aftermathConfig;
-    const hasNudges = ut.steps.some(
-      step => !('branchOnStep' in step) && !!step.nudges && step.nudges.length > 0,
-    );
-    return (hasSupportBundle || hasBranching || hasAftermath || hasNudges) ? ut : null;
+    // That fall-through only worked because the simple screen had a move set to
+    // render: the generic supportive/coercive/withdrawn triple from
+    // `generateInterventionChoices`. Retiring that producer leaves the simple
+    // adapter with `notification.choices` empty and no nudge phase to offer
+    // instead — a stage with nothing on it to do. Widening the gate routes those
+    // templates to the unified adapter, which builds the fate-alone nudge phase
+    // (`Let fate decide`) for a step that authored nothing. The gate lost its
+    // reason before it lost its condition; this removes both.
+    //
+    // `watched` tier and gate duty are still excluded above, and both are
+    // unaffected by the retirement: watched was observation-only already
+    // (`maxChoices: 0`), and gate duty sources its stances locally.
+    return ut;
   }, [tieredEncounterState, isGateDutyEncounterStage]);
 
   const encounterStageActiveAction = useMemo(() => {

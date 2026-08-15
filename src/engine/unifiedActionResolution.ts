@@ -409,12 +409,21 @@ export function resolveUncontestedStep(
   // Phase 3: Push — risky actions attempt to spend quintessence for better odds.
   // The actor node must be resolvable and the template must be push-eligible.
   let pushModifier = 0;
-  const rememberedChoice = getEffectiveUnifiedActionChoiceMemory(
-    action,
-    action.currentStep,
-    step.id,
-  );
-  const interventionBoost = rememberedChoice?.probabilityBoost ?? 0;
+  // THR-1121 — the step's choice memory is **no longer read here**. It was
+  // the application site of the paid RNG modifier: a choice priced in essence
+  // bought a flat addition to the roll's odds, on the same additive channel as
+  // push and the company assist. The Nudge Model pivot (THR-773/WS0) rejects
+  // exactly that trade — the god nudges the fiction, fate picks the outcome — so
+  // there is no longer any surface that sells odds, and this was the last thing
+  // reading the price as one.
+  //
+  // The choice memory itself stays: `resolveInterveneChoice` writes it, and
+  // `resolveAftermathVariant` keys authored endings off `choiceId` via
+  // `aftermathConfig.branchOnStep` (THR-989 — 30 of 34 variant-carrying templates
+  // depend on it). An authored choice therefore still costs essence and still
+  // decides which ending is reached; what it no longer does is move the roll.
+  // Per-card forecast movement now lives on the *named* `nudge:<id>` channel
+  // below, which the stage renders as words rather than percentages.
   let pushEvent: import('../types/quintessence').QuintessenceEvent | null = null;
   // THR-728: push is mortal-only. It spends the actor's quintessence pre-roll, and
   // the ascendant has no place in that economy.
@@ -457,9 +466,10 @@ export function resolveUncontestedStep(
   }
 
   // THR-74: the company's assist + cohesion bonus rides the same additive
-  // channel as push and intervention, so scale adjustment, the probability
-  // floor, and the trace all see one consistent modifier total.
-  const totalActionModifiers = pushModifier + interventionBoost + (groupStep?.totalBonus ?? 0)
+  // channel as push, so scale adjustment, the probability floor, and the trace
+  // all see one consistent modifier total. (THR-1121 removed the intervention
+  // boost from this sum — see the note at `rememberedChoice` above.)
+  const totalActionModifiers = pushModifier + (groupStep?.totalBonus ?? 0)
     + nudgeModifierTotal;
 
   // THR-451: Apply scale-based difficulty adjustments at the caller boundary.

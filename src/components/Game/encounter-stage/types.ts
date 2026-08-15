@@ -663,9 +663,20 @@ export interface EncounterStageModel {
   resolutionReadout?: EncounterStageResolutionReadoutModel;
   aftermath?: EncounterStageAftermathModel;
   /**
-   * THR-775 — present only when the current step carries an authored nudge
-   * hand. The stage branches on its presence: absent ⇒ the legacy
-   * `authoredChoices` screen renders exactly as before.
+   * THR-775 — present when the current step carries an authored nudge hand.
+   * The stage branches on its presence: absent ⇒ the `authoredChoices` screen
+   * renders exactly as before.
+   *
+   * THR-1121 — **also present, with an empty `cards` array, when the step
+   * authored neither a hand nor choices.** That is the fate-alone screen:
+   * `Nothing here answers to you. Let it play out.` over the usual motive/test
+   * framing, with `Let fate decide` as the only move. It exists because the
+   * generic supportive/coercive/withdrawn stance triple that used to carry such
+   * steps is retired, so `choices` is now empty for every unauthored step and
+   * the absent branch would render a scene with nothing to do on it.
+   *
+   * So `nudgePhase` present no longer implies an authored hand — read `cards`
+   * for that, not presence.
    */
   nudgePhase?: EncounterStageNudgePhaseModel;
 }

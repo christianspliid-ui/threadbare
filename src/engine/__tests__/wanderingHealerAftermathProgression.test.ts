@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { initializeGameState } from '../gameInit';
 import { prepareDebugEncounterSpawn } from '../debugEncounterTools';
-import { recordUnifiedActionChoiceMemory } from '../encounterChoiceMemory';
 import { runTick, resetDecisionCache, resetEventCounter } from '../orchestrator';
 import { createSimulationRuntime } from '../simulationRuntime';
 
@@ -41,24 +40,19 @@ describe('wandering healer unified encounter', () => {
     expect(prepared.unifiedAction).toBeDefined();
     expect(prepared.notification).toBeDefined();
 
-    const choice = prepared.notification!.choices[0]!;
+    // THR-1121 — this used to commit `notification.choices[0]` into choice memory
+    // before ticking, standing in for "the player picked a stance". That lever is
+    // gone: the generic triple is retired, so an unauthored step's notification
+    // now arrives with an empty hand, and the step needs no commit to progress —
+    // fate resolves it when `stepProgress` completes. Driving with the empty hand
+    // is the current path, and it is what the fate-alone stage does when the
+    // player clicks `Let fate decide` on a step that authored nothing.
+    expect(prepared.notification!.choices).toEqual([]);
+
     state = {
       ...state,
       unifiedActions: prepared.unifiedAction ? [prepared.unifiedAction] : [],
       encounterNotifications: prepared.notification ? [{ ...prepared.notification, viewed: true, resolved: true }] : [],
-    };
-
-    state = {
-      ...state,
-      unifiedActions: state.unifiedActions.map(action =>
-        recordUnifiedActionChoiceMemory(
-          action,
-          action.currentStep,
-          `step-${action.currentStep + 1}`,
-          choice,
-          state.tick,
-          choice.essenceCost ?? 0,
-        )),
     };
 
     const runtime = createSimulationRuntime();

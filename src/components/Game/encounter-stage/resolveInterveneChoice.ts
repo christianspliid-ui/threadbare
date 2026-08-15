@@ -40,14 +40,24 @@ import type {
   UnifiedActionTemplate,
 } from '../../../types/unifiedAction';
 import type { EncounterInterventionChoice } from '../../../types/encounterVisibility';
-import { BOOST_TO_PROBABILITY_RATIO } from '../../../types/encounterVisibility';
 
 /**
  * Convert an authored card to the intervention shape the recorders consume.
  *
- * `probabilityBoost` uses the same `BOOST_TO_PROBABILITY_RATIO` conversion the
- * generic path applies (NFP #1 — one named constant, not a second scale), so a
- * paid authored choice buys exactly the odds a generic one of that cost buys.
+ * `probabilityBoost` is **0** (THR-1121). It used to be
+ * `BOOST_TO_PROBABILITY_RATIO * card.essenceCost`, mirroring the generic path so
+ * that a paid authored choice bought exactly the odds a generic one of that cost
+ * bought. Both halves of that trade are now retired: the generic triple is gone
+ * (`generateInterventionChoices` returns `[]`) and resolution no longer reads the
+ * field at all, because selling odds is the pre-nudge pattern the Nudge Model
+ * pivot rejected (THR-773/WS0). Writing a live-looking number into choice memory
+ * that nothing applies would be worse than a zero — it reads as a working
+ * mechanic to the next person who greps for it.
+ *
+ * The card's `essenceCost` is still charged and its `id` is still what
+ * `resolveAftermathVariant` branches authored endings on, so an authored choice
+ * keeps costing something and keeps deciding which ending is reached.
+ *
  * `godVoice` is deliberately absent: an authored card carries `intent`, a full
  * prose paragraph the stage already renders, and synthesising a second voice
  * line here would ship prose no author wrote.
@@ -57,7 +67,7 @@ function toInterventionChoice(card: AuthoredChoiceCard): EncounterInterventionCh
     id: card.id,
     text: card.label,
     essenceCost: card.essenceCost,
-    probabilityBoost: BOOST_TO_PROBABILITY_RATIO * card.essenceCost,
+    probabilityBoost: 0,
     interventionType: card.interventionType,
   };
 }

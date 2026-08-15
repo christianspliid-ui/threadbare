@@ -74,30 +74,41 @@ describe('getVisibilityDepth', () => {
 
 // ─── Intervention Choices ──────────────────────────────────────────
 
-describe('generateInterventionChoices', () => {
-  it('generates 3 choices for the_first', () => {
-    const choices = generateInterventionChoices('the_first', 'Battle');
-    expect(choices.length).toBe(3);
-    expect(choices.some(c => c.interventionType === 'supportive')).toBe(true);
-    expect(choices.some(c => c.interventionType === 'coercive')).toBe(true);
-    expect(choices.some(c => c.interventionType === 'withdrawn')).toBe(true);
+/**
+ * THR-1121 — the generic stance triple is retired, and these pin that it stays
+ * retired for **every** court position rather than merely being unreachable from
+ * the one the last test happened to use.
+ *
+ * The old suite asserted 3 choices for `the_first`, 2 for `retinue` (no
+ * coercive), 0 for `watched` and 0 for null — the shape of a paid RNG modifier
+ * scaled by court rank. All four now answer 0. The two that already expected 0
+ * are kept deliberately: without them a future reintroduction gated on rank
+ * could pass the suite by only lighting up the top tiers, which is exactly how
+ * this producer was originally written.
+ */
+describe('generateInterventionChoices (retired — THR-1121)', () => {
+  it.each(['the_first', 'retinue', 'watched', 'dormant'] as const)(
+    'emits no generic stance choices for %s',
+    position => {
+      expect(generateInterventionChoices(position, 'Battle')).toEqual([]);
+    },
+  );
+
+  it('emits no generic stance choices for a null position', () => {
+    expect(generateInterventionChoices(null, 'Battle')).toEqual([]);
   });
 
-  it('generates 2 choices for retinue (no coercive)', () => {
-    const choices = generateInterventionChoices('retinue', 'Battle');
-    expect(choices.length).toBe(2);
-    expect(choices.some(c => c.interventionType === 'supportive')).toBe(true);
-    expect(choices.some(c => c.interventionType === 'withdrawn')).toBe(true);
-  });
-
-  it('generates no choices for watched', () => {
-    const choices = generateInterventionChoices('watched', 'Battle');
-    expect(choices.length).toBe(0);
-  });
-
-  it('generates no choices for null position', () => {
-    const choices = generateInterventionChoices(null, 'Battle');
-    expect(choices.length).toBe(0);
+  it('emits none under the force-full-visibility override either', () => {
+    // THR-880 used to promote every threaded position to `the_first` here, which
+    // is precisely the path that would resurrect the triple in a testing session
+    // while production looked clean.
+    setForceFullEncounterVisibility(true);
+    try {
+      expect(generateInterventionChoices('watched', 'Battle')).toEqual([]);
+      expect(generateInterventionChoices('the_first', 'Battle')).toEqual([]);
+    } finally {
+      setForceFullEncounterVisibility(false);
+    }
   });
 });
 
@@ -143,7 +154,10 @@ describe('buildEncounterNotification', () => {
     expect(notif).not.toBeNull();
     expect(notif!.agentName).toBe('Kira');
     expect(notif!.autoResolveTick).toBe(10 + RETINUE_VIGNETTE_TIMEOUT);
-    expect(notif!.choices.length).toBe(2);
+    // THR-1121 — was 2 (the retinue stance pair). A notification now arrives with
+    // an empty hand and is filled by `phaseEncounterVisibility` only when the
+    // step carries authored choices.
+    expect(notif!.choices).toEqual([]);
   });
 
   it('builds notification with null auto-resolve for pause mode', () => {
@@ -192,11 +206,14 @@ describe('force-full-encounter-visibility override', () => {
     expect(getVisibilityDepth('dormant')).toBe('none');
   });
 
-  it('upgrades watched to the_first-level choices while active', () => {
+  it('still upgrades watched to full prose depth while active', () => {
+    // THR-1121 — this case used to assert the *choice* upgrade (watched → the
+    // 3-stance the_first set). The stance set is retired, so what the override
+    // still buys a watched thread is the thing it was really for: full prose
+    // instead of a one-line peek.
     setForceFullEncounterVisibility(true);
-    const choices = generateInterventionChoices('watched', 'Battle');
-    expect(choices.length).toBe(3);
-    expect(choices.some(c => c.interventionType === 'coercive')).toBe(true);
+    expect(getVisibilityDepth('watched')).toBe('full');
+    expect(generateInterventionChoices('watched', 'Battle')).toEqual([]);
   });
 
   it('forces autoResolveTick to null for a threaded auto_resolve notification', () => {
@@ -207,7 +224,7 @@ describe('force-full-encounter-visibility override', () => {
     );
     expect(notif).not.toBeNull();
     expect(notif!.autoResolveTick).toBeNull();
-    expect(notif!.choices.length).toBe(3);
+    expect(notif!.choices).toEqual([]);
   });
 
   it('still returns null for a dormant/null court position while active', () => {

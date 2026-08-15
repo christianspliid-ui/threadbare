@@ -9,6 +9,7 @@ import { applyEncounterAftermathReaction } from '../encounterAftermath';
 import { runTick, resetDecisionCache, resetEventCounter } from '../orchestrator';
 import { createSimulationRuntime } from '../simulationRuntime';
 import { initializeGameState } from '../gameInit';
+import { gateDutyStanceChoices } from '../../components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel';
 
 function addIndividual(
   graph: WorldGraph,
@@ -207,21 +208,28 @@ describe('Gate Duty aftermath progression', () => {
 
     const runtime = createSimulationRuntime();
 
-    const stepOneChoice = prepared.notification?.choices[0];
-    expect(stepOneChoice).toBeDefined();
-    state = commitChoiceForCurrentStep(state, stepOneChoice!);
+    // THR-1121 — gate duty's stances come from its own adapter now that the
+    // generic triple is retired, so every step's notification arrives with an
+    // empty hand and the stance is supplied here from the same production helper
+    // the stage renders. Asserted once, on the first step, rather than at each:
+    // one falsification of "the notification no longer carries choices" is the
+    // claim, and repeating it three times would just be louder.
+    expect(prepared.notification?.choices).toEqual([]);
+    const stanceChoice = gateDutyStanceChoices()[0]!;
+
+    state = commitChoiceForCurrentStep(state, stanceChoice);
     state = runTick(state, [], runtime);
     state = runTick(state, [], runtime);
 
     const stepTwoNotification = getOpenNotification(state, 1);
     expect(stepTwoNotification).toBeDefined();
-    state = commitChoiceForCurrentStep(state, stepTwoNotification!.choices[0]!);
+    state = commitChoiceForCurrentStep(state, stanceChoice);
     state = runTick(state, [], runtime);
     state = runTick(state, [], runtime);
 
     const stepThreeNotification = getOpenNotification(state, 2);
     expect(stepThreeNotification).toBeDefined();
-    state = commitChoiceForCurrentStep(state, stepThreeNotification!.choices[0]!);
+    state = commitChoiceForCurrentStep(state, stanceChoice);
     state = runTick(state, [], runtime);
 
     const actionAfterResolution = state.unifiedActions.find(candidate => candidate.templateId === 'cg.quest.gate_duty');
