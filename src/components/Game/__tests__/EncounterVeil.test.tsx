@@ -179,14 +179,48 @@ describe('EncounterVeil', () => {
     expect(defaultProps.onDisregard).toHaveBeenCalled();
   });
 
-  it('calls onIntervene with selected choice when Intervene is clicked', () => {
+  /**
+   * THR-1121 — the commit moved out of the footer and into the stage, and now
+   * says `Let fate decide` like every other commit in the nudge pattern. What it
+   * *does* is unchanged, which is what this pins: select a choice, commit, and
+   * `onIntervene` still receives that choice's id and price.
+   */
+  it('calls onIntervene with the selected choice when the stage commit is clicked', () => {
     const onIntervene = vi.fn();
     render(<EncounterVeil {...defaultProps} onIntervene={onIntervene} />);
-    // Click a choice to select it
+
+    // Nothing selected: the commit is present but refuses.
+    const commit = screen.getByTestId('stage-commit');
+    expect(commit).toBeDisabled();
+    fireEvent.click(commit);
+    expect(onIntervene).not.toHaveBeenCalled();
+
     fireEvent.click(screen.getByText(/Let the grain through/));
-    // Click Intervene
-    fireEvent.click(screen.getByText('Intervene'));
+    expect(commit).toBeEnabled();
+    fireEvent.click(commit);
     expect(onIntervene).toHaveBeenCalledWith('choice-support', 2);
+  });
+
+  /**
+   * The legacy pair is gone as *labels*, not merely relocated — the director's
+   * finding was about the words on screen ("the resume/intervene buttons bottom
+   * right ... is a legacy UX pattern"), so absence is the assertion.
+   */
+  it('no longer renders the legacy Intervene / Resume pair', () => {
+    render(<EncounterVeil {...defaultProps} />);
+    expect(screen.queryByText('Intervene')).toBeNull();
+    expect(screen.queryByText('Resume')).toBeNull();
+    expect(screen.getByText('Let fate decide')).toBeInTheDocument();
+  });
+
+  /**
+   * The commit is not a paid-odds purchase any more, so no stance may advertise
+   * one. Falsified against the mock's own choices, which carry the boosts the
+   * retired mechanic would have printed (0.2 and 0.35 ⇒ "+20%" / "+35%").
+   */
+  it('never prints a percentage success purchase beside a choice', () => {
+    render(<EncounterVeil {...defaultProps} />);
+    expect(screen.queryByText(/\+\d+% success/)).toBeNull();
   });
 
   it('shows art title from illustration caption', () => {

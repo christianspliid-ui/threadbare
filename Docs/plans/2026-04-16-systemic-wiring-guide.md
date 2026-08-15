@@ -345,14 +345,28 @@ All six `IntelligenceCategory` values are supported: `shrine_location`, `agent_n
 
 ### Capability 7: Divine Intervention Choices — The Player's Voice
 
-The player is a god. Their choices are always divine interventions, never direct character control. The engine generates intervention choices based on the agent's court position:
+The player is a god. Their choices are always divine interventions, never direct character control.
 
-| Court Position | Choices Available | Prose Depth |
-|---|---|---|
-| `the_first` | Supportive (+3%, 1 essence) + Coercive (+15%, 5 essence) + Withdrawn (free) | Full (3-5 sentences) |
-| `retinue` | Supportive + Withdrawn | Medium (2-3 sentences) |
-| `watched` | Observation only | Peek (1-2 sentences) |
-| `dormant` | None | None |
+> **⚠️ The engine no longer generates a generic choice set (THR-1121, 2026-08-15).** Court position governs **prose depth only**. What the player is offered at a step now comes entirely from what the *template* authored, and there are exactly three cases:
+>
+> | The step authored… | The player gets |
+> |---|---|
+> | a `nudges` hand (capability 14) | the nudge stage: those cards, plus `Let fate decide` |
+> | `authoredChoices` (legacy, 30 templates pending WS5) | the choice screen, committed with `Let fate decide` |
+> | neither | **fate alone** — *"Nothing here answers to you. Let it play out."* and `Let fate decide` |
+>
+> The third case is the model working, not a gap: a step where the god has no purchase is a real state. **What you must not expect any more is a free floor of choices under an unauthored step** — if you want the player to have a move, author one.
+>
+> Court position still governs prose depth exactly as before:
+>
+> | Court Position | Prose Depth |
+> |---|---|
+> | `the_first` | Full (3-5 sentences) |
+> | `retinue` | Medium (2-3 sentences) |
+> | `watched` | Peek (1-2 sentences), observation only |
+> | `dormant` | None |
+>
+> **And no choice buys odds.** The retired set priced itself in essence and paid out in `probabilityBoost` — *supportive +3% for 1 essence, coercive +15% for 5*. `probabilityBoost` is no longer read by resolution at all. An authored choice still **costs** essence and still **keys which authored ending resolves** (`aftermathConfig.branchOnStep`), but the only thing that moves a roll now is a committed nudge card on the named `nudge:<id>` channel. Do not write a choice whose appeal is that it is the expensive one.
 
 **Intervention tracking persists on thread edges:**
 - `totalVignettes`, `playerIntervened`, `playerWithdrew`
@@ -360,7 +374,7 @@ The player is a god. Their choices are always divine interventions, never direct
 - `supportiveCount`, `coerciveCount`
 - `essenceSpentOnEncounters`
 
-**Why this changes what you write:** You're not writing choices for a character — you're writing moments where divine observation creates tension. The god sees the agent struggling and must decide: pour power in, or let them find their own way? **Write moments where the intervention decision is genuinely difficult — where supporting has a cost beyond essence, and withdrawing has consequences beyond failure probability.** The intervention ratio is tracked. A god who always meddles creates a different story than one who watches.
+**Why this changes what you write:** You're not writing choices for a character — you're writing moments where divine observation creates tension. The god sees the agent struggling and must decide: pour power in, or let them find their own way? **Write moments where the intervention decision is genuinely difficult — where supporting has a cost beyond essence, and withdrawing has consequences beyond failure probability.** That last clause is now the *whole* of it rather than a stretch goal: since THR-1121 withdrawing has no failure-probability consequence to be "beyond", because no choice carries one. The interesting difference between meddling and watching has to be in the fiction and the aftermath, or it is nowhere. The intervention ratio is still tracked, and a god who always meddles still creates a different story than one who watches.
 
 **Authored moral-axis poles on choice cards (THR-528).** An `AuthoredChoiceCard` (the cards under a template's `authoredChoices`) can now *declare* which way a choice tilts the acting agent's personality, instead of letting the engine infer it from `interventionType`:
 

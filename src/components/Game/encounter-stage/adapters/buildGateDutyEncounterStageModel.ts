@@ -11,7 +11,14 @@ import type {
   EncounterSupportBinding,
   EncounterSupportSpec,
 } from '../../../../types/encounter';
-import type { EncounterNotification } from '../../../../types/encounterVisibility';
+import type {
+  EncounterNotification,
+  EncounterInterventionChoice,
+} from '../../../../types/encounterVisibility';
+import {
+  ENCOUNTER_BOOST_MIN,
+  ENCOUNTER_BOOST_MAX,
+} from '../../../../types/encounterVisibility';
 import { isStepSuccess, type UnifiedAction, type UnifiedActionTemplate } from '../../../../types/unifiedAction';
 import { getRarityName } from '../../../../types/rarity';
 import type { ReachDomain } from '../../../../types/traits';
@@ -202,6 +209,67 @@ function getGateDutyHeaderSubtitle(currentStepIndex: number): string {
     default:
       return 'A checkpoint story is already unfolding without waiting for you.';
   }
+}
+
+/**
+ * Gate duty's three stances, sourced locally (THR-1121).
+ *
+ * `cg.quest.gate_duty` is the one encounter that *decorates* the generic
+ * intervention triple rather than authoring its own hand: every entry in
+ * `stepCopy` below is keyed by `interventionType`, and so are its aftermath
+ * paragraphs, its opening recaps and its consequence lines — roughly eight
+ * keyed tables across this file. Retiring `generateInterventionChoices` would
+ * therefore have deleted a fully-authored encounter's entire move set as a side
+ * effect of removing a generic producer it happened to lean on.
+ *
+ * So the stances survive, sourced here instead of from the engine, and **stop
+ * selling odds**: `probabilityBoost` is 0, matching every other choice path
+ * after THR-1121. The essence prices stay — a stance still costs something and
+ * still decides which authored ending is reached — they just no longer buy a
+ * flat addition to the roll.
+ *
+ * The ids are the engine's originals (`intervene_support` / `intervene_force` /
+ * `intervene_withdraw`) because choice memory, the aftermath keying and this
+ * file's own `stepCopy` all index on them; renaming them here would be a
+ * migration wearing a cleanup's clothes.
+ *
+ * Converting this encounter to authored nudge cards is real content work — the
+ * fiction is good and wants carrying over, not deleting — and is tracked
+ * separately rather than smuggled into this change.
+ *
+ * A notification that *does* arrive carrying choices (an authored hand, via
+ * `phaseEncounterVisibility`'s override) wins: this is a fallback for the
+ * now-empty generic set, never an override of authored content.
+ */
+export function gateDutyStanceChoices(
+  fromNotification: readonly EncounterInterventionChoice[] = [],
+): readonly EncounterInterventionChoice[] {
+  if (fromNotification.length > 0) return fromNotification;
+  return [
+    {
+      id: 'intervene_support',
+      text: 'Tip the scales in their favor',
+      essenceCost: ENCOUNTER_BOOST_MIN,
+      probabilityBoost: 0,
+      interventionType: 'supportive',
+      godVoice: 'The thread hums with divine purpose.',
+    },
+    {
+      id: 'intervene_force',
+      text: 'Pour divine power into the encounter',
+      essenceCost: ENCOUNTER_BOOST_MAX,
+      probabilityBoost: 0,
+      interventionType: 'coercive',
+      godVoice: 'My will be done.',
+    },
+    {
+      id: 'intervene_withdraw',
+      text: 'Let it play out',
+      essenceCost: 0,
+      probabilityBoost: 0,
+      interventionType: 'withdrawn',
+    },
+  ];
 }
 
 function buildChoiceIntent(args: {
@@ -1294,7 +1362,7 @@ export function buildGateDutyEncounterStageModel({
     factions: factionModels,
     shellState: shellStateModel,
     signals: signalModels,
-      choices: notification.choices.map(choice =>
+      choices: gateDutyStanceChoices(notification.choices).map(choice =>
         buildChoiceIntent({
           choice,
           currentStepIndex,

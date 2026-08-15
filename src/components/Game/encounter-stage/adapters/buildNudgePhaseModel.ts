@@ -144,6 +144,23 @@ export interface BuildNudgePhaseModelArgs {
   narrativeContext?: NarrativeContext;
   /** Phrase-dedup history for `{outcome_phrase}` / `{q_flavor}`; fail-soft when absent. */
   runtime?: SimulationRuntime;
+  /**
+   * Build the phase even when this step authored no nudges (THR-1121).
+   *
+   * The caller sets this when the step has nothing else to offer either — no
+   * authored choices, and no generic stance set now that
+   * `generateInterventionChoices` is retired. The result is the stage's
+   * **fate-alone** screen: the motive line, the test panel, `Nothing here answers
+   * to you. Let it play out.` in place of the hand, and `Let fate decide` as the
+   * only move.
+   *
+   * That is the Nudge Model working rather than a gap — a step where the god has
+   * no purchase is a real state the model is *for*, and it now reads that way
+   * instead of falling back to a paid stance triple. Left `false`, the builder
+   * keeps its original bail so a step with an authored *choice* hand still gets
+   * the choice screen (30 templates rely on it, pending WS5 conversion).
+   */
+  allowEmptyHand?: boolean;
 }
 
 /**
@@ -382,8 +399,10 @@ function essenceReader(pool: Readonly<Record<string, number>> | undefined) {
 
 /**
  * Build the stage's nudge phase, or `undefined` when this step has no authored
- * hand — the caller branches on that to keep legacy templates on the legacy
- * screen (per-template rollout, no flag day).
+ * hand and the caller has something else to render — the caller branches on that
+ * to keep authored-choice templates on the choice screen (per-template rollout,
+ * no flag day). With `allowEmptyHand`, an unauthored step builds anyway and
+ * renders fate-alone (THR-1121).
  *
  * Fail-soft (NFP #4): a missing agent node, an absent essence pool, and a
  * throwing motive classification all degrade to a rendered stage rather than a
@@ -394,8 +413,13 @@ export function buildNudgePhaseModel(
 ): EncounterStageNudgePhaseModel | undefined {
   const { template, activeAction, step, graph, gameState } = args;
 
-  const authored = step.nudges;
-  if (!authored || authored.length === 0) return undefined;
+  // THR-1121 — normalized to an array rather than left possibly-undefined. The
+  // early return below used to guarantee non-emptiness for everything after it,
+  // so the withheld-card pass further down dereferences this directly; with
+  // `allowEmptyHand` that guarantee is gone and an unauthored step would throw
+  // there instead of rendering fate-alone.
+  const authored = step.nudges ?? [];
+  if (authored.length === 0 && !args.allowEmptyHand) return undefined;
 
   const actorId = activeAction.actorId;
 
