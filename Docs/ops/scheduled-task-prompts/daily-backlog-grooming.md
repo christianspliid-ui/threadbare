@@ -71,6 +71,25 @@ Also `list_projects team:"Threadbare"`.
 - **Deferrals that are not claimable.** A `Deferral`-labeled issue sitting in Ready for Dev is correct and expected — CLAUDE.md § *Prioritization: Finish Before You Start* names Ready-for-Dev deferrals in active projects as the **first** place the executor looks for work. **Never move one out of Ready for Dev on account of the label** (this bullet said the opposite until THR-968; obeyed literally it would have emptied most of the queue in one pass, each move looking individually justified). Flag only deferrals that are genuinely unclaimable — no Done-when, or no coordination block in the description or any comment, which is what `pull-work` Step 3 bounces. Report those; do not re-state them yourself.
 - **Pipeline gaps.** If Ready for Dev and In Dev are both empty, the executor has nothing to pick up — say so prominently and identify the issue closest to Ready for Dev.
 
+### 2.5 Materiality sweep — judge worth, not just form (THR-1090)
+
+Everything above is a **form** check: does the ticket have a project, a coordination block, a state that matches its project's? Nothing asks whether the ticket is *worth doing*. That gap is why 9 of 36 Ready-for-Dev tickets sat below the materiality bar on 2026-08-11 — with three lanes (orchestrator, keep-work-flowing, this one) scanning the queue every day and none of them flagging a single one. Christian did the sweep by hand in chat instead: ~1 h of his attention, on a failure already measured one cycle earlier (2026-08-10 — 32 of 35 Ready-for-Dev items were Low-priority process work).
+
+**Form checks are Goodhart-satisfiable, so run this one on magnitude.** The tickets canceled on 2026-08-11 *complied* with every form rule — THR-1057 and THR-1060 both carried textbook "costs ~X; not fixing costs ~Y" lines. The same class of agent writes the tickets and grooms them, so the presence of a cost/benefit line proves nothing about worth. The § *Rule-0 minting bar* below checks that the line **exists**, forward-looking, at filing time; this step checks whether the number in it is **true and large enough**, retroactively, on what is already queued.
+
+**Scope:** every `Ready for Dev` / `Todo` ticket labeled `Infrastructure` or `Improvement`, or belonging to project Continuous Improvement. **Product work — Content/UI/Engine tickets describing player-visible behavior — is out of scope for cancellation.** This sweep demotes process work only; it never touches the feature pipeline. An empty product shelf is a supply problem to surface, never a backlog to prune harder.
+
+For each in-scope ticket, ask the CLAUDE.md § Prioritization questions in order, stopping at the first that fires:
+
+1. **Does the quotable evidence clear the bar?** ≥ ~1 h of lane or human time lost, a shipped artifact corrupted, or the same failure recurring ≥3× in a week. Judge the magnitude, not the boilerplate — a cost/benefit line is a claim, not evidence. Below the bar → cancel; the finding belongs in `Docs/impediments.md` as a row, where the weekly retro can batch it with its accumulated cost.
+2. **Is the fix smaller than the ticket?** Comment renames, single-file deletes, gitignore lines. → cancel with "below ticket materiality; fix in passing", optionally folding it into an adjacent queued ticket's scope.
+3. **Is it a ticket about another ticket's paperwork** — a record-keeping ticket, or an N-th layer of instrumentation/gating on machinery that already has one? → cancel, citing the sunset rule (CLAUDE.md § Process-work throttle: anything that has caught no real defect in six weeks is presumed deletable, and *keeping* it is what requires evidence).
+4. **Are ≥3 open tickets the same predicate** (e.g. "X has zero callers")? → consolidate into one batch ticket following the THR-1089 pattern, and cancel the members with pointers to it.
+
+**Every cancellation records its reason in a Linear comment before the state write**, then re-queries with `get_issue` to confirm the write stuck (impediment #48). The 2026-08-11 cancellations are the worked examples: THR-1072, THR-1060, THR-1057, THR-956, THR-960, THR-867, THR-895, THR-1027, THR-959.
+
+**When in doubt, the ticket stays and the doubt goes in the report.** A wrongly-canceled ticket gets re-filed by whoever needed it; a queue nobody trusts is the failure this step exists to prevent. **`0 canceled` is a valid and expected result** — what the report has to show is that the judgment ran, not that heads rolled.
+
 ### 3. Cross-reference the legacy roadmap
 
 Read `.planning/ROADMAP.md`. If items there (especially "Future Work") lack corresponding Linear issues, create them with appropriate project, state, priority, labels, and description.
@@ -95,6 +114,8 @@ run: YYYY-MM-DD
 promoted: <n>
 filed: <n>
 resolved: <n>
+swept: <n>
+canceled: <n>
 newFindings: <n>
 needsChristian: <true | false>
 ---
@@ -114,6 +135,11 @@ needsChristian: <true | false>
 
 ## Problems found and fixed
 (bullets)
+
+## Materiality sweep
+(in-scope tickets swept: <n>. Canceled: <n>, each with the question that fired and its reason.
+Consolidated: <n>. Doubts that let a ticket stand, if any. "swept N, 0 canceled" is a
+complete and valid entry — the sweep having run is the finding.)
 
 ## Pipeline status
 (what's closest to Ready for Dev; recommended next pickup)
@@ -144,3 +170,5 @@ CC-lane port of the Cowork `daily-backlog-grooming` task (THR-677, Pure Claude C
 ## Rule-0 minting bar (2026-08-08):
 
 Before filing any process/infrastructure ticket, apply the materiality bar (CLAUDE.md § Prioritization, amended 2026-08-08): quotable loss ≥ ~1 lane/human hour, a corrupted shipped artifact, or ≥3 recurrences in a week. Below the bar: impediment-log row only — no ticket. Every ticket filed carries one cost/benefit line ("costs ~X to fix; not fixing costs ~Y per week"). Grooming additionally demotes any open process ticket lacking that line to Idea with a comment naming this rule. The goal is fewer, denser process tickets — not more receipts.
+
+**This bar governs *filing*; § 2.5 governs *worth*.** They are two halves of one rule and neither substitutes for the other: this one asks whether the cost/benefit line is present (a form check, applied as tickets are minted), § 2.5 asks whether its number is real and large enough (a magnitude check, applied retroactively to what is already queued). A ticket can pass this bar and still fail § 2.5 — THR-1057 and THR-1060 both did. Where the two prescribe different states, § 2.5's cancel wins for an in-scope ticket that fails on magnitude; demotion to Idea is for the narrower case of a ticket whose line is simply missing.
