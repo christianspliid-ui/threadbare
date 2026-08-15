@@ -319,6 +319,68 @@ describe('concept decorations (THR-1004)', () => {
     expect(linked?.entityKind).toBe('attachment');
   });
 
+  it('derives the attachment tooltip id from the entity id (THR-1122)', () => {
+    // THR-1120 gave the word its link; this is the hover tier. The id is
+    // derived rather than authored because the producer already said which
+    // template this is — asking ~12 call sites to repeat it in a second field
+    // is where drift starts.
+    const chips = buildAftermathConsequences({
+      changes: [change({
+        kind: 'trait',
+        polarity: 'loss',
+        detail: 'They are wounded now.',
+        stateNoun: {
+          text: 'wounded',
+          entityId: 'trait.condition.wounded',
+          visualKind: 'attachment',
+        },
+        concepts: [{
+          text: 'wounded',
+          entityId: 'trait.condition.wounded',
+          visualKind: 'attachment',
+        }],
+      })],
+      enrich: (t) => t,
+      link: (id) => ({ id, segments: [{ text: 'They are wounded now.' }] }),
+    });
+
+    expect(chips[0].sentence.segments.find((s) => s.text === 'wounded')?.tooltipId)
+      .toBe('attachment.trait.condition.wounded');
+    // The noun is the chip's most concentrated concept word and owes the same tier.
+    expect(chips[0].nounTooltipId).toBe('attachment.trait.condition.wounded');
+  });
+
+  it('never overwrites a tooltip id the producer declared', () => {
+    // Falsification for the derivation guard: derivation must be a fallback,
+    // not a rewrite, or an authored `ui.*` id silently becomes an attachment one.
+    const chips = buildAftermathConsequences({
+      changes: [change({
+        kind: 'reputation',
+        polarity: 'gain',
+        stateNoun: { text: 'their name on this road', tooltipId: 'ui.standing' },
+      })],
+      ...passthrough,
+    });
+
+    expect(chips[0].nounTooltipId).toBe('ui.standing');
+  });
+
+  it('offers no tooltip id for a concept that names no attachment', () => {
+    // A concept with an entity id but a different kind must not acquire an
+    // `attachment.*` id — that would be a dangling id on an agent node, which
+    // is the dead-underline shape Law 21 names.
+    const chips = buildAftermathConsequences({
+      changes: [change({
+        kind: 'trait',
+        polarity: 'gain',
+        stateNoun: { text: 'Jorun', entityId: 'agent.jorun', visualKind: 'agent' },
+      })],
+      ...passthrough,
+    });
+
+    expect(chips[0].nounTooltipId).toBeUndefined();
+  });
+
   it('draws no icon tile for an attachment, which has a page and no visual family', () => {
     // Falsification for the resolveIcon guard: an attachment must reach the
     // sentence's link tier without ever being handed to the entity-visual

@@ -360,6 +360,22 @@ export interface EncounterStageConsequenceChipModel {
    * alone — the designed fallback, never a blank and never "something".
    */
   nounLabel?: string;
+  /**
+   * THR-1122 — the registry id that explains `nounLabel`, when one exists.
+   *
+   * The noun is the chip's most concentrated concept word — `SCAR · WOUNDED`
+   * names a condition and nothing else — and until this field it carried
+   * neither its tooltip nor its link, because the sentence-decoration path only
+   * ever reached words inside the prose. Law 17 holds on the surface as
+   * composed, not on the prose alone.
+   *
+   * Carries whatever the producer declared (`ui.standing`) or, for a concept
+   * naming an attachment template, the derived `attachment.*` id. The surface
+   * still gates on `tooltipResolves` before drawing anything, so an id the
+   * registry cannot answer stays plain text rather than becoming a dead
+   * underline (Law 21).
+   */
+  nounTooltipId?: string;
   /** Icon-tile fallback glyph when neither an entity nor a reach resolves. */
   categoryGlyph: string;
   /**
