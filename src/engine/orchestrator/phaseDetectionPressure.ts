@@ -1,6 +1,5 @@
 import type { GameState, PendingChoiceCommit, RegionDetectionState } from '../../types/gameState';
 import type { DetectionThresholdBand, EncounterChoiceCost } from '../../types/traces/encounter-traces';
-import type { TraceEntry } from '../../types/trace';
 import {
   DETECTION_DECAY_RATE_PER_TICK,
   DETECTION_THRESHOLD_ENCOUNTER,
@@ -96,7 +95,7 @@ function emitThresholdTrace(
     toPressure,
     thresholdCrossed,
     summary: `Detection threshold ${thresholdCrossed}: ${regionId} ${fromPressure.toFixed(2)} → ${toPressure.toFixed(2)}`,
-  } as unknown as Omit<TraceEntry, 'id' | 'timestamp'>);
+  });
 }
 
 export function phaseDetectionPressure(state: GameState): DetectionPressurePhaseResult {

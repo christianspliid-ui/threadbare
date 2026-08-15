@@ -173,6 +173,10 @@ function maybeComputeEncounterForecast(
     modifiers,
     finalTier: forecast.finalTier,
     factors: forecast.factors,
+    // Cast retained (THR-1065): the payload genuinely diverges from
+    // `ForecastComputedTrace` — `factors` is declared `string[]` and this site
+    // sends an `EncounterForecastFactors` object. Filed as THR-1117; reconciling
+    // the shape is a content-of-the-trace decision, not this ticket's type wiring.
   } as unknown as Omit<TraceEntry, 'id' | 'timestamp'>);
 }
 
@@ -260,6 +264,11 @@ export function phaseAscendantHandFilter(
         prereq: entry.prereq.code,
       })),
       hiddenTemplateIds: partition.hidden.map((entry) => entry.template.id),
+    // Cast retained (THR-1065): this site sends `playableTemplateIds`,
+    // `dimmedTemplateIds` and `hiddenTemplateIds`, none of which
+    // `HandFilteredTrace` declares — it declares only the counts. Filed as
+    // THR-1117; the interface is missing real fields the emitter has been
+    // sending all along, and choosing which are canonical is its own call.
     } as unknown as Omit<TraceEntry, 'id' | 'timestamp'>);
 
     filteredCount += 1;

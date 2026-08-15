@@ -1,5 +1,6 @@
 import type {
   TraceEntry,
+  TraceEntryInput,
   TickPhaseProfileTrace,
   TickProfileTrace,
   DistanceMatrixRebuildTrace,
@@ -56,7 +57,7 @@ function asNonEmptyString(value: unknown): string | null {
 }
 
 function normalizeTraceEntry(
-  entry: Omit<TraceEntry, 'id' | 'timestamp'>
+  entry: TraceEntryInput
 ): Omit<TraceEntry, 'id' | 'timestamp'> {
   const raw = entry as Record<string, unknown>;
   const legacyType = asNonEmptyString(raw.type);
@@ -84,7 +85,7 @@ function normalizeTraceEntry(
  * Automatically evicts oldest entry if buffer exceeds BUFFER_SIZE.
  */
 export function emitTrace(
-  entry: Omit<TraceEntry, 'id' | 'timestamp'>
+  entry: TraceEntryInput
 ): void {
   if (!enabled) return;
   const normalizedEntry = normalizeTraceEntry(entry);
@@ -299,8 +300,8 @@ export function aggregatePhaseTimings(
     const last = entries[entries.length - 1];
     const p95Idx = Math.max(0, Math.ceil(sorted.length * 0.95) - 1);
     const crashed = traces.some(
-      // `tick_crash` is emitted with a cast and isn't in the TraceEntry union; widen to string.
-      (t) => (t.category as string) === 'tick_crash' && typeof t.summary === 'string' && t.summary.includes(`"${phase}"`),
+      // `TickCrashTrace` is a `TraceEntry` member as of THR-1065 — no widening.
+      (t) => t.category === 'tick_crash' && typeof t.summary === 'string' && t.summary.includes(`"${phase}"`),
     );
     result.push({
       phase,

@@ -143,39 +143,20 @@ function collectEmittedCategories(): Map<string, string[]> {
  * every consumer — `trace.category === '<its literal>'` is a TS2367 "no overlap"
  * error — so its emit site needs an `as unknown as` cast to compile.
  *
- * Not fixed wholesale in THR-928 because these interfaces do not extend
- * `TraceBase`: several omit `summary`, and none carry `id`/`timestamp`. Adding
- * them to the union as-is would make `trace.id` and `trace.summary` unreadable on
- * `TraceEntry` and would *raise* the typecheck baseline rather than lower it.
+ * **Drained to zero by THR-1065.** The twenty listed here now extend `TraceBase`
+ * and are named individually in the `TraceEntry` union. The blocker THR-928
+ * recorded — that adding them as-is would make `trace.id`/`trace.summary`
+ * unreadable and *raise* the baseline — was resolved by making `summary` optional
+ * on the emit-side input type only (`TraceEntryInput`), so payloads that never
+ * declared one keep compiling while every reader still sees it as required.
+ * Measured: 3448 → 3212 typecheck errors, −236.
  *
- * TODO(THR-1065): wire these in behind a distributive `Omit`, which also retires
- * the 81 `as unknown as` casts at emitTrace boundaries.
+ * **This staying empty is the gate.** A new payload interface that declares a
+ * `category` without joining the union fails the assertion below rather than
+ * quietly re-opening the class — which is the whole reason the set is pinned
+ * rather than counted.
  */
-const ORPHANED_TRACE_INTERFACES: readonly string[] = [
-  // src/types/trace.ts
-  'TickHealthTrace',
-  'TickCrashTrace',
-  'SelfActionTrace',
-  'SurveyProseComposedTrace',
-  'KpiSnapshotTrace',
-  // src/types/traces/encounter-traces.ts
-  'ChoiceResolvedTrace',
-  'ForecastComputedTrace',
-  'HandFilteredTrace',
-  'DriftThresholdCrossedTrace',
-  'BranchDecidedTrace',
-  'DetectionThresholdCrossedTrace',
-  'ItemConsumedByChoiceTrace',
-  'SpotlightChangedTrace',
-  'CallbackEligibilityComputedTrace',
-  // src/types/traces/mentorship-traces.ts
-  'MentorshipOfferedTrace',
-  'MentorshipStartedTrace',
-  'MentorshipLessonTrace',
-  'MentorshipGraduatedTrace',
-  'MentorshipSurpassedTrace',
-  'MentorshipSeveredTrace',
-];
+const ORPHANED_TRACE_INTERFACES: readonly string[] = [];
 
 describe('trace vocabulary (THR-928)', () => {
   const emitted = collectEmittedCategories();

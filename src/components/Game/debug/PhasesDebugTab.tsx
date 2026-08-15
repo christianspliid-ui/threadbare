@@ -43,9 +43,10 @@ interface PhaseProfile {
 function deriveCrashes(traces: readonly TraceEntry[]): Map<string, string> {
   const out = new Map<string, string>();
   for (const t of traces) {
-    // `tick_crash` is emitted with a cast and isn't in the TraceEntry category union;
-    // widen to string to read it (mirrors the runtime shape).
-    if ((t.category as string) !== 'tick_crash') continue;
+    // `TickCrashTrace` joined the `TraceEntry` union in THR-1065, so this reads
+    // without widening — the trace a crash investigation reaches for first is now
+    // narrowable like any other.
+    if (t.category !== 'tick_crash') continue;
     const m = /^Phase "([^"]+)" threw during/.exec(t.summary);
     if (m) out.set(m[1], t.summary);
   }
