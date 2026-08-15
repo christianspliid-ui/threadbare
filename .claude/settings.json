@@ -1,7 +1,5 @@
 {
-  "enabledPlugins": {
-    "codex@openai-codex": true
-  },
+  "enabledPlugins": {},
   "permissions": {
     "allow": [
       "mcp__7aa97de8-78a2-4b5d-a6e0-0aabc5d0bb68__list_issues",
