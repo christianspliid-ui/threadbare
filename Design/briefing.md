@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-08-15 03:57 local (01:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-08-15 04:56 local (02:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -13,17 +13,17 @@
 
 ## Also waiting (2)
 
-- **One command, when you are next at the keyboard** — the main working copy on your machine stopped updating 7 hours ago and is now 17 commits behind, growing every hour. It cannot fix itself and no automated lane is allowed to touch it. The repair is loss-free and takes a second; the command is in [user-actions.md](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md).
+- **One command, when you are next at the keyboard** — the main working copy on your machine has now been stuck for ~8 hours and is **19 commits behind**, up from 17 an hour ago. It cannot fix itself and no automated lane is allowed to touch it. The repair is loss-free and takes a second; the command is in [user-actions.md](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md).
 - **A Tenacious-style trait** — parked design option, no ticket, nothing downstream waiting. Listed so it is not silently forgotten; say the word and it gets a ticket and a design pass.
 
 ## Queue
 
-Healthy — 7 items ready, 1 in progress.
+Healthy by count — 6 items ready, 1 in progress.
 
-- **All 7 ready items are workshop cleanup, not game work.** Nothing feature- or content-shaped is queued, so the executor's next few runs will look quiet on the game side. This is the shelf asking for upstream supply, and closing THR-974 above is what reopens that tap.
-- [THR-1102](https://linear.app/threadbare/issue/THR-1102) has sat parked in progress ~11h awaiting a close — it was implemented, measured, found to have zero live readers, and reverted rather than shipped. An agent's close to make, not yours.
+- **All 6 ready items are workshop cleanup, not game work**, and every one is Low priority. Nothing feature- or content-shaped is queued, so the executor's next few runs will look quiet on the game side. This is the shelf asking for upstream supply, and closing THR-974 above is what reopens that tap. The same finding is in the orchestrator's latest report, independently.
+- [THR-1102](https://linear.app/threadbare/issue/THR-1102) has now sat parked in progress ~14h with no one assigned. It was implemented, measured, found to have zero live readers, and reverted rather than shipped — so it is a close an agent should make, not yours.
 
 ## Health
 
-- Lane silence reports a historical 20.6h gap (2026-08-10 → 08-11) that recovered on its own four days ago, with no pause marker recording it. Carried as visibility only, per your 2026-08-08 ruling that overnight quiet is normal — the four other flagged gaps are all plainly nightly.
-- Everything else green: deploys current, CI healthy, no PRs stuck waiting to merge, all 9 scheduled lanes on schedule, workspace reaper ran 17 minutes ago.
+- Lane silence still reports the historical 20.6h gap (2026-08-10 → 08-11) that recovered on its own four days ago with no pause marker recording it. Carried as visibility only, per your 2026-08-08 ruling that overnight quiet is normal — the four other flagged gaps are all plainly nightly.
+- Everything else green: deploys current, CI healthy, both scheduled GitHub jobs running, no PRs stuck waiting to merge, all 9 scheduled lanes on schedule, workspace reaper ran 16 minutes ago.

@@ -1,12 +1,12 @@
 # User Action Required
 
-**Last updated:** 2026-08-15 03:57 local (2026-08-15 01:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-15 04:56 local (2026-08-15 02:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
 ### 1. Rule the consequence verdict — play one encounter through to its aftermath
 
-[**THR-974**](https://linear.app/threadbare/issue/THR-974/consequence-verdict-session-christian-rules-on-world-graph-consequence) — the last verdict still open on the Encounter Experience map. You ruled it **"not yet"** on 2026-08-10 because the chips were unreadable (*"what does steadily even mean?"*). Everything you chartered against that ruling has now shipped and deployed: the icon vocabulary ([THR-1082](https://linear.app/threadbare/issue/THR-1082)) and the content rewrite of all 55 authored consequences ([THR-1097](https://linear.app/threadbare/issue/THR-1097)), on top of the logic ([THR-969](https://linear.app/threadbare/issue/THR-969)) and UI ([THR-971](https://linear.app/threadbare/issue/THR-971)) that were already in. Level re-checked against the live build 2026-08-15 01:57 UTC.
+[**THR-974**](https://linear.app/threadbare/issue/THR-974/consequence-verdict-session-christian-rules-on-world-graph-consequence) — the last verdict still open on the Encounter Experience map. You ruled it **"not yet"** on 2026-08-10 because the chips were unreadable (*"what does steadily even mean?"*). Everything you chartered against that ruling has now shipped and deployed: the icon vocabulary ([THR-1082](https://linear.app/threadbare/issue/THR-1082)) and the content rewrite of all 55 authored consequences ([THR-1097](https://linear.app/threadbare/issue/THR-1097)), on top of the logic ([THR-969](https://linear.app/threadbare/issue/THR-969)) and UI ([THR-971](https://linear.app/threadbare/issue/THR-971)) that were already in. Level re-checked against the live build 2026-08-15 02:56 UTC — the deployed artifact is current.
 
 **The question:** after a hand resolves, does the consequence read as a real thing that happened to that person — noun, direction, rough magnitude — rather than an ungaugeable adverb?
 
@@ -16,7 +16,7 @@ One honest seam, by design: no encounter authors a `success` band — the base t
 
 ### 2. One command on your machine — the main working copy stopped updating
 
-The working copy at `C:\Users\chris\Dev\Projects\TheFantasyWorldSimulator` last synced at 20:50 and is now **17 commits behind, growing every hour**. Three locally-modified files block the automatic fast-forward, and per [THR-937](https://linear.app/threadbare/issue/THR-937) this shape never resumes on its own — every hourly attempt re-hits the same collision. No automated lane may run git operations there ([THR-672](https://linear.app/threadbare/issue/THR-672)), so it needs you or an attended session.
+The working copy at `C:\Users\chris\Dev\Projects\TheFantasyWorldSimulator` last synced at 20:50 — about 8 hours ago — and is now **19 commits behind, growing every hour** (17 an hour ago). Three locally-modified files block the automatic fast-forward, and per [THR-937](https://linear.app/threadbare/issue/THR-937) this shape never resumes on its own — every hourly attempt re-hits the same collision. No automated lane may run git operations there ([THR-672](https://linear.app/threadbare/issue/THR-672)), so it needs you or an attended session.
 
 **The repair is loss-free.** The `Docs/impediments.md` edit is already redundant — row 582 is on `main`. The two `.claude/settings*.json` edits are local permission-allowlist entries, kept in the stash and recoverable with `git stash show -p` if you want them back.
 
