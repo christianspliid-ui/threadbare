@@ -27,6 +27,8 @@ import { NudgePhaseShell } from './encounter-stage/shells/NudgePhaseShell';
 import { NudgeMotiveIntro } from './encounter-stage/shells/NudgeMotiveIntro';
 import { ProseTtsButton } from './Encounter/ProseTtsButton';
 import { formatEssence, formatEssencePool } from '../shared/formatEssence';
+import { CostPips } from '../shared/OddsPips';
+import { NUDGE_COMMIT_LABEL } from '../../data/nudge-stage-content';
 import { getDurationWord } from '../../data/domain-words';
 
 // ── Thread tier types ──────────────────────────────────────────────
@@ -57,7 +59,7 @@ export interface EncounterVeilProps {
    * live one's clothes. A host that omits this leaves those names emphasised
    * and unclickable, which is the fail-open behaviour.
    */
-  onSelectEntity?: (entityId: string, kind: 'faction' | 'artifact') => void;
+  onSelectEntity?: (entityId: string, kind: 'faction' | 'artifact' | 'attachment') => void;
   /** THR-636 — "Show on map": close the veil and pan the camera to the encounter hex. */
   onShowOnMap?: (col: number, row: number) => void;
   /**
@@ -230,10 +232,23 @@ const TIER_MODE_SUFFIX: Record<ThreadTier, string> = {
   watched: 'Watching',
 };
 
-/** Disregard button label per thread tier */
+/**
+ * Walk-away label per thread tier.
+ *
+ * THR-1121 — `strong` used to read `Resume`, one half of the `Resume`/`Intervene`
+ * pair the director called out as *"a legacy UX pattern from the old encounter"*.
+ * `Resume` named a simulation control (un-pause the world), which is the wrong
+ * noun for what the button does to the *encounter*: it sets the moment down and
+ * lets the mortals carry it. The other two tiers already said something closer to
+ * that, and `Look away` says it for all three registers without pretending the
+ * player is operating a transport.
+ *
+ * The commit that used to sit beside it now lives in the stage body, where the
+ * nudge pattern puts it (`Let fate decide`), so this is the footer's only move.
+ */
 const DISREGARD_LABEL: Record<ThreadTier, string> = {
-  strong: 'Resume',
-  light: 'Close',
+  strong: 'Look away',
+  light: 'Look away',
   watched: 'Dismiss',
 };
 
@@ -431,7 +446,7 @@ export function EncounterVeil({
      */
     const openEntity = (
       entityId: string | undefined,
-      kind: 'agent' | 'faction' | 'artifact' | 'companion' | undefined,
+      kind: 'agent' | 'faction' | 'artifact' | 'companion' | 'attachment' | undefined,
     ): (() => void) | undefined => {
       if (!entityId) return undefined;
       // Absent kind = the narrative linker's cast scan, which has always been
@@ -445,6 +460,11 @@ export function EncounterVeil({
       // ruled off-limits for companions). Their tile renders; their sheet is the
       // Companions row on the bearer's own surface. Non-interactive beats wrong.
       if (kind === 'companion') return undefined;
+      // THR-1120 — a granted condition/blessing/curse/power. `entityId` is the
+      // template node id (the grant itself is written by the reaction's effects,
+      // after this veil closes), and the host opens the same AttachmentDetailView
+      // the bearer's Attachments tab drills into. Fail-open like every kind above:
+      // a host that cannot open one leaves the name as emphasised text.
       return onSelectEntity ? () => onSelectEntity(entityId, kind) : undefined;
     };
 
@@ -2053,14 +2073,29 @@ export function EncounterVeil({
               renderMotiveIntro={false}
             />
           ) : (
-            model.choices.map((choice) => (
-              <ChoiceBlock
-                key={choice.id}
-                choice={choice}
-                selected={selectedChoiceId === choice.id}
-                onClick={() => handleChoiceClick(choice)}
-              />
-            ))
+            <>
+              {model.choices.map((choice) => (
+                <ChoiceBlock
+                  key={choice.id}
+                  choice={choice}
+                  selected={selectedChoiceId === choice.id}
+                  onClick={() => handleChoiceClick(choice)}
+                />
+              ))}
+              {/* THR-1121 — the choices path's commit, in the nudge stage's
+                  pattern and position: under the hand, saying the same words.
+                  It replaces the footer `Intervene` button, which sat across the
+                  screen from what it committed. Still gated on a selection —
+                  on this path the choice *is* the move, and it also keys which
+                  authored ending the aftermath resolves to. */}
+              {model.choices.length > 0 && (
+                <StageCommit
+                  disabled={!selectedChoice}
+                  essenceCost={selectedChoice?.essenceCost ?? 0}
+                  onCommit={handleIntervene}
+                />
+              )}
+            </>
           )}
         </div>
         )}
@@ -2124,37 +2159,13 @@ export function EncounterVeil({
           >
             {DISREGARD_LABEL[threadTier]}
           </button>
-          <button
-            className="focus-ring"
-            onClick={handleIntervene}
-            disabled={!selectedChoice || replayEntry !== null}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              fontFamily: FONT_PROSE,
-              fontStyle: 'italic',
-              fontSize: 'var(--text-xs)',
-              letterSpacing: '0.06em',
-              color: GOLD,
-              opacity: selectedChoice && !replayEntry ? 0.7 : 0.3,
-              cursor: selectedChoice && !replayEntry ? 'pointer' : 'default',
-              padding: '8px 0',
-              transition: 'opacity 0.4s ease, text-shadow 0.4s ease',
-            }}
-            onMouseEnter={(e) => {
-              if (selectedChoice) {
-                e.currentTarget.style.opacity = '1';
-                e.currentTarget.style.textShadow =
-                  '0 0 20px rgb(var(--veil-gold-rgb) / 0.3)';
-              }
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.opacity = selectedChoice ? '0.7' : '0.3';
-              e.currentTarget.style.textShadow = 'none';
-            }}
-          >
-            Intervene
-          </button>
+          {/* THR-1121 — the `Intervene` button that sat here is gone. It was the
+              commit half of the legacy pair: a footer control, far from the
+              choice it committed, that only lit up once a stance was selected.
+              The commit now renders directly under the choices (`StageCommit`
+              below), which is where the nudge stage has always put `Let fate
+              decide` — one pattern for "hand this moment to fate", wherever the
+              player is standing. */}
         </div>
       </div>
     </div>,
@@ -2291,6 +2302,64 @@ function ResolutionCheckCard({ entry }: { entry: EncounterStageResolutionCheckMo
   );
 }
 
+/**
+ * The stage's commit control for the authored-choice path (THR-1121).
+ *
+ * Deliberately the same affordance the nudge stage uses — same words
+ * (`NUDGE_COMMIT_LABEL`), same gold-outlined button, same running cost in
+ * `CostPips` — because it is the same act: the player has finished shaping the
+ * moment and is handing it to fate. Two screens saying "commit" two different
+ * ways is what made the old footer pair read as legacy.
+ *
+ * It is a separate component rather than a shared import from `NudgePhaseShell`
+ * because that shell's commit is bound to its hand's selection state; hoisting it
+ * would mean threading a hand model through a path that has no hand. The shared
+ * thing is the label and the pip renderer, and both are imported.
+ */
+function StageCommit({
+  disabled,
+  essenceCost,
+  onCommit,
+}: {
+  disabled: boolean;
+  essenceCost: number;
+  onCommit: () => void;
+}) {
+  return (
+    <div style={{ marginTop: 24, display: 'flex', alignItems: 'center', gap: 14 }}>
+      <button
+        type="button"
+        className="focus-ring"
+        data-testid="stage-commit"
+        onClick={onCommit}
+        disabled={disabled}
+        style={{
+          padding: '10px 22px',
+          borderRadius: 8,
+          border: `1px solid ${GOLD}`,
+          background: 'rgb(var(--veil-gold-rgb) / 0.1)',
+          color: GOLD,
+          fontFamily: FONT_DISPLAY,
+          fontSize: 'var(--text-base)',
+          letterSpacing: '0.06em',
+          opacity: disabled ? 0.4 : 1,
+          cursor: disabled ? 'default' : 'pointer',
+        }}
+      >
+        {NUDGE_COMMIT_LABEL}
+      </button>
+      {essenceCost > 0 && (
+        <span
+          data-testid="stage-commit-cost"
+          style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 'var(--text-xs)', color: TEXT_WARM }}
+        >
+          <CostPips cost={essenceCost} size={13} />
+        </span>
+      )}
+    </div>
+  );
+}
+
 function ChoiceBlock({ choice, selected, onClick }: ChoiceBlockProps) {
   const [hovered, setHovered] = useState(false);
   const active = hovered || selected;
@@ -2302,12 +2371,14 @@ function ChoiceBlock({ choice, selected, onClick }: ChoiceBlockProps) {
     ? TYPE_LABEL_COLORS[choice.interventionType]
     : undefined;
 
+  // THR-1121 — the `+N% success` branch that stood here is gone with the
+  // mechanic it reported. A choice no longer buys odds (see
+  // `unifiedActionResolution`), so printing a percentage beside one would be
+  // advertising a purchase the engine does not make. `fate decides` stays: it
+  // says what a withdrawn stance actually does, in the vocabulary the nudge
+  // stage uses everywhere else — words, never numerals (WS2 ruling 6).
   const boostLabel =
-    choice.probabilityBoost && choice.probabilityBoost > 0
-      ? `+${Math.round(choice.probabilityBoost * 100)}% success`
-      : choice.interventionType === 'withdrawn'
-        ? 'fate decides'
-        : undefined;
+    choice.interventionType === 'withdrawn' ? 'fate decides' : undefined;
 
   return (
     <button

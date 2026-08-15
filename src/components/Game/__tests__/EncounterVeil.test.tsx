@@ -179,14 +179,48 @@ describe('EncounterVeil', () => {
     expect(defaultProps.onDisregard).toHaveBeenCalled();
   });
 
-  it('calls onIntervene with selected choice when Intervene is clicked', () => {
+  /**
+   * THR-1121 — the commit moved out of the footer and into the stage, and now
+   * says `Let fate decide` like every other commit in the nudge pattern. What it
+   * *does* is unchanged, which is what this pins: select a choice, commit, and
+   * `onIntervene` still receives that choice's id and price.
+   */
+  it('calls onIntervene with the selected choice when the stage commit is clicked', () => {
     const onIntervene = vi.fn();
     render(<EncounterVeil {...defaultProps} onIntervene={onIntervene} />);
-    // Click a choice to select it
+
+    // Nothing selected: the commit is present but refuses.
+    const commit = screen.getByTestId('stage-commit');
+    expect(commit).toBeDisabled();
+    fireEvent.click(commit);
+    expect(onIntervene).not.toHaveBeenCalled();
+
     fireEvent.click(screen.getByText(/Let the grain through/));
-    // Click Intervene
-    fireEvent.click(screen.getByText('Intervene'));
+    expect(commit).toBeEnabled();
+    fireEvent.click(commit);
     expect(onIntervene).toHaveBeenCalledWith('choice-support', 2);
+  });
+
+  /**
+   * The legacy pair is gone as *labels*, not merely relocated — the director's
+   * finding was about the words on screen ("the resume/intervene buttons bottom
+   * right ... is a legacy UX pattern"), so absence is the assertion.
+   */
+  it('no longer renders the legacy Intervene / Resume pair', () => {
+    render(<EncounterVeil {...defaultProps} />);
+    expect(screen.queryByText('Intervene')).toBeNull();
+    expect(screen.queryByText('Resume')).toBeNull();
+    expect(screen.getByText('Let fate decide')).toBeInTheDocument();
+  });
+
+  /**
+   * The commit is not a paid-odds purchase any more, so no stance may advertise
+   * one. Falsified against the mock's own choices, which carry the boosts the
+   * retired mechanic would have printed (0.2 and 0.35 ⇒ "+20%" / "+35%").
+   */
+  it('never prints a percentage success purchase beside a choice', () => {
+    render(<EncounterVeil {...defaultProps} />);
+    expect(screen.queryByText(/\+\d+% success/)).toBeNull();
   });
 
   it('shows art title from illustration caption', () => {
@@ -591,6 +625,85 @@ describe('aftermath mode', () => {
     expect(within(screen.getByTestId('consequence-chip-seed')).getByText('PATH')).toBeInTheDocument();
     expect(screen.queryByText('PRIZE')).not.toBeInTheDocument();
     expect(screen.queryByText('SEED')).not.toBeInTheDocument();
+  });
+
+  // ── The granted attachment is reachable (THR-1120) ────────────────
+  //
+  // Christian's THR-974 verdict: *"I am seeing no links to any reward or
+  // penalty attachments anywhere."* A chip whose whole point is that something
+  // real was granted must let the player reach that thing (Law 21).
+  //
+  // These assert the *surface as composed*, which is what the UI-pillar gate
+  // asks for: that the chip draws a real control, that activating it hands the
+  // host the template id and the kind that routes it, and — the half that keeps
+  // the affordance honest — that a chip granting nothing draws no control at all.
+
+  const grantChipModel: EncounterStageModel = {
+    ...aftermathModel,
+    aftermath: {
+      ...aftermathModel.aftermath!,
+      consequences: [
+        {
+          id: 'c-grant',
+          kind: 'wound',
+          kindLabel: 'WOUND',
+          category: 'scar',
+          categoryLabel: 'SCAR',
+          categoryGlyph: '✕',
+          sentence: {
+            id: 'c-grant',
+            segments: [
+              { text: 'They come off the bridge ' },
+              {
+                text: 'wounded',
+                emphasis: 'accent',
+                entityId: 'trait.condition.wounded',
+                entityKind: 'attachment',
+              },
+              { text: ', and the leg will have opinions about stairs.' },
+            ],
+          },
+          sentenceText: 'They come off the bridge wounded, and the leg will have opinions about stairs.',
+          compact: false,
+          tone: 'loss',
+        },
+      ],
+    },
+  };
+
+  it('draws a real control on the granted attachment, and hands the host its template id', () => {
+    const onSelectEntity = vi.fn();
+    render(
+      <EncounterVeil {...defaultProps} model={grantChipModel} onSelectEntity={onSelectEntity} />,
+    );
+
+    // getByRole('button') is load-bearing: a `role="link"` span would not match,
+    // so this also pins the un-nested rendering a chip is supposed to take.
+    const link = within(screen.getByTestId('consequence-chip-wound'))
+      .getByRole('button', { name: 'wounded' });
+    fireEvent.click(link);
+
+    expect(onSelectEntity).toHaveBeenCalledWith('trait.condition.wounded', 'attachment');
+  });
+
+  it('leaves the grant as plain text when the host cannot open one', () => {
+    // Fail-open, the rule NarrativeSegments already states for every kind: a
+    // dead affordance that looks live is worse than no affordance.
+    render(<EncounterVeil {...defaultProps} model={grantChipModel} onSelectEntity={undefined} />);
+
+    const chip = within(screen.getByTestId('consequence-chip-wound'));
+    expect(chip.queryByRole('button', { name: 'wounded' })).not.toBeInTheDocument();
+    expect(chip.getByText('wounded')).toBeInTheDocument();
+  });
+
+  it('draws no control on a chip that granted nothing graph-real', () => {
+    // The absence half of the Done-when. The pre-existing PRIZE chip names a
+    // parcel and grants no node, so it must render exactly as it always did.
+    render(<EncounterVeil {...defaultProps} model={chipModel} onSelectEntity={vi.fn()} />);
+
+    const chip = within(screen.getByTestId('consequence-chip-prize'));
+    expect(chip.queryByRole('button')).not.toBeInTheDocument();
+    expect(chip.getByText('A wrapped parcel changed hands.')).toBeInTheDocument();
   });
 
   it('LAW 12: introduces the category vocabulary on first contact (THR-1082)', () => {

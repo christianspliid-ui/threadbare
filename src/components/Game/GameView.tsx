@@ -77,6 +77,9 @@ import { LocationProfileModal } from './LocationProfileModal';
 import { FactionSheet } from './FactionSheet';
 import { ArmySheet } from './ArmySheet';
 import { ArtifactSheet } from './ArtifactSheet';
+import { AttachmentDetailView } from './AttachmentDetailView';
+import { resolveAttachmentTemplateDetail } from '../../engine/attachmentTemplateDetail';
+import { Modal } from '../shared/Modal';
 import { AgentProfileModal } from './AgentProfileModal';
 import { ChapterLedger } from './ChapterLedger';
 import { StrandView } from './StrandView';
@@ -1241,21 +1244,26 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     if (tieredEncounterState.threadTier === 'watched') return null;
     const ut = getUnifiedTemplateById(tieredEncounterState.template.id);
     if (!ut) return null;
-    // Qualify if the template has support bundle, branching steps, aftermath config,
-    // or an authored nudge hand on any step.
+    // THR-1121 — every unified template qualifies. The old gate admitted only
+    // templates with a support bundle, branching, aftermath config or an authored
+    // nudge hand (THR-775's clause, load-bearing at the time: a nudge-bearing
+    // template is typically plain otherwise, and without it the hand was
+    // unreachable for exactly the templates WS1 authors it onto). Everything else
+    // fell through to `buildSimpleEncounterStageModel`.
     //
-    // THR-775: the nudge clause is load-bearing, not a nicety. A nudge-bearing
-    // template is typically plain otherwise — the golden exemplar has no bundle,
-    // no branching and no aftermath config — so without this it falls through to
-    // the simple adapter, which builds no nudge phase, and the hand is unreachable
-    // for exactly the templates WS1 authors it onto.
-    const hasSupportBundle = !!ut.supportBundle && ut.supportBundle.length > 0;
-    const hasBranching = ut.steps.some(step => 'branchOnStep' in step);
-    const hasAftermath = !!ut.aftermathConfig;
-    const hasNudges = ut.steps.some(
-      step => !('branchOnStep' in step) && !!step.nudges && step.nudges.length > 0,
-    );
-    return (hasSupportBundle || hasBranching || hasAftermath || hasNudges) ? ut : null;
+    // That fall-through only worked because the simple screen had a move set to
+    // render: the generic supportive/coercive/withdrawn triple from
+    // `generateInterventionChoices`. Retiring that producer leaves the simple
+    // adapter with `notification.choices` empty and no nudge phase to offer
+    // instead — a stage with nothing on it to do. Widening the gate routes those
+    // templates to the unified adapter, which builds the fate-alone nudge phase
+    // (`Let fate decide`) for a step that authored nothing. The gate lost its
+    // reason before it lost its condition; this removes both.
+    //
+    // `watched` tier and gate duty are still excluded above, and both are
+    // unaffected by the retirement: watched was observation-only already
+    // (`maxChoices: 0`), and gate duty sources its stances locally.
+    return ut;
   }, [tieredEncounterState, isGateDutyEncounterStage]);
 
   const encounterStageActiveAction = useMemo(() => {
@@ -3219,6 +3227,14 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // ── Stub modal state for non-agent thread types (Plan 16-02) ──
   const [stubModalState, setStubModalState] = useState<{ nodeId: string; category: import('../../engine/retinue').ThreadCategory } | null>(null);
 
+  // ── Attachment sheet, opened from an aftermath consequence chip (THR-1120) ──
+  //
+  // Deliberately its own state rather than a fifth `stubModalState.category`:
+  // that field is a `ThreadCategory`, the divine-court vocabulary THR-1099 ruled
+  // off-limits for things that are not threads. A granted condition is not a
+  // thread the god holds — it is a thing that happened to someone.
+  const [attachmentSheetId, setAttachmentSheetId] = useState<string | null>(null);
+
   // ── Debug modal auto-opener (dev-only, tree-shaken in prod) ──
   useDebugOpenModal(_gameStateRef, {
     openAgentProfileForId,
@@ -3527,6 +3543,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       if (stubModalState.category === 'army') openModals.push('ArmySheet');
       if (stubModalState.category === 'artifact') openModals.push('ArtifactSheet');
     }
+    if (attachmentSheetId) openModals.push('AttachmentDetailView');
     if (tieredEncounterState && encounterVeilModel) openModals.push('EncounterVeil');
     if (meetingState && ascendantIdentity) openModals.push('MeetTheFirstFlow');
     if (activeVignette && !interruptsSuppressed) openModals.push('JourneyVignetteModal');
@@ -3552,6 +3569,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     agentInfoCard,
     ascendantIdentity,
     ascendantSheetOpen,
+    attachmentSheetId,
     debugPanelOpen,
     doomDetailOpen,
     drawerOpen,
@@ -4500,6 +4518,27 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         })()}
       </AnimateMount>
 
+      {/* Attachment sheet — the consequence chip's link half (THR-1120).
+          `Modal` sits at z-index 60 against the veil's 50, so the sheet opens
+          *over* the aftermath rather than behind it, and closing returns the
+          player to the ending they were reading. An id that resolves to no
+          attachment renders nothing: the chip that offered it was never
+          clickable, so this is belt-and-braces, not a silent failure path. */}
+      {attachmentSheetId && (() => {
+        const detail = resolveAttachmentTemplateDetail(gameState.graph, attachmentSheetId);
+        if (!detail) return null;
+        return (
+          <Modal open={true} onClose={() => setAttachmentSheetId(null)} maxWidth={720}>
+            <div data-testid="aftermath-attachment-sheet">
+              <AttachmentDetailView
+                attachment={detail}
+                onBack={() => setAttachmentSheetId(null)}
+              />
+            </div>
+          </Modal>
+        );
+      })()}
+
       {/* EncounterVeil — unified encounter display for all encounter types.
           Wrapped in `anim-encounter-handoff-fade-up` so the world view → encounter
           transition lands as a 400ms fade-up (THR-340 / design plan §5.8). */}
@@ -4519,13 +4558,21 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
             onAcknowledgeAftermath={handleEncounterAcknowledgeAftermath}
             onAftermathReaction={handleEncounterAftermathReaction}
             onSelectAgent={handleAgentSelect}
-            onSelectEntity={(entityId, kind) =>
+            onSelectEntity={(entityId, kind) => {
+              // THR-1120 — a granted condition/blessing/curse/power opens the
+              // attachment sheet. `entityId` is the template node id; see
+              // `engine/attachmentTemplateDetail.ts` for why a template and not
+              // the granted instance.
+              if (kind === 'attachment') {
+                setAttachmentSheetId(entityId);
+                return;
+              }
               // THR-1004 — the UI Law's link half for non-person entities named
               // on an aftermath chip. Routes to the same stub-modal path the
               // thread list uses, so a faction or a reward opens its own sheet
               // rather than the agent drawer.
-              setStubModalState({ nodeId: entityId, category: kind })
-            }
+              setStubModalState({ nodeId: entityId, category: kind });
+            }}
             onCommitNudges={handleCommitNudges}
             onShowOnMap={(col, row) => {
               if (hexMapRef.current) {

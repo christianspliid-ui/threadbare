@@ -581,6 +581,57 @@ describe('buildUnifiedEncounterStageModel', () => {
       expect(model.header.threatLabel).toBe('Easy');
     });
 
+    /**
+     * THR-1121 — a step that authored neither a nudge hand nor choices gets the
+     * **fate-alone** stage rather than an empty screen.
+     *
+     * Before this, such a step was carried by the generic
+     * supportive/coercive/withdrawn triple from `generateInterventionChoices`.
+     * That producer is retired, so `notification.choices` arrives empty for
+     * every unauthored step — and without the `allowEmptyHand` branch the veil
+     * would render a scene with no move on it at all. Falsified on both halves:
+     * the phase must exist, and its hand must be empty (a phase carrying cards
+     * would mean the fixture accidentally authored some, and the test would be
+     * pinning the pre-existing THR-775 path instead of the new one).
+     */
+    it('builds a fate-alone nudge phase when the step authored no hand and no choices', () => {
+      const model = buildUnifiedEncounterStageModel({
+        template: LINEAR_TEMPLATE,
+        activeAction: buildLinearAction(),
+        notification: buildNotification({ choices: [] }),
+        agentName: 'Kael the Scout',
+        threadTier: 'strong',
+        graph: buildGraph(),
+        essence: 10,
+      });
+
+      expect(model.choices).toEqual([]);
+      expect(model.nudgePhase).toBeDefined();
+      expect(model.nudgePhase!.cards).toEqual([]);
+    });
+
+    /**
+     * The converse, so the branch is a branch and not an unconditional switch:
+     * a step whose notification carries authored choices keeps the choice
+     * screen, and no nudge phase is invented over the top of it. The 30
+     * templates still on `authoredChoices` depend on this until WS5 converts
+     * them.
+     */
+    it('keeps the choice screen — no nudge phase — when the step has authored choices', () => {
+      const model = buildUnifiedEncounterStageModel({
+        template: LINEAR_TEMPLATE,
+        activeAction: buildLinearAction(),
+        notification: buildNotification(),
+        agentName: 'Kael the Scout',
+        threadTier: 'strong',
+        graph: buildGraph(),
+        essence: 10,
+      });
+
+      expect(model.choices.length).toBeGreaterThan(0);
+      expect(model.nudgePhase).toBeUndefined();
+    });
+
     it('populates interventionType, godVoice, and probabilityBoost on choices', () => {
       const graph = buildGraph();
       const notification = buildNotification({

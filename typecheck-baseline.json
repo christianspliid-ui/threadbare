@@ -1,5 +1,5 @@
 {
-  "total": 3192,
+  "total": 3190,
   "command": "npx tsc -b --force --pretty false",
   "perFile": {
     "scripts/lint-encounter-content.ts": 2,
@@ -568,7 +568,7 @@
     "src/engine/encounterSeeding.ts": 2,
     "src/engine/encounterSupportBundle.ts": 1,
     "src/engine/encounterSurface.ts": 3,
-    "src/engine/encounterVisibility.ts": 12,
+    "src/engine/encounterVisibility.ts": 11,
     "src/engine/factionAmbitions.ts": 3,
     "src/engine/factionGovernanceVerbs.ts": 1,
     "src/engine/factionNetwork.ts": 3,
@@ -686,7 +686,7 @@
     "src/engine/trustMechanics.ts": 1,
     "src/engine/unifiedActionLifecycle.ts": 1,
     "src/engine/unifiedActionPhases.ts": 1,
-    "src/engine/unifiedActionResolution.ts": 26,
+    "src/engine/unifiedActionResolution.ts": 25,
     "src/engine/unifiedCandidates.ts": 1,
     "src/engine/vignetteNotification.ts": 2,
     "src/engine/worldgen/__tests__/biome.test.ts": 4,

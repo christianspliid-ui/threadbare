@@ -322,7 +322,7 @@ export const SLICE_UNSAFE_BRIDGE: UnifiedActionTemplate = {
               polarity: 'gain',
               category: 'boon',
               direction: 'gain',
-              stateNoun: { text: 'inspired' },
+              stateNoun: { text: 'inspired', entityId: 'trait.condition.inspired', visualKind: 'attachment' },
             },
           ],
           reactions: [
@@ -394,7 +394,7 @@ export const SLICE_UNSAFE_BRIDGE: UnifiedActionTemplate = {
               polarity: 'loss',
               category: 'scar',
               direction: 'loss',
-              stateNoun: { text: 'exhausted' },
+              stateNoun: { text: 'exhausted', entityId: 'trait.condition.exhausted', visualKind: 'attachment' },
             },
           ],
           reactions: [
@@ -423,7 +423,14 @@ export const SLICE_UNSAFE_BRIDGE: UnifiedActionTemplate = {
               polarity: 'loss',
               category: 'scar',
               direction: 'loss',
-              stateNoun: { text: 'wounded' },
+              // THR-1120 — the state noun declares the attachment this band's
+              // reaction grants, so the chip can link it. The producer says what
+              // it named (Law 2); matching 'wounded' against the reaction's
+              // `trait.condition.wounded` by English would be the guess that law
+              // forbids. `entityId` is the **template** id: the grant is written
+              // when the player picks, and the veil closes on the pick, so the
+              // instance does not exist while the chip is on screen.
+              stateNoun: { text: 'wounded', entityId: 'trait.condition.wounded', visualKind: 'attachment' },
             },
             {
               id: 'slice.bridge.the_water_underneath',
@@ -434,7 +441,7 @@ export const SLICE_UNSAFE_BRIDGE: UnifiedActionTemplate = {
               polarity: 'loss',
               category: 'scar',
               direction: 'loss',
-              stateNoun: { text: 'terrified' },
+              stateNoun: { text: 'terrified', entityId: 'trait.condition.terrified', visualKind: 'attachment' },
             },
           ],
           reactions: [
@@ -827,7 +834,7 @@ export const SLICE_SNOW_ON_THE_PASS: UnifiedActionTemplate = {
               polarity: 'loss',
               category: 'scar',
               direction: 'loss',
-              stateNoun: { text: 'exhausted' },
+              stateNoun: { text: 'exhausted', entityId: 'trait.condition.exhausted', visualKind: 'attachment' },
             },
           ],
           reactions: [
@@ -856,7 +863,7 @@ export const SLICE_SNOW_ON_THE_PASS: UnifiedActionTemplate = {
               polarity: 'loss',
               category: 'scar',
               direction: 'loss',
-              stateNoun: { text: 'exhausted' },
+              stateNoun: { text: 'exhausted', entityId: 'trait.condition.exhausted', visualKind: 'attachment' },
             },
             {
               id: 'slice.pass.what_the_dark_took',
@@ -902,7 +909,7 @@ export const SLICE_SNOW_ON_THE_PASS: UnifiedActionTemplate = {
               polarity: 'loss',
               category: 'scar',
               direction: 'loss',
-              stateNoun: { text: 'wounded' },
+              stateNoun: { text: 'wounded', entityId: 'trait.condition.wounded', visualKind: 'attachment' },
             },
           ],
           reactions: [
@@ -1359,7 +1366,7 @@ export const SLICE_RIDERS_BEHIND_CARAVAN: UnifiedActionTemplate = {
               polarity: 'loss',
               category: 'scar',
               direction: 'loss',
-              stateNoun: { text: 'wounded' },
+              stateNoun: { text: 'wounded', entityId: 'trait.condition.wounded', visualKind: 'attachment' },
             },
           ],
           reactions: [
@@ -2955,7 +2962,7 @@ export const SLICE_SWINDLER_FOUND: UnifiedActionTemplate = {
                 polarity: 'loss',
                 category: 'scar',
                 direction: 'loss',
-                stateNoun: { text: 'wounded' },
+                stateNoun: { text: 'wounded', entityId: 'trait.condition.wounded', visualKind: 'attachment' },
               },
             ],
             reactions: [
@@ -2989,7 +2996,7 @@ export const SLICE_SWINDLER_FOUND: UnifiedActionTemplate = {
                 polarity: 'loss',
                 category: 'scar',
                 direction: 'loss',
-                stateNoun: { text: 'wounded' },
+                stateNoun: { text: 'wounded', entityId: 'trait.condition.wounded', visualKind: 'attachment' },
               },
               {
                 id: 'slice.swindler.the_market_talks',

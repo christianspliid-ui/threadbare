@@ -234,9 +234,10 @@ remediation ticket or the build fails.
 - **Intent:** The character sheet shows what an agent carries.
 - **Producer → Consumer:** Attachments, Items & Possessions → Attention, Chronicle & Narrative
 - **Module:** `src/engine/agentAttachments.ts`
-- **Production hits:** 3 total — 2 write, 1 read, 0 unclassified
+- **Production hits:** 4 total — 2 write, 1 read, 1 unclassified
 - **Write sites:** `src/engine/agentAttachments.ts`, `src/engine/agentDetail.ts`
 - **Read sites:** `src/debug-bridge.ts`
+- **Other hits:** `src/engine/attachmentTemplateDetail.ts`
 - **Verdict:** Verified 2026-07-23: AttachmentsTab renders inside AgentProfileModal. Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified)
 
 ### `attachment-domain-contributions` — 🟢 LIVE
@@ -286,10 +287,10 @@ remediation ticket or the build fails.
 - **Intent:** Encounters grant rewards, which become possessions — by random draw from the pool, or as an authored consequence naming one template.
 - **Producer → Consumer:** Encounters & Dilemmas → Attachments, Items & Possessions
 - **Module:** `src/engine/rewardPool.ts`
-- **Production hits:** 9 total — 2 write, 3 read, 4 unclassified
+- **Production hits:** 10 total — 2 write, 3 read, 5 unclassified
 - **Write sites:** `src/engine/rewardPool.ts`, `src/types/attachments.ts`
 - **Read sites:** `src/engine/encounterAftermath.ts`, `src/engine/orchestrator.ts`, `src/engine/unifiedActionResolution.ts`
-- **Other hits:** `src/engine/debugWorldSpawnTools.ts`, `src/engine/nudgeGrantLiveness.ts`, `src/engine/phaseDoom.ts`, `src/types/unifiedAction.ts`
+- **Other hits:** `src/engine/attachmentTemplateDetail.ts`, `src/engine/debugWorldSpawnTools.ts`, `src/engine/nudgeGrantLiveness.ts`, `src/engine/phaseDoom.ts`, `src/types/unifiedAction.ts`
 - **Verdict:** Verified 2026-08-14: possesses edges grow 7→82 over 120 ticks (seed 42, medium). Authored arm (THR-1110): the crossroads accept path writes one agreement edge binding the actor to the materialized stranger, 132-tick term (seed 42, medium, CLI). Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified)
 
 ### `attachment-grants-trait-while-held` — 🟢 LIVE
@@ -308,10 +309,10 @@ remediation ticket or the build fails.
 - **Intent:** Items break, deplete, or curse their bearer on use — authored consequence for carrying power.
 - **Producer → Consumer:** Attachments, Items & Possessions → Encounters & Dilemmas
 - **Module:** `src/engine/effects/actionTriggerPayloads.ts`
-- **Production hits:** 16 total — 2 write, 4 read, 10 unclassified
+- **Production hits:** 17 total — 2 write, 4 read, 11 unclassified
 - **Write sites:** `src/data/anomaly-reward-catalog.ts`, `src/data/starter-attachments.ts`
 - **Read sites:** `src/engine/effects/actionTrigger.ts`, `src/engine/orchestrator.ts`, `src/engine/phaseMovement.ts`, `src/engine/unifiedActionResolution.ts`
-- **Other hits:** `src/components/Game/AttachmentDetailView.tsx`, `src/data/effect-constants.ts`, `src/data/reward-attachment-catalog.ts`, `src/engine/agentAttachments.ts`, `src/engine/attachmentTooltip.ts` +5 more
+- **Other hits:** `src/components/Game/AttachmentDetailView.tsx`, `src/data/effect-constants.ts`, `src/data/reward-attachment-catalog.ts`, `src/engine/agentAttachments.ts`, `src/engine/attachmentTemplateDetail.ts` +6 more
 - **Verdict:** Verified 2026-07-25: Both sides carry live symbol hits. Producer: 9 authored `action_trigger` entries across starter-attachments.ts + anomaly-reward-catalog.ts (port-completeness test asserts the count and that every condition_grant names an existing node). Consumer: `checkAndFireActionTriggers` is called from unifiedActionResolution.ts (ladder-mapped outcome bands), orchestrator.ts, and phaseMovement.ts; the graph-affecting payloads are executed by `applyActionTriggerPayloads` at all three sites. Value-level check: the granted has_trait edge carries `ticksRemaining`, the field `decayConditions` actually counts down (asserted in actionTriggerOnUse.test.ts + the ported lifecycle integration test), not the inert `durationTicks` that `apply_condition` writes.
 
 ### `attachment-slot-caps-suppress` — 🟢 LIVE

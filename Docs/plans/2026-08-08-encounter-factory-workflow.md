@@ -88,6 +88,56 @@ BRIEF ─▶ DRAFT ─▶ CRITIC LOOP ─▶ MACHINE GATES ─▶ LIVE PROOF ─
 8. **Retrofit all 15** nudge-era encounters to the full contract — the slice five (riding THR-973) *and* the camp seven + sequels. The retrofit is the pilot volume.
 9. **The THR-883 sitting collapses into a review**: Fable drafts the amended spec + one full-contract exemplar encounter; Christian's chat review of those two artifacts is the sitting.
 
-## Done-when (this design)
+## Substrate inventory
 
-Plan approved in chat → tickets 1–5 filed with coordination blocks → pilot batch (item 6) produces 6 encounters that pass every gate with ≤2 critic loops each, and Christian's 2-encounter sample verdict is "ship" — that verdict, not the tooling, is what proves "same high quality every time."
+*Backfilled 2026-08-15 (the THR-1060 requirement, folded into this ticket 2026-08-11). Written **post-implementation** — items 1, 2, 4 and 5 shipped as THR-1044, THR-1045, THR-1046 and THR-1047 between 2026-08-09 and 2026-08-14 — so this records the as-built reuse, verified against the shipped code rather than asserted at drafting time. No design decisions change.*
+
+The THR-614 question — did the factory green-field machinery that already existed? — answered per gate-stack member:
+
+| Factory stage | Substrate used | Status |
+|---|---|---|
+| Composition validation | `src/data/content-eval/compositionContract.ts` — **new**, but delegates hand → `nudgeHandChecklist` and setting → `validateSettingEnvelope` (both pre-existing) rather than restating them; verified in `scripts/check-encounter.ts`'s own stack ordering | extends |
+| Register/prose gating | `src/data/content-eval/detectors.ts`, `registerCompliance.ts`, `proseQualityScore.ts` (pre-existing, THR-490/472/609 family) — the gate reads `auditTemplate().failures`; the abstraction detector deliberately ranks rather than gates (THR-1092) | reuses |
+| Reference liveness | `validateNudgeGrantRefs`, `traitRefValidation.ts` (pre-existing THR-786/809), image-library resolution (THR-777) | reuses |
+| Gate runner | `scripts/check-encounter.ts` (`npm run check:encounter`) — **new composition of existing validators**, one command per Stage 3 | new (composition only) |
+| Live proof | `scripts/encounter-live-proof.ts` (`npm run check:encounter-live`) — drives the **existing** `initializeGameState` → `runTick` pipeline headlessly, same substrate as the CLI | new (harness only) |
+| Batch review | `scripts/encounter-batch-report.ts` (`npm run encounter:batch-report`) — renders six side by side per ruling 1 | new |
+| Package View | `?view=cms#encounter-packages` (`src/components/CMS/encounter-package/`) — lives on the **existing** CMS surface, reads `checkCompositionContract`'s verdict rather than re-deriving it | extends |
+| Orchestration | `.claude/skills/encounter-pipeline/` v3 — same five-stage line as v2 with the brief stage in front and the loop bound added | extends |
+
+No duplicated substrate found: every validator the gate stack runs either pre-existed or is a composition/harness over pre-existing machinery. The one genuinely new *validator* is the Composition Contract itself, which is the plan's load-bearing artifact by design.
+
+## Constants table
+
+Every tunable named, with its home — all shipped as named exports or ruling-bound skill constants:
+
+| Constant | Value | Lives at | Purpose / ruling |
+|---|---|---|---|
+| `COMPOSITION_STEPS_MIN` / `_MAX` | 1 / 3 | `compositionContract.ts:51-52` | step count bounds |
+| `COMPOSITION_BYOUTCOME_MIN_BANDS` | 3 | `compositionContract.ts:58` | byOutcome floor (ruling 7 — a floor, never a norm) |
+| `COMPOSITION_SYSTEMS_QUOTA_MIN` | 3 | `compositionContract.ts:65` | systems-connection quota (spec §262–276) |
+| `BATCH_SIZE` | 6 | `encounter-batch-report.ts:57` | batch size (ruling 1) |
+| Critic loop bound | 2, then **park** | `encounter-pipeline` SKILL Step 2b | ruling 4 — park, don't kill; governs agent behavior, so it lives in the skill, not code |
+| Director sample | 2 of 6 | `encounter-pipeline` SKILL Stage 5 | ruling 1 — gates hold the floor, Christian holds the ceiling |
+| Nudge hand size | 4–6 cards, ≥1 sphere-gated, ≥1 trait-gated | `nudgeHandChecklist` (pre-existing) | contract row 2 |
+| Register thresholds | vagueness 0, no numerals, no second person | detector stack via `auditTemplate().failures` | contract row "Register" |
+| `WARMUP_TICKS` | 2 | `encounter-live-proof.ts:114` | live-proof world warm-up before spawn |
+
+## NFP-compliance table
+
+| NFP | Verdict | Evidence |
+|---|---|---|
+| 1. Tunability | ✅ | every gate threshold is a named export (table above); changing the byOutcome floor is one constant |
+| 2. Inspectability | ✅ | each stage emits a readable artifact: gate report per template, live-proof evidence, batch report with per-encounter verdicts, Package View rendering the contract verdict inline |
+| 3. Determinism | ✅ | gates are pure functions over template data; live proof runs the seeded engine pipeline (same-seed reproducible); no gate consults an LLM |
+| 4. Fail-soft | ✅ | deliberate polarity: authoring-time tooling **fails loud by design** (ruling 3 — the validator hard-fails a missing block); fail-soft applies to the *runtime*, which Stage 4 asserts (no tick crash, aftermath resolves a variant not a fallback) |
+| 5. Narrative over mechanical | ✅ | the editorial critic and the director's ceiling sample judge prose; gates only hold the floor |
+| 6. Additive | ✅ | extends encounter-pipeline v2 (§Lineage); no existing surface replaced; contract expression is inline on templates (ruling 5), no parallel manifest files |
+| 7. Performance budget | ✅ | all factory machinery is authoring-time (scripts + CLI); zero runtime cost — shipped encounters are data like any other template |
+
+## Done when
+
+- [x] Plan approved in chat (Christian, 2026-08-08)
+- [x] Tickets 1–5 filed with coordination blocks (shipped: THR-1044, THR-1045, THR-1046, THR-1047; spec expansion rode the format ruling)
+- [ ] Pilot batch (item 6) produces 6 encounters that pass every gate with ≤2 critic loops each
+- [ ] Christian's 2-encounter sample verdict is "ship" — that verdict, not the tooling, is what proves "same high quality every time"

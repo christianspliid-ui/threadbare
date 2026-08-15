@@ -715,6 +715,12 @@ function buildAftermath(
     resolveIcon: (concept) => {
       const kind = concept.visualKind;
       if (!kind) return undefined;
+      // THR-1120 — an attachment has a page but no entity-visual family: its art
+      // lives on its own template node and `AttachmentDetailView` draws it. It
+      // takes the link tier and no tile, which is the documented fail-open path
+      // rather than a wrong glyph. `EntityVisualKind` excludes it, so removing
+      // this guard is a type error, not a silent regression.
+      if (kind === 'attachment') return undefined;
       const entityId = concept.entityId ?? concept.visualName ?? concept.text;
       const name = concept.visualName ?? concept.text;
       const descriptor = resolveEntityVisual({ id: entityId, kind, name }, graph);
@@ -808,15 +814,28 @@ export function buildUnifiedEncounterStageModel(
       }
     : undefined;
 
-  // THR-775 — the nudge phase is present only when the *current* step carries an
+  // THR-775 — the nudge phase is present when the *current* step carries an
   // authored hand. A template with `authoredChoices` and no hand gets
-  // `undefined` here and keeps the legacy choice screen untouched, which is what
-  // makes the rollout per-template and reversible (remove the nudges, get the
-  // old screen back). Never built during aftermath: the hand is a pre-roll
-  // surface, and offering it after the roll would be a lie.
+  // `undefined` here and keeps the choice screen untouched, which is what makes
+  // the rollout per-template and reversible (remove the nudges, get the old
+  // screen back). Never built during aftermath: the hand is a pre-roll surface,
+  // and offering it after the roll would be a lie.
+  //
+  // THR-1121 — it is *also* built, with an empty hand, when the step has no
+  // authored choices either. Before this, such a step fell through to the generic
+  // supportive/coercive/withdrawn stance triple priced in `probabilityBoost`; that
+  // producer is retired, so `choices` is now empty for every unauthored step and
+  // the branch below would have rendered a screen with no move on it at all.
+  // Fate-alone is the replacement: the stage still frames the moment (motive,
+  // test, cast) and offers `Let fate decide`. Note the check reads the built
+  // `choices`, not `template.authoredChoices` — the authored hand reaches the
+  // stage through `buildChoices`' own step resolution, and re-deriving the
+  // condition here is how the two would drift apart.
+  const choices = buildChoices(args, ctx);
   const nudgePhase = isAftermath
     ? undefined
     : buildNudgePhaseModel({
+        allowEmptyHand: choices.length === 0,
         template: args.template,
         activeAction,
         step: getCurrentStep(args.template, activeAction),
@@ -838,7 +857,7 @@ export function buildUnifiedEncounterStageModel(
     cast: buildCast(args),
     factions: [],
     signals: [],
-    choices: buildChoices(args, ctx),
+    choices,
     falloutPreview: buildFalloutPreview(args),
     history: buildHistory(args, ctx),
     aftermath: buildAftermath(args, ctx),

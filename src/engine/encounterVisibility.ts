@@ -20,9 +20,6 @@ import type {
 import {
   RETINUE_VIGNETTE_TIMEOUT,
   ENCOUNTER_PEEK_COST,
-  ENCOUNTER_BOOST_MIN,
-  ENCOUNTER_BOOST_MAX,
-  BOOST_TO_PROBABILITY_RATIO,
   PAUSE_MODE_MIN_TIER,
   ATTENTION_MODE_CHANGE_COST,
   VISIBILITY_BY_POSITION,
@@ -48,61 +45,39 @@ export function getVisibilityDepth(courtPosition: CourtPosition | null): Encount
 }
 
 /**
- * Generate encounter intervention choices based on court position.
+ * Generic intervention choices — **retired** (THR-1121). Always `[]`.
  *
- * THR-880: while the force-full-visibility debug override is active, every
- * threaded (non-dormant) position gets treated as `the_first` here — the
- * full 3-choice set — so testing sessions aren't limited to Watched's
- * observation-only view.
+ * This built the pre-nudge divine-intervention layer: a fixed
+ * supportive/coercive/withdrawn triple priced in essence and paying out in
+ * `probabilityBoost` — *"Tip the scales in their favor · 1 essence · +3%
+ * success"*. That is a **paid RNG modifier**, precisely the pattern the Nudge
+ * Model pivot rejected (THR-773/WS0): the god nudges the *fiction* and fate
+ * picks the outcome, so no surface sells odds.
+ *
+ * Director finding, THR-974 verdict session (Christian, 2026-08-15), on
+ * Swindler Found step 2: *"this step 2 and the choices seem like legacy
+ * encounter design. am I correct"* — confirmed correct, and this was the
+ * producer.
+ *
+ * **Emptied rather than deleted.** `buildEncounterNotification` still calls it,
+ * and `EncounterNotification.choices` is still the channel a template's
+ * `authoredChoices` ride on — `phaseEncounterVisibility` overwrites `choices`
+ * with the authored hand for steps that carry one. So the field stays live and
+ * only the *generic* producer is gone. Returning `[]` is what makes a step with
+ * no authored content fall through to the nudge stage's fate-alone screen
+ * (`buildUnifiedEncounterStageModel` branches on `choices.length === 0`), which
+ * is the replacement pattern rather than an absence.
+ *
+ * The court-position gate it used to apply (`VISIBILITY_BY_POSITION.maxChoices`,
+ * and THR-880's force-full-visibility promotion to `the_first`) went with it:
+ * with no generic hand to size, there is nothing left for a maximum to bound.
+ * Both still govern prose depth via {@link getVisibilityDepth}.
  */
 export function generateInterventionChoices(
-  courtPosition: CourtPosition | null,
-  encounterName: string,
+  _courtPosition: CourtPosition | null,
+  _encounterName: string,
 ): EncounterInterventionChoice[] {
-  if (!courtPosition) return [];
-
-  const effectivePosition: CourtPosition =
-    isForceFullEncounterVisibility() && courtPosition !== 'dormant' ? 'the_first' : courtPosition;
-
-  const config = VISIBILITY_BY_POSITION[effectivePosition];
-  if (!config || config.maxChoices === 0) return [];
-
-  const choices: EncounterInterventionChoice[] = [];
-
-  if (effectivePosition === 'the_first' || effectivePosition === 'retinue') {
-    // Supportive intervention
-    choices.push({
-      id: 'intervene_support',
-      text: 'Tip the scales in their favor',
-      essenceCost: ENCOUNTER_BOOST_MIN,
-      probabilityBoost: BOOST_TO_PROBABILITY_RATIO * ENCOUNTER_BOOST_MIN,
-      interventionType: 'supportive',
-      godVoice: 'The thread hums with divine purpose.',
-    });
-
-    if (effectivePosition === 'the_first') {
-      // Coercive intervention (First only)
-      choices.push({
-        id: 'intervene_force',
-        text: 'Pour divine power into the encounter',
-        essenceCost: ENCOUNTER_BOOST_MAX,
-        probabilityBoost: BOOST_TO_PROBABILITY_RATIO * ENCOUNTER_BOOST_MAX,
-        interventionType: 'coercive',
-        godVoice: 'My will be done.',
-      });
-    }
-
-    // Let it play out
-    choices.push({
-      id: 'intervene_withdraw',
-      text: 'Let it play out',
-      essenceCost: 0,
-      probabilityBoost: 0,
-      interventionType: 'withdrawn',
-    });
-  }
-
-  return choices.slice(0, config.maxChoices);
+  return [];
 }
 
 /**

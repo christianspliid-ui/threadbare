@@ -13,9 +13,18 @@ import { describe, expect, it } from 'vitest';
 import { resolveInterveneChoice } from '../resolveInterveneChoice';
 import { UNIFIED_ACTION_TEMPLATES } from '../../../../data/unified-action-templates';
 import type { EncounterInterventionChoice } from '../../../../types/encounterVisibility';
-import { BOOST_TO_PROBABILITY_RATIO } from '../../../../types/encounterVisibility';
 
-/** The set `generateInterventionChoices` actually builds, for The First. */
+/**
+ * The set `generateInterventionChoices` built for The First **before THR-1121
+ * retired it**.
+ *
+ * Kept as a literal rather than regenerated: these tests are about the *lookup*
+ * across two producers, and the lookup must still handle a non-empty
+ * notification hand — which is exactly what a template's `authoredChoices`
+ * arrive as, via `phaseEncounterVisibility`'s override. Calling the retired
+ * builder here would fixture an empty array and quietly stop testing the
+ * precedence rule this file exists for.
+ */
 const GENERIC_CHOICES: readonly EncounterInterventionChoice[] = [
   {
     id: 'intervene_support',
@@ -52,11 +61,24 @@ describe('resolveInterveneChoice', () => {
   it('carries the authored essence cost through to the recorded choice', () => {
     const free = resolveInterveneChoice(THE_OFFER, 1, GENERIC_CHOICES, 'let_them_choose');
     expect(free!.essenceCost).toBe(0);
-    expect(free!.probabilityBoost).toBe(0);
 
     const paid = resolveInterveneChoice(THE_OFFER, 1, GENERIC_CHOICES, 'whisper_the_cost');
     expect(paid!.essenceCost).toBe(1);
-    expect(paid!.probabilityBoost).toBeCloseTo(BOOST_TO_PROBABILITY_RATIO * 1);
+  });
+
+  /**
+   * THR-1121 — a paid authored card no longer buys odds.
+   *
+   * It used to convert its price at `BOOST_TO_PROBABILITY_RATIO`, matching the
+   * generic triple, and `unifiedActionResolution` added the result to the roll.
+   * Both halves are retired. Asserted on the **paid** card specifically: a free
+   * card has always been 0, so pinning only that would pass unchanged if the
+   * conversion came back.
+   */
+  it('never buys probability, however expensive the card', () => {
+    const paid = resolveInterveneChoice(THE_OFFER, 1, GENERIC_CHOICES, 'whisper_the_cost');
+    expect(paid!.essenceCost).toBeGreaterThan(0);
+    expect(paid!.probabilityBoost).toBe(0);
   });
 
   it('still resolves the generic set, so the un-authored path is untouched', () => {

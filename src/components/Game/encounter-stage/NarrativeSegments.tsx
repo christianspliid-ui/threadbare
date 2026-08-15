@@ -48,7 +48,14 @@ import { Tooltip } from '../../shared/Tooltip';
 import { tooltipResolves } from '../../../engine/tooltipResolver';
 import type { EncounterStageNarrativeParagraph } from './types';
 
-export type NarrativeEntityKind = 'agent' | 'faction' | 'artifact' | 'companion';
+export type NarrativeEntityKind =
+  | 'agent'
+  | 'faction'
+  | 'artifact'
+  | 'companion'
+  // THR-1120 — a granted condition/blessing/curse/power, named by its template
+  // node id. Routed to the attachment sheet; see `EncounterVeil`'s `openEntity`.
+  | 'attachment';
 
 export interface NarrativeSegmentsProps {
   paragraph: EncounterStageNarrativeParagraph;
