@@ -1342,6 +1342,12 @@ const ALL_ATTACHMENT_TEMPLATES: GraphNode[] = [
 interface CliAftermathApplyResult {
   success: boolean;
   message: string;
+  /**
+   * THR-1112: the refusal is "the tick loop already applied this", not a failure.
+   * Reported as a notice rather than a red error — nothing went wrong, and the
+   * previous red framing is what made these runs read as engine defects.
+   */
+  alreadyApplied?: boolean;
   reactionId?: string;
   encounterId?: string;
   actionId?: string;
@@ -1385,7 +1391,7 @@ function markAftermathNotificationsResolved(
 function applyAftermathForAgent(agentId: string, reactionId?: string, source: 'cli' | 'debug-bridge' = 'cli'): CliAftermathApplyResult {
   const resolved = resolveAftermathContextForAgent(state, agentId, reactionId);
   if ('error' in resolved) {
-    return { success: false, message: resolved.error };
+    return { success: false, message: resolved.error, alreadyApplied: Boolean(resolved.alreadyApplied) };
   }
 
   try {
@@ -1625,7 +1631,9 @@ function handleAftermathCommand(args: string[]): void {
   if (subcommand === 'list') {
     const resolved = resolveAftermathContextForAgent(state, agent.id);
     if ('error' in resolved) {
-      console.log(dim('(no pending aftermath)'));
+      // THR-1112: distinguish "already consumed by the tick loop" from "nothing here" —
+      // the two look identical from the outside and lead to opposite conclusions.
+      console.log(resolved.alreadyApplied ? `${YELLOW}○${RESET} ${resolved.error}` : dim('(no pending aftermath)'));
       return;
     }
     const reactions = resolved.action.aftermathSummary?.reactions ?? [];
@@ -1644,7 +1652,8 @@ function handleAftermathCommand(args: string[]): void {
   if (subcommand === 'pick') {
     const result = applyAftermathForAgent(agent.id, reactionId, 'cli');
     if (!result.success) {
-      console.log(`${RED}${result.message}${RESET}`);
+      // THR-1112: an already-applied aftermath is a no-op notice, not a failure.
+      console.log(result.alreadyApplied ? `${YELLOW}○${RESET} ${result.message}` : `${RED}${result.message}${RESET}`);
       return;
     }
     const selectedLabel = reactionId ? result.reactionId : `${result.reactionId} ${dim('(auto-picked first reaction)')}`;
