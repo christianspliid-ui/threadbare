@@ -1364,7 +1364,7 @@ Three things to know:
 
 Supersedes `onFailureEffects`, a key the THR-101 tavern migration authored at five sites in place of the legacy `appliesWound` flag. It was never declared on the type and never read by any engine module, so a lost tavern brawl marked nobody from 2026-04-24 until this fix. **If you are reading an old plan doc or changelog row that says `onFailureEffects`, the field is now `effects`.**
 
-> **Caveat (THR-809, open).** The condition *definition* nodes (`trait.condition.wounded` and 5 siblings) are not currently seeded into the world graph — `ensureTraitNodes` hangs off a legacy loop the unified pipeline never runs. Until that lands, a `condition_attachment` naming a definition-file condition fail-softs on `template_missing` in a live game. The wiring above is correct and unit-proven; the effect is simply not yet observable in play.
+> **Resolved (THR-809, shipped 2026-07-27, PR #926).** Condition + mastery trait definitions now seed at world init, so `condition_attachment` / `apply_condition` naming a definition-file condition land in live play. This caveat previously read "open" and suppressed condition authoring long after the fix shipped (caught by the 2026-08-16 palette census: conditions were among the least-used effect families partly on the strength of this stale line) — corrected 2026-08-16 in the consequence-palette-expansion plan PR.
 
 ### Aftermath Reaction Effect Types
 
