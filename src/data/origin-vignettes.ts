@@ -25,7 +25,7 @@ import type { ReachDomain } from '../types/traits';
  *   veil   — Patient/Weaver       / Impatient/Unraveller
  *   heart  — Loyal/Sworn          / Disloyal/Renegade
  *   eye    — Perceptive/Seer      / Judgemental/Inquisitor
- *   stone  — Dependable/Keeper     / Reckless/Destroyer
+ *   stone  — Careful/Keeper        / Reckless/Destroyer
  *   star   — Guiding/Beacon        / Misleading/Wrecker
  *
  * Voice: Threadbare house style (`Docs/canon/prose.md`) — plain, concrete,
@@ -192,16 +192,20 @@ export const ORIGIN_VIGNETTES: readonly OriginVignette[] = [
   { id: 'origin.eye.vice.over-a-trifle', text: 'Put a whole household to the question over a missing trifle, and never apologised.', reach: 'eye', pole: 'vice', magnitude: 0.2 },
 
   // ─────────────────────────────── STONE ──────────────────────────────
-  // Virtue: Dependable / Keeper
+  // Virtue: Careful / Keeper
+  // Word revised THR-1135 (was Dependable). The three vignettes below whose text
+  // encoded interpersonal trust or promise-keeping — Heart's domain, the same bleed
+  // as the old label — were re-anchored on foresight and vigilance; ids and
+  // magnitudes are unchanged. The other six already read as steadiness/vigilance.
   { id: 'origin.stone.virtue.chores-no-thanks', text: 'Was up before everyone to do the chores no one thanked them for.', reach: 'stone', pole: 'virtue', magnitude: 0.05 },
   { id: 'origin.stone.virtue.one-lamp', text: 'Kept the one lamp burning so the others could find their way home.', reach: 'stone', pole: 'virtue', magnitude: 0.05 },
   { id: 'origin.stone.virtue.same-task-right', text: 'Did the same dull task right, every day, without being checked.', reach: 'stone', pole: 'virtue', magnitude: 0.05 },
-  { id: 'origin.stone.virtue.held-a-key', text: 'Could be trusted to hold a secret or a key for years.', reach: 'stone', pole: 'virtue', magnitude: 0.05 },
+  { id: 'origin.stone.virtue.held-a-key', text: 'Kept the seed grain sealed and dry through two wet winters.', reach: 'stone', pole: 'virtue', magnitude: 0.05 },
   { id: 'origin.stone.virtue.long-illness', text: 'Held the household together through a long illness, quietly, without being asked.', reach: 'stone', pole: 'virtue', magnitude: 0.1 },
   { id: 'origin.stone.virtue.relief-came', text: 'Stayed at the post long after the relief should have come.', reach: 'stone', pole: 'virtue', magnitude: 0.1 },
-  { id: 'origin.stone.virtue.spare-key', text: 'Was the one the whole street left their spare key with.', reach: 'stone', pole: 'virtue', magnitude: 0.1 },
+  { id: 'origin.stone.virtue.spare-key', text: 'Checked every latch on the street twice at night, and found the one left open.', reach: 'stone', pole: 'virtue', magnitude: 0.1 },
   { id: 'origin.stone.virtue.single-handed', text: 'Kept a failing farm running single-handed through a season no one else would face.', reach: 'stone', pole: 'virtue', magnitude: 0.15 },
-  { id: 'origin.stone.virtue.years-of-hardship', text: 'Stood by a promise through years of hardship, when breaking it would have been easy.', reach: 'stone', pole: 'virtue', magnitude: 0.2 },
+  { id: 'origin.stone.virtue.years-of-hardship', text: 'Walked the flood wall every night of the wet season, and knew before anyone where it would give.', reach: 'stone', pole: 'virtue', magnitude: 0.2 },
   // Vice: Reckless / Destroyer
   { id: 'origin.stone.vice.shrugged-pieces', text: 'Broke more than they ever mended, and shrugged at the pieces.', reach: 'stone', pole: 'vice', magnitude: 0.05 },
   { id: 'origin.stone.vice.scars-as-winnings', text: 'Took every dare, and counted the scars as winnings.', reach: 'stone', pole: 'vice', magnitude: 0.05 },

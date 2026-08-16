@@ -94,7 +94,9 @@ const FLAVOR: Record<string, { virtue: string; vice: string }> = {
     vice: 'Has already decided, and is only gathering proof.',
   },
   stone: {
-    virtue: 'Is the thing others lean on when it gives way.',
+    // Re-anchored THR-1135: the old lean-on-me image was reliability (Heart's
+    // domain); Careful points at foresight and inspection instead.
+    virtue: 'Checks the beam before trusting weight to it.',
     vice: 'Breaks what stands to see what was holding it up.',
   },
   star: {
