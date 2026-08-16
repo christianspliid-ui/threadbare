@@ -1,35 +1,46 @@
 # User Action Required
 
-**Last updated:** 2026-08-16 05:00 local (2026-08-16 03:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-16 05:58 local (2026-08-16 03:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
 ### 1. Sample 2 of 6 from Batch 1 — [THR-1131](https://linear.app/threadbare/issue/THR-1131/retrofit-batch-1-the-slice-six-through-the-factory-line-contract-thr)
 
-Your ruling 6: you sample two encounters per batch. Batch 1 shipped 2026-08-15 23:34Z and is live on the deployed build.
+Your ruling 6: you sample two encounters per batch. Batch 1 shipped 2026-08-15 23:34Z. Verified live this run — its commit is an ancestor of the deployed build, so these open the retrofitted versions.
 
 - **[The Unsafe Bridge](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge)**
 - **[The Grateful Kin](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin)**
 
 Chosen because they are the two your own [THR-974](https://linear.app/threadbare/issue/THR-974/consequence-verdict-session-christian-rules-on-world-graph-consequence) rewrites targeted — the clearest read on whether the plainness re-register landed. All six passed the gate; the two sequels were given first nudge hands rather than being dropped.
 
-Batches 2–3 wait on this read, and they remain the only work left on the board that an agent can build. [All six side by side](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/batch-report-2026-08-15.md) · [PR #1494](https://github.com/christianspliid-ui/threadbare/pull/1494)
+[All six side by side](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/batch-report-2026-08-15.md) · [PR #1494](https://github.com/christianspliid-ui/threadbare/pull/1494)
 
-### 2. The slice verdict session — [THR-907](https://linear.app/threadbare/issue/THR-907/slice-verdict-session-christian-rules-on-prose-firing-ui-and-game)
+### 2. Charter batch 2 — [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to)
+
+**New to this list, and it should have been here since 21:16Z yesterday.** Four earlier briefs called this an agent's job. It is not: the ticket is parked with *"Parked here for your approval — ruling 2 says a batch does not run until you approve its brief."* Your ruling put the charter in your hands, so no lane can take it.
+
+Two things to answer, both with a recommendation already on the ticket:
+
+- **The batch itself.** A brief for the camp six is committed ([`2026-08-15-retrofit-batch-1-brief.md`](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/2026-08-15-retrofit-batch-1-brief.md)) — Sharpen Blades, Ward the Camp, Offer a Small Prayer, Rest and Reflect, Tend to Wounds, Scout the Perimeter. Batch 1 ran the slice six instead, so this brief is still unspent and is the natural batch 2.
+- **Nudge-card art.** The brief framed this as 27 missing plates corpus-wide, generate-or-remap. Batch 1 measured it much smaller in practice: 9 dead tags across six encounters, 7 with honest matches already in the library, and it shipped by remapping. A third option worth considering: give the lane a standing rule — *remap where a match is honest, come to me only when it is not* — and the question stops recurring per batch.
+
+Answering this in the same sitting as ask 1 restarts the only agent-buildable work on the board.
+
+### 3. The slice verdict session — [THR-907](https://linear.app/threadbare/issue/THR-907/slice-verdict-session-christian-rules-on-prose-firing-ui-and-game)
 
 *— from tb-orchestrator.* Play the 5-encounter slice end-to-end in the real game and rule on four things: **prose** (does the plain register read grounded), **firing** (does the rhythm work, what is your first pruning instinct — this one needs free play, not only spawn-on-demand), **UI** (the new interface and modifier iconography with real nudge-native encounters), and **game** (is it fun to make these decisions). The consequence verdict was split out and you already ruled it on [THR-974](https://linear.app/threadbare/issue/THR-974/consequence-verdict-session-christian-rules-on-world-graph-consequence).
 
 Open with `run the slice verdict session`. "Needs another iteration" is a valid ruling on any of the four. Waiting since 2026-07-31; both native blockers shipped 2026-08-01, and the surface it asks you to judge finished landing yesterday — the veil rework, the consequence-chip links and the icon language all merged 08-14/08-15. Closing this closes the [encounter experience map](https://linear.app/threadbare/issue/THR-902/encounter-experience-redesign-vertical-slice-wayfinder-map).
 
-Overlaps ask 1 deliberately: sampling the two Batch 1 encounters is the opening of this same sitting.
+Overlaps asks 1 and 2 deliberately: one sitting covers all three.
 
-### 3. An attended design session for [THR-790 — Traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)
+### 4. An attended design session for [THR-790 — Traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)
 
 *— from tb-orchestrator.* The longest-waiting agreed item on the board: created 2026-07-26 as part of the Traits program you settled that same day, blocker `Done` since then, unstaged for 21 days. Staged when the Ready-for-Dev shelf ran thin.
 
-What it lacks is a plan doc, and that needs you in the room — locations, artifacts, and draw-by-trait pools. Its sibling [THR-791 (wave 3)](https://linear.app/threadbare/issue/THR-791) is blocked on the identical gap and clears once this one lands a plan doc, so the session buys two tickets, not one. Loads and rationale are in the staging comment on the ticket.
+What it lacks is a plan doc, and that needs you in the room — locations, artifacts, and draw-by-trait pools. Its sibling [THR-791 (wave 3)](https://linear.app/threadbare/issue/THR-791) is blocked on the identical gap and clears once this one lands a plan doc, so the session buys two tickets, not one.
 
-### 4. Close [THR-1129](https://linear.app/threadbare/issue/THR-1129/encounter-factory-ruling-9-sitting-fable-drafts-the-amended-nudge) — one click, nothing to build
+### 5. Close [THR-1129](https://linear.app/threadbare/issue/THR-1129/encounter-factory-ruling-9-sitting-fable-drafts-the-amended-nudge) — one click, nothing to build
 
 The amended spec and exemplar it asked for shipped 2026-08-09 under [THR-883](https://linear.app/threadbare/issue/THR-883/fable-encounter-writing-prototype-lock-the-exact-authoring-format), verified line by line against all three Done-when items; your chat approval was recorded that day. It needs *you* because no automated lane may write `Done`, and closure normally rides a merged PR — there is none when the work shipped a week ago under another id.
 
@@ -37,16 +48,16 @@ It is no longer blocking anything: an agent verified the spec is on `main` and r
 
 *If the ticket shows an assignee when you open it, ignore that — Linear's GitHub integration re-assigns on PR events (impediment #607), not a session claiming the work.*
 
-### 5. Parked option, no urgency: a Tenacious-style trait
+### 6. Parked option, no urgency: a Tenacious-style trait
 
 An open design option with no ticket behind it. Explicitly not urgent — the safe default is that it stays parked, and nothing downstream is waiting on it. Listed only so it is not silently forgotten; say the word if you want it opened, and it will be given a ticket and a design pass.
 
 ## Resolved this period
 
-- 2026-08-16: **the checker that marked clean encounters red is fixed.** [THR-1132](https://linear.app/threadbare/issue/THR-1132/checkencounter-live-false-fails-gate-clean-content-reaction-borne) ([PR #1495](https://github.com/christianspliid-ui/threadbare/pull/1495)) — the live-proof sweep counted reaction-borne effects as missing, which is why the Batch 1 report carried five red ✗ against encounters whose gates were all green. Those marks were the tool, not the content.
-- 2026-08-16: **the two sequels were saved, not dropped.** [THR-1131](https://linear.app/threadbare/issue/THR-1131/retrofit-batch-1-the-slice-six-through-the-factory-line-contract-thr) — a veto window proposed parking `grateful_kin` and `full_moon_collection` for want of a contract shape. Instead both were authored first nudge hands (5 cards, 4 spheres, all bands covered) and passed the full gate. Batch 1 delivered six, not four.
-- 2026-08-16: **you approved the batch-1 brief and chartered the batch.** [THR-1131](https://linear.app/threadbare/issue/THR-1131/retrofit-batch-1-the-slice-six-through-the-factory-line-contract-thr) — approved with one amendment, that your 10 [THR-974](https://linear.app/threadbare/issue/THR-974/consequence-verdict-session-christian-rules-on-world-graph-consequence) rewrites are the editorial critic's validation reference rather than verbatim text: *"run them through the factory instead with the new rules as a validation."*
-- 2026-08-15: **you ruled the consequence verdict, and the standard is already in canon.** [THR-974](https://linear.app/threadbare/issue/THR-974/consequence-verdict-session-christian-rules-on-world-graph-consequence) — mechanics pass, prose does not, *"i think we need the prose changed."* The three plainness moves entered the prose register model and the nudge authoring spec within 50 minutes ([PR #1480](https://github.com/christianspliid-ui/threadbare/pull/1480), [PR #1481](https://github.com/christianspliid-ui/threadbare/pull/1481)).
+- 2026-08-16: **the checker that marked clean encounters red is fixed.** [THR-1132](https://linear.app/threadbare/issue/THR-1132/checkencounter-live-false-fails-gate-clean-content-reaction-borne) ([PR #1495](https://github.com/christianspliid-ui/threadbare/pull/1495)) — the live-proof sweep counted reaction-borne effects as missing, which is why the Batch 1 report carried five red ✗ against encounters whose gates were all green.
+- 2026-08-16: **the two sequels were saved, not dropped.** [THR-1131](https://linear.app/threadbare/issue/THR-1131/retrofit-batch-1-the-slice-six-through-the-factory-line-contract-thr) — a veto window proposed parking `grateful_kin` and `full_moon_collection`; instead both were authored first nudge hands and passed the full gate. Batch 1 delivered six, not four.
+- 2026-08-16: **you approved the batch-1 brief and chartered the batch.** [THR-1131](https://linear.app/threadbare/issue/THR-1131/retrofit-batch-1-the-slice-six-through-the-factory-line-contract-thr) — approved with one amendment, that your 10 [THR-974](https://linear.app/threadbare/issue/THR-974/consequence-verdict-session-christian-rules-on-world-graph-consequence) rewrites are the editorial critic's validation reference rather than verbatim text.
+- 2026-08-15: **you ruled the consequence verdict, and the standard is already in canon.** [THR-974](https://linear.app/threadbare/issue/THR-974/consequence-verdict-session-christian-rules-on-world-graph-consequence) — mechanics pass, prose does not. The three plainness moves entered the prose register model and the nudge authoring spec within 50 minutes ([PR #1480](https://github.com/christianspliid-ui/threadbare/pull/1480), [PR #1481](https://github.com/christianspliid-ui/threadbare/pull/1481)).
 - 2026-08-15: **a broken gate stopped reporting success.** [THR-1128](https://linear.app/threadbare/issue/THR-1128/checktypecheck-reports-ok-0-errors-down-from-baseline-when-tsc-is) — the typecheck check said "OK — 0 errors" when the compiler was simply absent, then invited committing that as the new floor.
 - 2026-08-15: **the resolution readout stopped reporting percentages to you.** [THR-1124](https://linear.app/threadbare/issue/THR-1124) ([PR #1479](https://github.com/christianspliid-ui/threadbare/pull/1479)) — raw numbers on a player surface, replaced with language a player can read. Deployed.
 - 2026-08-15: **condition and attachment names explain themselves.** [THR-1122](https://linear.app/threadbare/issue/THR-1122) ([PR #1477](https://github.com/christianspliid-ui/threadbare/pull/1477)) — hovering a condition or attachment name now gives you what it means, wherever it appears. Deployed.
