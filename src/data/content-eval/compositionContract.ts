@@ -190,6 +190,21 @@ export type SystemConnection =
   | 'reputation'
   | 'factions';
 
+/**
+ * Canonical order, so two templates connecting to the same systems report
+ * identically regardless of authoring order (NFP #3). Also the enumeration
+ * {@link systemSurfacesForOutcome} initialises from — one list, so a seventh
+ * connection cannot be added to the type and silently missed by that record.
+ */
+export const SYSTEM_CONNECTIONS: readonly SystemConnection[] = [
+  'cast',
+  'rewards',
+  'seeds',
+  'conditions',
+  'reputation',
+  'factions',
+];
+
 export interface CompositionReport {
   readonly templateId: string;
   readonly violations: readonly CompositionViolation[];
@@ -344,17 +359,191 @@ export function systemConnections(
     found.add('factions');
   }
 
-  // Canonical order, so two templates connecting to the same systems report
-  // identically regardless of authoring order (NFP #3).
-  const ORDER: readonly SystemConnection[] = [
-    'cast',
-    'rewards',
-    'seeds',
-    'conditions',
-    'reputation',
-    'factions',
-  ];
-  return ORDER.filter(s => found.has(s));
+  return SYSTEM_CONNECTIONS.filter(s => found.has(s));
+}
+
+// ─── Where a connection is authored (THR-1132) ───────────────────────
+
+/**
+ * The three places a system connection can be authored, relative to one run.
+ *
+ * {@link systemConnections} answers "does this template touch the seed system
+ * *at all*" — the right question for Stage 3, which reads a template and never
+ * runs it. Stage 4 runs it, and a run reaches exactly one outcome band and picks
+ * at most one reaction, so the same union answer over-promises there: a seed
+ * authored on `critical_failure` cannot arrive on a run that rolled
+ * `success_at_cost`, and one riding a reaction cannot arrive until somebody
+ * picks it.
+ *
+ * Reporting that absence as a *failure* is what THR-1132 measured: on unmodified
+ * `main` the six slice templates scored 0 proved / 6 failed with every ✗ of this
+ * shape. So the live proof asks this narrower question instead, and the two
+ * consumers keep sharing one walk of the template — a second hand-rolled
+ * "where is this authored" predicate is exactly the drift the module's header
+ * warns about.
+ */
+export interface SystemSurface {
+  /** Authored where this run's band reaches it without a reaction pick. */
+  readonly unconditional: boolean;
+  /**
+   * Ids of the reactions carrying this connection on a band this run can reach.
+   *
+   * Ids rather than a flag, because a run applies exactly *one* reaction: a seed
+   * on `leave_them_to_it` is unreachable on a run that picked `pay_them_back`,
+   * and a boolean cannot tell those apart. Sorted, so the set reads identically
+   * regardless of authoring order (NFP #3).
+   */
+  readonly reactionIds: readonly string[];
+  /** Authored on some outcome band other than the one this run rolled. */
+  readonly otherBand: boolean;
+}
+
+/** One authored effect or change, tagged with where it sits. */
+interface LocatedAuthoring {
+  readonly systems: readonly SystemConnection[];
+  /** The reaction carrying it, or `undefined` when it fires without a pick. */
+  readonly reactionId?: string;
+  /** `undefined` = variant-level, so every band reaches it. */
+  readonly band?: UnifiedActionOutcome;
+}
+
+/**
+ * Whether an effect kind promises a persistent consequence.
+ *
+ * Exported so the live proof can look for the *right* arrival evidence: a
+ * `favor_creation` lands as a graph edge and a trace, never as an `item` or
+ * `trait` change, so a stage that reads only `aftermathSummary.changes` reports
+ * an arrived reward as missing (THR-1132).
+ */
+export function isPersistentEffectKind(kind: string): boolean {
+  return PERSISTENT_EFFECT_KINDS.has(kind);
+}
+
+/** Which connections one effect contributes. Mirrors {@link systemConnections}'s arms. */
+function systemsOfEffect(effect: EncounterAftermathReactionEffect): readonly SystemConnection[] {
+  const out: SystemConnection[] = [];
+  if (PERSISTENT_EFFECT_KINDS.has(effect.kind)) out.push('rewards');
+  if (effect.kind === 'encounter_seed') out.push('seeds');
+  if (CONDITION_EFFECT_KINDS.has(effect.kind)) out.push('conditions');
+  if (REPUTATION_EFFECT_KINDS.has(effect.kind)) out.push('reputation');
+  if (FACTION_EFFECT_KINDS.has(effect.kind)) out.push('factions');
+  return out;
+}
+
+/** Which connections one aftermath change contributes. */
+function systemsOfChange(change: EncounterAftermathChange): readonly SystemConnection[] {
+  const out: SystemConnection[] = [];
+  if (change.kind === 'item' || change.kind === 'trait') out.push('rewards');
+  if (change.kind === 'trait') out.push('conditions');
+  if (
+    change.kind === 'reputation'
+    || change.kind === 'reputation_tally'
+    || change.kind === 'faction_reputation'
+  ) {
+    out.push('reputation');
+  }
+  if (change.kind === 'faction_reputation') out.push('factions');
+  return out;
+}
+
+/** Every authored effect and change, tagged with its band and reaction provenance. */
+function locatedAuthoring(template: UnifiedActionTemplate): readonly LocatedAuthoring[] {
+  const out: LocatedAuthoring[] = [];
+  const push = (
+    systems: readonly SystemConnection[],
+    reactionId?: string,
+    band?: UnifiedActionOutcome,
+  ): void => {
+    if (systems.length > 0) out.push({ systems, reactionId, band });
+  };
+
+  for (const variant of aftermathVariants(template)) {
+    // Same `?? []` guard as `allAftermathChanges`, for the same reason: the red
+    // baseline lets a mis-shaped variant compile with no `changes` (THR-1054).
+    for (const change of variant.changes ?? []) push(systemsOfChange(change));
+    for (const reaction of variant.reactions ?? []) {
+      for (const effect of reaction.effects) push(systemsOfEffect(effect), reaction.id);
+    }
+    for (const [band, override] of Object.entries(variant.byOutcome ?? {})) {
+      const outcome = band as UnifiedActionOutcome;
+      for (const change of override?.changes ?? []) {
+        push(systemsOfChange(change), undefined, outcome);
+      }
+      for (const reaction of override?.reactions ?? []) {
+        for (const effect of reaction.effects) push(systemsOfEffect(effect), reaction.id, outcome);
+      }
+    }
+  }
+
+  // Step-outcome metadata (THR-783) fires with the step, not with an aftermath
+  // pick, so it is unconditional and band-agnostic here. A `rewardPool` recipe
+  // is the same: it is the other authoring route `hasReward` accepts.
+  for (const step of plainSteps(template)) {
+    for (const effect of step.successMetadata?.effects ?? []) push(systemsOfEffect(effect));
+    for (const effect of step.failureMetadata?.effects ?? []) push(systemsOfEffect(effect));
+    if (step.successMetadata?.rewardPool || step.failureMetadata?.rewardPool) {
+      push(['rewards']);
+    }
+  }
+
+  return out;
+}
+
+/**
+ * Where each system connection is authored, relative to the band a run rolled.
+ *
+ * `outcome === undefined` (the run never resolved) collapses to the union
+ * answer: nothing is `otherBand` when there is no band to be other than, which
+ * keeps an unresolved run reporting the same failures it does today rather than
+ * excusing them.
+ *
+ * A connection can be authored in several places at once — the returned flags
+ * are independent, not a partition.
+ */
+export function systemSurfacesForOutcome(
+  template: UnifiedActionTemplate,
+  outcome: UnifiedActionOutcome | undefined,
+): Readonly<Record<SystemConnection, SystemSurface>> {
+  interface MutableSurface {
+    unconditional: boolean;
+    reactionIds: Set<string>;
+    otherBand: boolean;
+  }
+  const building = {} as Record<SystemConnection, MutableSurface>;
+  for (const system of SYSTEM_CONNECTIONS) {
+    building[system] = { unconditional: false, reactionIds: new Set(), otherBand: false };
+  }
+
+  for (const entry of locatedAuthoring(template)) {
+    const reachesThisRun = entry.band === undefined || outcome === undefined || entry.band === outcome;
+    for (const system of entry.systems) {
+      if (!reachesThisRun) {
+        building[system].otherBand = true;
+      } else if (entry.reactionId !== undefined) {
+        building[system].reactionIds.add(entry.reactionId);
+      } else {
+        building[system].unconditional = true;
+      }
+    }
+  }
+
+  // Cast is neither band- nor reaction-scoped: a support bundle is prepared at
+  // stage time, before any roll. It reports as unconditional so a caller reading
+  // this record uniformly gets today's answer for it.
+  if (castSpecs(template).length > 0) building.cast.unconditional = true;
+  if (castSpecs(template).some(spec => spec.kind === 'actor' && spec.factionDefId !== undefined)) {
+    building.factions.unconditional = true;
+  }
+
+  const surfaces = {} as Record<SystemConnection, SystemSurface>;
+  for (const system of SYSTEM_CONNECTIONS) {
+    surfaces[system] = {
+      unconditional: building[system].unconditional,
+      reactionIds: [...building[system].reactionIds].sort(),
+      otherBand: building[system].otherBand,
+    };
+  }
+  return surfaces;
 }
 
 // ─── The contract ────────────────────────────────────────────────────

@@ -25,9 +25,12 @@ import { UNIFIED_ACTION_TEMPLATES } from '../../unified-action-templates';
 import {
   COMPOSITION_BYOUTCOME_MIN_BANDS,
   COMPOSITION_SYSTEMS_QUOTA_MIN,
+  SYSTEM_CONNECTIONS,
   type CompositionBlock,
   checkCompositionContract,
+  isPersistentEffectKind,
   systemConnections,
+  systemSurfacesForOutcome,
 } from '../compositionContract';
 import { RETROFIT_PENDING, isRetrofitPending } from '../retrofitPending';
 
@@ -207,26 +210,50 @@ describe('Composition Contract — each block falsified from the passing exempla
   });
 });
 
-describe('Composition Contract — red on shipped content', () => {
-  // THR-1131 retrofitted the bridge (and the rest of Batch 1), so the shipped
-  // red example moved to a template still on RETROFIT_PENDING. When the last
-  // batch drains the ratchet, this block needs a synthetic non-compliant
-  // fixture instead — there deliberately will be no shipped red left to point at.
-  const bridge = UNIFIED_ACTION_TEMPLATES.find(t => t.id === 'encounter.slice.snow_on_the_pass');
+describe('Composition Contract — red on a non-compliant template', () => {
+  // **This block no longer points at shipped content, and must not again.**
+  //
+  // It used to name whichever template was currently worst — the bridge, then
+  // `snow_on_the_pass` after THR-1131 retrofitted the bridge — which made the
+  // test hostage to every content improvement: closing that template's Law 2 gap
+  // (THR-1132) turned this green-by-being-broken assertion red, on a change that
+  // made the corpus *better*. The file's own note predicted needing a synthetic
+  // fixture "when the last batch drains the ratchet"; the same reasoning applies
+  // one improvement at a time, so it is taken now rather than re-pointed at the
+  // next victim.
+  //
+  // Stripping `changes` of their `concepts` is the exact Law 2 violation the
+  // aftermath block exists to catch, so the fixture stays faithful to what the
+  // rule is for while owing nothing to the state of the corpus.
+  const nonCompliant: UnifiedActionTemplate = {
+    ...NUDGE_GOLDEN_EXEMPLAR,
+    aftermathConfig: {
+      ...NUDGE_GOLDEN_EXEMPLAR.aftermathConfig!,
+      fallback: {
+        ...NUDGE_GOLDEN_EXEMPLAR.aftermathConfig!.fallback,
+        changes: (NUDGE_GOLDEN_EXEMPLAR.aftermathConfig!.fallback.changes ?? []).map(
+          ({ concepts: _dropped, ...rest }) => rest,
+        ),
+      },
+    },
+  } as UnifiedActionTemplate;
 
-  it('the red-example template resolves (population guard)', () => {
-    // Without this, every assertion below passes vacuously on `undefined`.
-    expect(bridge).toBeDefined();
+  it('the exemplar it is built from carries aftermath changes (fixture guard)', () => {
+    // Without this the strip below could remove nothing and the assertions would
+    // pass over an empty `changes` array — the vacuous shape this file guards
+    // against everywhere else.
+    expect(NUDGE_GOLDEN_EXEMPLAR.aftermathConfig?.fallback.changes?.length ?? 0)
+      .toBeGreaterThan(0);
   });
 
   it('fails the contract, naming the aftermath block', () => {
-    const violations = checkCompositionContract(bridge!).violations;
+    const violations = checkCompositionContract(nonCompliant).violations;
     expect(violations.length).toBeGreaterThan(0);
     expect(violations.map(v => v.block)).toContain('aftermath');
   });
 
   it('every violation names where the rule is written down', () => {
-    for (const violation of checkCompositionContract(bridge!).violations) {
+    for (const violation of checkCompositionContract(nonCompliant).violations) {
       expect(violation.planSection).toMatch(/^Docs\/plans\/2026-08-08-encounter-factory-workflow\.md §/u);
     }
   });
@@ -266,5 +293,97 @@ describe('the ratchet', () => {
 
   it('holds no id outside the encounter families it gates', () => {
     expect(RETROFIT_PENDING.filter(id => !id.startsWith('encounter.'))).toEqual([]);
+  });
+});
+
+// ─── THR-1132 — band/reaction provenance for the live proof ──────────
+
+describe('systemSurfacesForOutcome', () => {
+  /** A minimal template whose seed sits on one band, behind one reaction. */
+  const banded = {
+    id: 'encounter.test.banded',
+    steps: [],
+    aftermathConfig: {
+      branchOnStep: 0,
+      variants: {},
+      fallback: {
+        changes: [],
+        reactions: [],
+        byOutcome: {
+          // Deliberately NOT a `trait` here: a trait counts as both a reward and
+          // a condition, which would make the rolled band supply `rewards` and
+          // defeat the otherBand assertion below.
+          critical_failure: {
+            changes: [{ kind: 'reputation' }],
+            reactions: [
+              { id: 'r.walk_away', effects: [{ kind: 'encounter_seed' }] },
+            ],
+          },
+          success: { changes: [{ kind: 'item' }], reactions: [] },
+        },
+      },
+    },
+  } as unknown as UnifiedActionTemplate;
+
+  it('marks a band the run did not roll as otherBand, not as reachable', () => {
+    // The `unsafe_bridge` shape: rewards authored on `success` while the run
+    // rolled `critical_failure`. Stage 3's union answer says "declares rewards";
+    // Stage 4 must not turn that into "rewards failed to arrive".
+    const surfaces = systemSurfacesForOutcome(banded, 'critical_failure');
+    expect(surfaces.rewards.otherBand).toBe(true);
+    expect(surfaces.rewards.unconditional).toBe(false);
+  });
+
+  it('names the reactions carrying a connection, so one pick can be told from another', () => {
+    const surfaces = systemSurfacesForOutcome(banded, 'critical_failure');
+    expect(surfaces.seeds.reactionIds).toEqual(['r.walk_away']);
+    expect(surfaces.seeds.unconditional).toBe(false);
+  });
+
+  it('reaches a band-scoped change when that band is the one rolled', () => {
+    // `reputation` rides the `critical_failure` change directly, with no reaction
+    // in the way — so on that band it is plainly assertable, and scoping must not
+    // excuse it.
+    const surfaces = systemSurfacesForOutcome(banded, 'critical_failure');
+    expect(surfaces.reputation.unconditional).toBe(true);
+    expect(surfaces.reputation.otherBand).toBe(false);
+  });
+
+  it('collapses to the union answer when the run never resolved', () => {
+    // No band rolled means nothing can be "another band". An unresolved run must
+    // keep reporting the failures it does today rather than excusing them.
+    const surfaces = systemSurfacesForOutcome(banded, undefined);
+    expect(surfaces.rewards.otherBand).toBe(false);
+    expect(surfaces.rewards.unconditional).toBe(true);
+  });
+
+  it('counts favor_creation persistent, the reward route that lands off `changes`', () => {
+    // THR-1132's fourth false-fail: `grateful_kin` promises its reward as a
+    // `favor_creation` on the reaction that fires. The applier writes a favor
+    // edge and a trace and never touches `aftermathSummary.changes`, so a stage
+    // reading only `changes` called an arrived reward missing. This predicate is
+    // what lets the live proof look in the right place — if it ever stops
+    // agreeing with the declaration side, that stage silently under-asks again.
+    expect(isPersistentEffectKind('favor_creation')).toBe(true);
+    expect(isPersistentEffectKind('spawn_artifact')).toBe(true);
+    expect(isPersistentEffectKind('reputation_score')).toBe(false);
+  });
+
+  it('agrees with systemConnections on which systems are authored at all', () => {
+    // One walk, two consumers (the module header's rule). If these two ever
+    // disagree about membership, the narrower one is silently under-asking.
+    for (const template of UNIFIED_ACTION_TEMPLATES.slice(0, 40)) {
+      const union = new Set(systemConnections(template));
+      const surfaces = systemSurfacesForOutcome(template, undefined);
+      for (const system of SYSTEM_CONNECTIONS) {
+        const surfaced = surfaces[system].unconditional
+          || surfaces[system].reactionIds.length > 0
+          || surfaces[system].otherBand;
+        // `reputation`/`factions` have declaration routes systemConnections reads
+        // that this walk deliberately does not re-derive, so only assert the
+        // direction that would hide a defect: surfaced ⇒ declared.
+        if (surfaced) expect(union.has(system)).toBe(true);
+      }
+    }
   });
 });
