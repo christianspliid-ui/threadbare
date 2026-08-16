@@ -31,8 +31,12 @@ import React from 'react';
 import { Modal } from '../shared/Modal';
 import { EntityVisual } from '../shared/EntityVisual';
 import { RarityBadge } from '../shared/RarityBadge';
+import { SectionHeading } from '../shared/SectionHeading';
+import { ListRow } from '../shared/ListRow';
+import { Tooltip } from '../shared/Tooltip';
 import { clampRarityTier } from '../../types/rarity';
 import { locationSubtypeName } from '../../data/location-words';
+import { durationLabel } from '../../engine/aftermathWords';
 import type { TerrainType } from '../../types';
 import type { SphereInfluence } from '../../engine/hexZoom';
 import type { WorldGraph } from '../../engine/graph';
@@ -47,6 +51,54 @@ interface LocationProfileModalProps {
 
 /** Copy shown when the graph holds no prose for this place (a designed state, Law 4). */
 const NO_DETAIL_COPY = 'Nothing further is recorded of this place yet.';
+
+/** A condition with no `ticksRemaining` on its edge — it holds until a story lifts it. */
+const INDEFINITE_TERM_COPY = 'until it lifts';
+
+/** What a place's active conditions are read off (THR-1143). */
+interface ActiveLocationCondition {
+  edgeId: string;
+  templateId: string;
+  /** The condition's own display name from its definition node. */
+  name: string;
+  /** Remaining term in words — never ticks (Law 13/14). */
+  term: string;
+}
+
+/**
+ * Read the conditions currently sitting on this place (THR-1143).
+ *
+ * Reader-side of the primitive: the same `has_trait` edges the aftermath writes
+ * and `decayConditions` counts down, so the panel needs no state of its own and
+ * cannot drift from the engine — an expired condition disappears here because the
+ * edge is gone, not because a second bookkeeping path was kept in step.
+ *
+ * Sorted by remaining term, soonest first, so what is about to lift reads first;
+ * indefinite conditions sort last. NFP #4: a dangling edge whose definition node
+ * is missing is skipped rather than rendered as its raw id (Law 14).
+ */
+function readActiveConditions(
+  graph: WorldGraph,
+  locationId: string,
+): ActiveLocationCondition[] {
+  const rows: (ActiveLocationCondition & { sortKey: number })[] = [];
+  for (const edge of graph.getOutgoingEdges(locationId, 'has_trait')) {
+    const def = graph.getNode(edge.target);
+    if (!def) continue;
+    if ((def.properties?.subcategory as string) !== 'condition') continue;
+    const remaining = edge.properties?.ticksRemaining;
+    const hasTerm = typeof remaining === 'number' && remaining > 0;
+    rows.push({
+      edgeId: edge.id,
+      templateId: edge.target,
+      name: def.name ?? edge.target,
+      term: hasTerm ? durationLabel(remaining) : INDEFINITE_TERM_COPY,
+      sortKey: hasTerm ? remaining : Number.POSITIVE_INFINITY,
+    });
+  }
+  rows.sort((a, b) => a.sortKey - b.sortKey || a.name.localeCompare(b.name));
+  return rows.map(({ sortKey: _sortKey, ...row }) => row);
+}
 
 /** Sentence-case an authored prose fragment ("power flows downhill from these walls"). */
 function asSentence(fragment: string): string {
@@ -76,6 +128,15 @@ export const LocationProfileModal = React.memo(function LocationProfileModal({
   // Hints the concept-art scorer needs; both live on the location node itself.
   const terrain = typeof props.terrain === 'string' ? (props.terrain as TerrainType) : undefined;
   const sphereInfluence = (props.sphereInfluence ?? null) as SphereInfluence | null;
+
+  // THR-1143 — what the world has done to this place, and for how much longer.
+  const conditions = React.useMemo(
+    () => (node && graph && locationId ? readActiveConditions(graph, locationId) : []),
+    // `graph` is mutated in place, so its identity is not a change signal (the
+    // load-bearing rule). The modal is short-lived and remounts per open, which is
+    // the surface's refresh; a live subscription belongs to the panel, not here.
+    [node, graph, locationId],
+  );
 
   return (
     <Modal open={true} onClose={onClose} aria-label={`${name} profile`}>
@@ -131,6 +192,39 @@ export const LocationProfileModal = React.memo(function LocationProfileModal({
           >
             {flavor ?? NO_DETAIL_COPY}
           </p>
+
+          {/* Active conditions (THR-1143) — the place's timed states, each hoverable
+              through the one tooltip registry (`attachment.*`, Laws 3/17) and each
+              carrying its remaining term in words (Law 13). The section renders only
+              when the place has conditions: a heading over an empty list is a control
+              that does nothing (Law 25), and most places have none. */}
+          {conditions.length > 0 && (
+            <div data-testid="location-profile-conditions">
+              <SectionHeading count={conditions.length}>Conditions</SectionHeading>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                {conditions.map(condition => (
+                  <ListRow
+                    key={condition.edgeId}
+                    trailing={
+                      <span
+                        style={{
+                          fontSize: 'var(--text-xs)',
+                          color: 'var(--text-tertiary)',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {condition.term}
+                      </span>
+                    }
+                  >
+                    <Tooltip id={`attachment.${condition.templateId}`}>
+                      <ListRow.Title>{condition.name}</ListRow.Title>
+                    </Tooltip>
+                  </ListRow>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </Modal.Body>
     </Modal>

@@ -523,6 +523,17 @@
   </div>
 
   <div class="section">
+    <h2>Spotlight — What a place is going through
+      <span class="lead">Audited 2026-08-16 (audit-on-touch, THR-1143). A capability the substrate had permitted since it was written, and nothing had ever used.</span>
+    </h2>
+
+    <ul class="contracts">
+      <li class="live"><span class="flow">Authored consequence <span class="arrow">⟶</span> Movement cost &amp; template gating — an ending can put a <em>place</em> into a state other systems act on</span><span class="chip live">LIVE</span>
+        <span class="note">THR-1143. The interesting half of this row is how little of it was new. <code>has_trait.sourceNodeType</code> has listed <code>location</code> since the edge schema was written; <code>decayConditions</code> walks <code>has_trait</code> by <em>edge type</em>, never by source node kind, so a condition on a place always expired correctly; and <code>buildLocationTargetContext</code> has always read a location's trait edges into <code>traitIds</code>, so <code>requiredTargetTraits</code> gating against places was live and had simply never had content to match. What was missing was the <em>authoring surface</em> — no effect field named a place — plus one reader and a player surface. So the arrow is a dormant capability activated rather than a system built (the THR-614 shape), and the tests are written to prove the untouched parts really carry it rather than assuming so. The new reader is movement cost: <code>LOCATION_CONDITION_MOVEMENT_TAX</code> multiplies the price of entering a place carrying a condition, <code>pass_closed</code> at ×8 — a <em>soft</em> block, because a hard one strands an agent whose only road home runs through the pass. Both readers key on the edge itself rather than caching a derived flag, which is what makes expiry free: when the decay loop removes the edge, the tax lifts and the gate closes in the same tick, with no second lifecycle to keep in step. Deliberately <em>not</em> a reader: encounter-type bias, which stays the omen system's job — two bias channels would drift.</span></li>
+    </ul>
+  </div>
+
+  <div class="section">
     <h2>How this map stays true
       <span class="lead">A hand-drawn diagram is a lie waiting to happen. This one is designed to become a projection.</span>
     </h2>

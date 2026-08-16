@@ -1293,6 +1293,55 @@ export const CONTRACTS: readonly Contract[] = [
     // wiring-guide row; the design question is the ticket's, not this row's.
   },
   {
+    id: 'location-condition-taxes-movement-and-gates-templates',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      'A place can be in a state — a pass shut for the season, a town under a plague scare — and that state is something other systems act on, not scenery.',
+    ulTerms: ['Encounter', 'Condition', 'Location'],
+    mechanism: {
+      kind: 'function',
+      symbols: [
+        // Write side — the aftermath branch that puts the edge on a place.
+        'isLocationCarrier',
+        // Read side — the movement tax and the gating context.
+        'LOCATION_CONDITION_MOVEMENT_TAX',
+        'buildLocationTargetContext',
+      ],
+      module: 'src/data/condition-trait-content.ts',
+    },
+    writeSites: ['src/engine/encounterAftermath.ts'],
+    readSites: ['src/engine/movementCost.ts', 'src/engine/targetContextBuilders.ts'],
+    // THR-1143, the second primitive of the consequence-palette expansion. The row
+    // exists because the *write* was the easy half and the readers are the contract:
+    // a condition on a place that nothing consumes is UI Law 56's hollowness one
+    // level down, at world scope.
+    //
+    // Two readers, deliberately of different kinds. `computeEdgeCost` multiplies the
+    // cost of entering the place by the condition's entry in the tax map — new work.
+    // `buildLocationTargetContext` already read a location's `has_trait` edges into
+    // `traitIds`, so `requiredTargetTraits` gating against places was live and simply
+    // had no content to match — this ticket verified and pinned it rather than
+    // building it, which is why the test falsifies in *both* directions (eligible
+    // with the condition, ineligible once it expires); a gate that only ever passes
+    // is not a gate.
+    //
+    // The load-bearing clause is that both readers key on the `has_trait` edge itself
+    // rather than caching a derived flag. That is what makes expiry free: when
+    // `decayConditions` removes the edge the tax lifts and the gate closes in the same
+    // tick, with no second lifecycle to keep in step — the THR-761 lesson applied to a
+    // new carrier rather than re-learned.
+    //
+    // Deliberately NOT a reader: encounter-type bias. That stays the omen system's
+    // job; an ending wanting ambient bias emits an omen alongside. Two bias channels
+    // would drift, and the omen path already carries that meaning.
+    //
+    // Scope note: hex-*coordinate* targeting (`buildHexTargetContext`) takes no graph
+    // and hardcodes `traitIds: []`, so it does not gate on conditions. Location,
+    // settlement and waypoint *nodes* do. Named here so the boundary is a recorded
+    // decision rather than a gap someone later reads as a bug.
+  },
+  {
     id: 'nudge-card-cost-channels-detection-and-doom',
     producerSystem: ENCOUNTERS,
     consumerSystem: QUINTESSENCE,

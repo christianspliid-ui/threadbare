@@ -89,8 +89,13 @@ describe('Condition Decay', () => {
 
     // Assert: edge removed and returns RemovedCondition
     expect(removed).toHaveLength(1);
+    // THR-1143 added `carrierId` — the honest name once places could carry a
+    // condition too. `agentId` stays alongside it as a deprecated alias, and this
+    // stays an exact-shape `toEqual` so a *third* name for the same value fails
+    // here rather than accumulating.
     expect(removed[0]).toEqual({
       edgeId: 'edge.agent1.wound',
+      carrierId: agent1Id,
       agentId: agent1Id,
       traitId: wound1Id,
       traitName: 'Wound',

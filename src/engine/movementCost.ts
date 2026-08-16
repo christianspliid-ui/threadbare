@@ -6,10 +6,13 @@
  *   [Hex A center] ---(1 tick + departure tax)---> [border]
  *   [border]       ---(1 tick + arrival tax)  ---> [Hex B center]
  *
- * Total = 2 × BASE_EDGE_TRAVERSAL_COST + sourceTerrain + destTerrain
- *       + locationEntryTax + speedModifier
+ * Total = (2 × BASE_EDGE_TRAVERSAL_COST + sourceTerrain + destTerrain
+ *          + locationEntryTax + speedModifier)
+ *         × locationConditionMultiplier × rangeMultiplier
  *
- * All costs are tunable and stored in movement-content.ts.
+ * All costs are tunable and stored in movement-content.ts; the location-condition
+ * multipliers live beside their definitions in condition-trait-content.ts
+ * (THR-1143), because the tax is a property of the condition, not of the road.
  */
 
 import { WorldGraph } from './graph';
@@ -20,6 +23,7 @@ import {
   getLocationEntryTax,
   MIN_EDGE_COST,
 } from '../data/movement-content';
+import { LOCATION_CONDITION_MOVEMENT_TAX } from '../data/condition-trait-content';
 import type { TerrainType, LocationSubtype } from '../types';
 import type { EffectRuntimeState } from '../types/effects';
 import { getRangeModifiers } from './effects/effectQueries';
@@ -88,6 +92,22 @@ export function computeEdgeCost(
     }
   }
 
+  // --- Location Condition Tax (THR-1143) ---
+  // Reader #2 for location conditions: a place the world has done something to
+  // costs more to enter. Reads the destination's own `has_trait` edges — the same
+  // edges `decayConditions` counts down — so the tax lifts by itself when the
+  // condition expires; there is no second lifecycle to keep in step.
+  //
+  // Multipliers compound: a blighted town also under a plague scare is worse than
+  // either alone, which is the honest reading of two bad seasons at once.
+  let conditionMultiplier = 1;
+  for (const edge of graph.getOutgoingEdges(destId, 'has_trait')) {
+    const tax = LOCATION_CONDITION_MOVEMENT_TAX[edge.target];
+    if (typeof tax === 'number' && tax > 0) {
+      conditionMultiplier *= tax;
+    }
+  }
+
   // --- Speed Modifiers ---
   // Sum movement_speed from all has_trait edges on the agent
   let speedModifier = 0;
@@ -105,10 +125,13 @@ export function computeEdgeCost(
     : 1.0;
 
   // --- Total Cost ---
-  // Range multiplier applied to the full pre-floor cost, then floored at MIN_EDGE_COST
+  // Range and condition multipliers applied to the full pre-floor cost, then
+  // floored at MIN_EDGE_COST. Never Infinity and never a hard refusal: a closed
+  // pass is a price, not a wall (NFP #4 — a hard block can strand an agent whose
+  // only route home runs through it).
   const totalCost = Math.max(
     MIN_EDGE_COST,
-    (baseCost + terrainTax + locationTax + speedModifier) * rangeMultiplier,
+    (baseCost + terrainTax + locationTax + speedModifier) * conditionMultiplier * rangeMultiplier,
   );
 
   return {
@@ -116,6 +139,7 @@ export function computeEdgeCost(
     terrainTax,
     locationTax,
     speedModifier,
+    conditionMultiplier,
     totalCost,
   };
 }

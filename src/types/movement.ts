@@ -10,7 +10,14 @@ export interface MovementEdgeCost {
   terrainTax: number;
   locationTax: number;
   speedModifier: number;
-  /** baseCost + terrainTax + locationTax + speedModifier, floored at 0.5 */
+  /**
+   * Multiplier from the destination's active location conditions (THR-1143).
+   * 1 when the place carries none — a closed pass reads ~8, a festival ~1.2.
+   * Multiplicative rather than additive so a closed pass stays expensive on cheap
+   * terrain, where a flat surcharge would wash out.
+   */
+  conditionMultiplier: number;
+  /** (baseCost + terrainTax + locationTax + speedModifier) × conditionMultiplier × rangeMultiplier, floored at 0.5 */
   totalCost: number;
 }
 

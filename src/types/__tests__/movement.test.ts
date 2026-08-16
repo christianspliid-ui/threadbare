@@ -34,6 +34,7 @@ describe('movement types', () => {
       terrainTax: 0.5,
       locationTax: 0,
       speedModifier: 0,
+      conditionMultiplier: 1,
       totalCost: 1.5,
     };
     expect(cost.totalCost).toBe(1.5);

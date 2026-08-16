@@ -16,6 +16,13 @@ import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { LocationProfileModal } from '../LocationProfileModal';
 import { WorldGraph } from '../../../engine/graph';
+import { seedEncounterTraitDefinitions } from '../../../engine/traitDefinitionSeeding';
+import { decayConditions } from '../../../engine/conditionDecay';
+import { resolveAttachmentTemplateTooltip } from '../../../engine/attachmentTemplateIndex';
+import {
+  CONDITION_PASS_CLOSED_DURATION,
+  LOCATION_CONDITION_IDS,
+} from '../../../data/condition-trait-content';
 
 function graphWithKeep(): WorldGraph {
   const graph = new WorldGraph();
@@ -145,5 +152,155 @@ describe('LocationProfileModal — location representation (THR-1023)', () => {
 
     expect(screen.getByText(/Nothing further is recorded/i)).toBeTruthy();
     expect(container.textContent).not.toMatch(/undefined|null/);
+  });
+});
+
+// ─── Active conditions (THR-1143) ────────────────────────────────────────────
+
+/**
+ * The panel is reader #3 of the location-condition primitive. These lock the two
+ * things that make it a *reader* rather than decoration: it shows only what the
+ * graph actually holds, and it stops showing it the moment the engine's own decay
+ * loop removes the edge. The absence case is asserted alongside the presence case
+ * because a section that always renders proves nothing about the data behind it.
+ */
+function graphWithConditions(opts?: { ticksRemaining?: number | null }): WorldGraph {
+  const graph = graphWithKeep();
+  seedEncounterTraitDefinitions(graph);
+  const ticks = opts?.ticksRemaining;
+  graph.addEdge({
+    id: 'has_trait_loc_0_pass_closed',
+    source: 'loc_0',
+    target: 'trait.condition.location.pass_closed',
+    type: 'has_trait',
+    properties: {
+      appliedAt: 10,
+      durationTicks: CONDITION_PASS_CLOSED_DURATION,
+      ...(ticks === null ? {} : { ticksRemaining: ticks ?? CONDITION_PASS_CLOSED_DURATION }),
+    },
+  } as never);
+  return graph;
+}
+
+describe('LocationProfileModal — active conditions (THR-1143)', () => {
+  it('lists a condition the place is carrying, by name', () => {
+    render(
+      <LocationProfileModal
+        name="Ardenmor Keep"
+        locationId="loc_0"
+        graph={graphWithConditions()}
+        onClose={() => {}}
+      />,
+    );
+
+    expect(screen.getByTestId('location-profile-conditions')).toBeTruthy();
+    expect(screen.getByText('Closed for the Season')).toBeTruthy();
+  });
+
+  it('Law 13/14: the remaining term reads in words — no ticks, no numerals', () => {
+    render(
+      <LocationProfileModal
+        name="Ardenmor Keep"
+        locationId="loc_0"
+        graph={graphWithConditions({ ticksRemaining: 48 })}
+        onClose={() => {}}
+      />,
+    );
+
+    const section = screen.getByTestId('location-profile-conditions');
+    expect(section.textContent).toContain('four days');
+    // Scoped to the rows, not the section: the group count in the heading is the
+    // one numeral Law 36 explicitly sanctions ("counts on the group header").
+    const rows = section.textContent!.replace(/^Conditions \(\d+\)/, '');
+    expect(rows).not.toMatch(/\d/);
+    expect(rows).not.toMatch(/tick/i);
+    // And never the raw template id (Law 14).
+    expect(rows).not.toContain('trait.condition');
+  });
+
+  it('an indefinite condition reads as a state, not a blank or a zero', () => {
+    render(
+      <LocationProfileModal
+        name="Ardenmor Keep"
+        locationId="loc_0"
+        graph={graphWithConditions({ ticksRemaining: null })}
+        onClose={() => {}}
+      />,
+    );
+    expect(screen.getByTestId('location-profile-conditions').textContent).toContain('until it lifts');
+  });
+
+  it('Law 25: renders no Conditions section at all when the place carries none', () => {
+    render(
+      <LocationProfileModal
+        name="Ardenmor Keep"
+        locationId="loc_0"
+        graph={graphWithKeep()}
+        onClose={() => {}}
+      />,
+    );
+    expect(screen.queryByTestId('location-profile-conditions')).toBeNull();
+    expect(screen.queryByText(/conditions/i)).toBeNull();
+  });
+
+  it('the section disappears once the engine\'s own decay loop expires the edge', () => {
+    const graph = graphWithConditions({ ticksRemaining: 1 });
+    decayConditions(graph, 11);
+    render(
+      <LocationProfileModal
+        name="Ardenmor Keep"
+        locationId="loc_0"
+        graph={graph}
+        onClose={() => {}}
+      />,
+    );
+    expect(screen.queryByTestId('location-profile-conditions')).toBeNull();
+  });
+
+  it('lists only conditions — a non-condition trait on the same place is not one', () => {
+    // The reachable half of the guard. A dangling `has_trait` edge cannot be built
+    // at all (`addEdge` rejects a missing target), so the case that can actually
+    // occur is a place carrying a trait from another family; this section is
+    // "Conditions", and a mastery or archetype marker is not a timed state.
+    const graph = graphWithConditions();
+    graph.addNode({
+      id: 'trait.core.storied',
+      type: 'trait',
+      name: 'Storied',
+      properties: { subcategory: 'core' },
+    } as never);
+    graph.addEdge({
+      id: 'has_trait_loc_0_storied',
+      source: 'loc_0',
+      target: 'trait.core.storied',
+      type: 'has_trait',
+      properties: {},
+    } as never);
+
+    render(
+      <LocationProfileModal
+        name="Ardenmor Keep"
+        locationId="loc_0"
+        graph={graph}
+        onClose={() => {}}
+      />,
+    );
+
+    const section = screen.getByTestId('location-profile-conditions');
+    expect(section.textContent).toContain('Closed for the Season');
+    expect(section.textContent).not.toContain('Storied');
+    expect(section.textContent).toContain('Conditions (1)');
+  });
+
+  it('Law 17: every shipped location condition resolves a tooltip from the one registry', () => {
+    for (const id of LOCATION_CONDITION_IDS) {
+      const content = resolveAttachmentTemplateTooltip(id);
+      if (!content) throw new Error(`${id} has no tooltip`);
+      expect(content.label).toBeTruthy();
+      expect(content.desc).toBeTruthy();
+      // Law 18: plain-register, capped length; Law 14: no raw ids leaking.
+      expect(content.desc.length).toBeLessThanOrEqual(200);
+      expect(content.desc).not.toContain('trait.condition');
+    }
   });
 });
