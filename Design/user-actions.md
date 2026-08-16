@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-16 03:57 local (2026-08-16 01:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-16 05:00 local (2026-08-16 03:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -15,13 +15,21 @@ Chosen because they are the two your own [THR-974](https://linear.app/threadbare
 
 Batches 2–3 wait on this read, and they remain the only work left on the board that an agent can build. [All six side by side](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/batch-report-2026-08-15.md) · [PR #1494](https://github.com/christianspliid-ui/threadbare/pull/1494)
 
-### 2. An attended design session for [THR-790 — Traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)
+### 2. The slice verdict session — [THR-907](https://linear.app/threadbare/issue/THR-907/slice-verdict-session-christian-rules-on-prose-firing-ui-and-game)
+
+*— from tb-orchestrator.* Play the 5-encounter slice end-to-end in the real game and rule on four things: **prose** (does the plain register read grounded), **firing** (does the rhythm work, what is your first pruning instinct — this one needs free play, not only spawn-on-demand), **UI** (the new interface and modifier iconography with real nudge-native encounters), and **game** (is it fun to make these decisions). The consequence verdict was split out and you already ruled it on [THR-974](https://linear.app/threadbare/issue/THR-974/consequence-verdict-session-christian-rules-on-world-graph-consequence).
+
+Open with `run the slice verdict session`. "Needs another iteration" is a valid ruling on any of the four. Waiting since 2026-07-31; both native blockers shipped 2026-08-01, and the surface it asks you to judge finished landing yesterday — the veil rework, the consequence-chip links and the icon language all merged 08-14/08-15. Closing this closes the [encounter experience map](https://linear.app/threadbare/issue/THR-902/encounter-experience-redesign-vertical-slice-wayfinder-map).
+
+Overlaps ask 1 deliberately: sampling the two Batch 1 encounters is the opening of this same sitting.
+
+### 3. An attended design session for [THR-790 — Traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)
 
 *— from tb-orchestrator.* The longest-waiting agreed item on the board: created 2026-07-26 as part of the Traits program you settled that same day, blocker `Done` since then, unstaged for 21 days. Staged when the Ready-for-Dev shelf ran thin.
 
 What it lacks is a plan doc, and that needs you in the room — locations, artifacts, and draw-by-trait pools. Its sibling [THR-791 (wave 3)](https://linear.app/threadbare/issue/THR-791) is blocked on the identical gap and clears once this one lands a plan doc, so the session buys two tickets, not one. Loads and rationale are in the staging comment on the ticket.
 
-### 3. Close [THR-1129](https://linear.app/threadbare/issue/THR-1129/encounter-factory-ruling-9-sitting-fable-drafts-the-amended-nudge) — one click, nothing to build
+### 4. Close [THR-1129](https://linear.app/threadbare/issue/THR-1129/encounter-factory-ruling-9-sitting-fable-drafts-the-amended-nudge) — one click, nothing to build
 
 The amended spec and exemplar it asked for shipped 2026-08-09 under [THR-883](https://linear.app/threadbare/issue/THR-883/fable-encounter-writing-prototype-lock-the-exact-authoring-format), verified line by line against all three Done-when items; your chat approval was recorded that day. It needs *you* because no automated lane may write `Done`, and closure normally rides a merged PR — there is none when the work shipped a week ago under another id.
 
@@ -29,7 +37,7 @@ It is no longer blocking anything: an agent verified the spec is on `main` and r
 
 *If the ticket shows an assignee when you open it, ignore that — Linear's GitHub integration re-assigns on PR events (impediment #607), not a session claiming the work.*
 
-### 4. Parked option, no urgency: a Tenacious-style trait
+### 5. Parked option, no urgency: a Tenacious-style trait
 
 An open design option with no ticket behind it. Explicitly not urgent — the safe default is that it stays parked, and nothing downstream is waiting on it. Listed only so it is not silently forgotten; say the word if you want it opened, and it will be given a ticket and a design pass.
 
