@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-16 23:56 local (21:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-17 00:58 local (22:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -39,9 +39,9 @@ This replaces separate tickets (THR-1109, THR-1125, THR-1126, THR-1127), consoli
 
 ### 5. An attended design session for [THR-790 — Traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)
 
-*— from tb-orchestrator.* The longest-waiting agreed item on the board: created 2026-07-26 as part of the Traits program you settled that same day, blocker `Done` since then, unstaged for 21 days.
+*— from tb-orchestrator.* The longest-waiting agreed item on the board: created 2026-07-26 as part of the Traits program you settled that same day, blocker `Done` since then, unstaged for 22 days.
 
-What it lacks is a plan doc, and that needs you in the room — locations, artifacts, and draw-by-trait pools. Its sibling [THR-791 (wave 3)](https://linear.app/threadbare/issue/THR-791) is blocked on the identical gap and clears once this one lands a plan doc, so the session buys two tickets, not one.
+What it lacks is a plan doc, and that needs you in the room — locations, artifacts, and draw-by-trait pools. Its sibling [THR-791 (wave 3)](https://linear.app/threadbare/issue/THR-791/traits-wave-3-minting-identity-god-earned-traits-relationship-traits) is blocked on the identical gap and clears once this one lands a plan doc, so the session buys two tickets, not one.
 
 Not urgent while the palette ladder stocks the shelf — though four of its six rungs are now spent, so this rises as the remaining two land.
 
@@ -51,8 +51,8 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
-- 2026-08-16: **your morning play session became four tickets, and all four have now shipped.** [THR-1136](https://linear.app/threadbare/issue/THR-1136/aftermath-screen-corner-chrome-removal-step-replay-from-the-ending) (aftermath screen), [THR-1137](https://linear.app/threadbare/issue/THR-1137/compulsion-premonition-the-gods-will-loops-every-tick-no-pending-gate) (premonition loop), [THR-1139](https://linear.app/threadbare/issue/THR-1139/premonition-modal-shows-no-portrait-of-the-mortal-add-entityvisual) (the missing portrait) and — merged tonight at 23:20 — [THR-1138](https://linear.app/threadbare/issue/THR-1138/character-sheet-faction-section-prints-a-raw-percentage-62percent), where faction standing now reads as a word instead of `62%`. All deployed.
-- 2026-08-16: **rungs 2 and 3 of your palette ladder are live.** [THR-1142](https://linear.app/threadbare/issue/THR-1142/palette-primitive-agent-relocation-encounters-can-send-people) — encounters can send people somewhere — and [THR-1143](https://linear.app/threadbare/issue/THR-1143/palette-primitive-location-conditions-timed-readable-states-on-places) — timed states on places, a pass closed for the season, a festival, a plague scare. Both shipped and deployed this evening, in the order you set. Rung 4 is in the build queue.
+- 2026-08-16: **your morning play session became four tickets, and all four have now shipped.** [THR-1136](https://linear.app/threadbare/issue/THR-1136/aftermath-screen-corner-chrome-removal-step-replay-from-the-ending) (aftermath screen), [THR-1137](https://linear.app/threadbare/issue/THR-1137/compulsion-premonition-the-gods-will-loops-every-tick-no-pending-gate) (premonition loop), [THR-1139](https://linear.app/threadbare/issue/THR-1139/premonition-modal-shows-no-portrait-of-the-mortal-add-entityvisual) (the missing portrait) and [THR-1138](https://linear.app/threadbare/issue/THR-1138/character-sheet-faction-section-prints-a-raw-percentage-62percent), where faction standing now reads as a word instead of `62%`. All deployed.
+- 2026-08-16: **rungs 2 and 3 of your palette ladder are live.** [THR-1142](https://linear.app/threadbare/issue/THR-1142/palette-primitive-agent-relocation-encounters-can-send-people) — encounters can send people somewhere — and [THR-1143](https://linear.app/threadbare/issue/THR-1143/palette-primitive-location-conditions-timed-readable-states-on-places) — timed states on places, a pass closed for the season, a festival, a plague scare. Both shipped and deployed, in the order you set. Rung 4 is in the build queue.
 - 2026-08-16: **the chip ruling you gave this afternoon is now shipped and live.** [THR-1141](https://linear.app/threadbare/issue/THR-1141/aftermath-chips-that-claim-state-nothing-wrote-law-56-content-sweep) ([PR #1507](https://github.com/christianspliid-ui/threadbare/pull/1507)) — chips may only show state the engine actually wrote, and PATH is reserved for openings the game will act on. UI Law 56 records the rule.
 - 2026-08-16: **the vocabulary bleed you spotted on Sevrin is fixed and deployed.** [THR-1135](https://linear.app/threadbare/issue/THR-1135/rename-stone-virtue-word-dependable-careful-vocabulary-bleeds-into) — Stone's virtue word is now *Careful*, and three vignettes stopped borrowing Heart's meaning.
 - 2026-08-16: **THR-1129 is closed — that click is off your list.** [THR-1129](https://linear.app/threadbare/issue/THR-1129/encounter-factory-ruling-9-sitting-fable-drafts-the-amended-nudge) — its scope shipped 2026-08-09 under [THR-883](https://linear.app/threadbare/issue/THR-883/fable-encounter-writing-prototype-lock-the-exact-authoring-format); closed as a technical verdict rather than routed to you.
