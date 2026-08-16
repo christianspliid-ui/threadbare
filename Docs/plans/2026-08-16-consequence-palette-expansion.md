@@ -16,9 +16,23 @@ The THR-1141 palette census measured what 295 encounters' endings actually write
 
 ---
 
+## Engine pillar
+
+Four dispatcher cases in `applyEncounterAftermathReaction` (A: `agent_relocation`, C: `membership_change`, D: `reward_draw`, and B's widened target resolution), one decision-phase read (relocation intent), one widened decay loop (location condition expiry), one movement-cost read (condition tax), one revived prerequisite gate (`faction_rank:`), and one authoring-time module (the Consequence Draw — no tick-loop code). Full systems design per primitive in the sections below; every write lands with its reader in the same PR.
+
+## Content pillar
+
+The starter location-condition set (`trait.condition.location.*`), one live exemplar per primitive (three of them doubling as THR-1141 sweep fixes), wiring-guide rows for all four kinds, the § Consequence Draw section in the shared nudge-authoring spec, and the 8×15 weight matrix — which *is* the content of THR-1145. Details per primitive below.
+
+## UI pillar
+
+UI: THR-1143 only — the location detail surface lists active conditions (Section/ListRow + registry tooltips; Playwright evidence). Everything else N/A with per-section rationale: relocation renders through existing map trails and agent panels, membership through existing faction surfaces, reward_draw through the existing PRIZE chip, and the draw is authoring-time. No new primitives, no new components.
+
+---
+
 ## Primitive A — `agent_relocation` (THR-1142)
 
-### Engine pillar
+### A: Engine design
 
 **Effect shape** (new member of the aftermath effect union in `src/types/unifiedAction.ts`):
 
@@ -45,11 +59,11 @@ The THR-1141 palette census measured what 295 encounters' endings actually write
 
 **PRNG:** the `away` destination pick uses the engine's seeded PRNG keyed (seed, tick, agentId) — no `Math.random()`.
 
-### Content pillar
+### A: Content
 
 Wiring-guide row (Part 5 effect table) + one live exemplar: the THR-1141 sweep's `healer_departs` fix should use it ("Maret departs" = relocation intent away from the settlement), which gives the primitive its first shipped consumer in the same season it lands. Enrichment: no new placeholders.
 
-### UI pillar
+### A: UI
 
 UI: N/A — movement is already visible (map trails, agent panels); the ending's chip is authored per Law 56 and renders through existing chip kinds. Debug: agent inspection (`agent <name>` CLI, `__DEBUG` agent readout) prints the live intent — that read is part of this ticket.
 
@@ -57,7 +71,7 @@ UI: N/A — movement is already visible (map trails, agent panels); the ending's
 
 ## Primitive B — location conditions (THR-1143)
 
-### Engine pillar
+### B: Engine design
 
 **Not a new effect kind** — additive `targetLocationId?: string` on `apply_condition`, `remove_condition`, and `condition_attachment`, extending target resolution to `location` nodes (hexes, settlements, waypoints are all `location` nodes, so "the pass" and "the town" both qualify). Sentinels apply (`'$target'` when the action targets a location).
 
@@ -69,11 +83,11 @@ UI: N/A — movement is already visible (map trails, agent panels); the ending's
 
 Encounter-type *bias* deliberately stays the omen system's job — an encounter wanting ambient bias emits an omen alongside; two bias channels would drift.
 
-### Content pillar
+### B: Content
 
 Starter set in the condition content family, ids under `trait.condition.location.*`: `pass_closed` (impassable, seasonal duration), `festival` (gating flavor, short), `plague_scare` (gating + tax), `under_watch` (gating for shadow content), `harvest_blight` (long, pairs with the existing blight graph op). Each carries duration defaults in `CONDITION_DURATIONS` and a one-line tooltip registration. Wiring-guide row added. The THR-1141 sweep's "The Season" chip becomes this primitive's first consumer (`pass_closed` on the pass location).
 
-### UI pillar
+### B: UI
 
 Player-facing: the location detail surface lists active conditions as a `Section` of `ListRow`s with tooltips from the registry (Laws 1/17; no new primitive components). Screenshot tool: Playwright (DOM surface). HexMapV2: no map layer in v1 — the panel is the surface; a map badge is a separate design if wanted later (kept out to avoid hexmap scope creep — recorded as a non-goal, not an open question).
 
@@ -81,7 +95,7 @@ Player-facing: the location detail surface lists active conditions as a `Section
 
 ## Primitive C — `membership_change` (THR-1144)
 
-### Engine pillar
+### C: Engine design
 
 ```ts
 {
@@ -98,11 +112,11 @@ Writes the `member_of` edge through the same membership helpers the faction bulk
 
 **Graph:** existing `member_of` edge + one edge property; no new types.
 
-### Content pillar
+### C: Content
 
 Wiring-guide row; the 17 THR-805 regional templates that carried dead `faction_rank:` prerequisites become the gate's test corpus (the ticket picks 2–3 to verify live, per THR-805's own notes). Exemplar: a guild recruitment ending using `join`.
 
-### UI pillar
+### C: UI
 
 UI: N/A — membership and rank already render on existing faction/agent surfaces reading the same edges; no new component. (Executor confirms the faction sheet shows the new member after a CLI join — that is evidence of the existing surface reading the write, not new UI.)
 
@@ -110,7 +124,7 @@ UI: N/A — membership and rank already render on existing faction/agent surface
 
 ## Primitive D — `reward_draw` (THR-1146)
 
-### Engine pillar
+### D: Engine design
 
 ```ts
 {
@@ -124,11 +138,11 @@ Dispatcher case in `applyEncounterAftermathReaction` that resolves the recipe th
 
 **Empty-pool rule (THR-844 rot class):** at authoring time, `check:encounter`'s existing grant-liveness stage extends to `reward_draw.tagFilters` — a filter matching zero live attachment templates is a red gate. At runtime an empty pool fail-softs with an `aftermath_reward_draw_empty` trace, never a throw.
 
-### Content pillar
+### D: Content
 
 Wiring-guide row + spec note in the nudge-authoring spec's Rewards block (route 1 gains "or a `reward_draw` on the band"); one live exemplar in content.
 
-### UI pillar
+### D: UI
 
 UI: N/A — the draw lands as an attachment and renders through the existing PRIZE chip path (`item` change kind), untouched.
 
@@ -136,7 +150,7 @@ UI: N/A — the draw lands as an attachment and renders through the existing PRI
 
 ## The Consequence Draw (THR-1145)
 
-### Engine pillar (authoring-time module — no tick-loop code)
+### Draw: Engine design (authoring-time module — no tick-loop code)
 
 **Module:** `src/data/content-eval/consequenceDraw.ts`, plus a generic seeded weighted-table utility `drawFromTable(tableId, weights, seedKey, n)` designed to host later tables (see § Other tables below). Seed = stable string hash of the template id → the engine's seeded PRNG. Deterministic and **recomputable**: given a template id, anyone can re-derive the hand, which makes the recorded draw tamper-evident.
 
@@ -190,11 +204,11 @@ Reading the columns as identities: **iron** wounds and earns standing; **gold** 
 
 **Authoring surface:** `npm run draw:consequences -- <templateId> --reach <reach> [--rarity n]` prints the hand + concrete kind options; the encounter-pipeline brief stage runs the draw and the brief carries the hand; the nudge-authoring spec gains a § Consequence Draw section (spec is shared with `template-encounter-rewrite`, so both authoring routes inherit it).
 
-### Content pillar
+### Draw: Content
 
 The weights table above **is** the content; plus the spec/SKILL updates. No encounter rewrites in this ticket.
 
-### UI pillar
+### Draw: UI
 
 UI: N/A — authoring-time tool; nothing player-facing renders from it directly.
 
@@ -212,6 +226,8 @@ Reward pools already prove the pattern in-engine (`categoryWeights` is a weighte
 
 ## Wiring
 
+> See checklist: Docs/plans/wiring-checklist.md
+
 | Module | Orchestrator phase | UI component | GameState field | Trace emitted | Debug visibility |
 |--------|-------------------|-------------|-----------------|---------------|-----------------|
 | `agent_relocation` dispatcher case | aftermath apply (existing) | — | agent node `relocationIntent` property | `aftermath_agent_relocation`, `relocation_arrived`, `relocation_expired` | CLI `agent <name>`, `__DEBUG` agent readout |
@@ -222,6 +238,10 @@ Reward pools already prove the pattern in-engine (`categoryWeights` is a weighte
 | `faction_rank:` gate | prerequisite check (existing) | — | — | prerequisite traces (existing) | CLI `encounters` |
 | `reward_draw` dispatcher case | aftermath apply (existing) | PRIZE chip (existing) | attachment edges (existing) | `aftermath_reward_draw` / `aftermath_reward_draw_empty` | trace viewer |
 | `consequenceDraw` module + gate | none (authoring-time) | — | template fields `consequenceDraw`/`consequenceSwap` | — | `npm run draw:consequences`, `check:encounter` output |
+
+## Interface impact
+
+No existing contract in `Docs/canon/interface-map.md` is retired or rerouted. The four new effect kinds are new content→engine write surfaces of the *existing* aftermath-dispatch contract; per the Definition of Done, the executor adds their rows (and `scripts/interface-contracts.ts` entries where the map tracks the touched subsystem) in the landing PRs — new rows, no reclassifications expected.
 
 ## Constants table
 
@@ -301,11 +321,13 @@ interface RewardDrawTrace {
 
 ## Vision audit
 
-- [x] No Vision premise contradicted — all five items deepen "systemic god-game where consequences live in the world"; the draw enforces the existing player-as-god content doctrine rather than changing it.
+- [x] This plan does not contradict any Vision premise — all five items deepen "systemic god-game where consequences live in the world"; the draw enforces the existing player-as-god content doctrine rather than changing it.
+- [x] No Vision edit needed as part of this scope.
 
 ## Rulebook impact
 
-- [x] No rule of play changes. New effect kinds extend the consequence vocabulary (content-facing), not turn structure, verbs, prerequisites (the `faction_rank:` gate already exists in the rulebook's prerequisite model — THR-1144 revives its reader, changing no rule), resources, clocks, or win/loss. If the executor finds the rulebook documents prerequisites in a way rank-revival contradicts, the rulebook edit rides that PR.
+- [x] This plan does not change a rule of play. New effect kinds extend the consequence vocabulary (content-facing), not turn structure, verbs, prerequisites (the `faction_rank:` gate already exists in the rulebook's prerequisite model — THR-1144 revives its reader, changing no rule), resources, clocks, or win/loss.
+- [x] If execution finds the rulebook documents prerequisites in a way the `faction_rank:` revival contradicts, the rulebook edit rides that PR (`Docs/canon/rulebook.md`).
 
 > Brainstorm companion: none — the exploration happened in the attended chat session (2026-08-16, palette census → proposal → director approval); this doc records decisions, and the census method lives in THR-1141's comments.
 
@@ -340,7 +362,7 @@ interface RewardDrawTrace {
 
 **Mutex with:** THR-1142 ↔ THR-1143 ↔ THR-1144 ↔ THR-1145 ↔ THR-1146 (all edit the `unifiedAction.ts` effect union and/or the aftermath dispatcher — execute serially, any order, except THR-1145 last-or-parallel-late so its family table can name all four shipped kinds; if THR-1145 lands first, the `movement`/`place`/`membership` rows map to their ticket ids and the gate treats an unshipped kind as unwirable → those families are excluded from draws by a `CONSEQUENCE_FAMILIES_LIVE` gate constant flipped per landing). Also mutex with THR-1141 (sweep edits `compositionContract.ts` + `unifiedAction.ts` doc comments and the same content files the exemplars touch).
 
-**Files to touch (union across tickets):**
+**Files to touch:** (union across the five tickets)
 - Create: `src/data/content-eval/consequenceDraw.ts`, `scripts/draw-consequences.ts`, location condition content entries, tests per primitive
 - Edit: `src/types/unifiedAction.ts` (union + fields), the aftermath dispatcher module, `src/engine/phaseAgentDecision.ts` (intent read), `src/engine/conditionDecay.ts` (carrier widening), movement-cost module, membership helpers + prerequisite checker, `scripts/check-encounter.ts` / `compositionContract.ts`, `Docs/plans/2026-04-16-systemic-wiring-guide.md` (rows), `.claude/skills/encounter-pipeline/reference/nudge-authoring-spec.md` (§ Consequence Draw)
 
@@ -352,3 +374,19 @@ interface RewardDrawTrace {
 - **The weight matrix ships as written** — tuning it later is a one-table edit and explicitly does not need a new ruling (gate/calibration is agent territory per canon process rule 4); *adding or removing a family* does need a note to the director.
 - **Verify every content id live** (condition template ids, attachment tags) — resolve, never trust (THR-844).
 - The wiring guide's THR-809 caveat is corrected in this docs PR; do not re-add it.
+
+## Forked-audit verdicts
+
+<!-- populated by design-audit-pipeline — /design-audit <plan-doc-path> -->
+
+### NFP audit
+
+<!-- pending -->
+
+### Three-pillar audit
+
+<!-- pending -->
+
+### Vision audit
+
+<!-- pending -->
