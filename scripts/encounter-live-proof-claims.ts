@@ -61,6 +61,101 @@ export function computeVerdict(claims: readonly VerdictClaim[]): ProofVerdict {
   return declared && proved ? 'proved' : 'vacuous';
 }
 
+// ─── Declaration scope (THR-1132) ────────────────────────────────────
+
+/**
+ * What a run is entitled to assert about one declared system connection.
+ *
+ * `check:encounter-live` used to ask a single question of every connection the
+ * template declares: *did it arrive?* But a run reaches one outcome band and
+ * picks at most one reaction, while the declaration is a union over every band
+ * and every reaction — so the question was unanswerable for anything authored
+ * outside the path the run took, and the honest "no" was reported as ✗.
+ *
+ * Measured on unmodified `main` (THR-1132): the six vertical-slice templates
+ * scored **0 proved / 6 failed**, every ✗ of this shape. A gate that fails
+ * gate-clean content carries no information on exactly the templates the
+ * Encounter Factory ships, which is worse than one that says nothing.
+ *
+ * So a claim now resolves to one of four scopes, and only `reachable` is
+ * pass-or-fail. The other three are `not_declared` **with the reason on the
+ * row** — a skip that says why is inspectable (NFP #2); a skip that vanishes is
+ * how a sweep goes quiet.
+ */
+export type DeclarationScope =
+  /** Authored on the path this run took — arrival is assertable. */
+  | 'reachable'
+  /** Authored only under a reaction nobody picked this run. */
+  | 'reaction_scoped'
+  /** Authored only on an outcome band fate did not roll. */
+  | 'band_scoped'
+  /** Not authored anywhere. */
+  | 'absent';
+
+/** The shape {@link classifyDeclaration} needs — `SystemSurface` from the contract. */
+export interface DeclarationSurface {
+  readonly unconditional: boolean;
+  readonly reactionIds: readonly string[];
+  readonly otherBand: boolean;
+}
+
+/**
+ * Decide what this run may assert about one connection.
+ *
+ * `appliedReactionId` is the load-bearing input, and it is an **id**, not a
+ * flag. A run applies exactly one reaction, so "some reaction fired" is not
+ * enough to make a reaction-borne effect reachable — the one that fired has to
+ * be the one carrying it. An earlier revision of this function took a boolean
+ * and reported `swindled_family`'s seed as a *failure* on a run where the
+ * engine had autonomously picked a different reaction: the seed was never going
+ * to arrive, and saying so as ✗ is the same false-fail this rule exists to end.
+ *
+ * Order matters. `unconditional` wins outright; a connection authored both on
+ * the rolled band and on another band is reachable, not band-scoped. Only when
+ * nothing on this run's path could deliver it do the excuses apply, and
+ * `reaction_scoped` is checked before `band_scoped` because it is the more
+ * specific fact about why this run did not see it.
+ */
+export function classifyDeclaration(
+  surface: DeclarationSurface,
+  appliedReactionId: string | undefined,
+): DeclarationScope {
+  if (surface.unconditional) return 'reachable';
+  if (surface.reactionIds.length > 0) {
+    const fired = appliedReactionId !== undefined && surface.reactionIds.includes(appliedReactionId);
+    return fired ? 'reachable' : 'reaction_scoped';
+  }
+  if (surface.otherBand) return 'band_scoped';
+  return 'absent';
+}
+
+// ─── Reaction selection ──────────────────────────────────────────────
+
+/** The shape {@link selectReaction} needs — an aftermath reaction's id. */
+export interface ReactionChoice {
+  readonly id: string;
+}
+
+/**
+ * Pick the aftermath reaction one run applies, deterministically.
+ *
+ * Ties break by **id**, for the same reason {@link selectHand} does: re-ordering
+ * a variant's `reactions` array must not change which effects a proof observes,
+ * or a cosmetic edit would silently change a verdict (NFP #3).
+ *
+ * Picking the *first by id* rather than sampling is deliberate and does under-
+ * assert: a template whose seed rides only its last-sorting reaction reports
+ * `reaction_scoped` rather than proving the seed. That is the honest reading —
+ * this stage proves one run, and one run picks one reaction. Proving every
+ * branch is `--play all`'s axis, not this one's.
+ */
+export function selectReaction(
+  reactions: readonly ReactionChoice[],
+): string | undefined {
+  if (reactions.length === 0) return undefined;
+  return [...reactions].sort((a, b) => a.id.localeCompare(b.id))[0]?.id;
+}
+
 // ─── Hand selection ──────────────────────────────────────────────────
 
 export type PlayMode = 'none' | 'cheapest' | 'all';

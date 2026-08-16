@@ -73,10 +73,21 @@ import { generateArchetypes } from '../src/engine/ascendant';
 import { prepareEncounterSupportBundle } from '../src/engine/encounterSupportBundle';
 import { createUnifiedAction } from '../src/engine/unifiedActionLifecycle';
 import { mulberry32 } from '../src/engine/factionAmbitions';
+import { getAgentLocationId, getAllActorsAtLocation } from '../src/engine/graphQueries';
+import { clearTraces, enableTracing, getTraces } from '../src/engine/traceBuffer';
+import {
+  applyEncounterAftermathReaction,
+  resolveAftermathContextForAgent,
+} from '../src/engine/encounterAftermath';
 
 import { UNIFIED_ACTION_TEMPLATES, getUnifiedTemplateById } from '../src/data/unified-action-templates';
 import { NUDGE_GOLDEN_EXEMPLAR } from '../src/data/__fixtures__/nudge-exemplar/swollen-ford-exemplar';
-import { systemConnections } from '../src/data/content-eval/compositionContract';
+import { hasOnlyDefaultSupportBundle } from '../src/data/default-support-bundles';
+import {
+  isPersistentEffectKind,
+  systemConnections,
+  systemSurfacesForOutcome,
+} from '../src/data/content-eval/compositionContract';
 
 import { isActionStepBranch } from '../src/types/unifiedAction';
 import type {
@@ -87,9 +98,12 @@ import type {
 } from '../src/types/unifiedAction';
 import type { GameState } from '../src/types/gameState';
 import {
+  classifyDeclaration,
   computeVerdict,
   selectHand as selectHandFrom,
+  selectReaction,
   type ClaimStatus,
+  type DeclarationScope,
   type PlayMode,
   type ProofVerdict,
 } from './encounter-live-proof-claims';
@@ -105,11 +119,14 @@ const DEFAULT_MAP: MapSizePreset = 'medium';
 /**
  * Ticks the world runs before the encounter is spawned.
  *
- * Zero would spawn into a world whose agents have not moved, whose locations
- * have no occupants and whose support bundle therefore binds nothing — the cast
- * claim would fail for every template on a technicality of timing. Two ticks is
- * enough for placement to settle without letting the ascendant wander into an
- * unrelated encounter.
+ * Zero would spawn into a world whose agents have not moved and whose locations
+ * have no occupants. Two ticks is enough for placement to settle without letting
+ * the ascendant wander into an unrelated encounter.
+ *
+ * It is **not** enough to give the ascendant a location, and no number is:
+ * measured for THR-1132, `getAgentLocationId(graph, state.ascendantId)` returns
+ * `undefined` at every tick from 0 to 12 in a seed-42 medium world. That is what
+ * {@link anchorAscendant} exists to repair — see its note.
  */
 const WARMUP_TICKS = 2;
 
@@ -168,6 +185,8 @@ interface LiveProofResult {
   readonly resolvedAtTick?: number;
   readonly ticksSpent: number;
   readonly committedNudges: readonly string[];
+  /** The aftermath reaction this run applied, if any (THR-1132). */
+  readonly appliedReaction?: string;
   readonly claims: readonly ProofClaim[];
 }
 
@@ -240,6 +259,61 @@ interface SpawnedWorld {
   state: GameState;
   actionId: string;
   actorId: string;
+  /** The location the encounter was anchored at, for the cast claim's detail line. */
+  anchorLocationId?: string;
+}
+
+/**
+ * Stand the ascendant somewhere real, and report where.
+ *
+ * **The defect this repairs (THR-1132).** The ascendant carries no `located_at`
+ * edge — not after the warmup, not ever; measured at every tick 0–12. So
+ * `resolveAnchorLocationId` runs out of options and returns the *target id*
+ * itself, anchoring the support bundle on an actor node. `findExistingActorSupport`
+ * then looks for NPCs standing "at" the ascendant, finds none, and every
+ * `pre-seeded` spec resolves to `null`. On the vertical slice that read as
+ * `cast_bound: fail` on 5 of 6 templates — the sixth passing only because its
+ * `stranger` spec is `lazy-materialize-on-trigger`, which ignores the anchor.
+ *
+ * The engine is not at fault and both live callers already do this: the debug
+ * spawn path refuses outright with *"has no location anchor for encounter
+ * testing"*, and `phaseAgentDecision` passes `sel.entry.locationId`. Only the
+ * harness staged an encounter nowhere.
+ *
+ * **How the location is chosen.** Deterministically (NFP #3), and preferring a
+ * place the template is actually authorable at — the encounter should be proved
+ * where it would really fire, not wherever happens to be populated. Populated
+ * matters because a bind-only bundle attaches to whoever is standing there:
+ * an empty location would reproduce the same false negative with extra steps.
+ */
+function anchorAscendant(
+  state: GameState,
+  actorId: string,
+  template: UnifiedActionTemplate,
+): { state: GameState; anchorLocationId?: string } {
+  if (getAgentLocationId(state.graph, actorId)) return { state, anchorLocationId: undefined };
+
+  const authorable = new Set(template.locationSubtypes ?? []);
+  const candidates = state.graph
+    .getNodesByType('location')
+    .filter(node => getAllActorsAtLocation(state.graph, node.id).length > 0)
+    .sort((a, b) => a.id.localeCompare(b.id));
+
+  const preferred = candidates.find(node =>
+    authorable.has(node.properties.locationSubtype as string),
+  );
+  const anchor = preferred ?? candidates[0];
+  if (!anchor) return { state, anchorLocationId: undefined };
+
+  state.graph.addEdge({
+    id: `edge_liveproof_located_${actorId}_${anchor.id}`,
+    source: actorId,
+    target: anchor.id,
+    type: 'located_at',
+    properties: {},
+  });
+
+  return { state, anchorLocationId: anchor.id };
 }
 
 /**
@@ -273,6 +347,9 @@ function spawnInFreshWorld(
   const actorId = state.ascendantId;
   if (!actorId) throw new Error('world has no ascendant — cannot stage an encounter');
 
+  const anchored = anchorAscendant(state, actorId, template);
+  state = anchored.state;
+
   const supportBindings = prepareEncounterSupportBundle(state, template, actorId);
 
   // A per-template stream: two templates in one batch must not reorder each
@@ -296,6 +373,7 @@ function spawnInFreshWorld(
     state: { ...state, unifiedActions: [...state.unifiedActions, action] },
     actionId: action.actionId,
     actorId,
+    anchorLocationId: anchored.anchorLocationId,
   };
 }
 
@@ -324,10 +402,71 @@ function findAction(state: GameState, actionId: string): UnifiedAction | undefin
   return state.unifiedActions.find(action => action.actionId === actionId);
 }
 
+/**
+ * The reaction `processAutonomousAftermath` picked for this action, off its own trace.
+ *
+ * The phase emits `reaction_selected` carrying `reactionId` every time it applies
+ * one. Reading the engine's record is how the proof learns *which* reaction fired
+ * without duplicating the personality-aligned selection rule that chose it.
+ *
+ * Fail-soft (NFP #4): tracing off, buffer rolled, or shape changed → `undefined`,
+ * and the caller falls back to the first authored reaction. A wrong guess costs a
+ * claim its scope, never the run.
+ */
+function autonomousReactionId(actionId: string): string | undefined {
+  for (const entry of [...getTraces()].reverse()) {
+    const record = entry as unknown as { category?: string; actionId?: string; reactionId?: string };
+    if (record.category === 'reaction_selected' && record.actionId === actionId) {
+      return record.reactionId;
+    }
+  }
+  return undefined;
+}
+
+/**
+ * Aftermath effect kinds that landed for this action, off the engine's traces.
+ *
+ * **Why `aftermathSummary.changes` is not enough (THR-1132).** A template can
+ * promise a persistent consequence by two different routes: an aftermath
+ * *change* of kind `item`/`trait`, or an aftermath *effect* — and
+ * `PERSISTENT_EFFECT_KINDS` counts 24 of the latter, almost none of which
+ * produce a change entry. `grateful_kin` promises its reward as a
+ * `favor_creation` on the reaction that fired; the applier writes a favor
+ * **edge** and emits a trace, leaving `changes` untouched. Reading only
+ * `changes` therefore reported a reward that had genuinely arrived as missing —
+ * the same false-fail shape as the band and reaction cases, one layer down.
+ *
+ * Every applier emits a trace carrying `effectKind`, and marks a no-op with
+ * `success: false`, so this is real falsifiable arrival evidence rather than a
+ * lever that cannot fail: an effect that skipped for a missing target is
+ * excluded here exactly as it should be.
+ */
+function appliedEffectKinds(actionId: string): ReadonlySet<string> {
+  const kinds = new Set<string>();
+  for (const entry of getTraces()) {
+    const record = entry as unknown as {
+      actionId?: string;
+      effectKind?: string;
+      success?: boolean;
+    };
+    if (record.actionId !== actionId) continue;
+    if (record.effectKind === undefined) continue;
+    if (record.success === false) continue;
+    kinds.add(record.effectKind);
+  }
+  return kinds;
+}
+
 function runOne(template: UnifiedActionTemplate): LiveProofResult {
   const declared = new Set(systemConnections(template));
   const claims: ProofClaim[] = [];
   const hand = selectHand(template, playMode);
+
+  // Per-template trace window: `autonomousReactionId` reads the engine's own
+  // `reaction_selected` record, and clearing here keeps one template's pick from
+  // being attributed to the next (the buffer is module-scoped and rolls).
+  enableTracing();
+  clearTraces();
 
   const claim = (name: ClaimName, status: ClaimStatus, detail: string): void => {
     claims.push({ name, status, detail });
@@ -425,7 +564,88 @@ function runOne(template: UnifiedActionTemplate): LiveProofResult {
       : `unresolved after ${ticksSpent} tick(s) (bound ${MAX_RESOLUTION_TICKS})`,
   );
 
+  // ── Apply one aftermath reaction, so reaction-borne effects can arrive ──
+  //
+  // A large share of authored consequence rides a reaction rather than the band:
+  // the slice's swindler seed is on `leave_them_to_it`, the bridge's conditions
+  // on reaction `condition_attachment`s, the full-moon gift on `take_the_gift`.
+  // Resolving the encounter and stopping left every one of them unfired, and the
+  // claims below reported the absence as a content defect (THR-1132).
+  //
+  // This is the headless equivalent of the player picking a card off the
+  // aftermath, and it goes through the same engine entry points the CLI's
+  // `--auto-aftermath` uses — so what arrives here is what arrives in play, not
+  // a harness approximation. Fail-soft (NFP #4): a template with no reactions,
+  // or a refusal from the resolver, leaves `reactionApplied` false and the
+  // affected claims scope themselves to `reaction_scoped` rather than failing.
+  // The tick loop usually gets there first: `processAutonomousAftermath` applies
+  // a reaction for any non-hero actor — and the ascendant is not in its hero set
+  // — then stamps `autonomousAftermathApplied`, after which the resolver refuses
+  // a second application (THR-1112). That refusal means the effects are *already
+  // in the world*, so it must not be read as "no reaction fired": doing so would
+  // scope away exactly the claims the pick was added to prove. The resolver
+  // reports it structurally via `alreadyApplied`, so this does not parse prose.
+  //
+  // **Which** reaction fired is what the claims need, and the engine records it
+  // on its own `reaction_selected` trace. Reading that is better than re-deriving
+  // the choice here: `selectAutonomousDefaultReaction` is personality-aligned and
+  // not exported, and a second copy of its rule would drift from the engine's
+  // within a month — the same trap this script's header warns about for
+  // `systemConnections`.
+  let reactionApplied: string | undefined;
+  let reactionRefusal: string | undefined;
+  if (didResolve) {
+    const available = resolved?.aftermathSummary?.reactions ?? [];
+    const pick = selectReaction(available);
+    if (pick) {
+      const context = resolveAftermathContextForAgent(state, world.actorId, pick);
+      if ('error' in context) {
+        if (context.alreadyApplied) {
+          reactionApplied = autonomousReactionId(world.actionId)
+            ?? available[0]?.id;
+        } else {
+          reactionRefusal = context.error;
+        }
+      } else {
+        try {
+          const applied = applyEncounterAftermathReaction(
+            state,
+            context.action,
+            context.reaction,
+            state.tick,
+            runtime,
+          );
+          state = applied.state;
+          reactionApplied = context.reaction.id;
+        } catch (error) {
+          reactionRefusal = error instanceof Error ? error.message : String(error);
+        }
+      }
+    }
+  }
+
   // ── Delivery claims, each gated on the declaration ──
+  //
+  // `surfaces` narrows `declared` from "authored anywhere" to "authored where
+  // this run could reach it" — the union answer is right for Stage 3, which never
+  // runs the template, and wrong here, where one band rolled and one reaction was
+  // picked. `scopeOf` turns that into the claim's disposition.
+  const surfaces = systemSurfacesForOutcome(template, resolved?.outcome);
+  const scopeOf = (system: keyof typeof surfaces): DeclarationScope =>
+    classifyDeclaration(surfaces[system], reactionApplied);
+
+  /** Why a claim was skipped, as a sentence for the row (NFP #2). */
+  const scopeReason = (system: keyof typeof surfaces, scope: DeclarationScope): string => {
+    if (scope === 'reaction_scoped') {
+      const carriers = surfaces[system].reactionIds.join(', ');
+      if (reactionRefusal) return `rides reaction(s) ${carriers}; none applied (${reactionRefusal})`;
+      return reactionApplied
+        ? `rides reaction(s) ${carriers}; this run applied '${reactionApplied}'`
+        : `rides reaction(s) ${carriers}, and this run applied none`;
+    }
+    return `authored only on an outcome band this run did not roll `
+      + `(rolled '${resolved?.outcome ?? 'none'}')`;
+  };
 
   const nudgeBearing = plainSteps(template).some(step => (step.nudges ?? []).length > 0);
   if (!nudgeBearing) {
@@ -498,38 +718,69 @@ function runOne(template: UnifiedActionTemplate): LiveProofResult {
     }
   }
 
+  // Cast is not band- or reaction-scoped, but it *is* promise-scoped: a
+  // template-authored bundle is a promise this encounter makes, while a
+  // family default (THR-698/THR-1044) is an opportunistic attach whose own
+  // module calls staying unresolved "the honest outcome rather than a spawned
+  // prop". Failing the second kind reports designed behaviour as a defect.
   if (!declared.has('cast')) {
     claim('cast_bound', 'not_declared', 'template declares no cast');
   } else {
     const bindings = resolved?.supportBindings ?? staged?.supportBindings ?? [];
     const actors = bindings.filter(binding => binding.kind === 'actor');
-    claim(
-      'cast_bound',
-      actors.length > 0 ? 'pass' : 'fail',
-      actors.length > 0
-        ? `${actors.length} cast member(s) bound to live actors`
-        : 'support bundle declares cast but bound no actor in the live world',
-    );
+    const anchorNote = world.anchorLocationId ? ` at ${world.anchorLocationId}` : '';
+    if (actors.length > 0) {
+      claim('cast_bound', 'pass', `${actors.length} cast member(s) bound to live actors${anchorNote}`);
+    } else if (hasOnlyDefaultSupportBundle(template)) {
+      claim(
+        'cast_bound',
+        'not_declared',
+        `bundle is a bind-only family default, not an authored cast; no matching NPC`
+          + `${anchorNote}. Defaults attach opportunistically and stay unresolved by design`,
+      );
+    } else {
+      claim(
+        'cast_bound',
+        'fail',
+        `support bundle declares cast but bound no actor in the live world${anchorNote}`,
+      );
+    }
   }
 
-  if (!declared.has('rewards')) {
+  const rewardScope = scopeOf('rewards');
+  if (rewardScope === 'absent') {
     claim('reward_node', 'not_declared', 'template declares no reward or persistent consequence');
+  } else if (rewardScope !== 'reachable') {
+    claim('reward_node', 'not_declared', `reward ${scopeReason('rewards', rewardScope)}`);
   } else {
+    // Two authoring routes, so two places to look. A reward promised as an
+    // aftermath *change* lands in `summary.changes`; one promised as an
+    // aftermath *effect* lands in the world and on the effect's own trace, and
+    // leaves `changes` untouched entirely (THR-1132).
     const persistent = (summary?.changes ?? []).filter(
       change => change.kind === 'item' || change.kind === 'trait',
     );
+    const landedEffects = [...appliedEffectKinds(world.actionId)].filter(isPersistentEffectKind);
+    const arrived = persistent.length > 0 || landedEffects.length > 0;
+    const evidence = [
+      ...persistent.map(change => `${change.kind} change`),
+      ...landedEffects.map(kind => `${kind} effect`),
+    ];
     claim(
       'reward_node',
-      persistent.length > 0 ? 'pass' : 'fail',
-      persistent.length > 0
-        ? `${persistent.length} persistent change(s) landed: `
-          + persistent.map(change => change.kind).join(', ')
-        : 'declared a reward but the resolved aftermath left nothing persistent',
+      arrived ? 'pass' : 'fail',
+      arrived
+        ? `${evidence.length} persistent consequence(s) landed: ${evidence.join(', ')}`
+        : 'declared a reward on this run\'s path but nothing persistent landed — '
+          + 'no item/trait change and no persistent effect trace',
     );
   }
 
-  if (!declared.has('seeds')) {
+  const seedScope = scopeOf('seeds');
+  if (seedScope === 'absent') {
     claim('seed_planted', 'not_declared', 'template declares no encounter seed');
+  } else if (seedScope !== 'reachable') {
+    claim('seed_planted', 'not_declared', `seed ${scopeReason('seeds', seedScope)}`);
   } else {
     const planted = (state.pendingEncounterSeeds ?? []).filter(
       seedEntry => seedEntry.sourceEncounterId === template.id,
@@ -540,20 +791,28 @@ function runOne(template: UnifiedActionTemplate): LiveProofResult {
       planted.length > 0
         ? `${planted.length} seed(s) in pendingEncounterSeeds: `
           + planted.map(entry => entry.seedLabel).join(', ')
-        : 'declared a seed effect but pendingEncounterSeeds carries none from this encounter',
+        : 'declared a seed effect on this run\'s path but pendingEncounterSeeds carries none',
     );
   }
 
-  if (!declared.has('conditions')) {
+  const conditionScope = scopeOf('conditions');
+  if (conditionScope === 'absent') {
     claim('condition_applied', 'not_declared', 'template declares no condition effect');
+  } else if (conditionScope !== 'reachable') {
+    claim('condition_applied', 'not_declared', `condition ${scopeReason('conditions', conditionScope)}`);
   } else {
-    const conditions = (summary?.changes ?? []).filter(change => change.kind === 'trait');
+    // Read the live action rather than the pre-reaction summary: a condition
+    // riding a reaction lands after `aftermathSummary` was written.
+    const post = findAction(state, world.actionId);
+    const conditions = (post?.aftermathSummary?.changes ?? summary?.changes ?? []).filter(
+      change => change.kind === 'trait',
+    );
     claim(
       'condition_applied',
       conditions.length > 0 ? 'pass' : 'fail',
       conditions.length > 0
         ? `${conditions.length} condition/trait change(s) applied`
-        : 'declared a condition effect but none applied on this outcome',
+        : 'declared a condition effect on this run\'s path but none applied',
     );
   }
 
@@ -567,6 +826,7 @@ function runOne(template: UnifiedActionTemplate): LiveProofResult {
     resolvedAtTick: resolved?.completedAtTick,
     ticksSpent,
     committedNudges: hand,
+    appliedReaction: reactionApplied,
     claims,
   };
 }
@@ -640,7 +900,8 @@ if (wantsJson) {
   for (const result of results) {
     const badge = VERDICT_BADGE[result.verdict];
     const outcome = result.outcome ? ` → ${result.outcome}` : '';
-    console.log(`  ${badge} ${result.templateId}${outcome}`);
+    const reaction = result.appliedReaction ? ` [reaction: ${result.appliedReaction}]` : '';
+    console.log(`  ${badge} ${result.templateId}${outcome}${reaction}`);
     for (const entry of result.claims) {
       if (entry.status === 'pass') continue;
       const mark = entry.status === 'fail' ? '✗' : '·';

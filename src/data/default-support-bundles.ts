@@ -654,3 +654,45 @@ function settingClassDefaultsFor(template: UnifiedActionTemplate): EncounterSupp
   const cls = primarySettingClass(template);
   return cls ? DEFAULT_SETTING_SUPPORT_BUNDLES[cls] : undefined;
 }
+
+/**
+ * The default bundle this template *would* receive, whether or not it has one.
+ *
+ * Exposed so a consumer can tell a **template-authored** cast from a bundle this
+ * module attached — a distinction `template.supportBundle` alone cannot carry,
+ * because {@link withDefaultSupportBundle} writes the default into that same
+ * field at registry assembly.
+ *
+ * The distinction is load-bearing for anything judging whether an unbound cast
+ * is a defect (THR-1132). An authored bundle is a promise the encounter makes.
+ * A default is the opposite: bind-only by construction, and per this module's
+ * own rule a spec that finds nobody "stays unresolved … which is the honest
+ * outcome rather than a spawned prop". Treating both as promises made
+ * `check:encounter-live` fail 5 of 6 vertical-slice templates for behaving
+ * exactly as designed.
+ */
+export function defaultSupportBundleFor(
+  template: UnifiedActionTemplate,
+): EncounterSupportBundle | undefined {
+  const family = template.id.split('.')[0];
+  const defaults = SETTING_KEYED_FAMILIES.includes(family)
+    ? settingClassDefaultsFor(template)
+    : DEFAULT_FAMILY_SUPPORT_BUNDLES[family];
+  return defaults && defaults.length > 0 ? defaults.slice(0, DEFAULT_BUNDLE_MAX_SPECS) : undefined;
+}
+
+/**
+ * Whether every spec on this template's bundle came from a default table.
+ *
+ * Compares by **spec identity**, not by value: `withDefaultSupportBundle` copies
+ * the array but shares the spec objects, so identity is exact here and a
+ * template that hand-authors a spec with the same fields still reads as
+ * authored — which is the answer we want, since it wrote the promise itself.
+ */
+export function hasOnlyDefaultSupportBundle(template: UnifiedActionTemplate): boolean {
+  const bundle = template.supportBundle;
+  if (!bundle || bundle.length === 0) return false;
+  const defaults = defaultSupportBundleFor(template);
+  if (!defaults) return false;
+  return bundle.every(spec => defaults.includes(spec));
+}

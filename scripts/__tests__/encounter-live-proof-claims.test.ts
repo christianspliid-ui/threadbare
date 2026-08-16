@@ -10,8 +10,11 @@
 import { describe, it, expect } from 'vitest';
 import {
   BASELINE_CLAIMS,
+  classifyDeclaration,
   computeVerdict,
   selectHand,
+  selectReaction,
+  type DeclarationSurface,
   type VerdictClaim,
 } from '../encounter-live-proof-claims';
 
@@ -113,5 +116,81 @@ describe('selectHand', () => {
 
   it('returns an empty hand for a template with no nudge-bearing step', () => {
     expect(selectHand([[], []], 'cheapest')).toEqual([]);
+  });
+});
+
+// ─── THR-1132 — the false-fail the scoping rule exists to end ────────
+
+describe('classifyDeclaration', () => {
+  const surface = (over: Partial<DeclarationSurface> = {}): DeclarationSurface => ({
+    unconditional: false,
+    reactionIds: [],
+    otherBand: false,
+    ...over,
+  });
+
+  it('scopes a reaction-borne claim away when a DIFFERENT reaction fired', () => {
+    // The measured case (THR-1132): `slice.family.swindled_family` authors its
+    // swindler seed on `leave_them_to_it` / `watch_them_go`, and the engine
+    // autonomously applied `make_the_town_haunted`. The seed was never going to
+    // arrive — reporting that as ✗ is a false failure against clean content.
+    //
+    // This is also why the applied reaction is an *id* and not a boolean: under
+    // a boolean this exact run read as "a reaction fired, so the seed must
+    // arrive", and failed.
+    const seedOnOtherReactions = surface({
+      reactionIds: ['slice.family.leave_them_to_it', 'slice.family.watch_them_go'],
+    });
+    expect(
+      classifyDeclaration(seedOnOtherReactions, 'slice.family.make_the_town_haunted'),
+    ).toBe('reaction_scoped');
+  });
+
+  it('makes the same claim reachable once the carrying reaction is the one applied', () => {
+    // The other half: scoping must not become blanket silence. When the reaction
+    // that carries the seed is the one that fired, arrival is assertable again.
+    const seedOnOtherReactions = surface({
+      reactionIds: ['slice.family.leave_them_to_it', 'slice.family.watch_them_go'],
+    });
+    expect(
+      classifyDeclaration(seedOnOtherReactions, 'slice.family.leave_them_to_it'),
+    ).toBe('reachable');
+  });
+
+  it('scopes a claim authored only on a band this run did not roll', () => {
+    // `unsafe_bridge` authors its reward and conditions on bands other than the
+    // `success_at_cost` it rolled. A claim on band X cannot arrive on band Y.
+    expect(classifyDeclaration(surface({ otherBand: true }), undefined)).toBe('band_scoped');
+  });
+
+  it('prefers reachable over both excuses when the rolled band also delivers', () => {
+    // Order is load-bearing: a connection authored BOTH on the rolled band and
+    // elsewhere is reachable. Were `otherBand` checked first, every widely
+    // authored consequence would excuse itself and the gate would go quiet —
+    // which is worse than the false failures, because nobody re-reads a green wall.
+    const everywhere = surface({ unconditional: true, reactionIds: ['r.a'], otherBand: true });
+    expect(classifyDeclaration(everywhere, undefined)).toBe('reachable');
+  });
+
+  it('reports a connection authored nowhere as absent, not as an excuse', () => {
+    // `absent` must stay distinguishable from the two scoped answers: it is the
+    // one case where the template genuinely declares nothing, and the row should
+    // say so rather than implying something was withheld by chance.
+    expect(classifyDeclaration(surface(), 'r.a')).toBe('absent');
+  });
+});
+
+describe('selectReaction', () => {
+  it('picks deterministically by id, not by authoring order', () => {
+    // Same rule as `selectHand`: re-ordering a variant's `reactions` array is a
+    // cosmetic edit and must not move a verdict (NFP #3).
+    const authored = [{ id: 'r.charlie' }, { id: 'r.alpha' }, { id: 'r.bravo' }];
+    const reordered = [authored[2], authored[0], authored[1]];
+    expect(selectReaction(authored)).toBe('r.alpha');
+    expect(selectReaction(reordered)).toBe(selectReaction(authored));
+  });
+
+  it('returns undefined when the aftermath authors no reaction', () => {
+    expect(selectReaction([])).toBeUndefined();
   });
 });
