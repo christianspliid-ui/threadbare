@@ -21,8 +21,7 @@ import { ACTION_ART } from '../Game/actionArt';
 import { isStarterActionId } from '../../engine/actionUnlock';
 import { effectSourceFor, type EffectSource } from '../../data/actionEffectSource';
 import { formatEssenceLabel } from '../shared/formatEssence';
-import { magnitudeWord, countWord, type MagnitudeBand } from '../../engine/aftermathWords';
-import { TICKS_PER_DAY } from '../../data/attention-constants';
+import { magnitudeWord, durationLabel, type MagnitudeBand } from '../../engine/aftermathWords';
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -625,27 +624,13 @@ export function formatDomainContributions(contributions: Record<string, number>)
 }
 
 /**
- * An agreement's remaining term, in days rather than ticks (THR-1113).
- *
- * Ticks are an engine unit with no player-facing display anywhere else in the game, so `48 ticks`
- * fails Law 14 as squarely as it fails Law 13. The conversion is the game's own — `TICKS_PER_DAY`,
- * twelve — and the count is spelled out, so no numeral escapes.
- *
- * **Why a real unit rather than a band.** The Law 13 amendment of 2026-08-12 is explicit that a
- * word ladder is the wrong answer to *"how much?"* — Christian's verdict on `grew steadily` was
- * *"how can a player use that word to gage anything"*. `four days` is not an adverb: it is a
- * quantity in a unit the player already reasons in, which is what the amendment asks for and what
- * banding this to `brief` / `lasting` would have thrown away.
- *
- * Above the spelled-count ladder the reading steps up to weeks rather than growing a numeral, so
- * an authored term of any length still renders in words. The live corpus is 48/72/96 ticks.
+ * Re-exported (THR-1143). The ladder itself moved to `engine/aftermathWords` when
+ * the location-condition panel needed the same reading for a place's conditions —
+ * a second copy would have been two ladders for one quantity (UI Law 3). Callers
+ * and behaviour are unchanged; this export keeps the Codex's own tests and
+ * imports pointing where they already did.
  */
-export function durationLabel(ticks: number): string {
-  const days = Math.max(1, Math.round(ticks / TICKS_PER_DAY));
-  if (days <= 9) return `${countWord(days)} day${days === 1 ? '' : 's'}`;
-  const weeks = Math.max(1, Math.round(days / 7));
-  return `${countWord(weeks)} week${weeks === 1 ? '' : 's'}`;
-}
+export { durationLabel } from '../../engine/aftermathWords';
 
 // ─── Deduplication ───────────────────────────────────────────────
 

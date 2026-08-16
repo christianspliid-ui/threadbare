@@ -137,6 +137,8 @@ export type TraceCategory =
   | 'reputation_set_applied'
   | 'condition_applied'
   | 'condition_removed'
+  // Location conditions (THR-1143)
+  | 'location_condition_applied'
   | 'aftermath_target_invalid'
   // Nudge card dispatch (THR-885)
   | 'nudge_cost_charged'
@@ -507,6 +509,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'reputation_set_applied',
   'condition_applied',
   'condition_removed',
+  // Location conditions (THR-1143)
+  'location_condition_applied',
   'aftermath_target_invalid',
   // Nudge card dispatch (THR-885)
   'nudge_cost_charged',
@@ -1650,7 +1654,7 @@ export interface EncounterAftermathEffectTrace extends TraceBase {
   /** The entity this effect actually landed on (promoted from effectDetail for filter convenience). */
   effectiveTargetId?: string;
   /** Whether the actor fallback was used or a specific target was supplied. */
-  effectiveTargetKind?: 'agent' | 'faction' | 'sublocation' | 'actor_fallback';
+  effectiveTargetKind?: 'agent' | 'faction' | 'sublocation' | 'location' | 'actor_fallback';
 }
 
 /** Trace: encounter seed planted by aftermath reaction */
@@ -1794,7 +1798,7 @@ export interface AftermathTargetResolvedTrace extends TraceBase {
   effectIndex: number;
   effectKind: string;
   effectiveTargetId: string;
-  effectiveTargetKind: 'agent' | 'faction' | 'sublocation' | 'actor_fallback';
+  effectiveTargetKind: 'agent' | 'faction' | 'sublocation' | 'location' | 'actor_fallback';
 }
 
 /** Trace: a `$target` / `$cast:` / `role:` aftermath sentinel rebound (THR-695, Slice B). */
@@ -1911,7 +1915,7 @@ export interface ReputationSetAppliedTrace extends TraceBase {
 export interface ConditionAppliedTrace extends TraceBase {
   category: 'condition_applied';
   targetId: string;
-  targetKind: 'agent' | 'faction' | 'sublocation';
+  targetKind: 'agent' | 'faction' | 'sublocation' | 'location';
   conditionTraitId: string;
   durationTicks: number;
   intensity: number;
@@ -1923,9 +1927,31 @@ export interface ConditionAppliedTrace extends TraceBase {
 export interface ConditionRemovedTrace extends TraceBase {
   category: 'condition_removed';
   targetId: string;
-  targetKind: 'agent' | 'faction' | 'sublocation';
+  targetKind: 'agent' | 'faction' | 'sublocation' | 'location';
   conditionTraitId: string;
   removedCount: number;
+  encounterId: string;
+  reactionId: string;
+}
+
+/**
+ * Trace: a condition landed on a **place** (THR-1143).
+ *
+ * Emitted *in addition to* `condition_applied`, not instead of it — the generic
+ * trace keeps carrying every condition write so existing readers are untouched,
+ * and this one exists so "what is happening to the world's places" is one
+ * category filter rather than a predicate over a mixed stream. `carrierKind`
+ * distinguishes a hex from a settlement, which the node id alone does not.
+ */
+export interface LocationConditionAppliedTrace extends TraceBase {
+  category: 'location_condition_applied';
+  locationId: string;
+  locationName: string;
+  /** `hex` when the node carries terrain, else the location subtype, else 'location'. */
+  carrierKind: string;
+  conditionTemplateId: string;
+  /** Live decay counter written to the edge. 0 = indefinite (no `ticksRemaining` written). */
+  ticksRemaining: number;
   encounterId: string;
   reactionId: string;
 }
@@ -2236,6 +2262,7 @@ export type TraceEntry =
   | FactionReputationChangedTrace
   | ReputationSetAppliedTrace
   | ConditionAppliedTrace
+  | LocationConditionAppliedTrace
   | ConditionRemovedTrace
   | AftermathTargetInvalidTrace
   // Nudge card dispatch (THR-885)

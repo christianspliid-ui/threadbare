@@ -245,7 +245,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `coastline` (1) | `coastline.ts` | — |
 | `companions` (1) | `companions.ts` | `THR-1096` |
 | `complication` (2) | `complicationEffects.ts`, `complicationSelection.ts` | `THR-20` |
-| `condition` (2) | `conditionDecay.ts`, `conditionOverflow.ts` | — |
+| `condition` (2) | `conditionDecay.ts`, `conditionOverflow.ts` | `THR-1143`, `THR-761` |
 | `content-eval` (6) | `content-eval/collectAuthoredProse.ts`, `content-eval/detectors.ts`, `content-eval/proseQualityScore.ts`, `content-eval/registerCompliance.ts`, `content-eval/surfaceFragmentReport.ts`, `content-eval/unreachableActions.ts` | `THR-490`, `THR-472`, `THR-609`, `THR-573`, `THR-659`, `THR-501`, `THR-523` |
 | `contentcensus` (5) | `contentCensus/adapters.ts`, `contentCensus/constants.ts`, `contentCensus/index.ts`, `contentCensus/matrix.ts`, `contentCensus/types.ts` | — |
 | `contestation` (1) | `contestation.ts` | `Phase 3`, `THR-731` |
@@ -310,7 +310,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `mentorship` (1) | `mentorshipOutcomes.ts` | `THR-75` |
 | `modifiers` (1) | `modifiers.ts` | — |
 | `monster` (1) | `monsterFactionSeed.ts` | — |
-| `movement` (3) | `movementCandidates.ts`, `movementCost.ts`, `movementExecution.ts` | — |
+| `movement` (3) | `movementCandidates.ts`, `movementCost.ts`, `movementExecution.ts` | `THR-1143` |
 | `narrative` (2) | `narrative-constants.ts`, `narrative.ts` | — |
 | `notable` (1) | `notableAgendas.ts` | `THR-630`, `THR-225`, `THR-66` |
 | `notification` (3) | `notificationRouter.ts`, `notificationThreadingGate.ts`, `notificationVisibilityFilter.ts` | `THR-727`, `THR-666`, `THR-667` |

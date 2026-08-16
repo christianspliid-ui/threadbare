@@ -368,6 +368,13 @@ export type AftermathTarget =
   | { readonly kind: 'agent'; readonly id: string }
   | { readonly kind: 'faction'; readonly id: string }
   | { readonly kind: 'sublocation'; readonly id: string }
+  /**
+   * A place — hex, settlement or waypoint (THR-1143). All three are `location`
+   * nodes, so "the pass" and "the town" are the same target kind; `sublocation`
+   * stays a distinct member because it is resolved by a different sentinel rule
+   * (a location *inside* a location), not because it is a different node type.
+   */
+  | { readonly kind: 'location'; readonly id: string }
   | { readonly kind: 'actor_fallback' };
 
 export type EncounterAftermathReactionEffect =
@@ -551,6 +558,12 @@ export type EncounterAftermathReactionEffect =
     readonly targetAgentId?: string;
     readonly targetFactionId?: string;
     readonly targetSublocationId?: string;
+    /**
+     * Put the condition on a **place** (THR-1143) — a pass closed for the season,
+     * a town under a plague scare, a square under watch. Accepts scene sentinels
+     * (`$target` binds when the action targets a location).
+     */
+    readonly targetLocationId?: string;
     readonly when?: EffectPredicate;
   }
   | {
@@ -587,6 +600,8 @@ export type EncounterAftermathReactionEffect =
     readonly targetAgentId?: string;
     readonly targetFactionId?: string;
     readonly targetSublocationId?: string;
+    /** Lift a condition from a **place** (THR-1143) — the pass reopens early. */
+    readonly targetLocationId?: string;
     readonly when?: EffectPredicate;
   }
   | {
@@ -625,6 +640,11 @@ export type EncounterAftermathReactionEffect =
     readonly templateId: string;
     /** Who receives the condition. Defaults to action.actorId (same fallback as other effect kinds). */
     readonly targetAgentId?: string;
+    /**
+     * Put it on a **place** instead of a person (THR-1143) — the template-default
+     * duration lookup and stacking behave identically; only the carrier changes.
+     */
+    readonly targetLocationId?: string;
     /** Duration override in ticks. If omitted, uses the template's default from CONDITION_DURATIONS. */
     readonly durationOverride?: number;
     /** Number of stacks to apply. Defaults to CONDITION_ATTACHMENT_DEFAULT_STACK_COUNT (1). */

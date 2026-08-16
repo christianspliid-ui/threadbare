@@ -1378,9 +1378,9 @@ Supersedes `onFailureEffects`, a key the THR-101 tavern migration authored at fi
 | `hidden_mark` | Track discoverable secret on an agent | `category`, `severity`, `label`, `revealFamilies`, `targetAgentId?` |
 | `intelligence` | Grant knowledge to an agent | `category`, `label`, `detail`, `targetEntityId`, `reliability`, `targetAgentId?` |
 | `intel_referenced_prose` (THR-139) | Authored "the intel paid off" chronicle line — fires when actor holds a matching record; reliability band picks one of three prose variants; record is read, not consumed | `category`, `prose: { reliable, uncertain?, dubious? }`, `significance?`, `targetAgentId?` |
-| `apply_condition` | Attach a trait condition for N ticks (full target resolution: agent, faction, sublocation) | `conditionTraitId`, `durationTicks?`, `intensity?`, `targetAgentId?`, `targetFactionId?`, `targetSublocationId?` |
-| `remove_condition` | Remove a trait condition (oldest or all) | `conditionTraitId`, `removeAll?`, `targetAgentId?`, `targetFactionId?`, `targetSublocationId?` |
-| `condition_attachment` | Apply a condition trait by template ID; auto-looks up default duration; **triggers mid-encounter tier promotion when the template is the `wounded` condition** | `templateId` (e.g. `'trait.condition.wounded'`), `targetAgentId?`, `durationOverride?`, `stackCount?` |
+| `apply_condition` | Attach a trait condition for N ticks (full target resolution: agent, faction, sublocation, **location** — THR-1143) | `conditionTraitId`, `durationTicks?`, `intensity?`, `targetAgentId?`, `targetFactionId?`, `targetSublocationId?`, `targetLocationId?` |
+| `remove_condition` | Remove a trait condition (oldest or all) | `conditionTraitId`, `removeAll?`, `targetAgentId?`, `targetFactionId?`, `targetSublocationId?`, `targetLocationId?` |
+| `condition_attachment` | Apply a condition trait by template ID; auto-looks up default duration; **triggers mid-encounter tier promotion when the template is the `wounded` condition** (actor only — a wound on a *place* never promotes) | `templateId` (e.g. `'trait.condition.wounded'`), `targetAgentId?`, `targetLocationId?`, `durationOverride?`, `stackCount?` |
 | `clearance_gate_tag` | Advance gate progression | `tag` |
 | `recent_event` | Emit narrative event (optionally fan out to witnesses) | `message`, `significance`, `witnessAgentIds?[]` |
 | `spawn_artifact` | Create an artifact graph node; add possesses/bonded_to/contains edges; optional chronicle event | `artifactName`, `artifactSubtype`, `possessedByAgentId?`, `bondedToAgentId?`, `targetLocationId?`, `chronicleEntry?` |
@@ -1426,7 +1426,23 @@ The executor (a) resolves `templateId` from `condition-trait-content`, (b) looks
 
 **Durations expire on `ticksRemaining`, not `durationTicks` (THR-761, fixed 2026-07-26).** `decayConditions` (`src/engine/conditionDecay.ts`) is the only tick-driven expiry path and it counts down the `has_trait` edge property **`ticksRemaining`**. Both `apply_condition` and `condition_attachment` now write it alongside `durationTicks`; before this they wrote only `durationTicks`, which has no production reader, so every authored duration was decorative and the condition was permanent. As a content author you do not need to do anything — author `durationTicks` (or let `CONDITION_DURATIONS` supply the default) and expiry follows. If you add a **new** site that mints a `has_trait` edge meant to expire, write `ticksRemaining`: the two fields are kept distinct on purpose (`ticksRemaining` = live counter, `durationTicks` = authored total kept as provenance and as the duration-UI denominator), and a duration of `0` means indefinite, expressed by omitting `ticksRemaining` entirely.
 
-**Verification:** `src/engine/__tests__/conditionOverflow.test.ts` (overflow pipeline), `src/engine/__tests__/conditionAttachment.test.ts` (aftermath effect), `src/engine/__tests__/conditionExpiry.test.ts` (expiry through the real decay loop — asserts the condition is *gone*, not merely that the edge was written).
+**A condition can sit on a *place*, not only a person (THR-1143, 2026-08-16).** Add `targetLocationId` to any of the three condition effects and the `has_trait` edge lands on a location node — a pass closed for the season, a town under a plague scare, a square under watch. This is a **widening, not a new effect kind**: same edge, same `ticksRemaining` counter, same single `decayConditions` expiry path, so nothing you know about authoring a condition changes except who carries it. `$target` binds the field when the action targeted a location. Sublocations keep `targetSublocationId` — `targetLocationId` will not bind a node with a `parentLocationId`, so a tavern inside a keep never resolves to both.
+
+Starter set (`CONDITION_TRAIT_DEFINITIONS`, seeded at world init like the personal ones):
+
+| Id | Default duration | Movement tax | Notes |
+|---|---|---|---|
+| `trait.condition.location.pass_closed` | 360 (a season) | ×8 (`LOCATION_IMPASSABLE_MULTIPLIER`) | A **soft** block by design — a hard one strands agents whose only road home runs through it (NFP #4) |
+| `trait.condition.location.festival` | 36 | ×1.2 | Crowds slow the streets; gating flavour |
+| `trait.condition.location.plague_scare` | 168 | ×1.6 | Travellers route around it |
+| `trait.condition.location.under_watch` | 84 | *none* | Deliberate: being watched changes what you can *do* in a place, not how long it takes to walk in |
+| `trait.condition.location.harvest_blight` | 480 | ×1.6 | Pairs with the existing blight graph op |
+
+**Two systems read it, which is the point** (UI Law 56 at world scope — a write nothing consumes is hollowness one level down). First, **template gating**: `requiredTargetTraits` already matched a location target's `has_trait` edges and now has content to match, so a festival-gated template becomes eligible while the festival runs and stops when it lifts. Second, **movement cost**: `LOCATION_CONDITION_MOVEMENT_TAX` (`src/data/condition-trait-content.ts`) maps a condition id to a multiplier on entering that place, multipliers compound, and the tax lifts by itself when the edge expires because the tax *reads the edge* — there is no second lifecycle to keep in step. A condition absent from that map costs nothing to travel through; that is the designed default, not an omission, because most of what can happen to a place is not about the road. Tuning travel feel is editing that one table (NFP #1).
+
+Player-facing, the location detail panel (`LocationProfileModal`) lists what a place is carrying and for how much longer, in words. **Authoring caution:** the panel renders one row per condition, so a place is not a dumping ground — if an ending wants ambient encounter *bias* rather than a readable state, emit an omen instead; two bias channels would drift.
+
+**Verification:** `src/engine/__tests__/conditionOverflow.test.ts` (overflow pipeline), `src/engine/__tests__/conditionAttachment.test.ts` (aftermath effect), `src/engine/__tests__/conditionExpiry.test.ts` (expiry through the real decay loop — asserts the condition is *gone*, not merely that the edge was written), `src/engine/__tests__/locationConditions.test.ts` (places: write, sentinel binding, expiry, and both readers falsified in each direction).
 
 ---
 

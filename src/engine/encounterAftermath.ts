@@ -272,6 +272,33 @@ function emitCompulsionAftermathTrace(
   emitTrace(entry as Parameters<typeof emitTrace>[0]);
 }
 
+/**
+ * THR-1143 — is this node a place at the hex/settlement/waypoint tier?
+ *
+ * Read off the graph rather than off `target.kind`, because the carrier is what
+ * decides whether the movement-tax reader will ever see this condition, and an
+ * effect can reach a location node through the actor fallback as well as through
+ * `targetLocationId`. Fail-soft: an unresolvable id is simply not a location.
+ */
+function isLocationCarrier(graph: WorldGraph, nodeId: string): boolean {
+  const node = graph.getNode(nodeId);
+  if (!node) return false;
+  return (node.type as string) === 'location'
+    && node.properties?.parentLocationId === undefined;
+}
+
+/**
+ * Name the tier of a place for the `location_condition_applied` trace: a hex
+ * carries `terrain`, a settlement carries a `locationSubtype`, and anything else
+ * reads as a bare location. Presentation-free — the trace is a designer surface.
+ */
+function locationCarrierKind(graph: WorldGraph, nodeId: string): string {
+  const props = graph.getNode(nodeId)?.properties ?? {};
+  if (typeof props.terrain === 'string' && props.terrain) return 'hex';
+  if (typeof props.locationSubtype === 'string' && props.locationSubtype) return props.locationSubtype;
+  return 'location';
+}
+
 export function resolveAftermathTarget(
   effect: EncounterAftermathReactionEffect,
   action: UnifiedAction | undefined,
@@ -280,11 +307,15 @@ export function resolveAftermathTarget(
     targetAgentId: string;
     targetFactionId: string;
     targetSublocationId: string;
+    targetLocationId: string;
     actorId: string; // legacy field on reputation_score / reputation_tally
   }>;
   if (e.targetAgentId) return { kind: 'agent', id: e.targetAgentId };
   if (e.targetFactionId) return { kind: 'faction', id: e.targetFactionId };
   if (e.targetSublocationId) return { kind: 'sublocation', id: e.targetSublocationId };
+  // THR-1143 — a place. Ranked *below* sublocation deliberately: a sublocation is
+  // also a location node, so an effect naming both means the more specific one.
+  if (e.targetLocationId) return { kind: 'location', id: e.targetLocationId };
   if (e.actorId) return { kind: 'agent', id: e.actorId }; // legacy fallback
   if (action?.actorId) return { kind: 'agent', id: action.actorId };
   return { kind: 'actor_fallback' };
@@ -612,6 +643,12 @@ const SCENE_SENTINEL_FIELDS = {
   counterpartyId: 'agent',
   targetFactionId: 'faction',
   targetSublocationId: 'sublocation',
+  // THR-1143 — a place. `$target` binds when the action targets a location, which
+  // is how "the pass you just closed" reaches the condition without the author
+  // knowing the node id. Registered here rather than handled in the three
+  // condition branches so location targeting composes with every future effect
+  // kind that grows the field, the way the other four do.
+  targetLocationId: 'location',
 } as const;
 
 type SceneSentinelField = keyof typeof SCENE_SENTINEL_FIELDS;
@@ -620,7 +657,7 @@ type SceneSentinelField = keyof typeof SCENE_SENTINEL_FIELDS;
 function nodeMatchesSceneField(
   graph: WorldGraph,
   nodeId: string,
-  kind: 'agent' | 'faction' | 'sublocation',
+  kind: 'agent' | 'faction' | 'sublocation' | 'location',
 ): boolean {
   const node = graph.getNode(nodeId);
   if (!node) return false;
@@ -638,6 +675,12 @@ function nodeMatchesSceneField(
     case 'sublocation':
       return nodeType === 'sublocation'
         || (nodeType === 'location' && node.properties?.parentLocationId !== undefined);
+    case 'location':
+      // A place at the hex/settlement/waypoint tier — deliberately *excluding*
+      // sublocations, which have their own field. A sublocation is a location node
+      // with a `parentLocationId`; accepting it here would make `$target` bind the
+      // same node to two fields with different tax and gating semantics.
+      return nodeType === 'location' && node.properties?.parentLocationId === undefined;
   }
 }
 
@@ -877,15 +920,15 @@ export function applyEncounterAftermathReaction(
     const target = resolveAftermathTarget(effect, action);
 
     // Check for ambiguous multi-target specification
-    const e = effect as Partial<{ targetAgentId: string; targetFactionId: string; targetSublocationId: string }>;
-    const targetFieldCount = [e.targetAgentId, e.targetFactionId, e.targetSublocationId].filter(Boolean).length;
+    const e = effect as Partial<{ targetAgentId: string; targetFactionId: string; targetSublocationId: string; targetLocationId: string }>;
+    const targetFieldCount = [e.targetAgentId, e.targetFactionId, e.targetSublocationId, e.targetLocationId].filter(Boolean).length;
     if (targetFieldCount > 1) {
       emitTrace({
         tick, category: 'aftermath_target_invalid',
         agentId: actorAgentId, encounterId, actionId: actionId, reactionId: reaction.id,
         effectIndex: i, effectKind: effect.kind,
         reason: 'multiple_targets_specified',
-        summary: `aftermath[${i}] ${effect.kind}: multiple target fields set — using priority (agent>faction>sublocation)`,
+        summary: `aftermath[${i}] ${effect.kind}: multiple target fields set — using priority (agent>faction>sublocation>location)`,
       });
     }
 
@@ -967,7 +1010,7 @@ export function applyEncounterAftermathReaction(
             encounterId, actionId, reactionId: reaction.id, effectIndex: i,
             effectKind: 'reputation_score', effectDetail: { targetId: resolvedId, delta: effect.delta },
             success: false, failReason: 'target_node_missing',
-            effectiveTargetId: resolvedId, effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'actor_fallback',
+            effectiveTargetId: resolvedId, effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'location' | 'actor_fallback',
             summary: `reputation_score[${i}] skipped: target node not found (${resolvedId})`,
           });
           break;
@@ -992,7 +1035,7 @@ export function applyEncounterAftermathReaction(
           effectKind: 'reputation_score',
           effectDetail: { targetId: resolvedId, delta: effect.delta, previous: current, result },
           success: true,
-          effectiveTargetId: resolvedId, effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'actor_fallback',
+          effectiveTargetId: resolvedId, effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'location' | 'actor_fallback',
           summary: `reputation_score[${i}]: ${resolvedId} ${effect.delta >= 0 ? '+' : ''}${effect.delta.toFixed(2)}`,
         });
         break;
@@ -1026,7 +1069,7 @@ export function applyEncounterAftermathReaction(
             encounterId, actionId, reactionId: reaction.id, effectIndex: i,
             effectKind: 'reputation_tally', effectDetail: { targetId: resolvedId, key: effect.key, delta: effect.delta },
             success: false, failReason: 'target_node_missing',
-            effectiveTargetId: resolvedId, effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'actor_fallback',
+            effectiveTargetId: resolvedId, effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'location' | 'actor_fallback',
             summary: `reputation_tally[${i}] skipped: target node not found (${resolvedId})`,
           });
           break;
@@ -1073,7 +1116,7 @@ export function applyEncounterAftermathReaction(
           effectKind: 'reputation_tally',
           effectDetail: { targetId: resolvedId, key: effect.key, delta: effect.delta, newTally: tallies[effect.key] },
           success: true,
-          effectiveTargetId: resolvedId, effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'actor_fallback',
+          effectiveTargetId: resolvedId, effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'location' | 'actor_fallback',
           summary: `reputation_tally[${i}]: ${resolvedId} [${effect.key}] ${effect.delta >= 0 ? '+' : ''}${effect.delta}`,
         });
         break;
@@ -1184,7 +1227,7 @@ export function applyEncounterAftermathReaction(
             encounterId, actionId, reactionId: reaction.id, effectIndex: i,
             effectKind: 'reputation_set', effectDetail: { targetId: resolvedId, value: effect.value },
             success: false, failReason: 'target_node_missing',
-            effectiveTargetId: resolvedId, effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'actor_fallback',
+            effectiveTargetId: resolvedId, effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'location' | 'actor_fallback',
             summary: `reputation_set[${i}] skipped: node not found (${resolvedId})`,
           });
           break;
@@ -1216,7 +1259,7 @@ export function applyEncounterAftermathReaction(
           effectKind: 'reputation_set',
           effectDetail: { targetId: resolvedId, value: clamped, previous },
           success: true,
-          effectiveTargetId: resolvedId, effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'actor_fallback',
+          effectiveTargetId: resolvedId, effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'location' | 'actor_fallback',
           summary: `reputation_set[${i}]: ${resolvedId} → ${clamped.toFixed(2)}`,
         });
         break;
@@ -1396,7 +1439,7 @@ export function applyEncounterAftermathReaction(
           effectKind: 'quintessence_shift',
           effectDetail: { targetId: resolvedId, delta: effect.delta },
           success: true,
-          effectiveTargetId: resolvedId, effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'actor_fallback',
+          effectiveTargetId: resolvedId, effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'location' | 'actor_fallback',
           summary: `quintessence_shift[${i}]: ${resolvedId} ${effect.delta >= 0 ? '+' : ''}${effect.delta.toFixed(2)}`,
         });
         break;
@@ -1700,7 +1743,7 @@ export function applyEncounterAftermathReaction(
             effectDetail: { targetId: resolvedId, companionTemplateId: effect.companionTemplateId },
             success: false, failReason: 'companion_grant_refused',
             effectiveTargetId: resolvedId,
-            effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'actor_fallback',
+            effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'location' | 'actor_fallback',
             summary: `grant_companion[${i}] skipped: template unknown, unique already instanced, or bearer missing (${effect.companionTemplateId})`,
           } as unknown as TraceEntry);
           break;
@@ -1718,7 +1761,7 @@ export function applyEncounterAftermathReaction(
           },
           success: true,
           effectiveTargetId: resolvedId,
-          effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'actor_fallback',
+          effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'location' | 'actor_fallback',
           summary: `grant_companion[${i}]: ${minted.name} (${minted.template.profession}) joins ${resolvedId}`,
         } as unknown as TraceEntry);
         break;
@@ -1747,7 +1790,7 @@ export function applyEncounterAftermathReaction(
             effectDetail: { targetId: resolvedId, companionTemplateId: effect.companionTemplateId },
             success: false, failReason: 'companion_not_held',
             effectiveTargetId: resolvedId,
-            effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'actor_fallback',
+            effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'location' | 'actor_fallback',
             summary: `remove_companion[${i}] skipped: bearer has no ${effect.companionTemplateId}`,
           } as unknown as TraceEntry);
           break;
@@ -1766,7 +1809,7 @@ export function applyEncounterAftermathReaction(
           },
           success: true,
           effectiveTargetId: resolvedId,
-          effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'actor_fallback',
+          effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'location' | 'actor_fallback',
           summary: `remove_companion[${i}]: ${gone?.companionName ?? held.name} leaves ${resolvedId} (${effect.reason ?? 'story'})`,
         } as unknown as TraceEntry);
         break;
@@ -1806,7 +1849,7 @@ export function applyEncounterAftermathReaction(
             encounterId, actionId, reactionId: reaction.id, effectIndex: i,
             effectKind: 'apply_condition', effectDetail: { targetId: resolvedId, conditionTraitId: effect.conditionTraitId },
             success: false, failReason: 'target_node_missing',
-            effectiveTargetId: resolvedId, effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'actor_fallback',
+            effectiveTargetId: resolvedId, effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'location' | 'actor_fallback',
             summary: `apply_condition[${i}] skipped: target node not found (${resolvedId})`,
           });
           break;
@@ -1824,7 +1867,7 @@ export function applyEncounterAftermathReaction(
             encounterId, actionId, reactionId: reaction.id, effectIndex: i,
             effectKind: 'apply_condition', effectDetail: { targetId: resolvedId, conditionTraitId: effect.conditionTraitId },
             success: false, failReason: 'condition_template_missing',
-            effectiveTargetId: resolvedId, effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'actor_fallback',
+            effectiveTargetId: resolvedId, effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'location' | 'actor_fallback',
             summary: `apply_condition[${i}] skipped: condition node not found (${effect.conditionTraitId})`,
           });
           break;
@@ -1853,7 +1896,8 @@ export function applyEncounterAftermathReaction(
           },
         });
         mutationSummary.touchedStructure = true;
-        const condKind = (target.kind === 'agent' || target.kind === 'faction' || target.kind === 'sublocation')
+        const condKind = (target.kind === 'agent' || target.kind === 'faction'
+          || target.kind === 'sublocation' || target.kind === 'location')
           ? target.kind
           : 'agent' as const;
         emitTrace({
@@ -1863,13 +1907,24 @@ export function applyEncounterAftermathReaction(
           encounterId, reactionId: reaction.id,
           summary: `condition_applied[${i}]: ${effect.conditionTraitId} → ${resolvedId} (intensity=${intensity}, duration=${durationTicks || 'indefinite'})`,
         });
+        if (isLocationCarrier(state.graph, resolvedId)) {
+          emitTrace({
+            tick, category: 'location_condition_applied', agentId: actorAgentId,
+            locationId: resolvedId, locationName: targetNode.name,
+            carrierKind: locationCarrierKind(state.graph, resolvedId),
+            conditionTemplateId: effect.conditionTraitId,
+            ticksRemaining: durationTicks > 0 ? durationTicks : 0,
+            encounterId, reactionId: reaction.id,
+            summary: `location_condition_applied[${i}]: ${effect.conditionTraitId} → ${targetNode.name} (${durationTicks > 0 ? `${durationTicks}t` : 'indefinite'})`,
+          });
+        }
         emitTrace({
           tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
           encounterId, actionId, reactionId: reaction.id, effectIndex: i,
           effectKind: 'apply_condition',
           effectDetail: { targetId: resolvedId, conditionTraitId: effect.conditionTraitId, intensity, durationTicks },
           success: true,
-          effectiveTargetId: resolvedId, effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'actor_fallback',
+          effectiveTargetId: resolvedId, effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'location' | 'actor_fallback',
           summary: `apply_condition[${i}]: ${effect.conditionTraitId} → ${resolvedId}`,
         });
         break;
@@ -1912,7 +1967,8 @@ export function applyEncounterAftermathReaction(
           if (removedCount > 0) mutationSummary.touchedStructure = true;
         }
 
-        const removKind = (target.kind === 'agent' || target.kind === 'faction' || target.kind === 'sublocation')
+        const removKind = (target.kind === 'agent' || target.kind === 'faction'
+          || target.kind === 'sublocation' || target.kind === 'location')
           ? target.kind
           : 'agent' as const;
         emitTrace({
@@ -1928,7 +1984,7 @@ export function applyEncounterAftermathReaction(
           effectKind: 'remove_condition',
           effectDetail: { targetId: resolvedId, conditionTraitId: effect.conditionTraitId, removedCount },
           success: true,
-          effectiveTargetId: resolvedId, effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'actor_fallback',
+          effectiveTargetId: resolvedId, effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'location' | 'actor_fallback',
           summary: `remove_condition[${i}]: removed ${removedCount} edge(s) of ${effect.conditionTraitId} from ${resolvedId}`,
         });
         break;
@@ -1998,7 +2054,7 @@ export function applyEncounterAftermathReaction(
           success: assignment.assigned,
           ...(assignment.assigned ? {} : { failReason: assignment.reason }),
           effectiveTargetId: resolvedId,
-          effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'actor_fallback',
+          effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'location' | 'actor_fallback',
           summary: assignment.assigned
             ? `assign_ambition[${i}]: ${effect.templateId} → ${resolvedId} (${assignment.priority})`
             : `assign_ambition[${i}] skipped: ${assignment.reason}`,
@@ -2040,7 +2096,7 @@ export function applyEncounterAftermathReaction(
             encounterId, actionId, reactionId: reaction.id, effectIndex: i,
             effectKind: 'condition_attachment', effectDetail: { targetId: resolvedId, templateId: effect.templateId },
             success: false, failReason: 'target_node_missing',
-            effectiveTargetId: resolvedId, effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'actor_fallback',
+            effectiveTargetId: resolvedId, effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'location' | 'actor_fallback',
             summary: `condition_attachment[${i}] skipped: target node not found (${resolvedId})`,
           });
           break;
@@ -2058,7 +2114,7 @@ export function applyEncounterAftermathReaction(
             encounterId, actionId, reactionId: reaction.id, effectIndex: i,
             effectKind: 'condition_attachment', effectDetail: { targetId: resolvedId, templateId: effect.templateId },
             success: false, failReason: 'template_missing',
-            effectiveTargetId: resolvedId, effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'actor_fallback',
+            effectiveTargetId: resolvedId, effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'location' | 'actor_fallback',
             summary: `condition_attachment[${i}] skipped: trait template not found (${effect.templateId})`,
           });
           break;
@@ -2072,7 +2128,7 @@ export function applyEncounterAftermathReaction(
                 encounterId, actionId, reactionId: reaction.id, effectIndex: i,
                 effectKind: 'condition_attachment', effectDetail: { warn: 'duration_override_invalid', templateId: effect.templateId },
                 success: true,
-                effectiveTargetId: resolvedId, effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'actor_fallback',
+                effectiveTargetId: resolvedId, effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'location' | 'actor_fallback',
                 summary: `condition_attachment[${i}]: duration_override_invalid — falling back to template default`,
               });
               return CONDITION_DURATIONS[effect.templateId] ?? CONDITION_DEFAULT_DURATION_TICKS;
@@ -2106,11 +2162,15 @@ export function applyEncounterAftermathReaction(
         mutationSummary.touchedStructure = true;
         // Set woundApplied when wound condition targets the actor (drives mid-encounter promotion)
         const caIsWound = effect.templateId === 'trait.condition.wounded';
-        const caTargetsActor = !effect.targetAgentId || effect.targetAgentId === actorAgentId;
+        // THR-1143: `resolvedId`, not the raw field — an effect naming a place leaves
+        // `targetAgentId` undefined, and the old `!effect.targetAgentId` test read that
+        // absence as "the actor", promoting the encounter tier for a wound nobody took.
+        const caTargetsActor = !!actorAgentId && resolvedId === actorAgentId;
         if (caIsWound && caTargetsActor) {
           mutationSummary.woundApplied = true;
         }
-        const caKind = (target.kind === 'agent' || target.kind === 'faction' || target.kind === 'sublocation')
+        const caKind = (target.kind === 'agent' || target.kind === 'faction'
+          || target.kind === 'sublocation' || target.kind === 'location')
           ? target.kind
           : 'agent' as const;
         emitTrace({
@@ -2120,13 +2180,24 @@ export function applyEncounterAftermathReaction(
           encounterId, reactionId: reaction.id,
           summary: `condition_attachment[${i}]: ${effect.templateId} → ${resolvedId} ×${caStackCount} (duration=${caDuration || 'indefinite'})`,
         });
+        if (isLocationCarrier(state.graph, resolvedId)) {
+          emitTrace({
+            tick, category: 'location_condition_applied', agentId: actorAgentId,
+            locationId: resolvedId, locationName: caTargetNode.name,
+            carrierKind: locationCarrierKind(state.graph, resolvedId),
+            conditionTemplateId: effect.templateId,
+            ticksRemaining: caDuration > 0 ? caDuration : 0,
+            encounterId, reactionId: reaction.id,
+            summary: `location_condition_applied[${i}]: ${effect.templateId} → ${caTargetNode.name} (${caDuration > 0 ? `${caDuration}t` : 'indefinite'})`,
+          });
+        }
         emitTrace({
           tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
           encounterId, actionId, reactionId: reaction.id, effectIndex: i,
           effectKind: 'condition_attachment',
           effectDetail: { targetId: resolvedId, templateId: effect.templateId, stackCount: caStackCount, durationTicks: caDuration, edgeIds: caEdgeIds, woundApplied: mutationSummary.woundApplied },
           success: true,
-          effectiveTargetId: resolvedId, effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'actor_fallback',
+          effectiveTargetId: resolvedId, effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'location' | 'actor_fallback',
           summary: `condition_attachment[${i}]: ${effect.templateId} → ${resolvedId} ×${caStackCount}${caIsWound && caTargetsActor ? ' [woundApplied]' : ''}`,
         });
         break;
@@ -2165,7 +2236,7 @@ export function applyEncounterAftermathReaction(
               success: false,
               failReason: agCounterpartyId ? 'counterparty_unresolved' : 'counterparty_missing',
               effectiveTargetId: agRecipientId,
-              effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'actor_fallback',
+              effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'location' | 'actor_fallback',
               summary: `attachment_grant[${i}] skipped: agreement '${effect.templateId}' needs a counterparty that resolves (${agCounterpartyId ?? 'none given'})`,
             } as unknown as TraceEntry);
             break;
@@ -2188,7 +2259,7 @@ export function applyEncounterAftermathReaction(
               effectDetail: { templateId: effect.templateId, targetId: agRecipientId, attachmentCategory: 'agreement' },
               success: false, failReason: 'recipient_missing',
               effectiveTargetId: agRecipientId,
-              effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'actor_fallback',
+              effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'location' | 'actor_fallback',
               summary: `attachment_grant[${i}] skipped: recipient node not found (${agRecipientId})`,
             } as unknown as TraceEntry);
             break;
@@ -2211,7 +2282,7 @@ export function applyEncounterAftermathReaction(
             },
             success: true,
             effectiveTargetId: agRecipientId,
-            effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'actor_fallback',
+            effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'location' | 'actor_fallback',
             summary: `attachment_grant[${i}]: agreement '${agAgreement.displayName}' binds ${agRecipientId} to ${agCounterpartyId}`,
           } as unknown as TraceEntry);
           break;
@@ -2229,7 +2300,7 @@ export function applyEncounterAftermathReaction(
             effectDetail: { templateId: effect.templateId, targetId: agRecipientId },
             success: false, failReason: 'template_or_recipient_missing',
             effectiveTargetId: agRecipientId,
-            effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'actor_fallback',
+            effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'location' | 'actor_fallback',
             summary: `attachment_grant[${i}] skipped: no template or recipient for '${effect.templateId}'`,
           } as unknown as TraceEntry);
           break;
@@ -2264,7 +2335,7 @@ export function applyEncounterAftermathReaction(
           },
           success: true,
           effectiveTargetId: agRecipientId,
-          effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'actor_fallback',
+          effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'location' | 'actor_fallback',
           summary: `attachment_grant[${i}]: ${agInstance.category} '${agInstance.displayName}' → ${agRecipientId}`,
         } as unknown as TraceEntry);
         break;
@@ -4140,7 +4211,7 @@ export function applyEncounterAftermathReaction(
             effectDetail: { targetAgentId: resolvedId, mode, ...detail },
             success: false, failReason: reason,
             effectiveTargetId: resolvedId ?? '',
-            effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'actor_fallback',
+            effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'location' | 'actor_fallback',
             summary: `agent_relocation[${i}] skipped: ${reason}`,
           });
         };
@@ -4225,7 +4296,7 @@ export function applyEncounterAftermathReaction(
           },
           success: true,
           effectiveTargetId: resolvedId,
-          effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'actor_fallback',
+          effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'location' | 'actor_fallback',
           summary: `agent_relocation[${i}]: ${resolvedId} → ${destination.label} (${mode})`,
         });
         break;
