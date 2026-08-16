@@ -9,6 +9,7 @@ import {
 import { SectionHeading } from '../../shared/SectionHeading';
 import { Tooltip } from '../../shared/Tooltip';
 import { getSphereColor } from '../../../data/sphereIcons';
+import { getReputationWord } from '../../../data/domain-words';
 import { CORE_CONTINUA, CORE_NEUTRAL } from '../../../types/coreRegistry';
 import { CANONICAL_AXES, signedToCanonical01 } from '../../../types/axisRegistry';
 
@@ -313,8 +314,8 @@ export function OverviewTab({ card, profile: _profile, knowledge, onOpenEntity }
                     }}
                   />
                 </div>
-                <span className="text-xs tabular-nums" style={{ color: 'var(--text-tertiary)' }}>
-                  {Math.round(card.factionReputation * 100)}%
+                <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+                  {getReputationWord(card.factionReputation)}
                 </span>
               </div>
             )}
