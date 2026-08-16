@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-08-17 00:58 local (22:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-08-17 01:55 local (23:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -8,7 +8,7 @@
 - **[The Unsafe Bridge](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge)**
 - **[The Grateful Kin](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin)**
 
-The site is still serving `c659de4d` — the same build as last hour, carrying every fix from your morning play session. Nothing new landed that changes either screen.
+The site is still serving `c659de4d`, the same build as the last several hours — it carries every fix from your morning play session. Nothing has landed since that changes either screen.
 
 What's owed is the **sample verdict** on those two (your ruling 6), plus the four [THR-907](https://linear.app/threadbare/issue/THR-907/slice-verdict-session-christian-rules-on-prose-firing-ui-and-game) rulings — prose, firing rhythm, UI, and whether it's fun. One sitting produces both. Your verdict is what the next nine encounters get written against, and closing THR-907 closes the [encounter experience map](https://linear.app/threadbare/issue/THR-902/encounter-experience-redesign-vertical-slice-wayfinder-map).
 
@@ -24,25 +24,22 @@ What's owed is the **sample verdict** on those two (your ruling 6), plus the fou
 
 ## Queue
 
-**Read live from Linear this hour.** Last hour's brief carried a 27-minute-old copy because the API was returning 503; that has cleared, and the counts below are current.
+**Read live from Linear this hour. Healthy — 2 Ready for Dev, 2 In Dev.**
 
-**Healthy — 3 Ready for Dev, 2 of them claimable by a routine:**
-
-- **[THR-1144](https://linear.app/threadbare/issue/THR-1144/palette-primitive-membership-change-join-leave-and-rank-in-a-faction)** (High) — rung 4 of your palette ladder: one person joins, leaves, or is promoted in a faction. Promoted 23:29, not yet claimed.
-- **[THR-1149](https://linear.app/threadbare/issue/THR-1149/character-sheet-faction-name-is-plain-text-not-clickable-no-tooltip)** (Medium) — the Faction name on the character sheet is dead plain text, no link and no tooltip.
+- **[THR-1149](https://linear.app/threadbare/issue/THR-1149/character-sheet-faction-name-is-plain-text-not-clickable-no-tooltip)** (Medium) — the Faction name on the character sheet is dead plain text, no link and no tooltip. The one item a routine can pick up next.
 - [THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server) (Low) — the attended screenshot sweep, an ask above and structurally not claimable by a routine.
 
-Rungs 1–3 of the ladder are shipped and live. Two rungs sit behind THR-1144: the [tag-filtered random reward](https://linear.app/threadbare/issue/THR-1146/palette-primitive-reward-draw-tag-filtered-random-item-as-a) and the [consequence draw](https://linear.app/threadbare/issue/THR-1145/consequence-draw-reach-weighted-primitive-tables-for-the-encounter), each waiting on the one ahead. Nothing for you here.
+**Rung 4 of your palette ladder went into the build this hour.** [THR-1144](https://linear.app/threadbare/issue/THR-1144/palette-primitive-membership-change-join-leave-and-rank-in-a-faction) — one person joins, leaves, or is promoted in a faction — was claimed and is now in flight as [PR #1512](https://github.com/christianspliid-ui/threadbare/pull/1512). It is not merging yet; see Health. Two rungs sit behind it: the [tag-filtered random reward](https://linear.app/threadbare/issue/THR-1146/palette-primitive-reward-draw-tag-filtered-random-item-as-a) and the [consequence draw](https://linear.app/threadbare/issue/THR-1145/consequence-draw-reach-weighted-primitive-tables-for-the-encounter), each waiting on the one ahead. Nothing for you here.
 
-**One parked In Dev:** THR-1130, waiting on the verdict at the top of this brief. Nothing in flight on it.
-
-**In flight:** nothing. No open PRs.
+**One parked In Dev:** [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to), waiting on the verdict at the top of this brief. Nothing in flight on it.
 
 ## Health
 
-**All green.** Site serving the current build, all 9 lanes on schedule, background jobs healthy, no PR waiting to merge, reaper ran 18 minutes ago, home tree clean on `main` and 0 behind.
+**One item, and it is an agent's to fix, not yours.**
 
-**Last hour's one item resolved itself.** Linear's API was returning 503 to this lane across seven consecutive calls; it is answering normally again this run, so the Queue above is live rather than inherited. No action needed.
+- **[PR #1512](https://github.com/christianspliid-ui/threadbare/pull/1512) (THR-1144, rung 4 of the palette ladder) is failing a required check.** Auto-merge is armed, so the PR reads as shipped everywhere except the check rollup — it will sit there indefinitely until someone reads the failing check and pushes a fix. It is 18 minutes old and the next pickup run inherits it. No action from you.
+
+Otherwise green: site serving the current build, all 9 lanes on schedule, background jobs healthy, reaper ran 15 minutes ago, home tree clean on `main` and 0 behind.
 
 Two visibility lines, no action:
 
