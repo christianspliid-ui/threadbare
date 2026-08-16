@@ -663,16 +663,21 @@ describe('unifiedActionResolution', () => {
     // only the absence would pass just as well if the tally had stopped
     // moving, which is the change the ruling explicitly did *not* ask for.
     it('moves a reputation tally without reporting it to the player', () => {
+      // Hoisted rather than read back off `template.steps[0].onSuccess`: that
+      // access is the `ActionStepOrBranch` narrowing error this file already
+      // carries four baselined instances of, and a new test has no reason to
+      // add a fifth.
+      const onSuccess = [{
+        op: 'update_node' as const,
+        nodeId: 'actor-1',
+        changes: { reputationTallies: { 'iron.positive': 3 } },
+      }];
       const template = make1StepTemplate({
         steps: [{
           reach: 'iron',
           duration: { min: 2, max: 2 },
           difficulty: 0.3,
-          onSuccess: [{
-            op: 'update_node',
-            nodeId: 'actor-1',
-            changes: { reputationTallies: { 'iron.positive': 3 } },
-          }],
+          onSuccess,
           onFailure: [],
           failBehavior: 'fail_action',
         }],
@@ -687,8 +692,7 @@ describe('unifiedActionResolution', () => {
       });
 
       const { updatedAction } = executeStepResult(
-        action, template, 'success',
-        template.steps[0].onSuccess, state, fixedRng, 10,
+        action, template, 'success', onSuccess, state, fixedRng, 10,
       );
 
       // The mutation is untouched — the world still remembers.
