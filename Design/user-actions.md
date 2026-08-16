@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-16 06:53 local (2026-08-16 04:53 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-16 07:55 local (2026-08-16 05:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -17,9 +17,7 @@ Chosen because they are the two your own [THR-974](https://linear.app/threadbare
 
 ### 2. Charter batch 2 — [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to)
 
-Parked on you since 2026-08-15 21:16Z: *"Parked here for your approval — ruling 2 says a batch does not run until you approve its brief."* Your ruling put the charter in your hands, so no lane can take it. Best done straight after ask 1, so your read of Batch 1 shapes the next brief.
-
-Two things to answer, both with a recommendation already on the ticket:
+Parked on you since 2026-08-15 21:16Z: *"a batch does not run until you approve its brief"* (your ruling 2). Best done straight after ask 1, so your read of Batch 1 shapes the next brief. Two things to answer, both with a recommendation already on the ticket:
 
 - **The batch itself.** A brief for the camp six is committed ([`2026-08-15-retrofit-batch-1-brief.md`](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/2026-08-15-retrofit-batch-1-brief.md)) — Sharpen Blades, Ward the Camp, Offer a Small Prayer, Rest and Reflect, Tend to Wounds, Scout the Perimeter. Batch 1 ran the slice six instead, so this brief is unspent and is the natural batch 2.
 - **Nudge-card art.** The brief framed this as 27 missing plates corpus-wide, generate-or-remap. Batch 1 measured it much smaller in practice: 9 dead tags across six encounters, 7 with honest matches already in the library, and it shipped by remapping. A third option: give the lane a standing rule — *remap where a match is honest, come to me only when it is not* — and the question stops recurring per batch.
