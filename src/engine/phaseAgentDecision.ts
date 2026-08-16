@@ -53,6 +53,8 @@ import { hexDistance } from '../lib/hexMath';
 import { MAX_AWARENESS_HOPS, EDGE_HEX_AWARENESS_BONUS } from '../data/agent-behavior-constants';
 import type { SimulationRuntime } from './simulationRuntime';
 import { touchWorld } from './simulationRuntime';
+import { resolveRelocationIntentForAgent } from './relocationIntent';
+import { observeResidence } from './agentResidence';
 import { recordBalanceEvent } from './balanceTelemetry';
 import { prepareEncounterSupportBundle } from './encounterSupportBundle';
 import { initializeClearanceGates } from './clearanceGate';
@@ -299,6 +301,42 @@ export function phaseAgentDecision(
     const agentId = actor.id;
 
     try {
+      // ── Relocation intent resolution (THR-1142) ──────────────────────────
+      // Runs BEFORE every skip below, deliberately: an agent mid-journey is
+      // skipped by the movement guard, and that is exactly the agent most likely
+      // to be arriving. Placing this after the skips would mean an intent could
+      // only ever resolve on a tick the mortal happened to be idle.
+      //
+      // This is the whole of the intent lifecycle — no new phase, no second
+      // movement path. The *pull* lives in `computeRelocationIntentBonus`, read
+      // inside `scoreAndSelect` further down; here we only retire an intent that
+      // has been fulfilled or has run out of time, so nobody walks forever.
+      {
+        const reloc = resolveRelocationIntentForAgent(state, agentId, state.tick);
+        if (reloc.outcome === 'arrived' || reloc.outcome === 'expired') {
+          const intent = reloc.intent!;
+          if (reloc.outcome === 'arrived' && intent.stampResidenceOnArrival) {
+            // THR-822 shape: residence is observed where the agent actually
+            // stands, not stamped from the authored destination.
+            observeResidence(graph, agentId, state.tick);
+          }
+          if (runtime) touchWorld(runtime);
+          emitTrace({
+            category: reloc.outcome === 'arrived' ? 'relocation_arrived' : 'relocation_expired',
+            tick: state.tick,
+            agentId,
+            agentName: actor.name,
+            destination: intent.destinationNodeId ?? `hex ${intent.destinationHex.col},${intent.destinationHex.row}`,
+            destinationHex: intent.destinationHex,
+            ticksTaken: state.tick - intent.setAtTick,
+            templateId: intent.templateId,
+            summary: reloc.outcome === 'arrived'
+              ? `${actor.name} reaches ${intent.destinationNodeId ?? 'their destination'} after ${state.tick - intent.setAtTick} ticks`
+              : `${actor.name} gives up on reaching ${intent.destinationNodeId ?? 'their destination'} after ${state.tick - intent.setAtTick} ticks`,
+          });
+        }
+      }
+
       // Skip if already active (unified action)
       if (
         busyAgentIds.has(agentId)

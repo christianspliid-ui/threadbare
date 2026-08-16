@@ -381,6 +381,7 @@ export type TraceCategory =
   // regression gate in src/types/__tests__/trace-vocabulary.test.ts, which
   // fails if the set ever diverges again.
   | 'action'
+  | 'aftermath_agent_relocation'
   | 'aftermath_invalid_tally_key'
   | 'aftermath_invalid_tally_key_rate_limited'
   | 'aftermath_sentinel_bound'
@@ -411,6 +412,8 @@ export type TraceCategory =
   | 'faction_reputation_gain_error'
   | 'faction_reputation_trait'
   | 'graph_op_execution'
+  | 'relocation_arrived'
+  | 'relocation_expired'
   | 'reputation_walk'
   | 'seed_context_inherited'
   | 'social_encounter_generation'
@@ -733,6 +736,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   // inspector. Until now each was emitted faithfully and then filtered out of
   // the panel, because DebugPanel seeds its enabled set from this array.
   'action',
+  'aftermath_agent_relocation',
   'aftermath_invalid_tally_key',
   'aftermath_invalid_tally_key_rate_limited',
   'aftermath_sentinel_bound',
@@ -760,6 +764,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'faction_reputation',
   'faction_reputation_gain_error',
   'faction_reputation_trait',
+  'relocation_arrived',
+  'relocation_expired',
   'reputation_walk',
   'seed_context_inherited',
   'social_encounter_generation',
@@ -1630,7 +1636,13 @@ export interface EncounterAftermathEffectTrace extends TraceBase {
     | 'recent_event' | 'encounter_seed' | 'hidden_mark' | 'intelligence'
     | 'reputation_set' | 'apply_condition' | 'remove_condition' | 'condition_attachment'
     | 'grant_aspect' | 'signature_warhost'
-    | 'plant_compulsion';
+    | 'plant_compulsion'
+    // THR-1142. Note this union is a *subset* of the live effect vocabulary and
+    // has been since it was written — which is why nearly every case in
+    // `encounterAftermath.ts` reaches for a cast to emit its trace. Kinds are
+    // added here as their dispatchers learn to emit without one; the cast
+    // ratchet (THR-1065) is what keeps that direction of travel.
+    | 'agent_relocation';
   /** Kind-specific payload for inspection */
   effectDetail: Readonly<Record<string, unknown>>;
   success: boolean;
@@ -1807,6 +1819,46 @@ export interface BondChangeAppliedTrace extends TraceBase {
   sentimentAfter: number;
   created: boolean;
   reciprocal: boolean;
+}
+
+/**
+ * Trace: an `agent_relocation` aftermath effect sent someone somewhere (THR-1142).
+ *
+ * `mode: 'travel'` means an intent was written and the agent has NOT moved — they
+ * walk there through the ordinary movement system. `expiresAtTick` is absent for
+ * an instant move, which has nothing to expire.
+ */
+export interface AgentRelocationTrace extends TraceBase {
+  category: 'aftermath_agent_relocation';
+  /** Human-readable destination name, for reading the trace without a graph lookup. */
+  destination: string;
+  destinationNodeId?: string;
+  destinationHex: { col: number; row: number };
+  mode: 'travel' | 'instant';
+  expiresAtTick?: number;
+  templateId?: string;
+  // Attribution back to the ending that sent them.
+  encounterId?: string;
+  actionId?: string;
+  reactionId?: string;
+  effectIndex?: number;
+}
+
+/**
+ * Trace: a travel intent ended (THR-1142) — the agent reached the destination, or
+ * gave up when the TTL lapsed.
+ *
+ * `relocation_expired` is not an error: an intent is a lean on the movement
+ * scoring, so a mortal with a better reason to stay legitimately never arrives.
+ */
+export interface RelocationResolvedTrace extends TraceBase {
+  category: 'relocation_arrived' | 'relocation_expired';
+  agentName?: string;
+  destination: string;
+  destinationHex: { col: number; row: number };
+  /** Ticks between the intent being written and this resolution. */
+  ticksTaken: number;
+  templateId?: string;
 }
 
 /** Trace: a family-only encounter seed resolved to a concrete template (THR-697, Slice D). */
@@ -2194,6 +2246,8 @@ export type TraceEntry =
   // Scene-targeting aftermath sentinels + bond_change (THR-695, Slice B)
   | AftermathSentinelBoundTrace
   | BondChangeAppliedTrace
+  | AgentRelocationTrace
+  | RelocationResolvedTrace
   // Companions (THR-1096)
   | CompanionJoinedTrace
   | CompanionDepartedTrace

@@ -15,6 +15,7 @@ import type { ClearanceGateConfig } from './contentShells';
 import type { EffectPredicate } from './effects';
 import type { EncounterForeshadowingDefinition } from './foreshadowing';
 import type { AmbitionPriority } from './ambition';
+import type { RelocationDestination } from './movement';
 
 export type ActionScale = 'cosmic' | 'regional' | 'local' | 'personal';
 export type ActionSource = 'agent' | 'player' | 'system';
@@ -1087,6 +1088,47 @@ export type EncounterAftermathReactionEffect =
     readonly trustDelta?: number;
     /** Mirror the deltas onto the reverse (with→actor) edge. Default true. */
     readonly reciprocal?: boolean;
+    readonly when?: EffectPredicate;
+  }
+  | {
+    /**
+     * THR-1142 — send someone somewhere: a departure, an exile, a pilgrimage,
+     * a family taking the east road.
+     *
+     * Before this kind no effect in the vocabulary could move anyone, which is
+     * the gap the THR-1141 Law 56 census kept hitting — "Maret Departs", "East
+     * Is Theirs" and "He Left First" all *describe* movement that nothing caused,
+     * so their chips claimed state no write backed.
+     *
+     * Default `travel` mode writes a `relocationIntent` onto the agent node and
+     * lets the existing agent-decision/movement system pursue it: the mortal walks
+     * there and the journey stays visible on the map. It does **not** teleport, and
+     * it does not add a second movement path — the intent only tilts the movement
+     * scoring already there. `instant` retargets the `located_at` edge immediately
+     * and is for scene logic (someone flees the room *now*); rare by intent, not gated.
+     */
+    readonly kind: 'agent_relocation';
+    /**
+     * Who is being sent. Literal node id, `'$actor'`, `'$target'`, or
+     * `'$cast:<key>'` / `'role:<key>'` — bound by `bindAftermathSceneTargets`
+     * before dispatch. Defaults to the encounter's actor.
+     */
+    readonly targetAgentId?: string;
+    /**
+     * Where they are going. A `location` destination may carry `'$target'` or
+     * `'$cast:<key>'`, bound by `bindReachSignatureTargets` (the nested field is
+     * outside the generic top-level scene pass).
+     */
+    readonly destination: RelocationDestination;
+    /** `travel` (default) writes an intent; `instant` retargets `located_at` now. */
+    readonly mode?: 'travel' | 'instant';
+    /** Intent lifetime. Defaults to `RELOCATION_INTENT_TTL_TICKS`. Ignored when instant. */
+    readonly ttlTicks?: number;
+    /**
+     * `set_destination` stamps the observed-residence property on arrival (THR-822
+     * shape) — the difference between visiting and moving house. Default `unchanged`.
+     */
+    readonly residence?: 'set_destination' | 'unchanged';
     readonly when?: EffectPredicate;
   };
 

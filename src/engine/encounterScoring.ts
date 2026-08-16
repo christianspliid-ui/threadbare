@@ -40,6 +40,7 @@ import type { WorldGraph } from './graph';
 import type { GraphNode } from '../types/graph';
 import { resolveLocationToHex } from './encounterAwareness';
 import { computeBrokenDriftBonus } from './brokenState';
+import { computeRelocationIntentBonus } from './relocationIntent';
 import { hexDistance } from '../lib/hexMath';
 import { DRAW_TOGETHER_PULL_WEIGHT } from '../data/group-constants';
 import type { ScoringTrace } from '../types/trace';
@@ -1219,6 +1220,14 @@ export function scoreAndSelect(
     // a per-agent, hex-proximity pull toward the convergence point while the window is open.
     const convergenceBonus = computeConvergenceBonus(agentNode, entryHex?.col, entryHex?.row, tick);
 
+    // 17a-bis. Relocation intent pull (THR-1142) — an encounter ending told this
+    // mortal to go somewhere, and this is the whole of how that steers them. Same
+    // additive channel and same `W / (1 + dist)` shape as the convergence bonus
+    // above, at a quarter its weight: a departure is a standing lean, not a god's
+    // summons, and a good enough reason to stay still outscores it. 0 when the
+    // agent carries no live intent, so every pre-THR-1142 score is unchanged.
+    const relocationBonus = computeRelocationIntentBonus(agentNode, entryHex?.col, entryHex?.row, tick);
+
     // 18. Divine hunch bonus (divine action: hex.whisper_intuition)
     const hunchBonus = computeDivineHunchBonus(graph, agentId, entry.reachPrimary, tick);
 
@@ -1291,7 +1300,7 @@ export function scoreAndSelect(
 
     const rawFinalScore = baseScore * rarityMultiplier * roleAffinityMultiplier * (1 - familiarityPenalty) + explorationBonus + chainBonus
       + ruinsBonus + anomalyBonus + attractionBonus + convergenceBonus + hunchBonus + identityBiasBonus + markRevealBonus + intelBonus
-      + brokenDriftBonus;
+      + brokenDriftBonus + relocationBonus;
 
     // 17b. Branching curator bias (THR-452) — boost under-selected branching templates
     const curatorMultiplier = computeBranchingCuratorMultiplier(entry, agentId, tick, runtime ?? null);

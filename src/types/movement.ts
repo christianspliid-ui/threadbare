@@ -59,6 +59,48 @@ export interface MovementState {
   }>;
 }
 
+/**
+ * Where an `agent_relocation` aftermath effect is sending someone (THR-1142).
+ *
+ * Authored on the effect; resolved to a concrete hex at apply time and stored
+ * on the intent, so a destination whose location node later dissolves still
+ * reads as a place on the map rather than a dangling id.
+ */
+export type RelocationDestination =
+  | { readonly kind: 'location'; readonly locationId: string }
+  | { readonly kind: 'hex'; readonly col: number; readonly row: number }
+  /** Nearest settlement to the agent's current hex, resolved at apply time. */
+  | { readonly kind: 'nearest_settlement' }
+  /** Any location at least `minHexDistance` hexes away; seeded pick. */
+  | { readonly kind: 'away'; readonly minHexDistance: number };
+
+/**
+ * A live travel intent on an agent node (THR-1142) — "this person is trying to
+ * get somewhere", written by an encounter ending and read by the decision phase.
+ *
+ * Deliberately **not** a movement path. The intent only tilts the existing
+ * movement-target scoring toward its destination hex (`computeRelocationIntentBonus`,
+ * the same additive channel Draw Together's convergence pull uses). Nothing here
+ * moves anyone: the agent walks there through the ordinary movement system, so the
+ * journey stays watchable on the map. There is no second movement path by design.
+ */
+export interface RelocationIntent {
+  /** Resolved destination hex — what the scoring read actually compares against. */
+  readonly destinationHex: { readonly col: number; readonly row: number };
+  /** Destination location node id when the destination named one; absent for a bare hex. */
+  readonly destinationNodeId?: string;
+  /** Tick at which an unfulfilled intent is abandoned. Agents never get stuck walking. */
+  readonly expiresAtTick: number;
+  /** Tick the intent was written — arrival traces report the journey's length. */
+  readonly setAtTick: number;
+  /** What wrote it. Only `aftermath` today; named so a later writer is distinguishable. */
+  readonly source: 'aftermath';
+  /** Template whose ending sent them, for attribution in traces. */
+  readonly templateId?: string;
+  /** On arrival, stamp the observed-residence property (THR-822 shape). */
+  readonly stampResidenceOnArrival?: boolean;
+}
+
 /** One entry in the movement trail history */
 export interface MovementHistoryEntry {
   nodeId: string;
