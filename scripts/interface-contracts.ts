@@ -1252,6 +1252,47 @@ export const CONTRACTS: readonly Contract[] = [
     deferralTicket: 'THR-883',
   },
   {
+    id: 'relocation-intent-steers-agent-movement',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      'An ending that says someone left actually sends them — and the leaving is a journey the player can watch, not a body appearing elsewhere.',
+    ulTerms: ['Encounter', 'Agent'],
+    mechanism: {
+      kind: 'function',
+      symbols: [
+        'computeRelocationIntentBonus',
+        'resolveRelocationIntentForAgent',
+        'setRelocationIntent',
+      ],
+      module: 'src/engine/relocationIntent.ts',
+    },
+    writeSites: ['src/engine/encounterAftermath.ts'],
+    readSites: ['src/engine/encounterScoring.ts', 'src/engine/phaseAgentDecision.ts'],
+    // THR-1142, the first primitive of the consequence-palette expansion. Before it,
+    // no aftermath effect could move anyone, so every ending that narrated a departure
+    // backed its chip with nothing — the defect class the THR-1141 Law 56 census
+    // measured ("Maret Departs", "East Is Theirs", "He Left First").
+    //
+    // The contract's load-bearing clause is that the write is an *intent*, not a
+    // position: `agent_relocation` (travel mode) stores a `relocationIntent` property
+    // and moves no one. `encounterScoring` reads it as one additive term on the
+    // candidate score — the same channel and the same `W / (1 + hexDistance)` shape as
+    // `computeConvergenceBonus` — and `phaseAgentDecision` retires the intent on
+    // arrival or expiry. That is what makes "no second movement path" a fact about
+    // the code rather than an intention: nothing here calls into movement at all.
+    //
+    // LIVE, unlike the THR-885 grant rows above: the healer encounter's
+    // `healer_departs` ending authors the effect in this same PR, so the path carries
+    // real traffic on a shipped template rather than waiting on content.
+    //
+    // Known limitation, measured rather than predicted (THR-1148): because the pull
+    // attaches to encounter *candidates*, it steers reliably toward a destination that
+    // has one (0.0101 → 0.6985; agent closed 26 → 20 hexes in 60 ticks, seed 42) and
+    // only weakly toward an empty one. Documented at both the module header and the
+    // wiring-guide row; the design question is the ticket's, not this row's.
+  },
+  {
     id: 'nudge-card-cost-channels-detection-and-doom',
     producerSystem: ENCOUNTERS,
     consumerSystem: QUINTESSENCE,

@@ -19,8 +19,8 @@ remediation ticket or the build fails.
 | 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 7 |
 | ⚫ UNWIRED | 0 |
-| 🔵 UNVERIFIED-OK | 9 |
-| **Total** | **64** |
+| 🔵 UNVERIFIED-OK | 10 |
+| **Total** | **65** |
 
 ## Contracts by producing subsystem
 
@@ -109,6 +109,7 @@ remediation ticket or the build fails.
 | `player-action-aftermath-read` | The aftermath a player action already produces finally reaches the player — the receipt phase reads the summary that was built and discarded for player casts. | function: `processPlayerReceipts`, `aftermathSummary` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `player-action-receipts-queue` | A resolved player cast queues a Divine Receipt the UI surfaces as a toast or a receipt dialogue. | node-prop: `playerActionReceipts` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `receipt-event-band-toast` | A receipt toast carries its outcome band so the toast accent matches how the cast landed. | event: `band` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
+| `relocation-intent-steers-agent-movement` | An ending that says someone left actually sends them — and the leaving is a journey the player can watch, not a body appearing elsewhere. | function: `computeRelocationIntentBonus`, `resolveRelocationIntentForAgent`, `setRelocationIntent` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `secrets-generation` | Secrets are born from scenes — mortals learn things about each other worth holding. | function: `generateSecret`, `createSecretEdge` | Secrets & Favors | 🟢 LIVE | — |
 | `seeded-opponent-survives-to-spawn` | A grudge planted against a named band is collected against that same band — or, if it died in the meantime, quietly becomes an ordinary encounter instead of pointing at a corpse. | node-prop: `opposingGroupId`, `resolveSeedOpposition` | Companies & Group Travel | 🟢 LIVE | — |
 | `world-events-mint-ambitions` | World events write themselves into mortal desire — a sacked town mints avengers and refugees. | function: `AMBITION_MINTING_RULES`, `mintAmbitionsFromEvents` | Ambitions & Initiatives | 🟢 LIVE | — |
@@ -731,6 +732,18 @@ remediation ticket or the build fails.
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
 - **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts` +193 more
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
+### `relocation-intent-steers-agent-movement` — 🔵 UNVERIFIED-OK
+
+- **Intent:** An ending that says someone left actually sends them — and the leaving is a journey the player can watch, not a body appearing elsewhere.
+- **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
+- **UL terms:** *Encounter*, *Agent*
+- **Module:** `src/engine/relocationIntent.ts`
+- **Production hits:** 5 total — 1 write, 2 read, 2 unclassified
+- **Write sites:** `src/engine/encounterAftermath.ts`
+- **Read sites:** `src/engine/encounterScoring.ts`, `src/engine/phaseAgentDecision.ts`
+- **Other hits:** `src/engine/relocationIntent.ts`, `src/types/movement.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `reunion-reads-the-edges-not-the-roster` — 🟢 LIVE

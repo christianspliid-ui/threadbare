@@ -21,6 +21,13 @@ import type { SphereName, CreationSphereName } from '../types';
 import { CREATION_SPHERE_NAMES } from '../types';
 import type { SimulationRuntime } from './simulationRuntime';
 import { touchWorld, touchStructure } from './simulationRuntime';
+import {
+  rebindLocatedAt,
+  resolveRelocationDestination,
+  setRelocationIntent,
+} from './relocationIntent';
+import { observeResidence } from './agentResidence';
+import { RELOCATION_INTENT_TTL_TICKS } from '../data/movement-content';
 import { assignAmbitionToActor } from './ambitionAssignment';
 import type { TraceEntry } from '../types/trace';
 import { buildPredicateContext, evaluateOptionalCondition } from './effects/effectPredicates';
@@ -538,6 +545,35 @@ export function bindReachSignatureTargets(
       const hex = targetId ? resolveLocationToHex(graph, targetId) : null;
       const unbound: EncounterAftermathReactionEffect = { ...effect, nearAgentId: undefined };
       return hex ? { ...unbound, hex: { col: hex.col, row: hex.row } } : unbound;
+    }
+    case 'agent_relocation': {
+      // THR-1142 — `destination.locationId` is a *nested* field, so the generic
+      // top-level scene pass (`bindAftermathSceneTargets`, which walks
+      // SCENE_SENTINEL_FIELDS) cannot see it. Bind it here, where the
+      // kind-specific/nested sentinels already live. `targetAgentId` is top-level
+      // and is bound by that pass for free — do not duplicate it.
+      const dest = effect.destination;
+      if (dest.kind !== 'location') return effect;
+      const isTarget = dest.locationId === AFTERMATH_TARGET_SENTINEL;
+      const isCast =
+        dest.locationId.startsWith(AFTERMATH_CAST_SENTINEL_PREFIX) ||
+        dest.locationId.startsWith(AFTERMATH_CAST_SENTINEL_LEGACY_PREFIX);
+      if (!isTarget && !isCast) return effect;
+
+      let resolved: string | undefined;
+      if (isTarget) {
+        resolved = targetId;
+      } else {
+        const key = dest.locationId.startsWith(AFTERMATH_CAST_SENTINEL_PREFIX)
+          ? dest.locationId.slice(AFTERMATH_CAST_SENTINEL_PREFIX.length)
+          : dest.locationId.slice(AFTERMATH_CAST_SENTINEL_LEGACY_PREFIX.length);
+        resolved = action?.supportBindings?.find(b => b.key === key)?.nodeId;
+      }
+      // Resolve-don't-trust: bind only when the id names something that actually
+      // has a hex. An unresolvable sentinel is left in place and the dispatcher
+      // no-ops it down the existing invalid-destination path (NFP #4).
+      if (!resolved || !resolveLocationToHex(graph, resolved)) return effect;
+      return { ...effect, destination: { kind: 'location', locationId: resolved } };
     }
     default:
       return effect;
@@ -4086,6 +4122,112 @@ export function applyEncounterAftermathReaction(
           effectiveTargetId: withId, effectiveTargetKind: 'agent',
           summary: `bond_change[${i}]: ${actorAgentId} → ${withId} Δsentiment ${effect.sentimentDelta >= 0 ? '+' : ''}${effect.sentimentDelta}`,
         } as unknown as Parameters<typeof emitTrace>[0]);
+        break;
+      }
+
+      case 'agent_relocation': {
+        // THR-1142 — the first effect in the vocabulary that can send someone
+        // somewhere. `travel` (default) writes an intent the decision phase
+        // pursues; `instant` retargets `located_at` now, for scene logic.
+        const resolvedId = target.kind !== 'actor_fallback' ? target.id : actorAgentId;
+        const mode = effect.mode ?? 'travel';
+
+        const failRelocation = (reason: string, detail: Record<string, unknown> = {}): void => {
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'agent_relocation',
+            effectDetail: { targetAgentId: resolvedId, mode, ...detail },
+            success: false, failReason: reason,
+            effectiveTargetId: resolvedId ?? '',
+            effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'actor_fallback',
+            summary: `agent_relocation[${i}] skipped: ${reason}`,
+          });
+        };
+
+        if (!resolvedId) { failRelocation('no_actor_id'); break; }
+        const relocNode = state.graph.getNode(resolvedId);
+        if (!relocNode || relocNode.type !== 'actor') { failRelocation('non_agent_target'); break; }
+
+        // Seeded per (world seed, tick, effect site) — the `away` pick must be
+        // reproducible from the same seed and never touch Math.random (NFP #3).
+        const relocSalt = `${encounterId}_${reaction.id}_${i}_${resolvedId}`;
+        let relocSeed = state.seed;
+        for (let c = 0; c < relocSalt.length; c++) relocSeed = (relocSeed ^ relocSalt.charCodeAt(c)) >>> 0;
+        relocSeed = (relocSeed + tick * 31337) >>> 0;
+        const relocRng = mulberry32(relocSeed);
+
+        const destination = resolveRelocationDestination(
+          state.graph, resolvedId, effect.destination, relocRng,
+        );
+        if (!destination) {
+          failRelocation('destination_unresolvable', { destinationKind: effect.destination.kind });
+          break;
+        }
+
+        if (mode === 'instant') {
+          // Needs a location node to stand on — a bare hex has no `located_at`
+          // target, so an instant move to one cannot be expressed in the
+          // three-tier position model. Fail-soft rather than inventing a node.
+          if (!destination.nodeId) {
+            failRelocation('instant_requires_location', { destinationKind: effect.destination.kind });
+            break;
+          }
+          rebindLocatedAt(state.graph, resolvedId, destination.nodeId, 'aftermath_located_at');
+          if (effect.residence === 'set_destination') {
+            // THR-822's write path: residence is *observed*, never stamped ahead
+            // of the agent — and they are standing there now, so this records a
+            // real arrival rather than manufacturing one.
+            observeResidence(state.graph, resolvedId, tick);
+          }
+          touchWorld(runtime);
+          touchStructure(runtime);
+          mutationSummary.touchedWorld = true;
+          mutationSummary.touchedStructure = true;
+        } else {
+          const ttl = effect.ttlTicks ?? RELOCATION_INTENT_TTL_TICKS;
+          setRelocationIntent(state.graph, resolvedId, {
+            destinationHex: destination.hex,
+            destinationNodeId: destination.nodeId,
+            expiresAtTick: tick + ttl,
+            setAtTick: tick,
+            source: 'aftermath',
+            templateId: action?.templateId,
+            stampResidenceOnArrival: effect.residence === 'set_destination',
+          });
+          touchWorld(runtime);
+          mutationSummary.touchedWorld = true;
+        }
+
+        emitTrace({
+          tick, category: 'aftermath_agent_relocation', agentId: resolvedId,
+          encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+          destination: destination.label,
+          destinationNodeId: destination.nodeId,
+          destinationHex: destination.hex,
+          mode,
+          expiresAtTick: mode === 'travel' ? tick + (effect.ttlTicks ?? RELOCATION_INTENT_TTL_TICKS) : undefined,
+          templateId: action?.templateId,
+          summary: mode === 'instant'
+            ? `agent_relocation[${i}]: ${relocNode.name ?? resolvedId} moves to ${destination.label} (instant)`
+            : `agent_relocation[${i}]: ${relocNode.name ?? resolvedId} sets out for ${destination.label}`,
+        });
+
+        emitTrace({
+          tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+          encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+          effectKind: 'agent_relocation',
+          effectDetail: {
+            targetAgentId: resolvedId, mode,
+            destination: destination.label,
+            destinationNodeId: destination.nodeId,
+            residence: effect.residence ?? 'unchanged',
+          },
+          success: true,
+          effectiveTargetId: resolvedId,
+          effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'actor_fallback',
+          summary: `agent_relocation[${i}]: ${resolvedId} → ${destination.label} (${mode})`,
+        });
         break;
       }
     }

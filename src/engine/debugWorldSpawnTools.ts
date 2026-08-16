@@ -10,6 +10,7 @@ import { spawnBandForFaction, canFieldBand } from './groups/bandSpawner';
 import type { BandRole } from './groups/groupQueries';
 import { selectDefaultTrackedHero } from './balanceTelemetry';
 import { instantiateReward, REWARD_INSTANTIATE_PREFIX } from './rewardPool';
+import { rebindLocatedAt as sharedRebindLocatedAt } from './relocationIntent';
 
 /** Build a resolution note showing what a query resolved to, so misresolution is visible. */
 function resolutionNote(query: string, resolvedId: string, resolvedName: string): string {
@@ -203,18 +204,16 @@ function nextRewardTick(state: GameState, recipientAgentId: string, templateNode
   return tick;
 }
 
+/**
+ * Retarget an agent's position edge.
+ *
+ * Delegates to the shared `rebindLocatedAt` (THR-1142) so `move agent` and the
+ * `agent_relocation` aftermath effect's `instant` mode write agent position
+ * through one implementation rather than two that can drift. The `debug_` edge-id
+ * prefix is preserved so debug-authored edges stay identifiable.
+ */
 function rebindLocatedAt(state: GameState, actorId: string, locationId: string): void {
-  const oldEdges = state.graph.getOutgoingEdges(actorId, 'located_at');
-  for (const edge of oldEdges) {
-    state.graph.removeEdge(edge.id);
-  }
-  state.graph.addEdge({
-    id: `debug_located_at_${actorId}_${locationId}`,
-    source: actorId,
-    target: locationId,
-    type: 'located_at',
-    properties: {},
-  });
+  sharedRebindLocatedAt(state.graph, actorId, locationId, 'debug_located_at');
 }
 
 function copyCurrentCulture(state: GameState, sourceLocationId: string, targetNodeId: string): void {

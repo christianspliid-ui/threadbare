@@ -1825,6 +1825,49 @@ if (import.meta.env.DEV) {
       };
     },
 
+    // THR-1142: travel-intent readout — where an encounter ending sent this agent.
+    getRelocationIntent: async (agentIdOrName: string) => {
+      const graph = _graphProvider?.();
+      const state = _gameStateProvider?.();
+      if (!graph) return null;
+
+      const actors = graph.getNodesByType('actor');
+      const match =
+        actors.find(n => n.id === agentIdOrName) ??
+        actors.find(n => n.id.startsWith(agentIdOrName)) ??
+        actors.find(n =>
+          typeof n.name === 'string' && n.name.toLowerCase().includes(agentIdOrName.toLowerCase()),
+        );
+      if (!match) return null;
+
+      const { readStoredRelocationIntent, resolveAgentHex } = await import('./engine/relocationIntent');
+      const intent = readStoredRelocationIntent(match);
+      if (!intent) return null;
+
+      const { hexDistance } = await import('./lib/hexMath');
+      const tick = state?.tick;
+      const here = resolveAgentHex(graph, match.id);
+
+      return {
+        agentId: match.id,
+        agentName: match.name ?? match.id,
+        destinationNodeId: intent.destinationNodeId ?? null,
+        destinationName: intent.destinationNodeId
+          ? graph.getNode(intent.destinationNodeId)?.name ?? intent.destinationNodeId
+          : null,
+        destinationHex: { col: intent.destinationHex.col, row: intent.destinationHex.row },
+        /** Live hex distance still to cover — 0 means the arrival sweep fires next decision phase. */
+        hexesRemaining: here ? hexDistance(here, intent.destinationHex) : null,
+        setAtTick: intent.setAtTick,
+        expiresAtTick: intent.expiresAtTick,
+        /** Negative once lapsed; the intent is cleared on the owning agent's next decision tick. */
+        ticksRemaining: tick === undefined ? null : intent.expiresAtTick - tick,
+        source: intent.source,
+        templateId: intent.templateId ?? null,
+        stampResidenceOnArrival: intent.stampResidenceOnArrival ?? false,
+      };
+    },
+
     // THR-66: rival scheme inspection — reads the denormalized RivalState.schemes summaries.
     getRivalSchemes: () => {
       const state = _gameStateProvider?.();

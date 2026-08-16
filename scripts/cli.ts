@@ -56,6 +56,8 @@ import {
 import type { TickProfileTrace } from '../src/types/trace';
 import { createSimulationRuntime, ensureEncounterCache, touchStructure, touchWorld } from '../src/engine/simulationRuntime';
 import { spawnDebugBand } from '../src/engine/debugWorldSpawnTools';
+import { readStoredRelocationIntent, resolveAgentHex } from '../src/engine/relocationIntent';
+import { hexDistance } from '../src/lib/hexMath';
 import type { SimulationRuntime } from '../src/engine/simulationRuntime';
 import { setTrackedAgents, getBalanceEvents, selectDefaultTrackedHero } from '../src/engine/balanceTelemetry';
 import { buildBalanceRunSummary, buildBalanceAgentJourneySummary } from '../src/engine/balanceSummary';
@@ -263,9 +265,16 @@ function printAgents(): void {
 
 function printAgent(partialId: string): void {
   const actors = state.graph.getNodesByType('actor');
+  // Name lives on the node, not in its property bag — `properties.name` is
+  // `undefined` for every seeded agent, so matching on it alone meant `agent
+  // Oswen` answered "No agent matching" for an agent literally listed by
+  // `agents` one line earlier. Found while proving THR-1142's own Done-when
+  // ("`agent <name>` shows intent"), which the miss made unreachable.
+  const nameOf = (n: { name?: string; properties: Record<string, unknown> }) =>
+    ((n.properties.name as string | undefined) ?? n.name ?? '');
   const match = actors.find(n =>
     n.id.startsWith(partialId) ||
-    (n.properties.name ?? '').toLowerCase().includes(partialId.toLowerCase())
+    nameOf(n).toLowerCase().includes(partialId.toLowerCase())
   );
 
   if (!match) {
@@ -273,7 +282,7 @@ function printAgent(partialId: string): void {
     return;
   }
 
-  console.log(header(`Agent: ${match.properties.name ?? match.id}`));
+  console.log(header(`Agent: ${nameOf(match) || match.id}`));
   console.log(`  ID:        ${match.id}`);
   console.log(`  Type:      ${match.properties.actorType}`);
   console.log(`  Tier:      ${match.properties.tier ?? 0}`);
@@ -283,6 +292,21 @@ function printAgent(partialId: string): void {
   if (loc.length > 0) {
     const locNode = state.graph.getNode(loc[0].target);
     console.log(`  Location:  ${locNode?.properties.name ?? loc[0].target}`);
+  }
+
+  // Travel intent (THR-1142) — where an encounter ending sent them, and whether
+  // it is still live. This readout is the ticket's debug-visibility half: an
+  // intent nobody can see is indistinguishable from one that never landed.
+  const intent = readStoredRelocationIntent(match);
+  if (intent) {
+    const destName = intent.destinationNodeId
+      ? (state.graph.getNode(intent.destinationNodeId)?.properties.name ?? intent.destinationNodeId)
+      : `hex ${intent.destinationHex.col},${intent.destinationHex.row}`;
+    const remaining = intent.expiresAtTick - state.tick;
+    const status = remaining > 0 ? `${remaining} ticks left` : `${RED}EXPIRED${RESET}`;
+    const here = resolveAgentHex(state.graph, match.id);
+    const away = here ? hexDistance(here, intent.destinationHex) : '?';
+    console.log(`  Travelling to: ${destName} (${away} hexes away, ${status})`);
   }
 
   // Capabilities

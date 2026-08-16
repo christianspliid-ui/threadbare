@@ -585,6 +585,10 @@
         <dd>A 0&ndash;1 score per Reach, computed from traits + attachments via a sigmoid curve. The agent's "stat sheet."</dd>
       </dl>
       <dl class="concept">
+        <dt>Travel Intent</dt>
+        <dd>Where an encounter ending told an agent to go (THR-1142, <code>agent_relocation</code>). Deliberately a <em>lean</em>, not a route: it adds a distance-decayed weight to the agent's own encounter scoring, so they walk there through ordinary movement and a better local reason can still keep them. Clears on arrival (hex-granular) or when its TTL lapses.</dd>
+      </dl>
+      <dl class="concept">
         <dt>Fate Forecast</dt>
         <dd>The predicted outcome tier (Doomed &rarr; Fated) shown before an encounter step resolves. Based on the full resolution formula.</dd>
       </dl>
