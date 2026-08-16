@@ -35,6 +35,7 @@ import type {
   ActionStep,
   AftermathVariant,
   EncounterAftermathChange,
+  EncounterAftermathReaction,
   EncounterAftermathReactionEffect,
   UnifiedActionOutcome,
   UnifiedActionTemplate,
@@ -151,6 +152,47 @@ const CONDITION_EFFECT_KINDS: ReadonlySet<string> = new Set([
   'apply_condition',
   'remove_condition',
   'condition_attachment',
+]);
+
+/**
+ * Effect kinds that can back an authored consequence chip — UI Law 56.
+ *
+ * Deliberately its own list rather than a reuse of {@link PERSISTENT_EFFECT_KINDS},
+ * which is scoped to the *Rewards* block ("does this encounter leave the player
+ * something") and would answer a narrower question than the law asks. Law 56 asks
+ * only whether the engine wrote state a later system can read. So this set is the
+ * persistent kinds, plus:
+ *
+ * - **the reputation kinds** — a standing move is written state, and the ruling
+ *   explicitly contemplates state the game writes without surfacing it;
+ * - **the kinds that were simply never added to the persistent set.** That set is
+ *   documented as "exhaustive-by-inspection … un-counted until someone decides it
+ *   persists", and nobody ever decided about these. An attachment grant, a
+ *   companion joining, an intelligence record, a planted compulsion, a
+ *   quintessence shift, a clearance-gate tag, a registered archetype drift and a
+ *   sphere amplification all write state the simulation reads later. Adding them
+ *   *here* rather than widening the persistent set keeps the change additive
+ *   (NFP #6): the Rewards block and the systems quota score exactly as before.
+ *
+ * `recent_event`, `intel_referenced_prose` and `emit_omen` stay out. The first two
+ * print. `emit_omen` is the debatable one — an omen carries a duration and biases
+ * later encounter selection — but this module already classifies it as scene
+ * dressing, and a chip-backing rule is the wrong place to reverse that. The
+ * practical effect is nil: the one swept chip whose fiction is an omen ("The
+ * Season") is backed by an intelligence record alongside it.
+ */
+const CHIP_BACKING_EFFECT_KINDS: ReadonlySet<string> = new Set([
+  ...PERSISTENT_EFFECT_KINDS,
+  ...REPUTATION_EFFECT_KINDS,
+  'attachment_grant',
+  'grant_companion',
+  'remove_companion',
+  'intelligence',
+  'plant_compulsion',
+  'quintessence_shift',
+  'clearance_gate_tag',
+  'archetype_drift_register',
+  'sphere_influence_amplify',
 ]);
 
 // ─── Report shape ────────────────────────────────────────────────────
@@ -295,6 +337,29 @@ function allAftermathChanges(
   return out;
 }
 
+/**
+ * Every step the template can actually run, branch arms included.
+ *
+ * {@link plainSteps} answers a different question — "which steps carry prose,
+ * a hand and a difficulty" — and so drops branch nodes entirely. For "does this
+ * template write any state", dropping them is a false negative with teeth: a
+ * branching encounter puts its whole consequence inside `variants`/`fallback`,
+ * and a naive `steps[]` walk reports every one of them as writing nothing.
+ * That is the exact shape the THR-1141 corpus audit flagged as the gate's likely
+ * first bug, so the walk lives here once rather than in each caller.
+ */
+function allRunnableSteps(template: UnifiedActionTemplate): readonly ActionStep[] {
+  const out: ActionStep[] = [];
+  for (const step of template.steps ?? []) {
+    if (isActionStepBranch(step)) {
+      out.push(...Object.values(step.variants), step.fallback);
+    } else {
+      out.push(step);
+    }
+  }
+  return out;
+}
+
 /** Outcome bands authored anywhere on the template's aftermath. */
 function authoredBands(template: UnifiedActionTemplate): readonly UnifiedActionOutcome[] {
   const bands = new Set<UnifiedActionOutcome>();
@@ -304,6 +369,180 @@ function authoredBands(template: UnifiedActionTemplate): readonly UnifiedActionO
     }
   }
   return [...bands];
+}
+
+// ─── Chip backing (UI Law 56, THR-1141) ──────────────────────────────
+
+/**
+ * One ending a player can actually be shown — a variant resolved at one band.
+ *
+ * The unit matters because {@link applyAftermathOutcomeBand} substitutes
+ * **wholesale**: a band's `changes` replace the variant's rather than adding to
+ * them, and so do its `reactions`. A sweep that unions both levels (which
+ * {@link allAftermathChanges} deliberately does, for the "authored anywhere"
+ * questions) therefore cannot answer Law 56, because it will credit a chip on
+ * one band with a write that only exists on another.
+ *
+ * `band: undefined` is the base face — the ending reached whenever the roll
+ * lands on an outcome the variant did not override. It is reachable on nearly
+ * every template, since no encounter authors all seven bands.
+ */
+interface AftermathFace {
+  readonly variantKey: string;
+  readonly band?: UnifiedActionOutcome;
+  readonly changes: readonly EncounterAftermathChange[];
+  readonly reactions: readonly EncounterAftermathReaction[];
+}
+
+/** Every (variant × band) ending the config can render, resolved as the engine does. */
+function aftermathFaces(template: UnifiedActionTemplate): readonly AftermathFace[] {
+  const config = template.aftermathConfig;
+  if (!config) return [];
+  const out: AftermathFace[] = [];
+
+  const entries: (readonly [string, AftermathVariant | undefined])[] = [
+    ...Object.entries(config.variants ?? {}),
+    ['fallback', config.fallback],
+  ];
+
+  for (const [variantKey, variant] of entries) {
+    if (!variant) continue;
+    // Same `?? []` guards as `allAftermathChanges` — the red baseline (THR-489)
+    // lets a mis-shaped variant compile with neither field (THR-1054), and this
+    // module never throws (NFP #4).
+    const baseChanges = variant.changes ?? [];
+    const baseReactions = variant.reactions ?? [];
+    out.push({ variantKey, changes: baseChanges, reactions: baseReactions });
+
+    for (const [band, override] of Object.entries(variant.byOutcome ?? {})) {
+      if (!override) continue;
+      out.push({
+        variantKey,
+        band: band as UnifiedActionOutcome,
+        // `??`, not a merge: this is the resolver's own substitution rule.
+        changes: override.changes ?? baseChanges,
+        reactions: override.reactions ?? baseReactions,
+      });
+    }
+  }
+
+  return out;
+}
+
+/**
+ * Whether a step's writes can reach a face, given which half of the ladder it is.
+ *
+ * `successMetadata` fires on a win and `failureMetadata` on a loss, so crediting
+ * both to every face would let a chip on a `critical_failure` band be "backed" by
+ * a reward the run never drew. The base face takes both, because it is reached by
+ * whichever bands the variant left unoverridden — either half may be one of them.
+ */
+function stepWritesReachFace(
+  face: AftermathFace,
+  half: 'success' | 'failure',
+): boolean {
+  if (face.band === undefined) return true;
+  return half === 'success'
+    ? SUCCESS_BANDS.includes(face.band)
+    : FAILURE_BANDS.includes(face.band);
+}
+
+/**
+ * Writes the template performs on a step, reachable from this face.
+ *
+ * Reads **three** authoring routes, because an encounter may put its whole
+ * consequence in any of them: step-outcome effects (THR-783), a `rewardPool`
+ * recipe, and the step's own `onSuccess`/`onFailure` graph operations. The third
+ * is the one a chip-backing sweep is most likely to miss and the most direct
+ * evidence there is — `soul_ferryman` writes every one of its twelve chips'
+ * consequences as an `update_node` op and authors no aftermath effect at all, so
+ * a gate reading only `effects` calls the corpus's most systemically-wired
+ * encounter a Law 56 violation twelve times over.
+ */
+function stepBackingForFace(
+  template: UnifiedActionTemplate,
+  face: AftermathFace,
+): readonly string[] {
+  const out: string[] = [];
+  for (const [index, step] of allRunnableSteps(template).entries()) {
+    for (const [half, meta, ops] of [
+      ['success', step.successMetadata, step.onSuccess],
+      ['failure', step.failureMetadata, step.onFailure],
+    ] as const) {
+      if (!stepWritesReachFace(face, half)) continue;
+      for (const effect of meta?.effects ?? []) {
+        if (CHIP_BACKING_EFFECT_KINDS.has(effect.kind)) {
+          out.push(`step ${index} ${half}Metadata.${effect.kind}`);
+        }
+      }
+      if (meta?.rewardPool) out.push(`step ${index} ${half}Metadata.rewardPool`);
+      for (const op of ops ?? []) out.push(`step ${index} on${half === 'success' ? 'Success' : 'Failure'}.${op.op}`);
+    }
+  }
+  return out;
+}
+
+/** Writes a face's own reactions perform. */
+function reactionBackingForFace(face: AftermathFace): readonly string[] {
+  const out: string[] = [];
+  for (const reaction of face.reactions) {
+    for (const effect of reaction.effects ?? []) {
+      if (CHIP_BACKING_EFFECT_KINDS.has(effect.kind)) {
+        out.push(`reaction '${reaction.id}'.${effect.kind}`);
+      }
+    }
+  }
+  return out;
+}
+
+/**
+ * The writes that can back the chips on one ending. Exported for the CMS Package
+ * View and the sweep runner, which both want to *show* the backing rather than
+ * merely learn that some exists.
+ */
+export function chipBackingForFace(
+  template: UnifiedActionTemplate,
+  face: AftermathFace,
+): readonly string[] {
+  return [...reactionBackingForFace(face), ...stepBackingForFace(template, face)];
+}
+
+/**
+ * UI Law 56 — every consequence chip is backed by a write the engine performed.
+ *
+ * Christian's ruling, 2026-08-16, on the Unsafe Bridge's `PATH · THE RIVER
+ * CROSSING`: *"the chips specifically show only things that have updated the game
+ * state … we do not show prose in this section. basic game UX."* A chip whose
+ * band writes nothing is scene prose wearing a chip's frame — it promises the
+ * player an inspectable consequence and there is nothing to inspect.
+ *
+ * **This is a floor, not a semantic match.** The gate asks whether the ending
+ * carrying a chip performs *any* qualifying write; it cannot ask whether that
+ * particular write is the one the chip's sentence describes, because no machine
+ * reads the sentence. Per-chip semantic verdicts are the author's, recorded in
+ * the sweep — the floor is what stops the shipped shape (authored chip, empty
+ * `effects`, no seed, no reward pool) from ever recurring silently.
+ *
+ * Engine-*derived* chips are out of scope by construction: they are a snapshot
+ * diff assembled at resolution time, so their backing is the diff itself. Only
+ * authored `changes` reach this function.
+ */
+function chipBackingViolations(template: UnifiedActionTemplate): readonly string[] {
+  const out: string[] = [];
+  for (const face of aftermathFaces(template)) {
+    if (face.changes.length === 0) continue;
+    if (chipBackingForFace(template, face).length > 0) continue;
+    const where = face.band ? `${face.variantKey}/${face.band}` : face.variantKey;
+    for (const change of face.changes) {
+      out.push(
+        `change '${change.id}' on ${where} claims state nothing wrote — `
+          + 'that ending performs no qualifying write (Law 56). Back it with a real '
+          + 'effect (a seed, a condition, a bond, a standing move), or fold the '
+          + 'sentence into the band overview and delete the chip',
+      );
+    }
+  }
+  return out;
 }
 
 /** Actor specs in the resolved support bundle — cast, as opposed to places. */
@@ -685,6 +924,10 @@ export function checkCompositionContract(
       add('aftermath', `change '${change.id}' declares no \`concepts\` (Law 2)`);
     }
   }
+
+  // Per-chip backing (Law 56). Resolved per *face*, not unioned across the
+  // template — see `chipBackingViolations`.
+  for (const violation of chipBackingViolations(template)) add('aftermath', violation);
 
   // ─── Systems quota ─────────────────────────────────────────────────
   const systems = systemConnections(template);

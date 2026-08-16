@@ -241,7 +241,17 @@ export interface EncounterAftermathConceptRef {
  * - `scar` — what the trial cost them, on body or spirit.
  * - `bond` — who now stands with or against them.
  * - `boon` — what they earned, and why.
- * - `path` — a way that has opened.
+ * - `path` — a way that has opened **and that the engine now tracks**.
+ *
+ * **UI Law 56 (THR-1141) binds every member, and `path` most of all.** A chip may
+ * only report state a write actually produced. `path` was the category that
+ * invited the breach, because a way opening reads as atmosphere: the Unsafe
+ * Bridge shipped `PATH · THE RIVER CROSSING` on a band whose only reaction had
+ * `effects: []`, so the player was told a route existed that nothing in the
+ * simulation had ever heard of. A `path` is a route learned (an `intelligence`
+ * record), an offer that will come round again (an `encounter_seed`), or a door
+ * a later system can open — never the sentence alone. Prose belongs in the
+ * band's `overview`, which promises nothing and is the right home for a mood.
  *
  * There is deliberately no fifth "everything else" member: a bucket named that
  * can never be story-legible, which is why MARK was retired. An unclassifiable

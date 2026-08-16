@@ -75,6 +75,34 @@ import {
  */
 const APOTHEOSIS_SETTINGS = ['rural', 'urban', 'sacred', 'wayside'] as const;
 
+// ─── Law 56 backing tuning (THR-1141, NFP #1) ────────────────────────
+//
+// The four failure endings each describe a mortal left damaged — worn through,
+// broken, doubting, hesitating on a shrine step. Until this ticket none of them
+// wrote anything: the template's only write is the `grant_aspect` on the
+// success side, so every failure chip claimed a mark the encounter never made.
+// UI Law 56 says a chip reports state the engine wrote, so the damage the prose
+// describes is now damage the sheet carries.
+//
+// The conditions are chosen from the live catalog, not minted: a failed
+// apotheosis is a wounding and a grief, and `trait.condition.wounded` /
+// `trait.condition.grieving` already exist. Minting a bespoke condition for one
+// encounter is the kind of green-fielding the systems inventory exists to stop.
+
+/** A frame opened and not filled (~60 game days). Long, because it is not a bruise. */
+const APOTHEOSIS_UNMADE_DURATION_TICKS = 720;
+/** A frame that came apart (~120 game days) and stacked, because it is worse. */
+const APOTHEOSIS_RUINED_DURATION_TICKS = 1440;
+const APOTHEOSIS_RUINED_STACKS = 2;
+/** What the pouring took out of the soul it was poured through. */
+const APOTHEOSIS_UNMADE_QUINTESSENCE = -0.15;
+const APOTHEOSIS_RUINED_QUINTESSENCE = -0.3;
+/** A doubt entering a devotion that had none. The thread holds; the trust dips. */
+const APOTHEOSIS_DOUBT_TRUST = -0.12;
+/** Twenty years of unhesitating mornings, and now a pause. */
+const APOTHEOSIS_PAUSE_TRUST = -0.25;
+const APOTHEOSIS_PAUSE_DURATION_TICKS = 480;
+
 // ─── The god's hand ──────────────────────────────────────────────────
 
 /**
@@ -447,6 +475,28 @@ const ASCEND_AFTERMATH = {
           polarity: 'loss' as const,
         },
       ],
+      // Law 56 (THR-1141): 'Unmade' says the soul was worn through. That is a
+      // wound and an erosion, and both are now written on the mortal.
+      reactions: [
+        {
+          id: 'apotheosis.unmade.let_them_be',
+          label: 'Let them be',
+          intent: 'They are at their own table by morning. Leave them there.',
+          effects: [
+            {
+              kind: 'condition_attachment' as const,
+              templateId: 'trait.condition.wounded',
+              durationOverride: APOTHEOSIS_UNMADE_DURATION_TICKS,
+              targetAgentId: '$target',
+            },
+            {
+              kind: 'quintessence_shift' as const,
+              delta: APOTHEOSIS_UNMADE_QUINTESSENCE,
+              targetAgentId: '$target',
+            },
+          ],
+        },
+      ],
     },
     critical_failure: {
       overview:
@@ -464,6 +514,29 @@ const ASCEND_AFTERMATH = {
             'The pouring broke the frame it was poured into. No aspect, no grant, and the devotion that ' +
             'made the mortal eligible is now the wound that shows.',
           polarity: 'loss' as const,
+        },
+      ],
+      // 'What Came Back' is the worst ending the template has. The condition is
+      // indefinite because nothing in the fiction gives this one back.
+      reactions: [
+        {
+          id: 'apotheosis.ruined.let_them_be',
+          label: 'Let them be',
+          intent: 'The village still uses the old name.',
+          effects: [
+            {
+              kind: 'condition_attachment' as const,
+              templateId: 'trait.condition.wounded',
+              durationOverride: APOTHEOSIS_RUINED_DURATION_TICKS,
+              stackCount: APOTHEOSIS_RUINED_STACKS,
+              targetAgentId: '$target',
+            },
+            {
+              kind: 'quintessence_shift' as const,
+              delta: APOTHEOSIS_RUINED_QUINTESSENCE,
+              targetAgentId: '$target',
+            },
+          ],
         },
       ],
     },
@@ -552,6 +625,25 @@ const WITHHOLD_AFTERMATH = {
           polarity: 'loss' as const,
         },
       ],
+      // 'The Withdrawal, Felt' says the thread holds and the devotion under it
+      // has a doubt in it. A held thread with dipped trust is exactly a bond
+      // edge, so the doubt is written there rather than described.
+      reactions: [
+        {
+          id: 'apotheosis.withdrawal.listen',
+          label: 'Let them listen',
+          intent: 'They prayed at the usual hour, and listened afterward.',
+          effects: [
+            {
+              kind: 'bond_change' as const,
+              withAgentId: '$target',
+              sentimentDelta: 0,
+              trustDelta: APOTHEOSIS_DOUBT_TRUST,
+              reciprocal: false,
+            },
+          ],
+        },
+      ],
     },
     critical_failure: {
       overview:
@@ -568,6 +660,32 @@ const WITHHOLD_AFTERMATH = {
             'The closing wounded what it was protecting. The thread survives, and the faithful one now ' +
             'hesitates before a shrine they used to walk straight into.',
           polarity: 'loss' as const,
+        },
+      ],
+      // The worst of the declined endings: the thread survives, so the write is
+      // a deeper trust dip than 'The Withdrawal, Felt' — plus the grief of
+      // twenty years of certainty ending. `grieving` is the live condition that
+      // names a loss with no body to bury.
+      reactions: [
+        {
+          id: 'apotheosis.pause.stand_outside',
+          label: 'Let them stand outside a while',
+          intent: 'They will go in. Not yet.',
+          effects: [
+            {
+              kind: 'bond_change' as const,
+              withAgentId: '$target',
+              sentimentDelta: 0,
+              trustDelta: APOTHEOSIS_PAUSE_TRUST,
+              reciprocal: false,
+            },
+            {
+              kind: 'condition_attachment' as const,
+              templateId: 'trait.condition.grieving',
+              durationOverride: APOTHEOSIS_PAUSE_DURATION_TICKS,
+              targetAgentId: '$target',
+            },
+          ],
         },
       ],
     },

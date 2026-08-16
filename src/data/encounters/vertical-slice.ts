@@ -55,6 +55,24 @@ export const SLICE_SWINDLER_DELAY_TICKS = 96;
 /** Ticks until word of the kindness runs ahead of the traveler (~20 game days). */
 export const SLICE_KIN_DELAY_TICKS = 240;
 
+// ─── Law 56 backing tuning (THR-1141, NFP #1) ────────────────────────
+//
+// The writes below exist because a consequence chip may only report state the
+// engine wrote (UI Law 56). Each number is the *duration or weight* of one such
+// write; the chip's sentence was already authored and is unchanged.
+
+/** How long the pass stays shut behind them (~30 game days — a season's tail). */
+export const SLICE_PASS_SEASON_DURATION_TICKS = 360;
+/** The closed pass is a plain fact of the region, not a portent. */
+export const SLICE_PASS_SEASON_INTENSITY = 0.4;
+/** Ticks until the crossroads marker can be found again (~15 game days). */
+export const SLICE_CROSSROADS_RETURN_DELAY_TICKS = 180;
+/** Ticks until word of the swindled family's road comes back (~13 game days). */
+export const SLICE_FAMILY_NEWS_DELAY_TICKS = 156;
+/** Four days walked inside a hunted column buys a warm edge, not a friendship. */
+export const SLICE_CARAVAN_MASTER_SENTIMENT = 0.15;
+export const SLICE_CARAVAN_MASTER_TRUST = 0.1;
+
 // ─── Aftermath consequence tuning (THR-973, NFP #1) ──────────────────
 //
 // The slice's endings are outcome-banded (`byOutcome`) and each carries at
@@ -290,7 +308,39 @@ export const SLICE_UNSAFE_BRIDGE: UnifiedActionTemplate = {
           id: 'slice.bridge.walk_on',
           label: 'Walk on',
           intent: 'The road goes on from either bank.',
-          effects: [],
+          effects: [
+            // Law 56 (THR-1141): 'The Bridge, Measured' claims the traveler now
+            // knows what the crossing is worth and that the ford is a real
+            // option. That is a knowledge claim, so it is written as knowledge —
+            // an intelligence record later steps can read (`intel_sensitive`
+            // eases on it, `intel_referenced_prose` can pay it off), rather than
+            // a sentence describing a thing the simulation never learned.
+            {
+              kind: 'intelligence',
+              category: 'trade_route',
+              label: 'The river crossing, measured',
+              detail:
+                'The planking holds a walking weight and no more. The ford lies half a day '
+                + 'upstream and is passable on foot.',
+              targetAgentId: '$actor',
+              reliability: 0.9,
+            },
+            // The keeper takes coppers for planking her own sons will not look
+            // at. That is a concealed action, and a mark is what makes it
+            // discoverable later instead of a detail only the prose knows.
+            {
+              kind: 'hidden_mark',
+              category: 'concealed_action',
+              severity: 0.4,
+              label: 'Takes a toll on planking she knows is failing',
+              // `investigation` only. `wayside` is a *setting class*, not a
+              // template-id prefix — reveal families match by id prefix, so
+              // naming it would have made this mark unrevealable by
+              // construction (caught by `revealFamilyLiveness.test.ts`).
+              targetAgentId: '$cast:keeper',
+              revealFamilies: ['investigation'],
+            },
+          ],
         },
       ],
       byOutcome: {
@@ -775,7 +825,34 @@ export const SLICE_SNOW_ON_THE_PASS: UnifiedActionTemplate = {
           id: 'slice.pass.walk_down',
           label: 'Walk down the far side',
           intent: 'The road resumes below the snow line.',
-          effects: [],
+          effects: [
+            // Law 56 (THR-1141): 'The Season' claims the near side is shut until
+            // spring. The omen is what makes the season real to the simulation —
+            // it carries a duration and biases what the region turns up while it
+            // holds. It is paired with the intelligence record deliberately: this
+            // module classifies `emit_omen` as scene dressing for the Rewards
+            // block, so the knowledge write is what the chip is backed by, and
+            // the omen is what makes the claim true rather than merely known.
+            {
+              kind: 'emit_omen',
+              category: 'seasonal',
+              intensity: SLICE_PASS_SEASON_INTENSITY,
+              durationTicks: SLICE_PASS_SEASON_DURATION_TICKS,
+              narrativeHook:
+                'The high pass is closed. Nothing crosses it until the thaw.',
+              scope: { kind: 'global' },
+            },
+            {
+              kind: 'intelligence',
+              category: 'trade_route',
+              label: 'The high pass, after the first snow',
+              detail:
+                'The near side is shut until spring. Anything left on it stays there, and the '
+                + 'only way back is the long road around.',
+              targetAgentId: '$actor',
+              reliability: 0.9,
+            },
+          ],
         },
       ],
       byOutcome: {
@@ -1246,7 +1323,28 @@ export const SLICE_RIDERS_BEHIND_CARAVAN: UnifiedActionTemplate = {
           id: 'slice.caravan.part_ways',
           label: 'Part ways at the gates',
           intent: 'The column scatters into the town, and the road resumes.',
-          effects: [],
+          effects: [
+            // Law 56 (THR-1141): 'The Column' claims thirty people can name the
+            // stranger who walked them in. Being nameable is two real things —
+            // an edge to the man who asked, and a standing on this road — so
+            // both are written rather than described.
+            {
+              kind: 'bond_change',
+              withAgentId: '$cast:keeper',
+              sentimentDelta: SLICE_CARAVAN_MASTER_SENTIMENT,
+              trustDelta: SLICE_CARAVAN_MASTER_TRUST,
+            },
+            {
+              kind: 'intelligence',
+              category: 'trade_route',
+              label: 'The caravan roads',
+              detail:
+                'Which column runs which chalk road, and who walks at the front of it. Thirty '
+                + 'people can put a name to the stranger who walked them in.',
+              targetAgentId: '$actor',
+              reliability: 0.85,
+            },
+          ],
         },
       ],
       byOutcome: {
@@ -1908,7 +2006,31 @@ export const SLICE_BARGAIN_AT_CROSSROADS: UnifiedActionTemplate = {
           id: 'slice.crossroads.move_along',
           label: 'Move along',
           intent: 'The treeline takes the road back.',
-          effects: [],
+          effects: [
+            // Law 56 (THR-1141): 'The Marker and the Tree' claims they know the
+            // road back if they ever want the offer again. The seed is what makes
+            // "again" a thing the world holds — `inheritContext` keeps the same
+            // stranger under the same tree (THR-1110), so the sentence describes
+            // a scheduled return rather than a mood.
+            {
+              kind: 'encounter_seed',
+              templateId: SLICE_TEMPLATE_IDS.crossroads,
+              targetAgentId: '$actor',
+              delayTicks: SLICE_CROSSROADS_RETURN_DELAY_TICKS,
+              seedLabel: 'The road bends back toward a dead tree and an offer left unanswered.',
+              inheritContext: true,
+            },
+            {
+              kind: 'intelligence',
+              category: 'cultural_knowledge',
+              label: 'The marker under the dead tree',
+              detail:
+                'What waits at that crossroads, what it asks for, and which of the four roads '
+                + 'comes back to it.',
+              targetAgentId: '$actor',
+              reliability: 0.8,
+            },
+          ],
         },
       ],
     },
@@ -2703,7 +2825,30 @@ export const SLICE_SWINDLED_FAMILY: UnifiedActionTemplate = {
             id: 'slice.family.make_the_town',
             label: 'Make the town by dark',
             intent: 'The planned road, at the planned pace.',
-            effects: [],
+            effects: [
+              // Law 56 (THR-1141): 'East Is Theirs' claims the fen does its work
+              // out of their sight. Out of sight is not out of the world — the
+              // seed is what makes the phrase true, bringing back what happened
+              // on the road they did not take.
+              {
+                kind: 'encounter_seed',
+                templateId: SLICE_TEMPLATE_IDS.family,
+                targetAgentId: '$actor',
+                delayTicks: SLICE_FAMILY_NEWS_DELAY_TICKS,
+                seedLabel: 'Word comes back from the fen road about a handcart and three children.',
+                inheritContext: true,
+              },
+              {
+                kind: 'intelligence',
+                category: 'trade_route',
+                label: 'The fen road, east of the fork',
+                detail:
+                  'What the salt-grey country east of the fork does to people who walk into it '
+                  + 'with a handcart and no guide.',
+                targetAgentId: '$actor',
+                reliability: 0.75,
+              },
+            ],
           },
         ],
         byOutcome: {
@@ -2742,6 +2887,32 @@ export const SLICE_SWINDLED_FAMILY: UnifiedActionTemplate = {
                     delta: SLICE_NERVE_EROSION,
                     source: 'slice.family.the_fen_in_mind',
                   },
+                  // Carried down from the base reaction on purpose. THR-1141
+                  // added the fen-road seed and intel to `negative`'s base
+                  // reaction so 'East Is Theirs' has a write behind it; this
+                  // band authors its own `reactions`, and
+                  // `applyAftermathOutcomeBand` substitutes them **wholesale**,
+                  // so anything not repeated here is silently dropped. The
+                  // haunted ending is the one that most needs the news to come
+                  // back — that is the whole shape of it.
+                  {
+                    kind: 'encounter_seed',
+                    templateId: SLICE_TEMPLATE_IDS.family,
+                    targetAgentId: '$actor',
+                    delayTicks: SLICE_FAMILY_NEWS_DELAY_TICKS,
+                    seedLabel: 'Word comes back from the fen road about a handcart and three children.',
+                    inheritContext: true,
+                  },
+                  {
+                    kind: 'intelligence',
+                    category: 'trade_route',
+                    label: 'The fen road, east of the fork',
+                    detail:
+                      'What the salt-grey country east of the fork does to people who walk into '
+                      + 'it with a handcart and no guide.',
+                    targetAgentId: '$actor',
+                    reliability: 0.75,
+                  },
                 ],
               },
             ],
@@ -2770,7 +2941,29 @@ export const SLICE_SWINDLED_FAMILY: UnifiedActionTemplate = {
           id: 'slice.family.roads_part',
           label: 'Let the roads part',
           intent: 'East is theirs. The rest is the traveler’s.',
-          effects: [],
+          effects: [
+            // Law 56 (THR-1141): 'Two Roads' claims they know what lies east and
+            // will not walk into it. Knowing is the write — a record the fen-road
+            // steps can read — and the seed brings the other road's answer back.
+            {
+              kind: 'intelligence',
+              category: 'trade_route',
+              label: 'The fen road east of the meeting point',
+              detail:
+                'Salt ground, no guide, and a deed that buys nothing. Anyone walking it with a '
+                + 'handcart is walking it once.',
+              targetAgentId: '$actor',
+              reliability: 0.8,
+            },
+            {
+              kind: 'encounter_seed',
+              templateId: SLICE_TEMPLATE_IDS.family,
+              targetAgentId: '$actor',
+              delayTicks: SLICE_FAMILY_NEWS_DELAY_TICKS,
+              seedLabel: 'The fen road gives back word of the family who took it.',
+              inheritContext: true,
+            },
+          ],
         },
       ],
     },
@@ -3213,7 +3406,40 @@ export const SLICE_SWINDLER_FOUND: UnifiedActionTemplate = {
           id: 'slice.swindler.market_closes',
           label: 'Let the market close',
           intent: 'Stalls fold. The square empties.',
-          effects: [],
+          effects: [
+            // Law 56 (THR-1141): 'The Square Empties' makes three claims in one
+            // sentence — they know his pitch, they know his hours, and markets
+            // like this repeat — and each names a different real system. All
+            // three are written: the knowledge, the mark that makes his trade
+            // discoverable by market and investigation content, and the seed that
+            // makes "repeat" a scheduled fact.
+            {
+              kind: 'intelligence',
+              category: 'agent_network',
+              label: 'The paper-seller’s circuit',
+              detail:
+                'His pitch, his patter, and the hours he works a market. He does not vary any '
+                + 'of the three.',
+              targetAgentId: '$actor',
+              reliability: 0.85,
+            },
+            {
+              kind: 'hidden_mark',
+              category: 'concealed_action',
+              severity: 0.5,
+              label: 'Sells deeds to land that was never his',
+              targetAgentId: '$cast:trader',
+              revealFamilies: ['investigation', 'merchant', 'social.investigate_reputation'],
+            },
+            {
+              kind: 'encounter_seed',
+              templateId: SLICE_TEMPLATE_IDS.swindlerFound,
+              targetAgentId: '$actor',
+              delayTicks: SLICE_SWINDLER_DELAY_TICKS,
+              seedLabel: 'The same voice is working the same lie, a few markets on.',
+              inheritContext: true,
+            },
+          ],
         },
       ],
     },

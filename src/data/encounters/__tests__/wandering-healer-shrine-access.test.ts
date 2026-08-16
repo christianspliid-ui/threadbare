@@ -154,7 +154,45 @@ describe('The Healer at the Ward-Gate — aftermath config', () => {
     expect(changeIds).toContain('child_recovers');
   });
 
-  it('fallback has no reactions (clean consequence)', () => {
-    expect(config.fallback.reactions).toBeUndefined();
+  // Repointed by THR-1141. This assertion used to read `reactions` must be
+  // `undefined` — "clean consequence" — and it was the codified form of exactly
+  // the defect UI Law 56 was ratified to kill: three chips claiming a
+  // disposition, a community memory and a recovery, with no write anywhere on
+  // the template to make any of them true. A test asserting the dead side of a
+  // retired contract is worse than no test, so it is inverted rather than
+  // deleted: the encounter now owes its chips a write, and this is where that
+  // is held.
+  it('each authored chip is backed by a write on the same ending (Law 56)', () => {
+    const effects = (config.fallback.reactions ?? []).flatMap(r => r.effects);
+    const kinds = effects.map(e => e.kind);
+    // `healer_departs` — Maret's disposition is an edge, not a sentence.
+    expect(kinds).toContain('bond_change');
+    // `ward_policy_tested` — carried by the man who holds the ward's gate.
+    // Thornwall Ward is fiction, not a faction node, so there is no
+    // `targetFactionId` to move here.
+    expect(kinds).toContain('reputation_score');
+    // `child_recovers` is a `future_hook`, and a hook is backed by a seed.
+    expect(kinds).toContain('encounter_seed');
+  });
+
+  it('every effect names a cast key the template actually declares', () => {
+    // The THR-844 rot class: a `$cast:` sentinel naming a key outside the
+    // support bundle no-ops silently, so the write never lands and the chip is
+    // back to claiming nothing.
+    const declared = new Set(
+      (WANDERING_HEALER_SHRINE_ACCESS_TEMPLATE.supportBundle ?? []).map(s => s.key),
+    );
+    const sentinels = (config.fallback.reactions ?? [])
+      .flatMap(r => r.effects)
+      .flatMap(e => [
+        (e as { targetAgentId?: string }).targetAgentId,
+        (e as { withAgentId?: string }).withAgentId,
+      ])
+      .filter((id): id is string => typeof id === 'string' && id.startsWith('$cast:'));
+
+    expect(sentinels.length).toBeGreaterThan(0);
+    for (const sentinel of sentinels) {
+      expect(declared).toContain(sentinel.slice('$cast:'.length));
+    }
   });
 });

@@ -79,6 +79,19 @@ const step0TheNudge: ActionStep = {
     'the moment the way wind leans into a flame — not enough to extinguish, just enough to bend.',
 };
 
+// ─── Law 56 backing tuning (THR-1141, NFP #1) ────────────────────
+//
+// A consequence chip may only report state the engine wrote. These are the
+// magnitudes of the writes the three authored chips point at.
+
+/** Maret leaves owing the god a good opinion, not a friendship. */
+const HEALER_MARET_SENTIMENT = 0.2;
+const HEALER_MARET_TRUST = 0.15;
+/** Jorik carries the ward's memory of a gate that was tested. */
+const HEALER_WARD_STANDING_DELTA = 0.08;
+/** Ticks until the household comes looking for the god (~15 game days). */
+const HEALER_GRATITUDE_DELAY_TICKS = 180;
+
 // ─── Aftermath Config ────────────────────────────────────────────
 
 /**
@@ -116,6 +129,46 @@ const LINEAR_AFTERMATH = {
       title: 'The Sick Child',
       detail: 'The child recovers from bone-fever — quickly if the healer got through, slowly if not.',
       polarity: 'gain' as const,
+    },
+  ],
+  // Law 56 (THR-1141): until this reaction existed the three chips above were
+  // the whole aftermath — three sentences claiming a disposition, a community
+  // memory and a recovery, with no reaction and no effect anywhere on the
+  // template. Each chip now points at a write.
+  //
+  // Two authoring notes, both the THR-844 rot class caught at wiring time:
+  // *Thornwall Ward is fiction, not a faction node* — there is no `factionDefId`
+  // for it — so "the community remembers" is carried by the man who holds its
+  // gate, which is where the encounter already puts it. And the sick child is
+  // not in the support bundle, so the recovery cannot be written as a condition
+  // on her; the hook is backed the way hooks are backed, with a seed that brings
+  // the household back.
+  reactions: [
+    {
+      id: 'healer.gate_closes',
+      label: 'Let the gate close',
+      intent: 'Maret takes the road. The ward keeps its rule and its quiet.',
+      effects: [
+        {
+          kind: 'bond_change' as const,
+          withAgentId: '$cast:maret',
+          sentimentDelta: HEALER_MARET_SENTIMENT,
+          trustDelta: HEALER_MARET_TRUST,
+        },
+        {
+          kind: 'reputation_score' as const,
+          targetAgentId: '$cast:jorik',
+          delta: HEALER_WARD_STANDING_DELTA,
+        },
+        {
+          kind: 'encounter_seed' as const,
+          templateId: 'encounter.slice.grateful_kin',
+          targetAgentId: '$actor',
+          delayTicks: HEALER_GRATITUDE_DELAY_TICKS,
+          seedLabel: 'A household in Thornwall remembers who stood at their gate.',
+          inheritContext: true,
+        },
+      ],
     },
   ],
 } as const;
