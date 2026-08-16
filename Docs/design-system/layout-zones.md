@@ -30,6 +30,7 @@
 Overlay layers (centered, above everything):
   - EncounterVeil / Full-screen modals           z:50–60
   - Modal (shared primitive)                     z:60
+  - Sheet opened over an interrupt               z:65
   - Tooltips                                     z:70+
   - Portaled dropdowns                           z:9999
   - Toast / AlertBar                             z:10000 (conceptual top)
@@ -94,11 +95,13 @@ Overlay layers (centered, above everything):
 
 | Property | Value | Source |
 |----------|-------|--------|
-| Z-index | `60` (backdrop + dialog) | `Modal.tsx:68` |
+| Z-index | `60` default (`MODAL_Z_DEFAULT`), `65` raised (`MODAL_Z_ABOVE_INTERRUPT`) — via the `zIndex` prop | `Modal.tsx` |
 | Max width | `600px` default (configurable via `maxWidth` prop) | `Modal.tsx:23,80` |
 | Max height | `75vh` | `Modal.tsx:82` |
 | Animation | `anim-fade-up` default | `Modal.tsx:23` |
 | Behavior | Centered overlay. Escape to close. Backdrop click to close. | |
+
+**Two modals at equal z resolve by DOM order** — which the JSX author never sees, and which changes whenever the render order in `GameView` is edited. `MODAL_Z_ABOVE_INTERRUPT` (65) is the one sanctioned step up, for a sheet opened *from* a modal-tier interrupt that renders later in `GameView`: `AgentProfileModal` over `PremonitionModal` (THR-1139). It deliberately stops below 70 — the profile sheet contains tooltips, and `Tooltip` sits at `70 + depth`, so raising a sheet into that band would bury its own hovers. A third band is a design decision against this table, not an implementation choice (Law 35).
 
 ### Avatar HUD
 
@@ -136,7 +139,8 @@ From bottom to top — every layer that participates in the stacking context:
 | 45 | Debug panel | `DebugPanel` | Dev-only, above cards |
 | 50 | Focused overlays | ActionDrawer backdrop, `SettingsPanel`, `EncounterVeil` | Focused card interaction, settings |
 | 51 | Focused card | ActionDrawer focused card detail | Above backdrop |
-| 60 | Modals | `Modal` (shared primitive) | Standard dialogs |
+| 60 | Modals | `Modal` (shared primitive) | Standard dialogs — `MODAL_Z_DEFAULT` |
+| 65 | Sheet over interrupt | `AgentProfileModal` when opened from `PremonitionModal` | `MODAL_Z_ABOVE_INTERRUPT`, via `Modal`'s `zIndex` prop (THR-1139) |
 | 70+ | Tooltips | `Tooltip` (shared primitive) | `70 + depth` for nested tooltips |
 | 9999 | Portaled menus | `Dropdown` | Portal-based, always on top |
 

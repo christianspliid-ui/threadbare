@@ -79,7 +79,7 @@ import { ArmySheet } from './ArmySheet';
 import { ArtifactSheet } from './ArtifactSheet';
 import { AttachmentDetailView } from './AttachmentDetailView';
 import { resolveAttachmentTemplateDetail } from '../../engine/attachmentTemplateDetail';
-import { Modal } from '../shared/Modal';
+import { Modal, MODAL_Z_ABOVE_INTERRUPT } from '../shared/Modal';
 import { AgentProfileModal } from './AgentProfileModal';
 import { ChapterLedger } from './ChapterLedger';
 import { StrandView } from './StrandView';
@@ -4425,6 +4425,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
             gameState={gameState}
             runtime={runtime}
             onOpenEntity={openAgentProfileForId}
+            // Opens above a modal-tier interrupt (THR-1139) — the premonition
+            // renders later in this file and would otherwise win the equal-z tie.
+            zIndex={MODAL_Z_ABOVE_INTERRUPT}
           />
         )}
       </AnimateMount>
@@ -4694,8 +4697,18 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
           open={true}
           premonition={activePremonition}
           essencePool={gameState.essencePool}
+          graph={gameState.graph}
+          tooltipContext={{
+            graph: gameState.graph,
+            familiarityMap: gameState.familiarityMap,
+            ascendantId: gameState.ascendantId,
+          }}
           onWhisperChoice={handleWhisperChoice}
           onCompulsionChoice={handleCompulsionChoice}
+          // Opens the mortal's sheet *over* the premonition (THR-1139). The
+          // premonition stays mounted and choosable underneath — this is a
+          // context lookup, not a dismissal.
+          onViewAgent={() => openAgentProfileForId(activePremonition.agentId)}
           onDismiss={handlePremonitionDismiss}
         />
       )}

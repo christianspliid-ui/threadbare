@@ -11,9 +11,13 @@
 
 import { useMemo } from 'react';
 import { Modal } from '../shared/Modal';
+import { EntityVisual } from '../shared/EntityVisual';
+import { Tooltip } from '../shared/Tooltip';
 import type { PremonitionEvent, WhisperNudge, CompulsionCandidate } from '../../types/premonition';
 import type { EssencePool } from '../../types/influence';
 import type { SphereName } from '../../types';
+import type { WorldGraph } from '../../engine/graph';
+import { resolveTooltip, type TooltipResolverContext } from '../../engine/tooltipResolver';
 import { SPHERE_COLORS, QUINTESSENCE_COLOR } from '../../data/premonition-constants';
 import { formatEssence } from '../shared/formatEssence';
 
@@ -23,8 +27,14 @@ interface PremonitionModalProps {
   open: boolean;
   premonition: PremonitionEvent;
   essencePool: EssencePool;
+  /** World graph — resolves the subject's portrait (Law 1). Omit on graph-free surfaces. */
+  graph?: WorldGraph | null;
+  /** Context for the subject's `agent.*` tooltip; absent ⇒ no hover tier, name still links. */
+  tooltipContext?: TooltipResolverContext | null;
   onWhisperChoice: (nudge: WhisperNudge) => void;
   onCompulsionChoice: (candidate: CompulsionCandidate) => void;
+  /** Opens the subject's character sheet *over* this modal — never dismisses it. */
+  onViewAgent?: () => void;
   onDismiss: () => void;
 }
 
@@ -60,6 +70,20 @@ const OPTION_BORDER_PCT = 25;
 const OPTION_BG_PCT = 3;
 const OPTION_TEXT_PCT = 87;
 const tint = (color: string, pct: number) => `color-mix(in srgb, ${color} ${pct}%, transparent)`;
+
+// ─── Subject header (THR-1139) ──────────────────────────────────
+
+/**
+ * Portrait width in the 520px modal (NFP #1). The `chip` size (40px) is too small
+ * to recognise a face at a glance; `portrait` is 3:4, so this reads 84×112 —
+ * present enough to identify the mortal, short enough that the vignette stays the
+ * surface's subject. Rounded rather than circular to match the character sheet the
+ * portrait opens, so the player sees one face in two places.
+ */
+const SUBJECT_PORTRAIT_PX = 84;
+
+/** Minimum hit area for the name control (Law 46). */
+const SUBJECT_NAME_MIN_HIT_PX = 24;
 
 // ─── Helpers ────────────────────────────────────────────────────
 
@@ -171,11 +195,26 @@ export function PremonitionModal({
   open,
   premonition,
   essencePool,
+  graph,
+  tooltipContext,
   onWhisperChoice,
   onCompulsionChoice,
+  onViewAgent,
   onDismiss,
 }: PremonitionModalProps) {
   const isWhisper = premonition.type === 'whisper';
+
+  /**
+   * `agent.*` is a context-bearing prefix — `Tooltip`'s own `id` path calls
+   * `resolveTooltip` with no context and would resolve it to null (a dead hover
+   * that looks live, Law 21's anti-pattern). So resolve it here with the context
+   * and hand `Tooltip` the finished label/desc. Null without a context: the name
+   * still links, it just has no hover tier.
+   */
+  const subjectTooltip = useMemo(
+    () => (tooltipContext ? resolveTooltip(`agent.${premonition.agentId}`, tooltipContext) : null),
+    [tooltipContext, premonition.agentId],
+  );
 
   const headerText = isWhisper ? 'A Stirring in the Thread' : "The God's Will";
   const dismissText = isWhisper ? 'Let the dream fade' : 'Release your hold \u2014 let them choose';
@@ -191,7 +230,30 @@ export function PremonitionModal({
         }}
       >
         {/* Header */}
-        <div className="text-center pt-5 pb-2">
+        <div className="text-center pt-5 pb-2 flex flex-col items-center">
+          {/* Law 1 — the subject carries its image. Entity Visual Header pattern
+              (THR-637); the resolver is knowledge-gated but fail-open when no
+              level is passed, and a threaded mortal always resolves to art or
+              the authored fallback tile. Clicking it does what the name does. */}
+          <EntityVisual
+            size="portrait"
+            shape="rounded"
+            entity={{ id: premonition.agentId, kind: 'agent', name: premonition.agentName }}
+            graph={graph ?? null}
+            onClick={onViewAgent}
+            aria-label={
+              onViewAgent
+                ? `Open the character sheet for ${premonition.agentName}`
+                : `Portrait of ${premonition.agentName}`
+            }
+            data-testid="premonition-subject-portrait"
+            style={{
+              width: SUBJECT_PORTRAIT_PX,
+              minWidth: SUBJECT_PORTRAIT_PX,
+              height: Math.round(SUBJECT_PORTRAIT_PX * 4 / 3),
+              marginBottom: 10,
+            }}
+          />
           <div
             className="text-[11px] uppercase tracking-[3px]"
             style={{ color: accent(isWhisper, '--premonition-accent-text-alpha') }}
@@ -200,10 +262,38 @@ export function PremonitionModal({
           </div>
           {/* Law 45: was `opacity-40` (~2.5:1 composed). Which mortal the
               premonition is about is the one thing on this surface that cannot
-              be inferred from anything else on it. */}
-          <div className="text-xs mt-1" style={{ color: dimText(isWhisper) }}>
-            {premonition.agentName}
-          </div>
+              be inferred from anything else on it.
+              Law 21/20: the name is the link to the mortal's page, and the
+              tooltip is the hover tier above it. */}
+          <Tooltip label={subjectTooltip?.label} desc={subjectTooltip?.desc}>
+            {onViewAgent ? (
+              <button
+                type="button"
+                onClick={onViewAgent}
+                data-testid="premonition-subject-name"
+                className="text-xs mt-1 bg-transparent border-none cursor-pointer hover:brightness-125 transition-[filter]"
+                style={{
+                  color: dimText(isWhisper),
+                  fontFamily: 'inherit',
+                  minHeight: SUBJECT_NAME_MIN_HIT_PX,
+                  padding: '0 8px',
+                  textDecoration: 'underline',
+                  textDecorationStyle: 'dotted',
+                  textUnderlineOffset: 3,
+                }}
+              >
+                {premonition.agentName}
+              </button>
+            ) : (
+              <span
+                className="text-xs mt-1"
+                data-testid="premonition-subject-name"
+                style={{ color: dimText(isWhisper) }}
+              >
+                {premonition.agentName}
+              </span>
+            )}
+          </Tooltip>
         </div>
 
         {/* Vignette */}
