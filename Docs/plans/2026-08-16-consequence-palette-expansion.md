@@ -1,5 +1,5 @@
 > **title:** `Consequence palette expansion + the Consequence Draw — THR-1142/1143/1144/1145/1146`
-> **linear_issue:** THR-1142, THR-1143, THR-1144, THR-1145, THR-1146
+> **linear_issue:** THR-1142, THR-1143, THR-1144, THR-1145, THR-1146, THR-1147
 > **author:** `Claude Code (Fable, attended design session)`
 > **created:** 2026-08-16
 > **three_pillars:** Engine `done` · Content `done` · UI `done (THR-1143 only; N/A elsewhere — see per-primitive sections)`
@@ -214,7 +214,7 @@ UI: N/A — authoring-time tool; nothing player-facing renders from it directly.
 
 ### § Other tables — the same utility elsewhere (director ask, 2026-08-16)
 
-The utility is deliberately generic because the factory has three more variety problems with the same shape; each is a **named follow-up, not scope of THR-1145**:
+The utility is deliberately generic because the factory has more variety problems with the same shape. One is **commissioned** (director direction, 2026-08-16 in-session): **THR-1147, the plot-hook table** — a curated, rollable catalog of story-seed hooks (collected from the numbered Hook #NNN list the vertical-slice batch drew from, the Obsidian Archetypes folder, and unshipped encounter drafts) rolled at brief time so the premise starts from a drawn hook instead of the author's habits; per-hook reuse-damping is the variety guarantee, and the hook is a starting point, never a contract. Blocked by THR-1145 (needs `drawFromTable` + brief-stage plumbing). Two more are **named follow-ups, not scope**:
 
 1. **Cast draw** — who stands in the scene: a reach-weighted table over cast archetypes (rival, kin, official, stranger, old debt, crowd). The census's social-tier starvation partly traces to scenes that only cast a counterparty-of-function.
 2. **Complication draw** — which complication family a failure takes (Capability 8's templates are a ready-made table; today authors pick the same few).
