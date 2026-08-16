@@ -8,6 +8,10 @@ import {
   setNudgeDesignerView,
 } from '../encounter-stage/designerView';
 import { buildSimpleEncounterStageModel } from '../encounter-stage/adapters/buildSimpleEncounterStageModel';
+import {
+  CONSEQUENCE_LEGEND_STORE_KEY,
+  buildAftermathConsequences,
+} from '../encounter-stage/adapters/buildAftermathConsequences';
 import { WorldGraph } from '../../../engine/graph';
 import type { UnifiedActionTemplate } from '../../../types/unifiedAction';
 import type { EncounterNotification } from '../../../types/encounterVisibility';
@@ -555,9 +559,79 @@ describe('aftermath mode', () => {
     expect(screen.getByText('1 of 2 resolved')).toBeInTheDocument();
   });
 
-  it('leaves the aftermath navigator inert — no dot enters a replay that cannot render', () => {
+  // ── Replay from the ending (THR-1136 §2) ─────────────────────────
+  //
+  // THR-1003 left these dots inert because the aftermath rendered no replay
+  // view, and a control that does nothing is worse than no control. The
+  // director overruled the premise — "all 2 resolved" while the resolved steps
+  // cannot be opened is a dead end — so the fix gives them the view they were
+  // missing rather than restoring the inertness.
+
+  it('opens a resolved step from the aftermath navigator', () => {
     render(<EncounterVeil {...defaultProps} model={identityModel} />);
-    expect(screen.getByRole('button', { name: 'Step 1 — held' })).toBeDisabled();
+    const dot = screen.getByRole('button', { name: 'Step 1 — held' });
+    expect(dot).toBeEnabled();
+
+    fireEvent.click(dot);
+    expect(screen.getByTestId('aftermath-step-replay')).toBeInTheDocument();
+    // The ending's own body is out of the way while the past is on screen.
+    expect(screen.queryByTestId('aftermath-section-label')).not.toBeInTheDocument();
+  });
+
+  it('keeps the encounter identity chrome visible during a replay', () => {
+    render(<EncounterVeil {...defaultProps} model={identityModel} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Step 2 — slipped' }));
+
+    // Only the ending is swapped out — the player never loses which encounter
+    // and whose story they are reading.
+    expect(screen.getByTestId('aftermath-encounter-title')).toHaveTextContent('Gate Duty');
+    expect(screen.getByTestId('aftermath-context-strip')).toHaveTextContent('Vasara Enkhet');
+    expect(screen.getByText('all 2 resolved')).toBeInTheDocument();
+  });
+
+  it('returns from a replay to the ending, not out of the encounter', () => {
+    const onAcknowledge = vi.fn();
+    render(
+      <EncounterVeil {...defaultProps} model={identityModel} onAcknowledgeAftermath={onAcknowledge} />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Step 1 — held' }));
+    // The exit is deliberately absent mid-replay: two return-shaped controls
+    // with different destinations on one screen is the Law 21 failure.
+    expect(screen.queryByText('Return to the world')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /return/i }));
+    expect(screen.getByTestId('aftermath-section-label')).toBeInTheDocument();
+    expect(onAcknowledge).not.toHaveBeenCalled();
+  });
+
+  it('leaves an unresolved step shut — there is no past to replay', () => {
+    render(
+      <EncounterVeil
+        {...defaultProps}
+        model={{
+          ...identityModel,
+          history: [
+            { stepId: 'step-1', stepLabel: 'First Step', status: 'resolved', outcome: 'success', outcomeWord: 'held' },
+            { stepId: 'step-2', stepLabel: 'Second Step', status: 'future' },
+          ],
+        }}
+      />,
+    );
+    expect(screen.getByRole('button', { name: 'Step 1 — held' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'Step 2' })).toBeDisabled();
+  });
+
+  // ── Corner chrome removal (THR-1136 §1) ──────────────────────────
+
+  it('drops the top-right tier label from the ending', () => {
+    render(<EncounterVeil {...defaultProps} model={identityModel} />);
+    // The thread-tier word is process chrome, and `· Aftermath` duplicated the
+    // section marker the content column already opens with (THR-1003).
+    expect(screen.queryByText(/Strongly Threaded/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/· Aftermath/)).not.toBeInTheDocument();
+    // Falsifier: the marker the corner label duplicated is still there, so a
+    // pass cannot mean the aftermath simply failed to render.
+    expect(screen.getByTestId('aftermath-section-label')).toHaveTextContent('Aftermath');
   });
 
   it('keeps the aftermath section marker distinct from the encounter title', () => {
@@ -609,6 +683,7 @@ describe('aftermath mode', () => {
           kindLabel: 'PRIZE',
           category: 'boon',
           categoryLabel: 'BOON',
+          categoryTooltipId: 'ui.consequence.boon',
           categoryGlyph: '✦',
           sentence: { id: 'c-prize', segments: [{ text: 'A wrapped parcel changed hands.' }] },
           sentenceText: 'A wrapped parcel changed hands.',
@@ -621,6 +696,7 @@ describe('aftermath mode', () => {
           kindLabel: 'SEED',
           category: 'path',
           categoryLabel: 'PATH',
+          categoryTooltipId: 'ui.consequence.path',
           categoryGlyph: '◆',
           sentence: {
             id: 'c-seed',
@@ -676,6 +752,7 @@ describe('aftermath mode', () => {
           kindLabel: 'WOUND',
           category: 'scar',
           categoryLabel: 'SCAR',
+          categoryTooltipId: 'ui.consequence.scar',
           categoryGlyph: '✕',
           sentence: {
             id: 'c-grant',
@@ -801,6 +878,68 @@ describe('aftermath mode', () => {
     expect(chip.getByText('A wrapped parcel changed hands.')).toBeInTheDocument();
   });
 
+  // ── Reading order reaches the screen (THR-1136 §4) ───────────────
+  //
+  // Built through the real adapter rather than from a hand-written chip list:
+  // every other test in this block fixes `consequences` by hand, which would
+  // make an order assertion a test of the fixture. The reported defect was a
+  // live ending drawing BOON/BOND/BOON/BOND, so what has to be proven is that
+  // the sort survives all the way to the DOM.
+  it('draws consequence chips grouped by story category, not in change-set order', () => {
+    const sortedModel: EncounterStageModel = {
+      ...aftermathModel,
+      aftermath: {
+        ...aftermathModel.aftermath!,
+        consequences: buildAftermathConsequences({
+          changes: [
+            { id: 'p', kind: 'future_hook', title: 'p', detail: 'A road opens.', polarity: 'info' },
+            { id: 'b', kind: 'item', title: 'b', detail: 'A parcel changed hands.', polarity: 'gain' },
+            { id: 'n', kind: 'reputation', title: 'n', detail: 'They are spoken of.', polarity: 'gain' },
+            { id: 's', kind: 'trait', title: 's', detail: 'A limp remains.', polarity: 'loss' },
+          ],
+          enrich: (t) => t,
+          link: (id, text) => ({ id, segments: [{ text }] }),
+        }),
+      },
+    };
+    render(<EncounterVeil {...defaultProps} model={sortedModel} />);
+
+    const drawn = screen
+      .getByTestId('aftermath-consequences')
+      .querySelectorAll('[data-consequence-category]');
+    expect([...drawn].map((el) => el.getAttribute('data-consequence-category')))
+      .toEqual(['scar', 'bond', 'boon', 'path']);
+  });
+
+  // ── The category word's own hover tier (THR-1136 §3a) ────────────
+  //
+  // The legend below teaches the vocabulary once and is dismissable, and Law 51
+  // keeps that dismissal across sessions — so after "got it", a player facing
+  // `BOON · EYE` had no way left to ask what BOON meant, on any ending, ever.
+  // Law 17 holds on the surface as composed, and the chip is the surface.
+
+  it('LAW 17: the chip category word answers for itself, independent of the legend', () => {
+    vi.useFakeTimers();
+    try {
+      // Legend dismissed — the exact state the defect was reported from.
+      localStorage.setItem(CONSEQUENCE_LEGEND_STORE_KEY, 'true');
+      render(<EncounterVeil {...defaultProps} model={chipModel} />);
+      expect(screen.queryByTestId('consequence-legend')).not.toBeInTheDocument();
+
+      const category = screen.getAllByTestId(/^consequence-chip-category-/)[0];
+      expect(category).toHaveAttribute('tabindex', '0');
+
+      fireEvent.pointerEnter(category);
+      act(() => { vi.advanceTimersByTime(300); });
+
+      // Registry copy, the same entry the legend reads — one set of words.
+      expect(screen.getByRole('tooltip')).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+      localStorage.clear();
+    }
+  });
+
   it('LAW 12: introduces the category vocabulary on first contact (THR-1082)', () => {
     render(<EncounterVeil {...defaultProps} model={chipModel} />);
     const legend = screen.getByTestId('consequence-legend');
@@ -829,6 +968,7 @@ describe('aftermath mode', () => {
           kindLabel: 'MARK',
           category: 'boon',
           categoryLabel: 'BOON',
+          categoryTooltipId: 'ui.consequence.boon',
           nounLabel: 'STONE',
           categoryGlyph: '✦',
           reachDomain: 'stone',
@@ -949,6 +1089,7 @@ describe('aftermath mode', () => {
             kindLabel: 'STANDING',
             category: 'bond',
             categoryLabel: 'BOND',
+            categoryTooltipId: 'ui.consequence.bond',
             categoryGlyph: '◈',
             sentence: {
               id: 'c-standing',

@@ -37,7 +37,6 @@ import {
   overviewHighlightPhrase,
   reachDisplayName,
   reputationSentence,
-  reputationTallySentence,
   rewardSentence,
   traitGrantedSentence,
 } from './aftermathWords';
@@ -2440,28 +2439,20 @@ export function executeStepResult(
     });
   }
 
-  const tallyKeys = new Set([
-    ...Object.keys(beforeSnapshot.reputationTallies),
-    ...Object.keys(finalSnapshot.reputationTallies),
-  ]);
-  for (const key of tallyKeys) {
-    const beforeValue = beforeSnapshot.reputationTallies[key] ?? 0;
-    const afterValue = finalSnapshot.reputationTallies[key] ?? 0;
-    const delta = afterValue - beforeValue;
-    if (Math.abs(delta) <= 0.0001) continue;
-    const sentence = reputationTallySentence({ actorName: currentActorName, key, delta });
-    aftermathChanges.push({
-      id: `${action.actionId}:step:${action.currentStep}:tally:${key}`,
-      kind: 'reputation_tally',
-      title: 'Reputation memory deepened',
-      detail: sentence.detail,
-      concepts: sentence.concepts,
-      ...derivedFields(sentence),
-      polarity: delta > 0 ? 'gain' : 'loss',
-      actorId: action.actorId,
-      actorName: currentActorName,
-    });
-  }
+  // THR-1136 §5 — the snapshot diff no longer reports reputation *tallies* to
+  // the player. Director ruling, 2026-08-16: a quantity the aftermath reports
+  // must be inspectable on some player surface, and the per-Reach tallies are
+  // on none — they were invisible on the character sheet and reported here,
+  // and that asymmetry was the defect. Each ending carried two or three
+  // one-line "their record in Eye deepened" chips that told the player nothing
+  // they could act on and crowded out the changes that did.
+  //
+  // Only the *reporting* stopped. `finalSnapshot.reputationTallies` is still
+  // written by the tally effects, still steers scoring and gating, still emits
+  // its traces (NFP #2 — inspectability lives in the traces and the designer
+  // view, not on a mortal-facing chip), and the Whispered/Known/Legendary
+  // threshold mints in `phaseReputationTraits.ts` are untouched. A minted trait
+  // is a real, sheet-visible change and still reports as one.
 
   for (const [runtimeId, afterGate] of finalSnapshot.clearanceGates.entries()) {
     const beforeGate = beforeSnapshot.clearanceGates.get(runtimeId);

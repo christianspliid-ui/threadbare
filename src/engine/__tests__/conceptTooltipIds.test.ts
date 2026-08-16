@@ -29,7 +29,7 @@ import {
   TOOLTIP_BACKED_REACHES,
   growthSentence,
   reputationSentence,
-  reputationTallySentence,
+
   reachTooltipId,
 } from '../aftermathWords';
 
@@ -115,8 +115,9 @@ describe('concept tooltip ids (THR-1033)', () => {
       growthSentence({ actorName: 'Vara', domain: 'star', applied: 0.4, tierCrossed: true }),
       reputationSentence({ actorName: 'Vara', delta: 0.3, flavour: 'authored' }),
       reputationSentence({ actorName: 'Vara', delta: -0.3, flavour: 'branch' }),
-      reputationTallySentence({ actorName: 'Vara', key: 'star.positive', delta: 0.2 }),
-      reputationTallySentence({ actorName: 'Vara', key: 'heart.negative', delta: -0.2 }),
+      // THR-1136 §5 — the two `reputationTallySentence` rows are gone with the
+      // producer. Tallies no longer reach a mortal-facing surface at all, so
+      // there is no concept of theirs left for this law to bind.
     ];
 
     const dangling = sentences
