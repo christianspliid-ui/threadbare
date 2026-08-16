@@ -109,7 +109,7 @@ Each of the 8 Reaches maps to an archetype-pair axis (the moral dimension in the
 | Veil | Weaver (Patient) | Unraveller (Impatient) |
 | Heart | Sworn (Loyal) | Renegade (Disloyal) |
 | Eye | Seer (Perceptive) | Inquisitor (Judgemental) |
-| Stone | Keeper (Dependable) | Destroyer (Reckless) |
+| Stone | Keeper (Careful) | Destroyer (Reckless) |
 | Star | Beacon (Guiding) | Wrecker (Misleading) |
 
 **Behavioral words are deliberately plain** (not literary) for in-game readability — see the change note below.
@@ -121,7 +121,9 @@ Each of the 8 Reaches maps to an archetype-pair axis (the moral dimension in the
 - Star: Wanderer → **Beacon**.
 - **`Manipulator` relocated Veil → Shadow** and **`Seer` relocated Veil → Eye.** Any content/code referencing these archetype names by reach must be checked against this table.
 
-**Source:** approved by user (creative director), 2026-06-29 — supersedes the archetype-pole names in `Brainstorms/brainstorm-cosmological-symmetry.md` (2026-03-28). See `Docs/plans/2026-06-29-archetype-virtue-vice-layer.md` for the full decision record and wiring spec.
+**Note on 2026-08-16 revision (THR-1135):** Stone's virtue *word* changed **Dependable → Careful**; the role name `Keeper` and the whole vice pole are unchanged. "Dependable" means *people can rely on you* — an interpersonal-trust reading that overlaps Heart's `Loyal`, so an agent legitimately holding both `Disloyal` (Heart) and `Dependable` (Stone) read as a contradiction wherever the chips appeared together. `Careful ↔ Reckless` is a clean antonym pair with no interpersonal-trust connotation. The registry (`src/types/axisRegistry.ts`) is the single source of truth, so chips, slider pole labels, the "has become X" event line and trait descriptions all follow from it.
+
+**Source:** approved by user (creative director), 2026-06-29 — supersedes the archetype-pole names in `Brainstorms/brainstorm-cosmological-symmetry.md` (2026-03-28). See `Docs/plans/2026-06-29-archetype-virtue-vice-layer.md` for the full decision record and wiring spec. The 2026-08-16 Stone-word revision is likewise a creative-director decision, recorded in THR-1135.
 
 ### Key sources
 

@@ -131,7 +131,10 @@ export const CANONICAL_AXES: readonly CanonicalAxis[] = [
     reachDomain: 'stone',
     axisId: axisIdForReach('stone'),
     valuePair: REACH_VALUE_PAIR.stone,
-    virtue: { role: 'Keeper', word: 'Dependable' },
+    // Virtue word renamed Dependable → Careful (THR-1135): "Dependable" reads as
+    // interpersonal trust, which is Heart's domain, so Keeper/Disloyal chips looked
+    // contradictory on shared surfaces. Careful ↔ Reckless is a clean antonym pair.
+    virtue: { role: 'Keeper', word: 'Careful' },
     vice: { role: 'Destroyer', word: 'Reckless' },
   },
   {

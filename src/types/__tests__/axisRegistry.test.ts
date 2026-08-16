@@ -29,7 +29,7 @@ const APPROVED = {
   veil: { virtue: { role: 'Weaver', word: 'Patient' }, vice: { role: 'Unraveller', word: 'Impatient' } },
   heart: { virtue: { role: 'Sworn', word: 'Loyal' }, vice: { role: 'Renegade', word: 'Disloyal' } },
   eye: { virtue: { role: 'Seer', word: 'Perceptive' }, vice: { role: 'Inquisitor', word: 'Judgemental' } },
-  stone: { virtue: { role: 'Keeper', word: 'Dependable' }, vice: { role: 'Destroyer', word: 'Reckless' } },
+  stone: { virtue: { role: 'Keeper', word: 'Careful' }, vice: { role: 'Destroyer', word: 'Reckless' } }, // word revised THR-1135: Dependable → Careful (Dependable bled into Heart's Loyal axis)
   star: { virtue: { role: 'Beacon', word: 'Guiding' }, vice: { role: 'Wrecker', word: 'Misleading' } }, // re-scoped THR-545: wayfinding/fate, not inner outlook
 } as const;
 
