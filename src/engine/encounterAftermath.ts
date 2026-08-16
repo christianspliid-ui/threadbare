@@ -27,6 +27,8 @@ import {
   setRelocationIntent,
 } from './relocationIntent';
 import { observeResidence } from './agentResidence';
+import type { MembershipChangeResult } from './factionMembership';
+import { joinFaction, leaveFaction, adjustMemberRank } from './factionMembership';
 import { RELOCATION_INTENT_TTL_TICKS } from '../data/movement-content';
 import { assignAmbitionToActor } from './ambitionAssignment';
 import type { TraceEntry } from '../types/trace';
@@ -642,6 +644,17 @@ const SCENE_SENTINEL_FIELDS = {
   // sentinel and passes through untouched, then is validated by the handler.
   counterpartyId: 'agent',
   targetFactionId: 'faction',
+  // THR-1144 — `membership_change` names the faction someone joins or leaves in
+  // `factionId`, not `targetFactionId`, because the *person* is the effect's
+  // target. Registered here rather than special-cased so `$target` binds "the
+  // guild you just impressed" without the author knowing its node id.
+  //
+  // This widens four existing kinds that also carry `factionId`
+  // (`faction_absorb`, `faction_dissolve`, `signature_warhost`,
+  // `faction_reputation_gain`), which could not take a sentinel before. Widening
+  // only: a literal id is not a sentinel and passes through untouched, so no
+  // shipped content changes behaviour.
+  factionId: 'faction',
   targetSublocationId: 'sublocation',
   // THR-1143 — a place. `$target` binds when the action targets a location, which
   // is how "the pass you just closed" reaches the condition without the author
@@ -4298,6 +4311,110 @@ export function applyEncounterAftermathReaction(
           effectiveTargetId: resolvedId,
           effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'location' | 'actor_fallback',
           summary: `agent_relocation[${i}]: ${resolvedId} → ${destination.label} (${mode})`,
+        });
+        break;
+      }
+
+      case 'membership_change': {
+        // THR-1144 — one person joins, leaves, or moves rank in a faction.
+        // The effect's *target* is the person, so `factionId` names the faction
+        // and the usual target resolution supplies the agent.
+        const memberId = target.kind !== 'actor_fallback' ? target.id : actorAgentId;
+        const op = effect.op;
+
+        const failMembership = (reason: string, detail: Record<string, unknown> = {}): void => {
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'membership_change',
+            effectDetail: { targetAgentId: memberId, factionId: effect.factionId, op, ...detail },
+            success: false, failReason: reason,
+            effectiveTargetId: memberId ?? '',
+            effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'location' | 'actor_fallback',
+            summary: `membership_change[${i}] skipped: ${reason}`,
+          });
+        };
+
+        if (!memberId) { failMembership('no_actor_id'); break; }
+
+        let result: MembershipChangeResult;
+        if (op === 'join') {
+          result = joinFaction(state.graph, memberId, effect.factionId, tick);
+        } else if (op === 'leave') {
+          result = leaveFaction(state.graph, memberId, effect.factionId);
+        } else {
+          // `rank_delta` without a delta is an authoring slip, not a world event.
+          if (effect.rankDelta === undefined) { failMembership('no_rank_delta'); break; }
+          result = adjustMemberRank(state.graph, memberId, effect.factionId, effect.rankDelta);
+        }
+
+        if (!result.changed) { failMembership(result.reason ?? 'no_change'); break; }
+
+        touchWorld(runtime);
+        mutationSummary.touchedWorld = true;
+
+        const memberName = state.graph.getNode(memberId)?.name ?? memberId;
+        // The *resolved* node id, never the authored one — content names the
+        // faction definition (`'mercenary_company'`), which is not a node, so
+        // looking the name up by the authored value put a raw slug into the
+        // player-facing chronicle line. Caught in a CLI run.
+        const factionNodeId = result.factionNodeId ?? effect.factionId;
+        const factionName = state.graph.getNode(factionNodeId)?.name ?? factionNodeId;
+        const summary = op === 'join'
+          ? `membership_change[${i}]: ${memberName} joins ${factionName}`
+          : op === 'leave'
+            ? `membership_change[${i}]: ${memberName} leaves ${factionName}`
+            : `membership_change[${i}]: ${memberName} rank in ${factionName} ${result.oldRank?.toFixed(2)} → ${result.newRank?.toFixed(2)}`;
+
+        emitTrace({
+          tick, category: 'aftermath_membership_change', agentId: memberId,
+          encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+          factionId: factionNodeId,
+          op,
+          oldRank: result.oldRank,
+          newRank: result.newRank,
+          role: result.role,
+          templateId: action?.templateId,
+          summary,
+        });
+
+        // A chronicle-visible arrival or departure, when the author asked for one.
+        // Reuses the two event types the quest-driven join path already emits, so
+        // notification routing and the faction anchor need no new case.
+        if (effect.chronicle && op !== 'rank_delta') {
+          const membershipEvent = {
+            id: `aftermath_membership_${op}_${tick}_${encounterId}_${i}`,
+            tick,
+            type: op === 'join' ? 'faction_member_joined' : 'faction_rank_changed',
+            message: op === 'join'
+              ? `${memberName} has joined ${factionName}.`
+              : `${memberName} has left ${factionName}.`,
+            significance: 0.6,
+            notification: { channel: 'toast', icon: 'faction' },
+            actorId: memberId,
+            factionId: factionNodeId,
+          } as TickEvent;
+          // Both feeds, as every other event-emitting effect here does.
+          // `tickEvents` is per-tick and is gone next tick; `recentEvents` is the
+          // rolling buffer the chronicle and notification surfaces actually read,
+          // so a `chronicle: true` that skipped it would announce nothing.
+          nextRecentEvents = appendRecentEvent(nextRecentEvents, membershipEvent);
+          nextTickEvents = [...nextTickEvents, membershipEvent];
+        }
+
+        emitTrace({
+          tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+          encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+          effectKind: 'membership_change',
+          effectDetail: {
+            targetAgentId: memberId, factionId: factionNodeId, op,
+            oldRank: result.oldRank, newRank: result.newRank, role: result.role,
+            chronicle: effect.chronicle ?? false,
+          },
+          success: true,
+          effectiveTargetId: memberId,
+          effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'location' | 'actor_fallback',
+          summary,
         });
         break;
       }

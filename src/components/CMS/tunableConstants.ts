@@ -320,6 +320,10 @@ export const TUNABLE_GROUPS: TunableGroup[] = [
         'Rank bump for factions whose secondary reach matches the promoted domain.',
         'src/data/agent-behavior-constants.ts', [0.02, 0.1],
         'tierPromotion → secondary rank update'),
+      n('FACTION_RANK_MAX', abc.FACTION_RANK_MAX,
+        'Ceiling for a member_of edge rank (0 = recruit, 1 = leader). Clamps membership_change.rank_delta and sets the top of the scale faction_rank: reads.',
+        'src/data/agent-behavior-constants.ts', [1.0, 10.0],
+        'membership_change → rank_delta clamp; faction_rank: predicate'),
     ],
   },
 

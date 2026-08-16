@@ -1342,6 +1342,64 @@ export const CONTRACTS: readonly Contract[] = [
     // decision rather than a gap someone later reads as a bug.
   },
   {
+    id: 'membership-change-writes-rank-and-faction-rank-gate-reads-it',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      'An ending can make someone a member of a faction, or move them up inside it — and a later scene can require the rank it gave them.',
+    ulTerms: ['Encounter', 'Faction', 'Prerequisite'],
+    mechanism: {
+      kind: 'function',
+      symbols: [
+        // Write side — the three membership ops and the id resolution they share.
+        'joinFaction',
+        'leaveFaction',
+        'adjustMemberRank',
+        'resolveFactionNodeId',
+        // Read side — the predicate that gates on what was written.
+        'buildPredicateContext',
+        'FACTION_RANK_MAX',
+      ],
+      module: 'src/engine/factionMembership.ts',
+    },
+    writeSites: ['src/engine/encounterAftermath.ts'],
+    readSites: ['src/engine/effects/effectPredicates.ts'],
+    // THR-1144, the third primitive of the consequence-palette expansion. The row
+    // exists for the same reason THR-1143's does: the write was the easy half.
+    //
+    // The reader here was not merely missing, it was *present and dead*.
+    // `buildPredicateContext` read `agentNode.properties.factionRank`, a node
+    // property no engine path writes, so `ctx.factionRank` was permanently 0 and
+    // every `faction_rank:` predicate permanently false. THR-805 found that and
+    // declined to build guild-tier gating on it. Shipping `rank_delta` without
+    // reviving the reader would have written a number nothing could ever ask about
+    // — UI Law 56's hollowness at world scope, which is why the reader is in this
+    // ticket's scope rather than a follow-up.
+    //
+    // Two halves to the revival, and both are load-bearing. The context builder now
+    // reads the highest `rank` across the agent's `member_of` edges — where rank has
+    // always actually lived, and what `tierPromotion` and the join/promotion outcomes
+    // write. And the predicate parses a *float*: `MemberOfEdgeProperties.rank`
+    // declares its scale as 0 (recruit) → 1 (leader), so `parseInt` left authors
+    // exactly two usable thresholds on a continuous axis. `parseFloat('2')` is still
+    // 2 and no predicate had ever been authored against a dead gate, so nothing
+    // changed meaning.
+    //
+    // The test falsifies in *both* directions on purpose: reverting the context
+    // builder leaves the "below-rank agent is blocked" arm green and turns the
+    // "at-rank agent is admitted" arm red. A gate that never fires passes every
+    // negative-only test, which is precisely how this one stayed dead.
+    //
+    // `resolveFactionNodeId` is in the mechanism because the contract is unusable
+    // without it: content names the faction *definition* (`'mercenary_company'`)
+    // while `factionSeeding` keys nodes `faction_def_<definitionId><chapterSuffix>`.
+    //
+    // Deliberately NOT rerouted here: `faction_reputation_gain`, which carries the
+    // same `factionId` field and the same mismatch, and is therefore dead across the
+    // whole authored corpus. Filed as THR-1150 rather than changed inside an
+    // unrelated PR — a recorded boundary, not an oversight.
+  },
+  {
     id: 'nudge-card-cost-channels-detection-and-doom',
     producerSystem: ENCOUNTERS,
     consumerSystem: QUINTESSENCE,

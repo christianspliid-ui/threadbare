@@ -385,6 +385,7 @@ export type TraceCategory =
   | 'action'
   | 'aftermath_agent_relocation'
   | 'aftermath_invalid_tally_key'
+  | 'aftermath_membership_change'
   | 'aftermath_invalid_tally_key_rate_limited'
   | 'aftermath_sentinel_bound'
   | 'agent_validation'
@@ -742,6 +743,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'action',
   'aftermath_agent_relocation',
   'aftermath_invalid_tally_key',
+  'aftermath_membership_change',
   'aftermath_invalid_tally_key_rate_limited',
   'aftermath_sentinel_bound',
   'agent_validation',
@@ -1646,7 +1648,9 @@ export interface EncounterAftermathEffectTrace extends TraceBase {
     // `encounterAftermath.ts` reaches for a cast to emit its trace. Kinds are
     // added here as their dispatchers learn to emit without one; the cast
     // ratchet (THR-1065) is what keeps that direction of travel.
-    | 'agent_relocation';
+    | 'agent_relocation'
+    // THR-1144.
+    | 'membership_change';
   /** Kind-specific payload for inspection */
   effectDetail: Readonly<Record<string, unknown>>;
   success: boolean;
@@ -1842,6 +1846,30 @@ export interface AgentRelocationTrace extends TraceBase {
   expiresAtTick?: number;
   templateId?: string;
   // Attribution back to the ending that sent them.
+  encounterId?: string;
+  actionId?: string;
+  reactionId?: string;
+  effectIndex?: number;
+}
+
+/**
+ * Trace: a `membership_change` aftermath effect moved one person in, out, or up a
+ * faction (THR-1144).
+ *
+ * `oldRank`/`newRank` are on the `member_of` edge's canonical 0–1 scale and are
+ * both present only for `rank_delta`; `join` reports the rank it started someone
+ * at, `leave` the rank they left with.
+ */
+export interface MembershipChangeTrace extends TraceBase {
+  category: 'aftermath_membership_change';
+  factionId: string;
+  op: 'join' | 'leave' | 'rank_delta';
+  oldRank?: number;
+  newRank?: number;
+  /** Role string on the edge after the write, when one was written. */
+  role?: string;
+  templateId?: string;
+  // Attribution back to the ending that moved them.
   encounterId?: string;
   actionId?: string;
   reactionId?: string;
@@ -2274,6 +2302,7 @@ export type TraceEntry =
   | AftermathSentinelBoundTrace
   | BondChangeAppliedTrace
   | AgentRelocationTrace
+  | MembershipChangeTrace
   | RelocationResolvedTrace
   // Companions (THR-1096)
   | CompanionJoinedTrace

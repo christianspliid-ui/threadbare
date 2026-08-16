@@ -19,8 +19,8 @@ remediation ticket or the build fails.
 | 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 7 |
 | ⚫ UNWIRED | 0 |
-| 🔵 UNVERIFIED-OK | 11 |
-| **Total** | **66** |
+| 🔵 UNVERIFIED-OK | 12 |
+| **Total** | **67** |
 
 ## Contracts by producing subsystem
 
@@ -105,6 +105,7 @@ remediation ticket or the build fails.
 | `compulsion-card-plants-agent-decision-bias` | A god can steer one mortal without seizing them: the card plants an urge, and that mortal's own next decision leans toward it — you steered them, they still chose. | function: `derivePlantedCompulsionEncounterBias`, `phasePlantedCompulsionDecay` | Encounters & Dilemmas | 🔴 LEAKED | THR-883 |
 | `location-condition-taxes-movement-and-gates-templates` | A place can be in a state — a pass shut for the season, a town under a plague scare — and that state is something other systems act on, not scenery. | function: `isLocationCarrier`, `LOCATION_CONDITION_MOVEMENT_TAX`, `buildLocationTargetContext` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `meeting-trait-seeds-land-as-narrative-descriptors` | The choices you made while meeting your First stay visible in who they are — the descriptors the meeting authored read back on their character sheet and in their backstory, instead of every First being described in the same default words. | node-prop: `narrativeDescriptors` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
+| `membership-change-writes-rank-and-faction-rank-gate-reads-it` | An ending can make someone a member of a faction, or move them up inside it — and a later scene can require the rank it gave them. | function: `joinFaction`, `leaveFaction`, `adjustMemberRank`, `resolveFactionNodeId`, `buildPredicateContext`, `FACTION_RANK_MAX` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `nudge-card-cost-channels-detection-and-doom` | A card can be cheap in essence and expensive somewhere else — visibility to rivals, or the doom clock — so the price of divine help is not always the same currency. | function: `collectNudgeCostChannels`, `applyRawDetectionDelta`, `accelerateDoomClock` | Spheres & Quintessence | 🔴 LEAKED | THR-883 |
 | `nudge-card-grants-dispatch-to-host-systems` | A card that says it changed the world actually changes it, through the system that owns that change — so the fiction the player is shown and the state the world holds cannot disagree. | function: `dispatchNudgeCommitments`, `collectNudgeGrants`, `assignAmbitionToActor` | Ambitions & Initiatives | 🔵 UNVERIFIED-OK | THR-883 |
 | `player-action-aftermath-read` | The aftermath a player action already produces finally reaches the player — the receipt phase reads the summary that was built and discarded for player casts. | function: `processPlayerReceipts`, `aftermathSummary` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
@@ -644,6 +645,18 @@ remediation ticket or the build fails.
 - **Write sites:** `src/engine/meetingEncounter.ts`
 - **Read sites:** `src/engine/agentDetail.ts`, `src/engine/profileGenerator.ts`
 - **Verdict:** Verified 2026-07-31: src/engine/__tests__/meetingTraitSeedLanding.test.ts enumerates the authored population from all four catalogs (each asserted non-empty individually, so the sweep cannot pass vacuously), lands it through createAgentFromMeeting, and asserts zero unconsumed values. Reader pinned on both sides: getAgentInfoCard(…, "intimate").allTraits contains the humanized descriptor, and generateBackstory fills the {trait} slot from it instead of the hardcoded "resolute" fallback that previously covered every freshly-created First.
+
+### `membership-change-writes-rank-and-faction-rank-gate-reads-it` — 🔵 UNVERIFIED-OK
+
+- **Intent:** An ending can make someone a member of a faction, or move them up inside it — and a later scene can require the rank it gave them.
+- **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
+- **UL terms:** *Encounter*, *Faction*, *Prerequisite*
+- **Module:** `src/engine/factionMembership.ts`
+- **Production hits:** 11 total — 1 write, 1 read, 9 unclassified
+- **Write sites:** `src/engine/encounterAftermath.ts`
+- **Read sites:** `src/engine/effects/effectPredicates.ts`
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/data/agent-behavior-constants.ts`, `src/engine/effectResolver.ts`, `src/engine/effects/index.ts`, `src/engine/factionMembership.ts` +4 more
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `milestone-grants-unlock-repertoire-cards` — 🔵 UNVERIFIED-OK
 
