@@ -1,23 +1,23 @@
 # User Action Required
 
-**Last updated:** 2026-08-16 03:02 local (2026-08-16 01:02 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-16 03:57 local (2026-08-16 01:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
 ### 1. Sample 2 of 6 from Batch 1 — [THR-1131](https://linear.app/threadbare/issue/THR-1131/retrofit-batch-1-the-slice-six-through-the-factory-line-contract-thr)
 
-Your ruling 6: you sample two encounters per batch. Batch 1 shipped 2026-08-15 23:34Z and has been live since.
+Your ruling 6: you sample two encounters per batch. Batch 1 shipped 2026-08-15 23:34Z and is live on the deployed build.
 
 - **[The Unsafe Bridge](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge)**
 - **[The Grateful Kin](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin)**
 
 Chosen because they are the two your own [THR-974](https://linear.app/threadbare/issue/THR-974/consequence-verdict-session-christian-rules-on-world-graph-consequence) rewrites targeted — the clearest read on whether the plainness re-register landed. All six passed the gate; the two sequels were given first nudge hands rather than being dropped.
 
-Batches 2–3 wait on this read, and as of this hour they are the only work left on the board that an agent can build. [All six side by side](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/batch-report-2026-08-15.md) · [PR #1494](https://github.com/christianspliid-ui/threadbare/pull/1494)
+Batches 2–3 wait on this read, and they remain the only work left on the board that an agent can build. [All six side by side](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/batch-report-2026-08-15.md) · [PR #1494](https://github.com/christianspliid-ui/threadbare/pull/1494)
 
 ### 2. An attended design session for [THR-790 — Traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)
 
-*— from tb-orchestrator.* The longest-waiting agreed item on the board: created 2026-07-26 as part of the Traits program you settled that same day, blocker `Done` since then, unstaged for 20 days. Staged when the Ready-for-Dev shelf ran thin.
+*— from tb-orchestrator.* The longest-waiting agreed item on the board: created 2026-07-26 as part of the Traits program you settled that same day, blocker `Done` since then, unstaged for 21 days. Staged when the Ready-for-Dev shelf ran thin.
 
 What it lacks is a plan doc, and that needs you in the room — locations, artifacts, and draw-by-trait pools. Its sibling [THR-791 (wave 3)](https://linear.app/threadbare/issue/THR-791) is blocked on the identical gap and clears once this one lands a plan doc, so the session buys two tickets, not one. Loads and rationale are in the staging comment on the ticket.
 
@@ -44,7 +44,6 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 - 2026-08-15: **condition and attachment names explain themselves.** [THR-1122](https://linear.app/threadbare/issue/THR-1122) ([PR #1477](https://github.com/christianspliid-ui/threadbare/pull/1477)) — hovering a condition or attachment name now gives you what it means, wherever it appears. Deployed.
 - 2026-08-15: **the stance triple is gone from the game.** [THR-1123](https://linear.app/threadbare/issue/THR-1123) ([PR #1475](https://github.com/christianspliid-ui/threadbare/pull/1475)) — Gate Duty, the last quest encounter still decorating the `supportive / coercive / withdrawn` purchases you condemned at 10:00, now authors its own hand. Deployed.
 - 2026-08-15: **the ascendant bar's tooltips come from one place.** [THR-1118](https://linear.app/threadbare/issue/THR-1118) ([PR #1476](https://github.com/christianspliid-ui/threadbare/pull/1476)) — raw internal keys were reaching a player surface; they now resolve through the shared registry.
-- 2026-08-15: **the Encounter Factory ask was this lane's error — withdrawn, and the jam it caused is now cleared too.** [THR-1043](https://linear.app/threadbare/issue/THR-1043) was briefed for days as needing your attended session. In fact you approved the plan 2026-08-08 and the authoring format locked 2026-08-09 ([THR-883](https://linear.app/threadbare/issue/THR-883)). At 21:35 an agent verified that independently, freed the design slot the epic was squatting, and filed the two remaining operation items.
 
 ---
 *Refreshed hourly by `keep-work-flowing-cc`. Full history of every prior version: `git log -p origin/ops -- Design/user-actions.md`.*
