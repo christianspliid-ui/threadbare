@@ -4,8 +4,13 @@
  * Keyed by (nudge category, ambition category, quintessence tier).
  * Selected by seeded PRNG at generation time.
  *
- * Placeholders: {name}, {possessive}, {pronoun}, {reachName}, {sphereName},
- *   {locationName}, {encounterName}, {encounterHook}
+ * Placeholders: {name}, {possessive}, {pronoun}/{Pronoun}, {object}/{Object},
+ *   {reachName}, {sphereName}, {locationName}, {encounterName}, {encounterHook}
+ *
+ * Pronouns carry CASE. `{pronoun}` is the subject ("they walk"); `{object}` is
+ * the object ("calls to them"). Authoring an object position with `{pronoun}`
+ * shipped "an uncharted place calls to they" to the live modal — THR-1137.
+ * `{Pronoun}` / `{Object}` are the sentence-initial forms.
  *
  * @see Docs/plans/2026-04-04-divine-premonition-design.md
  */
@@ -13,6 +18,25 @@
 import type { WhisperNudgeCategory } from '../types/premonition';
 import type { EncounterType } from '../types/encounter';
 import type { ReachDomain } from '../types/traits';
+
+// ─── Shared Pronoun Resolver ────────────────────────────────────
+
+/**
+ * Resolve agent placeholders in premonition prose.
+ *
+ * One resolver for the whole premonition family. Three byte-identical copies
+ * used to live here, in phaseDivinePremonition.ts and in premonitionCompulsion.ts,
+ * and all three shared the missing object case (THR-1137).
+ */
+export function resolveAgentPronouns(text: string, name: string): string {
+  return text
+    .replace(/\{name\}/g, name)
+    .replace(/\{possessive\}/g, 'their')
+    .replace(/\{pronoun\}/g, 'they')
+    .replace(/\{Pronoun\}/g, 'They')
+    .replace(/\{object\}/g, 'them')
+    .replace(/\{Object\}/g, 'Them');
+}
 
 // ─── Quintessence Tiers ─────────────────────────────────────────
 
@@ -43,7 +67,7 @@ export const WHISPER_VIGNETTE_TEMPLATES: Record<QuintessenceProseTier, string[]>
   moderate: [
     '{name} dreamed, though the edges were soft and indistinct. Shapes moved in the dark behind {possessive} eyes — not quite clear, not quite forgotten.',
     'Sleep came unevenly to {name}. Between the quiet hours, something flickered — a sense of direction, faint but persistent.',
-    'A dream visited {name}, muted but insistent. {pronoun} could not recall the details, only the feeling: a pull, gentle as a current.',
+    'A dream visited {name}, muted but insistent. {Pronoun} could not recall the details, only the feeling: a pull, gentle as a current.',
   ],
   strained: [
     '{name} slept fitfully. The dreams came in fragments — a face half-seen, a road that split and split again. The weariness went deeper than bones.',
@@ -52,7 +76,7 @@ export const WHISPER_VIGNETTE_TEMPLATES: Record<QuintessenceProseTier, string[]>
   ],
   critical: [
     '{name} shivered in {possessive} sleep. The dreams were dark and formless — dissolution pressed close, and the thread itself flickered like a guttering candle.',
-    'What passed for sleep was more absence than rest. {name} floated in the dark, barely tethered. A single thread of intent was all that held {pronoun} to the world.',
+    'What passed for sleep was more absence than rest. {name} floated in the dark, barely tethered. A single thread of intent was all that held {object} to the world.',
     'The dream was not a dream but a void. {name} felt {possessive} edges fraying. Yet even here, at the threshold of dissolution, something whispered.',
   ],
 };
@@ -108,7 +132,7 @@ export const WHISPER_NUDGE_TEMPLATES: Record<WhisperNudgeCategory, {
     ],
     flavors: [
       '{name} felt the weariness in {possessive} bones — a weight beyond fatigue, as though the world itself pressed down.',
-      'The body knows what the mind denies. {pronoun} needs stillness.',
+      'The body knows what the mind denies. {Pronoun} need stillness.',
       'Even the thread grows taut when pulled too hard. Slack is not surrender.',
     ],
   },
@@ -135,8 +159,8 @@ export const AMBITION_DREAM_IMAGERY: Record<AmbitionProseCategory, string[]> = {
     'The taste of iron lingered when {pronoun} woke. Somewhere, a score remained unsettled.',
   ],
   legacy: [
-    '{pronoun} dreamed of monuments — names carved deep in stone, crowds that remembered.',
-    'A hall stretched before {pronoun}, lined with banners bearing {possessive} name. Not yet. But someday.',
+    '{Pronoun} dreamed of monuments — names carved deep in stone, crowds that remembered.',
+    'A hall stretched before {object}, lined with banners bearing {possessive} name. Not yet. But someday.',
   ],
   discovery: [
     'Doors appeared in the dream — one after another, each leading somewhere {pronoun} had never been.',
@@ -144,7 +168,7 @@ export const AMBITION_DREAM_IMAGERY: Record<AmbitionProseCategory, string[]> = {
   ],
   dominion: [
     'Walls rose at {possessive} command. In the dream, the world bent and obeyed.',
-    '{pronoun} dreamed of thrones — not inherited, but built. Stone by stone.',
+    '{Pronoun} dreamed of thrones — not inherited, but built. Stone by stone.',
   ],
   mastery: [
     'In the dream, {possessive} hands did not tremble. The strike was perfect, effortless, absolute.',
@@ -155,7 +179,7 @@ export const AMBITION_DREAM_IMAGERY: Record<AmbitionProseCategory, string[]> = {
     'The thread was visible in the dream. Golden, humming, connecting {name} to something greater.',
   ],
   survival: [
-    '{pronoun} dreamed of running — not from fear, but toward shelter. The horizon was clear.',
+    '{Pronoun} dreamed of running — not from fear, but toward shelter. The horizon was clear.',
     'A fire in a stone ring. Walls against the wind. In {possessive} sleep, the world was small and safe.',
   ],
   generic: [
@@ -168,21 +192,21 @@ export const AMBITION_DREAM_IMAGERY: Record<AmbitionProseCategory, string[]> = {
 
 export const COMPULSION_VIGNETTE_TEMPLATES: Record<QuintessenceProseTier, string[]> = {
   healthy: [
-    'You pull at the thread binding you to {name} and feel {possessive} mind turning. {Pronoun} stand at a crossroads, weighing paths forward. You could tip the balance — or let {pronoun} find {possessive} own way.',
+    'You pull at the thread binding you to {name} and feel {possessive} mind turning. {Pronoun} stand at a crossroads, weighing paths forward. You could tip the balance — or let {object} find {possessive} own way.',
     'The thread hums taut. Through it, you sense {name} deliberating — futures branching, narrowing. Your will could shape which path {pronoun} take.',
     'You reach through the thread and catch {name} mid-thought, turning over what comes next. The connection is strong. You could guide {possessive} hand.',
   ],
   moderate: [
-    'You reach for {name} through the thinning thread. {Pronoun} are deliberating — you sense the weight of choices ahead. Your influence could still sway {pronoun}.',
-    'The thread to {name} holds, though it strains. Through it you catch {pronoun} weighing {possessive} next move. You may still guide {pronoun} — carefully.',
+    'You reach for {name} through the thinning thread. {Pronoun} are deliberating — you sense the weight of choices ahead. Your influence could still sway {object}.',
+    'The thread to {name} holds, though it strains. Through it you catch {object} weighing {possessive} next move. You may still guide {object} — carefully.',
   ],
   strained: [
-    'The thread to {name} frays, but holds. Through it you glimpse {pronoun} wrestling with what comes next. You may have enough strength to guide {possessive} hand.',
+    'The thread to {name} frays, but holds. Through it you glimpse {object} wrestling with what comes next. You may have enough strength to guide {possessive} hand.',
     'A faltering connection — but enough. {name} is at a decision point, and through the fading thread, you sense {possessive} uncertainty. One nudge might be all you can manage.',
   ],
   critical: [
     'Barely a whisper of connection remains. But through it, you catch {name} at a decision point. One last nudge — if you can manage it.',
-    'The thread is almost gone. Yet through the thinning dark, {name} hesitates — and in that hesitation, a sliver of divine will might still reach {pronoun}.',
+    'The thread is almost gone. Yet through the thinning dark, {name} hesitates — and in that hesitation, a sliver of divine will might still reach {object}.',
   ],
 };
 
@@ -203,22 +227,27 @@ export const DISTANCE_BAND_MEDIUM = 5;
 const RETCON_DISTANCE_FRAGMENTS: Record<string, string[]> = {
   here:   ['Right here,', 'Close at hand,', 'Nearby,'],
   short:  ['Not far off,', 'Just beyond the next ridge,', 'A short journey away,'],
-  medium: ['Word has reached {pronoun} of', 'Rumours have drifted in —', 'Talk at the inn mentioned'],
-  far:    ['From distant lands, news of', 'Far off, word has spread of', 'A traveller brought word of'],
+  // Every desire fragment below is a CLAUSE, so a distance fragment must end in a
+  // complementizer ('that'), a dash, or a comma — never a bare preposition. 'Word
+  // has reached {pronoun} of' + 'they could make a difference' shipped as "Word has
+  // reached they of they could make a difference" (THR-1137); the whole `far` band
+  // had the same dangling 'of'.
+  medium: ['Word has reached {name} —', 'Rumours have drifted in —', 'Talk at the inn had it that'],
+  far:    ['From distant lands, word has come that', 'Far off, talk has spread that', 'A traveller brought word that'],
   remote: ['Even from here,', 'Without needing to travel,', 'From where {pronoun} stand,'],
 };
 
 // ── Encounter type "desire" fragments ──
 
 const RETCON_DESIRE_FRAGMENTS: Record<EncounterType, string[]> = {
-  explore:  ['something unknown waits to be found', 'a mystery begs investigation', 'an uncharted place calls to {pronoun}'],
+  explore:  ['something unknown waits to be found', 'a mystery begs investigation', 'an uncharted place calls to {name}'],
   duel:     ['a challenge demands an answer', 'someone stands in {possessive} way', 'a fight is brewing'],
   trade:    ['a deal could be struck', 'goods change hands if the price is right', 'riches ripe for the taking'],
   steal:    ['something valuable sits poorly guarded', 'an opportunity for the quick-fingered', 'someone else\'s fortune beckons'],
   assist:   ['someone needs {possessive} help', 'a task awaits willing hands', '{pronoun} could make a difference'],
   build:    ['something could be raised from nothing', 'raw materials and ambition align', 'the foundations of something new await'],
   hire:     ['a capable soul seeks a patron', 'loyalty is on offer', 'a willing blade awaits a purpose'],
-  lead:     ['others look to {pronoun} for direction', 'a group needs someone to follow', 'leadership is called for'],
+  lead:     ['others look to {name} for direction', 'a group needs someone to follow', 'leadership is called for'],
   acquire:  ['something of value is within reach', 'a prize sits waiting to be claimed', 'treasure ripe for the taking'],
   create:   ['an idea takes shape in {possessive} mind', 'the urge to make something stirs', 'inspiration strikes'],
 };
@@ -230,7 +259,7 @@ const RETCON_CONFIDENCE_FRAGMENTS: Record<string, string[]> = {
   easy:     ['— and {pronoun} like {possessive} chances', '— a fair bet', '— well within {possessive} grasp'],
   moderate: ['— though it won\'t be simple', '— a real test', '— odds could go either way'],
   hard:     ['— a daunting prospect', '— {pronoun} are not sure {pronoun} are ready', '— it\'ll take everything {pronoun} have'],
-  deadly:   ['— it could be the end of {pronoun}', '— only a fool would try', '— but the pull is strong, despite the danger'],
+  deadly:   ['— it could be the end of {object}', '— only a fool would try', '— but the pull is strong, despite the danger'],
 };
 
 // ── Location suffix ──
@@ -257,12 +286,21 @@ function pickFragment(pool: string[], rng: () => number): string {
   return pool[Math.floor(rng() * pool.length)];
 }
 
-function resolveRetconPronouns(text: string, name: string): string {
-  return text
-    .replace(/\{name\}/g, name)
-    .replace(/\{possessive\}/g, 'their')
-    .replace(/\{pronoun\}/g, 'they')
-    .replace(/\{Pronoun\}/g, 'They');
+/**
+ * Name on first mention, object pronoun after.
+ *
+ * The three fragment pools are combinatorial, so no fragment can know whether it
+ * holds the line's first reference to the agent — 'Word has reached {name} —' and
+ * 'an uncharted place calls to {name}' are each correct alone and say the name
+ * twice together. The composer decides, because only the composer sees the line.
+ */
+function collapseRepeatedNames(raw: string): string {
+  let named = false;
+  return raw.replace(/\{name\}/g, () => {
+    if (named) return '{object}';
+    named = true;
+    return '{name}';
+  });
 }
 
 export function composeRetconLine(rng: () => number, input: RetconInput): string {
@@ -300,7 +338,7 @@ export function composeRetconLine(rng: () => number, input: RetconInput): string
   }
 
   const raw = `${distFragment} ${desireFragment}${locationSuffix} ${confFragment}`;
-  return resolveRetconPronouns(raw, agentName);
+  return resolveAgentPronouns(collapseRepeatedNames(raw), agentName);
 }
 
 // ── Legacy export for backward compat (tests that reference it) ──
