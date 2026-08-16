@@ -1,12 +1,12 @@
 # User Action Required
 
-**Last updated:** 2026-08-16 05:58 local (2026-08-16 03:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-16 06:53 local (2026-08-16 04:53 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
 ### 1. Sample 2 of 6 from Batch 1 — [THR-1131](https://linear.app/threadbare/issue/THR-1131/retrofit-batch-1-the-slice-six-through-the-factory-line-contract-thr)
 
-Your ruling 6: you sample two encounters per batch. Batch 1 shipped 2026-08-15 23:34Z. Verified live this run — its commit is an ancestor of the deployed build, so these open the retrofitted versions.
+Your ruling 6: you sample two encounters per batch. Batch 1 shipped 2026-08-15 23:34Z. Re-verified this run — its commit is an ancestor of the deployed build, so these open the retrofitted versions.
 
 - **[The Unsafe Bridge](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge)**
 - **[The Grateful Kin](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin)**
@@ -17,20 +17,18 @@ Chosen because they are the two your own [THR-974](https://linear.app/threadbare
 
 ### 2. Charter batch 2 — [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to)
 
-**New to this list, and it should have been here since 21:16Z yesterday.** Four earlier briefs called this an agent's job. It is not: the ticket is parked with *"Parked here for your approval — ruling 2 says a batch does not run until you approve its brief."* Your ruling put the charter in your hands, so no lane can take it.
+Parked on you since 2026-08-15 21:16Z: *"Parked here for your approval — ruling 2 says a batch does not run until you approve its brief."* Your ruling put the charter in your hands, so no lane can take it. Best done straight after ask 1, so your read of Batch 1 shapes the next brief.
 
 Two things to answer, both with a recommendation already on the ticket:
 
-- **The batch itself.** A brief for the camp six is committed ([`2026-08-15-retrofit-batch-1-brief.md`](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/2026-08-15-retrofit-batch-1-brief.md)) — Sharpen Blades, Ward the Camp, Offer a Small Prayer, Rest and Reflect, Tend to Wounds, Scout the Perimeter. Batch 1 ran the slice six instead, so this brief is still unspent and is the natural batch 2.
-- **Nudge-card art.** The brief framed this as 27 missing plates corpus-wide, generate-or-remap. Batch 1 measured it much smaller in practice: 9 dead tags across six encounters, 7 with honest matches already in the library, and it shipped by remapping. A third option worth considering: give the lane a standing rule — *remap where a match is honest, come to me only when it is not* — and the question stops recurring per batch.
-
-Answering this in the same sitting as ask 1 restarts the only agent-buildable work on the board.
+- **The batch itself.** A brief for the camp six is committed ([`2026-08-15-retrofit-batch-1-brief.md`](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/2026-08-15-retrofit-batch-1-brief.md)) — Sharpen Blades, Ward the Camp, Offer a Small Prayer, Rest and Reflect, Tend to Wounds, Scout the Perimeter. Batch 1 ran the slice six instead, so this brief is unspent and is the natural batch 2.
+- **Nudge-card art.** The brief framed this as 27 missing plates corpus-wide, generate-or-remap. Batch 1 measured it much smaller in practice: 9 dead tags across six encounters, 7 with honest matches already in the library, and it shipped by remapping. A third option: give the lane a standing rule — *remap where a match is honest, come to me only when it is not* — and the question stops recurring per batch.
 
 ### 3. The slice verdict session — [THR-907](https://linear.app/threadbare/issue/THR-907/slice-verdict-session-christian-rules-on-prose-firing-ui-and-game)
 
 *— from tb-orchestrator.* Play the 5-encounter slice end-to-end in the real game and rule on four things: **prose** (does the plain register read grounded), **firing** (does the rhythm work, what is your first pruning instinct — this one needs free play, not only spawn-on-demand), **UI** (the new interface and modifier iconography with real nudge-native encounters), and **game** (is it fun to make these decisions). The consequence verdict was split out and you already ruled it on [THR-974](https://linear.app/threadbare/issue/THR-974/consequence-verdict-session-christian-rules-on-world-graph-consequence).
 
-Open with `run the slice verdict session`. "Needs another iteration" is a valid ruling on any of the four. Waiting since 2026-07-31; both native blockers shipped 2026-08-01, and the surface it asks you to judge finished landing yesterday — the veil rework, the consequence-chip links and the icon language all merged 08-14/08-15. Closing this closes the [encounter experience map](https://linear.app/threadbare/issue/THR-902/encounter-experience-redesign-vertical-slice-wayfinder-map).
+Open with `run the slice verdict session`. "Needs another iteration" is a valid ruling on any of the four. Waiting since 2026-07-31; both native blockers shipped 2026-08-01, and the surface it asks you to judge finished landing 08-14/08-15. Closing this closes the [encounter experience map](https://linear.app/threadbare/issue/THR-902/encounter-experience-redesign-vertical-slice-wayfinder-map).
 
 Overlaps asks 1 and 2 deliberately: one sitting covers all three.
 
@@ -54,6 +52,7 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
+- 2026-08-16: **the home tree started updating again on its own schedule.** [THR-1119](https://linear.app/threadbare/issue/THR-1119/autosync-has-been-stalled-12-consecutive-hours-on-three-modified) — yesterday's grooming report led with this as your #1 ask (a 5-minute attended repair); it was fixed 08-15, the stranded note was rescued rather than discarded, and the tree is confirmed clean and current this run.
 - 2026-08-16: **the checker that marked clean encounters red is fixed.** [THR-1132](https://linear.app/threadbare/issue/THR-1132/checkencounter-live-false-fails-gate-clean-content-reaction-borne) ([PR #1495](https://github.com/christianspliid-ui/threadbare/pull/1495)) — the live-proof sweep counted reaction-borne effects as missing, which is why the Batch 1 report carried five red ✗ against encounters whose gates were all green.
 - 2026-08-16: **the two sequels were saved, not dropped.** [THR-1131](https://linear.app/threadbare/issue/THR-1131/retrofit-batch-1-the-slice-six-through-the-factory-line-contract-thr) — a veto window proposed parking `grateful_kin` and `full_moon_collection`; instead both were authored first nudge hands and passed the full gate. Batch 1 delivered six, not four.
 - 2026-08-16: **you approved the batch-1 brief and chartered the batch.** [THR-1131](https://linear.app/threadbare/issue/THR-1131/retrofit-batch-1-the-slice-six-through-the-factory-line-contract-thr) — approved with one amendment, that your 10 [THR-974](https://linear.app/threadbare/issue/THR-974/consequence-verdict-session-christian-rules-on-world-graph-consequence) rewrites are the editorial critic's validation reference rather than verbatim text.
