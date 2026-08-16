@@ -19,6 +19,13 @@
  */
 
 import type { UnifiedActionTemplate, ActionStep } from '../../types/unifiedAction';
+import {
+  MENTORSHIP_HONORED_SENTIMENT,
+  MENTORSHIP_HONORED_TRUST,
+  MENTORSHIP_NEXT_MEETING_DELAY_TICKS,
+  MENTORSHIP_RIVALRY_SENTIMENT,
+  MENTORSHIP_TALLY_KEY,
+} from './law56-backing';
 
 const step0Reckoning: ActionStep = {
   reach: 'heart',
@@ -148,6 +155,24 @@ export const MENTORSHIP_GRADUATION_TEMPLATE: UnifiedActionTemplate = {
             polarity: 'gain',
           },
         ],
+        // Law 56 (THR-1141): "the settlement marks the lineage" is a tally, and
+        // "carry each other forward as peers" is an edge. Both written.
+        reactions: [
+          {
+            id: 'mentorship.graduation.honored',
+            label: 'Let them part as peers',
+            intent: 'The craft passes without rupture.',
+            effects: [
+              { kind: 'reputation_tally', key: MENTORSHIP_TALLY_KEY, delta: 1 },
+              {
+                kind: 'bond_change',
+                withAgentId: '$target',
+                sentimentDelta: MENTORSHIP_HONORED_SENTIMENT,
+                trustDelta: MENTORSHIP_HONORED_TRUST,
+              },
+            ],
+          },
+        ],
       },
       let_the_moment_be_theirs: {
         overview:
@@ -160,6 +185,18 @@ export const MENTORSHIP_GRADUATION_TEMPLATE: UnifiedActionTemplate = {
             title: 'A quiet ending',
             detail: 'Completed an apprenticeship without divine weight on the closing words.',
             polarity: 'info',
+          },
+        ],
+        // The whole point of this variant is that the god added nothing, so the
+        // tally is the only write — the settlement still marks the completion.
+        reactions: [
+          {
+            id: 'mentorship.graduation.quiet',
+            label: 'Let the ending be theirs',
+            intent: 'The apprenticeship closes on mortal terms.',
+            effects: [
+              { kind: 'reputation_tally', key: MENTORSHIP_TALLY_KEY, delta: 1 },
+            ],
           },
         ],
       },
@@ -185,6 +222,34 @@ export const MENTORSHIP_GRADUATION_TEMPLATE: UnifiedActionTemplate = {
             title: 'The next meeting',
             detail: 'Teacher and former apprentice will cross paths again, and the air between them will carry charge.',
             polarity: 'mixed',
+          },
+        ],
+        // Law 56 (THR-1141): two chips, two writes. The rivalry is a live
+        // negative edge rather than a closed one — hence a sentiment move with
+        // no trust move, since neither has stopped believing the other competent.
+        // And 'The next meeting' stops promising and starts scheduling:
+        // `inheritContext` keeps the same two people in it.
+        reactions: [
+          {
+            id: 'mentorship.graduation.rivalry',
+            label: 'Let the rivalry stand',
+            intent: 'Kin in craft, no longer kin in rank.',
+            effects: [
+              { kind: 'reputation_tally', key: MENTORSHIP_TALLY_KEY, delta: 1 },
+              {
+                kind: 'bond_change',
+                withAgentId: '$target',
+                sentimentDelta: MENTORSHIP_RIVALRY_SENTIMENT,
+              },
+              {
+                kind: 'encounter_seed',
+                templateId: 'mentorship.the-falling-out',
+                targetAgentId: '$actor',
+                delayTicks: MENTORSHIP_NEXT_MEETING_DELAY_TICKS,
+                seedLabel: 'Teacher and former apprentice cross paths, with the rank between them named.',
+                inheritContext: true,
+              },
+            ],
           },
         ],
       },

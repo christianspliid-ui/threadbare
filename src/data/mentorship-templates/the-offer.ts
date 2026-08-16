@@ -20,6 +20,11 @@
  */
 
 import type { UnifiedActionTemplate, ActionStep } from '../../types/unifiedAction';
+import {
+  MENTORSHIP_STEADY_SENTIMENT,
+  MENTORSHIP_STEADY_TRUST,
+  MENTORSHIP_TALLY_KEY,
+} from './law56-backing';
 
 const step0Reckoning: ActionStep = {
   reach: 'heart',
@@ -147,6 +152,22 @@ export const MENTORSHIP_THE_OFFER_TEMPLATE: UnifiedActionTemplate = {
             polarity: 'gain',
           },
         ],
+        reactions: [
+          {
+            id: 'mentorship.offer.steady',
+            label: 'Let the bond settle',
+            intent: 'The teaching begins on solid ground.',
+            effects: [
+              { kind: 'reputation_tally', key: MENTORSHIP_TALLY_KEY, delta: 1 },
+              {
+                kind: 'bond_change',
+                withAgentId: '$target',
+                sentimentDelta: MENTORSHIP_STEADY_SENTIMENT,
+                trustDelta: MENTORSHIP_STEADY_TRUST,
+              },
+            ],
+          },
+        ],
       },
       let_them_choose: {
         overview:
@@ -161,6 +182,16 @@ export const MENTORSHIP_THE_OFFER_TEMPLATE: UnifiedActionTemplate = {
             polarity: 'info',
           },
         ],
+        reactions: [
+          {
+            id: 'mentorship.offer.mortal',
+            label: 'Let it be theirs',
+            intent: 'The settlement marks the apprenticeship, and nothing else.',
+            effects: [
+              { kind: 'reputation_tally', key: MENTORSHIP_TALLY_KEY, delta: 1 },
+            ],
+          },
+        ],
       },
       whisper_the_cost: {
         overview:
@@ -173,6 +204,25 @@ export const MENTORSHIP_THE_OFFER_TEMPLATE: UnifiedActionTemplate = {
             title: 'A choice made sharper',
             detail: 'The cost was named; the answer carries the god\'s fingerprint on its edge.',
             polarity: 'mixed',
+          },
+        ],
+        reactions: [
+          {
+            id: 'mentorship.offer.whisper',
+            label: 'Let the whisper stand',
+            intent: 'They answered with their eyes open, and the edge of it stays.',
+            effects: [
+              { kind: 'reputation_tally', key: MENTORSHIP_TALLY_KEY, delta: 1 },
+              // The whisper buys a truer answer at the price of some warmth —
+              // trust rises because the god did not lie, sentiment falls because
+              // nobody enjoys being told the bill before they order.
+              {
+                kind: 'bond_change',
+                withAgentId: '$target',
+                sentimentDelta: -MENTORSHIP_STEADY_SENTIMENT,
+                trustDelta: MENTORSHIP_STEADY_TRUST,
+              },
+            ],
           },
         ],
       },

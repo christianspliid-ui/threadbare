@@ -384,7 +384,11 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
   },
   'ui.consequence.path': {
     label: 'Path',
-    desc: 'A way that has opened. Nothing is held yet: this is the world turning to face a direction it was not facing before.',
+    // Law 56 (THR-1141): the old copy licensed exactly the chips the law
+    // forbids — "nothing is held yet" told the player a PATH chip need not
+    // point at anything. A path is an opening the world now tracks: a road
+    // learned, a door that will open again, a meeting already scheduled.
+    desc: 'A way the world now holds open for them — a route they know, an offer that will come round again, a meeting already on its way.',
   },
 
   // ─── Threads panel (THR-1008) ─────────────────────────────────
