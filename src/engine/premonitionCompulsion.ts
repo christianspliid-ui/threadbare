@@ -12,9 +12,11 @@ import type { GameState } from '../types/gameState';
 import type { PremonitionEvent, CompulsionCandidate } from '../types/premonition';
 import type { ScoredCandidate } from './encounterScoring';
 import type { WorldGraph } from './graph';
+import type { GraphNode } from '../types/graph';
 import { getAnyEncounterById } from '../data/encounter-content';
 import {
   COMPULSION_CANDIDATE_COUNT,
+  COMPULSION_COOLDOWN_TICKS,
   COMPULSION_ESSENCE_COST_MIN,
   COMPULSION_ESSENCE_COST_MAX,
   PREMONITION_DISPLAY_DELAY_TICKS,
@@ -25,6 +27,7 @@ import {
   COMPULSION_VIGNETTE_TEMPLATES,
   getQuintessenceProseTier,
   composeRetconLine,
+  resolveAgentPronouns,
 } from '../data/premonition-content';
 import { resolveLocationToHex } from './encounterAwareness';
 import { hexDistance } from '../lib/hexMath';
@@ -47,14 +50,6 @@ function threatToNorm(rating: string): number {
   }
 }
 
-function resolvePronouns(template: string, name: string): string {
-  return template
-    .replace(/\{name\}/g, name)
-    .replace(/\{possessive\}/g, 'their')
-    .replace(/\{pronoun\}/g, 'they')
-    .replace(/\{Pronoun\}/g, 'They');
-}
-
 // ─── Compulsion Eligibility ─────────────────────────────────────
 
 export function isCompulsionEligible(
@@ -72,6 +67,40 @@ export function isCompulsionEligible(
 
   const courtPosition = (threadEdge.properties?.courtPosition as string) ?? null;
   return courtPosition === 'the_first' || courtPosition === 'retinue';
+}
+
+// ─── Re-fire Suppression ────────────────────────────────────────
+
+/**
+ * Should a Compulsion be offered to this agent on this tick?
+ *
+ * Eligibility says *who* may be compelled; this says *when*. Without it the
+ * compulsion path minted a brand-new event every single tick — choosing wrote a
+ * target the emitter never read, and dismissing wrote nothing at all, so the
+ * modal returned forever (THR-1137). The Whisper phase has had both halves of
+ * this gate since it shipped; the compulsion path had neither.
+ *
+ * @param pending     premonitions already queued from earlier ticks
+ * @param pendingThisTick premonitions minted so far during this tick's agent loop
+ */
+export function shouldEmitCompulsion(
+  agentNode: GraphNode,
+  tick: number,
+  pending: readonly PremonitionEvent[],
+  pendingThisTick: readonly PremonitionEvent[],
+): boolean {
+  const agentId = agentNode.id;
+
+  // Gate 1: one live premonition per agent at a time. Expired entries do not
+  // block — they are dropped from the queue at the end of this same phase.
+  if (pending.some(p => p.agentId === agentId && p.eligibleUntilTick > tick)) return false;
+  if (pendingThisTick.some(p => p.agentId === agentId)) return false;
+
+  // Gate 2: cooldown since the last offer, whatever became of it.
+  const lastTick = agentNode.properties?.lastCompulsionTick as number | undefined;
+  if (typeof lastTick === 'number' && tick - lastTick < COMPULSION_COOLDOWN_TICKS) return false;
+
+  return true;
 }
 
 // ─── Build Compulsion Event ─────────────────────────────────────
@@ -154,7 +183,7 @@ export function buildCompulsionEvent(
   // Generate vignette
   const proseTier = getQuintessenceProseTier(quintessence);
   const vignetteTemplate = seededPick(COMPULSION_VIGNETTE_TEMPLATES[proseTier], rng);
-  const vignetteProse = resolvePronouns(vignetteTemplate, agentName);
+  const vignetteProse = resolveAgentPronouns(vignetteTemplate, agentName);
 
   const showAfterTick = state.tick + PREMONITION_DISPLAY_DELAY_TICKS;
   return {

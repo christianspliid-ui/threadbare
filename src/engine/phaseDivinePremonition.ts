@@ -46,6 +46,7 @@ import {
   WHISPER_NUDGE_TEMPLATES,
   AMBITION_DREAM_IMAGERY,
   getQuintessenceProseTier,
+  resolveAgentPronouns,
 } from '../data/premonition-content';
 import type { AmbitionProseCategory } from '../data/premonition-content';
 
@@ -60,18 +61,7 @@ function seededPick<T>(arr: T[], rng: () => number): T {
 }
 
 // ─── Helper: pronoun resolution ─────────────────────────────────
-
-function resolvePronouns(
-  template: string,
-  name: string,
-): string {
-  // Simple neutral pronoun resolution — can be expanded per-agent later
-  return template
-    .replace(/\{name\}/g, name)
-    .replace(/\{possessive\}/g, 'their')
-    .replace(/\{pronoun\}/g, 'they')
-    .replace(/\{Pronoun\}/g, 'They');
-}
+// Shared with the compulsion path — see resolveAgentPronouns in premonition-content.ts.
 
 function resolveNudgeProse(
   template: string,
@@ -79,7 +69,7 @@ function resolveNudgeProse(
   reachName?: string,
   sphereName?: string,
 ): string {
-  let result = resolvePronouns(template, name);
+  let result = resolveAgentPronouns(template, name);
   if (reachName) result = result.replace(/\{reachName\}/g, reachName);
   if (sphereName) result = result.replace(/\{sphereName\}/g, sphereName);
   return result;
@@ -216,7 +206,7 @@ function generateWhisperVignette(
   const imagery = AMBITION_DREAM_IMAGERY[ambitionCategory] ?? AMBITION_DREAM_IMAGERY.generic;
   const ambitionFragment = seededPick(imagery, rng);
 
-  const combined = `${resolvePronouns(baseVignette, agent.name)} ${resolvePronouns(ambitionFragment, agent.name)}`;
+  const combined = `${resolveAgentPronouns(baseVignette, agent.name)} ${resolveAgentPronouns(ambitionFragment, agent.name)}`;
   return combined;
 }
 

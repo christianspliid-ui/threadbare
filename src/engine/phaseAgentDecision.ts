@@ -57,7 +57,7 @@ import { recordBalanceEvent } from './balanceTelemetry';
 import { prepareEncounterSupportBundle } from './encounterSupportBundle';
 import { initializeClearanceGates } from './clearanceGate';
 import { createUnifiedAction } from './unifiedActionLifecycle';
-import { isCompulsionEligible, buildCompulsionEvent } from './premonitionCompulsion';
+import { isCompulsionEligible, buildCompulsionEvent, shouldEmitCompulsion } from './premonitionCompulsion';
 import type { PremonitionEvent } from '../types/premonition';
 import { resolveEffectiveTier } from './attentionTier';
 import type { BalanceEncounterPoolCandidate } from '../types/balanceEval';
@@ -692,12 +692,24 @@ export function phaseAgentDecision(
       // will be influenced by compulsionTargetTemplateId if the player acts.
       if (decision.selected && decision.topCandidates.length > 1) {
         try {
-          if (isCompulsionEligible(graph, state.ascendantId, agentId)) {
+          const compulsionActor = graph.getNode(agentId);
+          if (
+            compulsionActor
+            && isCompulsionEligible(graph, state.ascendantId, agentId)
+            && shouldEmitCompulsion(
+              compulsionActor, state.tick, state.premonitionQueue ?? [], newPremonitions,
+            )
+          ) {
             const compulsionEvent = buildCompulsionEvent(
               state, agentId, actor.name, decision.topCandidates, rng,
             );
             if (compulsionEvent) {
               newPremonitions.push(compulsionEvent);
+              // Stamp at emission, not at resolution — one write covers all three
+              // endings (chosen, dismissed, expired). Direct property write, not
+              // spread: updateNode replaces the handle.
+              const freshForStamp = graph.getNode(agentId);
+              if (freshForStamp) freshForStamp.properties.lastCompulsionTick = state.tick;
             }
           }
         } catch {

@@ -64,6 +64,12 @@ export const COMPULSION_SCORE_BOOST = 5.0;
  * @range 3–5 */
 export const COMPULSION_CANDIDATE_COUNT = 4;
 
+/** Ticks after a Compulsion is offered before the same agent may be offered another.
+ * Counted from the tick the event is emitted, so it covers all three endings —
+ * chosen, dismissed, expired. 24 ticks = 2 game days at 12 ticks/day.
+ * @range 12–72 */
+export const COMPULSION_COOLDOWN_TICKS = 24;
+
 // ═══════════════════════════════════════════════════════════════════
 // QUEUE & ELIGIBILITY
 // ═══════════════════════════════════════════════════════════════════
