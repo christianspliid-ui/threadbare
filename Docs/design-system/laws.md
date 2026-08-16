@@ -108,6 +108,10 @@
 
 55. **[E] An ongoing story is never lost between its beats.** A multi-beat encounter that returns after time away re-orients the player at open: the Law 37 chrome plus its resolved chapters reviewable in place (the step navigator's replay). And outside the pop-ups, every ongoing or finished story's unlocked chapters are reachable at any time — from the agent's thread row and the chronicle/Chapter Ledger — so the player never has to *remember* which story a beat belongs to or what has happened in it so far; the surface tells them, and the record is one click away. Applies to every multi-beat encounter type, present and future.
 
+## XIV. Consequences are state — Christian's law, 2026-08-16
+
+56. **[E] A consequence chip renders only a change the engine actually wrote.** Every chip in an ending (SCAR / BOND / BOON / PATH) is backed by a game-state write: a stat or standing moved, a relationship or agreement created, an object gained or lost (artifact, attachment, trait, companion), or a planted seed the engine will act on later. A chip whose claim nothing wrote — scene prose wearing a chip's frame — is a released defect, same severity as a numeral leak. Scene texture belongs in the `overview` and afterimages, which are prose surfaces and never claim state. **PATH specifically is reserved for openings the game will act on** — a planted `encounter_seed`, an unlocked option or route the simulation tracks, a changed world object — never "the fiction moved"; a way that opens only in the words has not opened. Source: Christian, chat, 2026-08-16, on The Unsafe Bridge's `PATH · The River Crossing` chip, which no state backed: *"the chips specifically show only things that have updated the game state … we do not show prose in this section. basic game UX."* This law and Law 13's visibility-parity clause pin the chip list from both sides: parity says a reported quantity must be player-inspectable; this law says a report must have a real referent. Together, the chip list is exactly the inspectable state deltas of the ending — nothing hidden, nothing fictional.
+
 
 ---
 

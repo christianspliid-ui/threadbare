@@ -581,6 +581,11 @@ rather than beside it.
   chip can explain itself. (`EncounterAftermathChange.concepts`' own type comment
   still describes the pre-contract convention; the contract's ruling is later and
   wins — the reconciliation is THR-1053.)
+- **Every `changes` entry is backed by a write** (UI Law 56; § Consequences rule 0) —
+  a chip on a band must correspond to an effect that actually fires on that band (a
+  reaction effect, a step-outcome effect, a reward-pool draw, or a planted seed).
+  "Something must persist" binds **per chip**, not merely per ending: a `shell_state`
+  chip over empty `effects` is a defect, not texture.
 - **Something must persist** — the Rewards block. Two authoring routes, either
   sufficient:
   1. **A `rewardPool` draw** — documented here for the first time; the audit found
@@ -890,7 +895,21 @@ to have happen. Christian's ruling, 2026-08-10: incidental stat drift *"takes aw
 the encounter story"* and no longer renders as a chip at all — the engine demotes it to
 an icon and a delta cluster automatically, and you never author it.
 
-So every chip you *do* write obeys four rules.
+So every chip you *do* write obeys five rules — and the first is the gate the other
+four stand behind.
+
+**0. Every chip is backed by a write (UI Law 56, Christian's ruling 2026-08-16).**
+A chip renders only a change the engine actually wrote: a stat or standing moved, a
+relationship or agreement created, an object gained or lost, or a planted
+`encounter_seed`. Before writing the sentence, point at the effect (in the reaction, the
+step outcome, or the seed) that makes the claim true — if there is no effect, there is no
+chip. Scene texture goes in the `overview` and afterimages, which are prose surfaces and
+never claim state. The motivating defect shipped on The Unsafe Bridge: a `PATH · The
+River Crossing` chip (`kind: 'shell_state'`, empty `effects`) told the player a way had
+opened while nothing in the simulation tracked it. Christian: *"the chips specifically
+show only things that have updated the game state … we do not show prose in this
+section. basic game UX."* Note this closes what the old `shell_state`-with-no-effects
+pattern left open — "something must persist" (§6) binds per chip, not merely per ending.
 
 **1. Cause → change, in that order, in one sentence.** The consequence never appears
 divorced from what caused it. Write the beat from the scene that produced it, then what
@@ -918,7 +937,7 @@ If you cannot name the noun, you do not yet have a consequence.
 | `scar` | What the trial cost them, on body or spirit — a wound, a debt, a confidence spent |
 | `bond` | Who now stands with them, or against them |
 | `boon` | What they earned, and *why* they earned it |
-| `path` | A way that has opened — nothing held yet, but the world has turned |
+| `path` | A way that has opened **and that the game will act on** — a planted seed, an unlocked route or option the simulation tracks. Nothing *held* yet, but state moved: a way that opens only in the words is not a PATH (rule 0 / Law 56) |
 
 There is no fifth bucket, and no "other". If a consequence fits none of the four, that is
 a signal the consequence is not personal enough to be one — not a signal the taxonomy
