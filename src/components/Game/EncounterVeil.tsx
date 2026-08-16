@@ -7,6 +7,8 @@ import { ReachIcon, REACH_TO_SPHERE } from '../icons';
 import {
   CONSEQUENCE_CATEGORY_GLYPHS,
   CONSEQUENCE_CATEGORY_LABELS,
+  CONSEQUENCE_CATEGORY_ORDER,
+  CONSEQUENCE_CATEGORY_TOOLTIP_IDS,
   CONSEQUENCE_LEGEND_STORE_KEY,
 } from './encounter-stage/adapters/buildAftermathConsequences';
 import type {
@@ -109,11 +111,14 @@ const CONSEQUENCE_LEGEND_ENTRIES: readonly {
   glyph: string;
   label: string;
   tooltipId: string;
-}[] = (['scar', 'bond', 'boon', 'path'] as const).map((category) => ({
+}[] = CONSEQUENCE_CATEGORY_ORDER.map((category) => ({
   category,
   glyph: CONSEQUENCE_CATEGORY_GLYPHS[category],
   label: CONSEQUENCE_CATEGORY_LABELS[category],
-  tooltipId: `ui.consequence.${category}`,
+  // THR-1136 — read from the shared map rather than rebuilt here. The chip tag
+  // now draws the same tooltip, and an id spelled in two places is an id that
+  // drifts in one of them.
+  tooltipId: CONSEQUENCE_CATEGORY_TOOLTIP_IDS[category],
 }));
 
 /**
@@ -533,30 +538,15 @@ export function EncounterVeil({
             reason the ending read as its own screen: it said "resolved" without
             ever saying resolved *what*. */}
 
-        {/* Tier label — top-right */}
-        <div
-          style={{
-            position: 'absolute',
-            top: '4vh',
-            right: '5vw',
-            zIndex: 20,
-            textAlign: 'right',
-            ...aftermathEntrance(0.6, 0.8),
-          }}
-        >
-          <div
-            style={{
-              fontFamily: FONT_DISPLAY,
-              fontSize: 'var(--text-xs)',
-              letterSpacing: '0.18em',
-              textTransform: 'uppercase',
-              color: GOLD,
-              opacity: 0.4,
-            }}
-          >
-            {TIER_LABELS[threadTier]} &middot; Aftermath
-          </div>
-        </div>
+        {/* THR-1136 §1 — the top-right `{tier} · Aftermath` label is gone, on
+            the director's explicit ask. Both halves of it were chrome the
+            ending does not need: the content column already opens with the
+            AFTERMATH section marker (THR-1003), so the suffix said the same
+            word twice, and the thread-tier word is process vocabulary — how
+            closely the player is following this mortal — which has nothing to
+            say about what just happened to them. The live (step) and watched
+            paths keep their corner labels; there the tier is still telling the
+            player which affordances they have. */}
 
         {/* ── Scrollable content zone ────────────────────── */}
         <div
@@ -589,11 +579,19 @@ export function EncounterVeil({
               encounter title, context strip — the same three components, not
               copies of them, so the two surfaces cannot drift apart. */}
           <div style={aftermathEntrance(0.5, 0.8)}>
+            {/* THR-1136 §2 — the dots are live on the ending too. THR-1003 left
+                them inert because the aftermath rendered no replay view, and a
+                control that does nothing is worse than no control; the director
+                overruled the premise rather than the reasoning, so the fix is to
+                give them the view they were missing. This is the same
+                `StepReplayView` swap the live path performs, driven by the same
+                `replayStepIndex` state — not a second replay implementation. */}
             <StepNavigator
               history={model.history}
               currentStepIndex={currentStepIndex}
               totalSteps={totalSteps}
-              replayStepIndex={null}
+              replayStepIndex={replayStepIndex}
+              onSelectStep={setReplayStepIndex}
               mode="resolved"
             />
           </div>
@@ -637,6 +635,18 @@ export function EncounterVeil({
             }}
           />
 
+          {/* THR-1136 §2 — a resolved step's frozen replay takes the body,
+              exactly as it does on the live path. The identity chrome above
+              (navigator, title, context strip, divider) stays put, so the
+              player never loses which encounter they are reading; only the
+              ending itself is swapped out, and `StepReplayView`'s own return
+              control brings it back. */}
+          {replayEntry ? (
+            <div data-testid="aftermath-step-replay" style={aftermathEntrance(0, 0.6)}>
+              <StepReplayView entry={replayEntry} onReturn={() => setReplayStepIndex(null)} />
+            </div>
+          ) : (
+          <>
           {/* Aftermath section marker — carries the veil's gold rather than the
               title's ghost tone, so the ending reads as a section *of* the
               encounter above it instead of a second title (THR-1003). */}
@@ -863,7 +873,25 @@ export function EncounterVeil({
                       maxWidth: 190,
                     }}
                   >
-                    {chip.categoryLabel}
+                    {/* THR-1136 §3a — the category word carries Law 17's hover
+                        tier. It was explained only by the first-contact legend
+                        below, whose dismissal outlives the session (Law 51), so
+                        a player who pressed "got it" once had no way left to ask
+                        what BOON meant on any later ending. Same registry entry
+                        the legend reads, so there is one set of words, not two.
+                        Unguarded by `tooltipResolves` on purpose: unlike the
+                        noun, these four ids are a closed set shipped with the
+                        legend, so a miss is a build-time content bug to fix
+                        rather than a runtime case to fall back from. */}
+                    <Tooltip id={chip.categoryTooltipId}>
+                      <span
+                        className="focus-ring"
+                        tabIndex={0}
+                        data-testid={`consequence-chip-category-${chip.category}`}
+                      >
+                        {chip.categoryLabel}
+                      </span>
+                    </Tooltip>
                     {chip.nounLabel && (
                       <span style={{ color: TEXT_WHISPER }}>
                         {' · '}
@@ -1242,51 +1270,60 @@ export function EncounterVeil({
               ))}
             </div>
           )}
-        </div>
 
-        {/* ── Footer ─────────────────────────────────────── */}
-        <div
-          style={{
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            display: 'flex',
-            justifyContent: 'flex-end',
-            alignItems: 'center',
-            padding: '2.5vh 5vw',
-            zIndex: 20,
-            background: `linear-gradient(to top, ${VOID} 0%, rgba(10,10,15,0.6) 60%, transparent 100%)`,
-            ...aftermathEntrance(1.6, 0.8),
-          }}
-        >
-          <button
-            className="focus-ring"
-            onClick={onAcknowledgeAftermath}
+          {/* THR-1136 §1 — the exit sits at the end of the ending it exits.
+              It used to be pinned to the viewport's bottom-right corner, which
+              on a wide screen put it a long way from the column it belonged to
+              and read as window chrome rather than as the last line of the
+              story (Law 1 — one reading order, top to bottom). The button and
+              its handler are unchanged; only its position moved.
+
+              Deliberately not rendered during a step replay: the replay has its
+              own return, and offering "Return to the world" beside it would put
+              two return-shaped controls with different destinations on one
+              screen (Law 21). Closing the whole encounter stays one step away —
+              leave the replay, then leave the ending. */}
+          <div
             style={{
-              background: 'transparent',
-              border: 'none',
-              fontFamily: FONT_PROSE,
-              fontStyle: 'italic',
-              fontSize: 'var(--text-xs)',
-              letterSpacing: '0.06em',
-              color: GOLD,
-              opacity: 0.6,
-              cursor: 'pointer',
-              padding: '8px 0',
-              transition: 'opacity 0.4s ease, text-shadow 0.4s ease',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.opacity = '1';
-              e.currentTarget.style.textShadow = '0 0 20px rgb(var(--veil-gold-rgb) / 0.3)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.opacity = '0.6';
-              e.currentTarget.style.textShadow = 'none';
+              display: 'flex',
+              justifyContent: 'flex-start',
+              maxWidth: 540,
+              marginTop: 8,
+              ...aftermathEntrance(1.6, 0.8),
             }}
           >
-            Return to the world
-          </button>
+            <button
+              className="focus-ring"
+              onClick={onAcknowledgeAftermath}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                fontFamily: FONT_PROSE,
+                fontStyle: 'italic',
+                fontSize: 'var(--text-xs)',
+                letterSpacing: '0.06em',
+                color: GOLD,
+                opacity: 0.6,
+                cursor: 'pointer',
+                // Law 46 — the mark stays small, the hit area does not.
+                padding: '8px 4px',
+                marginLeft: -4,
+                transition: 'opacity 0.4s ease, text-shadow 0.4s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.opacity = '1';
+                e.currentTarget.style.textShadow = '0 0 20px rgb(var(--veil-gold-rgb) / 0.3)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.opacity = '0.6';
+                e.currentTarget.style.textShadow = 'none';
+              }}
+            >
+              Return to the world
+            </button>
+          </div>
+          </>
+          )}
         </div>
       </div>,
       document.body,
@@ -2908,13 +2945,23 @@ function StepNavigator({
   onSelectStep?: (index: number | null) => void;
   /**
    * THR-1003 — `resolved` is the aftermath's reading of the same flow: every
-   * dot in its outcome colour, the trailing count reading as finished, and no
-   * dot clickable, because the aftermath path renders no replay view and a
-   * control that does nothing is worse than no control.
+   * dot in its outcome colour and the trailing count reading as finished
+   * ("all 2 resolved") rather than as a position ("2 of 2").
+   *
+   * THR-1136 — it no longer implies inert dots. That was THR-1003's *inference*
+   * from the aftermath having no replay view, not the rule; the rule is that a
+   * control which cannot act must not be drawn, and it is now enforced directly
+   * by whether the host passed `onSelectStep`. The aftermath passes one, so its
+   * resolved dots open the same replay the live path shows.
    */
   mode?: 'live' | 'resolved';
 }) {
   const resolvedMode = mode === 'resolved';
+  // THR-1136 §2 — in resolved mode a dot is clickable when the host gave it
+  // somewhere to go. Gating on `onSelectStep` rather than on the mode keeps
+  // THR-1003's real rule (never offer a control that cannot act) while letting
+  // the aftermath, which now renders a replay view, opt in.
+  const canSelect = onSelectStep !== undefined;
   // An encounter can end before its last step (early exit, termination), so the
   // aftermath count reports what actually resolved rather than asserting the
   // whole flow ran.
@@ -2925,7 +2972,8 @@ function StepNavigator({
         const isCurrent = step.status === 'current';
         const isResolved = step.status === 'resolved';
         const isReplaying = replayStepIndex === i;
-        const clickable = !resolvedMode && (isResolved || isCurrent);
+        // A resolved ending has no "current" step, so only finalized ones open.
+        const clickable = canSelect && (resolvedMode ? isResolved : isResolved || isCurrent);
         const dotColor = isReplaying || isCurrent
           ? GOLD
           : isResolved

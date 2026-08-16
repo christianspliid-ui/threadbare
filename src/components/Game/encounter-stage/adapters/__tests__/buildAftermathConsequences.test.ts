@@ -99,7 +99,7 @@ describe('classifyChangeKind — the mapping table', () => {
 });
 
 describe('buildAftermathConsequences — chips', () => {
-  it('renders one chip per authored change, in authored order', () => {
+  it('renders one chip per authored change, grouped by story category', () => {
     const chips = buildAftermathConsequences({
       changes: [
         change({ kind: 'item', polarity: 'gain', id: 'a', detail: 'A wrapped parcel changed hands.' }),
@@ -108,14 +108,102 @@ describe('buildAftermathConsequences — chips', () => {
       ...passthrough,
     });
 
-    expect(chips.map((c) => c.kind)).toEqual(['prize', 'standing']);
+    // THR-1136 §4 — emission order no longer reaches the screen. `standing` is
+    // BOND and `prize` is BOON, so the standing chip leads however the changes
+    // were assembled: the ending reads who it changed before what was earned.
+    expect(chips.map((c) => c.kind)).toEqual(['standing', 'prize']);
     expect(chips.map((c) => c.kindLabel)).toEqual([
-      CONSEQUENCE_KIND_LABELS.prize,
       CONSEQUENCE_KIND_LABELS.standing,
+      CONSEQUENCE_KIND_LABELS.prize,
     ]);
-    expect(chips[0].sentence.segments[0].text).toBe('A wrapped parcel changed hands.');
-    expect(chips[0].tone).toBe('gain');
-    expect(chips[1].tone).toBe('loss');
+    expect(chips.map((c) => c.category)).toEqual(['bond', 'boon']);
+    const prize = chips.find((c) => c.kind === 'prize')!;
+    expect(prize.sentence.segments[0].text).toBe('A wrapped parcel changed hands.');
+    expect(prize.tone).toBe('gain');
+    expect(chips.find((c) => c.kind === 'standing')!.tone).toBe('loss');
+  });
+
+  // ── Reading order (THR-1136 §4) ────────────────────────────────────
+  //
+  // The reported defect was a live ending drawing BOON/BOND/BOON/BOND — chips
+  // emitted in change-set order, which is an assembly detail the player has no
+  // way to read. These pin the three sort keys independently, so a regression
+  // names which one broke rather than just "the order changed".
+
+  it('orders categories as the legend tells them: scar, bond, boon, path', () => {
+    const chips = buildAftermathConsequences({
+      changes: [
+        change({ kind: 'future_hook', polarity: 'info', id: 'p' }),
+        change({ kind: 'item', polarity: 'gain', id: 'b' }),
+        change({ kind: 'reputation', polarity: 'gain', id: 'n' }),
+        change({ kind: 'trait', polarity: 'loss', id: 's' }),
+      ],
+      ...passthrough,
+    });
+
+    expect(chips.map((c) => c.category)).toEqual(['scar', 'bond', 'boon', 'path']);
+  });
+
+  it('sorts by drawn magnitude within a category, largest first', () => {
+    const big = change({ kind: 'item', polarity: 'gain', id: 'big' });
+    const small = change({ kind: 'item', polarity: 'gain', id: 'small' });
+    const chips = buildAftermathConsequences({
+      // Emitted smallest-first, so a passing result cannot be emission order.
+      changes: [
+        { ...small, direction: 'gain', magnitude: { ladder: 'growth', band: 0 } },
+        { ...big, direction: 'gain', magnitude: { ladder: 'growth', band: 4 } },
+      ],
+      ...passthrough,
+    });
+
+    expect(chips.map((c) => c.id)).toEqual(['consequence-big', 'consequence-small']);
+    expect(chips[0].delta!.count).toBeGreaterThan(chips[1].delta!.count);
+  });
+
+  it('sinks a chip with no drawn magnitude below the sized ones in its category', () => {
+    const chips = buildAftermathConsequences({
+      changes: [
+        // No `direction`, so `deltaClusterFor` returns undefined — no cluster.
+        change({ kind: 'item', polarity: 'gain', id: 'sizeless' }),
+        { ...change({ kind: 'item', polarity: 'gain', id: 'sized' }), direction: 'gain' },
+      ],
+      ...passthrough,
+    });
+
+    expect(chips.map((c) => c.id)).toEqual(['consequence-sized', 'consequence-sizeless']);
+    expect(chips[1].delta).toBeUndefined();
+  });
+
+  it('falls back to emission order, so the same change set always reads the same', () => {
+    const build = () =>
+      buildAftermathConsequences({
+        changes: [
+          change({ kind: 'item', polarity: 'gain', id: 'first' }),
+          change({ kind: 'item', polarity: 'gain', id: 'second' }),
+          change({ kind: 'item', polarity: 'gain', id: 'third' }),
+        ],
+        ...passthrough,
+      });
+
+    // Same category, no magnitudes — nothing but the tiebreak decides this,
+    // which is what makes it a real test of determinism (NFP #3).
+    expect(build().map((c) => c.id)).toEqual([
+      'consequence-first',
+      'consequence-second',
+      'consequence-third',
+    ]);
+    expect(build().map((c) => c.id)).toEqual(build().map((c) => c.id));
+  });
+
+  it('carries the registry id that explains each category word', () => {
+    const chips = buildAftermathConsequences({
+      changes: [change({ kind: 'trait', polarity: 'loss', id: 'a' })],
+      ...passthrough,
+    });
+
+    // THR-1136 §3a — the legend is dismissable and its dismissal persists, so
+    // the chip's own tag has to be able to answer on its own.
+    expect(chips[0].categoryTooltipId).toBe('ui.consequence.scar');
   });
 
   it('gives a toll and a wound loss tone regardless of how the change reads', () => {

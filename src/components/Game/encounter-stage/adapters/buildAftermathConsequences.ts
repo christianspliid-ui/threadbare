@@ -139,6 +139,39 @@ export const CONSEQUENCE_CATEGORY_GLYPHS: Record<EncounterStageConsequenceCatego
 };
 
 /**
+ * THR-1136 — the registry id that explains each category word.
+ *
+ * One derivation, read by both surfaces that draw the vocabulary: the
+ * first-contact legend and the chip tag itself (Law 27 — one rule, one place).
+ * The legend used to build this string inline in `EncounterVeil`, which is
+ * exactly how the chip came to have no tooltip at all: the id existed, and the
+ * only thing that knew how to spell it was the surface that was already
+ * dismissable.
+ */
+export const CONSEQUENCE_CATEGORY_TOOLTIP_IDS: Record<EncounterStageConsequenceCategory, string> =
+  {
+    scar: 'ui.consequence.scar',
+    bond: 'ui.consequence.bond',
+    boon: 'ui.consequence.boon',
+    path: 'ui.consequence.path',
+  };
+
+/**
+ * THR-1136 — the order the ending reads its categories in.
+ *
+ * The legend's own story order: what it cost, who it changed, what was earned,
+ * what it opened. Emission order used to reach the screen untouched, so a
+ * two-of-each ending interleaved BOON/BOND/BOON/BOND and read as a shuffled
+ * list rather than a told story.
+ */
+export const CONSEQUENCE_CATEGORY_ORDER: readonly EncounterStageConsequenceCategory[] = [
+  'scar',
+  'bond',
+  'boon',
+  'path',
+];
+
+/**
  * Band rung → triangles, per ladder.
  *
  * The ladders are 4–5 rungs deep and the display is three steps, so this is a
@@ -466,11 +499,58 @@ export function applyConceptDecorations(
 }
 
 /**
+ * Rank two chips for the ending's reading order (THR-1136 §4).
+ *
+ * **Category first**, in `CONSEQUENCE_CATEGORY_ORDER` — the legend's own story
+ * order, so the ending reads what it cost, who it changed, what was earned,
+ * what it opened, rather than whatever order the change set happened to be
+ * assembled in.
+ *
+ * **Magnitude second**, descending on the drawn cluster's `count`. That is the
+ * magnitude the *player can see*, not the underlying band — sorting on a
+ * quantity the surface never renders would produce an order nobody could read
+ * back. A chip with no delta sorts last within its category: it has no size to
+ * compare, and putting sizeless changes above sized ones would break the run of
+ * the eye down the cluster column.
+ *
+ * **Emission order last**, as a stable tiebreak, so the result is fully
+ * determined by the input (NFP #3) — `Array.prototype.sort` is only guaranteed
+ * stable in ES2019+, and relying on that instead of an explicit index would
+ * make the order an engine detail rather than a decision.
+ *
+ * Note this deliberately supersedes the old "seeds last" rule, which is now a
+ * consequence rather than a special case: seeds are `path`, and `path` is last
+ * in the category order.
+ */
+function compareChips(
+  a: { chip: EncounterStageConsequenceChipModel; index: number },
+  b: { chip: EncounterStageConsequenceChipModel; index: number },
+): number {
+  const categoryDelta =
+    CONSEQUENCE_CATEGORY_ORDER.indexOf(a.chip.category)
+    - CONSEQUENCE_CATEGORY_ORDER.indexOf(b.chip.category);
+  if (categoryDelta !== 0) return categoryDelta;
+
+  // Absent delta sorts after any present one; two absent deltas tie and fall
+  // through to emission order.
+  const aCount = a.chip.delta?.count;
+  const bCount = b.chip.delta?.count;
+  if (aCount !== bCount) {
+    if (aCount === undefined) return 1;
+    if (bCount === undefined) return -1;
+    return bCount - aCount;
+  }
+
+  return a.index - b.index;
+}
+
+/**
  * Build the ending's consequence chips.
  *
- * Order is stable and meaningful: authored changes in their authored order
- * first, then seeds last — the ending says what happened before it says what
- * it set in motion.
+ * Order is stable and meaningful: chips are grouped by story category
+ * (scar → bond → boon → path) and sized within each group, magnitude
+ * descending — see `compareChips`. Emission order survives only as the final
+ * tiebreak, so the same change set always produces the same reading.
  */
 export function buildAftermathConsequences(
   args: BuildAftermathConsequencesArgs,
@@ -507,6 +587,7 @@ export function buildAftermathConsequences(
       kindLabel: CONSEQUENCE_KIND_LABELS[kind],
       category,
       categoryLabel: CONSEQUENCE_CATEGORY_LABELS[category],
+      categoryTooltipId: CONSEQUENCE_CATEGORY_TOOLTIP_IDS[category],
       nounLabel: nounLabelFor(nounText),
       // THR-1122 — the noun is a concept word and owes its hover tier. Derived
       // from the same declaration that already drives the tile, so no authored
@@ -544,6 +625,7 @@ export function buildAftermathConsequences(
         kindLabel: CONSEQUENCE_KIND_LABELS.seed,
         category: 'path',
         categoryLabel: CONSEQUENCE_CATEGORY_LABELS.path,
+        categoryTooltipId: CONSEQUENCE_CATEGORY_TOOLTIP_IDS.path,
         categoryGlyph: CONSEQUENCE_CATEGORY_GLYPHS.path,
         sentence,
         sentenceText: paragraphText(sentence),
@@ -556,5 +638,8 @@ export function buildAftermathConsequences(
     }
   }
 
-  return chips;
+  return chips
+    .map((chip, index) => ({ chip, index }))
+    .sort(compareChips)
+    .map((entry) => entry.chip);
 }

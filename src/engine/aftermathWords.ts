@@ -341,9 +341,19 @@ export function reputationSentence(args: {
   // THR-1033 — `ui.standing` is the id the registry actually holds. This read
   // `ui.reputation`, which has never existed in `ui-content.ts`, so every
   // STANDING chip in the game carried an unresolvable tooltip.
-  const noun: EncounterAftermathConceptRef = { text: 'standing', tooltipId: 'ui.standing' };
+  //
+  // THR-1136 — the noun names its *scope*. It read a bare `standing`, which is
+  // the same word faction standing uses, so on an ending carrying both the two
+  // chips rendered as `BOND · STANDING` twice with nothing saying whose regard
+  // was moving. `factionStandingSentence` already solves its half by putting the
+  // faction's name in the noun; this is the other half — the regard of the world
+  // at large, which is exactly what the tally is *not* (see §5 of THR-1136).
+  // Deliberately the ticket's own phrase rather than a coined term, so no new UL
+  // entry is minted for a display word the glossary already covers under
+  // `standing`.
+  const noun: EncounterAftermathConceptRef = { text: 'world standing', tooltipId: 'ui.standing' };
   return {
-    detail: `${args.actorName}'s standing ${verb} ${word}${tail}.`,
+    detail: `${args.actorName}'s standing in the world ${verb} ${word}${tail}.`,
     concepts: [noun],
     stateNoun: noun,
     direction: args.delta >= 0 ? 'gain' : 'loss',
@@ -399,26 +409,30 @@ export function factionStandingSentence(args: {
   };
 }
 
-/** A reputation tally deepening or thinning. This is the `star.positive` site. */
-export function reputationTallySentence(args: {
-  readonly actorName: string;
-  readonly key: string;
-  readonly delta: number;
-}): DerivedChange {
-  const { phrase, concept } = describeTallyKey(args.key);
-  const word = magnitudeWord(args.delta, TALLY_MAGNITUDE_BANDS);
-  const verb = directionWord(args.delta, 'deepened', 'thinned');
-  return {
-    detail: `${args.actorName}'s ${phrase} ${verb} ${word}.`,
-    concepts: concept ? [concept] : [],
-    // A free-form tally has no reach concept behind it; the humanised phrase is
-    // the only noun there is, and naming it beats naming nothing.
-    stateNoun: concept ?? { text: phrase },
-    direction: args.delta >= 0 ? 'gain' : 'loss',
-    magnitude: { ladder: 'tally', band: magnitudeBandIndex(args.delta, TALLY_MAGNITUDE_BANDS) },
-    storyWeight: 'incidental',
-  };
-}
+/**
+ * `reputationTallySentence` was retired by THR-1136 §5 — director ruling,
+ * 2026-08-16: *"they are small and more systemic than telling the player
+ * anything. they are noise"*.
+ *
+ * Reputation tallies (`ReputationTallies`, `<reach>.positive|negative`) are a
+ * **system-visible** quantity now. They still move, still steer scoring and
+ * gating, and still mint the Whispered/Known/Legendary traits at their
+ * thresholds — and a minted trait is a real, sheet-visible change that reports
+ * normally. What they no longer do is speak to the player directly, so the
+ * producer that turned one into a chip sentence has no caller and is gone
+ * rather than left green-but-dead. Its only production caller was the snapshot
+ * diff in `unifiedActionResolution.ts`, deleted in the same change.
+ *
+ * `describeTallyKey` and `TALLY_MAGNITUDE_BANDS` below are deliberately kept.
+ * §5 preserves tally inspectability *"in traces and the designer view"*, and
+ * they are the only vocabulary that turns `star.positive` into words — deleting
+ * them would make that preserved inspectability unimplementable. They have no
+ * production caller today, which is tracked debt rather than invisible debt —
+ * THR-1140 holds the decision: either build the designer readout that consumes
+ * them, or prune both with their tests. Do not resolve it by re-adding a
+ * player-facing tally chip; the visibility-parity clause under Law 13 in
+ * `Docs/design-system/laws.md` forbids that until a tally gains a sheet surface.
+ */
 
 /** A clearance gate changing state. States are already words; they only need casing. */
 export function gateStateSentence(args: {

@@ -652,6 +652,58 @@ describe('unifiedActionResolution', () => {
       expect(locNode?.properties?.tested).toBe(true);
     });
 
+    // ── THR-1136 §5 — tallies moved, never reported ──────────────────
+    //
+    // Director ruling, 2026-08-16: a quantity the aftermath reports must be
+    // inspectable on some player surface, and the per-Reach tallies are on
+    // none. They kept running and kept narrating themselves, so every ending
+    // carried two or three "their record in Eye deepened" chips naming a
+    // quantity the player could never look up. This asserts both halves at
+    // once — the mutation survives, the report does not — because asserting
+    // only the absence would pass just as well if the tally had stopped
+    // moving, which is the change the ruling explicitly did *not* ask for.
+    it('moves a reputation tally without reporting it to the player', () => {
+      // Hoisted rather than read back off `template.steps[0].onSuccess`: that
+      // access is the `ActionStepOrBranch` narrowing error this file already
+      // carries four baselined instances of, and a new test has no reason to
+      // add a fifth.
+      const onSuccess = [{
+        op: 'update_node' as const,
+        nodeId: 'actor-1',
+        changes: { reputationTallies: { 'iron.positive': 3 } },
+      }];
+      const template = make1StepTemplate({
+        steps: [{
+          reach: 'iron',
+          duration: { min: 2, max: 2 },
+          difficulty: 0.3,
+          onSuccess,
+          onFailure: [],
+          failBehavior: 'fail_action',
+        }],
+      });
+      const state = createMinimalGameState();
+      const actorBefore = state.graph.getNode('actor-1');
+      actorBefore!.properties.reputationTallies = { 'iron.positive': 1 };
+
+      const action = createUnifiedAction({
+        actorId: 'actor-1', templateId: 'action.iron.test', targetId: 'loc-1',
+        scale: 'personal', source: 'agent', tick: 0, template, rng: fixedRng,
+      });
+
+      const { updatedAction } = executeStepResult(
+        action, template, 'success', onSuccess, state, fixedRng, 10,
+      );
+
+      // The mutation is untouched — the world still remembers.
+      const tallies = state.graph.getNode('actor-1')!.properties.reputationTallies as Record<string, number>;
+      expect(tallies['iron.positive']).toBe(3);
+
+      // ...and no chip source was minted from it.
+      const kinds = (updatedAction.aftermathChanges ?? []).map(c => c.kind);
+      expect(kinds).not.toContain('reputation_tally');
+    });
+
     it('generates failure event on failure', () => {
       const template = make1StepTemplate();
       const state = createMinimalGameState();

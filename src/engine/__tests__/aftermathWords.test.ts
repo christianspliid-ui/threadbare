@@ -27,7 +27,7 @@ import {
   reachDisplayName,
   reachTooltipId,
   reputationSentence,
-  reputationTallySentence,
+
   rewardSentence,
   traitGrantedSentence,
   type DerivedChange,
@@ -155,9 +155,29 @@ describe('derived sentences name their concepts', () => {
 
   it('reputation states direction and weight, never the delta', () => {
     expect(reputationSentence({ actorName: 'Vara', delta: 0.05, flavour: 'authored' }).detail)
-      .toBe("Vara's standing rose noticeably.");
+      .toBe("Vara's standing in the world rose noticeably.");
     expect(reputationSentence({ actorName: 'Vara', delta: -0.05, flavour: 'branch' }).detail)
-      .toBe("Vara's standing fell noticeably as the checkpoint's judgement landed.");
+      .toBe("Vara's standing in the world fell noticeably as the checkpoint's judgement landed.");
+  });
+
+  // THR-1136 §3b — personal standing names its scope, in both halves of the
+  // chip. It read a bare "standing", which is the same word faction standing
+  // uses, so an ending carrying both drew `BOND · STANDING` twice with nothing
+  // saying whose regard had moved. Falsified against the faction builder below,
+  // which must keep naming the faction rather than the world.
+  it('personal standing names the world as its scope, distinguishing it from faction standing', () => {
+    const personal = reputationSentence({ actorName: 'Vara', delta: 0.2, flavour: 'authored' });
+    const faction = factionStandingSentence({
+      actorName: 'Vara',
+      factionId: 'faction-mason-guild',
+      factionName: 'The Mason Guild',
+      delta: 0.2,
+      beforeRole: 'member',
+      afterRole: 'member',
+    });
+    expect(personal.stateNoun).toEqual({ text: 'world standing', tooltipId: 'ui.standing' });
+    expect(personal.stateNoun!.text).not.toBe(faction.stateNoun!.text);
+    expect(personal.detail).toContain('in the world');
   });
 
   it('faction standing carries the faction as a linkable entity with a tile', () => {
@@ -190,11 +210,11 @@ describe('derived sentences name their concepts', () => {
     expect(sentence.detail).toBe('The Mason Guild now names Vara journeyman.');
   });
 
-  it('the tally sentence replaces the raw key it used to print', () => {
-    const sentence = reputationTallySentence({ actorName: 'Vara', key: 'star.positive', delta: 1 });
-    expect(sentence.detail).toBe("Vara's reputation for Star deepened again.");
-    expect(sentence.detail).not.toContain('star.positive');
-  });
+  // THR-1136 §5 — `reputationTallySentence` was retired with its only producer,
+  // so its tests went with it rather than staying green on a dead contract.
+  // `describeTallyKey`, which it wrapped, is still covered above: that helper is
+  // the surviving half (Law 14's key→words vocabulary) and is kept for the
+  // designer surface the ruling preserves tally inspectability for.
 
   it('a reward names an entity the chip can picture', () => {
     const sentence = rewardSentence({
@@ -249,9 +269,6 @@ describe('every derived sentence builder is numeral-free', () => {
         beforeRole: 'member',
         afterRole: 'journeyman',
       }).detail);
-      for (const key of ['star.positive', 'iron.negative', 'ac.guild_work', 'army.command.banner_up']) {
-        record(`tally:${key}`, reputationTallySentence({ actorName: 'Vara', key, delta }).detail);
-      }
     }
 
     record('trait', traitGrantedSentence({ actorName: 'Vara', traitLabel: 'Steady Hands' }).detail);
@@ -298,8 +315,6 @@ describe('every derived builder returns the structure it spent on the sentence',
       actorName: 'Vara', factionId: 'f1', factionName: 'The Mason Guild',
       delta: 0.2, beforeRole: 'member', afterRole: 'journeyman',
     })],
-    ['tally', reputationTallySentence({ actorName: 'Vara', key: 'star.positive', delta: 2 })],
-    ['tally-authored', reputationTallySentence({ actorName: 'Vara', key: 'ac.guild_work', delta: 1 })],
     ['reward', rewardSentence({ actorName: 'Vara', rewardName: 'Meditation Stones', gained: true })],
     ['gate-state', gateStateSentence({ beforeState: 'closed_watchful', afterState: 'open' })],
     ['gate-follow-on', gateFollowOnSentence('#witness_story_followed')],
@@ -338,8 +353,6 @@ describe('every derived builder returns the structure it spent on the sentence',
   it('bands each ladder against its own rungs', () => {
     expect(reputationSentence({ actorName: 'Vara', delta: 0.5, flavour: 'authored' }).magnitude)
       .toEqual({ ladder: 'reputation', band: REPUTATION_MAGNITUDE_BANDS.length - 1 });
-    expect(reputationTallySentence({ actorName: 'Vara', key: 'star.positive', delta: 9 }).magnitude)
-      .toEqual({ ladder: 'tally', band: TALLY_MAGNITUDE_BANDS.length - 1 });
   });
 
   it('omits magnitude where the change genuinely has no scale', () => {

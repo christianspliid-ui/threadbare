@@ -355,6 +355,17 @@ export interface EncounterStageConsequenceChipModel {
   /** The category word drawn on the tag (SCAR / BOND / BOON / PATH). */
   categoryLabel: string;
   /**
+   * THR-1136 — the registry id that explains `categoryLabel`.
+   *
+   * The four category words were explained only by the first-contact legend,
+   * whose dismissal persists across sessions (Law 51) — so after "got it" there
+   * was no way left to ask what BOON meant, on any ending, ever. Law 17's hover
+   * tier is the standing answer; the legend teaches once, the tooltip explains
+   * forever, and both read the same registry entry so there is no second copy
+   * of the words.
+   */
+  categoryTooltipId: string;
+  /**
    * THR-1082 — the changed state, named. `SCAR · TWISTED ANKLE`. Absent when no
    * producer declared a state noun, in which case the tag shows the category
    * alone — the designed fallback, never a blank and never "something".
