@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-08-16 07:55 local (2026-08-16 05:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-08-16 08:55 local (2026-08-16 06:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -8,11 +8,11 @@
 - [The Unsafe Bridge](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge)
 - [The Grateful Kin](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin)
 
-Both links open the retrofitted versions — Batch 1's commit is an ancestor of the live build, re-confirmed this run.
+Both links open the retrofitted versions — re-verified this run, not carried forward: the Batch 1 content commit `781cbbbe` and the gate fix `81a5da96` are both ancestors of the live build `4b7e0777`.
 
 Then answer [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to) — a committed brief for the camp six, plus one nudge-card art question, recommendation already on the ticket. Your ruling 2 put the charter in your hands, so no lane can take it.
 
-Seventh hour unchanged; nothing new arrived. This is still the only thing standing between the board and buildable work.
+**Eighth hour unchanged — and the cost stopped being hypothetical overnight.** The executor lane has now run four consecutive times finding zero claimable work, and its own impediment log ([#611 occurrence 4](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/impediments.md)) names what that turned into: *"the lane's response to the stall has become the lane's only output."* The last four merges to `main` are literally four PRs whose entire content is that nothing happened ([#1497](https://github.com/christianspliid-ui/threadbare/pull/1497), [#1498](https://github.com/christianspliid-ui/threadbare/pull/1498), [#1499](https://github.com/christianspliid-ui/threadbare/pull/1499), [#1500](https://github.com/christianspliid-ui/threadbare/pull/1500)). The lane has since adopted its own rule to stop shipping a PR per occurrence, so that bleeding is stopped — but the shelf only refills from this sitting.
 
 [THR-1131](https://linear.app/threadbare/issue/THR-1131/retrofit-batch-1-the-slice-six-through-the-factory-line-contract-thr) · [all six side by side](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/batch-report-2026-08-15.md) · [PR #1494](https://github.com/christianspliid-ui/threadbare/pull/1494)
 
@@ -25,9 +25,9 @@ Seventh hour unchanged; nothing new arrived. This is still the only thing standi
 
 ## Queue
 
-**Thin — 4 Ready for Dev, none buildable unattended, unchanged for seven hours.** All four are Low-priority 1920×1080 pixel passes needing an attended browser session: [THR-1109](https://linear.app/threadbare/issue/THR-1109/companions-row-owes-its-19201080-pixel-pass-attended-session-thr-1096), [THR-1125](https://linear.app/threadbare/issue/THR-1125/thr-1121s-veil-rework-owes-its-19201080-pixel-pass-attended-session), [THR-1126](https://linear.app/threadbare/issue/THR-1126/gate-dutys-nudge-stage-owes-its-19201080-pixel-pass-thr-1123-follow-up), [THR-1127](https://linear.app/threadbare/issue/THR-1127/ascendant-bars-four-rehomed-tooltips-owe-their-19201080-pixel-pass).
+**Empty in practice — 4 Ready for Dev, none claimable unattended, unchanged for eight hours.** All four are Low-priority 1920×1080 pixel passes needing an attended browser session: [THR-1109](https://linear.app/threadbare/issue/THR-1109/companions-row-owes-its-19201080-pixel-pass-attended-session-thr-1096), [THR-1125](https://linear.app/threadbare/issue/THR-1125/thr-1121s-veil-rework-owes-its-19201080-pixel-pass-attended-session), [THR-1126](https://linear.app/threadbare/issue/THR-1126/gate-dutys-nudge-stage-owes-its-19201080-pixel-pass-thr-1123-follow-up), [THR-1127](https://linear.app/threadbare/issue/THR-1127/ascendant-bars-four-rehomed-tooltips-owe-their-19201080-pixel-pass). Reported as thin rather than healthy on purpose — a count-only reading would call four items supplied, which is the exact mis-signal impediment #611 filed against this brief.
 
-Two parked In Dev, both above: THR-1130 (your charter) and THR-1129 (your click). The executor lane keeps finding nothing to take — correct behaviour, but the pipeline idles until the sitting above happens.
+Two parked In Dev, both above and both genuinely yours: THR-1130 (your charter) and THR-1129 (your click). Zero new work entered the queue across those eight hours, so the shelf is not merely unclaimable — nothing is arriving to displace it, and the fix for that is upstream supply, not tidying.
 
 ## Health
 
@@ -36,4 +36,4 @@ All green. Site current, CI healthy, no PRs waiting to merge, all 9 lanes on tim
 Two visibility lines, no action:
 
 - The lane-silence probe still reports the 20.6-hour quiet of 2026-08-10 → 08-11 as unexplained. Recovered five days ago; declined under your 2026-08-08 ruling that overnight quiet is normal.
-- The reaper still can't remove one stale worktree (`kwf-briefing-2026-07-31w`, 15 days, unmerged), with three needing disposition. Housekeeping for an agent.
+- The reaper still can't remove three stale worktrees (`hopeful-shaw-3150f4` 27d, `jovial-mcnulty-37a4c9` 28d, `kwf-briefing-2026-07-31w` 15d — all unmerged). Housekeeping for an agent.

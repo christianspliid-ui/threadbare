@@ -1,12 +1,12 @@
 # User Action Required
 
-**Last updated:** 2026-08-16 07:55 local (2026-08-16 05:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-16 08:55 local (2026-08-16 06:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
 ### 1. Sample 2 of 6 from Batch 1 — [THR-1131](https://linear.app/threadbare/issue/THR-1131/retrofit-batch-1-the-slice-six-through-the-factory-line-contract-thr)
 
-Your ruling 6: you sample two encounters per batch. Batch 1 shipped 2026-08-15 23:34Z. Re-verified this run — its commit is an ancestor of the deployed build, so these open the retrofitted versions.
+Your ruling 6: you sample two encounters per batch. Batch 1 shipped 2026-08-15 23:34Z. Re-verified this run by commit, not by assumption — content commit `781cbbbe` and gate fix `81a5da96` are both ancestors of the live build `4b7e0777`, so these links open the retrofitted versions.
 
 - **[The Unsafe Bridge](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge)**
 - **[The Grateful Kin](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin)**
@@ -50,7 +50,7 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
-- 2026-08-16: **the home tree started updating again on its own schedule.** [THR-1119](https://linear.app/threadbare/issue/THR-1119/autosync-has-been-stalled-12-consecutive-hours-on-three-modified) — yesterday's grooming report led with this as your #1 ask (a 5-minute attended repair); it was fixed 08-15, the stranded note was rescued rather than discarded, and the tree is confirmed clean and current this run.
+- 2026-08-16: **the home tree started updating again on its own schedule.** [THR-1119](https://linear.app/threadbare/issue/THR-1119/autosync-has-been-stalled-12-consecutive-hours-on-three-modified) — fixed 08-15, the stranded note rescued rather than discarded, tree confirmed clean and current again this run.
 - 2026-08-16: **the checker that marked clean encounters red is fixed.** [THR-1132](https://linear.app/threadbare/issue/THR-1132/checkencounter-live-false-fails-gate-clean-content-reaction-borne) ([PR #1495](https://github.com/christianspliid-ui/threadbare/pull/1495)) — the live-proof sweep counted reaction-borne effects as missing, which is why the Batch 1 report carried five red ✗ against encounters whose gates were all green.
 - 2026-08-16: **the two sequels were saved, not dropped.** [THR-1131](https://linear.app/threadbare/issue/THR-1131/retrofit-batch-1-the-slice-six-through-the-factory-line-contract-thr) — a veto window proposed parking `grateful_kin` and `full_moon_collection`; instead both were authored first nudge hands and passed the full gate. Batch 1 delivered six, not four.
 - 2026-08-16: **you approved the batch-1 brief and chartered the batch.** [THR-1131](https://linear.app/threadbare/issue/THR-1131/retrofit-batch-1-the-slice-six-through-the-factory-line-contract-thr) — approved with one amendment, that your 10 [THR-974](https://linear.app/threadbare/issue/THR-974/consequence-verdict-session-christian-rules-on-world-graph-consequence) rewrites are the editorial critic's validation reference rather than verbatim text.
