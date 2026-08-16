@@ -421,6 +421,36 @@ export interface DebugBridge {
   } | null>;
 
   /**
+   * THR-1142: read an agent's live travel intent — where an `agent_relocation`
+   * aftermath effect sent them, and how far along they are.
+   *
+   * An intent is a *lean*, not a route: it adds a distance-decayed weight to the
+   * agent's encounter-movement scoring (`RELOCATION_INTENT_SCORE_WEIGHT`), so a
+   * mortal with a better reason to stay may never arrive — and `ticksRemaining`
+   * going negative is that story ending, not a bug. The intent is cleared on the
+   * agent's next decision tick after arrival or expiry.
+   *
+   * Accepts an agent id, id prefix, or partial name (case-insensitive). `null` when
+   * no agent matches, the game is not loaded, or the agent carries no intent.
+   */
+  getRelocationIntent: (agentIdOrName: string) => Promise<{
+    agentId: string;
+    agentName: string;
+    destinationNodeId: string | null;
+    destinationName: string | null;
+    destinationHex: { col: number; row: number };
+    /** Live hex distance still to cover; 0 means the arrival sweep fires next decision phase. */
+    hexesRemaining: number | null;
+    setAtTick: number;
+    expiresAtTick: number;
+    /** Negative once lapsed but not yet swept. */
+    ticksRemaining: number | null;
+    source: 'aftermath';
+    templateId: string | null;
+    stampResidenceOnArrival: boolean;
+  } | null>;
+
+  /**
    * THR-479: list the ascendant's Aspects (apex milestone beyond the five tiers),
    * including living Aspects and mythic echoes. Empty array if none / not loaded.
    */
