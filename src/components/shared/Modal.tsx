@@ -19,11 +19,30 @@ const FOCUSABLE_SELECTOR = [
   '[tabindex]:not([tabindex="-1"])',
 ].join(', ');
 
+/**
+ * The modal band (Law 35 — z-index comes from the stacking table, never invented).
+ * `layout-zones.md`: 50 focused overlays · **60 modals** · 70+ tooltips · 9999 portalled menus.
+ *
+ * `MODAL_Z_DEFAULT` is where every modal sits, and equal z means DOM order decides
+ * — which is a coin toss the JSX author never sees. `MODAL_Z_ABOVE_INTERRUPT` is the
+ * one sanctioned step up, for a sheet opened *from* an interrupt that renders later
+ * in `GameView` (AgentProfileModal over PremonitionModal, THR-1139). It deliberately
+ * stops below 70: the profile sheet has tooltips inside it, and `Tooltip` sits at
+ * `70 + depth`, so raising the sheet into that band would bury its own hovers.
+ */
+export const MODAL_Z_DEFAULT = 60;
+export const MODAL_Z_ABOVE_INTERRUPT = 65;
+
 interface ModalProps {
   open: boolean;
   onClose: () => void;
   maxWidth?: number;
   animation?: 'anim-fade' | 'anim-fade-up';
+  /**
+   * Stacking band. Defaults to `MODAL_Z_DEFAULT`, so every existing surface is
+   * untouched; pass `MODAL_Z_ABOVE_INTERRUPT` to open above a modal-tier interrupt.
+   */
+  zIndex?: number;
   /** Accessible label for the dialog (aria-label). */
   'aria-label'?: string;
   /**
@@ -43,7 +62,7 @@ interface ModalProps {
  * a new containing block). Instead, the backdrop div handles its own
  * mount/unmount lifecycle and applies animation classes directly.
  */
-function ModalRoot({ open, onClose, maxWidth = 600, animation = 'anim-fade-up', 'aria-label': ariaLabel, panelClassName, children }: ModalProps) {
+function ModalRoot({ open, onClose, maxWidth = 600, animation = 'anim-fade-up', zIndex = MODAL_Z_DEFAULT, 'aria-label': ariaLabel, panelClassName, children }: ModalProps) {
   const [shouldRender, setShouldRender] = useState(open);
   const [animClass, setAnimClass] = useState('');
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -147,7 +166,7 @@ function ModalRoot({ open, onClose, maxWidth = 600, animation = 'anim-fade-up', 
     position: 'fixed',
     inset: 0,
     backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    zIndex: 60,
+    zIndex,
     display: 'flex',
     alignItems: 'flex-start',
     justifyContent: 'center',
