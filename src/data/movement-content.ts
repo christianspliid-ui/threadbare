@@ -220,6 +220,43 @@ export const MOVEMENT_EVENT_SIGNIFICANCE = 0.3;
  */
 export const THREAT_MODIFIER_FLOOR = 0.1;
 
+// ─── Relocation intent (THR-1142) ───────────────────────────────────────────
+
+/**
+ * How long an unfulfilled travel intent lives before it is abandoned.
+ *
+ * 36 ticks = 3 game days at the 12-tick day (see `project_12_tick_day`). Long
+ * enough to cross most of a medium map on foot, short enough that a mortal whose
+ * road is blocked goes back to living their life instead of walking forever.
+ */
+export const RELOCATION_INTENT_TTL_TICKS = 36;
+
+/**
+ * Pull weight toward a live intent's destination, additive on the encounter
+ * score and decayed by hex distance (`WEIGHT / (1 + distance)`).
+ *
+ * Deliberately the same shape and channel as Draw Together's
+ * `DRAW_TOGETHER_PULL_WEIGHT`, at a quarter its strength: a departure the story
+ * announced is a standing lean, not the sharp gather a god just called. It is a
+ * tilt, never a command — a mortal with a compelling reason to stay can still
+ * outscore it, which is the point (NFP #5: the fiction stays watchable, and a
+ * reluctant departure is a better story than a teleport).
+ */
+export const RELOCATION_INTENT_SCORE_WEIGHT = 0.5;
+
+/**
+ * Hex radius searched for `{ kind: 'nearest_settlement' }` before the effect
+ * gives up and no-ops with a trace. Bounds the scan on a large map (NFP #7).
+ */
+export const RELOCATION_NEAREST_SETTLEMENT_MAX_HEXES = 12;
+
+/**
+ * Hex radius cap for the `{ kind: 'away' }` seeded pick — candidates must sit at
+ * least `minHexDistance` and at most this far out, so "leave" does not mean
+ * "walk to the far corner of the world".
+ */
+export const RELOCATION_AWAY_MAX_HEXES = 20;
+
 /**
  * Get terrain tax for a specific terrain type
  *

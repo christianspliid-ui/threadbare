@@ -92,6 +92,15 @@ const HEALER_WARD_STANDING_DELTA = 0.08;
 /** Ticks until the household comes looking for the god (~15 game days). */
 const HEALER_GRATITUDE_DELAY_TICKS = 180;
 
+/**
+ * How far Maret goes when she takes the road (THR-1142).
+ *
+ * 3 hexes is out of Thornwall's orbit without being an exile — she is a
+ * *wandering* healer, and the next place that needs her is the next place she
+ * stops, not the far edge of the map.
+ */
+const HEALER_DEPARTURE_MIN_HEXES = 3;
+
 // ─── Aftermath Config ────────────────────────────────────────────
 
 /**
@@ -154,6 +163,20 @@ const LINEAR_AFTERMATH = {
           withAgentId: '$cast:maret',
           sentimentDelta: HEALER_MARET_SENTIMENT,
           trustDelta: HEALER_MARET_TRUST,
+        },
+        // THR-1142: the departure itself. The `healer_departs` chip has always
+        // said "the wandering healer leaves the settlement"; THR-1141 backed the
+        // *disposition* half of that sentence and could not back the leaving,
+        // because no effect in the vocabulary could move anyone. This is that
+        // write — and it is a travel intent, not a teleport, so Maret walks out
+        // of Thornwall on the map over the following ticks the way the sentence
+        // implies. If the road keeps her (an encounter she cannot refuse, a
+        // better reason to stay), the intent lapses and she is still here: that
+        // is a story, not a failure.
+        {
+          kind: 'agent_relocation' as const,
+          targetAgentId: '$cast:maret',
+          destination: { kind: 'away' as const, minHexDistance: HEALER_DEPARTURE_MIN_HEXES },
         },
         {
           kind: 'reputation_score' as const,
