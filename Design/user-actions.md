@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-16 16:05 local (2026-08-16 14:05 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-16 17:00 local (2026-08-16 15:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -13,16 +13,17 @@ Your ruling 6: you sample two encounters per batch. Batch 1 shipped 2026-08-15 2
 
 Chosen because they are the two your own [THR-974](https://linear.app/threadbare/issue/THR-974/consequence-verdict-session-christian-rules-on-world-graph-consequence) rewrites targeted — the clearest read on whether the plainness re-register landed.
 
-**Caveat as of 16:05:** the four defects you filed this morning are all still unshipped, so the aftermath chrome and the looping premonition will look exactly as they did at 10:00. The prose is unaffected. Say the word and this ask holds until they land.
+**The 16:05 caveat is withdrawn.** [THR-1136](https://linear.app/threadbare/issue/THR-1136/aftermath-screen-corner-chrome-removal-step-replay-from-the-ending) merged at 16:49 and is live: corner chrome gone, chips sorted and de-noised, resolved steps clickable, category words explained on hover. The three defects still open are premonition and character-sheet surfaces — neither is on these links.
 
 [All six side by side](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/batch-report-2026-08-15.md) · [PR #1494](https://github.com/christianspliid-ui/threadbare/pull/1494)
 
-### 2. Charter batch 2 — [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to)
+### 2. Batch 2 of the retrofit — [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to)
 
-Parked on you since 2026-08-15 21:16Z: *"a batch does not run until you approve its brief"* (your ruling 2). Best done straight after ask 1, so your read of Batch 1 shapes the next brief. Two things to answer, both with a recommendation already on the ticket:
+**Sequenced behind ask 1, and there is nothing to approve until it lands.** Your ruling 2 gates a batch behind an approved brief, and the ticket names your sample verdicts as direct input to the retrofit bar — so drafting batch 2's brief before your verdict would pre-empt the feedback it exists to absorb. The correction is recorded on the ticket (2026-08-16 07:20Z); an earlier version of this list asked you to approve a brief that had already been superseded.
 
-- **The batch itself.** A brief for the camp six is committed ([`2026-08-15-retrofit-batch-1-brief.md`](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/2026-08-15-retrofit-batch-1-brief.md)) — Sharpen Blades, Ward the Camp, Offer a Small Prayer, Rest and Reflect, Tend to Wounds, Scout the Perimeter. Batch 1 ran the slice six instead, so this brief is unspent and is the natural batch 2.
-- **Nudge-card art.** The brief framed this as 27 missing plates corpus-wide. Batch 1 measured it much smaller in practice: 9 dead tags, 7 with honest matches already in the library, shipped by remapping. A third option: give the lane a standing rule — *remap where a match is honest, come to me only when it is not* — and the question stops recurring per batch.
+What remains after batch 1: the **camp seven** plus the two sequels. Roughly nine encounters.
+
+**Nudge-card art, when it next comes up.** Batch 1 measured the gap far smaller than the corpus sweep implied — 9 dead tags, 7 with honest matches already in the library, shipped by remapping. Standing recommendation the lane will follow unless you say otherwise: *remap where a match is honest, come to you only when it is not*, so the question stops recurring per batch.
 
 ### 3. The slice verdict session — [THR-907](https://linear.app/threadbare/issue/THR-907/slice-verdict-session-christian-rules-on-prose-firing-ui-and-game)
 
@@ -50,8 +51,9 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
+- 2026-08-16: **the aftermath screen you photographed this morning is fixed and deployed.** [THR-1136](https://linear.app/threadbare/issue/THR-1136/aftermath-screen-corner-chrome-removal-step-replay-from-the-ending) ([PR #1502](https://github.com/christianspliid-ui/threadbare/pull/1502)) — corner chrome gone, chips ordered cost → who → earned → opened, resolved steps open on click, category words explained on hover, and your craft-repute ruling applied with the visibility-parity clause written into the laws doc. Claimed 16:03, merged 16:49.
 - 2026-08-16: **the vocabulary bleed you spotted on Sevrin is fixed and deployed.** [THR-1135](https://linear.app/threadbare/issue/THR-1135/rename-stone-virtue-word-dependable-careful-vocabulary-bleeds-into) — Stone's virtue word is now *Careful*, and three vignettes stopped borrowing Heart's meaning. Merged 10:22, needed nothing further from you.
-- 2026-08-16: **your morning play session became four tickets, all fully specified.** THR-1136, THR-1137, THR-1138, THR-1139 — diagnosis done in-session, solutions carried on the tickets, nothing else owed by you. Tracked in the briefing's Queue section until they ship.
+- 2026-08-16: **your morning play session became four tickets, all fully specified.** THR-1136, THR-1137, THR-1138, THR-1139 — diagnosis done in-session, solutions carried on the tickets, nothing else owed by you. One has shipped; the other three are tracked in the briefing's Queue section.
 - 2026-08-16: **THR-1129 is closed — that click is off your list.** [THR-1129](https://linear.app/threadbare/issue/THR-1129/encounter-factory-ruling-9-sitting-fable-drafts-the-amended-nudge) — its scope shipped 2026-08-09 under [THR-883](https://linear.app/threadbare/issue/THR-883/fable-encounter-writing-prototype-lock-the-exact-authoring-format); an agent re-verified the commits and closed it as a technical verdict rather than routing it to you.
 - 2026-08-16: **the home tree started updating again on its own schedule.** [THR-1119](https://linear.app/threadbare/issue/THR-1119/autosync-has-been-stalled-12-consecutive-hours-on-three-modified) — fixed 08-15, the stranded note rescued rather than discarded.
 - 2026-08-16: **the checker that marked clean encounters red is fixed.** [THR-1132](https://linear.app/threadbare/issue/THR-1132/checkencounter-live-false-fails-gate-clean-content-reaction-borne) ([PR #1495](https://github.com/christianspliid-ui/threadbare/pull/1495)) — why the Batch 1 report carried five red ✗ against encounters whose gates were all green.
@@ -59,7 +61,6 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 - 2026-08-16: **you approved the batch-1 brief and chartered the batch.** [THR-1131](https://linear.app/threadbare/issue/THR-1131/retrofit-batch-1-the-slice-six-through-the-factory-line-contract-thr) — approved with one amendment, that your 10 THR-974 rewrites are the critic's validation reference rather than verbatim text.
 - 2026-08-15: **you ruled the consequence verdict, and the standard is already in canon.** [THR-974](https://linear.app/threadbare/issue/THR-974/consequence-verdict-session-christian-rules-on-world-graph-consequence) — mechanics pass, prose does not. The three plainness moves entered the prose register model and the nudge authoring spec within 50 minutes.
 - 2026-08-15: **a broken gate stopped reporting success.** [THR-1128](https://linear.app/threadbare/issue/THR-1128/checktypecheck-reports-ok-0-errors-down-from-baseline-when-tsc-is) — the typecheck check said "OK — 0 errors" when the compiler was simply absent.
-- 2026-08-15: **the resolution readout stopped reporting percentages to you.** [THR-1124](https://linear.app/threadbare/issue/THR-1124) ([PR #1479](https://github.com/christianspliid-ui/threadbare/pull/1479)) — raw numbers on a player surface, replaced with language a player can read. Deployed.
 
 ---
 *Refreshed hourly by `keep-work-flowing-cc`. Full history of every prior version: `git log -p origin/ops -- Design/user-actions.md`.*
