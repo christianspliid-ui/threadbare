@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-16 19:58 local (17:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-16 20:57 local (18:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -13,7 +13,7 @@ Your ruling 6: you sample two encounters per batch. Batch 1 shipped 2026-08-15 2
 
 Chosen because they are the two your own [THR-974](https://linear.app/threadbare/issue/THR-974/consequence-verdict-session-christian-rules-on-world-graph-consequence) rewrites targeted — the clearest read on whether the plainness re-register landed.
 
-**Partly done already.** You opened the Unsafe Bridge on 2026-08-16 and ruled on its aftermath chips; that ruling became UI Law 56 and [THR-1141](https://linear.app/threadbare/issue/THR-1141/aftermath-chips-that-claim-state-nothing-wrote-law-56-content-sweep), now Urgent and in flight. What is still owed is the sample verdict itself. Expect the unbacked `PATH · THE RIVER CROSSING` chip again — the fix is being worked, not yet live.
+**Partly done already, and the blemish is now gone.** You opened the Unsafe Bridge on 2026-08-16 and ruled on its aftermath chips; that ruling became UI Law 56 and [THR-1141](https://linear.app/threadbare/issue/THR-1141/aftermath-chips-that-claim-state-nothing-wrote-law-56-content-sweep), which merged 20:11 local and is live. The unbacked `PATH · THE RIVER CROSSING` chip you were previously told to look past is fixed. What is still owed is the sample verdict itself.
 
 **This overlaps ask 2 by construction:** the batch-1 retrofit *is* the slice six, so one sitting produces both this sample verdict and the THR-907 ruling.
 
@@ -23,7 +23,7 @@ Chosen because they are the two your own [THR-974](https://linear.app/threadbare
 
 *— from tb-orchestrator.* Play the 5-encounter slice end-to-end and rule on four things: **prose** (does the plain register read grounded), **firing** (does the rhythm work, what is your first pruning instinct), **UI** (the interface and modifier iconography with real nudge-native encounters), and **game** (is it fun to make these decisions). The consequence verdict was split out and you ruled it on [THR-974](https://linear.app/threadbare/issue/THR-974/consequence-verdict-session-christian-rules-on-world-graph-consequence).
 
-Nothing gates this. The every-tick premonition loop that was the last caveat ([THR-1137](https://linear.app/threadbare/issue/THR-1137/compulsion-premonition-the-gods-will-loops-every-tick-no-pending-gate)) merged 2026-08-16 17:32 and is live.
+Nothing gates this. The every-tick premonition loop that was the last caveat ([THR-1137](https://linear.app/threadbare/issue/THR-1137/compulsion-premonition-the-gods-will-loops-every-tick-no-pending-gate)) merged 2026-08-16 and is live.
 
 Open with `run the slice verdict session`. "Needs another iteration" is a valid ruling on any of the four. Closing this closes the [encounter experience map](https://linear.app/threadbare/issue/THR-902/encounter-experience-redesign-vertical-slice-wayfinder-map).
 
@@ -47,7 +47,7 @@ This replaces separate tickets (THR-1109, THR-1125, THR-1126, THR-1127), consoli
 
 What it lacks is a plan doc, and that needs you in the room — locations, artifacts, and draw-by-trait pools. Its sibling [THR-791 (wave 3)](https://linear.app/threadbare/issue/THR-791) is blocked on the identical gap and clears once this one lands a plan doc, so the session buys two tickets, not one.
 
-Not urgent while the palette tickets stock the shelf.
+Not urgent while the palette ladder stocks the shelf.
 
 ### 6. Parked option, no urgency: a Tenacious-style trait
 
@@ -55,7 +55,7 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
-- 2026-08-16: **your afternoon ruling on aftermath chips is written down, ticketed and now being built.** UI Law 56 plus [THR-1141](https://linear.app/threadbare/issue/THR-1141/aftermath-chips-that-claim-state-nothing-wrote-law-56-content-sweep) (Urgent, claimed 19:01) — chips may only show state the engine actually wrote, and PATH is reserved for openings the game will act on. Nothing further owed by you.
+- 2026-08-16: **the chip ruling you gave this afternoon is now shipped and live.** [THR-1141](https://linear.app/threadbare/issue/THR-1141/aftermath-chips-that-claim-state-nothing-wrote-law-56-content-sweep) ([PR #1507](https://github.com/christianspliid-ui/threadbare/pull/1507)) merged 20:11 local and the site is serving it — chips may only show state the engine actually wrote, and PATH is reserved for openings the game will act on. UI Law 56 records the rule.
 - 2026-08-16: **the premonition loop you hit this morning is fixed and deployed.** [THR-1137](https://linear.app/threadbare/issue/THR-1137/compulsion-premonition-the-gods-will-loops-every-tick-no-pending-gate) ([PR #1503](https://github.com/christianspliid-ui/threadbare/pull/1503)) — fires once per cooldown instead of every tick, dismissal sticks, and the prose calls the mortal by name instead of *"calls to they"*.
 - 2026-08-16: **the aftermath screen you photographed this morning is fixed and deployed.** [THR-1136](https://linear.app/threadbare/issue/THR-1136/aftermath-screen-corner-chrome-removal-step-replay-from-the-ending) ([PR #1502](https://github.com/christianspliid-ui/threadbare/pull/1502)) — corner chrome gone, chips ordered cost → who → earned → opened, resolved steps open on click, category words explained on hover, and your craft-repute ruling applied.
 - 2026-08-16: **the vocabulary bleed you spotted on Sevrin is fixed and deployed.** [THR-1135](https://linear.app/threadbare/issue/THR-1135/rename-stone-virtue-word-dependable-careful-vocabulary-bleeds-into) — Stone's virtue word is now *Careful*, and three vignettes stopped borrowing Heart's meaning.
