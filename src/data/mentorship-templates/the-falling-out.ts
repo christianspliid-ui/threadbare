@@ -17,6 +17,14 @@
  */
 
 import type { UnifiedActionTemplate, ActionStep } from '../../types/unifiedAction';
+import {
+  MENTORSHIP_BREAK_SENTIMENT,
+  MENTORSHIP_MENDED_SENTIMENT,
+  MENTORSHIP_MENDED_TRUST,
+  MENTORSHIP_NEXT_MEETING_DELAY_TICKS,
+  MENTORSHIP_SIDED_SENTIMENT,
+  MENTORSHIP_TALLY_KEY,
+} from './law56-backing';
 
 const step0Reckoning: ActionStep = {
   reach: 'heart',
@@ -146,6 +154,25 @@ export const MENTORSHIP_THE_FALLING_OUT_TEMPLATE: UnifiedActionTemplate = {
             polarity: 'mixed',
           },
         ],
+        // Law 56 (THR-1141): "ended on terms both could live with" is a real,
+        // positive move on a bond that was breaking — smaller than a graduation
+        // honored, because mending a seam is not the same as closing well.
+        reactions: [
+          {
+            id: 'mentorship.falling_out.mend',
+            label: 'Let the seam hold',
+            intent: 'Not warmly, but not as enemies.',
+            effects: [
+              { kind: 'reputation_tally', key: MENTORSHIP_TALLY_KEY, delta: 1 },
+              {
+                kind: 'bond_change',
+                withAgentId: '$target',
+                sentimentDelta: MENTORSHIP_MENDED_SENTIMENT,
+                trustDelta: MENTORSHIP_MENDED_TRUST,
+              },
+            ],
+          },
+        ],
       },
       let_it_break: {
         overview:
@@ -158,6 +185,23 @@ export const MENTORSHIP_THE_FALLING_OUT_TEMPLATE: UnifiedActionTemplate = {
             title: 'A bond broken',
             detail: 'The apprenticeship ended badly; the settlement notes the rupture.',
             polarity: 'loss',
+          },
+        ],
+        // "Both parties will carry the worst version of each other forward" —
+        // the largest single sentiment move in the mentorship ladder.
+        reactions: [
+          {
+            id: 'mentorship.falling_out.break',
+            label: 'Let it break',
+            intent: 'The rupture stands, and no divine hand was on it.',
+            effects: [
+              { kind: 'reputation_tally', key: MENTORSHIP_TALLY_KEY, delta: 1 },
+              {
+                kind: 'bond_change',
+                withAgentId: '$target',
+                sentimentDelta: MENTORSHIP_BREAK_SENTIMENT,
+              },
+            ],
           },
         ],
       },
@@ -180,6 +224,34 @@ export const MENTORSHIP_THE_FALLING_OUT_TEMPLATE: UnifiedActionTemplate = {
             title: 'The next meeting',
             detail: 'Teacher and former apprentice will cross paths again; the god\'s choice will shape that meeting.',
             polarity: 'mixed',
+          },
+        ],
+        // Law 56 (THR-1141): taking a side is asymmetric by definition — "one
+        // stands taller; the other carries the cut" — so the edge is written one
+        // way only. `reciprocal: false` is what makes the sentence true rather
+        // than merely evocative. And the hook is seeded, not promised.
+        reactions: [
+          {
+            id: 'mentorship.falling_out.side',
+            label: 'Let the choice stand',
+            intent: 'One stands taller. The other carries the cut.',
+            effects: [
+              { kind: 'reputation_tally', key: MENTORSHIP_TALLY_KEY, delta: 1 },
+              {
+                kind: 'bond_change',
+                withAgentId: '$target',
+                sentimentDelta: MENTORSHIP_SIDED_SENTIMENT,
+                reciprocal: false,
+              },
+              {
+                kind: 'encounter_seed',
+                templateId: 'mentorship.the-falling-out',
+                targetAgentId: '$actor',
+                delayTicks: MENTORSHIP_NEXT_MEETING_DELAY_TICKS,
+                seedLabel: 'The two meet again, carrying the weight a god put between them.',
+                inheritContext: true,
+              },
+            ],
           },
         ],
       },
