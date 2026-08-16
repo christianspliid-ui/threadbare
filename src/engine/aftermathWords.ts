@@ -32,6 +32,7 @@
  */
 
 import type { ReachDomain } from '../types/traits';
+import { TICKS_PER_DAY } from '../data/attention-constants';
 import type {
   EncounterAftermathConceptRef,
   EncounterAftermathDirection,
@@ -186,6 +187,35 @@ export const COUNT_WORD_MANY = 'many';
 export function countWord(n: number): string {
   const count = Number.isFinite(n) ? Math.max(0, Math.floor(n)) : 0;
   return COUNT_WORDS[count] ?? COUNT_WORD_MANY;
+}
+
+/**
+ * A remaining term, in days rather than ticks (THR-1113; moved here THR-1143).
+ *
+ * Ticks are an engine unit with no player-facing display anywhere else in the game, so `48 ticks`
+ * fails Law 14 as squarely as it fails Law 13. The conversion is the game's own — `TICKS_PER_DAY`,
+ * twelve — and the count is spelled out, so no numeral escapes.
+ *
+ * **Why a real unit rather than a band.** The Law 13 amendment of 2026-08-12 is explicit that a
+ * word ladder is the wrong answer to *"how much?"* — Christian's verdict on `grew steadily` was
+ * *"how can a player use that word to gage anything"*. `four days` is not an adverb: it is a
+ * quantity in a unit the player already reasons in, which is what the amendment asks for and what
+ * banding this to `brief` / `lasting` would have thrown away.
+ *
+ * Above the spelled-count ladder the reading steps up to weeks rather than growing a numeral, so
+ * an authored term of any length still renders in words.
+ *
+ * **Why it lives here rather than in the Codex** (THR-1143): it was written for an agreement's
+ * term and was marked module-private, but a location condition's remaining season is the same
+ * quantity asking the same question, and the location panel needed it. Copying would have made
+ * two ladders for one reading — the drift UI Law 3 exists to prevent — so the ladder moved to the
+ * module that already owns "band it at the source" and the Codex re-exports it.
+ */
+export function durationLabel(ticks: number): string {
+  const days = Math.max(1, Math.round(ticks / TICKS_PER_DAY));
+  if (days <= 9) return `${countWord(days)} day${days === 1 ? '' : 's'}`;
+  const weeks = Math.max(1, Math.round(days / 7));
+  return `${countWord(weeks)} week${weeks === 1 ? '' : 's'}`;
 }
 
 // ─── Key humanising ──────────────────────────────────────────────────

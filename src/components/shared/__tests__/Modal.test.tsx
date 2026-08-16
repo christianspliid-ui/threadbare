@@ -2,7 +2,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { useState } from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { Modal } from '../Modal';
+import { Modal, MODAL_Z_DEFAULT, MODAL_Z_ABOVE_INTERRUPT } from '../Modal';
 
 describe('Modal', () => {
   it('renders children when open', () => {
@@ -211,5 +211,47 @@ describe('Modal — Law 50 focus contract', () => {
     // The row that opened the sheet is filtered out of its list mid-flow.
     fireEvent.click(screen.getByText('Drop invoker'));
     expect(() => fireEvent.keyDown(document, { key: 'Escape' })).not.toThrow();
+  });
+
+  /**
+   * THR-1139 — two modals at equal z resolve by DOM order, which the JSX author
+   * never sees. These pin the band itself, not just that the prop is forwarded:
+   * a regression that quietly reorders GameView's JSX is caught by the ordering
+   * assertion, and one that changes the default is caught by the first.
+   */
+  describe('stacking band', () => {
+    const backdropOf = (label: string) =>
+      screen.getByRole('dialog', { name: label }).style.zIndex;
+
+    it('defaults every modal to the modal tier', () => {
+      render(
+        <Modal open onClose={() => {}} aria-label="Default sheet">
+          <Modal.Body>Body</Modal.Body>
+        </Modal>,
+      );
+      expect(backdropOf('Default sheet')).toBe(String(MODAL_Z_DEFAULT));
+      expect(MODAL_Z_DEFAULT).toBe(60);
+    });
+
+    it('opens above a modal-tier interrupt when given the raised band', () => {
+      render(
+        <>
+          <Modal open onClose={() => {}} aria-label="Interrupt">
+            <Modal.Body>Premonition</Modal.Body>
+          </Modal>
+          <Modal open onClose={() => {}} aria-label="Sheet" zIndex={MODAL_Z_ABOVE_INTERRUPT}>
+            <Modal.Body>Character sheet</Modal.Body>
+          </Modal>
+        </>,
+      );
+      expect(Number(backdropOf('Sheet'))).toBeGreaterThan(Number(backdropOf('Interrupt')));
+    });
+
+    it('stays below the tooltip band so a raised sheet cannot bury its own hovers', () => {
+      // Tooltip.tsx renders at `70 + depth`; a sheet at or above that would
+      // cover the tooltips rendered from inside it.
+      expect(MODAL_Z_ABOVE_INTERRUPT).toBeLessThan(70);
+      expect(MODAL_Z_ABOVE_INTERRUPT).toBeGreaterThan(MODAL_Z_DEFAULT);
+    });
   });
 });

@@ -67,6 +67,12 @@ The 2026-05-04 encounter-experience plan specified "sphere-tinted halo" silhouet
 
 EncounterVeil (context-strip character + aftermath actor moments), AgentProfileModal portrait header, LocationView hero landscape. Codex, CMS, debug, and reference surfaces adopt the primitive in later tickets — this pattern is the default for all new modal work.
 
+## Later adopters
+
+**PremonitionModal subject header (THR-1139).** Both premonition variants — Whisper and Compulsion — open with the mortal's `portrait` tile above the type label, at a constrained 84px width (`SUBJECT_PORTRAIT_PX`) inside the 520px modal. Rounded rather than circular so the face matches the character sheet the tile opens, and the tile *is* the link: clicking it, or the name beneath it, opens `AgentProfileModal` over the premonition without dismissing it. The knowledge gate is left unwired here and so fails open, which is correct for the surface — a premonition is about a mortal the god is already threaded to.
+
+This is also the pattern's first case where the image is the **navigation affordance** rather than decoration, so the header carries all three of Law 1's parts: image (this primitive), tooltip (`agent.*` through `resolveTooltip`, which needs a context the `Tooltip` component cannot supply on its own — resolve it at the call site and pass `label`/`desc`), and link (`onViewAgent`).
+
 ## Debug
 
 `window.__DEBUG.resolveEntityVisual('<id-or-name>')` returns the resolver's decision (tier, chosen source, gradient index, kind) for any node — the one-call answer to "why is this showing a fallback?"

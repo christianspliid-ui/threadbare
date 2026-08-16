@@ -41,9 +41,16 @@ export interface AgentProfileModalProps {
   runtime?: SimulationRuntime;
   /** Open another entity's profile from a chapter's cast. */
   onOpenEntity?: (id: string) => void;
+  /**
+   * Stacking band (THR-1139). Defaults to the modal tier; GameView passes
+   * `MODAL_Z_ABOVE_INTERRUPT` so the sheet opens above a modal-tier interrupt
+   * such as the premonition, which renders later in GameView's JSX and would
+   * otherwise win the equal-z tie.
+   */
+  zIndex?: number;
 }
 
-export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata, knowledge, gameState, runtime, onOpenEntity }: AgentProfileModalProps) {
+export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata, knowledge, gameState, runtime, onOpenEntity, zIndex }: AgentProfileModalProps) {
   const [activeTab, setActiveTab] = useState<TabId>(
     scrollToNewStrata ? 'chronicle' : 'overview'
   );
@@ -94,7 +101,7 @@ export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata, k
   };
 
   return (
-    <Modal open={true} onClose={onClose} maxWidth={960}>
+    <Modal open={true} onClose={onClose} maxWidth={960} zIndex={zIndex}>
       {/* Header Zone */}
       <div className="border-b p-6 pb-4 relative" style={{ borderColor: 'var(--border-subtle)' }}>
         <div className="absolute top-4 right-4">
