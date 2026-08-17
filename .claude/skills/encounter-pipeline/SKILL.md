@@ -30,6 +30,7 @@ PR:
 | 0 Brief | — | [`reference/batch-brief-format.md`](reference/batch-brief-format.md), agent-drafted, Christian-approved in chat (ruling 2) |
 | 1 Draft | Pass 1 | unchanged, plus the Composition Contract as the draft's skeleton |
 | 2 Critic loop | editorial → systems, retry once | **bounded at two loops, then park** (ruling 4) |
+| 2b Package critic | — | [`agents/package-prompt.md`](agents/package-prompt.md) — judges prose + chips as **one package** (THR-1154) |
 | 3 Machine gates | tests + build | `npm run check:encounter` — green is a precondition for a PR existing |
 | 4 Live proof | — | `npm run check:encounter-live` — the declared blocks must *arrive* in a running world |
 | 5 Batch review | — | `npm run encounter:batch-report` — six side by side, Christian samples two |
@@ -183,6 +184,7 @@ Then the orchestrator reads the files the Canon page links to and injects them a
 0. [`reference/nudge-authoring-spec.md`](reference/nudge-authoring-spec.md) — **mandatory**, the authoring contract every card is written against.
 0b. `src/data/__fixtures__/nudge-exemplar/swollen-ford-exemplar.ts` — the worked example. Read it, do not re-derive it.
 0c. `public/nudge-cards-reference.html` — the 21-type card library and pip vocabulary the hand is cut from.
+0d. [`reference/anchor-catalog.generated.md`](reference/anchor-catalog.generated.md) — **mandatory**, every legal anchor a consequence chip may point at, how it is declared, and which surface shows it. Generated from the live type unions. Inject it into the draft prompt as well as the critics': a chip's referent is chosen while the prose is being written, and an author who has not seen this list writes toward fiction and gets the chip folded three stages later.
 1. `Docs/authoring-brief.md` — compiled capability + principle preamble (preferred). If missing or stale, fall back: read `Docs/plans/2026-04-16-systemic-wiring-guide.md` and `Docs/plans/2026-04-16-game-design-direction.md` instead.
 2. `Docs/encounter-building-checklist.md` — structural packet template. **Its per-step "approach card" sections describe the pre-nudge model**; where it conflicts with the spec above, the spec wins.
 3. `Docs/encounter-branching-templates.md`
@@ -301,6 +303,41 @@ Parking rather than killing is deliberate: an encounter that survived two critic
 real authored prose, and the failure is usually one block a human can settle in a minute.
 Redrafting throws that away and re-spends the tokens on the same wall.
 
+### Step 3a: Dispatch Pass 3b (Package critic) — THR-1154
+
+Dispatch sub-agent with `agents/package-prompt.md`, model `opus`.
+Agent writes: `<slug>-package.md`
+
+**Why a third critic, and why it runs on the composed whole.** Editorial judges prose.
+Systems judges whether declared ids resolve *against the code*. Neither can see the
+question the director actually reviews — whether the prose was written *toward* its
+chips, and whether the chips connect the encounter to the world. His frame, 2026-08-17:
+*"they fit together into one player experience and so can't be evaluated individually …
+if that doesnt work the encounter is just a solitary isolated story."*
+
+The Unsafe Bridge is the proof the stage was missing: it passed the editorial critic, the
+systems critic, **and** the Law 56 backing gate, and shipped a dead chip anyway. Every
+stage was individually satisfied.
+
+The pass has two halves. **Half A** is mechanical and shared with THR-1153's
+anchor-resolution gate — every chip's referent must be a member of
+`reference/anchor-catalog.generated.md` and the prose must name that particular object.
+**Half B** is the judgment no machine makes: *what does this encounter leave behind that
+a later encounter or system can pick up, and would the player recognise it happening?*
+
+**Check the verdict line:**
+- `PACKAGE PASS` → proceed to Step 3.
+- `PACKAGE FIX` → apply the fold/bind list, then re-run this pass. This does **not**
+  consume a critic loop — Half A is a mechanical defect list, not a quality disagreement.
+- `PACKAGE PARK` → the encounter is `solitary`. Park it (ruling 4) and continue the
+  batch. Do not redraft: an encounter that reached this stage carries real authored
+  prose, and "connects to nothing" is a brief-level problem, not a drafting one.
+
+**One trap, and it is the expensive one.** Half A must not fold a chip merely because its
+anchor cannot be clicked. Only four kinds route a click; locations, cultures, regions,
+bonds and traits are all lawful `named` anchors. A critic that treats unclickable as
+unanchored would strip most legitimate consequences out of the corpus.
+
 ### Step 3: Machine gates
 
 ```bash
@@ -364,9 +401,14 @@ npm run encounter:batch-report -- <id1> <id2> … --brief Docs/plans/encounters/
 ```
 
 Renders the batch **side by side** (ruling 1): one row per encounter carrying gate
-verdict, live verdict, resolved outcome, systems connected, band count, and two review
-links. The per-encounter detail comes after the table, not before — a report that led
-with six dossiers would be six reviews rather than one batch review.
+verdict, live verdict, **package verdict**, resolved outcome, systems connected, band
+count, and two review links. The per-encounter detail comes after the table, not before —
+a report that led with six dossiers would be six reviews rather than one batch review.
+
+The **Package** column and the *What each encounter leaves behind* table are read from
+each `<slug>-package.md` (THR-1154), so package quality is a column in the director's
+sample review rather than nobody's. A batch that never ran Pass 3b renders `— not run`
+and says so in the section body: unjudged, which is not the same as passing.
 
 The report **runs neither check itself** — it renders their JSON. That is what keeps it
 from disagreeing with CI, which is the most expensive disagreement available here
@@ -513,9 +555,10 @@ Branch count 1 is invalid. Encounters are linear (0) or branching (2-3).
 | 1: Draft | **Opus** | Prose quality is the primary output |
 | 2: Editorial + Revision | **Opus** | Must catch prose weakness, enforce quality gates, apply its own edits |
 | 3: Systems + Final Merge | **Sonnet** | Code/systems analysis + mechanical assembly |
+| 3b: Package | **Opus** | Half A is mechanical, but Half B is the qualitative judgment the director reviews — "would the player recognise it happening?" is not a Sonnet question |
 | 4: Implementation | **Sonnet** | Code translation of already-authored prose |
 
-Opus where creative judgment matters. Sonnet where code/systems matters. 2 of 4 passes use the cheaper model.
+Opus where creative judgment matters. Sonnet where code/systems matters. 2 of 5 passes use the cheaper model.
 
 ## File Dependencies
 
@@ -537,6 +580,13 @@ Pass 2 (Editorial+Revision, Opus) ──→ <slug>-editorial.md + <slug>-revised
 Pass 3 (Systems+Merge, Sonnet) ──→ <slug>-systems.md + <slug>-final.md
     │
     ├── BLOCKED? → STOP (final file marked BLOCKED)
+    │
+    ▼
+Pass 3b (Package, Opus) ──────→ <slug>-package.md
+    │                            templateId / packageVerdict / packageLeaves
+    │
+    ├── PACKAGE FIX?  → apply the fold/bind list, re-run 3b
+    ├── PACKAGE PARK? → <slug>-parked.md, continue the batch (ruling 4)
     │
     ▼
 Pass 4 (Implementation, Sonnet) ──→ src/data/encounters/<slug>.ts

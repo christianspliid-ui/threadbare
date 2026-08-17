@@ -66,6 +66,10 @@ const STATIC_GENERATED_PATHS: readonly string[] = [
   "src/data/ul-dashboard.generated.json", // generate-ul-dashboard
   "Docs/canon/interface-map.generated.md", // generate-interface-map (THR-717)
   "Docs/canon/setting-coverage.generated.md", // generate-setting-coverage (THR-884, registered THR-948)
+  // generate-anchor-catalog (THR-1154). Registered in the same PR that adds the
+  // generator, deliberately: an anchor catalog that goes stale is worse than none,
+  // because authors would anchor chips against a vocabulary the code no longer has.
+  ".claude/skills/encounter-pipeline/reference/anchor-catalog.generated.md",
 ];
 
 /**

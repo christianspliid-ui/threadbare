@@ -47,6 +47,20 @@ not converge:
 - **Reach for:** <e.g. seeds, factions — under-represented today>
 - **Avoid defaulting to:** <e.g. conditions — already on most of the corpus>
 
+## Anchors this batch intends to touch
+
+Which **world objects** the batch's chips should connect to. Name anchor
+*kinds* from [`anchor-catalog.generated.md`](anchor-catalog.generated.md), not
+specific instances — the draft agent picks the instance, the brief picks the
+spread, same as every other axis here.
+
+| Anchor kind | Target across the batch |
+|---|---|
+| `<e.g. faction>` | <e.g. at least two encounters leave a standing change> |
+| `<e.g. relationship / bond>` | <e.g. one mints a reified bond> |
+
+**Avoid defaulting to:** <the anchor kinds the corpus already leans on>
+
 ## Over-exposed cards
 
 Read `cardPlayTally` telemetry and list the library cards the corpus already
@@ -61,6 +75,18 @@ brief reads telemetry rather than guessing.
 
 What this batch is explicitly not doing, so a critic does not ask for it.
 ```
+
+## Why the brief names anchors (THR-1154)
+
+Christian's ruling, 2026-08-17: *"the choice of prose when generated must take into account that they generate interesting chips and connections into the gamestate."*
+
+The causality is the whole point of putting anchors in the **brief** rather than leaving them to the draft. Chips bolted onto finished prose are chips written to fit sentences that were never aiming at the world — which is how The Unsafe Bridge ended up with a `PATH` chip about a river that is not a game object and is usually not even on the hex the encounter spawned on. Naming the anchor kinds up front makes the prose get written *toward* them.
+
+It also gives the Package critic (Pass 3b) something to judge the batch against, not merely each encounter in isolation: a batch whose six encounters all anchor to the same kind is a spread failure the per-encounter passes cannot see.
+
+Name **kinds**, never instances — same rule as every other axis in this document. A brief that names the faction has authored the encounter.
+
+**Do not name the `nation` anchor** — it does not exist. There is no nation node type and no border model; territory is expressed as faction control over locations. Anchor the faction that holds the ground instead. The catalog's gap table carries the current verdict and the ticket tracking it.
 
 ## How the brief is used
 

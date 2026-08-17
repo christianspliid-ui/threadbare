@@ -911,6 +911,45 @@ show only things that have updated the game state … we do not show prose in th
 section. basic game UX."* Note this closes what the old `shell_state`-with-no-effects
 pattern left open — "something must persist" (§6) binds per chip, not merely per ending.
 
+**0b. The referent exists, and your sentence names it (UI Law 56 clause 2, Christian's
+ruling 2026-08-17).** Rule 0 asks whether *a write fired*. This one asks what the write
+was **about**. The chip's referent must be an existing graph object — resolvable in the
+live world the player is in — and your sentence must name *that particular object*.
+
+Read the anchor catalog before you write the sentence:
+
+> **`reference/anchor-catalog.generated.md`** — every legal anchor kind, how a chip
+> declares it, and which player surface shows it. It is generated from the live type
+> unions, so it is current by construction; if a thing is not in it, it is not an anchor.
+
+The two failure shapes, and what to do with each:
+
+| Shape | Example | Fix |
+|---|---|---|
+| The referent is **scene fiction** | "the river crossing", "the ford upstream" | **Fold** the chip into band prose — the words survive, the chip goes — or **bind** the encounter's spawn to settings that actually carry the feature and anchor to the real node |
+| The referent is **real but unnamed** | "a nearby settlement" | **Name it.** `$cast` and the resolved location give you the actual name |
+
+The motivating defect is the one rule 0 did not catch. THR-1141 gave The Unsafe Bridge's
+`PATH · The River Crossing` chip a genuine backing write — an `intelligence` record — and
+the chip was still dead. Christian: *"there is in all likelyhood no river in the hex the
+encounter spawned in, even though a river is referred in the prose … it makes a chip that
+connects to a river that is nowhere in the gamestate even worse."* A river is hex state
+(`hasRiver`), not a node, so no pointer could have repaired it. The chip was folded.
+
+Two clarifications ratified with the rule:
+
+- **What this encounter creates counts as existing.** A spawned item, a granted condition,
+  a minted relationship — legal anchors the moment your effects write them. "Existing"
+  means resolvable after this ending resolves, not pre-existing before it.
+- **A seed anchors through its carrier.** An `encounter_seed` is not itself a referent.
+  Anchor the agent or location it is planted on, and name them.
+
+**Do not fold a chip merely because its anchor cannot be clicked.** The catalog marks
+anchors `linked` (the chip carries a click) or `named` (a real object the player reaches
+by another surface). Both are lawful. Only five kinds route at all — `agent`, `faction`,
+`artifact`, `attachment`, and `companion`, of which `companion` deliberately withholds the
+click — so most legitimate anchors are `named`, including every location.
+
 **1. Cause → change, in that order, in one sentence.** The consequence never appears
 divorced from what caused it. Write the beat from the scene that produced it, then what
 it did:

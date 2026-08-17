@@ -107,6 +107,17 @@ export const STATIC_ARTIFACT_SOURCES: Readonly<Record<string, readonly string[]>
     "src/engine/",
     "scripts/generate-systems-inventory.ts",
   ],
+  // generate-anchor-catalog: code in, doc out (THR-1154) — the harmless direction, so
+  // no DOC_TO_CODE_ALLOWLIST entry is needed. The output is a `.md`, which `isDocPath`
+  // treats as documentation wherever it lives, so a graph-type edit still classifies as
+  // code (that file is its own path) while the catalog itself costs a docs PR nothing.
+  ".claude/skills/encounter-pipeline/reference/anchor-catalog.generated.md": [
+    "src/types/graph.ts",
+    "src/types/attachments.ts",
+    "src/types/unifiedAction.ts",
+    "src/types/traits.ts",
+    "scripts/generate-anchor-catalog.ts",
+  ],
   // rebuild-plans-index: doc in, doc out — `Docs/plans/` on both sides, so the
   // coupling classifier answers "none" and a plan-doc PR stays on the docs track.
   // Registered by THR-987; THR-807 deliberately left its own gate advisory pending

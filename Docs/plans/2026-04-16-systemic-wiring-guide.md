@@ -1941,6 +1941,10 @@ This guide should be read before these skills:
 - **`prose-pipeline`** — Resolver architecture for graph-walking prose. This guide explains the other side: how encounter outcomes create the graph state that resolvers later walk.
 - **`encounter-actor-systems`** — The scoring, filtering, and resolution systems. This guide explains how template fields feed into those systems.
 
+**The anchor catalog (THR-1154).** Everything in Part 2 tells you what the engine can *write*. `.claude/skills/encounter-pipeline/reference/anchor-catalog.generated.md` tells you what a consequence chip may be *about* — every legal anchor kind, how a chip declares it (`entityId` / `tooltipId` / both endpoints of an edge), and which player surface shows it. It is generated from the live `NodeType` / `ActorType` / `EdgeType` / `AttachmentCategory` unions, so it is current by construction and a new node type appears in it the day it is added.
+
+Read it alongside this guide, because the two answer different halves of one question and a chip needs both to be true. UI Law 56 clause 1 requires the write (this guide's subject); clause 2 requires the write to be *about an existing object the prose names* (the catalog's subject). The Unsafe Bridge is the case that proves they are separable: it had a genuine backing write and still shipped a dead chip, because the thing the write was about — a river — is hex state rather than a graph object, and the encounter spawns on hexes that have none.
+
 **The chain of authority:**
 ```
 Game Design Direction (emotional principles)
