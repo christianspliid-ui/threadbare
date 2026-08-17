@@ -1065,6 +1065,40 @@ export type EncounterAftermathReactionEffect =
     readonly chronicle?: boolean;
     readonly when?: EffectPredicate;
   }
+  // ─── Tag-filtered random prize (THR-1146) ─────────────────────────────────
+  | {
+    /**
+     * THR-1146 — draw a *random* attachment matching a recipe, as the
+     * consequence of a specific ending: "the keeper pays you off with a blade
+     * from the strongbox" draws some `#weapon`, not one authored blade.
+     *
+     * The machinery is not new. `RewardPoolRecipe` + `assembleRewardPool` have
+     * always resolved a tag-filtered, tier-weighted draw — but only from step
+     * `successMetadata`/`failureMetadata`, so a *band* or a *reaction* could
+     * only ever spawn one fixed artifact. This kind is the same recipe reaching
+     * the rest of the effect vocabulary; it adds no tuning surface of its own.
+     *
+     * Tier curve and bad-outcome chance come from the action's already-resolved
+     * outcome, exactly as the step route takes them from the step's — so a
+     * better ending draws a better prize for free, and both routes run the
+     * identical seeded draw (`drawSeededReward`, keyed seed/tick/actor/template).
+     *
+     * **`tagFilters` must name tags that exist.** Tags carry their `#` — the
+     * library writes `'#weapon'`, and `'weapon'` matches nothing. A filter
+     * matching zero templates is a silently empty pool, the THR-844 rot class,
+     * so `check:encounter` resolves every recipe against the live catalogs and
+     * fails on an empty one rather than trusting the author.
+     *
+     * Fail-soft at runtime (NFP #4): an empty pool emits
+     * `aftermath_reward_draw_empty` and the encounter proceeds — never a throw.
+     */
+    readonly kind: 'reward_draw';
+    /** The draw recipe — `categoryWeights` + optional `tagFilters` / `sphereTint`. */
+    readonly pool: RewardPoolRecipe;
+    /** Who receives the prize. Defaults to the encounter's actor. Accepts scene sentinels. */
+    readonly targetAgentId?: string;
+    readonly when?: EffectPredicate;
+  }
   // ─── Aspect apex grant (THR-479) ──────────────────────────────────────────
   | {
     /**

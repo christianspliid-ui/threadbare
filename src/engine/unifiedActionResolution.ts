@@ -153,13 +153,7 @@ import {
   findActionableIntelligence,
   reliabilityDescriptor,
 } from './intelligence';
-import {
-  assembleRewardPool,
-  BAD_OUTCOME_CATEGORY_WEIGHTS,
-  drawFromPool,
-  instantiateReward,
-  resolveRewardRecipe,
-} from './rewardPool';
+import { drawSeededReward } from './rewardPool';
 import { recordReward } from './rewardHistory';
 import { mulberry32 } from '../lib/prng';
 import { mintCompanion } from './companions';
@@ -1251,23 +1245,21 @@ function resolveUnifiedReward(
 ): ResolvedUnifiedReward | undefined {
   if (!metadata?.rewardPool) return undefined;
 
-  const rng = mulberry32(
-    state.seed + tick * 41 + hashString(action.actorId) + hashString(action.templateId),
-  );
-  const resolved = resolveRewardRecipe(
-    metadata.rewardPool,
-    mapStepOutcomeToRewardOutcome(outcome),
-  );
-
-  const badRoll = rng();
-  const isBadOutcome = badRoll < resolved.badOutcomeChance;
-  const effectiveRecipe = isBadOutcome
-    ? { ...resolved, categoryWeights: BAD_OUTCOME_CATEGORY_WEIGHTS, tagFilters: undefined }
-    : resolved;
-  const pool = assembleRewardPool(state.graph, effectiveRecipe);
+  // THR-1146 moved the draw itself into `drawSeededReward`, which the
+  // `reward_draw` aftermath effect also calls. Same seed key, same roll order,
+  // same pool assembly — one implementation, so the two routes cannot drift.
+  const draw = drawSeededReward(state.graph, {
+    recipe: metadata.rewardPool,
+    outcomeType: mapStepOutcomeToRewardOutcome(outcome),
+    seed: state.seed,
+    tick,
+    actorId: action.actorId,
+    templateId: action.templateId,
+  });
+  const { isBadOutcome } = draw;
   const actorName = state.graph.getNode(action.actorId)?.name ?? '?';
 
-  if (pool.length === 0) {
+  if (draw.poolSize === 0) {
     recordReward({
       tick,
       agentId: action.actorId,
@@ -1298,15 +1290,8 @@ function resolveUnifiedReward(
     return undefined;
   }
 
-  const drawRoll = rng();
-  const templateId = drawFromPool(pool, drawRoll);
-  if (!templateId) return undefined;
-
-  const instantiation = instantiateReward(state.graph, templateId, action.actorId, tick);
-  if (!instantiation) return undefined;
-
-  const templateNode = state.graph.getNode(templateId);
-  const tier = (templateNode?.properties?.tier as number) ?? 1;
+  const { drawnTemplateId: templateId, instantiation, tier, drawRoll } = draw;
+  if (!templateId || !instantiation) return undefined;
 
   recordReward({
     tick,
@@ -1314,12 +1299,12 @@ function resolveUnifiedReward(
     agentName: actorName,
     encounterId: action.templateId,
     templateId,
-    templateName: templateNode?.name ?? '?',
+    templateName: draw.templateName ?? '?',
     instanceId: instantiation.instanceId,
     category: instantiation.category,
     tier,
     isBadOutcome,
-    poolSize: pool.length,
+    poolSize: draw.poolSize,
     roll: drawRoll,
   });
 
@@ -1332,9 +1317,11 @@ function resolveUnifiedReward(
       encounterId: action.templateId,
       rewardTemplateId: templateId,
       rewardCategory: instantiation.category,
-      rewardTier: tier,
+      // Always set alongside a non-null instantiation; `?? undefined` narrows
+      // the shared helper's `number | null` without inventing a tier.
+      rewardTier: tier ?? undefined,
       isBadOutcome,
-      rewardPoolSize: pool.length,
+      rewardPoolSize: draw.poolSize,
     });
   }
 

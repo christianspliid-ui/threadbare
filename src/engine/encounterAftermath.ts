@@ -80,7 +80,12 @@ import { mulberry32 } from '../lib/prng';
 import { mintCompanion, removeCompanion, getCompanions } from './companions';
 // THR-1110 — the two pre-existing attachment write paths the `attachment_grant`
 // dispatcher routes between. `instantiateAgreementReward` had no caller before this.
-import { instantiateReward, instantiateAgreementReward } from './rewardPool';
+import {
+  instantiateReward,
+  instantiateAgreementReward,
+  drawSeededReward,
+  mapActionOutcomeToRewardOutcome,
+} from './rewardPool';
 import { getAgreementTemplate } from '../data/agreement-reward-catalog';
 import { generateSecret, createSecretEdge, createFavorEdge } from './secretGeneration';
 import { spawnClueFromEvent, findAnyRuinId } from './ruins/clueLifecycle';
@@ -4415,6 +4420,112 @@ export function applyEncounterAftermathReaction(
           effectiveTargetId: memberId,
           effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'location' | 'actor_fallback',
           summary,
+        });
+        break;
+      }
+
+      case 'reward_draw': {
+        // THR-1146 — a specific ending hands out a *random* matching prize.
+        // The effect's target is the recipient, so the ordinary target
+        // resolution supplies the agent and `pool` carries the recipe.
+        const recipientId = target.kind !== 'actor_fallback' ? target.id : actorAgentId;
+
+        const failDraw = (reason: string): void => {
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'reward_draw',
+            effectDetail: {
+              targetAgentId: recipientId,
+              categoryWeights: effect.pool.categoryWeights,
+              tagFilters: effect.pool.tagFilters,
+            },
+            success: false, failReason: reason,
+            effectiveTargetId: recipientId ?? '',
+            effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'location' | 'actor_fallback',
+            summary: `reward_draw[${i}] skipped: ${reason}`,
+          });
+        };
+
+        // No actor means no recipient and no seed key — there is nothing to draw
+        // for, and nothing to draw it with.
+        if (!recipientId || !action) { failDraw('no_actor_id'); break; }
+
+        const draw = drawSeededReward(state.graph, {
+          recipe: effect.pool,
+          outcomeType: mapActionOutcomeToRewardOutcome(action.outcome),
+          seed: state.seed,
+          tick,
+          actorId: action.actorId,
+          templateId: action.templateId,
+          recipientId,
+        });
+
+        // An empty pool is the THR-844 rot class reaching runtime: the fiction
+        // promised a prize and the recipe matched nothing. `check:encounter`
+        // fails this at authoring time, so a live one is worth a loud trace —
+        // but never a throw (NFP #4).
+        if (draw.poolSize === 0 || !draw.instantiation || !draw.drawnTemplateId) {
+          emitTrace({
+            tick, category: 'aftermath_reward_draw_empty', agentId: recipientId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            categoryWeights: effect.pool.categoryWeights as Readonly<Record<string, number>>,
+            tagFilters: effect.pool.tagFilters,
+            isBadOutcome: draw.isBadOutcome,
+            recipientId,
+            templateId: action.templateId,
+            summary: `reward_draw[${i}]: pool empty — nothing matched `
+              + `${Object.keys(effect.pool.categoryWeights).join('/')}`
+              + `${effect.pool.tagFilters?.length ? ` ${effect.pool.tagFilters.join(' ')}` : ''}`,
+          });
+          failDraw(draw.poolSize === 0 ? 'empty_pool' : 'instantiate_failed');
+          break;
+        }
+
+        touchWorld(runtime);
+        mutationSummary.touchedWorld = true;
+
+        const recipientName = state.graph.getNode(recipientId)?.name ?? recipientId;
+        const prizeName = draw.instantiation.displayName || draw.templateName || draw.drawnTemplateId;
+        const drawSummary = `reward_draw[${i}]: ${recipientName} `
+          + `${draw.isBadOutcome ? 'suffered' : 'earned'} ${prizeName} `
+          + `(T${draw.tier} ${draw.instantiation.category}, pool ${draw.poolSize})`;
+
+        emitTrace({
+          tick, category: 'aftermath_reward_draw', agentId: recipientId,
+          encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+          drawnTemplateId: draw.drawnTemplateId,
+          instanceId: draw.instantiation.instanceId,
+          templateName: draw.templateName ?? undefined,
+          tier: draw.tier ?? undefined,
+          attachmentCategory: draw.instantiation.category,
+          poolSize: draw.poolSize,
+          roll: draw.drawRoll ?? 0,
+          isBadOutcome: draw.isBadOutcome,
+          recipientId,
+          templateId: action.templateId,
+          summary: drawSummary,
+        });
+
+        emitTrace({
+          tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+          encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+          effectKind: 'reward_draw',
+          effectDetail: {
+            targetAgentId: recipientId,
+            categoryWeights: effect.pool.categoryWeights,
+            tagFilters: effect.pool.tagFilters,
+            drawnTemplateId: draw.drawnTemplateId,
+            instanceId: draw.instantiation.instanceId,
+            tier: draw.tier,
+            attachmentCategory: draw.instantiation.category,
+            poolSize: draw.poolSize,
+            isBadOutcome: draw.isBadOutcome,
+          },
+          success: true,
+          effectiveTargetId: recipientId,
+          effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'location' | 'actor_fallback',
+          summary: drawSummary,
         });
         break;
       }

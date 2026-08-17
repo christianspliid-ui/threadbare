@@ -334,6 +334,35 @@ export const MERCENARY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
             ],
             closeAfterSelection: true,
           },
+          {
+            id: 'mc_bounty_kept_the_arms',
+            label: 'Whatever the mark was carrying.',
+            intent:
+              'The clause pays for the body, not the belt. What came in with them goes out with whoever walked them home.',
+            effects: [
+              { kind: 'reputation_tally', key: 'gold.positive', delta: 0.3 },
+              // THR-1146 exemplar. The ending cannot know what the mark carried
+              // — that is the point. It draws *some* weapon, and the outcome
+              // band decides how good: a clean collection turns up better arms
+              // than a botched one, off the same recipe and no extra tuning.
+              //
+              // `#weapon` is 24 templates across all four tiers. Tags carry
+              // their `#`; `'weapon'` would match nothing, which is exactly
+              // what `check:encounter` now refuses to let ship.
+              {
+                kind: 'reward_draw',
+                pool: {
+                  categoryWeights: { possession: 1 },
+                  tagFilters: ['#weapon'],
+                },
+              },
+              {
+                kind: 'recent_event',
+                message: '{name} kept the arms off a delivered bounty. The Company noted it and let it stand.',
+              },
+            ],
+            closeAfterSelection: true,
+          },
         ],
       },
     },
