@@ -72,7 +72,13 @@ export function evaluatePredicate(
     return (ctx.reachValues[reach] ?? 0) > threshold;
   }
   if (predicate.startsWith('faction_rank:')) {
-    const minRank = parseInt(predicate.slice('faction_rank:'.length), 10);
+    // THR-1144 — `parseFloat`, not `parseInt`. `member_of.rank` is canonically
+    // 0 (recruit) → 1 (leader), so integer parsing left authors exactly two
+    // usable thresholds (0 = everyone, 1 = leader only) on a continuous scale.
+    // `parseFloat('2')` is still 2, so no previously-authored predicate changes
+    // meaning — and none existed, because the gate was dead (see the context
+    // builder below).
+    const minRank = parseFloat(predicate.slice('faction_rank:'.length));
     if (isNaN(minRank)) return false;
     return ctx.factionRank >= minRank;
   }
@@ -253,8 +259,34 @@ export function buildPredicateContext(
     }
   }
 
-  // Faction rank
-  const factionRank = (agentNode?.properties.factionRank as number) ?? 0;
+  // Faction rank (THR-1144 — gate revival).
+  //
+  // This site read `agentNode.properties.factionRank`, which **nothing in the
+  // engine writes**. `ctx.factionRank` was therefore permanently 0 and every
+  // `faction_rank:` predicate permanently false — the dead gate THR-805 found
+  // and declined to build on. Rank has always lived on the `member_of` *edge*
+  // (`MemberOfEdgeProperties.rank`, 0 = recruit → 1 = leader); that is what
+  // `tierPromotion`, `socialLeverage` and the faction join/promotion outcomes
+  // all write, and now what `membership_change.rank_delta` writes too.
+  //
+  // Highest rank across all memberships, matching `getHighestFactionRank`'s
+  // convention in `socialLeverage` — a captain in one guild is a captain when
+  // a scene asks, regardless of which other rolls they are on.
+  //
+  // Fail-soft on shape: some `member_of` edges (armies, bands) carry a *string*
+  // rank like `'war_chief'`, which is not on this scale and contributes 0
+  // rather than `NaN`-poisoning the comparison. The node property is kept as a
+  // fallback so a future writer of it still resolves, but the edge wins.
+  let factionRank = 0;
+  for (const edge of graph.getOutgoingEdges(agentId, 'member_of')) {
+    const raw = edge.properties?.rank;
+    if (typeof raw !== 'number' || !Number.isFinite(raw)) continue;
+    if (raw > factionRank) factionRank = raw;
+  }
+  if (factionRank === 0) {
+    const nodeRank = agentNode?.properties.factionRank;
+    if (typeof nodeRank === 'number' && Number.isFinite(nodeRank)) factionRank = nodeRank;
+  }
 
   // THR-116: hidden mark categories for this agent
   const hiddenMarkCategories = new Set<string>();

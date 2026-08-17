@@ -1369,6 +1369,13 @@ export const MC_JOIN_TEMPLATE: UnifiedActionTemplate = {
           label: 'Callused hands and one honest answer.',
           intent: 'The recruiter checks hands first and asks one question about the last contract. Both checked out.',
           effects: [
+            // THR-1144 — the signing now *signs*. Until this landed, this ending's
+            // "Signed to the Company" chip claimed a membership nothing wrote:
+            // `mc.join` is not any definition's `joinEncounterTemplateId`, so the
+            // quest-driven `processFactionJoinOutcome` path never fires here, and
+            // the reputation gain below silently no-ops on a non-member. The chip
+            // is now backed by the edge it always described (Law 56).
+            { kind: 'membership_change', factionId: 'mercenary_company', op: 'join', chronicle: true },
             { kind: 'faction_reputation_gain', factionId: 'mercenary_company', amount: 0.1 },
             {
               kind: 'recent_event',
@@ -1383,6 +1390,9 @@ export const MC_JOIN_TEMPLATE: UnifiedActionTemplate = {
           intent:
             'The names outside the barracks are the contract\'s other half, stated in the only terms that do not negotiate.',
           effects: [
+            // Same signing, different way in — the membership follows the scene,
+            // not which line the player picked.
+            { kind: 'membership_change', factionId: 'mercenary_company', op: 'join', chronicle: true },
             { kind: 'faction_reputation_gain', factionId: 'mercenary_company', amount: 0.1 },
             { kind: 'reputation_tally', key: 'stone.positive', delta: 0.3 },
             {

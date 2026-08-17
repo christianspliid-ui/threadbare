@@ -174,7 +174,13 @@ function clusterModules(repoRoot: string): DomainRow[] {
     for (const t of header.match(TAG_RE) ?? []) row.tags.push(t.replace(/\s+/g, ' '));
   }
   return [...byDomain.values()]
-    .map(r => ({ ...r, files: r.files.sort(), tags: uniq(r.tags) }))
+    // Tags must be SORTED, not merely de-duplicated: they are collected in
+    // `readdirSync` order, which is filesystem-dependent — NTFS returns entries
+    // alphabetically, ext4 returns them in hash order. `uniq` preserves insertion
+    // order, so the tag column came out Windows-ordered locally and CI-ordered on
+    // Linux, and `check:generated-freshness` failed on a file nobody had edited
+    // (THR-1144, PR #1512: 32 rows differing in tag order alone).
+    .map(r => ({ ...r, files: r.files.sort(), tags: uniq(r.tags).sort() }))
     .sort((a, b) => a.domain.localeCompare(b.domain));
 }
 

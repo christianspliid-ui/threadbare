@@ -1016,10 +1016,53 @@ export type EncounterAftermathReactionEffect =
      * with off-axis keys.
      */
     readonly kind: 'faction_reputation_gain';
-    /** The faction node ID (e.g. 'faction.civic-guard'). */
+    /** The faction node ID (e.g. 'faction.civic-guard'). Accepts scene sentinels. */
     readonly factionId: string;
     /** Reputation delta. Applied as-is; clamped to [-1.0, +1.0] at runtime. */
     readonly amount: number;
+    readonly when?: EffectPredicate;
+  }
+  | {
+    /**
+     * THR-1144 — move **one person** in, out, or up a faction as the consequence
+     * of an encounter: a recruitment, an expulsion, a defection, a promotion.
+     *
+     * The bulk faction verbs (`faction_splinter` / `faction_absorb` /
+     * `faction_dissolve`) could already migrate members wholesale, and
+     * `faction_reputation_gain` could move an existing member's *standing* — but
+     * nothing in the vocabulary could make someone a member who was not one, or
+     * unmake one who was. An ending that recruited you had to say so in prose
+     * alone, which is the Law-56-hollow chip THR-971 exists to stop.
+     *
+     * Writes the `member_of` edge through the same shape `processFactionJoinOutcome`
+     * writes, so a card-made member is byte-identical to a quest-made one.
+     *
+     * Fail-soft in every direction (NFP #4): a `join` for an existing member
+     * no-ops, a `leave` for a non-member no-ops, an unresolvable faction or agent
+     * no-ops — each with a trace, never a throw.
+     */
+    readonly kind: 'membership_change';
+    /** Who moves. Defaults to the encounter's actor. Accepts scene sentinels. */
+    readonly targetAgentId?: string;
+    /**
+     * The faction they move in or out of. Accepts scene sentinels — `$target`
+     * binds when the action targets a faction, `$cast:<key>` binds a cast member.
+     */
+    readonly factionId: string;
+    /** `join` creates the membership, `leave` removes it, `rank_delta` moves rank within it. */
+    readonly op: 'join' | 'leave' | 'rank_delta';
+    /**
+     * Rank change for `rank_delta`, on the `member_of` edge's canonical 0–1 scale
+     * (0 = recruit, 1 = leader — see {@link MemberOfEdgeProperties.rank}). The
+     * result is clamped to `[0, FACTION_RANK_MAX]`. Required for `rank_delta`;
+     * ignored by the other two ops.
+     */
+    readonly rankDelta?: number;
+    /**
+     * Emit a chronicle-visible recruitment/expulsion event as well as the trace.
+     * Defaults to false — most membership moves are quiet.
+     */
+    readonly chronicle?: boolean;
     readonly when?: EffectPredicate;
   }
   // ─── Aspect apex grant (THR-479) ──────────────────────────────────────────

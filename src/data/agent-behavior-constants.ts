@@ -213,6 +213,17 @@ export const FACTION_RANK_PER_PROMOTION = 0.1;
  * @range 0.02–0.1 */
 export const FACTION_RANK_SECONDARY_FRACTION = 0.05;
 
+/**
+ * Ceiling for a `member_of` edge's `rank` property — the top of the canonical
+ * scale that `MemberOfEdgeProperties.rank` declares as "0 (recruit) to 1 (leader)".
+ *
+ * Named here (THR-1144) because `membership_change.rank_delta` and the revived
+ * `faction_rank:` predicate are the first writer/reader pair to *share* the scale,
+ * and NFP #1 wants the ceiling to be a number you change rather than a literal
+ * repeated at both ends.
+ * @range 1.0–10.0 */
+export const FACTION_RANK_MAX = 1.0;
+
 // ═══════════════════════════════════════════════════════════════════
 // IDLE BEHAVIOR — Personality-driven idle actions (idleBehavior.ts)
 // ═══════════════════════════════════════════════════════════════════

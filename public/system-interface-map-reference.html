@@ -534,6 +534,17 @@
   </div>
 
   <div class="section">
+    <h2>Spotlight — Where a mortal belongs
+      <span class="lead">Audited 2026-08-17 (audit-on-touch, THR-1144). A write whose reader was not missing but <em>present and dead</em>.</span>
+    </h2>
+
+    <ul class="contracts">
+      <li class="live"><span class="flow">Authored consequence <span class="arrow">⟶</span> Prerequisite gating — an ending can put someone in a faction, or move them up it, and a later scene can require the rank it gave them</span><span class="chip live">LIVE</span>
+        <span class="note">THR-1144. The write half was the easy half. The bulk faction verbs could already scatter or absorb a membership <em>wholesale</em>, and <code>faction_reputation_gain</code> could move an existing member's standing — but nothing could admit or expel one person, so a recruitment ending was a chip over an unwritten edge. <code>membership_change</code> writes <code>member_of</code> through one shared module in the same shape the quest-driven join path writes, so a card-made member is byte-identical to a quest-made one and no existing reader can tell them apart. The row is here for the <em>read</em> side: <code>rank_delta</code> would have written a number nothing could ever ask about, because the <code>faction_rank:</code> predicate had been dead since it was written, consulting <code>agentNode.properties.factionRank</code> — a node property no engine path writes — so it was permanently false, and THR-805 found that and declined to build guild-tier gating on it. Reviving it was in scope precisely because a rank no gate can read is not a rank, only a number; that is UI Law 56's hollowness one level down, at world scope. The context builder now reads the highest <code>rank</code> across the agent's <code>member_of</code> edges, and the predicate parses a <em>float</em>, because the edge's scale is 0 (recruit) → 1 (leader) and an integer parse offered exactly two usable thresholds on it. Falsified in <em>both</em> directions, which is the point: a gate that never fires passes every negative-only test, and that is how this one stayed dead through a prior audit — reverting the context builder leaves "below-rank agent blocked" green and turns "at-rank agent admitted" red. <strong>Recorded boundary, not an oversight:</strong> <code>faction_reputation_gain</code> carries the same <code>factionId</code> field and the same node-id/definition-id mismatch, and is therefore dead across the entire authored corpus — filed as THR-1150 rather than rerouted inside an unrelated ticket.</span></li>
+    </ul>
+  </div>
+
+  <div class="section">
     <h2>How this map stays true
       <span class="lead">A hand-drawn diagram is a lie waiting to happen. This one is designed to become a projection.</span>
     </h2>
