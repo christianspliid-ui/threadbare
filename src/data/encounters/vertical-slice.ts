@@ -284,50 +284,48 @@ export const SLICE_UNSAFE_BRIDGE: UnifiedActionTemplate = {
     branchOnStep: 0,
     variants: {},
     fallback: {
+      // THR-1153 — the `PATH · THE RIVER CROSSING` chip that stood here is
+      // **folded**, not re-pointed. Its words survive in this overview; the chip
+      // is gone.
+      //
+      // Christian's ruling (2026-08-17) set the bar at *anchoring*, not
+      // reachability: a chip's referent must be an existing graph object,
+      // resolvable in the live world the player is in, and the prose must name
+      // that particular object. This chip's referents — "the river crossing",
+      // "the ford upstream" — are landscape fiction. The template registers at
+      // `wayside`, which expands to `camp | oasis | wilderness`, so it spawns on
+      // hexes that in all likelihood carry no river at all.
+      //
+      // The ruling allowed one alternative: bind the spawn envelope to hexes
+      // that really carry the feature. Measured, that is not cheap. `hasRiver`
+      // is real, queryable world state (`src/types/index.ts`), but the setting
+      // envelope is a *location-subtype* vocabulary end to end —
+      // `SETTING_CLASS_MAP` expands a class to `LocationSubtype[]` and
+      // `encounterCache` filters on exactly that. Binding would mean a new
+      // hex-feature gating axis through the registration path, which is a design
+      // change and not this ticket's. So: fold.
       overview:
         'The river keeps moving under the bridge, and the keeper keeps taking coppers. ' +
-        'Neither can do it forever.',
-      changes: [
-        {
-          id: 'slice.bridge.the_planking',
-          kind: 'shell_state',
-          title: 'The Bridge, Measured',
-          causeClause: 'They put their own weight on every plank between the two banks',
-          detail:
-            'They know what the crossing is worth now. The river can be crossed here again, ' +
-            'and the ford upstream is a real option, not a rumour.',
-          polarity: 'info',
-          category: 'path',
-          direction: 'opens',
-          stateNoun: { text: 'the river crossing' },
-          concepts: [{ text: 'the ford upstream' }],
-        },
-      ],
+        'Neither can do it forever. They know what the crossing is worth now — the ford ' +
+        'upstream is a real option, not a rumour.',
+      changes: [],
       reactions: [
         {
           id: 'slice.bridge.walk_on',
           label: 'Walk on',
           intent: 'The road goes on from either bank.',
           effects: [
-            // Law 56 (THR-1141): 'The Bridge, Measured' claims the traveler now
-            // knows what the crossing is worth and that the ford is a real
-            // option. That is a knowledge claim, so it is written as knowledge —
-            // an intelligence record later steps can read (`intel_sensitive`
-            // eases on it, `intel_referenced_prose` can pay it off), rather than
-            // a sentence describing a thing the simulation never learned.
-            {
-              kind: 'intelligence',
-              category: 'trade_route',
-              label: 'The river crossing, measured',
-              detail:
-                'The planking holds a walking weight and no more. The ford lies half a day '
-                + 'upstream and is passable on foot.',
-              targetAgentId: '$actor',
-              reliability: 0.9,
-            },
             // The keeper takes coppers for planking her own sons will not look
             // at. That is a concealed action, and a mark is what makes it
             // discoverable later instead of a detail only the prose knows.
+            //
+            // This one survives the THR-1153 fold because it anchors to a real
+            // graph object: `$cast:keeper` is a cast actor the template declares
+            // and the world instantiates. The `intelligence` record that sat
+            // beside it did not — it filed knowledge about the ford, and the ford
+            // is nowhere in the game state. THR-1141 added it to back the chip
+            // that is now folded, so it leaves with the claim it existed to
+            // support.
             {
               kind: 'hidden_mark',
               category: 'concealed_action',
