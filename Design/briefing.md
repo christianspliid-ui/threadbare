@@ -1,38 +1,41 @@
 # Briefing
-**Generated:** 2026-08-17 13:57 local (11:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-08-17 14:56 local (12:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**One attended session with a dev server — [THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server).**
+**Book a chat session on one question — [when the world quietly notices something about a person, when does the player get told?](https://linear.app/threadbare/issue/THR-1161/the-acted-on-taxonomy-acted-on-dormant-hook-or-bookkeeping-definitions)** Say *"work the typed-state map"* when you have the time; it resolves live, roughly a grilling.
 
-Roughly 30 minutes: one `npm run dev`, six surfaces, 13 screenshots at 1920×1080. Six shipped UI changes carry test-level proof but no picture. No routine can take this — a scheduled run is refused a dev server, so it discharges only when you are present. It grew 4 → 6 passes in two days and will keep growing.
+**This is back on your list, and it is back for a reason worth one sentence.** You answered it in chat this morning and the lane recorded it as settled. It is not: you have ruled in two directions that do not yet reconcile — reach-reputation tallies are the game's private bookkeeping, invisible everywhere and still steering who trusts whom (your call, 2026-08-16), but a recording that could become a future story hook is one where *"we need to make it clear to the player that that is what has happened"* (your call, 2026-08-17). Both are on the ticket. Neither tells the machine which class a given write falls into.
 
-Unchanged from the last two hours, and you have not been pinged again for it.
+The proposal on the table is three classes — **acted-on** (something reads it now, so the player sees it in full), **dormant hook** (recorded for a story nobody has written yet, so the player is told it was noted), **bookkeeping** (the machine's own ledger, invisible by design). What is genuinely open is what a dormant hook *means*: does it expire if nothing ever picks it up, does the player watch that happen, and who is allowed to mint one — authored content, the engine, or both.
 
-## Also waiting (1)
+**Why this one and not the screenshots.** It is the only unblocked question on the new architecture map, the wave-order decision behind it cannot be taken until it lands, and the shelf is currently empty of product work for exactly that reason — design supply is the constraint, not execution.
 
+## Also waiting (2)
+
+- **One attended session with a dev server — [THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server).** ~30 minutes, 13 screenshots across six shipped UI surfaces. A scheduled run is refused a dev server, so it discharges only when you are present. Unchanged; led the brief for the last three hours.
 - **A Tenacious-style trait stays parked** — an open design option, no ticket, nothing waiting on it. The safe default is that it stays parked; listed only so it is not silently dropped.
 
 ## Queue
 
-**Thin but honest: 2 Ready for Dev, 1 of them claimable, both product work.**
+**Thin and honest: 2 Ready for Dev, both `Deferral`, zero claimable product work — and that is a supply problem upstream of you, not a stall.**
 
-- [THR-1164](https://linear.app/threadbare/issue/THR-1164/anchor-the-corpus-sort-every-chip-that-names-a-referent-and-gate-on) (**Urgent**) — the remaining half of the chip-anchoring work, split out of THR-1153 at 13:18 local by the executor that claimed it. It owns the corpus sweep and the gate: **48 chips across 17 templates** name something the world has no object for — 29 in the vertical slice, 19 in the Holy Order content all naming *"The Dawn"*, one decision applied nineteen times. Gate and sweep must land in one PR.
+- [THR-1140](https://linear.app/threadbare/issue/THR-1140/reputation-tallies-are-system-visible-with-no-designer-surface) (Low, `Deferral`) — new on the shelf this hour. Leftover reputation-tally vocabulary with no caller since your 2026-08-16 ruling made tallies system-visible; closes either by building the designer readout or pruning the words.
 - [THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server) (Low, `Deferral`) — the screenshot sweep above; structurally not claimable by a routine.
-- **In Dev, parked ~41 h:** [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to). Nine encounters — the camp seven plus two sequels — sit behind your batch-1 verdict, which is still held. Nothing here needs you.
+- **In Dev, live:** [THR-1164](https://linear.app/threadbare/issue/THR-1164/anchor-the-corpus-sort-every-chip-that-names-a-referent-and-gate-on) (**Urgent**) — claimed 14:02 local and being built right now. The 48 chips across 17 templates that name something the world has no object for, plus the gate that stops it recurring.
+- **In Dev, parked ~42 h:** [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to). Nine encounters behind your batch-1 verdict, which you yourself put on hold. Nothing here needs you.
 
-**[THR-1153](https://linear.app/threadbare/issue/THR-1153/a-law-56-backed-chip-whose-backing-the-player-cannot-reach-is-still-a) closed at 13:34 local ([PR #1522](https://github.com/christianspliid-ui/threadbare/pull/1522)) and is live on the deployed build** — a chip's declared anchor is now reachable from the noun that names it, so once a chip is anchored it becomes clickable with no further UI work.
-
-**That does not release your encounter verdict, and the distinction is worth one paragraph because the surface reading says otherwise.** Your 10:06 hold named THR-1153 and THR-1154 as the condition, and both now read `Done` — but THR-1153 shipped the *route*, not the *sweep*; the sweep moved to THR-1164 above. Your condition's actual test was the second half of the sentence: *"the fixes are visibly applied to The Unsafe Bridge and The Grateful Kin on the deployed build."* Those two live in the vertical slice, which is where 29 of the 48 unanchored chips still sit. So the encounters you would be judging still carry the exact fault you said turns a living encounter into a solitary story. The ask stays withdrawn until THR-1164 lands, and it returns **once**, with fresh links.
+**Two gameplay reviews are waiting on the same thing, and both stay withheld until it lands.** Your 10:06 hold set the test: *"the fixes are visibly applied to The Unsafe Bridge and The Grateful Kin on the deployed build."* Both live in the vertical slice, where 29 of those 48 unanchored chips still sit — so the encounter verdict ([THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to)) and the five-verdict slice session ([THR-907](https://linear.app/threadbare/issue/THR-907/slice-verdict-session-christian-rules-on-prose-firing-ui-and-game)) would both be judging encounters that still carry the fault you named. THR-1164 is the last piece; when it merges, the pair returns **once**, with fresh links. *(The orchestrator's 14:31 report says THR-907 is "carried in the briefing" — it was not, and this paragraph is where it now lives.)*
 
 ## Health
 
 **All green on the machinery.**
 
-Site serving `35cae751`, the current tip of main. No PR waiting to merge, all 9 lanes on schedule, both background jobs healthy, reaper ran 17 minutes ago, home tree on `main` and level with origin.
+Site serving `35cae751`, the current tip of main. No PR waiting to merge, all 9 lanes on schedule, both background jobs healthy, reaper ran 16 minutes ago, home tree on `main` and level with origin.
 
-Three lines for an agent, none for you:
+Two visibility lines, neither yours:
 
-- **Your acted-on ruling is still not on [THR-1161](https://linear.app/threadbare/issue/THR-1161/the-acted-on-taxonomy-acted-on-dormant-hook-or-bookkeeping-definitions)** — zero comments, second hour running. The orchestrator's 12:26 report still names it as your one open sitting *because* nobody has written the ruling down; it is bookkeeping, not a decision, and belongs to the next session that touches the ticket.
 - The lane-silence probe still reports the 20.6-hour quiet of 2026-08-10 → 08-11 as unexplained. Recovered six days ago; declined under your 2026-08-08 ruling that overnight quiet is normal.
-- The reaper still cannot remove three stale worktrees (unmerged, 16–29 days old), now against 83 worktrees and 96 branches.
+- The reaper still cannot remove three stale worktrees (unmerged, 16–30 days old), now against 85 worktrees and 97 branches.
+
+**One correction to the last three briefs:** they reported your acted-on ruling as "not written down anywhere on [THR-1161](https://linear.app/threadbare/issue/THR-1161/the-acted-on-taxonomy-acted-on-dormant-hook-or-bookkeeping-definitions)." It is — the ticket body quotes both of your rulings with dates. The gap was never the record; it was that the two rulings do not yet compose, which is the ask at the top of this brief.
