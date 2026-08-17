@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-17 22:58 local (20:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-17 23:58 local (21:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -21,7 +21,7 @@ Everything you directed this morning is one step back from the build queue: nobo
 
 **Recommendation, taken unless you veto it:** the next design session writes up [the shared machinery](https://linear.app/threadbare/issue/THR-1156/typed-game-state-architecture-program-epic-claims-vs-reports-acted-on) — your acted-on ruling turned into the plan the builders work from. It is Urgent, and [wave-1 ordering](https://linear.app/threadbare/issue/THR-1163/wave-1-selection-which-seams-make-the-first-wave-in-what-order-under) plus [the second-seam prototype](https://linear.app/threadbare/issue/THR-1162/anchor-type-on-a-second-seam-throwaway-prototype-proving-the-pilots) are both queued behind it. Say *"design the shared machinery."*
 
-[Nations and named areas](https://linear.app/threadbare/issue/THR-1155/nations-and-named-areas-are-rendered-not-simulated-promote-both-to) (High, your own direction this morning) remains a good session — say *"design nations and named areas"* and it starts there. The switch is about reach, not merit.
+[Nations and named areas](https://linear.app/threadbare/issue/THR-1155/nations-and-named-areas-are-rendered-not-simulated-promote-both-to) (High, your own direction this morning) and [Traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools) (waiting 48 h) are both good alternatives — name either and the session starts there. The switch is about reach, not merit.
 
 ### 3. One attended dev-server session — [THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server)
 
@@ -37,6 +37,7 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
+- 2026-08-17: **four prototype components that never reached the game are gone** — [THR-1049](https://linear.app/threadbare/issue/THR-1049/prototype-disposition-encounterscreen-castrail-casttile) ([PR #1531](https://github.com/christianspliid-ui/threadbare/pull/1531)): wire-or-retire, resolved by deletion.
 - 2026-08-17: **two review tools can find the avatar again** — [THR-1032](https://linear.app/threadbare/issue/THR-1032/two-debug-aftermath-accessors-cannot-see-the-ascendant-avatar) ([PR #1530](https://github.com/christianspliid-ui/threadbare/pull/1530)): re-checking before building found the fault wider than filed — the name lookup was dead for every character, not just the avatar.
 - 2026-08-17: **the lair rule that excluded itself is fixed** — [THR-995](https://linear.app/threadbare/issue/THR-995/adjacent-lair-spawning-is-unreachable-a-lair-is-always-too-close-to) ([PR #1529](https://github.com/christianspliid-ui/threadbare/pull/1529)): a lair could never spawn next to another lair because the proximity rule counted the lair itself.
 - 2026-08-17: **batch 1 of the encounter retrofit shipped** — [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to) ([PR #1528](https://github.com/christianspliid-ui/threadbare/pull/1528)): the bond chip fix, fourteen more invisible chips found by the same pattern, and the prose re-pass. This is what unblocked ask 1 above.
@@ -46,7 +47,6 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 - 2026-08-17: **"the god sways the odds" is now the game's language** — [THR-1166](https://linear.app/threadbare/issue/THR-1166/content-sweep-the-god-decides-the-god-sways-odds-and-influences) ([PR #1525](https://github.com/christianspliid-ui/threadbare/pull/1525)) swept the content from your canon correction this morning, plus a gate that keeps the distinction.
 - 2026-08-17: **two silent writes fixed** — [THR-1165](https://linear.app/threadbare/issue/THR-1165/two-dollarcast-sentinels-resolve-to-nothing-at-runtime-the-caravan) ([PR #1526](https://github.com/christianspliid-ui/threadbare/pull/1526)): the caravan master's bond and the swindler's mark were claimed by chips but never written.
 - 2026-08-17: **the designer view section 5 promised** — [THR-1140](https://linear.app/threadbare/issue/THR-1140/reputation-tallies-are-system-visible-with-no-designer-surface) ([PR #1524](https://github.com/christianspliid-ui/threadbare/pull/1524)) built the tally readout rather than pruning the vocabulary.
-- 2026-08-17: **every chip in the game now reaches what it names** — [THR-1164](https://linear.app/threadbare/issue/THR-1164/anchor-the-corpus-sort-every-chip-that-names-a-referent-and-gate-on) ([PR #1523](https://github.com/christianspliid-ui/threadbare/pull/1523)) sorted 48 chips across 17 templates and added a gate that sees all 683 templates.
 
 ---
 
