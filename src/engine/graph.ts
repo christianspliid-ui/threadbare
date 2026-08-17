@@ -62,6 +62,21 @@ export class WorldGraph {
     return result;
   }
 
+  /**
+   * Every node, regardless of type — the node-side counterpart of `getAllEdges()`.
+   *
+   * THR-1032: three call sites already assumed this existed and threw
+   * `getAllNodes is not a function` on every invocation — the CLI's documented
+   * `graph` command (which crashed the whole REPL process, not fail-soft), and
+   * `__DEBUG.consequencesFor`. The omission was the defect, not the callers: the
+   * edge side has had `getAllEdges()` since the class was written.
+   *
+   * Prefer `getNodesByType()` when you know the type — this is a full scan.
+   */
+  getAllNodes(): GraphNode[] {
+    return Array.from(this.nodes.values());
+  }
+
   // --- Edge operations ---
 
   addEdge(edge: GraphEdge): void {
