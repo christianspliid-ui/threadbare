@@ -258,6 +258,16 @@ export interface AgentInfoCardData {
   factionReputation?: number;
   /** Faction definition ID for lookups — set when factionName is set */
   factionDefId?: string;
+  /**
+   * Graph **node** id of the faction this agent belongs to (THR-1149).
+   *
+   * Deliberately separate from `factionDefId`: the sheet-opening surfaces
+   * (`FactionSheet`, `resolveEntityVisual`) take a node id and look it up in the
+   * live graph, while `factionDefId` keys the static definition table. Several
+   * chapters of one order share a `factionDefId`, so passing the def id where a
+   * node id belongs opens the wrong chapter's sheet — or none at all.
+   */
+  factionNodeId?: string;
   /** Faction icon glyph for UI display */
   factionIconGlyph?: string;
   /** Faction theme color for UI styling */
@@ -1032,6 +1042,10 @@ export function getAgentInfoCard(
       // Populate faction rank/reputation from member_of edge
       const factionResult = getAgentFaction(graph, agentId);
       if (factionResult) {
+        // The node id is what opens the sheet and resolves the heraldry
+        // (THR-1149) — set it from the membership itself, not from the
+        // definition, and set it whether or not a definition resolves.
+        card.factionNodeId = factionResult.faction.id;
         const memberEdges = graph.getOutgoingEdges(agentId, 'member_of')
           .filter(e => e.target === factionResult.faction.id);
         if (memberEdges.length > 0) {

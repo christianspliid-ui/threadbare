@@ -42,6 +42,12 @@ export interface AgentProfileModalProps {
   /** Open another entity's profile from a chapter's cast. */
   onOpenEntity?: (id: string) => void;
   /**
+   * Open a faction's own sheet from the Overview tab's Faction section
+   * (THR-1149). Separate from `onOpenEntity`, which routes to the *agent*
+   * profile and would open the wrong surface for a faction node.
+   */
+  onOpenFaction?: (factionNodeId: string, name: string) => void;
+  /**
    * Stacking band (THR-1139). Defaults to the modal tier; GameView passes
    * `MODAL_Z_ABOVE_INTERRUPT` so the sheet opens above a modal-tier interrupt
    * such as the premonition, which renders later in GameView's JSX and would
@@ -50,7 +56,7 @@ export interface AgentProfileModalProps {
   zIndex?: number;
 }
 
-export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata, knowledge, gameState, runtime, onOpenEntity, zIndex }: AgentProfileModalProps) {
+export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata, knowledge, gameState, runtime, onOpenEntity, onOpenFaction, zIndex }: AgentProfileModalProps) {
   const [activeTab, setActiveTab] = useState<TabId>(
     scrollToNewStrata ? 'chronicle' : 'overview'
   );
@@ -209,7 +215,14 @@ export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata, k
         <TabBar activeTab={activeTab} onTabChange={setActiveTab} />
 
         {activeTab === 'overview' && (
-          <OverviewTab card={card} profile={profile} knowledge={knowledge} onOpenEntity={onOpenEntity} />
+          <OverviewTab
+            card={card}
+            profile={profile}
+            knowledge={knowledge}
+            onOpenEntity={onOpenEntity}
+            graph={gameState?.graph}
+            onOpenFaction={onOpenFaction}
+          />
         )}
         {activeTab === 'prowess' && (
           <ProwessTab card={card} knowledge={knowledge} onAttachmentClick={handleAttachmentClick} />
