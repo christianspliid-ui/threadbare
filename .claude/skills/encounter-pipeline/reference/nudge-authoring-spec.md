@@ -981,6 +981,87 @@ lands. `durationOverride` sets the term when the scene names one (`null` = perma
 
 ---
 
+## The Consequence Draw (THR-1145)
+
+**You do not choose which kinds of consequence your encounter has. You draw them.**
+
+Rule 4 above asks you to draw from the whole palette. Left as an instruction it does not
+work, and the corpus is the evidence: asked to invent a consequence, everyone reaches for
+the nearest one, and the palette census behind THR-1141 found nearly every shipped
+consequence landing on an item, a reputation delta, or a condition while a dozen live
+primitives went unused. So the factory rolls the hand instead.
+
+At brief time, run:
+
+```
+npm run draw:consequences -- <templateId> --reach <reach> [--rarity n]
+```
+
+It prints **two families** (three at `rarityTier` ≥ 3) drawn from a reach-weighted table,
+plus the concrete effect kinds that satisfy each. **Every family in the hand must be wired
+in context.** "In context" is the whole difficulty and the whole point: a drawn `movement`
+is not a teleport bolted onto the ending, it is a reason this scene sends someone
+somewhere. If you cannot find that reason, you have either not thought about it long
+enough or you have a real conflict — and there is a valve for the second case, below.
+
+**The fifteen families** — a *family* is a kind of thing that happens to someone, named as
+a player would recognise it, not an effect kind:
+
+| Family | What it is | Wire it with |
+|---|---|---|
+| `relationship` | Who they are closer to, or further from | `bond_change` |
+| `companion` | Someone travels with them now, or leaves | `grant_companion` / `remove_companion` |
+| `standing` | How a group or a place regards them | `reputation_score`, `faction_reputation_gain` |
+| `possession` | Something they now hold | `spawn_artifact`, `attachment_grant`, `reward_draw`, or a step `rewardPool` |
+| `condition` | Something the trial did to body or spirit | `condition_attachment`, `apply_condition`, `remove_condition` |
+| `knowledge` | Something they now know | `intelligence`, `spawn_clue` |
+| `secret` | Something they know that others must not | `hidden_mark`, `secret_discovery`, `favor_creation` |
+| `story_seed` | A scene planted for later | `encounter_seed` |
+| `thread` | A tie to the divine, tightened or cut | `thread_strengthen` / `thread_weaken` / `thread_break` |
+| `drive` | What they now want, or cannot stop doing | `assign_ambition`, `plant_compulsion` |
+| `movement` | Where they go next | `agent_relocation` |
+| `place` | What is now true of a location | a condition kind **with `targetLocationId`**, or `spawn_unique_location` |
+| `membership` | Who they belong to, and how highly | `membership_change` |
+| `omen` | What the sky says is coming | `emit_omen` |
+| `formative` | A defining moment (rarity ≥ 3 only) | `axiological_mark_apply` |
+
+**The weights carry the reach's flavor; the floor carries the variety.** `heart` draws
+`relationship` far more often than `omen`, `gold` draws `possession`, `star` draws
+`story_seed` — but every cell of the table is ≥ 1, so any family can surface in any
+reach. A `veil` encounter that draws `possession` is not a bug; it is the table asking
+you what a blessing looks like when it is an object. The matrix lives in
+`src/data/content-eval/consequenceDraw.ts` (`CONSEQUENCE_FAMILY_WEIGHTS`) — tuning a
+number is calibration and needs no ruling; adding or removing a *family* is a design
+decision and needs a note to the director.
+
+**Record what you drew.** The template carries the hand:
+
+```ts
+consequenceDraw: ['relationship', 'secret'],
+```
+
+The hand is **recomputed from the template id** — `check:encounter` re-derives it and
+fails a mismatch, so this field is a claim the gate audits, not data you can edit. It also
+fails a recorded family that nothing wires, naming the kinds that would satisfy it. A
+template that records nothing is silent here; that is the legacy corpus, not a route.
+
+**The one swap.** Exactly one drawn family may be traded, recorded with its reason:
+
+```ts
+consequenceDraw: ['secret', 'standing'],
+consequenceSwap: { from: 'companion', to: 'standing',
+                   reason: 'nobody in this scene persists past the ending — no one to join them' },
+```
+
+The traded-in family must still hold weight ≥ 2 in this reach, and the reason must be a
+real one. This is the pressure valve that keeps a drawn `companion` out of an encounter
+with no persistent cast — **not** a second chance at the dice. One swap, recorded; zero
+unrecorded deviations. If two families fight the fiction, the encounter is probably fighting
+the hand rather than the other way round, and the honest move is to let the second one
+change what the scene is about.
+
+---
+
 ## Reusable card faces, bespoke hands
 
 Pre-pivot, ruling 3 made every card per-encounter authored content with a narrow shared

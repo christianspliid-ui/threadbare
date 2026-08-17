@@ -2774,8 +2774,9 @@ npm run check:encounter -- --all            # the corpus, as CI runs it
 npm run check:encounter -- fixture.encounter.swollen_ford   # the green worked example
 ```
 
-Eight blocks, each a hard failure naming itself and the plan section it comes from
-(`Docs/plans/2026-08-08-encounter-factory-workflow.md` §1):
+Nine blocks, each a hard failure naming itself and the plan section it comes from
+(`Docs/plans/2026-08-08-encounter-factory-workflow.md` §1 — except Draw, whose rule was
+designed later and lives in `Docs/plans/2026-08-16-consequence-palette-expansion.md`):
 
 | Block | What it wants | Reach for |
 |---|---|---|
@@ -2787,6 +2788,7 @@ Eight blocks, each a hard failure naming itself and the plan section it comes fr
 | Aftermath | `byOutcome` bands ≥3 — success / failure / **one extreme** — every variant with an overview, `concepts` on every change | Capability 10, THR-969 bands |
 | Systems | ≥3 connections among cast · rewards · seeds · conditions · reputation · factions, **counted from what you authored** | this whole guide |
 | Images | every card `imageTag` resolving to a real `ENCOUNTER_IMAGE_LIBRARY` row | `src/data/encounter-image-library.ts` |
+| Draw | if the template records a `consequenceDraw`, it must match the hand its id computes, and every family in it must be wired | § The Consequence Draw (THR-1145), below |
 
 Then the composed stack: register detectors, card-grant liveness, an enrichment
 token dry-run (every `{...}` is one `enrichProse` resolves, every `{frag:*}` and
@@ -2802,6 +2804,59 @@ does not.
 
 **The worked example is `swollen-ford-exemplar.ts`**, which passes every block.
 Copy its shape rather than re-deriving the contract from this table.
+
+## Capability: The Consequence Draw — the dice pick your primitives (THR-1145)
+
+**You do not choose which *kinds* of consequence your encounter has. You draw them.**
+
+This whole guide is a list of capabilities, and the honest problem with a list of
+capabilities is that nobody uses all of it. The palette census behind THR-1141 measured
+the result: nearly every shipped consequence landed on an item, a reputation delta, or a
+condition, while a dozen documented primitives went unused. That is not authors ignoring
+the guide — it is what happens when the guide is a menu and the deadline is real. So the
+factory rolls a hand instead of offering one.
+
+```bash
+npm run draw:consequences -- <templateId> --reach <reach> [--rarity n]
+```
+
+Two **consequence families** (three at `rarityTier` ≥ 3), drawn from a reach-weighted
+table, that the encounter must wire **in context**. The command prints the concrete effect
+kinds that satisfy each one, so the hand is actionable rather than a riddle. Fifteen
+families cover the palette: `relationship`, `companion`, `standing`, `possession`,
+`condition`, `knowledge`, `secret`, `story_seed`, `thread`, `drive`, `movement`, `place`,
+`membership`, `omen`, `formative`.
+
+**The weights carry the reach's flavor; the floor carries the variety.** `heart` draws
+`relationship` most often, `gold` draws `possession`, `star` draws `story_seed` — but every
+cell of `CONSEQUENCE_FAMILY_WEIGHTS` is ≥ 1, so any family can surface in any reach. A
+`veil` encounter drawing `possession` is the table asking what a blessing looks like as an
+object, and that question is the whole mechanism. Tuning a number is calibration; adding
+or removing a *family* is a design decision needing a note to the director.
+
+**Record it, and it becomes checkable.** The template carries `consequenceDraw:
+['relationship', 'secret']`. The hand is **recomputed from the template id**, so the field
+is a claim `check:encounter` audits rather than data anyone can edit — it fails a mismatch,
+and it fails a recorded family nothing wires. Exactly one deviation is allowed, recorded
+with its reason: `consequenceSwap: { from, to, reason }`, where the traded-in family still
+holds weight ≥ `CONSEQUENCE_SWAP_MIN_WEIGHT` in that reach. That valve exists so a drawn
+`companion` need not be forced into a scene with no persistent cast — not as a second roll.
+
+**Presence-conditional, deliberately.** A template that records nothing is silent at the
+gate. The corpus predates the draw, and requiring the field outright would have redded
+precisely the templates *not* on the `RETROFIT_PENDING` ratchet — the six the factory has
+already finished. New factory output carries the field because the pipeline's brief stage
+(`encounter-pipeline` SKILL Step 0b) hands the author their hand and the authoring spec
+requires it.
+
+**The utility is generic on purpose.** `drawFromTable(tableId, weights, seedKey, n)` in
+`src/data/content-eval/drawTable.ts` knows nothing about consequences — the plot-hook table
+(THR-1147) reuses it verbatim, and cast / complication / premise draws are named
+follow-ups. Seeded, without replacement, and independent of the weight object's key order,
+so reformatting a table does not re-roll the corpus.
+
+Authoring rules and the full family table: `nudge-authoring-spec.md` § The Consequence
+Draw. Module: `src/data/content-eval/consequenceDraw.ts`.
 
 ## Your aftermath prose is linted now — and half that screen is not yours (THR-1083)
 

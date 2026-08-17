@@ -45,6 +45,7 @@ import type { EncounterSupportSpec } from '../../types/encounter';
 import { ENCOUNTER_IMAGE_LIBRARY } from '../encounter-image-library';
 import { validateSettingEnvelope } from '../settingClasses';
 import { checkNudgeHand, nudgeBearingSteps } from './nudgeHandChecklist';
+import { checkConsequenceDraw, familiesWiredByEffects } from './consequenceDraw';
 
 // ─── Contract constants (NFP #1 — every magic number is named) ───────
 
@@ -212,7 +213,8 @@ export type CompositionBlock =
   | 'rewards'
   | 'aftermath'
   | 'systems'
-  | 'images';
+  | 'images'
+  | 'draw';
 
 export interface CompositionViolation {
   readonly templateId: string;
@@ -268,6 +270,9 @@ const PLAN_SECTION: Readonly<Record<CompositionBlock, string>> = {
   aftermath: `${PLAN} §1 — Aftermath (ruling 7)`,
   systems: `${PLAN} §1 — Systems quota`,
   images: `${PLAN} §1 — Images`,
+  // The one block whose rule is not in the factory-workflow plan: the draw was
+  // designed later, in the palette-expansion pass (THR-1145).
+  draw: 'Docs/plans/2026-08-16-consequence-palette-expansion.md § The Consequence Draw',
 };
 
 // ─── Manifest readers ────────────────────────────────────────────────
@@ -557,10 +562,23 @@ function castSpecs(template: UnifiedActionTemplate): readonly EncounterSupportSp
  * outcome metadata, or an aftermath effect that leaves something behind.
  */
 function hasReward(template: UnifiedActionTemplate): boolean {
+  if (hasRewardPoolRecipe(template)) return true;
+  return allAftermathEffects(template).some(e => PERSISTENT_EFFECT_KINDS.has(e.kind));
+}
+
+/**
+ * Whether any step outcome carries a `rewardPool` recipe.
+ *
+ * Split out of {@link hasReward} because the consequence draw needs this half
+ * alone: a `rewardPool` is the pre-`reward_draw` authoring route to a possession,
+ * so it satisfies the `possession` family, while the persistent-effect half of
+ * `hasReward` says nothing about which family was wired.
+ */
+function hasRewardPoolRecipe(template: UnifiedActionTemplate): boolean {
   for (const step of plainSteps(template)) {
     if (step.successMetadata?.rewardPool || step.failureMetadata?.rewardPool) return true;
   }
-  return allAftermathEffects(template).some(e => PERSISTENT_EFFECT_KINDS.has(e.kind));
+  return false;
 }
 
 /**
@@ -966,6 +984,21 @@ export function checkCompositionContract(
       'images',
       `illustrationUrl '${template.illustrationUrl}' must be public-absolute (start with "/")`,
     );
+  }
+
+  // ─── Consequence draw (THR-1145) ───────────────────────────────────
+  // Presence-conditional: a template with no `consequenceDraw` is silent here.
+  // The corpus predates the draw, and requiring the field would fail exactly the
+  // templates that are *not* on the ratchet — the ones the factory has already
+  // finished. See `checkConsequenceDraw`'s doc comment for why that trade runs
+  // this way round. The effects walk is shared rather than repeated: this module
+  // owns "what does this template author", and a second walk is the drift its
+  // header warns about.
+  for (const problem of checkConsequenceDraw(
+    template,
+    familiesWiredByEffects(allAftermathEffects(template), hasRewardPoolRecipe(template)),
+  )) {
+    add('draw', problem);
   }
 
   return { templateId: template.id, violations, systems, bands };
