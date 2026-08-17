@@ -1,44 +1,47 @@
 # Briefing
-**Generated:** 2026-08-17 08:54 local (06:54 UTC) · keep-work-flowing-cc
+**Generated:** 2026-08-17 09:55 local (07:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**Two encounters are waiting for your verdict. It is the only thing on the board that is yours, and it is now the only thing holding the encounter work at all.**
+**One sentence is missing from this morning's session: whether these two are worth meeting twice.**
 
 - **[The Unsafe Bridge](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge)**
 - **[The Grateful Kin](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin)**
 
-Re-checked against `main` this hour: both template ids resolve and the site is serving `74240e02`, the current tip. These links show you the newest build.
+You played the Bridge two hours ago and got three tickets out of it — the chip rule, the package rule, the invisible replay dot. That was the valuable half and it is banked. What ruling 6 still wants is the plain one: **yes or no on each.**
 
-One question: *do these two read like encounters worth meeting twice?*
+**Your answer no longer releases batch 2 on its own** — and that is new since the last brief. Your own [07:36 comment](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to) put [THR-1154](https://linear.app/threadbare/issue/THR-1154/prose-and-chips-are-one-package-ratify-the-chip-anchoring-rule-ship)'s spec edits in front of the batch-2 brief too. So the verdict now sets the bar rather than opening the gate, and it is worth about a minute rather than a sitting.
 
-Your ruling 6 says you sample two per batch, and ruling 2 holds batch 2 behind a brief written against this verdict. **This one sitting releases the remaining nine encounters** — and with the build queue now empty, it is also the largest single piece of work your answer would put back in motion.
+One caveat worth your knowing before you answer: the Bridge's PATH chip is the thing you flagged as connecting to nothing, and [THR-1153](https://linear.app/threadbare/issue/THR-1153/a-law-56-backed-chip-whose-backing-the-player-cannot-reach-is-still-a) will rewrite it. Judge the writing, not that chip.
 
 [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to) · [all six side by side](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/batch-report-2026-08-15.md)
 
-## Also waiting (4)
+## Also waiting (3)
 
-- **[Batch 2 — THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to).** Sequenced behind the sample above, not parallel to it. Nothing to approve until your verdict lands.
-- **[THR-1133 — one attended dev-server session clears six owed screenshot passes](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server)** *— from daily-backlog-grooming.* ~30 min, one `npm run dev`. Grew from five passes to six overnight as another UI change shipped without a picture. A scheduled run is refused a dev server, so no routine can do this.
-- **An attended design session for [THR-790 — Traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools).** Oldest agreed item on the board, 22 days without a plan doc. Clears [THR-791](https://linear.app/threadbare/issue/THR-791/traits-wave-3-minting-identity-god-earned-traits-relationship-traits) too — and it is the readiest way to restock an empty build queue.
+- **[Batch 2 — THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to).** Now behind two gates, not one: your verdict above, and [THR-1154](https://linear.app/threadbare/issue/THR-1154/prose-and-chips-are-one-package-ratify-the-chip-anchoring-rule-ship)'s anchor rules. The second is agent work and claimable right now, so it moves without you. Nine encounters sit behind it.
+- **[THR-1133 — one attended dev-server session clears the owed screenshot passes](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server)** *— from daily-backlog-grooming.* ~30 min, one `npm run dev`. Now 13 captures across 6 surfaces. A scheduled run is refused a dev server, so no routine can take it.
 - **A Tenacious-style trait stays parked** — open design option, no ticket, nothing waiting on it. Listed so it isn't silently dropped.
 
 ## Queue
 
-**Read live from Linear this hour. The claimable shelf is empty — 1 Ready for Dev, 1 In Dev (parked), and neither can be picked up by a routine.**
+**Read live from Linear this hour. Healthy for the first time in days — 3 Ready for Dev, 2 of them claimable by a routine, all three product work.**
 
-- [THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server) (Low) — the attended screenshot sweep. It is an ask above, and structurally not claimable by a scheduled run.
-- **One parked In Dev:** [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to), waiting on the verdict at the top of this brief.
+- [THR-1154](https://linear.app/threadbare/issue/THR-1154/prose-and-chips-are-one-package-ratify-the-chip-anchoring-rule-ship) (High) — ratify the chip-anchoring rule, ship the anchor catalog, add a package-judgment stage to the factory. Your ruling, filed 07:36.
+- [THR-1153](https://linear.app/threadbare/issue/THR-1153/a-law-56-backed-chip-whose-backing-the-player-cannot-reach-is-still-a) (High) — make the Bridge's dead chip reach the state it claims, plus the gate that stops the next one. Your bug report, filed 07:02.
+- [THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server) (Low) — the screenshot sweep above; structurally not claimable by a routine.
+- **One parked In Dev:** [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to), holding for the verdict at the top.
 
-**This is a supply problem, not a tidiness problem.** The lane drained the shelf rather than stalling on it: [THR-1147](https://linear.app/threadbare/issue/THR-1147/plot-hook-table-rollable-story-seed-inspiration-for-the-encounter) shipped this hour ([PR #1518](https://github.com/christianspliid-ui/threadbare/pull/1518)) — the plot-hook table, the story-seed catalogue an encounter writer rolls on for a starting premise. With [THR-1145](https://linear.app/threadbare/issue/THR-1145/consequence-draw-reach-weighted-primitive-tables-for-the-encounter) yesterday, both halves of *make the factory vary itself* are now built. What refills the queue from here is your verdict above, or the THR-790 design session — both of which are yours.
+**The supply problem from the last three briefs is closed, and you closed it.** One hour of your play produced two High-priority tickets with full diagnoses attached — [THR-1152](https://linear.app/threadbare/issue/THR-1152/step-replay-on-the-aftermath-is-invisible-as-a-control-the-shipped) from the same sitting already shipped and merged ([PR #1519](https://github.com/christianspliid-ui/threadbare/pull/1519)). The build queue is fed for the next several hours without you.
+
+[THR-790 — Traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools) has dropped off your list: it needs a plan doc, that is a design session's job, and with the queue no longer empty there is nothing about it that requires you.
 
 ## Health
 
 **All green.**
 
-No PR waiting to merge, all 9 lanes on schedule, background jobs healthy, reaper ran 14 minutes ago, home tree clean and synced. The site is serving `74240e02` — main tip, no lag.
+No PR waiting to merge, all 9 lanes on schedule, background jobs healthy, reaper ran 15 minutes ago, home tree clean and synced. The site is serving `583a1b24` — main tip, no lag.
 
 Two visibility lines, no action:
 
 - The lane-silence probe still reports the 20.6-hour quiet of 2026-08-10 → 08-11 as unexplained. Recovered six days ago; declined under your 2026-08-08 ruling that overnight quiet is normal.
-- The reaper still can't remove three stale worktrees (all unmerged, 16–29 days old), against 81 worktrees and 94 branches. Housekeeping for an agent, not for you.
+- The reaper still can't remove three stale worktrees (unmerged, 16–29 days old), against 81 worktrees and 94 branches. Housekeeping for an agent, not for you.
