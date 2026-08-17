@@ -91,6 +91,60 @@ const FIRST_POLE_CHOICE_INDEX: Readonly<Record<string, 0 | 1>> = {
   'AX-STAR-05': 0, // a: goes over the mountain         | b: stays, works the night
 };
 
+/**
+ * The same reading for the 24 converted `reach_specific` templates (THR-1091).
+ *
+ * Separate table, separate membership assertion, because the two populations
+ * carry **different** contracts and merging them would hide that. A converted
+ * `RC-*` declares no `targetValuePair` and writes `axiologicalShifts: {}` on
+ * both choices, so neither the pair-binding check nor the legacy-path check
+ * below has anything to bite on: the formative path is the only path, and this
+ * table is the only thing standing between it and an inverted binding. THR-1062
+ * said so in its own header — *"the pole binding is carried by authoring
+ * discipline alone"* — and this closes that.
+ *
+ * Read the same way as the axiological table: off each template's recorded
+ * `Pole \`a\` = …` comment and the choice text it names, never off the
+ * heuristic below. Reading it off `narratedChoiceIndex` would make the guard
+ * assert against its own output. The two were compared **after** recording and
+ * agree 24/24; the disagreement that comparison could have surfaced is the
+ * whole reason to record it by hand first.
+ */
+const RC_FIRST_POLE_CHOICE_INDEX: Readonly<Record<string, 0 | 1>> = {
+  // Iron — courage(+) / prudence(-)
+  'RC-IRON-02': 0, // a: takes the sword          | b: takes the shield
+  'RC-IRON-03': 0, // a: shouts forward and runs  | b: the ordered withdrawal
+  'RC-IRON-04': 1, // a: studies the challenger   | b: attacks on the first exchange
+  // Gold — the reach's own pair is not what these scenes test
+  'RC-GOLD-02': 0, // honesty(+): terms at his own table  | cunning(-): spends his credit
+  'RC-GOLD-04': 0, // revelation(+): the open market      | discretion(-): the room
+  'RC-GOLD-05': 0, // courage(+): funds it                | prudence(-): declines, watches
+  // Shadow — honesty(+) / cunning(-), and courage for the window
+  'RC-SHADOW-02': 0, // a: learns the tells to catch them | b: learns the hand to write it
+  'RC-SHADOW-03': 1, // a: holds the cover                | b: names himself, trades straight
+  'RC-SHADOW-05': 1, // a: the absurd lie                 | b: the two-storey drop
+  // Veil — tradition(+) / novelty(-), honesty for the birds
+  'RC-VEIL-03': 1, // a: transforms what the rite is for | b: keeps the rite, unanswered
+  'RC-VEIL-04': 1, // a: gives them the certainty        | b: gives them both readings
+  'RC-VEIL-05': 1, // a: takes the figure home to study  | b: carries it to the grove
+  // Heart
+  'RC-HEART-02': 0, // sacrifice(+): his own house      | survival(-): a structure that spreads it
+  'RC-HEART-03': 1, // a: new events beside the old     | b: runs as it has always run
+  'RC-HEART-04': 0, // preservation(+): the circle back | transformation(-): something wider
+  // Eye
+  'RC-EYE-02': 0, // courage(+): the chart, now          | prudence(-): two children upwind
+  'RC-EYE-03': 1, // a: cracks it for what it can become | b: carries the work on as kept
+  'RC-EYE-04': 1, // a: the sealed account               | b: says it at the memorial
+  // Stone
+  'RC-STONE-03': 1, // a: the curve that redistributes | b: the simple chamber
+  'RC-STONE-04': 0, // sacrifice(+): the lower fields  | survival(-): the western channel
+  'RC-STONE-05': 1, // a: the jointing nobody knows    | b: goes to the labourers first
+  // Star
+  'RC-STAR-02': 0, // revelation(+): the council, now  | discretion(-): sealed and dated
+  'RC-STAR-03': 1, // a: shouts the arithmetic         | b: reads it as a message, properly
+  'RC-STAR-05': 0, // courage(+): sails past the last island | prudence(-): the coastal survey
+};
+
 const STOP = new Set([
   'agent', 'name', 'the', 'and', 'of', 'to', 'in', 'is', 'it', 'that', 'which', 'with', 'for',
   'not', 'but', 'on', 'at', 'as', 'his', 'her', 'their', 'this', 'what', 'who', 'does', 'has',
@@ -122,7 +176,8 @@ function jaccard(a: Set<string>, b: Set<string>): number {
  * Derived rather than recorded on purpose: a second hand table would just be
  * this file asserting against itself. A **clean** band re-narrates its choice's
  * concrete nouns, so the two separate cleanly — measured across all 40
- * templates the correct choice wins by ≥35% relative margin. A rewrite that
+ * axiological templates the correct choice wins by ≥35% relative margin (min
+ * 35.2%, median 81.7% over 80 bands). A rewrite that
  * drifts a clean band's vocabulary far enough to flip this fails loudly and
  * readably, which is the right trade for a guard that exists because 40
  * templates shipped inverted in silence.
@@ -135,15 +190,45 @@ function jaccard(a: Set<string>, b: Set<string>): number {
  * defect in them. Asserting the clean pair is enough to catch the inversion this
  * file exists for: `selectFormativeProse` keys all four keys off the same
  * `writtenPole`, so a binding that flips flips them together.
+ *
+ * **Re-measured over the 24 converted `reach_specific` templates (THR-1091),**
+ * because their band prose was written against *legacy* choice text it
+ * deliberately does not re-narrate word for word, so the axiological
+ * measurement did not transfer. It separates, less comfortably: min relative
+ * margin **14.3%** against the axiological set's 35.2%, p10 53.1%, median
+ * 77.3%, two of 48 bands under 35% (`RC-STONE-03` cleanB at 14.3%,
+ * `RC-STAR-02` cleanA at 16.7%). The property the guard actually rests on holds
+ * outright: on all 24, `cleanA` and `cleanB` pick **opposite** choices, and no
+ * band ties. So the reading is decisive everywhere it is used, and the thinner
+ * floor is recorded rather than papered over — a rewrite of those two
+ * templates' clean bands is the realistic way this guard goes false, and the
+ * margin assertion below fails before the pole assertion silently flips.
  */
-function narratedChoiceIndex(prose: string, t: EnrichedDilemmaTemplate): 0 | 1 {
+function choiceScores(prose: string, t: EnrichedDilemmaTemplate): [number, number] {
   const p = contentTokens(prose);
-  return jaccard(p, contentTokens(t.choices[0].text)) >= jaccard(p, contentTokens(t.choices[1].text)) ? 0 : 1;
+  return [jaccard(p, contentTokens(t.choices[0].text)), jaccard(p, contentTokens(t.choices[1].text))];
 }
 
+function narratedChoiceIndex(prose: string, t: EnrichedDilemmaTemplate): 0 | 1 {
+  const [j0, j1] = choiceScores(prose, t);
+  return j0 >= j1 ? 0 : 1;
+}
+
+/** How decisively a band picked its choice, as a fraction of the winning score. */
+function relativeMargin(prose: string, t: EnrichedDilemmaTemplate): number {
+  const [j0, j1] = choiceScores(prose, t);
+  const hi = Math.max(j0, j1), lo = Math.min(j0, j1);
+  return hi === 0 ? 0 : (hi - lo) / hi;
+}
+
+type Converted = EnrichedDilemmaTemplate & { test: NonNullable<EnrichedDilemmaTemplate['test']> };
+
 const converted = ENRICHED_DILEMMA_LIBRARY.filter(
-  (t): t is EnrichedDilemmaTemplate & { test: NonNullable<EnrichedDilemmaTemplate['test']> } =>
-    t.category === 'axiological' && Boolean(t.test),
+  (t): t is Converted => t.category === 'axiological' && Boolean(t.test),
+);
+
+const convertedReach = ENRICHED_DILEMMA_LIBRARY.filter(
+  (t): t is Converted => t.category === 'reach_specific' && Boolean(t.test),
 );
 
 describe('axiological polarity contract (THR-1071)', () => {
@@ -193,6 +278,91 @@ describe('axiological polarity contract (THR-1071)', () => {
       const written = [bands.cleanA, bands.cleanB, bands.brokenIntoA, bands.brokenIntoB, bands.tempered];
       for (const b of written) expect(b.trim().length, `${id}: empty band`).toBeGreaterThan(0);
       // A duplicated band is how a half-applied pole swap would hide.
+      expect(new Set(written).size, `${id}: two bands share prose`).toBe(written.length);
+    });
+
+    it('offers the god a card for each pole', () => {
+      const leans = new Set(t.test.nudges.map(n => n.poleLean).filter(Boolean));
+      expect(leans, `${id}: a test with no card for one pole cannot be leaned both ways`).toContain('a');
+      expect(leans).toContain('b');
+    });
+  });
+});
+
+/**
+ * The same contract for converted `reach_specific` templates (THR-1091).
+ *
+ * Two assertions from the block above are structurally absent here, and both
+ * absences are asserted rather than assumed — an `RC-*` that grows either field
+ * fails this suite instead of quietly slipping past a guard written when it had
+ * neither:
+ *
+ * - **the pair binding.** A reach trial names its own axis (THR-1062 director
+ *   verdict): `RC-IRON-02` is blade against shield, which is `courage_prudence`
+ *   and not iron's `mercy_ruthlessness`. 18 of the 24 sit on a pair other than
+ *   their reach's, so there is nothing to bind `test.valuePair` *to*.
+ * - **the legacy path.** These carry `axiologicalShifts: {}` and move
+ *   `reachChanges` instead, so the authored-shift half of the THR-1071 defect
+ *   pair cannot occur — and equally cannot be checked.
+ *
+ * What is left is the formative path alone, which is exactly the half that shipped
+ * inverted on all five stone templates.
+ */
+describe('reach_specific polarity contract (THR-1091)', () => {
+  it('records a first-pole reading for every converted reach template, and no others', () => {
+    expect(convertedReach.length).toBeGreaterThan(0);
+    expect(Object.keys(RC_FIRST_POLE_CHOICE_INDEX).sort()).toEqual(convertedReach.map(t => t.id).sort());
+  });
+
+  it('every converted reach template offers exactly two choices', () => {
+    for (const t of convertedReach) {
+      expect(t.choices, t.id).toHaveLength(2);
+    }
+  });
+
+  describe.each(convertedReach.map(t => [t.id, t] as const))('%s', (id, t) => {
+    const firstIdx = RC_FIRST_POLE_CHOICE_INDEX[id];
+    const secondIdx = (1 - firstIdx) as 0 | 1;
+
+    // Absent-by-construction, asserted so the absence stays true. If a reach
+    // template ever declares a target pair, the binding check above becomes
+    // available to it and this suite should gain it rather than stay silent.
+    it('declares no target value pair, so its test names its own axis', () => {
+      expect(t.targetValuePair, `${id}: declares a target pair — re-tighten the binding check`).toBeUndefined();
+      expect(t.test.valuePair, `${id}: a test with no axis cannot be leaned`).toBeTruthy();
+    });
+
+    // Likewise: no authored shifts means no legacy path to cross-check. A
+    // template that grows one is only half-guarded until it is moved.
+    it('writes no axiological shifts, so the formative path is the only path', () => {
+      for (const [i, c] of t.choices.entries()) {
+        const shifts = Object.keys(c.axiologicalShifts ?? {});
+        expect(shifts, `${id}: choice ${i} grew authored shifts — it needs the legacy-path check too`).toEqual([]);
+      }
+    });
+
+    // The defect this file exists for, on the one path these templates have.
+    it('formative path: the pole-`a` band narrates the first-pole choice', () => {
+      expect(narratedChoiceIndex(t.test.bandProse.cleanA, t), `${id}: cleanA`).toBe(firstIdx);
+      expect(narratedChoiceIndex(t.test.bandProse.cleanB, t), `${id}: cleanB`).toBe(secondIdx);
+    });
+
+    // The reading above is a `>=` comparison, so a tie resolves to choice 0 and
+    // would read as a confident answer. Measured floor over this set is 14.3%;
+    // the assertion sits at strict separation, which is the claim being relied
+    // on, and reports the number when a rewrite erodes it.
+    it('separates the two choices decisively enough to be read', () => {
+      for (const band of ['cleanA', 'cleanB'] as const) {
+        const margin = relativeMargin(t.test.bandProse[band], t);
+        expect(margin, `${id}: ${band} does not distinguish the two choices (margin ${(margin * 100).toFixed(1)}%)`)
+          .toBeGreaterThan(0);
+      }
+    });
+
+    it('authors all five bands as distinct prose', () => {
+      const bands = t.test.bandProse;
+      const written = [bands.cleanA, bands.cleanB, bands.brokenIntoA, bands.brokenIntoB, bands.tempered];
+      for (const b of written) expect(b.trim().length, `${id}: empty band`).toBeGreaterThan(0);
       expect(new Set(written).size, `${id}: two bands share prose`).toBe(written.length);
     });
 
