@@ -790,11 +790,16 @@ export const NUDGE_GOLDEN_EXEMPLAR: UnifiedActionTemplate = {
               title: 'What the river took',
               detail: 'The current stripped what was carried and left an exhaustion that will not walk off.',
               polarity: 'loss',
-              // THR-1033 — `condition.*` is not one of the registry's prefixes
-              // (Law 17), so an id here would render as a dead underline. The
-              // word stays; it is plain prose until conditions become a tooltip
-              // class (THR-1094).
-              concepts: [{ text: 'exhaustion' }],
+              // THR-1033 left this word plain, because `condition.*` is not one
+              // of the tooltip registry's prefixes (Law 17) and an id there
+              // would have rendered as a dead underline. THR-1164 gives it the
+              // route it was missing: the condition is an **attachment**, whose
+              // `entityId` is the template node id and whose `attachment.*`
+              // tooltip is derived from it. The word the ending narrates now
+              // reaches the condition the ending wrote.
+              concepts: [
+                { text: 'exhaustion', entityId: 'trait.condition.exhausted', visualKind: 'attachment' },
+              ],
             },
           ],
         },

@@ -998,6 +998,43 @@ describe('aftermath mode', () => {
       .toHaveAttribute('tabindex', '0');
   });
 
+  // THR-1164 — the surface half of the sentinel route. Nineteen shipped chips
+  // name "The Dawn", and a faction node is minted per world, so what the author
+  // wrote was `$faction:holy_order_dawn` and what must arrive here is the node
+  // id this world resolved it to. The assertion is deliberately that the raw
+  // sentinel never reaches the host: handing `openEntity` a `$`-prefixed string
+  // would open nothing while looking exactly like a working link (Law 21).
+  it('opens the faction sheet for a resolved faction noun, never the sentinel', () => {
+    const factionNoun: EncounterStageModel = {
+      ...grantChipModel,
+      aftermath: {
+        ...grantChipModel.aftermath!,
+        consequences: [
+          {
+            ...grantChipModel.aftermath!.consequences![0],
+            nounLabel: 'THE DAWN',
+            nounTooltipId: undefined,
+            // What `resolveAnchorDeclaration` produced from '$faction:holy_order_dawn'.
+            nounEntityId: 'actor.faction.dawn.7',
+            nounEntityKind: 'faction',
+          },
+        ],
+      },
+    };
+    const onSelectEntity = vi.fn();
+    render(
+      <EncounterVeil {...defaultProps} model={factionNoun} onSelectEntity={onSelectEntity} />,
+    );
+
+    const noun = within(screen.getByTestId('consequence-chip-wound'))
+      .getByRole('button', { name: 'THE DAWN' });
+    fireEvent.click(noun);
+
+    expect(onSelectEntity).toHaveBeenCalledWith('actor.faction.dawn.7', 'faction');
+    const [[handedId]] = onSelectEntity.mock.calls;
+    expect(handedId).not.toMatch(/^\$/);
+  });
+
   it('leaves the noun plain when the registry cannot explain it', () => {
     // The falsification half. An id the registry cannot answer must render as
     // plain text — never as an underline into nothing (Law 21), and never as

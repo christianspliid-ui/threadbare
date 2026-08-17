@@ -17,6 +17,7 @@ import type { SimulationRuntime } from '../../../../engine/simulationRuntime';
 import { stepOutcomeToOutcomeBand, stepOutcomeWord } from '../../../../data/outcome-band-content';
 import { autoLinkNarrative, collectSupportBundleEntities } from '../narrativeLinker';
 import { buildAftermathConsequences } from './buildAftermathConsequences';
+import { resolveAnchorDeclaration } from '../../../../data/content-eval/chipAnchorDeclarations';
 import { resolveEntityVisual } from '../../../shared/entityVisualResolver';
 import { getFamiliarity, getKnowledgeLevel } from '../../../../engine/familiarity';
 import { supportRoleWord } from '../../../../engine/supportRoleWords';
@@ -726,6 +727,19 @@ function buildAftermath(
       const descriptor = resolveEntityVisual({ id: entityId, kind, name }, graph);
       return { entityId, kind, name, src: descriptor.src };
     },
+    // THR-1164 — Law 56 clause 2's runtime half. An anchor that cannot be a
+    // literal id (a faction node minted per world, a cast actor, the acting
+    // agent) is authored as a sentinel and only the graph can say what it means
+    // here. Same module the gate classifies with, so a declaration that passed
+    // `check:chip-anchors` is the one resolved on screen.
+    resolveAnchor: (entityId) =>
+      resolveAnchorDeclaration(entityId, {
+        graph,
+        actorId: activeAction.actorId,
+        castNodeIdByKey: new Map(
+          (activeAction.supportBindings ?? []).map(b => [b.key, b.nodeId]),
+        ),
+      }),
   });
 
   return {
