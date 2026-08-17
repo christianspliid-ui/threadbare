@@ -137,6 +137,29 @@ if (import.meta.env.DEV) {
   // Thread story provider (THR-455)
   let _threadStoryProvider: ((agentRef: string) => import('./engine/threadDigest').ThreadStoryComposition | null) | null = null;
 
+  /**
+   * THR-1032: single agent-selector resolution for every accessor that takes one.
+   *
+   * Six accessors each hand-rolled this and none of them accepted `@hero` — the
+   * alias CLAUDE.md documents for the ascendant's avatar, and the one actor every
+   * `?spawn=` review route stages on. The result was a set of accessors that
+   * could not name the only actor a reviewer would ask about, reporting it as
+   * `No agent matching '<x>'` — indistinguishable from a typo (impediment #486).
+   *
+   * Async because this module deliberately has no static imports: `import.meta.env.DEV`
+   * makes the whole file dead code in prod, and a static import would anchor the
+   * resolver into the production bundle.
+   */
+  async function resolveAgentNode(
+    query: string,
+  ): Promise<import('./types/graph').GraphNode | null> {
+    const state = _gameStateProvider?.();
+    if (!state) return null;
+    const { resolveDebugAgent, isDebugAgentMiss } = await import('./engine/debugAgentResolver');
+    const resolved = resolveDebugAgent(state, query);
+    return isDebugAgentMiss(resolved) ? null : resolved.node;
+  }
+
   window.__DEBUG = {
     // Debug panel control — called from browser console or Playwright
     openDebugPanel: () => { _debugPanelToggle?.(true); },
@@ -1074,20 +1097,14 @@ if (import.meta.env.DEV) {
     },
     /**
      * Returns all attachments (possessions, conditions, powers, agreements) for an agent.
-     * Accepts an agent id, id prefix, or partial name (case-insensitive). Returns null if not found.
+     * Accepts `@hero`, an agent id, id prefix, or partial name (case-insensitive).
+     * Returns null if not found.
      */
     getAgentAttachments: async (agentIdOrName: string) => {
       const graph = _graphProvider?.();
       if (!graph) return null;
 
-      const actors = graph.getNodesByType('actor');
-      const match =
-        actors.find(n => n.id === agentIdOrName) ??
-        actors.find(n => n.id.startsWith(agentIdOrName)) ??
-        actors.find(n =>
-          typeof n.name === 'string' && n.name.toLowerCase().includes(agentIdOrName.toLowerCase()),
-        );
-
+      const match = await resolveAgentNode(agentIdOrName);
       if (!match) return null;
 
       const { getAgentAttachments: getAttachments } = await import('./engine/agentAttachments');
@@ -1212,13 +1229,11 @@ if (import.meta.env.DEV) {
       const runtime = _runtimeProvider?.();
       if (!state || !runtime?.balanceTelemetry) return null;
 
-      const actors = state.graph.getNodesByType('actor');
-      const agent = actors.find(n =>
-        n.id === agentQuery
-        || n.id.startsWith(agentQuery)
-        || n.name.toLowerCase().includes(agentQuery.toLowerCase())
-      );
-      if (!agent) return null;
+      // THR-1032: shared resolver — adds the `@hero` alias this never had.
+      const { resolveDebugAgent, isDebugAgentMiss } = await import('./engine/debugAgentResolver');
+      const resolved = resolveDebugAgent(state, agentQuery);
+      if (isDebugAgentMiss(resolved)) return null;
+      const agent = resolved.node;
 
       const decision = runtime.balanceTelemetry.latestEncounterDecisionByAgent.get(agent.id);
       if (!decision) return null;
@@ -1268,17 +1283,15 @@ if (import.meta.env.DEV) {
      * computed. Accepts an actor id, id prefix, or partial name. Returns null if
      * no agent matches or the agent has not selected an encounter yet.
      */
-    getMotiveReceipt: (agentQuery: string) => {
+    // THR-1032: async since the shared resolver is dynamically imported, in keeping
+    // with this file's no-static-imports rule (it must dead-code-eliminate in prod).
+    getMotiveReceipt: async (agentQuery: string) => {
       const state = _gameStateProvider?.();
       if (!state) return null;
-      const actors = state.graph.getNodesByType('actor');
-      const agent = actors.find(n =>
-        n.id === agentQuery
-        || n.id.startsWith(agentQuery)
-        || n.name.toLowerCase().includes(agentQuery.toLowerCase())
-      );
-      if (!agent) return null;
-      return (agent.properties?.motiveReceipt as import('./types/foreshadowing').MotiveReceipt | undefined) ?? null;
+      const { resolveDebugAgent, isDebugAgentMiss } = await import('./engine/debugAgentResolver');
+      const resolved = resolveDebugAgent(state, agentQuery);
+      if (isDebugAgentMiss(resolved)) return null;
+      return (resolved.node.properties?.motiveReceipt as import('./types/foreshadowing').MotiveReceipt | undefined) ?? null;
     },
 
     /** Returns the current encounter novelty record (surface-keyed since THR-475). Keys are surfaceKeys; values are last-selected tick. */
@@ -1489,14 +1502,11 @@ if (import.meta.env.DEV) {
 
       const state = _gameStateProvider?.();
       if (!state) return traces.filter(t => t.agentId === agentQuery || t.agentId?.startsWith(agentQuery));
-      const actors = state.graph.getNodesByType('actor');
-      const agent = actors.find(n =>
-        n.id === agentQuery
-        || n.id.startsWith(agentQuery)
-        || n.name.toLowerCase().includes(agentQuery.toLowerCase())
-      );
-      if (!agent) return [];
-      return traces.filter(t => t.agentId === agent.id);
+      // THR-1032: shared resolver — adds the `@hero` alias this never had.
+      const { resolveDebugAgent, isDebugAgentMiss } = await import('./engine/debugAgentResolver');
+      const resolved = resolveDebugAgent(state, agentQuery);
+      if (isDebugAgentMiss(resolved)) return [];
+      return traces.filter(t => t.agentId === resolved.node.id);
     },
 
     // Strategic action inspection
@@ -1547,15 +1557,17 @@ if (import.meta.env.DEV) {
       const { getTraces } = await import('./engine/traceBuffer');
       const state = _gameStateProvider?.();
       const allTraces = getTraces();
-      // Resolve actorRef: exact id or partial name match
+      // THR-1032: this called `graph.getAllNodes()`, which did not exist, so the
+      // accessor threw for every argument. Resolution now goes through the shared
+      // resolver, which also gives it the `@hero` alias it never had.
       let actorId = actorRef;
       if (state) {
-        const node = state.graph.getNode(actorRef) ?? state.graph.getAllNodes()
-          .filter(n => n.type === 'actor')
-          .find(n => n.name?.toLowerCase().includes(actorRef.toLowerCase()));
-        if (node) actorId = node.id;
+        const { resolveDebugAgent, isDebugAgentMiss } = await import('./engine/debugAgentResolver');
+        const resolved = resolveDebugAgent(state, actorRef);
+        if (isDebugAgentMiss(resolved)) return { error: resolved.error, consequences: [] };
+        actorId = resolved.node.id;
       }
-      return allTraces
+      const consequences = allTraces
         .filter(t => t.category === 'consequence_applied' && t.actorId === actorId)
         .slice(-last)
         .map(t => ({
@@ -1568,6 +1580,7 @@ if (import.meta.env.DEV) {
           dropIntent: (t as Record<string, unknown>).dropIntent,
           complicationId: (t as Record<string, unknown>).complicationId,
         }));
+      return { actorId, consequences };
     },
 
     // THR-490: prose-quality audit over the static authored-content library.
@@ -1793,13 +1806,7 @@ if (import.meta.env.DEV) {
       const state = _gameStateProvider?.();
       if (!graph) return null;
 
-      const actors = graph.getNodesByType('actor');
-      const match =
-        actors.find(n => n.id === agentIdOrName) ??
-        actors.find(n => n.id.startsWith(agentIdOrName)) ??
-        actors.find(n =>
-          typeof n.name === 'string' && n.name.toLowerCase().includes(agentIdOrName.toLowerCase()),
-        );
+      const match = await resolveAgentNode(agentIdOrName);
       if (!match) return null;
 
       const { readResidence, dwellTicks, isAwayFromOrigin, currentPositionId } =
@@ -1831,13 +1838,7 @@ if (import.meta.env.DEV) {
       const state = _gameStateProvider?.();
       if (!graph) return null;
 
-      const actors = graph.getNodesByType('actor');
-      const match =
-        actors.find(n => n.id === agentIdOrName) ??
-        actors.find(n => n.id.startsWith(agentIdOrName)) ??
-        actors.find(n =>
-          typeof n.name === 'string' && n.name.toLowerCase().includes(agentIdOrName.toLowerCase()),
-        );
+      const match = await resolveAgentNode(agentIdOrName);
       if (!match) return null;
 
       const { readStoredRelocationIntent, resolveAgentHex } = await import('./engine/relocationIntent');

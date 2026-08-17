@@ -511,8 +511,9 @@ export interface DebugBridge {
   getRecentRewards: (n?: number) => Promise<readonly RewardHistoryEntry[]>;
   /** Resolve encounter foreshadowing prose for an agent's latest ranked encounter candidate. */
   getForeshadowing: (agentQuery: string, templateQuery?: string) => Promise<DebugForeshadowingResult | null>;
-  /** THR-631: raw Motive Receipt from an agent's most recent encounter selection (ranked decision-causality contributions). Accepts id, id prefix, or partial name. Null if no match or no selection yet. */
-  getMotiveReceipt: (agentQuery: string) => import('./types/foreshadowing').MotiveReceipt | null;
+  /** THR-631: raw Motive Receipt from an agent's most recent encounter selection (ranked decision-causality contributions). Accepts `@hero`, id, id prefix, or partial name. Null if no match or no selection yet.
+   *  THR-1032: became async when it moved onto the shared agent resolver — `await` it. */
+  getMotiveReceipt: (agentQuery: string) => Promise<import('./types/foreshadowing').MotiveReceipt | null>;
   /** Returns the current encounter novelty record (surface-keyed since THR-475). Keys are surfaceKeys; values are last-selected tick. Null if no game state. */
   getEncounterNoveltyRecord: () => Record<string, number> | null;
   /** Snapshot of the trace ring buffer. Empty unless tracing was enabled first. */
@@ -846,19 +847,31 @@ export interface DebugBridge {
   bandPhraseUsage: (actorId?: string) => Map<string, Set<string>> | Set<string> | null;
 
   /** Phase 6: Returns the last N consequence_applied traces for an actor (THR-63).
-   *  @param actorRef - exact actor id or partial name match
+   *
+   *  THR-1032: this threw `getAllNodes is not a function` for EVERY argument until
+   *  2026-08-17, so it had no working callers and its shape was changed freely to
+   *  match this file's `{ items, error }` convention. An unresolvable selector now
+   *  returns `{ error, consequences: [] }` naming the collection searched, rather
+   *  than an empty array that reads as "this actor has no consequences".
+   *
+   *  @param actorRef - `@hero`, an exact actor id, an id prefix, or a partial name
    *  @param last - number of records to return (default 10)
    */
-  consequencesFor: (actorRef: string, last?: number) => Promise<Array<{
-    tick: unknown;
-    templateId: unknown;
-    band: unknown;
-    qDelta: unknown;
-    growthMultiplier: unknown;
-    progressCounterDelta: unknown;
-    dropIntent: unknown;
-    complicationId: unknown;
-  }>>;
+  consequencesFor: (actorRef: string, last?: number) => Promise<{
+    /** The resolved actor id — confirms which actor the records belong to. */
+    actorId?: string;
+    error?: string;
+    consequences: Array<{
+      tick: unknown;
+      templateId: unknown;
+      band: unknown;
+      qDelta: unknown;
+      growthMultiplier: unknown;
+      progressCounterDelta: unknown;
+      dropIntent: unknown;
+      complicationId: unknown;
+    }>;
+  }>;
 
   /** Compose and return the story-so-far for an agent by id, id prefix, or partial name (THR-455). Returns null if not available. */
   getThreadStory(agentRef: string): import('./engine/threadDigest').ThreadStoryComposition | null;

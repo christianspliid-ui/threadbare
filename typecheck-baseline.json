@@ -1,5 +1,5 @@
 {
-  "total": 3178,
+  "total": 3175,
   "command": "npx tsc -b --force --pretty false",
   "perFile": {
     "scripts/lint-encounter-content.ts": 2,
@@ -251,7 +251,7 @@
     "src/data/tavern-encounter-content.ts": 7,
     "src/data/uiColorPalette.ts": 1,
     "src/data/unified-action-templates.ts": 8,
-    "src/debug-bridge.ts": 16,
+    "src/debug-bridge.ts": 13,
     "src/engine/__tests__/actionCandidates.test.ts": 13,
     "src/engine/__tests__/actionCardRedesign-integration.test.ts": 1,
     "src/engine/__tests__/actionLifecycle.test.ts": 2,

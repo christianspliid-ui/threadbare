@@ -9,6 +9,7 @@ import { useAmbientContext } from './hooks/useAmbientContext';
 import { CAMERA_CONSTANTS } from '../HexMapV2/camera/D3ZoomCamera';
 import type { ScryState } from '../../types/scry';
 import { createScryState } from '../../engine/scry';
+import { resolveDebugAgent, isDebugAgentMiss } from '../../engine/debugAgentResolver';
 import { useSimulation } from './hooks/useSimulation';
 import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 import type { CardPlayTallyEntry } from '../../types/gameState';
@@ -2915,24 +2916,25 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   useEffect(() => {
     if (!import.meta.env.DEV || !window.__DEBUG) return;
 
-    const resolveAgentId = (agentQuery: string): string | null => {
-      const actors = _gameStateRef.current.graph.getNodesByType('actor');
-      const match = actors.find(node =>
-        node.id === agentQuery
-        || node.id.startsWith(agentQuery)
-        || ((node.properties.name as string | undefined) ?? '').toLowerCase().includes(agentQuery.toLowerCase())
-      );
-      return match?.id ?? null;
+    // THR-1032: this matcher failed on every spelling of the ascendant avatar —
+    // it had no `@hero` alias, and it read the display name from
+    // `properties.name` when `GraphNode.name` is a TOP-LEVEL field, so partial-name
+    // matching silently matched nothing at all. Both aftermath accessors therefore
+    // returned `No agent matching '<x>'` for the one actor `?spawn=` stages on
+    // (impediment #486, six spellings tried). Shared resolver fixes both halves.
+    const resolveAgent = (agentQuery: string): { id: string } | { error: string } => {
+      const resolved = resolveDebugAgent(_gameStateRef.current, agentQuery);
+      return isDebugAgentMiss(resolved) ? { error: resolved.error } : { id: resolved.node.id };
     };
 
     window.__DEBUG._registerAftermathBridge({
       listAftermathReactions: (agentQuery: string) => {
-        const resolvedAgentId = resolveAgentId(agentQuery);
-        if (!resolvedAgentId) {
-          return { reactions: [], error: `No agent matching '${agentQuery}'.` };
+        const resolution = resolveAgent(agentQuery);
+        if ('error' in resolution) {
+          return { reactions: [], error: resolution.error };
         }
 
-        const resolvedContext = resolveAftermathContextForAgent(_gameStateRef.current, resolvedAgentId);
+        const resolvedContext = resolveAftermathContextForAgent(_gameStateRef.current, resolution.id);
         if ('error' in resolvedContext) {
           return { reactions: [], error: resolvedContext.error };
         }
@@ -2941,12 +2943,12 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         return { reactions: reactions.map(reaction => ({ id: reaction.id, label: reaction.label })) };
       },
       pickAftermathReaction: (agentQuery: string, reactionId?: string) => {
-        const resolvedAgentId = resolveAgentId(agentQuery);
-        if (!resolvedAgentId) {
-          return { success: false, message: `No agent matching '${agentQuery}'.` };
+        const resolution = resolveAgent(agentQuery);
+        if ('error' in resolution) {
+          return { success: false, message: resolution.error };
         }
 
-        const result = applyAftermathReactionForAgent(resolvedAgentId, reactionId, 'debug-bridge');
+        const result = applyAftermathReactionForAgent(resolution.id, reactionId, 'debug-bridge');
         return {
           success: result.success,
           reactionId: result.reactionId,
