@@ -14,9 +14,12 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import {
   computeInitialLeverage,
   isSocialSceneTemplate,
+  getHighestFactionRank,
   LEVERAGE_BOND_BONUS,
   LEVERAGE_INITIAL_CAP,
+  LEVERAGE_RANK_BONUS,
 } from '../socialLeverage';
+import { FACTION_RANK_MAX } from '../../data/agent-behavior-constants';
 import {
   selectCounterArgument,
   applyCounterModifier,
@@ -91,6 +94,66 @@ describe('computeInitialLeverage', () => {
     const result = computeInitialLeverage(graph, 'a1', 't1');
     expect(result.leverage).toBe(0);
     expect(result.history).toEqual([]);
+  });
+
+  // ─── THR-1151: the faction-rank advantage bonus ─────────────────────────
+  // `getHighestFactionRank` divided raw rank by RANK_NORMALIZATION_DIVISOR = 10,
+  // justified by a comment describing "raw rank numbers (typically 1–10)" — a scale
+  // nothing has ever written. `member_of.rank` is declared 0–1, so the divisor
+  // squashed the maximum to 0.1 and LEVERAGE_RANK_GAP of 0.30 could never be cleared
+  // by any agent in any world. There was no arm covering this axis at all, which is
+  // why it shipped dead. The positive arm below is the one a squashed scale fails.
+
+  it('applies rank bonus when actor outranks target on the 0-1 member_of scale', () => {
+    const graph = buildGraph();
+    graph.addNode({ id: 'a1', type: 'actor', name: 'Actor', properties: {} });
+    graph.addNode({ id: 't1', type: 'actor', name: 'Target', properties: {} });
+    graph.addNode({ id: 'f1', type: 'actor', name: 'Guild', properties: {} });
+    graph.addEdge({
+      id: 'member.a1.f1', type: 'member_of', source: 'a1', target: 'f1',
+      properties: { role: 'member', rank: 0.9, joinedTick: 0 },
+    });
+    graph.addEdge({
+      id: 'member.t1.f1', type: 'member_of', source: 't1', target: 'f1',
+      properties: { role: 'member', rank: 0.1, joinedTick: 0 },
+    });
+
+    const result = computeInitialLeverage(graph, 'a1', 't1');
+
+    expect(result.leverage).toBeCloseTo(LEVERAGE_RANK_BONUS, 5);
+    expect(result.history.some(h => h.source === 'rank_bonus')).toBe(true);
+  });
+
+  it('withholds rank bonus when the rank gap is below LEVERAGE_RANK_GAP', () => {
+    const graph = buildGraph();
+    graph.addNode({ id: 'a1', type: 'actor', name: 'Actor', properties: {} });
+    graph.addNode({ id: 't1', type: 'actor', name: 'Target', properties: {} });
+    graph.addNode({ id: 'f1', type: 'actor', name: 'Guild', properties: {} });
+    graph.addEdge({
+      id: 'member.a1.f1', type: 'member_of', source: 'a1', target: 'f1',
+      properties: { role: 'member', rank: 0.5, joinedTick: 0 },
+    });
+    graph.addEdge({
+      id: 'member.t1.f1', type: 'member_of', source: 't1', target: 'f1',
+      properties: { role: 'member', rank: 0.4, joinedTick: 0 },
+    });
+
+    const result = computeInitialLeverage(graph, 'a1', 't1');
+
+    expect(result.history.some(h => h.source === 'rank_bonus')).toBe(false);
+  });
+
+  it('clamps an out-of-scale rank to FACTION_RANK_MAX', () => {
+    const graph = buildGraph();
+    graph.addNode({ id: 'a1', type: 'actor', name: 'Actor', properties: {} });
+    graph.addNode({ id: 'f1', type: 'actor', name: 'Guild', properties: {} });
+    // A stray integer-scale fixture must not hand back more than the ceiling.
+    graph.addEdge({
+      id: 'member.a1.f1', type: 'member_of', source: 'a1', target: 'f1',
+      properties: { role: 'member', rank: 7, joinedTick: 0 },
+    });
+
+    expect(getHighestFactionRank(graph, 'a1')).toBe(FACTION_RANK_MAX);
   });
 
   it('applies bond bonus when actor has strong trust with target', () => {

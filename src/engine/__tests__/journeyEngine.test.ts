@@ -302,6 +302,50 @@ describe('buildStateSnapshot', () => {
     expect(snapshot.power.totalTraits).toBe(0); // no traits yet
   });
 
+  // ─── THR-1151: the rank half of the influence axis ──────────────────────
+  // `factionsLed` filtered on `role === 'leader' || rank >= 3`. `rank` is on the
+  // declared 0–1 scale, so the second clause was permanently false and a senior
+  // member who had not taken the single leader slot counted as leading nothing.
+  // No arm covered the rank clause, which is how it shipped dead.
+  //
+  // The fixtures below use LITERALS on the declared 0–1 scale, deliberately not
+  // FACTION_RANK_SENIOR. Writing the constant on both sides of the comparison moves
+  // the fixture with the threshold, so the arm passes for any value — including the
+  // dead `3` it exists to rule out. Verified: with the threshold restored to `3`
+  // these two go red, which is the only thing that makes them evidence.
+
+  test('counts a senior-ranked membership toward factionsLed without a leader role', () => {
+    const { graph, agentId } = buildTestGraph();
+    graph.addNode({
+      id: 'faction.senior', name: 'Ashen Circle', type: 'actor',
+      properties: { actorType: 'faction' },
+    });
+    graph.addEdge({
+      id: 'member.senior', source: agentId, target: 'faction.senior', type: 'member_of',
+      properties: { role: 'member', rank: 0.7, joinedTick: 0 },
+    });
+
+    const snapshot = buildStateSnapshot(graph, agentId, makeThreadProps({ tier: 2 }));
+
+    expect(snapshot.influence.factionsLed).toBe(1);
+  });
+
+  test('does not count a membership ranked below the senior threshold', () => {
+    const { graph, agentId } = buildTestGraph();
+    graph.addNode({
+      id: 'faction.junior', name: 'Hedge Chapter', type: 'actor',
+      properties: { actorType: 'faction' },
+    });
+    graph.addEdge({
+      id: 'member.junior', source: agentId, target: 'faction.junior', type: 'member_of',
+      properties: { role: 'member', rank: 0.2, joinedTick: 0 },
+    });
+
+    const snapshot = buildStateSnapshot(graph, agentId, makeThreadProps({ tier: 2 }));
+
+    expect(snapshot.influence.factionsLed).toBe(0);
+  });
+
   test('builds snapshot with correct relationship axis', () => {
     const { graph, agentId } = buildTestGraph();
     const threadProps = makeThreadProps({

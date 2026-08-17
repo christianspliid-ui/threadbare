@@ -41,7 +41,7 @@ import type { WorldGraph } from './graph';
 import type { LeverageHistoryEntry } from '../types/encounter';
 import { getTrust } from './trustMechanics';
 import { computeCapability } from './domainCapability';
-import { STRONG_BOND_THRESHOLD } from '../data/agent-behavior-constants';
+import { STRONG_BOND_THRESHOLD, FACTION_RANK_MAX } from '../data/agent-behavior-constants';
 import {
   SECRET_LEVERAGE_MULTIPLIER,
   FAVOR_LEVERAGE_MULTIPLIER,
@@ -74,13 +74,10 @@ export const LEVERAGE_POWER_GAP = 0.20;
 export const LEVERAGE_RANK_BONUS = 0.05;
 
 /**
- * Minimum rank difference (normalized 0–1) required for the rank advantage bonus.
- * Raw rank values from member_of edges are normalized by RANK_NORMALIZATION_DIVISOR.
+ * Minimum rank difference (0–1) required for the rank advantage bonus.
+ * `member_of.rank` is already on that scale, so the difference is read directly.
  */
 export const LEVERAGE_RANK_GAP = 0.30;
-
-/** Divisor to normalize raw rank numbers (typically 1–10) into 0–1 scale. */
-const RANK_NORMALIZATION_DIVISOR = 10;
 
 /**
  * Maximum starting leverage. Ensures actors can't skip directly to a decisive
@@ -93,7 +90,14 @@ export const LEVERAGE_INITIAL_CAP = 0.30;
 /**
  * Get the highest faction rank for an agent across all their memberships.
  * Reads `rank` from member_of edge properties (number, default 0).
- * Returns a normalized value in [0, 1].
+ * Returns a value in [0, 1].
+ *
+ * No normalization divisor (THR-1151): `member_of.rank` is declared 0 (recruit) to
+ * 1 (leader) and every writer honours it, so the previous `/ 10` — justified by a
+ * comment describing "raw rank numbers (typically 1–10)", a scale nothing has ever
+ * written — squashed the maximum to 0.1. Against LEVERAGE_RANK_GAP of 0.30 that made
+ * the rank advantage bonus unreachable for every agent in every world. Clamped rather
+ * than divided, so a stray out-of-scale fixture cannot hand back more than the ceiling.
  */
 export function getHighestFactionRank(graph: WorldGraph, agentId: string): number {
   const memberEdges = graph.getOutgoingEdges(agentId, 'member_of');
@@ -105,7 +109,7 @@ export function getHighestFactionRank(graph: WorldGraph, agentId: string): numbe
     if (rank > highest) highest = rank;
   }
 
-  return highest / RANK_NORMALIZATION_DIVISOR;
+  return Math.max(0, Math.min(FACTION_RANK_MAX, highest));
 }
 
 // ─── Main API ──────────────────────────────────────────────────────────────

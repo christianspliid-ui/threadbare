@@ -37,6 +37,7 @@ import {
   getAgentBonds,
   getAgentMemberships,
 } from './graphQueries';
+import { FACTION_RANK_SENIOR } from '../data/agent-behavior-constants';
 import { emitTrace } from './traceBuffer';
 import { mulberry32 } from '../lib/prng';
 import { executeReturn } from './returnEngine';
@@ -103,8 +104,12 @@ export function buildStateSnapshot(
 
   // Influence axis
   const memberships = getAgentMemberships(graph, agentId);
+  // `rank` is on the declared 0–1 scale (MemberOfEdgeProperties), so the old literal
+  // `>= 3` was permanently false and this filter silently collapsed to its role half
+  // (THR-1151). FACTION_RANK_SENIOR is the same axis, anchored to the lieutenant tier.
   const leaderMemberships = memberships.filter(
-    m => (m.edge.properties.role as string) === 'leader' || (m.edge.properties.rank as number) >= 3
+    m => (m.edge.properties.role as string) === 'leader'
+      || (m.edge.properties.rank as number) >= FACTION_RANK_SENIOR
   );
   const bonds = getAgentBonds(graph, agentId);
   const enemyBonds = bonds.filter(b => b.sentiment < -0.3);
