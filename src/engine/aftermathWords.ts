@@ -456,12 +456,18 @@ export function factionStandingSentence(args: {
  * `describeTallyKey` and `TALLY_MAGNITUDE_BANDS` below are deliberately kept.
  * §5 preserves tally inspectability *"in traces and the designer view"*, and
  * they are the only vocabulary that turns `star.positive` into words — deleting
- * them would make that preserved inspectability unimplementable. They have no
- * production caller today, which is tracked debt rather than invisible debt —
- * THR-1140 holds the decision: either build the designer readout that consumes
- * them, or prune both with their tests. Do not resolve it by re-adding a
- * player-facing tally chip; the visibility-parity clause under Law 13 in
- * `Docs/design-system/laws.md` forbids that until a tally gains a sheet surface.
+ * them would make that preserved inspectability unimplementable.
+ *
+ * THR-1140 resolved the debt they briefly carried by building that designer
+ * view rather than pruning them: the debug panel's **Tallies** tab
+ * (`components/Game/debug/TalliesDebugTab.tsx`) is their production caller, and
+ * it is where §5's preserved inspectability actually lives. Law 13 names the
+ * designer view as a place numbers may be shown, so that tab prints the raw
+ * value and resolves the key through `describeTallyKey` beside it.
+ *
+ * That tab is the sanctioned consumer; a *player-facing* tally chip is still
+ * forbidden. The visibility-parity clause under Law 13 in
+ * `Docs/design-system/laws.md` bars one until a tally gains a sheet surface.
  */
 
 /** A clearance gate changing state. States are already words; they only need casing. */

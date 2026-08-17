@@ -58,11 +58,12 @@ import { EssenceSourcesDebugTab } from './EssenceSourcesDebugTab';
 import { OrphanedCardsDebugTab } from './OrphanedCardsDebugTab';
 import { FragmentsDebugTab } from './FragmentsDebugTab';
 import { NudgeDesignerTab } from './NudgeDesignerTab';
+import { TalliesDebugTab } from './TalliesDebugTab';
 import { EMPTY_STATE_STYLE } from './debugPanelStyles';
 import type { KnowsClueOfEdgeProperties } from '../../../types/knowledge';
 import type { FlipTableRuntimeState } from '../../../types/contentShells';
 
-export type ViewMode = 'feed' | 'agent-follow' | 'tick-inspector' | 'social' | 'encounters' | 'encounter-seeds' | 'hidden-marks' | 'journey' | 'webgl' | 'factions' | 'spheres' | 'revelation-log' | 'knowledge-gaps' | 'armies' | 'companies' | 'cli' | 'strategic' | 'omens' | 'cultures' | 'secrets-favors' | 'clues' | 'ruins' | 'recent-events' | 'shells' | 'compositions' | 'phases' | 'choices' | 'drift' | 'hand' | 'detection' | 'forecast' | 'foreshadowing' | 'action-unlocks' | 'beats' | 'sustained-controls' | 'kpi' | 'prose-quality' | 'economy' | 'essence-sources' | 'orphaned-cards' | 'fragments' | 'nudges';
+export type ViewMode = 'feed' | 'agent-follow' | 'tick-inspector' | 'social' | 'encounters' | 'encounter-seeds' | 'hidden-marks' | 'journey' | 'webgl' | 'factions' | 'spheres' | 'revelation-log' | 'knowledge-gaps' | 'armies' | 'companies' | 'cli' | 'strategic' | 'omens' | 'cultures' | 'secrets-favors' | 'clues' | 'ruins' | 'recent-events' | 'shells' | 'compositions' | 'phases' | 'choices' | 'drift' | 'hand' | 'detection' | 'forecast' | 'foreshadowing' | 'action-unlocks' | 'beats' | 'sustained-controls' | 'kpi' | 'prose-quality' | 'economy' | 'essence-sources' | 'orphaned-cards' | 'fragments' | 'nudges' | 'tallies';
 
 export const TABS: { id: ViewMode; label: string }[] = [
   { id: 'feed', label: 'Feed' }, { id: 'agent-follow', label: 'Agent' },
@@ -94,6 +95,7 @@ export const TABS: { id: ViewMode; label: string }[] = [
   { id: 'orphaned-cards', label: 'Orphaned Cards' },
   { id: 'fragments', label: 'Fragments' },
   { id: 'nudges', label: 'Nudges' },
+  { id: 'tallies', label: 'Tallies' },
 ];
 
 export interface DebugTabContentProps {
@@ -182,6 +184,9 @@ export function DebugTabContent({
   }
   if (viewMode === 'encounters') {
     return <EncounterCacheView cacheEntries={cacheEntries ?? []} encounterProgress={encounterProgress ?? []} currentTick={currentTick} followAgentId={effectiveAgentId} onZoomToLocation={onZoomToLocation} graph={graph} seed={seed != null ? String(seed) : undefined} />;
+  }
+  if (viewMode === 'tallies') {
+    return <TalliesDebugTab graph={graph} traces={allTraces} focusedAgentId={effectiveAgentId} retinueAgents={retinueAgents} />;
   }
   if (viewMode === 'hidden-marks') {
     return <HiddenMarksTab marks={hiddenMarks ?? []} currentTick={currentTick} focusedAgentId={effectiveAgentId} retinueAgents={retinueAgents} />;
