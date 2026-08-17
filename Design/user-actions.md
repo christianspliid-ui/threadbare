@@ -1,12 +1,12 @@
 # User Action Required
 
-**Last updated:** 2026-08-17 05:56 local (03:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-17 06:55 local (04:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
 ### 1. Sample 2 of 6 from Batch 1 — [THR-1131](https://linear.app/threadbare/issue/THR-1131/retrofit-batch-1-the-slice-six-through-the-factory-line-contract-thr)
 
-Your ruling 6: you sample two encounters per batch. Batch 1 shipped 2026-08-15. Both template ids were re-checked against `main` this hour and resolve; the site is serving `a2077402`, the current tip.
+Your ruling 6: you sample two encounters per batch. Batch 1 shipped 2026-08-15. Both template ids were re-checked against `main` this hour and resolve; the site is serving `93eec92d`, the current tip.
 
 - **[The Unsafe Bridge](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge)**
 - **[The Grateful Kin](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin)**
@@ -19,7 +19,7 @@ You already opened the Unsafe Bridge once and ruled on its aftermath chips; that
 
 ### 2. Batch 2 of the retrofit — [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to)
 
-**Sequenced behind ask 1, and there is nothing to approve until it lands.** Your ruling 2 gates a batch behind an approved brief, and the ticket names your sample verdicts as direct input to the retrofit bar — so drafting batch 2's brief before your verdict would pre-empt the feedback it exists to absorb.
+**Sequenced behind ask 1, and there is nothing to approve until it lands.** Your ruling 2 gates a batch behind an approved brief, and the ticket names your sample verdicts as *"direct input to the retrofit bar"* — so drafting batch 2's brief before your verdict would pre-empt the feedback it exists to absorb.
 
 What remains after batch 1: the **camp seven** plus the two sequels. Roughly nine encounters.
 
@@ -37,7 +37,7 @@ This replaces separate tickets (THR-1109, THR-1125, THR-1126, THR-1127), consoli
 
 What it lacks is a plan doc, and that needs you in the room — locations, artifacts, and draw-by-trait pools. Its sibling [THR-791 (wave 3)](https://linear.app/threadbare/issue/THR-791/traits-wave-3-minting-identity-god-earned-traits-relationship-traits) is blocked on the identical gap and clears once this one lands a plan doc, so the session buys two tickets, not one.
 
-Rising: the palette ladder that has been stocking the shelf is at rung six of seven, and the claimable queue is down to two items.
+Rising: the palette ladder that has been stocking the shelf is now at its **last rung** — six of seven shipped — and the claimable queue is down to one item.
 
 ### 5. Parked option, no urgency: a Tenacious-style trait
 
@@ -45,6 +45,7 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
+- 2026-08-17: **rung 6 of your palette ladder is live.** [THR-1145](https://linear.app/threadbare/issue/THR-1145/consequence-draw-reach-weighted-primitive-tables-for-the-encounter) ([PR #1516](https://github.com/christianspliid-ui/threadbare/pull/1516)) — an encounter's consequences are now drawn from reach-weighted tables instead of each one being hand-picked, so the same ending can land differently twice. Claimed 04:24, deployed by 04:55.
 - 2026-08-17: **faction rank now reads on the scale the writers use.** [THR-1151](https://linear.app/threadbare/issue/THR-1151/three-member-ofrank-3-readers-are-dead-they-test-an-integer-threshold) ([PR #1515](https://github.com/christianspliid-ui/threadbare/pull/1515)) — three places meant to treat a senior guild member differently compared a 0–1 rank against an integer threshold, so they never fired. Second dead faction reader closed in two hours.
 - 2026-08-17: **faction standing now actually moves.** [THR-1150](https://linear.app/threadbare/issue/THR-1150/faction-reputation-gain-is-dead-in-all-shipped-content-authored) ([PR #1514](https://github.com/christianspliid-ui/threadbare/pull/1514)) — every authored consequence of the form *"your standing with the mercenary company rises"* had been silently doing nothing. Picked up 02:02, merged 02:41.
 - 2026-08-17: **THR-907 is off your list — you had already ruled it.** [THR-907](https://linear.app/threadbare/issue/THR-907/slice-verdict-session-christian-rules-on-prose-firing-ui-and-game) carried all four verdicts (prose, firing, UI, game) from 2026-08-10, with the prose bar sharpened 2026-08-15. Two briefs re-asked you for them in error. The ticket stays open only for a plan-doc carve-up and successor-map charter — an agent's job in a design session.
