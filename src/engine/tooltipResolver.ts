@@ -11,6 +11,7 @@
  * - reach.* → world-model.json reaches
  * - terrain.* → world-model.json terrain biomes
  * - archetype.* → archetype-content.ts
+ * - faction.* → faction-definition-lookup.ts, keyed by definition id
  * - doom.* → doom-content.ts stage names or hardcoded definitions
  * - quintessence.* → ascendant-bar-content.ts band tooltips
  * - attachment.* → attachmentTemplateIndex.ts shipped attachment templates
@@ -30,6 +31,22 @@ import { MANDATE_TEMPLATES } from '../data/mandate-content';
 import { BAND_TOOLTIP } from '../data/ascendant-bar-content';
 import type { QuintessenceBand } from '../types/quintessence';
 import { resolveAttachmentTemplateTooltip } from './attachmentTemplateIndex';
+import { getFactionDefinition } from '../data/faction-definition-lookup';
+import type { FactionDefinition } from '../types/faction';
+
+/**
+ * A faction definition's name template with its generated slots stripped —
+ * `'The {adj} Beast Pack'` → `'The Beast Pack'` (THR-1149).
+ *
+ * Monster definitions carry an adjective slot that worldgen fills per instance.
+ * The concept a `faction.*` tooltip names is the *family*, not one chapter of
+ * it, and a raw `{adj}` reaching a player-facing surface is a defect on its own.
+ * Every non-monster template is already a plain literal, so this is a no-op for
+ * them rather than a transform they have to survive.
+ */
+function factionConceptLabel(definition: FactionDefinition): string {
+  return definition.nameTemplate.replace(/\{[^}]*\}/g, ' ').replace(/\s+/g, ' ').trim();
+}
 
 export interface TooltipResolverContext {
   graph: WorldGraph;
@@ -46,6 +63,7 @@ export interface TooltipResolverContext {
  * - reach.* → Reach domain from world-model.json
  * - terrain.* → Terrain biome from world-model.json
  * - archetype.* → Narrative archetype from archetype-content.ts
+ * - faction.* → Faction definition (regular + monster), keyed by definition id
  * - doom.* → Doom stage or global doom definitions
  * - agent.* → Agent name + archetype/domain info, gated by familiarity (Tier 1)
  * - quintessence.* → Quintessence band (transcendent … dissolving)
@@ -129,6 +147,23 @@ export function resolveTooltip(id: string, context?: TooltipResolverContext): To
       };
     }
     return null;
+  }
+
+  // ─── Faction Lookup (THR-1149) ─────────────────────────────────
+  // Keyed by *definition* id rather than node id, so it resolves from the
+  // static definition table with no context — which is exactly what `Tooltip`
+  // supplies when it calls `resolveTooltip(id)` on its own. A node-keyed
+  // faction tooltip would need the graph and would resolve to null on every
+  // plain `<Tooltip id="faction...">`, i.e. a dead hover.
+  if (prefix === 'faction') {
+    const definition = getFactionDefinition(suffix);
+    if (!definition) return null;
+    return {
+      label: factionConceptLabel(definition),
+      desc: definition.motto
+        ? `${definition.description} — "${definition.motto}"`
+        : definition.description,
+    };
   }
 
   // ─── Doom Lookup ──────────────────────────────────────────────

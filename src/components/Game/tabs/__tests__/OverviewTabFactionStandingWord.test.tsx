@@ -87,7 +87,12 @@ describe('OverviewTab — faction standing word (THR-1138)', () => {
 
     // The fill element carries the magnitude as CSS width. A percentage in a
     // style attribute is not a rendered numeral; the player sees a bar length.
-    const fill = factionSection(container).querySelector<HTMLElement>('[style*="width"]');
+    //
+    // Selected by test id rather than "first element with an inline width"
+    // (THR-1149): the faction heraldry tile now renders earlier in this section
+    // and carries its own inline width, so the positional selector would have
+    // quietly started measuring the wrong element and still passed a `toBe`.
+    const fill = factionSection(container).querySelector<HTMLElement>('[data-testid="faction-standing-fill"]');
     expect(fill, 'standing bar fill should still render').not.toBeNull();
     expect(fill!.style.width).toBe('62%');
     // ...and that width must not have leaked into the visible text.

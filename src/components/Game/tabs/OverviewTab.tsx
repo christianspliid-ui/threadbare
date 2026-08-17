@@ -8,6 +8,9 @@ import {
 } from '../../../types/agentKnowledge';
 import { SectionHeading } from '../../shared/SectionHeading';
 import { Tooltip } from '../../shared/Tooltip';
+import { EntityVisual } from '../../shared/EntityVisual';
+import { resolveTooltip } from '../../../engine/tooltipResolver';
+import type { WorldGraph } from '../../../engine/graph';
 import { getSphereColor } from '../../../data/sphereIcons';
 import { getReputationWord } from '../../../data/domain-words';
 import { CORE_CONTINUA, CORE_NEUTRAL } from '../../../types/coreRegistry';
@@ -183,6 +186,92 @@ function MoralAxisRow({
   );
 }
 
+// ─── Faction name (THR-1149) ─────────────────────────────────────
+
+/**
+ * The faction line in the sheet's Faction section: heraldry, name, tooltip,
+ * and a click through to that faction's own sheet.
+ *
+ * Until THR-1149 this was a bare `<p>` carrying a glyph prefix — a named entity
+ * with a live page (`FactionSheet`) reachable from nowhere (Law 21), and a game
+ * concept presented as text alone (Law 1).
+ *
+ * Each of the three treatments degrades on its own, because each depends on
+ * different data and the sheet must stay honest when a piece is missing
+ * (NFP #4):
+ *
+ * - **Heraldry** always renders. `resolveEntityVisual` falls back to a designed
+ *   glyph tile when no sigil resolves, so the missing-art state reads as
+ *   designed rather than broken (Law 4). It replaces the ad-hoc
+ *   `factionIconGlyph` prefix — one resolver per representation class (Law 3).
+ * - **The link** needs `factionNodeId` *and* a handler. Without both the name is
+ *   plain styled text, never a control that looks live and does nothing.
+ * - **The tooltip** needs `factionDefId` to resolve in the registry. The label
+ *   is the faction's own name — data the card already carries, not copy — while
+ *   the description comes from `resolveTooltip` (Law 17). A faction whose
+ *   definition is absent gets no hover affordance rather than an empty popup.
+ */
+function FactionName({
+  card,
+  graph,
+  onOpenFaction,
+}: {
+  card: AgentInfoCardData;
+  graph?: WorldGraph | null;
+  onOpenFaction?: (factionNodeId: string, name: string) => void;
+}) {
+  const name = card.factionName ?? '';
+  const canOpen = !!card.factionNodeId && !!onOpenFaction;
+  const hasTooltip = !!card.factionDefId && !!resolveTooltip(`faction.${card.factionDefId}`);
+
+  const label = (
+    <span
+      className={`text-sm${canOpen || hasTooltip ? ' underline decoration-dotted' : ''}`}
+      style={{ color: 'var(--text-secondary)' }}
+    >
+      {name}
+    </span>
+  );
+
+  const named = canOpen ? (
+    <button
+      type="button"
+      onClick={() => onOpenFaction!(card.factionNodeId!, name)}
+      title={`Open ${name}`}
+      className="cursor-pointer p-0 bg-transparent text-left"
+      style={{ border: 'none' }}
+    >
+      {label}
+    </button>
+  ) : (
+    label
+  );
+
+  return (
+    <div className="flex items-center gap-2 min-w-0">
+      <EntityVisual
+        size="chip"
+        entity={{
+          id: card.factionNodeId ?? card.factionDefId ?? name,
+          kind: 'faction',
+          name,
+        }}
+        graph={graph ?? null}
+        aria-label={name}
+        title={name}
+        data-testid="faction-heraldry"
+      />
+      {hasTooltip ? (
+        <Tooltip id={`faction.${card.factionDefId}`} label={name}>
+          {named}
+        </Tooltip>
+      ) : (
+        named
+      )}
+    </div>
+  );
+}
+
 // ─── Component ───────────────────────────────────────────────────
 
 interface OverviewTabProps {
@@ -191,9 +280,13 @@ interface OverviewTabProps {
   knowledge?: AgentKnowledge;
   /** Open a fellow company member's profile (THR-74 roster click-through). */
   onOpenEntity?: (id: string) => void;
+  /** World graph — resolves faction heraldry art (THR-1149). */
+  graph?: WorldGraph | null;
+  /** Open the faction's own sheet from the Faction section (THR-1149). */
+  onOpenFaction?: (factionNodeId: string, name: string) => void;
 }
 
-export function OverviewTab({ card, profile: _profile, knowledge, onOpenEntity }: OverviewTabProps) {
+export function OverviewTab({ card, profile: _profile, knowledge, onOpenEntity, graph, onOpenFaction }: OverviewTabProps) {
   // How many quotes to show: one per interaction depth point (max 5), or all if no knowledge
   const quoteCount = knowledge != null
     ? Math.max(
@@ -293,9 +386,7 @@ export function OverviewTab({ card, profile: _profile, knowledge, onOpenEntity }
           <SectionHeading as="h2">Faction</SectionHeading>
           <div className="space-y-2">
             <div className="flex items-center justify-between gap-3">
-              <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                {card.factionIconGlyph ? `${card.factionIconGlyph} ` : ''}{card.factionName}
-              </p>
+              <FactionName card={card} graph={graph} onOpenFaction={onOpenFaction} />
               {card.factionRank && (
                 <p className="text-xs" style={{ color: card.factionThemeColor ?? 'var(--accent-gold)' }}>
                   {card.factionRank}
@@ -307,6 +398,11 @@ export function OverviewTab({ card, profile: _profile, knowledge, onOpenEntity }
                 <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--border-subtle)' }}>
                   <div
                     className="h-full rounded-full transition-all"
+                    // Named so THR-1138's "the bar survives" assertion can select
+                    // it directly. It used to be found as the section's first
+                    // element carrying an inline width, which the heraldry tile
+                    // added by THR-1149 would silently have become.
+                    data-testid="faction-standing-fill"
                     style={{
                       width: `${Math.round(card.factionReputation * 100)}%`,
                       backgroundColor: card.factionThemeColor ?? 'var(--accent-gold)',

@@ -4425,6 +4425,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
             gameState={gameState}
             runtime={runtime}
             onOpenEntity={openAgentProfileForId}
+            // The Faction section opens the faction's own sheet (THR-1149) —
+            // the same stub-modal route the hex and thread surfaces use, not
+            // `onOpenEntity`, which resolves every id to an agent profile.
+            onOpenFaction={(factionNodeId) => setStubModalState({ nodeId: factionNodeId, category: 'faction' })}
             // Opens above a modal-tier interrupt (THR-1139) — the premonition
             // renders later in this file and would otherwise win the equal-z tie.
             zIndex={MODAL_Z_ABOVE_INTERRUPT}
