@@ -387,6 +387,34 @@ export interface EncounterStageConsequenceChipModel {
    * underline (Law 21).
    */
   nounTooltipId?: string;
+  /**
+   * THR-1153 — the graph object the noun *is*, so the noun can be reached and not
+   * merely explained.
+   *
+   * Law 56's second clause requires a chip's referent to be an existing graph
+   * object and the prose to name that object. THR-1122 gave the noun its hover
+   * tier and stopped there, so a chip could declare `entityId` on its
+   * `stateNoun` — twelve in the corpus do — and the noun still rendered as text
+   * that goes nowhere, while a *decorated word inside the same sentence* clicked
+   * through. The chip's most concentrated referent was its least reachable one.
+   *
+   * Carries the declaration verbatim: `entityId` is the node id the producer
+   * named (an attachment's **template** node id for `attachment`, per THR-1120)
+   * and `nounEntityKind` is its `visualKind`. Both optional and additive — a
+   * chip that declares no anchor renders exactly as before (NFP #6) — and the
+   * surface still routes through `openEntity`, so a kind this host cannot open
+   * stays emphasised text rather than becoming a link to the wrong sheet
+   * (Law 21).
+   */
+  nounEntityId?: string;
+  /**
+   * THR-1153 — kind of {@link nounEntityId}, routed by `openEntity`.
+   *
+   * Spelled as the same inline union the segment's `entityKind` uses rather than
+   * imported from `NarrativeSegments`: this module is types-only and stays free
+   * of component imports.
+   */
+  nounEntityKind?: 'agent' | 'faction' | 'artifact' | 'companion' | 'attachment';
   /** Icon-tile fallback glyph when neither an entity nor a reach resolves. */
   categoryGlyph: string;
   /**

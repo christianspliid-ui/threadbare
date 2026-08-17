@@ -898,7 +898,7 @@ describe('aftermath mode', () => {
     try {
       render(<EncounterVeil {...defaultProps} model={nounTooltipModel} />);
 
-      const noun = screen.getByTestId('consequence-chip-noun-wound');
+      const noun = screen.getByTestId('consequence-chip-noun-wound-seg-0');
       expect(noun).toHaveTextContent('WOUNDED');
       // Focusable, so the hover tier is reachable from the keyboard too — a
       // tooltip nobody can open is inert by another name (Laws 17/23).
@@ -915,6 +915,87 @@ describe('aftermath mode', () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+
+  // ── THR-1153 — the click tier on the chip's noun ───────────────────────
+  //
+  // Law 56's second clause makes the noun the chip's *referent* — the word that
+  // names the graph object the ending changed. THR-1122 gave it a tooltip and
+  // stopped there, so a chip could declare `entityId` on its `stateNoun` and the
+  // noun still went nowhere, while the same object clicked through from inside
+  // the sentence one line below. Reaching the backing is the whole point of the
+  // anchor; a noun that only explains itself is the dead chip in a smaller frame.
+
+  const nounAnchorModel: EncounterStageModel = {
+    ...grantChipModel,
+    aftermath: {
+      ...grantChipModel.aftermath!,
+      consequences: [
+        {
+          ...grantChipModel.aftermath!.consequences![0],
+          nounLabel: 'WOUNDED',
+          nounTooltipId: 'attachment.trait.condition.wounded',
+          nounEntityId: 'trait.condition.wounded',
+          nounEntityKind: 'attachment',
+        },
+      ],
+    },
+  };
+
+  it('routes the chip noun to its anchor, and hands the host the declared id and kind', () => {
+    const onSelectEntity = vi.fn();
+    render(
+      <EncounterVeil {...defaultProps} model={nounAnchorModel} onSelectEntity={onSelectEntity} />,
+    );
+
+    // `getByRole('button')` rather than the test id: the assertion is that the
+    // noun is a real control, not merely an element that exists. A `role="link"`
+    // span would not match either, which also pins the un-nested rendering.
+    const noun = within(screen.getByTestId('consequence-chip-wound'))
+      .getByRole('button', { name: 'WOUNDED' });
+    fireEvent.click(noun);
+
+    expect(onSelectEntity).toHaveBeenCalledWith('trait.condition.wounded', 'attachment');
+  });
+
+  it('leaves the noun as text when the host cannot open the anchor', () => {
+    // The fail-open half (Law 21). A host with no `onSelectEntity` cannot route
+    // an attachment, so the noun must stay text — a dead affordance that looks
+    // live is worse than no affordance. It keeps its hover tier regardless.
+    render(
+      <EncounterVeil {...defaultProps} model={nounAnchorModel} onSelectEntity={undefined} />,
+    );
+
+    const chip = within(screen.getByTestId('consequence-chip-wound'));
+    expect(chip.queryByRole('button', { name: 'WOUNDED' })).not.toBeInTheDocument();
+    expect(screen.getByTestId('consequence-chip-noun-wound-seg-0')).toHaveTextContent('WOUNDED');
+  });
+
+  it('draws no control on a noun that declares no anchor', () => {
+    // The falsification case for the whole change: strip `nounEntityId` and the
+    // control must disappear. Without this, the test above would pass just as
+    // well on a noun that had been made unconditionally clickable — which would
+    // put a link on the 29 chips whose referent is still scene fiction.
+    const noAnchor: EncounterStageModel = {
+      ...nounAnchorModel,
+      aftermath: {
+        ...nounAnchorModel.aftermath!,
+        consequences: [
+          {
+            ...nounAnchorModel.aftermath!.consequences![0],
+            nounEntityId: undefined,
+            nounEntityKind: undefined,
+          },
+        ],
+      },
+    };
+    render(<EncounterVeil {...defaultProps} model={noAnchor} onSelectEntity={vi.fn()} />);
+
+    const chip = within(screen.getByTestId('consequence-chip-wound'));
+    expect(chip.queryByRole('button', { name: 'WOUNDED' })).not.toBeInTheDocument();
+    // Still explained, still reachable by keyboard — only the navigation is absent.
+    expect(screen.getByTestId('consequence-chip-noun-wound-seg-0'))
+      .toHaveAttribute('tabindex', '0');
   });
 
   it('leaves the noun plain when the registry cannot explain it', () => {
@@ -935,7 +1016,7 @@ describe('aftermath mode', () => {
     };
     render(<EncounterVeil {...defaultProps} model={unresolvable} />);
 
-    const noun = screen.getByTestId('consequence-chip-noun-wound');
+    const noun = screen.getByTestId('consequence-chip-noun-wound-seg-0');
     expect(noun).toHaveTextContent('WOUNDED');
     expect(noun).not.toHaveTextContent('no.such.template');
     expect(noun).not.toHaveAttribute('tabindex');
