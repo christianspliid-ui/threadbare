@@ -666,10 +666,10 @@ remediation ticket or the build fails.
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Encounter*, *Faction*, *Prerequisite*
 - **Module:** `src/engine/factionMembership.ts`
-- **Production hits:** 12 total — 1 write, 1 read, 10 unclassified
+- **Production hits:** 13 total — 1 write, 1 read, 11 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`
 - **Read sites:** `src/engine/effects/effectPredicates.ts`
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/data/agent-behavior-constants.ts`, `src/engine/effectResolver.ts`, `src/engine/effects/index.ts`, `src/engine/factionMembership.ts` +5 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/data/agent-behavior-constants.ts`, `src/engine/effectResolver.ts`, `src/engine/effects/index.ts`, `src/engine/factionMembership.ts` +6 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `milestone-grants-unlock-repertoire-cards` — 🔵 UNVERIFIED-OK
@@ -768,10 +768,10 @@ remediation ticket or the build fails.
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 203 total — 1 write, 1 read, 201 unclassified
+- **Production hits:** 204 total — 1 write, 1 read, 202 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts` +196 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts` +197 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `relocation-intent-steers-agent-movement` — 🔵 UNVERIFIED-OK

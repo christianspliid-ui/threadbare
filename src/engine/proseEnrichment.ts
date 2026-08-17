@@ -36,6 +36,7 @@ import { resolveFragment, type BoundFragmentAxes } from './fragmentResolution';
 import { settingClassForSubtype } from '../data/settingClasses';
 import { locationTypeFromProperties } from './encounterCache';
 import { ALLY_SENTIMENT_THRESHOLD, ENEMY_SENTIMENT_THRESHOLD } from '../data/effect-constants';
+import { FACTION_RANK_SENIOR } from '../data/agent-behavior-constants';
 import {
   buildIntelligenceView,
   emitIntelligenceReferenced,
@@ -378,8 +379,12 @@ export function gatherNarrativeContext(
 
   // Faction rank
   const memberships = getAgentMemberships(graph, agentId);
+  // `rank` is on the declared 0–1 scale, so the old literal `>= 3` never fired and
+  // `{faction_rank}` only ever enriched for an explicit `role: 'leader'` — a senior
+  // member one slot below the title enriched as nobody (THR-1151).
   const leaderMembership = memberships.find(
-    m => (m.edge.properties.role as string) === 'leader' || (m.edge.properties.rank as number) >= 3,
+    m => (m.edge.properties.role as string) === 'leader'
+      || (m.edge.properties.rank as number) >= FACTION_RANK_SENIOR,
   );
   const factionRank = leaderMembership
     ? { factionName: leaderMembership.group.name, rank: (leaderMembership.edge.properties.role as string) ?? 'member' }

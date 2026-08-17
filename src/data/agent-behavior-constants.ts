@@ -224,6 +224,37 @@ export const FACTION_RANK_SECONDARY_FRACTION = 0.05;
  * @range 1.0–10.0 */
 export const FACTION_RANK_MAX = 1.0;
 
+/**
+ * Rank at which a member reads as *senior* — the upper reaches of a faction
+ * hierarchy, short of holding the title itself.
+ *
+ * Anchored to the `lieutenant` tier boundary in `faction-definitions.ts`, which
+ * states on this same 0–1 axis what the game already means by senior standing.
+ * Readers pair it with `role === 'leader'` because the two signals are genuinely
+ * different: `role` is derived from *reputation* via `getRankTier`, while `rank`
+ * is the promotion-accumulated number `tierPromotion.ts` bumps. A high-rank
+ * member who has not taken the single leader slot is exactly what this catches.
+ *
+ * Replaces a literal `>= 3` in `journeyEngine.ts` and `proseEnrichment.ts` — a
+ * threshold on a 1–10 scale nothing has ever written, so permanently false (THR-1151).
+ * @range 0.4–0.85 */
+export const FACTION_RANK_SENIOR = 0.6;
+
+/**
+ * Rank at which a membership reads as *notable* — above raw recruit, worth
+ * naming as a consequence target. A deliberately wider net than
+ * {@link FACTION_RANK_SENIOR}.
+ *
+ * Anchored to the `sergeant` tier boundary. This sits at the rank `worldSeed.ts`
+ * seeds members at (0.3), so an ordinary seeded membership qualifies — intended
+ * for `returnEngine`'s ripple targets, which sort by significance and cap at
+ * `RIPPLE_MAX_TARGETS`, so a wide gate costs breadth of candidates rather than
+ * flooding the output.
+ *
+ * Replaces a literal `>= 2` in `returnEngine.ts` (THR-1151).
+ * @range 0.2–0.6 */
+export const FACTION_RANK_NOTABLE = 0.3;
+
 // ═══════════════════════════════════════════════════════════════════
 // IDLE BEHAVIOR — Personality-driven idle actions (idleBehavior.ts)
 // ═══════════════════════════════════════════════════════════════════

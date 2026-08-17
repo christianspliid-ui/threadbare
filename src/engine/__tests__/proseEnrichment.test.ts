@@ -105,14 +105,18 @@ function createTestGraph(): WorldGraph {
     id: 'faction_1', name: 'The Iron Wardens', type: 'actor', category: 'faction',
     properties: { actorType: 'faction' },
   });
+  // Ranks are on the declared 0–1 scale (MemberOfEdgeProperties). These fixtures used
+  // integers 4 and 1, which read as plausible tiers but put a "rank-and-file" member at
+  // the leader ceiling — one of the fixtures that kept the dead `>= 3` read green (THR-1151).
   g.addEdge({
     id: 'edge_faction', source: 'agent_1', target: 'faction_1', type: 'member_of',
-    properties: { role: 'leader', rank: 4 },
+    properties: { role: 'leader', rank: 0.9 },
   });
   // agent_4 is a rank-and-file member of the same faction (for {target:faction} tests).
+  // Deliberately below FACTION_RANK_SENIOR so it is a genuine negative for the rank half.
   g.addEdge({
     id: 'edge_faction_4', source: 'agent_4', target: 'faction_1', type: 'member_of',
-    properties: { role: 'member', rank: 1 },
+    properties: { role: 'member', rank: 0.2 },
   });
 
   // Reputation trait. `subcategory` is the canonical field on TraitDefinitionProperties —
@@ -207,6 +211,47 @@ describe('gatherNarrativeContext', () => {
     expect(ctx.factionRank).toBeDefined();
     expect(ctx.factionRank!.factionName).toBe('The Iron Wardens');
     expect(ctx.factionRank!.rank).toBe('leader');
+  });
+
+  // ─── THR-1151: the rank half of the faction-rank read ────────────────────
+  // The test above passes on `role === 'leader'` alone, so it stayed green through
+  // the entire life of the dead `rank >= 3` predicate. These two arms exercise the
+  // rank half in both directions — the positive one is what a permanently-false
+  // predicate cannot satisfy, and is therefore the arm that actually falsifies it.
+  //
+  // Ranks here are LITERALS on the declared 0–1 scale, deliberately not
+  // FACTION_RANK_SENIOR: a fixture written as the constant moves with the threshold
+  // and so passes for any value, including the dead `3`. Verified red at `3`.
+
+  it('includes faction rank for a senior member who does not hold the leader title', () => {
+    const g = createTestGraph();
+    // agent_5 belongs to one faction only, at senior rank with an ordinary role —
+    // so `role === 'leader'` is false and only the rank half can satisfy the read.
+    g.addNode({
+      id: 'agent_5', name: 'Sera', type: 'actor',
+      properties: { actorType: 'individual', gender: 'female' },
+    });
+    g.addNode({
+      id: 'faction_2', name: 'The Ashen Circle', type: 'actor',
+      properties: { actorType: 'faction' },
+    });
+    g.addEdge({
+      id: 'edge_faction_senior', source: 'agent_5', target: 'faction_2', type: 'member_of',
+      properties: { role: 'member', rank: 0.7 },
+    });
+
+    const ctx = gatherNarrativeContext(g, 'agent_5');
+
+    expect(ctx.factionRank).toBeDefined();
+    expect(ctx.factionRank!.factionName).toBe('The Ashen Circle');
+  });
+
+  it('omits faction rank for a member below the senior threshold', () => {
+    const g = createTestGraph();
+    // agent_4's seeded membership is role 'member' at rank 0.2 — under FACTION_RANK_SENIOR.
+    const ctx = gatherNarrativeContext(g, 'agent_4');
+
+    expect(ctx.factionRank).toBeUndefined();
   });
 
   it('includes reputation titles', () => {

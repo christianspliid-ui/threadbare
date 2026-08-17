@@ -26,6 +26,7 @@ import type {
   FoundingGateConfig,
   RippleTargetType,
 } from '../types/returnEngine';
+import { FACTION_RANK_NOTABLE } from '../data/agent-behavior-constants';
 import {
   ALL_RETURN_OUTCOMES,
   FOUNDING_GATES,
@@ -334,12 +335,17 @@ export function gatherRippleTargets(graph: WorldGraph, agentId: string): RippleT
     }
   }
 
-  // Factions: member_of edges where rank is high
+  // Factions: member_of edges where rank is notable.
+  // `rank` is on the declared 0–1 scale, so the old literal `>= 2` was permanently
+  // false and only an explicit `role: 'leader'` ever produced a faction ripple
+  // target (THR-1151). `significance` below already reads on the 0–1 scale, so it
+  // needed no change: rank + leader-bonus stays in the 0–3 band the other target
+  // kinds in this function use.
   const memberships = getAgentMemberships(graph, agentId);
   for (const m of memberships) {
     const rank = (m.edge.properties.rank as number) ?? 0;
     const role = (m.edge.properties.role as string) ?? '';
-    if (rank >= 2 || role === 'leader') {
+    if (rank >= FACTION_RANK_NOTABLE || role === 'leader') {
       targets.push({
         nodeId: m.group.id,
         name: m.group.name,

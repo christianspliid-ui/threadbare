@@ -295,7 +295,7 @@ describe('gatherRippleTargets', () => {
     expect(targets.some(t => t.name === 'Rusty Sword')).toBe(false);
   });
 
-  it('finds factions via member_of edges with high rank', () => {
+  it('finds factions via member_of edges where the agent holds the leader role', () => {
     const g = createTestGraph();
     g.addNode({
       id: 'faction_1', name: 'Iron Order', type: 'actor', category: 'faction',
@@ -303,11 +303,51 @@ describe('gatherRippleTargets', () => {
     });
     g.addEdge({
       id: 'member_1', source: 'agent_1', target: 'faction_1', type: 'member_of',
-      properties: { rank: 3, role: 'leader' },
+      properties: { rank: 0.9, role: 'leader' },
     });
 
     const targets = gatherRippleTargets(g, 'agent_1');
     expect(targets.some(t => t.type === 'faction' && t.name === 'Iron Order')).toBe(true);
+  });
+
+  // ─── THR-1151: the rank half of the faction ripple-target gate ───────────
+  // Renamed the arm above to say what it actually proves: its fixture carried
+  // `role: 'leader'`, so it passed on the role half and stayed green for the whole
+  // life of the dead `rank >= 2` predicate. `rank` is on the 0–1 scale, so an
+  // integer threshold could never fire. These two arms drive the rank half alone.
+  //
+  // Ranks are LITERALS on the declared 0–1 scale, deliberately not
+  // FACTION_RANK_NOTABLE: a fixture written as the constant moves with the threshold
+  // and passes for any value, including the dead `2`. Verified red at `2`.
+
+  it('finds factions via member_of rank alone, with no leader role', () => {
+    const g = createTestGraph();
+    g.addNode({
+      id: 'faction_2', name: 'Ashen Circle', type: 'actor',
+      properties: { actorType: 'faction' },
+    });
+    g.addEdge({
+      id: 'member_2', source: 'agent_1', target: 'faction_2', type: 'member_of',
+      properties: { rank: 0.5, role: 'member' },
+    });
+
+    const targets = gatherRippleTargets(g, 'agent_1');
+    expect(targets.some(t => t.type === 'faction' && t.name === 'Ashen Circle')).toBe(true);
+  });
+
+  it('skips a faction whose membership rank is below the notable threshold', () => {
+    const g = createTestGraph();
+    g.addNode({
+      id: 'faction_3', name: 'Hedge Chapter', type: 'actor',
+      properties: { actorType: 'faction' },
+    });
+    g.addEdge({
+      id: 'member_3', source: 'agent_1', target: 'faction_3', type: 'member_of',
+      properties: { rank: 0.1, role: 'member' },
+    });
+
+    const targets = gatherRippleTargets(g, 'agent_1');
+    expect(targets.some(t => t.type === 'faction' && t.name === 'Hedge Chapter')).toBe(false);
   });
 
   it('caps at RIPPLE_MAX_TARGETS', () => {
