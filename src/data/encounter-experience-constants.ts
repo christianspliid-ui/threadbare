@@ -88,10 +88,13 @@ export const BEAT_COUNT_DEFAULT = 4;
 // Hard cap for encounter beat count.
 export const BEAT_COUNT_MAX = 8;
 
-// Aftermath registration animation fade-in duration.
-export const AFTERMATH_ANIMATION_FADE_IN_MS = 600;
-// Aftermath registration animation settle duration.
-export const AFTERMATH_ANIMATION_SETTLE_MS = 400;
+// The aftermath registration animation constants (fade-in + settle) were retired
+// with the prototype cluster they tuned (THR-1049 / THR-1167). Both were already
+// unreferenced at THR-1049's base commit, so the spec they timed never had a live
+// mount. The live "what registered" surface is the consequence-chip block in
+// `EncounterVeil.tsx` (THR-971 / THR-1082), which is not animated. Recover from
+// git history if the animation spec is revived.
+
 // World-to-encounter handoff transition duration.
 export const ENCOUNTER_HANDOFF_TRANSITION_MS = 400;
 
