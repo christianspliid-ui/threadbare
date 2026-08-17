@@ -2966,6 +2966,39 @@ function StepNavigator({
   // aftermath count reports what actually resolved rather than asserting the
   // whole flow ran.
   const resolvedCount = history.filter((step) => step.status === 'resolved').length;
+
+  // THR-1152 — the re-read has to say its own name. THR-1136 §2 shipped the
+  // mechanism correctly and shipped no affordance with it: the whole control was
+  // a 7px dot beside the italic word "resolved", which on a single-step
+  // encounter is one dot and reads as a status bullet. The director — who
+  // ordered the feature — played the Bridge aftermath and reported the
+  // capability absent. A control only its implementer can find has not shipped.
+  //
+  // So the dots keep doing the work and a labeled text control announces it in
+  // words. It opens the earliest step there is a past for; from there the dots
+  // teach themselves, because the player has now seen what they do.
+  // Resolved-only in both modes. On the live path the current step's dot is
+  // clickable too, but it is the way *back* to the present (`onSelectStep(null)`),
+  // not a past to open — counting it would label a one-step-in encounter as
+  // having something to re-read when it does not.
+  const replayableIndices = history
+    .map((step, i) => ({ step, i }))
+    .filter(({ step }) => step.status === 'resolved')
+    .map(({ i }) => i);
+  // THR-1003's rule holds: a control that cannot act is not drawn. Nothing to
+  // re-read (no host handler, no finished step) means no invitation to try —
+  // and mid-replay `StepReplayView` already owns the one return-shaped control
+  // on screen, so offering a second entrance here would be the Law 21 failure
+  // the aftermath's exit is suppressed to avoid.
+  const replayEntryIndex =
+    canSelect && replayStepIndex === null && replayableIndices.length > 0 ? replayableIndices[0] : null;
+  const replayLabel = resolvedMode
+    ? replayableIndices.length === 1
+      ? 're-read this step'
+      : 're-read the steps'
+    : replayableIndices.length === 1
+      ? 're-read the finished step'
+      : 're-read the finished steps';
   return (
     <div style={{ display: 'flex', gap: 0, alignItems: 'center', marginBottom: 24 }}>
       {history.map((step, i) => {
@@ -3045,6 +3078,53 @@ function StepNavigator({
             ? `replaying ${replayStepIndex + 1} of ${totalSteps}`
             : `${currentStepIndex + 1} of ${totalSteps}`}
       </span>
+      {/* THR-1152 — the affordance in words. The status span above stays status;
+          overloading "resolved" with a second, silent job as a button is what
+          produced the unreadable surface in the first place. */}
+      {replayEntryIndex !== null && (
+        <>
+          <span
+            aria-hidden="true"
+            style={{ color: TEXT_GHOST, marginLeft: 8, fontSize: 'var(--text-xs)', opacity: 0.5 }}
+          >
+            ·
+          </span>
+          <button
+            className="focus-ring"
+            data-testid="step-replay-invitation"
+            onClick={() => onSelectStep?.(replayEntryIndex)}
+            aria-label={replayLabel}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              padding: '4px 0',
+              marginLeft: 8,
+              fontFamily: FONT_PROSE,
+              fontStyle: 'italic',
+              fontSize: 'var(--text-xs)',
+              letterSpacing: '0.04em',
+              color: GOLD,
+              // The underline is the point: gold italic beside ghost italic was
+              // already the ambiguity the director could not read. A link that
+              // looks like a link needs no hover to be found.
+              textDecoration: 'underline',
+              textDecorationColor: 'rgb(var(--veil-gold-rgb) / 0.35)',
+              textUnderlineOffset: 3,
+              opacity: 0.75,
+              cursor: 'pointer',
+              transition: 'opacity 0.2s ease',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.opacity = '1';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.opacity = '0.75';
+            }}
+          >
+            {replayLabel}
+          </button>
+        </>
+      )}
     </div>
   );
 }
