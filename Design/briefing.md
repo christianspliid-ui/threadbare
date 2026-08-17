@@ -1,51 +1,37 @@
 # Briefing
-**Generated:** 2026-08-17 15:59 local (13:59 UTC) · keep-work-flowing-cc
+**Generated:** 2026-08-17 17:05 local (15:05 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**Your slice review is unblocked — the thing you put it on hold for is fixed, merged and live.** [Play the slice and rule](https://linear.app/threadbare/issue/THR-907/slice-verdict-session-christian-rules-on-prose-firing-ui-and-game): prose, firing, UI, game. Start here —
+**Play the slice and rule on it — [THR-907](https://linear.app/threadbare/issue/THR-907/slice-verdict-session-christian-rules-on-prose-firing-ui-and-game).** Unchanged from this afternoon and still the ask with the most behind it: nine encounters are queued on your verdict, and [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to) has now been parked **44 hours** waiting for the batch-1 sample (2 of 6) that rides the same sitting.
+
+Four verdicts: **prose**, **firing**, **UI**, **game**. "Needs another iteration" is a valid ruling.
 
 - [The Unsafe Bridge](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge)
 - [The Grateful Kin](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin)
-- [Free play, everything firing](https://threadbare.vercel.app/?view=game&seeded&size=medium&forceencounters) — the firing verdict needs this, not spawn-on-demand
+- [Free play, everything firing](https://threadbare.vercel.app/?view=game&seeded&size=medium&forceencounters) — the firing verdict needs free play, not spawn-on-demand
 
-**Your test, and how it was met.** At 10:06 you held the encounter verdict *"until this is fixed,"* the test being *"the fixes are visibly applied to The Unsafe Bridge and The Grateful Kin on the deployed build."* Both halves are now in: the Bridge chip that named a river the world does not have was deleted in [PR #1520](https://github.com/christianspliid-ui/threadbare/pull/1520), and the Grateful Kin's chips were anchored in [PR #1523](https://github.com/christianspliid-ui/threadbare/pull/1523) — the 48-chip corpus sweep, which finished and merged 25 minutes ago. The site is serving that exact commit (`60084988`), and the new anchor gate runs clean across the **whole** catalogue: 683 templates, 0 failing, 0 unanchored chips. Not a sample — every template in the game.
+**These links are unaffected by the deploy problem below.** The live site serves `60084988`, which is the commit carrying both chip fixes you held the review for. What is missing from the live site is only this afternoon's designer-view change, which is not part of what you are reviewing.
 
-**One honest limit.** That is a machine verdict on the commit the site is serving, not a human having looked at the screen. Nobody has opened it; you will be the first, which is the point of the session.
+## Also waiting (3)
 
-**The batch-1 sample verdict rides the same sitting** ([THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to)) — 2 of 6, with nine more encounters queued behind your ruling. It has been parked 41 hours waiting on exactly this.
-
-## Also waiting (2)
-
-- **One attended session with a dev server — [THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server).** ~30 minutes, 13 screenshots across six shipped UI surfaces. A scheduled run is refused a dev server, so it discharges only when you are present. Unchanged.
-- **A Tenacious-style trait stays parked** — an open design option, no ticket, nothing waiting on it. The safe default is that it stays parked; listed only so it is not silently dropped.
-
-## From Christian
-
-You asked, at 13:01: *"What even is a dormant plot hook in this game systemically? I think we need to define that in technical terms."*
-
-Taken, and it corrects this lane. [THR-1161](https://linear.app/threadbare/issue/THR-1161/the-acted-on-taxonomy-acted-on-dormant-hook-or-bookkeeping-definitions) has led your brief for three runs as a chat session waiting on you — and it should not have, because it asked you to rule on the visibility of a "dormant hook" while the term had no technical definition behind it. That is a question about the word, not about the game.
-
-**Routed, and off your list.** A design session authors the definition first — in state terms, against the real engine shapes: who may mint one, what it attaches to, how a write declares its class, whether it expires and what you see when it does. It comes back as a proposal you rule on. Your wording is [recorded on the ticket](https://linear.app/threadbare/issue/THR-1161/the-acted-on-taxonomy-acted-on-dormant-hook-or-bookkeeping-definitions) so the next session starts from it instead of re-asking you. Your two earlier rulings stand as the constraints it has to satisfy — they never conflicted, they were about two different classes, and naming those precisely is the work you just asked for.
+- **The site has stopped publishing** — verbatim from the probe: *"The live site is behind. It is serving 60084988, but main has moved on to d2508ed3 with real game changes that never published. Publishing has stopped without reporting an error."* An agent should diagnose before you open anything — see § Health.
+- **[THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server) — one attended dev-server session**, ~30 minutes, six surfaces, 13 screenshots. A scheduled run is refused a dev server and structurally cannot capture these.
+- **A Tenacious-style trait stays parked** — no ticket, nothing downstream waiting. Listed so it is not silently forgotten.
 
 ## Queue
 
-**Thin: 2 Ready for Dev, both `Deferral`, zero claimable product work — a supply problem upstream of you, not a stall.**
+**Healthy but thin — 3 ready, 1 in dev (parked).** Supply is the constraint, not throughput: five tickets have completed since midnight, and the executor cleared THR-1140 inside two hours of pickup this afternoon.
 
-- [THR-1140](https://linear.app/threadbare/issue/THR-1140/reputation-tallies-are-system-visible-with-no-designer-surface) (Low, `Deferral`) — leftover reputation-tally vocabulary with no caller since your 2026-08-16 ruling. Closes by building the designer readout or pruning the words.
-- [THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server) (Low, `Deferral`) — the screenshot sweep above; structurally not claimable by a routine.
-- **In Dev, parked 41 h:** [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to) — waiting on your batch-1 sample verdict, which the lead ask above now releases.
-- **Closed this hour:** [THR-1164](https://linear.app/threadbare/issue/THR-1164/anchor-the-corpus-sort-every-chip-that-names-a-referent-and-gate-on) (Urgent) — the corpus sweep and its gate. Filed, built and merged inside three hours.
+- [THR-1166](https://linear.app/threadbare/issue/THR-1166/content-sweep-the-god-decides-the-god-sways-odds-and-influences) (High) — content sweep on "the god decides", from your canon correction today.
+- [THR-1165](https://linear.app/threadbare/issue/THR-1165/two-dollarcast-sentinels-resolve-to-nothing-at-runtime-the-caravan) (Medium) — two `$cast:` sentinels resolve to nothing, so a bond and a mark are silently never written.
+- [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to) — **parked 44 h**, unassigned, waiting on your batch-1 sample. Its blocker ([THR-1129](https://linear.app/threadbare/issue/THR-1129/encounter-factory-ruling-9-sitting-fable-drafts-the-amended-nudge)) cleared yesterday morning; nothing technical is holding it.
 
-**Note the shelf is empty of product work again**, and with THR-1161 correctly redirected the design side now owes two things: the dormant-hook definition, and the wave-order decision behind it. That is where the next feature work comes from.
+**On the typed-state map — from tb-orchestrator, corrected.** That lane's report leads with three questions as "one sitting". Two of them are not actually ready for you: the wave-ordering question needs a ranked shortlist that does not exist yet, and the prototype question has nothing built to react to. Both are design-session work first. The third is the dormant-hook question you already sent back this afternoon — it stays off your list until a technical definition exists, per your own call. So the map is **not** an ask this hour.
 
 ## Health
 
-**All green on the machinery.**
-
-Site serving `60084988`, the current tip of main. No PR waiting to merge, all 9 lanes on schedule, both background jobs healthy, reaper ran 19 minutes ago, home tree on `main` and level with origin.
-
-Two visibility lines, neither yours:
-
-- The lane-silence probe still reports the 20.6-hour quiet of 2026-08-10 → 08-11 as unexplained. Recovered six days ago; declined under your 2026-08-08 ruling that overnight quiet is normal.
-- The reaper still cannot remove three stale worktrees (unmerged, 16–30 days old), now against 84 worktrees and 98 branches.
+- **Deploy stopped, and it should be diagnosed before it reaches you.** THR-1140 merged at 14:28 UTC; 37 minutes later there is still no production deployment record, against a normal latency of about 7 minutes today (four production deploys fired cleanly at 08:28, 09:40, 11:35 and 13:41 UTC). Four real `src/` files changed, so Vercel's skip rule does not explain it. The executor lane should establish whether this is a failed build, a quota, or a config change before you open a dashboard.
+- **Not a defect, checked and cleared:** the merge commit shows `Test · Typecheck · Build` as *skipped* and the Linear autoclose as *failed*. Both are post-merge re-run artifacts — PR #1524's own head commit ran a full green build, and THR-1140 did close to Done. No gate was bypassed and no work was lost.
+- **Lane silence:** the probe still flags historical overnight gaps (worst 20.6 h, 10–11 Aug). Declined per your 2026-08-08 ruling that overnight quiet is normal; noted for visibility only, nothing ongoing.
+- Automated checks, background jobs, merge queue and the git reaper are all green. Home tree is clean and current on `main`.
