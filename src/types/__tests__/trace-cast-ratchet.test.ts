@@ -33,14 +33,16 @@ const SRC = join(REPO_ROOT, 'src');
  *
  * 117 when THR-1065 landed the distributive input; 112 after it retired the five
  * it could prove unnecessary; 110 after THR-1117 reconciled the two payloads that
- * retrofit had exposed in `phaseAscendantHandFilter`. The rest are not yet known
- * to be removable — each needs its payload checked against its interface, which
- * is the work, not a formality.
+ * retrofit had exposed in `phaseAscendantHandFilter`; 107 after THR-1150 added
+ * `faction_reputation_gain` to `EncounterAftermathEffectTrace.effectKind` and took
+ * the casts out of that arm. The rest are not yet known to be removable — each
+ * needs its payload checked against its interface, which is the work, not a
+ * formality.
  *
  * Lowering this number is the point. If a change raises it, the cast is hiding
  * something: name what, in the same PR.
  */
-const MAX_EMITTRACE_CASTS = 110;
+const MAX_EMITTRACE_CASTS = 107;
 
 /**
  * Lines between an `emitTrace(` and its cast. Emit payloads are object literals
