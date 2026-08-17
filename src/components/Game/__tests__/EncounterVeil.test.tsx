@@ -621,6 +621,79 @@ describe('aftermath mode', () => {
     expect(screen.getByRole('button', { name: 'Step 2' })).toBeDisabled();
   });
 
+  // ── The re-read says its own name (THR-1152) ─────────────────────
+  //
+  // THR-1136 §2 shipped the mechanism above and no affordance with it: the
+  // entire control was a 7px dot beside the italic word "resolved". The
+  // director played the single-step Bridge aftermath — one dot — and reported
+  // the capability absent. These pin the words, because the words are the fix.
+
+  const singleStepModel: EncounterStageModel = {
+    ...identityModel,
+    history: [
+      { stepId: 'step-1', stepLabel: 'First Step', status: 'resolved', outcome: 'success', outcomeWord: 'held' },
+    ],
+  };
+
+  it('names the re-read in words on a multi-step ending', () => {
+    render(<EncounterVeil {...defaultProps} model={identityModel} />);
+    const invitation = screen.getByTestId('step-replay-invitation');
+    expect(invitation).toHaveTextContent('re-read the steps');
+    // A button, so it is keyboard-reachable and announced as actionable —
+    // which the bare dot never was in words.
+    expect(invitation.tagName).toBe('BUTTON');
+    expect(invitation).toBeEnabled();
+  });
+
+  it('offers the re-read on a single-step ending — the shape the director played', () => {
+    render(<EncounterVeil {...defaultProps} model={singleStepModel} />);
+    // One dot and the word "resolved" is exactly the surface that read as
+    // having no control at all.
+    expect(screen.getByText('resolved')).toBeInTheDocument();
+    expect(screen.getByTestId('step-replay-invitation')).toHaveTextContent('re-read this step');
+  });
+
+  it('opens the replay from the named control, not only from the dot', () => {
+    render(<EncounterVeil {...defaultProps} model={singleStepModel} />);
+    fireEvent.click(screen.getByTestId('step-replay-invitation'));
+    expect(screen.getByTestId('aftermath-step-replay')).toBeInTheDocument();
+  });
+
+  it('opens the earliest resolved step when several are available', () => {
+    render(<EncounterVeil {...defaultProps} model={identityModel} />);
+    fireEvent.click(screen.getByTestId('step-replay-invitation'));
+    // Step 1, not step 2 — the flow is re-read from its beginning.
+    expect(screen.getByTestId('aftermath-step-replay')).toHaveTextContent('First Step');
+  });
+
+  it('withdraws the invitation while a replay is open', () => {
+    render(<EncounterVeil {...defaultProps} model={identityModel} />);
+    fireEvent.click(screen.getByTestId('step-replay-invitation'));
+    // `StepReplayView` owns the one return-shaped control on screen; a second
+    // entrance beside it is the Law 21 failure the aftermath exit avoids.
+    expect(screen.queryByTestId('step-replay-invitation')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /return/i }));
+    expect(screen.getByTestId('step-replay-invitation')).toBeInTheDocument();
+  });
+
+  it('draws no invitation when nothing has resolved', () => {
+    render(
+      <EncounterVeil
+        {...defaultProps}
+        model={{
+          ...identityModel,
+          history: [
+            { stepId: 'step-1', stepLabel: 'First Step', status: 'future' },
+            { stepId: 'step-2', stepLabel: 'Second Step', status: 'future' },
+          ],
+        }}
+      />,
+    );
+    // THR-1003's rule survives the fix: a control that cannot act is not drawn.
+    expect(screen.queryByTestId('step-replay-invitation')).not.toBeInTheDocument();
+  });
+
   // ── Corner chrome removal (THR-1136 §1) ──────────────────────────
 
   it('drops the top-right tier label from the ending', () => {
@@ -1628,5 +1701,63 @@ describe('EncounterVeil — Law 13 on the simple adapter (THR-1124)', () => {
     );
     expect(screen.getByRole('dialog').textContent).toMatch(/Peer Through the Thread/);
     expect(screen.queryByText('Resolution Readout')).toBeNull();
+  });
+});
+
+// ── The live path gets the same words (THR-1152) ───────────────────
+//
+// The director's report names "finished **and** active steps": mid-encounter,
+// with parallel threads running, the player must be able to re-read what
+// already resolved and come back. The machinery was already there on this path
+// too — only the discovery was missing, and it was missing on both.
+
+describe('live step navigator — re-read affordance (THR-1152)', () => {
+  const midEncounterModel: EncounterStageModel = {
+    ...mockModel,
+    history: [
+      { stepId: 'step-1', stepLabel: 'First Step', status: 'resolved', outcome: 'success', outcomeWord: 'held' },
+      { stepId: 'step-2', stepLabel: 'Second Step', status: 'current' },
+    ],
+  };
+
+  it('names the re-read mid-encounter', () => {
+    render(<EncounterVeil {...defaultProps} model={midEncounterModel} />);
+    expect(screen.getByTestId('step-replay-invitation')).toHaveTextContent('re-read the finished step');
+  });
+
+  it('counts the finished steps in the label, not the whole flow', () => {
+    render(
+      <EncounterVeil
+        {...defaultProps}
+        model={{
+          ...mockModel,
+          history: [
+            { stepId: 'step-1', stepLabel: 'First Step', status: 'resolved', outcome: 'success', outcomeWord: 'held' },
+            { stepId: 'step-2', stepLabel: 'Second Step', status: 'resolved', outcome: 'failure', outcomeWord: 'slipped' },
+            { stepId: 'step-3', stepLabel: 'Third Step', status: 'current' },
+          ],
+        }}
+      />,
+    );
+    expect(screen.getByTestId('step-replay-invitation')).toHaveTextContent('re-read the finished steps');
+  });
+
+  it('opens the resolved step and returns to the present', () => {
+    render(<EncounterVeil {...defaultProps} model={midEncounterModel} />);
+    fireEvent.click(screen.getByTestId('step-replay-invitation'));
+    expect(screen.getByText('replaying 1 of 2')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /return/i }));
+    // Back on step 2, the live position — not the step that was being re-read.
+    expect(screen.getByText('2 of 2')).toBeInTheDocument();
+    expect(screen.getByTestId('step-replay-invitation')).toBeInTheDocument();
+  });
+
+  it('offers nothing on the opening step — the current step is not a past', () => {
+    // `mockModel`'s own history: step 1 current, step 2 future. The current
+    // step's dot is clickable, but as the way *back* to the present, so
+    // counting it would invite a re-read of a step that has not happened.
+    render(<EncounterVeil {...defaultProps} />);
+    expect(screen.queryByTestId('step-replay-invitation')).not.toBeInTheDocument();
   });
 });
