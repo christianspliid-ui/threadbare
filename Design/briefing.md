@@ -1,37 +1,36 @@
 # Briefing
-**Generated:** 2026-08-17 18:00 local (16:00 UTC) · keep-work-flowing-cc
+**Generated:** 2026-08-17 18:56 local (16:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**Play the slice and rule on it — [THR-907](https://linear.app/threadbare/issue/THR-907/slice-verdict-session-christian-rules-on-prose-firing-ui-and-game).** Unchanged, and still the ask with the most behind it: nine encounters are queued on your verdict, and [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to) has now been parked **43 hours** waiting for the batch-1 sample that rides the same sitting.
+**One attended session with a dev server — [THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server).** Roughly 30 minutes: one `npm run dev`, six shipped UI surfaces, 13 screenshots at 1920×1080.
 
-Four verdicts: **prose**, **firing**, **UI**, **game**. "Needs another iteration" is a valid ruling.
+This is now the only thing on your list, because **the slice verdict has come off it** — see directly below. THR-1133 is small, but it is the one item no scheduled run can ever discharge: an unattended session is refused a dev server outright, so these six surfaces will keep accumulating owed pictures until someone is present. It grew from five passes to six in two days.
 
-- [The Unsafe Bridge](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge)
-- [The Grateful Kin](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin)
-- [Free play, everything firing](https://threadbare.vercel.app/?view=game&seeded&size=medium&forceencounters) — the firing verdict needs free play, not spawn-on-demand
+**The slice and batch-1 sample verdict are off your list — you held them yourself, twice today, and I kept asking anyway.**
 
-For the batch-1 sample, `daily-backlog-grooming` proposes a specific pair: **Ward the Camp** (thinnest start) and **Tend to Wounds** (warmest tone) — the two ends of the batch, so the variance is visible in one reading.
+Your instruction on [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to) at 08:06 was *"hold the verdict on encounters until this is fixed"*, and at 14:52 you added the condition that the sample does not come back until the prose re-pass and the chip fixes are **visibly live** on the Bridge and the Grateful Kin. One of the two conditions is met — the "god sways the odds" sweep ([THR-1166](https://linear.app/threadbare/issue/THR-1166/content-sweep-the-god-decides-the-god-sways-odds-and-influences)) is merged and deployed. The other is not: the re-pass you ordered this afternoon — the density rule on the prose, and chip copy that names the mechanic and who owes whom — **has not been written yet**.
 
-**The publishing problem I flagged an hour ago has cleared itself** — see § Health. The live site is now ahead of where it was when I sent that message, and every link above works.
+So there is nothing for you to look at, and the last three briefs (including mine an hour ago) were wrong to lead with it. The ask returns, with fresh links, when the re-pass is live. That is on us, not you.
 
-## Also waiting (2)
+## Also waiting (1)
 
-- **[THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server) — one attended dev-server session**, ~30 minutes, six surfaces, 13 screenshots. A scheduled run is refused a dev server and structurally cannot capture these.
-- **A Tenacious-style trait stays parked** — no ticket, nothing downstream waiting. Listed so it is not silently forgotten.
+- **A Tenacious-style trait stays parked** — an open design option with no ticket and nothing downstream waiting. Listed so it is not silently forgotten; say the word and it gets a ticket and a design pass.
 
 ## Queue
 
-**Thin but healthy — 2 ready, 1 in dev (parked).** Supply is the constraint, not throughput: [THR-1166](https://linear.app/threadbare/issue/THR-1166/content-sweep-the-god-decides-the-god-sways-odds-and-influences) — the content sweep from your canon correction this morning — was picked up and merged inside the hour ([PR #1525](https://github.com/christianspliid-ui/threadbare/pull/1525)). Six tickets have completed since midnight.
+**3 ready, 1 in dev (parked).** The executor has work; supply is thinner than throughput but not starved.
 
-- [THR-1165](https://linear.app/threadbare/issue/THR-1165/two-dollarcast-sentinels-resolve-to-nothing-at-runtime-the-caravan) (Medium) — two `$cast:` sentinels resolve to nothing, so a bond and a mark are silently never written while the chips above them claim both. Next in line.
+- [THR-1048](https://linear.app/threadbare/issue/THR-1048/the-legacy-encounter-choice-card-breaks-laws-13-and-14-15percent) (Medium) — a raw engine word (`coercive`, `supportive`) still renders verbatim on a player-facing choice card. Next in line.
+- [THR-1049](https://linear.app/threadbare/issue/THR-1049/prototype-disposition-encounterscreen-castrail-casttile) (Low) — four prototype components that exist only in the styleguide: wire them or retire them.
 - [THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server) (Low) — the attended sweep above; no scheduled lane can take it.
-- [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to) — **parked 43 h**, unassigned, waiting on your batch-1 sample. Nothing technical is holding it.
 
-**The typed-state map is still not an ask.** `tb-orchestrator` continues to lead with its three questions as one sitting; that judgment is unchanged from this afternoon, and so is mine. Two of the three are not answerable yet — the wave-ordering question needs a ranked shortlist nobody has built, and the prototype question has nothing built to react to. The third is the dormant-hook question you already sent back today. All three are design-session work before they are yours.
+**The one thing genuinely stuck is not yours.** [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to) has sat parked and unassigned for **44 hours** with its park reason recorded as "waiting on Christian's verdict" — but that verdict is held pending work THR-1130 itself has to do, so the park is waiting on itself. The re-pass has no ticket and nobody on it. That is an orchestrator/executor correction and I have not touched the ticket; flagging it here so it does not sit another 44 hours.
+
+Six tickets completed since midnight, including two you filed from chat this morning.
 
 ## Health
 
-- **Publishing recovered on its own — no action needed, and the alarm I sent you was real but is now spent.** The commit I flagged (`d2508ed3`) published shortly after that message; the live site now serves it. Total latency was roughly an hour against a normal 7 minutes, with no error reported at any point — slow, not stopped. The newest merge (`965a2edc`, 17:36) is 20 minutes old and within normal lag. I am leaving this off your list entirely: nothing to flip, nothing to diagnose. If it recurs, it comes back as a diagnosis job for an agent first.
-- **Lane silence:** the probe still flags historical overnight gaps (worst 20.6 h, 10–11 Aug). Declined per your 2026-08-08 ruling that overnight quiet is normal; noted for visibility only, nothing ongoing.
-- Automated checks, background jobs, scheduled-task heartbeats, the merge queue and the git reaper are all green. Home tree is clean and current on `main`.
+- **All probes green.** Deploy is current (the live site serves `d0d1dba0`, the newest merge), automated checks, background jobs, scheduled-task heartbeats, the merge queue and the git reaper are all normal. Home tree is clean and current on `main`.
+- **Lane silence:** the probe still reports historical overnight gaps (worst 20.6 h, 10–11 Aug). Declined per your 2026-08-08 ruling that overnight quiet is normal; visibility only, nothing ongoing.
+- **One lane defect, logged not ticketed.** This lane carried a Christian-held ask as its lead item for three consecutive runs, against an explicit *"the briefing should not re-surface the verdict ask before then"* written on the ticket itself. The hold was readable the whole time — it was in the ticket comments, and the run that wrote it was this one. The fix is that a held ask gets checked against its ticket's latest comment before it leads, not just against whether its blockers closed. Recorded for the weekly retro rather than filed as a ticket, per the process-work throttle.
