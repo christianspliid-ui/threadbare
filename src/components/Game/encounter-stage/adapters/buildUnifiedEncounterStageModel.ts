@@ -747,6 +747,11 @@ function buildAftermath(
       resolveAnchorDeclaration(entityId, {
         graph,
         actorId: activeAction.actorId,
+        // THR-1130 — the other end of the edge. Effects that write onto the
+        // agent the encounter was aimed at (`favor_creation` mints `owes_favor`
+        // debtor-side) produce chips whose sentence is about the target, and
+        // until this was passed the only anchor available was `$actor`.
+        targetId: activeAction.targetId,
         castNodeIdByKey: new Map(
           (activeAction.supportBindings ?? []).map(b => [b.key, b.nodeId]),
         ),

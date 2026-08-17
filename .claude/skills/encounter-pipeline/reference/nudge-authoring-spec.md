@@ -740,7 +740,27 @@ the aphorisms, and the abstract nouns doing concrete work."*
    (*"it will have opinions about stairs"*); a second ironic turn on the same beat is
    drift — cut the weaker one.
 
-The editorial critic checks these by name; a draft that fails any of the three revises
+4. **Density — fewer specifics, so the ones left can land (Christian, 2026-08-17,
+   THR-1130).** Added after the batch-1 sample play, on The Grateful Kin. Verbatim:
+   *"the concepts here are again very weak, as if the agent who wrote them has created
+   a more complex story that it wants to relate in too little space. the writing is in
+   situ with specific people mentioning other specific people. this is a problem
+   because there is not enough room to write so many details into the story and keep it
+   gamey and understandable."*
+
+   The failure is not vagueness — every sentence was concrete, which is what moves 1–3
+   ask for. It is **too many concrete things at once**. The opening carried an
+   innkeeper, her brother, his family, three children, a nine-day walk, a letter and a
+   pair of boots, in sixty words, to set up "someone is thanking you in public". A
+   third party who mentions a fourth is backstory competing with the beat.
+
+   Practically: **one named person on stage**, and props only where the player can act
+   on them. Cut a specific whenever the scene still reads without it — a letter that
+   exists only to explain how the thanks came about is a detail the beat does not need.
+   Judge it at game speed: the player has one read to know who is in front of them and
+   what is being asked.
+
+The editorial critic checks these by name; a draft that fails any of the four revises
 before the systems pass runs.
 
 1. **Concrete anchors by default.** Prefer sentences the reader can see. Plain
@@ -981,6 +1001,50 @@ anchors `linked` (the chip carries a click) or `named` (a real object the player
 by another surface). Both are lawful. Only five kinds route at all — `agent`, `faction`,
 `artifact`, `attachment`, and `companion`, of which `companion` deliberately withholds the
 click — so most legitimate anchors are `named`, including every location.
+
+**0c. State first — the chip's words name the mechanic and the endpoints, not the
+fiction (Christian, 2026-08-17, THR-1130).** Rule 0b makes the referent *reachable*. This
+one makes the sentence *legible*, and it is the half a chip can fail while passing every
+gate above.
+
+The motivating defect: The Grateful Kin wrote a real, well-formed `owes_favor` edge and
+reported it as **`BOND · the roof they are owed`**, titled "A Roof, Remembered", detailing
+beds and hearings. The word *favour* and the debtor's name appeared nowhere. Christian,
+reading it: *"the bond… the roof they are owed: again this simply doesn't communicate what
+game state has changed."*
+
+So, in order:
+
+1. **The `stateNoun` names the mechanic** — `a favour owed`, not `the roof they are owed`.
+   It renders raw into the `CATEGORY · NOUN` tag, so it must read as game state at a
+   glance. Note the surface does **not** enrich this field: `{target}` and friends resolve
+   in `detail` and `causeClause` only, and a placeholder here ships as literal braces.
+2. **The `detail` names the endpoints** — who owes whom what. `{target}` renders the
+   target agent's name; `{actor}` the acting agent's.
+3. **The fiction goes last**, decorating a claim the player has already read:
+   *"{target} owes them a favour now — a bed and a hearing the next time they come
+   through."*
+
+**Anchor the end of the edge your sentence is about.** An effect that writes onto the
+agent the encounter was *aimed at* produces a chip about the target, and the anchor
+follows the sentence: `favor_creation` mints `owes_favor` with **debtor = target,
+creditor = actor**, so its chip anchors `$target`. Anchoring `$actor` there is not a
+milder version of the rule — it points the player's click at the wrong person. The
+sentinel forms are `$actor`, `$target`, `$cast:<key>` and `$faction:<defId>`.
+
+**0d. Never report a quantity the player cannot look up (Law 13 visibility parity,
+THR-1136 §5).** An authored chip whose `kind` is `reputation_tally` is a released defect:
+per-Reach tallies render only in the debug designer tab, so the chip names a number with
+no home. `check:encounter` fails on it. The **effect** stays — tallies keep steering
+scoring and gating and keep minting the Whispered/Known/Legendary traits, and a minted
+trait *is* sheet-visible and reports normally. World standing and faction standing both
+pass parity and keep their chips. The fix is almost always to delete the chip and fold its
+sentence into the band `overview`, which is prose and claims nothing.
+
+One caveat learned folding fifteen of them (THR-1130): **fold the words only if they were
+true.** Several tally chips also asserted a debt — "the family owes them the road south" —
+that no effect on that band wrote. Moving those words into the overview relocates a false
+state claim instead of retiring it. Where the sentence was fiction, delete it.
 
 **1. Cause → change, in that order, in one sentence.** The consequence never appears
 divorced from what caused it. Write the beat from the scene that produced it, then what
