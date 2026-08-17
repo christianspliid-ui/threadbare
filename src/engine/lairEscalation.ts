@@ -19,8 +19,9 @@
 
 import type { GameState } from '../types/gameState';
 import type { GraphNode } from '../types/graph';
-import type { SphereName } from '../types/index';
+import type { HexTile, SphereName } from '../types/index';
 import type { SpherePressureEvent } from '../types/sphereAffinity';
+import { isWaterTerrain } from './coastline';
 import { seedMonsterFaction } from './monsterFactionSeed';
 import { emitTrace } from './traceBuffer';
 import { pickCulturalName } from '../data/culture-name-pools';
@@ -115,6 +116,12 @@ function hasControllingNonMonsterFaction(state: GameState, lairId: string): bool
 /**
  * Find the hex location node at the given coordinates.
  * Returns undefined if not found (fail-soft).
+ *
+ * A generated world contains **no** such nodes — the map is `state.tiles`, and
+ * `seedMonsterLairs` reads it directly. So this resolves only in fixtures and in
+ * any world that models hexes as an overlay; production callers must treat an
+ * undefined result as "no zone overlay here", never as "off the map". Use
+ * `findHexTile` for the map itself (THR-995).
  */
 function findHexNode(state: GameState, col: number, row: number): GraphNode | undefined {
   const { graph } = state;
@@ -126,15 +133,37 @@ function findHexNode(state: GameState, col: number, row: number): GraphNode | un
   );
 }
 
+/**
+ * Find the worldgen tile at the given coordinates — the authoritative map.
+ * Returns undefined when the coordinates fall off the grid (fail-soft).
+ */
+function findHexTile(state: GameState, col: number, row: number): HexTile | undefined {
+  return state.tiles?.find(t => t.coord.col === col && t.coord.row === row);
+}
+
 // ─── Helper: check if any lair exists within MIN_SEPARATION of a hex ──────────
 
+/**
+ * True when some lair other than `excludeLairId` sits within `minDist`
+ * (Manhattan, on offset coordinates) of the given hex.
+ *
+ * `excludeLairId` is load-bearing, not a convenience (THR-995). The separation
+ * rule means "not too close to a *different* lair", and the caller asks it about
+ * the six neighbours of a lair it is spawning from. Every neighbour sits at
+ * `|Δcol| + |Δrow| ∈ {1, 2}` from that source, always under the separation of 3 —
+ * so with the source in the list a lair is permanently too close to its own
+ * neighbours, the guard fires on all six, and `spawnAdjacentLair` has no
+ * reachable call site at all. Pass the source lair's id.
+ */
 function lairExistsNearby(
   allLairs: GraphNode[],
   col: number,
   row: number,
   minDist: number,
+  excludeLairId?: string,
 ): boolean {
   return allLairs.some(n => {
+    if (n.id === excludeLairId) return false;
     const lCol = n.properties.hexCol as number;
     const lRow = n.properties.hexRow as number;
     return Math.abs(col - lCol) + Math.abs(row - lRow) < minDist;
@@ -209,14 +238,13 @@ function getHexSphereScore(hexNode: GraphNode, sphere: SphereName): number {
  * at the session boundary rather than per tick, and `resetDecisionCache()` now calls
  * it alongside the other persistent-id counters.
  *
- * **Stated plainly so this is not mistaken for a live repair: the sequence currently
- * cannot advance at all, because `spawnAdjacentLair` is unreachable.** Its guard asks
- * `lairExistsNearby(..., ADJACENT_SPAWN_MIN_SEPARATION)` over a list that *includes
- * the source lair*, and every hex `getHexNeighbors` returns sits at
- * `|Δcol| + |Δrow| ∈ {1, 2}` — always under the separation of 3. So a lair is always
- * too close to its own neighbours and the loop `continue`s on all six every time.
- * The reset is wired now so that determinism is already correct if that guard is ever
- * fixed; whether lairs *should* metastasize is a design question, filed as THR-995.
+ * The sequence was unreachable when that was written: the separation guard asked
+ * `lairExistsNearby` over a list that *included the source lair*, and every hex
+ * `getHexNeighbors` returns sits at `|Δcol| + |Δrow| ∈ {1, 2}` — always under the
+ * separation of 3 — so a lair was permanently too close to its own neighbours and
+ * the loop `continue`d on all six every time. THR-995 fixed that guard (the source
+ * is now excluded by id), so the counter is live and this reset is a real repair
+ * rather than a defensive one.
  */
 let adjacentLairCounter = 0;
 
@@ -369,19 +397,34 @@ export function phaseLairEscalation(state: GameState): void {
         // Roll for spawn chance
         if (rng() >= LAIR_ADJACENT_SPAWN_CHANCE) continue;
 
-        // Check no existing lair is too close
+        // Check no *other* lair is too close. The list is re-read from the graph
+        // each neighbour on purpose: it must include lairs spawned earlier in
+        // this same phase run, so one source cannot pack its own ring.
         if (lairExistsNearby(
           [...allLairNodes, ...graph.getNodesByType('location').filter(n => n.properties.locationSubtype === 'lair')],
           neighbor.col,
           neighbor.row,
           ADJACENT_SPAWN_MIN_SEPARATION,
+          lairNode.id,
         )) continue;
 
-        // Check that the neighbor hex exists and is in an eligible zone
-        const hexNode = findHexNode(state, neighbor.col, neighbor.row);
-        if (!hexNode) continue;
+        // Check that the neighbour is on the map and is land. `state.tiles` is
+        // the authoritative grid — this used to ask the graph for a hex
+        // *location node*, of which a generated world has none, so the lookup
+        // failed on every neighbour and gave step 4 a second, independent
+        // deadness behind the separation guard (THR-995). Water is excluded for
+        // the same reason `seedMonsterLairs` excludes it: lairs sit on land.
+        const tile = findHexTile(state, neighbor.col, neighbor.row);
+        if (!tile) continue;
+        if (isWaterTerrain(tile.terrain)) continue;
 
-        const neighborZone = hexNode.properties.dangerZone as string | undefined;
+        // Zone overlay, where one exists. Province roles are a worldgen input and
+        // never reach the tick loop, so in a generated world this is absent and
+        // the authored "don't push lairs into heartland/capital" rule holds only
+        // through the source-zone gate above. Fixtures that model hexes as nodes
+        // still get the full check.
+        const neighborZone = findHexNode(state, neighbor.col, neighbor.row)
+          ?.properties.dangerZone as string | undefined;
         // Spawn in wilderness/borderland only (don't push lairs into heartland/capital)
         const eligibleZone = neighborZone === 'wilderness' || neighborZone === 'borderland'
           || !neighborZone; // Fail-soft: if no zone info, allow spawn

@@ -20,6 +20,7 @@ import {
   LAIR_ADJACENT_SPAWN_CHANCE,
 } from '../lairEscalation';
 import type { GameState } from '../../types/gameState';
+import type { HexTile } from '../../types/index';
 import type { SpherePressureEvent } from '../../types/sphereAffinity';
 
 // ─── Minimal GameState builder ────────────────────────────────────────────────
@@ -525,12 +526,33 @@ describe('phaseLairEscalation — adjacent spawn', () => {
     expect(LAIR_ADJACENT_SPAWN_CHANCE).toBeLessThan(1);
   });
 
-  it('adjacent spawn only occurs in wilderness or borderland zones based on PRNG', () => {
-    // Test that the adjacent spawn mechanism doesn't crash and uses deterministic PRNG
-    const graph = new WorldGraph();
-    const tick = LAIR_ESCALATION_INTERVAL * 4; // well past upgrade thresholds for testing pure spawn
+  /** The six neighbours of (20,20). 20 is even, so this is the even-column offset set. */
+  const NEIGHBOURS_OF_20_20: Array<[number, number]> = [
+    [19, 20], [21, 20], [20, 19], [20, 21], [19, 21], [21, 21],
+  ];
 
-    // Place a lair with a nearby wilderness hex
+  function landTile(col: number, row: number, terrain = 'grassland'): HexTile {
+    return {
+      coord: { col, row },
+      geoParams: { elevation: 0.4, temperature: 0.5, moisture: 0.5 },
+      terrain,
+      dangerLevel: 0.5,
+    } as HexTile;
+  }
+
+  /**
+   * Build a lair at (20,20) with all six neighbours present on the map.
+   *
+   * `state.tiles` is what the phase actually reads — a generated world has no
+   * hex *location nodes* at all (THR-995), so a fixture that supplied only
+   * those would pass while production stayed dead. The hex nodes are added
+   * alongside to exercise the optional zone overlay; they carry no
+   * `dangerZone`, which the phase treats as eligible (fail-soft).
+   */
+  function makeSpawnFixture(seed: number): { graph: WorldGraph; state: GameState } {
+    const graph = new WorldGraph();
+    const tick = LAIR_ESCALATION_INTERVAL * 4;
+
     addLairNode(graph, 'lair_spawn_src', {
       lairTier: 'minor',
       spawnedAtTick: tick - 5, // recent, won't upgrade — just spawns
@@ -540,15 +562,133 @@ describe('phaseLairEscalation — adjacent spawn', () => {
       dangerZone: 'wilderness',
     });
 
-    const state = makeMinimalState({
+    for (const [col, row] of NEIGHBOURS_OF_20_20) {
+      addHexNode(graph, `hex_${col}_${row}`, col, row);
+    }
+
+    const tiles = [
+      landTile(20, 20),
+      ...NEIGHBOURS_OF_20_20.map(([col, row]) => landTile(col, row)),
+    ];
+
+    return {
       graph,
-      tick,
-      seed: 99,
-      pendingSpherePressures: [],
+      state: makeMinimalState({ graph, tick, seed, pendingSpherePressures: [], tiles }),
+    };
+  }
+
+  function adjacentLairs(graph: WorldGraph): Array<{ col: number; row: number }> {
+    return graph
+      .getNodesByType('location')
+      .filter(n => n.properties.locationSubtype === 'lair' && n.id.startsWith('lair_adj_'))
+      .map(n => ({ col: n.properties.hexCol as number, row: n.properties.hexRow as number }));
+  }
+
+  /**
+   * The regression test for THR-995. This is the assertion the old
+   * `not.toThrow()` test could not make: before the source lair was excluded
+   * from the separation check, `spawnAdjacentLair` had no reachable call site,
+   * so this expected exactly zero and passed against a dead feature.
+   *
+   * Seed 2026 at tick 100 draws 0.097 / 0.195 / 0.308 / 0.011 / 0.253 / 0.811,
+   * so neighbours 0 and 3 clear LAIR_ADJACENT_SPAWN_CHANCE.
+   */
+  it('spawns an adjacent lair on a neighbour hex the PRNG selects', () => {
+    const { graph, state } = makeSpawnFixture(2026);
+
+    phaseLairEscalation(state);
+
+    expect(adjacentLairs(graph)).toEqual([{ col: 19, row: 20 }]);
+  });
+
+  /**
+   * Falsifies "the fix simply deleted the guard". Neighbour 3 at (20,21) also
+   * clears the probability roll, but by the time it is considered the lair just
+   * spawned at (19,20) sits 2 hexes away — inside ADJACENT_SPAWN_MIN_SEPARATION
+   * of 3 — so one source cannot pack its own ring in a single escalation.
+   */
+  it('separation still blocks a second spawn in the same ring', () => {
+    const { graph, state } = makeSpawnFixture(2026);
+
+    phaseLairEscalation(state);
+
+    expect(adjacentLairs(graph)).toHaveLength(1);
+  });
+
+  /**
+   * The other half of the falsification: separation must still bite against a
+   * *different* lair. The blocker sits at (19,21), one hex from both rolled
+   * neighbours, and is heartland so it does not run step 4 itself.
+   */
+  it('separation still blocks spawning near another lair', () => {
+    const { graph, state } = makeSpawnFixture(2026);
+
+    addLairNode(graph, 'lair_blocker', {
+      lairTier: 'minor',
+      spawnedAtTick: (state.tick as number) - 5,
+      dominantSphere: 'entropy',
+      hexCol: 19,
+      hexRow: 21,
+      dangerZone: 'heartland',
     });
 
-    // Should not throw
-    expect(() => phaseLairEscalation(state)).not.toThrow();
+    phaseLairEscalation(state);
+
+    expect(adjacentLairs(graph)).toEqual([]);
+  });
+
+  it('does not spawn when no neighbour clears the probability roll', () => {
+    // Seed 42 at tick 100 draws 0.865 / 0.918 / 0.816 / 0.515 / 0.714 / 0.687 —
+    // all above LAIR_ADJACENT_SPAWN_CHANCE.
+    const { graph, state } = makeSpawnFixture(42);
+
+    phaseLairEscalation(state);
+
+    expect(adjacentLairs(graph)).toEqual([]);
+  });
+
+  /**
+   * The map is `state.tiles`, not hex location nodes. A world with no tiles has
+   * no neighbours to spawn onto, however the roll lands — this is the shape a
+   * generated world presented to the old `findHexNode` lookup, which is why the
+   * feature stayed dead in production even with the separation guard fixed.
+   */
+  it('does not spawn onto a hex that is not on the map', () => {
+    const { graph, state } = makeSpawnFixture(2026);
+    (state as { tiles: HexTile[] }).tiles = [];
+
+    phaseLairEscalation(state);
+
+    expect(adjacentLairs(graph)).toEqual([]);
+  });
+
+  it('does not spawn onto water', () => {
+    const { graph, state } = makeSpawnFixture(2026);
+    (state as { tiles: HexTile[] }).tiles = state.tiles.map(t =>
+      t.coord.col === 19 && t.coord.row === 20
+        ? ({ ...t, terrain: 'lake' } as HexTile)
+        : t,
+    );
+
+    phaseLairEscalation(state);
+
+    // (19,20) is water, so the first rolled neighbour is skipped. (20,21) also
+    // clears the roll and is now unblocked, since nothing spawned at (19,20).
+    expect(adjacentLairs(graph)).toEqual([{ col: 20, row: 21 }]);
+  });
+
+  it('does not spawn from a heartland lair even when the roll clears', () => {
+    const { graph, state } = makeSpawnFixture(2026);
+    graph.updateNode('lair_spawn_src', {
+      properties: {
+        ...graph.getNode('lair_spawn_src')!.properties,
+        dangerZone: 'heartland',
+      },
+    });
+
+    phaseLairEscalation(state);
+
+    expect(adjacentLairs(graph)).toEqual([]);
   });
 
 });
