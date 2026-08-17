@@ -413,8 +413,8 @@ export const VERDICT_THAT_BURNS_TEMPLATE: UnifiedActionTemplate = withEncounterC
   narrativeTemplates: {
     initiation:
       'A threaded magistrate must judge the war-lord who held the region together, for a massacre the evidence ' +
-      'proves beyond doubt. But a true verdict pulls the keystone and the region burns. The god decides ' +
-      'whether the hammer falls or the truth is witnessed and the sentence withheld.',
+      'proves beyond doubt. But a true verdict pulls the keystone and the region burns. A god can lean ' +
+      'toward the hammer falling, or toward the truth witnessed and the sentence withheld.',
     success:
       'The magistrate does what the god leans them toward — speaks the burning verdict, or records the truth ' +
       'and withholds the hammer. A whole region either goes up in the fire that justice lit, or keeps its ' +
@@ -469,8 +469,8 @@ export const VERDICT_THAT_BURNS_TEMPLATE: UnifiedActionTemplate = withEncounterC
   description:
     'A regional-scale justice-versus-survival encounter: a threaded magistrate must judge the war-lord who ' +
     'holds the region together for a massacre the evidence proves, knowing a true verdict burns the region ' +
-    'down, and the god decides whether the hammer falls or the truth is witnessed and withheld. Reach: eye ' +
-    '(Witness ↔ Judge).',
+    'down, and a god can lean the verdict toward the hammer or toward the truth witnessed and withheld. ' +
+    'Reach: eye (Witness ↔ Judge).',
 });
 
 export default VERDICT_THAT_BURNS_TEMPLATE;

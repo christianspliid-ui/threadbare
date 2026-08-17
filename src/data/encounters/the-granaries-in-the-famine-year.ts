@@ -406,8 +406,8 @@ export const GRANARIES_IN_THE_FAMINE_YEAR_TEMPLATE: UnifiedActionTemplate = with
   narrativeTemplates: {
     initiation:
       'A threaded merchant-prince holds the region\'s entire grain supply in a famine year. It is the only ' +
-      'thing between a whole region and starvation. The god decides whether to press them into opening the ' +
-      'granaries or to stay its hand and let the market corner the region.',
+      'thing between a whole region and starvation. A god can press them toward opening the granaries, or ' +
+      'stay its hand and let the market corner the region.',
     success:
       'The merchant does what the god leans them toward — opens the granaries at a loss, or corners the grain ' +
       'at the starvation price. A whole region is either fed and left free, or fed and sold, a generation ' +
@@ -460,8 +460,8 @@ export const GRANARIES_IN_THE_FAMINE_YEAR_TEMPLATE: UnifiedActionTemplate = with
 
   description:
     'A regional-scale patronage-versus-extraction encounter: a threaded merchant-prince holds a whole ' +
-    'region\'s grain in a famine year and can feed it or bleed it, and the god decides whether to press the ' +
-    'granaries open or stay its hand and let the market corner the region. Reach: gold (Patron ↔ Extractor).',
+    'region\'s grain in a famine year and can feed it or bleed it, and a god can press the granaries open ' +
+    'or stay its hand and let the market corner the region. Reach: gold (Patron ↔ Extractor).',
 });
 
 export default GRANARIES_IN_THE_FAMINE_YEAR_TEMPLATE;

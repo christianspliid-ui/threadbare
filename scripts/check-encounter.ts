@@ -16,7 +16,9 @@
  *                            Delegates hand → `checkNudgeHand` and setting →
  *                            `validateSettingEnvelope` rather than restating them.
  *   2. Register detectors    `auditTemplate().failures` — vagueness, not-X-but-Y,
- *                            thin premise, second person. Abstraction and
+ *                            thin premise, second person, and divine
+ *                            outcome-authorship (THR-1166: the god sways the
+ *                            odds; fate settles the result). Abstraction and
  *                            intensifiers report into `warnings` and are
  *                            deliberately not read here (THR-1092): the
  *                            abstract-noun measure is a suffix proxy that counts

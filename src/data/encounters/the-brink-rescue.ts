@@ -577,7 +577,7 @@ export const BRINK_RESCUE_TEMPLATE: UnifiedActionTemplate = withEncounterContrac
 
   description:
     'A quintessence-thread pulled taut in the settlement\'s morning weave: someone is dying inside a collapsing or burning structure. ' +
-    'The god chooses between threading the survivor out directly or investing courage in a bystander who is already holding a rope.',
+    'A god can thread the survivor out directly, or invest courage in a bystander who is already holding a rope.',
 });
 
 export const BRINK_RESCUE_TEMPLATE_CONTRACT: EncounterContract = buildLiteEncounterContract(BRINK_RESCUE_TEMPLATE);

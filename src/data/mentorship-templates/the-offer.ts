@@ -2,7 +2,7 @@
  * Mentorship: The Offer — branching encounter (THR-75)
  *
  * The mentor offers to take the apprentice on. A mortal stands at a threshold;
- * the god decides what kind of presence to be in that moment.
+ * the god leans on that threshold, as one kind of presence or another.
  *
  * Three player choices (god actions, path-over-adjective):
  *   - Steady their nerve (supportive — raises acceptance odds, tilts Sworn)

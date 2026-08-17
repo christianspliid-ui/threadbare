@@ -524,7 +524,7 @@ export const SLICE_UNSAFE_BRIDGE: UnifiedActionTemplate = {
   description:
     'A failing toll bridge stands on the only crossing within a day’s walk, and the family ' +
     'that keeps it swears it will hold. The traveler weighs a cheap crossing against a long ' +
-    'ford, and the god decides what that confidence is worth.',
+    'ford, and a god can lean on that confidence either way.',
 };
 
 // ═════════════════════════════════════════════════════════════════════
@@ -1026,7 +1026,7 @@ export const SLICE_SNOW_ON_THE_PASS: UnifiedActionTemplate = {
   description:
     'A mountain pass with the weather closing in behind it, and a shelter somewhere ahead ' +
     'worth reaching first. Whatever the race costs is still owed when night falls, and the ' +
-    'god decides whether to spend the traveler’s strength on speed or on shelter.',
+    'god can press the traveler toward speed, or toward shelter.',
 };
 
 // ═════════════════════════════════════════════════════════════════════
@@ -1506,8 +1506,8 @@ export const SLICE_RIDERS_BEHIND_CARAVAN: UnifiedActionTemplate = {
   },
   description:
     'Riders have shadowed a crowded column since the river, hunting one traveler among many. ' +
-    'The god decides whether the hunted is found and moved out unseen, or whether the road ' +
-    'settles it at the gates.',
+    'A god can tip the odds of moving the hunted out unseen, or leave the road to settle it ' +
+    'at the gates.',
 };
 
 // ═════════════════════════════════════════════════════════════════════
@@ -2389,7 +2389,7 @@ export const SLICE_FULL_MOON_COLLECTION: UnifiedActionTemplate = {
   },
   description:
     'A promise made at a crossroads falls due tonight, and the one who holds it has come to ' +
-    'collect. The god decides whether the debt is paid as agreed or contested in the dark.',
+    'collect. A god can press the debt toward its agreed terms, or let it be contested in the dark.',
 };
 
 // ═════════════════════════════════════════════════════════════════════
@@ -3012,8 +3012,8 @@ export const SLICE_SWINDLED_FAMILY: UnifiedActionTemplate = {
   },
   description:
     'A cheerful family is walking into a salt fen carrying a worthless deed for a map. ' +
-    'Nothing obliges the traveler to stop them, and the god decides whether a day is spent ' +
-    'on strangers.',
+    'Nothing obliges the traveler to stop them, and only a god’s weight makes a day spent ' +
+    'on strangers likely.',
 };
 
 // ═════════════════════════════════════════════════════════════════════
@@ -3492,7 +3492,7 @@ export const SLICE_SWINDLER_FOUND: UnifiedActionTemplate = {
   },
   description:
     'The paper-seller has surfaced again, working the same lie a few markets from the fen ' +
-    'road. The god decides what justice looks like here — the warden’s hands, or the alley’s.',
+    'road. A god can steer justice toward the warden’s hands, or toward the alley’s.',
 };
 
 // ═════════════════════════════════════════════════════════════════════
@@ -3816,8 +3816,7 @@ export const SLICE_GRATEFUL_KIN: UnifiedActionTemplate = {
   },
   description:
     'Word of the fen-road kindness has run ahead of the traveler, and the family means to ' +
-    'repay it in front of company. The god decides whether the thanks is taken gracefully ' +
-    'or fumbled.',
+    'repay it in front of company. A god can steady the thanks, or let it fumble.',
 };
 
 // ─── The slice, assembled ────────────────────────────────────────────

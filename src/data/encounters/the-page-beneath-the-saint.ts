@@ -385,8 +385,8 @@ export const PAGE_BENEATH_THE_SAINT_TEMPLATE: UnifiedActionTemplate = withEncoun
   narrativeTemplates: {
     initiation:
       'A threaded archivist has found the original founding chronicle of a regional faith. It is proof that ' +
-      'the venerated saint was an invention, and that the whole order rests on a forged page. The god decides ' +
-      'whether the comforting truth stays buried or the disruptive one is let into the light.',
+      'the venerated saint was an invention, and that the whole order rests on a forged page. A god can press ' +
+      'the comforting truth deeper into the dark, or the disruptive one into the light.',
     success:
       'The archivist does what the god leans them toward — re-seals the page deeper, or carries it into the ' +
       'light. A faith that orders a whole region either stands untouched on a known lie, or comes apart ' +
@@ -440,7 +440,7 @@ export const PAGE_BENEATH_THE_SAINT_TEMPLATE: UnifiedActionTemplate = withEncoun
 
   description:
     'A regional-scale truth-versus-comfort encounter: a threaded archivist has found proof that a regional ' +
-    'faith\'s founding saint was forged, and the god decides whether to press the truth back into the dark ' +
+    'faith\'s founding saint was forged, and a god can press the truth back into the dark ' +
     'or let the scholar carry it into the light. Reach: veil (Seer ↔ Manipulator).',
 });
 

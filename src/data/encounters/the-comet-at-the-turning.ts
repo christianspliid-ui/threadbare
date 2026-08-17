@@ -384,7 +384,7 @@ export const COMET_AT_THE_TURNING_TEMPLATE: UnifiedActionTemplate = withEncounte
     initiation:
       'A comet hangs in the western sky, and a threaded prophet has climbed above the rooftops to read it ' +
       'while the nations wait. Whatever they proclaim by morning will be carried to the capitals — the end ' +
-      'of the age, or the proof that it endures. The god decides what the prophet sees in the sky.',
+      'of the age, or the proof that it endures. A god can sway what the prophet sees in the sky.',
     success:
       'The prophet reads the comet — as an ending or as a constancy — and the reading rides out to reshape ' +
       'the fate of nations, for good and for ill, on the strength of one upturned face and one god\'s choice.',
@@ -435,7 +435,7 @@ export const COMET_AT_THE_TURNING_TEMPLATE: UnifiedActionTemplate = withEncounte
 
   description:
     'A cosmic-scale turning-of-the-age encounter: a threaded prophet reads a comet the whole world is ' +
-    'watching, and the god decides whether the omen means an ending or an enduring. Reach: star ' +
+    'watching, and a god can sway the omen toward an ending or an enduring. Reach: star ' +
     '(Wanderer ↔ Anchor).',
 });
 

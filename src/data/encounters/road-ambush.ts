@@ -544,7 +544,7 @@ export const ROAD_AMBUSH_TEMPLATE: UnifiedActionTemplate = withEncounterContract
         id: 'shield_the_road',
         label: 'Shield the Road',
         intent:
-          'The god\'s attention sharpens along the line of defense -- the two guards behind the second wagon, the driver clinging to the reins, the merchant with her axe. These are the threads worth strengthening. Iron-reach force flows outward not as wrath but as reinforcement: a guard\'s blade finds the angle it was searching for, the driver\'s hand steadies despite the pain, a stone shifts under an attacker\'s boot at the worst possible moment. The god chooses to be the reason the road holds.',
+          'The god\'s attention sharpens along the line of defense -- the two guards behind the second wagon, the driver clinging to the reins, the merchant with her axe. These are the threads worth strengthening. Iron-reach force flows outward not as wrath but as reinforcement: a guard\'s blade finds the angle it was searching for, the driver\'s hand steadies despite the pain, a stone shifts under an attacker\'s boot at the worst possible moment. The god leans on the line, and the road has a chance to hold.',
         targetLabel: '{cast:soraya}',
         essenceCost: 2,
         likelyBurden:
@@ -616,7 +616,7 @@ export const ROAD_AMBUSH_TEMPLATE: UnifiedActionTemplate = withEncounterContract
 
   description:
     'A trade road ambush already in progress. Six former soldiers, a wounded driver, and a merchant holding her nerve. ' +
-    'The god chooses: shield the caravan, or harvest the chaos for strategic gain.',
+    'A god can lean toward shielding the caravan, or toward harvesting the chaos for strategic gain.',
 });
 
 export const ROAD_AMBUSH_TEMPLATE_CONTRACT: EncounterContract = buildLiteEncounterContract(ROAD_AMBUSH_TEMPLATE);

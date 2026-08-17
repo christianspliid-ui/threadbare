@@ -5,8 +5,8 @@
  * A duel is already underway in a courtyard — blades drawn, audience
  * assembled, honor and reputation balanced on the outcome. One duelist
  * fights with skill and precision; the other fights with everything else.
- * The god decides whether to tip the contest toward Iron mastery or
- * manipulate the terms so the right outcome is guaranteed by other means.
+ * The god may tip the contest toward Iron mastery, or work the terms so
+ * the odds favour the outcome it wants by other means.
  *
  * Seeds: Duelist's Luck Token on honor-intact survival.
  */
@@ -594,7 +594,7 @@ export const COURTYARD_DUEL_TEMPLATE: UnifiedActionTemplate = withEncounterContr
 
   description:
     'A formal duel in progress: one skilled fighter, one heavier challenger, and an accusation that will stand or fall with the bout. ' +
-    'The god chooses between tipping the fight toward technical mastery or manipulating the Code\'s formal framing to decide the outcome by other means.',
+    'A god can tip the fight toward technical mastery, or work the Code\'s formal framing so the odds move by other means.',
 });
 
 export const COURTYARD_DUEL_TEMPLATE_CONTRACT: EncounterContract = buildLiteEncounterContract(COURTYARD_DUEL_TEMPLATE);
