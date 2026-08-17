@@ -1656,7 +1656,11 @@ export interface EncounterAftermathEffectTrace extends TraceBase {
     // THR-1144.
     | 'membership_change'
     // THR-1146.
-    | 'reward_draw';
+    | 'reward_draw'
+    // THR-1150 — added so this arm emits its four traces unlaundered. It is also
+    // the arm that most needed checking: its "no member" no-op was silent, and the
+    // trace that now reports it would otherwise have gone in behind a cast.
+    | 'faction_reputation_gain';
   /** Kind-specific payload for inspection */
   effectDetail: Readonly<Record<string, unknown>>;
   success: boolean;

@@ -20,6 +20,7 @@ import {
 } from '../data/faction-definitions';
 import { FACTION_ENCOUNTER_META } from '../data/faction-encounter-content';
 import { getEncounterRewardMultiplier, emitFactionBonusTrace } from './factionRankBonus';
+import { resolveFactionNodeId } from './factionMembership';
 import { emitTrace } from './traceBuffer';
 import type { GameState } from '../types/gameState';
 import { getTraitsForNode } from './traits';
@@ -35,7 +36,12 @@ import {
  * Apply reputation gain to an agent's faction membership.
  * Recalculates rank from the new reputation value.
  *
- * @returns Object with new reputation, whether rank changed, and new rank ID
+ * `factionId` accepts either a faction **node** id or the **definition** id
+ * authors write (`'mercenary_company'`) — see the resolution note below.
+ *
+ * @returns Object with new reputation, whether rank changed, and new rank ID.
+ *   `newRank: 'none'` is the no-op sentinel; `reason` says which no-op it was, so
+ *   a caller can trace the difference instead of dropping it (THR-1150).
  */
 export function applyFactionReputationGain(
   graph: WorldGraph,
@@ -44,13 +50,28 @@ export function applyFactionReputationGain(
   amount: number,
   tick: number,
   cause: FactionReputationTrace['cause'],
-): { newReputation: number; rankChanged: boolean; newRank: string } {
+): {
+  newReputation: number;
+  rankChanged: boolean;
+  newRank: string;
+  reason?: 'faction_not_found' | 'not_a_member';
+} {
+  // THR-1150 — `member_of.target` is a faction **node** id (`faction_def_<defId><chapter>`),
+  // but every authored `faction_reputation_gain` passes the **definition** id, which
+  // matches no edge target. Resolve first: exact-node-id-first order means every
+  // existing node-id caller (`processFactionEncounterReputation`, `factionOutcome`,
+  // `chosenFactionPowers`) resolves to itself and is unchanged.
+  const factionNodeId = resolveFactionNodeId(graph, factionId, agentId);
+  if (!factionNodeId) {
+    return { newReputation: 0, rankChanged: false, newRank: 'none', reason: 'faction_not_found' };
+  }
+
   // Find the member_of edge
   const memberEdges = graph.getOutgoingEdges(agentId, 'member_of')
-    .filter(e => e.target === factionId);
+    .filter(e => e.target === factionNodeId);
 
   if (memberEdges.length === 0) {
-    return { newReputation: 0, rankChanged: false, newRank: 'none' };
+    return { newReputation: 0, rankChanged: false, newRank: 'none', reason: 'not_a_member' };
   }
 
   const edge = memberEdges[0];
@@ -90,12 +111,12 @@ export function applyFactionReputationGain(
 
   // Emit trace
   const agentName = graph.getNode(agentId)?.name ?? '?';
-  const factionName = graph.getNode(factionId)?.name ?? '?';
+  const factionName = graph.getNode(factionNodeId)?.name ?? '?';
   emitTrace({
     tick,
     category: 'faction_reputation',
     agentId,
-    factionId,
+    factionId: factionNodeId,
     oldReputation,
     newReputation,
     cause,

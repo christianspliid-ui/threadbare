@@ -1398,6 +1398,46 @@ export const CONTRACTS: readonly Contract[] = [
     // same `factionId` field and the same mismatch, and is therefore dead across the
     // whole authored corpus. Filed as THR-1150 rather than changed inside an
     // unrelated PR — a recorded boundary, not an oversight.
+    //
+    // THR-1150 closed that boundary on 2026-08-17: the resolution moved out of these
+    // three ops' bodies into a bind pass that covers every faction-carrying effect
+    // kind. See `authored-faction-ids-resolve-to-seeded-faction-nodes` below. These
+    // ops still resolve internally — the two are idempotent, exact-node-id-first.
+  },
+  {
+    id: 'authored-faction-ids-resolve-to-seeded-faction-nodes',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: FACTIONS,
+    intent:
+      'When an ending says it changed your standing with a guild, your standing with that guild actually changes.',
+    ulTerms: ['Encounter', 'Faction'],
+    mechanism: {
+      kind: 'function',
+      symbols: [
+        // The bind pass that rewrites an authored definition id to a node id, and
+        // the table of which fields on which kinds carry one.
+        'bindFactionDefinitionIds',
+        'resolveFactionNodeId',
+        // The consumer whose match was the dead one.
+        'applyFactionReputationGain',
+      ],
+      module: 'src/engine/encounterAftermath.ts',
+    },
+    writeSites: ['src/engine/encounterAftermath.ts'],
+    readSites: ['src/engine/factionReputation.ts'],
+    verifiedLive: {
+      date: '2026-08-17',
+      evidence:
+        "THR-1150. `applyFactionReputationGain` matched memberships with `e.target === factionId`, a faction NODE id, while every authored `faction_reputation_gain` passes a DEFINITION id ('mercenary_company', 'temple_of_spheres', 'underking_court', 'rangers_brotherhood', 'lorekeepers_covenant'). `factionSeeding` keys the node `faction_def_<definitionId><chapterSuffix>`, so the authored id matched no node and no edge target: every faction-standing consequence in the shipped game was a no-op. Both halves are now proven against a real `initializeGameState(seed 42, medium)` world rather than a fixture — `src/engine/__tests__/factionReputationSeededWorld.test.ts` asserts the seeded node id contains the definition id AND that the definition id resolves to no node, then fires the effect with the authored value and reads the reputation move off the seeded edge. Falsified at 1-of-3 red with the fix reverted; the two arms that stay green are the deliberate controls (the premise assertion, and the already-tracing faction_not_found path). Resolution is widening-only by `resolveFactionNodeId`'s exact-node-id-first order, so the three pre-existing node-id callers (`processFactionEncounterReputation`, `factionOutcome`, `chosenFactionPowers`) resolve to themselves — pinned by the 'explicit faction node id still works' arm in `aftermathFactionDefinitionId.test.ts`, 4-of-6 red without the fix. The second half is the trace: the `newRank === 'none'` sentinel used to `break` SILENTLY, which is why a corpus-wide dead effect survived to be found by an unrelated ticket. It now emits `encounter_aftermath_effect` with `failReason: 'not_a_member' | 'faction_not_found'`, and `faction_reputation_gain` was added to `EncounterAftermathEffectTrace.effectKind` so all four traces in the arm emit unlaundered — the cast ratchet (THR-1065) fell 110 → 107. Corpus pinned by `src/testing/__tests__/factionEffectIds.lint.test.ts`, which deep-walks UNIFIED_ACTION_TEMPLATES for all eight faction-carrying effect kinds and fails on any id naming no FACTION_DEFINITIONS entry — with a population guard, since a `<=` over an empty walk is the vacuous pass this lint exists to avoid.",
+    },
+    // The bind pass covers all seven kinds carrying a faction id, not only the one
+    // that was measurably dead: `faction_reputation_gain`, `faction_dissolve`,
+    // `signature_warhost`, `faction_absorb`, `faction_declare_war`,
+    // `faction_force_peace`, `faction_splinter`. The other six have no authored
+    // definition ids today, so this is prevention rather than repair for them — but
+    // the trap is identical and the cost is one table row each. `membership_change`
+    // is deliberately absent from the table: its three ops resolve internally
+    // (THR-1144), so binding it here would do the same work twice.
   },
   {
     id: 'reward-draw-shares-one-seeded-draw-with-the-step-route',

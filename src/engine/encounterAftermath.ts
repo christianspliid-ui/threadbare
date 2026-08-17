@@ -28,7 +28,7 @@ import {
 } from './relocationIntent';
 import { observeResidence } from './agentResidence';
 import type { MembershipChangeResult } from './factionMembership';
-import { joinFaction, leaveFaction, adjustMemberRank } from './factionMembership';
+import { joinFaction, leaveFaction, adjustMemberRank, resolveFactionNodeId } from './factionMembership';
 import { RELOCATION_INTENT_TTL_TICKS } from '../data/movement-content';
 import { assignAmbitionToActor } from './ambitionAssignment';
 import type { TraceEntry } from '../types/trace';
@@ -791,6 +791,67 @@ export function bindAftermathSceneTargets(
   return (next ?? source) as unknown as EncounterAftermathReactionEffect;
 }
 
+// ─── Faction definition-id binding (THR-1150) ───────────────────────────────
+
+/**
+ * Effect kinds whose faction fields are authored as *definition* ids, mapped to
+ * every field on that kind carrying one.
+ *
+ * `membership_change` is deliberately absent: `joinFaction` / `leaveFaction` /
+ * `adjustMemberRank` already resolve internally (THR-1144), so binding it here
+ * would only do the same work twice.
+ */
+const FACTION_ID_FIELDS_BY_KIND: Readonly<Record<string, readonly string[]>> = {
+  faction_reputation_gain: ['factionId'],
+  faction_dissolve: ['factionId'],
+  signature_warhost: ['factionId'],
+  faction_absorb: ['absorbingFactionId', 'absorbedFactionId'],
+  faction_declare_war: ['factionA', 'factionB'],
+  faction_force_peace: ['factionA', 'factionB'],
+  faction_splinter: ['sourceFactionId'],
+};
+
+/**
+ * THR-1150 — rewrite an authored faction **definition** id to the faction **node**
+ * id the graph actually keys, before dispatch.
+ *
+ * Authors write `factionId: 'mercenary_company'`, because that is the id every
+ * faction content file already carries and the only one that reads naturally.
+ * `factionSeeding` keys the seeded node `faction_def_<definitionId><chapterSuffix>`,
+ * so a definition id matches no node and no `member_of` edge target. Every shipped
+ * `faction_reputation_gain` therefore no-opped — the arm's existence check failed
+ * on `getNode('mercenary_company')`, and had it passed, `applyFactionReputationGain`
+ * would have returned its "not a member" sentinel for the same reason.
+ *
+ * Composes *after* the two sentinel passes, so a `$target`-bound id (already a node
+ * id) arrives here and resolves to itself.
+ *
+ * Widening only, by {@link resolveFactionNodeId}'s exact-node-id-first order: a
+ * value already naming a faction node returns unchanged, so no shipped content that
+ * worked stops working. A value naming nothing is left in place, so each arm's own
+ * not-found trace still reports the id the content actually carries (NFP #4).
+ */
+export function bindFactionDefinitionIds(
+  effect: EncounterAftermathReactionEffect,
+  graph: WorldGraph,
+  actorAgentId?: string,
+): EncounterAftermathReactionEffect {
+  const fields = FACTION_ID_FIELDS_BY_KIND[effect.kind];
+  if (!fields) return effect;
+
+  const source = effect as unknown as Record<string, unknown>;
+  let next: Record<string, unknown> | undefined;
+  for (const field of fields) {
+    const value = source[field];
+    if (typeof value !== 'string' || value.length === 0) continue;
+    const resolved = resolveFactionNodeId(graph, value, actorAgentId);
+    if (!resolved || resolved === value) continue;
+    next = next ?? { ...source };
+    next[field] = resolved;
+  }
+  return (next ?? source) as unknown as EncounterAftermathReactionEffect;
+}
+
 /** Clamp a sentiment value to the relates_to sentiment range [-1, 1]. */
 function clampSentiment(value: number): number {
   return Math.max(-1, Math.min(1, value));
@@ -929,11 +990,18 @@ export function applyEncounterAftermathReaction(
     // THR-695: then bind the general scene sentinels ($target / $cast: / role:) on
     // targetAgentId/targetFactionId/targetSublocationId/withAgentId. Signature pass
     // runs first so its $primary + three signature kinds keep their behavior.
-    const effect = bindAftermathSceneTargets(
-      bindReachSignatureTargets(reaction.effects[i], action, state.graph),
-      action,
+    // THR-1150: last, rewrite authored faction *definition* ids to faction node ids.
+    // Runs after both sentinel passes so a `$target`-bound faction arrives as a node
+    // id and resolves to itself. No-op for every non-faction effect kind.
+    const effect = bindFactionDefinitionIds(
+      bindAftermathSceneTargets(
+        bindReachSignatureTargets(reaction.effects[i], action, state.graph),
+        action,
+        state.graph,
+        { tick, actionId, actorAgentId, encounterId, reactionId: reaction.id, effectIndex: i },
+      ),
       state.graph,
-      { tick, actionId, actorAgentId, encounterId, reactionId: reaction.id, effectIndex: i },
+      actorAgentId,
     );
     const target = resolveAftermathTarget(effect, action);
 
@@ -1150,7 +1218,7 @@ export function applyEncounterAftermathReaction(
             success: false, failReason: 'no_actor_id',
             effectiveTargetId: '', effectiveTargetKind: 'actor_fallback',
             summary: `faction_reputation_gain[${i}] skipped: no actorId`,
-          } as unknown as Parameters<typeof emitTrace>[0]);
+          });
           break;
         }
         if (!state.graph.getNode(effect.factionId)) {
@@ -1167,7 +1235,7 @@ export function applyEncounterAftermathReaction(
             success: false, failReason: 'faction_not_found',
             effectiveTargetId: effect.factionId, effectiveTargetKind: 'faction',
             summary: `faction_reputation_gain[${i}] skipped: faction '${effect.factionId}' not found`,
-          } as unknown as Parameters<typeof emitTrace>[0]);
+          });
           break;
         }
         const rawAmount = isNaN(effect.amount) ? 0 : effect.amount;
@@ -1175,8 +1243,22 @@ export function applyEncounterAftermathReaction(
         const result = applyFactionReputationGain(
           state.graph, actorAgentId, effect.factionId, clampedAmount, tick, 'encounter_aftermath',
         );
-        // "not a member" sentinel — skip silently per plan doc fail-soft table
-        if (result.newRank === 'none') break;
+        if (result.newRank === 'none') {
+          // THR-1150 — this used to `break` silently "per plan doc fail-soft table",
+          // and that silence is exactly why the definition-id defect survived: every
+          // shipped faction-standing consequence no-opped and nothing said so. Fail
+          // soft, but never quiet (NFP #2).
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'faction_reputation_gain',
+            effectDetail: { factionId: effect.factionId, amount: clampedAmount },
+            success: false, failReason: result.reason ?? 'not_a_member',
+            effectiveTargetId: effect.factionId, effectiveTargetKind: 'faction',
+            summary: `faction_reputation_gain[${i}] skipped: ${actorAgentId} ${result.reason === 'faction_not_found' ? `cannot resolve faction '${effect.factionId}'` : `is not a member of '${effect.factionId}'`}`,
+          });
+          break;
+        }
         mutationSummary.touchedWorld = true;
         emitTrace({
           tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
@@ -1189,7 +1271,7 @@ export function applyEncounterAftermathReaction(
           success: true,
           effectiveTargetId: effect.factionId, effectiveTargetKind: 'faction',
           summary: `faction_reputation_gain[${i}]: ${actorAgentId} in ${effect.factionId} ${clampedAmount >= 0 ? '+' : ''}${clampedAmount.toFixed(3)}${result.rankChanged ? ` → rank ${result.newRank}` : ''}`,
-        } as unknown as Parameters<typeof emitTrace>[0]);
+        });
         break;
       }
 

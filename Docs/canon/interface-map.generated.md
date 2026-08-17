@@ -15,12 +15,12 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 47 |
+| 🟢 LIVE | 48 |
 | 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 7 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 13 |
-| **Total** | **68** |
+| **Total** | **69** |
 
 ## Contracts by producing subsystem
 
@@ -97,6 +97,7 @@ remediation ticket or the build fails.
 |---|---|---|---|---|---|
 | `ascendant-affinity-cast-capability` | The ascendant's persisted reach affinities become its capability for a cast — the god's innate aptitude is not on the raw scale `computeRawScore` walks, so a literal read left every cast at capability 0.02 and one reachable outcome band. | node-prop: `domainAffinities`, `computeCapabilityWithRawBonus` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `attachment-encounter-rewards` | Encounters grant rewards, which become possessions — by random draw from the pool, or as an authored consequence naming one template. | function: `assembleRewardPool`, `instantiateReward`, `instantiateAgreementReward` | Attachments, Items & Possessions | 🟢 LIVE | — |
+| `authored-faction-ids-resolve-to-seeded-faction-nodes` | When an ending says it changed your standing with a guild, your standing with that guild actually changes. | function: `bindFactionDefinitionIds`, `resolveFactionNodeId`, `applyFactionReputationGain` | Factions & Succession | 🟢 LIVE | — |
 | `authored-nudge-hand-reaches-resolution` | A god may bend the odds of an attended encounter step with authored, essence-priced cards — the mechanical form of "the intervention shifted the odds, not the outcome". Without this read, an attended encounter offers the player nothing to do but watch. | function: `collectNudgeModifiers`, `selectActiveRider`, `applyRider`, `buildNudgeHand` | Encounters & Dilemmas | 🔴 LEAKED | THR-774 |
 | `authored-quintessence-shift` | An encounter can finally author an existential price — what the trial cost a mortal in spirit rather than in coin or reputation. | function: `quintessence_shift`, `pendingQuintessenceEvents` | Spheres & Quintessence | 🔵 UNVERIFIED-OK | — |
 | `authored-step-difficulty-player-resolution` | Authored step difficulty finally prices a player cast. 82 of 136 ascendant-castable templates carried difficulties 0.1–0.6 that the player branch discarded before this contract existed; the same value now feeds the shared capability-vs-difficulty roll, floored at success-at-cost. | function: `resolveUncontestedStep`, `difficulty` | Encounters & Dilemmas | 🟢 LIVE | — |
@@ -360,6 +361,18 @@ remediation ticket or the build fails.
 - **Read sites:** `src/engine/worldSeed.ts`
 - **Other hits:** `src/engine/nudgeGrantLiveness.ts`
 - **Verdict:** Verified 2026-07-23: 7 possesses edges present at tick 0. Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified)
+
+### `authored-faction-ids-resolve-to-seeded-faction-nodes` — 🟢 LIVE
+
+- **Intent:** When an ending says it changed your standing with a guild, your standing with that guild actually changes.
+- **Producer → Consumer:** Encounters & Dilemmas → Factions & Succession
+- **UL terms:** *Encounter*, *Faction*
+- **Module:** `src/engine/encounterAftermath.ts`
+- **Production hits:** 6 total — 1 write, 1 read, 4 unclassified
+- **Write sites:** `src/engine/encounterAftermath.ts`
+- **Read sites:** `src/engine/factionReputation.ts`
+- **Other hits:** `src/engine/chosenFactionPowers.ts`, `src/engine/factionMembership.ts`, `src/engine/factionOutcome.ts`, `src/types/unifiedAction.ts`
+- **Verdict:** Verified 2026-08-17: THR-1150. `applyFactionReputationGain` matched memberships with `e.target === factionId`, a faction NODE id, while every authored `faction_reputation_gain` passes a DEFINITION id ('mercenary_company', 'temple_of_spheres', 'underking_court', 'rangers_brotherhood', 'lorekeepers_covenant'). `factionSeeding` keys the node `faction_def_<definitionId><chapterSuffix>`, so the authored id matched no node and no edge target: every faction-standing consequence in the shipped game was a no-op. Both halves are now proven against a real `initializeGameState(seed 42, medium)` world rather than a fixture — `src/engine/__tests__/factionReputationSeededWorld.test.ts` asserts the seeded node id contains the definition id AND that the definition id resolves to no node, then fires the effect with the authored value and reads the reputation move off the seeded edge. Falsified at 1-of-3 red with the fix reverted; the two arms that stay green are the deliberate controls (the premise assertion, and the already-tracing faction_not_found path). Resolution is widening-only by `resolveFactionNodeId`'s exact-node-id-first order, so the three pre-existing node-id callers (`processFactionEncounterReputation`, `factionOutcome`, `chosenFactionPowers`) resolve to themselves — pinned by the 'explicit faction node id still works' arm in `aftermathFactionDefinitionId.test.ts`, 4-of-6 red without the fix. The second half is the trace: the `newRank === 'none'` sentinel used to `break` SILENTLY, which is why a corpus-wide dead effect survived to be found by an unrelated ticket. It now emits `encounter_aftermath_effect` with `failReason: 'not_a_member' | 'faction_not_found'`, and `faction_reputation_gain` was added to `EncounterAftermathEffectTrace.effectKind` so all four traces in the arm emit unlaundered — the cast ratchet (THR-1065) fell 110 → 107. Corpus pinned by `src/testing/__tests__/factionEffectIds.lint.test.ts`, which deep-walks UNIFIED_ACTION_TEMPLATES for all eight faction-carrying effect kinds and fails on any id naming no FACTION_DEFINITIONS entry — with a population guard, since a `<=` over an empty walk is the vacuous pass this lint exists to avoid.
 
 ### `authored-nudge-hand-reaches-resolution` — 🔴 LEAKED
 
@@ -653,10 +666,10 @@ remediation ticket or the build fails.
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Encounter*, *Faction*, *Prerequisite*
 - **Module:** `src/engine/factionMembership.ts`
-- **Production hits:** 11 total — 1 write, 1 read, 9 unclassified
+- **Production hits:** 12 total — 1 write, 1 read, 10 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`
 - **Read sites:** `src/engine/effects/effectPredicates.ts`
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/data/agent-behavior-constants.ts`, `src/engine/effectResolver.ts`, `src/engine/effects/index.ts`, `src/engine/factionMembership.ts` +4 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/data/agent-behavior-constants.ts`, `src/engine/effectResolver.ts`, `src/engine/effects/index.ts`, `src/engine/factionMembership.ts` +5 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `milestone-grants-unlock-repertoire-cards` — 🔵 UNVERIFIED-OK
