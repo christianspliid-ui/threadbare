@@ -35,6 +35,7 @@ import type {
   ActionStep,
   AftermathVariant,
   EncounterAftermathChange,
+  EncounterAftermathConceptRef,
   EncounterAftermathReaction,
   EncounterAftermathReactionEffect,
   UnifiedActionOutcome,
@@ -46,6 +47,12 @@ import { ENCOUNTER_IMAGE_LIBRARY } from '../encounter-image-library';
 import { validateSettingEnvelope } from '../settingClasses';
 import { checkNudgeHand, nudgeBearingSteps } from './nudgeHandChecklist';
 import { checkConsequenceDraw, familiesWiredByEffects } from './consequenceDraw';
+import {
+  ANCHOR_SENTINEL_ACTOR,
+  ANCHOR_SENTINEL_CAST_PREFIX,
+  ANCHOR_SENTINEL_FACTION_PREFIX,
+  classifyAnchorDeclaration,
+} from './chipAnchorDeclarations';
 
 // ─── Contract constants (NFP #1 — every magic number is named) ───────
 
@@ -550,6 +557,89 @@ function chipBackingViolations(template: UnifiedActionTemplate): readonly string
   return out;
 }
 
+/**
+ * UI Law 56 clause 2 — a chip that names a referent must anchor it.
+ *
+ * Clause 1 ({@link chipBackingViolations}) asks whether a write fired. This asks
+ * what it was *about*: the referent must be an existing graph object, resolvable
+ * in the live world, and the chip must point at that object. THR-1153 is why the
+ * clause was needed — a chip could name the thing the ending changed and render
+ * the name as inert text while the same object, decorated one line below inside
+ * the sentence, clicked through. The most concentrated referent on the chip was
+ * its least reachable one.
+ *
+ * **What counts as declaring a referent.** A `stateNoun` is the chip's referent
+ * by construction — it is the word naming the changed object, drawn as the
+ * `CATEGORY · NOUN` tag. Failing that, a non-empty `concepts` list is the older
+ * authoring shape's way of naming one. A chip declaring **neither** is outside
+ * this clause on purpose: it makes no claim the clause could be about, and the
+ * `concepts` rule plus the composition ratchet already hold those templates.
+ *
+ * **The second half is the one that matters more.** A declared `entityId` that
+ * resolves to nothing is worse than no anchor at all — it renders as a live link
+ * and goes nowhere (Law 21), which is indistinguishable from a working link until
+ * a player clicks it. So every declaration form is classified here, before the
+ * content ships, against the same rule the renderer resolves with.
+ */
+export function chipAnchorViolations(template: UnifiedActionTemplate): readonly string[] {
+  const out: string[] = [];
+  const supportKeys = new Set((template.supportBundle ?? []).map(spec => spec.key));
+  // Faces overlap — a band that authors no `changes` inherits the variant's, so
+  // the same chip is reachable on several endings. Reporting it once keeps the
+  // fix list the shape an author acts on.
+  const reported = new Set<string>();
+
+  for (const face of aftermathFaces(template)) {
+    const where = face.band ? `${face.variantKey}/${face.band}` : face.variantKey;
+    for (const change of face.changes) {
+      if (reported.has(change.id)) continue;
+
+      const declared = [change.stateNoun, ...(change.concepts ?? [])].filter(
+        (ref): ref is EncounterAftermathConceptRef => ref !== undefined,
+      );
+      for (const ref of declared) {
+        if (!ref.entityId) continue;
+        const verdict = classifyAnchorDeclaration(ref.entityId, { supportKeys });
+        if (verdict.ok) continue;
+        reported.add(change.id);
+        out.push(
+          `change '${change.id}' on ${where} declares an anchor that cannot resolve: `
+            + `${verdict.reason} (Law 56 clause 2). A dead pointer renders as a live link`,
+        );
+      }
+      if (reported.has(change.id)) continue;
+
+      // The referent half. `stateNoun` wins when present — it is the chip's own
+      // claim about what changed, and a decorated concept elsewhere in the
+      // sentence does not discharge it.
+      const referent = change.stateNoun ?? undefined;
+      if (referent) {
+        if (referent.entityId || referent.tooltipId) continue;
+        reported.add(change.id);
+        out.push(
+          `change '${change.id}' on ${where} names '${referent.text}' and anchors nothing `
+            + '(Law 56 clause 2). Point the noun at the object the ending wrote — '
+            + `'${ANCHOR_SENTINEL_ACTOR}', '${ANCHOR_SENTINEL_CAST_PREFIX}<key>', `
+            + `'${ANCHOR_SENTINEL_FACTION_PREFIX}<defId>', an attachment template id, or a `
+            + 'tooltip id — or fold the sentence into the band overview and delete the chip',
+        );
+        continue;
+      }
+
+      const concepts = change.concepts ?? [];
+      if (concepts.length === 0) continue;
+      if (concepts.some(c => c.entityId || c.tooltipId)) continue;
+      reported.add(change.id);
+      out.push(
+        `change '${change.id}' on ${where} names [${concepts.map(c => c.text).join('; ')}] `
+          + 'and anchors none of them (Law 56 clause 2). Anchor the one the ending '
+          + 'actually wrote, or fold the sentence into the band overview',
+      );
+    }
+  }
+  return out;
+}
+
 /** Actor specs in the resolved support bundle — cast, as opposed to places. */
 function castSpecs(template: UnifiedActionTemplate): readonly EncounterSupportSpec[] {
   return (template.supportBundle ?? []).filter(spec => spec.kind === 'actor');
@@ -946,6 +1036,10 @@ export function checkCompositionContract(
   // Per-chip backing (Law 56). Resolved per *face*, not unioned across the
   // template — see `chipBackingViolations`.
   for (const violation of chipBackingViolations(template)) add('aftermath', violation);
+
+  // Law 56 clause 2 (THR-1164). Reported under the same block as clause 1 — an
+  // author fixing an ending's chips wants both halves in one list.
+  for (const violation of chipAnchorViolations(template)) add('aftermath', violation);
 
   // ─── Systems quota ─────────────────────────────────────────────────
   const systems = systemConnections(template);

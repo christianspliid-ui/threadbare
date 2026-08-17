@@ -161,7 +161,7 @@ export const HOLY_ORDER_DAWN_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                 detail: 'The Dawn enters the night in its record. The reliquary sits where it sat.',
                 polarity: 'gain',
                 concepts: [
-                  { text: 'The Dawn', visualKind: 'faction', visualName: 'Holy Order of the Dawn' },
+                  { text: 'The Dawn', entityId: '$faction:holy_order_dawn', visualKind: 'faction', visualName: 'Holy Order of the Dawn' },
                 ],
               },
             ],
@@ -181,7 +181,7 @@ export const HOLY_ORDER_DAWN_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                   'The Dawn records the reliquary safe. What the night took from {name} is not the order\'s to record.',
                 polarity: 'mixed',
                 concepts: [
-                  { text: 'The Dawn', visualKind: 'faction', visualName: 'Holy Order of the Dawn' },
+                  { text: 'The Dawn', entityId: '$faction:holy_order_dawn', visualKind: 'faction', visualName: 'Holy Order of the Dawn' },
                 ],
               },
             ],
@@ -433,7 +433,7 @@ export const HOLY_ORDER_DAWN_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                 detail: 'The Dawn will send a voice with more years behind it. The road past the shrine stays cold.',
                 polarity: 'loss',
                 concepts: [
-                  { text: 'The Dawn', visualKind: 'faction', visualName: 'Holy Order of the Dawn' },
+                  { text: 'The Dawn', entityId: '$faction:holy_order_dawn', visualKind: 'faction', visualName: 'Holy Order of the Dawn' },
                 ],
               },
             ],
@@ -453,7 +453,7 @@ export const HOLY_ORDER_DAWN_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                   'The shrine at {location} is emptier and the road is worse. The Dawn will read this as a rite that woke what it meant to end.',
                 polarity: 'loss',
                 concepts: [
-                  { text: 'The Dawn', visualKind: 'faction', visualName: 'Holy Order of the Dawn' },
+                  { text: 'The Dawn', entityId: '$faction:holy_order_dawn', visualKind: 'faction', visualName: 'Holy Order of the Dawn' },
                 ],
               },
               {
@@ -634,7 +634,7 @@ export const HOLY_ORDER_DAWN_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                 detail: 'The arrival log at the high temple carries every name that left. The Dawn walked the road.',
                 polarity: 'gain',
                 concepts: [
-                  { text: 'The Dawn', visualKind: 'faction', visualName: 'Holy Order of the Dawn' },
+                  { text: 'The Dawn', entityId: '$faction:holy_order_dawn', visualKind: 'faction', visualName: 'Holy Order of the Dawn' },
                 ],
               },
             ],
@@ -654,7 +654,7 @@ export const HOLY_ORDER_DAWN_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                   'What broke on this road will not re-form quickly. The Dawn gains a road, not only an escort.',
                 polarity: 'gain',
                 concepts: [
-                  { text: 'The Dawn', visualKind: 'faction', visualName: 'Holy Order of the Dawn' },
+                  { text: 'The Dawn', entityId: '$faction:holy_order_dawn', visualKind: 'faction', visualName: 'Holy Order of the Dawn' },
                 ],
               },
               {
@@ -926,7 +926,7 @@ export const HOLY_ORDER_DAWN_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                 detail: 'The Dawn will send a heavier hand. Until it does, the gutters stay wrong.',
                 polarity: 'loss',
                 concepts: [
-                  { text: 'The Dawn', visualKind: 'faction', visualName: 'Holy Order of the Dawn' },
+                  { text: 'The Dawn', entityId: '$faction:holy_order_dawn', visualKind: 'faction', visualName: 'Holy Order of the Dawn' },
                 ],
               },
             ],
@@ -946,7 +946,7 @@ export const HOLY_ORDER_DAWN_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                   'It is in the streets of {location} now, not under them. The Dawn will be answering for this hunt for a long season.',
                 polarity: 'loss',
                 concepts: [
-                  { text: 'The Dawn', visualKind: 'faction', visualName: 'Holy Order of the Dawn' },
+                  { text: 'The Dawn', entityId: '$faction:holy_order_dawn', visualKind: 'faction', visualName: 'Holy Order of the Dawn' },
                 ],
               },
               {
@@ -1173,7 +1173,7 @@ export const HOLY_ORDER_DAWN_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                   'The Dawn enters a verdict upheld. What upholding it cost the one who testified goes in no hand at all.',
                 polarity: 'mixed',
                 concepts: [
-                  { text: 'The Dawn', visualKind: 'faction', visualName: 'Holy Order of the Dawn' },
+                  { text: 'The Dawn', entityId: '$faction:holy_order_dawn', visualKind: 'faction', visualName: 'Holy Order of the Dawn' },
                 ],
               },
               {
@@ -1435,7 +1435,7 @@ export const HOLY_ORDER_DAWN_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
                 detail: 'The Dawn will need more rites than one throat carries. The under-temple stays shut.',
                 polarity: 'loss',
                 concepts: [
-                  { text: 'The Dawn', visualKind: 'faction', visualName: 'Holy Order of the Dawn' },
+                  { text: 'The Dawn', entityId: '$faction:holy_order_dawn', visualKind: 'faction', visualName: 'Holy Order of the Dawn' },
                 ],
               },
             ],
@@ -1455,7 +1455,7 @@ export const HOLY_ORDER_DAWN_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
                   'The temple at {location} is a fire and a closed door. The Dawn loses a house to keep a city.',
                 polarity: 'loss',
                 concepts: [
-                  { text: 'The Dawn', visualKind: 'faction', visualName: 'Holy Order of the Dawn' },
+                  { text: 'The Dawn', entityId: '$faction:holy_order_dawn', visualKind: 'faction', visualName: 'Holy Order of the Dawn' },
                 ],
               },
               {
@@ -1687,7 +1687,7 @@ export const HOLY_ORDER_DAWN_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
                   'The Dawn takes a stronghold and the belief that held it. The second is the one the order will still have next season.',
                 polarity: 'gain',
                 concepts: [
-                  { text: 'The Dawn', visualKind: 'faction', visualName: 'Holy Order of the Dawn' },
+                  { text: 'The Dawn', entityId: '$faction:holy_order_dawn', visualKind: 'faction', visualName: 'Holy Order of the Dawn' },
                 ],
               },
               {
@@ -1973,7 +1973,7 @@ export const HOLY_ORDER_DAWN_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
                   'The Dawn records an inquisition closed. Two of the taken will not be un-taken by a record.',
                 polarity: 'mixed',
                 concepts: [
-                  { text: 'The Dawn', visualKind: 'faction', visualName: 'Holy Order of the Dawn' },
+                  { text: 'The Dawn', entityId: '$faction:holy_order_dawn', visualKind: 'faction', visualName: 'Holy Order of the Dawn' },
                 ],
               },
               {
@@ -1983,7 +1983,7 @@ export const HOLY_ORDER_DAWN_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
                 detail: 'People in {location} who were faithful last month are counting who the order took. That count does not stop.',
                 polarity: 'loss',
                 concepts: [
-                  { text: 'the order', visualKind: 'faction', visualName: 'Holy Order of the Dawn' },
+                  { text: 'the order', entityId: '$faction:holy_order_dawn', visualKind: 'faction', visualName: 'Holy Order of the Dawn' },
                 ],
               },
             ],
@@ -2040,7 +2040,7 @@ export const HOLY_ORDER_DAWN_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
                 detail: 'The Dawn takes no names. What was in that house is in a dozen houses now.',
                 polarity: 'loss',
                 concepts: [
-                  { text: 'The Dawn', visualKind: 'faction', visualName: 'Holy Order of the Dawn' },
+                  { text: 'The Dawn', entityId: '$faction:holy_order_dawn', visualKind: 'faction', visualName: 'Holy Order of the Dawn' },
                 ],
               },
             ],
@@ -2239,7 +2239,7 @@ export const HOLY_ORDER_DAWN_ELITE_TEMPLATES: UnifiedActionTemplate[] = [
                   'The Dawn does not have an army in this region any more. It has survivors, and a road home.',
                 polarity: 'loss',
                 concepts: [
-                  { text: 'The Dawn', visualKind: 'faction', visualName: 'Holy Order of the Dawn' },
+                  { text: 'The Dawn', entityId: '$faction:holy_order_dawn', visualKind: 'faction', visualName: 'Holy Order of the Dawn' },
                 ],
               },
               {
@@ -2250,7 +2250,7 @@ export const HOLY_ORDER_DAWN_ELITE_TEMPLATES: UnifiedActionTemplate[] = [
                   'Belief that has seen its own banner go down in open field is a different belief. {name} carries that back with the banner.',
                 polarity: 'loss',
                 concepts: [
-                  { text: 'the banner', visualKind: 'faction', visualName: 'Holy Order of the Dawn' },
+                  { text: 'the banner', entityId: '$faction:holy_order_dawn', visualKind: 'faction', visualName: 'Holy Order of the Dawn' },
                 ],
               },
             ],
@@ -2538,7 +2538,7 @@ export const HOLY_ORDER_DAWN_ELITE_TEMPLATES: UnifiedActionTemplate[] = [
                 detail: 'The Dawn enters a trial attempted. There is no second line in the record for why.',
                 polarity: 'loss',
                 concepts: [
-                  { text: 'The Dawn', visualKind: 'faction', visualName: 'Holy Order of the Dawn' },
+                  { text: 'The Dawn', entityId: '$faction:holy_order_dawn', visualKind: 'faction', visualName: 'Holy Order of the Dawn' },
                 ],
               },
             ],
@@ -2559,7 +2559,7 @@ export const HOLY_ORDER_DAWN_ELITE_TEMPLATES: UnifiedActionTemplate[] = [
                   'The Dawn does not write refusals down. Everyone who stood at that door knows the record is short a line.',
                 polarity: 'loss',
                 concepts: [
-                  { text: 'The Dawn', visualKind: 'faction', visualName: 'Holy Order of the Dawn' },
+                  { text: 'The Dawn', entityId: '$faction:holy_order_dawn', visualKind: 'faction', visualName: 'Holy Order of the Dawn' },
                 ],
               },
               {
