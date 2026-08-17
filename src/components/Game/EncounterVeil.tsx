@@ -35,7 +35,6 @@ import { ProseTtsButton } from './Encounter/ProseTtsButton';
 import { formatEssence, formatEssencePool } from '../shared/formatEssence';
 import { CostPips } from '../shared/OddsPips';
 import { NUDGE_COMMIT_LABEL } from '../../data/nudge-stage-content';
-import { tooltipResolves } from '../../engine/tooltipResolver';
 import { getDurationWord } from '../../data/domain-words';
 
 // ── Thread tier types ──────────────────────────────────────────────
@@ -879,10 +878,11 @@ export function EncounterVeil({
                         a player who pressed "got it" once had no way left to ask
                         what BOON meant on any later ending. Same registry entry
                         the legend reads, so there is one set of words, not two.
-                        Unguarded by `tooltipResolves` on purpose: unlike the
-                        noun, these four ids are a closed set shipped with the
-                        legend, so a miss is a build-time content bug to fix
-                        rather than a runtime case to fall back from. */}
+                        Unguarded on purpose: unlike the noun — whose resolve
+                        guard now lives inside `NarrativeSegments` (THR-1153) —
+                        these four ids are a closed set shipped with the legend,
+                        so a miss is a build-time content bug to fix rather than
+                        a runtime case to fall back from. */}
                     <Tooltip id={chip.categoryTooltipId}>
                       <span
                         className="focus-ring"
@@ -893,35 +893,52 @@ export function EncounterVeil({
                       </span>
                     </Tooltip>
                     {chip.nounLabel && (
-                      <span style={{ color: TEXT_WHISPER }}>
-                        {' · '}
-                        {/* THR-1122 — Law 17's hover tier for the chip's noun.
-                            The underline and the focus stop are drawn only when
-                            the registry can actually answer, so a concept with
-                            no shipped template stays plain rather than becoming
-                            a dead link that looks live (Law 21). */}
-                        {tooltipResolves(chip.nounTooltipId) ? (
-                          <Tooltip id={chip.nounTooltipId}>
-                            <span
-                              className="focus-ring"
-                              tabIndex={0}
-                              data-testid={`consequence-chip-noun-${chip.kind}`}
-                              style={{
-                                color: TEXT_WARM,
-                                borderBottom: `1px solid ${GOLD_DIM}`,
-                              }}
-                            >
-                              {chip.nounLabel}
-                            </span>
-                          </Tooltip>
-                        ) : (
-                          <span
-                            data-testid={`consequence-chip-noun-${chip.kind}`}
-                            style={{ color: TEXT_WARM }}
-                          >
-                            {chip.nounLabel}
-                          </span>
-                        )}
+                      // Warm on the wrapper, whisper on the separator alone.
+                      // `NarrativeSegments` sets no colour on a plain segment, so
+                      // the noun inherits — and inheriting TEXT_WARM is exactly the
+                      // plain look this tag has always had. Its other two tiers
+                      // colour themselves (`plainColor`, `linkColor`).
+                      <span style={{ color: TEXT_WARM }}>
+                        <span style={{ color: TEXT_WHISPER }}>{' · '}</span>
+                        {/* THR-1122 gave the noun Law 17's hover tier. THR-1153
+                            gives it the *click* tier, because Law 56's second
+                            clause makes the noun the chip's referent — the one
+                            word that names the graph object the ending changed.
+                            Until this, a chip could declare `entityId` on its
+                            `stateNoun` and the noun still went nowhere while a
+                            decorated word inside the same sentence clicked
+                            through: the most concentrated referent was the least
+                            reachable one.
+
+                            Drawn by `NarrativeSegments` rather than by a third
+                            inline copy of the three-tier rule (Law 27) — this
+                            block was one of the two copies THR-1105 collapsed,
+                            and re-hand-rolling a click tier here is how that
+                            drift starts again. A single segment carries all three
+                            tiers, and each is still earned: the link only when
+                            `openEntity` can route the kind (Law 21), the underline
+                            only when the registry can answer, plain otherwise.
+                            Outside any outer click target, so the default
+                            `nested={false}` keeps a real `<button>`. */}
+                        <NarrativeSegments
+                          paragraph={{
+                            id: `${chip.id}-noun`,
+                            segments: [
+                              {
+                                text: chip.nounLabel,
+                                emphasis: 'accent',
+                                tooltipId: chip.nounTooltipId,
+                                entityId: chip.nounEntityId,
+                                entityKind: chip.nounEntityKind,
+                              },
+                            ],
+                          }}
+                          openEntity={openEntity}
+                          linkColor={GOLD}
+                          underlineColor={GOLD_DIM}
+                          plainColor={TEXT_WARM}
+                          testIdPrefix={`consequence-chip-noun-${chip.kind}`}
+                        />
                       </span>
                     )}
                   </span>

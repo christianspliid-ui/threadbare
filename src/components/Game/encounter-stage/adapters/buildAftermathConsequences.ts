@@ -593,6 +593,13 @@ export function buildAftermathConsequences(
       // from the same declaration that already drives the tile, so no authored
       // change has to repeat itself.
       nounTooltipId: change.stateNoun ? attachmentTooltipIdFor(change.stateNoun) : undefined,
+      // THR-1153 — Law 56's second clause: the noun *is* the referent, so it owes
+      // the click tier and not only the hover tier THR-1122 gave it. Passed
+      // through verbatim; the surface decides whether it can open the kind, which
+      // is what keeps a kind this host cannot route (a `companion`) plain rather
+      // than a link to the wrong sheet.
+      nounEntityId: change.stateNoun?.entityId,
+      nounEntityKind: change.stateNoun?.visualKind,
       categoryGlyph: CONSEQUENCE_CATEGORY_GLYPHS[category],
       reachDomain: reachDomainFor(change.stateNoun),
       sentence,

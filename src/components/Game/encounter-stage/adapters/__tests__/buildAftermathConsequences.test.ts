@@ -438,6 +438,65 @@ describe('concept decorations (THR-1004)', () => {
     expect(chips[0].nounTooltipId).toBe('attachment.trait.condition.wounded');
   });
 
+  // ── THR-1153 — the noun carries its anchor, not only its tooltip ────────
+
+  it('passes the state noun\'s anchor through to the noun, id and kind', () => {
+    // Law 56 clause 2: the noun IS the referent. The adapter's job is to carry
+    // the declaration verbatim so the surface can route it — deriving or guessing
+    // a kind here is what would put a link on the wrong sheet.
+    const chips = buildAftermathConsequences({
+      changes: [change({
+        kind: 'trait',
+        polarity: 'loss',
+        stateNoun: {
+          text: 'wounded',
+          entityId: 'trait.condition.wounded',
+          visualKind: 'attachment',
+        },
+      })],
+      ...passthrough,
+    });
+
+    expect(chips[0].nounEntityId).toBe('trait.condition.wounded');
+    expect(chips[0].nounEntityKind).toBe('attachment');
+  });
+
+  it('leaves the noun anchor absent when the state noun declares none', () => {
+    // The falsification half, and the reason it matters: 29 chips in the corpus
+    // still name scene fiction on their `stateNoun`. A blanket anchor would make
+    // every one of them clickable, which is the THR-1141 failure — dressing an
+    // unanchored claim in a pointer — one layer up.
+    const chips = buildAftermathConsequences({
+      changes: [change({
+        kind: 'shell_state',
+        polarity: 'info',
+        stateNoun: { text: 'the far side of the pass' },
+      })],
+      ...passthrough,
+    });
+
+    expect(chips[0].nounLabel).toBe('THE FAR SIDE OF THE PASS');
+    expect(chips[0].nounEntityId).toBeUndefined();
+    expect(chips[0].nounEntityKind).toBeUndefined();
+  });
+
+  it('carries a tooltip-only anchor without inventing an entity id', () => {
+    // A stat anchor names its bearer by `entityId` and the stat by `tooltipId`;
+    // a standing noun declares only the latter. It must keep its hover tier and
+    // acquire no navigation — `ui.standing` is not a node id.
+    const chips = buildAftermathConsequences({
+      changes: [change({
+        kind: 'reputation',
+        polarity: 'gain',
+        stateNoun: { text: 'their name on this road', tooltipId: 'ui.standing' },
+      })],
+      ...passthrough,
+    });
+
+    expect(chips[0].nounTooltipId).toBe('ui.standing');
+    expect(chips[0].nounEntityId).toBeUndefined();
+  });
+
   it('never overwrites a tooltip id the producer declared', () => {
     // Falsification for the derivation guard: derivation must be a fallback,
     // not a rewrite, or an authored `ui.*` id silently becomes an attachment one.
