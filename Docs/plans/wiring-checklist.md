@@ -1021,14 +1021,14 @@ The scorer's real decision causality, kept instead of discarded. One receipt fee
 | Agent pulse overlay (THR-340 / Phase F2) | `src/components/HexMapV2/overlay/AgentPulseOverlay.tsx`, `src/components/HexMapV2/HexMapV2.tsx` (`spotlightedAgentId`, `spotlightThreadColor` props), `src/index.css` (`@keyframes agent-pulse`, `@keyframes encounter-handoff-fade-up`) | Camera-projected hex flare on the spotlit agent (rAF, named tunable constants `PULSE_DIAMETER_PX`/`PULSE_PERIOD_S`/`PULSE_OPACITY_RANGE`). Mounted alongside RegionLabelOverlay/LocationLabelOverlay; rendered only when spotlit agent is in viewport. |
 | Retinue priority pip (THR-340 / Phase F2) | `src/components/Game/ThreadsPanel.tsx` (`CompactThreadRow`), `src/components/Game/RetinuePanel.tsx` | Small pulsing gold pip rendered next to the agent name when an active encounter exists for that thread. ThreadsPanel is the actively-rendered surface; RetinuePanel kept in sync for tests/legacy mounts. |
 
-### Encounter UI Shell (THR-330, Phase C1)
+### Encounter UI Shell (THR-330, Phase C1) — **RETIRED 2026-08-17 (THR-1049)**
 
-| Surface | Path | Notes |
-|---|---|---|
-| Layout shell | `src/components/Game/Encounter/EncounterScreen.tsx` | Three-zone grid (440px hero rail + flex-1 center + 540px right rail) + 100px bottom strip. Exports `ENCOUNTER_SCREEN_LAYOUT` constants. **Not yet wired to GameView — C1 scope. Full data wiring in Phase F2 (THR-TBD).** |
-| Hero panel | `src/components/Game/Encounter/EiraHeroPanel.tsx` | Left-rail protagonist panel: portrait fallback, name/subtitle/status, capability strips, items, active vow, recent moments, registration slot for aftermath UI. |
-| Capability strip | `src/components/Game/Encounter/CapabilityStrip.tsx` | Single-row reach display: sphere label, dot pips (filled/empty), narrative hint. |
-| Verification coverage | `src/components/Game/Encounter/__tests__/EncounterScreen.test.tsx` | Shell zones data-testid presence, `BOTTOM_STRIP_HEIGHT_PX` constraint, protagonist panel sections. |
+The three-zone `EncounterScreen` shell, its `EiraHeroPanel` left rail and that panel's
+`CapabilityStrip` were **deleted**, along with their tests. The "full data wiring in
+Phase F2" this section promised never came: the live encounter surface became
+`EncounterVeil` (mounted in `GameView.tsx`), a modal veil rather than a full-screen
+shell, so the shell was displaced rather than pending. Recover from git history if a
+full-screen encounter layout is ever wanted again.
 
 ### Detail Pages (THR-337, Phase E1)
 
@@ -1456,7 +1456,7 @@ Eight new `EncounterAftermathReactionEffect` kinds that change world topology fr
 | `UiChannel` | Fire-and-forget; called at SFX trigger sites | No persistent state; no orchestrator phase |
 | `AudioMaster` | `useAmbientContext` — exposes global mute/unmute | Consumed by SettingsPanel master mute toggle |
 | `useAmbientContext` | Mounted in `GameView.tsx`; receives `centerHex`, `activeEncounter`, `activeLocation` | Drives all three channel instances |
-| `encounterSoundDesign` (THR-346) | **Moment 1:** `useThreadReveal` — `beginTensionReveal()` at commit, `playResolveNote(reach)` at the resolving beat, `endTensionReveal()` on reset/unmount. **Moment 2:** `useLandingLifecycle` in `EffectRegistration/_shared.tsx` — `playRegistrationCue(cueKind)` at settle, passed by all 10 landing components. | Web Audio synthesis, no assets. Not orchestrator-driven. Mute follows `UiChannel.isUiMuted()`, so `AudioMaster.muteAll()` already covers it with no extra wiring. Scheduled on the Web Audio clock (not React effects) so cues hold the §3.3 millisecond boundaries under main-thread load. The §4.3 #3 first-registration-only latch lives in this module, not in `useEffectSequencing`. **Neither consuming surface is mounted in `GameView` yet** — `ThreadOverlay` and the landings render only in `?view=styleguide` pending the Phase F2/C4 integration, so these cues are live-but-unreachable in normal play until that lands. |
+| `encounterSoundDesign` (THR-346) | **Moment 1:** `useThreadReveal` — `beginTensionReveal()` at commit, `playResolveNote(reach)` at the resolving beat, `endTensionReveal()` on reset/unmount. **Moment 2:** *retired 2026-08-17 (THR-1049)* — `useLandingLifecycle` and all 10 `EffectRegistration` landings were deleted, so `playRegistrationCue` now has no caller in production. | Web Audio synthesis, no assets. Not orchestrator-driven. Mute follows `UiChannel.isUiMuted()`, so `AudioMaster.muteAll()` already covers it with no extra wiring. Scheduled on the Web Audio clock (not React effects) so cues hold the §3.3 millisecond boundaries under main-thread load. **Moment 1's consuming surface is still not mounted in `GameView`** — `ThreadOverlay` renders only in tests, so those cues remain live-but-unreachable in normal play. The live "what registered" surface is the consequence-chip block in `EncounterVeil.tsx` (THR-971 / THR-1082), which is silent and unanimated. Disposition of the now-callless cue is THR-1167. |
 
 ---
 

@@ -1,32 +1,34 @@
 // @vitest-environment jsdom
 /**
- * THR-346 wiring contract: the Moment 1 beat clock and the Moment 2 landing
- * lifecycle actually dispatch sound cues.
+ * THR-346 wiring contract: the Moment 1 beat clock actually dispatches sound cues.
  *
- * These are the tests that would have caught the failure mode this ticket
- * existed to fix — `onResolveBeat` and `onEffectLand` shipped in D1/D2 with
- * zero production consumers, so the seams were live but silent. Asserting the
- * cue module is *called* is the contract; the cue's own behaviour is covered
- * in `encounterSoundDesign.test.ts`.
+ * These are the tests that would have caught the failure mode that ticket
+ * existed to fix — `onResolveBeat` shipped in D1 with zero production
+ * consumers, so the seam was live but silent. Asserting the cue module is
+ * *called* is the contract; the cue's own behaviour is covered in
+ * `encounterSoundDesign.test.ts`.
+ *
+ * The Moment 2 half (landing lifecycle → `playRegistrationCue`) was removed in
+ * THR-1049 with the `EffectRegistration` prototype cluster it exercised. That
+ * leaves `playRegistrationCue` itself call-less in production — filed rather
+ * than pruned here, because the audio cue and its semitone table are a separate
+ * cluster from this ticket's UI scope.
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { act, render, renderHook } from '@testing-library/react';
+import { act, renderHook } from '@testing-library/react';
 
 vi.mock('../encounterSoundDesign', () => ({
   beginTensionReveal: vi.fn(),
   endTensionReveal: vi.fn(),
   playResolveNote: vi.fn(),
-  playRegistrationCue: vi.fn(),
 }));
 
 import {
   beginTensionReveal,
   endTensionReveal,
-  playRegistrationCue,
   playResolveNote,
 } from '../encounterSoundDesign';
 import { useThreadReveal } from '../../hooks/useThreadReveal';
-import { IntelligenceLanding } from '../../components/Game/Encounter/EffectRegistration/IntelligenceLanding';
 
 describe('Moment 1 — useThreadReveal drives the tension-reveal cues', () => {
   beforeEach(() => {
@@ -110,31 +112,3 @@ describe('Moment 1 — useThreadReveal drives the tension-reveal cues', () => {
   });
 });
 
-describe('Moment 2 — landing lifecycle dispatches the registration cue', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
-  it('cues with the landing kind when the motion settles', () => {
-    render(
-      <IntelligenceLanding
-        data={{ label: 'CLUE · NEW', name: 'A rumour', tail: 'about the road north' }}
-        skipAnimation
-      />,
-    );
-    expect(playRegistrationCue).toHaveBeenCalledWith('intelligence');
-  });
-
-  it('still fires onEffectLand alongside the cue', () => {
-    const onEffectLand = vi.fn();
-    render(
-      <IntelligenceLanding
-        data={{ label: 'CLUE · NEW', name: 'A rumour', tail: 'about the road north' }}
-        skipAnimation
-        onEffectLand={onEffectLand}
-      />,
-    );
-    expect(onEffectLand).toHaveBeenCalledTimes(1);
-    expect(playRegistrationCue).toHaveBeenCalledTimes(1);
-  });
-});

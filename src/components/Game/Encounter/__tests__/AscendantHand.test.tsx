@@ -3,8 +3,6 @@ import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { AscendantHand, type AscendantHandPartitionView } from '../AscendantHand';
-import { CastRail } from '../CastRail';
-import type { CastTileData } from '../CastTile';
 import type { UnifiedActionTemplate } from '../../../../types/unifiedAction';
 import type {
   HandFilterDimmedEntry,
@@ -66,20 +64,7 @@ function makeHand(overrides?: Partial<AscendantHandPartitionView>): AscendantHan
   };
 }
 
-function castEntry(id: string, priority: CastTileData['attentionPriority']): CastTileData {
-  return {
-    id,
-    name: `Cast ${id}`,
-    sphereLabel: 'IRON',
-    roleInScene: 'witness',
-    sceneDisposition: 'guarded',
-    relationshipToHer: null,
-    fallbackSentiment: 'a measured distance',
-    attentionPriority: priority,
-  };
-}
-
-describe('AscendantHand + CastRail (C3)', () => {
+describe('AscendantHand (C3)', () => {
   it('renders 0 playable hand snapshot', () => {
     const { asFragment } = render(
       <div style={{ width: 1920, height: 1080 }}>
@@ -129,75 +114,5 @@ describe('AscendantHand + CastRail (C3)', () => {
 
     expect(onCommit).toHaveBeenCalledTimes(1);
     expect(onCommit).toHaveBeenCalledWith('playable');
-  });
-
-  it('renders cast rail snapshots for 0/1/4/6 members', () => {
-    const { asFragment, rerender } = render(
-      <div style={{ width: 1920, height: 1080 }}>
-        <CastRail cast={[]} />
-      </div>,
-    );
-    expect(asFragment()).toMatchSnapshot('cast-0');
-
-    rerender(
-      <div style={{ width: 1920, height: 1080 }}>
-        <CastRail cast={[castEntry('one', 'primary')]} />
-      </div>,
-    );
-    expect(asFragment()).toMatchSnapshot('cast-1');
-
-    rerender(
-      <div style={{ width: 1920, height: 1080 }}>
-        <CastRail cast={[
-          castEntry('a', 'primary'),
-          castEntry('b', 'primary'),
-          castEntry('c', 'background'),
-          castEntry('d', 'offstage'),
-        ]}
-        />
-      </div>,
-    );
-    expect(asFragment()).toMatchSnapshot('cast-4');
-
-    rerender(
-      <div style={{ width: 1920, height: 1080 }}>
-        <CastRail cast={[
-          castEntry('a', 'primary'),
-          castEntry('b', 'primary'),
-          castEntry('c', 'background'),
-          castEntry('d', 'background'),
-          castEntry('e', 'offstage'),
-          castEntry('f', 'offstage'),
-        ]}
-        />
-      </div>,
-    );
-    expect(asFragment()).toMatchSnapshot('cast-6');
-  });
-
-  it('uses relationship resolver first, then falls back to edge sentiment', () => {
-    render(
-      <CastRail
-        cast={[
-          {
-            ...castEntry('node', 'primary'),
-            relationshipToHer: 'a debt and a winter ago',
-            fallbackSentiment: 'ignored fallback',
-          },
-          {
-            ...castEntry('edge', 'primary'),
-            relationshipToHer: null,
-            fallbackSentiment: 'uneasy ally',
-          },
-        ]}
-      />,
-    );
-
-    expect(screen.getByTestId('encounter-cast-tile-relationship-node')).toHaveTextContent(
-      'to her: a debt and a winter ago',
-    );
-    expect(screen.getByTestId('encounter-cast-tile-relationship-edge')).toHaveTextContent(
-      'to her: uneasy ally',
-    );
   });
 });
