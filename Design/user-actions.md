@@ -1,16 +1,16 @@
 # User Action Required
 
-**Last updated:** 2026-08-17 19:58 local (17:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-17 20:57 local (18:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
 ### 1. One attended design hour — the program has run out of designed work
 
-Everything you directed this morning is one step back from the build queue: nobody has designed it yet, and a design pass only happens in an attended session. The executor is being fed bug fixes and cleanup instead.
+Everything you directed this morning is one step back from the build queue: nobody has designed it yet, and a design pass only happens in an attended session.
 
-**Recommendation, taken unless you veto it:** the next design session takes [nations and named areas](https://linear.app/threadbare/issue/THR-1155/nations-and-named-areas-are-rendered-not-simulated-promote-both-to) — your direction, High priority, and the one that changes what the world *is*. Say *"design nations and named areas"*, or name a different one.
+**Recommendation, taken unless you veto it — changed at 19:00:** the next design session writes up [the shared machinery](https://linear.app/threadbare/issue/THR-1156/typed-game-state-architecture-program-epic-claims-vs-reports-acted-on) — your acted-on ruling turned into the plan the builders work from. It is Urgent, and [wave-1 ordering](https://linear.app/threadbare/issue/THR-1163/wave-1-selection-which-seams-make-the-first-wave-in-what-order-under) plus [the second-seam prototype](https://linear.app/threadbare/issue/THR-1162/anchor-type-on-a-second-seam-throwaway-prototype-proving-the-pilots) are both queued behind it. Say *"design the shared machinery."*
 
-Also in the group: [the typed game-state architecture epic](https://linear.app/threadbare/issue/THR-1156/typed-game-state-architecture-program-epic-claims-vs-reports-acted-on) (Urgent, no longer blocked on you), [wave-1 selection](https://linear.app/threadbare/issue/THR-1163/wave-1-selection-which-seams-make-the-first-wave-in-what-order-under) (needs a shortlist written first), [the second-seam prototype](https://linear.app/threadbare/issue/THR-1162/anchor-type-on-a-second-seam-throwaway-prototype-proving-the-pilots) (needs building first).
+Until 19:00 the recommendation was [nations and named areas](https://linear.app/threadbare/issue/THR-1155/nations-and-named-areas-are-rendered-not-simulated-promote-both-to) (High, your own direction this morning). It remains a good session — say *"design nations and named areas"* and it starts there. The switch is about reach, not merit: the write-up unblocks three things, nations unblocks the anchor-catalog rows.
 
 ### 2. One attended dev-server session — [THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server)
 
@@ -26,7 +26,7 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
-- 2026-08-17: **the 44-hour park on the encounter retrofit cleared** — [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to) was parked "waiting on Christian's verdict" while that verdict was sequenced behind the ticket's own next action. It is back in the queue at High, and the batch-1 re-pass needs nobody's approval.
+- 2026-08-17: **the batch-1 prose re-pass is being written** — [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to) was claimed at 17:27 after its 44-hour park cleared. This is the work your 14:52 condition names; the encounter sample stays off your list until it is live.
 - 2026-08-17: **the acted-on taxonomy is settled** — [THR-1161](https://linear.app/threadbare/issue/THR-1161/the-acted-on-taxonomy-acted-on-dormant-hook-or-bookkeeping-definitions) closed. The typed-state map no longer has a question waiting on you.
 - 2026-08-17: **the raw engine word is off the choice card** — [THR-1048](https://linear.app/threadbare/issue/THR-1048/the-legacy-encounter-choice-card-breaks-laws-13-and-14-15percent) ([PR #1527](https://github.com/christianspliid-ui/threadbare/pull/1527)): the stance now says what the god does, not what the enum is.
 - 2026-08-17: **the slice and batch-1 sample verdict are off your list — you held them, and this lane kept asking.** Your 08:06 instruction was *"hold the verdict on encounters until this is fixed"*; your 14:52 ruling added that the sample does not return until the prose re-pass and the state-first chip copy are visibly live. ([THR-907](https://linear.app/threadbare/issue/THR-907/slice-verdict-session-christian-rules-on-prose-firing-ui-and-game) · [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to))
