@@ -69,6 +69,23 @@ const PACKAGE_VIEW_ROUTE = 'view=cms#encounter-packages';
 
 const DEFAULT_OUT_DIR = 'Docs/plans/encounters';
 
+/**
+ * Where the Package critic's per-encounter verdicts live (THR-1154).
+ *
+ * Beside the batch's other pipeline artifacts, same as the editorial and systems
+ * passes. Read rather than re-run: this file is a renderer, and the package
+ * question is a *written judgment*, not a machine output — re-deriving it here
+ * would either drift from the critic or silently invent an answer nobody wrote.
+ */
+const PACKAGE_DIR = DEFAULT_OUT_DIR;
+
+/** The three package verdicts, worst last so a batch sorts readably. */
+const PACKAGE_BADGE: Readonly<Record<string, string>> = {
+  connected: '🔗 connected',
+  thin: '🪢 thin',
+  solitary: '📖 solitary',
+};
+
 // ─── Args ────────────────────────────────────────────────────────────
 
 const argv = process.argv.slice(2);
@@ -196,6 +213,54 @@ try {
 
 const gateById = new Map(gates.map(gate => [gate.id, gate]));
 const liveById = new Map(lives.map(live => [live.templateId, live]));
+const packageById = loadPackageVerdicts(PACKAGE_DIR);
+
+/**
+ * One Package-critic verdict, as written into `<slug>-package.md` (THR-1154).
+ *
+ * `leaves` is the critic's answer to the qualitative half — *what does this
+ * encounter leave behind that a later encounter or system can pick up, and would
+ * the player recognise it happening?* It is carried into the report verbatim,
+ * because that sentence is the thing the director's sample review reads.
+ */
+interface PackageVerdict {
+  readonly templateId: string;
+  readonly verdict: string;
+  readonly leaves: string;
+}
+
+/**
+ * Scan the batch's pipeline artifacts for Package-critic verdicts.
+ *
+ * Reads authored markdown by regex, the same way the plot-hook block reads the
+ * brief, and for the same reason: the verdict exists only in the critic's write-up,
+ * so that document is the sole source. A missing file is not an error — a batch run
+ * before this stage existed simply has no verdicts, and the column says so rather
+ * than failing a report that is otherwise complete (the report never fails on batch
+ * content, only on being unable to run).
+ */
+function loadPackageVerdicts(dir: string): Map<string, PackageVerdict> {
+  const byId = new Map<string, PackageVerdict>();
+  if (!fs.existsSync(dir)) return byId;
+
+  for (const entry of fs.readdirSync(dir)) {
+    if (!entry.endsWith('-package.md')) continue;
+    const body = fs.readFileSync(path.join(dir, entry), 'utf8');
+
+    const templateId = /^\s*templateId:\s*(.+)$/im.exec(body)?.[1]?.trim().replace(/[`,]/g, '');
+    const verdict = /^\s*packageVerdict:\s*(.+)$/im.exec(body)?.[1]?.trim().toLowerCase();
+    const leaves = /^\s*packageLeaves:\s*(.+)$/im.exec(body)?.[1]?.trim();
+    if (!templateId || !verdict) continue;
+
+    byId.set(templateId, { templateId, verdict, leaves: leaves ?? '' });
+  }
+  return byId;
+}
+
+function packageBadge(entry: PackageVerdict | undefined): string {
+  if (!entry) return '— not run';
+  return PACKAGE_BADGE[entry.verdict] ?? `⚠️ \`${entry.verdict}\``;
+}
 
 function spawnLink(id: string): string {
   return `${REVIEW_BASE_URL}/?${SPAWN_QUERY}&spawn=${id}`;
@@ -241,8 +306,8 @@ lines.push('');
 // ── Variance table (ruling 1) ──
 lines.push('## The batch, side by side');
 lines.push('');
-lines.push('| Encounter | Gate | Live | Outcome | Systems | Bands | Review |');
-lines.push('|---|---|---|---|---|---|---|');
+lines.push('| Encounter | Gate | Live | Package | Outcome | Systems | Bands | Review |');
+lines.push('|---|---|---|---|---|---|---|---|');
 for (const id of ids) {
   const gate = gateById.get(id);
   const live = liveById.get(id);
@@ -250,8 +315,8 @@ for (const id of ids) {
   const bands = gate?.composition.bands.length ?? 0;
   const outcome = live?.outcome ?? '—';
   lines.push(
-    `| \`${id}\` | ${gateBadge(gate)} | ${liveBadge(live)} | ${outcome} | ${systems} `
-      + `| ${bands} | [spawn](${spawnLink(id)}) · [package](${packageLink(id)}) |`,
+    `| \`${id}\` | ${gateBadge(gate)} | ${liveBadge(live)} | ${packageBadge(packageById.get(id))} `
+      + `| ${outcome} | ${systems} | ${bands} | [spawn](${spawnLink(id)}) · [package](${packageLink(id)}) |`,
   );
 }
 lines.push('');
@@ -259,6 +324,54 @@ lines.push(
   '*Package View links resolve once THR-1046 ships; the spawn links are live today.*',
 );
 lines.push('');
+
+// ── Package verdicts (THR-1154) ──
+//
+// The director's frame: prose and chips are one package, judged together or not at
+// all. The mechanical half (does every chip anchor?) is shared with THR-1153's gate
+// and shows up in the Gate column. This block carries the half no machine can read.
+{
+  const answered = ids.map(id => packageById.get(id)).filter((v): v is PackageVerdict => v !== undefined);
+  lines.push('## What each encounter leaves behind');
+  lines.push('');
+  lines.push(
+    '> The Package critic\'s answer, per encounter, to: *what does this encounter leave '
+      + 'behind that a later encounter or system can pick up, and would the player '
+      + 'recognise it happening?* An encounter whose honest answer is "nothing" is a '
+      + 'solitary story — ruling 4 applies, park it rather than shipping it.',
+  );
+  lines.push('');
+
+  if (answered.length === 0) {
+    lines.push(
+      `*No Package verdicts found in \`${PACKAGE_DIR}\`. Either the batch predates the `
+        + 'Package stage or it has not run yet — treat this batch as unjudged on the '
+        + 'package question, not as passing it.*',
+    );
+  } else {
+    lines.push('| Encounter | Verdict | What it leaves |');
+    lines.push('|---|---|---|');
+    for (const id of ids) {
+      const entry = packageById.get(id);
+      if (!entry) {
+        lines.push(`| \`${id}\` | — not run | — |`);
+        continue;
+      }
+      lines.push(`| \`${id}\` | ${packageBadge(entry)} | ${entry.leaves || '⚠️ no answer written'} |`);
+    }
+
+    const solitary = answered.filter(v => v.verdict === 'solitary').length;
+    if (solitary > 0) {
+      lines.push('');
+      lines.push(
+        `**${solitary} of ${ids.length} judged solitary.** A solitary encounter is not a `
+          + 'failed one — it is a finished story that connects to nothing, and the response '
+          + 'is to park it for a human, not to redraft it.',
+      );
+    }
+  }
+  lines.push('');
+}
 
 // ── Plot hooks (THR-1147) ──
 //
