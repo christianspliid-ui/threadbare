@@ -299,7 +299,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `initiative` (3) | `initiativeCandidates.ts`, `initiativeLifecycle.ts`, `initiativeOutcomes.ts` | `THR-51` |
 | `insider` (1) | `insiderBeatDetection.ts` | — |
 | `intelligence` (1) | `intelligence.ts` | `THR-113`, `THR-140` |
-| `intervention` (3) | `interventionCost.ts`, `interventionEffects.ts`, `interventionTracking.ts` | — |
+| `intervention` (4) | `interventionCost.ts`, `interventionEffects.ts`, `interventionStanceWords.ts`, `interventionTracking.ts` | `THR-1048`, `THR-772` |
 | `journey` (1) | `journeyEngine.ts` | `Phase 2`, `TB-035` |
 | `kpi` (3) | `kpi/branchingDistance.ts`, `kpi/gameplayKpi.ts`, `kpi/kpiConstants.ts` | `THR-452`, `THR-457`, `THR-571` |
 | `lair` (2) | `lairEscalation.ts`, `lairSeeding.ts` | `M2.5`, `Phase 2` |
@@ -393,4 +393,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 26 registered subsystems (1 dormant) · 101 tick phases · 172 engine domains · 493 modules._
+_Counts: 26 registered subsystems (1 dormant) · 101 tick phases · 172 engine domains · 494 modules._

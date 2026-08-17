@@ -21,6 +21,7 @@ import { resolveAnchorDeclaration } from '../../../../data/content-eval/chipAnch
 import { resolveEntityVisual } from '../../../shared/entityVisualResolver';
 import { getFamiliarity, getKnowledgeLevel } from '../../../../engine/familiarity';
 import { supportRoleWord } from '../../../../engine/supportRoleWords';
+import { interventionStanceWord } from '../../../../engine/interventionStanceWords';
 import { buildNudgePhaseModel } from './buildNudgePhaseModel';
 import { resolveStepDefinition } from '../../../../engine/unifiedActionLifecycle';
 import {
@@ -361,14 +362,24 @@ function buildChoices(
   }
 
   // Fall back to generic notification choices
+  //
+  // THR-1048 — `intent` used to be `choice.interventionType`, so the card's
+  // main italic line rendered the bare enum: not a dim stance tag but the
+  // sentence the player reads first. It is unreachable today (this branch runs
+  // only when the step has no `authoredChoices`, and that is the sole thing
+  // that ever fills `notification.choices` — see `phaseEncounterVisibility`),
+  // which is why the veil audit caught the tag and missed this. Unreachable is
+  // one edit away from reachable, and the fix is the field the sibling adapter
+  // already uses: `choice.text` is the choice's own display text.
   return notification.choices.map((choice) => ({
     id: choice.id,
     label: choice.text,
-    intent: choice.interventionType,
+    intent: choice.text,
     essenceCost: choice.essenceCost,
     affordable: choice.essenceCost <= essence,
     costLabel: choice.essenceCost > 0 ? formatEssenceLabel(choice.essenceCost) : 'Free',
     interventionType: choice.interventionType,
+    stanceLabel: interventionStanceWord(choice.interventionType),
     godVoice: choice.godVoice,
     probabilityBoost: choice.probabilityBoost,
   }));

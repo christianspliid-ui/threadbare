@@ -2575,8 +2575,14 @@ function ChoiceBlock({ choice, selected, onClick }: ChoiceBlockProps) {
           letterSpacing: '0.04em',
         }}
       >
-        {choice.interventionType && (
+        {/*
+          THR-1048 — the stance in words, never `choice.interventionType`.
+          The enum still picks the colour above; Law 31 wants a word beside
+          that colour, and Law 14 wants it to be a word rather than the key.
+        */}
+        {choice.stanceLabel && (
           <span
+            data-testid="choice-stance"
             style={{
               textTransform: 'lowercase',
               color: typeLabelColor,
@@ -2584,7 +2590,7 @@ function ChoiceBlock({ choice, selected, onClick }: ChoiceBlockProps) {
               transition: 'opacity 0.5s ease',
             }}
           >
-            {choice.interventionType}
+            {choice.stanceLabel}
           </span>
         )}
         <span
