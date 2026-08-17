@@ -33,6 +33,7 @@ import { stepOutcomeToOutcomeBand, stepOutcomeWord } from '../../../../data/outc
 import { getAgentPortraitUrlFromProperties } from '../../../../data/portrait-assets';
 import type { RarityTier } from '../../../../types/rarity';
 import { formatEssenceLabel } from '../../../shared/formatEssence';
+import { interventionStanceWord } from '../../../../engine/interventionStanceWords';
 
 // ── Types ────────────────────────────────────────────────
 
@@ -306,6 +307,12 @@ export function buildSimpleEncounterStageModel(
     affordable: c.essenceCost <= essence,
     costLabel: c.essenceCost > 0 ? formatEssenceLabel(c.essenceCost) : undefined,
     interventionType: c.interventionType,
+    // THR-1048 — banded here, not at the surface. This adapter is the live
+    // producer of a stance-carrying choice: `phaseEncounterVisibility`
+    // overwrites `notification.choices` with the authored hand (each card
+    // keeping its `interventionType`), and a `watched`-tier encounter routes to
+    // this adapter rather than the unified one, so the enum reached the veil.
+    stanceLabel: interventionStanceWord(c.interventionType),
     godVoice: c.godVoice,
     probabilityBoost: c.probabilityBoost,
   }));

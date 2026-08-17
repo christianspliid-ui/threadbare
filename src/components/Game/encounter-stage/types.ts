@@ -169,8 +169,22 @@ export interface EncounterStageChoiceModel {
   affordable: boolean;
   costLabel?: string;
   likelyBurden?: string;
-  /** Intervention type — supportive, coercive, or withdrawn. Drives choice glow color. */
+  /**
+   * Intervention type — supportive, coercive, or withdrawn. Drives choice glow
+   * color **only**. THR-1048: never render this; it is an engine enum, and Law
+   * 14 forbids it reaching the DOM. Read {@link stanceLabel} for the words.
+   */
   interventionType?: 'supportive' | 'coercive' | 'withdrawn';
+  /**
+   * THR-1048 — what the god does, in words, for {@link interventionType}.
+   *
+   * Banded at the source by `engine/interventionStanceWords`, the way
+   * `roleLabel` bands a cast member's `supportRole`, so a surface never has to
+   * remember to resolve the enum. Absent means the producer tagged no stance
+   * (authored choice cards carry their own prose instead) and the meta row
+   * renders nothing — a designed empty, not a missing value.
+   */
+  stanceLabel?: string;
   /** God-voice quote revealed when choice is selected. */
   godVoice?: string;
   /** Probability boost (0.0–1.0) shown in choice meta. */
