@@ -640,6 +640,118 @@ export function chipAnchorViolations(template: UnifiedActionTemplate): readonly 
   return out;
 }
 
+/**
+ * Effect kinds that write a **persistent consequence** to the person they name.
+ *
+ * Deliberately not "every effect that takes a `$cast:` field". An `intelligence`
+ * record filed about a cast member is a note in someone's head and costs nothing
+ * if the scene had no such person; a bond, a mark, an agreement, a membership or
+ * a relocation is a durable fact written onto a specific someone, and writing it
+ * onto the wrong someone — or onto nobody — is the failure {@link castTargetViolations}
+ * exists to catch.
+ */
+const CAST_TARGET_PERSISTENT_KINDS: ReadonlySet<string> = new Set([
+  'bond_change',
+  'hidden_mark',
+  'attachment_grant',
+  'membership_change',
+  'agent_relocation',
+]);
+
+/** Effect fields that name the *person* a persistent consequence is written onto. */
+const CAST_TARGET_FIELDS = ['withAgentId', 'targetAgentId', 'counterpartyId'] as const;
+
+/**
+ * THR-1165 — a persistent consequence must name a cast member the scene actually casts.
+ *
+ * `$cast:<key>` binds through `action.supportBindings`, produced from the template's
+ * `supportBundle` at spawn. Two distinct ways that can come to nothing, and the
+ * corpus contained only the second, which is why the first alone would have reported
+ * green over the whole defect:
+ *
+ * 1. **The key is not declared at all.** The sentinel resolves to `undefined`, the
+ *    effect no-ops down its invalid-target path, and nothing says so. Zero templates
+ *    were in this state when the rule was written — the gate is a guard, not a sweep.
+ *
+ * 2. **The key is declared, but only as ambient scenery.** This is the one that bit.
+ *    `withDefaultSupportBundle` merges a setting-class cast onto any template that
+ *    declares no bundle of its own, and *every* default spec is `delivery: 'pre-seeded'`
+ *    — bind-only by design (`default-support-bundles.ts`: "defaults are bind-only").
+ *    A bind-only spec attaches an NPC the world already put there and materializes
+ *    nobody, so the binding exists only when a matching role happens to stand at the
+ *    location. Measured on seed 42, `encounter.slice.riders_behind_caravan` spawned
+ *    with `supportBindings: []` and its `bond_change` wrote nothing.
+ *
+ * **And when it does bind, it binds the scenery.** That is the sharper half. The
+ * wayside default's `keeper` is a hermit named "Wayside Keeper"; the urban default's
+ * `trader` is a "Market Trader". So `hidden_mark` labelled *"Sells deeds to land that
+ * was never his"* aimed at `$cast:trader` does not mark the swindler the scene is
+ * about — it brands whichever honest merchant was standing in the square. A write
+ * that lands on the wrong person is worse than one that lands nowhere.
+ *
+ * The rule therefore asks for a spec that *produces* the person: a materializing
+ * delivery, which the template must declare itself. Fictionally that is also the
+ * right shape — the subject of a scene is cast by the scene, not borrowed from the
+ * furniture.
+ */
+export function castTargetViolations(template: UnifiedActionTemplate): readonly string[] {
+  const out: string[] = [];
+  const specByKey = new Map((template.supportBundle ?? []).map(spec => [spec.key, spec]));
+  const reported = new Set<string>();
+
+  for (const face of aftermathFaces(template)) {
+    const where = face.band ? `${face.variantKey}/${face.band}` : face.variantKey;
+    for (const reaction of face.reactions) {
+      for (const effect of reaction.effects ?? []) {
+        const kind = (effect as { kind?: string }).kind;
+        if (!kind || !CAST_TARGET_PERSISTENT_KINDS.has(kind)) continue;
+
+        for (const field of CAST_TARGET_FIELDS) {
+          const value = (effect as unknown as Record<string, unknown>)[field];
+          if (typeof value !== 'string' || !value.startsWith(ANCHOR_SENTINEL_CAST_PREFIX)) continue;
+          const key = value.slice(ANCHOR_SENTINEL_CAST_PREFIX.length);
+
+          // One report per (reaction, effect kind, field, key) — the same effect is
+          // reachable from several faces when a band inherits its variant's reactions.
+          const dedupe = `${reaction.id}|${kind}|${field}|${key}`;
+          if (reported.has(dedupe)) continue;
+
+          const spec = specByKey.get(key);
+          if (!spec) {
+            reported.add(dedupe);
+            out.push(
+              `reaction '${reaction.id}' on ${where}: ${kind}.${field} names '${value}', `
+                + 'which this template\'s supportBundle does not declare — the sentinel '
+                + 'resolves to nothing and the write silently never lands',
+            );
+            continue;
+          }
+          if (spec.kind !== 'actor') {
+            reported.add(dedupe);
+            out.push(
+              `reaction '${reaction.id}' on ${where}: ${kind}.${field} names '${value}', `
+                + `which is a '${spec.kind}' spec — a persistent consequence needs a person`,
+            );
+            continue;
+          }
+          if (spec.delivery === 'pre-seeded') {
+            reported.add(dedupe);
+            out.push(
+              `reaction '${reaction.id}' on ${where}: ${kind}.${field} names '${value}', `
+                + `a bind-only 'pre-seeded' spec (role '${spec.supportRole}'). It binds an NPC `
+                + 'the world already placed and materializes none, so the write lands only when '
+                + 'that role happens to stand there — and when it does, it lands on ambient '
+                + 'scenery rather than the scene\'s subject. Declare a materializing spec for '
+                + 'the person this consequence is actually about',
+            );
+          }
+        }
+      }
+    }
+  }
+  return out;
+}
+
 /** Actor specs in the resolved support bundle — cast, as opposed to places. */
 function castSpecs(template: UnifiedActionTemplate): readonly EncounterSupportSpec[] {
   return (template.supportBundle ?? []).filter(spec => spec.kind === 'actor');
@@ -1040,6 +1152,11 @@ export function checkCompositionContract(
   // Law 56 clause 2 (THR-1164). Reported under the same block as clause 1 — an
   // author fixing an ending's chips wants both halves in one list.
   for (const violation of chipAnchorViolations(template)) add('aftermath', violation);
+
+  // THR-1165 — the write's *target*, as opposed to the chip's referent. Same block
+  // again: a chip anchored to `$cast:x` and a bond written to `$cast:x` fail together
+  // and are fixed by the same spec.
+  for (const violation of castTargetViolations(template)) add('aftermath', violation);
 
   // ─── Systems quota ─────────────────────────────────────────────────
   const systems = systemConnections(template);

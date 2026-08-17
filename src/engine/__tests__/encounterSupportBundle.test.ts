@@ -366,9 +366,14 @@ describe('setting-keyed default support bundles — the encounter.* family (THR-
     const state = makeState(graph);
     const before = graph.getNodesByType('actor').length;
 
+    // THR-1165 moved this off `bridge`, which now declares a bundle of its own
+    // carrying a *materializing* keeper — so it spawns, and would falsify the
+    // no-new-node assertion for a reason that has nothing to do with the rule
+    // under test. `snow_on_the_pass` still inherits the wayside default whole,
+    // which is the shape this test is about: bind-only, spawning nothing.
     const bindings = prepareEncounterSupportBundle(
       state,
-      getUnifiedTemplateById(SLICE_TEMPLATE_IDS.bridge)!,
+      getUnifiedTemplateById(SLICE_TEMPLATE_IDS.pass)!,
       'loc_camp',
     );
 
@@ -383,8 +388,13 @@ describe('setting-keyed default support bundles — the encounter.* family (THR-
     expect(getUnifiedTemplateById(SLICE_TEMPLATE_IDS.gratefulKin)?.supportBundle?.map(s => s.key))
       .toEqual(['elder', 'neighbor', 'bystander']);
     // `swindler_found` declares ['urban'] — a different class, a different cast.
+    // THR-1165 appended `swindler`: the template now composes the urban default
+    // with a materializing spec for the man its `hidden_mark` is about, because
+    // the ambient `trader` the default supplies is an honest merchant and the
+    // mark was branding him. Composed, not replaced — the three default keys keep
+    // their order, which is what this test is asserting.
     expect(getUnifiedTemplateById(SLICE_TEMPLATE_IDS.swindlerFound)?.supportBundle?.map(s => s.key))
-      .toEqual(['clerk', 'trader', 'watch']);
+      .toEqual(['clerk', 'trader', 'watch', 'swindler']);
   });
 
   it('leaves a template spanning several setting classes without a default', () => {
