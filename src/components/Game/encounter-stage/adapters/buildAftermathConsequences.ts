@@ -431,6 +431,46 @@ export interface BuildAftermathConsequencesArgs {
   link: ChipSentenceLinker;
   /** THR-1004 — resolve a named entity concept to its chip tile. */
   resolveIcon?: ChipIconResolver;
+  /**
+   * THR-1164 — turn a declared anchor into a node id in *this* world.
+   *
+   * Most anchors are literal and shared across every world (an attachment's
+   * template node), but the ones that cannot be — a faction whose node is minted
+   * per world, a cast actor, the acting agent — are authored as sentinels and
+   * only the graph can say what they mean here. This adapter holds the graph;
+   * the veil below it does not, and that division is the reason this arrives as
+   * a callback rather than the module reaching for the world itself.
+   *
+   * When it returns `undefined` the anchor is **dropped** rather than passed
+   * through: an unresolved `$actor` reaching the surface would render as a live
+   * link to a node id that does not exist (Law 21). Dropping it returns the noun
+   * to the plain-text tier it had before it declared anything (NFP #4).
+   *
+   * Omitting the callback entirely is different, and deliberately so — it means
+   * *no resolution was attempted*, so every ref passes through exactly as
+   * authored. That is what keeps a caller which never had sentinels (and every
+   * existing test) rendering unchanged (NFP #6).
+   */
+  resolveAnchor?: (entityId: string) => string | undefined;
+}
+
+/**
+ * A concept ref with its declared anchor resolved against the live world.
+ *
+ * Returns the ref unchanged when it declares no anchor or no resolver was given,
+ * and strips `entityId` when the declaration resolves to nothing — never leaves
+ * a sentinel in place, which is the one outcome that renders as a dead link.
+ */
+function resolveRefAnchor<T extends EncounterAftermathConceptRef>(
+  ref: T | undefined,
+  resolveAnchor: ((entityId: string) => string | undefined) | undefined,
+): T | undefined {
+  if (!ref?.entityId || !resolveAnchor) return ref;
+  const resolved = resolveAnchor(ref.entityId);
+  if (resolved === ref.entityId) return ref;
+  if (resolved) return { ...ref, entityId: resolved };
+  const { entityId: _dropped, ...rest } = ref;
+  return rest as T;
 }
 
 /**
@@ -555,7 +595,7 @@ function compareChips(
 export function buildAftermathConsequences(
   args: BuildAftermathConsequencesArgs,
 ): EncounterStageConsequenceChipModel[] {
-  const { changes, reactions, enrich, link, resolveIcon } = args;
+  const { changes, reactions, enrich, link, resolveIcon, resolveAnchor } = args;
   const chips: EncounterStageConsequenceChipModel[] = [];
 
   for (const change of changes) {
@@ -575,12 +615,17 @@ export function buildAftermathConsequences(
     // her now."
     const causeClause = change.causeClause?.trim();
     const body = causeClause ? `${causeClause} — ${change.detail}` : change.detail;
-    const sentence = applyConceptDecorations(link(id, enrich(body)), change.concepts);
+    // THR-1164 — resolve declared anchors once, here, and use the resolved refs
+    // for every tier below. Resolving per-consumer instead would let the tile and
+    // the link disagree about what the chip points at.
+    const stateNoun = resolveRefAnchor(change.stateNoun, resolveAnchor);
+    const concepts = change.concepts?.map(c => resolveRefAnchor(c, resolveAnchor)!);
+    const sentence = applyConceptDecorations(link(id, enrich(body)), concepts);
     // The state noun is the changed state itself and takes precedence for the
     // tile; `concepts` merely decorates the sentence, so it is the fallback.
-    const iconConcept = (change.stateNoun?.visualKind ? change.stateNoun : undefined)
-      ?? change.concepts?.find(c => c.visualKind);
-    const nounText = change.stateNoun?.text;
+    const iconConcept = (stateNoun?.visualKind ? stateNoun : undefined)
+      ?? concepts?.find(c => c.visualKind);
+    const nounText = stateNoun?.text;
     chips.push({
       id,
       kind,
@@ -592,16 +637,16 @@ export function buildAftermathConsequences(
       // THR-1122 — the noun is a concept word and owes its hover tier. Derived
       // from the same declaration that already drives the tile, so no authored
       // change has to repeat itself.
-      nounTooltipId: change.stateNoun ? attachmentTooltipIdFor(change.stateNoun) : undefined,
+      nounTooltipId: stateNoun ? attachmentTooltipIdFor(stateNoun) : undefined,
       // THR-1153 — Law 56's second clause: the noun *is* the referent, so it owes
       // the click tier and not only the hover tier THR-1122 gave it. Passed
       // through verbatim; the surface decides whether it can open the kind, which
       // is what keeps a kind this host cannot route (a `companion`) plain rather
       // than a link to the wrong sheet.
-      nounEntityId: change.stateNoun?.entityId,
-      nounEntityKind: change.stateNoun?.visualKind,
+      nounEntityId: stateNoun?.entityId,
+      nounEntityKind: stateNoun?.visualKind,
       categoryGlyph: CONSEQUENCE_CATEGORY_GLYPHS[category],
-      reachDomain: reachDomainFor(change.stateNoun),
+      reachDomain: reachDomainFor(stateNoun),
       sentence,
       sentenceText: paragraphText(sentence),
       // Incidental drift renders as tag + cluster with no sentence. An author

@@ -989,3 +989,79 @@ describe('planted seeds are PATH (THR-1082)', () => {
     expect(chips[0].compact).toBe(false);
   });
 });
+
+/**
+ * THR-1164 — Law 56 clause 2's runtime half.
+ *
+ * The gate proves a declared anchor *could* resolve; these prove the adapter
+ * actually resolves it, and — the load-bearing half — that one which cannot is
+ * **dropped** rather than passed through. A sentinel reaching the surface would
+ * render as a live link to a node id no world contains, which is Law 21's dead
+ * link wearing a working link's clothes and is strictly worse than no anchor.
+ */
+describe('declared anchors are resolved against the live world (THR-1164)', () => {
+  const anchored = (entityId: string) =>
+    change({
+      kind: 'trait',
+      polarity: 'gain',
+      stateNoun: { text: 'The Dawn', entityId, visualKind: 'faction' },
+    });
+
+  it('resolves a sentinel to the node id the world minted for it', () => {
+    const chips = buildAftermathConsequences({
+      changes: [anchored('$faction:holy_order_dawn')],
+      ...passthrough,
+      resolveAnchor: (id) => (id === '$faction:holy_order_dawn' ? 'actor.faction.dawn.7' : undefined),
+    });
+    expect(chips[0].nounEntityId).toBe('actor.faction.dawn.7');
+    expect(chips[0].nounEntityKind).toBe('faction');
+  });
+
+  it('drops an anchor the world cannot resolve, rather than shipping a dead link', () => {
+    const chips = buildAftermathConsequences({
+      changes: [anchored('$faction:an_order_this_world_has_no_chapter_of')],
+      ...passthrough,
+      resolveAnchor: () => undefined,
+    });
+    // The noun survives as text — the tier it held before it declared anything.
+    expect(chips[0].nounEntityId).toBeUndefined();
+    expect(chips[0].nounLabel).toBe('THE DAWN');
+  });
+
+  it('never leaks the sentinel itself when no resolver is wired', () => {
+    // Omitting the callback means "no resolution attempted", so refs pass through
+    // as authored — that is what keeps every pre-THR-1164 caller unchanged. The
+    // assertion that matters is the pairing: production always wires the
+    // resolver, so this path only ever carries literal ids.
+    const chips = buildAftermathConsequences({
+      changes: [anchored('trait.condition.exhausted')],
+      ...passthrough,
+    });
+    expect(chips[0].nounEntityId).toBe('trait.condition.exhausted');
+  });
+
+  it('resolves anchors on decorating concepts, not only on the noun', () => {
+    const chips = buildAftermathConsequences({
+      changes: [
+        change({
+          kind: 'trait',
+          polarity: 'gain',
+          detail: 'The Dawn remembers them.',
+          concepts: [{ text: 'The Dawn', entityId: '$faction:holy_order_dawn', visualKind: 'faction' }],
+        }),
+      ],
+      ...passthrough,
+      resolveAnchor: () => 'actor.faction.dawn.7',
+      // `EncounterStageConsequenceIconModel['kind']` excludes `attachment`, so the
+      // kind is named rather than widened off the concept — this case is a faction.
+      resolveIcon: (concept) => ({
+        entityId: concept.entityId ?? concept.text,
+        kind: 'faction',
+        name: concept.text,
+      }),
+    });
+    // The tile and the sentence must agree about what the chip points at, which
+    // is why resolution happens once per change rather than per consumer.
+    expect(chips[0].icon?.entityId).toBe('actor.faction.dawn.7');
+  });
+});
