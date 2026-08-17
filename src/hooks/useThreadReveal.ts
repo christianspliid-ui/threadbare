@@ -6,6 +6,13 @@ import {
   playResolveNote,
 } from '../audio/encounterSoundDesign';
 
+// TODO(THR-1168): this hook has no production value-consumer. Its only non-test
+// importer was `Encounter/ThreadOverlay.tsx` — type-only, and deleted by THR-1167 —
+// and it is the sole caller of the three tension-cue functions imported above.
+// Kept rather than deleted because the beat clock below is an authored THR-346 spec;
+// THR-1168 carries the wire-or-retire call, naming EncounterVeil/NudgePhaseShell
+// step-commit as the producer.
+
 /**
  * Beat durations for the Moment 1 tension reveal sequence.
  *

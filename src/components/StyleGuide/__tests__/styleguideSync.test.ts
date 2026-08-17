@@ -160,3 +160,58 @@ describe('styleguide sync (UI Law 29)', () => {
     });
   });
 });
+
+// ─── Nav ↔ section sync (THR-1167) ──────────────────────────────────────────
+//
+// The `SECTIONS` registry drives the left-hand nav; each entry's `id` is expected
+// to anchor a `<section id="section-${id}">` in the same file. The two are written
+// ~1000 lines apart, so retiring a styleguide section is exactly the edit that
+// leaves a nav link pointing at nothing — a dead anchor that scrolls nowhere and
+// reads as a broken page rather than as a removed demo. THR-1167 removed the
+// `encounter-choice-c2` pair when its prototype component was retired; this gate is
+// what makes the *next* such removal fail loudly instead of silently.
+
+describe('styleguide nav and sections stay in sync', () => {
+  function navIds(source: string): string[] {
+    const registry = source.match(/const SECTIONS = \[([\s\S]*?)\n\];/);
+    if (!registry) return [];
+    return [...registry[1].matchAll(/id: '([^']+)'/g)].map((m) => m[1]);
+  }
+
+  function sectionIds(source: string): string[] {
+    return [...source.matchAll(/id="section-([^"]+)"/g)].map((m) => m[1]);
+  }
+
+  // Vacuity guard, first: if either matcher stops parsing the file, both
+  // assertions below go green against empty sets and prove nothing.
+  it('parses a non-empty nav registry and section set', () => {
+    expect(navIds(styleGuideSource).length).toBeGreaterThan(0);
+    expect(sectionIds(styleGuideSource).length).toBeGreaterThan(0);
+  });
+
+  it('every nav entry anchors a section that exists', () => {
+    const sections = sectionIds(styleGuideSource);
+    const orphaned = navIds(styleGuideSource).filter((id) => !sections.includes(id));
+    expect(
+      orphaned,
+      `nav entries pointing at no section (dead anchors): ${orphaned.join(', ')}`,
+    ).toEqual([]);
+  });
+
+  it('every section is reachable from the nav', () => {
+    const nav = navIds(styleGuideSource);
+    const unreachable = sectionIds(styleGuideSource).filter((id) => !nav.includes(id));
+    expect(
+      unreachable,
+      `sections with no nav entry (unreachable by scroll): ${unreachable.join(', ')}`,
+    ).toEqual([]);
+  });
+
+  // Negative control — the matchers must actually fail on the shape they exist
+  // to catch, or the two assertions above are green on a file they never read.
+  it('detects a nav entry whose section was removed', () => {
+    const withSectionGone = styleGuideSource.replace('id="section-tokens"', 'id="section-renamed"');
+    expect(navIds(withSectionGone)).toContain('tokens');
+    expect(sectionIds(withSectionGone)).not.toContain('tokens');
+  });
+});

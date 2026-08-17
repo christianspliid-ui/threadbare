@@ -59,8 +59,6 @@ import {
   type Section as DetailPageSection,
 } from '../../types/detailPage';
 import { CulturePhoneticsInspector } from '../Game/debug/CulturePhoneticsInspector';
-import { EncounterChoiceCard } from '../Game/Encounter/EncounterChoiceCard';
-import type { EncounterChoiceContract } from '../../types/encounter-contract';
 import { WorldGraph } from '../../engine/graph';
 import { buildPhoneticSignature } from '../../engine/culturePhonetics';
 import type { CultureIdentity } from '../../types/culture';
@@ -133,7 +131,6 @@ const SECTIONS = [
   { id: 'activityicon', label: 'ActivityIcon' },
   { id: 'detail-page', label: 'DetailBreadcrumb / Section / DetailModal' },
   { id: 'culture-phonetics', label: 'CulturePhoneticsInspector' },
-  { id: 'encounter-choice-c2', label: 'EncounterChoiceCard (C2)' },
 ];
 
 // ─── Detail-page sample data ──────────────────────────────────────────────────
@@ -282,37 +279,6 @@ const SAMPLE_ENTITY_SECTIONS = [
         { id: 'm2', name: 'Bram Coldstone', role: 'Heavy', tier: 1 },
       ],
     },
-  },
-];
-
-const STYLEGUIDE_CHOICE_FIXTURES: readonly EncounterChoiceContract[] = [
-  {
-    reach: 'iron',
-    cost: 'small_breath',
-    god_verb: 'Stir her resolve.',
-    agent_reaction: "Her shoulders set. She closes the distance and meets Veiren's eye.",
-    tilts_toward: 'a wound, a debt, or his favour earned',
-    moral_axis_pole: 'conqueror',
-    fail_forward: 'she stands her ground; the queue notices',
-  },
-  {
-    reach: 'eye',
-    cost: 'fuller_breath',
-    god_verb: 'Sharpen her sight.',
-    agent_reaction: 'Her gaze flicks past Veiren to the trader. Whatever he hides, she will see it.',
-    tilts_toward: 'knowledge, a thread to follow',
-    moral_axis_pole: 'seeker',
-    fail_forward: 'she sees too much; what she sees marks her',
-    consumes_item: "Captain's token",
-  },
-  {
-    reach: 'heart',
-    cost: 'deep_draught',
-    god_verb: 'Soften her stance.',
-    agent_reaction: "She finds the small folk's silence and gives it. Veiren picks another.",
-    tilts_toward: 'a vow deepened, a story moved sideways',
-    moral_axis_pole: 'sworn',
-    fail_forward: 'the trader runs anyway; the vow holds',
   },
 ];
 
@@ -1207,43 +1173,6 @@ export default function StyleGuide() {
               <GameErrorBoundary>
                 <Label>Debug panel tab — shows phoneme inventory + sample names per culture. Re-roll samples button regenerates names.</Label>
                 <SamplePhoneticInspector />
-              </GameErrorBoundary>
-            </div>
-          </section>
-
-          {/* ── EncounterChoiceCard (Phase C2) ── */}
-          <section id="section-encounter-choice-c2" style={{ marginBottom: SECTION_GAP }}>
-            <SectionHeading ornamental>EncounterChoiceCard (C2)</SectionHeading>
-            <div style={{ marginTop: '1.25rem' }}>
-              <GameErrorBoundary>
-                <Label>
-                  Center-column primitive. Choice cards take the encounter-author-supplied
-                  `moral_axis_pole` directly. Sample shows the three classic Iron / Eye / Heart
-                  leans; the rightmost card is the selected state.
-                </Label>
-                <div
-                  style={{
-                    marginTop: '1rem',
-                    padding: '1.5rem',
-                    background: 'var(--bg-surface)',
-                    border: '1px solid var(--border-subtle)',
-                    borderRadius: 8,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '1.25rem',
-                  }}
-                >
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem' }}>
-                    {STYLEGUIDE_CHOICE_FIXTURES.map((choice, idx) => (
-                      <EncounterChoiceCard
-                        key={choice.god_verb}
-                        choice={choice}
-                        selected={idx === 2}
-                        dimmed={false}
-                      />
-                    ))}
-                  </div>
-                </div>
               </GameErrorBoundary>
             </div>
           </section>

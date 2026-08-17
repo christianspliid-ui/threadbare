@@ -311,6 +311,11 @@ export function playResolveNote(reach: string): void {
  * The latch resets on `beginTensionReveal()` (next resolution) or
  * `resetRegistrationCueLatch()`.
  */
+// TODO(THR-1168): call-less in production since THR-1049 deleted its only caller
+// (`EffectRegistration/_shared.tsx`). Kept by THR-1167 as a cue-library API awaiting
+// a consumer — `encounterSoundDesign.test.ts` asserts its synthesis directly, so the
+// coverage is real rather than a snapshot on an unmounted component. THR-1168 carries
+// the wire-or-retire call, naming the EncounterVeil consequence-chip block as producer.
 export function playRegistrationCue(kind: string): void {
   if (registrationCueFired) return;
   registrationCueFired = true;
