@@ -249,6 +249,31 @@ const BRIDGE_STEP: ActionStep = {
   nudges: BRIDGE_HAND,
 };
 
+/**
+ * The woman taking coppers for the crossing — the scene's subject, cast by the scene.
+ *
+ * THR-1165: the `hidden_mark` below used to aim at `$cast:keeper`, which reads as
+ * this woman and is not. `keeper` came from the inherited `wayside` default, where
+ * it is a bind-only hermit called "Wayside Keeper" — so the mark landed on a passing
+ * hermit when one happened to stand there and on nobody otherwise. A materializing
+ * spec makes the person the mark is about exist whenever the mark is written.
+ */
+const BRIDGE_KEEPER_SPEC: EncounterSupportActorSpec = {
+  kind: 'actor',
+  key: 'bridge_keeper',
+  delivery: 'lazy-materialize-on-trigger',
+  persistence: 'must-persist',
+  supportRole: 'bridge_toll_keeper',
+  spawnNpcRole: 'hermit',
+  spawnName: 'The Keeper at the Crossing',
+};
+
+/** Composed, not replaced — same reasoning as {@link CROSSROADS_SUPPORT_BUNDLE}. */
+const BRIDGE_SUPPORT_BUNDLE: EncounterSupportBundle = [
+  ...DEFAULT_SETTING_SUPPORT_BUNDLES.wayside,
+  BRIDGE_KEEPER_SPEC,
+];
+
 export const SLICE_UNSAFE_BRIDGE: UnifiedActionTemplate = {
   id: SLICE_TEMPLATE_IDS.bridge,
   rarityTier: 2,
@@ -271,6 +296,8 @@ export const SLICE_UNSAFE_BRIDGE: UnifiedActionTemplate = {
       'half a day upstream, if you like wet boots.”',
   },
   locationSubtypes: expandSettings(['wayside']),
+  // THR-1165 — casts the toll keeper, so the mark on her lands on her.
+  supportBundle: BRIDGE_SUPPORT_BUNDLE,
   traitVariants: [
     {
       // Being True, they will not pretend the bridge is better than it looks —
@@ -320,8 +347,8 @@ export const SLICE_UNSAFE_BRIDGE: UnifiedActionTemplate = {
             // discoverable later instead of a detail only the prose knows.
             //
             // This one survives the THR-1153 fold because it anchors to a real
-            // graph object: `$cast:keeper` is a cast actor the template declares
-            // and the world instantiates. The `intelligence` record that sat
+            // graph object: `$cast:bridge_keeper` is a cast actor the template
+            // declares and the world instantiates. The `intelligence` record that sat
             // beside it did not — it filed knowledge about the ford, and the ford
             // is nowhere in the game state. THR-1141 added it to back the chip
             // that is now folded, so it leaves with the claim it existed to
@@ -331,11 +358,15 @@ export const SLICE_UNSAFE_BRIDGE: UnifiedActionTemplate = {
               category: 'concealed_action',
               severity: 0.4,
               label: 'Takes a toll on planking she knows is failing',
+              // THR-1165: was `$cast:keeper`. The comment above claimed the
+              // template declared that key; it did not — `keeper` arrived from
+              // the inherited `wayside` default as a bind-only hermit, so this
+              // mark landed on scenery when it landed at all.
               // `investigation` only. `wayside` is a *setting class*, not a
               // template-id prefix — reveal families match by id prefix, so
               // naming it would have made this mark unrevealable by
               // construction (caught by `revealFamilyLiveness.test.ts`).
-              targetAgentId: '$cast:keeper',
+              targetAgentId: '$cast:bridge_keeper',
               revealFamilies: ['investigation'],
             },
           ],
@@ -1273,6 +1304,31 @@ const CARAVAN_SLIP_STEP: ActionStep = {
   nudges: CARAVAN_SLIP_HAND,
 };
 
+/**
+ * The man who walks at the front of the column and decides who travels with it.
+ *
+ * THR-1165: the `bond_change` below used to aim at `$cast:keeper` — the inherited
+ * `wayside` hermit — so the bond the ending describes ("thirty people can name the
+ * stranger who walked them in") was either written onto a roadside hermit with no
+ * connection to the column, or, far more often, onto nobody at all. The caravan
+ * master is the party to that bond, so the scene casts him.
+ */
+const CARAVAN_MASTER_SPEC: EncounterSupportActorSpec = {
+  kind: 'actor',
+  key: 'caravan_master',
+  delivery: 'lazy-materialize-on-trigger',
+  persistence: 'must-persist',
+  supportRole: 'caravan_master',
+  spawnNpcRole: 'merchant',
+  spawnName: 'The Caravan Master',
+};
+
+/** Composed, not replaced — same reasoning as {@link CROSSROADS_SUPPORT_BUNDLE}. */
+const CARAVAN_SUPPORT_BUNDLE: EncounterSupportBundle = [
+  ...DEFAULT_SETTING_SUPPORT_BUNDLES.wayside,
+  CARAVAN_MASTER_SPEC,
+];
+
 export const SLICE_RIDERS_BEHIND_CARAVAN: UnifiedActionTemplate = {
   id: SLICE_TEMPLATE_IDS.caravan,
   rarityTier: 2,
@@ -1296,6 +1352,9 @@ export const SLICE_RIDERS_BEHIND_CARAVAN: UnifiedActionTemplate = {
       'they will not be polite about the other twenty-nine of us.”',
   },
   locationSubtypes: expandSettings(['wayside']),
+  // THR-1165 — casts the caravan master, so the bond the ending describes binds
+  // the man who asked rather than the wayside default's ambient hermit.
+  supportBundle: CARAVAN_SUPPORT_BUNDLE,
   traitVariants: [
     {
       // Warmth opens doors that questions cannot.
@@ -1341,7 +1400,9 @@ export const SLICE_RIDERS_BEHIND_CARAVAN: UnifiedActionTemplate = {
             // both are written rather than described.
             {
               kind: 'bond_change',
-              withAgentId: '$cast:keeper',
+              // THR-1165: was `$cast:keeper` — the inherited wayside hermit, not
+              // the man who walks at the front of the column.
+              withAgentId: '$cast:caravan_master',
               sentimentDelta: SLICE_CARAVAN_MASTER_SENTIMENT,
               trustDelta: SLICE_CARAVAN_MASTER_TRUST,
             },
@@ -3179,6 +3240,32 @@ const SWINDLER_FORK: ActionStepBranch = {
   fallback: SWINDLER_LAW_STEP,
 };
 
+/**
+ * The paper-seller himself — the man the mark is about.
+ *
+ * THR-1165, and the sharpest case of the three. The `hidden_mark` below used to aim
+ * at `$cast:trader`, which is the inherited `urban` default's ambient "Market
+ * Trader" — an honest merchant. A mark labelled *"Sells deeds to land that was never
+ * his"* written onto that person is not a missing write, it is a false accusation
+ * against a bystander, discoverable later by exactly the investigation and merchant
+ * content the mark exists to feed. The swindler is cast so the mark has its man.
+ */
+const SWINDLER_SPEC: EncounterSupportActorSpec = {
+  kind: 'actor',
+  key: 'swindler',
+  delivery: 'lazy-materialize-on-trigger',
+  persistence: 'must-persist',
+  supportRole: 'deed_swindler',
+  spawnNpcRole: 'merchant',
+  spawnName: 'The Paper-Seller',
+};
+
+/** Composed, not replaced — same reasoning as {@link CROSSROADS_SUPPORT_BUNDLE}. */
+const SWINDLER_SUPPORT_BUNDLE: EncounterSupportBundle = [
+  ...DEFAULT_SETTING_SUPPORT_BUNDLES.urban,
+  SWINDLER_SPEC,
+];
+
 export const SLICE_SWINDLER_FOUND: UnifiedActionTemplate = {
   id: SLICE_TEMPLATE_IDS.swindlerFound,
   rarityTier: 3,
@@ -3200,6 +3287,9 @@ export const SLICE_SWINDLER_FOUND: UnifiedActionTemplate = {
       'handcart, from the mouths of the people it ruined.',
   },
   locationSubtypes: expandSettings(['urban']),
+  // THR-1165 — casts the paper-seller, so the mark naming his crime names him
+  // and not the ambient market trader the urban default would have supplied.
+  supportBundle: SWINDLER_SUPPORT_BUNDLE,
   aftermathConfig: {
     // The deciding step, not the fork's own index — see THR-979 on the
     // crossroads config. SWINDLER_FORK declares `branchOnStep: 0`.
@@ -3469,7 +3559,9 @@ export const SLICE_SWINDLER_FOUND: UnifiedActionTemplate = {
               category: 'concealed_action',
               severity: 0.5,
               label: 'Sells deeds to land that was never his',
-              targetAgentId: '$cast:trader',
+              // THR-1165: was `$cast:trader` — the urban default's ambient honest
+              // merchant. This mark names a crime; it must name its author.
+              targetAgentId: '$cast:swindler',
               revealFamilies: ['investigation', 'merchant', 'social.investigate_reputation'],
             },
             {
