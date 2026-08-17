@@ -1400,6 +1400,68 @@ export const CONTRACTS: readonly Contract[] = [
     // unrelated PR — a recorded boundary, not an oversight.
   },
   {
+    id: 'reward-draw-shares-one-seeded-draw-with-the-step-route',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      'A specific ending can hand out a random matching prize — and it draws it exactly the way the step route does, so the two can never pay out differently.',
+    ulTerms: ['Encounter', 'Attachment', 'Outcome Band'],
+    mechanism: {
+      kind: 'function',
+      symbols: [
+        // The one draw path both routes call.
+        'drawSeededReward',
+        'mapActionOutcomeToRewardOutcome',
+        // The category/tag predicate the authoring-time gate reuses verbatim.
+        'rewardCategoryNodeQuery',
+        'rewardCandidateMatchesTags',
+      ],
+      module: 'src/engine/rewardPool.ts',
+    },
+    writeSites: [
+      'src/engine/encounterAftermath.ts',
+      'src/engine/unifiedActionResolution.ts',
+    ],
+    readSites: ['src/engine/nudgeGrantLiveness.ts'],
+    // THR-1146, the fourth primitive of the consequence-palette expansion.
+    //
+    // The contract worth recording is not "an effect grants an item" — it is that
+    // there is exactly **one** seeded draw in the codebase and two callers of it.
+    // The obvious build was to copy the twenty lines out of `resolveUnifiedReward`
+    // into a new dispatcher case; that produces two draws which agree on the day
+    // they are written and diverge the first time either tier curve is tuned, with
+    // nothing to notice. So the step route was moved onto `drawSeededReward` in the
+    // same commit, and identity is a property of the code rather than a claim a
+    // test has to keep re-checking.
+    //
+    // The test still asserts it, because the property is what the structure is for:
+    // the dispatcher's drawn template is compared against a direct call with the
+    // same seed key, and a *different* key is shown to draw differently — otherwise
+    // "identical" would be satisfied by a draw that ignored its seed. Falsified by
+    // perturbing the dispatcher's seed key: the identity arm goes red, alone.
+    //
+    // `readSites` is the authoring-time gate, and it is a real cross-boundary read
+    // rather than bookkeeping. `validateRewardDrawPools` answers "would this recipe
+    // draw anything?" by calling the engine's own category mapping and tag
+    // predicate over the seed catalogs. A gate that reimplemented that mapping
+    // would drift from the runtime it guards, which is the exact failure it exists
+    // to prevent (THR-844: 66 dead references nobody saw for months, because a dead
+    // reference costs nothing at runtime).
+    //
+    // Known and deliberate limit: the gate is band-agnostic. `assembleRewardPool`
+    // additionally weights by the outcome's tier curve, so a recipe matching only
+    // tier-4 items really is empty at `critical_failure` — but the band is not
+    // knowable at authoring time, and the question worth gating is the one that is.
+    // The runtime `aftermath_reward_draw_empty` trace covers the rest.
+    //
+    // Also deliberate: `resolveUnifiedReward` now passes a `recipientId`, where it
+    // previously passed none. That feeds only the companion cap/unique filters
+    // (THR-1096), which the orchestrator route has always passed and this one never
+    // did — so companion category weights were silently unreachable from step
+    // metadata. Verified inert on the shipped corpus before the change: no content
+    // sets a `companion` weight in a step `rewardPool`.
+  },
+  {
     id: 'nudge-card-cost-channels-detection-and-doom',
     producerSystem: ENCOUNTERS,
     consumerSystem: QUINTESSENCE,

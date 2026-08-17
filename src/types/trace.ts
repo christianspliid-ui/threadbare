@@ -386,6 +386,8 @@ export type TraceCategory =
   | 'aftermath_agent_relocation'
   | 'aftermath_invalid_tally_key'
   | 'aftermath_membership_change'
+  | 'aftermath_reward_draw'
+  | 'aftermath_reward_draw_empty'
   | 'aftermath_invalid_tally_key_rate_limited'
   | 'aftermath_sentinel_bound'
   | 'agent_validation'
@@ -744,6 +746,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'aftermath_agent_relocation',
   'aftermath_invalid_tally_key',
   'aftermath_membership_change',
+  'aftermath_reward_draw',
+  'aftermath_reward_draw_empty',
   'aftermath_invalid_tally_key_rate_limited',
   'aftermath_sentinel_bound',
   'agent_validation',
@@ -1650,7 +1654,9 @@ export interface EncounterAftermathEffectTrace extends TraceBase {
     // ratchet (THR-1065) is what keeps that direction of travel.
     | 'agent_relocation'
     // THR-1144.
-    | 'membership_change';
+    | 'membership_change'
+    // THR-1146.
+    | 'reward_draw';
   /** Kind-specific payload for inspection */
   effectDetail: Readonly<Record<string, unknown>>;
   success: boolean;
@@ -1870,6 +1876,63 @@ export interface MembershipChangeTrace extends TraceBase {
   role?: string;
   templateId?: string;
   // Attribution back to the ending that moved them.
+  encounterId?: string;
+  actionId?: string;
+  reactionId?: string;
+  effectIndex?: number;
+}
+
+/**
+ * Trace: a `reward_draw` aftermath effect drew a random prize (THR-1146).
+ *
+ * `roll` and `poolSize` are both recorded because together they make the draw
+ * *re-derivable*: the same seed key and the same pool reproduce the same prize,
+ * so a surprising item is diagnosable from the trace alone rather than by
+ * replaying the encounter.
+ *
+ * `isBadOutcome` marks the draw that flipped to the harmful table — a failure
+ * band mostly hands out a wound, not a blade, and the trace should say which
+ * table it read.
+ */
+export interface RewardDrawTrace extends TraceBase {
+  category: 'aftermath_reward_draw';
+  /** The drawn template, and the instance it became on the recipient. */
+  drawnTemplateId: string;
+  instanceId: string;
+  templateName?: string;
+  tier?: number;
+  attachmentCategory?: string;
+  poolSize: number;
+  roll: number;
+  isBadOutcome: boolean;
+  /** Who received it — may differ from the actor when the effect names a target. */
+  recipientId: string;
+  templateId?: string;
+  // Attribution back to the ending that paid out.
+  encounterId?: string;
+  actionId?: string;
+  reactionId?: string;
+  effectIndex?: number;
+}
+
+/**
+ * Trace: a `reward_draw` matched nothing and paid out nothing (THR-1146).
+ *
+ * This is the THR-844 rot class caught at runtime. `check:encounter` fails an
+ * empty recipe at authoring time, so a live one means either the world has not
+ * seeded the catalog this recipe wants, or the recipe reached a world where its
+ * category genuinely has no candidates. Fail-soft by contract (NFP #4): the
+ * encounter proceeds, and this trace is the only evidence — which is why it
+ * carries the whole recipe rather than a summary.
+ */
+export interface RewardDrawEmptyTrace extends TraceBase {
+  category: 'aftermath_reward_draw_empty';
+  /** The categories and tags that matched nothing — enough to fix the content from. */
+  categoryWeights: Readonly<Record<string, number>>;
+  tagFilters?: readonly string[];
+  isBadOutcome: boolean;
+  recipientId: string;
+  templateId?: string;
   encounterId?: string;
   actionId?: string;
   reactionId?: string;
@@ -2303,6 +2366,8 @@ export type TraceEntry =
   | BondChangeAppliedTrace
   | AgentRelocationTrace
   | MembershipChangeTrace
+  | RewardDrawTrace
+  | RewardDrawEmptyTrace
   | RelocationResolvedTrace
   // Companions (THR-1096)
   | CompanionJoinedTrace

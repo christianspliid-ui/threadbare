@@ -22,7 +22,7 @@
  *                            abstract-noun measure is a suffix proxy that counts
  *                            domain vocabulary against a template, so it ranks
  *                            rather than gates.
- *   3. Reference liveness    `validateNudgeGrantRefs` — every id a card grants
+ *   3. Reference liveness    `validateNudgeGrantRefs` + `validateRewardDrawPools` — every id a card grants
  *                            resolves against built content. This is the
  *                            per-template sibling of `validateTraitRefs`, which
  *                            is a graph-wide sweep over every content surface
@@ -61,7 +61,7 @@ import {
 } from '../src/data/content-eval/compositionContract';
 import { RETROFIT_PENDING, isRetrofitPending } from '../src/data/content-eval/retrofitPending';
 import { auditTemplate } from '../src/data/content-eval/nudgeAuditDetectors';
-import { validateNudgeGrantRefs } from '../src/engine/nudgeGrantLiveness';
+import { validateNudgeGrantRefs, validateRewardDrawPools } from '../src/engine/nudgeGrantLiveness';
 import { NUDGE_GOLDEN_EXEMPLAR } from '../src/data/__fixtures__/nudge-exemplar/swollen-ford-exemplar';
 
 // ─── Args ────────────────────────────────────────────────────────────
@@ -196,9 +196,19 @@ interface TemplateResult {
 function runOne(template: UnifiedActionTemplate): TemplateResult {
   const composition = checkCompositionContract(template);
   const register = auditTemplate(template).failures;
-  const liveness = validateNudgeGrantRefs([template]).dead.map(
-    d => `step ${d.stepIndex} card '${d.nudgeId}' ${d.effectKind} → unknown ${d.refKind} '${d.ref}'`,
-  );
+  const liveness = [
+    ...validateNudgeGrantRefs([template]).dead.map(
+      d => `step ${d.stepIndex} card '${d.nudgeId}' ${d.effectKind} → unknown ${d.refKind} '${d.ref}'`,
+    ),
+    // THR-1146 — a `reward_draw` whose recipe matches no live attachment is the
+    // same rot in a different shape: nothing is misspelled, the query just
+    // selects nothing, and at runtime the prose promises a prize that never
+    // arrives. Tags carry their `#` — `'weapon'` matches nothing, `'#weapon'` does.
+    ...validateRewardDrawPools([template]).empty.map(
+      e => `${e.site} reward_draw → no candidate matches [${e.categoryWeights.join('/')}]`
+        + `${e.tagFilters.length ? ` tags ${e.tagFilters.join(' ')}` : ' (no tag filter)'}`,
+    ),
+  ];
   const tokens = tokenProblems(template);
   const forecast = forecastProblems(template);
 

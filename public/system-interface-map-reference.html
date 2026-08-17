@@ -534,6 +534,17 @@
   </div>
 
   <div class="section">
+    <h2>Spotlight — What the ending hands you
+      <span class="lead">Audited 2026-08-17 (audit-on-touch, THR-1146). Two routes, and the decision not to let them become two implementations.</span>
+    </h2>
+
+    <ul class="contracts">
+      <li class="live"><span class="flow">Authored consequence <span class="arrow">&#10231;</span> Attachment library — a specific ending hands out a <em>random</em> matching prize, drawn exactly the way the step route draws it</span><span class="chip live">LIVE</span>
+        <span class="note">THR-1146. The recipe machinery was never the missing part: <code>RewardPoolRecipe</code> and <code>assembleRewardPool</code> have always resolved a tag-filtered, tier-weighted draw. It was reachable only from step <code>successMetadata</code>/<code>failureMetadata</code>, so a <em>band</em> or a <em>reaction</em> could spawn one fixed authored artifact and never a random matching one &mdash; "the keeper pays you off with a blade from the strongbox" had to name the blade. <code>reward_draw</code> is that recipe reaching the rest of the effect vocabulary, and it adds <strong>no tuning surface of its own</strong>: the tier curve comes from the action's already-resolved outcome band, so a better ending draws a better prize for free. The row exists for what was deliberately <em>not</em> done. Building the dispatcher case by copying the twenty lines out of <code>resolveUnifiedReward</code> yields two draws that agree on the day they are written and diverge the first time either curve is tuned, with nothing to notice &mdash; so the draw moved into <code>drawSeededReward</code> and the existing step route moved onto it in the same commit. There is now exactly one seeded draw and two callers of it, and identity is a property of the code rather than a claim a test keeps re-checking. The test asserts it anyway, comparing the dispatcher's prize against a direct call and showing a <em>different</em> seed key draws differently &mdash; otherwise "identical" would be satisfied by a draw that ignored its seed; falsified by perturbing the dispatcher's key, which reddens that arm alone. The authoring-time gate is the second arrow: <code>validateRewardDrawPools</code> answers "would this recipe draw anything?" by calling the <em>engine's own</em> category mapping and tag predicate over the seed catalogs, because a gate that reimplemented the mapping would drift from the runtime it guards &mdash; which is the exact failure it exists to prevent (THR-844: 66 dead references nobody saw for months, since a dead reference costs nothing at runtime). Tags carry their <code>#</code>; <code>'weapon'</code> is a well-typed string that matches zero templates. <strong>Known limit, recorded rather than papered over:</strong> the gate is band-agnostic, so a recipe matching only tier-4 items really is empty at <code>critical_failure</code> &mdash; the band is not knowable at authoring time, and the runtime <code>aftermath_reward_draw_empty</code> trace covers the rest.</span></li>
+    </ul>
+  </div>
+
+  <div class="section">
     <h2>Spotlight — Where a mortal belongs
       <span class="lead">Audited 2026-08-17 (audit-on-touch, THR-1144). A write whose reader was not missing but <em>present and dead</em>.</span>
     </h2>

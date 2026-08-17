@@ -15,6 +15,7 @@ import type {
   AttachmentCategory,
 } from '../types/attachments';
 import type { OutcomeType } from '../types/resolution';
+import type { UnifiedActionOutcome } from '../types/unifiedAction';
 import type { AttachmentEffect, ContentGrantEffect } from '../types/effects';
 import { mulberry32 } from '../lib/prng';
 import { applyResourceDelta } from './effects/resourceDelta';
@@ -34,6 +35,53 @@ export interface PoolEntry {
 }
 
 /**
+ * Which node type (and subcategory) a reward category draws from, or `null` for
+ * the categories that are not node-backed at all.
+ *
+ * Exported because the authoring-time gate (`validateRewardDrawPools`) has to
+ * ask *exactly* this question against the seed catalogs. A recipe naming tags
+ * that match nothing is a silently empty pool — the THR-844 rot class — and a
+ * gate that reimplemented the mapping would drift from the runtime it guards,
+ * which is the failure it exists to prevent (THR-1146).
+ */
+export function rewardCategoryNodeQuery(
+  category: AttachmentCategory,
+): { nodeType: 'artifact' | 'artifact_legendary' | 'trait'; subcategory?: string } | null {
+  switch (category) {
+    case 'possession':
+    case 'spell':
+      return { nodeType: 'artifact' };
+    case 'condition':
+    case 'blessing':
+    case 'curse':
+      return { nodeType: 'trait', subcategory: 'condition' };
+    case 'bestowed_power':
+      return { nodeType: 'trait', subcategory: 'bestowed' };
+    // Agreements and companions are catalog/registry-backed, not graph nodes —
+    // `assembleRewardPool` handles both before it ever reaches this mapping.
+    default:
+      return null;
+  }
+}
+
+/**
+ * Does a node-shaped candidate satisfy a recipe's tag filter?
+ *
+ * **Every** tag must be present, and tags carry their `#` in the library
+ * (`'#weapon'`, not `'weapon'`) — the single most likely way for an author to
+ * write a filter that matches nothing.
+ */
+export function rewardCandidateMatchesTags(
+  nodeTags: unknown,
+  tagFilters?: readonly string[],
+): boolean {
+  if (!tagFilters || tagFilters.length === 0) return true;
+  const tags = nodeTags as string[] | undefined;
+  if (!tags) return false;
+  return tagFilters.every(t => tags.includes(t));
+}
+
+/**
  * Map category to graph node search.
  */
 function getCandidateNodes(
@@ -41,45 +89,16 @@ function getCandidateNodes(
   category: AttachmentCategory,
   tagFilters?: string[],
 ): Array<{ id: string; tier: number }> {
-  let nodeType: 'artifact' | 'artifact_legendary' | 'trait';
-  let subcategoryFilter: string | undefined;
+  const query = rewardCategoryNodeQuery(category);
+  if (!query) return [];
 
-  switch (category) {
-    case 'possession':
-      nodeType = 'artifact';
-      break;
-    case 'condition':
-    case 'blessing':
-    case 'curse':
-      nodeType = 'trait';
-      subcategoryFilter = 'condition';
-      break;
-    case 'bestowed_power':
-      nodeType = 'trait';
-      subcategoryFilter = 'bestowed';
-      break;
-    case 'spell':
-      nodeType = 'artifact';
-      break;
-    case 'agreement':
-      return []; // agreements are edge-backed — handled separately via agreement catalog
-    default:
-      return [];
+  let nodes = graph.getNodesByType(query.nodeType);
+
+  if (query.subcategory) {
+    nodes = nodes.filter(n => n.properties.subcategory === query.subcategory);
   }
 
-  let nodes = graph.getNodesByType(nodeType);
-
-  if (subcategoryFilter) {
-    nodes = nodes.filter(n => n.properties.subcategory === subcategoryFilter);
-  }
-
-  if (tagFilters && tagFilters.length > 0) {
-    nodes = nodes.filter(n => {
-      const tags = n.properties.tags as string[] | undefined;
-      if (!tags) return false;
-      return tagFilters.every(t => tags.includes(t));
-    });
-  }
+  nodes = nodes.filter(n => rewardCandidateMatchesTags(n.properties.tags, tagFilters));
 
   return nodes.map(n => ({
     id: n.id,
@@ -239,6 +258,146 @@ export function resolveRewardRecipe(
     ...templateRecipe,
     tierCurve,
     badOutcomeChance,
+  };
+}
+
+// ─── The single seeded draw path (THR-1146) ────────────────────────────
+
+/**
+ * Normalise any {@link OutcomeType} to one of the four bands the tier curves
+ * are written for.
+ *
+ * `OutcomeType` carries a fifth member, `success_at_cost`, that
+ * {@link getTierCurveForOutcome} has no arm for — it would return `undefined`
+ * and the destructure in {@link resolveRewardRecipe} would throw, against
+ * NFP #4. Both existing callers happen to map it away before they get here, so
+ * the hole has never been reachable; closing it in the shared path means the
+ * third caller cannot reopen it.
+ */
+function normaliseRewardOutcome(outcome: OutcomeType): OutcomeType {
+  return outcome === 'success_at_cost' ? 'success' : outcome;
+}
+
+/**
+ * Which tier curve an *action-level* outcome reads (THR-1146).
+ *
+ * The step route has {@link OutcomeType} already; an aftermath reaction has the
+ * action's {@link UnifiedActionOutcome}, which additionally carries the two
+ * contested bands. A contest won is a success and a contest lost is a failure —
+ * the reward table has no third thing to say about them.
+ */
+export function mapActionOutcomeToRewardOutcome(
+  outcome: UnifiedActionOutcome | undefined,
+): OutcomeType {
+  switch (outcome) {
+    case 'critical_success': return 'critical_success';
+    case 'critical_failure': return 'critical_failure';
+    case 'failure':
+    case 'contested_lost': return 'failure';
+    case 'success':
+    case 'success_at_cost':
+    case 'contested_won': return 'success';
+    // An aftermath always follows a resolved action, so this is unreachable in
+    // practice; `success` keeps an unresolved one paying out rather than
+    // throwing (NFP #4).
+    default: return 'success';
+  }
+}
+
+export interface SeededRewardDrawParams {
+  readonly recipe: RewardPoolRecipe;
+  /** The already-resolved outcome band. Sets the tier curve and bad-outcome chance. */
+  readonly outcomeType: OutcomeType;
+  readonly seed: number;
+  readonly tick: number;
+  /** Whose luck this is — part of the seed key. */
+  readonly actorId: string;
+  /** The encounter/action template — part of the seed key. */
+  readonly templateId: string;
+  /** Who receives the prize. Defaults to `actorId`. */
+  readonly recipientId?: string;
+}
+
+export interface SeededRewardDraw {
+  /** The draw flipped to the harmful table (failure bands mostly do). */
+  readonly isBadOutcome: boolean;
+  readonly poolSize: number;
+  /** The draw roll, or null when the pool was empty and no draw happened. */
+  readonly drawRoll: number | null;
+  readonly drawnTemplateId: string | null;
+  /** Null when the pool was empty or the template refused to instantiate. */
+  readonly instantiation: InstantiateRewardResult | null;
+  readonly tier: number | null;
+  readonly templateName: string | null;
+}
+
+/**
+ * Resolve a {@link RewardPoolRecipe} into an actual prize: pick the tier curve
+ * from the outcome, roll the bad-outcome flip, assemble the pool, draw, and
+ * instantiate onto the recipient.
+ *
+ * **This is the one draw path.** THR-1146 added `reward_draw` as an aftermath
+ * effect kind, and the obvious way to build it — copy the twenty lines out of
+ * `resolveUnifiedReward` — would have produced two draws that agreed until the
+ * day one of them was tuned. So the step route was moved onto this function in
+ * the same change, and the identity the ticket asks for is a property of the
+ * code rather than a claim a test has to keep re-checking: there is only one
+ * implementation to be identical to.
+ *
+ * Callers own their own telemetry. The pool being empty is a *result*, not an
+ * error — it comes back as `poolSize: 0` with nulls, and each caller records it
+ * the way its surface wants (NFP #4).
+ */
+export function drawSeededReward(
+  graph: WorldGraph,
+  params: SeededRewardDrawParams,
+): SeededRewardDraw {
+  const { recipe, seed, tick, actorId, templateId } = params;
+  const recipientId = params.recipientId ?? actorId;
+
+  const rng = mulberry32(seed + tick * 41 + hashString(actorId) + hashString(templateId));
+  const resolved = resolveRewardRecipe(recipe, normaliseRewardOutcome(params.outcomeType));
+
+  // Roll order is load-bearing: bad-outcome flip first, then the draw. Both
+  // routes consume the same stream in the same order, so the same inputs give
+  // the same prize.
+  const badRoll = rng();
+  const isBadOutcome = badRoll < resolved.badOutcomeChance;
+  const effectiveRecipe = isBadOutcome
+    ? { ...resolved, categoryWeights: BAD_OUTCOME_CATEGORY_WEIGHTS, tagFilters: undefined }
+    : resolved;
+
+  // `recipientId` feeds the companion cap/unique filters (THR-1096); every other
+  // category ignores it.
+  const pool = assembleRewardPool(graph, effectiveRecipe, recipientId);
+  if (pool.length === 0) {
+    return {
+      isBadOutcome, poolSize: 0, drawRoll: null,
+      drawnTemplateId: null, instantiation: null, tier: null, templateName: null,
+    };
+  }
+
+  const drawRoll = rng();
+  const drawnTemplateId = drawFromPool(pool, drawRoll);
+  if (!drawnTemplateId) {
+    return {
+      isBadOutcome, poolSize: pool.length, drawRoll,
+      drawnTemplateId: null, instantiation: null, tier: null, templateName: null,
+    };
+  }
+
+  const instantiation = instantiateReward(graph, drawnTemplateId, recipientId, tick);
+
+  // Companion templates live in the registry, not the graph, so the node lookup
+  // misses them — read the registry for name and tier (THR-1096).
+  const companionTemplate = getCompanionTemplate(drawnTemplateId);
+  const templateNode = graph.getNode(drawnTemplateId);
+  const tier = companionTemplate?.tier ?? (templateNode?.properties?.tier as number) ?? 1;
+  const templateName = companionTemplate?.profession ?? templateNode?.name ?? null;
+
+  return {
+    isBadOutcome, poolSize: pool.length, drawRoll,
+    drawnTemplateId, instantiation, tier, templateName,
   };
 }
 
