@@ -2858,6 +2858,54 @@ so reformatting a table does not re-roll the corpus.
 Authoring rules and the full family table: `nudge-authoring-spec.md` § The Consequence
 Draw. Module: `src/data/content-eval/consequenceDraw.ts`.
 
+## Capability: The Plot-Hook Draw — the dice pick your premise too (THR-1147)
+
+The Consequence Draw above fixes the *back* of an encounter. This fixes the *front*, and
+it is the same failure treated the same way: asked to invent a premise under a deadline,
+an author writes the nearest one, and a corpus grown that way is all roadside trouble and
+shrine errands.
+
+```bash
+npm run draw:hooks -- <briefSlug> --reach <reach>      # three story seeds
+npm run draw:hooks -- --coverage                        # what the corpus has spent
+```
+
+Three **plot hooks** drawn from the project's own inspiration corpus — the Obsidian
+`Archetypes/` pages (Adventure & Quest, Event, Ordeal), the four recoverable numbered
+`Hook #NNN` seeds, and unshipped drafts — each printed with its themes, its source, and the
+weight it drew at. Take one as the premise's starting point, or blend two.
+
+**The hook is a starting point, not a contract, and that is the one hard difference from
+the consequence hand.** The hand is binding: `check:encounter` recomputes it and fails a
+family nothing wires. The hook is not checked at all, because nothing about a finished
+encounter could honestly be compared to a premise by a machine — creative drift is what a
+starting point is *for*. So this capability ships no template field and no gate rule. What
+it does require is that the brief record the roll:
+
+```
+plotHookRolled: hook.trial_by_combat, hook.scarcity_crisis, hook.unsafe_crossing
+plotHookTaken:  hook.trial_by_combat
+```
+
+That record is the only trace the hook leaves, and it is what the batch report reads to
+show hook and theme spread across a batch — six encounters sharing a theme being the
+finding worth having.
+
+**Reuse damping is the variety guarantee, mechanically.** Each hook carries `usedBy`, and
+its weight decays by `PLOT_HOOK_REUSE_DAMPING` (0.45) per recorded use, so a well-used hook
+keeps appearing but rarely, and the long tail gets its turn. **Stamp `usedBy` when your
+encounter ships** — nothing can do it for you, precisely because the hook left no trace on
+the template; an unstamped hook stays likelier than it deserves indefinitely.
+
+**Affinity flavors, it does not restrict.** A hook tagged for a reach draws at
+`PLOT_HOOK_AFFINITY_WEIGHT` (6) there and `PLOT_HOOK_BASE_WEIGHT` (1) elsewhere — the same
+non-zero-floor law as the consequence matrix, so a siege can surface in a `heart` brief and
+the interesting question becomes what a siege is about read through `heart`.
+
+Authoring rules: `nudge-authoring-spec.md` § The Plot-Hook Draw. Pipeline step:
+`encounter-pipeline` SKILL Step 0a. Module and catalog:
+`src/data/content-eval/plotHooks.ts`.
+
 ## Your aftermath prose is linted now — and half that screen is not yours (THR-1083)
 
 Two things to know before you write an ending, because the second one decides

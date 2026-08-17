@@ -51,6 +51,8 @@ import { execSync } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
 
+import { plotHookById } from '../src/data/content-eval/plotHooks';
+
 // ─── Constants (NFP #1) ──────────────────────────────────────────────
 
 /** Ruling 1. Not enforced — a batch may be short — but reported against. */
@@ -257,6 +259,62 @@ lines.push(
   '*Package View links resolve once THR-1046 ships; the spawn links are live today.*',
 );
 lines.push('');
+
+// ── Plot hooks (THR-1147) ──
+//
+// Read from the brief rather than the templates, because the hook is deliberately
+// not recorded on a template: it is a starting point, not a contract, and the
+// finished encounter is never checked against it. The brief is therefore the only
+// place the roll exists, which is exactly why recording it there is mandatory.
+if (briefPath && fs.existsSync(briefPath)) {
+  const brief = fs.readFileSync(briefPath, 'utf8');
+  const taken = [...brief.matchAll(/^\s*plotHookTaken:\s*(.+)$/gim)]
+    .flatMap(match => match[1].split(','))
+    .map(id => id.trim().replace(/[`,]/g, ''))
+    .filter(id => id !== '');
+
+  if (taken.length > 0) {
+    lines.push('## Plot hooks taken');
+    lines.push('');
+    lines.push(
+      '> The premise each encounter started from (THR-1147). A hook is a starting '
+        + 'point, never a contract — nothing checks the finished encounter against it, '
+        + 'so read this for **spread**, not for fidelity. Six hooks sharing a theme is '
+        + 'the finding.',
+    );
+    lines.push('');
+    lines.push('| Hook | Themes | Source | Times used before |');
+    lines.push('|---|---|---|---|');
+
+    const themeTally = new Map<string, number>();
+    for (const id of taken) {
+      const hook = plotHookById(id);
+      if (!hook) {
+        lines.push(`| \`${id}\` | — | ⚠️ not in the catalog | — |`);
+        continue;
+      }
+      for (const theme of hook.themes) {
+        themeTally.set(theme, (themeTally.get(theme) ?? 0) + 1);
+      }
+      lines.push(
+        `| \`${hook.id}\` | ${hook.themes.join(', ')} | ${hook.source} | ${hook.usedBy.length} |`,
+      );
+    }
+    lines.push('');
+
+    const spread = [...themeTally.entries()].sort((a, b) => b[1] - a[1]);
+    lines.push(
+      `**Theme spread:** ${spread.map(([theme, n]) => `${theme} ×${n}`).join(' · ') || '—'}`,
+    );
+    lines.push('');
+    lines.push(
+      '*A `usedBy` count above 0 means the hook had already been spent before this '
+        + 'batch — stamp the hook in `src/data/content-eval/plotHooks.ts` as each '
+        + 'encounter ships, or the damping that keeps the corpus varied never applies.*',
+    );
+    lines.push('');
+  }
+}
 
 // ── Roll-up ──
 const gateGreen = ids.filter(id => gateById.get(id)?.failed === false).length;

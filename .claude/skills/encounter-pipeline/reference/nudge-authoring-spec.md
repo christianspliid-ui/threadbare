@@ -981,6 +981,65 @@ lands. `durationOverride` sets the term when the scene names one (`null` = perma
 
 ---
 
+## The Plot-Hook Draw (THR-1147)
+
+**You do not invent the premise from nothing. You roll for it.**
+
+The Consequence Draw below fixes the *back* of an encounter — what happens to someone when
+it ends. This fixes the *front*: what the encounter is about at all. The same convergence
+applies and for the same reason — asked to invent a premise under a deadline, an author
+writes the nearest one, and a corpus grown that way is all roadside trouble and shrine
+errands.
+
+At brief time, run:
+
+```
+npm run draw:hooks -- <briefSeed> --reach <reach>
+```
+
+`briefSeed` is the slug the brief is filed under — not a template id, because at brief time
+the template does not exist yet. It prints **three story seeds** drawn from the project's
+own inspiration corpus (the Obsidian `Archetypes/` pages, the four recoverable numbered
+hooks, and unshipped drafts), each with its themes, its source, and the weight it drew at.
+
+**Take one as the starting point, or blend two.** Then record both on the brief:
+
+```
+plotHookRolled: hook.trial_by_combat, hook.scarcity_crisis, hook.unsafe_crossing
+plotHookTaken:  hook.trial_by_combat
+```
+
+**The hook is a starting point, not a contract — and this is the one hard difference from
+the Consequence Draw.** The hand below is *binding*: `check:encounter` recomputes it and
+fails a family nothing wires. The hook is not, and nothing checks the finished encounter
+against it, because there is nothing about a premise a machine could honestly compare.
+Drifting a long way from the hook you took is allowed and ordinary; the encounter that
+comes out is judged as an encounter. What is not optional is *recording the roll* — that is
+what makes hook coverage measurable across batches, which is the only reason the table
+improves anything.
+
+**Reuse damping is the variety guarantee, mechanically.** Each hook carries `usedBy`, the
+templates that started from it, and its weight decays by `PLOT_HOOK_REUSE_DAMPING` (0.45)
+per recorded use. A well-used hook keeps appearing, just rarely; the long tail of
+never-drawn archetypes gets its turn. **Stamp `usedBy` when your encounter ships** — in
+`src/data/content-eval/plotHooks.ts`, on the hook you took. Nothing can do this for you: the
+hook leaves no trace on the finished template by design, so an unstamped hook stays likelier
+than it deserves forever. `npm run draw:hooks -- --coverage` shows what the corpus has spent.
+
+**Reach affinity flavors, it does not restrict.** A hook tagged `iron`/`veil` draws at
+weight 6 in those reaches and 1 everywhere else — so a siege can still surface in a `heart`
+brief, and when it does the interesting question is what a siege is *about* when read
+through `heart`. Same law as the consequence matrix: the tags carry flavor, the floor
+carries the variety.
+
+> **On the numbering.** `vertical-slice.ts` cites `Hook #204`–`#207`, so a numbered catalog
+> existed in the THR-883 session. It is not in the repo, the vault, or any plan doc —
+> searched 2026-08-17 across all three. Those four numbers are preserved on their hooks;
+> the rest never had one, and none were invented, because a fabricated number would read as
+> recovered provenance.
+
+---
+
 ## The Consequence Draw (THR-1145)
 
 **You do not choose which kinds of consequence your encounter has. You draw them.**
