@@ -2144,6 +2144,42 @@ export interface UnifiedActionTemplate {
    */
   readonly openings?: Readonly<Record<string, string>>;
 
+  /**
+   * The consequence families this encounter drew at brief time (THR-1145).
+   *
+   * A hand of two (three at `rarityTier` ≥ 3) drawn from the reach-weighted table
+   * in `src/data/content-eval/consequenceDraw.ts`. The draw is a pure function of
+   * `id` + `reach` + `rarityTier`, so recording it here is a *claim* the gate
+   * recomputes rather than data anyone can edit — `check:encounter` fails a
+   * mismatch, and fails a recorded family that nothing wires.
+   *
+   * Optional because the corpus predates the draw. New factory output carries it;
+   * the legacy corpus is grandfathered by the field simply being absent, which is
+   * why this is additive rather than required (NFP #6).
+   *
+   * Values are `ConsequenceFamily` strings, typed as `string` here to keep
+   * `src/types/` from importing `src/data/` — the gate narrows them and rejects
+   * a name that is not a family.
+   */
+  readonly consequenceDraw?: readonly string[];
+
+  /**
+   * The one swap the author took against their drawn hand (THR-1145).
+   *
+   * The pressure valve that keeps a drawn `companion` out of an encounter with no
+   * persistent cast, without letting authors quietly regress to the five
+   * favorites: exactly one swap, recorded with its reason, and the traded-in
+   * family must still hold `CONSEQUENCE_SWAP_MIN_WEIGHT` in this reach. Zero
+   * unrecorded deviations — a recorded hand that does not match the computed one
+   * is a gate failure whether or not a swap is present.
+   */
+  readonly consequenceSwap?: {
+    readonly from: string;
+    readonly to: string;
+    /** Why the drawn family fought the fiction. Required — an unexplained swap is an unrecorded one. */
+    readonly reason: string;
+  };
+
   /** Encounter-network support that should be resolved at action start. */
   readonly supportBundle?: EncounterSupportBundle;
   /** Optional scrutiny/proof shell configs migrated from encounter packets. */

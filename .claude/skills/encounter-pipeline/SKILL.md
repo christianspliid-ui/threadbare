@@ -2,7 +2,7 @@
 name: encounter-pipeline
 description: Automated encounter pipeline v3 — the Encounter Factory line. Runs brief → draft → bounded critic loop → machine gates → live proof → batch report for composition-complete encounter delivery, one encounter or a batch of six. Triggers on "encounter pipeline", "draft encounter", "run encounter pipeline", "author encounter", "encounter batch", "run a batch", or "/encounter-pipeline".
 model: opus
-last_validated_against: 2026-08-16
+last_validated_against: 2026-08-17
 ---
 
 > **Load before authoring:** `Docs/canon/rulebook-quick-reference.md` (always — the synthesis layer for rules of play). Load `Docs/canon/rulebook.md` (full rulebook) when the work touches a specific rule of play and you need depth, status flags, or source citations.
@@ -194,10 +194,38 @@ Then the orchestrator reads the files the Canon page links to and injects them a
 
 If Obsidian MCP is unavailable, note it and proceed. The draft agent should not need to read these files itself.
 
+### Step 0b: Roll the Consequence Draw (THR-1145)
+
+Before dispatching the draft, roll each encounter's consequence hand and carry it into the
+brief:
+
+```
+npm run draw:consequences -- <templateId> --reach <reach> --rarity <n>
+```
+
+The template does not exist yet, so `--reach` is required — pass the reach the brief
+assigns. The hand is two families (three at rarity ≥ 3) the encounter **must wire in
+context**, drawn from a reach-weighted table; the command prints the concrete effect kinds
+that satisfy each. Inject the hand into the draft agent's prompt alongside the premise, and
+record it in the brief so the batch report can show what each encounter was asked for.
+
+**Why the roll is upstream of the draft rather than a choice inside it.** Told to "draw
+from the whole palette", every author reaches for the same three primitives — the
+convergence the palette census measured. Rolling first makes the variety structural
+instead of aspirational. The draw's rules, the family table, and the one-swap valve are in
+[`reference/nudge-authoring-spec.md`](reference/nudge-authoring-spec.md) § The Consequence
+Draw; the draft agent authors against that section, and `check:encounter` recomputes the
+hand from the template id at Step 3, so a hand cannot be quietly rewritten downstream.
+
+In batch mode, roll all six before dispatching any of them — the spread of families across
+the batch is part of what the batch report shows Christian, and a hand that lands six
+`possession` draws is worth noticing before six encounters are written.
+
 ### Step 1: Dispatch Pass 1 (Draft)
 
 Dispatch sub-agent with `agents/draft-prompt.md`, model `opus`.
-Inject: scale, premise, constraints, pre-read reference material.
+Inject: scale, premise, constraints, pre-read reference material, **and the encounter's
+consequence hand from Step 0b**.
 Agent writes: `<slug>-draft.md`
 
 ### Step 2: Dispatch Pass 2 (Editorial + Revision)
@@ -336,7 +364,7 @@ in [`reference/nudge-authoring-spec.md`](reference/nudge-authoring-spec.md) in o
 3. **The hand** — 4–8 `StepNudge`s per nudge-bearing step cut from the 21-type library: generic faces, mechanism-stating effect lines, ≥4 spheres, ≥1 ungated common option, ≤1 rider per hand, trait-only cards at cost 0, zero-essence cards priced on another channel, grants naming only built content
 4. **Band prose** — all six `StepOutcome`s covered; every nudge ≥1 failure-band fragment; big-delta cards cover both failure bands
 5. **Trait hooks** — all four questions answered explicitly (gate / variant / trait-only nudge / trait fragment); live refs only
-6. **Aftermath** — prizes, tolls, seeds as object references; tolls in words
+6. **Aftermath** — prizes, tolls, seeds as object references; tolls in words; **every family in the Step 0b consequence hand wired in context**, recorded in `consequenceDraw` (one recorded `consequenceSwap` allowed)
 7. **Images** — one generic image tag per library card + scene tag; genericity test documented
 8. **Evidence** — register scorer + detectors clean; 14-question answers recorded in the file doc comment
 
