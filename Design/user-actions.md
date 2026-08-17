@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-18 00:58 local (22:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-18 01:56 local (23:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -8,13 +8,13 @@
 
 An agent puts five candidates in front of you — the hunger vocabulary, the consequence chips (already rebuilt once, as the proof), region identity, mandate prose, follow-on tags — ranked against stated criteria; you rule on the order in chat. One sitting, no code. Say *"run the wave-1 sitting."*
 
-It was blocked on homework until this afternoon; all three background investigations are now finished, so nothing is missing but the sitting itself. Resolving it closes [the architecture map](https://linear.app/threadbare/issue/THR-1157/typed-game-state-architecture-machinery-first-wave-wayfinder-map) and turns it into one written plan per part plus one for the shared machinery.
+It was blocked on homework until yesterday afternoon; all three background investigations are finished, so nothing is missing but the sitting itself. Resolving it closes [the architecture map](https://linear.app/threadbare/issue/THR-1157/typed-game-state-architecture-machinery-first-wave-wayfinder-map) and turns it into one written plan per part plus one for the shared machinery.
 
-[Nations and named areas](https://linear.app/threadbare/issue/THR-1155/nations-and-named-areas-are-rendered-not-simulated-promote-both-to) (High, your own direction) and [Traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools) (waiting 50 h) remain good alternatives — name either and the session starts there. Note the sitting may decide the *scope* of the nations one, so doing it first risks designing the narrow version.
+[Nations and named areas](https://linear.app/threadbare/issue/THR-1155/nations-and-named-areas-are-rendered-not-simulated-promote-both-to) (High, your own direction) and [Traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools) (waiting 51 h) remain good alternatives — name either and the session starts there. Note the sitting may decide the *scope* of the nations one, so doing it first risks designing the narrow version.
 
 ### 2. Play two encounters and rule on them — [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to)
 
-Your held condition is met, and it was verified against the live build rather than assumed: the prose re-pass and the state-first chip copy are deployed on both of these.
+Your held condition is met, and it was re-verified against the live build this run rather than assumed: the prose re-pass and the state-first chip copy are both deployed on these two.
 
 **The Grateful Kin** — [play it](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin) · [good ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin&outcome=critical_success) · [bad ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin&outcome=critical_failure)
 **The Unsafe Bridge** — [play it](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge) · [good ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge&outcome=critical_success) · [costly ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge&outcome=success_at_cost)
@@ -37,6 +37,7 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
+- 2026-08-18: **six encounter-screen components nothing used any more are gone** — [THR-1167](https://linear.app/threadbare/issue/THR-1167/residue-of-the-encounter-prototype-tree-after-thr-1049-three-test-only) ([PR #1533](https://github.com/christianspliid-ui/threadbare/pull/1533)): the prototype residue, and the two pieces that were not residue — those became [THR-1168](https://linear.app/threadbare/issue/THR-1168/two-authored-encounter-audio-moments-have-no-live-caller-wire-or) rather than being deleted quietly.
 - 2026-08-17: **24 converted encounter templates now have a machine check on their pole binding** — [THR-1091](https://linear.app/threadbare/issue/THR-1091/converted-reach-specific-templates-have-no-polarity-guard) ([PR #1532](https://github.com/christianspliid-ui/threadbare/pull/1532)): the 24 reach trials nothing was checking.
 - 2026-08-17: **four prototype components that never reached the game are gone** — [THR-1049](https://linear.app/threadbare/issue/THR-1049/prototype-disposition-encounterscreen-castrail-casttile) ([PR #1531](https://github.com/christianspliid-ui/threadbare/pull/1531)): wire-or-retire, resolved by deletion.
 - 2026-08-17: **two review tools can find the avatar again** — [THR-1032](https://linear.app/threadbare/issue/THR-1032/two-debug-aftermath-accessors-cannot-see-the-ascendant-avatar) ([PR #1530](https://github.com/christianspliid-ui/threadbare/pull/1530)): re-checking before building found the fault wider than filed — the name lookup was dead for every character, not just the avatar.
@@ -46,7 +47,6 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 - 2026-08-17: **the raw engine word is off the choice card** — [THR-1048](https://linear.app/threadbare/issue/THR-1048/the-legacy-encounter-choice-card-breaks-laws-13-and-14-15percent) ([PR #1527](https://github.com/christianspliid-ui/threadbare/pull/1527)): the stance now says what the god does, not what the enum is.
 - 2026-08-17: **the publishing stoppage cleared itself** — the commit flagged at 17:00 published shortly after; the live site is current. No switch to flip.
 - 2026-08-17: **"the god sways the odds" is now the game's language** — [THR-1166](https://linear.app/threadbare/issue/THR-1166/content-sweep-the-god-decides-the-god-sways-odds-and-influences) ([PR #1525](https://github.com/christianspliid-ui/threadbare/pull/1525)) swept the content from your canon correction, plus a gate that keeps the distinction.
-- 2026-08-17: **two silent writes fixed** — [THR-1165](https://linear.app/threadbare/issue/THR-1165/two-dollarcast-sentinels-resolve-to-nothing-at-runtime-the-caravan) ([PR #1526](https://github.com/christianspliid-ui/threadbare/pull/1526)): the caravan master's bond and the swindler's mark were claimed by chips but never written.
 
 ---
 
