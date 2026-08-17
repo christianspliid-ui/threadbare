@@ -84,6 +84,8 @@ The full new-era feature set: `nudges` on every test step, `settings` + `opening
 
 Live player surface = `EncounterVeil` (mounted `GameView.tsx:4335`) fed by `buildUnifiedEncounterStageModel`. Note: `src/components/Game/Encounter/` (EncounterScreen, CastRail, EffectRegistration landings, OutcomeForecastBand) is **mounted only in `StyleGuide.tsx` and tests** — a THR-925/926 prototype, not player-reachable.
 
+> **Disposition recorded 2026-08-17 (THR-1049).** That prototype cluster was **deleted**, not wired. Each named member was displaced by a live surface that had already overtaken it — `EncounterScreen`/`EiraHeroPanel`/`CapabilityStrip` by the veil that `GameView` actually mounts; `CastRail`/`CastTile` by the `CastStrip` THR-1041 built inside `EncounterVeil.tsx`, which borrowed their patterns and rejected their `CastTileData` props for having no producer; `OutcomeForecastBand` by `NudgePhaseShell`'s live forecast readout (`buildNudgePhaseModel` → `useNudgeHand` → `hand.forecast.tier`/`.word`); and the ten `EffectRegistration` landings by the consequence-chip block (THR-971 / THR-1082), which states the same registrations without animation. Per-component evidence is in THR-1049's closeout comment. What survives the cluster is filed as THR-1167.
+
 | Block | Renders where | Status |
 |---|---|---|
 | Step prose + openings/fragments | Veil narrative (`buildUnifiedEncounterStageModel.ts:184-220`; fragments threaded `:631-637`) | OK |
