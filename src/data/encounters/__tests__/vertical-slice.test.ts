@@ -524,3 +524,71 @@ describe('vertical slice — registration', () => {
     }
   });
 });
+
+/**
+ * THR-1153 — the Unsafe Bridge's folded PATH chip stays folded.
+ *
+ * Christian's 2026-08-17 ruling set the bar at anchoring: a chip's referent is an
+ * existing graph object, resolvable in the live world, named by the chip's prose.
+ * `slice.bridge.the_planking` claimed "the river crossing" / "the ford upstream" —
+ * landscape fiction on a template that registers at `wayside` (`camp | oasis |
+ * wilderness`), so it spawns where no river need exist. It was folded into the
+ * band overview rather than re-pointed.
+ *
+ * The regression this pins is a *re-growth*, not a rendering detail: the cheapest
+ * way to undo this fix is for a later authoring pass to put a chip back on the
+ * base face because the ending "looks empty". These assertions fail if that
+ * happens, and name the rule.
+ */
+describe('vertical slice — the bridge PATH chip stays folded (THR-1153)', () => {
+  const bridge = VERTICAL_SLICE_TEMPLATES.find(
+    (t) => t.id === 'encounter.slice.unsafe_bridge',
+  );
+
+  it('the template is present (guards the assertions below against a silent rename)', () => {
+    expect(bridge, 'encounter.slice.unsafe_bridge is not in VERTICAL_SLICE_TEMPLATES').toBeDefined();
+  });
+
+  it('the fallback base face carries no chips, so a plain success renders none', () => {
+    // Bands substitute `changes` WHOLESALE (`override.changes ?? baseChanges`),
+    // and this variant authors no `success` override — so the base face is the
+    // ending a plain success actually shows. That is the face the director was
+    // looking at when he filed the bug.
+    expect(bridge?.aftermathConfig?.fallback?.changes ?? []).toEqual([]);
+  });
+
+  it('no face anywhere in the template re-declares the folded chip id', () => {
+    const config = bridge?.aftermathConfig;
+    const offenders: string[] = [];
+    for (const variant of [...Object.values(config?.variants ?? {}), config?.fallback]) {
+      if (!variant) continue;
+      const faces: (readonly EncounterAftermathChange[])[] = [
+        variant.changes ?? [],
+        ...Object.values(variant.byOutcome ?? {}).map((b) => b?.changes ?? []),
+      ];
+      for (const changes of faces) {
+        for (const change of changes) {
+          if (change.id === 'slice.bridge.the_planking') offenders.push(change.id);
+        }
+      }
+    }
+    expect(
+      offenders,
+      'slice.bridge.the_planking was folded (THR-1153) — its referent is landscape '
+        + 'fiction, not a graph object. Re-anchor it to a real object or leave it folded.',
+    ).toEqual([]);
+  });
+
+  it("the keeper's hidden mark survives the fold — it anchors to a real cast actor", () => {
+    // The fold removed the `intelligence` record (filed about a ford that is not
+    // in the game state) and kept this one, which targets a declared cast key the
+    // world instantiates. Pinning it stops the fold from being widened into
+    // "delete the whole reaction".
+    const effects = bridge?.aftermathConfig?.fallback?.reactions?.[0]?.effects ?? [];
+    const kinds = effects.map((e: EncounterAftermathReactionEffect) => e.kind);
+    expect(kinds).toContain('hidden_mark');
+    expect(kinds, 'the ford intelligence record left with the chip it backed').not.toContain(
+      'intelligence',
+    );
+  });
+});
