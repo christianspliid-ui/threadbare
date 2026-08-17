@@ -1,29 +1,23 @@
 # User Action Required
 
-**Last updated:** 2026-08-17 02:56 local (00:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-17 04:00 local (02:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
 ### 1. Sample 2 of 6 from Batch 1 — [THR-1131](https://linear.app/threadbare/issue/THR-1131/retrofit-batch-1-the-slice-six-through-the-factory-line-contract-thr)
 
-Your ruling 6: you sample two encounters per batch. Batch 1 shipped 2026-08-15; both links are verified against `cca00b97`, the commit the site is serving right now.
+Your ruling 6: you sample two encounters per batch. Batch 1 shipped 2026-08-15; both links are verified against `f86fa4a3`, the commit the site is serving right now.
 
 - **[The Unsafe Bridge](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge)**
 - **[The Grateful Kin](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin)**
 
-Chosen because they are the two your own [THR-974](https://linear.app/threadbare/issue/THR-974/consequence-verdict-session-christian-rules-on-world-graph-consequence) rewrites targeted — the clearest read on whether the plainness re-register landed. You already opened the Unsafe Bridge and ruled on its aftermath chips; that became UI Law 56 and [THR-1141](https://linear.app/threadbare/issue/THR-1141/aftermath-chips-that-claim-state-nothing-wrote-law-56-content-sweep), now live. What is still owed is the sample verdict itself. **It overlaps ask 2 by construction** — the batch-1 retrofit *is* the slice six, so one sitting produces both.
+Chosen because they are the two your own [THR-974](https://linear.app/threadbare/issue/THR-974/consequence-verdict-session-christian-rules-on-world-graph-consequence) rewrites targeted, run back through the factory with your 10 rewrites as the critic's validation reference rather than verbatim text — your amendment when you approved the batch-1 brief. So they are the clearest read on whether the plainness re-register landed in the writing itself.
+
+You already opened the Unsafe Bridge once and ruled on its aftermath chips; that became UI Law 56 and [THR-1141](https://linear.app/threadbare/issue/THR-1141/aftermath-chips-that-claim-state-nothing-wrote-law-56-content-sweep), now live. What is still owed is the sample verdict.
 
 [All six side by side](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/batch-report-2026-08-15.md) · [PR #1494](https://github.com/christianspliid-ui/threadbare/pull/1494)
 
-### 2. The slice verdict session — [THR-907](https://linear.app/threadbare/issue/THR-907/slice-verdict-session-christian-rules-on-prose-firing-ui-and-game)
-
-*— from tb-orchestrator.* Play the 5-encounter slice end-to-end and rule on four things: **prose** (does the plain register read grounded), **firing** (does the rhythm work, what is your first pruning instinct), **UI** (the interface and modifier iconography with real nudge-native encounters), and **game** (is it fun to make these decisions). The consequence verdict was split out and you ruled it on [THR-974](https://linear.app/threadbare/issue/THR-974/consequence-verdict-session-christian-rules-on-world-graph-consequence).
-
-Nothing gates this. The every-tick premonition loop that was the last caveat ([THR-1137](https://linear.app/threadbare/issue/THR-1137/compulsion-premonition-the-gods-will-loops-every-tick-no-pending-gate)) merged 2026-08-16 and is live.
-
-Open with `run the slice verdict session`. "Needs another iteration" is a valid ruling on any of the four. Closing this closes the [encounter experience map](https://linear.app/threadbare/issue/THR-902/encounter-experience-redesign-vertical-slice-wayfinder-map).
-
-### 3. Batch 2 of the retrofit — [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to)
+### 2. Batch 2 of the retrofit — [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to)
 
 **Sequenced behind ask 1, and there is nothing to approve until it lands.** Your ruling 2 gates a batch behind an approved brief, and the ticket names your sample verdicts as direct input to the retrofit bar — so drafting batch 2's brief before your verdict would pre-empt the feedback it exists to absorb.
 
@@ -31,33 +25,34 @@ What remains after batch 1: the **camp seven** plus the two sequels. Roughly nin
 
 **Nudge-card art, when it next comes up.** Batch 1 measured the gap far smaller than the corpus sweep implied — 9 dead tags, 7 with honest matches already in the library, shipped by remapping. Standing recommendation the lane will follow unless you say otherwise: *remap where a match is honest, come to you only when it is not*, so the question stops recurring per batch.
 
-### 4. One attended dev-server session — [THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server)
+### 3. One attended dev-server session — [THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server)
 
 *— from daily-backlog-grooming.* Roughly 30 minutes: one `npm run dev`, five URLs, five screenshots at 1920×1080. Shipped UI changes carry test-level proof but no picture, because a scheduled run is refused a dev server and so structurally cannot capture one.
 
 This replaces separate tickets (THR-1109, THR-1125, THR-1126, THR-1127), consolidated 2026-08-16. It is a merge, not a prune — every parent, URL and Done-when is carried inside the one ticket. If you only get through part of it, say which, and the remainder is re-expanded rather than closed whole.
 
-### 5. An attended design session for [THR-790 — Traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)
+### 4. An attended design session for [THR-790 — Traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)
 
 *— from tb-orchestrator.* The longest-waiting agreed item on the board: created 2026-07-26 as part of the Traits program you settled that same day, blocker `Done` since then, unstaged for 22 days.
 
 What it lacks is a plan doc, and that needs you in the room — locations, artifacts, and draw-by-trait pools. Its sibling [THR-791 (wave 3)](https://linear.app/threadbare/issue/THR-791/traits-wave-3-minting-identity-god-earned-traits-relationship-traits) is blocked on the identical gap and clears once this one lands a plan doc, so the session buys two tickets, not one.
 
-Not urgent while the palette ladder stocks the shelf — though four of its seven rungs are now spent and a fifth is in the queue, so this rises as the remaining two land.
+Not urgent while the palette ladder stocks the shelf — though five of its seven rungs are now spent, so this rises as the remaining two land.
 
-### 6. Parked option, no urgency: a Tenacious-style trait
+### 5. Parked option, no urgency: a Tenacious-style trait
 
 An open design option with no ticket behind it. Explicitly not urgent — the safe default is that it stays parked, and nothing downstream is waiting on it. Listed only so it is not silently forgotten; say the word if you want it opened, and it will be given a ticket and a design pass.
 
 ## Resolved this period
 
-- 2026-08-17: **rung 4 of your palette ladder is live.** [THR-1144](https://linear.app/threadbare/issue/THR-1144/palette-primitive-membership-change-join-leave-and-rank-in-a-faction) — one person joining, leaving, or rising in a faction: recruitments, expulsions, defections, promotions. Merged at 00:20 and deployed. Rung 5, the tag-filtered random reward, went into the queue six minutes later.
+- 2026-08-17: **THR-907 is off your list — you had already ruled it.** [THR-907](https://linear.app/threadbare/issue/THR-907/slice-verdict-session-christian-rules-on-prose-firing-ui-and-game) carried all four verdicts (prose, firing, UI, game) from 2026-08-10, with the prose bar sharpened 2026-08-15. Two briefs re-asked you for them in error. The ticket stays open only for a plan-doc carve-up and successor-map charter — an agent's job in a design session.
+- 2026-08-17: **rung 5 of your palette ladder is live.** [THR-1146](https://linear.app/threadbare/issue/THR-1146/palette-primitive-reward-draw-tag-filtered-random-item-as-a) — an ending can hand out *a blade from the strongbox* rather than always the same authored blade. Merged and deployed at 01:44.
+- 2026-08-17: **rung 4 of your palette ladder is live.** [THR-1144](https://linear.app/threadbare/issue/THR-1144/palette-primitive-membership-change-join-leave-and-rank-in-a-faction) — one person joining, leaving, or rising in a faction: recruitments, expulsions, defections, promotions. Merged at 00:20 and deployed.
 - 2026-08-16: **your morning play session became four tickets, and all four have now shipped.** [THR-1136](https://linear.app/threadbare/issue/THR-1136/aftermath-screen-corner-chrome-removal-step-replay-from-the-ending) (aftermath screen), [THR-1137](https://linear.app/threadbare/issue/THR-1137/compulsion-premonition-the-gods-will-loops-every-tick-no-pending-gate) (premonition loop), [THR-1139](https://linear.app/threadbare/issue/THR-1139/premonition-modal-shows-no-portrait-of-the-mortal-add-entityvisual) (the missing portrait) and [THR-1138](https://linear.app/threadbare/issue/THR-1138/character-sheet-faction-section-prints-a-raw-percentage-62percent), where faction standing now reads as a word instead of `62%`. All deployed.
 - 2026-08-16: **rungs 2 and 3 of your palette ladder are live.** [THR-1142](https://linear.app/threadbare/issue/THR-1142/palette-primitive-agent-relocation-encounters-can-send-people) — encounters can send people somewhere — and [THR-1143](https://linear.app/threadbare/issue/THR-1143/palette-primitive-location-conditions-timed-readable-states-on-places) — timed states on places, a pass closed for the season, a festival, a plague scare. Both shipped and deployed, in the order you set.
 - 2026-08-16: **the chip ruling you gave this afternoon is now shipped and live.** [THR-1141](https://linear.app/threadbare/issue/THR-1141/aftermath-chips-that-claim-state-nothing-wrote-law-56-content-sweep) ([PR #1507](https://github.com/christianspliid-ui/threadbare/pull/1507)) — chips may only show state the engine actually wrote, and PATH is reserved for openings the game will act on. UI Law 56 records the rule.
 - 2026-08-16: **the vocabulary bleed you spotted on Sevrin is fixed and deployed.** [THR-1135](https://linear.app/threadbare/issue/THR-1135/rename-stone-virtue-word-dependable-careful-vocabulary-bleeds-into) — Stone's virtue word is now *Careful*, and three vignettes stopped borrowing Heart's meaning.
 - 2026-08-16: **THR-1129 is closed — that click is off your list.** [THR-1129](https://linear.app/threadbare/issue/THR-1129/encounter-factory-ruling-9-sitting-fable-drafts-the-amended-nudge) — its scope shipped 2026-08-09 under [THR-883](https://linear.app/threadbare/issue/THR-883/fable-encounter-writing-prototype-lock-the-exact-authoring-format); closed as a technical verdict rather than routed to you.
-- 2026-08-16: **the home tree started updating again on its own schedule.** [THR-1119](https://linear.app/threadbare/issue/THR-1119/autosync-has-been-stalled-12-consecutive-hours-on-three-modified) — fixed 08-15, the stranded note rescued rather than discarded.
 - 2026-08-16: **the checker that marked clean encounters red is fixed.** [THR-1132](https://linear.app/threadbare/issue/THR-1132/checkencounter-live-false-fails-gate-clean-content-reaction-borne) ([PR #1495](https://github.com/christianspliid-ui/threadbare/pull/1495)) — why the Batch 1 report carried five red ✗ against encounters whose gates were all green.
 
 ---
