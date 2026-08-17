@@ -394,7 +394,7 @@ export const WALL_OF_THE_MASON_LORD_TEMPLATE: UnifiedActionTemplate = withEncoun
     initiation:
       'A threaded mason-lord stands on a half-built wall across a mountain pass, weighing a permanence ' +
       'against a mercy. Raise the stone and seal one region safe behind it, or leave it unfinished and ' +
-      'keep the pass — and its danger, and its mercy — open. The god decides whether the doubt holds or breaks.',
+      'keep the pass — and its danger, and its mercy — open. A god can press the doubt toward holding, or toward breaking.',
     success:
       'The mason-lord makes the choice the god leans them toward — to finish the wall, or to walk away from ' +
       'it. A whole region, and the lands beyond it, are decided by where the stone stops.',
@@ -445,8 +445,8 @@ export const WALL_OF_THE_MASON_LORD_TEMPLATE: UnifiedActionTemplate = withEncoun
 
   description:
     'A regional-scale permanence-versus-mercy encounter: a threaded mason-lord can raise a great wall that ' +
-    'saves one region by dooming the lands beyond it, and the god decides whether the resolve holds or the ' +
-    'doubt breaks it. Reach: stone (Keeper ↔ Destroyer).',
+    'saves one region by dooming the lands beyond it, and a god can press the resolve to hold or let the ' +
+    'doubt break it. Reach: stone (Keeper ↔ Destroyer).',
 });
 
 export default WALL_OF_THE_MASON_LORD_TEMPLATE;

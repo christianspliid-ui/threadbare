@@ -766,6 +766,20 @@ before the systems pass runs.
    text), never "the god grants courage" — write what happens in the room. The
    `effectLine` is the exception by design: it is the rules text, and it says what the
    god does plainly.
+5b. **The god sways, never decides (Christian, 2026-08-17 — THR-1166).** Verbatim, from
+   an attended read of The Grateful Kin's description: *"the concept that the god decides
+   anything is wrong. the god does not decide, but sways the odds and influences the
+   outcomes."* This is the nudge model's founding charter (THR-772) and it binds every
+   player-facing prose field. Never write the god as the author of a **result** — "the
+   god decides whether the thanks is taken gracefully or fumbled". Present the fork and
+   the god's weight on it: *sways, tips, presses, leans, steadies, steers*. → "A god can
+   steady the thanks, or let it fumble."
+
+   The god choosing its **own action** is untouched by this rule and stays correct —
+   "the god chose how to pull", "the god may press to break the bargain" — because
+   picking which card to play is the game. The `divine outcome-authorship` detector
+   enforces exactly that line: a decision verb followed by a clause about the world
+   fails; followed by an infinitive it passes. See the detector spec below.
 6. **Every sentence has a job the player can feel (Christian, 2026-07-31).** For each
    sentence, name what the player should feel or understand from it. "It satisfies a
    design rule" is not an answer: pole staging, mechanic seeding, and payoff planting
@@ -807,7 +821,7 @@ Over budget is a signal the field is carrying another field's job, not an error.
 
 ## Detector spec (verbatim)
 
-Three detectors. **`nudgeAuditDetectors.ts` is the single authority for the vagueness
+Four detectors. **`nudgeAuditDetectors.ts` is the single authority for the vagueness
 term lists**; `nudgeAuthoringConstants.ts` re-exports from it and derives
 `VAGUENESS_LEXICON` rather than keeping a second copy. Where this page and the code
 disagree, **the code is the contract, not this page.**
@@ -875,6 +889,24 @@ loosening.
 
 Both are the writer stepping in to gloss their own image. One is a rhythm; three is a tic.
 The budget is per **encounter**, not per field.
+
+### Divine outcome-authorship — target **zero**, every field class (THR-1166)
+
+`DIVINE_DECISION_PATTERNS`. A sentence fails when the god is the grammatical author of a
+**result**: a decision verb (`decides`/`chooses`/`chose`/`picks`/`determines`) followed by
+`whether`/`what`/`which`/`who`/`if` **and a clause**, or by the bare phrase "the outcome".
+
+| Sentence | Verdict |
+|---|---|
+| "the god decides whether the debt is paid" | **fails** — a result |
+| "the god decides whether **to** press them" | passes — its own act |
+| "the god chose how to pull" | passes — its own act |
+| "is not the god's to decide" | passes — states the rule |
+
+The infinitive is the whole distinction, and it was drawn from measurement: an earlier
+pass also matched `how` and `between`, which flagged two correct lines about the god
+choosing its own intervention. Enforced in **every** field class, because there is no slot
+where the god picks the ending. See rule 5b above for the phrasing that replaces it.
 
 ### Abstraction-as-subject spot check
 

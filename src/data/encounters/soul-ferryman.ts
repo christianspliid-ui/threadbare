@@ -3,7 +3,7 @@
  * and BranchAwareAftermathConfig primitives.
  *
  * A fog-shrouded river crossing where the ferryman charges soul-qualities
- * instead of coin. The god must decide whether to break the bargain
+ * instead of coin. The god may press to break the bargain
  * or steady a courier through it.
  *
  * Design doc: Docs/plans/encounters/soul-ferryman-opus-final.md
@@ -507,7 +507,7 @@ export const SOUL_FERRYMAN_TEMPLATE: UnifiedActionTemplate = withEncounterContra
           'of light that sometimes breaks through fog and makes the world seem briefly navigable. ' +
           '{cast:diehl} steps onto the punt. {cast:vesik} names his price. The crossing continues. This is not ' +
           'rescue — it is a nudge that keeps the wound open and the community around it intact. ' +
-          'The god chooses the crossing over the courier, and the courier loses something he ' +
+          'The god’s weight falls on the crossing, not the courier, and the courier loses something he ' +
           'didn\'t know he was carrying.',
         targetLabel: '{cast:diehl}',
         essenceCost: 1,
@@ -531,7 +531,7 @@ export const SOUL_FERRYMAN_TEMPLATE: UnifiedActionTemplate = withEncounterContra
 
   description:
     'A fog-shrouded river crossing where the ferryman charges soul-qualities instead of coin. ' +
-    'The god must decide whether to break the bargain or steady a courier through it.',
+    'A god can press to break the bargain, or steady a courier through it.',
 });
 
 export const SOUL_FERRYMAN_TEMPLATE_CONTRACT: EncounterContract = buildLiteEncounterContract(SOUL_FERRYMAN_TEMPLATE);

@@ -187,6 +187,54 @@ export function vaguenessTermsFor(fieldClass: ProseFieldClass): readonly string[
     : EVASIVE_VAGUENESS_TERMS;
 }
 
+/**
+ * Divine outcome-authorship — the god presented as the author of a result
+ * (THR-1166). Enforced at zero in **every** field class.
+ *
+ * The nudge model's founding charter (THR-772,
+ * `Docs/plans/2026-07-26-nudge-model-encounter-system.md`) is that the god
+ * nudges, fate rolls, and the god never picks endings. Christian, reading The
+ * Grateful Kin's description line in an attended session 2026-08-17: *"the
+ * concept that the god decides anything is wrong. the god does not decide, but
+ * sways the odds and influences the outcomes."* The rule was canon from the
+ * start and was violated in shipped prose 21 times, so it is now a gate.
+ *
+ * ─── What this catches, and what it deliberately does not ────────────
+ * The target is the god deciding a **result**: "the god decides whether the
+ * thanks is taken gracefully or fumbled". The complement must therefore be a
+ * *clause about the world* — `whether`/`what`/`which`/`who`/`if` followed by a
+ * subject — or the bare phrase "the outcome".
+ *
+ * A god choosing its **own action** is not a violation and must not be caught,
+ * because that is the entire game: the player-god picks which card to play.
+ * The infinitive is what separates the two, and the negative lookahead is the
+ * whole of the distinction:
+ *
+ *   "the god decides whether **the debt is paid**"  → a result   → caught
+ *   "the god decides whether **to** press them"     → its own act → passes
+ *
+ * That line was drawn from measurement, not taste. A first pass also admitted
+ * `how` and `between`, and the corpus sweep immediately returned "The god
+ * perceived the threads of the forge and chose how to pull"
+ * (`crafting.quest.flawed_steel`) and "chose how to act before it broke"
+ * (`enc.brink_rescue`) — both correct prose about the god's own choice of
+ * intervention. Neither word survived.
+ *
+ * Two further shapes in the corpus are canon-*correct* and would be destroyed
+ * by a looser pattern, which is why the possessive form is absent here:
+ * `the-star-pilgrim.ts` ends a choice with "is not the god's to decide" — a
+ * line asserting the rule — and `the-veiled-consultation.ts` has "a cost the
+ * god had decided not to pay", which is the god's own ledger. A detector that
+ * fails the sentences stating the rule is measuring the wrong thing (the same
+ * trap THR-899 records for the vagueness lexicon).
+ *
+ * Matched per sentence, one hit maximum per sentence.
+ */
+export const DIVINE_DECISION_PATTERNS: readonly RegExp[] = [
+  /\bgods?\b[^.!?]{0,60}?\b(?:decides?|decided|deciding|chooses?|chose|choosing|picks?|picked|determines?|determined)\s+(?:whether|what|which|who|if)\s+(?!to\b)/i,
+  /\b(?:decides?|decided|deciding|determines?|determined)\s+the\s+outcome\b/i,
+];
+
 /** not-X-but-Y constructions. Matched per sentence, one hit maximum per sentence. */
 export const NOT_X_BUT_Y_PATTERNS: readonly RegExp[] = [
   /\bnot\s+(?:just|only|merely|simply)\b[^.!?]{0,90}?\bbut\b/i,
@@ -433,6 +481,19 @@ export function countSecondPerson(text: string): number {
 }
 
 /**
+ * Divine outcome-authorship constructions, one hit maximum per sentence
+ * (THR-1166). Any hit is a failure — the threshold is zero, not a density.
+ */
+export function countDivineDecision(text: string): number {
+  const sentences = text.split(/(?<=[.!?])\s+/u);
+  let total = 0;
+  for (const sentence of sentences) {
+    if (DIVINE_DECISION_PATTERNS.some(pattern => pattern.test(sentence))) total += 1;
+  }
+  return total;
+}
+
+/**
  * not-X-but-Y constructions, one hit maximum per sentence — a sentence that
  * trips three of the five patterns is one annotation, not three.
  */
@@ -455,6 +516,11 @@ export interface NudgeAuditScores {
   /** Vagueness-lexicon hits per 100 words. */
   readonly vaguenessDensity: number;
   readonly notXButY: number;
+  /**
+   * Sentences asserting the god authored an outcome (THR-1166). Gating at zero
+   * — the god sways the odds, fate settles the result.
+   */
+  readonly divineDecision: number;
   readonly secondPerson: number;
   /** Intensifier hits across every field class. Warn-level — never a failure. */
   readonly intensifiers: number;
@@ -469,9 +535,10 @@ export interface NudgeAuditScores {
   /**
    * Which *gating* thresholds this template trips. Empty ⇒ clean.
    *
-   * Four detectors only, since THR-1092: vagueness, not-X-but-Y, thin premise
-   * and second person. Abstraction reports into {@link warnings} — a caller that
-   * filters this array for `abstraction` is asserting nothing.
+   * Five detectors: vagueness, not-X-but-Y, thin premise and second person
+   * (THR-1092), plus divine outcome-authorship (THR-1166). Abstraction reports
+   * into {@link warnings} — a caller that filters this array for `abstraction`
+   * is asserting nothing.
    */
   readonly failures: readonly string[];
   /** Advisory signals that do not fail the template: abstraction, intensifiers. */
@@ -502,6 +569,11 @@ export function auditTemplate(template: UnifiedActionTemplate): NudgeAuditScores
   const vaguenessDensity = density(vaguenessHits, words);
   const intensifiers = countIntensifiers(text);
   const notXButY = countNotXButY(text);
+  // Swept over the whole template rather than a field class: divine
+  // outcome-authorship is wrong in a description, in an afterimage and in an
+  // effectLine alike, because the claim is false in all three — there is no
+  // slot where the god picks the ending (THR-1166).
+  const divineDecision = countDivineDecision(text);
   // Scoped to the NARRATIVE classes, the same way vagueness was scoped by
   // THR-899 and for the same reason: the rule is about who the prose addresses,
   // and one field class has a different audience (THR-1045).
@@ -520,7 +592,7 @@ export function auditTemplate(template: UnifiedActionTemplate): NudgeAuditScores
   const mortalDrawn = !(template.actorAffinities ?? []).includes('ascendant');
 
   const failures: string[] = [];
-  // Abstraction is deliberately NOT here — it is a warning (THR-1092). The four
+  // Abstraction is deliberately NOT here — it is a warning (THR-1092). The
   // lexicon/structure detectors below stay hard gates; the one *proxy* detector
   // does not.
   //
@@ -554,6 +626,11 @@ export function auditTemplate(template: UnifiedActionTemplate): NudgeAuditScores
   if (notXButY >= NOT_X_BUT_Y_FAIL) {
     failures.push(`not-X-but-Y x${notXButY} (>= ${NOT_X_BUT_Y_FAIL})`);
   }
+  if (divineDecision > 0) {
+    failures.push(
+      `divine outcome-authorship x${divineDecision} (the god sways the odds; fate settles the result)`,
+    );
+  }
   if (words < THIN_PREMISE_WORDS) {
     failures.push(`thin premise ${words}w (< ${THIN_PREMISE_WORDS})`);
   }
@@ -581,6 +658,7 @@ export function auditTemplate(template: UnifiedActionTemplate): NudgeAuditScores
     abstractDensity,
     vaguenessDensity,
     notXButY,
+    divineDecision,
     secondPerson,
     intensifiers,
     vaguenessByClass,
