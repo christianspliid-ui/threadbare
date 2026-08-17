@@ -194,6 +194,42 @@ Then the orchestrator reads the files the Canon page links to and injects them a
 
 If Obsidian MCP is unavailable, note it and proceed. The draft agent should not need to read these files itself.
 
+### Step 0a: Roll the Plot-Hook Draw (THR-1147)
+
+Roll the premise **before** writing the brief — the hook is what the brief is about, so a
+brief written first has nothing left to roll for:
+
+```
+npm run draw:hooks -- <briefSlug> --reach <reach>
+```
+
+It offers three story seeds from the project's inspiration corpus (Obsidian `Archetypes/`,
+the four recoverable numbered hooks, unshipped drafts), each with themes, source and drawn
+weight. **Take one as the starting point, or blend two**, write the premise from it, and
+record both lines in the brief:
+
+```
+plotHookRolled: hook.trial_by_combat, hook.scarcity_crisis, hook.unsafe_crossing
+plotHookTaken:  hook.trial_by_combat
+```
+
+**The hook is a starting point, not a contract**, and this is where it differs from Step 0b:
+the consequence hand is binding and gate-checked, the hook is neither. Nothing compares the
+finished encounter to the hook, because nothing machine-readable could. Drift is expected.
+Recording the roll is not optional — it is what makes hook coverage measurable across
+batches, and coverage is the only thing that makes the table worth having.
+
+**Stamp `usedBy` at closeout.** When the encounter ships, add its template id to the hook you
+took in `src/data/content-eval/plotHooks.ts`. That is what damps the hook's weight
+(`PLOT_HOOK_REUSE_DAMPING`, 0.45 per use) so the corpus keeps reaching for unused ones. The
+hook leaves no trace on the finished template by design, so nothing can stamp this for you —
+an unstamped hook stays likelier than it deserves indefinitely. `npm run draw:hooks --
+--coverage` reports what has been spent.
+
+In batch mode, roll all six briefs before writing any of them, and check the spread: six
+hooks sharing a theme is worth re-rolling a brief for, and it is much cheaper to notice here
+than in the batch report.
+
 ### Step 0b: Roll the Consequence Draw (THR-1145)
 
 Before dispatching the draft, roll each encounter's consequence hand and carry it into the
@@ -224,8 +260,8 @@ the batch is part of what the batch report shows Christian, and a hand that land
 ### Step 1: Dispatch Pass 1 (Draft)
 
 Dispatch sub-agent with `agents/draft-prompt.md`, model `opus`.
-Inject: scale, premise, constraints, pre-read reference material, **and the encounter's
-consequence hand from Step 0b**.
+Inject: scale, premise, constraints, pre-read reference material, **the plot hook taken at
+Step 0a**, and **the encounter's consequence hand from Step 0b**.
 Agent writes: `<slug>-draft.md`
 
 ### Step 2: Dispatch Pass 2 (Editorial + Revision)
@@ -359,7 +395,7 @@ Zero every reference he sees is something he can click.
 The draft agent produces a complete encounter packet by walking the **8-step checklist**
 in [`reference/nudge-authoring-spec.md`](reference/nudge-authoring-spec.md) in order:
 
-1. **Envelope + vignette** — setting envelope declared; one opening per class + setting-neutral spine, written under the 14-question scene-writer's checklist; motive hooks, quintessence stakes, and scene tag declared
+1. **Envelope + vignette** — setting envelope declared; one opening per class + setting-neutral spine, written under the 14-question scene-writer's checklist; motive hooks, quintessence stakes, and scene tag declared; premise started from the Step 0a plot hook (drift away from it is fine — an unrecorded roll is not)
 2. **Test panel data** — per step: reach(es) + ≤4-word purpose line, difficulty, 2–4 factor lines each naming its source
 3. **The hand** — 4–8 `StepNudge`s per nudge-bearing step cut from the 21-type library: generic faces, mechanism-stating effect lines, ≥4 spheres, ≥1 ungated common option, ≤1 rider per hand, trait-only cards at cost 0, zero-essence cards priced on another channel, grants naming only built content
 4. **Band prose** — all six `StepOutcome`s covered; every nudge ≥1 failure-band fragment; big-delta cards cover both failure bands
