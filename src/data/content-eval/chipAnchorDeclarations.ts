@@ -32,6 +32,25 @@ import type { WorldGraph } from '../../engine/graph';
 
 /** The acting agent — the one the encounter resolved for. */
 export const ANCHOR_SENTINEL_ACTOR = '$actor';
+/**
+ * The agent the encounter was *aimed at* — `action.targetId` (THR-1130).
+ *
+ * The effect side has had this sentinel since THR-695
+ * (`AFTERMATH_TARGET_SENTINEL`); the chip side did not, and the asymmetry was
+ * load-bearing in the wrong direction. Several aftermath effects write their
+ * durable fact onto the target rather than the actor — `favor_creation` is the
+ * plain case, minting `owes_favor` with **debtor = target, creditor = actor** —
+ * so a chip reporting that write is a sentence *about the target*, and the only
+ * anchor an author could reach for was `$actor`, the other end of the edge.
+ *
+ * That is how The Grateful Kin shipped a chip whose noun ("the roof they are
+ * owed") pointed at the creditor while the state it reported lived on the
+ * debtor. Christian, playing it 2026-08-17: *"the bond… the roof they are owed:
+ * again this simply doesn't communicate what game state has changed."*
+ * Anchoring the creditor is not a smaller version of naming the debtor — it
+ * points the player at the wrong person.
+ */
+export const ANCHOR_SENTINEL_TARGET = '$target';
 /** A cast member, by its `supportBundle` key: `$cast:keeper`. */
 export const ANCHOR_SENTINEL_CAST_PREFIX = '$cast:';
 /** A faction, by its **definition** id: `$faction:holy_order_dawn`. */
@@ -44,7 +63,7 @@ export function isAnchorSentinel(entityId: string): boolean {
 
 /** What a declared `entityId` turned out to be, once classified. */
 export type AnchorDeclarationVerdict =
-  | { readonly ok: true; readonly form: 'actor' | 'cast' | 'faction' | 'attachment_template' }
+  | { readonly ok: true; readonly form: 'actor' | 'target' | 'cast' | 'faction' | 'attachment_template' }
   | { readonly ok: false; readonly reason: string };
 
 export interface ClassifyAnchorOptions {
@@ -69,6 +88,7 @@ export function classifyAnchorDeclaration(
   options: ClassifyAnchorOptions,
 ): AnchorDeclarationVerdict {
   if (entityId === ANCHOR_SENTINEL_ACTOR) return { ok: true, form: 'actor' };
+  if (entityId === ANCHOR_SENTINEL_TARGET) return { ok: true, form: 'target' };
 
   if (entityId.startsWith(ANCHOR_SENTINEL_CAST_PREFIX)) {
     const key = entityId.slice(ANCHOR_SENTINEL_CAST_PREFIX.length);
@@ -96,7 +116,8 @@ export function classifyAnchorDeclaration(
       ok: false,
       reason:
         `'${entityId}' is not a sentinel this build resolves — the forms are `
-        + `'${ANCHOR_SENTINEL_ACTOR}', '${ANCHOR_SENTINEL_CAST_PREFIX}<key>', `
+        + `'${ANCHOR_SENTINEL_ACTOR}', '${ANCHOR_SENTINEL_TARGET}', `
+        + `'${ANCHOR_SENTINEL_CAST_PREFIX}<key>', `
         + `'${ANCHOR_SENTINEL_FACTION_PREFIX}<defId>'`,
     };
   }
@@ -119,6 +140,13 @@ export interface ResolveAnchorContext {
   readonly graph: WorldGraph;
   /** The agent the encounter resolved for — what `$actor` means. */
   readonly actorId: string | undefined;
+  /**
+   * The agent the encounter was aimed at — what `$target` means. Optional
+   * because plenty of encounters target a place or nothing at all; an
+   * unresolvable target falls through to `undefined` and the chip renders as
+   * text, the same fail-open path every other sentinel takes (NFP #4).
+   */
+  readonly targetId?: string | undefined;
   /** Resolved support bindings, keyed as the template declared them. */
   readonly castNodeIdByKey: ReadonlyMap<string, string>;
 }
@@ -137,6 +165,7 @@ export function resolveAnchorDeclaration(
   if (!isAnchorSentinel(entityId)) return entityId;
 
   if (entityId === ANCHOR_SENTINEL_ACTOR) return context.actorId;
+  if (entityId === ANCHOR_SENTINEL_TARGET) return context.targetId;
 
   if (entityId.startsWith(ANCHOR_SENTINEL_CAST_PREFIX)) {
     return context.castNodeIdByKey.get(entityId.slice(ANCHOR_SENTINEL_CAST_PREFIX.length));

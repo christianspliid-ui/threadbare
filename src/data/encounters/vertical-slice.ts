@@ -374,26 +374,18 @@ export const SLICE_UNSAFE_BRIDGE: UnifiedActionTemplate = {
       ],
       byOutcome: {
         critical_success: {
+          // THR-1130 — `slice.bridge.read_the_boards` folded, not re-pointed.
+          // It reported a `reputation_tally`, which has no player surface (Law
+          // 13 parity): the effect below still fires and still counts toward the
+          // threshold traits, but the number never speaks to the player, so the
+          // chip named a quantity nobody could look up. Its last sentence is now
+          // the overview's, where it is scene texture rather than a claim.
           overview:
             'They read the boards and crossed as if the bridge were ten years younger. The ' +
             'keeper’s sons watched the whole crossing from the near post, and neither has ' +
-            'looked at their mother’s strongbox the same way since.',
+            'looked at their mother’s strongbox the same way since. The story reaches the ' +
+            'next inn before they do.',
           changes: [
-            {
-              id: 'slice.bridge.read_the_boards',
-              kind: 'reputation_tally',
-              title: 'The Crossing Watched',
-              causeClause:
-                'The keeper’s sons watched a stranger read their father’s bridge better than he ever has',
-              detail:
-                'Their name runs ahead of them on this stretch of road now.',
-              polarity: 'gain',
-              category: 'bond',
-              direction: 'gain',
-              stateNoun: { text: 'their name on this road', tooltipId: 'ui.standing' },
-              concepts: [{ text: 'Their name', tooltipId: 'ui.standing' }],
-              magnitude: { ladder: 'reputation', band: 1 },
-            },
             {
               id: 'slice.bridge.steady_hands',
               kind: 'trait',
@@ -424,27 +416,14 @@ export const SLICE_UNSAFE_BRIDGE: UnifiedActionTemplate = {
           ],
         },
         success_at_cost: {
+          // THR-1130 — `slice.bridge.a_plank_short` folded (Law 13 parity; see
+          // the critical_success note above). Its sentence is the last one here.
           overview:
             'They reach the far bank. Behind them a plank goes end over end into the river, ' +
             'and the keeper does not turn to watch it go. Tomorrow the toll is the same two ' +
-            'coppers, for a bridge with one plank fewer.',
-          changes: [
-            {
-              id: 'slice.bridge.a_plank_short',
-              kind: 'reputation_tally',
-              title: 'A Plank Short',
-              causeClause:
-                'A board dropped into the river under their step, and the keeper watched it fall',
-              detail:
-                'The family that lives off this crossing knows whose weight took it, and says so to everyone who pays the toll after.',
-              polarity: 'loss',
-              category: 'bond',
-              direction: 'loss',
-              stateNoun: { text: 'their name on this road', tooltipId: 'ui.standing' },
-              concepts: [{ text: 'the toll' }],
-              magnitude: { ladder: 'reputation', band: 1 },
-            },
-          ],
+            'coppers, for a bridge with one plank fewer. The keeper knows whose weight took ' +
+            'it, and tells everyone who pays after.',
+          changes: [],
           reactions: [
             {
               id: 'slice.bridge.walk_on_owing',
@@ -886,10 +865,16 @@ export const SLICE_SNOW_ON_THE_PASS: UnifiedActionTemplate = {
       ],
       byOutcome: {
         critical_success: {
+          // THR-1130 — `slice.pass.the_woodpile` folded (Law 13 parity: a
+          // `reputation_tally` chip reports a quantity with no player surface).
+          // The woodpile was already the overview's closing image, so the fold
+          // costs the scene nothing.
           overview:
             'They beat the storm with light to spare, slept warm through the worst of it, and ' +
             'came out to a pass already clearing. They left the woodpile higher than they ' +
-            'found it, which is the only rent the hut has ever asked of anyone.',
+            'found it, which is the only rent the hut has ever asked of anyone. The next ' +
+            'traveler over will owe their night to a stranger, and the road will have a name ' +
+            'for them by then.',
           changes: [
             {
               id: 'slice.pass.a_night_that_held',
@@ -910,19 +895,6 @@ export const SLICE_SNOW_ON_THE_PASS: UnifiedActionTemplate = {
                 entityId: '$actor',
                 visualKind: 'agent',
               },
-            },
-            {
-              id: 'slice.pass.the_woodpile',
-              kind: 'reputation_tally',
-              title: 'The Woodpile',
-              causeClause: 'They cut more than they burned and stacked it dry against the hut wall',
-              detail:
-                'The next traveler over this pass owes their night to a stranger, and the road tells that story with a name attached.',
-              polarity: 'gain',
-              category: 'bond',
-              direction: 'gain',
-              stateNoun: { text: 'their name on this road', tooltipId: 'ui.standing' },
-              magnitude: { ladder: 'reputation', band: 1 },
             },
           ],
           reactions: [
@@ -1425,22 +1397,14 @@ export const SLICE_RIDERS_BEHIND_CARAVAN: UnifiedActionTemplate = {
             'By dawn the hunted one was a day gone on a road with no watchers, and the riders ' +
             'were following a cart that mattered to no one. The master says nothing at the ' +
             'gates and means all of it, and twenty-nine people walk through knowing why.',
-          changes: [
-            {
-              id: 'slice.caravan.the_masters_word',
-              kind: 'reputation_tally',
-              title: 'The Master’s Word',
-              causeClause:
-                'The master said nothing at the gates and meant all of it, in front of twenty-nine witnesses',
-              detail:
-                'A caravan master owes them a debt he cannot say out loud — and caravan masters talk to caravan masters.',
-              polarity: 'gain',
-              category: 'bond',
-              direction: 'gain',
-              stateNoun: { text: 'their name on this road', tooltipId: 'ui.standing' },
-              magnitude: { ladder: 'reputation', band: 1 },
-            },
-          ],
+          // THR-1130 — `slice.caravan.the_masters_word` deleted, not folded (Law
+          // 13 parity). Deliberately *not* folded: its sentence claimed the
+          // master "owes them a debt", and no effect on this band writes an
+          // `owes_favor` edge, so moving those words into the overview would
+          // relocate a false state claim rather than retire it (Law 56 clause 1).
+          // The master's silence at the gates is already the overview's closing
+          // beat, which is the part that actually happened.
+          changes: [],
           reactions: [
             {
               id: 'slice.caravan.part_ways_owed',
@@ -1955,25 +1919,12 @@ export const SLICE_BARGAIN_AT_CROSSROADS: UnifiedActionTemplate = {
         },
       },
       positive: {
+        // THR-1130 — `slice.crossroads.word_unspent` folded (Law 13 parity).
         overview:
           'The offer was real, and so was the refusal. The road east keeps its ordinary ' +
-          'evening, which suddenly counts for more than it did this morning.',
-        changes: [
-          {
-            id: 'slice.crossroads.word_unspent',
-            kind: 'reputation_tally',
-            title: 'The Word Unspent',
-            causeClause: 'They heard the offer out under the dead tree and still said no',
-            detail:
-              'They leave the crossroads with no debt on them at all, and the story of the refusal walks ahead of them.',
-            polarity: 'gain',
-            category: 'bond',
-            direction: 'gain',
-            stateNoun: { text: 'their name on this road', tooltipId: 'ui.standing' },
-            concepts: [{ text: 'no debt' }],
-            magnitude: { ladder: 'reputation', band: 1 },
-          },
-        ],
+          'evening, which suddenly counts for more than it did this morning. They walk it ' +
+          'owing nobody.',
+        changes: [],
         reactions: [
           {
             id: 'slice.crossroads.walk_on',
@@ -1990,26 +1941,13 @@ export const SLICE_BARGAIN_AT_CROSSROADS: UnifiedActionTemplate = {
         ],
         byOutcome: {
           critical_success: {
+            // THR-1130 — `slice.crossroads.refused_free` folded (Law 13 parity).
             overview:
               'The refusal cost them not one copper. He did not follow and did not frown. The ' +
               'crossroads dropped behind at the treeline like any other stretch of road, ' +
-              'and that was the whole of it.',
-            changes: [
-              {
-                id: 'slice.crossroads.refused_free',
-                kind: 'reputation_tally',
-                title: 'Refused Free',
-                causeClause:
-                  'The offer shaped itself to exactly what they wanted and they turned it down anyway, for nothing',
-                detail:
-                  'They walk east knowing exactly what they can turn down.',
-                polarity: 'gain',
-                category: 'boon',
-                direction: 'gain',
-                stateNoun: { text: 'their name on this road', tooltipId: 'ui.standing' },
-                concepts: [{ text: 'what they can turn down' }],
-              },
-            ],
+              'and that was the whole of it. They walk east knowing exactly what they can ' +
+              'turn down.',
+            changes: [],
           },
           critical_failure: {
             overview:
@@ -2738,25 +2676,12 @@ export const SLICE_SWINDLED_FAMILY: UnifiedActionTemplate = {
     branchOnStep: 0,
     variants: {
       positive: {
+        // THR-1130 — `slice.family.a_road_that_exists` folded (Law 13 parity).
         overview:
-          'The family turns south with a marked road and the truth about their paper. The ' +
-          'story of the turning travels with them.',
-        changes: [
-          {
-            id: 'slice.family.a_road_that_exists',
-            kind: 'reputation_tally',
-            title: 'A Road That Exists',
-            causeClause: 'They read the country, found the southern turn, and marked it for a cart to follow',
-            detail:
-              'Five people walk toward water instead of salt, and every one of them can name the stranger who turned them.',
-            polarity: 'gain',
-            category: 'bond',
-            direction: 'gain',
-            stateNoun: { text: 'their name on this road', tooltipId: 'ui.standing' },
-            concepts: [{ text: 'water instead of salt' }],
-            magnitude: { ladder: 'reputation', band: 2 },
-          },
-        ],
+          'The family turns south with a marked road and the truth about their paper. They ' +
+          'walk toward water instead of salt, and every one of them can name the stranger ' +
+          'who turned them.',
+        changes: [],
         reactions: [
           {
             id: 'slice.family.watch_them_go',
@@ -2794,22 +2719,8 @@ export const SLICE_SWINDLED_FAMILY: UnifiedActionTemplate = {
               'dry the whole way, on no paper anyone ever sold. The family fed the traveler ' +
               'at their fire before the cart rolled, and the youngest drew the new road on ' +
               'the back of the worthless deed.',
-            changes: [
-              {
-                id: 'slice.family.the_drovers_cut',
-                kind: 'reputation_tally',
-                title: 'The Drover’s Cut',
-                causeClause: 'The southern turn came out of the country in the first hour, dry the whole way',
-                detail:
-                  'Five people ride a found road south, and the story they tell about it has the stranger’s name in the first sentence.',
-                polarity: 'gain',
-                category: 'bond',
-                direction: 'gain',
-                stateNoun: { text: 'their name on this road', tooltipId: 'ui.standing' },
-                magnitude: { ladder: 'reputation', band: 2 },
-                concepts: [{ text: 'a found road' }],
-              },
-            ],
+            // THR-1130 — `slice.family.the_drovers_cut` folded (Law 13 parity).
+            changes: [],
           },
           success_at_cost: {
             overview:
@@ -2829,19 +2740,12 @@ export const SLICE_SWINDLED_FAMILY: UnifiedActionTemplate = {
                 stateNoun: { text: 'a day of their own road', entityId: '$actor', visualKind: 'agent' },
                 concepts: [{ text: 'a day behind' }],
               },
-              {
-                id: 'slice.family.south_regardless',
-                kind: 'reputation_tally',
-                title: 'South Regardless',
-                causeClause: 'Late or not, the turn was found, marked, and taken with the cart on it',
-                detail: 'The family owes them the road south, and says so at every well between here and it.',
-                polarity: 'gain',
-                category: 'bond',
-                direction: 'gain',
-                stateNoun: { text: 'their name on this road', tooltipId: 'ui.standing' },
-                concepts: [{ text: 'the road south' }],
-                magnitude: { ladder: 'reputation', band: 1 },
-              },
+              // THR-1130 — `slice.family.south_regardless` deleted, not folded
+              // (Law 13 parity). Its sentence claimed the family "owes them the
+              // road south"; no effect on this band writes a favour edge, so
+              // folding it would move a false state claim into prose rather than
+              // retire it (Law 56 clause 1). The cart going south anyway is
+              // already the overview's second sentence.
             ],
           },
           critical_failure: {
@@ -2850,26 +2754,13 @@ export const SLICE_SWINDLED_FAMILY: UnifiedActionTemplate = {
             // failed guiding that thinned the family's faith in strangers does
             // not mint that word. The swindler seed survives — his face is
             // known either way, which was never the family's to give or withhold.
+            // THR-1130 — `slice.family.faith_thinned` folded (Law 13 parity).
             overview:
               'The country fought the reading all day and won. The turn stayed hidden, the ' +
               'light went, and by dusk the family had stopped asking the stranger questions. ' +
-              'They will find the river themselves or they will not.',
-            changes: [
-              {
-                id: 'slice.family.faith_thinned',
-                kind: 'reputation_tally',
-                title: 'Faith in Strangers',
-                causeClause: 'A whole day was spent on their behalf and the turn never came out of the country',
-                detail:
-                  'The family will tell it as a day a stranger cost them, and the next stranger they meet starts further back for it.',
-                polarity: 'loss',
-                category: 'bond',
-                direction: 'loss',
-                stateNoun: { text: 'their name on this road', tooltipId: 'ui.standing' },
-                concepts: [{ text: 'a day a stranger cost them' }],
-                magnitude: { ladder: 'reputation', band: 1 },
-              },
-            ],
+              'They will find the river themselves or they will not. They will tell it as a ' +
+              'day a stranger cost them.',
+            changes: [],
             reactions: [
               {
                 id: 'slice.family.leave_them_to_it',
@@ -3296,24 +3187,12 @@ export const SLICE_SWINDLER_FOUND: UnifiedActionTemplate = {
     branchOnStep: 0,
     variants: {
       positive: {
+        // THR-1130 — `slice.swindler.the_ledger_way` folded (Law 13 parity).
         overview:
           'The town’s justice has the man, the paper, and the pattern. A lockup is ' +
-          'slower than anger, and it holds.',
-        changes: [
-          {
-            id: 'slice.swindler.the_ledger_way',
-            kind: 'reputation_tally',
-            title: 'By the Ledger',
-            causeClause: 'They took the case to the wardens instead of the alley, and made it stand up',
-            detail: 'This market knows them as the stranger who used its own law instead of an alley.',
-            polarity: 'gain',
-            category: 'bond',
-            direction: 'gain',
-            stateNoun: { text: 'their name in this market', tooltipId: 'ui.standing' },
-            concepts: [{ text: 'its own law' }],
-            magnitude: { ladder: 'reputation', band: 1 },
-          },
-        ],
+          'slower than anger, and it holds. The market knows them as the stranger who ' +
+          'used its own law instead of an alley.',
+        changes: [],
         reactions: [
           {
             id: 'slice.swindler.leave_it_to_law',
@@ -3334,22 +3213,8 @@ export const SLICE_SWINDLER_FOUND: UnifiedActionTemplate = {
               'The wardens took him mid-sentence, the paper still up like a lamp, and the ' +
               'listening family got their coin back on the spot in front of the whole ' +
               'square. The wardens were unhurried about it. That was the worst part for him.',
-            changes: [
-              {
-                id: 'slice.swindler.coin_back_in_public',
-                kind: 'reputation_tally',
-                title: 'Coin Back, in Public',
-                causeClause:
-                  'He was taken mid-sentence with the paper still up, and the listening family got their coin back in front of the whole square',
-                detail: 'The square tells this one with a stranger in it, and the stranger comes off well every time.',
-                polarity: 'gain',
-                category: 'bond',
-                direction: 'gain',
-                stateNoun: { text: 'their name in this market', tooltipId: 'ui.standing' },
-                concepts: [{ text: 'The square' }],
-                magnitude: { ladder: 'reputation', band: 2 },
-              },
-            ],
+            // THR-1130 — `slice.swindler.coin_back_in_public` folded (Law 13 parity).
+            changes: [],
           },
           failure: {
             overview:
@@ -3391,24 +3256,12 @@ export const SLICE_SWINDLER_FOUND: UnifiedActionTemplate = {
         },
       },
       negative: {
+        // THR-1130 — `slice.swindler.collected_in_person` folded (Law 13 parity).
         overview:
           'The debt was collected in person. The market will tell the story in its own words, ' +
-          'and the story will grow a knife it may or may not have had.',
-        changes: [
-          {
-            id: 'slice.swindler.collected_in_person',
-            kind: 'reputation_tally',
-            title: 'Collected in Person',
-            causeClause: 'They took the satchel off him in an alley rather than hand him to the wardens',
-            detail: 'The market has its own version of what happened behind the corn scales, and it is not the kind one.',
-            polarity: 'mixed',
-            category: 'bond',
-            direction: 'loss',
-            stateNoun: { text: 'their name in this market', tooltipId: 'ui.standing' },
-            concepts: [{ text: 'its own version' }],
-            magnitude: { ladder: 'reputation', band: 1 },
-          },
-        ],
+          'and the story will grow a knife it may or may not have had. It is not the kind ' +
+          'version.',
+        changes: [],
         reactions: [
           {
             id: 'slice.swindler.walk_away',
@@ -3460,10 +3313,13 @@ export const SLICE_SWINDLER_FOUND: UnifiedActionTemplate = {
             ],
           },
           critical_failure: {
+            // THR-1130 — `slice.swindler.the_market_talks` folded (Law 13 parity).
             overview:
               'The alley went wrong. He had a knife, a friend waiting past the turn, and no ' +
               'interest at all in a fair fight. The satchel left with them. The market ' +
-              'found them afterward, on the ground behind the scales and slow to get up.',
+              'found them afterward, on the ground behind the scales and slow to get up. It ' +
+              'has them as the one who swung first and came off worse, and that is the ' +
+              'version it will keep.',
             changes: [
               {
                 id: 'slice.swindler.the_knife',
@@ -3476,21 +3332,6 @@ export const SLICE_SWINDLER_FOUND: UnifiedActionTemplate = {
                 direction: 'loss',
                 stateNoun: { text: 'wounded', entityId: 'trait.condition.wounded', visualKind: 'attachment' },
                 concepts: [{ text: 'cut behind the corn scales' }],
-              },
-              {
-                id: 'slice.swindler.the_market_talks',
-                kind: 'reputation_tally',
-                title: 'The Market’s Version',
-                causeClause:
-                  'The square found a stranger sitting down in an alley where nobody should be sitting',
-                detail:
-                  'This market has them as the one who swung first and came off worse, and that is the only version it will keep.',
-                polarity: 'loss',
-                category: 'bond',
-                direction: 'loss',
-                stateNoun: { text: 'their name in this market', tooltipId: 'ui.standing' },
-                concepts: [{ text: 'the only version it will keep' }],
-                magnitude: { ladder: 'reputation', band: 2 },
               },
             ],
             reactions: [
@@ -3672,7 +3513,7 @@ const KIN_HAND: readonly StepNudge[] = [
     fiction: 'Nothing owed before morning.',
     bandProse: {
       near_miss: 'The evening kept an easy pace. The last toast still found them tired.',
-      failure: 'The slow hour helped until the letter came out, and the letter had its own schedule.',
+      failure: 'The slow hour helped until she stood up to speak, and then it did not.',
     },
   },
 ];
@@ -3685,11 +3526,14 @@ const KIN_STEP: ActionStep = {
   onSuccess: [],
   onFailure: [],
   failBehavior: 'fail_action',
+  // THR-1130 — density re-pass. The letter and the boots were the sentence the
+  // director's note is about: a prop with its own subplot, described in detail,
+  // in the one paragraph that has to make the player understand what they are
+  // being asked to do.
   narrativeTemplate:
     'The bowl arrives unasked and the coin is refused twice. The room has gone interested. ' +
-    'There is a letter in her apron with the whole fen road in it, and the ' +
-    'traveler described down to the boots. The thanks is being given in front of ' +
-    'everyone, and it has to be stood in graciously.',
+    'She means to thank the traveler properly, out loud, in front of everyone — and it ' +
+    'has to be stood in graciously.',
   successAfterimage: 'The thanks was taken well, and the room warmed accordingly.',
   failureAfterimage: 'The thanks was shrugged at, and the shrug landed harder than meant.',
   successAtCostAfterimage: 'The thanks was taken, along with three retellings and a toast.',
@@ -3711,16 +3555,23 @@ export const SLICE_GRATEFUL_KIN: UnifiedActionTemplate = {
   actorAffinities: ['individual'],
   motivations: ['loyalty_ambition'],
   settings: ['rural', 'urban'],
+  // THR-1130 — density re-pass. Christian, playing this scene 2026-08-17:
+  // *"the concepts here are again very weak, as if the agent who wrote them has
+  // created a more complex story that it wants to relate in too little space.
+  // the writing is in situ with specific people mentioning other specific
+  // people."* The openings carried a brother, a cousin, three children, a
+  // nine-day walk and a letter — four third parties and a prop, none of which the
+  // player can act on, in sixty words. What the scene needs is one person
+  // thanking them in public for something already done. The rest was backstory
+  // competing with the beat.
   openings: {
     rural:
-      'The innkeeper sets down the bowl unasked, and will not take the coin for it. ' +
-      '“You walked my brother’s family off the fen road,” she says. “Nine ' +
-      'days out with three children, and a stranger turned them around.”',
+      'The innkeeper sets down a bowl nobody ordered and will not take the coin for it. ' +
+      '“You walked my people off the fen road,” she says. The room has stopped to listen.',
     urban:
       'The taproom is city-loud until the landlady crosses it with a bowl nobody ordered. ' +
-      '“My cousin’s people,” she says, setting it down. “The fen road. ' +
-      'You are the one who walked them south.” Half the nearest table has already ' +
-      'turned around to look.',
+      '“The fen road,” she says, setting it down. “You are the one who walked them ' +
+      'south.” The nearest tables have already turned around.',
   },
   locationSubtypes: expandSettings(['rural', 'urban']),
   aftermathConfig: {
@@ -3731,20 +3582,39 @@ export const SLICE_GRATEFUL_KIN: UnifiedActionTemplate = {
         'The family keeps accounts, and tonight the traveler went into them. There is a ' +
         'roof in this town that opens for them now.',
       changes: [
+        // THR-1130 — the chip the director read out loud. Verbatim: *"the bond…
+        // the roof they are owed: again this simply doesn't communicate what game
+        // state has changed."* The write was real and well-formed the whole time;
+        // every word of the chip was fiction. "A Roof, Remembered" / "the roof
+        // they are owed" / a detail about beds and hearings — the word *favour*
+        // and the debtor appeared nowhere, so a player reading it could not tell
+        // that an `owes_favor` edge now exists or who is on the other end of it.
+        //
+        // Two fixes, both from the anchoring rule's second half ("the chip's
+        // prose refers to that particular game state"):
+        //  1. **State first.** The noun names the mechanic and the detail names
+        //     the endpoints — who owes whom what. Fiction moves to the tail of
+        //     the sentence, where it decorates a claim the player can already read.
+        //  2. **Anchor the debtor, not the creditor.** `favor_creation` writes
+        //     debtor = target, creditor = actor, so this chip is a sentence about
+        //     the target; `$actor` pointed the click at the wrong end of the edge.
+        //     `$target` is new in this ticket for exactly this reason — the effect
+        //     side has had the sentinel since THR-695 and the chip side did not.
+        //
+        // `{target}` enriches in `detail` and `causeClause` but **not** in
+        // `stateNoun.text`, which the surface renders raw into the `CATEGORY ·
+        // NOUN` tag — so the noun carries the mechanic and the detail carries
+        // the name.
         {
-          id: 'slice.kin.a_roof_remembered',
+          id: 'slice.kin.a_favour_owed',
           kind: 'reputation',
-          title: 'A Roof, Remembered',
-          causeClause: 'She would not take the coin for the bowl, and she had the letter to explain why',
-          detail: 'This family’s people owe them a bed and a hearing wherever they turn up, and they are the sort who pay.',
+          title: 'A Favour Owed',
+          causeClause: 'The bowl came unasked and the coin went back twice, in front of the whole room',
+          detail: '{target} owes them a favour now — a bed and a hearing the next time they come through.',
           polarity: 'gain',
           category: 'bond',
           direction: 'gain',
-          // G2 (THR-1164): `favor_creation` writes an `owes_favor` edge, and the
-          // catalog anchors an edge by naming its endpoints. The family is not a
-          // graph object — no cast key, no faction — so the authorable endpoint is
-          // the creditor, who is real and whose sheet carries the favour.
-          stateNoun: { text: 'the roof they are owed', entityId: '$actor', visualKind: 'agent' },
+          stateNoun: { text: 'a favour owed', entityId: '$target', visualKind: 'agent' },
           concepts: [{ text: 'a bed and a hearing' }],
         },
       ],
@@ -3764,53 +3634,44 @@ export const SLICE_GRATEFUL_KIN: UnifiedActionTemplate = {
       ],
       byOutcome: {
         critical_success: {
+          // THR-1130 — `slice.kin.the_room_carries_it` folded (Law 13 parity: it
+          // reported a `reputation_tally`, which has no player surface). Its
+          // sentence is the second one here; the tally effect below is untouched.
           overview:
-            'By the second bowl the letter was out of her apron and read aloud to the room. ' +
-            'Half the tables will carry some version of the fen road out of here tonight, ' +
-            'told at the good end.',
+            'By the second bowl she was telling the whole room, and the room was listening. ' +
+            'By morning their name is in three more taprooms, and it comes off well in ' +
+            'every telling.',
           changes: [
             {
-              id: 'slice.kin.a_roof_remembered_well',
+              // State-first, debtor-anchored — see the note on
+              // 'slice.kin.a_favour_owed'. Same edge, louder room.
+              id: 'slice.kin.a_favour_owed_well',
               kind: 'reputation',
-              title: 'A Roof, Remembered',
-              causeClause: 'They took the thanks graciously and let her read the letter out to the room',
-              detail: 'The family owes them a roof and says so to anyone who will listen.',
+              title: 'A Favour Owed',
+              causeClause: 'They took the thanks graciously and let her say it in front of everyone',
+              detail: '{target} owes them a favour, and says so to anyone who will listen.',
               polarity: 'gain',
               category: 'bond',
               direction: 'gain',
-              // G2: carrier-anchored — see the note on 'slice.kin.a_roof_remembered'.
-              stateNoun: { text: 'the roof they are owed', entityId: '$actor', visualKind: 'agent' },
-              concepts: [{ text: 'a roof' }],
+              stateNoun: { text: 'a favour owed', entityId: '$target', visualKind: 'agent' },
+              concepts: [{ text: 'a favour' }],
             },
             {
               id: 'slice.kin.the_keepsake',
               kind: 'item',
               title: 'The Pressed Keepsake',
-              causeClause: 'She pressed a folded scrap of the letter into their hand on the way out and would not discuss it',
-              detail: 'They carry a small token of the fen road now, and the family will know it on sight.',
+              causeClause: 'She pressed it into their hand on the way out and would not discuss it',
+              detail: 'They carry a keepsake from the fen road now, and her people will know it on sight.',
               polarity: 'gain',
               category: 'boon',
               direction: 'gain',
               // G1: carrier-anchored — see the note on 'slice.fullmoon.the_gift'.
               stateNoun: {
-                text: 'the token they carry from the fen road',
+                text: 'the keepsake they carry',
                 entityId: '$actor',
                 visualKind: 'agent',
               },
-              concepts: [{ text: 'a small token of the fen road' }],
-            },
-            {
-              id: 'slice.kin.the_room_carries_it',
-              kind: 'reputation_tally',
-              title: 'The Room Carries It',
-              causeClause: 'By the second bowl the whole taproom had heard the fen road told properly',
-              detail: 'By morning their name is in three more taprooms, and it comes off well in every telling.',
-              polarity: 'gain',
-              category: 'bond',
-              direction: 'gain',
-              stateNoun: { text: 'their name on this road', tooltipId: 'ui.standing' },
-              concepts: [{ text: 'their name', tooltipId: 'ui.standing' }],
-              magnitude: { ladder: 'reputation', band: 2 },
+              concepts: [{ text: 'a keepsake from the fen road' }],
             },
           ],
           reactions: [
@@ -3849,17 +3710,18 @@ export const SLICE_GRATEFUL_KIN: UnifiedActionTemplate = {
             'all of it the welcome is real.',
           changes: [
             {
-              id: 'slice.kin.a_roof_and_an_evening',
+              // State-first, debtor-anchored — see the note on
+              // 'slice.kin.a_favour_owed'.
+              id: 'slice.kin.a_favour_owed_dearly',
               kind: 'reputation',
-              title: 'A Roof, and an Evening Spent',
+              title: 'A Favour Owed, an Evening Spent',
               causeClause: 'The thanks was taken three times over, with a toast, and the bowl went cold twice',
-              detail: 'The family owes them a roof, and they paid for it with most of a night of being talked about.',
+              detail: '{target} owes them a favour, and they paid for it with most of a night of being talked about.',
               polarity: 'mixed',
               category: 'bond',
               direction: 'gain',
-              // G2: carrier-anchored — see the note on 'slice.kin.a_roof_remembered'.
-              stateNoun: { text: 'the roof they are owed', entityId: '$actor', visualKind: 'agent' },
-              concepts: [{ text: 'a roof' }],
+              stateNoun: { text: 'a favour owed', entityId: '$target', visualKind: 'agent' },
+              concepts: [{ text: 'a favour' }],
             },
           ],
         },
@@ -3870,24 +3732,27 @@ export const SLICE_GRATEFUL_KIN: UnifiedActionTemplate = {
             'stays welcoming — kin are stubborn that way — just less than they were going to be.',
           changes: [
             {
-              id: 'slice.kin.a_thinner_welcome',
+              // State-first, debtor-anchored — see the note on
+              // 'slice.kin.a_favour_owed'. The band writes the same edge at the
+              // fumbled magnitude (`SLICE_KIN_FAVOR_FUMBLED_RANGE`), so the chip
+              // says a smaller favour rather than a different thing.
+              id: 'slice.kin.a_smaller_favour_owed',
               kind: 'reputation',
-              title: 'A Thinner Welcome',
+              title: 'A Smaller Favour Owed',
               causeClause: 'The thanks was honest, public, and long, and they stood it badly',
-              detail: 'The family’s door stays open to them. It is a narrower door than it was going to be.',
+              detail: '{target} still owes them a favour. It is a smaller one than it was going to be.',
               polarity: 'mixed',
               category: 'bond',
               direction: 'gain',
-              // G2: carrier-anchored — see the note on 'slice.kin.a_roof_remembered'.
-              stateNoun: { text: 'the narrower door they are owed', entityId: '$actor', visualKind: 'agent' },
-              concepts: [{ text: 'a narrower door' }],
+              stateNoun: { text: 'a favour owed', entityId: '$target', visualKind: 'agent' },
+              concepts: [{ text: 'a favour' }],
             },
           ],
           reactions: [
             {
               id: 'slice.kin.accept_the_debt_awkwardly',
               label: 'Take the thanks anyway',
-              intent: 'Badly received is still received. The letter is still in her apron.',
+              intent: 'Badly received is still received. She meant every word of it.',
               effects: [
                 {
                   kind: 'favor_creation',

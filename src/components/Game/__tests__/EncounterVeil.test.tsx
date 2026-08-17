@@ -971,6 +971,57 @@ describe('aftermath mode', () => {
     expect(screen.getByTestId('consequence-chip-noun-wound-seg-0')).toHaveTextContent('WOUNDED');
   });
 
+  // ── THR-1130 — the noun must reach the *debtor*, not the creditor ──────
+  //
+  // The surface half of the `$target` sentinel. THR-1153 (above) proved a
+  // declared anchor becomes a control; this proves the anchor the author now
+  // declares resolves to the right *person*. `favor_creation` writes
+  // `owes_favor` with debtor = target, creditor = actor, so The Grateful Kin's
+  // chip is a sentence about the innkeeper — and it shipped anchored to
+  // `$actor`, which routes the click to the traveler reading the chip. Christian,
+  // playing it 2026-08-17: *"the bond… the roof they are owed: again this simply
+  // doesn't communicate what game state has changed."*
+  //
+  // A unit test on `resolveAnchorDeclaration` alone would not have caught the
+  // shipped defect, because the wrong sentinel resolves perfectly well. What
+  // makes this evidence is the assertion on *which id* reaches the host.
+
+  const debtorAnchorModel: EncounterStageModel = {
+    ...grantChipModel,
+    aftermath: {
+      ...grantChipModel.aftermath!,
+      consequences: [
+        {
+          ...grantChipModel.aftermath!.consequences![0],
+          nounLabel: 'A FAVOUR OWED',
+          // What `resolveAnchorDeclaration` produced from `$target` — the
+          // adapter resolves the sentinel before the model reaches the veil.
+          nounEntityId: 'agent_innkeeper',
+          nounEntityKind: 'agent',
+        },
+      ],
+    },
+  };
+
+  it('routes the chip noun to the debtor the ending wrote, not the acting agent', () => {
+    // An `agent` anchor routes through `onSelectAgent` (the agent drawer), not
+    // `onSelectEntity` — see `EncounterVeil`'s `openEntity`, where only the
+    // attachment kinds take the entity path.
+    const onSelectAgent = vi.fn();
+    render(
+      <EncounterVeil {...defaultProps} model={debtorAnchorModel} onSelectAgent={onSelectAgent} />,
+    );
+
+    const noun = within(screen.getByTestId('consequence-chip-wound'))
+      .getByRole('button', { name: 'A FAVOUR OWED' });
+    fireEvent.click(noun);
+
+    expect(onSelectAgent).toHaveBeenCalledWith('agent_innkeeper');
+    // The assertion that would have failed on the shipped content: the acting
+    // agent is the *other* end of this edge and must never be what the noun opens.
+    expect(onSelectAgent).not.toHaveBeenCalledWith('agent_traveler');
+  });
+
   it('draws no control on a noun that declares no anchor', () => {
     // The falsification case for the whole change: strip `nounEntityId` and the
     // control must disappear. Without this, the test above would pass just as

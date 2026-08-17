@@ -558,6 +558,62 @@ function chipBackingViolations(template: UnifiedActionTemplate): readonly string
 }
 
 /**
+ * Chip kinds whose quantity has **no player surface**, and so may not be
+ * reported as a chip (Law 13's visibility-parity clause, THR-1136 §5).
+ *
+ * Exactly one member today, and the narrowness is the point: per-Reach
+ * reputation tallies keep steering scoring and gating and keep minting the
+ * Whispered/Known/Legendary traits at their thresholds — the *effect* is alive
+ * and stays — but the number itself is rendered only in `TalliesDebugTab`, the
+ * designer view. World standing and faction standing both pass the parity test
+ * and keep their chips; this is not a ban on reporting reputation.
+ */
+const UNINSPECTABLE_CHANGE_KINDS: ReadonlySet<string> = new Set(['reputation_tally']);
+
+/**
+ * Law 13 visibility parity — a reported quantity must be player-inspectable.
+ *
+ * The asymmetry this closes: a chip naming a quantity the player can then never
+ * look up. Christian's verdict on the per-Reach tallies, 2026-08-16: *"if we
+ * make it invisible it has to be invisible in the aftermath also … they are
+ * small and more systemic than telling the player anything. they are noise."*
+ *
+ * **Why this is a gate and not a review note.** The rule shipped as prose in
+ * `laws.md` on 2026-08-16 and nothing enforced it, so fifteen authored tally
+ * chips sat in the vertical slice reading green through every gate — including
+ * the two encounters the director was handed to sample. He caught one by eye on
+ * The Grateful Kin (2026-08-17) and only one, because a person reads the
+ * encounter in front of them; the other fourteen were found by grepping the
+ * kind. A rule a person has to notice is a rule the corpus outgrows.
+ *
+ * The fix an author takes is almost always **delete the chip and fold its
+ * sentence into the band `overview`** — the overview is a prose surface and
+ * never claims state, so nothing about the scene is lost. Keep the effect.
+ */
+export function chipVisibilityParityViolations(
+  template: UnifiedActionTemplate,
+): readonly string[] {
+  const out: string[] = [];
+  const reported = new Set<string>();
+
+  for (const face of aftermathFaces(template)) {
+    const where = face.band ? `${face.variantKey}/${face.band}` : face.variantKey;
+    for (const change of face.changes) {
+      if (reported.has(change.id)) continue;
+      if (!UNINSPECTABLE_CHANGE_KINDS.has(change.kind)) continue;
+      reported.add(change.id);
+      out.push(
+        `change '${change.id}' on ${where} reports a '${change.kind}', which has no player `
+          + 'surface (Law 13 visibility parity, THR-1136 §5). The tally effect keeps running '
+          + 'and keeps minting its threshold traits — delete the chip and fold its sentence '
+          + 'into the band overview, or report the sheet-visible thing the ending wrote instead',
+      );
+    }
+  }
+  return out;
+}
+
+/**
  * UI Law 56 clause 2 — a chip that names a referent must anchor it.
  *
  * Clause 1 ({@link chipBackingViolations}) asks whether a write fired. This asks
@@ -1152,6 +1208,12 @@ export function checkCompositionContract(
   // Law 56 clause 2 (THR-1164). Reported under the same block as clause 1 — an
   // author fixing an ending's chips wants both halves in one list.
   for (const violation of chipAnchorViolations(template)) add('aftermath', violation);
+
+  // THR-1130 — Law 13's half of the same pin. Clause 2 above asks whether the
+  // chip's referent is real; this asks whether the player can ever look the
+  // reported quantity up. Both failures produce a chip that tells the player
+  // nothing they can act on, so they belong in the same block.
+  for (const violation of chipVisibilityParityViolations(template)) add('aftermath', violation);
 
   // THR-1165 — the write's *target*, as opposed to the chip's referent. Same block
   // again: a chip anchored to `$cast:x` and a bond written to `$cast:x` fail together
