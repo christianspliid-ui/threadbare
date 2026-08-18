@@ -22,6 +22,7 @@ import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 
 const GATE_HELD_ID = 'encounter.company.gate_held';
 const TWO_ROADS_ID = 'encounter.company.two_roads_named';
+const THIRD_WATCH_ID = 'encounter.company.third_watch';
 
 describe('company drama — content integrity', () => {
   for (const authored of COMPANY_DRAMA_TEMPLATES) {
@@ -97,6 +98,7 @@ describe('company drama — end-to-end reachability against real content', () =>
 
   const ruinGraph = () => placeGraph('ruins', 'The Sunk Bastion');
   const waysideGraph = () => placeGraph('camp', 'The Fork Camp');
+  const urbanGraph = () => placeGraph('town', 'Ashfold');
 
   function joinCompany(graph: WorldGraph, livingCompanions: number): void {
     graph.addNode({
@@ -175,17 +177,56 @@ describe('company drama — end-to-end reachability against real content', () =>
     expect(result).toHaveLength(0);
   });
 
-  it('the two subjects register at disjoint places — the dispute is not drawn at the ruin', () => {
-    // Guards a real authoring slip rather than restating the envelope: both
+  // ─── The Third Watch — the romance ────────────────────────────────
+
+  const thirdWatch = UNIFIED_ACTION_TEMPLATES.find(
+    t => t.id === THIRD_WATCH_ID,
+  ) as UnifiedActionTemplate;
+
+  it('a company of two in a town draws the authored romance', () => {
+    const graph = urbanGraph();
+    joinCompany(graph, 1); // actor-1 + 1 companion = 2 living
+    const result = generateUnifiedCandidates(graph, 'actor-1', 'ruin-1', [thirdWatch]);
+    expect(result.map(c => c.templateId)).toContain(THIRD_WATCH_ID);
+  });
+
+  it('a solo agent in the same town cannot draw it (group-exclusive)', () => {
+    const graph = urbanGraph(); // actor-1 ungrouped
+    const result = generateUnifiedCandidates(graph, 'actor-1', 'ruin-1', [thirdWatch]);
+    expect(result).toHaveLength(0);
+  });
+
+  it('a company of one cannot draw it — a company of one has no watch rotation', () => {
+    const graph = urbanGraph();
+    joinCompany(graph, 0); // actor-1 alone in the company = 1 living
+    const result = generateUnifiedCandidates(graph, 'actor-1', 'ruin-1', [thirdWatch]);
+    expect(result).toHaveLength(0);
+  });
+
+  it('all three subjects register at disjoint places — each place draws exactly its own', () => {
+    // Guards a real authoring slip rather than restating the envelope: the
     // templates are group-exclusive with identical member gates, so a copied
     // `settings` block would make them interchangeable and the corpus would
-    // draw the same scene twice at every location. The settings differ, so the
-    // eligibility result at a given place must differ too.
-    const graph = ruinGraph();
-    joinCompany(graph, 1);
-    const result = generateUnifiedCandidates(graph, 'actor-1', 'ruin-1', [gateHeld, twoRoads]);
-    const ids = result.map(c => c.templateId);
-    expect(ids).toContain(GATE_HELD_ID);
-    expect(ids).not.toContain(TWO_ROADS_ID);
+    // draw the same company scene two or three times at every location. The
+    // settings differ, so the eligibility result at a given place must differ
+    // too — asserted in both directions at every place, so a template that
+    // silently widens its envelope fails here by name.
+    const all = [gateHeld, twoRoads, thirdWatch];
+    const cases: readonly (readonly [() => WorldGraph, string, string])[] = [
+      [ruinGraph, 'the ruin', GATE_HELD_ID],
+      [waysideGraph, 'the wayside', TWO_ROADS_ID],
+      [urbanGraph, 'the town', THIRD_WATCH_ID],
+    ];
+    for (const [makeGraph, where, expectedId] of cases) {
+      const graph = makeGraph();
+      joinCompany(graph, 1);
+      const ids = generateUnifiedCandidates(graph, 'actor-1', 'ruin-1', all)
+        .map(c => c.templateId);
+      expect(ids, `${expectedId} should be drawn at ${where}`).toContain(expectedId);
+      for (const other of [GATE_HELD_ID, TWO_ROADS_ID, THIRD_WATCH_ID]) {
+        if (other === expectedId) continue;
+        expect(ids, `${other} must not be drawn at ${where}`).not.toContain(other);
+      }
+    }
   });
 });

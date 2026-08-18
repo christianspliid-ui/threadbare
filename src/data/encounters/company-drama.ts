@@ -11,9 +11,11 @@
  *   1. The Gate Held — the sacrifice: one member stays to hold the way out.
  *   2. Two Roads Named — the leadership dispute: two of them have named
  *      different ways, and the company is standing still while they settle it.
+ *   3. The Third Watch — the romance: two of them have become something to
+ *      each other, and the company has to decide what that is to the company.
  *
- * Remaining subjects on THR-733, unauthored here and tracked on the ticket:
- * romance, the slow-burn betrayal.
+ * Remaining subject on THR-733, unauthored here and tracked on the ticket:
+ * the slow-burn betrayal.
  *
  * **Why these are templates and not threshold pools.** The fray and parting
  * moments fire from `groupFray.ts` on a cohesion threshold, and each one needed
@@ -99,9 +101,40 @@ export const COMPANY_DISPUTE_RETURN_DELAY_TICKS = 60;
  */
 export const COMPANY_DISPUTE_HEARD_SEVERITY = 0.3;
 
+/**
+ * Ticks until an unnamed pairing comes back up (~7 game days).
+ *
+ * Between the dispute's five days and the gate's thirteen, and for a reason
+ * that is neither of theirs: this is not travelling news and it is not the next
+ * fork, it is the next time the company has to decide who goes back for whom.
+ * A week is about how long a company can run a watch list before the same
+ * question is standing in front of it again.
+ */
+export const COMPANY_ROMANCE_RETURN_DELAY_TICKS = 84;
+
+/**
+ * Sentiment the company earns with the one who heard them say it plainly.
+ * Modest and positive: this is a good opinion formed in one evening, not a
+ * friendship, and the trust step is deliberately the smaller of the two because
+ * hearing somebody be honest is evidence about their honesty and not yet about
+ * their reliability.
+ */
+export const COMPANY_OATH_WITNESS_SENTIMENT = 0.2;
+/** The same evening, read as a smaller step toward being counted on. */
+export const COMPANY_OATH_WITNESS_TRUST = 0.15;
+
+/**
+ * Severity of the mark left when a company is seen to carry a loyalty it will
+ * not name. Just above the dispute's gossip and well below the gate's
+ * abandonment: a company keeping something quiet about its own is more than a
+ * remark and less than a wrong done to anybody.
+ */
+export const COMPANY_UNSAID_SEVERITY = 0.35;
+
 export const COMPANY_DRAMA_TEMPLATE_IDS = {
   gateHeld: 'encounter.company.gate_held',
   twoRoadsNamed: 'encounter.company.two_roads_named',
+  thirdWatch: 'encounter.company.third_watch',
 } as const;
 
 // ═════════════════════════════════════════════════════════════════════
@@ -968,6 +1001,497 @@ export const COMPANY_TWO_ROADS_NAMED: UnifiedActionTemplate = {
     + 'is not saying — and fate decides whether the company leaves here as one company.',
 };
 
+// ═════════════════════════════════════════════════════════════════════
+// 3. THE THIRD WATCH — the romance
+// ═════════════════════════════════════════════════════════════════════
+//
+// Crux: two of the company have become something to each other, everybody can
+//       see it, and nobody has said it — and a company that travels armed runs
+//       on knowing who will go back for whom.
+// Shape: Single Test · Setting: urban + sacred · Pressure: an open secret ·
+// Form: a thing said or not said · Objective: settle what the pair is to the
+// company · Stakes: whether the company reorganises honestly or carries a
+// loyalty it will not name · Step: Heart — "Settle what they are".
+// Why here: downtime, under a roof, which is the only place this gets said.
+// Connected systems (Q8): cast, rewards, seeds, conditions, reputation — five,
+// against a quota of three, as the gate counts them. The `bond_change` on the
+// good bands is a sixth real write and is deliberately not claimed as a sixth
+// system: `check:encounter` does not score it, and a comment that counts higher
+// than the gate is the kind of drift nobody re-measures.
+// Choice: none at the step. The fork is in the aftermath reaction — whether the
+// company writes the pairing into how it works, or leaves the list as it is.
+// Promise → payoff: the opening states that the watch list has come out the same
+// way for days and that somebody wrote it; the step answers whether the company
+// gets to know why.
+//
+// **Why this is a company scene and not two people with an audience.** The
+// ticket's own framing ("Heart encounters between members during downtime")
+// would permit a two-hander, and a two-hander would be the wrong template in
+// this file: `actorAffinities: ['group']` would then be decoration. The subject
+// is therefore not whether the pair love each other — that is settled offscreen
+// and is nobody's business — but what the pair *is to the company*: who covers
+// whom, who can be sent out alone, and who will not make the cold call when the
+// company needs it made. The watch list is the company's own machinery
+// producing the evidence, which is what keeps the frame honest.
+//
+// **Why Heart and not Gold.** Gold went to the dispute, where the subject is who
+// the company will follow. Here the axis is Sworn ↔ Renegade: the same bond
+// sworn into the company and reorganised around, or kept private and running
+// underneath everything the company does.
+
+/**
+ * The party under whose roof it gets said — a celebrant at a shrine, a steward
+ * at an inn. Materializing rather than inherited for the THR-1165 reason, and
+ * load-bearing beyond that: the good bands write a real `bond_change` onto this
+ * person, so an inherited bind-only default would put the company's best
+ * evening on whichever ambient figure happened to exist, and on nobody at all
+ * otherwise.
+ */
+const OATH_WITNESS_SPEC: EncounterSupportActorSpec = {
+  kind: 'actor',
+  key: 'oath_witness',
+  delivery: 'lazy-materialize-on-trigger',
+  persistence: 'must-persist',
+  supportRole: 'oath_witness',
+  reuseNpcRoles: ['priest', 'steward'],
+  spawnNpcRole: 'priest',
+  spawnName: 'The One Who Heard It Said',
+};
+
+/** Composed, not replaced — the town keeps its own ambient cast. */
+const THIRD_WATCH_SUPPORT_BUNDLE: EncounterSupportBundle = [
+  ...DEFAULT_SETTING_SUPPORT_BUNDLES.urban,
+  OATH_WITNESS_SPEC,
+];
+
+const THIRD_WATCH_HAND: readonly StepNudge[] = [
+  {
+    // Type: Boost — the common option. Acts on the room, not on the pair.
+    id: 'company.romance.give_them_the_room',
+    name: 'Give Them the Room',
+    essenceCost: 1,
+    forecastDelta: 0.06,
+    imageTag: 'generic.focus',
+    effectLine:
+      'You thin out the traffic past their corner, so the sentence does not have to be started three times. A small help.',
+    fiction: 'The next two people who were going to walk past find a reason not to.',
+    bandProse: {
+      success: 'They got a clear run at it, and used it.',
+      near_miss: 'The corner stayed quiet the whole evening. Quiet was not the difficulty.',
+    },
+  },
+  {
+    // Type: Boost — spirit, putting the size of the thing where it can be felt.
+    id: 'company.romance.say_the_weight',
+    name: 'Say the Weight',
+    sphere: 'spirit',
+    essenceCost: 2,
+    forecastDelta: 0.09,
+    imageTag: 'generic.warmth',
+    effectLine:
+      'You let them feel how much of the last year this has been, so it comes out as large as it is. A real help.',
+    fiction: 'Not a fondness. The other thing.',
+    bandProse: {
+      critical_success: 'It came out at its full size, and the company took it at that size.',
+      failure: 'They understood exactly how much of it there was. That made it harder to start, not easier.',
+    },
+  },
+  {
+    // Type: Boost — life, steadying the body so the voice survives the sentence.
+    id: 'company.romance.steady_the_hands',
+    name: 'Steady the Hands',
+    sphere: 'life',
+    essenceCost: 2,
+    forecastDelta: 0.08,
+    imageTag: 'generic.vigor',
+    effectLine:
+      'You settle the pulse and the hands, so the words arrive in the order they were meant in. A real help.',
+    fiction: 'Say it once, and say it level.',
+    bandProse: {
+      success: 'It came out level, which is most of why it was heard as it was meant.',
+      failure: 'The hands stayed steady the whole evening. Steady hands were not the difficulty.',
+    },
+  },
+  {
+    // Type: Boost — time, holding the evening open a little past its length.
+    id: 'company.romance.the_hour_they_have',
+    name: 'The Hour They Have',
+    sphere: 'time',
+    essenceCost: 2,
+    forecastDelta: 0.09,
+    imageTag: 'generic.time-slow',
+    effectLine:
+      'You stretch the last of the evening, so the company is still sitting when it finally gets started. A real help.',
+    fiction: 'Nobody has gone up yet. There is still an hour in this.',
+    bandProse: {
+      success: 'The company was still at the table when it got said, which is the only reason it got said to the company.',
+      critical_failure: 'The evening ran long enough for all of it to come out, including the part that should have kept.',
+    },
+  },
+  {
+    // Type: Boost — darkness, narrowing the audience rather than the truth. A
+    // deliberate settlement between the people it concerns is still a
+    // settlement; the step asks what the pair is to the company, not how loudly.
+    id: 'company.romance.keep_it_between_them',
+    name: 'Keep It Between Them',
+    sphere: 'darkness',
+    essenceCost: 1,
+    forecastDelta: 0.07,
+    imageTag: 'generic.dark',
+    effectLine:
+      'You draw the light down at their end of the table, so it can be settled among the people it concerns. A small help.',
+    fiction: 'Three of them need to hear it. The room does not.',
+    bandProse: {
+      success_at_cost: 'It was settled at their end of the table. The rest of the company worked it out later, and from each other.',
+      near_miss: 'The room heard none of it. Neither did the two people it was about.',
+    },
+  },
+];
+
+const THIRD_WATCH_STEP: ActionStep = {
+  reach: 'heart',
+  duration: { min: 1, max: 2 },
+  difficulty: 0.44,
+  purposeLine: 'Settle what they are',
+  onSuccess: [],
+  onFailure: [],
+  failBehavior: 'fail_action',
+  narrativeTemplate:
+    'The watch list is chalked on the back of a shutter and it has come out the same '
+    + 'way eleven nights running. {actor} writes the list. The other one has never asked to '
+    + 'be moved off the third watch, and the rest of the company has never asked either, and '
+    + 'that second silence is the one that has gone on too long. It can be said now, while it '
+    + 'is still a question about a chalked list, or it can wait until the night it is a '
+    + 'question about who went back for whom.',
+  successAfterimage:
+    'The company knows what the pair are, and the list got rewritten in front of everybody.',
+  failureAfterimage:
+    'The list came out the same as it always does, and the company chalked it up and went to bed.',
+  successAtCostAfterimage:
+    'It got said. {actor} has not been asked to write the list since.',
+  criticalSuccessAfterimage:
+    'They said it plainly, the company took it plainly, and the list came out different in the morning because it should have.',
+  criticalFailureAfterimage:
+    'It came out as a loyalty the company had not been told about, and that is the half the company kept.',
+  nudges: THIRD_WATCH_HAND,
+};
+
+export const COMPANY_THIRD_WATCH: UnifiedActionTemplate = {
+  id: COMPANY_DRAMA_TEMPLATE_IDS.thirdWatch,
+  rarityTier: 3,
+  intrinsicTier: 'shaping',
+  name: 'The Third Watch',
+  reach: 'heart',
+  crudType: 'read',
+  scale: 'local',
+  steps: [THIRD_WATCH_STEP],
+  apCost: 1,
+  // Group-EXCLUSIVE: the authoring claim, not a swept affinity. A company of one
+  // has no watch rotation and nobody to be told, which is the whole subject.
+  actorAffinities: ['group'],
+  minGroupMembers: COMPANY_DRAMA_MIN_MEMBERS,
+  motivations: ['loyalty_ambition', 'revelation_discretion'],
+  settings: ['urban', 'sacred'],
+  openings: {
+    urban:
+      'The company has coin and a roof for the first time in a fortnight, and it has taken '
+      + 'the long table by the shutters. The packs are stacked where everyone can see them, '
+      + 'so a watch still has to be set, so the list is still chalked up — and the two at the '
+      + 'quiet end of the table have stopped pretending they came down separately.',
+    sacred:
+      'They are waiting out a night of rain in the shrine\'s side hall, where the floor is dry '
+      + 'and the celebrant does not much mind. A watch on the packs is still a watch, so the '
+      + 'list is chalked on the doorframe. Two of them have been sitting against the same wall '
+      + 'since the rain started, and this is a building where people say things out loud on '
+      + 'purpose.',
+  },
+  locationSubtypes: expandSettings(['urban', 'sacred']),
+  supportBundle: THIRD_WATCH_SUPPORT_BUNDLE,
+  traitVariants: [
+    {
+      // Warmth is what lets a person say a large thing without turning it into
+      // an announcement — which is exactly the difference between the company
+      // hearing it and the company being told.
+      traitId: 'trait.core.core_warmth.virtue',
+      forecastDelta: 0.05,
+      factorLine: 'Warm, they can say it without making it an announcement.',
+    },
+  ],
+  aftermathConfig: {
+    branchOnStep: 0,
+    variants: {},
+    fallback: {
+      overview:
+        'The chalk is still on the shutter and the list still says what it said. What the '
+        + 'company does about it is a separate decision from knowing about it, and the company '
+        + 'is at the table with the evening in front of it. The rotation can be written to fit '
+        + 'the pair, plainly, in front of everyone — or the list can be left exactly as it is '
+        + 'and the company can go on being a company that has noticed and not said so.',
+      changes: [],
+      reactions: [
+        {
+          id: 'company.romance.rewrite_the_rotation',
+          label: 'Rewrite the rotation',
+          intent: 'The company works out loud who covers whom, and chalks it up that way.',
+          effects: [
+            { kind: 'reputation_tally', key: COMPANY_REPUTE_KEY, delta: COMPANY_REPUTE_GAIN },
+          ],
+        },
+        {
+          id: 'company.romance.leave_the_list',
+          label: 'Leave the list as it is',
+          intent: 'It works. Nobody wants to be the one who made it a company matter.',
+          effects: [
+            // A question left on the shutter is a question that arrives again,
+            // and the seed is what makes the pairing a thing the world acts on
+            // rather than a thing the prose asserts.
+            {
+              kind: 'encounter_seed',
+              templateId: COMPANY_DRAMA_TEMPLATE_IDS.thirdWatch,
+              delayTicks: COMPANY_ROMANCE_RETURN_DELAY_TICKS,
+              seedLabel: 'The list, still coming out the same',
+            },
+          ],
+        },
+      ],
+      byOutcome: {
+        critical_success: {
+          overview:
+            'It got said at the table with everybody sitting there, and it took about a minute, '
+            + 'and the loudest reaction was one person saying they had a bet on it. The '
+            + 'rotation was rewritten before the candles went, out loud, with the pair arguing '
+            + 'their own case for keeping the third watch and losing that argument on grounds '
+            + 'nobody had to soften. The one who heard it said has known worse evenings and '
+            + 'says so.',
+          changes: [
+            {
+              id: 'company.romance.said_in_front_of_everyone',
+              kind: 'trait',
+              title: 'Said in Front of Everyone',
+              causeClause: 'They named it at the table instead of letting the company work it out',
+              detail:
+                'The company knows who covers whom and has written the rotation to match. Nobody is guessing at the next hard call.',
+              polarity: 'gain',
+              category: 'bond',
+              direction: 'gain',
+              stateNoun: {
+                text: 'inspired',
+                entityId: 'trait.condition.inspired',
+                visualKind: 'attachment',
+              },
+              // Anchored to the person the band's reaction actually writes an
+              // edge to (Law 56 clause 2). The `bond_change` below is a real,
+              // inspectable relationship write; the condition on the stateNoun
+              // is the other one. `$cast:` resolves against the declared key.
+              concepts: [
+                {
+                  text: 'The one who heard it said',
+                  entityId: '$cast:oath_witness',
+                  visualKind: 'agent',
+                  visualName: 'The One Who Heard It Said',
+                },
+              ],
+            },
+          ],
+          reactions: [
+            {
+              id: 'company.romance.chalk_it_up_new',
+              label: 'Chalk up the new rotation',
+              intent: 'The list gets written to fit what the company now knows.',
+              effects: [
+                { kind: 'reputation_tally', key: COMPANY_REPUTE_KEY, delta: COMPANY_REPUTE_GAIN },
+                { kind: 'condition_attachment', templateId: 'trait.condition.inspired' },
+                // Said plainly in front of a party whose business is words that
+                // bind. That is a person who will vouch for this company, and a
+                // relationship edge is what "will vouch" actually means.
+                {
+                  kind: 'bond_change',
+                  withAgentId: '$cast:oath_witness',
+                  sentimentDelta: COMPANY_OATH_WITNESS_SENTIMENT,
+                  trustDelta: COMPANY_OATH_WITNESS_TRUST,
+                },
+              ],
+            },
+          ],
+        },
+        success_at_cost: {
+          overview:
+            'It was settled at the quiet end of the table with three of them present, which is '
+            + 'a settlement and is not the same as the company being told. The rest worked it '
+            + 'out over the following days, from each other, in the order that suited whoever '
+            + 'was telling it. {actor} has not been asked to write the list since, and has not '
+            + 'asked why, and the not-asking is the expensive part.',
+          changes: [
+            {
+              id: 'company.romance.off_the_list',
+              kind: 'trait',
+              title: 'Off the List',
+              causeClause: 'It was settled among three people and reached the rest sideways',
+              detail:
+                'The rotation is somebody else\'s job now. It was not taken away in words, so there is nothing to take back.',
+              polarity: 'loss',
+              category: 'scar',
+              direction: 'loss',
+              // The condition vocabulary has no word for a job quietly moved off
+              // you, and a chip may only name a state the engine writes
+              // (Law 56). So the chip claims the tiredness of a week of it,
+              // which the reaction really attaches, and the sideways route the
+              // news took stays in the overview where scene facts belong.
+              stateNoun: {
+                text: 'exhausted',
+                entityId: 'trait.condition.exhausted',
+                visualKind: 'attachment',
+              },
+              concepts: [{ text: 'somebody else writes the list now' }],
+            },
+          ],
+          reactions: [
+            {
+              id: 'company.romance.let_it_travel',
+              label: 'Let it travel on its own',
+              intent: 'The three who were there know. The rest will get there.',
+              effects: [
+                { kind: 'condition_attachment', templateId: 'trait.condition.exhausted' },
+                {
+                  kind: 'encounter_seed',
+                  templateId: COMPANY_DRAMA_TEMPLATE_IDS.thirdWatch,
+                  delayTicks: COMPANY_ROMANCE_RETURN_DELAY_TICKS,
+                  seedLabel: 'The version of it that reached the rest',
+                },
+              ],
+            },
+          ],
+        },
+        failure: {
+          overview:
+            'The evening ended the ordinary way. The candles went, the packs got carried up, '
+            + 'and the list on the shutter says what it has said for eleven nights. Twice it '
+            + 'was nearly started and twice the table turned to a different subject at the '
+            + 'exact wrong second, and by the second time that had stopped being bad luck and '
+            + 'become the company\'s decision.',
+          changes: [
+            {
+              id: 'company.romance.still_the_same_list',
+              kind: 'future_hook',
+              title: 'Still the Same List',
+              causeClause: 'The company had an evening under a roof and did not use it',
+              detail:
+                'The rotation keeps coming out the same and the company keeps chalking it up, so the question arrives again on a night with less room in it.',
+              polarity: 'loss',
+              category: 'path',
+              direction: 'loss',
+              // A seed has no node to open until it fires, so it cannot be its
+              // own referent (Law 56 clause 2). The chip anchors to the one
+              // person on this scene who is written: the member who keeps
+              // writing the list, and whose next chance this seed schedules.
+              stateNoun: {
+                text: 'the list they keep chalking up',
+                entityId: '$actor',
+                visualKind: 'agent',
+              },
+              concepts: [{ text: 'the night it is a question about who went back for whom' }],
+            },
+          ],
+          reactions: [
+            {
+              id: 'company.romance.go_up_to_bed',
+              label: 'Carry the packs up and leave it',
+              intent: 'It has kept eleven nights. It will keep another.',
+              effects: [
+                {
+                  kind: 'encounter_seed',
+                  templateId: COMPANY_DRAMA_TEMPLATE_IDS.thirdWatch,
+                  delayTicks: COMPANY_ROMANCE_RETURN_DELAY_TICKS,
+                  seedLabel: 'The same list, on a worse night',
+                },
+              ],
+            },
+          ],
+        },
+        critical_failure: {
+          overview:
+            'It came out late and badly and in front of the whole room, and what the company '
+            + 'heard was not a pairing, it was two of its own agreeing in advance who they '
+            + 'would go back for. Nobody has said the word for that either. The one who heard '
+            + 'it said heard all of it, including the part that was about the rest of the '
+            + 'company, and what this company is understood to be is now partly in the keeping '
+            + 'of a stranger who was there for the worst of an evening.',
+          changes: [
+            {
+              // Reports the mark, not the standing move. The reaction does write
+              // a `reputation_tally`, but that number renders only in the
+              // designer's TalliesDebugTab — a chip reporting it would claim a
+              // quantity the player cannot inspect (Law 13 parity, THR-1136 §5),
+              // so the standing sentence stays in the overview and the chip
+              // reports the thing the engine will act on: a stranger carrying
+              // something about this company that an investigation can reach.
+              id: 'company.romance.what_they_owe_each_other',
+              kind: 'future_hook',
+              title: 'What They Owe Each Other',
+              causeClause: 'The company heard the pairing as a promise made over its head',
+              detail:
+                'A stranger sat through the whole of it and can repeat the part about who would be gone back for first.',
+              polarity: 'loss',
+              category: 'path',
+              direction: 'loss',
+              concepts: [
+                {
+                  text: 'The one who heard it said',
+                  entityId: '$cast:oath_witness',
+                  visualKind: 'agent',
+                  visualName: 'The One Who Heard It Said',
+                },
+              ],
+            },
+          ],
+          reactions: [
+            {
+              id: 'company.romance.sleep_on_it',
+              label: 'Break the table up for the night',
+              intent: 'Nothing said after this improves it. End the evening.',
+              effects: [
+                { kind: 'reputation_tally', key: COMPANY_REPUTE_KEY, delta: COMPANY_REPUTE_LOSS },
+                // A company overheard agreeing who it will go back for first is
+                // doing a thing that can be found out. The mark anchors to the
+                // cast member who sat through it — a declared actor the world
+                // instantiates, not ambient scenery.
+                {
+                  kind: 'hidden_mark',
+                  category: 'concealed_action',
+                  severity: COMPANY_UNSAID_SEVERITY,
+                  label: 'Two of the company settled between them who gets gone back for',
+                  targetAgentId: '$cast:oath_witness',
+                  revealFamilies: ['investigation'],
+                },
+                {
+                  kind: 'encounter_seed',
+                  templateId: COMPANY_DRAMA_TEMPLATE_IDS.thirdWatch,
+                  delayTicks: COMPANY_ROMANCE_RETURN_DELAY_TICKS,
+                  seedLabel: 'What the room took away from that evening',
+                },
+              ],
+            },
+          ],
+        },
+      },
+    },
+  },
+  narrativeTemplates: {
+    initiation:
+      'Two of a company have become something to each other, and the company has not been told.',
+    success: 'It got said, and the company wrote itself around it.',
+    failure: 'It did not get said, and the list came out the same again.',
+  },
+  description:
+    'Two members of a company have become something to each other, everybody in the company '
+    + 'can see it, and the watch list has come out the same way for eleven nights. The scene is '
+    + 'not about whether they love each other, which is settled; it is about what the pair is '
+    + 'to a company that has to know who covers whom before the next hard night. A god can lean '
+    + 'on the room, on the size of the thing, on the steadiness of a voice, on the length of '
+    + 'the evening, or on how narrow the audience is — and fate decides whether the company '
+    + 'reorganises honestly or carries a loyalty it will not name.',
+};
+
 /**
  * Every company-drama template, in authoring order.
  *
@@ -980,4 +1504,5 @@ export const COMPANY_TWO_ROADS_NAMED: UnifiedActionTemplate = {
 export const COMPANY_DRAMA_TEMPLATES: readonly UnifiedActionTemplate[] = [
   COMPANY_GATE_HELD,
   COMPANY_TWO_ROADS_NAMED,
+  COMPANY_THIRD_WATCH,
 ].map(compileOpeningEnvelope);
