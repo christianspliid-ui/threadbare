@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-18 21:56 local (19:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-18 22:57 local (20:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -16,17 +16,17 @@ Smallest ask on this list, longest chain behind it: return visit → payoff real
 
 An agent puts five candidates in front of you — the hunger vocabulary, the consequence chips (already rebuilt once, as the proof), region identity, mandate prose, follow-on tags — ranked against stated criteria; you rule on the order in chat. One sitting, no code. Say *"run the wave-1 sitting."*
 
-All three background investigations are finished, so nothing is missing but the sitting. Resolving it closes [the architecture map](https://linear.app/threadbare/issue/THR-1157/typed-game-state-architecture-machinery-first-wave-wayfinder-map) and turns it into one written plan per part plus one for the shared machinery. Still the largest-leverage ask here — no longer the one holding the pipeline up, since four feature jobs landed on the shelf on 2026-08-18.
+All three background investigations are finished, so nothing is missing but the sitting. Resolving it closes [the architecture map](https://linear.app/threadbare/issue/THR-1157/typed-game-state-architecture-machinery-first-wave-wayfinder-map) and turns it into one written plan per part plus one for the shared machinery. Still the largest-leverage ask here — no longer the one holding the pipeline up, since the shelf refilled on 2026-08-18.
 
 [Nations and named areas](https://linear.app/threadbare/issue/THR-1155/nations-and-named-areas-are-rendered-not-simulated-promote-both-to) (High, your own direction) and [Traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools) remain good alternatives — name either and the session starts there. Note the sitting may decide the *scope* of the nations one, so doing it first risks designing the narrow version.
 
 ### 3. Spending image credits — three missing plates, and five quarantined ones
 
-**[THR-1170](https://linear.app/threadbare/issue/THR-1170/every-meet-the-first-nudge-card-renders-the-same-plate-424-imagetags) — the opening beat.** Every nudge card in every Meet-The-First hand shows the same picture, wisps settling over a plain clay bowl. All 424 cards. They were written for three different images (a crowd, a mercy, a blade) and none was ever made. [Open the route and see it](https://threadbare.vercel.app/?view=game&firstunmet&size=medium). **Make the three, or reuse near-misses?** Reusing is free and same-day, but one of the three lands back on the stand-in it already shows, so a third of the cards gain nothing.
+**[THR-1170](https://linear.app/threadbare/issue/THR-1170/every-meet-the-first-nudge-card-renders-the-same-plate-424-imagetags) — the opening beat.** Every nudge card in every Meet-The-First hand shows the same picture, wisps settling over a plain clay bowl. All 424 cards. As of 2026-08-18 they each have their own written face, which makes the shared picture the last thing flattening them together. They were written for three different images (a crowd, a mercy, a blade) and none was ever made. [Open the route and see it](https://threadbare.vercel.app/?view=game&firstunmet&size=medium). **Make the three, or reuse near-misses?** Reusing is free and same-day, but one of the three lands back on the stand-in it already shows, so a third of the cards gain nothing.
 
 **[THR-876](https://linear.app/threadbare/issue/THR-876/regenerate-the-5-quarantined-meet-the-first-scene-assets-doctrine) — five scene images that break the art rule.** Ready to run whenever you say. Nothing is broken; substitutes cover those slots.
 
-Both are yours only because they spend credits. Nothing is blocked on either. Standing rule the lane follows unless you say otherwise: *remap where a match is honest, come to you only when it is not* — which is exactly what surfaced the first one.
+Both are yours only because they spend credits. Nothing is blocked on either. Standing rule the lane follows unless you say otherwise: *remap where a match is honest, come to you only when it is not.*
 
 ### 4. Should committing a nudge be followed by a held breath? — [THR-1168](https://linear.app/threadbare/issue/THR-1168/two-authored-encounter-audio-moments-have-no-live-caller-wire-or)
 
@@ -48,6 +48,7 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
+- 2026-08-18: **a god who pulls threads, not furniture** — [THR-1178](https://linear.app/threadbare/issue/THR-1178/nudge-library-completion-sphere-expressive-guidance-authored-card) ([PR #1553](https://github.com/christianspliid-ui/threadbare/pull/1553)): your afternoon note that "physics of the scene" was too narrow. Nudge guidance now reads *influence, never authorship* across dreams, omens, desires and fates — and all 34 cards in the library have their own written face.
 - 2026-08-18: **the guard that would have caught your favour bug** — [THR-1177](https://linear.app/threadbare/issue/THR-1177/edge-integrity-the-enforce-now-package-validate-at-the-two-generic) ([PR #1552](https://github.com/christianspliid-ui/threadbare/pull/1552)): the two places that write links between things now check what they are joining, so a debt owed by a town is refused at the point of writing rather than found by you in play.
 - 2026-08-18: **the favour a town could never repay** — [THR-1175](https://linear.app/threadbare/issue/THR-1175/a-town-cannot-owe-a-social-favour-favor-creation-with-a-non-person) ([PR #1551](https://github.com/christianspliid-ui/threadbare/pull/1551)): your 18:34 finding, fixed and deployed within four hours. It was worse than reported — the debt was uncollectable by construction, headed for a silent sweep a week later. It is a standing welcome on the town now.
 - 2026-08-18: **a company can now actually break up over a betrayal** — [THR-1174](https://linear.app/threadbare/issue/THR-1174/dissolutionreason-betrayal-has-a-consumer-and-no-producer-a-company) ([PR #1549](https://github.com/christianspliid-ui/threadbare/pull/1549)): the ending existed in the telling but nothing could cause it, so the betrayal scene had no way to end the company it broke. It has a producer now, and its own parting words.
@@ -57,7 +58,6 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 - 2026-08-18: **42 card pictures that named nothing now point at real ones** — [THR-1052](https://linear.app/threadbare/issue/THR-1052/27-card-imagetags-across-13-shipped-encounters-name-no-image-library): re-pointed where an honest match existed, plus a guard so the class cannot silently recur. Filed at 27, found to be 42 on inspection. It is what turned up ask 3 above.
 - 2026-08-18: **the equipment follow-on is already done** — [THR-1169](https://linear.app/threadbare/issue/THR-1169/stat-contribution-migration-the-effect-primitive-exerciser-block-and) ([PR #1541](https://github.com/christianspliid-ui/threadbare/pull/1541)): the items yesterday's job deliberately left out are now sorted into the ones that prove the machinery and the ones that are real gear.
 - 2026-08-18: **fifty-seven pieces of equipment now actually make their bearer more capable** — [THR-745](https://linear.app/threadbare/issue/THR-745/extend-stat-contribution-migration-to-the-remaining-reward-catalog) ([PR #1540](https://github.com/christianspliid-ui/threadbare/pull/1540)): weapons, relics and tomes whose whole point was to make you better at something were carrying no such effect.
-- 2026-08-18: **rivals now notice you gradually instead of all at once** — [THR-963](https://linear.app/threadbare/issue/THR-963/detection-pressure-is-fed-essence-costs-123-on-a-0-1-clamped-scale-so) ([PR #1539](https://github.com/christianspliid-ui/threadbare/pull/1539)): the ladder between "unnoticed" and "hunted" had no middle rung, so every step read as maximum.
 
 ---
 
