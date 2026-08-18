@@ -233,7 +233,12 @@ describe('encounter-experience contract', { timeout: WORLD_SIM_TEST_TIMEOUT_MS }
 
   it('4.3 detection threshold crossing queues exactly one rival-detection seed', () => {
     const state = createAftermathState();
-    state.pendingChoiceCommits = [makeChoiceCommit({ cost: 'deep_draught' })];
+    // Two deep draughts: since THR-963 a single one only reaches NOTICE, so the
+    // encounter band — and the seed it queues — takes a second choice to reach.
+    state.pendingChoiceCommits = [
+      makeChoiceCommit({ cost: 'deep_draught' }),
+      makeChoiceCommit({ cost: 'deep_draught' }),
+    ];
 
     const firstPass = phaseDetectionPressure(state);
     const firstEncounterCrossings = getTraces().filter((trace) =>

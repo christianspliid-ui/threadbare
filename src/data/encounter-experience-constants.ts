@@ -51,6 +51,25 @@ export const PERSONALITY_DRIFT_DECAY_PER_TICK = 0.001;
 /** @deprecated Renamed to PERSONALITY_DRIFT_DECAY_PER_TICK (THR-528). Kept as an alias. */
 export const DRIFT_DECAY_RATE_PER_TICK = PERSONALITY_DRIFT_DECAY_PER_TICK;
 
+// ── Detection pressure deltas (THR-963) ─────────────────────────────
+// Detection pressure is a normalised 0–1 fraction (see MAX_DETECTION_PRESSURE),
+// so the delta a divine choice writes to it must be a fraction too. Until THR-963
+// the delta was priced by the CHOICE_ESSENCE_COST_* constants above — a whole-unit
+// resource cost on a different scale entirely — so the smallest possible write
+// (1 × 0.8 sphere visibility = 0.8) already cleared both NOTICE and TURN, and any
+// louder choice saturated straight to ENCOUNTER. The ladder collapsed in one step.
+//
+// Sized against the three thresholds below (0.5 / 0.8 / 1.0) and the sphere
+// visibility multipliers the phase applies (0.8 / 1.0 / 1.2):
+//   - SMALL stays under the 0.2-wide TURN→ENCOUNTER gap even at 1.2×, so a single
+//     small breath can never cross more than one band from any starting pressure.
+//   - FULLER reaches NOTICE on the 2nd choice, TURN on the 3rd, ENCOUNTER on the 4th
+//     at neutral visibility — one band per step, which is the point of having three.
+//   - DEEP is deliberately loud: one draught reaches NOTICE, two saturate.
+export const DETECTION_DELTA_SMALL = 0.15;
+export const DETECTION_DELTA_FULLER = 0.3;
+export const DETECTION_DELTA_DEEP = 0.5;
+
 // Detection threshold for notice-level rival pressure.
 export const DETECTION_THRESHOLD_NOTICE = 0.5;
 // Detection threshold for turn-level rival pressure.

@@ -61,16 +61,31 @@ describe('phaseDetectionPressure', () => {
     expect(result.regionalDetectionPressure[0]?.regionId).toBe('region.alpha');
   });
 
-  it('emits detection threshold trace entries when crossing thresholds', () => {
+  it('emits no threshold trace for a single small breath (THR-963)', () => {
+    // The ladder is graduated: one small breath is 0.15 of the way to NOTICE, not
+    // past it. Before THR-963 this same call crossed notice, turn and encounter at
+    // once, and this suite asserted that it did.
     phaseDetectionPressure(makeState([makeCommit()]));
     const traces = getTraces().filter((trace) => trace.category === 'detection_threshold_crossed');
-    expect(traces.length).toBeGreaterThanOrEqual(1);
-    const encounterTrace = traces.find((trace) => (trace as { thresholdCrossed?: string }).thresholdCrossed === 'encounter');
-    expect(encounterTrace).toBeDefined();
+    expect(traces).toHaveLength(0);
+  });
+
+  it('emits detection threshold traces band by band as pressure accumulates', () => {
+    const commits = Array.from({ length: 7 }, () => makeCommit());
+    phaseDetectionPressure(makeState(commits));
+    const crossed = getTraces()
+      .filter((trace) => trace.category === 'detection_threshold_crossed')
+      .map((trace) => (trace as { thresholdCrossed?: string }).thresholdCrossed);
+    // Each band arrives on its own choice, in order — never all three at once.
+    expect(crossed).toEqual(['notice', 'turn', 'encounter']);
   });
 
   it('queues one rival-detection seed at encounter threshold crossing', () => {
-    const result = phaseDetectionPressure(makeState([makeCommit({ cost: 'deep_draught' })]));
+    // Two deep draughts to saturate — one only reaches NOTICE (THR-963).
+    const result = phaseDetectionPressure(makeState([
+      makeCommit({ cost: 'deep_draught' }),
+      makeCommit({ cost: 'deep_draught' }),
+    ]));
     expect(result.pendingEncounterSeeds).toHaveLength(1);
     expect(result.pendingEncounterSeeds[0]?.sourceReactionId).toBe('detection_threshold_encounter');
   });
@@ -87,12 +102,15 @@ describe('phaseDetectionPressure', () => {
       seedLabel: 'existing',
       plantedTick: 19,
     };
-    const result = phaseDetectionPressure(makeState([makeCommit({ cost: 'deep_draught' })], [existingSeed]));
+    const result = phaseDetectionPressure(makeState(
+      [makeCommit({ cost: 'deep_draught' }), makeCommit({ cost: 'deep_draught' })],
+      [existingSeed],
+    ));
     expect(result.pendingEncounterSeeds).toHaveLength(1);
   });
 
   it('detection_threshold_crossed trace carries regionId, fromPressure, and toPressure', () => {
-    phaseDetectionPressure(makeState([makeCommit()]));
+    phaseDetectionPressure(makeState(Array.from({ length: 4 }, () => makeCommit())));
     const trace = getTraces().find(t => t.category === 'detection_threshold_crossed') as Record<string, unknown> | undefined;
     expect(trace).toBeDefined();
     expect(typeof trace!['regionId']).toBe('string');

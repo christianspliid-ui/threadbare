@@ -1,9 +1,9 @@
 import type { RegionDetectionState } from '../../types/gameState';
 import type { DetectionThresholdBand, EncounterChoiceCost } from '../../types/traces/encounter-traces';
 import {
-  CHOICE_ESSENCE_COST_DEEP,
-  CHOICE_ESSENCE_COST_FULLER,
-  CHOICE_ESSENCE_COST_SMALL,
+  DETECTION_DELTA_DEEP,
+  DETECTION_DELTA_FULLER,
+  DETECTION_DELTA_SMALL,
   DETECTION_THRESHOLD_ENCOUNTER,
   DETECTION_THRESHOLD_NOTICE,
   DETECTION_THRESHOLD_TURN,
@@ -20,10 +20,21 @@ function clampPressure(value: number): number {
   return value;
 }
 
+/**
+ * How much detection pressure a divine choice of the given intensity writes,
+ * before the sphere-visibility multiplier is applied.
+ *
+ * THR-963: the returned value is a fraction on the same 0–1 scale as the pressure
+ * it is added to — NOT the choice's essence cost. Those are two different
+ * quantities (essence is a whole-unit resource spend, pressure is a normalised
+ * fraction) and pricing one with the other's constants collapsed the entire
+ * notice → turn → encounter ladder into a single step. See
+ * DETECTION_DELTA_* in encounter-experience-constants.ts for the sizing.
+ */
 export function baseDetectionDeltaForCost(cost: EncounterChoiceCost): number {
-  if (cost === 'small_breath') return CHOICE_ESSENCE_COST_SMALL;
-  if (cost === 'fuller_breath') return CHOICE_ESSENCE_COST_FULLER;
-  return CHOICE_ESSENCE_COST_DEEP;
+  if (cost === 'small_breath') return DETECTION_DELTA_SMALL;
+  if (cost === 'fuller_breath') return DETECTION_DELTA_FULLER;
+  return DETECTION_DELTA_DEEP;
 }
 
 export function resolveSphereVisibilityMultiplier(rawVisibility: number | undefined): number {
