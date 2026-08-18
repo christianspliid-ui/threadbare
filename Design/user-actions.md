@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-18 15:57 local (13:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-18 16:53 local (14:53 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -11,7 +11,7 @@
 
 A yes releases batch 2 — the remaining nine of fifteen, written and sequenced behind this. A no tells the line what the retrofit bar is still missing before those nine are written against it.
 
-Everything you flagged has landed and is live: the canon fix, the prose re-pass to your plainness and density notes, the bond chip that now names who owes whom, fifteen chips reporting numbers you could not see (retired), and as of this afternoon the underlines that answered nothing.
+Everything you flagged has landed and is live: the canon fix, the prose re-pass to your plainness and density notes, the bond chip that now names who owes whom, fifteen chips reporting numbers you could not see (retired), and the underlines that answered nothing.
 
 **One honest gap.** *Sacred Grove* no longer underlines at all — a word is only styled if it answers, so it reads as plain text rather than keeping a false promise. Making places open is separate work ([THR-1173](https://linear.app/threadbare/issue/THR-1173/location-link-tier-is-capability-complete-but-unexercised-no-shipped)), because the name comes from the world generator and carries no identity the game can follow. Say if that holds your verdict; the lane's read is that it does not.
 
@@ -19,9 +19,9 @@ Everything you flagged has landed and is live: the canon fix, the prose re-pass 
 
 An agent puts five candidates in front of you — the hunger vocabulary, the consequence chips (already rebuilt once, as the proof), region identity, mandate prose, follow-on tags — ranked against stated criteria; you rule on the order in chat. One sitting, no code. Say *"run the wave-1 sitting."*
 
-All three background investigations are finished, so nothing is missing but the sitting. Resolving it closes [the architecture map](https://linear.app/threadbare/issue/THR-1157/typed-game-state-architecture-machinery-first-wave-wayfinder-map) and turns it into one written plan per part plus one for the shared machinery. Today's fix handed it another piece it alone can settle: concepts that explain themselves but have nowhere to click through to.
+All three background investigations are finished, so nothing is missing but the sitting. Resolving it closes [the architecture map](https://linear.app/threadbare/issue/THR-1157/typed-game-state-architecture-machinery-first-wave-wayfinder-map) and turns it into one written plan per part plus one for the shared machinery. Yesterday's fix handed it another piece it alone can settle: concepts that explain themselves but have nowhere to click through to.
 
-This remains the only ask that supplies *new* feature work; everything on the shelf is repair or follow-on. [Nations and named areas](https://linear.app/threadbare/issue/THR-1155/nations-and-named-areas-are-rendered-not-simulated-promote-both-to) (High, your own direction) and [Traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools) remain good alternatives — name either and the session starts there. Note the sitting may decide the *scope* of the nations one, so doing it first risks designing the narrow version.
+This remains the only ask that supplies *new* feature work; all seven shelf items are repair or follow-on. [Nations and named areas](https://linear.app/threadbare/issue/THR-1155/nations-and-named-areas-are-rendered-not-simulated-promote-both-to) (High, your own direction) and [Traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools) remain good alternatives — name either and the session starts there. Note the sitting may decide the *scope* of the nations one, so doing it first risks designing the narrow version.
 
 ### 3. Three missing pictures on the opening beat — [THR-1170](https://linear.app/threadbare/issue/THR-1170/every-meet-the-first-nudge-card-renders-the-same-plate-424-imagetags)
 
@@ -53,8 +53,8 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
+- 2026-08-18: **the company drama is complete, four scenes of four** — [THR-733](https://linear.app/threadbare/issue/THR-733/company-drama-content-sweep-leadership-dispute-romance-betrayal) ([PR #1547](https://github.com/christianspliid-ui/threadbare/pull/1547)): "The Quiet Offer" lands the betrayal, joining the sacrifice, the leadership dispute and the romance. A companion can now turn on the company from the inside, and the game has a scene for it. It also turned up [THR-1174](https://linear.app/threadbare/issue/THR-1174/dissolutionreason-betrayal-has-a-consumer-and-no-producer-a-company) — the break-up ending exists in the telling but nothing can yet cause it.
 - 2026-08-18: **the underlines you flagged at lunchtime now answer** — [THR-1172](https://linear.app/threadbare/issue/THR-1172/finish-the-entity-reference-contract-an-underline-must-earn-itself) ([PR #1546](https://github.com/christianspliid-ui/threadbare/pull/1546)): filed from your chat report, merged and deployed within two hours. *A favour owed* explains on hover and opens the debtor on click; a word that cannot answer no longer gets styled at all. The place half was split out honestly as [THR-1173](https://linear.app/threadbare/issue/THR-1173/location-link-tier-is-capability-complete-but-unexercised-no-shipped) rather than half-done — see ask 1.
-- 2026-08-18: **the company drama's romance scene is live** — [THR-733](https://linear.app/threadbare/issue/THR-733/company-drama-content-sweep-leadership-dispute-romance-betrayal): "The Third Watch" merged, joining the sacrifice and the leadership dispute. Betrayal is the last of the four.
 - 2026-08-18: **42 card pictures that named nothing now point at real ones** — [THR-1052](https://linear.app/threadbare/issue/THR-1052/27-card-imagetags-across-13-shipped-encounters-name-no-image-library): re-pointed where an honest match existed, plus a guard so the class cannot silently recur. Filed at 27, found to be 42 on inspection. It is what turned up ask 3 above.
 - 2026-08-18: **the equipment follow-on is already done** — [THR-1169](https://linear.app/threadbare/issue/THR-1169/stat-contribution-migration-the-effect-primitive-exerciser-block-and) ([PR #1541](https://github.com/christianspliid-ui/threadbare/pull/1541)): the items yesterday's job deliberately left out are now sorted into the ones that prove the machinery and the ones that are real gear. Filed and closed inside two hours, no ruling needed.
 - 2026-08-18: **fifty-seven pieces of equipment now actually make their bearer more capable** — [THR-745](https://linear.app/threadbare/issue/THR-745/extend-stat-contribution-migration-to-the-remaining-reward-catalog) ([PR #1540](https://github.com/christianspliid-ui/threadbare/pull/1540)): weapons, relics and tomes whose whole point was to make you better at something were carrying no such effect. Already-agreed work, no ruling needed.
