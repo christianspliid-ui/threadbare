@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-18 16:53 local (14:53 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-18 17:56 local (15:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -21,7 +21,7 @@ An agent puts five candidates in front of you — the hunger vocabulary, the con
 
 All three background investigations are finished, so nothing is missing but the sitting. Resolving it closes [the architecture map](https://linear.app/threadbare/issue/THR-1157/typed-game-state-architecture-machinery-first-wave-wayfinder-map) and turns it into one written plan per part plus one for the shared machinery. Yesterday's fix handed it another piece it alone can settle: concepts that explain themselves but have nowhere to click through to.
 
-This remains the only ask that supplies *new* feature work; all seven shelf items are repair or follow-on. [Nations and named areas](https://linear.app/threadbare/issue/THR-1155/nations-and-named-areas-are-rendered-not-simulated-promote-both-to) (High, your own direction) and [Traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools) remain good alternatives — name either and the session starts there. Note the sitting may decide the *scope* of the nations one, so doing it first risks designing the narrow version.
+This remains the only ask that supplies *new* feature work; all six shelf items are repair or follow-on. [Nations and named areas](https://linear.app/threadbare/issue/THR-1155/nations-and-named-areas-are-rendered-not-simulated-promote-both-to) (High, your own direction) and [Traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools) remain good alternatives — name either and the session starts there. Note the sitting may decide the *scope* of the nations one, so doing it first risks designing the narrow version.
 
 ### 3. Three missing pictures on the opening beat — [THR-1170](https://linear.app/threadbare/issue/THR-1170/every-meet-the-first-nudge-card-renders-the-same-plate-424-imagetags)
 
@@ -53,6 +53,7 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
+- 2026-08-18: **a chip promised grief the game could not feel** — [THR-1171](https://linear.app/threadbare/issue/THR-1171/apotheosis-attaches-traitconditiongrieving-which-is-not-a-defined) ([PR #1548](https://github.com/christianspliid-ui/threadbare/pull/1548)): Apotheosis told you a companion would be left grieving, but no such state existed, so two chips named something that never arrived. Grief is now defined, and the sweep that catches this class was widened past cards so the next one cannot hide. Already-agreed work, no ruling needed.
 - 2026-08-18: **the company drama is complete, four scenes of four** — [THR-733](https://linear.app/threadbare/issue/THR-733/company-drama-content-sweep-leadership-dispute-romance-betrayal) ([PR #1547](https://github.com/christianspliid-ui/threadbare/pull/1547)): "The Quiet Offer" lands the betrayal, joining the sacrifice, the leadership dispute and the romance. A companion can now turn on the company from the inside, and the game has a scene for it. It also turned up [THR-1174](https://linear.app/threadbare/issue/THR-1174/dissolutionreason-betrayal-has-a-consumer-and-no-producer-a-company) — the break-up ending exists in the telling but nothing can yet cause it.
 - 2026-08-18: **the underlines you flagged at lunchtime now answer** — [THR-1172](https://linear.app/threadbare/issue/THR-1172/finish-the-entity-reference-contract-an-underline-must-earn-itself) ([PR #1546](https://github.com/christianspliid-ui/threadbare/pull/1546)): filed from your chat report, merged and deployed within two hours. *A favour owed* explains on hover and opens the debtor on click; a word that cannot answer no longer gets styled at all. The place half was split out honestly as [THR-1173](https://linear.app/threadbare/issue/THR-1173/location-link-tier-is-capability-complete-but-unexercised-no-shipped) rather than half-done — see ask 1.
 - 2026-08-18: **42 card pictures that named nothing now point at real ones** — [THR-1052](https://linear.app/threadbare/issue/THR-1052/27-card-imagetags-across-13-shipped-encounters-name-no-image-library): re-pointed where an honest match existed, plus a guard so the class cannot silently recur. Filed at 27, found to be 42 on inspection. It is what turned up ask 3 above.
