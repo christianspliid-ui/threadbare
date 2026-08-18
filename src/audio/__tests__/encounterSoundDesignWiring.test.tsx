@@ -9,10 +9,9 @@
  * `encounterSoundDesign.test.ts`.
  *
  * The Moment 2 half (landing lifecycle → `playRegistrationCue`) was removed in
- * THR-1049 with the `EffectRegistration` prototype cluster it exercised. That
- * leaves `playRegistrationCue` itself call-less in production — filed rather
- * than pruned here, because the audio cue and its semitone table are a separate
- * cluster from this ticket's UI scope.
+ * THR-1049 with the `EffectRegistration` prototype cluster it exercised, and the
+ * cue itself was retired in THR-1168 — its pitch map was keyed by the engine
+ * effect vocabulary that no player surface still speaks. Only Moment 1 remains.
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { act, renderHook } from '@testing-library/react';

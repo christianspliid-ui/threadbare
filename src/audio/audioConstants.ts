@@ -35,8 +35,6 @@ export const ENCOUNTER_THRUM_PEAK_DB = -16;
 export const ENCOUNTER_RESOLVE_DB = -18;
 /** Slackening-thread release. Spec: "barely-audible". */
 export const ENCOUNTER_RELEASE_DB = -34;
-/** Moment 2 first-registration cue. Quieter than the resolve it follows. */
-export const ENCOUNTER_REGISTRATION_DB = -22;
 
 // Cue timings in ms from commit, matching the §3.3 table and the
 // useThreadReveal beat clock (60+380+520+420+240 = 1620ms total).
@@ -60,8 +58,6 @@ export const ENCOUNTER_RESOLVE_OCTAVE_MULTIPLIER = 4;
 /** Struck string: near-instant attack, long decay. */
 export const ENCOUNTER_RESOLVE_ATTACK_MS = 4;
 export const ENCOUNTER_RESOLVE_DECAY_MS = 900;
-export const ENCOUNTER_REGISTRATION_ATTACK_MS = 3;
-export const ENCOUNTER_REGISTRATION_DECAY_MS = 420;
 
 /**
  * Sphere tinting for the resolve note, in semitones above the cello root.
@@ -88,22 +84,16 @@ export const ENCOUNTER_RESOLVE_SEMITONES: Readonly<Record<string, number>> = {
 /** Fallback interval when a reach is missing from the map (fail-soft). */
 export const ENCOUNTER_RESOLVE_SEMITONES_FALLBACK = 0;
 
-/**
- * Sphere tinting for Moment 2 registration cues, in semitones above the root.
- * Keyed by effect kind; each kind's sphere follows canonical UI spec §4.1.
- */
-export const ENCOUNTER_REGISTRATION_SEMITONES: Readonly<Record<string, number>> = {
-  intelligence: 7, // eye / mind
-  condition_attachment: 3, // spirit
-  reputation_tally: 5, // iron / force
-  reputation_score: 5, // iron / force
-  encounter_seed: 12, // time
-  hidden_mark: 6, // darkness
-  recent_event: 3, // heart / spirit
-  spawn_artifact: 0, // matter
-  faction: 9, // order
-  archetype_drift_register: 10, // chaos
-};
+// The Moment 2 registration-cue constants (level, attack, decay, and the
+// ten-entry sphere-tint map) were retired with the cue itself (THR-1168). The map
+// was keyed by the *engine effect* vocabulary of canonical UI spec §4.1 —
+// `intelligence`, `hidden_mark`, `spawn_artifact` and kin — and no player surface
+// still speaks it: THR-1082 replaced the mechanical effect buckets with six
+// story-first consequence kinds (`prize | standing | toll | wound | seed | mark`),
+// sharing zero keys with this map. The live "what registered" surface is the
+// consequence-chip block in `EncounterVeil.tsx` (THR-971 / THR-1082), which could
+// only ever have driven the fallback pitch. Recover from git history if a
+// per-effect registration surface returns.
 
 /**
  * Pool of in-game music tracks. MusicChannel shuffles through these,
