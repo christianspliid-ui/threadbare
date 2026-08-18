@@ -21,6 +21,7 @@ import { SETTING_CLASS_MAP } from '../settingClasses';
 import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 
 const GATE_HELD_ID = 'encounter.company.gate_held';
+const TWO_ROADS_ID = 'encounter.company.two_roads_named';
 
 describe('company drama — content integrity', () => {
   for (const authored of COMPANY_DRAMA_TEMPLATES) {
@@ -69,8 +70,8 @@ describe('company drama — end-to-end reachability against real content', () =>
     t => t.id === GATE_HELD_ID,
   ) as UnifiedActionTemplate;
 
-  /** A ruin whose subtype is one of the template's authored settings. */
-  function ruinGraph(): WorldGraph {
+  /** A place whose subtype is one of the template-under-test's authored settings. */
+  function placeGraph(subtype: string, name: string): WorldGraph {
     const graph = new WorldGraph();
     graph.addNode({
       id: 'actor-1',
@@ -81,8 +82,8 @@ describe('company drama — end-to-end reachability against real content', () =>
     graph.addNode({
       id: 'ruin-1',
       type: 'location',
-      name: 'The Sunk Bastion',
-      properties: { locationType: 'ruins', locationSubtype: 'ruins' },
+      name,
+      properties: { locationType: subtype, locationSubtype: subtype },
     });
     graph.addEdge({
       id: 'e-loc',
@@ -93,6 +94,9 @@ describe('company drama — end-to-end reachability against real content', () =>
     });
     return graph;
   }
+
+  const ruinGraph = () => placeGraph('ruins', 'The Sunk Bastion');
+  const waysideGraph = () => placeGraph('camp', 'The Fork Camp');
 
   function joinCompany(graph: WorldGraph, livingCompanions: number): void {
     graph.addNode({
@@ -143,5 +147,45 @@ describe('company drama — end-to-end reachability against real content', () =>
     joinCompany(graph, 0); // actor-1 alone in the company = 1 living
     const result = generateUnifiedCandidates(graph, 'actor-1', 'ruin-1', [gateHeld]);
     expect(result).toHaveLength(0);
+  });
+
+  // ─── Two Roads Named — the leadership dispute ──────────────────────
+
+  const twoRoads = UNIFIED_ACTION_TEMPLATES.find(
+    t => t.id === TWO_ROADS_ID,
+  ) as UnifiedActionTemplate;
+
+  it('a company of two at a wayside draws the authored dispute', () => {
+    const graph = waysideGraph();
+    joinCompany(graph, 1); // actor-1 + 1 companion = 2 living
+    const result = generateUnifiedCandidates(graph, 'actor-1', 'ruin-1', [twoRoads]);
+    expect(result.map(c => c.templateId)).toContain(TWO_ROADS_ID);
+  });
+
+  it('a solo agent at the same wayside cannot draw it (group-exclusive)', () => {
+    const graph = waysideGraph(); // actor-1 ungrouped
+    const result = generateUnifiedCandidates(graph, 'actor-1', 'ruin-1', [twoRoads]);
+    expect(result).toHaveLength(0);
+  });
+
+  it('a company of one cannot draw it — one member has nobody to disagree with', () => {
+    const graph = waysideGraph();
+    joinCompany(graph, 0); // actor-1 alone in the company = 1 living
+    const result = generateUnifiedCandidates(graph, 'actor-1', 'ruin-1', [twoRoads]);
+    expect(result).toHaveLength(0);
+  });
+
+  it('the two subjects register at disjoint places — the dispute is not drawn at the ruin', () => {
+    // Guards a real authoring slip rather than restating the envelope: both
+    // templates are group-exclusive with identical member gates, so a copied
+    // `settings` block would make them interchangeable and the corpus would
+    // draw the same scene twice at every location. The settings differ, so the
+    // eligibility result at a given place must differ too.
+    const graph = ruinGraph();
+    joinCompany(graph, 1);
+    const result = generateUnifiedCandidates(graph, 'actor-1', 'ruin-1', [gateHeld, twoRoads]);
+    const ids = result.map(c => c.templateId);
+    expect(ids).toContain(GATE_HELD_ID);
+    expect(ids).not.toContain(TWO_ROADS_ID);
   });
 });
