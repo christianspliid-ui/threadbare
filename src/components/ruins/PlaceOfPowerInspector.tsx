@@ -39,9 +39,19 @@
  * - **Origin ruin** — a ruin has no drawer of its own; its page is its place on
  *   the map, so it carries the sanctioned zoom-to-map eye affordance (Law 22,
  *   `Docs/ui-patterns.md` §1) and the name itself stays plain styled text per
- *   Law 21's fail-open clause. This is deliberately *not* a new `location` link
- *   kind on `NarrativeSegments`: widening that union would make every existing
- *   `openEntity` implementation contravariant against it for one caller's sake.
+ *   Law 21's fail-open clause.
+ *
+ *   THR-1172 widened `NarrativeEntityKind` with a `location` member, so the
+ *   original reason recorded here — that the union could not be widened without
+ *   making every existing `openEntity` contravariant against it — is spent, and
+ *   the variance never bit: this panel's `openEntity` types `kind` as `string |
+ *   undefined`, which is wider than the union and so accepts it. **The behaviour
+ *   is unchanged and still correct**, on the surviving reason rather than the
+ *   retired one: this panel is handed `onOpenHolder` and nothing else, so it has
+ *   no location destination to route to, and Law 21's fail-open clause keeps an
+ *   unroutable name as text. A ruin is also the one location whose page really is
+ *   the map. If this panel is ever given a location handler, the kind is now
+ *   there to declare.
  * - **Sphere** — `SphereIcon` (Law 9's one icon vocabulary) inside the sphere's
  *   registry tooltip (Law 17), both guarded so an unknown sphere string degrades
  *   to the bare word instead of a broken icon (NFP #4).

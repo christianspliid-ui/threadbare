@@ -15,6 +15,7 @@
  * - doom.* → doom-content.ts stage names or hardcoded definitions
  * - quintessence.* → ascendant-bar-content.ts band tooltips
  * - attachment.* → attachmentTemplateIndex.ts shipped attachment templates
+ * - location.* → world-model location kinds, or a live location node (THR-1172)
  */
 
 import type { TooltipContent } from '../types/tooltip';
@@ -68,6 +69,7 @@ export interface TooltipResolverContext {
  * - agent.* → Agent name + archetype/domain info, gated by familiarity (Tier 1)
  * - quintessence.* → Quintessence band (transcendent … dissolving)
  * - attachment.* → Condition/blessing/curse/bestowed/possession template (THR-1122)
+ * - location.* → Place kind (static) or a named place by node id (THR-1172)
  * - mandate.* → Reserved for future implementation
  *
  * World-model descriptions longer than ~120 chars are truncated at
@@ -282,6 +284,55 @@ export function resolveTooltip(id: string, context?: TooltipResolverContext): To
   // reachable from `Tooltip`, which calls this with no context at all.
   if (prefix === 'attachment') {
     return resolveAttachmentTemplateTooltip(suffix);
+  }
+
+  // ─── Location Lookup (THR-1172) ────────────────────────────────
+  // Two shapes behind one prefix, tried in that order:
+  //
+  //   `location.grove`      → the **kind** of place, a static world-model concept
+  //   `location.<node id>`  → **this** place, named and explained by its kind
+  //
+  // The static half first, and deliberately so. `Tooltip` calls `resolveTooltip(id)`
+  // with **no context** and so does `tooltipResolves`, which is what decides whether
+  // a word is underlined at all — so an arm that could only answer with a graph
+  // would resolve null at the one call site the player actually hovers, and Sacred
+  // Grove would keep the silence THR-1172 was filed to end. That is the `agent.*`
+  // caveat (THR-1159) recorded as a live constraint rather than inherited: the
+  // *kind* of a place is committed content and identical in every world, exactly
+  // like an attachment template, so it does not need the world to answer.
+  //
+  // The context-bearing half remains worth having — a host that holds the graph
+  // (the encounter stage does) gets the place's own name rather than its category
+  // — but nothing depends on it, which is the property that makes this arm safe.
+  if (prefix === 'location') {
+    // (a) The kind. Keyed by the id exactly as written, since world-model spells
+    //     these `location.<subtype>` already.
+    const conceptNode = nodeMap.get(id);
+    if (conceptNode) {
+      return {
+        label: conceptNode.name,
+        desc: truncateDescription(conceptNode.description),
+      };
+    }
+
+    // (b) This place. Explained through its subtype, so the hover says both what
+    //     it is called and what it is — fail-soft to the bare name when the
+    //     subtype names no concept (a worldgen outcome, not an authoring error).
+    const node = context?.graph?.getNode(suffix);
+    if (node) {
+      const subtype = (node.properties?.locationSubtype ?? node.properties?.locationType) as
+        | string
+        | undefined;
+      const kindNode = subtype ? nodeMap.get(`location.${subtype}`) : undefined;
+      return {
+        label: node.name,
+        desc: kindNode
+          ? truncateDescription(kindNode.description)
+          : 'A place in the world.',
+      };
+    }
+
+    return null;
   }
 
   // ─── Knowledge Level Tooltips ────────────────────────────────────

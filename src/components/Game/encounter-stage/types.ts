@@ -151,8 +151,12 @@ export interface EncounterStageNarrativeSegment {
    * THR-1120 — `attachment` names a granted condition/blessing/curse/power by
    * its **template** node id. See `EncounterAftermathConceptRef.visualKind` for
    * why a template rather than the granted instance.
+   *
+   * THR-1172 — `location` names a place by its location node id, routed to the
+   * location sheet. Distinct from `referenceId`'s `location:<key>` grammar,
+   * which is scene bookkeeping and opens nothing.
    */
-  entityKind?: 'agent' | 'faction' | 'artifact' | 'companion' | 'attachment';
+  entityKind?: 'agent' | 'faction' | 'artifact' | 'companion' | 'attachment' | 'location';
 }
 
 export interface EncounterStageNarrativeParagraph {
@@ -428,7 +432,7 @@ export interface EncounterStageConsequenceChipModel {
    * imported from `NarrativeSegments`: this module is types-only and stays free
    * of component imports.
    */
-  nounEntityKind?: 'agent' | 'faction' | 'artifact' | 'companion' | 'attachment';
+  nounEntityKind?: 'agent' | 'faction' | 'artifact' | 'companion' | 'attachment' | 'location';
   /** Icon-tile fallback glyph when neither an entity nor a reach resolves. */
   categoryGlyph: string;
   /**
@@ -476,7 +480,15 @@ export interface EncounterStageConsequenceChipModel {
 export interface EncounterStageConsequenceIconModel {
   /** Stable id — graph lookup key when the entity is a node, gradient seed always. */
   entityId: string;
-  kind: 'agent' | 'faction' | 'artifact' | 'companion';
+  /**
+   * THR-1172 — `location` joins the tiled kinds, and `attachment` still does not.
+   * The split is `EntityVisualKind`: a place has an entity-visual family (its
+   * concept art) so a chip naming one draws the place; an attachment's art lives
+   * on its own template node and `AttachmentDetailView` draws it, so it takes the
+   * link tier and no tile. The resolver's `attachment` guard is what keeps that
+   * true, and the union is what makes removing the guard a type error.
+   */
+  kind: 'agent' | 'faction' | 'artifact' | 'companion' | 'location';
   name: string;
   /** Art the adapter resolved, when any exists. Absent ⇒ the designed fallback tile. */
   src?: string;

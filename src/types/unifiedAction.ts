@@ -226,8 +226,15 @@ export interface EncounterAftermathConceptRef {
    * instance: the grant is written by the reaction's effects, which apply after
    * the player picks — at which point the veil closes. What the chip can honestly
    * link is the thing being granted, not a node that does not exist yet.
+   *
+   * **`location` (THR-1172)** names a place by its location node id — a place the
+   * ending moved someone to, opened a road to, or set a standing welcome at.
+   * Unlike `attachment` it *does* carry an entity-visual family, so a chip
+   * naming one draws the place's tile as well as routing to its sheet. The
+   * instance is minted per world, so an author reaches for it through an anchor
+   * sentinel rather than a literal id, exactly as they do for a faction.
    */
-  readonly visualKind?: 'agent' | 'faction' | 'artifact' | 'companion' | 'attachment';
+  readonly visualKind?: 'agent' | 'faction' | 'artifact' | 'companion' | 'attachment' | 'location';
   /** Display name for the visual's alt text and fallback tile. */
   readonly visualName?: string;
 }

@@ -4609,6 +4609,13 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
               // on an aftermath chip. Routes to the same stub-modal path the
               // thread list uses, so a faction or a reward opens its own sheet
               // rather than the agent drawer.
+              //
+              // THR-1172 — `location` needed no arm of its own here: every
+              // remaining kind is a `ThreadCategory`, and `'location'` has mapped
+              // to `LocationProfileModal` since the stub-modal path was built.
+              // The place was always openable from the thread list and the hex
+              // map; what was missing was upstream, in the kind union the veil
+              // could declare.
               setStubModalState({ nodeId: entityId, category: kind });
             }}
             onCommitNudges={handleCommitNudges}

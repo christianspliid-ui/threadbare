@@ -19,7 +19,7 @@
 | — not an anchor | Machinery. Not a thing a chip can be *about*. |
 | 🕳️ gap | The director named it as legal and the game has no representation yet. |
 
-**`named` is not second-class.** Both `linked` and `named` satisfy Law 56. The only difference is whether `openEntity` has a route for the kind — it switches on `visualKind`, whose members are exactly `agent`, `faction`, `artifact`, `companion`, `attachment`. Do not fold a chip merely because its anchor cannot click; fold it when the referent is not a real object at all.
+**`named` is not second-class.** Both `linked` and `named` satisfy Law 56. The only difference is whether `openEntity` has a route for the kind — it switches on `visualKind`, whose members are exactly `agent`, `faction`, `artifact`, `companion`, `attachment`, `location`. Do not fold a chip merely because its anchor cannot click; fold it when the referent is not a real object at all.
 
 ## Nodes
 
