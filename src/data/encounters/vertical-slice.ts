@@ -574,7 +574,7 @@ const PASS_CLIMB_HAND: readonly StepNudge[] = [
     sphere: 'life',
     essenceCost: 2,
     forecastDelta: 0.08,
-    imageTag: 'generic.balm',
+    imageTag: 'generic.warmth',
     effectLine: 'You keep the warmth in their hands and feet, so the cold cannot slow the climb before the snow does. A real help.',
     fiction: 'Cold takes the fingers first, and the will second.',
     bandProse: {
@@ -589,7 +589,7 @@ const PASS_CLIMB_HAND: readonly StepNudge[] = [
     sphere: 'force',
     essenceCost: 2,
     forecastDelta: 0.09,
-    imageTag: 'generic.force',
+    imageTag: 'generic.strength',
     effectLine: 'You blunt the north wind on the exposed stretches, so the climb spends its strength on climbing. A real help.',
     fiction: 'The wind is the mountain’s first argument.',
     bandProse: {
@@ -619,7 +619,7 @@ const PASS_CLIMB_HAND: readonly StepNudge[] = [
     sphere: 'time',
     essenceCost: 1,
     forecastDelta: 0.07,
-    imageTag: 'generic.time',
+    imageTag: 'generic.time-slow',
     effectLine: 'You settle their stride to a climber’s clock, so the slope is spent evenly instead of in bursts. A small, steady help.',
     fiction: 'Mountains are climbed at one speed.',
     bandProse: {
@@ -650,7 +650,7 @@ const PASS_NIGHT_HAND: readonly StepNudge[] = [
     sphere: 'energy',
     essenceCost: 2,
     forecastDelta: 0.08,
-    imageTag: 'generic.ember',
+    imageTag: 'generic.energy',
     effectLine: 'You keep the coals alive through the worst hour, so the fire is an ally and never a chore. A real help.',
     fiction: 'A banked fire is a promise kept till morning.',
     bandProse: {
@@ -665,7 +665,7 @@ const PASS_NIGHT_HAND: readonly StepNudge[] = [
     sphere: 'life',
     essenceCost: 2,
     forecastDelta: 0.06,
-    imageTag: 'generic.balm',
+    imageTag: 'generic.vigor',
     grants: [{ kind: 'remove_condition', conditionTraitId: 'trait.condition.exhausted' }],
     effectLine: 'The climb’s weariness lifts, so the night starts on a rested body, with the exhaustion lifted.',
     fiction: 'Rest is armor.',
@@ -680,7 +680,7 @@ const PASS_NIGHT_HAND: readonly StepNudge[] = [
     sphere: 'matter',
     essenceCost: 2,
     forecastDelta: 0.07,
-    imageTag: 'generic.stonework',
+    imageTag: 'generic.matter',
     effectLine: 'You stiffen whatever stands between them and the wind, so the shelter holds its shape till dawn. A real help.',
     fiction: 'Stone does not complain about weather.',
     bandProse: {
@@ -1091,7 +1091,7 @@ const CARAVAN_FIND_HAND: readonly StepNudge[] = [
     essenceCost: 1,
     forecastDelta: 0.04,
     rider: 'all_or_nothing',
-    imageTag: 'generic.gambit',
+    imageTag: 'generic.luck',
     effectLine: 'You loosen one voice at the night fire — the truth spills fast, or the hunt is tipped off. The middle drops away.',
     fiction: 'A shaken cup shows what settles.',
     bandProse: {
@@ -1107,7 +1107,7 @@ const CARAVAN_FIND_HAND: readonly StepNudge[] = [
     sphere: 'matter',
     essenceCost: 2,
     forecastDelta: 0.08,
-    imageTag: 'generic.coin',
+    imageTag: 'generic.matter',
     effectLine: 'You draw the eye to what things are worth against what their owners claim to be, so the gear tells on the story. A real help.',
     fiction: 'A pack always inventories its owner.',
     bandProse: {
@@ -1122,7 +1122,7 @@ const CARAVAN_FIND_HAND: readonly StepNudge[] = [
     sphere: 'time',
     essenceCost: 2,
     forecastDelta: 0.08,
-    imageTag: 'generic.time',
+    imageTag: 'generic.time-slow',
     effectLine: 'You hold the whole four days in view at once, so the one walker whose habits bend around the riders shows plain. A real help.',
     fiction: 'People repeat. Watch long enough.',
     bandProse: {
@@ -1200,7 +1200,7 @@ const CARAVAN_SLIP_HAND: readonly StepNudge[] = [
     sphere: 'spirit',
     essenceCost: 1,
     forecastDelta: 0.07,
-    imageTag: 'generic.bond',
+    imageTag: 'generic.oath',
     effectLine: 'You knit the traveler’s nerve to the hunted one’s, so neither can panic without the other steadying it. A small, steady help.',
     fiction: 'Two afraid together are braver than one.',
     bandProse: {
@@ -2528,7 +2528,7 @@ const FAMILY_GUIDE_HAND: readonly StepNudge[] = [
     sphere: 'matter',
     essenceCost: 2,
     forecastDelta: 0.07,
-    imageTag: 'generic.stonework',
+    imageTag: 'generic.matter',
     effectLine: 'You steady their hands building a cairn at the turn, so the road stays found after everyone walks away from it. A real help.',
     fiction: 'Pile three stones and the road remembers.',
     bandProse: {
