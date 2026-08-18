@@ -12,6 +12,7 @@ import {
   CONSEQUENCE_LEGEND_STORE_KEY,
   buildAftermathConsequences,
 } from '../encounter-stage/adapters/buildAftermathConsequences';
+import type { ChipSentenceLinker } from '../encounter-stage/adapters/buildAftermathConsequences';
 import { WorldGraph } from '../../../engine/graph';
 import type { UnifiedActionTemplate } from '../../../types/unifiedAction';
 import type { EncounterNotification } from '../../../types/encounterVisibility';
@@ -1928,5 +1929,88 @@ describe('live step navigator — re-read affordance (THR-1152)', () => {
     // counting it would invite a re-read of a step that has not happened.
     render(<EncounterVeil {...defaultProps} />);
     expect(screen.queryByTestId('step-replay-invitation')).not.toBeInTheDocument();
+  });
+});
+
+// ── THR-1172 — the three-tier contract on the surface AS COMPOSED ──────────
+//
+// `narrativeSegmentTiers.test.tsx` pins the rule on the leaf renderer. This pins
+// it where the director met it: a real chip, built by the real adapter, rendered
+// through the real veil. The leaf test would still pass if the veil handed its
+// chips somewhere else, so the composed assertion is the one that proves the fix
+// reaches the screen.
+//
+// This is also the sanctioned **jsdom-render substitution** for the browser
+// capture (CLAUDE.md § Browser-verify): this run could not start a dev server,
+// so the evidence is the rendered DOM of every face the change produces.
+describe('THR-1172 — an underline must earn itself (composed veil)', () => {
+  /** Underlined ⇔ the element carries a bottom border. */
+  const underlined = (el: Element) =>
+    (el as HTMLElement).style.borderBottom !== '' &&
+    (el as HTMLElement).style.borderBottom !== 'none';
+
+  function veilWithChips(link: ChipSentenceLinker) {
+    return {
+      ...mockModel,
+      aftermath: {
+        title: 'Aftermath',
+        overview: 'The bowl came unasked.',
+        consequences: buildAftermathConsequences({
+          changes: [
+            {
+              id: 'favour',
+              kind: 'reputation',
+              title: 'A Favour Owed',
+              detail: 'They owe a favour now.',
+              polarity: 'gain',
+              category: 'bond',
+              stateNoun: { text: 'a favour owed', tooltipId: 'ui.favour_owed' },
+            },
+          ],
+          enrich: (t: string) => t,
+          link,
+        }),
+      },
+    } as unknown as EncounterStageModel;
+  }
+
+  it('a chip noun with a resolving concept tooltip is underlined on screen', () => {
+    render(
+      <EncounterVeil
+        {...defaultProps}
+        model={veilWithChips((id, text) => ({ id, segments: [{ text }] }))}
+      />,
+    );
+    // The noun reaches the screen at all. It arrives upper-cased into the
+    // `CATEGORY · NOUN` tag — the surface renders `stateNoun.text` raw, which is
+    // why the authored string stays lower-case in the content file.
+    const chips = screen.getByTestId('aftermath-consequences');
+    expect(chips).toHaveTextContent('A FAVOUR OWED');
+    // ...and it is marked, because `ui.favour_owed` now answers on hover.
+    const marked = [...chips.querySelectorAll('span, button')].filter(
+      el => el.textContent === 'A FAVOUR OWED' && underlined(el),
+    );
+    expect(marked.length).toBeGreaterThan(0);
+  });
+
+  it('a referenceId-only segment reaches the screen UNMARKED — the reported defect', () => {
+    // Same chip, but the linker hands back the colon-grammar bookkeeping the
+    // narrative linker really produces. Pre-fix this drew a full underline and
+    // answered nothing; that is the pixel the director reported.
+    render(
+      <EncounterVeil
+        {...defaultProps}
+        model={veilWithChips((id, text) => ({
+          id,
+          segments: [{ text, referenceId: 'location:sacred_grove' }],
+        }))}
+      />,
+    );
+    const chips = screen.getByTestId('aftermath-consequences');
+    expect(chips).toHaveTextContent('They owe a favour now.');
+    const falselyMarked = [...chips.querySelectorAll('span, button')].filter(
+      el => el.textContent === 'They owe a favour now.' && underlined(el),
+    );
+    expect(falselyMarked).toEqual([]);
   });
 });

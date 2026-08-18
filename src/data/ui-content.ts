@@ -356,6 +356,17 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'An Agreement',
     desc: 'A claim standing between two parties — a debt, a favour, an oath, a bargain. Unlike a wound it sits on nobody alone: someone is always on the other end, and it holds until honoured, lapsed, or broken.',
   },
+  // THR-1172 — the director, on the re-passed Grateful Kin ending: *"the game
+  // concept (favor owed) is underlined so players can see what it is. but there
+  // is no tooltipping and/or linking to … an explanation of the concept."* The
+  // chip already anchored the debtor, so the click was right; what it could not
+  // say was what the thing being owed *is*. `ui.agreement` names the family
+  // (debt, favour, oath, bargain); this names the member, because that is the
+  // word on the chip.
+  'ui.favour_owed': {
+    label: 'A Favour Owed',
+    desc: 'A debt of goodwill running one way between two named people. It sits on the debtor until it is called in — once — and is then spent. Unpaid, it can still lapse or be broken.',
+  },
   'ui.aftermath_toll': {
     label: 'A Toll',
     desc: 'Something the ending took. A toll is a price already paid, not a threat — the scene resolved, and this is what it cost the mortal to get there.',

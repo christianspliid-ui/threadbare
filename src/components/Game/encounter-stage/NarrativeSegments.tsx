@@ -55,7 +55,15 @@ export type NarrativeEntityKind =
   | 'companion'
   // THR-1120 — a granted condition/blessing/curse/power, named by its template
   // node id. Routed to the attachment sheet; see `EncounterVeil`'s `openEntity`.
-  | 'attachment';
+  | 'attachment'
+  // THR-1172 — a place, named by its location node id. Until this member existed
+  // a scene could name the ground it stood on and the word could not even
+  // *declare* itself openable: the kind union had no arm for it, so Sacred Grove
+  // underlined (on `referenceId` alone, the defect below) and answered nothing.
+  // Routed to `LocationProfileModal`, the same sheet the thread list and the hex
+  // map already open — a destination that existed the whole time and had no door
+  // from here.
+  | 'location';
 
 export interface NarrativeSegmentsProps {
   paragraph: EncounterStageNarrativeParagraph;
@@ -160,8 +168,30 @@ export function NarrativeSegments({
               className={explains ? 'focus-ring' : undefined}
               tabIndex={explains ? 0 : undefined}
               data-testid={testId}
+              // THR-1172 — the underline is drawn on `explains` **alone**, never
+              // on `referenceId`.
+              //
+              // This branch is the not-clickable one, so `open` is already false
+              // here; `explains` is therefore the whole of what this span can do.
+              // Until this ticket the condition read `seg.referenceId || explains`
+              // — and a `referenceId` is the narrative linker's own colon-grammar
+              // bookkeeping (`cast:<key>`, `location:<key>`, `target:<id>`), not
+              // an affordance. Nothing downstream reads it: only `explains` gets a
+              // `Tooltip` wrapper, only `open` gets a click. So a segment carrying
+              // one drew the mark that promises "this word answers" and then
+              // answered nothing — the director's report, in one span:
+              // *"there is no tooltipping and/or linking … this UI pattern needs
+              // to be finished"*.
+              //
+              // Which restores the rule this file's own header states — the
+              // underline is drawn on what the surface can actually *do*, never on
+              // the mere presence of an id — and the "no naked state" promise in
+              // the other direction (THR-1161): unstyled text is just text, so
+              // styled text must be more than text. Dropping the mark is the
+              // fail-open half (NFP #4): the word keeps its meaning and loses only
+              // a promise nothing could keep.
               style={
-                seg.referenceId || explains
+                explains
                   ? { color: plainColor, borderBottom: `1px solid ${underlineColor}` }
                   : undefined
               }

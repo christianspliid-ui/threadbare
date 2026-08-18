@@ -53,6 +53,9 @@ import {
   ANCHOR_SENTINEL_FACTION_PREFIX,
   classifyAnchorDeclaration,
 } from './chipAnchorDeclarations';
+// THR-1172 — the same predicate the renderer styles on, so the gate and the
+// pixels cannot disagree about which nouns answer.
+import { tooltipResolves } from '../../engine/tooltipResolver';
 
 // ─── Contract constants (NFP #1 — every magic number is named) ───────
 
@@ -654,14 +657,36 @@ export function chipAnchorViolations(template: UnifiedActionTemplate): readonly 
         (ref): ref is EncounterAftermathConceptRef => ref !== undefined,
       );
       for (const ref of declared) {
-        if (!ref.entityId) continue;
-        const verdict = classifyAnchorDeclaration(ref.entityId, { supportKeys });
-        if (verdict.ok) continue;
-        reported.add(change.id);
-        out.push(
-          `change '${change.id}' on ${where} declares an anchor that cannot resolve: `
-            + `${verdict.reason} (Law 56 clause 2). A dead pointer renders as a live link`,
-        );
+        if (ref.entityId) {
+          const verdict = classifyAnchorDeclaration(ref.entityId, { supportKeys });
+          if (!verdict.ok) {
+            reported.add(change.id);
+            out.push(
+              `change '${change.id}' on ${where} declares an anchor that cannot resolve: `
+                + `${verdict.reason} (Law 56 clause 2). A dead pointer renders as a live link`,
+            );
+            continue;
+          }
+        }
+        // THR-1172 — the *tooltip* half of the same question, and the half that
+        // was missing. `entityId` has been proven resolvable since THR-1164;
+        // `tooltipId` was accepted on presence alone, so a dangling concept id
+        // discharged the clause below and shipped a noun that underlines and
+        // explains nothing. That is the director's report exactly.
+        //
+        // Checked context-free on purpose, because that is the check the surface
+        // makes: `NarrativeSegments` styles on `tooltipResolves(seg.tooltipId)`
+        // and `Tooltip` resolves with no context of its own. So a context-bearing
+        // id (`agent.<id>`) is genuinely not underlined at render, and calling it
+        // green here would be the gate disagreeing with the pixels.
+        if (ref.tooltipId && !tooltipResolves(ref.tooltipId)) {
+          reported.add(change.id);
+          out.push(
+            `change '${change.id}' on ${where} names '${ref.text}' and points it at `
+              + `tooltip '${ref.tooltipId}', which resolves to nothing (Law 56 clause 2). `
+              + 'An underline promises an answer; register the concept or drop the id',
+          );
+        }
       }
       if (reported.has(change.id)) continue;
 

@@ -197,3 +197,68 @@ describe('THR-1130 rule 2 — a `reputation_tally` chip fails visibility parity'
     expect(offenders, offenders.join('\n')).toEqual([]);
   });
 });
+
+/**
+ * Ids the registry deliberately does not carry — see the twin note in
+ * `narrativeSegmentTiers.test.tsx`. Constants, not quoted `tooltipId` strings,
+ * so the corpus sweep in `conceptTooltipIds.test.ts` keeps its full strength
+ * over genuinely authored ids while these stay readable as what they are.
+ */
+const UNREGISTERED_CONCEPT = 'ui.no_such_concept';
+const UNREGISTERED_REACH = 'reach.not_a_reach';
+const UNREGISTERED_ON_CONCEPTS = 'ui.nothing_here';
+
+describe('THR-1172 — an anchored noun must be provably answerable', () => {
+  // The clause already proved the `entityId` half (THR-1164). The `tooltipId`
+  // half was accepted on **presence** alone, so a dangling concept id satisfied
+  // the rule and shipped a noun that underlines and explains nothing — the
+  // director's report, reduced to one field. Falsified first, per this file's
+  // standing rule: the pre-fix shape must go red.
+
+  it('passes a noun whose tooltip resolves', () => {
+    expect(
+      chipAnchorViolations(
+        chipShape({ ...FAVOUR_CHIP, stateNoun: { ...FAVOUR_CHIP.stateNoun, tooltipId: 'ui.favour_owed' } }),
+      ),
+    ).toEqual([]);
+  });
+
+  it('FAILS a noun pointed at a tooltip that resolves to nothing', () => {
+    const violations = chipAnchorViolations(
+      chipShape({ ...FAVOUR_CHIP, stateNoun: { ...FAVOUR_CHIP.stateNoun, tooltipId: UNREGISTERED_CONCEPT } }),
+    );
+    expect(violations).toHaveLength(1);
+    expect(violations[0]).toContain(UNREGISTERED_CONCEPT);
+    expect(violations[0]).toContain('resolves to nothing');
+  });
+
+  it('FAILS a tooltip-only noun with a dangling id — the anchor half cannot cover for it', () => {
+    // Without an `entityId` the tooltip is the *whole* of what the noun offers,
+    // so a dangling one is the entire promise broken rather than half of it.
+    const { entityId: _dropped, ...nounWithoutAnchor } = FAVOUR_CHIP.stateNoun;
+    const violations = chipAnchorViolations(
+      chipShape({ ...FAVOUR_CHIP, stateNoun: { ...nounWithoutAnchor, tooltipId: UNREGISTERED_REACH } }),
+    );
+    expect(violations).toHaveLength(1);
+    expect(violations[0]).toContain('resolves to nothing');
+  });
+
+  it('holds the same rule on a decorated `concepts` entry, not just the stateNoun', () => {
+    const violations = chipAnchorViolations(
+      chipShape({
+        ...FAVOUR_CHIP,
+        concepts: [{ text: 'a bed and a hearing', tooltipId: UNREGISTERED_ON_CONCEPTS }],
+      }),
+    );
+    expect(violations.some(v => v.includes(UNREGISTERED_ON_CONCEPTS))).toBe(true);
+  });
+
+  it('the whole shipped catalog satisfies the stricter rule', () => {
+    // The sweep, in-suite rather than only at the CLI: a future chip that adds a
+    // dangling concept id fails here as well as in `check:chip-anchors`.
+    const failing = UNIFIED_ACTION_TEMPLATES
+      .map(t => ({ id: t.id, violations: chipAnchorViolations(t) }))
+      .filter(r => r.violations.length > 0);
+    expect(failing).toEqual([]);
+  });
+});

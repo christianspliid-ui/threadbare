@@ -115,12 +115,21 @@ describe('anchor catalog — the findings it records', () => {
     // Widening this union widens what a chip can click, which changes `linked`
     // vs `named` across the catalog. That should be a deliberate review, not a
     // silent consequence — so it fails here first.
+    //
+    // It did, and this is the review. **THR-1172 added `location`**: a place the
+    // ending moved someone to or opened a road to was previously unnameable as a
+    // clickable referent, so a scene could name the ground it stood on and the
+    // word could not even declare itself openable. The destination already
+    // existed (`LocationProfileModal`, reached by the thread list and the hex
+    // map) — only the door was missing. `region` stays out: it is a named area
+    // with no sheet, and the row above pins that distinction.
     expect(parseVisualKinds(aftermathSource, 'src/types/unifiedAction.ts')).toEqual([
       'agent',
       'faction',
       'artifact',
       'companion',
       'attachment',
+      'location',
     ]);
   });
 

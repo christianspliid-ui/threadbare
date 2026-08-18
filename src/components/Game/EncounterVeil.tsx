@@ -65,7 +65,7 @@ export interface EncounterVeilProps {
    * live one's clothes. A host that omits this leaves those names emphasised
    * and unclickable, which is the fail-open behaviour.
    */
-  onSelectEntity?: (entityId: string, kind: 'faction' | 'artifact' | 'attachment') => void;
+  onSelectEntity?: (entityId: string, kind: 'faction' | 'artifact' | 'attachment' | 'location') => void;
   /** THR-636 — "Show on map": close the veil and pan the camera to the encounter hex. */
   onShowOnMap?: (col: number, row: number) => void;
   /**
@@ -455,7 +455,7 @@ export function EncounterVeil({
      */
     const openEntity = (
       entityId: string | undefined,
-      kind: 'agent' | 'faction' | 'artifact' | 'companion' | 'attachment' | undefined,
+      kind: 'agent' | 'faction' | 'artifact' | 'companion' | 'attachment' | 'location' | undefined,
     ): (() => void) | undefined => {
       if (!entityId) return undefined;
       // Absent kind = the narrative linker's cast scan, which has always been
@@ -474,6 +474,12 @@ export function EncounterVeil({
       // after this veil closes), and the host opens the same AttachmentDetailView
       // the bearer's Attachments tab drills into. Fail-open like every kind above:
       // a host that cannot open one leaves the name as emphasised text.
+      //
+      // THR-1172 — `location` joins on the same terms: `entityId` is the location
+      // node id and the host opens `LocationProfileModal`, the sheet the thread
+      // list and the hex map already reach. It needed no new destination, only a
+      // door — which is why the fix is a union member and a prop widening rather
+      // than a surface.
       return onSelectEntity ? () => onSelectEntity(entityId, kind) : undefined;
     };
 
