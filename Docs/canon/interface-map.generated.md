@@ -15,12 +15,12 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 48 |
+| 🟢 LIVE | 49 |
 | 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 7 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 13 |
-| **Total** | **69** |
+| **Total** | **70** |
 
 ## Contracts by producing subsystem
 
@@ -95,6 +95,7 @@ remediation ticket or the build fails.
 
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
+| `a-concealed-sale-ends-the-company-that-was-sold` | A member who took coin for what the company knew is why it ends — the sale is recorded as the dissolution reason, not laundered into the collapse it caused. | property: `hiddenMarks` | Companies & Group Travel | 🟢 LIVE | — |
 | `ascendant-affinity-cast-capability` | The ascendant's persisted reach affinities become its capability for a cast — the god's innate aptitude is not on the raw scale `computeRawScore` walks, so a literal read left every cast at capability 0.02 and one reachable outcome band. | node-prop: `domainAffinities`, `computeCapabilityWithRawBonus` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `attachment-encounter-rewards` | Encounters grant rewards, which become possessions — by random draw from the pool, or as an authored consequence naming one template. | function: `assembleRewardPool`, `instantiateReward`, `instantiateAgreementReward` | Attachments, Items & Possessions | 🟢 LIVE | — |
 | `authored-faction-ids-resolve-to-seeded-faction-nodes` | When an ending says it changed your standing with a guild, your standing with that guild actually changes. | function: `bindFactionDefinitionIds`, `resolveFactionNodeId`, `applyFactionReputationGain` | Factions & Succession | 🟢 LIVE | — |
@@ -154,6 +155,17 @@ remediation ticket or the build fails.
 | `quintessence-threshold-gates-candidacy-and-movement` | A mortal worn to nothing goes out of the story rather than grinding on unchanged — the previously missing consumer of the weakened/critical threshold states. Without it, quintessence loss has no behavioural consequence at all. | node-prop: `isBrokenMortal`, `brokenGateActive`, `computeBrokenDriftBonus`, `brokenSince` | Encounters & Dilemmas | 🟠 PARTIAL | THR-778 |
 
 ## Evidence
+
+### `a-concealed-sale-ends-the-company-that-was-sold` — 🟢 LIVE
+
+- **Intent:** A member who took coin for what the company knew is why it ends — the sale is recorded as the dissolution reason, not laundered into the collapse it caused.
+- **Producer → Consumer:** Encounters & Dilemmas → Companies & Group Travel
+- **UL terms:** *Company*, *Hidden Mark*, *Group Cohesion*
+- **Production hits:** 16 total — 1 write, 1 read, 14 unclassified
+- **Write sites:** `src/engine/encounterAftermath.ts`
+- **Read sites:** `src/engine/groups/groupDissolution.ts`
+- **Other hits:** `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/debug/HiddenMarksTab.tsx`, `src/components/Game/DebugPanel.tsx`, `src/components/Game/GameView.tsx`, `src/engine/ascendantExpression.ts` +9 more
+- **Verdict:** Verified 2026-08-18: src/engine/groups/__tests__/groupLifecycle.test.ts § "betrayal dissolution (THR-1174)" drives the reason through runGroupUpkeep and reads it off the result — never by passing the literal to selectPartingVariant, which is how this contract sat consumer-only for months. Disabling the trigger fails 3 of its rows; the negative rows (floor, category, former member, holding company) stay green by design.
 
 ### `ambition-acquisition` — 🟢 LIVE
 
@@ -768,10 +780,10 @@ remediation ticket or the build fails.
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 203 total — 1 write, 1 read, 201 unclassified
+- **Production hits:** 204 total — 1 write, 1 read, 202 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts` +196 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts` +197 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `relocation-intent-steers-agent-movement` — 🔵 UNVERIFIED-OK

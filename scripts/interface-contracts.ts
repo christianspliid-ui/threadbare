@@ -960,6 +960,28 @@ export const CONTRACTS: readonly Contract[] = [
     },
   },
   {
+    id: 'a-concealed-sale-ends-the-company-that-was-sold',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: COMPANIES,
+    intent:
+      'A member who took coin for what the company knew is why it ends — the sale is recorded as the dissolution reason, not laundered into the collapse it caused.',
+    ulTerms: ['Company', 'Hidden Mark', 'Group Cohesion'],
+    // The carrier is `state.hiddenMarks`, not the effect kind that fills it.
+    // `encounterAftermath` executes a `hidden_mark` effect into that array;
+    // `findCompanyBetrayer` reads it back and matches on `category === 'betrayal'`.
+    // Declaring `hidden_mark` here would name the authoring vocabulary rather than
+    // the thing that crosses the boundary — impediment #206's rule, and the same
+    // trap the sibling `reunion-reads-the-edges-not-the-roster` row records.
+    mechanism: { kind: 'property', symbols: ['hiddenMarks'] },
+    writeSites: ['src/engine/encounterAftermath.ts'],
+    readSites: ['src/engine/groups/groupDissolution.ts'],
+    verifiedLive: {
+      date: '2026-08-18',
+      evidence:
+        'src/engine/groups/__tests__/groupLifecycle.test.ts § "betrayal dissolution (THR-1174)" drives the reason through runGroupUpkeep and reads it off the result — never by passing the literal to selectPartingVariant, which is how this contract sat consumer-only for months. Disabling the trigger fails 3 of its rows; the negative rows (floor, category, former member, holding company) stay green by design.',
+    },
+  },
+  {
     id: 'company-assist-shapes-resolution',
     producerSystem: COMPANIES,
     consumerSystem: ENCOUNTERS,

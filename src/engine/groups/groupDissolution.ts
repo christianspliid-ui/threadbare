@@ -24,10 +24,12 @@ import {
   type DissolutionReason,
 } from './groupQueries';
 import { reconcileLostMembers, refreshRoster } from './groupCohesion';
+import { getAgentHiddenMarks } from '../hiddenMarks';
 import {
   GROUP_MIN_MEMBERS,
   GROUP_DISSOLUTION_THRESHOLD,
   GROUP_FRAY_THRESHOLD,
+  GROUP_BETRAYAL_SEVERITY_FLOOR,
   SUNDER_LEAVE_MULT,
 } from '../../data/group-constants';
 
@@ -86,6 +88,13 @@ export function runGroupUpkeep(
     // Fail-soft: promote rather than dissolve when someone can take the reins.
     const promoted = promoteNewLeader(state, group, members);
     if (!promoted) reason = 'leader_death';
+  } else if (findCompanyBetrayer(state, members, cohesion)) {
+    // Ahead of `cohesion_floor` on purpose: a company holding a betrayer is
+    // usually also below the floor by the time this fires, and of the two true
+    // statements "the bond ran out" and "one of us sold us", the second is the
+    // one worth recording. Putting it first is what makes the reason reachable
+    // at all rather than being shadowed by the collapse it caused.
+    reason = 'betrayal';
   } else if (cohesion < GROUP_DISSOLUTION_THRESHOLD) {
     reason = 'cohesion_floor';
   } else if (isGoalComplete(state, group)) {
@@ -151,6 +160,43 @@ function shouldMemberLeave(
   // the shape the departures need for the drama to land.
   const rate = shortfall * 0.25 * (1 + ambition * 0.5 + prudence * 0.3) * rateMultiplier;
   return rng() < Math.max(0, Math.min(0.5, rate));
+}
+
+/**
+ * The member whose concealed sale is ending this company, if there is one (THR-1174).
+ *
+ * Two conditions, and the second is the load-bearing one:
+ *
+ *  - a current member carries a `hidden_mark` of category `betrayal` at or above
+ *    {@link GROUP_BETRAYAL_SEVERITY_FLOOR} — minted today only by The Quiet Offer's
+ *    worst band (`encounter.company.quiet_offer`, THR-733 subject 4), which lands
+ *    it on the member who took the coin rather than on a witness;
+ *  - and the company is already below {@link GROUP_FRAY_THRESHOLD}.
+ *
+ * **A secret does not break a company that is still holding.** The mark is
+ * concealed by construction — nobody in the fiction knows it exists — so letting
+ * it dissolve a bound company would have the engine act on knowledge no character
+ * has. What it does instead is decide *how a company that was already coming apart
+ * ends*: not "the bond wore out" but "one of us sold us". That also keeps the new
+ * trigger honest about its own rarity — it cannot fire on a healthy company, and
+ * the mark decays out of qualifying range in about fifty ticks.
+ *
+ * Returns the member so callers can name them; `undefined` when the company is not
+ * ending this way. Fail-soft on a state with no `hiddenMarks` array at all (NFP #4).
+ */
+export function findCompanyBetrayer(
+  state: GameState,
+  members: readonly GraphNode[],
+  cohesion: number,
+): GraphNode | undefined {
+  if (cohesion >= GROUP_FRAY_THRESHOLD) return undefined;
+  if (!state.hiddenMarks?.length) return undefined;
+
+  return members.find(member =>
+    getAgentHiddenMarks(state, member.id).some(
+      mark => mark.category === 'betrayal' && mark.severity >= GROUP_BETRAYAL_SEVERITY_FLOOR,
+    ),
+  );
 }
 
 /** True when the company's shared ambition has been completed. */

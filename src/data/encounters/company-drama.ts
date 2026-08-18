@@ -26,14 +26,15 @@
  * the one being asked, every consequence anchors to the actor by default, and
  * the company is what is being sold rather than what is watching.
  *
- * **What this subject does not promise.** `DissolutionReason` declares a
- * `'betrayal'` member that `selectPartingVariant` consumes — and nothing
- * produces: `groupDissolution.ts` assigns exactly `undersize`, `leader_death`,
- * `cohesion_floor` and `goal_complete`. So no band here claims the company ends
- * *as a betrayal*; the slow burn runs through marks, bonds and seeds, all of
- * which are real, and a company that comes apart over this comes apart by
- * cohesion like any other. The unreachable ending is filed separately rather
- * than papered over in prose (see the ticket).
+ * **What this subject does not promise.** The `betrayal` mark minted below is now
+ * a real dissolution producer — `findCompanyBetrayer` (THR-1174) ends a company
+ * *already below the fray line* as a betrayal, told in its own parting register.
+ * Even so, no band here claims that ending: the mark is the cause, and whether it
+ * proves fatal is the engine's call from cohesion. A company still holding
+ * survives its betrayer, and the mark decays out of range in roughly fifty ticks,
+ * so what this subject sells is the slow burn — marks, bonds and seeds — never a
+ * guaranteed collapse. (When this file was written the union member had a
+ * consumer and no producer at all; THR-1174 closed that loop from the engine side.)
  *
  * **Why these are templates and not threshold pools.** The fray and parting
  * moments fire from `groupFray.ts` on a cohesion threshold, and each one needed
