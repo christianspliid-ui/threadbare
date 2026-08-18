@@ -1329,11 +1329,31 @@ export const CONTRACTS: readonly Contract[] = [
         // Read side — the movement tax and the gating context.
         'LOCATION_CONDITION_MOVEMENT_TAX',
         'buildLocationTargetContext',
+        // THR-1175 — the third reader, and the only one a *player* meets.
+        'LocationProfileModal',
       ],
       module: 'src/data/condition-trait-content.ts',
     },
     writeSites: ['src/engine/encounterAftermath.ts'],
-    readSites: ['src/engine/movementCost.ts', 'src/engine/targetContextBuilders.ts'],
+    readSites: [
+      'src/engine/movementCost.ts',
+      'src/engine/targetContextBuilders.ts',
+      // THR-1175 — named late, and named because a ticket leaned on it. This row
+      // has always had three readers; it listed the two engine ones because those
+      // were the two THR-1143 *built*. The profile modal reads a place's condition
+      // edges generically (any `has_trait` whose definition carries
+      // `subcategory: 'condition'`), so it picked up every location condition for
+      // free and went unrecorded for exactly that reason.
+      //
+      // It stops being incidental with `standing_welcome`, the first location
+      // condition that is *earned* rather than inflicted: it carries no movement
+      // tax by design, and until THR-1182 authors the return encounter it gates
+      // nothing either — so the modal is the only thing standing between it and
+      // the hollowness this row exists to prevent. A row that omitted it would
+      // read as "this condition has no consumer" to the next auditor, which is the
+      // opposite of true and would invite deleting a live payoff.
+      'src/components/Game/LocationProfileModal.tsx',
+    ],
     // THR-1143, the second primitive of the consequence-palette expansion. The row
     // exists because the *write* was the easy half and the readers are the contract:
     // a condition on a place that nothing consumes is UI Law 56's hollowness one

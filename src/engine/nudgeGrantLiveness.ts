@@ -360,6 +360,87 @@ export function validateRewardDrawPools(
 }
 
 /** One line per empty pool, for a test failure message or a CLI report. */
+// ─── favor_creation debtor declaration (THR-1175) ────────────────────
+
+/**
+ * A `favor_creation` that does not name who owes.
+ *
+ * The third shape in this file's family, and the one that took a director probe
+ * to see. `validateNudgeGrantRefs` catches an id that names nothing;
+ * `validateRewardDrawPools` catches a query that selects nothing. This catches a
+ * write whose *consumers exist and can never fire for the operand it will
+ * receive* — well-formed, anchored, gate-passing, and inert.
+ *
+ * Concretely: the applier's debtor used to be `action.targetId` unconditionally.
+ * That is a person only when the encounter happens to target one. The Grateful
+ * Kin targets a location, so it minted "Sacred Grove owes them a favour" — an
+ * edge whose only remaining lifecycle event was silent deletion at expiry,
+ * because social leverage, tension drift and call-in all read an *individual's*
+ * regard for another. The chip reported it truthfully. Everything downstream of
+ * the chip was a lie by omission.
+ *
+ * The predicate is deliberately "must declare", not "must declare *correctly*".
+ * Nothing static can prove where a scene sentinel binds at runtime — that is the
+ * graph layer's job, and it now refuses bad endpoints loudly. What authoring time
+ * *can* insist on is that the author made a choice: name the person (a cast
+ * sentinel binds the scene's persistent agent, `$target` re-states the old
+ * behaviour for encounters that really do target people), or express the
+ * consequence as what it actually is. When the fiction is a place opening rather
+ * than a person owing, the shape is `apply_condition` + `targetLocationId`, and
+ * this gate never sees it.
+ */
+export interface UndeclaredFavorDebtor {
+  readonly templateId: string;
+  /** Where the effect sits — a card, a reaction, a band, a step. */
+  readonly site: string;
+}
+
+export interface FavorDebtorReport {
+  readonly checked: number;
+  readonly undeclared: readonly UndeclaredFavorDebtor[];
+}
+
+/**
+ * Sweep a template pool for `favor_creation` effects with no `debtorAgentId`.
+ *
+ * Fail-soft in shape (returns a report, never throws), like its two siblings, and
+ * walks {@link allTemplateEffects} so it cannot disagree with them about what
+ * "shipped content" means.
+ */
+export function validateFavorDebtors(
+  templates: readonly UnifiedActionTemplate[],
+): FavorDebtorReport {
+  const undeclared: UndeclaredFavorDebtor[] = [];
+  let checked = 0;
+
+  for (const template of templates) {
+    for (const { effect, site } of allTemplateEffects(template)) {
+      if (effect.kind !== 'favor_creation') continue;
+      checked++;
+      const declared = typeof effect.debtorAgentId === 'string'
+        && effect.debtorAgentId.trim().length > 0;
+      if (declared) continue;
+      undeclared.push({ templateId: template.id, site });
+    }
+  }
+
+  return { checked, undeclared };
+}
+
+export function formatUndeclaredFavorDebtors(
+  undeclared: readonly UndeclaredFavorDebtor[],
+): string {
+  if (undeclared.length === 0) return 'favor_creation debtors: all declared';
+  return [
+    `favor_creation with no declared debtor (${undeclared.length}):`,
+    ...undeclared.map(u => `  ${u.templateId} @ ${u.site}`),
+    '  A favour is owed by a person. Name them with `debtorAgentId`',
+    '  (`$cast:<key>`, `$actor`, `$target`, or a literal agent id), or — when the',
+    '  fiction is a place opening rather than a person owing — express it as',
+    '  `apply_condition` with `targetLocationId` plus an `encounter_seed`.',
+  ].join('\n');
+}
+
 export function formatEmptyRewardDrawPools(empty: readonly EmptyRewardDrawPool[]): string {
   return empty
     .map((e) =>

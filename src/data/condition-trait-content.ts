@@ -43,7 +43,16 @@
  * | CONDITION_PLAGUE_SCARE_DURATION     | 168     | Ticks (14 game days)          |
  * | CONDITION_UNDER_WATCH_DURATION      | 84      | Ticks (7 game days)           |
  * | CONDITION_HARVEST_BLIGHT_DURATION   | 480     | Ticks (40 game days)          |
+ * | CONDITION_STANDING_WELCOME_DURATION | 120     | Ticks (10 game days)          |
  * | LOCATION_IMPASSABLE_MULTIPLIER      | 8       | Soft-block movement tax        |
+ *
+ * Five of the six are things that happen *to* a place and read negative;
+ * `standing_welcome` (THR-1175) is the first that a person earns and the first
+ * that reads positive. It exists because a gratitude beat was expressing "a roof
+ * that opens for them" as an `owes_favor` edge owed by the *town* — schema-illegal
+ * and, worse, uncollectable, since every favour consumer is individual-shaped.
+ * The condition is the honest shape of that fiction, and the gate is what makes
+ * it pay off.
  */
 
 import type { GraphNode } from '../types/graph';
@@ -98,6 +107,18 @@ export const CONDITION_UNDER_WATCH_DURATION = 84;
 
 /** A failed harvest whose hunger outlasts the season (40 game days). */
 export const CONDITION_HARVEST_BLIGHT_DURATION = 480;
+
+/**
+ * A door that stays open for someone who earned it (10 game days) — THR-1175.
+ *
+ * Long enough that a traveller who keeps moving can plausibly come back through
+ * and still find the welcome standing; short enough that gratitude is a season
+ * rather than a deed. The Grateful Kin's return-visit seed ripens well inside
+ * this window on purpose — a seed that comes due after the welcome has lapsed is
+ * a scene that can never fire, which is the same write-with-no-reachable-consumer
+ * defect this ticket exists to close, one layer along.
+ */
+export const CONDITION_STANDING_WELCOME_DURATION = 120;
 
 /**
  * Movement multiplier for a place that is closed rather than merely costly.
@@ -332,6 +353,35 @@ export const CONDITION_TRAIT_DEFINITIONS: GraphNode[] = [
       censusTag: { scale: 'local' },
     } satisfies TraitDefinitionProperties,
   },
+  {
+    // THR-1175 — the first *positive* location condition, and the shape a
+    // gratitude beat should have been writing all along. The Grateful Kin used
+    // to express "there is a roof in this town that opens for them now" as an
+    // `owes_favor` edge with the town as debtor: schema-illegal, and inert even
+    // if it had been legal, because every favour consumer is person-shaped.
+    // A standing welcome is a property of the *place*, which is what the fiction
+    // actually said, and a place can carry a condition.
+    //
+    // Its reader is the gate (`requiredTargetTraits`) — `slice.kin.the_roof_opens`
+    // is eligible only where this condition is live, so the welcome is what makes
+    // the return visit possible. No movement tax: being welcome somewhere does not
+    // change how long the road takes, the same reasoning `under_watch` carries.
+    id: 'trait.condition.location.standing_welcome',
+    type: 'trait',
+    name: 'A Standing Welcome',
+    properties: {
+      subcategory: 'condition',
+      description: 'Someone here owes a kindness and means to repay it. A traveller who has earned this finds a door open and a hearing waiting.',
+      importance: 0.6,
+      maxLevel: 1,
+      visibility: 'public',
+      // A place has no capability to move; the reader is the gate.
+      domainContributions: {},
+      tags: ['#condition', '#location', '#heart', '#positive'],
+      flavorText: 'The bowl was set down unasked, and the coin went back twice.',
+      censusTag: { scale: 'local' },
+    } satisfies TraitDefinitionProperties,
+  },
 ];
 
 /** Map of condition trait IDs to their default durations */
@@ -349,6 +399,7 @@ export const CONDITION_DURATIONS: Record<string, number> = {
   'trait.condition.location.plague_scare': CONDITION_PLAGUE_SCARE_DURATION,
   'trait.condition.location.under_watch': CONDITION_UNDER_WATCH_DURATION,
   'trait.condition.location.harvest_blight': CONDITION_HARVEST_BLIGHT_DURATION,
+  'trait.condition.location.standing_welcome': CONDITION_STANDING_WELCOME_DURATION,
 };
 
 /**
@@ -380,4 +431,6 @@ export const LOCATION_CONDITION_MOVEMENT_TAX: Record<string, number> = {
   'trait.condition.location.festival': LOCATION_CROWDED_MULTIPLIER,
   // `under_watch` deliberately carries no tax: being observed changes what you can
   // do in a place, not how long it takes to walk in. Its reader is the gate.
+  // `standing_welcome` (THR-1175) carries none for the same reason, from the other
+  // side: being welcome somewhere does not shorten the road to it.
 };

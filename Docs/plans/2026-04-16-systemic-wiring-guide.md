@@ -1757,9 +1757,22 @@ steps: [{
   favorGeneration: { onSuccess: true, magnitudeRange: [0.2, 0.4], context: 'healed their wound' },
 }]
 
-// Aftermath effect:
-effects: [{ kind: 'favor_creation', magnitudeRange: [0.1, 0.3], context: 'gave shelter in the storm' }]
+// Aftermath effect — `debtorAgentId` is REQUIRED by the gate (THR-1175):
+effects: [{
+  kind: 'favor_creation',
+  debtorAgentId: '$cast:innkeeper',   // who owes. `$actor` / `$target` / a literal id also work.
+  magnitudeRange: [0.1, 0.3],
+  context: 'gave shelter in the storm',
+}]
 ```
+
+**Name the debtor, or you are not authoring a favour (THR-1175, 2026-08-18).** Until this ticket the debtor defaulted to `action.targetId` with no kind check, which is a person only when the encounter happens to target one. A gratitude scene targeting a settlement therefore wrote *"Sacred Grove owes them a favour"* — and every consumer of `owes_favor` is **individual**-shaped (social leverage, sentiment drift, call-in, break), so nothing could ever collect it. The edge existed, read correctly on the chip, and was silently deleted ~80 ticks later by the expiry sweep. Three things changed:
+
+- `favor_creation` takes `debtorAgentId`, registered in the scene-sentinel table as an `agent` field — so a cast sentinel binds the scene's persistent person and the kind check *refuses* to bind a location.
+- `check:encounter` fails a `favor_creation` with no declared debtor. Nothing static can prove where a target context resolves, so the gate insists the author made the choice rather than inheriting one.
+- `createFavorEdge` refuses a non-individual debtor or a non-actor creditor outright, emitting one loud trace naming the role and what the node actually was. `createSecretEdge` gets the same treatment for `knows_secret_of` (actors at both ends; deliberately *not* narrowed to individuals — a faction subject is legal there and shipped content relies on it).
+
+**When the fiction is a place opening rather than a person owing, do not reach for a favour at all.** Use `apply_condition` with `targetLocationId` — `trait.condition.location.standing_welcome` exists for exactly this shape — plus an `encounter_seed` for the return visit. That pair has live readers (the location detail panel, `requiredTargetTraits` gating); a location debtor has none. The Grateful Kin (`encounter.slice.grateful_kin`) is the worked example.
 
 **Leverage bonus:** `favor.magnitude × FAVOR_LEVERAGE_MULTIPLIER (0.25)`. Only unredeemed, unbroken favors contribute.
 

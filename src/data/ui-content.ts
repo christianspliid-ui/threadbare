@@ -367,6 +367,15 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'A Favour Owed',
     desc: 'A debt of goodwill running one way between two named people. It sits on the debtor until it is called in — once — and is then spent. Unpaid, it can still lapse or be broken.',
   },
+  // THR-1175 — the sibling concept, and the reason the sentence above says
+  // *people* twice. The director asked how a town could ever repay a favour;
+  // it cannot, because every way a favour gets collected runs through one
+  // person's regard for another. What a place can hold is a welcome. Same
+  // gratitude, different mechanism, and the two now say so on hover.
+  'ui.standing_welcome': {
+    label: 'A Standing Welcome',
+    desc: 'A place that opens for someone who earned it. It sits on the ground rather than on a person, holds for a season, and shows on the location itself.',
+  },
   'ui.aftermath_toll': {
     label: 'A Toll',
     desc: 'Something the ending took. A toll is a price already paid, not a threat — the scene resolved, and this is what it cost the mortal to get there.',

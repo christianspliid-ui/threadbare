@@ -21,6 +21,7 @@ import { decayConditions } from '../../../engine/conditionDecay';
 import { resolveAttachmentTemplateTooltip } from '../../../engine/attachmentTemplateIndex';
 import {
   CONDITION_PASS_CLOSED_DURATION,
+  CONDITION_STANDING_WELCOME_DURATION,
   LOCATION_CONDITION_IDS,
 } from '../../../data/condition-trait-content';
 
@@ -290,6 +291,47 @@ describe('LocationProfileModal — active conditions (THR-1143)', () => {
     expect(section.textContent).toContain('Closed for the Season');
     expect(section.textContent).not.toContain('Storied');
     expect(section.textContent).toContain('Conditions (1)');
+  });
+
+  it('THR-1175: a standing welcome reaches the player on the place that carries it', () => {
+    // The acted-on half of THR-1175. The Grateful Kin used to express "there is a
+    // roof in this town that opens for them now" as an `owes_favor` edge with the
+    // *town* as debtor — real, well-formed, and inert, because every favour
+    // consumer is person-shaped, so the only code that would ever touch it again
+    // was the expiry sweep. The condition replaces it, and this is the assertion
+    // that it is not the same defect in a new coat: the state a player was
+    // promised is on the surface a player can open, named in words, on the place
+    // the chip anchors to. Without a live reader this write would be exactly as
+    // uncollectable as the edge it replaced.
+    const graph = graphWithKeep();
+    seedEncounterTraitDefinitions(graph);
+    graph.addEdge({
+      id: 'has_trait_loc_0_standing_welcome',
+      source: 'loc_0',
+      target: 'trait.condition.location.standing_welcome',
+      type: 'has_trait',
+      properties: {
+        appliedAt: 10,
+        durationTicks: CONDITION_STANDING_WELCOME_DURATION,
+        ticksRemaining: CONDITION_STANDING_WELCOME_DURATION,
+        intensity: 0.55,
+      },
+    } as never);
+
+    render(
+      <LocationProfileModal
+        name="Ardenmor Keep"
+        locationId="loc_0"
+        graph={graph}
+        onClose={() => {}}
+      />,
+    );
+
+    const section = screen.getByTestId('location-profile-conditions');
+    expect(section.textContent).toContain('A Standing Welcome');
+    expect(section.textContent).toContain('Conditions (1)');
+    // Law 14 — the surface names the state, never the id behind it.
+    expect(section.textContent).not.toContain('trait.condition');
   });
 
   it('Law 17: every shipped location condition resolves a tooltip from the one registry', () => {
