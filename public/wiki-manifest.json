@@ -314,7 +314,9 @@
         "src/engine/rival*.ts",
         "src/engine/phaseHiddenMarkDecay*.ts",
         "src/engine/phaseIntelligenceDecay*.ts",
-        "src/data/rival-content.ts"
+        "src/data/rival-content.ts",
+        "src/engine/encounters/detectionPressure.ts",
+        "src/engine/orchestrator/phaseDetectionPressure.ts"
       ]
     },
     {
