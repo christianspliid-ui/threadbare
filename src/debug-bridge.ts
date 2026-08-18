@@ -318,6 +318,65 @@ if (import.meta.env.DEV) {
       return { sources, sourceIncome: computeSourceIncome(graph, ascId) };
     },
 
+    // ── The Repertoire — which library cards this god holds (THR-1180) ─────
+    /**
+     * Every nudge card the god currently holds, with its access level and the
+     * provenance that explains *why* it is held (`core` / `signature` / `hunger`
+     * / `milestone` / `god_trait` / `sphere_attunement` / `echo`), alongside the
+     * lifetime `essenceEarnedBySphere` counter and the attunement marks.
+     *
+     * `locked` never appears in `entries` — a locked card is not in the
+     * repertoire at all. To see what is *missing* and why, read `attunement`:
+     * it lists every mark with the sphere's current earned total, so a member
+     * that has not arrived is legible as "12 of 20" rather than as an absence.
+     *
+     * Read-only; returns `{ error }` with no live session, and `entries: []`
+     * with no ascendant identity (a legacy archetype run has no sphere identity
+     * to build a repertoire from — that is a real state, not a failure).
+     */
+    getRepertoire: async () => {
+      const state = _gameStateProvider?.();
+      if (!state) return { error: 'no live game state' };
+      const { buildRepertoire } = await import('./engine/nudgeCardRepertoire');
+      const { echoCardsFromDefinitions } = await import('./engine/nudgeCardRepertoire');
+      const { cardDisplayTitle } = await import('./data/nudge-card-library');
+      const { SPHERE_ATTUNEMENT_THRESHOLDS } = await import('./data/nudge-constants');
+      const { toHungerId } = await import('./types/hunger');
+
+      const identity = state.ascendantIdentity;
+      const earned = state.essenceEarnedBySphere ?? {};
+      const attunement = (Object.keys(earned) as import('./types').SphereName[])
+        .map((sphere) => ({
+          sphere,
+          earned: earned[sphere] ?? 0,
+          marksReached: SPHERE_ATTUNEMENT_THRESHOLDS.filter((t) => (earned[sphere] ?? 0) >= t),
+          nextMark:
+            SPHERE_ATTUNEMENT_THRESHOLDS.find((t) => (earned[sphere] ?? 0) < t) ?? null,
+        }))
+        .sort((a, b) => b.earned - a.earned);
+
+      if (!identity) return { entries: [], essenceEarnedBySphere: earned, attunement };
+
+      const entries = buildRepertoire({
+        primary: identity.sphereAlignment?.primary,
+        secondary: identity.sphereAlignment?.secondary,
+        hunger: toHungerId(identity.hungerId),
+        unlockedActionIds: new Set(state.unlockedActionIds ?? []),
+        essenceEarnedBySphere: state.essenceEarnedBySphere,
+        echoCards: echoCardsFromDefinitions(state.echoDefinitions ?? []),
+      }).map((entry) => ({
+        cardId: entry.member.id,
+        title: cardDisplayTitle(entry.member),
+        typeId: entry.member.typeId,
+        sphere: entry.member.sphere ?? null,
+        access: entry.access,
+        source: entry.source,
+        unlockKind: entry.member.unlock?.kind ?? 'starting',
+      }));
+
+      return { entries, essenceEarnedBySphere: earned, attunement };
+    },
+
     /**
      * Player action progression readout (THR-613 §3.6): per permanent reach, the
      * ascendant's accrued reach practice, live Domain Capability + tier, last-fired

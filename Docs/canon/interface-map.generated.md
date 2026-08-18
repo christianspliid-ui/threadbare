@@ -15,12 +15,12 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 49 |
+| 🟢 LIVE | 50 |
 | 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 7 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 14 |
-| **Total** | **71** |
+| **Total** | **72** |
 
 ## Contracts by producing subsystem
 
@@ -152,6 +152,7 @@ remediation ticket or the build fails.
 
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
+| `essence-earned-unlocks-attunement-cards` | Working a sphere teaches you its deeper tricks: essence drawn through a sphere over a lifetime widens what that sphere deals you, so a god who actually uses their power ends the run holding more of it than a god who hoarded. | state-field: `essenceEarnedBySphere` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `nudge-hand-runtime-filters-and-sphere-discount` | The hand the player is dealt reflects the world as it actually is — group cards only in groups, favor calls only when a favor is owed — and a sphere the god is aligned to makes its own work cheaper. | function: `buildNudgeHand`, `effectiveNudgeCost`, `totalNudgeCost` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | THR-883 |
 | `quintessence-threshold-gates-candidacy-and-movement` | A mortal worn to nothing goes out of the story rather than grinding on unchanged — the previously missing consumer of the weakened/critical threshold states. Without it, quintessence loss has no behavioural consequence at all. | node-prop: `isBrokenMortal`, `brokenGateActive`, `computeBrokenDriftBonus`, `brokenSince` | Encounters & Dilemmas | 🟠 PARTIAL | THR-778 |
 
@@ -615,6 +616,18 @@ remediation ticket or the build fails.
 - **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DecisionBreakdown.tsx`, `src/components/Game/LocationProfileModal.tsx` +56 more
 - **Verdict:** Verified 2026-07-23: THR-725: end-to-end in the CLI (seed 42, medium) — applied `loc.blight`'s -10 prosperity write to Thornhaven at tick 20; tick 21 emitted `econ_shock_seeded` (bust, -10.0) planting `encounter.debt_collection` and `encounter.aid_refugees`; by tick 27 both had matured into live scenes on the seeded agents. The verb now produces story, not just a number.
 
+### `essence-earned-unlocks-attunement-cards` — 🟢 LIVE
+
+- **Intent:** Working a sphere teaches you its deeper tricks: essence drawn through a sphere over a lifetime widens what that sphere deals you, so a god who actually uses their power ends the run holding more of it than a god who hoarded.
+- **Producer → Consumer:** Spheres & Quintessence → Encounters & Dilemmas
+- **UL terms:** *Nudge*, *Sphere*, *Essence*
+- **Module:** `src/engine/essenceEarned.ts`
+- **Production hits:** 6 total — 1 write, 2 read, 3 unclassified
+- **Write sites:** `src/engine/essenceEarned.ts`
+- **Read sites:** `src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts`, `src/engine/nudgeCardRepertoire.ts`
+- **Other hits:** `src/data/nudge-card-library.ts`, `src/debug-bridge.ts`, `src/types/gameState.ts`
+- **Verdict:** Verified 2026-08-19: Headless CLI, seed 42 medium: with the pool drained to 1/sphere the counter reached chaos 19.250000000000007 by tick 55 and 21.000000000000014 by tick 60 — identical across repeat runs, so same seed ⇒ same unlock tick. src/engine/__tests__/essenceEarned.test.ts drives the reader end-to-end: buildRepertoire with the counter one short of the mark omits every seeded attunement member and with the counter at the mark contains all of them, and the off-sphere arm asserts a god attuned to everything gains no member on a sphere they do not hold. Each arm falsified by breaking its guard (access gate, threshold comparison, monotonicity) and confirming the red.
+
 ### `faction-ambitions-drive-action` — 🟢 LIVE
 
 - **Intent:** Faction ambitions drive faction action and render on the faction sheet.
@@ -691,10 +704,10 @@ remediation ticket or the build fails.
 - **Producer → Consumer:** Ascendant Beats & Progression → Encounters & Dilemmas
 - **UL terms:** *Nudge*, *Ascendant Beat*
 - **Module:** `src/engine/nudgeCardRepertoire.ts`
-- **Production hits:** 3 total — 1 write, 1 read, 1 unclassified
+- **Production hits:** 5 total — 1 write, 1 read, 3 unclassified
 - **Write sites:** `src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts`
 - **Read sites:** `src/engine/encounters/nudges.ts`
-- **Other hits:** `src/engine/nudgeCardRepertoire.ts`
+- **Other hits:** `src/data/nudge-card-library.ts`, `src/debug-bridge.ts`, `src/engine/nudgeCardRepertoire.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `minted-ambition-provenance` — 🟢 LIVE
@@ -917,10 +930,10 @@ remediation ticket or the build fails.
 - **Producer → Consumer:** Attention, Chronicle & Narrative → Encounters & Dilemmas
 - **UL terms:** *Nudge*, *Echo*, *World-Soul*
 - **Module:** `src/engine/nudgeCardRepertoire.ts`
-- **Production hits:** 6 total — 1 write, 1 read, 4 unclassified
+- **Production hits:** 7 total — 1 write, 1 read, 5 unclassified
 - **Write sites:** `src/engine/cycleEnd.ts`
 - **Read sites:** `src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts`
-- **Other hits:** `src/engine/echo.ts`, `src/engine/nudgeCardRepertoire.ts`, `src/types/echo.ts`, `src/types/gameState.ts`
+- **Other hits:** `src/debug-bridge.ts`, `src/engine/echo.ts`, `src/engine/nudgeCardRepertoire.ts`, `src/types/echo.ts`, `src/types/gameState.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `undertow-card-drifts-mortal-values` — 🔴 LEAKED

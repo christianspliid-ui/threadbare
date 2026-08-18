@@ -143,6 +143,7 @@ export type TraceCategory =
   // Nudge card dispatch (THR-885)
   | 'nudge_cost_charged'
   | 'nudge_dispatch_failed'
+  | 'nudge_attunement_unlock'
   // World-shaping aftermath traces (THR-115)
   | 'artifact_spawned'
   | 'omen_emitted'
@@ -521,6 +522,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   // Nudge card dispatch (THR-885)
   'nudge_cost_charged',
   'nudge_dispatch_failed',
+  'nudge_attunement_unlock',
   // World-shaping aftermath traces (THR-115)
   'artifact_spawned',
   'omen_emitted',
@@ -2118,6 +2120,35 @@ export interface NudgeDispatchFailedTrace extends TraceBase {
 }
 
 /**
+ * Trace: a sphere crossed an attunement mark (THR-1180).
+ *
+ * One per crossing per sphere, ever — the crossing window is half-open
+ * (`before < threshold <= after`), so the mark is reported by the phase that
+ * reaches it and by no later phase. That is what makes this readable as a
+ * progression log rather than a per-tick level reading.
+ *
+ * `unlockedCardIds` names what the mark puts within reach *in the library*, not
+ * what this god gained: the identity floor still gates access, so a god without
+ * the sphere crosses the mark and holds nothing new. Carrying the list anyway
+ * is deliberate — an empty array here would read as a broken counter when the
+ * real answer is a locked sphere.
+ *
+ * Named `nudge_attunement_unlock` rather than the plan's dotted
+ * `nudge.attunement_unlock`: every category in this union is snake_case, and one
+ * dotted stray would be invisible to the category filters (NFP #2).
+ */
+export interface NudgeAttunementUnlockTrace extends TraceBase {
+  category: 'nudge_attunement_unlock';
+  sphere: SphereName;
+  /** The mark crossed — a row of `SPHERE_ATTUNEMENT_THRESHOLDS`. */
+  threshold: number;
+  /** Library members gated on exactly this (sphere, threshold). May be empty. */
+  unlockedCardIds: string[];
+  /** Lifetime essence earned in `sphere` after the crossing. */
+  earnedTotal: number;
+}
+
+/**
  * Trace: The Compulsion planted a decision urge on one mortal (THR-886).
  *
  * Carries the bias map rather than a summary number, because "why did this agent
@@ -2455,6 +2486,7 @@ export type TraceEntry =
   // Nudge card dispatch (THR-885)
   | NudgeCostChargedTrace
   | NudgeDispatchFailedTrace
+  | NudgeAttunementUnlockTrace
   | CompulsionPlantedTrace
   | CompulsionDecayedTrace
   // Scene-targeting aftermath sentinels + bond_change (THR-695, Slice B)

@@ -505,6 +505,11 @@ export function buildNudgePhaseModel(
           // hunger unique was ever dealt. `toHungerId` is the real conversion.
           hunger: toHungerId(identity.hungerId),
           unlockedActionIds: new Set(gameState?.unlockedActionIds ?? []),
+          // THR-1180 — passed straight through, absent and all. An absent
+          // counter is a legacy run that never earned anything, and the unlock
+          // reads it as all-zero, so attunement members stay locked rather than
+          // falling open on the saves least able to have earned them.
+          essenceEarnedBySphere: gameState?.essenceEarnedBySphere,
           echoCards: echoCardsFromDefinitions(gameState?.echoDefinitions ?? []),
         }).map((entry) => entry.member.id),
       )

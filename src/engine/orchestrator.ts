@@ -151,6 +151,7 @@ import { phaseInitiativeProgress } from './phaseInitiativeProgress';
 import { phaseMentorship } from './phaseMentorship';
 import { phaseStrategicProjects } from './phaseStrategicProjects';
 import { phaseDivinePremonition } from './phaseDivinePremonition';
+import { applyEssenceEarned } from './essenceEarned';
 import { phaseControlEffects, resetControlEffectsCounter } from './phaseControlEffects';
 import { phaseEssenceSources } from './phaseEssenceSources';
 import { phaseEffectShells } from './phaseEffectShells';
@@ -2736,7 +2737,11 @@ function runInlinePhase(
   const start = tickProfilingEnabled ? performance.now() : 0;
   const prevEvents = s.tickEvents.length;
   const delta = run();
-  const next = { ...s, ...delta } as GameState;
+  // THR-1180 — the essence-earned accrual seam. Every grant site in the divine
+  // economy lands in some phase's returned pool, so diffing here counts them
+  // all, including the site nobody has written yet. Reference-compares out on
+  // every phase that leaves the pool alone, which is nearly all of them.
+  const next = applyEssenceEarned(s, { ...s, ...delta } as GameState);
   const eventDelta = next.tickEvents.length - prevEvents;
   if (tickProfilingEnabled) {
     const durationMs = performance.now() - start;

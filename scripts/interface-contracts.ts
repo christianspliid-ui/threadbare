@@ -1673,6 +1673,43 @@ export const CONTRACTS: readonly Contract[] = [
     // stub, and it is exercised by test rather than left commented out.
   },
   {
+    id: 'essence-earned-unlocks-attunement-cards',
+    producerSystem: QUINTESSENCE,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      'Working a sphere teaches you its deeper tricks: essence drawn through a sphere over a lifetime widens what that sphere deals you, so a god who actually uses their power ends the run holding more of it than a god who hoarded.',
+    ulTerms: ['Nudge', 'Sphere', 'Essence'],
+    mechanism: {
+      kind: 'state-field',
+      symbols: ['essenceEarnedBySphere'],
+      module: 'src/engine/essenceEarned.ts',
+    },
+    // The write is the phase-merge seam, not a grant site: `applyEssenceEarned`
+    // is the only place the field is assigned, and `runInlinePhase`
+    // (`orchestrator.ts`) plus `runRegisteredPhases` (`phaseRegistry.ts`) are the
+    // two funnels that call it. Every essence grant in the economy passes through
+    // one of those on its way into state, which is what makes the counter total
+    // over a producer set that keeps growing — six sites at time of writing, and
+    // the plan named three. The funnels are call sites, not write sites; naming
+    // them here would report the field as absent from both, since neither
+    // mentions it.
+    writeSites: ['src/engine/essenceEarned.ts'],
+    readSites: [
+      'src/engine/nudgeCardRepertoire.ts',
+      'src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts',
+    ],
+    // The production read is `isMemberUnlocked`'s `sphere_attunement` case, which
+    // `buildNudgePhaseModel` reaches by threading the counter into
+    // `RepertoireContext`. Both halves are named because the adapter is the only
+    // live caller — a counter wired to the engine but not to the adapter would be
+    // LEAKED in exactly the invisible way this map exists to catch.
+    verifiedLive: {
+      date: '2026-08-19',
+      evidence:
+        'Headless CLI, seed 42 medium: with the pool drained to 1/sphere the counter reached chaos 19.250000000000007 by tick 55 and 21.000000000000014 by tick 60 — identical across repeat runs, so same seed ⇒ same unlock tick. src/engine/__tests__/essenceEarned.test.ts drives the reader end-to-end: buildRepertoire with the counter one short of the mark omits every seeded attunement member and with the counter at the mark contains all of them, and the off-sphere arm asserts a god attuned to everything gains no member on a sphere they do not hold. Each arm falsified by breaking its guard (access gate, threshold comparison, monotonicity) and confirming the red.',
+    },
+  },
+  {
     id: 'twilight-harvest-preserves-defining-card',
     producerSystem: NARRATIVE,
     consumerSystem: ENCOUNTERS,

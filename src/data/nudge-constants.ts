@@ -482,3 +482,23 @@ export const UNDERTOW_FORECAST_DELTA = 0.13;
  * decisively — but a single play never outweighs a single choice.
  */
 export const UNDERTOW_DRIFT_MAGNITUDE = 0.06;
+
+// ─── Sphere attunement (THR-1180) ────────────────────────────────────
+
+/**
+ * Lifetime essence-earned-in-a-sphere marks at which attunement members unlock.
+ *
+ * **First-cut, iterated on the wiki page** exactly as `SPHERE_SIGNATURES` is —
+ * which is why it is one ascending table read by every attunement member rather
+ * than a threshold typed per card. A member names the mark it wants; nobody
+ * hand-picks a number this table does not contain.
+ *
+ * Earned, not held: spending essence never un-earns it, so the marks measure how
+ * much a god has *worked through* a sphere, not how much they are sitting on. A
+ * hoarder and a spender who both drew 20 out of `chaos` are equally attuned to
+ * it, which is the reading the design wants — attunement is practice.
+ *
+ * Ascending order is assumed by {@link attunementThresholdsCrossed} and pinned
+ * by test; an unsorted table would report a crossing twice.
+ */
+export const SPHERE_ATTUNEMENT_THRESHOLDS: readonly number[] = [20, 60];

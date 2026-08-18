@@ -611,6 +611,54 @@ export interface DebugBridge {
    *
    * Read-only; does not mutate sanctity. Returns `{ error }` with no live session.
    */
+  /**
+   * The Repertoire (THR-1180) — every nudge card this god holds, why it is held,
+   * and how far along each sphere's attunement stands.
+   *
+   * `entries` lists held cards only: a locked card is absent, never listed with
+   * `access: 'locked'`. What a card is *waiting on* is read off `attunement`,
+   * which reports each sphere's lifetime earned total against
+   * `SPHERE_ATTUNEMENT_THRESHOLDS` — so a member that has not arrived reads as
+   * "12 earned, next mark 20" rather than as silence.
+   *
+   * `entries` is empty (not an error) for a legacy archetype run with no
+   * `ascendantIdentity`: no sphere identity, no repertoire to build. `attunement`
+   * is still populated there, because the counter runs regardless of identity.
+   *
+   * Returns `{ error }` with no live session. **Async — `await` it** (the usual
+   * forgotten-await trap reads as an empty object, impediment #405).
+   */
+  getRepertoire: () => Promise<
+    | {
+        entries: Array<{
+          cardId: string;
+          title: string;
+          typeId: string;
+          sphere: import('./types').SphereName | null;
+          access: 'full' | 'discounted';
+          source:
+            | 'core'
+            | 'signature'
+            | 'hunger'
+            | 'milestone'
+            | 'god_trait'
+            | 'sphere_attunement'
+            | 'echo';
+          unlockKind: 'starting' | 'milestone' | 'god_trait' | 'sphere_attunement';
+        }>;
+        essenceEarnedBySphere: Partial<Record<import('./types').SphereName, number>>;
+        attunement: Array<{
+          sphere: import('./types').SphereName;
+          earned: number;
+          /** Marks already reached, ascending. */
+          marksReached: readonly number[];
+          /** The next mark, or `null` when every mark is reached. */
+          nextMark: number | null;
+        }>;
+      }
+    | { error: string }
+  >;
+
   getEssenceSources: () => Promise<
     | {
         sources: Array<{
