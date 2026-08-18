@@ -9,6 +9,7 @@
 
 import type { WorldGraph } from './graph';
 import { buildRouteManifest } from './tradeRoute';
+import { validateEdgeEndpoints } from '../types/edgeSchema';
 import { emitTrace } from './traceBuffer';
 import type { RouteCargoAssignedTrace, TraceEntry } from '../types/trace';
 
@@ -271,6 +272,30 @@ export function createRelationEdge(
     const target = graph.getNode(targetId);
     if (!source || !target) {
       return { success: false, op: 'create_relation_edge', error: 'node_not_found' };
+    }
+
+    // ── Schema chokepoint (THR-1177) ────────────────────────────────────────
+    // This function's `edgeType` is a bare `string` and nothing narrowed it, so it was
+    // the one path by which an entirely unregistered family could enter the graph —
+    // the audit found four live `sacred_route` edges minted exactly this way, of a type
+    // that existed in neither `EdgeType` nor `EDGE_SCHEMA` and which therefore nothing
+    // could validate or consume. Refuse fail-soft, consistent with this module's
+    // contract (NFP #4): every mutation returns success/failure and never throws.
+    const violation = validateEdgeEndpoints(edgeType, source.type, target.type);
+    if (violation) {
+      emitTrace({
+        category: 'edge_schema_refused',
+        tick,
+        summary: `Refused ${edgeType} edge: ${violation.message}`,
+        edgeType,
+        chokepoint: 'create_relation_edge',
+        reason: violation.reason,
+        sourceId,
+        targetId,
+        sourceNodeType: source.type,
+        targetNodeType: target.type,
+      });
+      return { success: false, op: 'create_relation_edge', error: violation.message };
     }
 
     // Check for duplicate

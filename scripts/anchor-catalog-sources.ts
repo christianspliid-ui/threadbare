@@ -168,6 +168,18 @@ export const NODE_TYPE_ROWS: Readonly<Record<string, AnchorRow>> = {
       'relationship has an arc worth naming — the node carries `arc`, `tension_axis` and ' +
       'a history the player can see change.',
   },
+  sublocation: {
+    anchor: 'Sublocation',
+    declare: '`entityId` = the sublocation node id, `visualKind: \'location\'`',
+    surface: 'The location sheet of its parent, and the hex it sits on',
+    status: 'linked',
+    note:
+      'Registered in `NodeType` by THR-1177, having been written and read in production ' +
+      'while off-union. Note the two mint shapes: `sublocation.ts` mints these as ' +
+      '`location` nodes carrying `locationSubtype`, while `strategicGraphOps` mints ' +
+      'the bare `sublocation` type — a chip anchoring one shape will not match the ' +
+      'other until THR-1183 unifies them.',
+  },
   companion: {
     anchor: 'Companion',
     declare: '`entityId` = the companion node id, `visualKind: \'companion\'`',
@@ -346,6 +358,21 @@ export const EDGE_TYPE_ROWS: Readonly<Record<string, AnchorRow>> = {
     '`rank` is a 0–1 scale and `role` is derived from reputation — never integer-compare either.',
   ),
   belongs_to: RELATIONAL('The culture\'s readouts, and the member\'s sheet'),
+  // Faction work orders + pilgrimage routes (THR-1177) — registered after the audit
+  // found live writers with no registry entry at all.
+  commissions: RELATIONAL(
+    'The faction sheet posted-work list, and the quest itself',
+    'Anchor the faction and the quest event node; the edge carries only `expiryTick`.',
+  ),
+  issues: RELATIONAL(
+    'The faction sheet posted-work list, and the bounty itself',
+    'Anchor the faction and the bounty event node; the edge carries only `expiryTick`.',
+  ),
+  sacred_route: RELATIONAL(
+    'The consecrating actor sheet, and the destination location',
+    'KNOWN GAP: nothing consumes this edge yet (THR-1184), so a chip naming it would ' +
+    'report a write that changes nothing — do not anchor one until a consumer exists.',
+  ),
   thread: RELATIONAL('The thread row, and the thread detail view'),
   aspect_of: RELATIONAL('The thread detail view'),
   mentors: RELATIONAL('Both parties\' sheets', 'Carries domain, progress and phase a player can watch move.'),

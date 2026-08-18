@@ -437,10 +437,14 @@ describe('executeGraphOps', () => {
 
       graph.addNode({ id: 'villain.1', type: 'actor', name: 'Villain', properties: {} });
 
+      // THR-1177: was `edgeType: 'opposes'`, a family that exists in neither
+      // `EdgeType` nor `EDGE_SCHEMA`. The chokepoint now refuses unregistered types,
+      // so the fixture uses a real actor→actor family instead. The subject of this
+      // test is `$villain` resolving through `ctx.extras`, which is unchanged.
       const ops: GraphOp[] = [
         {
           op: 'add_edge',
-          edgeType: 'opposes',
+          edgeType: 'hostile_to',
           source: '$actor',
           target: '$villain',
           properties: {},
@@ -450,7 +454,7 @@ describe('executeGraphOps', () => {
       const result = executeGraphOps(graph, ops, ctxWithExtras);
       expect(result.allSucceeded).toBe(true);
 
-      const edges = graph.getOutgoingEdges('agent.1', 'opposes');
+      const edges = graph.getOutgoingEdges('agent.1', 'hostile_to');
       expect(edges[0].target).toBe('villain.1');
     });
   });

@@ -6,6 +6,7 @@
 import type { WorldGraph } from './graph';
 import type { GraphOp, GraphOpContext, GraphOpResult, GraphOpBatchResult } from '../types/graphOp';
 import { resolveRef } from '../types/graphOp';
+import { validateEdgeEndpoints } from '../types/edgeSchema';
 import { emitTrace } from './traceBuffer';
 import { hydrateToTier } from './npcGraduation';
 import type { SphereName } from '../types';
@@ -433,6 +434,57 @@ function executeAddEdge(
 
   const source = resolveRef(op.source, ctx);
   const target = resolveRef(op.target, ctx);
+
+  // ── Schema chokepoint (THR-1177) ──────────────────────────────────────────
+  // This is one of the two generic paths by which *any* edge family reaches the graph,
+  // and until now it checked nothing: `op.source`/`op.target` come out of sentinel
+  // resolution, and a cast default can bind ambient scenery, so a content-authored
+  // `add_edge` could edge a location into a family every consumer reads as person-shaped
+  // (the THR-1175 favour defect). Validating here closes that route for every family at
+  // once. Refuse fail-soft — return the op's failure shape, never throw (NFP #4).
+  const sourceNode = graph.getNode(source);
+  const targetNode = graph.getNode(target);
+  const violation = validateEdgeEndpoints(op.edgeType, sourceNode?.type, targetNode?.type);
+  if (violation) {
+    emitTrace({
+      category: 'edge_schema_refused',
+      tick: ctx.tick ?? 0,
+      summary: `Refused ${op.edgeType} edge: ${violation.message}`,
+      edgeType: op.edgeType,
+      chokepoint: 'graph_op_add_edge',
+      reason: violation.reason,
+      sourceId: source,
+      targetId: target,
+      sourceNodeType: sourceNode?.type,
+      targetNodeType: targetNode?.type,
+    });
+    return { op, success: false, error: violation.message };
+  }
+
+  // Thread source guard (THR-1177): every `thread` consumer assumes the source is the
+  // ascendant reaching down — the schema's `actor` row is too wide to say so, since
+  // mortals are actors too. A thread from a mortal source would be read as divine
+  // attention by everything downstream.
+  if (op.edgeType === 'thread' && sourceNode?.properties?.actorType !== 'ascendant') {
+    const actual = String(sourceNode?.properties?.actorType ?? 'unknown');
+    emitTrace({
+      category: 'edge_schema_refused',
+      tick: ctx.tick ?? 0,
+      summary: `Refused thread edge: source must be the ascendant, got actorType "${actual}"`,
+      edgeType: 'thread',
+      chokepoint: 'graph_op_add_edge',
+      reason: 'source_type',
+      sourceId: source,
+      targetId: target,
+      sourceNodeType: sourceNode?.type,
+      targetNodeType: targetNode?.type,
+    });
+    return {
+      op,
+      success: false,
+      error: `Edge "thread" source must be the ascendant, got actorType "${actual}"`,
+    };
+  }
 
   // Dedup guard: a given ascendant may only hold one thread edge to any target.
   // If a thread already exists from source → target, fail rather than create a duplicate.

@@ -153,6 +153,17 @@ export function joinFaction(
   if (!graph.getNode(agentId)) return { changed: false, reason: 'agent_not_found' };
   const nodeId = resolveFactionNodeId(graph, factionId, agentId);
   if (!nodeId) return { changed: false, reason: 'faction_not_found' };
+
+  // THR-1177 note: no target guard is added here, deliberately. The audit called the
+  // membership helper unguarded, but `resolveFactionNodeId` above already refuses
+  // anything that is not faction-shaped — it returns null for an individual, so an
+  // individual→individual `member_of` cannot be minted through this path. A guard on
+  // `properties.actorType` was written here first and had to be removed: it rejected
+  // the bare `type: 'faction'` node shape that `resolveFactionNodeId` deliberately
+  // tolerates (several shipped fixtures and the codex build factions that way), so it
+  // broke a documented tolerance while adding nothing. The producers the audit meant
+  // are the eleven that write `member_of` directly rather than through this helper;
+  // the reader-side fix in `getHighestFactionRank` is what covers those.
   if (findMembershipEdge(graph, agentId, nodeId)) {
     return { changed: false, reason: 'already_member' };
   }

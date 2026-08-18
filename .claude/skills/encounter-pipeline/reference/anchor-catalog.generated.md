@@ -7,7 +7,7 @@
 
 **What this is for.** Law 56's second clause requires a chip's referent to be an existing graph object, resolvable in the live world the player is in, and requires the chip's prose to name *that particular object*. This catalog is the list of objects that sentence can be about. THR-1153's anchor-resolution gate checks the declaration forms in the fourth column.
 
-**Totals.** 58 anchorable members across 75 classified.
+**Totals.** 62 anchorable members across 79 classified.
 
 ## How to read the status column
 
@@ -35,6 +35,7 @@
 | `event` | — | — not an anchor | — | — |
 | `cosmology` | Sphere / foundation | 📍 named | `tooltipId` on the concept; no `entityId` | The tooltip, and the cosmology readouts |
 | `region` | Named area (region) | 📍 named | `entityId` = the region node id; **no `visualKind` member exists** | The hex chronicle names the region a hex belongs to |
+| `sublocation` | Sublocation | 🔗 linked | `entityId` = the sublocation node id, `visualKind: 'location'` | The location sheet of its parent, and the hex it sits on |
 | `ambition` | Ambition | 📍 named | `entityId` = the ambition node id; no `visualKind` member | The pursuing actor's sheet |
 | `encounter_template` | — | — not an anchor | — | — |
 | `relationship` | Bond (reified relationship) | 📍 named | `entityId` = the relationship node id; no `visualKind` member | The cast tile and both participants' sheets |
@@ -47,6 +48,7 @@
 - **`action_template`** — Action template — a definition, not an object in the world the player can be pointed at
 - **`event`** — Event — the record of a resolution. A chip *is* a report of one; pointing a chip at its own event record says nothing new
 - **`region`** — This is the director's "named area", and it is real: `worldSeed` flood-fills regions, then names them from historical culture ownership, so a region has a name a player can read. It has no page and no click route. See the borders gap note below for what is still missing.
+- **`sublocation`** — Registered in `NodeType` by THR-1177, having been written and read in production while off-union. Note the two mint shapes: `sublocation.ts` mints these as `location` nodes carrying `locationSubtype`, while `strategicGraphOps` mints the bare `sublocation` type — a chip anchoring one shape will not match the other until THR-1183 unifies them.
 - **`encounter_template`** — Encounter template — the encounter itself. A planted seed anchors through its **carrier** — the agent or location it was planted on — never through the template id
 - **`relationship`** — The director's "bond". Prefer this over the bare `relates_to` edge when the relationship has an arc worth naming — the node carries `arc`, `tension_axis` and a history the player can see change.
 - **`companion`** — The one kind that is in the `visualKind` union and still does not click, on purpose: a companion is a person but not an agent node, so both the agent drawer and the stub-modal path would open the wrong sheet. Its tile renders; the click is withheld because non-interactive beats wrong.
@@ -140,6 +142,9 @@ The director's *"a particular relationship (edge) between objects"*. An edge has
 | `embodies_spirit_of` | Relationship (edge) | 📍 named | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The location, and the spirit's own sheet |
 | `will_succeed` | Relationship (edge) | 📍 named | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The faction sheet |
 | `leads` | Relationship (edge) | 📍 named | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The faction sheet |
+| `commissions` | Relationship (edge) | 📍 named | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The faction sheet posted-work list, and the quest itself |
+| `issues` | Relationship (edge) | 📍 named | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The faction sheet posted-work list, and the bounty itself |
+| `sacred_route` | Relationship (edge) | 📍 named | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The consecrating actor sheet, and the destination location |
 | `sponsors_scheme` | Relationship (edge) | 📍 named | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The target location, and the sponsor's sheet |
 
 - **`contains`** — Structural edge — containment is map plumbing; anchor the location itself
@@ -164,6 +169,9 @@ The director's *"a particular relationship (edge) between objects"*. An edge has
 - **`knows_secret_of`** — A concealed anchor — see the hidden-mark note below.
 - **`knows_of`** — Familiarity, created when a clue is consumed at convergence.
 - **`leads`** — Authoritative for the seated leader when present.
+- **`commissions`** — Anchor the faction and the quest event node; the edge carries only `expiryTick`.
+- **`issues`** — Anchor the faction and the bounty event node; the edge carries only `expiryTick`.
+- **`sacred_route`** — KNOWN GAP: nothing consumes this edge yet (THR-1184), so a chip naming it would report a write that changes nothing — do not anchor one until a consumer exists.
 
 ## Stats
 

@@ -105,6 +105,30 @@ export function getHighestFactionRank(graph: WorldGraph, agentId: string): numbe
 
   let highest = 0;
   for (const edge of memberEdges) {
+    // THR-1177: filter by the target's shape rather than trusting every member_of edge.
+    // `EDGE_SCHEMA` declares this family actor→actor — the narrowest NodeType can
+    // express — so an individual→individual member_of is schema-legal, and this loop
+    // used to read `rank` off it and let it win. A single such edge carrying a high
+    // `rank` would hand its bearer a permanent leverage advantage sourced from a
+    // membership in nothing. This is the reader-side guard because twelve writers mint
+    // `member_of` and only one goes through `joinFaction` — and because worlds already
+    // saved cannot be re-minted, so a writer-only fix would never reach them.
+    //
+    // Three node shapes count as a membership target, all three live in this repo:
+    // `actor` + actorType faction, `actor` + actorType group (companies and armies),
+    // and a bare `type: 'faction'` node (fixtures and the codex). Matching only the
+    // first would silently zero the rank of every company member.
+    const targetNode = graph.getNode(edge.target);
+    const targetActorType = targetNode?.properties?.actorType;
+    // `String(...)` because the bare shapes are off the `NodeType` union — comparing
+    // the typed field to them directly is a TS "unintentional comparison" error.
+    const targetNodeType = String(targetNode?.type ?? '');
+    const isMembershipTarget = targetNodeType === 'faction'
+      || targetNodeType === 'group'
+      || targetActorType === 'faction'
+      || targetActorType === 'group';
+    if (!isMembershipTarget) continue;
+
     const rank = (edge.properties.rank as number) ?? 0;
     if (rank > highest) highest = rank;
   }
