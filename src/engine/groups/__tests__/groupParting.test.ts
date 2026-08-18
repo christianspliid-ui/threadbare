@@ -67,9 +67,17 @@ describe('selectPartingVariant', () => {
     expect(selectPartingVariant('goal_complete', 0.9)).toBe('bittersweet');
   });
 
-  it('tells a failed bond (cohesion floor / betrayal) as bitter', () => {
+  it('tells a spent bond as bitter', () => {
     expect(selectPartingVariant('cohesion_floor', 0.9)).toBe('bitter');
-    expect(selectPartingVariant('betrayal', 0.9)).toBe('bitter');
+  });
+
+  it('tells a sale in its own register, not the bitter one (THR-1174)', () => {
+    // Reachability for this reason is asserted where it belongs — driven through
+    // `runGroupUpkeep` in groupLifecycle.test.ts. This row only fixes the mapping,
+    // and it must not be read as evidence that the state is attainable: passing
+    // the literal in is exactly how the dead branch stayed green for months.
+    expect(selectPartingVariant('betrayal', 0.9)).toBe('betrayed');
+    expect(selectPartingVariant('betrayal', 0.05)).toBe('betrayed');
   });
 
   it('splits the ambiguous reasons on the fray line', () => {

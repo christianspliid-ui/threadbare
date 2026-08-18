@@ -85,6 +85,22 @@ export const GROUP_DISSOLUTION_THRESHOLD = 0.15;
 /** At or above this the prose state is `bound` and the resolution bonus applies. */
 export const GROUP_COHESION_BOUND_THRESHOLD = 0.75;
 
+/**
+ * Minimum severity of a member's `betrayal` hidden mark for it to end the company
+ * (THR-1174). Below this the rot is there and the company survives it.
+ *
+ * Two things are tuned at once. The floor sits under `COMPANY_SOLD_SEVERITY`
+ * (0.65 — what The Quiet Offer's worst band mints), so a fresh sale qualifies;
+ * and because marks decay at {@link MARK_DECAY_PER_TICK} once the grace window
+ * closes, it also sets how long the sale stays lethal. From 0.65 that is roughly
+ * 50 ticks — the 20-tick grace plus ~31 of decay — a little over four days at
+ * twelve ticks to the day. After that the company has outlived what was done to
+ * it, which is the more interesting outcome to have available.
+ *
+ * @range 0.2–0.6
+ */
+export const GROUP_BETRAYAL_SEVERITY_FLOOR = 0.35;
+
 // ─── Resolution ──────────────────────────────────────────────────────
 
 /** Extra additive resolution bonus on company steps at `bound` cohesion. */

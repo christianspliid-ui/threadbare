@@ -248,12 +248,14 @@ describe('company drama — end-to-end reachability against real content', () =>
     expect((marks[0] as { targetAgentId?: string }).targetAgentId).toBeUndefined();
   });
 
-  it('no band claims the company ends as a betrayal — that DissolutionReason has no producer', () => {
-    // `DissolutionReason` declares 'betrayal' and `selectPartingVariant` consumes
-    // it, but `groupDissolution.ts` only ever assigns undersize / leader_death /
-    // cohesion_floor / goal_complete. Prose that promised a betrayal-ending would
-    // be claiming an outcome the engine cannot reach (filed separately). The
-    // slow burn here runs on marks, bonds and seeds, which are all real.
+  it('no band ends the company itself — the burn continues by re-offering', () => {
+    // The mark this template mints is now a genuine dissolution producer
+    // (THR-1174: `findCompanyBetrayer` ends a *fraying* company as a betrayal),
+    // so the original reason for this row — that no such outcome was reachable —
+    // is gone. The row still holds, for a better reason: the ending is the
+    // engine's to decide from cohesion, not this template's to assert. A band
+    // that dissolved the company outright would skip the slow burn the subject
+    // exists to tell, and would fire on a bound company the engine spares.
     const bands = quietOffer.aftermathConfig?.fallback?.byOutcome ?? {};
     const seeds = Object.values(bands)
       .flatMap(b => b?.reactions ?? [])
