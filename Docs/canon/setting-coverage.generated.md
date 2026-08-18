@@ -13,10 +13,10 @@ document fails a build. A thin cell is a scene not yet written.
 
 | | count |
 |---|---:|
-| templates in the pool | 686 |
-| drawable at ≥1 location subtype | 452 |
+| templates in the pool | 687 |
+| drawable at ≥1 location subtype | 453 |
 | drawable but at no *authorable* subtype | 22 |
-| declaring a setting envelope | 12 |
+| declaring a setting envelope | 13 |
 
 The third row counts templates placed only at worldgen overlay subtypes (wonders,
 lairs, anomalies) that no setting class claims — see the scope note on
@@ -35,10 +35,10 @@ be dealt?", not "how many templates exist".
 | `urban` | 49 | 49 | 43 | 17 | 40 | 48 | 24 | 24 | **294** |
 | `stronghold` | 25 | 6 | 8 | 4 | 12 | 16 | 7 | 5 | **83** |
 | `sacred` | 8 | 9 | 3 | 17 | 12 | 9 | 6 | 23 | **87** |
-| `arcane` | 6 | 5 | 5 | 20 | 7 | 28 | 5 | 11 | **87** |
+| `arcane` | 6 | 5 | 6 | 20 | 7 | 28 | 5 | 11 | **88** |
 | `ruin` | 16 | 9 | 9 | 11 | 12 | 27 | 13 | 8 | **105** |
 | `wayside` | 26 | 16 | 10 | 6 | 15 | 29 | 12 | 12 | **126** |
-| `battlefield` | 10 | 4 | 4 | 3 | 7 | 6 | 8 | 6 | **48** |
+| `battlefield` | 10 | 4 | 5 | 3 | 7 | 6 | 8 | 6 | **49** |
 
 ## Thin cells
 
@@ -58,7 +58,7 @@ more, else the first). That is a proxy for authorial grouping, not a curated tax
 |---|---:|---:|---|
 | `encounter` | 7 | 85 | push 15, rider 0, sphere 60, trait 10, free 0 |
 | `encounter.slice` | 8 | 50 | push 10, rider 3, sphere 37, trait 0, free 0 |
-| `encounter.company` | 3 | 15 | push 3, rider 0, sphere 12, trait 0, free 0 |
+| `encounter.company` | 4 | 20 | push 4, rider 0, sphere 16, trait 0, free 0 |
 | `cg.quest` | 1 | 9 | push 6, rider 0, sphere 0, trait 0, free 3 |
 | `encounter.apotheosis` | 1 | 7 | push 1, rider 1, sphere 5, trait 0, free 0 |
 
@@ -66,4 +66,4 @@ more, else the first). That is a proxy for authorial grouping, not a curated tax
 
 - `encounter` — 71% `sphere` across 85 cards
 - `encounter.slice` — 74% `sphere` across 50 cards
-- `encounter.company` — 80% `sphere` across 15 cards
+- `encounter.company` — 80% `sphere` across 20 cards

@@ -13,9 +13,27 @@
  *      different ways, and the company is standing still while they settle it.
  *   3. The Third Watch — the romance: two of them have become something to
  *      each other, and the company has to decide what that is to the company.
+ *   4. The Quiet Offer — the betrayal: somebody is buying, and one of them is
+ *      being asked, and the first thing asked for is small.
  *
- * Remaining subject on THR-733, unauthored here and tracked on the ticket:
- * the slow-burn betrayal.
+ * **Why the betrayal is told from inside it.** The other three subjects can put
+ * the company on one side and a situation on the other. This one cannot: its
+ * subject is a *member*, and the aftermath vocabulary has no sentinel for "a
+ * different member of the actor's company" — `$actor`, `$target` and
+ * `$cast:<key>` are the whole set. Anchoring the betrayer to a materialized
+ * cast NPC would make them an outsider and turn `actorAffinities: ['group']`
+ * back into decoration, which is the trap subject 3 recorded. So `{actor}` is
+ * the one being asked, every consequence anchors to the actor by default, and
+ * the company is what is being sold rather than what is watching.
+ *
+ * **What this subject does not promise.** `DissolutionReason` declares a
+ * `'betrayal'` member that `selectPartingVariant` consumes — and nothing
+ * produces: `groupDissolution.ts` assigns exactly `undersize`, `leader_death`,
+ * `cohesion_floor` and `goal_complete`. So no band here claims the company ends
+ * *as a betrayal*; the slow burn runs through marks, bonds and seeds, all of
+ * which are real, and a company that comes apart over this comes apart by
+ * cohesion like any other. The unreachable ending is filed separately rather
+ * than papered over in prose (see the ticket).
  *
  * **Why these are templates and not threshold pools.** The fray and parting
  * moments fire from `groupFray.ts` on a cohesion threshold, and each one needed
@@ -131,10 +149,51 @@ export const COMPANY_OATH_WITNESS_TRUST = 0.15;
  */
 export const COMPANY_UNSAID_SEVERITY = 0.35;
 
+/**
+ * Ticks until a refused buyer tries again (~10 game days).
+ *
+ * Longer than the romance's week and shorter than the gate's thirteen days, for
+ * a reason belonging to neither: a buyer who was turned down is not waiting for
+ * news to travel or for the next fork, they are waiting for the company to be in
+ * worse shape than it was. Ten days is about how long that takes to become
+ * visible from outside.
+ */
+export const COMPANY_OFFER_RETURN_DELAY_TICKS = 120;
+
+/**
+ * Severity of the mark left when a member of a company sells the company.
+ *
+ * The heaviest in this file by a clear step — above the gate's abandonment
+ * (0.5), which is a thing done in the open under pressure and survivable in the
+ * telling. This is the only one of the four subjects where the member acts
+ * against the company on purpose and arranges for it not to be known, and the
+ * severity is what makes it findable by an ordinary reveal rather than needing
+ * a lucky one.
+ */
+export const COMPANY_SOLD_SEVERITY = 0.65;
+
+/**
+ * Severity of the mark the buyer carries away when the refusal itself taught
+ * them something. Low: what a company will not sell is a smaller fact than what
+ * it would, and this is a stranger's inference rather than anybody's admission.
+ */
+export const COMPANY_READ_OFF_SEVERITY = 0.25;
+
+/**
+ * What the buyer thinks of a member who heard the whole offer and walked it
+ * straight back to the company. Negative on both counts and unequal: a buyer
+ * dislikes being refused, but what they actually revise is whether this person
+ * can be worked with again, so the trust step is the larger of the two.
+ */
+export const COMPANY_BUYER_SENTIMENT = -0.2;
+/** The same conversation, read as the larger correction to "can be approached". */
+export const COMPANY_BUYER_TRUST = -0.3;
+
 export const COMPANY_DRAMA_TEMPLATE_IDS = {
   gateHeld: 'encounter.company.gate_held',
   twoRoadsNamed: 'encounter.company.two_roads_named',
   thirdWatch: 'encounter.company.third_watch',
+  quietOffer: 'encounter.company.quiet_offer',
 } as const;
 
 // ═════════════════════════════════════════════════════════════════════
@@ -1492,6 +1551,521 @@ export const COMPANY_THIRD_WATCH: UnifiedActionTemplate = {
     + 'reorganises honestly or carries a loyalty it will not name.',
 };
 
+// ═════════════════════════════════════════════════════════════════════
+// 4. THE QUIET OFFER — the betrayal
+// ═════════════════════════════════════════════════════════════════════
+//
+// Crux: somebody is buying what a company knows, and one of the company is
+//       being asked, and the first thing asked for is small enough to refuse
+//       badly.
+// Shape: Single Test · Setting: arcane + battlefield · Pressure: an offer that
+// expires when the company finishes its work · Form: a first step ·
+// Objective: settle the offer while it is still one conversation ·
+// Stakes: whether the company is a thing this member is inside or a thing they
+// have a price for · Step: Shadow — "Settle the offer".
+// Why here: both places spread a company out over its own work, which is the
+// condition an approach needs — nobody can see who is talking to whom.
+// Connected systems (Q8): cast, rewards, seeds, conditions, reputation — five,
+// against a quota of three.
+// Choice: none at the step. The fork is in the aftermath reaction — whether the
+// conversation is carried back to the company or closed off alone.
+// Promise → payoff: the opening states that the company is spread out and that
+// somebody has been waiting for that; the step answers what the member does
+// with the hour nobody is watching them in.
+//
+// **The first ask is small on purpose.** A scene where the offer is obviously
+// vile is a scene with no question in it. What is asked for here — where the
+// company is going next, and who it is working for — is the kind of thing that
+// gets said out loud in a taproom for free, which is exactly what makes it
+// takeable. The size is the difficulty.
+//
+// **Shadow, and the axis is the fork.** `honesty_cunning` runs Confessor ↔
+// Puppeteer, which is this subject stated as a value: bring it into the light,
+// or keep it and run it. Iron went to the sacrifice, Gold to the dispute, Heart
+// to the romance; Shadow was left, and it is the one this needed.
+//
+// **The history is minted here, not presumed.** Nothing in this template asserts
+// the member has taken money before — the file's register rule forbids it, and
+// it would also be a worse scene: an offer already half-accepted has no question
+// in it. The worst band is where the first payment *happens*, and what it leaves
+// behind is a `hidden_mark` on the member, so the obligation starts existing at
+// the moment it is incurred rather than being backstory the prose asserts.
+
+/**
+ * The party doing the buying — a broker at a tower, a quartermaster's fixer
+ * walking a field. Materializing rather than inherited: three of the five bands
+ * write a real edge or mark involving this person, so an inherited bind-only
+ * default would hang the scene's consequences on whichever ambient figure
+ * happened to exist, and on nobody at all otherwise.
+ */
+const OFFER_BUYER_SPEC: EncounterSupportActorSpec = {
+  kind: 'actor',
+  key: 'the_buyer',
+  delivery: 'lazy-materialize-on-trigger',
+  persistence: 'must-persist',
+  supportRole: 'the_buyer',
+  reuseNpcRoles: ['broker', 'informant'],
+  spawnNpcRole: 'broker',
+  spawnName: 'The One Who Is Buying',
+};
+
+/** Composed, not replaced — the field keeps its own ambient cast. */
+const QUIET_OFFER_SUPPORT_BUNDLE: EncounterSupportBundle = [
+  ...DEFAULT_SETTING_SUPPORT_BUNDLES.battlefield,
+  OFFER_BUYER_SPEC,
+];
+
+const QUIET_OFFER_HAND: readonly StepNudge[] = [
+  {
+    // Type: Boost — the common option. Acts on the company's work, not on the
+    // member: the surest way to end a quiet conversation is to be needed loudly.
+    id: 'company.betrayal.the_work_calls',
+    name: 'The Work Calls Them Back',
+    essenceCost: 1,
+    forecastDelta: 0.06,
+    imageTag: 'generic.focus',
+    effectLine:
+      'You make the company\'s work want them — a call across the ground, a load that needs two. A small help.',
+    fiction: 'Somebody says their name from forty feet away, twice.',
+    bandProse: {
+      success: 'The conversation ended because it ran out of privacy, which is a fine reason.',
+      near_miss: 'They got called away and came back. The offer had waited.',
+    },
+  },
+  {
+    // Type: Boost — mind, pricing the thing rather than judging it. The scene's
+    // difficulty is that the first ask looks cheap; arithmetic is the answer.
+    id: 'company.betrayal.price_it_out',
+    name: 'Price It Out',
+    sphere: 'mind',
+    essenceCost: 2,
+    forecastDelta: 0.09,
+    imageTag: 'generic.memory',
+    effectLine:
+      'You run the sum forward — what is asked now, and what is asked once it can be asked. A real help.',
+    fiction: 'The first one is cheap. That is what the first one is for.',
+    bandProse: {
+      critical_success: 'They worked out what it was worth before answering, and the answer came easily after that.',
+      failure: 'They followed the sum right to the end and took the offer anyway, which is a worse thing than not having done the sum.',
+    },
+  },
+  {
+    // Type: Boost — light, putting the conversation where it can be seen. Not a
+    // moral lean: being visible is a practical way to end a private offer.
+    id: 'company.betrayal.stand_in_the_open',
+    name: 'Stand in the Open',
+    sphere: 'light',
+    essenceCost: 2,
+    forecastDelta: 0.08,
+    imageTag: 'generic.light',
+    effectLine:
+      'You move the light so the two of them are standing where the company can see them talking. A real help.',
+    fiction: 'Nothing has been done wrong yet. It is easier to keep it that way in the open.',
+    bandProse: {
+      success: 'It got settled where people could see it happening, which took most of the weight out of it.',
+      critical_failure: 'The company saw the whole conversation and drew the obvious conclusion from the wrong half of it.',
+    },
+  },
+  {
+    // Type: Boost — time, refusing the pressure the offer depends on. An offer
+    // that can wait an hour is an offer that can be thought about.
+    id: 'company.betrayal.let_it_wait',
+    name: 'Let It Wait',
+    sphere: 'time',
+    essenceCost: 2,
+    forecastDelta: 0.09,
+    imageTag: 'generic.time-slow',
+    effectLine:
+      'You take the hurry out of it, so the answer does not have to be given while the offer is still warm. A real help.',
+    fiction: 'It will still be an offer in an hour. That is worth knowing.',
+    bandProse: {
+      success_at_cost: 'The hour was taken and the answer was the right one, and the buyer used the hour too.',
+      near_miss: 'There was all the time in the world to decide, and it went unused.',
+    },
+  },
+  {
+    // Type: Boost — darkness, working the buyer instead of the offer. Cunning is
+    // the flaw pole of this reach's axis, and it still *settles* the matter: a
+    // member who turns the approach into a source has closed it, not taken it.
+    // The step asks what the member does with the offer, not how virtuously.
+    id: 'company.betrayal.ask_who_sent_them',
+    name: 'Ask Who Sent Them',
+    sphere: 'darkness',
+    essenceCost: 1,
+    forecastDelta: 0.07,
+    imageTag: 'generic.rumor',
+    effectLine:
+      'You turn the conversation around, so the one asking questions starts answering them. A small help.',
+    fiction: 'Somebody is paying for this. That somebody has a name.',
+    bandProse: {
+      critical_success: 'They came out of it knowing who was buying, which is worth more than the offer was.',
+      failure: 'They asked a great many questions and answered a few without noticing the trade.',
+    },
+  },
+];
+
+const QUIET_OFFER_STEP: ActionStep = {
+  reach: 'shadow',
+  duration: { min: 1, max: 2 },
+  difficulty: 0.46,
+  purposeLine: 'Settle the offer',
+  onSuccess: [],
+  onFailure: [],
+  failBehavior: 'fail_action',
+  narrativeTemplate:
+    'The company is spread out across its own work and has been for an hour, which is '
+    + 'the first time this week no one has been within earshot of anyone. Somebody has '
+    + 'been waiting for that. What they want from {actor} to begin with is where the '
+    + 'company goes next and whose coin it is on — the kind of thing that gets said for '
+    + 'nothing in a taproom, and they are not offering nothing for it. The rest of the '
+    + 'company is thirty feet away and getting on with it. This is still one '
+    + 'conversation, and it is still the sort that can be ended.',
+  successAfterimage:
+    'The offer was settled standing up, and the company got its hour of work out of {actor} as well.',
+  failureAfterimage:
+    'Nothing was agreed and nothing was refused, and the buyer went away content with that.',
+  successAtCostAfterimage:
+    'It was refused. The buyer had an hour to watch a company at work and did not waste it.',
+  criticalSuccessAfterimage:
+    'It was refused and then carried straight back, so the company learned it had a price on it.',
+  criticalFailureAfterimage:
+    'A small thing was told for money, and the small thing is not the part that matters.',
+  nudges: QUIET_OFFER_HAND,
+};
+
+export const COMPANY_QUIET_OFFER: UnifiedActionTemplate = {
+  id: COMPANY_DRAMA_TEMPLATE_IDS.quietOffer,
+  rarityTier: 3,
+  intrinsicTier: 'shaping',
+  name: 'The Quiet Offer',
+  reach: 'shadow',
+  crudType: 'read',
+  scale: 'local',
+  steps: [QUIET_OFFER_STEP],
+  apCost: 1,
+  // Group-EXCLUSIVE: the authoring claim, not a swept affinity. A member alone
+  // has nothing to sell — what is being bought is the company, so the company
+  // has to exist for the offer to mean anything.
+  actorAffinities: ['group'],
+  minGroupMembers: COMPANY_DRAMA_MIN_MEMBERS,
+  motivations: ['honesty_cunning', 'loyalty_ambition'],
+  settings: ['arcane', 'battlefield'],
+  openings: {
+    arcane:
+      'The company has been at the tower most of the day on business that belongs to '
+      + 'somebody else, and waiting is the whole of it. People have drifted to where there '
+      + 'is shade or a wall to sit against. Somebody who has been at the tower longer than '
+      + 'they have has worked out which of the company is the one worth standing next to.',
+    battlefield:
+      'The company is working the ground the day after, which is slow and spreads people '
+      + 'out over a wide area — a count here, a load there, and nobody within earshot of '
+      + 'anybody for an hour at a time. There are others on the field doing the same, and '
+      + 'not all of them are here for what they are carrying.',
+  },
+  locationSubtypes: expandSettings(['arcane', 'battlefield']),
+  supportBundle: QUIET_OFFER_SUPPORT_BUNDLE,
+  traitVariants: [
+    {
+      // Hope is what makes the company still worth being inside of. A member who
+      // expects it to come to something has a reason to refuse that does not
+      // depend on being watched — which is the only kind of reason available here.
+      traitId: 'trait.core.core_hope.virtue',
+      forecastDelta: 0.05,
+      factorLine: 'Hopeful, they still expect this company to come to something.',
+    },
+  ],
+  aftermathConfig: {
+    branchOnStep: 0,
+    variants: {},
+    fallback: {
+      overview:
+        'The conversation happened and the company\'s work got done around it. What the '
+        + 'company knows about it is a separate matter from what took place, and that is '
+        + 'still open: the whole of it can be walked back to them while it is a story about '
+        + 'somebody else\'s offer, or it can be left where it happened, which keeps it small '
+        + 'and keeps it {actor}\'s.',
+      changes: [],
+      reactions: [
+        {
+          id: 'company.betrayal.carry_it_back',
+          label: 'Carry it back to the company',
+          intent: 'They should know somebody is buying, and what was being asked for.',
+          effects: [
+            { kind: 'reputation_tally', key: COMPANY_REPUTE_KEY, delta: COMPANY_REPUTE_GAIN },
+          ],
+        },
+        {
+          id: 'company.betrayal.leave_it_where_it_fell',
+          label: 'Leave it where it happened',
+          intent: 'Nothing was taken. There is nothing to report and no good way to report it.',
+          effects: [
+            // An approach that went unreported is an approach that can be made
+            // again, and the seed is what makes the buyer a thing the world does
+            // rather than a thing this scene mentioned once.
+            {
+              kind: 'encounter_seed',
+              templateId: COMPANY_DRAMA_TEMPLATE_IDS.quietOffer,
+              delayTicks: COMPANY_OFFER_RETURN_DELAY_TICKS,
+              seedLabel: 'The offer, made again on a worse week',
+            },
+          ],
+        },
+      ],
+      byOutcome: {
+        critical_success: {
+          overview:
+            'It was refused on the spot and then walked straight back to the company before '
+            + 'the day\'s work was finished, which is the part that mattered — not the refusing, '
+            + 'which anybody might do, but the telling, which turns one member\'s private hour '
+            + 'into something the whole company knows it has. What the company has now is the '
+            + 'shape of somebody\'s interest in it: what was asked for first, and what that '
+            + 'says about what is wanted next. The one who was buying has revised their '
+            + 'estimate of this company, and not upward.',
+          changes: [
+            {
+              id: 'company.betrayal.told_it_the_same_day',
+              kind: 'trait',
+              title: 'Told It the Same Day',
+              causeClause: 'The offer was refused and then reported before the day was out',
+              detail:
+                'The company knows it has a price on it and knows what was asked for first. That is the company\'s information now, not one member\'s.',
+              polarity: 'gain',
+              category: 'bond',
+              direction: 'gain',
+              stateNoun: {
+                text: 'inspired',
+                entityId: 'trait.condition.inspired',
+                visualKind: 'attachment',
+              },
+              // Anchored to the person the band's effects actually write to
+              // (Law 56 clause 2): the `bond_change` below moves a real edge with
+              // the buyer, and the buyer is a declared cast key the world
+              // instantiates rather than ambient scenery.
+              concepts: [
+                {
+                  text: 'The one who is buying',
+                  entityId: '$cast:the_buyer',
+                  visualKind: 'agent',
+                  visualName: 'The One Who Is Buying',
+                },
+              ],
+            },
+          ],
+          reactions: [
+            {
+              id: 'company.betrayal.name_the_buyer',
+              label: 'Name the buyer to the company',
+              intent: 'Everything that was said, said again with the company sitting there.',
+              effects: [
+                { kind: 'reputation_tally', key: COMPANY_REPUTE_KEY, delta: COMPANY_REPUTE_GAIN },
+                { kind: 'condition_attachment', templateId: 'trait.condition.inspired' },
+                // A buyer who was heard out and then reported revises two
+                // separate things, and revises the second one harder: whether
+                // this person can be approached at all.
+                {
+                  kind: 'bond_change',
+                  withAgentId: '$cast:the_buyer',
+                  sentimentDelta: COMPANY_BUYER_SENTIMENT,
+                  trustDelta: COMPANY_BUYER_TRUST,
+                },
+              ],
+            },
+          ],
+        },
+        success_at_cost: {
+          overview:
+            'It was refused, properly and without much drama, and the refusing took long '
+            + 'enough that the one asking got an hour on a working company and used all of '
+            + 'it. What a company will not sell is a smaller fact than what it would, but it '
+            + 'is not nothing: they left knowing roughly how many, roughly how good, and '
+            + 'exactly which one of them is worth approaching. {actor} has the tiredness of '
+            + 'an hour spent being careful, and nobody to explain it to.',
+          changes: [
+            {
+              id: 'company.betrayal.read_off_the_refusal',
+              kind: 'trait',
+              title: 'Read Off the Refusal',
+              causeClause: 'The offer was refused at length, and the length was informative',
+              detail:
+                'Somebody walked away with a working estimate of this company, assembled from an hour of watching it and one careful no.',
+              polarity: 'loss',
+              category: 'scar',
+              direction: 'loss',
+              // The condition vocabulary has no word for an hour of being
+              // careful, and a chip may only name a state the engine writes
+              // (Law 56). So the chip claims the tiredness the reaction really
+              // attaches, and what the buyer inferred stays in the overview.
+              stateNoun: {
+                text: 'exhausted',
+                entityId: 'trait.condition.exhausted',
+                visualKind: 'attachment',
+              },
+              concepts: [
+                {
+                  text: 'The one who is buying',
+                  entityId: '$cast:the_buyer',
+                  visualKind: 'agent',
+                  visualName: 'The One Who Is Buying',
+                },
+              ],
+            },
+          ],
+          reactions: [
+            {
+              id: 'company.betrayal.say_nothing_about_it',
+              label: 'Refuse it and say nothing after',
+              intent: 'It was handled. Reporting it now only makes it a thing that needed handling.',
+              effects: [
+                { kind: 'condition_attachment', templateId: 'trait.condition.exhausted' },
+                // The mark sits on the *buyer*, who is the one carrying a
+                // discoverable fact about this company — `targetAgentId` names
+                // the bearer, and the bearer here is not the actor.
+                {
+                  kind: 'hidden_mark',
+                  category: 'secret_knowledge',
+                  severity: COMPANY_READ_OFF_SEVERITY,
+                  label: 'Holds a working estimate of the company, assembled while being turned down',
+                  targetAgentId: '$cast:the_buyer',
+                  revealFamilies: ['investigation'],
+                },
+              ],
+            },
+          ],
+        },
+        failure: {
+          overview:
+            'Nothing was agreed to and nothing was refused. It got left at the place where '
+            + 'people leave things they intend to think about, and both of them knew that is '
+            + 'what had happened. The work finished, the company packed up, and the offer is '
+            + 'still standing exactly where it was — which is the outcome the one who made it '
+            + 'would have chosen, given the choice, because an offer nobody refused is an '
+            + 'offer that can be made again in a month when there is less coin in the company.',
+          changes: [
+            {
+              id: 'company.betrayal.left_standing',
+              kind: 'future_hook',
+              title: 'Left Standing',
+              causeClause: 'The offer was neither taken nor refused',
+              detail:
+                'It stays open, and the next time it is put it will be put to a member who has already not said no once.',
+              polarity: 'loss',
+              category: 'path',
+              direction: 'loss',
+              // A seed has no node to open until it fires, so it cannot be its
+              // own referent (Law 56 clause 2). The chip anchors to the one
+              // person here who is written: the member the standing offer
+              // belongs to, and whose next hearing of it this seed schedules.
+              stateNoun: {
+                text: 'the offer they did not answer',
+                entityId: '$actor',
+                visualKind: 'agent',
+              },
+              concepts: [{ text: 'a month from now, with less coin in the company' }],
+            },
+          ],
+          reactions: [
+            {
+              id: 'company.betrayal.think_about_it',
+              label: 'Leave it open and get back to work',
+              intent: 'No answer is not an answer. It can keep.',
+              effects: [
+                {
+                  kind: 'encounter_seed',
+                  templateId: COMPANY_DRAMA_TEMPLATE_IDS.quietOffer,
+                  delayTicks: COMPANY_OFFER_RETURN_DELAY_TICKS,
+                  seedLabel: 'The offer, put again to someone who did not say no',
+                },
+              ],
+            },
+          ],
+        },
+        critical_failure: {
+          overview:
+            'It was taken. What got told was small — where the company is going and whose '
+            + 'coin it is on, which is worth about what it was paid — and the smallness is '
+            + 'the trap rather than the mitigation, because the thing that has actually '
+            + 'changed is that there is now a first time. The coin is real and so is the '
+            + 'expectation attached to it. Nobody in the company noticed anything, which is '
+            + 'the worst available version of this: there is no conversation coming that '
+            + 'would end it, only the next ask, which will be larger and will be made to '
+            + 'somebody who has already said yes once.',
+          changes: [
+            {
+              id: 'company.betrayal.the_first_time',
+              kind: 'trait',
+              title: 'The First Time',
+              causeClause: 'Something small about the company was sold, and paid for',
+              detail:
+                'There is coin taken and an expectation standing against it. What was told is not the part that matters; the part that matters is that there is now a first time.',
+              polarity: 'loss',
+              category: 'scar',
+              direction: 'loss',
+              // There is no attachable condition for "has taken money against
+              // their own company". The engine's nearest word, `debt-laden`,
+              // lives in ECONOMIC_TRAIT_DEFINITIONS, which is not one of
+              // `ATTACHMENT_TEMPLATE_SOURCES` — so it resolves to no shipped
+              // attachment template and a chip naming it would render a dead
+              // pointer as a live link (Law 56 clause 2). The obligation
+              // therefore stays in the overview where scene facts belong, and
+              // the chip anchors to the effect on this band that does name a
+              // person: the `hidden_mark` below, which takes no `targetAgentId`
+              // and so lands on the actor.
+              stateNoun: {
+                text: 'what they took the coin for',
+                entityId: '$actor',
+                visualKind: 'agent',
+              },
+              concepts: [{ text: 'the next ask, which will be larger' }],
+            },
+          ],
+          reactions: [
+            {
+              id: 'company.betrayal.take_the_coin',
+              label: 'Take the coin and go back to work',
+              intent: 'It was one small thing. Nobody is any worse off for it today.',
+              effects: [
+                { kind: 'reputation_tally', key: COMPANY_REPUTE_KEY, delta: COMPANY_REPUTE_LOSS },
+                // No `targetAgentId`: the default is the actor, and the actor is
+                // the one who did the concealed thing. This is the only mark in
+                // the file that lands on the member rather than a witness, which
+                // is what telling the betrayal from inside it buys.
+                {
+                  kind: 'hidden_mark',
+                  category: 'betrayal',
+                  severity: COMPANY_SOLD_SEVERITY,
+                  label: 'Sold the company\'s road and paymaster for coin, and was not seen doing it',
+                  revealFamilies: ['investigation', 'confession'],
+                },
+                {
+                  kind: 'encounter_seed',
+                  templateId: COMPANY_DRAMA_TEMPLATE_IDS.quietOffer,
+                  delayTicks: COMPANY_OFFER_RETURN_DELAY_TICKS,
+                  seedLabel: 'The second ask, made to somebody who said yes once',
+                },
+              ],
+            },
+          ],
+        },
+      },
+    },
+  },
+  narrativeTemplates: {
+    initiation:
+      'Somebody is buying what a company knows, and one of the company is being asked.',
+    success: 'The offer was settled while it was still one conversation.',
+    failure: 'The offer is still standing, and so is the one who made it.',
+  },
+  description:
+    'A company spread out over its own work is a company nobody is within earshot of, and '
+    + 'somebody has been waiting for that. What is asked for first is small — where the '
+    + 'company is going, whose coin it is on — and the smallness is the whole difficulty, '
+    + 'because there is no version of this where the first ask is bad enough to make '
+    + 'refusing easy. A god can call the member back to the work, price the offer out, put '
+    + 'the conversation where it can be seen, take the hurry out of it, or turn it around '
+    + 'on the one asking — and fate decides whether it ends as one conversation or as a '
+    + 'first time.',
+};
+
 /**
  * Every company-drama template, in authoring order.
  *
@@ -1505,4 +2079,5 @@ export const COMPANY_DRAMA_TEMPLATES: readonly UnifiedActionTemplate[] = [
   COMPANY_GATE_HELD,
   COMPANY_TWO_ROADS_NAMED,
   COMPANY_THIRD_WATCH,
+  COMPANY_QUIET_OFFER,
 ].map(compileOpeningEnvelope);
