@@ -7,7 +7,7 @@
  */
 import type { CosmologyProfile, HexTile, SphereName } from './index';
 import type { SimulationClock, ActionInProgress } from './temporal';
-import type { EssencePool } from './influence';
+import type { EssenceEarnedBySphere, EssencePool } from './influence';
 import type { MandateState, MandateDefinition } from './mandate';
 import type { RivalDefinition, RivalState } from './rival';
 import type { DoomClockState, DoomClockDefinition, DoomClockArchetype } from './doomClock';
@@ -239,6 +239,16 @@ export interface GameState {
   ascendantId: string;
   ascendantIdentity: AscendantIdentity | null;  // null for legacy archetype-based creation
   essencePool: EssencePool;
+  /**
+   * Lifetime essence *earned* per sphere — monotonic, never decremented by
+   * spending (THR-1180). Absent ⇒ all-zero, which is what every legacy save and
+   * every run predating the counter reads as.
+   *
+   * Accrued at the phase-merge seam rather than at grant sites; see
+   * `src/engine/essenceEarned.ts` for why. Read by the repertoire's
+   * `sphere_attunement` unlock kind.
+   */
+  essenceEarnedBySphere?: EssenceEarnedBySphere;
   mandateDefinition: MandateDefinition | null;
   mandateState: MandateState | null;
 

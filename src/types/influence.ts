@@ -17,6 +17,20 @@ import type { AscendantIdentity } from './remembrance';
 /** Sphere-typed essence pool. Each sphere has its own balance. */
 export type EssencePool = Record<SphereName, number>;
 
+/**
+ * Lifetime essence *earned* per sphere — the monotonic companion to
+ * {@link EssencePool} (THR-1180).
+ *
+ * Partial rather than total: an absent key means "nothing earned there yet",
+ * which is the same reading a whole absent counter gets. That keeps the field
+ * additive on every legacy save without a migration.
+ *
+ * Declared here, beside the pool it shadows, rather than in the engine module
+ * that maintains it — `src/types/` must not import from `src/engine/`, and
+ * `GameState` needs the type.
+ */
+export type EssenceEarnedBySphere = Partial<Record<SphereName, number>>;
+
 /** Per-tick generation rates by sphere. */
 export type EssenceGeneration = Record<SphereName, number>;
 

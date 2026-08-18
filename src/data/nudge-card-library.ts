@@ -320,7 +320,23 @@ export const SPHERE_SIGNATURES: Readonly<Record<SphereName, readonly NudgeCardTy
 export type NudgeCardUnlock =
   | { readonly kind: 'starting' }
   | { readonly kind: 'milestone'; readonly unlockActionId: string }
-  | { readonly kind: 'god_trait'; readonly traitId: string };
+  | { readonly kind: 'god_trait'; readonly traitId: string }
+  | {
+      /**
+       * Earned by *practice in a sphere* — `threshold` lifetime essence drawn
+       * through `sphere`, read off `GameState.essenceEarnedBySphere` (THR-1180).
+       *
+       * Deepening, never re-keying. The identity floor still decides which
+       * families a god may touch at all, so an attunement member on a sphere
+       * this god does not hold stays locked no matter how attuned they are
+       * elsewhere — `memberAccess` runs before `isMemberUnlocked` and answers
+       * a different question. THR-870's score-keyed *access* pivot stays parked.
+       */
+      readonly kind: 'sphere_attunement';
+      readonly sphere: SphereName;
+      /** A mark from `SPHERE_ATTUNEMENT_THRESHOLDS`; pinned to that table by test. */
+      readonly threshold: number;
+    };
 
 export interface NudgeCardMember {
   /** Library id. Stable — an echo card from a previous run names one of these. */
@@ -457,6 +473,42 @@ const VARIATION_MEMBERS: readonly NudgeCardMember[] = [
     // rather than commented out — an unlock path with no exerciser is a path
     // nobody notices has broken.
     unlock: { kind: 'god_trait', traitId: 'god.merciful' },
+  },
+
+  // ─── Attunement members (THR-1180) ─────────────────────────────────
+  //
+  // The `sphere_attunement` channel's exercisers. Three, not zero, and that is
+  // the whole reason they are here: the `god_trait` member above is tolerated
+  // inert because THR-791 will come and claim it, and this channel has no
+  // future owner but us — shipping the kind with nothing gated on it would mean
+  // nobody notices the day it stops resolving (plan § the live-layer trap).
+  //
+  // Each is signed by the sphere it is attuned to, which is not redundant: the
+  // `sphere` field gates *access* (does this god hold darkness at all) and the
+  // unlock gates *depth* (have they worked 20 essence through it). A god who
+  // holds the sphere but has not practiced it sees the family without this
+  // member; a god who has practiced a sphere they do not hold sees neither.
+  //
+  // Two sit at the first mark and one at the second, so both rows of
+  // `SPHERE_ATTUNEMENT_THRESHOLDS` have an exerciser — an unreachable second
+  // row is the same inert path one table cell further in.
+  {
+    id: 'card.gambit.attunement.chaos',
+    typeId: 'gambit',
+    sphere: 'chaos',
+    unlock: { kind: 'sphere_attunement', sphere: 'chaos', threshold: 20 },
+  },
+  {
+    id: 'card.veil.attunement.darkness',
+    typeId: 'veil',
+    sphere: 'darkness',
+    unlock: { kind: 'sphere_attunement', sphere: 'darkness', threshold: 20 },
+  },
+  {
+    id: 'card.whisper.attunement.light',
+    typeId: 'whisper',
+    sphere: 'light',
+    unlock: { kind: 'sphere_attunement', sphere: 'light', threshold: 60 },
   },
 ];
 
@@ -643,6 +695,22 @@ const CARD_CONTENT: Readonly<Record<string, NudgeCardContent>> = {
   'card.mercy.variation.witnessed': {
     title: 'Someone Was There',
     quote: 'The worst hour is the one nobody sees.',
+  },
+
+  // Attunement members — each reads as *practice* in its sphere, not as a
+  // stronger version of the signature it sits beside. That is the design
+  // constraint the faces have to carry: attunement is depth, never power.
+  'card.gambit.attunement.chaos': {
+    title: 'The Wider Swing',
+    quote: 'Practice does not make chaos safer. It makes it larger.',
+  },
+  'card.veil.attunement.darkness': {
+    title: 'Nothing To Find',
+    quote: 'A practiced hand leaves less than a careful one.',
+  },
+  'card.whisper.attunement.light': {
+    title: 'The Whole Shape',
+    quote: 'Long looking shows what one glance cannot.',
   },
 };
 

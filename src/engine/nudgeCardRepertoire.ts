@@ -41,7 +41,9 @@ import {
   ECHO_CARD_SCAR_DISCOUNT,
   ECHO_CARD_SCAR_PENALTY,
   SECONDARY_SPHERE_DISCOUNT,
+  SPHERE_ATTUNEMENT_THRESHOLDS,
 } from '../data/nudge-constants';
+import type { EssenceEarnedBySphere } from '../types/influence';
 
 // ─── Warnings ────────────────────────────────────────────────────────
 
@@ -68,6 +70,15 @@ export function resetRepertoireWarnings(): void {
  * `locked` — signed only by spheres this god does not hold. Not dealt at all.
  */
 export type CardAccess = 'full' | 'discounted' | 'locked';
+
+/**
+ * Access a card can carry once it is *in* a repertoire.
+ *
+ * `buildRepertoire` drops locked members before pushing, so an entry's access is
+ * never `locked` — stating that in the type rather than the prose is what lets a
+ * surface render access without a dead branch for a state it cannot receive.
+ */
+export type HeldCardAccess = Exclude<CardAccess, 'locked'>;
 
 /** The god's sphere identity, as the repertoire needs to read it. */
 export interface AscendantSpheres {
@@ -159,6 +170,13 @@ export interface RepertoireContext extends AscendantSpheres {
    */
   readonly godTraitIds?: ReadonlySet<string>;
   /**
+   * `GameState.essenceEarnedBySphere` — lifetime essence drawn through each
+   * sphere (THR-1180). Absent ⇒ all-zero, so `sphere_attunement` members stay
+   * locked on a legacy save rather than falling open; the safe direction, and
+   * the same one the exhaustiveness guard below takes.
+   */
+  readonly essenceEarnedBySphere?: EssenceEarnedBySphere;
+  /**
    * Echo cards carried in from previous runs — see {@link echoCardsFromDefinitions}.
    * An echo card is held **regardless of sphere**: a dead god's trick does not
    * ask whether the new god is allowed it.
@@ -180,6 +198,11 @@ export function isMemberUnlocked(member: NudgeCardMember, context: RepertoireCon
       return context.unlockedActionIds?.has(unlock.unlockActionId) ?? false;
     case 'god_trait':
       return context.godTraitIds?.has(unlock.traitId) ?? false;
+    case 'sphere_attunement':
+      // Depth only. Whether the god may touch this family at all was already
+      // answered by `memberAccess`, which runs first in `buildRepertoire` — so
+      // an attuned god with no claim on the sphere never reaches this line.
+      return (context.essenceEarnedBySphere?.[unlock.sphere] ?? 0) >= unlock.threshold;
     default: {
       // Exhaustiveness guard: a new unlock kind that forgets to add a case here
       // reaches this branch, and locking it is the safe direction — an
@@ -194,12 +217,41 @@ export function isMemberUnlocked(member: NudgeCardMember, context: RepertoireCon
   }
 }
 
+/**
+ * Library members a given sphere/threshold crossing puts within reach.
+ *
+ * Names what the mark *could* unlock, which is not the same as what any one god
+ * gains: the access check still applies, so a chaos-attuned god who does not
+ * hold `chaos` crosses the mark and gains nothing. The trace carries this list
+ * anyway — the question it exists to answer is "what did that mark mean?", and
+ * an empty list there would read as a broken counter rather than a locked
+ * sphere.
+ */
+export function attunementMemberIdsAt(
+  sphere: SphereName,
+  threshold: number,
+): readonly string[] {
+  return NUDGE_CARD_LIBRARY.filter(
+    (m) =>
+      m.unlock?.kind === 'sphere_attunement' &&
+      m.unlock.sphere === sphere &&
+      m.unlock.threshold === threshold,
+  ).map((m) => m.id);
+}
+
 /** One card in a god's repertoire, with the price and provenance it carries. */
 export interface RepertoireEntry {
   readonly member: NudgeCardMember;
-  readonly access: CardAccess;
+  readonly access: HeldCardAccess;
   /** Why this card is held — surfaced so the UI can explain a hand. */
-  readonly source: 'core' | 'signature' | 'hunger' | 'milestone' | 'god_trait' | 'echo';
+  readonly source:
+    | 'core'
+    | 'signature'
+    | 'hunger'
+    | 'milestone'
+    | 'god_trait'
+    | 'sphere_attunement'
+    | 'echo';
   /** Forecast penalty this card carries (scarred echo cards only). */
   readonly forecastPenalty?: number;
   /** Essence knocked off (scarred echo cards only — see the scar's bargain). */
@@ -211,6 +263,11 @@ function sourceFor(member: NudgeCardMember): RepertoireEntry['source'] {
   const kind = member.unlock?.kind ?? 'starting';
   if (kind === 'milestone') return 'milestone';
   if (kind === 'god_trait') return 'god_trait';
+  // Reported ahead of the sphere check below, which would otherwise call every
+  // attunement member a plain `signature` — they all carry a `sphere`, and the
+  // provenance a surface wants to explain is *how it was earned*, not that it
+  // happens to be sphere-signed.
+  if (kind === 'sphere_attunement') return 'sphere_attunement';
   return member.sphere !== undefined ? 'signature' : 'core';
 }
 
@@ -394,6 +451,13 @@ export interface RepertoireLivenessReport {
   readonly deadHungerCards: readonly string[];
   /** Signature types no library member actually implements. */
   readonly unbuiltSignatureTypes: readonly string[];
+  /**
+   * Attunement members naming a mark `SPHERE_ATTUNEMENT_THRESHOLDS` does not
+   * contain — a card that can never unlock, because nothing ever emits that
+   * crossing. Unlike the signature check above this one *can* fail: `threshold`
+   * is a `number`, so the type system has nothing to say about it (THR-1180).
+   */
+  readonly unreachableAttunementMembers: readonly string[];
   /** Keys swept, so a caller can tell "all live" from "matched nothing". */
   readonly checkedKeys: number;
 }
@@ -431,5 +495,20 @@ export function validateRepertoire(): RepertoireLivenessReport {
     }
   }
 
-  return { deadHungerCards, unbuiltSignatureTypes, checkedKeys };
+  const marks = new Set(SPHERE_ATTUNEMENT_THRESHOLDS);
+  const unreachableAttunementMembers: string[] = [];
+  for (const member of NUDGE_CARD_LIBRARY) {
+    if (member.unlock?.kind !== 'sphere_attunement') continue;
+    checkedKeys++;
+    if (!marks.has(member.unlock.threshold)) {
+      unreachableAttunementMembers.push(`${member.id} → ${member.unlock.threshold}`);
+    }
+  }
+
+  return {
+    deadHungerCards,
+    unbuiltSignatureTypes,
+    unreachableAttunementMembers,
+    checkedKeys,
+  };
 }
