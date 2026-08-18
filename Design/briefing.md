@@ -1,39 +1,38 @@
 # Briefing
-**Generated:** 2026-08-18 10:56 local (08:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-08-18 11:56 local (09:56 UTC) · keep-work-flowing-cc
 
-*Your list is unchanged — same one thing, same four behind it. What moved: the small follow-on job filed an hour ago is already finished and live, and a job that had been sitting untouched since July got read properly and put on the shelf.*
+*Same one thing as the last few hours. One new question behind it, and it is about the first picture a new player ever sees. The art-fallback job you were told about this morning is finished and live.*
 
 ## The one thing
 
 **Play two encounters and say whether they are worth meeting twice** — [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to)
 
-Still the fastest thing that restarts the writing, and now waiting about 16 hours. Both encounters are fixed and live — re-checked this run against the deployed build, which is serving the current code.
+Waiting about 15 hours, and still the fastest thing that restarts the writing. Nothing else is holding it: the spec it was waiting on was finished and signed off two days ago, so your verdict is the only thing left.
 
 **The Grateful Kin** — [play it](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin) · [good ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin&outcome=critical_success) · [bad ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin&outcome=critical_failure)
 **The Unsafe Bridge** — [play it](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge) · [good ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge&outcome=critical_success) · [costly ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge&outcome=success_at_cost)
 
-The bond chip you called out now names the favour and opens the person who owes it, instead of pointing back at you. Fifteen chips quietly reporting numbers you could never see are gone. The prose keeps one named person on stage and objects only where you can act on them.
-
 **Are these two worth meeting a second time?** A yes releases the next nine encounters — days of writing. A no tells the writer what the bar still misses before nine more are written against it.
 
-## Also waiting (4)
+## Also waiting (5)
 
+- **Should the game's opening beat get three new pictures?** — [THR-1170](https://linear.app/threadbare/issue/THR-1170/every-meet-the-first-nudge-card-renders-the-same-plate-424-imagetags). Every nudge card in the Meet-The-First hand currently shows the same plate — wisps over a clay bowl — because three pictures the cards were written for were never made. [See it yourself](https://threadbare.vercel.app/?view=game&firstunmet&size=medium). Making them spends image credits, which is why it is your call; the free alternative is to point two of the three names at pictures that already exist, leaving a third of the cards unchanged. *(— from tb-orchestrator)*
 - **Rank five parts of the game for rebuilding** — [the wave-1 sitting](https://linear.app/threadbare/issue/THR-1163/wave-1-selection-which-seams-make-the-first-wave-in-what-order-under). One chat sitting, no code; still the only ask that puts *new* feature work on the shelf rather than draining an old list.
-- **Should committing a nudge carry ~1.6 seconds of held breath before the outcome lands?** — [THR-1168](https://linear.app/threadbare/issue/THR-1168/two-authored-encounter-audio-moments-have-no-live-caller-wire-or). Pure feel; either answer closes the ticket.
-- **One attended dev-server session, ~30 minutes** — [THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server). Nine surfaces, at least 19 screenshots, none of which the overnight lane can capture — it is refused a dev server.
+- **Should committing a nudge carry ~1.6 seconds of held breath before the outcome lands?** — [THR-1168](https://linear.app/threadbare/issue/THR-1168/two-authored-encounter-audio-moments-have-no-live-caller-wire-or). Pure feel; either answer closes the ticket. The overnight lane recommends no — unskippable on every commit turns tense into waiting, and the timings are recorded so it stays recoverable.
+- **One attended dev-server session, ~30 minutes** — [THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server). Nine surfaces, 19 owed screenshots, none of which the overnight lane can capture — it is refused a dev server.
 - **A Tenacious-style trait** stays parked. No ticket, nothing waiting on it — listed only so it is not silently dropped.
 
 ## Queue
 
-**3 ready, 2 of them the builder can take on its own** — same count as an hour ago, different items: one finished, one arrived.
+**4 ready, 3 of them the builder can take on its own** — one more than an hour ago.
 
-- **The follow-on from this morning is already done and live** — the handful of equipment pieces the earlier job deliberately left out are now sorted correctly ([THR-1169](https://linear.app/threadbare/issue/THR-1169/stat-contribution-migration-the-effect-primitive-exerciser-block-and), [PR #1541](https://github.com/christianspliid-ui/threadbare/pull/1541), merged and deployed). Filed and closed inside two hours; no decision was needed from you.
-- **New on the shelf:** 27 encounter cards name a picture that does not exist, so they quietly fall back to a generic one ([THR-1052](https://linear.app/threadbare/issue/THR-1052/27-card-imagetags-across-13-shipped-encounters-name-no-image-library)). It had been blocked behind another job since July; that job is long finished, so it was freed this hour. **The builder is only authorised to re-point the ones that have an honest match already in the library** — anything needing new artwork gets written down as a candidate rather than drawn, because that spends image credits and is your call.
+- **This morning's art-fallback job is done and live** — 42 card pictures that named nothing now point at real ones, plus a guard so it cannot silently recur ([THR-1052](https://linear.app/threadbare/issue/THR-1052/27-card-imagetags-across-13-shipped-encounters-name-no-image-library), merged and deployed). Fixing it is what turned up the opening-beat question above.
+- **Two new content jobs arrived on the shelf:** more prose for the world's backstory layers ([THR-625](https://linear.app/threadbare/issue/THR-625/world-volume-backstory-strata-prose-expansion-content-follow-on-to-thr)) and a company-drama sweep — leadership disputes, romance, betrayal, sacrifice ([THR-733](https://linear.app/threadbare/issue/THR-733/company-drama-content-sweep-leadership-dispute-romance-betrayal)).
 - **Also on the shelf:** a trade-route relationship recorded between the wrong kinds of thing ([THR-830](https://linear.app/threadbare/issue/THR-830/edge-schema-declares-trades-with-as-actoractor-but-every-shipped)). Engine repair, not housekeeping.
-- **That is still a backlog draining, not a pipeline filling.** The wave-1 sitting above remains the only source of *new* feature work.
-- [THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server) — the third ready item, and it needs you at a keyboard with the game running. The overnight lane re-reads and re-declines it every hour.
-- [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to) — parked ~16 h on your sample verdict. Nothing in flight on it.
-- [THR-1168](https://linear.app/threadbare/issue/THR-1168/two-authored-encounter-audio-moments-have-no-live-caller-wire-or) — parked ~9 h on the held-breath question. Its other half already shipped, and the park is holding.
+- **That is still a backlog draining, not a pipeline filling.** Everything on the shelf is follow-on work; the wave-1 sitting above remains the only source of *new* feature work.
+- [THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server) — the fourth ready item, and it needs you at a keyboard with the game running.
+- [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to) — parked ~15 h on your sample verdict. Nothing in flight on it.
+- [THR-1168](https://linear.app/threadbare/issue/THR-1168/two-authored-encounter-audio-moments-have-no-live-caller-wire-or) — parked ~10 h on the held-breath question. Its other half already shipped, and the park is holding.
 - **Held rather than queued, no cost to leaving it** *(— from tb-orchestrator)*: five Meet-The-First scene images break the art rule about painted-in text and faces and could be redrawn ([THR-876](https://linear.app/threadbare/issue/THR-876/regenerate-the-5-quarantined-meet-the-first-scene-assets-doctrine)). Nothing is broken — substitutes already cover those slots — but redrawing spends image credits, so it waits for you to say the word.
 
 ## Health
