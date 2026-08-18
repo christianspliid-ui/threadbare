@@ -13,10 +13,10 @@ document fails a build. A thin cell is a scene not yet written.
 
 | | count |
 |---|---:|
-| templates in the pool | 683 |
-| drawable at ≥1 location subtype | 449 |
+| templates in the pool | 684 |
+| drawable at ≥1 location subtype | 450 |
 | drawable but at no *authorable* subtype | 22 |
-| declaring a setting envelope | 9 |
+| declaring a setting envelope | 10 |
 
 The third row counts templates placed only at worldgen overlay subtypes (wonders,
 lairs, anomalies) that no setting class claims — see the scope note on
@@ -33,10 +33,10 @@ be dealt?", not "how many templates exist".
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | `rural` | 27 | 18 | 10 | 4 | 17 | 13 | 13 | 7 | **109** |
 | `urban` | 49 | 49 | 43 | 17 | 39 | 48 | 24 | 24 | **293** |
-| `stronghold` | 24 | 6 | 8 | 4 | 12 | 16 | 7 | 5 | **82** |
+| `stronghold` | 25 | 6 | 8 | 4 | 12 | 16 | 7 | 5 | **83** |
 | `sacred` | 8 | 9 | 3 | 17 | 11 | 9 | 6 | 23 | **86** |
 | `arcane` | 6 | 5 | 5 | 20 | 7 | 28 | 5 | 11 | **87** |
-| `ruin` | 15 | 9 | 9 | 11 | 12 | 27 | 13 | 8 | **104** |
+| `ruin` | 16 | 9 | 9 | 11 | 12 | 27 | 13 | 8 | **105** |
 | `wayside` | 26 | 15 | 10 | 6 | 15 | 29 | 12 | 12 | **125** |
 | `battlefield` | 10 | 4 | 4 | 3 | 7 | 6 | 8 | 6 | **48** |
 
@@ -60,6 +60,7 @@ more, else the first). That is a proxy for authorial grouping, not a curated tax
 | `encounter.slice` | 8 | 50 | push 10, rider 3, sphere 37, trait 0, free 0 |
 | `cg.quest` | 1 | 9 | push 6, rider 0, sphere 0, trait 0, free 3 |
 | `encounter.apotheosis` | 1 | 7 | push 1, rider 1, sphere 5, trait 0, free 0 |
+| `encounter.company` | 1 | 5 | push 1, rider 0, sphere 4, trait 0, free 0 |
 
 **Hand monotony (advisory)** — one card kind dominates:
 
