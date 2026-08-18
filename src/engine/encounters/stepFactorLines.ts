@@ -44,6 +44,9 @@ import {
   DERIVED_FACTOR_ACTOR_FALLBACK,
   DERIVED_FACTOR_SENTENCES,
   DERIVED_SKILL_SENTENCE,
+  WHISPER_NEXT_STEP_SENTENCE,
+  WHISPER_NO_NEXT_STEP_SENTENCE,
+  WHISPER_UNSETTLED_NEXT_STEP_SENTENCE,
 } from '../../data/nudge-stage-content';
 
 /** Domain capability is 0–1; the reach word scales are indexed off 0–10. */
@@ -57,6 +60,7 @@ const CAPABILITY_TO_DOMAIN_SCALE = 10;
 export const FACTOR_LINE_EPSILON = 0.005;
 
 export type DerivedFactorKind =
+  | 'reveal'
   | 'skill'
   | 'equipment'
   | 'trait'
@@ -208,4 +212,72 @@ export function deriveStepFactorLines(args: DeriveFactorLinesArgs): DerivedFacto
   }
 
   return lines;
+}
+
+/**
+ * What follows the step being decided, as far as the panel can honestly say.
+ *
+ * Three cases and not two, because a branching template has a real next step
+ * whose demand is not yet fixed. Collapsing that into `none` would have the card
+ * announce "nothing waits beyond this" on the exact steps that matter most, and
+ * collapsing it into `demand` would name one branch's numbers as though the fork
+ * had already fallen. Neither is something a paid-for reveal may do.
+ */
+export type WhisperNextStep =
+  | { readonly kind: 'demand'; readonly reach: ReachDomain; readonly difficulty: number }
+  | { readonly kind: 'unsettled' }
+  | { readonly kind: 'none' };
+
+/**
+ * The line a committed Whisper adds to the panel — THR-1179.
+ *
+ * ## Why the *next step's demand*, and not a concealed factor
+ *
+ * The type was specced as "reveal one hidden factor line **or** the next step's
+ * demand". Only the second half is buildable against the panel as it stands:
+ * every derived line is already shown, so there is no concealed one to uncover,
+ * and inventing concealment — hiding lines from every player so one card could
+ * unhide them — would make the panel worse for everyone who never plays a
+ * Whisper. The next step's demand is genuinely unknown pre-commit, is a plain
+ * read of the template the encounter is already running, and answers the exact
+ * question the card is sold on: how much of my essence should this step get?
+ *
+ * ## Why this is a read and never a gate
+ *
+ * The function takes the coming step and returns a sentence. It has no access to
+ * the candidate pool and no way to remove anything from it, which is the
+ * structural guarantee that the Whisper cannot drift into the intel-gating that
+ * THR-138 rejected. A reveal that could filter would need a different signature.
+ *
+ * `polarity: 'for'` because the knowledge is a gain to the player regardless of
+ * how grim the news is — the *content* of the reveal carries the bad news, and
+ * flipping the line to `against` would read as the card having harmed them.
+ * `delta: 0` because a reveal shifts no odds at all: it draws no pips, and a
+ * card that appeared to move the forecast would be lying about what it did.
+ */
+export function deriveWhisperRevealLine(args: {
+  /** What follows the step being decided. See {@link WhisperNextStep}. */
+  nextStep: WhisperNextStep;
+  /** `difficultyWord` from the nudge model — passed in so this module stays pure. */
+  difficultyWord: (difficulty: number) => string;
+}): DerivedFactorLine {
+  const { nextStep, difficultyWord } = args;
+
+  const text = nextStep.kind === 'demand'
+    ? substitute(WHISPER_NEXT_STEP_SENTENCE, {
+      reach: nextStep.reach,
+      word: difficultyWord(nextStep.difficulty).toLowerCase(),
+    })
+    : nextStep.kind === 'unsettled'
+      ? WHISPER_UNSETTLED_NEXT_STEP_SENTENCE
+      : WHISPER_NO_NEXT_STEP_SENTENCE;
+
+  return {
+    id: 'reveal:next_step_demand',
+    kind: 'reveal',
+    text,
+    polarity: 'for',
+    source: 'reveal:next_step_demand',
+    delta: 0,
+  };
 }

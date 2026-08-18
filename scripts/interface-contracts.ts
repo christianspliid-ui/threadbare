@@ -1236,10 +1236,16 @@ export const CONTRACTS: readonly Contract[] = [
     // no assignment path outside `ambitionTick` (THR-812 / THR-726), which is why the
     // shared `assignAmbitionToActor` helper was extracted from the three in-phase copies.
     //
-    // Not LIVE: no shipped card authors `grants`, so nothing travels this path yet
-    // (badging it LIVE would be the THR-614 error class). The grant-liveness gate
-    // (`validateNudgeGrantRefs`) is what stops the first authored card from naming
-    // content nobody built.
+    // Corrected THR-1179: this comment read "no shipped card authors `grants`, so
+    // nothing travels this path yet" until 2026-08-19, by which point
+    // `slice.pass.deep_rest` in `vertical-slice.ts` did author them — the claim had
+    // been false for some time and nothing could catch it, since a stale *comment*
+    // is exactly the kind of drift the freshness gates do not read. Content coverage
+    // is still thin (one authored grant across the shipped set), so the row stays
+    // un-LIVE rather than jumping to a badge one template cannot carry.
+    //
+    // The grant-liveness gate (`validateNudgeGrantRefs`) is what stops an authored
+    // card from naming content nobody built.
     deferralTicket: 'THR-883',
   },
   {
@@ -1725,6 +1731,41 @@ export const CONTRACTS: readonly Contract[] = [
     // branch yet — THR-883 owns that content. Badging LIVE here would badge a
     // path nothing travels (the THR-614 error class).
     deferralTicket: 'THR-883',
+  },
+
+  // ── The Undertow's value drift (THR-1179) ─────────────────────────────────
+  {
+    id: 'undertow-card-drifts-mortal-values',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: TRAITS,
+    intent:
+      'The card that says it changes who the mortal is actually changes it, on the same axis their own choices move — so a god who keeps reaching for the ugly method is visibly making someone, not renting a bonus.',
+    ulTerms: ['Archetype Drift', 'Nudge'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['dispatchNudgeCommitments', 'collectNudgeValueDrifts', 'driftTowardPole'],
+      module: 'src/engine/encounters/nudgeDispatch.ts',
+    },
+    writeSites: ['src/engine/encounters/branchDecision.ts'],
+    readSites: [
+      'src/engine/encounters/driftAccumulator.ts',
+      'src/engine/orchestrator/phaseDriftDecay.ts',
+    ],
+    // `driftTowardPole` was made exported rather than copied, which is the whole
+    // point of the row: a card-driven shift and a choice-driven one accumulate into
+    // one axis entry and decay toward one baseline. Two writers would have produced
+    // a split that no test could see, because each path's own suite would pass while
+    // the mortal's position depended on which system moved them.
+    //
+    // The magnitude is deliberately below `BRANCH_DECISION_DRIFT_MAGNITUDE`: a
+    // decision the mortal made should say more about them than a nudge slipped
+    // under it.
+    //
+    // No `verifiedLive`: the engine path is wired and falsified (the dispatch arm
+    // reds its liveness tests when the drift loop is stubbed out), but no shipped
+    // template authors a `valueDrift` card yet — THR-1130 owns that content.
+    // Badging LIVE would badge a path nothing travels (the THR-614 error class).
+    deferralTicket: 'THR-1130',
   },
 ];
 

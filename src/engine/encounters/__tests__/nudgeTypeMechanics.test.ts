@@ -31,6 +31,10 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { WorldGraph } from '../../graph';
 import { dispatchNudgeCommitments } from '../nudgeDispatch';
 import { deriveEmittedOmenEncounterBias } from '../../phaseOmenAgenda';
+import { collectNudgeModifiers, CAST_MODIFIER_SOURCE_PREFIX, difficultyWord } from '../nudges';
+import { deriveWhisperRevealLine } from '../stepFactorLines';
+import { driftDeltaFor } from '../driftAccumulator';
+import { driftAxisIdForValuePair } from '../branchDecision';
 import { clearTraces, enableTracing, disableTracing } from '../../traceBuffer';
 import { createSimulationRuntime, type SimulationRuntime } from '../../simulationRuntime';
 import { NUDGE_CARD_TYPES, type NudgeCardTypeId } from '../../../data/nudge-card-library';
@@ -40,8 +44,15 @@ import {
   LONG_GAME_MARK_SEVERITY,
   OMEN_CARD_INTENSITY,
   OMEN_CARD_DURATION_TICKS,
+  STUMBLE_CONDITION_DURATION_TICKS,
+  STUMBLE_CONDITION_INTENSITY,
+  STUMBLE_FORECAST_DELTA,
+  UNDERTOW_DRIFT_MAGNITUDE,
+  UNDERTOW_FORECAST_DELTA,
 } from '../../../data/nudge-constants';
+import type { ValuePair } from '../../../types/agent';
 import type { GameState } from '../../../types/gameState';
+import type { EncounterSupportBinding } from '../../../types/encounter';
 import type {
   ActionStep,
   EncounterAftermathReactionEffect,
@@ -53,6 +64,12 @@ import type {
 const ACTOR = 'actor-hero';
 const REGION = 'region-vale';
 const TICK = 50;
+/**
+ * Axis The Undertow drags along in these tests. Typed as `ValuePair` and not
+ * cast: the first draft wrote a plausible-looking axis that does not exist, and
+ * the cast hid it from tsc until the assertion read NaN at runtime.
+ */
+const UNDERTOW_AXIS: ValuePair = 'mercy_ruthlessness';
 
 /**
  * A world with the actor placed in a resolvable region.
@@ -133,6 +150,9 @@ const COVERED_TYPES: readonly NudgeCardTypeId[] = [
   'omen',
   'cache',
   'balm',
+  'stumble',
+  'undertow',
+  'whisper',
 ];
 
 describe('nudge card type mechanics — host-path liveness (THR-1179)', () => {
@@ -341,6 +361,203 @@ describe('nudge card type mechanics — host-path liveness (THR-1179)', () => {
     });
   });
 
+  // --- Stumble -> Encounter cast ---
+
+  describe('stumble (host: Encounter cast)', () => {
+    const CAST_KEY = 'warden';
+    const CAST_NODE = 'actor-bridge-warden';
+
+    function withCast(state: GameState): EncounterSupportBinding[] {
+      state.graph.addNode({
+        id: CAST_NODE, type: 'actor', name: 'The Bridge-Warden',
+        properties: { actorType: 'individual' },
+      });
+      // Real union members, and deliberately not cast: the first draft invented
+      // `delivery: 'present'` / `persistence: 'scene'` and the cast hid both from
+      // tsc, exactly as it hid a non-existent axis name one describe block down.
+      const binding: EncounterSupportBinding = {
+        key: CAST_KEY, nodeId: CAST_NODE, kind: 'actor',
+        delivery: 'pre-seeded', persistence: 'scene-only', reused: false,
+      };
+      return [binding];
+    }
+
+    it('attributes its forecast modifier to the cast member, not to the card', () => {
+      // The delta is the same either way -- what the card buys is *whose doing*
+      // it was. A modifier still sourced `nudge:<id>` would render "your hand
+      // steadied" on the panel, which is the Boost's line, not the Stumble's.
+      const state = buildState();
+      const bindings = withCast(state);
+      const stumble = {
+        ...makeCard({ id: 'card.stumble.test', forecastDelta: STUMBLE_FORECAST_DELTA }),
+        opposes: CAST_KEY,
+      } as StepNudge;
+
+      const modifiers = collectNudgeModifiers(
+        { nudges: [stumble] } as Pick<ActionStep, 'nudges' | 'carryoverFactorLines'>,
+        [stumble.id], [], undefined, bindings,
+      );
+
+      expect(modifiers).toHaveLength(1);
+      expect(modifiers[0]!.source).toBe(`${CAST_MODIFIER_SOURCE_PREFIX}${CAST_NODE}`);
+      expect(modifiers[0]!.delta).toBe(STUMBLE_FORECAST_DELTA);
+    });
+
+    it('falls back to card attribution when the scene bound no such cast member', () => {
+      // Fail-soft (NFP #4): the boost the player paid for lands regardless. The
+      // card simply cannot name who faltered, which is the honest degradation --
+      // dropping the modifier would charge essence for nothing.
+      const state = buildState();
+      const stumble = {
+        ...makeCard({ id: 'card.stumble.test', forecastDelta: STUMBLE_FORECAST_DELTA }),
+        opposes: 'nobody-cast-this',
+      } as StepNudge;
+
+      const modifiers = collectNudgeModifiers(
+        { nudges: [stumble] } as Pick<ActionStep, 'nudges' | 'carryoverFactorLines'>,
+        [stumble.id], [], undefined, withCast(state),
+      );
+
+      expect(modifiers).toHaveLength(1);
+      expect(modifiers[0]!.source).toBe('nudge:card.stumble.test');
+      expect(modifiers[0]!.delta).toBe(STUMBLE_FORECAST_DELTA);
+    });
+
+    it('lands its condition on the cast member rather than on the acting mortal', () => {
+      // The half that makes this an *encounter cast* mechanic and not a forecast
+      // one: the world change happens to somebody else. Asserting only that a
+      // condition exists would pass with the effect landing on the actor -- which
+      // would be the opposite card, and a much worse one.
+      const state = buildState();
+      const bindings = withCast(state);
+      state.graph.addNode({
+        id: 'trait.condition.unfooted', type: 'trait', name: 'Unfooted', properties: {},
+      });
+      const card = makeCard({
+        id: 'card.stumble.test',
+        forecastDelta: STUMBLE_FORECAST_DELTA,
+        grants: [{
+          kind: 'apply_condition',
+          conditionTraitId: 'trait.condition.unfooted',
+          intensity: STUMBLE_CONDITION_INTENSITY,
+          durationTicks: STUMBLE_CONDITION_DURATION_TICKS,
+          targetAgentId: `$cast:${CAST_KEY}`,
+        }],
+      });
+      const action = { ...makeAction(), supportBindings: bindings } as UnifiedAction;
+
+      const result = dispatchNudgeCommitments(
+        state, action, { nudges: [card] } as Pick<ActionStep, 'nudges'>,
+        [card.id], TICK, runtime,
+      );
+
+      const castHasIt = result.state.graph.getOutgoingEdges(CAST_NODE, 'has_trait')
+        .some((e) => e.target === 'trait.condition.unfooted');
+      const actorHasIt = result.state.graph.getOutgoingEdges(ACTOR, 'has_trait')
+        .some((e) => e.target === 'trait.condition.unfooted');
+      expect(castHasIt, 'the opposition should carry the condition').toBe(true);
+      expect(actorHasIt, 'the acting mortal must not').toBe(false);
+    });
+  });
+
+  // --- Undertow -> Pole-shift ---
+
+  describe('undertow (host: Pole-shift / drift accumulator)', () => {
+    it('drags the mortal along its axis through the shared drift accumulator', () => {
+      const state = buildState();
+      const undertow = {
+        ...makeCard({ id: 'card.undertow.test', forecastDelta: UNDERTOW_FORECAST_DELTA }),
+        valueDrift: { axis: UNDERTOW_AXIS, toward: 'negative' },
+      } as StepNudge;
+
+      const result = dispatch(state, undertow, runtime);
+
+      const axisId = driftAxisIdForValuePair(UNDERTOW_AXIS);
+      const position = driftDeltaFor(result.state.archetypeDrift ?? [], ACTOR, axisId);
+      expect(position).toBeCloseTo(-UNDERTOW_DRIFT_MAGNITUDE, 5);
+      expect(result.driftedAxisIds).toEqual([axisId]);
+    });
+
+    it('accumulates on the same axis a branch decision writes, not beside it', () => {
+      // The whole reason this rides `driftTowardPole`. If the card wrote its own
+      // store, this second play would start from zero again and the mortal's
+      // drift would depend on *which system* moved them -- an invisible split,
+      // since each path's own tests would still pass.
+      const state = buildState();
+      const axisId = driftAxisIdForValuePair(UNDERTOW_AXIS);
+      const undertow = {
+        ...makeCard({ id: 'card.undertow.test', forecastDelta: UNDERTOW_FORECAST_DELTA }),
+        valueDrift: { axis: UNDERTOW_AXIS, toward: 'positive' },
+      } as StepNudge;
+
+      const once = dispatch(state, undertow, runtime);
+      const twice = dispatch(once.state, undertow, runtime);
+
+      expect(driftDeltaFor(twice.state.archetypeDrift ?? [], ACTOR, axisId))
+        .toBeCloseTo(UNDERTOW_DRIFT_MAGNITUDE * 2, 5);
+    });
+
+    it('moves nothing when the committed hand declares no drift', () => {
+      // Falsifies the assertions above: without this, a dispatcher that drifted
+      // every hand on a default axis would pass both of them.
+      const state = buildState();
+      const plain = makeCard({ id: 'card.boost.test', forecastDelta: 0.06 });
+
+      const result = dispatch(state, plain, runtime);
+
+      expect(result.driftedAxisIds).toEqual([]);
+      expect(result.state.archetypeDrift ?? []).toHaveLength(0);
+    });
+  });
+
+  // --- Whisper -> Intelligence (the reveal) ---
+
+  describe('whisper (host: Intelligence)', () => {
+    it('reads the next step demand in words, never digits', () => {
+      const line = deriveWhisperRevealLine({
+        nextStep: { kind: 'demand', reach: 'iron', difficulty: 0.7 },
+        difficultyWord,
+      });
+
+      expect(line.text).toContain('iron');
+      expect(line.text).toContain(difficultyWord(0.7).toLowerCase());
+      // UI Law 13/14 -- a reveal that leaked the raw difficulty would be the one
+      // card in the deck printing an internal number on a mortal-facing surface.
+      expect(line.text).not.toMatch(/[0-9]/);
+    });
+
+    it('says so plainly when this is the last step', () => {
+      const line = deriveWhisperRevealLine({ nextStep: { kind: 'none' }, difficultyWord });
+      expect(line.text).toBeTruthy();
+      expect(line.text).not.toMatch(/[0-9]/);
+    });
+
+    it('refuses to quote a demand that is not settled yet', () => {
+      // A branching next step has no fixed reach or difficulty. The three
+      // readings must be distinct sentences -- collapsing `unsettled` into either
+      // neighbour makes the card lie on exactly the steps that matter most.
+      const settled = deriveWhisperRevealLine({
+        nextStep: { kind: 'demand', reach: 'iron', difficulty: 0.7 }, difficultyWord,
+      });
+      const unsettled = deriveWhisperRevealLine({ nextStep: { kind: 'unsettled' }, difficultyWord });
+      const none = deriveWhisperRevealLine({ nextStep: { kind: 'none' }, difficultyWord });
+
+      expect(new Set([settled.text, unsettled.text, none.text]).size).toBe(3);
+      expect(unsettled.text).not.toContain('iron');
+    });
+
+    it('shifts no odds -- it is a read, not a modifier', () => {
+      // The structural guarantee against THR-138's rejected intel-gating, stated
+      // as an assertion: the reveal contributes zero delta, so it can neither
+      // move the roll nor draw a pip claiming it did.
+      const line = deriveWhisperRevealLine({
+        nextStep: { kind: 'demand', reach: 'gold', difficulty: 0.3 }, difficultyWord,
+      });
+      expect(line.delta).toBe(0);
+      expect(line.kind).toBe('reveal');
+    });
+  });
+
   // ─── Coverage guard ────────────────────────────────────────────────
 
   describe('coverage guard', () => {
@@ -352,16 +569,33 @@ describe('nudge card type mechanics — host-path liveness (THR-1179)', () => {
       }
     });
 
-    it('names the types still unbuilt, so a silent flip cannot pass unnoticed', () => {
-      // The inverse direction of the guard above: flipping a row to `impl`
-      // without adding its liveness test here fails this assertion, which is the
-      // whole point — `impl` is a claim about the engine, and a claim with no
-      // exercise is how THR-844 stayed invisible for months.
+    it('leaves no type unbuilt — every row is impl and every row is exercised', () => {
+      // The inverse direction of the guard above, and as of THR-1179 the
+      // stronger claim: the unbuilt set is *empty*. A type added later starts at
+      // `design`, fails here by name, and so cannot reach the library without
+      // someone deciding whether it is built. A future row that legitimately
+      // ships unbuilt updates this list deliberately — which is the point.
       const unbuilt = NUDGE_CARD_TYPES
         .filter((t) => t.status !== 'impl')
         .map((t) => t.id)
         .sort();
-      expect(unbuilt).toEqual(['stumble', 'undertow', 'whisper']);
+      expect(unbuilt).toEqual([]);
+    });
+
+    it('pins the closed set of types, so a new one cannot ship unnoticed', () => {
+      // With the unbuilt set empty, "flipping a badge" is no longer the way a
+      // type can arrive unexercised — *adding a row* is. This pin is what makes
+      // that a named failure: a new type breaks this list, and whoever adds it
+      // has to decide, in the open, whether it ships built and where it is
+      // driven. (The twelve types not in COVERED_TYPES predate THR-1179 and are
+      // exercised by their own suites; this file owns the nine it built.)
+      const ids = NUDGE_CARD_TYPES.map((t) => t.id).sort();
+      expect(ids).toEqual([
+        'balm', 'bargain', 'boost', 'cache', 'compulsion', 'fellowship',
+        'favor', 'gambit', 'heavy_hand', 'insurance', 'kindled_ambition',
+        'long_game', 'mercy', 'omen', 'side_bet', 'signature', 'stumble',
+        'trait_card', 'undertow', 'veil', 'whisper',
+      ].sort());
     });
   });
 });

@@ -19,8 +19,8 @@ remediation ticket or the build fails.
 | 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 7 |
 | ⚫ UNWIRED | 0 |
-| 🔵 UNVERIFIED-OK | 13 |
-| **Total** | **70** |
+| 🔵 UNVERIFIED-OK | 14 |
+| **Total** | **71** |
 
 ## Contracts by producing subsystem
 
@@ -99,7 +99,7 @@ remediation ticket or the build fails.
 | `ascendant-affinity-cast-capability` | The ascendant's persisted reach affinities become its capability for a cast — the god's innate aptitude is not on the raw scale `computeRawScore` walks, so a literal read left every cast at capability 0.02 and one reachable outcome band. | node-prop: `domainAffinities`, `computeCapabilityWithRawBonus` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `attachment-encounter-rewards` | Encounters grant rewards, which become possessions — by random draw from the pool, or as an authored consequence naming one template. | function: `assembleRewardPool`, `instantiateReward`, `instantiateAgreementReward` | Attachments, Items & Possessions | 🟢 LIVE | — |
 | `authored-faction-ids-resolve-to-seeded-faction-nodes` | When an ending says it changed your standing with a guild, your standing with that guild actually changes. | function: `bindFactionDefinitionIds`, `resolveFactionNodeId`, `applyFactionReputationGain` | Factions & Succession | 🟢 LIVE | — |
-| `authored-nudge-hand-reaches-resolution` | A god may bend the odds of an attended encounter step with authored, essence-priced cards — the mechanical form of "the intervention shifted the odds, not the outcome". Without this read, an attended encounter offers the player nothing to do but watch. | function: `collectNudgeModifiers`, `selectActiveRider`, `applyRider`, `buildNudgeHand` | Encounters & Dilemmas | 🔴 LEAKED | THR-774 |
+| `authored-nudge-hand-reaches-resolution` | A god may bend the odds of an attended encounter step with authored, essence-priced cards — the mechanical form of "the intervention shifted the odds, not the outcome". Without this read, an attended encounter offers the player nothing to do but watch. | function: `collectNudgeModifiers`, `selectActiveRider`, `applyRider`, `buildNudgeHand` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | THR-774 |
 | `authored-quintessence-shift` | An encounter can finally author an existential price — what the trial cost a mortal in spirit rather than in coin or reputation. | function: `quintessence_shift`, `pendingQuintessenceEvents` | Spheres & Quintessence | 🔵 UNVERIFIED-OK | — |
 | `authored-step-difficulty-player-resolution` | Authored step difficulty finally prices a player cast. 82 of 136 ascendant-castable templates carried difficulties 0.1–0.6 that the player branch discarded before this contract existed; the same value now feeds the shared capability-vs-difficulty roll, floored at success-at-cost. | function: `resolveUncontestedStep`, `difficulty` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `authored-tier-ramp-target-scaled-price` | The authored per-tier advancement ramp reaches the player. `TIER_ADVANCEMENT_ESSENCE_COST` / `TIER_ADVANCEMENT_DIFFICULTY` / `TIER_ADVANCEMENT_DURATION` author a 3-row ladder, but only row 1 had a consumer — a static template step cannot read its target's tier — so advancing a Mundane artifact and a Mythic one both cost 4 essence at difficulty 0.20, and both took 2–3 ticks. | function: `tierScaledEssenceCost`, `tierScaledDifficulty`, `tierScaledDuration`, `essenceCostContext` | Encounters & Dilemmas | 🟢 LIVE | — |
@@ -117,6 +117,7 @@ remediation ticket or the build fails.
 | `reward-draw-shares-one-seeded-draw-with-the-step-route` | A specific ending can hand out a random matching prize — and it draws it exactly the way the step route does, so the two can never pay out differently. | function: `drawSeededReward`, `mapActionOutcomeToRewardOutcome`, `rewardCategoryNodeQuery`, `rewardCandidateMatchesTags` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `secrets-generation` | Secrets are born from scenes — mortals learn things about each other worth holding. | function: `generateSecret`, `createSecretEdge` | Secrets & Favors | 🟢 LIVE | — |
 | `seeded-opponent-survives-to-spawn` | A grudge planted against a named band is collected against that same band — or, if it died in the meantime, quietly becomes an ordinary encounter instead of pointing at a corpse. | node-prop: `opposingGroupId`, `resolveSeedOpposition` | Companies & Group Travel | 🟢 LIVE | — |
+| `undertow-card-drifts-mortal-values` | The card that says it changes who the mortal is actually changes it, on the same axis their own choices move — so a god who keeps reaching for the ugly method is visibly making someone, not renting a bonus. | function: `dispatchNudgeCommitments`, `collectNudgeValueDrifts`, `driftTowardPole` | Personality & Emergent Traits | 🔴 LEAKED | THR-1130 |
 | `world-events-mint-ambitions` | World events write themselves into mortal desire — a sacked town mints avengers and refugees. | function: `AMBITION_MINTING_RULES`, `mintAmbitionsFromEvents` | Ambitions & Initiatives | 🟢 LIVE | — |
 
 ### Factions & Succession
@@ -386,17 +387,17 @@ remediation ticket or the build fails.
 - **Other hits:** `src/engine/chosenFactionPowers.ts`, `src/engine/factionMembership.ts`, `src/engine/factionOutcome.ts`, `src/types/unifiedAction.ts`
 - **Verdict:** Verified 2026-08-17: THR-1150. `applyFactionReputationGain` matched memberships with `e.target === factionId`, a faction NODE id, while every authored `faction_reputation_gain` passes a DEFINITION id ('mercenary_company', 'temple_of_spheres', 'underking_court', 'rangers_brotherhood', 'lorekeepers_covenant'). `factionSeeding` keys the node `faction_def_<definitionId><chapterSuffix>`, so the authored id matched no node and no edge target: every faction-standing consequence in the shipped game was a no-op. Both halves are now proven against a real `initializeGameState(seed 42, medium)` world rather than a fixture — `src/engine/__tests__/factionReputationSeededWorld.test.ts` asserts the seeded node id contains the definition id AND that the definition id resolves to no node, then fires the effect with the authored value and reads the reputation move off the seeded edge. Falsified at 1-of-3 red with the fix reverted; the two arms that stay green are the deliberate controls (the premise assertion, and the already-tracing faction_not_found path). Resolution is widening-only by `resolveFactionNodeId`'s exact-node-id-first order, so the three pre-existing node-id callers (`processFactionEncounterReputation`, `factionOutcome`, `chosenFactionPowers`) resolve to themselves — pinned by the 'explicit faction node id still works' arm in `aftermathFactionDefinitionId.test.ts`, 4-of-6 red without the fix. The second half is the trace: the `newRank === 'none'` sentinel used to `break` SILENTLY, which is why a corpus-wide dead effect survived to be found by an unrelated ticket. It now emits `encounter_aftermath_effect` with `failReason: 'not_a_member' | 'faction_not_found'`, and `faction_reputation_gain` was added to `EncounterAftermathEffectTrace.effectKind` so all four traces in the arm emit unlaundered — the cast ratchet (THR-1065) fell 110 → 107. Corpus pinned by `src/testing/__tests__/factionEffectIds.lint.test.ts`, which deep-walks UNIFIED_ACTION_TEMPLATES for all eight faction-carrying effect kinds and fails on any id naming no FACTION_DEFINITIONS entry — with a population guard, since a `<=` over an empty walk is the vacuous pass this lint exists to avoid.
 
-### `authored-nudge-hand-reaches-resolution` — 🔴 LEAKED
+### `authored-nudge-hand-reaches-resolution` — 🔵 UNVERIFIED-OK
 
 - **Intent:** A god may bend the odds of an attended encounter step with authored, essence-priced cards — the mechanical form of "the intervention shifted the odds, not the outcome". Without this read, an attended encounter offers the player nothing to do but watch.
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Nudge*, *Encounter*, *UnifiedActionTemplate*
 - **Module:** `src/engine/encounters/nudges.ts`
-- **Production hits:** 9 total — 0 write, 2 read, 7 unclassified
-- **Write sites:** —
+- **Production hits:** 10 total — 1 write, 2 read, 7 unclassified
+- **Write sites:** `src/types/unifiedAction.ts`
 - **Read sites:** `src/debug-bridge.ts`, `src/engine/unifiedActionResolution.ts`
 - **Other hits:** `src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts`, `src/components/Game/encounter-stage/nudgeCommit.ts`, `src/components/Game/encounter-stage/types.ts`, `src/engine/encounters/nudgeDispatch.ts`, `src/engine/encounters/nudges.ts` +2 more
-- **Verdict:** Tier 2: read sites present, declared write sites empty — nothing produces this contract. — or the declared symbol does not appear at the declared site: grep 'collectNudgeModifiers' src/types/unifiedAction.ts before treating this as a leak.
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `authored-quintessence-shift` — 🔵 UNVERIFIED-OK
 
@@ -921,6 +922,18 @@ remediation ticket or the build fails.
 - **Read sites:** `src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts`
 - **Other hits:** `src/engine/echo.ts`, `src/engine/nudgeCardRepertoire.ts`, `src/types/echo.ts`, `src/types/gameState.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
+### `undertow-card-drifts-mortal-values` — 🔴 LEAKED
+
+- **Intent:** The card that says it changes who the mortal is actually changes it, on the same axis their own choices move — so a god who keeps reaching for the ugly method is visibly making someone, not renting a bonus.
+- **Producer → Consumer:** Encounters & Dilemmas → Personality & Emergent Traits
+- **UL terms:** *Archetype Drift*, *Nudge*
+- **Module:** `src/engine/encounters/nudgeDispatch.ts`
+- **Production hits:** 3 total — 1 write, 0 read, 2 unclassified
+- **Write sites:** `src/engine/encounters/branchDecision.ts`
+- **Read sites:** —
+- **Other hits:** `src/engine/encounters/nudgeDispatch.ts`, `src/engine/phases/phaseAutonomousAftermath.ts`
+- **Verdict:** Tier 2: write sites present, declared read sites empty — the consumer is starving. — or the declared symbol does not appear at the declared site: grep 'dispatchNudgeCommitments' src/engine/encounters/driftAccumulator.ts before treating this as a leak.
 
 ### `world-events-mint-ambitions` — 🟢 LIVE
 

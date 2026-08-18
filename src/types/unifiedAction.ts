@@ -1504,7 +1504,65 @@ export interface StepNudge {
    * fiction and its world change cannot disagree about whether it happened.
    */
   readonly grants?: readonly EncounterAftermathReactionEffect[];
+  /**
+   * The Stumble (THR-1179) — the cast key this card's boost works *against*.
+   *
+   * The odds move by exactly `forecastDelta` either way; what this field changes
+   * is whose doing it was. `collectNudgeModifiers` sources the named modifier
+   * from the bound cast member instead of from the card, so the test panel
+   * reports "the bridge-warden loses their footing" rather than a nameless tilt
+   * in the god's favour — which is the entire difference between The Stumble and
+   * an ordinary Boost, and the reason the type is hosted on the encounter cast
+   * rather than on the forecast pipeline.
+   *
+   * Accepts a `supportBindings` key (bare, as authored on the template's cast)
+   * or a full `$cast:<key>` sentinel; both resolve the same way. A key the scene
+   * never bound falls back to card-sourced attribution rather than dropping the
+   * modifier — the boost the player paid for always lands (NFP #4).
+   */
+  readonly opposes?: string;
+  /**
+   * The Undertow (THR-1179) — the value axis this card drags the mortal along.
+   *
+   * Applied at dispatch through the **same** `applyDriftMagnitude` accumulator a
+   * branch decision drifts through, so a card-driven shift and a choice-driven
+   * one are one quantity that decays back toward baseline together. A second
+   * drift path would let the two disagree about who this person is becoming.
+   *
+   * Distinct from {@link poleLean}, which argues a fork the mortal is *already*
+   * deciding and moves nothing when the step does not fork. This shifts values
+   * unconditionally, because that is the card's printed promise: effective, and
+   * it changes who they are.
+   */
+  readonly valueDrift?: {
+    readonly axis: ValuePair;
+    /** Pole dragged toward: `positive` = the axis's virtue end. */
+    readonly toward: BranchPoleKey;
+  };
+  /**
+   * The Whisper (THR-1179) — what committing this card shows the player.
+   *
+   * A reveal is a **read**, never a filter: it adds a line to the test panel and
+   * changes nothing about which candidates exist or resolve. Intel-gating of
+   * encounter candidates stays rejected (THR-138), and this field is the shape
+   * that keeps the reveal on the safe side of that line — there is nowhere for it
+   * to hide anything, because it only ever produces a sentence.
+   */
+  readonly reveals?: NudgeRevealKind;
 }
+
+/**
+ * What a Whisper uncovers (THR-1179).
+ *
+ * `next_step_demand` — the reach and difficulty of the step *after* this one,
+ * which is genuinely unknown pre-commit and is the reveal the type was specced
+ * against ("pay to see before you spend"). Rendered in words, never digits.
+ *
+ * A union of one, deliberately: the second reveal the plan floats (a concealed
+ * factor line) needs a concealment concept the panel does not have today, and
+ * inventing one to fill out an enum would ship a shape with no reader.
+ */
+export type NudgeRevealKind = 'next_step_demand';
 
 /**
  * Non-essence prices a nudge card charges (THR-885).

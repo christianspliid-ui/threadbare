@@ -314,18 +314,26 @@ export interface BranchDecisionApplication {
  * crossings. Shared by both decision modes — a route that declares an axis
  * drifts exactly as a pole decision does, because it *is* the same claim about
  * who this person is becoming.
+ *
+ * Exported since THR-1179 so The Undertow drifts through this same function
+ * rather than a card-side copy. One writer means a card-driven shift and a
+ * choice-driven one accumulate into the same axis position and decay back toward
+ * the same baseline; two writers would eventually disagree about the person, and
+ * the disagreement would be invisible (each path's own tests would pass).
+ *
+ * @param magnitude Unsigned step size; `pole` supplies the sign. Defaults to the
+ *   branch-decision magnitude, so both existing call sites are unchanged.
  */
-function driftTowardPole(
+export function driftTowardPole(
   drift: GameState['archetypeDrift'],
   agentId: string,
   axis: ValuePair,
   pole: BranchPoleKey,
   tick: number,
+  magnitude: number = BRANCH_DECISION_DRIFT_MAGNITUDE,
 ): { drift: GameState['archetypeDrift']; driftAxisId: string } {
   const driftAxisId = driftAxisIdForValuePair(axis);
-  const signedMagnitude = pole === 'positive'
-    ? BRANCH_DECISION_DRIFT_MAGNITUDE
-    : -BRANCH_DECISION_DRIFT_MAGNITUDE;
+  const signedMagnitude = pole === 'positive' ? magnitude : -magnitude;
   const result = applyDriftMagnitude(drift, agentId, driftAxisId, signedMagnitude, tick);
 
   // Same emission shape as `phaseChoiceResolution`. Both emit uncast as of

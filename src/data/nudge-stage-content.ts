@@ -222,3 +222,39 @@ export const DERIVED_SKILL_SENTENCE = '{actor} is {word} in {reach}.';
 
 /** Stand-in when the acting node has no resolvable name (NFP #4, never throws). */
 export const DERIVED_FACTOR_ACTOR_FALLBACK = 'The acting hand';
+
+// ─── Whisper reveal (THR-1179) ───────────────────────────────────────
+
+/**
+ * What a committed Whisper shows about the step *after* this one.
+ *
+ * `{reach}` is the coming step's reach, `{word}` its difficulty word — words on
+ * both sides, never digits (UI Law 13/14). The sentence deliberately reads as a
+ * glimpse rather than a readout: the card sells foreknowledge, and a line shaped
+ * like a stat block would sell a spreadsheet row instead.
+ */
+export const WHISPER_NEXT_STEP_SENTENCE =
+  'What comes after this will ask for {reach}, and it looks {word}.';
+
+/**
+ * The reveal when this step is the last one.
+ *
+ * Still a real answer, which is why the card does not simply render nothing
+ * here: "there is no next demand" is exactly the thing a god deciding how much
+ * to spend on *this* step wanted to know, and withholding it would make the
+ * Whisper feel broken on the one step where its answer is most actionable.
+ */
+export const WHISPER_NO_NEXT_STEP_SENTENCE =
+  'Nothing waits beyond this. What is spent here is spent on the whole of it.';
+
+/**
+ * The reveal when a next step exists but its demand is not yet fixed — the way
+ * ahead branches on what happens here.
+ *
+ * Without this line the Whisper would have to choose between two lies on a
+ * branching template: claiming nothing follows, or naming one branch's demand as
+ * though it were settled. Saying "it turns on this" is both true and useful — it
+ * tells the god that this step is the hinge, which is worth knowing.
+ */
+export const WHISPER_UNSETTLED_NEXT_STEP_SENTENCE =
+  'What comes after this is not yet settled. It turns on how this goes.';

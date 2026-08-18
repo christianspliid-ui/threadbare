@@ -24,6 +24,7 @@ import type {
   UnifiedAction,
   UnifiedActionTemplate,
 } from '../../types/unifiedAction';
+import type { EncounterSupportBinding } from '../../types/encounter';
 import type { SphereName } from '../../types/index';
 import type { ForecastModifier } from './outcomeForecast';
 import {
@@ -40,6 +41,40 @@ export const NUDGE_MODIFIER_SOURCE_PREFIX = 'nudge:';
 export const TRAIT_MODIFIER_SOURCE_PREFIX = 'trait:';
 /** Source prefix for a carryover line's named forecast modifier (THR-892). */
 export const CARRYOVER_MODIFIER_SOURCE_PREFIX = 'carryover:';
+/**
+ * Source prefix for a modifier attributed to a cast member rather than to the
+ * card that produced it — The Stumble (THR-1179).
+ *
+ * The delta is identical either way. What the prefix buys is that the test panel
+ * can name *who faltered*, which is the only thing separating "the opposition
+ * lost their footing" from "your hand steadied", and therefore the only thing
+ * making The Stumble a distinct card rather than a re-skinned Boost.
+ */
+export const CAST_MODIFIER_SOURCE_PREFIX = 'cast:';
+
+/** `$cast:<key>` sentinel prefix, accepted alongside a bare key on `opposes`. */
+const OPPOSES_CAST_SENTINEL_PREFIX = '$cast:';
+
+/**
+ * The node id a card's {@link StepNudge.opposes} names, or undefined when the
+ * scene bound no such cast member.
+ *
+ * Fail-soft by design (NFP #4): an unbound key returns undefined and the caller
+ * falls back to card attribution. A Stumble authored against a cast member the
+ * scene did not cast still moves the odds it charged the player for — it simply
+ * cannot say whose fault it was.
+ */
+export function resolveOpposedCastNodeId(
+  opposes: string | undefined,
+  supportBindings: readonly EncounterSupportBinding[] | undefined,
+): string | undefined {
+  if (!opposes || !supportBindings || supportBindings.length === 0) return undefined;
+  const key = opposes.startsWith(OPPOSES_CAST_SENTINEL_PREFIX)
+    ? opposes.slice(OPPOSES_CAST_SENTINEL_PREFIX.length)
+    : opposes;
+  const binding = supportBindings.find((b) => b.key === key);
+  return binding?.kind === 'actor' ? binding.nodeId : undefined;
+}
 
 /** Why a nudge card is not playable right now. */
 export type NudgeBlockedCode =
@@ -313,6 +348,7 @@ export function collectNudgeModifiers(
   activeNudgeIds: readonly string[] | undefined,
   variants: readonly TraitVariant[] = [],
   priorOutcome?: StepOutcome,
+  supportBindings?: readonly EncounterSupportBinding[],
 ): ForecastModifier[] {
   const modifiers: ForecastModifier[] = [];
 
@@ -321,7 +357,15 @@ export function collectNudgeModifiers(
     for (const id of activeNudgeIds) {
       const nudge = byId.get(id);
       if (!nudge) continue;
-      modifiers.push({ source: `${NUDGE_MODIFIER_SOURCE_PREFIX}${id}`, delta: nudge.forecastDelta });
+      // The Stumble sources its modifier from the cast member it works against;
+      // every other card sources from itself. Same delta, different author.
+      const opposed = resolveOpposedCastNodeId(nudge.opposes, supportBindings);
+      modifiers.push({
+        source: opposed
+          ? `${CAST_MODIFIER_SOURCE_PREFIX}${opposed}`
+          : `${NUDGE_MODIFIER_SOURCE_PREFIX}${id}`,
+        delta: nudge.forecastDelta,
+      });
     }
   }
 
