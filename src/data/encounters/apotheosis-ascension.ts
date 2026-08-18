@@ -86,8 +86,19 @@ const APOTHEOSIS_SETTINGS = ['rural', 'urban', 'sacred', 'wayside'] as const;
 //
 // The conditions are chosen from the live catalog, not minted: a failed
 // apotheosis is a wounding and a grief, and `trait.condition.wounded` /
-// `trait.condition.grieving` already exist. Minting a bespoke condition for one
+// `trait.condition.grieving` both resolve. Minting a bespoke condition for one
 // encounter is the kind of green-fielding the systems inventory exists to stop.
+//
+// THR-1171 — that claim was half false when written: `wounded` existed and
+// `grieving` did not, so the `condition_attachment` below hit the fail-soft miss
+// in `encounterAftermath` and wrote nothing, while the chip above it went on
+// reporting the grief (a UI Law 56 breach, in the ticket that was fixing UI Law
+// 56 breaches). The sentence read as checked, which is what kept anyone from
+// checking it. `trait.condition.grieving` is now a real definition in
+// `condition-trait-content.ts` — two independent encounters had reached for the
+// same missing word, which is a vocabulary gap rather than two authoring slips —
+// and the liveness sweep now walks aftermath, so a comment like this one can no
+// longer be the only thing standing between a dead id and the player.
 
 /** A frame opened and not filled (~60 game days). Long, because it is not a bruise. */
 const APOTHEOSIS_UNMADE_DURATION_TICKS = 720;

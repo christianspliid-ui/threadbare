@@ -362,16 +362,22 @@ describe('assignAmbitionToActor (The Kindled Ambition)', () => {
 // ─── 7. Grant liveness ───────────────────────────────────────────────
 
 describe('nudge grant liveness', () => {
-  it('has no card naming content that was never built', () => {
+  it('has no effect naming content that was never built', () => {
     const report = validateNudgeGrantRefs(UNIFIED_ACTION_TEMPLATES);
+    // Non-vacuity, asserted rather than assumed (THR-1171). Until the sweep was
+    // widened past `step.nudges[].grants` this genuinely ran against an empty
+    // population — no shipped card authored a grant — so the green above proved
+    // nothing, and it stayed green through the whole life of the apotheosis
+    // `grieving` defect. The corpus now carries hundreds of aftermath refs; if
+    // this floor ever trips, the sweep stopped finding content, and the
+    // emptiness must be explained before the green below is believed.
+    expect(report.checkedRefs).toBeGreaterThan(0);
     expect(formatDeadNudgeGrantRefs(report.dead)).toBe('');
   });
 
   it('catches a dead reference when one is injected', () => {
-    // Falsifiability guard. The assertion above runs over the shipped corpus,
-    // which currently authors no card grants at all (content lands under
-    // THR-883), so on its own it would pass against an empty population and
-    // prove nothing. This proves the sweep can actually fail.
+    // Falsifiability guard — proves the sweep can actually fail, independent of
+    // whatever the shipped corpus happens to contain on any given day.
     const poisoned = [{
       id: 'test.poisoned',
       steps: [{
@@ -387,6 +393,43 @@ describe('nudge grant liveness', () => {
     expect(report.dead).toHaveLength(1);
     expect(report.dead[0].ref).toBe('artifact.that.never.existed');
     expect(report.dead[0].refKind).toBe('artifact');
+  });
+
+  it('catches a dead reference authored in an aftermath band, not just on a card', () => {
+    // THR-1171 regression. This is the exact shape the sweep could not see: the
+    // template has no cards at all, and its only dead ref sits on a reaction
+    // hanging off a `byOutcome` band. The old walk read `step.nudges[].grants`
+    // and reported such a template clean — which is how the apotheosis capstone
+    // shipped a `condition_attachment` to an undefined condition while this
+    // suite stayed green. Narrowing the traversal again fails here by name.
+    const bandOnly = [{
+      id: 'test.band_only',
+      steps: [],
+      aftermathConfig: {
+        variants: {
+          negative: {
+            byOutcome: {
+              critical_failure: {
+                reactions: [{
+                  id: 'sit_with_it',
+                  effects: [{
+                    kind: 'condition_attachment',
+                    templateId: 'trait.condition.that.never.existed',
+                  }],
+                }],
+              },
+            },
+          },
+        },
+      },
+    }] as unknown as UnifiedActionTemplate[];
+
+    const report = validateNudgeGrantRefs(bandOnly);
+    expect(report.dead).toHaveLength(1);
+    expect(report.dead[0].ref).toBe('trait.condition.that.never.existed');
+    expect(report.dead[0].refKind).toBe('condition');
+    // The site must name the band, or a failure report cannot be acted on.
+    expect(report.dead[0].site).toContain('critical_failure');
   });
 
   it('accepts a reference that does resolve', () => {
