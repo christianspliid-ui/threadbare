@@ -158,7 +158,7 @@ export const ANOMALY_SIGNATURE_ARTIFACTS: GraphNode[] = [
       subcategory: 'tomes_scrolls',
       tier: 3,
       tags: ['#ancient', '#relic', '#anomaly'],
-      mechanicalSummary: '+0.10 Eye, +0.05 Star, +0.01 Eye per social success (max +0.05)',
+      mechanicalSummary: '+0.10 Eye roll · Eye capability +0.7 / Star +0.35 while borne, +0.05 Star, +0.01 Eye per social success (max +0.05)',
       lossCondition: 'permanent',
       flavorText: 'Warded pages from before the fall — knowledge sealed in metal bindings that took centuries to corrode. The script is alien, but comprehensible.',
       effects: [
@@ -174,6 +174,9 @@ export const ANOMALY_SIGNATURE_ARTIFACTS: GraphNode[] = [
           maxFires: 1,
           narrativeTemplate: 'The Codex opens and {actor}\'s mind fills with knowledge from a world that fell. Not all of it is comfortable.',
         },
+        // THR-745: a codex from a fallen world: scholarly Eye first, celestial Star second.
+        // Notable band, high.
+        { type: 'stat_contribution', contributions: { eye: 0.7, star: 0.35 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -186,7 +189,7 @@ export const ANOMALY_SIGNATURE_ARTIFACTS: GraphNode[] = [
       subcategory: 'relics_talismans',
       tier: 2,
       tags: ['#gold', '#cursed', '#anomaly'],
-      mechanicalSummary: '+0.10 Gold, +0.05 Gold / -0.03 Heart (drowned king\'s price)',
+      mechanicalSummary: '+0.10 Gold roll · Gold capability +0.55 / Heart −0.25 while borne, +0.05 Gold / -0.03 Heart (drowned king\'s price)',
       lossCondition: 'cursed',
       flavorText: 'A barnacled circlet from a drowned treasury. The dead king it belonged to is not entirely gone.',
       effects: [
@@ -201,6 +204,9 @@ export const ANOMALY_SIGNATURE_ARTIFACTS: GraphNode[] = [
         },
         { type: 'passive', reach: 'gold', value: 0.10 },
         { type: 'tradeoff', bonus: { reach: 'gold', value: 0.05 }, penalty: { reach: 'heart', value: 0.03 } },
+        // THR-745: a drowned king's crown confers authority and takes warmth. Notable band,
+        // mid; mirrors the authored tradeoff.
+        { type: 'stat_contribution', contributions: { gold: 0.55, heart: -0.25 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -213,13 +219,16 @@ export const ANOMALY_SIGNATURE_ARTIFACTS: GraphNode[] = [
       subcategory: 'relics_talismans',
       tier: 2,
       tags: ['#ancient', '#bone', '#anomaly'],
-      mechanicalSummary: '+0.05 Eye, +0.03 Veil, +1 awareness range',
+      mechanicalSummary: '+0.05 Eye roll · Eye capability +0.45 / Veil +0.25 while borne, +0.03 Veil, +1 awareness range',
       lossCondition: 'permanent',
       flavorText: 'An ancient creature\'s eye, perfectly preserved in amber. It watches back. It always watches back.',
       effects: [
         { type: 'passive', reach: 'eye', value: 0.05 },
         { type: 'passive', reach: 'veil', value: 0.03 },
         { type: 'range_modifier', awarenessRangeBonus: 1 },
+        // THR-745: a preserved eye that watches back: perception with a Veil undertone.
+        // Notable band, low.
+        { type: 'stat_contribution', contributions: { eye: 0.45, veil: 0.25 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -232,13 +241,15 @@ export const ANOMALY_SIGNATURE_ARTIFACTS: GraphNode[] = [
       subcategory: 'arms',
       tier: 3,
       tags: ['#star_metal', '#fate', '#anomaly'],
-      mechanicalSummary: '+0.08 Iron, +0.05 Star, active 6 ticks / dormant 12 ticks: +0.05 Iron (star alignment)',
+      mechanicalSummary: '+0.08 Iron roll · Iron capability +0.7 / Star +0.35 while borne, +0.05 Star, active 6 ticks / dormant 12 ticks: +0.05 Iron (star alignment)',
       lossCondition: 'permanent',
       flavorText: 'Dense, dark metal from a fallen star. It is colder than iron, harder than steel, and the air around it tastes of distant places.',
       effects: [
         { type: 'passive', reach: 'iron', value: 0.08 },
         { type: 'passive', reach: 'star', value: 0.05 },
         { type: 'cooldown', activeTicks: 6, cooldownTicks: 12, reach: 'iron', value: 0.05 },
+        // THR-745: star-metal makes a weapon and a portent. Notable band, high.
+        { type: 'stat_contribution', contributions: { iron: 0.7, star: 0.35 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -251,13 +262,15 @@ export const ANOMALY_SIGNATURE_ARTIFACTS: GraphNode[] = [
       subcategory: 'vestments',
       tier: 2,
       tags: ['#pearl', '#devotion', '#anomaly'],
-      mechanicalSummary: '+0.08 Heart, +0.05 Heart in social contexts, cooperates more readily with allies',
+      mechanicalSummary: '+0.08 Heart roll · Heart capability +0.5 while borne, +0.05 Heart in social contexts, cooperates more readily with allies',
       lossCondition: 'permanent',
       flavorText: 'A string of flawless pearls, moon-white and warm to the touch. Folk say they calm the sea and soothe the restless dead.',
       effects: [
         { type: 'passive', reach: 'heart', value: 0.08 },
         { type: 'conditional', condition: 'in_social', reach: 'heart', value: 0.05 },
         { type: 'social_modifier', targetFilter: 'ally', cooperationBias: 0.15 },
+        // THR-745: moonpearl is worn to be received well. Notable band, mid.
+        { type: 'stat_contribution', contributions: { heart: 0.5 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -270,7 +283,7 @@ export const ANOMALY_SIGNATURE_ARTIFACTS: GraphNode[] = [
       subcategory: 'tools_instruments',
       tier: 2,
       tags: ['#fungus', '#vision', '#anomaly'],
-      mechanicalSummary: '+0.05 Eye, +0.05 Eye in exploration, +0.02 Veil / -0.02 Heart (spore haze)',
+      mechanicalSummary: '+0.05 Eye roll · Eye capability +0.5 / Veil +0.15 / Heart −0.15 while borne, +0.05 Eye in exploration, +0.02 Veil / -0.02 Heart (spore haze)',
       lossCondition: 'permanent',
       flavorText: 'Glowcap spores sealed in a glass jar. It illuminates and hallucinates in equal measure. Handle with care.',
       effects: [
@@ -286,6 +299,9 @@ export const ANOMALY_SIGNATURE_ARTIFACTS: GraphNode[] = [
           cooldownTicks: 0,
           narrativeTemplate: 'The {item_name}\'s glow brightens. {actor}\'s vision fractures into colours that have no name.',
         },
+        // THR-745: spore-light shows more than is there: real Eye, a haze of Veil, a cost in
+        // steadiness. Notable band, mid.
+        { type: 'stat_contribution', contributions: { eye: 0.5, veil: 0.15, heart: -0.15 } },
       ],
     } as PossessionNodeProperties,
   },

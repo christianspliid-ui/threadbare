@@ -43,13 +43,16 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'arms',
       tier: 1,
       tags: ['#iron', '#weapon', '#melee', '#combat'],
-      mechanicalSummary: '+0.03 Iron, +0.02 Iron in combat',
+      mechanicalSummary: '+0.03 Iron roll · Iron capability +0.25 while borne, +0.02 Iron in combat',
       censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'Pitted and green with age, but the point still bites.',
       effects: [
         { type: 'passive', reach: 'iron', value: 0.03 },
         { type: 'conditional', condition: 'in_combat', reach: 'iron', value: 0.02 },
+        // THR-745: a common pitted spear is a real weapon but barely lifts martial competence.
+        // Minor band, low end.
+        { type: 'stat_contribution', contributions: { iron: 0.25 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -61,13 +64,16 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'arms',
       tier: 1,
       tags: ['#iron', '#weapon', '#ranged', '#combat'],
-      mechanicalSummary: '+0.04 Iron, +0.01 Iron per combat success (max +0.03, decays 1/tick)',
+      mechanicalSummary: '+0.04 Iron roll · Iron capability +0.3 while borne, +0.01 Iron per combat success (max +0.03, decays 1/tick)',
       censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'Sinew-strung and warped from damp, but deadly enough at close range.',
       effects: [
         { type: 'passive', reach: 'iron', value: 0.04 },
         { type: 'stacking', reach: 'iron', valuePerStack: 0.01, maxStacks: 3, stackOn: 'combat_success', decayPerTick: 1 },
+        // THR-745: a serviceable bow teaches its user to shoot. Minor band; the stacking
+        // combat bonus already rewards use.
+        { type: 'stat_contribution', contributions: { iron: 0.3 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -79,13 +85,16 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'arms',
       tier: 1,
       tags: ['#iron', '#weapon', '#melee', '#combat'],
-      mechanicalSummary: '+0.04 Iron, +0.02 Iron / -0.01 Heart (blunt instrument)',
+      mechanicalSummary: '+0.04 Iron roll · Iron capability +0.25 / Heart −0.1 while borne, +0.02 Iron / -0.01 Heart (blunt instrument)',
       censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'The rust is mostly cosmetic. Mostly.',
       effects: [
         { type: 'passive', reach: 'iron', value: 0.04 },
         { type: 'tradeoff', bonus: { reach: 'iron', value: 0.02 }, penalty: { reach: 'heart', value: 0.01 } },
+        // THR-745: a blunt instrument makes its bearer effective and coarse. Minor band,
+        // mirroring the authored Iron/Heart tradeoff at tier scale.
+        { type: 'stat_contribution', contributions: { iron: 0.25, heart: -0.1 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -97,13 +106,16 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'arms',
       tier: 1,
       tags: ['#iron', '#weapon', '#melee', '#survival', '#combat', '#wilderness'],
-      mechanicalSummary: '+0.03 Iron, 3 charges of +0.04 Iron burst (desperate strikes)',
+      mechanicalSummary: '+0.03 Iron roll · Iron capability +0.2 while borne, 3 charges of +0.04 Iron burst (desperate strikes)',
       censusTag: { scale: 'local' },
       lossCondition: 'consumable',
       flavorText: 'Carved from the rib of something large. It will not last.',
       effects: [
         { type: 'passive', reach: 'iron', value: 0.03 },
         { type: 'consumable_charge', charges: 3, onUse: { reach: 'iron', value: 0.04 }, destroyOnEmpty: true },
+        // THR-745: a wasting improvised blade, the lowest Iron lift in the catalog. Minor
+        // band, floor: it destroys itself on empty.
+        { type: 'stat_contribution', contributions: { iron: 0.2 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -117,13 +129,16 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'arms',
       tier: 2,
       tags: ['#iron', '#weapon', '#melee', '#combat'],
-      mechanicalSummary: '+0.08 Iron, +0.01 Iron per combat success (max +0.04, decays 1 stack/tick)',
+      mechanicalSummary: '+0.08 Iron roll · Iron capability +0.5 while borne, +0.01 Iron per combat success (max +0.04, decays 1 stack/tick)',
       censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'Forged in a dead forge-town. The metal remembers heat it should not.',
       effects: [
         { type: 'passive', reach: 'iron', value: 0.08 },
         { type: 'stacking', reach: 'iron', valuePerStack: 0.01, maxStacks: 4, stackOn: 'combat_success', decayPerTick: 1 },
+        // THR-745: a properly forged blade is a genuine step up in martial capability. Notable
+        // band, low-mid, since it already stacks on combat success.
+        { type: 'stat_contribution', contributions: { iron: 0.5 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -135,7 +150,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'arms',
       tier: 2,
       tags: ['#iron', '#weapon', '#ranged', '#eye', '#combat'],
-      mechanicalSummary: "+0.07 Iron, +0.03 Eye, +1 awareness range (watchman's vigil)",
+      mechanicalSummary: "+0.07 Iron roll · Iron capability +0.45 / Eye +0.2 while borne, +0.03 Eye, +1 awareness range (watchman's vigil)",
       censusTag: { scale: 'local' },
       lossCondition: 'stealable',
       flavorText: 'Issued to border watchers. The sighting marks are worn smooth by anxious thumbs.',
@@ -143,6 +158,9 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
         { type: 'passive', reach: 'iron', value: 0.07 },
         { type: 'passive', reach: 'eye', value: 0.03 },
         { type: 'range_modifier', awarenessRangeBonus: 1 },
+        // THR-745: a watchman's weapon: martial reach first, the sighting discipline second.
+        // Notable band, low.
+        { type: 'stat_contribution', contributions: { iron: 0.45, eye: 0.2 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -154,7 +172,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'tools_instruments',
       tier: 1,
       tags: ['#checkpoint', '#order', '#eye', '#gold'],
-      mechanicalSummary: '+0.03 Eye, +0.02 Gold, +0.02 Gold in social (official authority)',
+      mechanicalSummary: '+0.03 Eye roll · Eye capability +0.2 / Gold +0.2 while borne, +0.02 Gold, +0.02 Gold in social (official authority)',
       censusTag: { scale: 'local' },
       lossCondition: 'stealable',
       flavorText: 'Wax seals, chalk, and a customs stamp wrapped in oilcloth. Boring to everyone except the people who know how power hides in paperwork.',
@@ -162,6 +180,9 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
         { type: 'passive', reach: 'eye', value: 0.03 },
         { type: 'passive', reach: 'gold', value: 0.02 },
         { type: 'conditional', condition: 'in_social', reach: 'gold', value: 0.02 },
+        // THR-745: paperwork as power: a little procedural sight, a little leverage. Minor
+        // band, split evenly.
+        { type: 'stat_contribution', contributions: { eye: 0.2, gold: 0.2 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -173,7 +194,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'arms',
       tier: 2,
       tags: ['#iron', '#weapon', '#melee', '#stone', '#combat'],
-      mechanicalSummary: '+0.06 Iron, +0.03 Stone, thorns emerge when attacked (+0.03 Iron for 6 ticks, 12-tick cooldown)',
+      mechanicalSummary: '+0.06 Iron roll · Iron capability +0.4 / Stone +0.2 while borne, +0.03 Stone, thorns emerge when attacked (+0.03 Iron for 6 ticks, 12-tick cooldown)',
       censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'The wood is alive. It sprouts small leaves in spring, thorns in winter.',
@@ -181,6 +202,9 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
         { type: 'passive', reach: 'iron', value: 0.06 },
         { type: 'passive', reach: 'stone', value: 0.03 },
         { type: 'reactive', trigger: 'attacked', effect: { type: 'duration', ticks: 6, reach: 'iron', value: 0.03, destroyOnExpiry: true }, cooldown: 12 },
+        // THR-745: a living stave fights and endures. Notable band, low: the reactive thorns
+        // already carry its bite.
+        { type: 'stat_contribution', contributions: { iron: 0.4, stone: 0.2 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -194,7 +218,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'arms',
       tier: 3,
       tags: ['#iron', '#weapon', '#melee', '#cursed', '#combat'],
-      mechanicalSummary: '+0.12 Iron, -0.05 Heart, when damaged: +0.05 Iron burst decaying over 5 ticks (12-tick cooldown), grants dark_ferocity trait',
+      mechanicalSummary: '+0.12 Iron roll · Iron capability +0.8 / Heart −0.4 while borne, -0.05 Heart, when damaged: +0.05 Iron burst decaying over 5 ticks (12-tick cooldown), grants dark_ferocity trait',
       censusTag: { scale: 'local' },
       lossCondition: 'cursed',
       flavorText: 'The blade is hollow and whistles when swung. The sound makes children weep.',
@@ -205,6 +229,9 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
           type: 'decay', reach: 'iron', startValue: 0.05, changePerTick: -0.01, limitValue: 0.0, destroyAtLimit: true
         }, cooldown: 12 },
         { type: 'trait_grant', grantedTrait: 'dark_ferocity' },
+        // THR-745: a cursed blade that makes its bearer formidable and cruel. Notable band,
+        // high; the Heart cost is the curse at tier scale.
+        { type: 'stat_contribution', contributions: { iron: 0.8, heart: -0.4 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -216,7 +243,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'arms',
       tier: 3,
       tags: ['#iron', '#weapon', '#ranged', '#star', '#combat'],
-      mechanicalSummary: '+0.10 Iron, +0.05 Star, stellar alignment: +0.03 Star for 6 ticks then dormant 12 ticks',
+      mechanicalSummary: '+0.10 Iron roll · Iron capability +0.7 / Star +0.35 while borne, +0.05 Star, stellar alignment: +0.03 Star for 6 ticks then dormant 12 ticks',
       censusTag: { scale: 'local' },
       lossCondition: 'permanent',
       flavorText: 'The string hums a note too low to hear. Arrows fly straighter than physics allows.',
@@ -224,6 +251,9 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
         { type: 'passive', reach: 'iron', value: 0.10 },
         { type: 'passive', reach: 'star', value: 0.05 },
         { type: 'cooldown', activeTicks: 6, cooldownTicks: 12, reach: 'star', value: 0.03 },
+        // THR-745: a star-touched bow: martial mastery with a thread of the heavens. Notable
+        // band, high.
+        { type: 'stat_contribution', contributions: { iron: 0.7, star: 0.35 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -240,7 +270,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'arms',
       tier: 4,
       tags: ['#iron', '#weapon', '#melee', '#shadow', '#ancient', '#combat'],
-      mechanicalSummary: '+0.18 Iron, +0.08 Shadow, blocks fear/intimidation conditions, when attacked: 20% faster movement for 6 ticks (12-tick cooldown), shadow focus persists until combat ends (+0.02 Shadow)',
+      mechanicalSummary: '+0.18 Iron roll · Iron capability +1.2 / Shadow +0.6 while borne, +0.08 Shadow, blocks fear/intimidation conditions, when attacked: 20% faster movement for 6 ticks (12-tick cooldown), shadow focus persists until combat ends (+0.02 Shadow)',
       censusTag: { scale: 'local' },
       lossCondition: 'permanent',
       flavorText: 'It makes no sound when it cuts. Neither does the one it cuts.',
@@ -252,6 +282,10 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
           type: 'range_modifier', movementCostMultiplier: 0.8
         }, duration: 6, cooldown: 12 },
         { type: 'tag_immunity', tags: ['fear', 'intimidation'] },
+        // THR-745: an ancient assassin's blade, legendary martial capability, shadowed.
+        // Legendary band but held below the ceiling: its passive roll total already overruns
+        // EFFECT_PER_ITEM_CAP (see the note above this entry).
+        { type: 'stat_contribution', contributions: { iron: 1.2, shadow: 0.6 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -265,13 +299,16 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'arms',
       tier: 1,
       tags: ['#shadow', '#weapon', '#melee', '#stealth', '#assassination'],
-      mechanicalSummary: '+0.03 Shadow, +0.02 Shadow when alone (ambush bonus)',
+      mechanicalSummary: '+0.03 Shadow roll · Shadow capability +0.25 while borne, +0.02 Shadow when alone (ambush bonus)',
       censusTag: { scale: 'local' },
       lossCondition: 'stealable',
       flavorText: 'Thin as a finger bone and just as cold. The grip is wrapped in linen from a burial shroud.',
       effects: [
         { type: 'passive', reach: 'shadow', value: 0.03 },
         { type: 'conditional', condition: 'alone', reach: 'shadow', value: 0.02 },
+        // THR-745: a thin blade for quiet work. Minor band: it teaches stealth, not
+        // swordsmanship.
+        { type: 'stat_contribution', contributions: { shadow: 0.25 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -283,7 +320,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'arms',
       tier: 1,
       tags: ['#heart', '#weapon', '#instrument', '#command', '#social'],
-      mechanicalSummary: '+0.03 Heart, +0.02 Heart in social encounters, +0.3 cooperation with allies (rallying call)',
+      mechanicalSummary: '+0.03 Heart roll · Heart capability +0.25 while borne, +0.02 Heart in social encounters, +0.3 cooperation with allies (rallying call)',
       censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'Dented brass with a cracked bell. It still carries across a valley when the wind is right.',
@@ -291,6 +328,8 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
         { type: 'passive', reach: 'heart', value: 0.03 },
         { type: 'conditional', condition: 'in_social', reach: 'heart', value: 0.02 },
         { type: 'social_modifier', targetFilter: 'ally', cooperationBias: 0.3 },
+        // THR-745: a rallying horn makes its bearer someone others follow. Minor band.
+        { type: 'stat_contribution', contributions: { heart: 0.25 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -302,7 +341,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'arms',
       tier: 1,
       tags: ['#eye', '#weapon', '#ranged', '#precision', '#reconnaissance'],
-      mechanicalSummary: '+0.03 Eye, +1 awareness range (surveyor sight), 4 charges of +0.03 Eye burst (mark target)',
+      mechanicalSummary: '+0.03 Eye roll · Eye capability +0.25 while borne, +1 awareness range (surveyor sight), 4 charges of +0.03 Eye burst (mark target)',
       censusTag: { scale: 'local' },
       lossCondition: 'consumable',
       flavorText: 'Crossbow quarrels with red-dyed fletching. The spotter who carried them marked enemy positions, not map edges.',
@@ -310,6 +349,8 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
         { type: 'passive', reach: 'eye', value: 0.03 },
         { type: 'range_modifier', awarenessRangeBonus: 1 },
         { type: 'consumable_charge', charges: 4, onUse: { reach: 'eye', value: 0.03 }, destroyOnEmpty: true },
+        // THR-745: a spotter's tool sharpens the eye more than the arm. Minor band.
+        { type: 'stat_contribution', contributions: { eye: 0.25 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -321,7 +362,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'arms',
       tier: 1,
       tags: ['#stone', '#weapon', '#melee', '#heavy', '#combat'],
-      mechanicalSummary: '+0.04 Stone, +0.02 Stone / -0.01 Eye (heavy and unwieldy), blocks bruise conditions',
+      mechanicalSummary: '+0.04 Stone roll · Stone capability +0.3 / Eye −0.1 while borne, +0.02 Stone / -0.01 Eye (heavy and unwieldy), blocks bruise conditions',
       censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'A column of black stone lashed to a shaft of green oak. Whoever swings it does not swing it twice in quick succession.',
@@ -329,6 +370,9 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
         { type: 'passive', reach: 'stone', value: 0.04 },
         { type: 'tradeoff', bonus: { reach: 'stone', value: 0.02 }, penalty: { reach: 'eye', value: 0.01 } },
         { type: 'tag_immunity', tags: ['bruise'] },
+        // THR-745: heavy stonework in weapon form: enduring, unsubtle. Minor band, mirroring
+        // the authored Stone/Eye tradeoff.
+        { type: 'stat_contribution', contributions: { stone: 0.3, eye: -0.1 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -340,7 +384,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'arms',
       tier: 2,
       tags: ['#shadow', '#weapon', '#melee', '#stealth', '#assassination'],
-      mechanicalSummary: '+0.05 Shadow, +0.03 Shadow / -0.02 Heart (silent killer), +0.01 Shadow per combat success (max 3 stacks, decays 1/tick)',
+      mechanicalSummary: '+0.05 Shadow roll · Shadow capability +0.45 / Heart −0.2 while borne, +0.03 Shadow / -0.02 Heart (silent killer), +0.01 Shadow per combat success (max 3 stacks, decays 1/tick)',
       censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'Braided from horsehair and treated with tallow. It leaves no mark on the throat if you know the twist.',
@@ -348,6 +392,9 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
         { type: 'passive', reach: 'shadow', value: 0.05 },
         { type: 'tradeoff', bonus: { reach: 'shadow', value: 0.03 }, penalty: { reach: 'heart', value: 0.02 } },
         { type: 'stacking', reach: 'shadow', valuePerStack: 0.01, maxStacks: 3, stackOn: 'combat_success', decayPerTick: 1 },
+        // THR-745: a silent killer's tool builds real stealth capability at a cost in warmth.
+        // Notable band, low.
+        { type: 'stat_contribution', contributions: { shadow: 0.45, heart: -0.2 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -359,7 +406,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'arms',
       tier: 2,
       tags: ['#veil', '#weapon', '#implement', '#mystical'],
-      mechanicalSummary: '+0.04 Veil, +0.03 Veil in mystical encounters, when attacked: +0.03 Veil for 4 ticks (10-tick cooldown)',
+      mechanicalSummary: '+0.04 Veil roll · Veil capability +0.4 while borne, +0.03 Veil in mystical encounters, when attacked: +0.03 Veil for 4 ticks (10-tick cooldown)',
       censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'Hazel wood stripped white by moonlight. Someone carved a name into the base and then scraped it out.',
@@ -367,6 +414,9 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
         { type: 'passive', reach: 'veil', value: 0.04 },
         { type: 'conditional', condition: 'in_mystical', reach: 'veil', value: 0.03 },
         { type: 'reactive', trigger: 'attacked', effect: { type: 'duration', ticks: 4, reach: 'veil', value: 0.03, destroyOnExpiry: true }, cooldown: 10 },
+        // THR-745: a cut hazel rod is the beginner's implement of the Veil. Notable band, low
+        // end.
+        { type: 'stat_contribution', contributions: { veil: 0.4 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -378,7 +428,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'arms',
       tier: 2,
       tags: ['#heart', '#iron', '#weapon', '#command', '#combat'],
-      mechanicalSummary: '+0.05 Heart, +0.03 Iron in combat, +0.5 cooperation with same-faction allies, drives wielder toward combat encounters (1.3x behavior weight)',
+      mechanicalSummary: '+0.05 Heart roll · Heart capability +0.45 / Iron +0.2 while borne, +0.03 Iron in combat, +0.5 cooperation with same-faction allies, drives wielder toward combat encounters (1.3x behavior weight)',
       censusTag: { scale: 'local' },
       lossCondition: 'stealable',
       flavorText: 'The pole is splintered and re-bound with wire. The cloth shows a sigil no living heraldist recognizes.',
@@ -387,6 +437,9 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
         { type: 'conditional', condition: 'in_combat', reach: 'iron', value: 0.03 },
         { type: 'social_modifier', targetFilter: 'same_faction', cooperationBias: 0.5 },
         { type: 'behavior_weight', reach: 'iron', multiplier: 1.3 },
+        // THR-745: a company banner is a leadership object first, a weapon second. Notable
+        // band, low.
+        { type: 'stat_contribution', contributions: { heart: 0.45, iron: 0.2 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -398,7 +451,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'arms',
       tier: 2,
       tags: ['#eye', '#iron', '#weapon', '#ranged', '#precision', '#combat'],
-      mechanicalSummary: '+0.05 Eye, +0.02 Iron, on near-miss Eye tests (within 2 margin): +1 step, +1 awareness range',
+      mechanicalSummary: '+0.05 Eye roll · Eye capability +0.45 / Iron +0.2 while borne, +0.02 Iron, on near-miss Eye tests (within 2 margin): +1 step, +1 awareness range',
       censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'The lens is ground from quartz and sits in a brass cradle. The crossbow itself is unremarkable. The lens is everything.',
@@ -407,6 +460,9 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
         { type: 'passive', reach: 'iron', value: 0.02 },
         { type: 'test_shaper', reach: 'eye', trigger: 'near_miss', steps: 1, maxMargin: 2 },
         { type: 'range_modifier', awarenessRangeBonus: 1 },
+        // THR-745: the lens is the point: marksmanship as perception. Notable band, low; its
+        // near-miss shaper is narrow (margin 2).
+        { type: 'stat_contribution', contributions: { eye: 0.45, iron: 0.2 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -418,7 +474,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'arms',
       tier: 2,
       tags: ['#stone', '#iron', '#weapon', '#melee', '#heavy', '#combat', '#ancient'],
-      mechanicalSummary: '+0.05 Stone, +0.03 Iron, when attacked: +0.03 Stone for 6 ticks (12-tick cooldown), 20% slower movement (weight penalty)',
+      mechanicalSummary: '+0.05 Stone roll · Stone capability +0.45 / Iron +0.25 while borne, +0.03 Iron, when attacked: +0.03 Stone for 6 ticks (12-tick cooldown), 20% slower movement (weight penalty)',
       censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'The wood turned to stone a thousand years ago. The blade edge is a geological accident. It cuts like a bad intention.',
@@ -427,6 +483,8 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
         { type: 'passive', reach: 'iron', value: 0.03 },
         { type: 'reactive', trigger: 'attacked', effect: { type: 'duration', ticks: 6, reach: 'stone', value: 0.03, destroyOnExpiry: true }, cooldown: 12 },
         { type: 'range_modifier', movementCostMultiplier: 1.2 },
+        // THR-745: petrified wood: endurance embodied, with martial reach. Notable band, low.
+        { type: 'stat_contribution', contributions: { stone: 0.45, iron: 0.25 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -438,7 +496,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'arms',
       tier: 2,
       tags: ['#gold', '#weapon', '#melee', '#commercial', '#social'],
-      mechanicalSummary: '+0.05 Gold, +0.03 Gold in social encounters, -0.02 Iron (not a fighting weapon), -0.2 cooperation with enemies (economic intimidation)',
+      mechanicalSummary: '+0.05 Gold roll · Gold capability +0.45 / Iron −0.15 while borne, +0.03 Gold in social encounters, -0.02 Iron (not a fighting weapon), -0.2 cooperation with enemies (economic intimidation)',
       censusTag: { scale: 'local' },
       lossCondition: 'stealable',
       flavorText: 'Brass pans on a chain, with lead weights sewn into the handle. The Assessors Guild calls it a tool. The people they assess call it a weapon.',
@@ -447,6 +505,9 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
         { type: 'conditional', condition: 'in_social', reach: 'gold', value: 0.03 },
         { type: 'passive', reach: 'iron', value: -0.02 },
         { type: 'social_modifier', targetFilter: 'enemy', cooperationBias: -0.2 },
+        // THR-745: a coercive instrument of trade, explicitly not a fighting weapon. Notable
+        // band, low; the Iron penalty mirrors its authored disclaimer.
+        { type: 'stat_contribution', contributions: { gold: 0.45, iron: -0.15 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -460,13 +521,16 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'vestments',
       tier: 1,
       tags: ['#iron', '#armor', '#cloth', '#combat'],
-      mechanicalSummary: '+0.03 Iron, blocks bruise conditions',
+      mechanicalSummary: '+0.03 Iron roll · Iron capability +0.2 while borne, blocks bruise conditions',
       censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'Quilted linen stuffed with horsehair. Better than bare skin.',
       effects: [
         { type: 'passive', reach: 'iron', value: 0.03 },
         { type: 'tag_immunity', tags: ['bruise'] },
+        // THR-745: the cheapest real armour. Minor band, floor: it lets its wearer take a hit,
+        // nothing more.
+        { type: 'stat_contribution', contributions: { iron: 0.2 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -478,13 +542,15 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'vestments',
       tier: 1,
       tags: ['#gold', '#cloth', '#commercial', '#trade'],
-      mechanicalSummary: '+0.04 Gold, +0.02 Gold in social encounters',
+      mechanicalSummary: '+0.04 Gold roll · Gold capability +0.3 while borne, +0.02 Gold in social encounters',
       censusTag: { scale: 'local' },
       lossCondition: 'stealable',
       flavorText: 'Dyed in the saffron of the eastern markets. Wealth worn on the sleeve.',
       effects: [
         { type: 'passive', reach: 'gold', value: 0.04 },
         { type: 'conditional', condition: 'in_social', reach: 'gold', value: 0.02 },
+        // THR-745: dressing like money makes money answer. Minor band, top.
+        { type: 'stat_contribution', contributions: { gold: 0.3 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -496,13 +562,15 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'vestments',
       tier: 1,
       tags: ['#star', '#cloth', '#divine'],
-      mechanicalSummary: '+0.03 Star, +0.02 Star in mystical encounters (pilgrim devotion)',
+      mechanicalSummary: '+0.03 Star roll · Star capability +0.25 while borne, +0.02 Star in mystical encounters (pilgrim devotion)',
       censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'Threadbare and sun-bleached. It smells of incense and long roads.',
       effects: [
         { type: 'passive', reach: 'star', value: 0.03 },
         { type: 'conditional', condition: 'in_mystical', reach: 'star', value: 0.02 },
+        // THR-745: the robe marks its wearer as devout, and devotion is practised. Minor band.
+        { type: 'stat_contribution', contributions: { star: 0.25 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -516,7 +584,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'vestments',
       tier: 2,
       tags: ['#iron', '#armor', '#combat'],
-      mechanicalSummary: '+0.08 Iron, when attacked: +0.03 Iron for 4 ticks (8-tick cooldown)',
+      mechanicalSummary: '+0.08 Iron roll · Iron capability +0.45 while borne, when attacked: +0.03 Iron for 4 ticks (8-tick cooldown)',
       censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'Each ring was closed by hand. Someone cared enough to do it right.',
@@ -525,6 +593,8 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
         { type: 'reactive', trigger: 'attacked', effect: {
           type: 'duration', ticks: 4, reach: 'iron', value: 0.03, destroyOnExpiry: true
         }, cooldown: 8 },
+        // THR-745: real mail changes how a body fights. Notable band, low.
+        { type: 'stat_contribution', contributions: { iron: 0.45 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -538,7 +608,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tags: ['#shadow', '#cloth', '#stealth'],
       // CAVEAT: 3 effects at T2 norm 1–2. All are utility (zero reach).
       // Accepted as-is — see systems audit.
-      mechanicalSummary: '+0.07 Shadow, +1 awareness range, blocks tracking conditions',
+      mechanicalSummary: '+0.07 Shadow roll · Shadow capability +0.5 while borne, +1 awareness range, blocks tracking conditions',
       censusTag: { scale: 'local' },
       lossCondition: 'stealable',
       flavorText: 'The fabric drinks light. Corners seem deeper when you wear it.',
@@ -546,6 +616,9 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
         { type: 'passive', reach: 'shadow', value: 0.07 },
         { type: 'range_modifier', awarenessRangeBonus: 1 },
         { type: 'tag_immunity', tags: ['tracked', 'marked'] },
+        // THR-745: a cloak woven to defeat tracking is stealth capability in cloth. Notable
+        // band, mid.
+        { type: 'stat_contribution', contributions: { shadow: 0.5 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -559,7 +632,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'vestments',
       tier: 3,
       tags: ['#shadow', '#cloth', '#veil', '#cursed', '#stealth'],
-      mechanicalSummary: '+0.12 Shadow, -0.06 Heart, entering new hex: +0.04 Shadow burst decaying over 4 ticks (8-tick cooldown), amplifies shadow encounter desire x1.5',
+      mechanicalSummary: '+0.12 Shadow roll · Shadow capability +0.8 / Heart −0.35 while borne, -0.06 Heart, entering new hex: +0.04 Shadow burst decaying over 4 ticks (8-tick cooldown), amplifies shadow encounter desire x1.5',
       censusTag: { scale: 'local' },
       lossCondition: 'cursed',
       flavorText: 'Those who wear it become harder to recall. Even by those who love them.',
@@ -570,6 +643,9 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
           type: 'decay', reach: 'shadow', startValue: 0.04, changePerTick: -0.01, limitValue: 0.0, destroyAtLimit: true
         }, cooldown: 8 },
         { type: 'behavior_weight', reach: 'shadow', multiplier: 1.5 },
+        // THR-745: being forgotten is mastery of Shadow bought with connection. Notable band,
+        // high; the Heart cost is its authored price.
+        { type: 'stat_contribution', contributions: { shadow: 0.8, heart: -0.35 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -585,7 +661,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'vestments',
       tier: 4,
       tags: ['#star', '#cloth', '#divine', '#ancient'],
-      mechanicalSummary: '+0.15 Star, +0.08 Veil, in mystical contexts: +0.03 Star, blocks curse/corruption/blight conditions, when damaged: +0.04 Veil ward for 6 ticks (12-tick cooldown)',
+      mechanicalSummary: '+0.15 Star roll · Star capability +1.2 / Veil +0.6 while borne, +0.08 Veil, in mystical contexts: +0.03 Star, blocks curse/corruption/blight conditions, when damaged: +0.04 Veil ward for 6 ticks (12-tick cooldown)',
       censusTag: { scale: 'local' },
       lossCondition: 'permanent',
       flavorText: 'A robe of impossible blue, stitched with constellations that move. It weighs nothing.',
@@ -597,6 +673,9 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
           type: 'duration', ticks: 6, reach: 'veil', value: 0.04, destroyOnExpiry: true
         }, cooldown: 12 },
         { type: 'tag_immunity', tags: ['curse', 'corruption', 'blight'] },
+        // THR-745: a garment of sky: legendary celestial capability with a Veil undertow.
+        // Legendary band.
+        { type: 'stat_contribution', contributions: { star: 1.2, veil: 0.6 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -610,13 +689,15 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'tomes_scrolls',
       tier: 1,
       tags: ['#eye', '#tome', '#knowledge'],
-      mechanicalSummary: '+0.03 Eye, +0.02 Eye in exploration',
+      mechanicalSummary: '+0.03 Eye roll · Eye capability +0.25 while borne, +0.02 Eye in exploration',
       censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'A naturalist\'s notes. The handwriting degrades toward the end.',
       effects: [
         { type: 'passive', reach: 'eye', value: 0.03 },
         { type: 'conditional', condition: 'in_exploration', reach: 'eye', value: 0.02 },
+        // THR-745: kept observations sharpen observation. Minor band.
+        { type: 'stat_contribution', contributions: { eye: 0.25 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -628,13 +709,16 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'tomes_scrolls',
       tier: 1,
       tags: ['#star', '#scroll', '#divine'],
-      mechanicalSummary: '+0.04 Star, 2 charges of +0.04 Star burst (divine invocation)',
+      mechanicalSummary: '+0.04 Star roll · Star capability +0.2 while borne, 2 charges of +0.04 Star burst (divine invocation)',
       censusTag: { scale: 'local' },
       lossCondition: 'consumable',
       flavorText: 'The words are old and the ink fading. One reading left, perhaps.',
       effects: [
         { type: 'passive', reach: 'star', value: 0.04 },
         { type: 'consumable_charge', charges: 2, onUse: { reach: 'star', value: 0.04 }, destroyOnEmpty: true },
+        // THR-745: a scroll of set prayers: real devotion, but it burns its charges and goes.
+        // Minor band, floor.
+        { type: 'stat_contribution', contributions: { star: 0.2 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -646,13 +730,15 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'tomes_scrolls',
       tier: 1,
       tags: ['#gold', '#tome', '#commercial'],
-      mechanicalSummary: '+0.04 Gold, +0.02 Gold in social (trade leverage)',
+      mechanicalSummary: '+0.04 Gold roll · Gold capability +0.3 while borne, +0.02 Gold in social (trade leverage)',
       censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'Columns of numbers, trade routes inked in margins. Knowledge is currency.',
       effects: [
         { type: 'passive', reach: 'gold', value: 0.04 },
         { type: 'conditional', condition: 'in_social', reach: 'gold', value: 0.02 },
+        // THR-745: a kept ledger is the whole discipline of trade. Minor band, top.
+        { type: 'stat_contribution', contributions: { gold: 0.3 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -688,13 +774,16 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'tomes_scrolls',
       tier: 2,
       tags: ['#eye', '#tome', '#knowledge'],
-      mechanicalSummary: '+0.08 Eye, rescue near-miss Eye tests (+1 step, margin 5)',
+      mechanicalSummary: '+0.08 Eye roll · Eye capability +0.45 while borne, rescue near-miss Eye tests (+1 step, margin 5)',
       censusTag: { scale: 'local' },
       lossCondition: 'stealable',
       flavorText: 'A history of empires that collapsed. The final chapter is blank.',
       effects: [
         { type: 'passive', reach: 'eye', value: 0.08 },
         { type: 'test_shaper', reach: 'eye', trigger: 'near_miss', steps: 1, maxMargin: 5 },
+        // THR-745: a historian's record teaches its reader to read the world. Notable band,
+        // low: its near-miss shaper is unusually wide (margin 5).
+        { type: 'stat_contribution', contributions: { eye: 0.45 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -706,7 +795,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'tomes_scrolls',
       tier: 2,
       tags: ['#veil', '#scroll', '#knowledge', '#arcane'],
-      mechanicalSummary: '+0.06 Veil, +0.03 Eye, +0.01 Veil per encounter (max +0.03, decays 1/tick)',
+      mechanicalSummary: '+0.06 Veil roll · Veil capability +0.45 / Eye +0.2 while borne, +0.03 Eye, +0.01 Veil per encounter (max +0.03, decays 1/tick)',
       censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'The letters rearrange themselves when you look away.',
@@ -714,6 +803,9 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
         { type: 'passive', reach: 'veil', value: 0.06 },
         { type: 'passive', reach: 'eye', value: 0.03 },
         { type: 'stacking', reach: 'veil', valuePerStack: 0.01, maxStacks: 3, stackOn: 'any_encounter', decayPerTick: 1 },
+        // THR-745: a fragment of true script: partial Veil instruction, with the literacy to
+        // parse it. Notable band, low.
+        { type: 'stat_contribution', contributions: { veil: 0.45, eye: 0.2 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -727,7 +819,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'tomes_scrolls',
       tier: 3,
       tags: ['#star', '#tome', '#knowledge', '#ancient', '#ruins'],
-      mechanicalSummary: '+0.10 Star, +0.05 Eye, prevents 1 condition loss, +0.03 Star at low health',
+      mechanicalSummary: '+0.10 Star roll · Star capability +0.75 / Eye +0.35 while borne, +0.05 Eye, prevents 1 condition loss, +0.03 Star at low health',
       censusTag: { scale: 'regional' },
       lossCondition: 'permanent',
       flavorText: 'Written by a god who chose to die. Every page is a eulogy for a truth.',
@@ -736,6 +828,9 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
         { type: 'passive', reach: 'eye', value: 0.05 },
         { type: 'prevent_loss', channel: 'condition', consumeOnPrevent: false },
         { type: 'conditional', condition: 'health_low', reach: 'star', value: 0.03 },
+        // THR-745: a complete devotional testament: sustained Star capability with scholarly
+        // Eye. Notable band, high.
+        { type: 'stat_contribution', contributions: { star: 0.75, eye: 0.35 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -749,7 +844,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'tomes_scrolls',
       tier: 4,
       tags: ['#veil', '#tome', '#knowledge', '#ancient', '#cursed', '#arcane', '#ruins'],
-      mechanicalSummary: '+0.15 Veil, -0.08 Heart, blocks Heart actions (too detached to empathize), reveals all encounters, drifts toward ruthlessness',
+      mechanicalSummary: '+0.15 Veil roll · Veil capability +1.3 / Heart −0.6 while borne, -0.08 Heart, blocks Heart actions (too detached to empathize), reveals all encounters, drifts toward ruthlessness',
       censusTag: { scale: 'cosmic' },
       lossCondition: 'cursed',
       flavorText: 'The pages are blank until you bleed on them. Then they show you how everything ends.',
@@ -759,6 +854,9 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
         { type: 'action_gate', mode: 'block', reach: 'heart' },
         { type: 'reveal', target: 'encounters', range: 'all' },
         { type: 'axiological_drift', axis: 'mercy_ruthlessness', ratePerTick: 0.008, limitValue: 0.50 },
+        // THR-745: the Codex teaches unmaking and unteaches empathy. Legendary band; the Heart
+        // cost is steep because the item already gates Heart actions outright.
+        { type: 'stat_contribution', contributions: { veil: 1.3, heart: -0.6 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -772,13 +870,15 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'tools_instruments',
       tier: 1,
       tags: ['#stone', '#tool', '#craft'],
-      mechanicalSummary: '+0.03 Stone, +0.02 Stone at home territory (workshop access)',
+      mechanicalSummary: '+0.03 Stone roll · Stone capability +0.25 while borne, +0.02 Stone at home territory (workshop access)',
       censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'Blacksmith\'s tongs, well-used. The handles are polished smooth by grip.',
       effects: [
         { type: 'passive', reach: 'stone', value: 0.03 },
         { type: 'conditional', condition: 'at_home_territory', reach: 'stone', value: 0.02 },
+        // THR-745: the basic smith's grip. Minor band.
+        { type: 'stat_contribution', contributions: { stone: 0.25 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -790,13 +890,15 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'tools_instruments',
       tier: 1,
       tags: ['#heart', '#tool', '#survival', '#craft', '#wilderness', '#healing'],
-      mechanicalSummary: '+0.04 Heart, 3 charges of +0.03 Heart burst (field dressing)',
+      mechanicalSummary: '+0.04 Heart roll · Heart capability +0.25 while borne, 3 charges of +0.03 Heart burst (field dressing)',
       censusTag: { scale: 'local' },
       lossCondition: 'consumable',
       flavorText: 'Dried leaves, crushed roots, and a mortar small enough to carry. The smell is medicinal.',
       effects: [
         { type: 'passive', reach: 'heart', value: 0.04 },
         { type: 'consumable_charge', charges: 3, onUse: { reach: 'heart', value: 0.03 }, destroyOnEmpty: true },
+        // THR-745: field medicine is care made competent. Minor band.
+        { type: 'stat_contribution', contributions: { heart: 0.25 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -808,13 +910,16 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'tools_instruments',
       tier: 1,
       tags: ['#eye', '#tool', '#craft'],
-      mechanicalSummary: '+0.04 Eye, +1 awareness range',
+      mechanicalSummary: '+0.04 Eye roll · Eye capability +0.3 while borne, +1 awareness range',
       censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'A single cracked lens in a brass tube. It magnifies, but distorts at the edges.',
       effects: [
         { type: 'passive', reach: 'eye', value: 0.04 },
         { type: 'range_modifier', awarenessRangeBonus: 1 },
+        // THR-745: a glass that extends sight is the purest Eye tool at tier 1. Minor band,
+        // top.
+        { type: 'stat_contribution', contributions: { eye: 0.3 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -828,7 +933,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'tools_instruments',
       tier: 2,
       tags: ['#veil', '#tool', '#knowledge', '#craft', '#arcane'],
-      mechanicalSummary: '+0.07 Veil, +0.03 Eye, +0.03 Veil for 6 ticks then dormant 12 ticks (distillation cycle)',
+      mechanicalSummary: '+0.07 Veil roll · Veil capability +0.45 / Eye +0.2 while borne, +0.03 Eye, +0.03 Veil for 6 ticks then dormant 12 ticks (distillation cycle)',
       censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'Stained with substances that should not exist in nature. The inside glows faintly at dusk.',
@@ -836,6 +941,9 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
         { type: 'passive', reach: 'veil', value: 0.07 },
         { type: 'passive', reach: 'eye', value: 0.03 },
         { type: 'cooldown', activeTicks: 6, cooldownTicks: 12, reach: 'veil', value: 0.03 },
+        // THR-745: distillation is applied Veil with an observer's discipline. Notable band,
+        // low.
+        { type: 'stat_contribution', contributions: { veil: 0.45, eye: 0.2 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -847,13 +955,15 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'tools_instruments',
       tier: 2,
       tags: ['#stone', '#tool', '#craft', '#ruins'],
-      mechanicalSummary: '+0.08 Stone, +0.01 Stone per encounter success (max +0.04)',
+      mechanicalSummary: '+0.08 Stone roll · Stone capability +0.5 while borne, +0.01 Stone per encounter success (max +0.04)',
       censusTag: { scale: 'local' },
       lossCondition: 'stealable',
       flavorText: 'Engraved with the mark of a guild that no longer exists. The edge never dulls.',
       effects: [
         { type: 'passive', reach: 'stone', value: 0.08 },
         { type: 'stacking', reach: 'stone', valuePerStack: 0.01, maxStacks: 4, stackOn: 'combat_success' },
+        // THR-745: a master's chisel is the craft itself. Notable band, mid.
+        { type: 'stat_contribution', contributions: { stone: 0.5 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -866,7 +976,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'tools_instruments',
       tier: 2,
       tags: ['#eye', '#veil', '#temporal', '#tool'],
-      mechanicalSummary: '+0.04 Eye, +0.03 Veil, freezes divine/blessing buff countdowns for 6 ticks, +1 awareness range',
+      mechanicalSummary: '+0.04 Eye roll · Eye capability +0.35 / Veil +0.25 while borne, +0.03 Veil, freezes divine/blessing buff countdowns for 6 ticks, +1 awareness range',
       censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'A lens ground from something that is not glass. When you look through it, moments stack upon each other like pages.',
@@ -875,6 +985,9 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
         { type: 'passive', reach: 'veil', value: 0.03 },
         { type: 'freeze_duration', target: 'buff', tags: ['#blessing', '#divine'], ticks: 6 },
         { type: 'range_modifier', awarenessRangeBonus: 1 },
+        // THR-745: an instrument that reads time: measured sight, lesser Veil. Held at the
+        // minor/notable boundary because its power is utility, not competence.
+        { type: 'stat_contribution', contributions: { eye: 0.35, veil: 0.25 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -888,7 +1001,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'tools_instruments',
       tier: 3,
       tags: ['#star', '#tool', '#ancient', '#knowledge', '#craft'],
-      mechanicalSummary: '+0.10 Star, +0.05 Eye, reveals agents within 3 hexes, +0.03 Star in mystical',
+      mechanicalSummary: '+0.10 Star roll · Star capability +0.75 / Eye +0.35 while borne, +0.05 Eye, reveals agents within 3 hexes, +0.03 Star in mystical',
       censusTag: { scale: 'local' },
       lossCondition: 'permanent',
       flavorText: 'The rings spin of their own accord. It does not measure the stars — it speaks with them.',
@@ -897,6 +1010,9 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
         { type: 'passive', reach: 'eye', value: 0.05 },
         { type: 'reveal', target: 'agent', range: 3 },
         { type: 'conditional', condition: 'in_mystical', reach: 'star', value: 0.03 },
+        // THR-745: a named astrolabe: celestial mastery through instrument. Notable band,
+        // high.
+        { type: 'stat_contribution', contributions: { star: 0.75, eye: 0.35 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -910,13 +1026,15 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'relics_talismans',
       tier: 1,
       tags: ['#heart', '#talisman', '#travel'],
-      mechanicalSummary: '+0.03 Heart, +0.02 Heart in social encounters',
+      mechanicalSummary: '+0.03 Heart roll · Heart capability +0.25 while borne, +0.02 Heart in social encounters',
       censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'A knot of twine and feathers, blessed by a roadside saint. It smells of campfire.',
       effects: [
         { type: 'passive', reach: 'heart', value: 0.03 },
         { type: 'conditional', condition: 'in_social', reach: 'heart', value: 0.02 },
+        // THR-745: a travelling charm opens doors socially. Minor band.
+        { type: 'stat_contribution', contributions: { heart: 0.25 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -928,13 +1046,15 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'relics_talismans',
       tier: 1,
       tags: ['#iron', '#talisman', '#survival'],
-      mechanicalSummary: '+0.04 Iron, blocks poison conditions',
+      mechanicalSummary: '+0.04 Iron roll · Iron capability +0.25 while borne, blocks poison conditions',
       censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'Carved from a knucklebone and hung on gut string. Old magic, close to the body.',
       effects: [
         { type: 'passive', reach: 'iron', value: 0.04 },
         { type: 'tag_immunity', tags: ['poison'] },
+        // THR-745: a ward against poison keeps its bearer standing. Minor band.
+        { type: 'stat_contribution', contributions: { iron: 0.25 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -972,7 +1092,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'relics_talismans',
       tier: 2,
       tags: ['#star', '#relic', '#divine'],
-      mechanicalSummary: '+0.06 Star, +0.03 Heart, when blessed: +0.03 Star for 6 ticks',
+      mechanicalSummary: '+0.06 Star roll · Star capability +0.45 / Heart +0.2 while borne, +0.03 Heart, when blessed: +0.03 Star for 6 ticks',
       censusTag: { scale: 'local' },
       lossCondition: 'stealable',
       flavorText: 'A disc of fired clay stamped with a burning eye. Warm to the touch, always.',
@@ -982,6 +1102,8 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
         { type: 'reactive', trigger: 'blessed', effect: {
           type: 'duration', ticks: 6, reach: 'star', value: 0.03, destroyOnExpiry: true
         }, cooldown: 12 },
+        // THR-745: a blessed sigil: devotion warmed by fellowship. Notable band, low.
+        { type: 'stat_contribution', contributions: { star: 0.45, heart: 0.2 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -993,13 +1115,16 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'relics_talismans',
       tier: 2,
       tags: ['#shadow', '#relic', '#stealth'],
-      mechanicalSummary: '+0.07 Shadow, reveals encounters within 2 hex range',
+      mechanicalSummary: '+0.07 Shadow roll · Shadow capability +0.5 while borne, reveals encounters within 2 hex range',
       censusTag: { scale: 'local' },
       lossCondition: 'stealable',
       flavorText: 'The glass is black but not opaque. Something moves inside when no one watches.',
       effects: [
         { type: 'passive', reach: 'shadow', value: 0.07 },
         { type: 'reveal', target: 'encounters', range: 2 },
+        // THR-745: shadowglass reveals what hides, which is Shadow practice. Notable band,
+        // mid.
+        { type: 'stat_contribution', contributions: { shadow: 0.5 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -1033,7 +1158,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'relics_talismans',
       tier: 2,
       tags: ['#veil', '#temporal', '#relic', '#preservation'],
-      mechanicalSummary: '+0.05 Veil, +0.02 Veil during active phase, freezes debuff countdowns for 6 ticks (active 6 ticks, dormant 18 ticks — cooldown cycle)',
+      mechanicalSummary: '+0.05 Veil roll · Veil capability +0.4 while borne, +0.02 Veil during active phase, freezes debuff countdowns for 6 ticks (active 6 ticks, dormant 18 ticks — cooldown cycle)',
       censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'A pearl the color of frozen smoke. Hold it to your chest and feel time hesitate.',
@@ -1041,6 +1166,9 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
         { type: 'passive', reach: 'veil', value: 0.05 },
         { type: 'cooldown', activeTicks: 6, cooldownTicks: 18, reach: 'veil', value: 0.02 },
         { type: 'freeze_duration', target: 'debuff', ticks: 6 },
+        // THR-745: a pearl that holds time still. Notable band, low: most of its power is the
+        // freeze utility.
+        { type: 'stat_contribution', contributions: { veil: 0.4 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -1054,7 +1182,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'relics_talismans',
       tier: 3,
       tags: ['#stone', '#relic', '#ancient', '#ruins'],
-      mechanicalSummary: '+0.12 Stone, -0.04 Shadow, 1-hex aura: +0.02 Stone to allies, +0.01 Stone per encounter (max +0.03)',
+      mechanicalSummary: '+0.12 Stone roll · Stone capability +0.8 / Shadow −0.3 while borne, -0.04 Shadow, 1-hex aura: +0.02 Stone to allies, +0.01 Stone per encounter (max +0.03)',
       censusTag: { scale: 'regional' },
       lossCondition: 'permanent',
       flavorText: 'A stone pulled from a king\'s grave. It pulses like a heartbeat when pressed to earth.',
@@ -1063,6 +1191,9 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
         { type: 'passive', reach: 'shadow', value: -0.04 },
         { type: 'aura', radius: 1, target: 'allies', reach: 'stone', value: 0.02 },
         { type: 'stacking', reach: 'stone', valuePerStack: 0.01, maxStacks: 3, stackOn: 'any_encounter' },
+        // THR-745: barrow-stone roots its bearer deeply and drags them into the light. Notable
+        // band, high.
+        { type: 'stat_contribution', contributions: { stone: 0.8, shadow: -0.3 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -1074,7 +1205,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'relics_talismans',
       tier: 3,
       tags: ['#heart', '#relic', '#divine', '#cursed'],
-      mechanicalSummary: '+0.10 Heart, -0.05 Eye, when damaged: +0.04 Heart for 6 ticks (12-tick cd), drifts toward mercy',
+      mechanicalSummary: '+0.10 Heart roll · Heart capability +0.75 / Eye −0.35 while borne, -0.05 Eye, when damaged: +0.04 Heart for 6 ticks (12-tick cd), drifts toward mercy',
       censusTag: { scale: 'regional' },
       lossCondition: 'cursed',
       flavorText: 'A small wooden saint that cries real tears. You feel what others feel, whether you wish to or not.',
@@ -1085,6 +1216,9 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
           type: 'duration', ticks: 6, reach: 'heart', value: 0.04, destroyOnExpiry: true
         }, cooldown: 12 },
         { type: 'axiological_drift', axis: 'mercy_ruthlessness', ratePerTick: -0.005, limitValue: 0.30 },
+        // THR-745: an icon of mercy: profound Heart bought with clear sight. Notable band,
+        // high; mirrors its authored mercy drift.
+        { type: 'stat_contribution', contributions: { heart: 0.75, eye: -0.35 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -1096,7 +1230,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'relics_talismans',
       tier: 3,
       tags: ['#veil', '#shadow', '#temporal', '#relic', '#ancient'],
-      mechanicalSummary: '+0.08 Veil, +0.04 Shadow, -0.03 Heart, slows one nearby enemy (skip actions for 3 ticks), freezes own condition countdowns for 6 ticks.',
+      mechanicalSummary: '+0.08 Veil roll · Veil capability +0.7 / Shadow +0.3 / Heart −0.25 while borne, +0.04 Shadow, -0.03 Heart, slows one nearby enemy (skip actions for 3 ticks), freezes own condition countdowns for 6 ticks.',
       censusTag: { scale: 'regional' },
       lossCondition: 'cursed',
       flavorText: 'The sand flows upward. The glass is warm to the touch, as if something inside is still dying.',
@@ -1106,6 +1240,9 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
         { type: 'passive', reach: 'heart', value: -0.03 },
         { type: 'slow', target: 'other_agent', skipActions: true, ticks: 3 },
         { type: 'freeze_duration', target: 'condition', ticks: 6 },
+        // THR-745: unravelling time: strong Veil, shadowed, at a cost in warmth. Notable band,
+        // high.
+        { type: 'stat_contribution', contributions: { veil: 0.7, shadow: 0.3, heart: -0.25 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -1119,7 +1256,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'relics_talismans',
       tier: 4,
       tags: ['#veil', '#relic', '#ancient', '#divine', '#arcane', '#ruins'],
-      mechanicalSummary: '+0.15 Veil, +0.08 Star, 1-hex aura: +0.03 Veil to all, mystical encounter bonus +0.04 Veil, outcome shift in mystical (+1 step)',
+      mechanicalSummary: '+0.15 Veil roll · Veil capability +1.2 / Star +0.6 while borne, +0.08 Star, 1-hex aura: +0.03 Veil to all, mystical encounter bonus +0.04 Veil, outcome shift in mystical (+1 step)',
       censusTag: { scale: 'cosmic' },
       lossCondition: 'permanent',
       flavorText: 'A sphere of perfect obsidian that balances on any surface. Reality bends toward it.',
@@ -1129,6 +1266,9 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
         { type: 'aura', radius: 1, target: 'all', reach: 'veil', value: 0.03 },
         { type: 'conditional', condition: 'in_mystical', reach: 'veil', value: 0.04 },
         { type: 'test_shaper', reach: 'veil', condition: 'in_mystical', trigger: 'near_miss', steps: 1, maxMargin: 5 },
+        // THR-745: the Fulcrum is a legendary instrument of the Veil with a celestial arm.
+        // Legendary band.
+        { type: 'stat_contribution', contributions: { veil: 1.2, star: 0.6 } },
       ],
     } as PossessionNodeProperties,
   },
