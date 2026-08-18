@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-18 07:56 local (05:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-18 08:54 local (06:54 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -21,7 +21,7 @@ An agent puts five candidates in front of you — the hunger vocabulary, the con
 
 All three background investigations are finished, so nothing is missing but the sitting. Resolving it closes [the architecture map](https://linear.app/threadbare/issue/THR-1157/typed-game-state-architecture-machinery-first-wave-wayfinder-map) and turns it into one written plan per part plus one for the shared machinery.
 
-This remains the only ask that supplies *new* feature work. A repair job was found on the old backlog this morning ([THR-963](https://linear.app/threadbare/issue/THR-963/detection-pressure-is-fed-essence-costs-123-on-a-0-1-clamped-scale-so)), so the builder is busy for now — but that drains a backlog rather than filling one.
+This remains the only ask that supplies *new* feature work. Reading the old backlog properly has since put three repair jobs on the shelf, so the builder has work for the next few hours — but that drains a backlog rather than filling one.
 
 [Nations and named areas](https://linear.app/threadbare/issue/THR-1155/nations-and-named-areas-are-rendered-not-simulated-promote-both-to) (High, your own direction) and [Traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools) (waiting ~4 days) remain good alternatives — name either and the session starts there. Note the sitting may decide the *scope* of the nations one, so doing it first risks designing the narrow version.
 
@@ -47,6 +47,7 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
+- 2026-08-18: **rivals now notice you gradually instead of all at once** — [THR-963](https://linear.app/threadbare/issue/THR-963/detection-pressure-is-fed-essence-costs-123-on-a-0-1-clamped-scale-so) ([PR #1539](https://github.com/christianspliid-ui/threadbare/pull/1539)): the ladder between "unnoticed" and "hunted" had no middle rung, so pressure was priced in the wrong currency and every step read as maximum. Already-agreed work, no ruling needed.
 - 2026-08-18: **one of the two orphaned encounter sounds is retired** — [THR-1168](https://linear.app/threadbare/issue/THR-1168/two-authored-encounter-audio-moments-have-no-live-caller-wire-or) ([PR #1534](https://github.com/christianspliid-ui/threadbare/pull/1534)): the cue meant to mark each consequence chip turned out to share no vocabulary with the chips at all, so wiring it would have played one note forever behind a passing test. Technical call, made by the lane. The pacing half is ask 3 above.
 - 2026-08-18: **six encounter-screen components nothing used any more are gone** — [THR-1167](https://linear.app/threadbare/issue/THR-1167/residue-of-the-encounter-prototype-tree-after-thr-1049-three-test-only) ([PR #1533](https://github.com/christianspliid-ui/threadbare/pull/1533)): the prototype residue, and the two pieces that were not residue — those became [THR-1168](https://linear.app/threadbare/issue/THR-1168/two-authored-encounter-audio-moments-have-no-live-caller-wire-or) rather than being deleted quietly.
 - 2026-08-17: **24 converted encounter templates now have a machine check on their pole binding** — [THR-1091](https://linear.app/threadbare/issue/THR-1091/converted-reach-specific-templates-have-no-polarity-guard) ([PR #1532](https://github.com/christianspliid-ui/threadbare/pull/1532)): the 24 reach trials nothing was checking.
@@ -56,7 +57,6 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 - 2026-08-17: **batch 1 of the encounter retrofit shipped** — [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to) ([PR #1528](https://github.com/christianspliid-ui/threadbare/pull/1528)): the bond chip fix, fourteen more invisible chips found by the same pattern, and the prose re-pass. This is what unblocked ask 1 above.
 - 2026-08-17: **the acted-on taxonomy is settled** — [THR-1161](https://linear.app/threadbare/issue/THR-1161/the-acted-on-taxonomy-acted-on-dormant-hook-or-bookkeeping-definitions) closed. The typed-state map no longer has a question waiting on you.
 - 2026-08-17: **the raw engine word is off the choice card** — [THR-1048](https://linear.app/threadbare/issue/THR-1048/the-legacy-encounter-choice-card-breaks-laws-13-and-14-15percent) ([PR #1527](https://github.com/christianspliid-ui/threadbare/pull/1527)): the stance now says what the god does, not what the enum is.
-- 2026-08-17: **the publishing stoppage cleared itself** — the commit flagged at 17:00 published shortly after; the live site is current. No switch to flip.
 
 ---
 
