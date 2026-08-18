@@ -9,7 +9,7 @@ description: >
   quality", "social encounter rewrite", "tavern encounter rewrite", "template
   encounter", "encounter quality pass", "prose quality pass", "write encounter".
 model: opus
-last_validated_against: 2026-08-12
+last_validated_against: 2026-08-18
 ---
 
 > **Load before authoring:** `Docs/canon/rulebook-quick-reference.md` (always — the synthesis layer for rules of play). Load `Docs/canon/rulebook.md` (full rulebook) when the work touches a specific rule of play and you need depth, status flags, or source citations.
@@ -22,7 +22,14 @@ This skill is for writing or improving **linear template encounters** in `Unifie
 
 ## Templates ship nudge-native (THR-772/774)
 
-> **The god acts in the physics of the scene, never in the dramaturgy of the story.**
+> **The god acts through their spheres on the fabric of the scene — matter, minds,
+> dreams, fates — never in the dramaturgy of the story. Influence, never authorship.**
+
+The lawful nudge space is as wide as the god's spheres — a stumble on loose stone
+(force), an urge arriving in sleep (mind), a sense that this has happened before (time),
+an old ambition catching light again (spirit), a wound that closes cleaner than it
+should (life). What stays forbidden is unchanged: never instruct the mortal, never pick
+between authored endings.
 
 A linear template is no longer prose plus an aftermath. Every step that deserves the
 player's hand gets a **hand**: 4–8 authored, essence-priced `StepNudge`s that shift the

@@ -13,12 +13,15 @@
  * new member of a family the god already plays, so late-run hands hold cards an
  * early-run god has never seen while every hand stays a decision.
  *
- * **This file is structure, not prose.** `title` and `quote` are optional and
- * deliberately absent: card content is authored under THR-883, which is paused
- * until the authoring format locks. A member with no title is a real, dealable,
- * fully-gated card that renders through {@link cardDisplayTitle}'s fallback —
- * so the engine, the gating, and the liveness tests all land now and the prose
- * arrives later without a schema change.
+ * **Structure and content are separate tables in this file, joined at assembly.**
+ * `title` and `quote` stayed optional on {@link NudgeCardMember} through THR-887,
+ * when a member with no title was a real, dealable, fully-gated card rendering
+ * through {@link cardDisplayTitle}'s keyword fallback. THR-1178 authored every
+ * member (see {@link CARD_CONTENT}), so the fallback is now a safety net rather
+ * than the normal path — but the fields stay optional and the fallback stays,
+ * because the alternative is a schema change that makes adding a member a
+ * two-file edit. `unauthoredCardCount() === 0` is pinned by test, so an
+ * unauthored member is a named CI failure instead of a silent keyword card.
  *
  * Plan: `Docs/plans/2026-07-30-nudge-card-repertoire.md`
  * Wiki: `public/nudge-cards-reference.html` (declares this file as a freshness source)
@@ -457,6 +460,206 @@ const VARIATION_MEMBERS: readonly NudgeCardMember[] = [
   },
 ];
 
+// ─── Authored content (THR-1178 workstream B) ────────────────────────
+
+/**
+ * The authored face of one library card: what the player reads.
+ *
+ * Kept as a **separate table keyed by member id** rather than as fields on the
+ * member literals, because sections 1–2 of the library are generated from
+ * {@link UNIVERSAL_CORE_TYPES} and {@link SPHERE_SIGNATURES} and must stay
+ * generated — hand-typing those members to hang prose on them would reintroduce
+ * exactly the drift surface this file exists to remove. Content joins the
+ * structure at assembly time instead (see {@link withContent}).
+ */
+interface NudgeCardContent {
+  /** Two to four generic words. Interactive-plain: no metaphor, no ambiguity. */
+  readonly title: string;
+  /** The card's only prose — one short line. A dry aphorism is the ceiling. */
+  readonly quote: string;
+  /** Image-library tag; omitted ⇒ the type's generic art. */
+  readonly imageTag?: string;
+}
+
+/**
+ * Every card face, authored under the locked THR-883 format (THR-1178).
+ *
+ * Three rules govern every entry and are worth restating where they are broken:
+ *
+ * 1. **Genericity.** A face must read correctly wherever its type deals. A title
+ *    or quote that only lands in one scene is a defect, not a flourish — scene
+ *    grounding is the *prose's* job, and the card's job is the rule.
+ * 2. **Sphere voice.** A signature member reads as its sphere's mode of power:
+ *    an `omen` card sounds like time, a `compulsion` card like mind. A recolored
+ *    boost is a miss, and this table is where that is caught.
+ * 3. **Interactive-plain titles.** The title is a label; its job is to be
+ *    unmistakable. The quote is the one element allowed a dry line.
+ *
+ * `imageTag` is deliberately absent throughout: the image library has no card
+ * rows to bind to, and minting art slots is owned elsewhere (THR-832/THR-1170).
+ * Every face therefore falls back to its type's generic art, which is the
+ * documented chain, not a gap.
+ */
+const CARD_CONTENT: Readonly<Record<string, NudgeCardContent>> = {
+  // Universal core — the floor every god holds. Plainest voices in the library.
+  'card.boost.core': {
+    title: 'A Little More',
+    quote: 'Most things fail by a margin.',
+  },
+  'card.insurance.core': {
+    title: 'Buy The Floor',
+    quote: 'Every plan should survive being wrong.',
+  },
+  'card.mercy.core': {
+    title: 'Not The Worst',
+    quote: 'Failing is survivable. Some failures are not.',
+  },
+  'card.trait_card.core': {
+    title: 'Who They Are',
+    quote: 'Character is the one resource nobody spends.',
+  },
+
+  // Sphere signatures — each reads as its sphere's mode of power.
+  'card.gambit.signature.chaos': {
+    title: 'No Middle Ground',
+    quote: 'Chaos has no use for the adequate.',
+  },
+  'card.stumble.signature.chaos': {
+    title: 'Something Gives Way',
+    quote: 'Every structure has one loose piece.',
+  },
+  'card.favor.signature.order': {
+    title: 'The Ledger Opens',
+    quote: 'Order is only debt everyone agreed to honor.',
+  },
+  'card.insurance.signature.order': {
+    title: 'By The Book',
+    quote: 'Rules exist so the worst case has a name.',
+  },
+  'card.whisper.signature.light': {
+    title: 'Plain Sight',
+    quote: 'Nothing was hidden. It was only unlit.',
+  },
+  'card.veil.signature.darkness': {
+    title: 'No One Saw',
+    quote: 'The kindest help leaves no fingerprints.',
+  },
+  'card.undertow.signature.darkness': {
+    title: 'The Easier Way',
+    quote: 'It works. That is the problem.',
+  },
+  'card.heavy_hand.signature.force': {
+    title: 'Full Weight',
+    quote: 'Subtlety is a choice. This is not it.',
+  },
+  'card.cache.signature.matter': {
+    title: 'Left Behind',
+    quote: 'Matter keeps its promises longer than people do.',
+  },
+  'card.boost.signature.energy': {
+    title: 'A Sudden Surge',
+    quote: 'Bodies hold more than they admit.',
+  },
+  'card.balm.signature.life': {
+    title: 'It Passes',
+    quote: 'Most suffering ends. This one ends sooner.',
+  },
+  'card.compulsion.signature.mind': {
+    title: 'An Urge In Sleep',
+    quote: 'By morning it feels like their own idea.',
+  },
+  'card.kindled_ambition.signature.spirit': {
+    title: 'Something To Want',
+    quote: 'A life turns on what it reaches for.',
+  },
+  'card.omen.signature.time': {
+    title: 'This Has Happened',
+    quote: 'Nothing happens only once.',
+  },
+  'card.bargain.signature.entropy': {
+    title: 'Pay It Elsewhere',
+    quote: 'Nothing is free. Some prices are only slower.',
+  },
+
+  // Hunger uniques — each reads as its hunger's perception style.
+  'card.whisper.hunger.witness': {
+    title: 'Seen Plainly',
+    quote: 'Every situation has an architecture. Most go unlooked at.',
+  },
+  'card.kindled_ambition.hunger.kindle': {
+    title: 'The Ember Takes',
+    quote: 'Some sparks only need the air.',
+  },
+  'card.long_game.hunger.sever': {
+    title: 'The Thread Cut',
+    quote: 'Not every tie was chosen. None are permanent.',
+  },
+  'card.favor.hunger.bind': {
+    title: 'A Debt Written',
+    quote: 'Every civilization runs on who owes whom.',
+  },
+  'card.undertow.hunger.consume': {
+    title: 'Take What Is There',
+    quote: 'Strength does not care where it came from.',
+  },
+  'card.cache.hunger.gather': {
+    title: 'Set Aside For Them',
+    quote: 'Someone always put something by.',
+  },
+  'card.insurance.hunger.preserve': {
+    title: 'Nothing More Lost',
+    quote: 'Keeping is harder than making. Do it anyway.',
+  },
+  'card.balm.hunger.reclaim': {
+    title: 'Made Whole Again',
+    quote: 'Some wounds are only debts the body is carrying.',
+  },
+  'card.stumble.hunger.reshape': {
+    title: 'The Right Pressure',
+    quote: 'Everything holds until the moment it does not.',
+  },
+  'card.omen.hunger.wander': {
+    title: 'Something Further On',
+    quote: 'Every road is asking to be followed.',
+  },
+  'card.compulsion.hunger.haunt': {
+    title: 'A Dream Not Theirs',
+    quote: 'Everyone is haunted. Few are visited on purpose.',
+  },
+  'card.heavy_hand.hunger.illuminate': {
+    title: 'In Full View',
+    quote: 'Let them see who did this.',
+  },
+
+  // Variation members — siblings of a card the god already plays.
+  'card.boost.variation.patient': {
+    title: 'The Slow Push',
+    quote: 'Early pressure costs less than late force.',
+  },
+  'card.insurance.variation.shared': {
+    title: 'Carried Between Them',
+    quote: 'A cost split is a cost survived.',
+  },
+  'card.mercy.variation.witnessed': {
+    title: 'Someone Was There',
+    quote: 'The worst hour is the one nobody sees.',
+  },
+};
+
+/**
+ * Join a structural member to its authored face.
+ *
+ * Fail-soft by omission: a member with no {@link CARD_CONTENT} row passes
+ * through unchanged and still renders through {@link cardDisplayTitle}'s keyword
+ * fallback. The `unauthoredCardCount() === 0` test is what makes that a
+ * *visible* gap rather than a silent one — adding a library member without a
+ * face fails CI by name, which is the intended friction.
+ */
+function withContent(member: NudgeCardMember): NudgeCardMember {
+  const content = CARD_CONTENT[member.id];
+  return content === undefined ? member : { ...member, ...content };
+}
+
 export const NUDGE_CARD_LIBRARY: readonly NudgeCardMember[] = [
   ...UNIVERSAL_CORE_TYPES.map(coreMember),
   ...SPHERE_NAMES.flatMap((sphere) =>
@@ -466,7 +669,7 @@ export const NUDGE_CARD_LIBRARY: readonly NudgeCardMember[] = [
     ([hunger, id]) => hungerMember(hunger, id),
   ),
   ...VARIATION_MEMBERS,
-];
+].map(withContent);
 
 const MEMBERS_BY_ID: ReadonlyMap<string, NudgeCardMember> = new Map(
   NUDGE_CARD_LIBRARY.map((m) => [m.id, m]),
@@ -486,16 +689,24 @@ export function nudgeCardFamily(typeId: NudgeCardTypeId): readonly NudgeCardMemb
  * What to print on a card that has no authored title yet — the type's keyword.
  *
  * Fail-soft in the sense that matters: an unauthored card is *dealable and
- * legible*, not blank and not a crash. It reads as its own keyword until
- * THR-883 gives it a name.
+ * legible*, not blank and not a crash. It reads as its own keyword.
+ *
+ * Since THR-1178 every library member is authored, so this fallback no longer
+ * fires for shipped content — it exists for the member added tomorrow before
+ * its face is written. Kept (rather than collapsed to `member.title`) because
+ * the alternative makes adding a card a two-file edit whose half-done state
+ * renders blank instead of legible.
  */
 export function cardDisplayTitle(member: NudgeCardMember): string {
   return member.title ?? nudgeCardType(member.typeId)?.keyword ?? member.typeId;
 }
 
 /**
- * Count of members still awaiting authored content — the THR-883 backlog, as a
- * number the wiki page and any content sweep can read rather than estimate.
+ * Count of members still awaiting authored content.
+ *
+ * **Zero since THR-1178, and pinned there by test.** It stays as a live gauge
+ * rather than a retired counter: it is what makes adding an unauthored member a
+ * named CI failure instead of a card that silently deals as its own keyword.
  */
 export function unauthoredCardCount(): number {
   return NUDGE_CARD_LIBRARY.filter((m) => m.title === undefined || m.quote === undefined).length;

@@ -32,17 +32,30 @@ Read the exemplar before authoring. Every rule here is visible in it once.
 
 ## What a nudge is
 
-> The god acts in the physics of the scene, never in the dramaturgy of the story.
+> The god acts through their spheres on the fabric of the scene — matter, minds, dreams,
+> fates — never in the dramaturgy of the story. Influence, never authorship.
 
 A **nudge** is an authored, essence-priced card the god may play into an *attended*
 encounter step. It shifts the odds. **Fate still picks the outcome.**
 
-This is the line that governs every card you write. A stumble at the right moment, an
-unnaturally good mood, a spark of light in a dark room, a surge of strength on a climb —
-these are nudges. "Forge the truth" and "Temper the narrative" are not: choosing between
-authored futures for a mortal is the rejected model this one replaced (program ruling,
+This is the line that governs every card you write, and the first half of it is as
+load-bearing as the second. The god is a magical being who works the threads of reality
+according to the spheres they hold, so the lawful nudge space spans all twelve: a
+stumble on loose stone (force), an urge arriving in sleep (mind), a sense that this has
+happened before (time), an old ambition catching light again (spirit), a face nobody
+afterwards quite recalls (darkness), a wound that closes cleaner than it should (life),
+a coin found where no coin was (matter). All of these are nudges.
+
+"Forge the truth" and "Temper the narrative" are not: choosing between authored futures
+for a mortal is the rejected model this one replaced (program ruling,
 `Docs/plans/2026-07-26-nudge-model-encounter-system.md`). The player must never pick an
-ending.
+ending, and must never instruct the mortal.
+
+**The two halves fail in opposite directions, so check both.** A hand reaching only for
+physical causes is authoring a twelve-sphere game in one sphere's vocabulary — a real
+defect, and the one this wording exists to correct (THR-1178). A hand that reaches into
+the mortal's decision *for* them has crossed the actual line. The test is never how
+physical the cause is; it is whether the mortal still chooses and fate still rolls.
 
 **Terminology — riders vs band fragments.** These are different things and the words are
 not interchangeable:

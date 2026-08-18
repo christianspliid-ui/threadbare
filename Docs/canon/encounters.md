@@ -12,7 +12,15 @@ status: live
 
 ## The nudge model is the current authoring spec (THR-772/774)
 
-> **The god acts in the physics of the scene, never in the dramaturgy of the story.**
+> **The god acts through their spheres on the fabric of the scene — matter, minds,
+> dreams, fates — never in the dramaturgy of the story. Influence, never authorship.**
+
+A god's reach is as wide as their spheres, and the lawful nudge space is that wide too:
+a stumble on loose stone (force), an urge arriving in sleep (mind), a sense that this
+has happened before (time), an old ambition catching light again (spirit), a face
+nobody afterwards quite recalls (darkness), a wound that closes cleaner than it should
+(life). What stays forbidden is unchanged and is not about *range*: never instruct the
+mortal, never pick between authored endings. Fate still rolls.
 
 Every encounter authored from 2026-07-27 ships **nudge-native**. The player is dealt a
 hand of authored, essence-priced **nudges** that shift the named odds; **fate rolls the
