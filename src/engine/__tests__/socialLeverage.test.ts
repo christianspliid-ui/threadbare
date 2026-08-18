@@ -108,7 +108,7 @@ describe('computeInitialLeverage', () => {
     const graph = buildGraph();
     graph.addNode({ id: 'a1', type: 'actor', name: 'Actor', properties: {} });
     graph.addNode({ id: 't1', type: 'actor', name: 'Target', properties: {} });
-    graph.addNode({ id: 'f1', type: 'actor', name: 'Guild', properties: {} });
+    graph.addNode({ id: 'f1', type: 'actor', name: 'Guild', properties: { actorType: 'faction' } });
     graph.addEdge({
       id: 'member.a1.f1', type: 'member_of', source: 'a1', target: 'f1',
       properties: { role: 'member', rank: 0.9, joinedTick: 0 },
@@ -128,7 +128,7 @@ describe('computeInitialLeverage', () => {
     const graph = buildGraph();
     graph.addNode({ id: 'a1', type: 'actor', name: 'Actor', properties: {} });
     graph.addNode({ id: 't1', type: 'actor', name: 'Target', properties: {} });
-    graph.addNode({ id: 'f1', type: 'actor', name: 'Guild', properties: {} });
+    graph.addNode({ id: 'f1', type: 'actor', name: 'Guild', properties: { actorType: 'faction' } });
     graph.addEdge({
       id: 'member.a1.f1', type: 'member_of', source: 'a1', target: 'f1',
       properties: { role: 'member', rank: 0.5, joinedTick: 0 },
@@ -146,7 +146,7 @@ describe('computeInitialLeverage', () => {
   it('clamps an out-of-scale rank to FACTION_RANK_MAX', () => {
     const graph = buildGraph();
     graph.addNode({ id: 'a1', type: 'actor', name: 'Actor', properties: {} });
-    graph.addNode({ id: 'f1', type: 'actor', name: 'Guild', properties: {} });
+    graph.addNode({ id: 'f1', type: 'actor', name: 'Guild', properties: { actorType: 'faction' } });
     // A stray integer-scale fixture must not hand back more than the ceiling.
     graph.addEdge({
       id: 'member.a1.f1', type: 'member_of', source: 'a1', target: 'f1',

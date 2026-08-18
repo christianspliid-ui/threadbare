@@ -144,12 +144,17 @@ export const EDGE_SCHEMA: Record<EdgeType, EdgeSchema> = {
   },
   belongs_to: {
     type: 'belongs_to',
-    sourceNodeType: ['actor', 'location'],
+    // THR-1177: `region` added. This is the one family with measured runtime violations
+    // — 18 of 315 in a seed-42/medium/120-tick world, every one of them region→culture
+    // from `historicalCulture.ts:206-213`, which is deliberate and documented. The
+    // defect was schema drift, not the writer: enforcing the old row would have refused
+    // valid worldgen edges on day one.
+    sourceNodeType: ['actor', 'location', 'region'],
     targetNodeType: 'actor',
     direction: 'directed',
     cardinality: 'many-to-many',
     requiredProperties: [],
-    description: 'Actor/location belongs to a culture. Edge properties: culturalStrength, cultureLayer.',
+    description: 'Actor/location/region belongs to a culture. Edge properties: culturalStrength, cultureLayer.',
   },
   thread: {
     type: 'thread',
@@ -221,11 +226,18 @@ export const EDGE_SCHEMA: Record<EdgeType, EdgeSchema> = {
   located_at: {
     type: 'located_at',
     sourceNodeType: 'actor',
-    targetNodeType: 'location',
+    // THR-1177: `sublocation` added. The three-tier position model (hex → location →
+    // sublocation) makes a sublocation target contract-legal, but the row declared
+    // location-only. It produced zero violations in the 120-tick measurement because
+    // the canonical writer (`sublocation.ts`) mints sublocations as `location` nodes —
+    // the latent half is `strategicGraphOps.createSublocation`, which mints
+    // `type: 'sublocation'` and simply did not fire in that run. Left unwidened, the
+    // chokepoint below would refuse a legal position edge the first time it did.
+    targetNodeType: ['location', 'sublocation'],
     direction: 'directed',
     cardinality: 'many-to-many',
     requiredProperties: [],
-    description: 'Actor is physically at this location. Source = actor, target = location.',
+    description: 'Actor is physically at this location or sublocation. Source = actor, target = the most specific node they occupy.',
   },
   avatar_of: {
     type: 'avatar_of',
@@ -424,6 +436,49 @@ export const EDGE_SCHEMA: Record<EdgeType, EdgeSchema> = {
     requiredProperties: ['magnitude', 'context', 'grantedTick', 'redeemed', 'broken'],
     description: 'Debtor owes a social favor to the creditor. Properties: magnitude, context, grantedTick, redeemed, broken.',
   },
+  // ── Faction work orders (THR-1177) ────────────────────────────────────────
+  // Both had live writers and no registry entry at all, so `EDGE_SCHEMA[type]` was
+  // undefined and every edge they minted skipped validation silently. Endpoints read
+  // off the writers: the quest and bounty nodes are `event` nodes carrying a
+  // `nodeSubtype` discriminator, not node types of their own.
+  commissions: {
+    type: 'commissions',
+    sourceNodeType: 'actor',
+    targetNodeType: 'event',
+    direction: 'directed',
+    cardinality: 'one-to-many',
+    requiredProperties: ['expiryTick'],
+    description: 'Faction commissions a quest. Source = faction actor, target = event node with nodeSubtype "faction_quest" (phaseFactionActions).',
+  },
+  issues: {
+    type: 'issues',
+    sourceNodeType: 'actor',
+    targetNodeType: 'event',
+    direction: 'directed',
+    cardinality: 'one-to-many',
+    requiredProperties: ['expiryTick'],
+    description: 'Faction issues a bounty. Source = faction actor, target = event node with nodeSubtype "bounty" (phaseFactionActions).',
+  },
+
+  // ── Pilgrimage routes (THR-1177) ──────────────────────────────────────────
+  sacred_route: {
+    type: 'sacred_route',
+    sourceNodeType: 'actor',
+    targetNodeType: 'location',
+    direction: 'directed',
+    cardinality: 'one-to-many',
+    requiredProperties: ['establishedTick'],
+    // Register-or-reject decision (THR-1177 asked for one sentence; this is the
+    // reasoning): registered, because rejecting would silently void an eight-tick
+    // strategic project that shipped content already performs — four live edges in the
+    // seeded world — and no existing edge type carries "this actor consecrated a
+    // pilgrimage route to this place", so the rewrite would have had to destroy the
+    // fiction to satisfy the registry (NFP #5 and #6 both point the other way).
+    // KNOWN GAP: zero consumers — nothing reads this edge yet, so it is inert rather
+    // than wrong. Tracked as THR-1184; do not read that gap as a reason to unregister.
+    description: 'Actor established a consecrated pilgrimage route to a location. Written by zealotStrategicPack via createRelationEdge. KNOWN GAP: no consumers yet (THR-1184).',
+  },
+
   // ── Ruins Layer (THR-149, THR-150) ────────────────────────────────────────
   knows_clue_of: {
     type: 'knows_clue_of',
@@ -455,6 +510,36 @@ export const EDGE_SCHEMA: Record<EdgeType, EdgeSchema> = {
   },
 
   // ── Faction Succession (THR-432) ───────────────────────────────────────────
+  // ── Dormant declared families (THR-1177) ──────────────────────────────────
+  // Both are in `EdgeType` and were missing from this `Record<EdgeType, …>` — holes
+  // parked in the typecheck baseline. Neither has a producer anywhere in `src/`, so
+  // these rows document intent rather than observed writers: the endpoints are the
+  // honest reading of each type's declaration comment. The first real producer either
+  // matches, or trips the chokepoint loudly and gets the row corrected — which is what
+  // the enforcement is for. Do not treat either row as measured.
+  knows_spell: {
+    type: 'knows_spell',
+    sourceNodeType: 'actor',
+    // The union's comment says "actor → spell_template", but there is no
+    // `spell_template` NodeType and spells are not graph nodes at all today
+    // (`spellActivation.ts` reads them off actor properties). `action_template` is the
+    // nearest real type a learned spell would be minted as.
+    targetNodeType: 'action_template',
+    direction: 'directed',
+    cardinality: 'many-to-many',
+    requiredProperties: [],
+    description: 'DORMANT (no producers): actor has learned a spell. Endpoints are declared intent, not measured — correct this row when a writer appears.',
+  },
+  embodies_spirit_of: {
+    type: 'embodies_spirit_of',
+    sourceNodeType: 'actor',
+    targetNodeType: 'location',
+    direction: 'directed',
+    cardinality: 'one-to-one',
+    requiredProperties: [],
+    description: 'DORMANT (no producers): place_spirit actor embodies the spirit of a location (THR-401). Source = actor with actorType "place_spirit".',
+  },
+
   will_succeed: {
     type: 'will_succeed',
     sourceNodeType: 'actor',
@@ -507,4 +592,61 @@ export function matchesNodeType(
     return allowedTypes.includes(actualType as NodeType);
   }
   return actualType === allowedTypes;
+}
+
+// ─── Chokepoint validation (THR-1177) ─────────────────────────────
+
+/**
+ * Why a proposed edge is not schema-legal, or `null` when it is.
+ *
+ * Shared by the two generic writer chokepoints — `graphOpExecutor.executeAddEdge`
+ * (content-authored `add_edge` ops, whose endpoints come from sentinel resolution and
+ * so can bind scenery) and `strategicGraphOps.createRelationEdge` (which accepted any
+ * string at all as an edge type). Those two are the only paths through which an
+ * arbitrary family can be written with unchecked endpoints, which is why one check
+ * here covers every family at once rather than needing thirty per-family guards
+ * (THR-1176 audit).
+ *
+ * Deliberately a pure function over *type strings*, not over nodes or a graph: it has
+ * to be callable from both chokepoints and from tests without a world, and keeping the
+ * graph out of it means it cannot develop opinions about anything but the schema.
+ *
+ * `null` for a legal edge, so callers read as `const violation = validateEdgeEndpoints(...)`.
+ */
+export interface EdgeSchemaViolation {
+  /** `unknown_type` = not in EDGE_SCHEMA at all; the others name the offending endpoint. */
+  reason: 'unknown_type' | 'source_type' | 'target_type';
+  /** Human-readable, safe to put straight into a trace summary or an op's `error`. */
+  message: string;
+}
+
+export function validateEdgeEndpoints(
+  edgeType: string,
+  sourceNodeType: string | undefined,
+  targetNodeType: string | undefined,
+): EdgeSchemaViolation | null {
+  const schema = EDGE_SCHEMA[edgeType as EdgeType];
+  if (!schema) {
+    return {
+      reason: 'unknown_type',
+      message: `Edge type "${edgeType}" is not registered in EDGE_SCHEMA`,
+    };
+  }
+
+  // An endpoint we cannot resolve is not a schema violation — the caller's own
+  // node-existence check owns that case, and reporting it here would produce two
+  // errors for one cause.
+  if (sourceNodeType !== undefined && !matchesNodeType(sourceNodeType, schema.sourceNodeType)) {
+    return {
+      reason: 'source_type',
+      message: `Edge "${edgeType}" source must be ${JSON.stringify(schema.sourceNodeType)}, got "${sourceNodeType}"`,
+    };
+  }
+  if (targetNodeType !== undefined && !matchesNodeType(targetNodeType, schema.targetNodeType)) {
+    return {
+      reason: 'target_type',
+      message: `Edge "${edgeType}" target must be ${JSON.stringify(schema.targetNodeType)}, got "${targetNodeType}"`,
+    };
+  }
+  return null;
 }

@@ -25,6 +25,17 @@ export type NodeType =
   | 'event'              // resolved action records
   | 'cosmology'          // sphere/foundation nodes (imported from taxonomy)
   | 'region'             // geographic region clusters (terrain gen Phase 2)
+  // THR-1177: sublocations are minted two ways and this union only ever described one
+  // of them. `sublocation.ts` mints them as `location` nodes carrying
+  // `locationSubtype`/`parentLocationId`; `strategicGraphOps.createSublocation` mints
+  // `type: 'sublocation'` outright, and `encounterAftermath` (~701) and
+  // `buildUnifiedEncounterStageModel` (~113) both branch on that literal. So the type
+  // was live in production on both the write and read side while being off-union — the
+  // union is what drifted, not the writers. Three EDGE_SCHEMA rows already named it
+  // (`contains`, `has_trait`, `constructed_by`), each a type error parked in the
+  // typecheck baseline. Registering it here makes those rows legal and lets `located_at`
+  // widen honestly. The duplicate mint shape is a separate design question — THR-1183.
+  | 'sublocation'        // a place inside a location, minted directly by strategicGraphOps
   | 'ambition'           // ambition template instances assigned to actors
   | 'encounter_template' // encounter template graph node (design plan §3.8, B5)
   | 'relationship'       // reified relationship between two actors (design plan §3.9, B5)
@@ -122,6 +133,16 @@ export type EdgeType =
   // Faction succession (THR-432)
   | 'will_succeed'         // agent → faction: anointed to inherit faction leadership on next leader exit
   | 'leads'                // agent → faction: the seated leader of this faction (authoritative when present)
+  // Faction work orders (THR-1177) — live writers in phaseFactionActions since before
+  // this union knew about them, so every edge they minted was unvalidatable by
+  // construction: `EDGE_SCHEMA[type]` returned undefined and the dev-mode warn skipped
+  // straight past. Endpoints below match the writers, not an intention.
+  | 'commissions'      // faction → event(faction_quest): faction posts a quest (phaseFactionActions:302)
+  | 'issues'           // faction → event(bounty): faction issues a bounty (phaseFactionActions:649)
+  // Pilgrimage routes (THR-1177) — content-minted by zealotStrategicPack via
+  // `createRelationEdge`, which accepted any string as an edge type. Registered rather
+  // than rejected: see the EDGE_SCHEMA row for the reasoning.
+  | 'sacred_route'     // actor → location: a consecrated pilgrimage route
   // Rival schemes (THR-66)
   | 'sponsors_scheme';     // rival/notable actor → materialized target node (location it is scheming against; THR-66 rivals, THR-630 notable agendas — edge properties carry family + sponsorKind)
 

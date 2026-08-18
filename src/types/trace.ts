@@ -429,12 +429,15 @@ export type TraceCategory =
   // inspector. Found by the regression gate, not by hand — a first scan keyed on
   // /[a-z0-9_]+/ misses every dotted name, and the same omission is why these
   // outlived the 34 above.
+  // Edge integrity (THR-1177)
+  | 'edge_schema_refused'
   | 'chronicle.aggregated'
   | 'chronicle.aggregate_failed'
   | 'naming.constrained_reject'
   | 'rival.scheme_phase_advanced';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
+  'edge_schema_refused',
   'action_selection', 'narrative_generation', 'context_harvest',
   'dilemma_resolution', 'tick_summary', 'encounter_resolution',
   'encounter_step_prose_recorded',
@@ -788,6 +791,35 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
 ];
 
 /** Base shape for all trace entries */
+/**
+ * Trace: a generic writer chokepoint refused an edge that violated EDGE_SCHEMA (THR-1177).
+ *
+ * Emitted from `graphOpExecutor.executeAddEdge` and
+ * `strategicGraphOps.createRelationEdge` when the proposed edge's type is unregistered
+ * or an endpoint's node type is not what the family declares. The write is refused
+ * fail-soft — the op returns its failure shape and nothing throws (NFP #4).
+ *
+ * **Volume is a signal, not noise.** A healthy world emits ZERO of these: the
+ * seed-42/medium/120-tick smoke asserts exactly that. A run that starts emitting them
+ * means either content is authoring an edge shape the schema forbids, or a schema row
+ * has drifted from a deliberate writer — the THR-1176 `belongs_to` case. Read the
+ * `reason` to tell those apart: `unknown_type` is almost always content reaching for a
+ * family nobody registered, while `source_type`/`target_type` is usually drift.
+ */
+export interface EdgeSchemaRefusedTrace extends TraceBase {
+  category: 'edge_schema_refused';
+  /** The edge family that was refused — may not be a registered EdgeType at all. */
+  edgeType: string;
+  /** Which chokepoint refused it, so the offending writer is one grep away. */
+  chokepoint: 'graph_op_add_edge' | 'create_relation_edge';
+  reason: 'unknown_type' | 'source_type' | 'target_type';
+  sourceId: string;
+  targetId: string;
+  /** Resolved node types; `undefined` when the node did not exist. */
+  sourceNodeType?: string;
+  targetNodeType?: string;
+}
+
 export interface TraceBase {
   id: number;
   tick: number;
@@ -2346,6 +2378,7 @@ export type TraceEntry =
   | EncounterAwarenessTrace
   | FactionAwarenessTrace
   | CacheUpdateTrace
+  | EdgeSchemaRefusedTrace
   | FilterPipelineTrace
   | ScoringTrace
   | MovementTrace
