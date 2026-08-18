@@ -1006,12 +1006,41 @@ export type EncounterAftermathReactionEffect =
   }
   | {
     /**
-     * Create an owes_favor edge (target → actor) when the encounter succeeds.
+     * Create an owes_favor edge (debtor → actor) when the encounter succeeds.
      * The favor magnitude is sampled from magnitudeRange using the session RNG.
+     *
+     * **The debtor must be a person, and since THR-1175 you have to say which
+     * one.** The debtor used to default to `action.targetId` unconditionally,
+     * which is only a person when the encounter happens to target one — in The
+     * Grateful Kin it targeted a *location*, so a town ended up owing a social
+     * favour that no consumer of `owes_favor` can ever collect (they are all
+     * individual-shaped; see the endpoint-enforcement note in
+     * `secretGeneration.ts`). The graph layer now refuses that edge, which
+     * turns the silent inert write into a loud refusal — but a refusal at
+     * runtime is still an authored consequence that does not happen.
+     *
+     * `debtorAgentId` closes it at authoring time: name the person who owes.
+     * Accepts scene sentinels, so `'$cast:innkeeper'` binds the scene's
+     * persistent agent and `'$target'` re-states the old behaviour explicitly
+     * for encounters that genuinely target a person. `check:encounter` requires
+     * it — a bare `favor_creation` is red, because nothing static can prove its
+     * target context resolves to a person.
+     *
+     * When the fiction is a *place* opening for someone rather than a person
+     * owing them, the shape is not a favour at all: use `apply_condition` with
+     * `targetLocationId` (a location condition, THR-1143) plus an
+     * `encounter_seed` for the return visit. That pair has live consumers; a
+     * location debtor has none.
      */
     readonly kind: 'favor_creation';
     readonly magnitudeRange: [number, number];
     readonly context: string;
+    /**
+     * Who owes. A cast sentinel (`$cast:<key>`), `$actor`, `$target`, or a
+     * literal agent id. Required by the authoring gate; optional in the type so
+     * the runtime keeps its historical fallback rather than throwing (NFP #4).
+     */
+    readonly debtorAgentId?: string;
     readonly when?: EffectPredicate;
   }
   // ─── Faction standing effects (THR-167) ──────────────────────────────────

@@ -648,6 +648,13 @@ const SCENE_SENTINEL_FIELDS = {
   // `$cast:<key>` binds the person; a literal faction or location id is not a
   // sentinel and passes through untouched, then is validated by the handler.
   counterpartyId: 'agent',
+  // THR-1175 — `favor_creation` names who *owes* here. Registered as 'agent' so
+  // `$cast:<key>` binds the scene's persistent person and the kind check refuses
+  // to bind a location: that refusal is the point, since a place owing a social
+  // favour is an edge no consumer can collect. `$target` re-states the old
+  // implicit behaviour explicitly, and only binds when the target really is a
+  // person.
+  debtorAgentId: 'agent',
   targetFactionId: 'faction',
   // THR-1144 — `membership_change` names the faction someone joins or leaves in
   // `factionId`, not `targetFactionId`, because the *person* is the effect's
@@ -4149,7 +4156,15 @@ export function applyEncounterAftermathReaction(
       case 'favor_creation': {
         // Explicit effect-level favor creation (distinct from template-level favorGeneration flag)
         const fcActorId = actorAgentId;
-        const fcTargetId = action?.targetId;
+        // THR-1175 — the debtor is whoever the author named, and only falls back
+        // to the action target for content written before `debtorAgentId` existed.
+        // The fallback is the defect this ticket is about: `action.targetId` is a
+        // person only when the encounter happens to target one, and The Grateful
+        // Kin targets a location, so the fallback minted a favour owed by a town.
+        // It is kept (NFP #6, additive) rather than removed, because removing it
+        // would silently drop favours from shipped content instead of refusing
+        // them loudly — but it is now guarded below and gated at authoring time.
+        const fcTargetId = effect.debtorAgentId ?? action?.targetId;
         if (!fcActorId || !fcTargetId) {
           emitTrace({
             tick, category: 'favor_created', agentId: actorAgentId,
@@ -4175,6 +4190,33 @@ export function applyEncounterAftermathReaction(
               effectKind: 'favor_creation', debtorId: fcTargetId, creditorId: fcActorId,
               magnitude: fcMagnitude, context: effect.context,
               summary: `favor_creation[${i}]: ${fcTargetId} owes ${fcActorId} (${effect.context}, mag ${fcMagnitude.toFixed(2)})`,
+            });
+          } else {
+            // THR-1175 — `createFavorEdge` returns false for two very different
+            // reasons: the debtor is at the favour cap (ordinary, expected), or
+            // the graph layer refused the endpoints (a location or faction
+            // debtor, which no consumer can ever collect). Until now both were
+            // dropped on the floor by a bare `if (fcCreated)`, so the *loud*
+            // refusal this ticket added would have been silent one frame later
+            // at the only surface a reader looks at. The edge layer emits its
+            // own diagnosis; this trace records that an authored consequence
+            // did not happen, which is the aftermath's business.
+            const fcDebtorNode = state.graph.getNode(fcTargetId);
+            emitTrace({
+              tick, category: 'favor_created', agentId: actorAgentId,
+              encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+              effectKind: 'favor_creation', success: false,
+              failReason: 'edge_not_created',
+              debtorId: fcTargetId, creditorId: fcActorId,
+              debtorNodeType: fcDebtorNode?.type,
+              debtorActorType: typeof fcDebtorNode?.properties.actorType === 'string'
+                ? fcDebtorNode.properties.actorType
+                : undefined,
+              debtorDeclared: effect.debtorAgentId != null,
+              summary:
+                `favor_creation[${i}] produced no edge: ${fcTargetId} `
+                + `(${fcDebtorNode ? `${fcDebtorNode.type}${typeof fcDebtorNode.properties.actorType === 'string' ? `/${fcDebtorNode.properties.actorType}` : ''}` : 'missing node'}) `
+                + `owes nothing to ${fcActorId} — refused endpoints or favour cap.`,
             });
           }
         } catch {

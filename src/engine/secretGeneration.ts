@@ -21,6 +21,7 @@ import type { WorldGraph } from './graph';
 import type { GraphNode } from '../types/graph';
 import type { SecretType, SecretSource, KnowsSecretOfEdgeProperties } from '../types/secretsFavors';
 import { MAX_SECRETS_PER_AGENT, MAX_FAVORS_PER_AGENT } from '../types/secretsFavors';
+import { emitTrace } from './traceBuffer';
 
 // ─── Score thresholds ─────────────────────────────────────────────────────
 
@@ -249,6 +250,130 @@ export function pickSecretSubject(
  * Create a `knows_secret_of` edge from discoverer → subject.
  * Returns the edge properties on success, undefined if capped or duplicate.
  */
+// ─── Endpoint enforcement (THR-1175) ──────────────────────────────────────
+
+/**
+ * The two social-leverage edge families are declared `actor → actor` in
+ * `edgeSchema.ts`, and until THR-1175 that declaration was **advisory**: the
+ * schema layer only warns in dev mode, so `createFavorEdge` and
+ * `createSecretEdge` would edge from any node id handed to them. The measured
+ * consequence (director probe, 2026-08-18) was Sacred Grove — a *location* —
+ * becoming the debtor of a social favour in The Grateful Kin, because
+ * `favor_creation` passes `action.targetId` through unchecked and that
+ * encounter targets a place.
+ *
+ * A location debtor is not merely off-schema, it is **uncollectable by
+ * construction**. Every consumer of `owes_favor` is person-shaped: social
+ * leverage reads favours only when the creditor targets the debtor in a deep
+ * social scene, tension drift moves sentiment on the debtor's `relates_to`
+ * edge, and call-in/break fire from person-to-person interactions. A place
+ * participates in none of them, so the only code that will ever touch such an
+ * edge is the expiry sweep that silently deletes it ~80 ticks later. The write
+ * is real, well-formed, anchored — and inert. That is the class this check
+ * exists to refuse: not a malformed edge, a **consumerless** one.
+ *
+ * Debtors are held to `individual` specifically, not merely `actor`. The
+ * consumers above are individual-shaped; a faction, culture or god owing a
+ * social favour has no reader today, so allowing it would mint the same inert
+ * edge one node type over. Widening that is a design extension with its own
+ * consumers, not a default.
+ *
+ * Fail-soft, never throws (NFP #4) — a refusal returns the caller's
+ * "didn't happen" value and emits one loud trace, so the tick loop is
+ * unaffected and the refusal is inspectable (NFP #2) instead of silent.
+ */
+
+/** Actor subtypes that may sit on either end of a social-leverage edge. */
+const SOCIAL_EDGE_ENDPOINT_NODE_TYPE = 'actor';
+
+/** Actor subtype that may *owe* — the one shape every favour consumer reads. */
+const FAVOR_DEBTOR_ACTOR_TYPE = 'individual';
+
+type SocialEdgeRole = 'debtor' | 'creditor' | 'discoverer' | 'subject';
+
+interface EndpointVerdict {
+  readonly ok: boolean;
+  /** Why it was refused — absent when `ok`. */
+  readonly reason?: 'node_missing' | 'not_an_actor' | 'not_an_individual';
+  /** What the node actually was, for the trace. */
+  readonly foundNodeType?: string;
+  readonly foundActorType?: string;
+}
+
+/**
+ * Check one endpoint of a social-leverage edge.
+ *
+ * `requireIndividual` is the debtor-side rule; creditors, discoverers and
+ * subjects need only be actors, because their consumers read them as parties
+ * rather than as people with sentiment to move.
+ */
+function checkSocialEdgeEndpoint(
+  nodeId: string,
+  graph: WorldGraph,
+  requireIndividual: boolean,
+): EndpointVerdict {
+  const node = graph.getNode(nodeId);
+  if (!node) return { ok: false, reason: 'node_missing' };
+  if (node.type !== SOCIAL_EDGE_ENDPOINT_NODE_TYPE) {
+    return { ok: false, reason: 'not_an_actor', foundNodeType: node.type };
+  }
+  const actorType = node.properties.actorType;
+  // Refuse a *known-wrong* subtype, not an unknown one. Every real producer sets
+  // `actorType` — `ActorNodeProperties` requires it — so a faction, culture, god
+  // or ascendant debtor is caught here by what it says it is. An actor node with
+  // the field absent is malformed data rather than the wrong kind of thing, and
+  // refusing it would have this guard invent a defect it was not written to find:
+  // the first casualty was a `secretsFavors` fixture that builds `properties: {}`
+  // and is testing something else entirely. Node type is the unambiguous half and
+  // is checked strictly above; a location can never reach this line.
+  if (requireIndividual && typeof actorType === 'string' && actorType !== FAVOR_DEBTOR_ACTOR_TYPE) {
+    return {
+      ok: false,
+      reason: 'not_an_individual',
+      foundNodeType: node.type,
+      foundActorType: actorType,
+    };
+  }
+  return { ok: true };
+}
+
+/**
+ * Refuse-and-trace for a bad endpoint. Returns `true` when the edge may
+ * proceed, `false` when it was refused (and a trace has been emitted).
+ */
+function socialEdgeEndpointsPermit(
+  edgeType: 'owes_favor' | 'knows_secret_of',
+  endpoints: readonly { id: string; role: SocialEdgeRole; requireIndividual: boolean }[],
+  tick: number,
+  graph: WorldGraph,
+): boolean {
+  for (const endpoint of endpoints) {
+    const verdict = checkSocialEdgeEndpoint(endpoint.id, graph, endpoint.requireIndividual);
+    if (verdict.ok) continue;
+    emitTrace({
+      tick,
+      category: edgeType === 'owes_favor' ? 'favor_created' : 'secret_discovered',
+      agentId: endpoint.id,
+      success: false,
+      failReason: `endpoint_refused_${verdict.reason}`,
+      edgeType,
+      refusedRole: endpoint.role,
+      refusedNodeId: endpoint.id,
+      foundNodeType: verdict.foundNodeType,
+      foundActorType: verdict.foundActorType,
+      summary:
+        `${edgeType} refused: ${endpoint.role} ${endpoint.id} is `
+        + `${verdict.reason === 'node_missing'
+          ? 'not in the graph'
+          : `a ${verdict.foundNodeType}${verdict.foundActorType ? `/${verdict.foundActorType}` : ''}`}`
+        + `, and ${edgeType} consumers only read `
+        + `${endpoint.requireIndividual ? 'individual actors' : 'actors'}.`,
+    });
+    return false;
+  }
+  return true;
+}
+
 export function createSecretEdge(
   discovererId: string,
   subjectId: string,
@@ -257,6 +382,16 @@ export function createSecretEdge(
   tick: number,
   graph: WorldGraph,
 ): KnowsSecretOfEdgeProperties | undefined {
+  // THR-1175 — the schema declares `knows_secret_of` actor→actor and only warned.
+  // The THR-1176 audit measured one shipped `individual→faction` secret already
+  // partly inert against the leverage reader; this refuses the class at source.
+  if (!socialEdgeEndpointsPermit('knows_secret_of', [
+    { id: discovererId, role: 'discoverer', requireIndividual: false },
+    { id: subjectId, role: 'subject', requireIndividual: false },
+  ], tick, graph)) {
+    return undefined;
+  }
+
   const existing = graph.getOutgoingEdges(discovererId, 'knows_secret_of')
     .filter(e => e.target === subjectId && !(e.properties.revealed as boolean));
   if (existing.length >= MAX_SECRETS_PER_AGENT) return undefined;
@@ -288,7 +423,11 @@ export function createSecretEdge(
 
 /**
  * Create an `owes_favor` edge from debtor → creditor.
- * Returns true on success, false if capped or invalid.
+ * Returns true on success, false if capped, refused (THR-1175) or invalid.
+ *
+ * The debtor must be an **individual** actor — see the endpoint-enforcement
+ * note above for why a place or a faction owing a favour is an edge no
+ * consumer can ever collect.
  */
 export function createFavorEdge(
   debtorId: string,
@@ -298,6 +437,13 @@ export function createFavorEdge(
   tick: number,
   graph: WorldGraph,
 ): boolean {
+  if (!socialEdgeEndpointsPermit('owes_favor', [
+    { id: debtorId, role: 'debtor', requireIndividual: true },
+    { id: creditorId, role: 'creditor', requireIndividual: false },
+  ], tick, graph)) {
+    return false;
+  }
+
   const existing = graph.getOutgoingEdges(debtorId, 'owes_favor')
     .filter(e => !(e.properties.redeemed as boolean) && !(e.properties.broken as boolean));
   if (existing.length >= MAX_FAVORS_PER_AGENT) return false;

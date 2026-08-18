@@ -45,6 +45,7 @@ import type {
 } from '../../types/encounter';
 import { DEFAULT_SETTING_SUPPORT_BUNDLES } from '../default-support-bundles';
 import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
+import { CONDITION_STANDING_WELCOME_DURATION } from '../condition-trait-content';
 
 // ─── Slice tuning (NFP #1) ───────────────────────────────────────────
 
@@ -118,10 +119,21 @@ export const SLICE_NERVE_EROSION = -0.02;
  */
 export const SLICE_CONCEALED_ACTION_SEVERITY = 0.45;
 
-/** The kin's debt when the thanks is taken well. */
-export const SLICE_KIN_FAVOR_RANGE: [number, number] = [0.4, 0.7];
-/** The kin's debt when the thanks is fumbled — still owed, and thinner for it. */
-export const SLICE_KIN_FAVOR_FUMBLED_RANGE: [number, number] = [0.2, 0.4];
+/**
+ * How warmly the kin's town opens for the traveler — THR-1175.
+ *
+ * These replace `SLICE_KIN_FAVOR_RANGE` / `SLICE_KIN_FAVOR_FUMBLED_RANGE`, which
+ * were favour magnitudes on an `owes_favor` edge the town could never repay. The
+ * quantity moved from "how big a debt" to "how wide the door", because the state
+ * moved from a person's ledger to a place's condition. Three bands, one axis:
+ * tuning how much a gratitude beat is worth is editing these numbers (NFP #1).
+ */
+/** The welcome when the thanks is taken well. */
+export const SLICE_KIN_WELCOME_INTENSITY = 0.55;
+/** The welcome when the room carries it — the same door, opened wider. */
+export const SLICE_KIN_WELCOME_INTENSITY_WARM = 0.75;
+/** The welcome when the thanks is fumbled — kin are stubborn, but it is cooler. */
+export const SLICE_KIN_WELCOME_INTENSITY_FUMBLED = 0.3;
 
 export const SLICE_TEMPLATE_IDS = {
   bridge: 'encounter.slice.unsafe_bridge',
@@ -3606,15 +3618,38 @@ export const SLICE_GRATEFUL_KIN: UnifiedActionTemplate = {
         // NOUN` tag — so the noun carries the mechanic and the detail carries
         // the name.
         {
-          id: 'slice.kin.a_favour_owed',
+          // THR-1175 — the chip that made the director ask the question that
+          // unpicked this whole beat. Verbatim: *"if it is a graph edge, then you
+          // must have created the edge to the town directly? so now the town,
+          // sacred grove, owes the favour? … how would a town and a person
+          // interact in a deep social scene?"* It would not, and could not.
+          // `favor_creation` set debtor = `action.targetId`, this encounter
+          // targets a *location*, and every consumer of `owes_favor` is
+          // person-shaped — social leverage, tension drift, call-in and break all
+          // read an individual's regard for another. So the edge was real,
+          // well-formed, correctly anchored by the chip, and completely inert:
+          // the only code that would ever touch it again was the expiry sweep
+          // that deletes it ~80 ticks later.
+          //
+          // The fiction was never a person-debt. "There is a roof in this town
+          // that opens for them now" is a property of the *place*, and places can
+          // carry conditions (THR-1143). So the band now writes
+          // `trait.condition.location.standing_welcome` onto the location, which
+          // the Location Profile renders and the chip's `location`-kind anchor
+          // clicks through to (THR-1172 shipped that tier two hours earlier).
+          // Same gratitude, a mechanism that can actually pay it.
+          id: 'slice.kin.a_standing_welcome',
           kind: 'reputation',
-          title: 'A Favour Owed',
+          title: 'A Standing Welcome',
           causeClause: 'The bowl came unasked and the coin went back twice, in front of the whole room',
-          detail: '{target} owes them a favour now — a bed and a hearing the next time they come through.',
+          detail: '{target} keeps a door open for them now — a bed and a hearing the next time they come through.',
           polarity: 'gain',
           category: 'bond',
           direction: 'gain',
-          stateNoun: { text: 'a favour owed', entityId: '$target', visualKind: 'agent', tooltipId: 'ui.favour_owed' },
+          // `visualKind: 'location'`, not `'agent'`. The old value was the second
+          // half of the same bug: a location entityId declared as an agent, which
+          // is what rendered the fallback "A" tile in the director's screenshot.
+          stateNoun: { text: 'a standing welcome', entityId: '$target', visualKind: 'location', tooltipId: 'ui.standing_welcome' },
           concepts: [{ text: 'a bed and a hearing' }],
         },
       ],
@@ -3625,9 +3660,15 @@ export const SLICE_GRATEFUL_KIN: UnifiedActionTemplate = {
           intent: 'A meal, a story told rightly, and a standing welcome.',
           effects: [
             {
-              kind: 'favor_creation',
-              magnitudeRange: SLICE_KIN_FAVOR_RANGE,
-              context: 'The fen-road kindness: the family’s kin owe the traveler a roof and more.',
+              // THR-1175 — was `favor_creation`, which minted a favour owed by a
+              // town. `$target` binds the location the scene is standing in; the
+              // sentinel refuses to bind anything that is not a place, so this
+              // no-ops loudly rather than landing somewhere wrong.
+              kind: 'apply_condition',
+              conditionTraitId: 'trait.condition.location.standing_welcome',
+              targetLocationId: '$target',
+              durationTicks: CONDITION_STANDING_WELCOME_DURATION,
+              intensity: SLICE_KIN_WELCOME_INTENSITY,
             },
           ],
         },
@@ -3643,18 +3684,18 @@ export const SLICE_GRATEFUL_KIN: UnifiedActionTemplate = {
             'every telling.',
           changes: [
             {
-              // State-first, debtor-anchored — see the note on
-              // 'slice.kin.a_favour_owed'. Same edge, louder room.
-              id: 'slice.kin.a_favour_owed_well',
+              // State-first, place-anchored — see the note on
+              // 'slice.kin.a_standing_welcome'. Same condition, louder room.
+              id: 'slice.kin.a_standing_welcome_well',
               kind: 'reputation',
-              title: 'A Favour Owed',
+              title: 'A Standing Welcome',
               causeClause: 'They took the thanks graciously and let her say it in front of everyone',
-              detail: '{target} owes them a favour, and says so to anyone who will listen.',
+              detail: '{target} keeps a door open for them, and says so to anyone who will listen.',
               polarity: 'gain',
               category: 'bond',
               direction: 'gain',
-              stateNoun: { text: 'a favour owed', entityId: '$target', visualKind: 'agent', tooltipId: 'ui.favour_owed' },
-              concepts: [{ text: 'a favour' }],
+              stateNoun: { text: 'a standing welcome', entityId: '$target', visualKind: 'location', tooltipId: 'ui.standing_welcome' },
+              concepts: [{ text: 'a standing welcome' }],
             },
             {
               id: 'slice.kin.the_keepsake',
@@ -3681,9 +3722,15 @@ export const SLICE_GRATEFUL_KIN: UnifiedActionTemplate = {
               intent: 'A meal, a story told rightly, a standing welcome — and a room that will repeat it.',
               effects: [
                 {
-                  kind: 'favor_creation',
-                  magnitudeRange: SLICE_KIN_FAVOR_RANGE,
-                  context: 'The fen-road kindness: the family’s kin owe the traveler a roof and more.',
+                  // THR-1175 — see 'slice.kin.a_standing_welcome'. The crit band
+                  // writes the same condition at a stronger intensity rather than
+                  // a different kind of thing, so the chip can say *warmer*
+                  // without the player having to learn a second mechanic.
+                  kind: 'apply_condition',
+                  conditionTraitId: 'trait.condition.location.standing_welcome',
+                  targetLocationId: '$target',
+                  durationTicks: CONDITION_STANDING_WELCOME_DURATION,
+                  intensity: SLICE_KIN_WELCOME_INTENSITY_WARM,
                 },
                 {
                   kind: 'reputation_tally',
@@ -3710,18 +3757,18 @@ export const SLICE_GRATEFUL_KIN: UnifiedActionTemplate = {
             'all of it the welcome is real.',
           changes: [
             {
-              // State-first, debtor-anchored — see the note on
-              // 'slice.kin.a_favour_owed'.
-              id: 'slice.kin.a_favour_owed_dearly',
+              // State-first, place-anchored — see the note on
+              // 'slice.kin.a_standing_welcome'.
+              id: 'slice.kin.a_standing_welcome_dearly',
               kind: 'reputation',
-              title: 'A Favour Owed, an Evening Spent',
+              title: 'A Standing Welcome, an Evening Spent',
               causeClause: 'The thanks was taken three times over, with a toast, and the bowl went cold twice',
-              detail: '{target} owes them a favour, and they paid for it with most of a night of being talked about.',
+              detail: '{target} keeps a door open for them, and they paid for it with most of a night of being talked about.',
               polarity: 'mixed',
               category: 'bond',
               direction: 'gain',
-              stateNoun: { text: 'a favour owed', entityId: '$target', visualKind: 'agent', tooltipId: 'ui.favour_owed' },
-              concepts: [{ text: 'a favour' }],
+              stateNoun: { text: 'a standing welcome', entityId: '$target', visualKind: 'location', tooltipId: 'ui.standing_welcome' },
+              concepts: [{ text: 'a standing welcome' }],
             },
           ],
         },
@@ -3732,20 +3779,20 @@ export const SLICE_GRATEFUL_KIN: UnifiedActionTemplate = {
             'stays welcoming — kin are stubborn that way — just less than they were going to be.',
           changes: [
             {
-              // State-first, debtor-anchored — see the note on
-              // 'slice.kin.a_favour_owed'. The band writes the same edge at the
-              // fumbled magnitude (`SLICE_KIN_FAVOR_FUMBLED_RANGE`), so the chip
-              // says a smaller favour rather than a different thing.
-              id: 'slice.kin.a_smaller_favour_owed',
+              // State-first, place-anchored — see the note on
+              // 'slice.kin.a_standing_welcome'. The band writes the same
+              // condition at the fumbled intensity, so the chip says a *cooler*
+              // welcome rather than a different thing.
+              id: 'slice.kin.a_cooler_welcome',
               kind: 'reputation',
-              title: 'A Smaller Favour Owed',
+              title: 'A Cooler Welcome',
               causeClause: 'The thanks was honest, public, and long, and they stood it badly',
-              detail: '{target} still owes them a favour. It is a smaller one than it was going to be.',
+              detail: '{target} keeps the door open anyway. It opens less wide than it was going to.',
               polarity: 'mixed',
               category: 'bond',
               direction: 'gain',
-              stateNoun: { text: 'a favour owed', entityId: '$target', visualKind: 'agent', tooltipId: 'ui.favour_owed' },
-              concepts: [{ text: 'a favour' }],
+              stateNoun: { text: 'a standing welcome', entityId: '$target', visualKind: 'location', tooltipId: 'ui.standing_welcome' },
+              concepts: [{ text: 'a standing welcome' }],
             },
           ],
           reactions: [
@@ -3755,9 +3802,14 @@ export const SLICE_GRATEFUL_KIN: UnifiedActionTemplate = {
               intent: 'Badly received is still received. She meant every word of it.',
               effects: [
                 {
-                  kind: 'favor_creation',
-                  magnitudeRange: SLICE_KIN_FAVOR_FUMBLED_RANGE,
-                  context: 'The fen-road kindness, awkwardly repaid: the debt stands, and so does the memory of the evening.',
+                  // THR-1175 — see 'slice.kin.a_standing_welcome'. Fumbled
+                  // intensity, same condition: kin are stubborn, the door stays
+                  // open, it just does not open as wide.
+                  kind: 'apply_condition',
+                  conditionTraitId: 'trait.condition.location.standing_welcome',
+                  targetLocationId: '$target',
+                  durationTicks: CONDITION_STANDING_WELCOME_DURATION,
+                  intensity: SLICE_KIN_WELCOME_INTENSITY_FUMBLED,
                 },
               ],
             },

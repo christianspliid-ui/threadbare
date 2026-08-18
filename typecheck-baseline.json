@@ -1,5 +1,5 @@
 {
-  "total": 3160,
+  "total": 3151,
   "command": "npx tsc -b --force --pretty false",
   "perFile": {
     "scripts/lint-encounter-content.ts": 2,
@@ -544,7 +544,7 @@
     "src/engine/elderEssenceReward.ts": 1,
     "src/engine/encounter.ts": 9,
     "src/engine/encounter/branchingCurator.ts": 1,
-    "src/engine/encounterAftermath.ts": 98,
+    "src/engine/encounterAftermath.ts": 93,
     "src/engine/encounterAwareness.ts": 1,
     "src/engine/encounterCache.ts": 1,
     "src/engine/encounterChoiceMemory.ts": 11,
@@ -587,7 +587,7 @@
     "src/engine/narrative.ts": 1,
     "src/engine/notableAgendas.ts": 1,
     "src/engine/npcSeeding.ts": 1,
-    "src/engine/orchestrator.ts": 39,
+    "src/engine/orchestrator.ts": 37,
     "src/engine/orchestrator/__tests__/phaseChoiceResolution.test.ts": 5,
     "src/engine/orchestrator/__tests__/phaseDetectionPressure.test.ts": 2,
     "src/engine/orchestrator/phaseAscendantHandFilter.ts": 2,
@@ -651,7 +651,6 @@
     "src/engine/ruins/questHooks.ts": 3,
     "src/engine/scry.ts": 4,
     "src/engine/secretsFavorsConsequences.ts": 3,
-    "src/engine/secretsFromResolution.ts": 2,
     "src/engine/seedAttachments.ts": 1,
     "src/engine/siegeResolution.ts": 6,
     "src/engine/simulationRuntime.ts": 1,

@@ -2116,6 +2116,64 @@ export interface CompulsionDecayedTrace extends TraceBase {
   failReason?: 'cap_evicted';
 }
 
+/**
+ * Trace: a social-leverage edge was written, or was not (THR-1175).
+ *
+ * `secret_discovered` and `favor_created` have been in `TRACE_CATEGORIES` since
+ * THR-30 with **no declared payload**, so they were absent from the `TraceEntry`
+ * union and every one of their five emit sites was a type error against
+ * `TraceEntryInput`. Six errors sat in the THR-489 baseline for it. Declaring the
+ * payloads is the actual fix: it removes those six rather than adding a seventh
+ * and eighth for this ticket's new refusal traces, and it means the next author
+ * to emit one gets checked instead of baselined.
+ *
+ * Fields are optional beyond `category` because the five sites legitimately carry
+ * different subsets — the orchestrator and `secretsFromResolution` emit success
+ * only, the aftermath applier emits success *and* three failure shapes, and the
+ * graph layer emits refusals that have no encounter around them at all. A
+ * narrower type would have to be satisfied by widening the emit sites, which is
+ * how a payload interface ends up asserted past with `as` instead of used.
+ */
+export interface SocialLeverageEdgeTrace extends TraceBase {
+  category: 'secret_discovered' | 'favor_created';
+  /** Encounter-scoped provenance, when the write came from an aftermath effect. */
+  encounterId?: string;
+  actionId?: string;
+  reactionId?: string;
+  effectIndex?: number;
+  effectKind?: string;
+  encounterContext?: string;
+  /** Legacy sibling of `category`, still emitted by the orchestrator. */
+  event?: string;
+  success?: boolean;
+  failReason?: string;
+  /** `owes_favor` endpoints. */
+  debtorId?: string;
+  creditorId?: string;
+  context?: string;
+  /** `knows_secret_of` endpoints. */
+  discovererId?: string;
+  subjectId?: string;
+  secretType?: string;
+  source?: string;
+  targetId?: string;
+  magnitude?: number;
+  /**
+   * Endpoint-refusal detail (THR-1175). `refusedRole` says which end was wrong
+   * and `foundNodeType`/`foundActorType` say what it actually was, because
+   * "refused" on its own does not tell a content author what to change.
+   */
+  edgeType?: 'owes_favor' | 'knows_secret_of';
+  refusedRole?: 'debtor' | 'creditor' | 'discoverer' | 'subject';
+  refusedNodeId?: string;
+  foundNodeType?: string;
+  foundActorType?: string;
+  debtorNodeType?: string;
+  debtorActorType?: string;
+  /** Whether the content named its debtor, or fell back to the action target. */
+  debtorDeclared?: boolean;
+}
+
 /** Trace: aftermath effect target could not be resolved or effect kind does not support the target kind */
 export interface AftermathTargetInvalidTrace extends TraceBase {
   category: 'aftermath_target_invalid';
@@ -2258,6 +2316,7 @@ export interface SurfaceFragmentsBoundTrace extends TraceBase {
 }
 
 export type TraceEntry =
+  | SocialLeverageEdgeTrace
   | SurfaceFragmentsBoundTrace
   | PersonalityTraitEmergedTrace
   | PersonalityOriginSeededTrace

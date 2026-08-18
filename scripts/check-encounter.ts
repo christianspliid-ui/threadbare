@@ -24,7 +24,9 @@
  *                            abstract-noun measure is a suffix proxy that counts
  *                            domain vocabulary against a template, so it ranks
  *                            rather than gates.
- *   3. Reference liveness    `validateNudgeGrantRefs` + `validateRewardDrawPools` — every id a card grants
+ *   3. Reference liveness    `validateNudgeGrantRefs` + `validateRewardDrawPools`
+ *                            + `validateFavorDebtors` — every id a card grants,
+ *                            every pool it draws from, and every favour's debtor
  *                            resolves against built content. This is the
  *                            per-template sibling of `validateTraitRefs`, which
  *                            is a graph-wide sweep over every content surface
@@ -63,7 +65,7 @@ import {
 } from '../src/data/content-eval/compositionContract';
 import { RETROFIT_PENDING, isRetrofitPending } from '../src/data/content-eval/retrofitPending';
 import { auditTemplate } from '../src/data/content-eval/nudgeAuditDetectors';
-import { validateNudgeGrantRefs, validateRewardDrawPools } from '../src/engine/nudgeGrantLiveness';
+import { validateNudgeGrantRefs, validateRewardDrawPools, validateFavorDebtors } from '../src/engine/nudgeGrantLiveness';
 import { NUDGE_GOLDEN_EXEMPLAR } from '../src/data/__fixtures__/nudge-exemplar/swollen-ford-exemplar';
 
 // ─── Args ────────────────────────────────────────────────────────────
@@ -209,6 +211,15 @@ function runOne(template: UnifiedActionTemplate): TemplateResult {
     ...validateRewardDrawPools([template]).empty.map(
       e => `${e.site} reward_draw → no candidate matches [${e.categoryWeights.join('/')}]`
         + `${e.tagFilters.length ? ` tags ${e.tagFilters.join(' ')}` : ' (no tag filter)'}`,
+    ),
+    // THR-1175 — the third liveness shape: not a dead id and not an empty query,
+    // but a write whose consumers can never fire for the operand it will get.
+    // A `favor_creation` with no declared debtor falls back to `action.targetId`,
+    // which is a person only by luck of what the encounter targets — and when it
+    // is a location, every `owes_favor` consumer is unreachable by construction.
+    ...validateFavorDebtors([template]).undeclared.map(
+      u => `${u.site} favor_creation → no declared debtor `
+        + `(add \`debtorAgentId\`, or express a place opening as apply_condition + encounter_seed)`,
     ),
   ];
   const tokens = tokenProblems(template);
