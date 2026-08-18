@@ -1,7 +1,7 @@
 # Briefing
-**Generated:** 2026-08-18 08:54 local (06:54 UTC) · keep-work-flowing-cc
+**Generated:** 2026-08-18 09:55 local (07:55 UTC) · keep-work-flowing-cc
 
-*Your list is unchanged — same one thing, same four behind it. What moved: the builder finished the repair it picked up this morning, and two more jobs went onto the shelf, so it has work without you for the next few hours.*
+*Your list is unchanged — same one thing, same four behind it. What moved: the reward-catalogue job the builder picked up this morning is finished and live, and the follow-on it filed for itself is already on the shelf and claimable. Two jobs it can take without you.*
 
 ## The one thing
 
@@ -25,14 +25,15 @@ The bond chip you called out now names the favour and opens the person who owes 
 
 ## Queue
 
-**3 ready, 2 of them the builder can take on its own.** The best state the shelf has been in for several days.
+**3 ready, 2 of them the builder can take on its own** — the same count as an hour ago, but a better one: the item that was blocked behind another job is now free.
 
-- **The repair from this morning is finished and live.** The ladder that decides when rivals notice you no longer jumps from "nobody notices" straight to "rivals move against you" — it now has the middle step ([THR-963](https://linear.app/threadbare/issue/THR-963/detection-pressure-is-fed-essence-costs-123-on-a-0-1-clamped-scale-so), merged and deployed). Already-agreed work; no decision was needed from you.
-- **Two more jobs went onto the shelf this hour**, both found by reading the old backlog properly rather than only recent filings: a trade-route relationship recorded between the wrong kinds of thing ([THR-830](https://linear.app/threadbare/issue/THR-830/edge-schema-declares-trades-with-as-actoractor-but-every-shipped)), and the rest of a reward-catalogue migration ([THR-745](https://linear.app/threadbare/issue/THR-745/extend-stat-contribution-migration-to-the-remaining-reward-catalog)). Both are engine and content repair, not housekeeping.
+- **This morning's job is finished and live.** Fifty-seven pieces of equipment that were meant to make their bearer better at something now actually do — a sword you carry raises what you can attempt with it, instead of only reading as if it should ([THR-745](https://linear.app/threadbare/issue/THR-745/extend-stat-contribution-migration-to-the-remaining-reward-catalog), [PR #1540](https://github.com/christianspliid-ui/threadbare/pull/1540), merged and deployed). Already-agreed work; no decision was needed from you.
+- **The builder filed its own follow-on and it is already claimable** — the handful of items that job deliberately left out ([THR-1169](https://linear.app/threadbare/issue/THR-1169/stat-contribution-migration-the-effect-primitive-exerciser-block-and)). It was held behind the job above until that merged an hour ago; that hold has lapsed.
+- **Also on the shelf:** a trade-route relationship recorded between the wrong kinds of thing ([THR-830](https://linear.app/threadbare/issue/THR-830/edge-schema-declares-trades-with-as-actoractor-but-every-shipped)). Engine repair, not housekeeping.
 - **That is still a backlog draining, not a pipeline filling.** The wave-1 sitting above remains the only source of *new* feature work.
 - [THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server) — the third ready item, and it needs you at a keyboard with the game running. The overnight lane re-reads and re-declines it every hour.
-- [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to) — parked ~15 h on your sample verdict. Nothing in flight on it.
-- [THR-1168](https://linear.app/threadbare/issue/THR-1168/two-authored-encounter-audio-moments-have-no-live-caller-wire-or) — parked ~7 h on the held-breath question. Its other half already shipped, and the park is holding.
+- [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to) — parked ~16 h on your sample verdict. Nothing in flight on it.
+- [THR-1168](https://linear.app/threadbare/issue/THR-1168/two-authored-encounter-audio-moments-have-no-live-caller-wire-or) — parked ~8 h on the held-breath question. Its other half already shipped, and the park is holding.
 
 ## Health
 
