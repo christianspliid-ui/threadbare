@@ -172,6 +172,7 @@ import { REACH_SIGNATURE_CONTENT_TEMPLATES } from './reach-signature-content';
 import { CONSECRATE_DEVOTION_PER_TICK } from '../types/ascendantPrimitives';
 import { RIVAL_SHRINE_BETRAYAL_TEMPLATE } from './encounters/rival-shrine-betrayal';
 import { VERTICAL_SLICE_TEMPLATES } from './encounters/vertical-slice';
+import { COMPANY_DRAMA_TEMPLATES } from './encounters/company-drama';
 import { WANDERING_HEALER_SHRINE_ACCESS_TEMPLATE } from './encounters/wandering-healer-shrine-access';
 import { FLAWED_STEEL_TEMPLATE } from './encounters/flawed-steel';
 // Non-local-scale branching encounters — THR-466 (cosmic Star, regional Stone/Veil/Eye/Gold)
@@ -5567,6 +5568,7 @@ const RAW_UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   // Vertical slice — THR-883 (the first eight locked-format encounters:
   // five shapes + three authored Seeded Sequels; mature systems only)
   ...VERTICAL_SLICE_TEMPLATES,
+  ...COMPANY_DRAMA_TEMPLATES,
   RIVAL_SHRINE_BETRAYAL_TEMPLATE,
   WANDERING_HEALER_SHRINE_ACCESS_TEMPLATE,
   FLAWED_STEEL_TEMPLATE,
@@ -5654,6 +5656,15 @@ export const UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] =
 export const LOCATION_BRANCHING_ENCOUNTER_TEMPLATES: readonly UnifiedActionTemplate[] = [
   // Vertical slice — THR-883: envelope-declared, cache-drawable at their subtypes.
   ...VERTICAL_SLICE_TEMPLATES,
+  // NOTE (THR-733): the company-drama templates are deliberately NOT registered
+  // here. They are group-EXCLUSIVE, and this list feeds the location cache,
+  // whose ids `getAnyEncounterById` cannot resolve — a group-exclusive template
+  // that is cache-registrable but pool-unresolvable reads to
+  // `prerequisiteTemplateResolution.test.ts` as a template *acquiring*
+  // exclusivity, which is the THR-811 polarity trap. They reach agents through
+  // the registry path instead (`unifiedActionPhases` passes the whole
+  // `UNIFIED_ACTION_TEMPLATES` to `generateUnifiedCandidates`), which is the
+  // path the group gate is enforced on and the one the reachability suite pins.
   RIVAL_SHRINE_BETRAYAL_TEMPLATE,
   WANDERING_HEALER_SHRINE_ACCESS_TEMPLATE,
   FLAWED_STEEL_TEMPLATE,
