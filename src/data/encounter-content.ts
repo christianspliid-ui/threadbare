@@ -7147,7 +7147,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             sphere: 'mind',
             essenceCost: 2,
             forecastDelta: 0.10,
-            imageTag: 'generic.mind',
+            imageTag: 'generic.memory',
             fiction: 'How this blade felt the last time it was right comes back exactly, and gives {them} a mark to measure against.',
             effectLine: 'Good help. There is a before to compare this to.',
             bandProse: {
@@ -7243,7 +7243,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             sphere: 'force',
             essenceCost: 2,
             forecastDelta: 0.11,
-            imageTag: 'generic.force',
+            imageTag: 'generic.strength',
             fiction: 'The weight through {their} wrist stops rising at the tip and dropping at the heel. It goes down the same all the way along.',
             effectLine: 'Strong help. The whole length gets the same treatment.',
             bandProse: {
@@ -7270,7 +7270,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             sphere: 'order',
             essenceCost: 2,
             forecastDelta: 0.13,
-            imageTag: 'generic.order',
+            imageTag: 'generic.oath',
             fiction: 'The blade sits at one angle to the stone and will not be talked out of it, stroke after stroke.',
             effectLine: 'Strong help. One bevel instead of four.',
             bandProse: {
@@ -7284,7 +7284,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             sphere: 'energy',
             essenceCost: 2,
             forecastDelta: 0.09,
-            imageTag: 'generic.spark',
+            imageTag: 'generic.warmth',
             fiction: 'The whetstone comes up to blood heat under {their} palm and stops dragging at the steel.',
             effectLine: 'Good help. The stone gives instead of fighting.',
             bandProse: {
@@ -7615,7 +7615,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             sphere: 'order',
             essenceCost: 2,
             forecastDelta: 0.12,
-            imageTag: 'generic.order',
+            imageTag: 'generic.ward',
             fiction: 'The walk straightens itself. Where {actor} would have cut a corner, {their} feet go the long way without being told.',
             effectLine: 'Strong help. The shape comes out round.',
             bandProse: {
@@ -7629,7 +7629,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             sphere: 'energy',
             essenceCost: 2,
             forecastDelta: 0.11,
-            imageTag: 'generic.spark',
+            imageTag: 'generic.warmth',
             fiction: 'The traced ground gives off the warmth of a stone that sat in sun all day.',
             effectLine: 'Strong help. The line stays awake behind {them}.',
             bandProse: {
@@ -7740,7 +7740,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             sphere: 'chaos',
             essenceCost: 2,
             forecastDelta: 0.09,
-            imageTag: 'generic.chaos',
+            imageTag: 'generic.dark',
             fiction: 'The line stops being exactly where it is. Whatever wants to find its edge has to guess.',
             effectLine: 'Good help against anything hunting for the seam.',
             bandProse: {
@@ -8272,7 +8272,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             sphere: 'spirit',
             essenceCost: 2,
             forecastDelta: 0.11,
-            imageTag: 'generic.listening',
+            imageTag: 'generic.blessing',
             fiction: 'Whatever sits on the other side of the prayer turns its head, and the empty road feels occupied.',
             effectLine: 'Strong help. The prayer lands on an ear.',
             bandProse: {
@@ -8381,7 +8381,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             sphere: 'mind',
             essenceCost: 2,
             forecastDelta: 0.10,
-            imageTag: 'generic.mind',
+            imageTag: 'generic.warmth',
             fiction: 'The list of what has to be done by dark stops reciting itself behind {their} eyes.',
             effectLine: 'Good help. Little is pulling at {them}.',
             bandProse: {
@@ -8407,7 +8407,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             sphere: 'order',
             essenceCost: 2,
             forecastDelta: 0.11,
-            imageTag: 'generic.order',
+            imageTag: 'generic.ward',
             fiction: 'The wait takes the shape of a rite with a beginning and an end, and {they} know{s} where in it {they} stand{s}.',
             effectLine: 'Strong help. The waiting has edges.',
             bandProse: {
@@ -8421,7 +8421,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             sphere: 'spirit',
             essenceCost: 2,
             forecastDelta: 0.12,
-            imageTag: 'generic.listening',
+            imageTag: 'generic.light',
             fiction: 'The gap between the kneeling and the listened-to closes by a step.',
             effectLine: 'Strong help. Less between {them} and an answer.',
             bandProse: {
@@ -8732,7 +8732,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             sphere: 'spirit',
             essenceCost: 2,
             forecastDelta: 0.11,
-            imageTag: 'generic.stillness',
+            imageTag: 'generic.ward',
             fiction: 'The faces {actor} left on the road stop arriving at the edge of sleep. The fire is just a fire.',
             effectLine: 'Strong help against what follows them to bed.',
             bandProse: {
@@ -8815,7 +8815,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             sphere: 'mind',
             essenceCost: 2,
             forecastDelta: 0.13,
-            imageTag: 'generic.recall',
+            imageTag: 'generic.memory',
             fiction: 'The stops stay in the order {they} walked them. Nothing slides forward to sit beside a day it did not happen near.',
             effectLine: 'Strong help. The month keeps its sequence.',
             bandProse: {
@@ -8843,7 +8843,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             sphere: 'entropy',
             essenceCost: 2,
             forecastDelta: 0.11,
-            imageTag: 'generic.settling',
+            imageTag: 'generic.decay',
             fiction: 'The parts {they} keep{s} turning over stop turning. What is heavy goes to the bottom and stays there.',
             effectLine: 'Strong help. The small grievances sink out of the way.',
             bandProse: {
@@ -8857,7 +8857,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             sphere: 'spirit',
             essenceCost: 2,
             forecastDelta: 0.09,
-            imageTag: 'generic.remembrance',
+            imageTag: 'generic.blessing',
             fiction: '{actor} says the names of whoever did not finish the month out loud, once each, to the fire.',
             effectLine: 'Good help, and the count comes out honest.',
             bandProse: {
@@ -9030,7 +9030,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             sphere: 'order',
             essenceCost: 2,
             forecastDelta: 0.10,
-            imageTag: 'generic.stillness',
+            imageTag: 'generic.ward',
             fiction: 'The three at the door stop talking at once. His wife sits down without being asked to.',
             effectLine: 'Good help. Nobody is shouting over him.',
             bandProse: {
@@ -9112,7 +9112,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             sphere: 'spirit',
             essenceCost: 3,
             forecastDelta: 0.15,
-            imageTag: 'generic.mercy',
+            imageTag: 'generic.blessing',
             fiction: 'He goes somewhere behind his own eyes for a while. His arm stays on the table without him in it.',
             effectLine: 'A large help. He stops fighting the hands holding him.',
             bandProse: {
@@ -9126,7 +9126,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             sphere: 'matter',
             essenceCost: 2,
             forecastDelta: 0.11,
-            imageTag: 'generic.water',
+            imageTag: 'generic.matter',
             fiction: 'The water in the pot goes clear as it comes to the boil, and stays clear when the linen comes out of it.',
             effectLine: 'Strong help against what comes after the setting.',
             bandProse: {
@@ -9153,7 +9153,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             sphere: 'life',
             essenceCost: 2,
             forecastDelta: 0.12,
-            imageTag: 'generic.knit',
+            imageTag: 'generic.vigor',
             fiction: 'The lips of the cut sit together instead of gaping, and stay together while the linen goes round.',
             effectLine: 'Strong help. The wound closes as it is bound.',
             bandProse: {
@@ -9253,7 +9253,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             sphere: 'life',
             essenceCost: 2,
             forecastDelta: 0.11,
-            imageTag: 'generic.thicket',
+            imageTag: 'generic.matter',
             fiction: 'The thorn on the east slope lies over, all one way, as if a cart had gone through it.',
             effectLine: 'Strong help on the slope that fights hardest.',
             bandProse: {
@@ -9267,7 +9267,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             sphere: 'mind',
             essenceCost: 2,
             forecastDelta: 0.13,
-            imageTag: 'generic.tracks',
+            imageTag: 'generic.memory',
             fiction: 'The scuffs in the ditch sort themselves: sheep, sheep, sheep, and one boot with a worn outside heel.',
             effectLine: 'Strong help. The ground says who has been on it.',
             bandProse: {
@@ -9281,7 +9281,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             sphere: 'energy',
             essenceCost: 2,
             forecastDelta: 0.10,
-            imageTag: 'generic.listening',
+            imageTag: 'generic.rumor',
             fiction: 'Noise from the far side of the wall arrives as if it were made at {their} shoulder — a bucket, a latch, a cough.',
             effectLine: 'Good help. The far side of the wall stops being quiet.',
             bandProse: {
@@ -9295,7 +9295,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             sphere: 'matter',
             essenceCost: 2,
             forecastDelta: 0.09,
-            imageTag: 'generic.stillness',
+            imageTag: 'generic.dark',
             fiction: 'The dry ditch stops smoking under {their} boots. What {they} kick{s} up drops straight back down.',
             effectLine: 'Good help. Nothing announces where they are walking.',
             bandProse: {
@@ -9362,7 +9362,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             sphere: 'order',
             essenceCost: 2,
             forecastDelta: 0.12,
-            imageTag: 'generic.muster',
+            imageTag: 'generic.oath',
             fiction: 'Three doors open on the lane without anyone knocking twice. The smith brings his own billhook.',
             effectLine: 'Strong help. There are hands enough for the work.',
             bandProse: {
@@ -9376,7 +9376,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             sphere: 'matter',
             essenceCost: 2,
             forecastDelta: 0.13,
-            imageTag: 'generic.stakes',
+            imageTag: 'generic.ward',
             fiction: 'Each stake finds the one line of clay under the ditch gravel and stands where it is put.',
             effectLine: 'Strong help. What goes in stays in.',
             bandProse: {
@@ -10384,7 +10384,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             sphere: 'spirit',
             essenceCost: 2,
             forecastDelta: 0.11,
-            imageTag: 'generic.listening',
+            imageTag: 'generic.blessing',
             fiction: 'Each item on the stone carries how much it would be missed, and the missing is what the shrine reads.',
             effectLine: 'Strong help. The gift is judged by loss.',
             bandProse: {
@@ -10493,7 +10493,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             sphere: 'order',
             essenceCost: 2,
             forecastDelta: 0.11,
-            imageTag: 'generic.order',
+            imageTag: 'generic.memory',
             fiction: 'The order of it comes back: right knee down, both palms, the hollow, and no words until after.',
             effectLine: 'Strong help. The rite has a shape to follow.',
             bandProse: {
@@ -10603,7 +10603,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             sphere: 'spirit',
             essenceCost: 2,
             forecastDelta: 0.12,
-            imageTag: 'generic.listening',
+            imageTag: 'generic.light',
             fiction: 'The wind comes apart from what stands behind the wind, and only one of the two is worth hearing.',
             effectLine: 'Strong help. The wind stops counting as an answer.',
             bandProse: {
@@ -10644,7 +10644,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             sphere: 'mind',
             essenceCost: 2,
             forecastDelta: 0.11,
-            imageTag: 'generic.mind',
+            imageTag: 'generic.ward',
             fiction: 'What {they} hoped to be told stops sitting in front of what is actually said.',
             effectLine: 'Strong help. The asking stays honest.',
             bandProse: {

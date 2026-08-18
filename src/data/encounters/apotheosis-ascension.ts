@@ -178,7 +178,7 @@ const APOTHEOSIS_HAND: readonly StepNudge[] = [
     sphere: 'time',
     essenceCost: 2,
     forecastDelta: 0.09,
-    imageTag: 'generic.time',
+    imageTag: 'generic.time-slow',
     effectLine: 'You stretch the hour around the doorway so the answer is not rushed. The largest help in the hand, and it argues for neither side.',
     fiction: 'The candle stops shortening.',
     bandProse: {
@@ -195,7 +195,7 @@ const APOTHEOSIS_HAND: readonly StepNudge[] = [
     essenceCost: 2,
     forecastDelta: 0.07,
     poleLean: { axis: 'sacrifice_survival', toward: 'negative' },
-    imageTag: 'generic.insight',
+    imageTag: 'generic.oath',
     effectLine: 'You show them the price honestly — the strain, the stretching, the body that has to carry it. A small help, and it argues for staying mortal.',
     fiction: 'The price, itemised, in their own handwriting.',
     bandProse: {

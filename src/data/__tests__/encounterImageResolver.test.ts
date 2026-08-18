@@ -24,6 +24,12 @@ import {
   getEncounterImageEntry,
 } from '../encounterImageResolver';
 import { REACH_DOMAINS } from '../../types/traits';
+import { UNIFIED_ACTION_TEMPLATES } from '../unified-action-templates';
+import {
+  isActionStepBranch,
+  type ActionStepOrBranch,
+  type StepNudge,
+} from '../../types/unifiedAction';
 
 describe('encounter image library — manifest integrity', () => {
   it('every library path exists on disk under public/', () => {
@@ -339,5 +345,71 @@ describe('resolveEncounterImage — the resolve chain', () => {
       kind: 'portrait',
     });
     expect(result.entry?.id).not.toBe('scene.wilderness.swamp');
+  });
+});
+
+describe('authored imageTags resolve against the manifest (THR-1052)', () => {
+  /**
+   * The direction `check:image-library` does not guard. That gate proves the
+   * library's own rows are honest — every path exists, nothing sits in both
+   * tables — but says nothing about whether *authored content* names a row that
+   * exists. THR-1052 is what that gap costs: 42 cards across 14 hands named a
+   * tag with no row, and because `NudgePhaseShell` passes only `{tag, kind,
+   * sphere}`, the tag-query rung (min score 10) could never fire on sphere
+   * alone (weight 4). Every one of them landed on `generic.blessing`, so whole
+   * hands rendered the same plate — fail-soft by design, and invisible for it.
+   *
+   * Asserted on `source === 'exact_tag'` rather than on a non-null path, for
+   * the reason this file's header already gives: a path assertion passes while
+   * the chain silently collapses to the category generic, which is precisely
+   * the failure being pinned.
+   *
+   * `check:encounter --all` covers most of this, but not all of it — see the
+   * branch-variant test below for the hole it leaves and how it was measured.
+   */
+  const nudgesOf = (step: ActionStepOrBranch): readonly StepNudge[] =>
+    isActionStepBranch(step)
+      ? [...Object.values(step.variants), step.fallback].flatMap((s) => s.nudges ?? [])
+      : (step.nudges ?? []);
+
+  const authored = UNIFIED_ACTION_TEMPLATES.flatMap((template) =>
+    (template.steps ?? []).flatMap((step) =>
+      nudgesOf(step)
+        .filter((nudge) => nudge.imageTag)
+        .map((nudge) => ({
+          where: `${template.id} / ${nudge.id}`,
+          tag: nudge.imageTag as string,
+        })),
+    ),
+  );
+
+  it('reaches nudges nested in branch variants, which the gate does not', () => {
+    // Why this lives here rather than being left to `check:encounter`: that
+    // gate's walk is `nudgeBearingSteps`, which filters `template.steps` for
+    // plain `ActionStep`s — "branching variants are out of scope for linear
+    // templates" (nudgeHandChecklist.ts). A hand inside an `ActionStepBranch`'s
+    // `variants`/`fallback` is therefore invisible to it. Measured on THR-1052:
+    // of 42 dead tags, the gate reported 41 and silently missed
+    // `slice.family.sure_marker`, which sits in a branch `fallback` of
+    // `encounter.slice.swindled_family` — a template the gate *did* check and
+    // pass. Restoring that one tag reproduces it: the gate reports 0.
+    const branchNested = UNIFIED_ACTION_TEMPLATES.flatMap((template) =>
+      (template.steps ?? [])
+        .filter(isActionStepBranch)
+        .flatMap((step) => [...Object.values(step.variants), step.fallback])
+        .flatMap((s) => s.nudges ?? [])
+        .filter((nudge) => nudge.imageTag),
+    );
+    expect(branchNested.length).toBeGreaterThan(0);
+    expect(authored.length).toBeGreaterThan(100);
+  });
+
+  it('every authored nudge imageTag hits a real library row', () => {
+    const dead = authored
+      .filter(({ tag }) => resolveEncounterImage({ tag, kind: 'nudge' }).source !== 'exact_tag')
+      .map(({ where, tag }) => `${where} -> ${tag}`);
+    // Listing offenders rather than asserting a count keeps a failure
+    // actionable, and matches the manifest-integrity tests above.
+    expect(dead).toEqual([]);
   });
 });
