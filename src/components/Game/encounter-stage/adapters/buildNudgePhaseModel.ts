@@ -44,6 +44,7 @@ import type {
   UnifiedAction,
   UnifiedActionTemplate,
 } from '../../../../types/unifiedAction';
+import { isActionStepBranch } from '../../../../types/unifiedAction';
 import { computeCapability } from '../../../../engine/domainCapability';
 import { locationTypeFromProperties } from '../../../../engine/encounterCache';
 import { settingClassForSubtype } from '../../../../data/settingClasses';
@@ -63,7 +64,11 @@ import {
   totalNudgeCost,
   type NudgeBlockedCode,
 } from '../../../../engine/encounters/nudges';
-import { deriveStepFactorLines } from '../../../../engine/encounters/stepFactorLines';
+import {
+  deriveStepFactorLines,
+  deriveWhisperRevealLine,
+  type WhisperNextStep,
+} from '../../../../engine/encounters/stepFactorLines';
 import {
   NUDGE_COST_CHANNEL_DISPLAY,
   nudgeCardKeyword,
@@ -398,6 +403,24 @@ function essenceReader(pool: Readonly<Record<string, number>> | undefined) {
 }
 
 /**
+ * What the step after `currentStep` demands, as far as it can honestly be read.
+ *
+ * A branch entry resolves to `unsettled` rather than being unwrapped: which
+ * variant runs depends on how the current step lands, so its reach and
+ * difficulty are not facts yet. Reading one anyway would let the Whisper quote a
+ * demand the encounter may never make.
+ */
+function readNextStepDemand(
+  template: UnifiedActionTemplate,
+  currentStep: number,
+): WhisperNextStep {
+  const next = template.steps?.[currentStep + 1];
+  if (!next) return { kind: 'none' };
+  if (isActionStepBranch(next)) return { kind: 'unsettled' };
+  return { kind: 'demand', reach: next.reach, difficulty: next.difficulty };
+}
+
+/**
  * Build the stage's nudge phase, or `undefined` when this step has no authored
  * hand and the caller has something else to render — the caller branches on that
  * to keep authored-choice templates on the choice screen (per-template rollout,
@@ -644,6 +667,31 @@ export function buildNudgePhaseModel(
       polarity: line.polarity,
       source: line.source,
       delta: line.delta === 0 ? undefined : line.delta,
+    });
+  }
+
+  // ── The Whisper's reveal (THR-1179) ─────────────────────────────
+  // The one card that pays for a *line* rather than for odds. It renders only
+  // once no matter how many Whispers are committed — a second copy of the same
+  // sentence is not a second reveal, and the player should not be able to buy
+  // the panel into repeating itself.
+  //
+  // Last in panel order on purpose: the reveal is about a step that has not
+  // happened, so it reads as a glimpse past the end of the list rather than as
+  // another factor bearing on this roll (it carries no delta and draws no pips).
+  const revealsNextDemand = (activeAction.activeNudges ?? []).some(
+    (id) => authored.find((n) => n.id === id)?.reveals === 'next_step_demand',
+  );
+  if (revealsNextDemand) {
+    const line = deriveWhisperRevealLine({
+      nextStep: readNextStepDemand(template, activeAction.currentStep),
+      difficultyWord,
+    });
+    factors.push({
+      id: line.id,
+      text: enrich(line.text),
+      polarity: line.polarity,
+      source: line.source,
     });
   }
 

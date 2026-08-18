@@ -146,7 +146,7 @@ export const NUDGE_CARD_TYPES: readonly NudgeCardType[] = [
     effectShape: "Reveals a hidden factor or the next step's demand",
     decision: 'Pay to see before you spend',
     hostSystem: 'Intelligence',
-    status: 'open',
+    status: 'impl',
   },
   {
     id: 'trait_card',
@@ -178,7 +178,7 @@ export const NUDGE_CARD_TYPES: readonly NudgeCardType[] = [
     effectShape: "Strong boost through an ugly method; shifts the mortal's values",
     decision: 'Effective, and it changes who they are',
     hostSystem: 'Pole-shift (WS6)',
-    status: 'design',
+    status: 'impl',
   },
   {
     id: 'stumble',
@@ -186,7 +186,7 @@ export const NUDGE_CARD_TYPES: readonly NudgeCardType[] = [
     effectShape: "Physics turns against the scene's opposition",
     decision: 'Weaken them instead of strengthening yours',
     hostSystem: 'Encounter cast',
-    status: 'design',
+    status: 'impl',
   },
   {
     id: 'kindled_ambition',

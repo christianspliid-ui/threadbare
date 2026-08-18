@@ -432,3 +432,53 @@ export const OMEN_CARD_INTENSITY = 0.6;
  * bend, short enough that an early omen is not still steering draws at the end.
  */
 export const OMEN_CARD_DURATION_TICKS = 24;
+
+/**
+ * Forecast shift a Stumble contributes.
+ *
+ * Sized *at* the ordinary Boost band rather than above it. The Stumble's appeal
+ * is not that it is stronger — it is that the same tilt arrives as the
+ * opposition faltering, which is a different thing to have done and leaves a
+ * different person standing afterwards. Pricing it above Boost would turn a
+ * flavour-and-consequence choice into an arithmetic one.
+ */
+export const STUMBLE_FORECAST_DELTA = 0.08;
+
+/**
+ * Intensity of the condition a Stumble may leave on the cast member it weakens.
+ *
+ * Low: the card buys one bad moment for them, not an injury. A Stumble that
+ * meaningfully disabled the opposition would be doing the mortal's work for
+ * them, which is the god-as-protagonist failure the whole nudge model exists to
+ * avoid (non-negotiable #1).
+ */
+export const STUMBLE_CONDITION_INTENSITY = 0.25;
+
+/**
+ * Ticks the Stumble's cast-side condition lasts.
+ *
+ * One 12-tick day — long enough that the scene's opposition is still nursing it
+ * if the encounter runs on, short enough that it never becomes a permanent
+ * handicap the player bought once.
+ */
+export const STUMBLE_CONDITION_DURATION_TICKS = 12;
+
+/**
+ * Forecast shift an Undertow contributes — the "strong boost" half of the trade.
+ *
+ * Between Boost and Heavy Hand. The Undertow's price is not paid in essence or
+ * attention but in *who the mortal becomes*, and that price is only legible if
+ * the boost is plainly worth considering; set at Boost strength the card reads
+ * as strictly worse than Boost, and nobody ever meets the trade.
+ */
+export const UNDERTOW_FORECAST_DELTA = 0.13;
+
+/**
+ * Signed drift magnitude one Undertow play applies on its declared axis.
+ *
+ * Deliberately smaller than `BRANCH_DECISION_DRIFT_MAGNITUDE`: a decision the
+ * mortal *made* should say more about them than a nudge the god slipped under
+ * it. The card still changes who they are — repeatedly played, it changes them
+ * decisively — but a single play never outweighs a single choice.
+ */
+export const UNDERTOW_DRIFT_MAGNITUDE = 0.06;

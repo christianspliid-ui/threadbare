@@ -450,6 +450,9 @@ export function resolveUncontestedStep(
     action.activeNudges,
     nudgeTraitVariants,
     priorStepOutcome(action),
+    // THR-1179 — a Stumble attributes its delta to the cast member it works
+    // against, which is only resolvable from this action's own bindings.
+    action.supportBindings,
   );
   const nudgeModifierTotal = sumModifiers(nudgeModifiers);
   // A trait variant may also ease (or steepen) the step itself, before the

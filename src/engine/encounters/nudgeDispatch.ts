@@ -47,11 +47,14 @@ import type {
   EncounterAftermathReaction,
   EncounterAftermathReactionEffect,
   NudgeCostChannels,
+  StepNudge,
   UnifiedAction,
 } from '../../types/unifiedAction';
 import type { AftermathMutationSummary } from '../encounterAftermath';
 import { applyEncounterAftermathReaction } from '../encounterAftermath';
 import { applyRawDetectionDelta } from './detectionPressure';
+import { driftTowardPole } from './branchDecision';
+import { UNDERTOW_DRIFT_MAGNITUDE } from '../../data/nudge-constants';
 import { accelerateDoomClock, decelerateDoomClock } from '../doomClock';
 import { emitTrace } from '../traceBuffer';
 import type { NudgeCostChargedTrace, NudgeDispatchFailedTrace } from '../../types/trace';
@@ -147,6 +150,28 @@ export function collectNudgeCostChannels(
   };
 }
 
+/**
+ * Value-axis drifts declared by the committed hand, in authored card order.
+ *
+ * Pure, and tolerant of a stale id for the same reason its two siblings are.
+ * Two Undertows on the same axis drift twice — that is correct, and it is why
+ * this returns a list rather than a summed axis map: each play is its own claim
+ * about the mortal, and each one's threshold crossing deserves its own trace.
+ */
+export function collectNudgeValueDrifts(
+  step: Pick<ActionStep, 'nudges'>,
+  activeNudgeIds: readonly string[] | undefined,
+): readonly NonNullable<StepNudge['valueDrift']>[] {
+  if (!activeNudgeIds || activeNudgeIds.length === 0 || !step.nudges) return [];
+  const byId = new Map(step.nudges.map((n) => [n.id, n]));
+  const drifts: NonNullable<StepNudge['valueDrift']>[] = [];
+  for (const id of activeNudgeIds) {
+    const drift = byId.get(id)?.valueDrift;
+    if (drift) drifts.push(drift);
+  }
+  return drifts;
+}
+
 // ─── Application ─────────────────────────────────────────────────────
 
 export interface NudgeDispatchResult {
@@ -156,6 +181,11 @@ export interface NudgeDispatchResult {
   readonly dispatchedGrantKinds: readonly string[];
   /** Cost channels actually charged. */
   readonly chargedCosts: NudgeCostChannels;
+  /**
+   * Drift axis ids the hand moved (The Undertow) — empty for every hand that
+   * committed no value-shifting card.
+   */
+  readonly driftedAxisIds: readonly string[];
 }
 
 const EMPTY_SUMMARY: AftermathMutationSummary = {
@@ -187,13 +217,21 @@ export function dispatchNudgeCommitments(
   const grants = collectNudgeGrants(step, activeNudgeIds);
   const costs = collectNudgeCostChannels(step, activeNudgeIds);
 
+  const valueDrifts = collectNudgeValueDrifts(step, activeNudgeIds);
+
   // The overwhelmingly common case: a hand of pure forecast-shifting cards.
-  if (grants.length === 0 && costs.detectionDelta === undefined && costs.doomDelta === undefined) {
+  if (
+    grants.length === 0
+    && valueDrifts.length === 0
+    && costs.detectionDelta === undefined
+    && costs.doomDelta === undefined
+  ) {
     return {
       state,
       mutationSummary: EMPTY_SUMMARY,
       dispatchedGrantKinds: [],
       chargedCosts: {},
+      driftedAxisIds: [],
     };
   }
 
@@ -293,11 +331,48 @@ export function dispatchNudgeCommitments(
     }
   }
 
+  // ── Value drift, through the shared drift accumulator ──
+  //
+  // The Undertow is the one card that changes *the mortal* rather than the odds
+  // or the world, so it routes to `driftTowardPole` — the same function a branch
+  // decision drifts through. Riding it (rather than calling `applyDriftMagnitude`
+  // here) also inherits the threshold-crossing traces for free, which is how a
+  // card-driven crossing shows up in the drift readout indistinguishably from a
+  // choice-driven one. That indistinguishability is the design: the mortal is
+  // becoming someone, and it does not matter to them who pushed.
+  const driftedAxisIds: string[] = [];
+  for (const drift of valueDrifts) {
+    if (!action?.actorId) break;
+    try {
+      const applied = driftTowardPole(
+        nextState.archetypeDrift ?? [],
+        action.actorId,
+        drift.axis,
+        drift.toward,
+        tick,
+        UNDERTOW_DRIFT_MAGNITUDE,
+      );
+      nextState = { ...nextState, archetypeDrift: applied.drift };
+      driftedAxisIds.push(applied.driftAxisId);
+    } catch (error) {
+      emitNudgeTrace({
+        tick,
+        category: 'nudge_dispatch_failed',
+        ...agentIdField(action?.actorId),
+        encounterId: action?.templateId ?? 'unknown',
+        channel: 'grants',
+        failReason: error instanceof Error ? error.message : String(error),
+        summary: `nudge value drift failed to apply on ${drift.axis}`,
+      });
+    }
+  }
+
   return {
     state: nextState,
     mutationSummary,
     dispatchedGrantKinds: grants.map((g) => g.kind),
     chargedCosts: costs,
+    driftedAxisIds,
   };
 }
 
