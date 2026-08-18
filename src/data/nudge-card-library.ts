@@ -98,7 +98,7 @@ export const NUDGE_CARD_TYPES: readonly NudgeCardType[] = [
     effectShape: 'Large boost + detection pressure rises',
     decision: 'Power now, attention later',
     hostSystem: 'Stealth & detection',
-    status: 'design',
+    status: 'impl',
   },
   {
     id: 'insurance',
@@ -138,7 +138,7 @@ export const NUDGE_CARD_TYPES: readonly NudgeCardType[] = [
     effectShape: 'Plants a trait or hidden mark future encounters fire on',
     decision: 'Sacrifice now for story later',
     hostSystem: 'Traits trigger layer',
-    status: 'design',
+    status: 'impl',
   },
   {
     id: 'whisper',
@@ -194,7 +194,7 @@ export const NUDGE_CARD_TYPES: readonly NudgeCardType[] = [
     effectShape: 'The mortal wakes wanting something lasting',
     decision: 'Give them a drive, not a bonus',
     hostSystem: 'Ambitions',
-    status: 'design',
+    status: 'impl',
   },
   {
     id: 'omen',
@@ -202,7 +202,7 @@ export const NUDGE_CARD_TYPES: readonly NudgeCardType[] = [
     effectShape: 'Future encounter draws bend toward what this uncovered',
     decision: 'Steer the story, not the roll',
     hostSystem: 'Omens',
-    status: 'design',
+    status: 'impl',
   },
   {
     id: 'cache',
@@ -210,7 +210,7 @@ export const NUDGE_CARD_TYPES: readonly NudgeCardType[] = [
     effectShape: 'Something is left for them to find; ships with the item built',
     decision: 'A keepsake that persists',
     hostSystem: 'Attachments & items',
-    status: 'design',
+    status: 'impl',
   },
   {
     id: 'balm',
@@ -218,7 +218,7 @@ export const NUDGE_CARD_TYPES: readonly NudgeCardType[] = [
     effectShape: 'Removes one condition (wound, fever, dread)',
     decision: 'End a suffering directly',
     hostSystem: 'Effects & conditions',
-    status: 'design',
+    status: 'impl',
   },
   {
     id: 'veil',

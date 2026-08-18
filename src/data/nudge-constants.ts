@@ -363,3 +363,72 @@ export const APOTHEOSIS_VESSEL_DIFFICULTY = 0.50;
  * mortal is left whole or left aching — a low difficulty is not a free pass.
  */
 export const APOTHEOSIS_WITHDRAWAL_DIFFICULTY = 0.25;
+
+// ─── Per-type card mechanic magnitudes (THR-1179) ────────────────────
+
+/**
+ * Authoring magnitudes for the card types whose mechanics ship under THR-1179.
+ *
+ * **Why these live here rather than inline on each authored card.** A card type
+ * is a *vocabulary word* — every Heavy Hand costs the same order of attention,
+ * or the word stops meaning anything to the player who learned it once. Naming
+ * the magnitude once makes the type tunable as a type (NFP #1); leaving it
+ * inline on each authored option makes "what does a Heavy Hand cost" a question
+ * you answer by grepping content.
+ *
+ * They are the numbers an authored `StepNudge` of that type is written against:
+ * a Heavy Hand's `costs.detectionDelta`, an Omen's `grants[].intensity`. An
+ * author may deviate for a specific scene — these are the type's centre of mass,
+ * not a clamp — but a card that deviates far enough to change the decision the
+ * keyword promises is a different type wearing the wrong word.
+ *
+ * The liveness of each mechanic — that a card carrying these actually reaches
+ * its host system and changes the world — is pinned per type by
+ * `src/engine/encounters/__tests__/nudgeTypeMechanics.test.ts`.
+ */
+
+/**
+ * Detection pressure a Heavy Hand play adds in the actor's region.
+ *
+ * Sized against The Veil, which *lowers* pressure: the pair is meant to net off
+ * when a player commits both, so a god who wants the large boost and none of the
+ * attention can buy its way back to neutral for two cards instead of one.
+ */
+export const HEAVY_HAND_DETECTION_DELTA = 0.25;
+
+/**
+ * Forecast shift a Heavy Hand contributes — the "large boost" half of the trade.
+ *
+ * Deliberately above the ordinary Boost band (~0.06–0.08 across shipped cards):
+ * the card's whole decision is *power now, attention later*, and a boost that
+ * does not visibly outclass a Boost makes the detection cost pure downside.
+ */
+export const HEAVY_HAND_FORECAST_DELTA = 0.18;
+
+/**
+ * Severity of the mark a Long Game plants.
+ *
+ * Mid-band on purpose: the card buys a *future*, not a wound. A severity high
+ * enough to drive immediate consequences would make it a Bargain, which is the
+ * type that already exists for paying now.
+ */
+export const LONG_GAME_MARK_SEVERITY = 0.4;
+
+/**
+ * Intensity of the omen an Omen card emits (0–1).
+ *
+ * This is the term `deriveEmittedOmenEncounterBias` scales the draw bias by, so
+ * it is the card's whole strength. Held below 1 so a single card bends the story
+ * without pinning it — "steer the story, not the roll" is the decision the
+ * keyword promises, and a maximal omen would read as authorship.
+ */
+export const OMEN_CARD_INTENSITY = 0.6;
+
+/**
+ * Ticks an Omen card's bias stains its scope before decaying out.
+ *
+ * Twice the 12-tick day, so the omen outlives the encounter that bought it and
+ * is gone within a run's memory — long enough that the player sees the story
+ * bend, short enough that an early omen is not still steering draws at the end.
+ */
+export const OMEN_CARD_DURATION_TICKS = 24;
