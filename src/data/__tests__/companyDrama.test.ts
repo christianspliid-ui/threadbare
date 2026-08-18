@@ -23,6 +23,7 @@ import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 const GATE_HELD_ID = 'encounter.company.gate_held';
 const TWO_ROADS_ID = 'encounter.company.two_roads_named';
 const THIRD_WATCH_ID = 'encounter.company.third_watch';
+const QUIET_OFFER_ID = 'encounter.company.quiet_offer';
 
 describe('company drama — content integrity', () => {
   for (const authored of COMPANY_DRAMA_TEMPLATES) {
@@ -99,6 +100,7 @@ describe('company drama — end-to-end reachability against real content', () =>
   const ruinGraph = () => placeGraph('ruins', 'The Sunk Bastion');
   const waysideGraph = () => placeGraph('camp', 'The Fork Camp');
   const urbanGraph = () => placeGraph('town', 'Ashfold');
+  const battlefieldGraph = () => placeGraph('battleground', 'The Long Meadow');
 
   function joinCompany(graph: WorldGraph, livingCompanions: number): void {
     graph.addNode({
@@ -203,7 +205,68 @@ describe('company drama — end-to-end reachability against real content', () =>
     expect(result).toHaveLength(0);
   });
 
-  it('all three subjects register at disjoint places — each place draws exactly its own', () => {
+  // ─── The Quiet Offer — the betrayal ───────────────────────────────
+
+  const quietOffer = UNIFIED_ACTION_TEMPLATES.find(
+    t => t.id === QUIET_OFFER_ID,
+  ) as UnifiedActionTemplate;
+
+  it('a company of two on a battlefield draws the authored betrayal', () => {
+    const graph = battlefieldGraph();
+    joinCompany(graph, 1); // actor-1 + 1 companion = 2 living
+    const result = generateUnifiedCandidates(graph, 'actor-1', 'ruin-1', [quietOffer]);
+    expect(result.map(c => c.templateId)).toContain(QUIET_OFFER_ID);
+  });
+
+  it('a solo agent on the same battlefield cannot draw it (group-exclusive)', () => {
+    const graph = battlefieldGraph(); // actor-1 ungrouped
+    const result = generateUnifiedCandidates(graph, 'actor-1', 'ruin-1', [quietOffer]);
+    expect(result).toHaveLength(0);
+  });
+
+  it('a company of one cannot draw it — a member alone has no company to sell', () => {
+    const graph = battlefieldGraph();
+    joinCompany(graph, 0); // actor-1 alone in the company = 1 living
+    const result = generateUnifiedCandidates(graph, 'actor-1', 'ruin-1', [quietOffer]);
+    expect(result).toHaveLength(0);
+  });
+
+  it('the betrayal anchors its worst band to the actor, not to a cast key', () => {
+    // The subject is a *member*, and the aftermath vocabulary has no sentinel
+    // for "another member of the actor's company" — so telling it from inside
+    // is what makes the mark land on the person who did the thing. A later
+    // author who redirects this mark at the buyer inverts the scene: the buyer
+    // would then be the one an investigation finds, and selling the company
+    // would leave no trace on the member who sold it.
+    const band = quietOffer.aftermathConfig?.fallback?.byOutcome?.critical_failure;
+    const marks = (band?.reactions ?? [])
+      .flatMap(r => r.effects ?? [])
+      .filter(e => e.kind === 'hidden_mark');
+    expect(marks).toHaveLength(1);
+    expect(marks[0]).toMatchObject({ category: 'betrayal' });
+    // Undefined is the load-bearing assertion: the effect defaults to the actor.
+    expect((marks[0] as { targetAgentId?: string }).targetAgentId).toBeUndefined();
+  });
+
+  it('no band claims the company ends as a betrayal — that DissolutionReason has no producer', () => {
+    // `DissolutionReason` declares 'betrayal' and `selectPartingVariant` consumes
+    // it, but `groupDissolution.ts` only ever assigns undersize / leader_death /
+    // cohesion_floor / goal_complete. Prose that promised a betrayal-ending would
+    // be claiming an outcome the engine cannot reach (filed separately). The
+    // slow burn here runs on marks, bonds and seeds, which are all real.
+    const bands = quietOffer.aftermathConfig?.fallback?.byOutcome ?? {};
+    const seeds = Object.values(bands)
+      .flatMap(b => b?.reactions ?? [])
+      .flatMap(r => r.effects ?? [])
+      .filter(e => e.kind === 'encounter_seed');
+    // The burn continues by re-offering, never by dissolving the company.
+    expect(seeds.length).toBeGreaterThan(0);
+    for (const seed of seeds) {
+      expect((seed as { templateId: string }).templateId).toBe(QUIET_OFFER_ID);
+    }
+  });
+
+  it('all four subjects register at disjoint places — each place draws exactly its own', () => {
     // Guards a real authoring slip rather than restating the envelope: the
     // templates are group-exclusive with identical member gates, so a copied
     // `settings` block would make them interchangeable and the corpus would
@@ -211,11 +274,13 @@ describe('company drama — end-to-end reachability against real content', () =>
     // settings differ, so the eligibility result at a given place must differ
     // too — asserted in both directions at every place, so a template that
     // silently widens its envelope fails here by name.
-    const all = [gateHeld, twoRoads, thirdWatch];
+    const all = [gateHeld, twoRoads, thirdWatch, quietOffer];
+    const everyId = [GATE_HELD_ID, TWO_ROADS_ID, THIRD_WATCH_ID, QUIET_OFFER_ID];
     const cases: readonly (readonly [() => WorldGraph, string, string])[] = [
       [ruinGraph, 'the ruin', GATE_HELD_ID],
       [waysideGraph, 'the wayside', TWO_ROADS_ID],
       [urbanGraph, 'the town', THIRD_WATCH_ID],
+      [battlefieldGraph, 'the battlefield', QUIET_OFFER_ID],
     ];
     for (const [makeGraph, where, expectedId] of cases) {
       const graph = makeGraph();
@@ -223,7 +288,7 @@ describe('company drama — end-to-end reachability against real content', () =>
       const ids = generateUnifiedCandidates(graph, 'actor-1', 'ruin-1', all)
         .map(c => c.templateId);
       expect(ids, `${expectedId} should be drawn at ${where}`).toContain(expectedId);
-      for (const other of [GATE_HELD_ID, TWO_ROADS_ID, THIRD_WATCH_ID]) {
+      for (const other of everyId) {
         if (other === expectedId) continue;
         expect(ids, `${other} must not be drawn at ${where}`).not.toContain(other);
       }
