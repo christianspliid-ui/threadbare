@@ -2,7 +2,7 @@
 name: encounter-pipeline
 description: Automated encounter pipeline v3 — the Encounter Factory line. Runs brief → draft → bounded critic loop → machine gates → live proof → batch report for composition-complete encounter delivery, one encounter or a batch of six. Triggers on "encounter pipeline", "draft encounter", "run encounter pipeline", "author encounter", "encounter batch", "run a batch", or "/encounter-pipeline".
 model: opus
-last_validated_against: 2026-08-17
+last_validated_against: 2026-08-18
 ---
 
 > **Load before authoring:** `Docs/canon/rulebook-quick-reference.md` (always — the synthesis layer for rules of play). Load `Docs/canon/rulebook.md` (full rulebook) when the work touches a specific rule of play and you need depth, status flags, or source citations.
@@ -54,7 +54,16 @@ ever shrinks.
 
 ## The model this pipeline authors for (THR-772/774)
 
-> **The god acts in the physics of the scene, never in the dramaturgy of the story.**
+> **The god acts through their spheres on the fabric of the scene — matter, minds,
+> dreams, fates — never in the dramaturgy of the story. Influence, never authorship.**
+
+The lawful nudge space is as wide as the god's spheres: a stumble on loose stone
+(force), an urge arriving in sleep (mind), a sense that this has happened before (time),
+an old ambition catching light again (spirit), a face nobody afterwards quite recalls
+(darkness), a wound that closes cleaner than it should (life). The prohibition is
+unchanged and is not about range — never instruct the mortal, never pick between
+authored endings. A hand that reaches only for physical causes is using one sphere's
+vocabulary for a twelve-sphere game.
 
 Encounters authored here ship **nudge-native**. The player is handed a hand of authored,
 essence-priced **nudges** that shift the named odds; **fate rolls the outcome** on the
@@ -105,7 +114,7 @@ If `Docs/canon/encounters.md` is missing or inaccessible, fall back to the pre-r
 
 **Inject the design direction principles into the draft agent's context.** The principles are compiled into `Docs/authoring-brief.md` (Section C). Prefer the brief; fall back to `Docs/plans/2026-04-16-game-design-direction.md` when the brief is absent.
 
-**Player-as-god framing constraint.** The player is a god who observes through threads and intervenes indirectly. They NEVER make choices for the character. Every player-facing option is a **nudge** — a concrete, sphere-flavoured change to the physics of the scene (a stumble at the right moment, a spark of light in a dark room, a surge of strength on a climb), never an instruction to the mortal (say this, go there, fight) and never a choice between authored endings. The mortal acts according to their personality and the god's influence. Playing nothing must always be viable: a hand is an offer, not a toll gate.
+**Player-as-god framing constraint.** The player is a god who observes through threads and intervenes indirectly. They NEVER make choices for the character. Every player-facing option is a **nudge** — a concrete, sphere-flavoured exercise of the god's influence on the scene or on the mortal's inner weather (a stumble on loose stone, an urge arriving in sleep, a sense that this has happened before, an old ambition catching light again, a face nobody afterwards quite recalls, a wound that closes cleaner than it should), never an instruction to the mortal (say this, go there, fight) and never a choice between authored endings. Influence, never authorship. The mortal acts according to their personality and the god's influence. Playing nothing must always be viable: a hand is an offer, not a toll gate.
 
 **The editorial agent must check against these principles.** If a draft has structurally correct encounters but emotionally inert prose — if failure is just "you failed" with a number change, if the hand has an obvious dominant card, if the player wouldn't care about the outcome — the editorial agent should REVISE, not PASS. **Additionally, any encounter where the player "chooses how the character responds" must be rejected and reframed as a nudge hand.**
 
@@ -478,7 +487,7 @@ The editorial agent:
 11. **A number or `%` in an `effectLine`** — words only; the pip row renders magnitude
 12. **Trait-hook step skipped**, or a hook naming a ref `validateTraitRefs()` reports dead
 13. **A nudge-specific payoff written into the base band text** — it must read correctly with any subset of the hand active
-14. **A player-facing option that instructs the mortal** rather than changing the physics of the scene — the rejected authored-futures model
+14. **A player-facing option that instructs the mortal** rather than exerting the god's influence on the scene or the mortal's inner weather — the rejected authored-futures model. Range is not the test: a dream, an omen, a kindled desire are lawful; "tell them to run" is not
 15. **Any detector hit**: a vagueness-lexicon word, or more than one annotation clause across the encounter
 16. **Scene-bespoke prose on a card face** — a title, effect line, or flavor quote that only reads in this encounter (the communication pivot: prose does the scene, cards do the rules)
 17. **An effect line that states mood instead of mechanism** — it must say what the god does and why that moves the odds

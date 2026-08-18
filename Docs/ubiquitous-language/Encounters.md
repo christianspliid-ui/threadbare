@@ -272,9 +272,9 @@ The **declared-default invariant** is the load-bearing rule: every `variants` ma
 **Also see:** `[[Rider]]`, `[[Band Fragment]]`, `[[Encounter]]`, `[[Rebuild Road]]`
 **Status:** canonical
 
-An authored, per-encounter, sphere-flavoured micro-intervention the god plays during an **attended** (`story_beat`) encounter step. Each nudge names a concrete physical cause — a tremor leaving a hand, a lamp catching a second time — is essence-priced, and shifts the fate forecast through a named modifier (`nudge:<id>`). It may also carry a `[[Rider]]`.
+An authored, per-encounter, sphere-flavoured micro-intervention the god plays during an **attended** (`story_beat`) encounter step. Each nudge names a concrete cause somewhere in the god's sphere range — a tremor leaving a hand, a lamp catching a second time, an urge arriving in sleep, a sense that this has happened before — is essence-priced, and shifts the fate forecast through a named modifier (`nudge:<id>`). It may also carry a `[[Rider]]`.
 
-**A nudge never picks an outcome; fate rolls.** That is the whole distinction from the rejected authored-futures model, in which the player chose the ending directly. The god acts in the physics of the scene, never in the dramaturgy of the story.
+**A nudge never picks an outcome; fate rolls.** That is the whole distinction from the rejected authored-futures model, in which the player chose the ending directly. The god acts through their spheres on the fabric of the scene — matter, minds, dreams, fates — never in the dramaturgy of the story: **influence, never authorship**. The cause need not be physical (THR-1178); what it must never be is an instruction to the mortal or a choice between authored endings.
 
 Nudges are content, not configuration: options are authored per encounter, and only the six families in `SHARED_GENERIC_NUDGE_FAMILIES` are reused across them. Schema: `StepNudge` on `ActionStep.nudges` (`src/types/unifiedAction.ts`). A step with no `nudges` resolves exactly as it did before the schema landed — the feature is opt-in.
 

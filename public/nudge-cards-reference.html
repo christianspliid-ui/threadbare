@@ -150,7 +150,7 @@
     <ul>
       <li><strong>Picture</strong> — one small painted image per library card, generic like the title. Manifest + fallback chain (type icon on a tinted band until painted); rides the encounter image library pattern.</li>
       <li><strong>Keyword + icon</strong> — the card's type, player-facing vocabulary learned once.</li>
-      <li><strong>Title</strong> — two or three generic words, reusable everywhere.</li>
+      <li><strong>Title</strong> — two to four generic words, reusable everywhere. Interactive-plain: a label's job is to be unmistakable, so no metaphor here. Authored for every member since THR-1178.</li>
       <li><strong>Cost</strong> — essence pips, <em>Free</em>, or alternate-cost icons (detection, doom, obligation). A sphere-discounted card prints the <em>effective</em> price: the pips are what the commit path charges, never the authored number.</li>
       <li><strong>Effect</strong> — one plain mechanical sentence; odds shown in the pip vocabulary below.</li>
       <li><strong>Flavor quote</strong> — one short generic line in the serif voice. The card's only prose.</li>
@@ -178,7 +178,7 @@
 
 <h2>The 21 card types</h2>
 
-<p>Status: <span class="flag impl">IMPL</span> engine mechanics shipped · <span class="flag design">DESIGN</span> specced in THR-885, being built · <span class="flag open">OPEN</span> direction agreed, design pending. Content (titles, quotes, art) is authored under THR-883 for all types.</p>
+<p>Status: <span class="flag impl">IMPL</span> engine mechanics shipped · <span class="flag design">DESIGN</span> specced in THR-885, being built · <span class="flag open">OPEN</span> direction agreed, design pending. Status tracks a type's <em>engine mechanics</em>, never its content — the two are independent, and since THR-1178 every member of every type carries an authored face regardless of badge. Building the nine non-<span class="flag impl">IMPL</span> mechanics is THR-1179.</p>
 
 <table>
   <tr><th style="width:12%">Type</th><th style="width:30%">Effect shape</th><th style="width:24%">The decision it creates</th><th style="width:22%">Host system</th><th style="width:12%">Status</th></tr>
@@ -280,7 +280,15 @@
 <p>The plan says the run's card is the most-played one, or the one played at <em>the chronicle's biggest moment</em>. The chronicle does not record which cards a beat was won with, so there is no direct signal to read. The tie-break uses <strong>doom-clock progress at the moment of play</strong> — the run's own tension curve, monotone and deterministic — as a first-cut proxy. Refine when the chronicle carries card provenance.</p>
 
 <h3>Card content status</h3>
-<p>The library ships <strong>structure without prose</strong>: every member is gated, priced, and dealable, and <span class="mono">title</span>/<span class="mono">quote</span> are optional and currently absent. An unauthored card renders as its own keyword rather than blank. Titles, flavor quotes, and art are authored under THR-883 once the authoring format locks — no schema change needed when they arrive.</p>
+<p><strong>The corpus is complete as of THR-1178 (2026-08-18): all 34 library members carry an authored <span class="mono">title</span> and <span class="mono">quote</span>.</strong> <span class="mono">unauthoredCardCount()</span> reads <strong>0</strong> and is pinned there by test, so adding a member without a face is a named CI failure rather than a card that silently deals as its own keyword.</p>
+
+<p>Structure and content are <strong>separate tables in the same file, joined at assembly</strong> (<span class="mono">CARD_CONTENT</span> keyed by member id → <span class="mono">withContent()</span>). The universal-core and sphere-signature sections are <em>generated</em> from <span class="mono">UNIVERSAL_CORE_TYPES</span> and <span class="mono">SPHERE_SIGNATURES</span>, so hanging prose directly on the member literals would have meant hand-typing those members back out — the exact drift surface the generation exists to remove.</p>
+
+<p><span class="mono">title</span>/<span class="mono">quote</span> stay <em>optional</em> on the schema and <span class="mono">cardDisplayTitle</span>'s keyword fallback stays live. That is deliberate: the fallback now serves the member added tomorrow before its face is written, and collapsing it would make adding a card a two-file edit whose half-done state renders blank instead of legible.</p>
+
+<p><span class="mono">imageTag</span> is absent on every member — the image library has no card rows to bind to, so each face falls back to its type's generic art. That is the documented chain, not a gap; minting card art slots is owned by THR-832/THR-1170.</p>
+
+<p>Three rules govern the authored faces, and the test file enforces the mechanical half of each: <strong>genericity</strong> (a face must read wherever its type deals — scene grounding is the prose's job), <strong>sphere voice</strong> (a signature member reads as its sphere's mode of power; an <span class="mono">omen</span> card sounds like time, not like a recolored boost), and <strong>interactive-plain titles</strong> (2–4 words, unmistakable; the quote is the one element allowed a dry line).</p>
 
 <p style="margin-top: 28px; font-size: 0.88rem; color: var(--ink-faint);">Maintained under THR-883. Engine shipped in THR-887 (library data model, per-member sphere gating, unlock resolution, echo-card harvest); the card row and pip rendering shipped in THR-890 (<span class="mono">NudgePhaseShell</span> draws the anatomy above; <span class="mono">OddsPips</span>/<span class="mono">CostPips</span>/<span class="mono">CardKeywordChip</span> are shared primitives). Keywords are derived from this library — no card type is declared anywhere else. This page's tables are freshness-gated against <span class="mono">src/data/nudge-card-library.ts</span>.</p>
 
