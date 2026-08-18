@@ -1,11 +1,13 @@
 # Briefing
-**Generated:** 2026-08-18 05:56 local (03:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-08-18 06:56 local (04:56 UTC) · keep-work-flowing-cc
+
+*Nothing changed in the last hour. Same one thing, same four behind it — if you read the 05:56 brief, you can skip this one.*
 
 ## The one thing
 
 **Play two encounters and say whether they are worth meeting twice** — [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to)
 
-Unchanged from the last few hours, and still the fastest thing that restarts the building. Both are fixed and live; the links open the corrected endings, not a build behind them.
+Still the fastest thing that restarts the building. Both encounters are fixed and live — re-checked this run against the actual deployed build, which carries the fix and nothing since it but notes.
 
 **The Grateful Kin** — [play it](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin) · [good ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin&outcome=critical_success) · [bad ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin&outcome=critical_failure)
 **The Unsafe Bridge** — [play it](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge) · [good ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge&outcome=critical_success) · [costly ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge&outcome=success_at_cost)
@@ -23,13 +25,13 @@ The bond chip you called out now names the favour and opens the person who owes 
 
 ## Queue
 
-**Starved — 1 ready, and nothing the overnight lane can take.** That one item (THR-1133) needs you at a keyboard with the game running.
+**Starved — 1 ready, and nothing the overnight lane can take.** That one item (THR-1133) needs you at a keyboard with the game running. Unchanged for several hours: the builder is not blocked on anything technical, it is out of work it is allowed to start.
 
-- [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to) — parked ~9 h on your sample verdict. Nothing in flight on it.
-- [THR-1168](https://linear.app/threadbare/issue/THR-1168/two-authored-encounter-audio-moments-have-no-live-caller-wire-or) — parked ~4 h on the held-breath question. Its other half already shipped.
+- [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to) — parked ~10 h on your sample verdict. Nothing in flight on it.
+- [THR-1168](https://linear.app/threadbare/issue/THR-1168/two-authored-encounter-audio-moments-have-no-live-caller-wire-or) — parked ~5 h on the held-breath question. Its other half already shipped, and the park survived this time where the previous one decayed.
 
 ## Health
 
-All green. The live site is current, automated checks and all nine scheduled lanes are running on time, no pull request is waiting to merge, and the repository housekeeping ran at 05:40.
+All green. The live site is current, automated checks and all nine scheduled lanes are running on time, no pull request is waiting to merge, and repository housekeeping is running.
 
-One visibility line, no action: the lane-silence probe still reports two overnight quiet stretches from 12–13 August (10.8 h and 9.4 h). Both are the nightly shape you already ruled normal, and both recovered on their own.
+One visibility line, no action: the lane-silence probe still reports the same two overnight quiet stretches from 12–13 August (10.8 h and 9.4 h). Both are the nightly shape you already ruled normal, and both recovered on their own.
