@@ -759,6 +759,10 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
           templateIds: ['reward_bestowed_patrons_backing'],
           selection: 'first',
         },
+        // THR-1169: exclusion from the stat_contribution migration CONFIRMED. Shown once and
+        // spent (`rewardMode: 'service'`, `lossCondition: 'consumable'`); nothing is borne, so
+        // there is no interval over which it could shape capability. The Backing it grants
+        // carries whatever influence this is worth.
       ],
       lossCondition: 'consumable',
       flavorText: 'Folded notes bearing three wax seals. Show them once, and doors begin opening for you.',
@@ -1077,6 +1081,15 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
           maxMargin: 8,
           steps: 1,
         },
+        // THR-1169: exclusion CONFIRMED — the closest call of the three, so the reasoning is
+        // recorded rather than left to be re-argued. Unlike the other two exclusions this one
+        // IS borne (`stealable`, not consumable), so the consumable argument does not apply.
+        // It is excluded on the other half of the predicate: its sole channel is a
+        // `test_shaper`, and the predicate asks for design intent that includes Domain-
+        // Capability influence. A token passed between duelists catches a near-miss; it does
+        // not teach anyone to fight, and the flavor says so ("recover from bad footing a
+        // heartbeat faster"). Granting it Iron capability would quietly turn a luck charm
+        // into a competence item — a different object than the one that was authored.
       ],
       lossCondition: 'stealable',
       flavorText: 'A nicked brass token passed between challengers. The bearer seems to recover from bad footing a heartbeat faster.',
@@ -1145,6 +1158,9 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
           amount: 0.08,
           consumeOnPrevent: true,
         },
+        // THR-1169: exclusion CONFIRMED. `consumeOnPrevent` — it shatters the one time it
+        // matters. A ward that spends itself absorbing a single blow never accompanies its
+        // bearer long enough to make them more capable.
       ],
       lossCondition: 'consumable',
       flavorText: 'A bubble of furnace glass with a coal-dark core. It flashes warm once when disaster almost takes hold.',
@@ -1786,6 +1802,37 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
   },
 
   // ─── Effect Primitive Exercisers (verify all P1 primitives work) ────
+  //
+  // THR-1169 — the proof/item split in this block, settled. Do not re-litigate per entry.
+  //
+  // THR-745 held the whole block back from the `stat_contribution` migration on one
+  // rationale: an entry here exists to demonstrate exactly ONE effect primitive, and
+  // bolting a second primitive onto a single-primitive proof weakens what it proves.
+  // That rationale is sound, but it does not describe every entry that ended up here.
+  //
+  // PROOF (no `stat_contribution` — adding one would blunt the demonstration):
+  //   an entry whose identity IS its primitive. Remove the primitive and nothing is left;
+  //   the name describes the mechanic, not an object. Ember Edge (`conditional`), Moonstone
+  //   Pendant (`cooldown`), Veteran's Shield (`stacking`), Fading Ward (`decay`),
+  //   Double-Edged Blade (`tradeoff`, T3 — tier is not the test), Battle Salve
+  //   (`consumable_charge`), Leather Bandolier / Scroll Case / Quartermaster's Harness
+  //   (`slot_bonus`), Sealed Bounty Scroll / Tithe Box (`content_grant`), Pilgrim's
+  //   Wayfinding Stone / Battle Spoils Talisman (`action_trigger`), and the T1/T2 entries
+  //   that pair one passive with the single primitive under test (Hush Stone, Gambler's
+  //   Last Copper, Wardwright's Compass, Book of Sealing, River Clay Bead, Tarnished
+  //   Draw-Tube).
+  //
+  // ITEM (migrated): a composed artifact — several interacting effects expressing one
+  //   design idea, borne rather than consumed, with flavor describing an object that has a
+  //   history. Null Circlet, Fatesight Lens, The Sweating Vessel, Bag of Conveyance,
+  //   The Trembling Needle, The Anvilbone, and the three T4 legendaries filed under
+  //   `provisions` that are not consumables by any mechanical signal — The Quiet Cup,
+  //   The Last Harvest, The Black Mead (`lossCondition` permanent/cursed, no charges, no
+  //   `destroyOnEmpty`). The predicate excludes consumables; those three are borne, so it
+  //   never reached them. That is an entry-level reading, NOT a revision of the predicate:
+  //   `provisions` remains excluded as a category.
+  //
+  // Anything added to this block later inherits the same test: proof, or item?
   {
     id: 'reward_arms_ember_edge',
     type: 'artifact',
@@ -1942,7 +1989,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'relics_talismans',
       tier: 3,
       tags: ['#veil', '#shadow', '#relic', '#anti-magic', '#ancient'],
-      mechanicalSummary: '+0.08 Veil, +0.04 Shadow, -0.04 Star, suppresses all effects in 1-hex radius for 6 ticks, creates awareness barrier on adjacent hexes for 8 ticks',
+      mechanicalSummary: '+0.08 Veil roll · Veil capability +0.75 / Shadow +0.35 / Star −0.3 while borne, +0.04 Shadow, -0.04 Star, suppresses all effects in 1-hex radius for 6 ticks, creates awareness barrier on adjacent hexes for 8 ticks',
       censusTag: { scale: 'regional' },
       lossCondition: 'cursed',
       flavorText: 'A band of grey iron that sits above the brow like a wound. Nothing magical survives within arm\'s reach. Including prayers.',
@@ -1952,6 +1999,11 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
         { type: 'passive', reach: 'star', value: -0.04 },
         { type: 'suppress', target: 'all_effects', scope: { scope: 'radius', hexes: 1 }, ticks: 6 },
         { type: 'create_barrier', between: 'self_hex', and: 'adjacent', blocks: 'awareness', ticks: 8 },
+        // THR-1169: ITEM, not a primitive proof — a named T3 cursed relic composing five
+        // effects into one anti-magic identity. Its suppress/barrier arms are utility, not
+        // roll shapers, so it sits mid-high in the notable band. Star penalty mirrors the
+        // authored -0.04 (half the Veil bonus): it silences prayer as readily as sorcery.
+        { type: 'stat_contribution', contributions: { veil: 0.75, shadow: 0.35, star: -0.3 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -1986,7 +2038,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'tools_instruments',
       tier: 3,
       tags: ['#eye', '#star', '#tool', '#divination', '#fate'],
-      mechanicalSummary: '+0.06 Eye, +0.04 Star, -0.03 Shadow, 4 encounter rerolls, reveals encounters within 2 hexes',
+      mechanicalSummary: '+0.06 Eye roll · Eye capability +0.7 / Star +0.3 / Shadow −0.25 while borne, +0.04 Star, -0.03 Shadow, 4 encounter rerolls, reveals encounters within 2 hexes',
       censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'A lens of polished quartz set in brass so old it has turned green. Through it, the future is not one line but many, and some of them are kind.',
@@ -1996,6 +2048,11 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
         { type: 'passive', reach: 'shadow', value: -0.03 },
         { type: 'reroll', uses: 4 },
         { type: 'reveal', target: 'encounters', range: 2 },
+        // THR-1169: ITEM, not a primitive proof — a named T3 divination lens composing five
+        // effects. Low end of the notable band: four rerolls is a strong roll shaper
+        // already, per THR-745's rule. Shadow penalty mirrors the authored -0.03 — seeing
+        // every thread leaves nothing hidden to work behind.
+        { type: 'stat_contribution', contributions: { eye: 0.7, star: 0.3, shadow: -0.25 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -2090,7 +2147,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'provisions',
       tier: 4,
       tags: ['#star', '#heart', '#provision', '#divine', '#ancient', '#healing', '#celestial'],
-      mechanicalSummary: '+0.08 Star, +0.06 Heart, restores 1 essence per tick (requires Star > 0.10), 1-hex aura: +0.02 Heart to allies, blocks Iron actions (too peaceful to fight)',
+      mechanicalSummary: '+0.08 Star roll · Star capability +1.2 / Heart +0.6 while borne, +0.06 Heart, restores 1 essence per tick (requires Star > 0.10), 1-hex aura: +0.02 Heart to allies, blocks Iron actions (too peaceful to fight)',
       censusTag: { scale: 'cosmic' },
       lossCondition: 'permanent',
       flavorText: 'The cup is always full. It tastes like the first meal you remember — the last drink before sleep. Those who share it speak more softly afterward.',
@@ -2100,6 +2157,12 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
         { type: 'resource_manipulate', resource: 'essence', target: 'self', amount: 1, mode: 'per_tick', condition: 'reach_above:star:0.10' },
         { type: 'aura', radius: 1, target: 'allies', reach: 'heart', value: 0.02 },
         { type: 'action_gate', mode: 'block', reach: 'iron' },
+        // THR-1169: ITEM despite the `provisions` subcategory — `lossCondition: 'permanent'`,
+        // no `consumable_charge`, no `destroyOnEmpty`. It is borne, never consumed, so the
+        // predicate's consumable exclusion does not reach it. Legendary band.
+        // No Iron penalty: `action_gate` already blocks Iron outright, and pricing the block
+        // a second time as lost capability would double-count one authored cost.
+        { type: 'stat_contribution', contributions: { star: 1.2, heart: 0.6 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -2111,7 +2174,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'provisions',
       tier: 4,
       tags: ['#iron', '#stone', '#provision', '#ancient', '#cursed', '#survival', '#fortification'],
-      mechanicalSummary: '+0.07 Iron, +0.06 Stone, blocks poison/disease/blight conditions, -0.04 Heart (numbing), modifies death_prevented rule (cannot die while held)',
+      mechanicalSummary: '+0.07 Iron roll · Iron capability +1.2 / Stone +0.6 / Heart −0.6 while borne, +0.06 Stone, blocks poison/disease/blight conditions, -0.04 Heart (numbing), modifies death_prevented rule (cannot die while held)',
       censusTag: { scale: 'cosmic' },
       lossCondition: 'cursed',
       flavorText: 'The grain is pale and heavy as lead. It tastes of nothing. After the third handful you stop noticing hunger, and after the tenth you stop noticing most things.',
@@ -2121,6 +2184,11 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
         { type: 'tag_immunity', tags: ['poison', 'disease', 'blight'] },
         { type: 'passive', reach: 'heart', value: -0.04 },
         { type: 'modify_rules', scope: { scope: 'self' }, rule: 'death_prevented', value: true, ticks: 'permanent' },
+        // THR-1169: ITEM despite the `provisions` subcategory — `lossCondition: 'cursed'`,
+        // no charges, never destroyed. Borne, so the consumable exclusion does not reach it.
+        // Legendary band. Heart −0.6 mirrors the authored numbing at the shipped T4 penalty
+        // rung: the grain keeps you alive by making you stop noticing anyone.
+        { type: 'stat_contribution', contributions: { iron: 1.2, stone: 0.6, heart: -0.6 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -2132,7 +2200,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'provisions',
       tier: 4,
       tags: ['#veil', '#shadow', '#provision', '#cursed', '#arcane', '#ancient', '#prophecy'],
-      mechanicalSummary: '+0.09 Veil, +0.05 Shadow, reveals all encounters (unlimited range), +0.04 Veil / -0.02 Star tradeoff (clarity at the cost of faith), drifts toward ruthlessness',
+      mechanicalSummary: '+0.09 Veil roll · Veil capability +1.3 / Shadow +0.6 / Star −0.3 while borne, +0.05 Shadow, reveals all encounters (unlimited range), +0.04 Veil / -0.02 Star tradeoff (clarity at the cost of faith), drifts toward ruthlessness',
       censusTag: { scale: 'cosmic' },
       lossCondition: 'cursed',
       flavorText: 'The mead is black and tastes of smoke and thyme. After the first draught the world looks thin — you can see the seams where it was stitched together. You pull at them.',
@@ -2142,6 +2210,12 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
         { type: 'reveal', target: 'encounters', range: 'all' },
         { type: 'tradeoff', bonus: { reach: 'veil', value: 0.04 }, penalty: { reach: 'star', value: 0.02 } },
         { type: 'axiological_drift', axis: 'mercy_ruthlessness', ratePerTick: 0.006, limitValue: 0.45 },
+        // THR-1169: ITEM despite the `provisions` subcategory — `lossCondition: 'cursed'`,
+        // no charges, never destroyed. Borne, so the consumable exclusion does not reach it.
+        // Top of the legendary band: seeing the seams of the world is the catalog's widest
+        // Veil claim. Star −0.3 mirrors the authored tradeoff, which is small by design —
+        // the mead does not take faith so much as make it look unnecessary.
+        { type: 'stat_contribution', contributions: { veil: 1.3, shadow: 0.6, star: -0.3 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -2191,7 +2265,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'relics_talismans',
       tier: 3,
       tags: ['#veil', '#relic', '#arcane', '#ancient', '#restoration'],
-      mechanicalSummary: 'Veil bonus decays from +0.08 to +0.02 over ~20 ticks, -0.04 Star, restores 2 quintessence per tick',
+      mechanicalSummary: 'Veil capability +0.7 / Star −0.3 while borne · Veil roll decays from +0.08 to +0.02 over ~20 ticks, -0.04 Star, restores 2 quintessence per tick',
       censusTag: { scale: 'regional' },
       lossCondition: 'cursed',
       flavorText: 'A vessel of fused obsidian, warm to the touch. It sweats a clear liquid that smells of lightning. The priests who made it did not survive the process.',
@@ -2199,6 +2273,11 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
         { type: 'decay', reach: 'veil', startValue: 0.08, changePerTick: -0.003, limitValue: 0.02, destroyAtLimit: false },
         { type: 'passive', reach: 'star', value: -0.04 },
         { type: 'resource_manipulate', resource: 'quintessence', target: 'self', amount: 2, mode: 'per_tick' },
+        // THR-1169: ITEM, not a primitive proof — a named T3 cursed relic with authored
+        // history (the priests who made it did not survive). Low end of the notable band:
+        // its Veil *roll* wastes away, so competence outlives the bonus but should not
+        // outstrip it. Star penalty mirrors the authored -0.04 cost of using the thing.
+        { type: 'stat_contribution', contributions: { veil: 0.7, star: -0.3 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -2298,7 +2377,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       slotTag: 'utility',
       tier: 3,
       tags: ['#gold', '#veil', '#arcane', '#equipment', '#carrying', '#ancient'],
-      mechanicalSummary: '+0.06 Gold, +0.04 Veil, +2 consumable slots, +1 wealth slot, restores 1 essence (one-shot)',
+      mechanicalSummary: '+0.06 Gold roll · Gold capability +0.75 / Veil +0.35 while borne, +0.04 Veil, +2 consumable slots, +1 wealth slot, restores 1 essence (one-shot)',
       censusTag: { scale: 'local' },
       lossCondition: 'stealable',
       flavorText: 'A leather satchel with seams that do not line up with its edges. You reach in past the elbow and your hand keeps going. The stitching hums when you find what you were looking for.',
@@ -2308,6 +2387,11 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
         { type: 'slot_bonus', slotTag: 'consumable', bonus: 2 },
         { type: 'slot_bonus', slotTag: 'wealth', bonus: 1 },
         { type: 'resource_manipulate', resource: 'essence', target: 'self', amount: 1, mode: 'one_shot' },
+        // THR-1169: ITEM, not a primitive proof — a named T3 arcane satchel with authored
+        // history, well past the bare `slot_bonus` demos (Bandolier, Scroll Case) it shares
+        // the block with. Mid-high notable band: no roll shaper competes with it, and a
+        // merchant who can carry anything anywhere genuinely trades better.
+        { type: 'stat_contribution', contributions: { gold: 0.75, veil: 0.35 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -2321,7 +2405,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'tools_instruments',
       tier: 4,
       tags: ['#eye', '#veil', '#tool', '#divination', '#ancient', '#exploration'],
-      mechanicalSummary: '+0.08 Eye, +0.05 Veil, reveals all encounters within 3 hexes, +0.03 Eye in exploration, modifies awareness range +2 (permanent, self only)',
+      mechanicalSummary: '+0.08 Eye roll · Eye capability +1.2 / Veil +0.6 while borne, +0.05 Veil, reveals all encounters within 3 hexes, +0.03 Eye in exploration, modifies awareness range +2 (permanent, self only)',
       censusTag: { scale: 'local' },
       lossCondition: 'permanent',
       flavorText: 'It trembles when you face a direction no one has walked. Carved from the world\'s first boundary stone. It has never pointed north.',
@@ -2331,6 +2415,11 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
         { type: 'reveal', target: 'encounters', range: 3 },
         { type: 'conditional', condition: 'in_exploration', reach: 'eye', value: 0.03 },
         { type: 'modify_rules', scope: { scope: 'self' }, rule: 'awareness_range_bonus', value: 2, ticks: 'permanent' },
+        // THR-1169: ITEM, not a primitive proof — a named T4 legendary composing five
+        // effects, including a permanent rule modification. Legendary band, matching the
+        // shipped T4 rung (Quiet Blade, Fulcrum): an instrument that permanently widens
+        // what its bearer can perceive is a competence artifact, not a demo.
+        { type: 'stat_contribution', contributions: { eye: 1.2, veil: 0.6 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -2342,7 +2431,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'tools_instruments',
       tier: 4,
       tags: ['#stone', '#star', '#tool', '#craft', '#ancient', '#divine', '#creation'],
-      mechanicalSummary: '+0.10 Stone, +0.04 Star, +0.03 Stone at home territory, creates a shrine on the wielder\'s hex (permanent), drifts toward ambition',
+      mechanicalSummary: '+0.10 Stone roll · Stone capability +1.3 / Star +0.6 while borne, +0.04 Star, +0.03 Stone at home territory, creates a shrine on the wielder\'s hex (permanent), drifts toward ambition',
       censusTag: { scale: 'local' },
       lossCondition: 'permanent',
       flavorText: 'The bones hum when they touch raw stone. Where you set them down, the ground remembers how to hold weight. Cities begin where you rest.',
@@ -2352,6 +2441,11 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
         { type: 'conditional', condition: 'at_home_territory', reach: 'stone', value: 0.03 },
         { type: 'create_structure', what: 'landmark', subtype: 'shrine', onHex: 'self', permanent: true, properties: { name: 'Anvilbone Foundation' } },
         { type: 'axiological_drift', axis: 'loyalty_ambition', ratePerTick: 0.005, limitValue: 0.40 },
+        // THR-1169: ITEM, not a primitive proof — a named T4 legendary that raises a
+        // permanent shrine and bends its bearer toward ambition. Top of the legendary band:
+        // its +0.10 Stone is the largest authored passive in the exerciser block, and
+        // founding places is the purest expression of Stone the catalog has.
+        { type: 'stat_contribution', contributions: { stone: 1.3, star: 0.6 } },
       ],
     } as PossessionNodeProperties,
   },
