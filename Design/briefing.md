@@ -1,7 +1,7 @@
 # Briefing
-**Generated:** 2026-08-18 22:57 local (20:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-08-18 23:55 local (21:55 UTC) · keep-work-flowing-cc
 
-*Your own note from this afternoon — that nudges should reach dreams and omens and fates, not just move furniture around a scene — is now in the game, along with words on all 34 cards. Nothing new needs you. The ask below is the same one, still ten minutes.*
+*Six of the nine unbuilt nudge cards became working mechanics this hour and are live. Nothing new needs you. The ask below is the same one, still ten minutes.*
 
 ## The one thing
 
@@ -23,16 +23,16 @@ Writing that scene needs you first, by your own rule: a new encounter's brief ge
 
 ## Queue
 
-**10 ready, 2 in flight. A second High-priority job finished and shipped this hour.**
+**9 ready, 3 in flight. The first of yesterday's three follow-ons is more than half built.**
 
-- **The nudges can reach further than the room now** — [THR-1178](https://linear.app/threadbare/issue/THR-1178/nudge-library-completion-sphere-expressive-guidance-authored-card) ([PR #1553](https://github.com/christianspliid-ui/threadbare/pull/1553)), from your chat direction this afternoon that "physics of the scene" was too narrow a frame for a god who pulls on the threads of reality. Two things landed: the guidance now reads *influence, never authorship* and spans dreams, omens, desires and fates; and **all 34 cards in the library have their own written face** instead of blank slots. Queued at 20:05, merged and deployed by 22:44.
-- **Its three follow-ons are on the shelf, untouched** — the nine card types that are still designs rather than working mechanics ([THR-1179](https://linear.app/threadbare/issue/THR-1179/nudge-card-mechanics-build-every-card-type-whose-library-status-is-not), High), the sphere-attunement unlock that deepens the deck as you earn essence in a sphere ([THR-1180](https://linear.app/threadbare/issue/THR-1180/sphere-attunement-essenceearnedbysphere-counter-sphere-attunement)), and the glossary entry naming it ([THR-1181](https://linear.app/threadbare/issue/THR-1181/ul-proposal-sphere-attunement)). Builders take them in order; none needs you.
-- **The shelf is healthy at 10** and holds real game work, not just cleanup — three of the ten are program features rather than tidying. Nothing is stale, nothing is blocked at the top.
-- **Nothing is actively being built.** Both in-flight tickets are parked correctly: the [encounter retrofit](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to) waits on the return visit above before asking you for the sample verdict, and the [audio pacing question](https://linear.app/threadbare/issue/THR-1168/two-authored-encounter-audio-moments-have-no-live-caller-wire-or) waits on your feel call.
+- **Six of the nine unbuilt nudge cards are now real mechanics** — [THR-1179](https://linear.app/threadbare/issue/THR-1179/nudge-card-mechanics-build-every-card-type-whose-library-status-is-not) ([PR #1554](https://github.com/christianspliid-ui/threadbare/pull/1554)), merged and deployed within the hour. These were the cards that had a written face but did nothing when played; each now runs through the existing system it was designed to lean on, rather than a new one built alongside. **Three remain**, and the ticket stays open until they land — this is a checkpoint, not a finish.
+- **Its two siblings are untouched on the shelf** — the sphere-attunement unlock that deepens the deck as you earn essence in a sphere ([THR-1180](https://linear.app/threadbare/issue/THR-1180/sphere-attunement-essenceearnedbysphere-counter-sphere-attunement)) and the glossary entry naming it ([THR-1181](https://linear.app/threadbare/issue/THR-1181/ul-proposal-sphere-attunement)). Neither needs you.
+- **The shelf is healthy at 9** and nothing on it is stale or blocked at the top.
+- **The two parked tickets are parked correctly.** The [encounter retrofit](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to) is holding its sample verdict back from you deliberately — asking *"worth meeting twice?"* while the payoff opens onto an unwritten room would earn a no it has not earned. The [audio pacing question](https://linear.app/threadbare/issue/THR-1168/two-authored-encounter-audio-moments-have-no-live-caller-wire-or) waits on your feel call above.
 - **Held, no cost to leaving it:** five Meet-The-First scene images that break the art rule ([THR-876](https://linear.app/threadbare/issue/THR-876/regenerate-the-5-quarantined-meet-the-first-scene-assets-doctrine)). Substitutes cover those slots; redrawing spends credits, so it waits for your word.
 
 ## Health
 
-All green. The live site is serving the current code (30ffa1d9, the widened nudge library), automated checks and all nine scheduled lanes are on time, no pull request is waiting to merge, and repository housekeeping ran seventeen minutes ago.
+All green. The live site is serving the current code (d681128b, the six new card mechanics), automated checks and all nine scheduled lanes are on time, no pull request is waiting to merge, and repository housekeeping ran fifteen minutes ago.
 
-Two visibility lines, no action from you. The lane-silence probe still reports the same two overnight quiet stretches from 12–13 August (10.8 h and 9.4 h) — both the nightly shape you already ruled normal, both recovered on their own. And Linear's own GitHub integration keeps re-attaching your name to parked tickets when a pull request mentions them; it re-broke one park this morning and the next scan cleared it. The lanes handle it each pass; it costs minutes, not work.
+Two visibility lines, no action from you. The lane-silence probe still reports the same two overnight quiet stretches from 12–13 August (10.8 h and 9.4 h) — both the nightly shape you already ruled normal, both recovered on their own. And Linear's own GitHub integration keeps re-attaching your name to parked tickets when a pull request mentions them; both parks read clean this scan. The lanes handle it each pass; it costs minutes, not work.
