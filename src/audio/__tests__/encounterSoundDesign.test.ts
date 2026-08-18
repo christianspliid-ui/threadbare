@@ -10,11 +10,7 @@ import {
   beginTensionReveal,
   dbToGain,
   endTensionReveal,
-  hasRegistrationCueFired,
-  playRegistrationCue,
   playResolveNote,
-  registrationCueFrequency,
-  resetRegistrationCueLatch,
   resolveNoteFrequency,
   semitonesToRatio,
 } from '../encounterSoundDesign';
@@ -128,26 +124,8 @@ describe('encounterSoundDesign — pure helpers', () => {
   it('falls back to the root for an unknown reach rather than throwing', () => {
     const base = ENCOUNTER_CELLO_ROOT_HZ * ENCOUNTER_RESOLVE_OCTAVE_MULTIPLIER;
     expect(resolveNoteFrequency('not_a_reach')).toBeCloseTo(base, 4);
-    expect(registrationCueFrequency('not_a_kind')).toBeCloseTo(base, 4);
   });
 
-  it('maps every canonical effect kind to a registration cue', () => {
-    const kinds = [
-      'intelligence',
-      'condition_attachment',
-      'reputation_tally',
-      'reputation_score',
-      'encounter_seed',
-      'hidden_mark',
-      'recent_event',
-      'spawn_artifact',
-      'faction',
-      'archetype_drift_register',
-    ];
-    for (const kind of kinds) {
-      expect(registrationCueFrequency(kind)).toBeGreaterThan(0);
-    }
-  });
 });
 
 describe('encounterSoundDesign — fail-soft', () => {
@@ -164,7 +142,6 @@ describe('encounterSoundDesign — fail-soft', () => {
     __setAudioContextFactory(() => null);
     expect(() => beginTensionReveal()).not.toThrow();
     expect(() => playResolveNote('iron')).not.toThrow();
-    expect(() => playRegistrationCue('intelligence')).not.toThrow();
     expect(() => endTensionReveal()).not.toThrow();
   });
 
@@ -234,52 +211,5 @@ describe('encounterSoundDesign — Moment 1 scheduling', () => {
     playResolveNote('iron');
 
     expect(started).toHaveLength(0);
-  });
-});
-
-describe('encounterSoundDesign — first-registration gate (§4.3 #3)', () => {
-  beforeEach(() => {
-    __resetEncounterSoundDesign();
-    __resetUiChannel();
-    unmuteUi();
-  });
-  afterEach(() => {
-    __resetEncounterSoundDesign();
-    __resetUiChannel();
-  });
-
-  it('cues only the first registration — no cumulative jingle', () => {
-    const { context, started } = makeFakeContext();
-    __setAudioContextFactory(() => context as unknown as AudioContext);
-
-    playRegistrationCue('intelligence');
-    playRegistrationCue('hidden_mark');
-    playRegistrationCue('faction');
-
-    expect(started.filter((s) => s.type === 'triangle')).toHaveLength(1);
-    expect(hasRegistrationCueFired()).toBe(true);
-  });
-
-  it('re-arms the gate when the next tension reveal begins', () => {
-    const { context, started } = makeFakeContext();
-    __setAudioContextFactory(() => context as unknown as AudioContext);
-
-    playRegistrationCue('intelligence');
-    expect(hasRegistrationCueFired()).toBe(true);
-
-    beginTensionReveal();
-    expect(hasRegistrationCueFired()).toBe(false);
-
-    playRegistrationCue('spawn_artifact');
-    // One per resolution: the first cue, then the second after the re-arm.
-    expect(started.filter((s) => s.type === 'triangle')).toHaveLength(2);
-  });
-
-  it('re-arms via the explicit latch reset', () => {
-    __setAudioContextFactory(() => null);
-    playRegistrationCue('faction');
-    expect(hasRegistrationCueFired()).toBe(true);
-    resetRegistrationCueLatch();
-    expect(hasRegistrationCueFired()).toBe(false);
   });
 });

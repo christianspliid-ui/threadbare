@@ -1,10 +1,23 @@
 /**
- * Encounter sound design — Moment 1 tension reveal + Moment 2 registration cues.
+ * Encounter sound design — the Moment 1 tension reveal.
  *
  * THR-346 (Encounter UI post-v1 H1). Spec:
  *   - Docs/plans/2026-05-04-encounter-ui-canonical.md §3.3 — Moment 1 cue table
- *   - Docs/plans/2026-05-04-encounter-ui-canonical.md §4.1 — effect-kind spheres
- *   - Docs/plans/2026-05-04-encounter-ui-canonical.md §4.3 #3 — first-registration gate
+ *
+ * RETIRED 2026-08-18 (THR-1168): the Moment 2 registration cue —
+ * `playRegistrationCue`, `registrationCueFrequency`, the first-registration latch
+ * (`hasRegistrationCueFired` / `resetRegistrationCueLatch`) and the four
+ * `ENCOUNTER_REGISTRATION_*` constants. It keyed its pitch off the *engine effect*
+ * vocabulary (`intelligence` / `hidden_mark` / `spawn_artifact` / …, the §4.1
+ * effect-kind sphere table), and that vocabulary no longer reaches any player
+ * surface: THR-1082 replaced the mechanical effect buckets with six story-first
+ * consequence kinds (`prize | standing | toll | wound | seed | mark`), which the
+ * ten-entry semitone map shares **zero** keys with. Wiring it to the consequence
+ * chips as first proposed would have sent every chip through the fallback pitch,
+ * leaving the authored per-kind design as dead data behind a live-looking call.
+ * Sonifying it at the engine layer instead would put Web Audio inside the
+ * deterministic tick pipeline and fire during headless and background resolutions.
+ * Recover from git history if a per-effect registration surface ever returns.
  *
  * Every cue is synthesized through the Web Audio API. Nothing is sampled and no
  * audio asset ships with this module, so there is no missing-asset failure mode
@@ -26,10 +39,6 @@ import {
   ENCOUNTER_INHALE_DB,
   ENCOUNTER_INHALE_DURATION_MS,
   ENCOUNTER_INHALE_LOWPASS_HZ,
-  ENCOUNTER_REGISTRATION_ATTACK_MS,
-  ENCOUNTER_REGISTRATION_DB,
-  ENCOUNTER_REGISTRATION_DECAY_MS,
-  ENCOUNTER_REGISTRATION_SEMITONES,
   ENCOUNTER_RELEASE_DB,
   ENCOUNTER_RESOLVE_ATTACK_MS,
   ENCOUNTER_RESOLVE_DB,
@@ -72,17 +81,6 @@ export function resolveNoteFrequency(reach: string): number {
   );
 }
 
-/** Frequency of the Moment 2 registration cue for an effect kind. */
-export function registrationCueFrequency(kind: string): number {
-  const semitones =
-    ENCOUNTER_REGISTRATION_SEMITONES[kind] ?? ENCOUNTER_RESOLVE_SEMITONES_FALLBACK;
-  return (
-    ENCOUNTER_CELLO_ROOT_HZ *
-    ENCOUNTER_RESOLVE_OCTAVE_MULTIPLIER *
-    semitonesToRatio(semitones)
-  );
-}
-
 // ── Context management (fail-soft) ───────────────────────────────────
 
 type AudioContextFactory = () => AudioContext | null;
@@ -108,13 +106,6 @@ let ctxUnavailable = false;
 
 /** Live nodes for the in-flight Moment 1 sequence, so reset can stop them. */
 let activeNodes: AudioScheduledSourceNode[] = [];
-
-/**
- * Latch for canonical UI spec §4.3 #3 — "Audio is cued only on the *first*
- * registration". Reset at the start of each tension reveal so every resolution
- * gets exactly one registration cue, no cumulative jingle.
- */
-let registrationCueFired = false;
 
 function getContext(): AudioContext | null {
   if (ctxUnavailable) return null;
@@ -175,7 +166,6 @@ function makeNoiseBuffer(context: AudioContext, seconds: number): AudioBuffer {
  * Safe to call repeatedly; a second call cancels the first.
  */
 export function beginTensionReveal(): void {
-  registrationCueFired = false;
   stopActiveNodes();
 
   const context = getContext();
@@ -297,70 +287,6 @@ export function playResolveNote(reach: string): void {
   }
 }
 
-// ── Moment 2 — registration cues ─────────────────────────────────────
-
-/**
- * Fire the Moment 2 registration cue for an effect kind.
- *
- * Canonical UI spec §4.3 #3: only the FIRST registration of a resolution is
- * cued — "Further effects land in the silence the resolve cue leaves behind.
- * No cumulative jingle." The latch is held here rather than in the sequencing
- * hook so the rule holds no matter which landing settles first, and whether or
- * not `useEffectSequencing` is the thing driving them.
- *
- * The latch resets on `beginTensionReveal()` (next resolution) or
- * `resetRegistrationCueLatch()`.
- */
-// TODO(THR-1168): call-less in production since THR-1049 deleted its only caller
-// (`EffectRegistration/_shared.tsx`). Kept by THR-1167 as a cue-library API awaiting
-// a consumer — `encounterSoundDesign.test.ts` asserts its synthesis directly, so the
-// coverage is real rather than a snapshot on an unmounted component. THR-1168 carries
-// the wire-or-retire call, naming the EncounterVeil consequence-chip block as producer.
-export function playRegistrationCue(kind: string): void {
-  if (registrationCueFired) return;
-  registrationCueFired = true;
-
-  const context = getContext();
-  if (!context) return;
-
-  try {
-    void context.resume?.();
-    const t0 = context.currentTime;
-
-    const gain = cueGain(ENCOUNTER_REGISTRATION_DB);
-    if (gain <= 0) return;
-
-    const attack = ENCOUNTER_REGISTRATION_ATTACK_MS / 1000;
-    const decay = ENCOUNTER_REGISTRATION_DECAY_MS / 1000;
-
-    const osc = context.createOscillator();
-    osc.type = 'triangle';
-    osc.frequency.value = registrationCueFrequency(kind);
-
-    const env = context.createGain();
-    env.gain.setValueAtTime(0.0001, t0);
-    env.gain.exponentialRampToValueAtTime(gain, t0 + attack);
-    env.gain.exponentialRampToValueAtTime(0.0001, t0 + attack + decay);
-
-    osc.connect(env).connect(context.destination);
-    osc.start(t0);
-    osc.stop(t0 + attack + decay);
-    track(osc);
-  } catch {
-    // Fail-soft.
-  }
-}
-
-/** True once a registration cue has fired for the current resolution. */
-export function hasRegistrationCueFired(): boolean {
-  return registrationCueFired;
-}
-
-/** Re-arm the first-registration gate without starting a new reveal. */
-export function resetRegistrationCueLatch(): void {
-  registrationCueFired = false;
-}
-
 // ── Teardown ─────────────────────────────────────────────────────────
 
 function stopActiveNodes(): void {
@@ -398,5 +324,4 @@ export function __resetEncounterSoundDesign(): void {
   factory = defaultFactory;
   ctx = null;
   ctxUnavailable = false;
-  registrationCueFired = false;
 }
