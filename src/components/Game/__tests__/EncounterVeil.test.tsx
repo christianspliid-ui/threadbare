@@ -12,6 +12,7 @@ import {
   CONSEQUENCE_LEGEND_STORE_KEY,
   buildAftermathConsequences,
 } from '../encounter-stage/adapters/buildAftermathConsequences';
+import type { ChipSentenceLinker } from '../encounter-stage/adapters/buildAftermathConsequences';
 import { WorldGraph } from '../../../engine/graph';
 import type { UnifiedActionTemplate } from '../../../types/unifiedAction';
 import type { EncounterNotification } from '../../../types/encounterVisibility';
@@ -1948,7 +1949,7 @@ describe('THR-1172 — an underline must earn itself (composed veil)', () => {
     (el as HTMLElement).style.borderBottom !== '' &&
     (el as HTMLElement).style.borderBottom !== 'none';
 
-  function veilWithChips(link: (id: string, text: string) => { id: string; segments: unknown[] }) {
+  function veilWithChips(link: ChipSentenceLinker) {
     return {
       ...mockModel,
       aftermath: {
