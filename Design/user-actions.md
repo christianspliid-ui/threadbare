@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-18 23:55 local (21:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-19 00:53 local (22:53 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -10,7 +10,7 @@ The town you helped now keeps a door open — *A Standing Welcome*, ten game day
 
 **The ask: one short chat where an agent drafts the brief with you** — what the return visit should be, who is there, what the welcome actually buys. Your own Factory rule puts brief approval before any prose, and no brief exists yet, so this cannot start unattended. Say *"draft the brief for the Grateful Kin return visit."*
 
-Smallest ask on this list, longest chain behind it: return visit → payoff real → the sample verdict you have been holding → batch 2's nine encounters. The verdict is held by the lane, not by you — asking *"worth meeting twice?"* while the payoff opens onto an unwritten room would earn a no it has not earned.
+Smallest ask on this list, longest chain behind it: return visit → payoff real → the sample verdict you have been holding → batch 2's nine encounters. The verdict is held by the lane, not by you — asking *"worth meeting twice?"* while the payoff opens onto an unwritten room would earn a no it has not earned. As of 2026-08-19 it is the only step in that chain still needing a person.
 
 ### 2. Rank five parts of the game for rebuilding — [the wave-1 sitting](https://linear.app/threadbare/issue/THR-1163/wave-1-selection-which-seams-make-the-first-wave-in-what-order-under)
 
@@ -22,7 +22,7 @@ All three background investigations are finished, so nothing is missing but the 
 
 ### 3. Spending image credits — three missing plates, and five quarantined ones
 
-**[THR-1170](https://linear.app/threadbare/issue/THR-1170/every-meet-the-first-nudge-card-renders-the-same-plate-424-imagetags) — the opening beat.** Every nudge card in every Meet-The-First hand shows the same picture, wisps settling over a plain clay bowl. All 424 cards. As of 2026-08-18 they each have their own written face, which makes the shared picture the last thing flattening them together. They were written for three different images (a crowd, a mercy, a blade) and none was ever made. [Open the route and see it](https://threadbare.vercel.app/?view=game&firstunmet&size=medium). **Make the three, or reuse near-misses?** Reusing is free and same-day, but one of the three lands back on the stand-in it already shows, so a third of the cards gain nothing.
+**[THR-1170](https://linear.app/threadbare/issue/THR-1170/every-meet-the-first-nudge-card-renders-the-same-plate-424-imagetags) — the opening beat.** Every nudge card in every Meet-The-First hand shows the same picture, wisps settling over a plain clay bowl. All 424 cards. As of 2026-08-18 they each have their own written face, and as of tonight their own working mechanic — which makes the shared picture the last thing flattening them together. They were written for three different images (a crowd, a mercy, a blade) and none was ever made. [Open the route and see it](https://threadbare.vercel.app/?view=game&firstunmet&size=medium). **Make the three, or reuse near-misses?** Reusing is free and same-day, but one of the three lands back on the stand-in it already shows, so a third of the cards gain nothing.
 
 **[THR-876](https://linear.app/threadbare/issue/THR-876/regenerate-the-5-quarantined-meet-the-first-scene-assets-doctrine) — five scene images that break the art rule.** Ready to run whenever you say. Nothing is broken; substitutes cover those slots.
 
@@ -48,6 +48,7 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
+- 2026-08-19: **every nudge card now does something when you play it** — [THR-1179](https://linear.app/threadbare/issue/THR-1179/nudge-card-mechanics-build-every-card-type-whose-library-status-is-not) ([PR #1555](https://github.com/christianspliid-ui/threadbare/pull/1555)): Whisper, Undertow and Stumble were the last three card types with a written face and no mechanic behind it. The deck is complete — face, words and effect on all of them.
 - 2026-08-18: **a god who pulls threads, not furniture** — [THR-1178](https://linear.app/threadbare/issue/THR-1178/nudge-library-completion-sphere-expressive-guidance-authored-card) ([PR #1553](https://github.com/christianspliid-ui/threadbare/pull/1553)): your afternoon note that "physics of the scene" was too narrow. Nudge guidance now reads *influence, never authorship* across dreams, omens, desires and fates — and all 34 cards in the library have their own written face.
 - 2026-08-18: **the guard that would have caught your favour bug** — [THR-1177](https://linear.app/threadbare/issue/THR-1177/edge-integrity-the-enforce-now-package-validate-at-the-two-generic) ([PR #1552](https://github.com/christianspliid-ui/threadbare/pull/1552)): the two places that write links between things now check what they are joining, so a debt owed by a town is refused at the point of writing rather than found by you in play.
 - 2026-08-18: **the favour a town could never repay** — [THR-1175](https://linear.app/threadbare/issue/THR-1175/a-town-cannot-owe-a-social-favour-favor-creation-with-a-non-person) ([PR #1551](https://github.com/christianspliid-ui/threadbare/pull/1551)): your 18:34 finding, fixed and deployed within four hours. It was worse than reported — the debt was uncollectable by construction, headed for a silent sweep a week later. It is a standing welcome on the town now.
@@ -57,7 +58,6 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 - 2026-08-18: **the underlines you flagged at lunchtime now answer** — [THR-1172](https://linear.app/threadbare/issue/THR-1172/finish-the-entity-reference-contract-an-underline-must-earn-itself) ([PR #1546](https://github.com/christianspliid-ui/threadbare/pull/1546)): filed from your chat report, merged and deployed within two hours. *A favour owed* explains on hover and opens the debtor on click; a word that cannot answer no longer gets styled at all.
 - 2026-08-18: **42 card pictures that named nothing now point at real ones** — [THR-1052](https://linear.app/threadbare/issue/THR-1052/27-card-imagetags-across-13-shipped-encounters-name-no-image-library): re-pointed where an honest match existed, plus a guard so the class cannot silently recur. Filed at 27, found to be 42 on inspection. It is what turned up ask 3 above.
 - 2026-08-18: **the equipment follow-on is already done** — [THR-1169](https://linear.app/threadbare/issue/THR-1169/stat-contribution-migration-the-effect-primitive-exerciser-block-and) ([PR #1541](https://github.com/christianspliid-ui/threadbare/pull/1541)): the items yesterday's job deliberately left out are now sorted into the ones that prove the machinery and the ones that are real gear.
-- 2026-08-18: **fifty-seven pieces of equipment now actually make their bearer more capable** — [THR-745](https://linear.app/threadbare/issue/THR-745/extend-stat-contribution-migration-to-the-remaining-reward-catalog) ([PR #1540](https://github.com/christianspliid-ui/threadbare/pull/1540)): weapons, relics and tomes whose whole point was to make you better at something were carrying no such effect.
 
 ---
 
