@@ -14,6 +14,7 @@
  * | CONDITION_BLESSED_DURATION     | 36      | Ticks (3 game days)                 |
  * | CONDITION_CURSED_DURATION      | 36      | Ticks (3 game days)                 |
  * | CONDITION_EXHAUSTED_DURATION   | 12      | Ticks (1 game day)                  |
+ * | CONDITION_GRIEVING_DURATION    | 72      | Ticks (6 game days)                 |
  *
  * ─── Location conditions (THR-1143) ─────────────────────────────
  * The same family, carried by a **place** instead of a person: a pass closed for
@@ -67,6 +68,17 @@ export const CONDITION_CURSED_DURATION = 36;
 
 /** Duration for exhausted condition (1 game day) */
 export const CONDITION_EXHAUSTED_DURATION = 12;
+
+/**
+ * Duration for grieving condition (6 game days) — THR-1171.
+ *
+ * The longest of the personal set on purpose: the others are things that happen
+ * *to* a body and wear off as it recovers, and this one is a thing that happened
+ * to a life. An encounter that wants a shorter or longer grief passes a
+ * `durationOverride` (apotheosis' declined endings run far past this), so this
+ * number is the default weight of an ordinary loss, not a ceiling.
+ */
+export const CONDITION_GRIEVING_DURATION = 72;
 
 // ─── Location Condition Durations (ticks) — THR-1143 ────────────────────────
 // A place's conditions run on the world's clock, not a person's, so these are an
@@ -202,6 +214,35 @@ export const CONDITION_TRAIT_DEFINITIONS: GraphNode[] = [
       censusTag: { scale: 'personal' },
     } as TraitDefinitionProperties,
   },
+  {
+    // THR-1171 — the vocabulary genuinely lacked a word for loss with no body to
+    // bury, and two independent encounters reached for it before it existed
+    // (apotheosis' declined endings, and THR-733's company drama, which worked
+    // around the gap by claiming `wounded` and moving the grief into prose).
+    // Two authors reaching for the same missing word is a gap, not two slips.
+    id: 'trait.condition.grieving',
+    type: 'trait',
+    name: 'Grieving',
+    properties: {
+      subcategory: 'condition',
+      description: 'Carrying a loss. Attention goes where the absence is, not where the work is.',
+      importance: 0.6,
+      maxLevel: 1,
+      visibility: 'public',
+      // Grief does not weaken the body — it takes the attention off the room and
+      // the steadiness out of dealing with people. `heart` and `eye` carry that;
+      // `iron` deliberately does not, which is what separates this from `wounded`.
+      domainContributions: { heart: -0.08, eye: -0.05 },
+      tags: ['#condition', '#social', '#negative'],
+      flavorText: 'They keep turning to say something to someone who is not there.',
+      censusTag: { scale: 'personal' },
+      // `satisfies`, not the `as` cast the six above use — the location set
+      // already made this switch (see the header note) so the required-field
+      // contract is checked at authoring time rather than asserted past. A new
+      // entry has no legacy to preserve, and the cast is what let the header's
+      // own claim about `grieving` go unchecked in the first place (THR-1171).
+    } satisfies TraitDefinitionProperties,
+  },
 
   // ─── Location conditions (THR-1143) ───────────────────────────────────────
   // Carried by a place. `censusTag.scale` is 'local' — the census counts these
@@ -301,6 +342,7 @@ export const CONDITION_DURATIONS: Record<string, number> = {
   'trait.condition.blessed': CONDITION_BLESSED_DURATION,
   'trait.condition.cursed': CONDITION_CURSED_DURATION,
   'trait.condition.exhausted': CONDITION_EXHAUSTED_DURATION,
+  'trait.condition.grieving': CONDITION_GRIEVING_DURATION,
   // Location conditions (THR-1143)
   'trait.condition.location.pass_closed': CONDITION_PASS_CLOSED_DURATION,
   'trait.condition.location.festival': CONDITION_FESTIVAL_DURATION,

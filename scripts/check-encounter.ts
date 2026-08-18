@@ -200,7 +200,7 @@ function runOne(template: UnifiedActionTemplate): TemplateResult {
   const register = auditTemplate(template).failures;
   const liveness = [
     ...validateNudgeGrantRefs([template]).dead.map(
-      d => `step ${d.stepIndex} card '${d.nudgeId}' ${d.effectKind} → unknown ${d.refKind} '${d.ref}'`,
+      d => `${d.site} ${d.effectKind} → unknown ${d.refKind} '${d.ref}'`,
     ),
     // THR-1146 — a `reward_draw` whose recipe matches no live attachment is the
     // same rot in a different shape: nothing is misspelled, the query just

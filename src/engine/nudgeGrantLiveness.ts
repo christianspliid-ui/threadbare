@@ -52,8 +52,16 @@ export type NudgeGrantRefKind = 'ambition' | 'artifact' | 'condition' | 'attachm
 
 export interface DeadNudgeGrantRef {
   readonly templateId: string;
-  readonly stepIndex: number;
-  readonly nudgeId: string;
+  /**
+   * Where in the template the dead ref sits, in `allTemplateEffects` notation —
+   * `step[2].card 'hold_the_line'`, `aftermath.declined.critical_failure.stand_outside`.
+   *
+   * THR-1171 replaced the old `stepIndex` + `nudgeId` pair: those two fields could
+   * only address a card, which is precisely why the sweep could only *walk* cards.
+   * A shape that cannot name an aftermath reaction is a shape that guarantees
+   * aftermath reactions go unchecked.
+   */
+  readonly site: string;
   readonly effectKind: string;
   readonly refKind: NudgeGrantRefKind;
   /** The id that resolved against nothing. */
@@ -63,8 +71,8 @@ export interface DeadNudgeGrantRef {
 export interface NudgeGrantLivenessReport {
   /** Grant references checked — a zero here means the sweep matched nothing (see below). */
   readonly checkedRefs: number;
-  /** Cards carrying at least one grant. */
-  readonly cardsWithGrants: number;
+  /** Sites carrying at least one id-naming effect (cards, aftermath reactions, step metadata). */
+  readonly sitesWithGrants: number;
   readonly dead: readonly DeadNudgeGrantRef[];
 }
 
@@ -124,10 +132,24 @@ function refsForEffect(
 // ─── Sweep ───────────────────────────────────────────────────────────
 
 /**
- * Sweep a template pool for card grants naming content that does not exist.
+ * Sweep a template pool for effects naming content that does not exist.
  *
  * Fail-soft in shape (returns a report, never throws) so a caller can decide
  * whether a dead ref is fatal. The test that owns this gate treats it as fatal.
+ *
+ * **Coverage is every site an effect can live at** (THR-1171), delegated to
+ * {@link allTemplateEffects} — the same walk the `reward_draw` gate uses, so the
+ * two cannot drift into disagreeing about what "shipped content" means.
+ *
+ * Until THR-1171 this walked `step.nudges[].grants` and nothing else, which left
+ * the entire aftermath surface unswept. That is not a hypothetical hole: the
+ * apotheosis capstone attached `trait.condition.grieving` — an id no catalog
+ * defined — from a `critical_failure` band reaction, and this gate reported the
+ * corpus clean for as long as the effect sat there. The `condition_attachment`
+ * arm in `encounterAftermath` fails soft on a missing node, so the write silently
+ * did nothing while the chip above it went on claiming the state (UI Law 56).
+ * A gate that can only see one of the four places an effect is authored reports
+ * green about the three it cannot see.
  */
 export function validateNudgeGrantRefs(
   templates: readonly UnifiedActionTemplate[],
@@ -135,36 +157,28 @@ export function validateNudgeGrantRefs(
   const live = buildLiveIndex();
   const dead: DeadNudgeGrantRef[] = [];
   let checkedRefs = 0;
-  let cardsWithGrants = 0;
+  let sitesWithGrants = 0;
 
   for (const template of templates) {
-    const steps = template.steps ?? [];
-    for (let stepIndex = 0; stepIndex < steps.length; stepIndex++) {
-      const step = steps[stepIndex];
-      // Branch nodes carry no nudges — skipping them is correct, not a gap.
-      if (isActionStepBranch(step)) continue;
-      for (const nudge of step.nudges ?? []) {
-        if (!nudge.grants || nudge.grants.length === 0) continue;
-        cardsWithGrants++;
-        for (const effect of nudge.grants) {
-          for (const { kind, ref } of refsForEffect(effect)) {
-            checkedRefs++;
-            if (live[kind].has(ref)) continue;
-            dead.push({
-              templateId: template.id,
-              stepIndex,
-              nudgeId: nudge.id,
-              effectKind: effect.kind,
-              refKind: kind,
-              ref,
-            });
-          }
-        }
+    for (const { effect, site } of allTemplateEffects(template)) {
+      const refs = refsForEffect(effect);
+      if (refs.length === 0) continue;
+      sitesWithGrants++;
+      for (const { kind, ref } of refs) {
+        checkedRefs++;
+        if (live[kind].has(ref)) continue;
+        dead.push({
+          templateId: template.id,
+          site,
+          effectKind: effect.kind,
+          refKind: kind,
+          ref,
+        });
       }
     }
   }
 
-  return { checkedRefs, cardsWithGrants, dead };
+  return { checkedRefs, sitesWithGrants, dead };
 }
 
 // ─── reward_draw pool liveness (THR-1146) ────────────────────────────
@@ -255,10 +269,25 @@ function allTemplateEffects(
 
   const config = template.aftermathConfig;
   if (config) {
-    const variants: [string, { reactions?: readonly { id: string; effects: readonly EncounterAftermathReactionEffect[] }[]; byOutcome?: Readonly<Record<string, { reactions?: readonly { id: string; effects: readonly EncounterAftermathReactionEffect[] }[] } | undefined>> }][] = [
+    type AftermathVariant = {
+      reactions?: readonly { id: string; effects: readonly EncounterAftermathReactionEffect[] }[];
+      byOutcome?: Readonly<Record<string, { reactions?: readonly { id: string; effects: readonly EncounterAftermathReactionEffect[] }[] } | undefined>>;
+    };
+    // `fallback` is optional in practice even where the type implies otherwise,
+    // and `config.variants` can carry an undefined value — so both are filtered
+    // rather than trusted (NFP #4). Until THR-1171 the `fallback` entry was
+    // pushed unconditionally and dereferenced one line later, so a template that
+    // authored variants and no fallback threw a TypeError out of a *gate*:
+    // `check:encounter --all` would abort mid-corpus instead of reporting, and
+    // the liveness sweep would take the whole test file down with it. A gate that
+    // crashes on unusual-but-legal content is worse than one that misses it —
+    // it makes the content look like a tooling failure.
+    const variantEntries: [string, AftermathVariant | undefined][] = [
       ...Object.entries(config.variants),
       ['fallback', config.fallback],
     ];
+    const variants: [string, AftermathVariant][] = variantEntries
+      .filter((entry): entry is [string, AftermathVariant] => Boolean(entry[1]));
     for (const [variantKey, variant] of variants) {
       for (const reaction of variant.reactions ?? []) {
         for (const effect of reaction.effects) {
@@ -344,7 +373,7 @@ export function formatEmptyRewardDrawPools(empty: readonly EmptyRewardDrawPool[]
 export function formatDeadNudgeGrantRefs(dead: readonly DeadNudgeGrantRef[]): string {
   return dead
     .map((d) =>
-      `${d.templateId} step ${d.stepIndex} card '${d.nudgeId}' `
+      `${d.templateId} ${d.site} `
       + `${d.effectKind} → unknown ${d.refKind} '${d.ref}'`)
     .join('\n');
 }

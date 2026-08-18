@@ -835,7 +835,7 @@ describe('golden exemplar — authoring checklist (locked THR-883 format)', () =
     // content built — THR-885's liveness gate, run here over the exemplar so
     // the reference implementation can never model a dead ref.
     const report = validateNudgeGrantRefs([NUDGE_GOLDEN_EXEMPLAR]);
-    expect(report.cardsWithGrants).toBeGreaterThan(0);
+    expect(report.sitesWithGrants).toBeGreaterThan(0);
     expect(report.checkedRefs).toBeGreaterThan(0);
     expect(report.dead, 'exemplar grants name unbuilt content').toEqual([]);
   });
