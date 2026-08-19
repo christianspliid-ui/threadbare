@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-19 05:57 local (03:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-19 06:54 local (04:54 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -26,7 +26,7 @@ Two hands-on sessions sit behind these whenever you want them: [try the anchor i
 
 There is a finished, unused piece of sound design: when you commit to a nudge, roughly 1.6 seconds where a tone draws tight, holds, then releases — and only then does the outcome land. Nothing plays it today; the visual it accompanied was deleted, so what is left is the pacing alone.
 
-**The question: does committing feel better with that beat, or should the outcome land immediately?** Pure feel, no measurement settles it. Either answer closes the ticket — wired to the encounter veil, or retired with its constants and tests. The lane's recommendation: no — unskippable on every commit turns tense into waiting, and the timings stay recoverable from history.
+**The question: does committing feel better with that beat, or should the outcome land immediately?** Pure feel, no measurement settles it. Either answer closes the ticket — wired to the encounter veil, or retired with its constants and tests. Open 34 hours. The lane's recommendation: no — unskippable on every commit turns tense into waiting, and the timings stay recoverable from history.
 
 ### 4. One attended dev-server session — [THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server)
 
@@ -38,7 +38,7 @@ It keeps growing as more UI work ships behind the same wall. This replaces four 
 
 **[THR-876](https://linear.app/threadbare/issue/THR-876/regenerate-the-5-quarantined-meet-the-first-scene-assets-doctrine) — five scene images that break the art rule.** Ready to run whenever you say. Nothing is broken; substitutes cover those slots. It is on your page only because it spends credits.
 
-**The question underneath it changed overnight.** The opening beat's three missing plates ([THR-1170](https://linear.app/threadbare/issue/THR-1170/every-meet-the-first-nudge-card-renders-the-same-plate-424-imagetags)) were listed here as your call for the same reason, and a lane made them anyway — taking the arm the ticket recommended, rejecting the free remap because a third of the cards would have gained nothing by it. The judgment looks right. So: **do you want image spends gated on you at all, or decided by the lane and reported after?** Your answer settles the five above and every batch after them. Until you say otherwise the lane keeps the standing rule: *remap where a match is honest, come to you only when it is not.*
+**The question underneath it.** The opening beat's three missing plates ([THR-1170](https://linear.app/threadbare/issue/THR-1170/every-meet-the-first-nudge-card-renders-the-same-plate-424-imagetags)) were listed here as your call for the same reason, and a lane made them anyway — taking the arm the ticket recommended, rejecting the free remap because a third of the cards would have gained nothing by it. The judgment looks right. So: **do you want image spends gated on you at all, or decided by the lane and reported after?** Your answer settles the five above and every batch after them. Until you say otherwise the lane keeps the standing rule: *remap where a match is honest, come to you only when it is not.*
 
 ### 6. Parked option, no urgency: a Tenacious-style trait
 
@@ -46,6 +46,7 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
+- 2026-08-19: **trade links between places are declared what they are** — THR-830 ([PR #1562](https://github.com/christianspliid-ui/threadbare/pull/1562)): the link that says two places trade was declared one shape and read as another by four bits of code; the declaration is now honest and the readers repointed. It surfaced a second, separate defect — four gold/trade action cards that narrate a deal and change nothing — now queued as [THR-1188](https://linear.app/threadbare/issue/THR-1188/the-four-actiongold-trade-ops-write-actor-location-a-shape-no-trades).
 - 2026-08-19: **the opening beat stopped dealing the same picture 424 times** — [THR-1170](https://linear.app/threadbare/issue/THR-1170/every-meet-the-first-nudge-card-renders-the-same-plate-424-imagetags) ([PR #1561](https://github.com/christianspliid-ui/threadbare/pull/1561)): three plates made — a crowd, a mercy, a blade — so the first encounter a new player ever sees no longer shows one clay bowl on every card. The gap-finding sweep was widened to the file that hid it. Credits spent without waiting on you; see ask 5.
 - 2026-08-19: **the "design side is frozen" ask was withdrawn** — it claimed a queue rule that does not bind. What survives is ask 2 above: design needs an attended hour, not a queue change.
 - 2026-08-19: **two words entered the game's dictionary** — [sphere attunement](https://github.com/christianspliid-ui/threadbare/pull/1558) and [repertoire](https://github.com/christianspliid-ui/threadbare/pull/1559): glossary entries for mechanics that already shipped. Nothing changed on screen.
@@ -55,7 +56,6 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 - 2026-08-18: **a god who pulls threads, not furniture** — [THR-1178](https://linear.app/threadbare/issue/THR-1178/nudge-library-completion-sphere-expressive-guidance-authored-card) ([PR #1553](https://github.com/christianspliid-ui/threadbare/pull/1553)): your afternoon note that "physics of the scene" was too narrow. Nudge guidance now reads *influence, never authorship* across dreams, omens, desires and fates.
 - 2026-08-18: **the guard that would have caught your favour bug** — [THR-1177](https://linear.app/threadbare/issue/THR-1177/edge-integrity-the-enforce-now-package-validate-at-the-two-generic) ([PR #1552](https://github.com/christianspliid-ui/threadbare/pull/1552)): the two places that write links between things now check what they are joining, so a debt owed by a town is refused at the point of writing.
 - 2026-08-18: **the favour a town could never repay** — [THR-1175](https://linear.app/threadbare/issue/THR-1175/a-town-cannot-owe-a-social-favour-favor-creation-with-a-non-person) ([PR #1551](https://github.com/christianspliid-ui/threadbare/pull/1551)): your 18:34 finding, fixed and deployed within four hours. It is a standing welcome on the town now.
-- 2026-08-18: **a company can now actually break up over a betrayal** — [THR-1174](https://linear.app/threadbare/issue/THR-1174/dissolutionreason-betrayal-has-a-consumer-and-no-producer-a-company) ([PR #1549](https://github.com/christianspliid-ui/threadbare/pull/1549)): the ending existed in the telling but nothing could cause it. It has a producer now, and its own parting words.
 
 ---
 
