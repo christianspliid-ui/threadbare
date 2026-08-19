@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-19 07:56 local (05:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-19 08:55 local (06:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -10,11 +10,11 @@ The town you helped keeps a door open — *A Standing Welcome*, ten game days, v
 
 **The ask: one short chat where an agent drafts the brief with you** — what the return visit should be, who is there, what the welcome actually buys. Your own Factory rule puts brief approval before any prose, so this cannot start unattended. Say *"draft the brief for the Grateful Kin return visit."*
 
-Smallest ask on this list, longest chain behind it: return visit → payoff real → the sample verdict you have been holding → batch 2's nine encounters. The verdict is held by the lane, not by you — asking *"worth meeting twice?"* while the payoff opens onto an unwritten room would earn a no it has not earned.
+It is the smallest ask on this list and it needs only you. Note the chain behind it is currently frozen — with the implementation lanes paused (2026-08-19, your request) nothing downstream will build against an approved brief until they resume. The brief keeps; it is ready the moment they do.
 
 ### 2. An hour of design time — three jobs are waiting for it
 
-No queue mechanic is in the way; there is simply no attended session. In the order I would take them:
+No queue mechanic is in the way; there is simply no attended session. This is also the group **least affected by the paused lanes** — its output is decisions, not queued work. In the order I would take them:
 
 - **[Rank five parts of the game for rebuilding](https://linear.app/threadbare/issue/THR-1163/wave-1-selection-which-seams-make-the-first-wave-in-what-order-under)** — an agent puts five candidates in front of you (hunger vocabulary, consequence chips, region identity, mandate prose, follow-on tags), ranked against stated criteria; you rule on the order in chat. One sitting, no code. All background research is finished. Resolving it closes [the architecture map](https://linear.app/threadbare/issue/THR-1157/typed-game-state-architecture-machinery-first-wave-wayfinder-map). Say *"run the wave-1 sitting."*
 - **[Unify the card grammar](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** — your 6 August note: action cards are too wordy, you cannot tell what they do, and playing one gives no feedback, while encounter cards already read the way you wanted. Staged with its reading list gathered; wants an attended session.
@@ -26,7 +26,7 @@ Four more sit behind these whenever you want them: [the anchor prototype](https:
 
 There is a finished, unused piece of sound design: when you commit to a nudge, roughly 1.6 seconds where a tone draws tight, holds, then releases — and only then does the outcome land. Nothing plays it today; the visual it accompanied was deleted, so what is left is the pacing alone.
 
-**The question: does committing feel better with that beat, or should the outcome land immediately?** Pure feel, no measurement settles it. Either answer closes the ticket — wired to the encounter veil, or retired with its constants and tests. Open 31 hours. The lane's recommendation: no — unskippable on every commit turns tense into waiting, and the timings stay recoverable from history.
+**The question: does committing feel better with that beat, or should the outcome land immediately?** Pure feel, no measurement settles it. Either answer closes the ticket — wired to the encounter veil, or retired with its constants and tests. Open 33 hours. The lane's recommendation: no — unskippable on every commit turns tense into waiting, and the timings stay recoverable from history.
 
 ### 4. One attended dev-server session — [THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server)
 
@@ -46,7 +46,7 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
-- 2026-08-19: **four trade cards that promised a deal and delivered nothing now deliver it** — [THR-1188](https://linear.app/threadbare/issue/THR-1188/the-four-actiongold-trade-ops-write-actor-location-a-shape-no-trades) ([PR #1563](https://github.com/christianspliid-ui/threadbare/pull/1563)): flagged last hour as possibly needing your ruling because the cheap repair was to delete all four; the agent found the better path and the cards write real trade routes instead. Nothing was removed from the player.
+- 2026-08-19: **four trade cards that promised a deal and delivered nothing now deliver it** — [THR-1188](https://linear.app/threadbare/issue/THR-1188/the-four-actiongold-trade-ops-write-actor-location-a-shape-no-trades) ([PR #1563](https://github.com/christianspliid-ui/threadbare/pull/1563)): flagged as possibly needing your ruling because the cheap repair was to delete all four; the agent found the better path and the cards write real trade routes instead. Nothing was removed from the player.
 - 2026-08-19: **trade links between places are declared what they are** — [THR-830](https://github.com/christianspliid-ui/threadbare/pull/1562): the link that says two places trade was declared one shape and read as another by four bits of code; the declaration is now honest and the readers repointed.
 - 2026-08-19: **the opening beat stopped dealing the same picture 424 times** — [THR-1170](https://linear.app/threadbare/issue/THR-1170/every-meet-the-first-nudge-card-renders-the-same-plate-424-imagetags) ([PR #1561](https://github.com/christianspliid-ui/threadbare/pull/1561)): three plates made — a crowd, a mercy, a blade — so the first encounter a new player sees no longer shows one clay bowl on every card. Credits spent without waiting on you; see ask 5.
 - 2026-08-19: **the "design side is frozen" ask was withdrawn** — it claimed a queue rule that does not bind. What survives is ask 2 above: design needs an attended hour, not a queue change.
