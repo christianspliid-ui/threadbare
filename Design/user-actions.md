@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-19 08:55 local (06:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-19 09:57 local (07:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -10,7 +10,7 @@ The town you helped keeps a door open — *A Standing Welcome*, ten game days, v
 
 **The ask: one short chat where an agent drafts the brief with you** — what the return visit should be, who is there, what the welcome actually buys. Your own Factory rule puts brief approval before any prose, so this cannot start unattended. Say *"draft the brief for the Grateful Kin return visit."*
 
-It is the smallest ask on this list and it needs only you. Note the chain behind it is currently frozen — with the implementation lanes paused (2026-08-19, your request) nothing downstream will build against an approved brief until they resume. The brief keeps; it is ready the moment they do.
+It is the smallest ask on this list and it needs only you. It also gates one other thing: the [encounter retrofit](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to) is holding its two-encounter sample verdict back from you until this room exists, because The Grateful Kin's payoff currently opens onto nothing. Note the build chain is frozen meanwhile — with the implementation lanes paused (2026-08-19, your request) nothing will build against an approved brief until they resume. The brief keeps; it is ready the moment they do.
 
 ### 2. An hour of design time — three jobs are waiting for it
 
@@ -26,7 +26,7 @@ Four more sit behind these whenever you want them: [the anchor prototype](https:
 
 There is a finished, unused piece of sound design: when you commit to a nudge, roughly 1.6 seconds where a tone draws tight, holds, then releases — and only then does the outcome land. Nothing plays it today; the visual it accompanied was deleted, so what is left is the pacing alone.
 
-**The question: does committing feel better with that beat, or should the outcome land immediately?** Pure feel, no measurement settles it. Either answer closes the ticket — wired to the encounter veil, or retired with its constants and tests. Open 33 hours. The lane's recommendation: no — unskippable on every commit turns tense into waiting, and the timings stay recoverable from history.
+**The question: does committing feel better with that beat, or should the outcome land immediately?** Pure feel, no measurement settles it. Either answer closes the ticket — wired to the encounter veil, or retired with its constants and tests. Open 32 hours. The lane's recommendation: no — unskippable on every commit turns tense into waiting, and the timings stay recoverable from history.
 
 ### 4. One attended dev-server session — [THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server)
 
