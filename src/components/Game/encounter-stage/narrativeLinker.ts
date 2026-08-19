@@ -11,6 +11,7 @@
  */
 
 import type { WorldGraph } from '../../../engine/graph';
+import { tooltipResolves } from '../../../engine/tooltipResolver';
 import { getDomainWord } from '../../../data/domain-words';
 import { getPortraitUrl } from '../../../data/portrait-assets';
 import type { EncounterSupportActorSpec, EncounterSupportBinding } from '../../../types/encounter';
@@ -25,10 +26,27 @@ import type {
 // Extracted from buildGateDutyEncounterStageModel.ts — the generic
 // tokenizer that parses {{token}} markers in text into segments.
 
+/**
+ * THR-1173 — the kind vocabulary, taken from the segment field itself rather
+ * than respelled. `entityKind` is one rule with three readers (segment, token,
+ * link entry); spelling the union three times is how the fourth reader drifts.
+ */
+export type NarrativeLinkKind = NonNullable<EncounterStageNarrativeSegment['entityKind']>;
+
 export type TokenEntry = {
   text: string;
   referenceId?: string;
   emphasis?: 'default' | 'strong' | 'accent';
+  /**
+   * THR-1173 — graph node id behind this token, when the producer knows one.
+   * `referenceId` names the *tooltip* (`location`, `cast:<key>`); it is scene
+   * bookkeeping and opens nothing. A token that wants link tier carries the id.
+   */
+  entityId?: string;
+  /** THR-1173 — what `entityId` names, so the host routes to the right sheet. */
+  entityKind?: NarrativeLinkKind;
+  /** THR-1173 — concept id for the hover tier, resolved context-free. */
+  tooltipId?: string;
 };
 
 /**
@@ -56,6 +74,9 @@ export function buildLinkedParagraph(
         text: token.text,
         referenceId: token.referenceId,
         emphasis: token.emphasis ?? 'default',
+        entityId: token.entityId,
+        entityKind: token.entityKind,
+        tooltipId: token.tooltipId,
       });
     } else {
       segments.push({ text: match[0], emphasis: 'default' });
@@ -90,6 +111,24 @@ export interface EntityLinkEntry {
    * link).
    */
   entityId?: string;
+  /**
+   * THR-1173 — what `entityId` names. **Absent means "a person"**, matching the
+   * segment field's own back-compatibility rule: every entry this scan produced
+   * before now was a cast member, and an absent kind must keep meaning that.
+   *
+   * A place needs it explicitly. Without it a bound location either underlined
+   * and answered nothing (no `entityId` at all — the Sacred Grove defect) or,
+   * once an id was carried, routed to the *agent* drawer, which is the worse of
+   * the two failures: a wrong sheet rather than no sheet.
+   */
+  entityKind?: NarrativeLinkKind;
+  /**
+   * THR-1173 — concept id for the hover tier. Must resolve **context-free**:
+   * `tooltipResolves()` decides whether a word is underlined and is called with
+   * no graph, so a `location.<node id>` here would never draw. Name the subtype
+   * (`location.grove`), which is committed world-model content.
+   */
+  tooltipId?: string;
 }
 
 /**
@@ -157,6 +196,8 @@ export function autoLinkNarrative(
         referenceId: entity.referenceId,
         emphasis: entity.emphasis,
         entityId: entity.entityId,
+        entityKind: entity.entityKind,
+        tooltipId: entity.tooltipId,
       });
     }
 
@@ -282,6 +323,25 @@ export function buildTargetReference(
   };
 }
 
+/**
+ * THR-1173 — the hover half of a place: `location.<subtype>`, or undefined.
+ *
+ * Deliberately the **kind**, not `location.<node id>`. The id-shaped arm of the
+ * resolver answers only when handed a graph, and `tooltipResolves()` — the call
+ * that decides whether a word is underlined at all — is made without one. A
+ * per-node tooltipId would therefore be committed data that never draws.
+ *
+ * Pre-checked rather than emitted hopefully: a subtype naming no concept is a
+ * worldgen outcome, not an authoring error, so it returns undefined and the
+ * place keeps the link tier without a hover it cannot honour.
+ */
+export function buildLocationTooltipId(node: { properties?: Record<string, unknown> } | undefined): string | undefined {
+  const subtype = (node?.properties?.locationSubtype ?? node?.properties?.locationType) as string | undefined;
+  if (!subtype) return undefined;
+  const candidate = `location.${subtype}`;
+  return tooltipResolves(candidate) ? candidate : undefined;
+}
+
 // ─── Collect Entities from Support Bundle ───────────────────────
 
 export interface CollectedEntities {
@@ -361,10 +421,18 @@ export function collectSupportBundleEntities(
       const node = graph.getNode(binding.nodeId);
       const resolvedName = node?.name;
       if (resolvedName) {
+        // THR-1173 — the place now answers. Until this carried `entityId` and a
+        // kind, a bound location matched the prose scan, took a `referenceId`,
+        // and stopped there: underlined on scene bookkeeping alone, opening
+        // nothing. That is the Sacred Grove defect exactly. The id was one line
+        // away the whole time — `binding.nodeId` is a real location node.
         linkEntries.push({
           name: resolvedName,
           referenceId: locRef.id,
           emphasis: 'accent',
+          entityId: binding.nodeId,
+          entityKind: 'location',
+          tooltipId: buildLocationTooltipId(node),
         });
       }
     }
@@ -375,15 +443,30 @@ export function collectSupportBundleEntities(
     const targetRef = buildTargetReference(graph, targetId);
     if (targetRef) {
       references.push(targetRef);
+      // THR-1173 — a scene target can be the ground the encounter stands on, not
+      // only a counterpart; `buildTargetReference` has branched on `location`
+      // for its detail line since THR-696. Until now the link entry did not,
+      // so a place-target carried an id with no kind — and an absent kind means
+      // *agent*, so the name opened the agent drawer on a location node. That is
+      // the one outcome worse than staying text, and Law 21 says fail open.
+      const targetNode = graph.getNode(targetId);
+      const targetIsPlace = targetNode?.type === 'location';
+      const targetKind: NarrativeLinkKind | undefined = targetIsPlace ? 'location' : undefined;
+      const targetTooltipId = targetIsPlace ? buildLocationTooltipId(targetNode) : undefined;
+
       linkEntries.push({
         name: targetRef.label,
         referenceId: targetRef.id,
         emphasis: 'strong',
         entityId: targetId,
+        entityKind: targetKind,
+        tooltipId: targetTooltipId,
       });
 
+      // A place's name is not a person's: "Sacred Grove" has no first name, and
+      // splitting it would link the bare word "Sacred". People only.
       const firstName = targetRef.label.split(' ')[0];
-      if (firstName && firstName !== targetRef.label && firstName.length >= 3) {
+      if (!targetIsPlace && firstName && firstName !== targetRef.label && firstName.length >= 3) {
         linkEntries.push({
           name: firstName,
           referenceId: targetRef.id,

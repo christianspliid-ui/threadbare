@@ -30,7 +30,7 @@ import type {
   EncounterStageNarrativeReference,
   EncounterStageSignalModel,
 } from '../types';
-import { buildLinkedParagraph } from '../narrativeLinker';
+import { buildLinkedParagraph, buildLocationTooltipId } from '../narrativeLinker';
 import { buildNudgePhaseModel } from './buildNudgePhaseModel';
 import { GATE_DUTY_NUDGE_IDS } from '../../../../data/civic-guard-encounter-content';
 
@@ -654,6 +654,10 @@ function buildGateDutySceneFrame(args: {
 
 function buildNarrativeModel(args: {
   locationLabel: string;
+  /** THR-1173 — the checkpoint's node id, when it resolves to a real place. */
+  locationId?: string;
+  /** THR-1173 — `location.<subtype>`, when the subtype names a concept. */
+  locationTooltipId?: string;
   captainName: string;
   courierName: string;
   witnessName: string;
@@ -721,7 +725,16 @@ function buildNarrativeModel(args: {
   const courierId = args.cast.find(entry => entry.name === args.courierName)?.id;
   const witnessId = args.cast.find(entry => entry.name === args.witnessName)?.id;
   const tokens = {
-    location: { text: args.locationLabel, referenceId: 'location', emphasis: 'accent' as const },
+    // THR-1173 — `referenceId: 'location'` is the tooltip key and opens nothing;
+    // the id and kind alongside it are what carry the word to link tier.
+    location: {
+      text: args.locationLabel,
+      referenceId: 'location',
+      emphasis: 'accent' as const,
+      entityId: args.locationId,
+      entityKind: args.locationId ? ('location' as const) : undefined,
+      tooltipId: args.locationTooltipId,
+    },
     captain: { text: args.captainName, referenceId: captainId ? `cast:${captainId}` : undefined, emphasis: 'strong' as const },
     courier: { text: args.courierName, referenceId: courierId ? `cast:${courierId}` : undefined, emphasis: 'strong' as const },
     witness: { text: args.witnessName, referenceId: witnessId ? `cast:${witnessId}` : undefined, emphasis: 'strong' as const },
@@ -810,6 +823,10 @@ function buildNarrativeModel(args: {
 
 function buildGateDutyAftermathNarrative(args: {
   locationLabel: string;
+  /** THR-1173 — the checkpoint's node id, when it resolves to a real place. */
+  locationId?: string;
+  /** THR-1173 — `location.<subtype>`, when the subtype names a concept. */
+  locationTooltipId?: string;
   captainName: string;
   courierName: string;
   witnessName: string;
@@ -853,7 +870,16 @@ function buildGateDutyAftermathNarrative(args: {
   ];
 
   const tokens = {
-    location: { text: args.locationLabel, referenceId: 'after:location', emphasis: 'accent' as const },
+    // THR-1173 — the aftermath names the same ground the scene stood on, so it
+    // reaches the same sheet. See the note on the scene-frame token above.
+    location: {
+      text: args.locationLabel,
+      referenceId: 'after:location',
+      emphasis: 'accent' as const,
+      entityId: args.locationId,
+      entityKind: args.locationId ? ('location' as const) : undefined,
+      tooltipId: args.locationTooltipId,
+    },
     captain: { text: args.captainName, referenceId: 'after:captain', emphasis: 'strong' as const },
     courier: { text: args.courierName, referenceId: 'after:courier', emphasis: 'strong' as const },
     witness: { text: args.witnessName, referenceId: 'after:witness', emphasis: 'strong' as const },
@@ -1070,11 +1096,19 @@ export function buildGateDutyEncounterStageModel({
   const currentStepIndex = getCurrentStepIndex(encounter, activeAction);
   const firstChoice = getChoiceMemoryForStep(encounter, activeAction, 0, template.steps[0]?.id ?? 'step-1');
   const secondChoice = getChoiceMemoryForStep(encounter, activeAction, 1, template.steps[1]?.id ?? 'step-2');
-  const locationLabel = getNodeName(
-    graph,
-    gatehouseBinding?.nodeId ?? clearanceGateState?.locationNodeId ?? clearanceGateState?.anchorLocationId,
-    'Gatehouse',
-  );
+  // THR-1173 — hoisted from the `getNodeName` argument it used to be written
+  // inline. The adapter always knew which node the checkpoint *is*; it spent
+  // that knowledge on a display string and dropped the id, which is why the
+  // scene could name its own ground and the word opened nothing.
+  const locationId =
+    gatehouseBinding?.nodeId ?? clearanceGateState?.locationNodeId ?? clearanceGateState?.anchorLocationId;
+  const locationLabel = getNodeName(graph, locationId, 'Gatehouse');
+  // Only a node that still exists and is actually a place earns link tier —
+  // `locationLabel` falls back to 'Gatehouse' for a missing node, and a literal
+  // that names nothing must stay text rather than become a dead link (Law 21).
+  const locationNode = locationId ? graph.getNode(locationId) : undefined;
+  const linkableLocationId = locationNode?.type === 'location' ? locationId : undefined;
+  const locationTooltipId = linkableLocationId ? buildLocationTooltipId(locationNode) : undefined;
   const captainName = getNodeName(graph, captainBinding?.nodeId ?? clearanceGateState?.authorityNodeId, 'the captain');
   const courierName = getNodeName(graph, courierBinding?.nodeId ?? clearanceGateState?.subjectNodeId, 'the courier');
   const witnessName = getNodeName(graph, witnessBinding?.nodeId ?? clearanceGateState?.witnessNodeIds[0], 'a witness in the line');
@@ -1129,6 +1163,8 @@ export function buildGateDutyEncounterStageModel({
   });
   const narrative = buildNarrativeModel({
     locationLabel,
+    locationId: linkableLocationId,
+    locationTooltipId,
     captainName,
     courierName,
     witnessName,
@@ -1156,6 +1192,8 @@ export function buildGateDutyEncounterStageModel({
     });
     const aftermathNarrative = buildGateDutyAftermathNarrative({
       locationLabel,
+      locationId: linkableLocationId,
+      locationTooltipId,
       captainName,
       courierName,
       witnessName,
