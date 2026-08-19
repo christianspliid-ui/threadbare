@@ -49,6 +49,14 @@ const ALL_STRATEGIES = ['tit-for-tat', 'grudger', 'pavlov', 'always-cooperate', 
 
 const ALL_BRACKETS = ['low', 'medium', 'high', 'massive'];
 
+/**
+ * Minimum variants every keyed-table key must carry, and the floor for the one
+ * flat table. Both are pinned to the shipped counts (THR-625) rather than to a
+ * permissive baseline — see the note on the density test in `validateKeyedTable`.
+ */
+const MIN_VARIANTS_PER_KEY = 6;
+const MIN_DECISIVE_NATURE_VARIANTS = 8;
+
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 /**
@@ -69,9 +77,12 @@ function validateKeyedTable(
     });
   });
 
-  test(`${tableName}: each key has at least 2 templates`, () => {
+  // Density floor is pinned to what the tables actually ship (THR-625: every key
+  // carries >= 6 variants). A floor below the shipped count cannot fail on a
+  // depth change, which makes a green run meaningless as evidence for one.
+  test(`${tableName}: each key has at least ${MIN_VARIANTS_PER_KEY} templates`, () => {
     requiredKeys.forEach((key) => {
-      expect(table[key].length).toBeGreaterThanOrEqual(2);
+      expect(table[key].length).toBeGreaterThanOrEqual(MIN_VARIANTS_PER_KEY);
     });
   });
 
@@ -165,9 +176,9 @@ describe('BOND_HISTORY_NEGATIVE_PROSE', () => {
 describe('TRAIT_ORIGIN_PROSE', () => {
   validateKeyedTable(TRAIT_ORIGIN_PROSE, ALL_TRAIT_CATEGORIES, ['{name}', '{trait}'], 'TRAIT_ORIGIN_PROSE');
 
-  test('each trait category has at least 3 templates', () => {
+  test(`each trait category has at least ${MIN_VARIANTS_PER_KEY} templates`, () => {
     ALL_TRAIT_CATEGORIES.forEach((category) => {
-      expect(TRAIT_ORIGIN_PROSE[category].length).toBeGreaterThanOrEqual(3);
+      expect(TRAIT_ORIGIN_PROSE[category].length).toBeGreaterThanOrEqual(MIN_VARIANTS_PER_KEY);
     });
   });
 
@@ -181,9 +192,9 @@ describe('TRAIT_ORIGIN_PROSE', () => {
 describe('TURNING_POINT_PROSE', () => {
   validateKeyedTable(TURNING_POINT_PROSE, ALL_VALUE_PAIRS, ['{name}', '{value}'], 'TURNING_POINT_PROSE');
 
-  test('each value pair has at least 3 templates', () => {
+  test(`each value pair has at least ${MIN_VARIANTS_PER_KEY} templates`, () => {
     ALL_VALUE_PAIRS.forEach((pair) => {
-      expect(TURNING_POINT_PROSE[pair].length).toBeGreaterThanOrEqual(3);
+      expect(TURNING_POINT_PROSE[pair].length).toBeGreaterThanOrEqual(MIN_VARIANTS_PER_KEY);
     });
   });
 
@@ -209,9 +220,9 @@ describe('CONTRADICTION_PROSE', () => {
 // ─── Table 8: DECISIVE_NATURE_PROSE ─────────────────────────────────────────
 
 describe('DECISIVE_NATURE_PROSE', () => {
-  test('is a flat array with at least 2 entries', () => {
+  test(`is a flat array with at least ${MIN_DECISIVE_NATURE_VARIANTS} entries`, () => {
     expect(Array.isArray(DECISIVE_NATURE_PROSE)).toBe(true);
-    expect(DECISIVE_NATURE_PROSE.length).toBeGreaterThanOrEqual(2);
+    expect(DECISIVE_NATURE_PROSE.length).toBeGreaterThanOrEqual(MIN_DECISIVE_NATURE_VARIANTS);
   });
 
   test('each entry is substantive (>20 chars)', () => {
@@ -237,15 +248,15 @@ describe('DECISIVE_NATURE_PROSE', () => {
 // ─── Table 9: FEAR_PROSE ─────────────────────────────────────────────────────
 
 describe('FEAR_PROSE', () => {
-  test('has all 20 expected keys', () => {
+  test(`has all ${ALL_FEAR_KEYS.length} expected keys`, () => {
     ALL_FEAR_KEYS.forEach((key) => {
       expect(FEAR_PROSE[key]).toBeDefined();
     });
   });
 
-  test('each key has at least 2 templates', () => {
+  test(`each key has at least ${MIN_VARIANTS_PER_KEY} templates`, () => {
     ALL_FEAR_KEYS.forEach((key) => {
-      expect(FEAR_PROSE[key].length).toBeGreaterThanOrEqual(2);
+      expect(FEAR_PROSE[key].length).toBeGreaterThanOrEqual(MIN_VARIANTS_PER_KEY);
     });
   });
 
