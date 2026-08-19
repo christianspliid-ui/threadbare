@@ -22,7 +22,7 @@
       "filename": "Encounters.md",
       "title": "Encounters",
       "contentAdjacent": true,
-      "termCount": 30,
+      "termCount": 31,
       "blurb": "Content-adjacent shard. Terms covering the encounter pipeline: templates, resolution, aftermath, awareness, and causation."
     },
     {
@@ -110,7 +110,7 @@
       ],
       "status": "canonical",
       "oneLiner": "a cosmic energy that fuels action; orthogonal to Reaches, not a subcategory of them",
-      "body": "One of the cosmic energies that *fuel* action. Spheres are orthogonal to Reaches — the same Reach action can be performed with different Sphere colorings, producing different flavors and eligibility. Sphere ≠ Reach. Neither subsumes the other.",
+      "body": "One of the cosmic energies that *fuel* action. Spheres are orthogonal to Reaches — the same Reach action can be performed with different Sphere colorings, producing different flavors and eligibility. Sphere ≠ Reach. Neither subsumes the other.\n\nA god's standing in a Sphere is read two independent ways, and they are not interchangeable: `[[Sphere Alignment]]` is an actor's *affinity* for the Sphere (an `aligned_with` edge), while `[[Sphere Attunement]]` is the lifetime essence the god has *drawn through* it. Alignment is who you are; attunement is what you have practised.",
       "seeAlso": [
         {
           "raw": "Foundation",
@@ -126,6 +126,11 @@
           "raw": "Sphere Alignment",
           "termName": "Sphere Alignment",
           "resolvedSlug": "cosmology#sphere-alignment"
+        },
+        {
+          "raw": "Sphere Attunement",
+          "termName": "Sphere Attunement",
+          "resolvedSlug": "encounters#sphere-attunement"
         }
       ],
       "sourcePath": "Docs/ubiquitous-language/Cosmology.md#sphere",
@@ -2174,6 +2179,43 @@
         }
       ],
       "sourcePath": "Docs/ubiquitous-language/Encounters.md#band-fragment",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "encounters",
+      "slug": "sphere-attunement",
+      "name": "Sphere Attunement",
+      "aliases": [
+        "attunement",
+        "essenceEarnedBySphere",
+        "`sphere_attunement`"
+      ],
+      "status": "canonical",
+      "oneLiner": "lifetime essence earned per sphere (`essenceEarnedBySphere`); the fourth card-unlock channel, deepening families the sphere identity already opens",
+      "body": "The **lifetime essence a god has drawn through one sphere**, counted monotonically for the whole run (`GameState.essenceEarnedBySphere`) and read as the fourth unlock channel on the nudge card library — beside `starting`, `milestone` and `god_trait`. Crossing an authored mark (`SPHERE_ATTUNEMENT_THRESHOLDS`, `[20, 60]`) brings that sphere's attunement-gated `[[Nudge]]` members within reach: siblings of cards the god already plays, never stronger ones. Each crossing emits one `nudge_attunement_unlock` trace naming the sphere, the mark, and the member ids it opened.\n\n**Earned, not held.** Attunement is a second reading of the divine economy sitting beside the spendable essence pool: the pool says what the god has left, attunement says how much has ever come through. **Spending never lowers it** — a sphere that goes 10 → 4 has not un-earned six, it has spent six. Because a run starts at the essence ceiling, nothing is attuned until essence has actually been spent and re-earned.\n\n**Depth, not a key.** Attunement *deepens* a family the god may already touch; it never widens which families are touchable. Base access stays keyed to the sphere identity — primary at full price, secondary discounted, off-sphere locked — and `memberAccess` runs before the unlock check, so a god who attunes to a sphere they do not hold crosses the mark and gains nothing. This is deliberately **not** THR-870's sphere-governance re-key, which remains parked: attunement adds a deepening channel *on top of* the identity floor and leaves the floor alone.\n\n**Accrual is net movement across one phase merge, not gross grants.** The counter banks at the phase-merge seam (`applyEssenceEarned`), which diffs the pool a phase returned against the pool it was handed and keeps the positive movement — so a grant site added tomorrow is counted without being told to. The stated cost of that choice: a phase that both grants and spends banks only the difference. One shipped phase does both (`phaseControlEffects`, an effect's upkeep against its income), and there the net is the honest number — an effect costing more than it yields has earned the god nothing. Across phases nothing nets.\n\n**An absent counter reads as all-zero, never as a throw.** A legacy save leaves attunement members locked rather than falling open — the same safe direction the unlock switch's exhaustiveness guard takes.",
+      "seeAlso": [
+        {
+          "raw": "Nudge",
+          "termName": "Nudge",
+          "resolvedSlug": "encounters#nudge"
+        },
+        {
+          "raw": "Sphere",
+          "termName": "Sphere",
+          "resolvedSlug": "cosmology#sphere"
+        },
+        {
+          "raw": "Sphere Alignment",
+          "termName": "Sphere Alignment",
+          "resolvedSlug": "cosmology#sphere-alignment"
+        },
+        {
+          "raw": "Rider",
+          "termName": "Rider",
+          "resolvedSlug": "encounters#rider"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Encounters.md#sphere-attunement",
       "contentAdjacent": true
     },
     {
