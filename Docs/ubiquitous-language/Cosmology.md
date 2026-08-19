@@ -21,10 +21,12 @@ The ninth Reach, Flesh, was absorbed into the Quintessence system in TB-075. Do 
 ### Sphere
 
 **Aliases:** Cosmic Energy, Sphere of Influence, SphereName
-**Also see:** `[[Foundation]]`, `[[Creation]]`, `[[Sphere Alignment]]`
+**Also see:** `[[Foundation]]`, `[[Creation]]`, `[[Sphere Alignment]]`, `[[Sphere Attunement]]`
 **Status:** canonical
 
 One of the cosmic energies that *fuel* action. Spheres are orthogonal to Reaches — the same Reach action can be performed with different Sphere colorings, producing different flavors and eligibility. Sphere ≠ Reach. Neither subsumes the other.
+
+A god's standing in a Sphere is read two independent ways, and they are not interchangeable: `[[Sphere Alignment]]` is an actor's *affinity* for the Sphere (an `aligned_with` edge), while `[[Sphere Attunement]]` is the lifetime essence the god has *drawn through* it. Alignment is who you are; attunement is what you have practised.
 
 ---
 
