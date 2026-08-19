@@ -25,6 +25,7 @@ import {
 } from '../encounterImageResolver';
 import { REACH_DOMAINS } from '../../types/traits';
 import { UNIFIED_ACTION_TEMPLATES } from '../unified-action-templates';
+import { ENRICHED_DILEMMA_LIBRARY } from '../meeting-dilemma-library';
 import {
   isActionStepBranch,
   type ActionStepOrBranch,
@@ -404,8 +405,42 @@ describe('authored imageTags resolve against the manifest (THR-1052)', () => {
     expect(authored.length).toBeGreaterThan(100);
   });
 
+  /**
+   * The Meet-The-First corpus, swept by the same assertion (THR-1170).
+   *
+   * This is an *extension* of the walk above rather than a second guard, because
+   * a second guard is what let this recur: THR-1052's sweep walked
+   * `UNIFIED_ACTION_TEMPLATES` only, and `meeting-dilemma-library.ts` is not in
+   * that collection — so all 424 of its nudges named three tags (`crowd`,
+   * `mercy`, `blade`) that had no library row, and the identical defect sat
+   * undetected on the game's *opening* beat while the template corpus was clean.
+   *
+   * `BondBeat`/`FormativeTestBeat` consume `NudgePhaseShell` whole, so these
+   * cards resolve through exactly the same `{tag, kind: 'nudge', sphere}` query
+   * as the template corpus — which is why one assertion is correct for both.
+   */
+  const meetingAuthored = ENRICHED_DILEMMA_LIBRARY.flatMap((template) =>
+    (template.test?.nudges ?? [])
+      .filter((nudge) => nudge.imageTag)
+      .map((nudge) => ({
+        where: `${template.id} / ${nudge.id}`,
+        tag: nudge.imageTag as string,
+      })),
+  );
+
+  it('walks a non-empty corpus on both sides', () => {
+    // Both polarities, pinned as literals. Every assertion below is satisfied by
+    // an empty population, so without this the whole sweep is vacuous — and the
+    // meeting half is the half that was missing, so its count is the one that
+    // matters. Literals rather than a re-derived constant: keying the expectation
+    // off the same expression under test would make it a tautology.
+    expect(authored.length).toBeGreaterThan(100);
+    expect(meetingAuthored.length).toBe(424);
+    expect(new Set(meetingAuthored.map((n) => n.tag)).size).toBe(3);
+  });
+
   it('every authored nudge imageTag hits a real library row', () => {
-    const dead = authored
+    const dead = [...authored, ...meetingAuthored]
       .filter(({ tag }) => resolveEncounterImage({ tag, kind: 'nudge' }).source !== 'exact_tag')
       .map(({ where, tag }) => `${where} -> ${tag}`);
     // Listing offenders rather than asserting a count keeps a failure
