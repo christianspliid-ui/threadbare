@@ -33,6 +33,27 @@ function makeActor(graph: WorldGraph, id: string, wealth: number, extras: Record
   });
 }
 
+/**
+ * Mint one `trades_with` route controlled by `controllerId`.
+ *
+ * THR-830: routes are location -> location. `controlledBy` is a property of the route,
+ * not of an endpoint, so the controller need not be either end — which is exactly what
+ * `countControlledRoutes` reads.
+ */
+function makeControlledRoute(graph: WorldGraph, id: string, controllerId: string): void {
+  const a = `loc.${id}.a`;
+  const b = `loc.${id}.b`;
+  graph.addNode({ id: a, type: 'location', name: `Town ${a}`, properties: { locationSubtype: 'town' } });
+  graph.addNode({ id: b, type: 'location', name: `Town ${b}`, properties: { locationSubtype: 'town' } });
+  graph.addEdge({
+    id,
+    source: a,
+    target: b,
+    type: 'trades_with',
+    properties: { volume: 5, controlledBy: controllerId },
+  });
+}
+
 function makeGuildFaction(graph: WorldGraph, id: string): void {
   graph.addNode({
     id,
@@ -73,14 +94,7 @@ describe('phaseEconomicTraits', () => {
       makeActor(graph, 'a1', WEALTH_TIER_WEALTHY);
       // Create trade partners and routes controlled by a1
       for (let i = 0; i < ECON_TRAIT_TRADE_BARON_MIN_ROUTES; i++) {
-        makeActor(graph, `partner${i}`, 30);
-        graph.addEdge({
-          id: `route${i}`,
-          source: `partner${i}`,
-          target: 'a1',
-          type: 'trades_with',
-          properties: { volume: 5, controlledBy: 'a1' },
-        });
+        makeControlledRoute(graph, `route${i}`, 'a1');
       }
 
       const state = makeMinimalState(graph, 10);
@@ -92,14 +106,7 @@ describe('phaseEconomicTraits', () => {
     it('does not assign trade-baron when wealth is below threshold', () => {
       makeActor(graph, 'a1', WEALTH_TIER_WEALTHY - 1);
       for (let i = 0; i < ECON_TRAIT_TRADE_BARON_MIN_ROUTES; i++) {
-        makeActor(graph, `partner${i}`, 30);
-        graph.addEdge({
-          id: `route${i}`,
-          source: `partner${i}`,
-          target: 'a1',
-          type: 'trades_with',
-          properties: { volume: 5, controlledBy: 'a1' },
-        });
+        makeControlledRoute(graph, `route${i}`, 'a1');
       }
 
       const state = makeMinimalState(graph, 10);
@@ -110,14 +117,7 @@ describe('phaseEconomicTraits', () => {
 
     it('does not assign trade-baron when routes are below threshold', () => {
       makeActor(graph, 'a1', WEALTH_TIER_WEALTHY);
-      makeActor(graph, 'partner0', 30);
-      graph.addEdge({
-        id: 'route0',
-        source: 'partner0',
-        target: 'a1',
-        type: 'trades_with',
-        properties: { volume: 5, controlledBy: 'a1' },
-      });
+      makeControlledRoute(graph, 'route0', 'a1');
 
       const state = makeMinimalState(graph, 10);
       phaseEconomicTraits(state);
@@ -551,14 +551,7 @@ describe('phaseEconomicTraits', () => {
     it('is idempotent — running twice does not duplicate traits', () => {
       makeActor(graph, 'a1', WEALTH_TIER_WEALTHY);
       for (let i = 0; i < ECON_TRAIT_TRADE_BARON_MIN_ROUTES; i++) {
-        makeActor(graph, `p${i}`, 30);
-        graph.addEdge({
-          id: `r${i}`,
-          source: `p${i}`,
-          target: 'a1',
-          type: 'trades_with',
-          properties: { volume: 5, controlledBy: 'a1' },
-        });
+        makeControlledRoute(graph, `r${i}`, 'a1');
       }
 
       const state = makeMinimalState(graph, 10);

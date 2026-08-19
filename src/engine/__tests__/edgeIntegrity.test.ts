@@ -221,6 +221,10 @@ describe('THR-1177 — registry completeness', () => {
 
 describe('THR-1177 — 120-tick seeded smoke', () => {
   let state: GameState;
+  /** Every `[GraphSchema]` line console.warn saw during the run (THR-830). */
+  let schemaWarnings: string[];
+  /** Edge types written during the run, counted at creation — including ones later removed. */
+  let writtenByType: Map<string, number>;
 
   beforeAll(() => {
     const runtime = createSimulationRuntime();
@@ -230,21 +234,46 @@ describe('THR-1177 — 120-tick seeded smoke', () => {
       archetype, 'SmokeBot', createBalancedCosmology(), 42, preset.cols, preset.rows,
     );
     state = init;
-    for (let t = 0; t < 120; t++) state = runTick(state, [], runtime);
+
+    // THR-830: the final-graph assertion below cannot see an edge that was written and
+    // later removed, which is precisely how `trades_with` escaped it (routes expire
+    // before tick 120). So record both halves *during* the run: the warnings as they
+    // fire, and a creation-time census that a later removal cannot erase.
+    schemaWarnings = [];
+    writtenByType = new Map();
+    const realWarn = console.warn;
+    console.warn = (...args: unknown[]) => {
+      const line = args.map(String).join(' ');
+      if (line.includes('[GraphSchema]')) schemaWarnings.push(line);
+      else realWarn(...args);
+    };
+    const graph = state.graph;
+    const realAddEdge = graph.addEdge.bind(graph);
+    (graph as unknown as { addEdge: typeof graph.addEdge }).addEdge = (edge) => {
+      writtenByType.set(edge.type, (writtenByType.get(edge.type) ?? 0) + 1);
+      return realAddEdge(edge);
+    };
+
+    try {
+      for (let t = 0; t < 120; t++) state = runTick(state, [], runtime);
+    } finally {
+      console.warn = realWarn;
+      (graph as unknown as { addEdge: typeof graph.addEdge }).addEdge = realAddEdge;
+    }
   }, 600_000);
 
   /**
    * Scope note, so this is not read as more than it measures: it inspects the
-   * **final** graph, so an edge written illegally and later removed would escape it.
-   * That is not hypothetical — `trades_with` is written location→location against an
-   * actor→actor row and warns during the run, but its routes expire before tick 120, so
-   * it appears here as neither a violation nor an edge. That family is a genuine,
-   * separately-ticketed drift (THR-830) on `createTradeRoute`, which writes via
-   * `graph.addEdge` directly and so passes through neither chokepoint — out of scope
-   * here, and deliberately not "fixed" by widening a row to make a warning go away.
+   * **final** graph, so an edge written illegally and later removed escapes it. That
+   * blind spot was not hypothetical — `trades_with` is written location→location, was
+   * declared actor→actor, warned twice per route all run, and still appeared here as
+   * neither a violation nor an edge, because its routes expire before tick 120. THR-830
+   * corrected the row and closed the hole in this file's coverage: the sibling test
+   * below reads the warnings recorded *during* the run, so a family that is created and
+   * later removed can no longer pass by being absent at the end.
    *
    * The complementary evidence that the guards refuse nothing *legal* is that the total
-   * edge count is unchanged across this change: 5,299 before and after, same seed.
+   * edge count is unchanged across THR-1177: 5,299 before and after, same seed.
    */
   it('produces a world with zero schema violations', () => {
     const g = state.graph;
@@ -270,6 +299,40 @@ describe('THR-1177 — 120-tick seeded smoke', () => {
     // zero violations. The measured run carries ~5,300.
     expect(g.getAllEdges().length).toBeGreaterThan(1000);
     expect(violations.slice(0, 20)).toEqual([]);
+  });
+
+  /**
+   * THR-830. The three assertions are one claim in three parts, and each is here to
+   * stop a specific way the other two could pass while saying nothing:
+   *
+   *  1. `trades_with` routes really were created this run — otherwise "no warnings"
+   *     is the trivially-true statement of a world that never exercised the family
+   *     (the measured run writes 5).
+   *  2. No `trades_with` warning fired at creation time, which is the actual
+   *     Done-when. The final-graph test above cannot make this claim: these routes
+   *     are gone by tick 120.
+   *  3. No *other* family started warning either, so a future row correction cannot
+   *     be graded on the one family it was aimed at while breaking a neighbour.
+   */
+  it('writes trade routes without a single schema warning', () => {
+    expect(writtenByType.get('trades_with') ?? 0).toBeGreaterThan(0);
+    expect(schemaWarnings.filter((w) => w.includes('"trades_with"'))).toEqual([]);
+    expect(schemaWarnings).toEqual([]);
+  });
+
+  /**
+   * THR-830 pins the row itself, so a later edit cannot re-widen it back to the
+   * `['actor','location']` union without this failing and having to say why. The union
+   * was rejected on measured evidence: it would have silenced the warning while
+   * admitting `actor -> location`, the shape the four `action.gold.*` trade ops write
+   * (THR-1188) and the one `tradeRouteMarkers` cannot place on the map.
+   */
+  it('declares trades_with as location-to-location and nothing wider', () => {
+    expect(EDGE_SCHEMA.trades_with.sourceNodeType).toBe('location');
+    expect(EDGE_SCHEMA.trades_with.targetNodeType).toBe('location');
+    expect(validateEdgeEndpoints('trades_with', 'location', 'location')).toBeNull();
+    expect(validateEdgeEndpoints('trades_with', 'actor', 'actor')).not.toBeNull();
+    expect(validateEdgeEndpoints('trades_with', 'actor', 'location')).not.toBeNull();
   });
 
   it('leaves worldgen and historical-culture seeding intact after the belongs_to widening', () => {

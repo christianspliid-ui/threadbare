@@ -382,11 +382,7 @@ describe('THR-401 — integration: Curse the Roads zeroes trade prosperity', () 
       id: 'loc.B', type: 'location', name: 'Eastend',
       properties: { locationSubtype: 'hamlet', prosperity: 60 },
     });
-    graph.addNode({ id: 'actor.A', type: 'actor', name: 'A-merchant', properties: { actorType: 'individual' } });
-    graph.addNode({ id: 'actor.B', type: 'actor', name: 'B-merchant', properties: { actorType: 'individual' } });
-    graph.addEdge({ id: 'e.loc.A', source: 'actor.A', target: 'loc.A', type: 'located_at', properties: {} });
-    graph.addEdge({ id: 'e.loc.B', source: 'actor.B', target: 'loc.B', type: 'located_at', properties: {} });
-    graph.addEdge({ id: 'e.trade', source: 'actor.A', target: 'actor.B', type: 'trades_with', properties: { volume: 10 } });
+    graph.addEdge({ id: 'e.trade', source: 'loc.A', target: 'loc.B', type: 'trades_with', properties: { volume: 10 } });
 
     // Step 1: no curse — A should drift toward a target that includes the trade bonus.
     phaseProsperity(makeState(graph, { tick: 1 }));

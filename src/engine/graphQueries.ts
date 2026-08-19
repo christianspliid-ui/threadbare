@@ -428,23 +428,13 @@ export function getAdjacentLocationIds(graph: WorldGraph, locationId: string): s
 }
 
 // ─── Economic ────────────────────────────────────────────────────
-
-/** Get trade routes for an actor */
-export function getTradeRoutes(
-  graph: WorldGraph,
-  actorId: string,
-): Array<{ partner: GraphNode; edge: GraphEdge }> {
-  const routes: Array<{ partner: GraphNode; edge: GraphEdge }> = [];
-  for (const e of graph.getOutgoingEdges(actorId, 'trades_with')) {
-    const partner = graph.getNode(e.target);
-    if (partner) routes.push({ partner, edge: e });
-  }
-  for (const e of graph.getIncomingEdges(actorId, 'trades_with')) {
-    const partner = graph.getNode(e.source);
-    if (partner) routes.push({ partner, edge: e });
-  }
-  return routes;
-}
+//
+// `getTradeRoutes(graph, actorId)` lived here and was retired by THR-830. It read
+// `trades_with` off an *actor* id, a shape the world has never produced —
+// `createTradeRoute` writes location -> location and the narrowed EDGE_SCHEMA row now
+// says so — and it had zero production callers, so its only remaining effect was a
+// green test asserting a dead contract. If a location-tier equivalent is ever wanted,
+// `armySupply.ts` and `battleAftermath.ts` already walk routes from a location id.
 
 // ─── Action ──────────────────────────────────────────────────────
 

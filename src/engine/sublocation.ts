@@ -904,17 +904,17 @@ function checkGuildWealthAtLocation(locationId: string, graph: WorldGraph, thres
 }
 
 /**
- * Returns true if any actor at the given location has at least one trades_with edge.
+ * Returns true if the given location is an endpoint of at least one trade route.
+ *
+ * THR-830: this used to hop location -> actors standing here -> their trades_with
+ * edges, which found nothing in the live world because routes are anchored to
+ * locations, not to the people at them. The condition it gates
+ * ("trade_route_present") is about the *place*, so reading the place's own routes is
+ * both correct and what the name always claimed. Checked in both directions — the
+ * family is bidirectional, so an endpoint may be either source or target.
  */
 function checkTradeRoutePresentAtLocation(locationId: string, graph: WorldGraph): boolean {
-  const locatedEdges = graph.getIncomingEdges(locationId, 'located_at');
-  for (const edge of locatedEdges) {
-    const actorId = edge.source;
-    const tradeEdges = graph.getOutgoingEdges(actorId, 'trades_with');
-    if (tradeEdges.length > 0) return true;
-    // Also check incoming trades_with (trade routes can be in either direction)
-    const incomingTradeEdges = graph.getIncomingEdges(actorId, 'trades_with');
-    if (incomingTradeEdges.length > 0) return true;
-  }
+  if (graph.getOutgoingEdges(locationId, 'trades_with').length > 0) return true;
+  if (graph.getIncomingEdges(locationId, 'trades_with').length > 0) return true;
   return false;
 }

@@ -28,14 +28,34 @@ describe('tradeRouteResolver', () => {
     };
     graph.addNode(location);
 
-    // Actor A at location (merchant)
-    const actorA: GraphNode = {
+    // Trade partners. THR-830: routes are anchored to locations, not to the people
+    // standing at them, so the resolver reads `loc_0`'s own edges and the partners are
+    // the far settlements.
+    const partnerB: GraphNode = {
+      id: 'loc_b',
+      type: 'location',
+      name: 'Brynnmoor',
+      properties: { locationSubtype: 'town', terrain: 'grassland' },
+    };
+    graph.addNode(partnerB);
+
+    const partnerC: GraphNode = {
+      id: 'loc_c',
+      type: 'location',
+      name: 'Coravale',
+      properties: { locationSubtype: 'town', terrain: 'grassland' },
+    };
+    graph.addNode(partnerC);
+
+    // An actor standing at loc_0, kept so the non-location fail-soft case has a
+    // non-location node to hand — deliberately carries no trade edges.
+    const bystander: GraphNode = {
       id: 'actor_a',
       type: 'actor',
       name: 'Merchant Aldric',
       properties: { actorType: 'individual' },
     };
-    graph.addNode(actorA);
+    graph.addNode(bystander);
     graph.addEdge({
       id: 'edge_loc_a',
       source: 'actor_a',
@@ -43,15 +63,6 @@ describe('tradeRouteResolver', () => {
       type: 'located_at',
       properties: {},
     });
-
-    // Actor B (trade partner, at another location)
-    const actorB: GraphNode = {
-      id: 'actor_b',
-      type: 'actor',
-      name: 'Merchant Brynn',
-      properties: { actorType: 'individual' },
-    };
-    graph.addNode(actorB);
   });
 
   // ─── Happy path ──────────────────────────────────────────────────
@@ -59,8 +70,8 @@ describe('tradeRouteResolver', () => {
   it('returns tension layer with priority 45 for a single trade route', () => {
     graph.addEdge({
       id: 'trade_1',
-      source: 'actor_a',
-      target: 'actor_b',
+      source: 'loc_0',
+      target: 'loc_b',
       type: 'trades_with',
       properties: { volume: 5, goodsType: 'grain' },
     });
@@ -78,8 +89,8 @@ describe('tradeRouteResolver', () => {
   it('selects high-volume prose for volume >= 7', () => {
     graph.addEdge({
       id: 'trade_1',
-      source: 'actor_a',
-      target: 'actor_b',
+      source: 'loc_0',
+      target: 'loc_b',
       type: 'trades_with',
       properties: { volume: 9 },
     });
@@ -93,8 +104,8 @@ describe('tradeRouteResolver', () => {
   it('selects medium-volume prose for volume 4-6', () => {
     graph.addEdge({
       id: 'trade_1',
-      source: 'actor_a',
-      target: 'actor_b',
+      source: 'loc_0',
+      target: 'loc_b',
       type: 'trades_with',
       properties: { volume: 5 },
     });
@@ -107,8 +118,8 @@ describe('tradeRouteResolver', () => {
   it('selects low-volume prose for volume 1-3', () => {
     graph.addEdge({
       id: 'trade_1',
-      source: 'actor_a',
-      target: 'actor_b',
+      source: 'loc_0',
+      target: 'loc_b',
       type: 'trades_with',
       properties: { volume: 2 },
     });
@@ -123,8 +134,8 @@ describe('tradeRouteResolver', () => {
   it('includes goods type color when goodsType is known', () => {
     graph.addEdge({
       id: 'trade_1',
-      source: 'actor_a',
-      target: 'actor_b',
+      source: 'loc_0',
+      target: 'loc_b',
       type: 'trades_with',
       properties: { volume: 8, goodsType: 'ore' },
     });
@@ -138,8 +149,8 @@ describe('tradeRouteResolver', () => {
   it('does not add goods color for unknown goodsType', () => {
     graph.addEdge({
       id: 'trade_1',
-      source: 'actor_a',
-      target: 'actor_b',
+      source: 'loc_0',
+      target: 'loc_b',
       type: 'trades_with',
       properties: { volume: 8, goodsType: 'unknown' },
     });
@@ -155,8 +166,8 @@ describe('tradeRouteResolver', () => {
   it('includes threatened status modifier', () => {
     graph.addEdge({
       id: 'trade_1',
-      source: 'actor_a',
-      target: 'actor_b',
+      source: 'loc_0',
+      target: 'loc_b',
       type: 'trades_with',
       properties: { volume: 6, threatened: true },
     });
@@ -181,8 +192,8 @@ describe('tradeRouteResolver', () => {
 
     graph.addEdge({
       id: 'trade_1',
-      source: 'actor_a',
-      target: 'actor_b',
+      source: 'loc_0',
+      target: 'loc_b',
       type: 'trades_with',
       properties: { volume: 6, controlledBy: 'faction_0' },
     });
@@ -195,8 +206,8 @@ describe('tradeRouteResolver', () => {
   it('includes decaying status for low volume routes', () => {
     graph.addEdge({
       id: 'trade_1',
-      source: 'actor_a',
-      target: 'actor_b',
+      source: 'loc_0',
+      target: 'loc_b',
       type: 'trades_with',
       properties: { volume: 2 },
     });
@@ -220,8 +231,8 @@ describe('tradeRouteResolver', () => {
 
     graph.addEdge({
       id: 'trade_1',
-      source: 'actor_a',
-      target: 'actor_b',
+      source: 'loc_0',
+      target: 'loc_b',
       type: 'trades_with',
       properties: { volume: 6, threatened: true, controlledBy: 'faction_0' },
     });
@@ -235,26 +246,17 @@ describe('tradeRouteResolver', () => {
   // ─── Crossroads summary ──────────────────────────────────────────
 
   it('adds crossroads summary for 2+ trade routes', () => {
-    // Actor C (second trade partner)
-    const actorC: GraphNode = {
-      id: 'actor_c',
-      type: 'actor',
-      name: 'Merchant Cora',
-      properties: { actorType: 'individual' },
-    };
-    graph.addNode(actorC);
-
     graph.addEdge({
       id: 'trade_1',
-      source: 'actor_a',
-      target: 'actor_b',
+      source: 'loc_0',
+      target: 'loc_b',
       type: 'trades_with',
       properties: { volume: 5 },
     });
     graph.addEdge({
       id: 'trade_2',
-      source: 'actor_a',
-      target: 'actor_c',
+      source: 'loc_0',
+      target: 'loc_c',
       type: 'trades_with',
       properties: { volume: 3 },
     });
@@ -271,8 +273,8 @@ describe('tradeRouteResolver', () => {
   it('does not add crossroads summary for single trade route', () => {
     graph.addEdge({
       id: 'trade_1',
-      source: 'actor_a',
-      target: 'actor_b',
+      source: 'loc_0',
+      target: 'loc_b',
       type: 'trades_with',
       properties: { volume: 5 },
     });
@@ -286,27 +288,19 @@ describe('tradeRouteResolver', () => {
   // ─── Picks highest volume route ──────────────────────────────────
 
   it('picks the highest-volume route for prose composition', () => {
-    const actorC: GraphNode = {
-      id: 'actor_c',
-      type: 'actor',
-      name: 'Merchant Cora',
-      properties: { actorType: 'individual' },
-    };
-    graph.addNode(actorC);
-
     // Low volume route
     graph.addEdge({
       id: 'trade_low',
-      source: 'actor_a',
-      target: 'actor_b',
+      source: 'loc_0',
+      target: 'loc_b',
       type: 'trades_with',
       properties: { volume: 1, goodsType: 'fish' },
     });
     // High volume route
     graph.addEdge({
       id: 'trade_high',
-      source: 'actor_a',
-      target: 'actor_c',
+      source: 'loc_0',
+      target: 'loc_c',
       type: 'trades_with',
       properties: { volume: 9, goodsType: 'ore' },
     });
@@ -324,8 +318,8 @@ describe('tradeRouteResolver', () => {
     // Trade edge points TO actor_a (incoming for actor at location)
     graph.addEdge({
       id: 'trade_1',
-      source: 'actor_b',
-      target: 'actor_a',
+      source: 'loc_b',
+      target: 'loc_0',
       type: 'trades_with',
       properties: { volume: 7, goodsType: 'timber' },
     });
@@ -347,7 +341,7 @@ describe('tradeRouteResolver', () => {
     expect(layers).toEqual([]);
   });
 
-  it('returns empty array when no actors at location', () => {
+  it('returns empty array for a location with no trade routes', () => {
     const emptyLoc: GraphNode = {
       id: 'loc_empty',
       type: 'location',
@@ -360,34 +354,21 @@ describe('tradeRouteResolver', () => {
     expect(layers).toEqual([]);
   });
 
-  it('returns empty array when actors have no trade routes', () => {
-    // actor_a is at loc_0 but has no trades_with edges
+  it('returns empty array when the location has people but no routes', () => {
+    // actor_a is at loc_0 and loc_0 has no trades_with edges. Standing traders are
+    // not evidence of a route (THR-830) — the edge is the evidence.
     const layers = tradeRouteResolver('loc_0', graph, testSeed);
     expect(layers).toEqual([]);
   });
 
-  it('deduplicates trade edges seen from multiple actors', () => {
-    // Actor C also at the same location
-    const actorC: GraphNode = {
-      id: 'actor_c',
-      type: 'actor',
-      name: 'Merchant Cora',
-      properties: { actorType: 'individual' },
-    };
-    graph.addNode(actorC);
-    graph.addEdge({
-      id: 'edge_loc_c',
-      source: 'actor_c',
-      target: 'loc_0',
-      type: 'located_at',
-      properties: {},
-    });
-
-    // Trade between actor_a and actor_c — visible from both actors
+  it('counts a route once when the location is both ends of it', () => {
+    // A route whose two endpoints are the same node is reachable from the outgoing
+    // read and the incoming read alike. Post-THR-830 that self-loop is the only way a
+    // single edge can be seen twice, so it is what the dedup set now guards.
     graph.addEdge({
       id: 'trade_shared',
-      source: 'actor_a',
-      target: 'actor_c',
+      source: 'loc_0',
+      target: 'loc_0',
       type: 'trades_with',
       properties: { volume: 5 },
     });
@@ -404,8 +385,8 @@ describe('tradeRouteResolver', () => {
   it('produces deterministic output for the same seed', () => {
     graph.addEdge({
       id: 'trade_1',
-      source: 'actor_a',
-      target: 'actor_b',
+      source: 'loc_0',
+      target: 'loc_b',
       type: 'trades_with',
       properties: { volume: 5, goodsType: 'grain' },
     });
@@ -418,8 +399,8 @@ describe('tradeRouteResolver', () => {
   it('produces different output for different seeds', () => {
     graph.addEdge({
       id: 'trade_1',
-      source: 'actor_a',
-      target: 'actor_b',
+      source: 'loc_0',
+      target: 'loc_b',
       type: 'trades_with',
       properties: { volume: 5, goodsType: 'grain' },
     });
@@ -438,8 +419,8 @@ describe('tradeRouteResolver', () => {
   it('falls back to "an unknown power" when controller node not found', () => {
     graph.addEdge({
       id: 'trade_1',
-      source: 'actor_a',
-      target: 'actor_b',
+      source: 'loc_0',
+      target: 'loc_b',
       type: 'trades_with',
       properties: { volume: 6, controlledBy: 'nonexistent_faction' },
     });

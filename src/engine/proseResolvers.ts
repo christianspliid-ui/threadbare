@@ -819,8 +819,8 @@ export function wealthResolver(nodeId: string, graph: WorldGraph, seed: number):
  * Priority: 45 (tension)
  * Category: 'tension'
  *
- * Walks actors at this location via incoming located_at edges,
- * then collects all trades_with edges (both directions) from those actors.
+ * Collects the location's own trades_with edges (both directions — the family is
+ * bidirectional, so this place may be either endpoint).
  * Picks the highest-volume route and composes a sentence from
  * volume tier + goods type color + status modifier fragments.
  * For 2+ routes, appends a crossroads summary line.
@@ -837,27 +837,27 @@ export function tradeRouteResolver(
   const node = graph.getNode(nodeId);
   if (!node || node.type !== 'location') return [];
 
-  // 2. Find actors at this location via incoming located_at edges
-  const locatedEdges = graph.getIncomingEdges(nodeId, 'located_at');
-  if (locatedEdges.length === 0) return [];
-
-  // 3. Collect all unique trades_with edges from actors here (both directions)
+  // 2. Collect this location's own trades_with edges, both directions.
+  //
+  // THR-830: this used to hop location -> actors standing here (incoming `located_at`)
+  // -> their `trades_with` edges. That found nothing in the live world — routes are
+  // written location -> location by `createTradeRoute`, and the EDGE_SCHEMA row now
+  // says so — which meant this resolver contributed no prose to any settlement. The
+  // dedup set survives the repoint because a self-loop would otherwise be counted
+  // twice, once from each direction.
   const seen = new Set<string>();
   const tradeEdges: { id: string; properties: Record<string, unknown> }[] = [];
 
-  for (const locEdge of locatedEdges) {
-    const actorId = locEdge.source;
-    for (const edge of graph.getOutgoingEdges(actorId, 'trades_with')) {
-      if (!seen.has(edge.id)) {
-        seen.add(edge.id);
-        tradeEdges.push(edge);
-      }
+  for (const edge of graph.getOutgoingEdges(nodeId, 'trades_with')) {
+    if (!seen.has(edge.id)) {
+      seen.add(edge.id);
+      tradeEdges.push(edge);
     }
-    for (const edge of graph.getIncomingEdges(actorId, 'trades_with')) {
-      if (!seen.has(edge.id)) {
-        seen.add(edge.id);
-        tradeEdges.push(edge);
-      }
+  }
+  for (const edge of graph.getIncomingEdges(nodeId, 'trades_with')) {
+    if (!seen.has(edge.id)) {
+      seen.add(edge.id);
+      tradeEdges.push(edge);
     }
   }
 

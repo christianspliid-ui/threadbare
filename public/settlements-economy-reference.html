@@ -236,6 +236,10 @@
       <div class="callout-title">A road falling silent is news</div>
       <p>When a trade route finally dies, the world records it — "A Road Falls Silent" — and the settlements at either end take a one-time knock to their prosperity, feeling the artery close. New routes, likewise, arrive as good news and a small lift. The economy speaks in these small, legible events.</p>
     </div>
+    <div class="callout amber">
+      <div class="callout-title">The trade bonus was dead until 2026-08-19</div>
+      <p>Routes have always lifted a settlement's prosperity <em>target</em> on paper, and until THR-830 they never lifted it in practice. A route hangs off the two <strong>places</strong> it joins, but <code>phaseProsperity</code> went looking for it on the <strong>people standing in the settlement</strong> — walking to each actor present and reading their routes, of which they have none and never had any. So the count came back zero for every settlement in every run, and the arteries described above fed nothing. The declaration was the reason: <code>EDGE_SCHEMA</code> called a route a link between actors, warned twice on every real route for as long as the system has existed, and was read as documentation by everything built near it. Both halves are corrected now, and the same wrong turn had been taken by the trade-route prose, the caravan-rest sublocation gate, and the trade-baron trait count.</p>
+    </div>
   </section>
 
   <section class="section">
