@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-19 15:56 local (13:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-19 16:54 local (14:54 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -26,7 +26,7 @@ Four more sit behind these whenever you want them: [the anchor prototype](https:
 
 There is a finished, unused piece of sound design: when you commit to a nudge, roughly 1.6 seconds where a tone draws tight, holds, then releases — and only then does the outcome land. Nothing plays it today; the visual it accompanied was deleted, so what is left is the pacing alone.
 
-**The question: does committing feel better with that beat, or should the outcome land immediately?** Pure feel, no measurement settles it. Either answer closes the ticket — wired to the encounter veil, or retired with its constants and tests. Open 38 hours, and it closes whether or not the builders are running. The lane's recommendation: no — unskippable on every commit turns tense into waiting, and the timings stay recoverable from history.
+**The question: does committing feel better with that beat, or should the outcome land immediately?** Pure feel, no measurement settles it. Either answer closes the ticket — wired to the encounter veil, or retired with its constants and tests. Open 39 hours, and it closes whether or not the builders are running. The lane's recommendation: no — unskippable on every commit turns tense into waiting, and the timings stay recoverable from history.
 
 ### 4. One attended dev-server session — [THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server)
 
