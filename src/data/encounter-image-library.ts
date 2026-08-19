@@ -652,6 +652,53 @@ const NUDGE_CONCEPT_ART: readonly EncounterImageEntry[] = [
 }));
 
 /**
+ * Situational nudge generics, generated in batch 5 (2026-08-19, THR-1170).
+ *
+ * `NUDGE_CONCEPT_ART` above names *kinds of divine help* — what the god does.
+ * These three name the *situation the nudge reaches into* — what the card is
+ * about. The Meet-The-First library authored exactly this trio across all 424 of
+ * its nudges (`crowd` ×198, `mercy` ×120, `blade` ×106) before any of them
+ * existed, so every card in the game's opening beat fell through to the `nudge`
+ * category generic and showed the same plate. That is the defect this batch
+ * closes; the vocabulary itself was sound and is kept.
+ *
+ * **Deliberately no `sphere`, and deliberately no baked magic.** Each of the
+ * three spans most of the sphere set — `crowd` alone is authored across time,
+ * mind, spirit, matter, order, life and light, and 128 of the 424 nudges carry
+ * no sphere at all. Colouring one of these plates with a sphere's thread would
+ * assert an intervention the step may not have made, which is the same failure
+ * the `nudge` category-generic note below reasons about. Their light is ordinary
+ * flame instead, which no card's sphere can contradict.
+ *
+ * The trailing comment on each row is the subject that was generated, kept for a
+ * later regeneration or taste pass; the resolver never reads it.
+ */
+const SITUATIONAL_NUDGE_ART: readonly EncounterImageEntry[] = [
+  [
+    'generic.crowd',
+    'witness',
+    'Any step whose pressure is other people knowing — a council, a testimony, a reading of the record, a room that has to be faced.',
+  ], // a ring of hooded backs at the edge of a lamplit yard, the lit ground between them empty
+  [
+    'generic.mercy',
+    'appeal',
+    'Any step turning on what could be given to someone in need — water, bread, a bandage, a season of grain.',
+  ], // a clay bowl of water, folded linen, a torn loaf and a loosed waterskin on a wet stone step
+  [
+    'generic.blade',
+    'hard_fact',
+    'Any step where the unarguable thing itself is the pressure — the tool, the tally, the object under the hand.',
+  ], // a plain blade at rest across a scarred oak block, whetstone and rag beside it
+].map(([id, concept, genericity]) => ({
+  id: id as string,
+  path: `/concept-art/nudge/${(id as string).slice('generic.'.length)}.jpg`,
+  kind: 'nudge' as const,
+  concepts: [concept as string, 'nudge', 'situation'],
+  mood: 'tense' as const,
+  genericity: genericity as string,
+}));
+
+/**
  * Scene generics the terrain plates do not already cover — the built and social
  * places, generated in batch 3 (2026-07-28). The outdoor half is served by
  * `TERRAIN_SCENE_GENERICS` above, which is why this list is 14 rather than the
@@ -769,6 +816,7 @@ export const ENCOUNTER_IMAGE_LIBRARY: readonly EncounterImageEntry[] = [
   ...BUILT_SCENE_GENERICS,
   ...FATE_ART,
   ...NUDGE_CONCEPT_ART,
+  ...SITUATIONAL_NUDGE_ART,
   PORTRAIT_TRAVELER,
   ...PORTRAIT_ARCHETYPES,
 ];

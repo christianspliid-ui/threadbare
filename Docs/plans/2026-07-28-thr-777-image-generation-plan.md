@@ -81,6 +81,7 @@ Batches ship in ascending order, one PR each. All generation via the mcp-image M
 | 2 | 16 | Nudge concept generics | Unblocks the hand, the surface the player reads most often | **Shipped 2026-07-28** (THR-832) |
 | 3 | 14 | Built/social scene generics | Terrain already covers outdoors; these finish the place vocabulary | **Shipped 2026-07-28** (THR-832) |
 | 4 | 15 | Remaining archetype portraits | Lowest reuse; the traveler baseline is now their category generic, so they degrade to a real image rather than a gradient | Planned |
+| 5 | 3 | Situational nudge generics (`generic.crowd` / `generic.mercy` / `generic.blade`) | The Meet-The-First library authored this trio across all 424 of its nudges before any of them existed, so the game's *opening* beat rendered one plate throughout | **Shipped 2026-08-19** (THR-1170) |
 
 ### Batch 1 — what shipped (2026-07-28)
 
@@ -130,6 +131,37 @@ Three things worth recording:
   which batch 2 falsified. It now uses `fate`, which is documented below as never
   getting one — a durable example rather than an incidental one. Two tests were
   added alongside it for the rungs batch 2 created.
+
+### Batch 5 — what shipped (2026-08-19, THR-1170)
+
+3 situational nudge generics at `public/concept-art/nudge/<concept>.jpg`, all
+1376×768, JPEG q92 progressive, 184–257 KB. Library goes 125 → **128 rows**; the
+plan table stays empty, so this batch was opened and closed in one PR rather than
+being staged as slots first.
+
+- **These are the first nudge rows that are not a kind of divine help.** Batch 2's
+  sixteen name *what the god does* (`focus`, `ward`, `vigor`); these three name
+  *the situation the nudge reaches into* — the room that is watching, the appeal
+  that could be answered, the unarguable thing under the hand. That distinction is
+  why they are the only nudge rows carrying **no `sphere` and no baked magic**:
+  `crowd` alone is authored across time, mind, spirit, matter, order, life and
+  light, and 128 of the 424 references carry no sphere at all, so a sphere thread
+  would assert an intervention the step may not have made. Their light is ordinary
+  flame, which no card's sphere can contradict. This is the same reasoning already
+  recorded for why `nudge`'s category generic is `generic.blessing`.
+- **The predicted defect was fixed structurally, and that is the transferable
+  half.** `crowd` is the only plate in the batch needing people in frame, so it
+  was the only one that could reproduce batch 2's `generic.vigor` failure (a nude
+  anatomical figure that the checker passed). Rather than lengthening the "no
+  faces" exclusion list, the subject was changed so a face is not on offer — a
+  ring of hooded figures seen **from behind**, backs and covered heads only. Held
+  first try, and it is the same motivated-occluder fix batch 4's portraits landed
+  on. Prefer changing what the subject physically affords over a longer negative
+  list.
+- **The contact sheet remains the only gate that can catch a wrong picture.**
+  `check:image-library` proves a path exists; it passes a plate with baked text, a
+  stray figure, a drifted palette or invented incident. All three were read at
+  full size before registration. Five batches, five sheets.
 
 Open question 1 was re-checked before generating, as this plan required: still no
 `lib-*.png` and no `Design/mockups/`, so all 16 were generated fresh.
