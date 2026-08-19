@@ -22,7 +22,7 @@
       "filename": "Encounters.md",
       "title": "Encounters",
       "contentAdjacent": true,
-      "termCount": 31,
+      "termCount": 32,
       "blurb": "Content-adjacent shard. Terms covering the encounter pipeline: templates, resolution, aftermath, awareness, and causation."
     },
     {
@@ -2183,6 +2183,43 @@
     },
     {
       "shardId": "encounters",
+      "slug": "repertoire",
+      "name": "Repertoire",
+      "aliases": [
+        "card repertoire",
+        "RepertoireEntry",
+        "buildRepertoire"
+      ],
+      "status": "canonical",
+      "oneLiner": "the nudge cards a god holds for a run, gated by access (sphere identity) **and** unlock (earned); per-run and library-level, **not** a per-step hand",
+      "body": "The set of `[[Nudge]]` cards a given god **holds for a run** — assembled from the whole card library by two independent gates, plus any echo cards carried in from previous runs. Built by `buildRepertoire` (`src/engine/nudgeCardRepertoire.ts`); each held card is a `RepertoireEntry` carrying its access band and a `source` naming *why* it is held (`core | signature | hunger | milestone | god_trait | sphere_attunement | echo`).\n\n**A repertoire is per-run and library-level; a hand is per-step and encounter-level.** The repertoire answers *which cards does this god hold*. `buildNudgeHand` answers *which of this authored step's cards may be played right now*, partitioning them into playable / dimmed / hidden. The two meet at exactly one seam — `repertoireCardCost` quotes a price that `effectiveNudgeCost` then charges — and keeping them apart is what stops a repertoire question being answered with one encounter's data.\n\n**Access is not unlock, and both must pass.** *Access* asks whether the god's sphere identity may touch the card at all: universal core and primary-sphere cards `full`, secondary-sphere `discounted`, everything else `locked`. *Unlock* asks whether this member has been earned yet — `starting`, `milestone` (riding the existing `unlockedActionIds` grant set rather than a second ledger), `god_trait`, or `[[Sphere Attunement]]`. `memberAccess` runs **first**, which is exactly why attunement deepens without widening.\n\n**A held card's access is never `locked`.** Locked members are dropped before they enter the list, and the type states it (`HeldCardAccess = Exclude<CardAccess, 'locked'>`) — so a surface rendering access carries no dead branch for a state it cannot receive.\n\n**Echo cards bypass access entirely**, the locked check included, which is why they are appended after the loop rather than filtered through it: a dead god's trick does not ask whether the new god is allowed it. A somber harvest returns one **scarred** — cheaper, and carrying a forecast penalty.\n\n**Pure over run state** (NFP #3). Same sphere identity, same unlock set, same chronicle ⇒ the same repertoire and the same echo card, every time. No PRNG: the run's defining card is *selected* by a total ordering — most played, then the most storied moment, then card id — never rolled. The final id tie-break is what makes a saved run replay rather than merely usually replay.",
+      "seeAlso": [
+        {
+          "raw": "Nudge",
+          "termName": "Nudge",
+          "resolvedSlug": "encounters#nudge"
+        },
+        {
+          "raw": "Sphere Attunement",
+          "termName": "Sphere Attunement",
+          "resolvedSlug": "encounters#sphere-attunement"
+        },
+        {
+          "raw": "Sphere",
+          "termName": "Sphere",
+          "resolvedSlug": "cosmology#sphere"
+        },
+        {
+          "raw": "Rider",
+          "termName": "Rider",
+          "resolvedSlug": "encounters#rider"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Encounters.md#repertoire",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "encounters",
       "slug": "sphere-attunement",
       "name": "Sphere Attunement",
       "aliases": [
@@ -2198,6 +2235,11 @@
           "raw": "Nudge",
           "termName": "Nudge",
           "resolvedSlug": "encounters#nudge"
+        },
+        {
+          "raw": "Repertoire",
+          "termName": "Repertoire",
+          "resolvedSlug": "encounters#repertoire"
         },
         {
           "raw": "Sphere",

@@ -310,10 +310,30 @@ Every nudge must carry at least one fragment in a failure band (`near_miss`, `fa
 
 ---
 
+### Repertoire
+
+**Aliases:** card repertoire, RepertoireEntry, buildRepertoire
+**Also see:** `[[Nudge]]`, `[[Sphere Attunement]]`, `[[Sphere]]`, `[[Rider]]`
+**Status:** canonical
+
+The set of `[[Nudge]]` cards a given god **holds for a run** — assembled from the whole card library by two independent gates, plus any echo cards carried in from previous runs. Built by `buildRepertoire` (`src/engine/nudgeCardRepertoire.ts`); each held card is a `RepertoireEntry` carrying its access band and a `source` naming *why* it is held (`core | signature | hunger | milestone | god_trait | sphere_attunement | echo`).
+
+**A repertoire is per-run and library-level; a hand is per-step and encounter-level.** The repertoire answers *which cards does this god hold*. `buildNudgeHand` answers *which of this authored step's cards may be played right now*, partitioning them into playable / dimmed / hidden. The two meet at exactly one seam — `repertoireCardCost` quotes a price that `effectiveNudgeCost` then charges — and keeping them apart is what stops a repertoire question being answered with one encounter's data.
+
+**Access is not unlock, and both must pass.** *Access* asks whether the god's sphere identity may touch the card at all: universal core and primary-sphere cards `full`, secondary-sphere `discounted`, everything else `locked`. *Unlock* asks whether this member has been earned yet — `starting`, `milestone` (riding the existing `unlockedActionIds` grant set rather than a second ledger), `god_trait`, or `[[Sphere Attunement]]`. `memberAccess` runs **first**, which is exactly why attunement deepens without widening.
+
+**A held card's access is never `locked`.** Locked members are dropped before they enter the list, and the type states it (`HeldCardAccess = Exclude<CardAccess, 'locked'>`) — so a surface rendering access carries no dead branch for a state it cannot receive.
+
+**Echo cards bypass access entirely**, the locked check included, which is why they are appended after the loop rather than filtered through it: a dead god's trick does not ask whether the new god is allowed it. A somber harvest returns one **scarred** — cheaper, and carrying a forecast penalty.
+
+**Pure over run state** (NFP #3). Same sphere identity, same unlock set, same chronicle ⇒ the same repertoire and the same echo card, every time. No PRNG: the run's defining card is *selected* by a total ordering — most played, then the most storied moment, then card id — never rolled. The final id tie-break is what makes a saved run replay rather than merely usually replay.
+
+---
+
 ### Sphere Attunement
 
 **Aliases:** attunement, essenceEarnedBySphere, `sphere_attunement`
-**Also see:** `[[Nudge]]`, `[[Sphere]]`, `[[Sphere Alignment]]`, `[[Rider]]`
+**Also see:** `[[Nudge]]`, `[[Repertoire]]`, `[[Sphere]]`, `[[Sphere Alignment]]`, `[[Rider]]`
 **Status:** canonical
 
 The **lifetime essence a god has drawn through one sphere**, counted monotonically for the whole run (`GameState.essenceEarnedBySphere`) and read as the fourth unlock channel on the nudge card library — beside `starting`, `milestone` and `god_trait`. Crossing an authored mark (`SPHERE_ATTUNEMENT_THRESHOLDS`, `[20, 60]`) brings that sphere's attunement-gated `[[Nudge]]` members within reach: siblings of cards the god already plays, never stronger ones. Each crossing emits one `nudge_attunement_unlock` trace naming the sphere, the mark, and the member ids it opened.

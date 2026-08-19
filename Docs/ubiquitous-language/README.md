@@ -96,6 +96,7 @@ Load this file at session start (referenced from CLAUDE.md). Load specific shard
 - **[Nudge](./Encounters.md#nudge)** — authored, essence-priced micro-intervention played into an attended step; shifts the odds, never picks the outcome
 - **[Rider](./Encounters.md#rider)** — mechanical remap of an already-resolved band (`no_crit_fail`, `floor_at_cost`); zero PRNG draws, never stacks
 - **[Band Fragment](./Encounters.md#band-fragment)** — prose appended when a nudge was active for that band; **not** a Rider, **not** a Context Fragment
+- **[Repertoire](./Encounters.md#repertoire)** — the nudge cards a god holds for a run, gated by access (sphere identity) **and** unlock (earned); per-run and library-level, **not** a per-step hand
 - **[Sphere Attunement](./Encounters.md#sphere-attunement)** — lifetime essence earned per sphere (`essenceEarnedBySphere`); the fourth card-unlock channel, deepening families the sphere identity already opens
 - **[Rebuild Road](./Encounters.md#rebuild-road)** — quintessence-rebuilding encounter; the only content a Broken mortal may draw
 - **[Surface](./Encounters.md#surface)** — a template bound to its context axes (`SurfaceKey`); the unit novelty and recency are tracked at, not a prose variant
