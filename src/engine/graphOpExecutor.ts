@@ -14,6 +14,12 @@ import type { EssenceSource, SourceKind } from '../types/essenceSource';
 import { readEssenceSource, findLatentSourcesInRange } from './essenceSources';
 import { resolveLocationToHex } from './encounterAwareness';
 import { getFortificationModifier } from './siegeResolution';
+import {
+  executeEstablishTradeRoute,
+  executeConductTrade,
+  executeDisruptTradeRoute,
+  executeTaxTradeRoute,
+} from './tradeRouteOps';
 import { FORTIFY_MULTIPLIER_BONUS, FORTIFY_MULTIPLIER_MAX } from '../types/battle';
 import type { AttachmentEffect } from '../types/effects';
 import { SPHERE_EFFECT_TABLE, isArtifactNode } from './ascendantPrimitives';
@@ -215,6 +221,21 @@ function executeSingleOp(
 
       case 'fortify_location':
         return executeFortifyLocation(graph, op, ctx);
+
+      // THR-1188 — the four catalog trade verbs. Graph-only, so
+      // `unifiedActionResolution` routes them here through `graphOnlyOps` with
+      // no interception; each resolves its own location pair (see tradeRouteOps).
+      case 'establish_trade_route':
+        return executeEstablishTradeRoute(graph, op, ctx);
+
+      case 'conduct_trade':
+        return executeConductTrade(graph, op, ctx);
+
+      case 'disrupt_trade_route':
+        return executeDisruptTradeRoute(graph, op, ctx);
+
+      case 'tax_trade_route':
+        return executeTaxTradeRoute(graph, op, ctx);
 
       case 'attune_artifact':
         return executeAttuneArtifact(graph, op, ctx);

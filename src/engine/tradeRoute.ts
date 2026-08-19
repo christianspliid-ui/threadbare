@@ -65,6 +65,35 @@ export const ROUTE_WANT_QUANTITY_CEIL = 30;
  */
 export const ROUTE_BALANCE_SCORE_DIVISOR = 3;
 
+// ─── Catalog trade-verb constants (THR-1188) ──────────────────────────────
+//
+// The four `action.gold.*` trade verbs resolve their own location pair from the
+// caster's anchor settlement (see `tradeRouteOps.ts`). These bound that search.
+
+/**
+ * Hex radius searched for a trade partner when `action.gold.establish-trade`
+ * resolves. Wide enough that a settlement in ordinary terrain has candidates,
+ * tight enough that a route stays a plausible caravan run rather than a line
+ * drawn across the map. Routes formed by the merchant strategic pack are not
+ * bounded by this — they pick from an ambition's own targeting rule.
+ */
+export const TRADE_PARTNER_MAX_HEX_RANGE = 6;
+
+/**
+ * Cap on partner candidates scored per cast. Bounds the scan on a large map
+ * (NFP #7) — locations are visited in graph order and the first N within range
+ * are scored, so a dense region is sampled rather than exhaustively ranked.
+ */
+export const TRADE_PARTNER_MAX_CANDIDATES = 24;
+
+/**
+ * Toll stamped on a route by `action.gold.tax-trade-route`. Matches the rate the
+ * template carried while its op was being refused, so the verb's effect on a
+ * route is unchanged from what the content author wrote — only the endpoints it
+ * lands on are corrected.
+ */
+export const TRADE_ROUTE_DEFAULT_TAX_RATE = 0.1;
+
 // ─── Types ────────────────────────────────────────────────────────────────
 
 /**
@@ -107,6 +136,18 @@ export interface TradeRouteProperties {
   lastTraded?: number;
   /** NodeId of the faction/agent controlling (taxing) this route; null if uncontrolled */
   controlledBy?: string | null;
+  /**
+   * Toll levied by `controlledBy`, as a fraction of route value.
+   *
+   * Written by `tax_trade_route` and documented to the player in
+   * `action-technical-effects.ts`, but **no subsystem reads it yet** — the
+   * controller's take is not deducted anywhere (THR-1189). Typed here so the
+   * field is at least first-class rather than an untyped bag entry; the
+   * consumer is the open half. `controlledBy`, the other half of the same
+   * stamp, *is* consumed — by `phaseEconomicTraits` (route-control count) and
+   * `proseResolvers` (route status prose).
+   */
+  taxRate?: number;
   /** Whether this route is currently threatened (bandits, war, etc.) */
   threatened?: boolean;
 }
@@ -126,6 +167,7 @@ export function readTradeRouteProps(raw: Record<string, unknown>): Required<Trad
     established: typeof raw.established === 'number' ? raw.established : 0,
     lastTraded: typeof raw.lastTraded === 'number' ? raw.lastTraded : 0,
     controlledBy: raw.controlledBy != null ? (raw.controlledBy as string) : null,
+    taxRate: typeof raw.taxRate === 'number' ? raw.taxRate : 0,
     threatened: typeof raw.threatened === 'boolean' ? raw.threatened : false,
   };
 }

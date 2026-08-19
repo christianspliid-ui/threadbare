@@ -90,6 +90,14 @@ export type GraphOpType =
   | 'find_source'    // THR-611 Slice 4: reveal latent (undiscovered) essence sources within range of the target (Find leg)
   | 'claim_source'   // THR-611 Slice 4: establish a controls edge to a discovered, uncontrolled source (Claim leg)
   | 'fortify_location' // THR-605 Slice 1: raise a location's fortificationMultiplier (capped), consumed by siegeResolution
+  // THR-1188: the four catalog trade verbs. Each resolves its own location pair
+  // from the caster's anchor settlement — a generic edge op cannot, because the
+  // action's `$target` IS the caster's location, so there is no partner endpoint
+  // for a sentinel to name and every generic binding produced `actor → location`.
+  | 'establish_trade_route' // open a trades_with route to the best-matched partner in range (delegates to createTradeRoute)
+  | 'conduct_trade'         // bump volume + refresh lastTraded on the stalest route at the anchor
+  | 'disrupt_trade_route'   // sever the busiest route at the anchor
+  | 'tax_trade_route'       // stamp controlledBy/taxRate on the busiest untolled route at the anchor
   | 'attune_artifact'  // THR-605 Slice 2: append the ascendant's-sphere positive effect to an artifact + stamp attunedSphere (consumed by the effect walker)
   | 'curse_artifact'   // THR-605 Slice 2: append a concealed per-tick quintessence drain to an artifact + set cursed flags (consumed by the effect walker)
   | 'nullify_artifact' // THR-605 Slice 2: strip an artifact's effects + attune/curse flags back to inert (inverse of imbue/attune/curse)
