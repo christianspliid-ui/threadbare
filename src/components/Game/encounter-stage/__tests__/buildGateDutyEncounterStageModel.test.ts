@@ -662,3 +662,127 @@ describe('buildGateDutyEncounterStageModel', () => {
     ]);
   });
 });
+
+/**
+ * THR-1173 — the checkpoint is a place you can open.
+ *
+ * The adapter always knew which node the gatehouse *is*: the id was computed
+ * inline as an argument to `getNodeName`, spent on a display string, and
+ * dropped. So the scene could name its own ground in every paragraph and the
+ * word opened nothing.
+ *
+ * **The typed stub is the point.** Every other graph stub in this file answers
+ * `getNode` with `{ name }` alone, which makes the adapter's `type === 'location'`
+ * guard false and the link silently absent — so a test written against those
+ * stubs would pass whether or not this shipped. The negative below pins that
+ * exact shape: an untyped node must stay text, and it must be *because* of the
+ * guard rather than because nothing was wired.
+ */
+describe('THR-1173 — the gate duty location reaches link tier', () => {
+  const GATEHOUSE_ID = 'loc.gatehouse';
+
+  function buildModel(gatehouse: { name: string; type?: string; properties?: Record<string, unknown> }) {
+    const template = getGateDutyTemplate();
+    const encounter: ActiveEncounterDisplay = {
+      encounterId: template.id,
+      actorId: 'agent.guard',
+      currentStepIndex: 0,
+      history: [],
+      choiceHistory: [],
+      status: 'active',
+      startedTick: 10,
+      sourceSystem: 'unified_action',
+      actionId: 'ua_gate_duty',
+    };
+    const notification: EncounterNotification = {
+      id: 'notif-gate-duty-location',
+      agentId: 'agent.guard',
+      agentName: 'Sergeant Tal',
+      courtPosition: 'the_first',
+      encounterId: template.id,
+      encounterName: template.name,
+      prose: 'The checkpoint is already in motion.',
+      choices: [],
+      createdTick: 11,
+      autoResolveTick: null,
+      viewed: false,
+      resolved: false,
+    };
+    const clearanceGateState: ClearanceGateRuntimeState = {
+      runtimeId: 'clearance_gate_cg.quest.gate_duty_loc_town_checkpoint_clearance',
+      templateId: template.id,
+      gateId: 'checkpoint_clearance',
+      anchorLocationId: 'loc.town',
+      subjectNodeId: 'npc.courier',
+      authorityNodeId: 'npc.captain',
+      witnessNodeIds: ['npc.witness'],
+      locationNodeId: GATEHOUSE_ID,
+      persistence: 'must-persist',
+      state: 'pending',
+      revealedSignalKeys: [],
+      followOnTags: [],
+      attempts: 0,
+      lastUpdatedTick: 11,
+      history: [],
+    };
+    const graph = {
+      getNode(nodeId: string) {
+        const nodes: Record<string, unknown> = {
+          [GATEHOUSE_ID]: gatehouse,
+          'npc.captain': { name: 'Captain Merrow' },
+          'npc.courier': { name: 'Courier Nessa' },
+          'npc.witness': { name: 'Dock Porter' },
+        };
+        return nodes[nodeId] ?? null;
+      },
+      getOutgoingEdges: () => [],
+    } as const;
+
+    return buildGateDutyEncounterStageModel({
+      template,
+      encounter,
+      notification,
+      agentName: 'Sergeant Tal',
+      threadTier: 'strong',
+      graph: graph as never,
+      clearanceGateState,
+      essence: 0.34,
+    });
+  }
+
+  /** Every segment across the scene's paragraphs that renders the gatehouse name. */
+  function locationSegments(model: ReturnType<typeof buildGateDutyEncounterStageModel>) {
+    return model.narrative.paragraphs
+      .flatMap(p => p.segments)
+      .filter(s => s.text === 'South Quarantine Gate');
+  }
+
+  it('a real location node carries its id, kind, and subtype tooltip into the prose', () => {
+    const model = buildModel({
+      name: 'South Quarantine Gate',
+      type: 'location',
+      properties: { locationSubtype: 'fortress' },
+    });
+
+    const segs = locationSegments(model);
+    expect(segs.length).toBeGreaterThan(0);
+    for (const seg of segs) {
+      expect(seg.entityId).toBe(GATEHOUSE_ID);
+      expect(seg.entityKind).toBe('location');
+      expect(seg.tooltipId).toBe('location.fortress');
+    }
+  });
+
+  it('NEGATIVE: a node that is not a place stays text, never a dead link', () => {
+    // Law 21 fail-open. `locationLabel` still renders — the name is real — but
+    // nothing promises a sheet that the host could not open.
+    const model = buildModel({ name: 'South Quarantine Gate' });
+
+    const segs = locationSegments(model);
+    expect(segs.length).toBeGreaterThan(0);
+    for (const seg of segs) {
+      expect(seg.entityId).toBeUndefined();
+      expect(seg.entityKind).toBeUndefined();
+    }
+  });
+});
