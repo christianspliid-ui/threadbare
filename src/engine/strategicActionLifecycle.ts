@@ -35,6 +35,7 @@ import {
   createRelationEdge,
   type GraphOpResult,
 } from './strategicGraphOps';
+import { resolveDurableActorLocation } from './tradeRouteOps';
 import { getStrategicTemplate } from './strategicActionCandidates';
 import { emitTrace } from './traceBuffer';
 import type { TraceEntry } from '../types/trace';
@@ -344,22 +345,9 @@ export function advanceStrategicProjects(
 
 // ─── Instant Mutation Dispatch ──────────────────────────────────────
 
-/**
- * The actor's current location resolved to something a durable edge can anchor
- * on (THR-669): sublocations climb to their parent settlement; transient
- * transit hexes (`loc.transient.*`, garbage-collected after passage) resolve
- * to undefined rather than becoming an edge endpoint that will evaporate.
- */
-function resolveDurableActorLocation(graph: WorldGraph, actorId: string): string | undefined {
-  const rawId = graph.getOutgoingEdges(actorId, 'located_at')[0]?.target;
-  if (!rawId) return undefined;
-  const node = graph.getNode(rawId);
-  if (!node) return undefined;
-  const parentId = node.properties.parentLocationId as string | undefined;
-  const resolvedId = parentId ?? rawId;
-  if (resolvedId.startsWith('loc.transient.')) return undefined;
-  return graph.getNode(resolvedId) ? resolvedId : undefined;
-}
+// `resolveDurableActorLocation` moved to `tradeRouteOps.ts` (THR-1188) so the
+// catalog trade verbs and this strategic pack cannot drift apart on what counts
+// as a durable route endpoint. Behaviour is unchanged.
 
 function executeInstantMutation(
   graph: WorldGraph,

@@ -202,7 +202,11 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     durationRange: { min: 2, max: 4 },
     motivations: ['asceticism_extravagance', 'honesty_cunning', 'loyalty_ambition'],
     onSuccess: [
-      { op: 'add_edge', edgeType: 'trades_with', source: '$actor', target: '$target' },
+      // THR-1188: resolves its own location pair (caster's settlement → best-matched
+      // partner in range). The generic add_edge this replaces bound $actor → $target,
+      // and $target IS the caster's location, so it wrote actor → location — refused by
+      // the trades_with EDGE_SCHEMA row and unreadable by every route consumer.
+      { op: 'establish_trade_route' },
       { op: 'update_node', nodeId: '$actor', changes: { wealth: 0.15 } },
     ],
     onFailure: [
@@ -210,9 +214,9 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     ],
     difficulty: 0.40,
     narrativeTemplates: {
-      initiation: '{{actor}} opens negotiations, seeking profitable trade with {{the-target}}.',
-      success: 'The deal is struck. Wealth flows between {{actor}} and {{the-target}} like rivers of gold.',
-      failure: '{{actor}}\'s proposal is rejected. {{the-target}} has no interest in {{actor}}\'s commerce.',
+      initiation: '{{actor}} sends word from {{the-location}}, sounding out the markets within reach.',
+      success: 'The accord holds. A road out of {{the-location}} carries cargo now, and {{actor}} takes a share of it.',
+      failure: 'No one signs. {{the-location}} trades as it always has, and {{actor}} is no part of it.',
     },
   },
   {
@@ -249,16 +253,19 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     durationRange: { min: 2, max: 3 },
     motivations: ['asceticism_extravagance', 'honesty_cunning'],
     onSuccess: [
-      { op: 'update_edge', edgeType: 'trades_with', source: '$actor', target: '$target', changes: { volume: 1 } },
+      // THR-1188: bumps volume and refreshes lastTraded on a real route at the
+      // caster's settlement. The generic update_edge this replaces could never match
+      // an edge createTradeRoute wrote, so the verb was a no-op against the trade web.
+      { op: 'conduct_trade' },
     ],
     onFailure: [
       { op: 'update_node', nodeId: '$actor', changes: { wealth: -0.03 } },
     ],
     difficulty: 0.45,
     narrativeTemplates: {
-      initiation: '{{actor}} executes a trade, swapping goods with {{the-target}} for mutual gain.',
-      success: 'The exchange prospers. {{actor}} gains wealth and favor with {{the-target}}.',
-      failure: '{{actor}}\'s trade goes awry. {{the-target}} cheats {{actor}}, and wealth is lost.',
+      initiation: '{{actor}} loads a caravan at {{the-location}} and sends it down the road.',
+      success: 'The caravan returns full. The road out of {{the-location}} is busier for it, and {{actor}} is richer.',
+      failure: 'The caravan comes back light. {{actor}} covers the loss out of pocket.',
     },
   },
   {
@@ -272,7 +279,8 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     durationRange: { min: 3, max: 5 },
     motivations: ['asceticism_extravagance', 'loyalty_ambition'],
     onSuccess: [
-      { op: 'remove_edge', edgeType: 'trades_with', source: '$actor', target: '$target' },
+      // THR-1188: severs a real route at the caster's settlement (see conduct_trade).
+      { op: 'disrupt_trade_route' },
       { op: 'update_node', nodeId: '$target', changes: { wealth: -0.20 } },
     ],
     onFailure: [
@@ -280,9 +288,9 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     ],
     difficulty: 0.60,
     narrativeTemplates: {
-      initiation: '{{actor}} sabotages {{the-target}}\'s trade routes, seeking to cripple {{their}} commerce.',
-      success: '{{target}}\'s trade is in ruins. {{actor}}\'s sabotage is complete, and {{their}} wealth evaporates.',
-      failure: '{{actor}}\'s plot is exposed. {{the-target}} retaliates, and {{actor}}\'s own wealth suffers.',
+      initiation: '{{actor}} works the road out of {{the-location}} - bought guards, a blocked ford, a rumour of bandits.',
+      success: 'The route is dead. Nothing leaves {{the-location}} that way, and the wealth that moved along it stops.',
+      failure: 'The plot is traced back. {{the-location}} knows the name behind it, and {{actor}} pays for that.',
     },
   },
 
@@ -335,13 +343,9 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     durationRange: { min: 2, max: 3 },
     motivations: ['asceticism_extravagance', 'preservation_transformation'],
     onSuccess: [
-      {
-        op: 'update_edge',
-        edgeType: 'trades_with',
-        source: '$actor',
-        target: '$target',
-        changes: { controlledBy: '$actor', taxRate: 0.1 },
-      },
+      // THR-1188: stamps controlledBy/taxRate on a real route at the caster's
+      // settlement. taxRate is TRADE_ROUTE_DEFAULT_TAX_RATE, unchanged at 0.1.
+      { op: 'tax_trade_route' },
       { op: 'update_node', nodeId: '$actor', changes: { wealth: 0.05 } },
     ],
     onFailure: [
@@ -349,9 +353,9 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     ],
     difficulty: 0.55,
     narrativeTemplates: {
-      initiation: '{{actor}} moves to assert control over the route to {{the-target}}, stationing collectors at every junction.',
-      success: 'The route bends to {{actor}}\'s will. Coin flows in, though merchants grumble at the toll.',
-      failure: '{{actor}}\'s tax collectors are driven off. {{the-target}} will not yield the route so easily.',
+      initiation: '{{actor}} posts collectors on the road out of {{the-location}}, one to a junction.',
+      success: 'The toll holds. Coin comes in off every cart, and the carters remember who put the table there.',
+      failure: 'The collectors are run off the road. {{the-location}} will not yield the route so easily.',
     },
   },
   {

@@ -377,7 +377,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `tier` (1) | `tierPromotion.ts` | — |
 | `tooltip` (1) | `tooltipResolver.ts` | `THR-1172` |
 | `trace` (1) | `traceBuffer.ts` | — |
-| `trade` (2) | `tradeRoute.ts`, `tradeRouteMarkers.ts` | `Phase 1`, `THR-616`, `THR-670` |
+| `trade` (3) | `tradeRoute.ts`, `tradeRouteMarkers.ts`, `tradeRouteOps.ts` | `Phase 1`, `THR-1188`, `THR-611`, `THR-616`, `THR-670`, `THR-830` |
 | `trait` (3) | `traitDefinitionSeeding.ts`, `traitRefIndex.ts`, `traitRefValidation.ts` | `THR-786`, `THR-809` |
 | `traits` (1) | `traits.ts` | `THR-786` |
 | `treasure` (1) | `treasureMapConsumption.ts` | — |
@@ -393,4 +393,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 26 registered subsystems (1 dormant) · 101 tick phases · 172 engine domains · 496 modules._
+_Counts: 26 registered subsystems (1 dormant) · 101 tick phases · 172 engine domains · 497 modules._
