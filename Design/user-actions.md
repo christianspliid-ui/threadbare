@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-19 02:53 local (00:53 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-19 03:53 local (01:53 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -19,7 +19,7 @@ Only one job may sit "in design" at a time. That slot has been held since Friday
 - [Nations and named areas are drawn but not simulated](https://linear.app/threadbare/issue/THR-1155/nations-and-named-areas-are-rendered-not-simulated-promote-both-to) — your call on 2026-08-17. Until it lands, a kingdom or a named region cannot be something an encounter points at, a faction claims, or a chip links to.
 - [The one-button snapshot](https://linear.app/threadbare/issue/THR-1134/shareable-game-state-snapshot-one-button-incident-bundle-that-works-in) — hand a weird-looking run straight to an agent instead of a screenshot and a sentence. Filed at your request 2026-08-16.
 
-**Either answer frees it:** an hour of design on one of the two, or *"put Traits wave 2 back in the pile."* Not urgent this minute — the builders still have seven jobs shelved — but the shelf is refilling only with defect repairs, so leaving this frozen dries up their supply within days. *(Surfaced by tb-orchestrator, 2026-08-18.)*
+**Either answer frees it:** an hour of design on one of the two, or *"put Traits wave 2 back in the pile."* The builders still have six jobs shelved, but as of tonight not one of them is newly-designed work — so this is no longer a problem that only arrives in a few days. *(Surfaced by tb-orchestrator, 2026-08-18.)*
 
 ### 3. Rank five parts of the game for rebuilding — [the wave-1 sitting](https://linear.app/threadbare/issue/THR-1163/wave-1-selection-which-seams-make-the-first-wave-in-what-order-under)
 
@@ -55,6 +55,7 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
+- 2026-08-19: **two words entered the game's dictionary** — [sphere attunement](https://github.com/christianspliid-ui/threadbare/pull/1558) and [repertoire](https://github.com/christianspliid-ui/threadbare/pull/1559): glossary entries for mechanics that already shipped, so the vocabulary now matches what the game does. Nothing changed on screen.
 - 2026-08-19: **a place you read about can now be opened** — [THR-1173](https://linear.app/threadbare/issue/THR-1173/location-link-tier-is-capability-complete-but-unexercised-no-shipped) ([PR #1557](https://github.com/christianspliid-ui/threadbare/pull/1557)): the game could already style a named location as something you click, but no shipped card ever did it, so the ability sat unproven. A chip now names a place and opens it.
 - 2026-08-19: **earning essence in a sphere now deepens your deck in it** — [THR-1180](https://linear.app/threadbare/issue/THR-1180/sphere-attunement-essenceearnedbysphere-counter-sphere-attunement) ([PR #1556](https://github.com/christianspliid-ui/threadbare/pull/1556)): a fourth way a nudge card can unlock, keyed to what you have actually spent yourself on rather than what you picked at the start.
 - 2026-08-19: **every nudge card now does something when you play it** — [THR-1179](https://linear.app/threadbare/issue/THR-1179/nudge-card-mechanics-build-every-card-type-whose-library-status-is-not) ([PR #1555](https://github.com/christianspliid-ui/threadbare/pull/1555)): Whisper, Undertow and Stumble were the last three card types with a written face and no mechanic behind it. The deck is complete — face, words and effect on all of them.
@@ -64,7 +65,6 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 - 2026-08-18: **a company can now actually break up over a betrayal** — [THR-1174](https://linear.app/threadbare/issue/THR-1174/dissolutionreason-betrayal-has-a-consumer-and-no-producer-a-company) ([PR #1549](https://github.com/christianspliid-ui/threadbare/pull/1549)): the ending existed in the telling but nothing could cause it, so the betrayal scene had no way to end the company it broke. It has a producer now, and its own parting words.
 - 2026-08-18: **a chip promised grief the game could not feel** — [THR-1171](https://linear.app/threadbare/issue/THR-1171/apotheosis-attaches-traitconditiongrieving-which-is-not-a-defined) ([PR #1548](https://github.com/christianspliid-ui/threadbare/pull/1548)): Apotheosis told you a companion would be left grieving, but no such state existed. Grief is now defined, and the sweep that catches this class was widened past cards.
 - 2026-08-18: **the company drama is complete, four scenes of four** — [THR-733](https://linear.app/threadbare/issue/THR-733/company-drama-content-sweep-leadership-dispute-romance-betrayal) ([PR #1547](https://github.com/christianspliid-ui/threadbare/pull/1547)): "The Quiet Offer" lands the betrayal, joining the sacrifice, the leadership dispute and the romance.
-- 2026-08-18: **the underlines you flagged at lunchtime now answer** — [THR-1172](https://linear.app/threadbare/issue/THR-1172/finish-the-entity-reference-contract-an-underline-must-earn-itself) ([PR #1546](https://github.com/christianspliid-ui/threadbare/pull/1546)): filed from your chat report, merged and deployed within two hours. *A favour owed* explains on hover and opens the debtor on click; a word that cannot answer no longer gets styled at all.
 
 ---
 
