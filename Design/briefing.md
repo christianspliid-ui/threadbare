@@ -1,7 +1,7 @@
 # Briefing
-**Generated:** 2026-08-19 19:55 local (17:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-08-19 20:55 local (18:55 UTC) · keep-work-flowing-cc
 
-*Fourth still hour. No messages, nothing merged since 15:41, no ticket moved, every check green. The builders are off at your request, so a still page is the expected reading — the list below is unchanged and re-verified.*
+*Fifth still hour. Nothing merged since 15:41, no message from you, no ticket moved, every check green. With the builders off at your request this is the expected reading — the list below is unchanged and re-verified, not restated from memory.*
 
 ## The one thing
 
@@ -16,7 +16,7 @@ Still leads because it is the smallest thing here and needs nothing but you. An 
 ## Also waiting (4)
 
 - **An hour of design time, three jobs want it.** [Rank five parts of the game for rebuilding](https://linear.app/threadbare/issue/THR-1163/wave-1-selection-which-seams-make-the-first-wave-in-what-order-under) is the highest-leverage half hour on the board and the ask **least affected by the pause** — its output is decisions, not queued work. Behind it, [unify the card grammar](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card) (your 6 August note that action cards are too wordy) and [Traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools), in design and assigned to you since Friday.
-- **Should committing a nudge carry ~1.6 seconds of held breath?** — [THR-1168](https://linear.app/threadbare/issue/THR-1168/two-authored-encounter-audio-moments-have-no-live-caller-wire-or). Pure feel; 30 seconds to answer, either answer closes it, and it closes whether or not the builders are on. Now 41 hours old. The lane recommends no.
+- **Should committing a nudge carry ~1.6 seconds of held breath?** — [THR-1168](https://linear.app/threadbare/issue/THR-1168/two-authored-encounter-audio-moments-have-no-live-caller-wire-or). Pure feel; 30 seconds to answer, either answer closes it, and it closes whether or not the builders are on. Now 42 hours old. The lane recommends no.
 - **One attended dev-server session, ~30 minutes** — [THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server). Nine surfaces, 19 owed screenshots a scheduled run cannot take.
 - **Image credits — who decides the spend?** [THR-876](https://linear.app/threadbare/issue/THR-876/regenerate-the-5-quarantined-meet-the-first-scene-assets-doctrine)'s five images run on your word. The standing question: gated on you at all, or decided by the lane and reported after? Until you say, the lane keeps the rule — remap where a match is honest, come to you only when it is not.
 - *(A Tenacious-style trait stays parked. Nothing waits on it; listed so it is not silently dropped.)*
@@ -31,6 +31,6 @@ Still leads because it is the smallest thing here and needs nothing but you. An 
 
 ## Health
 
-All green. Live site current, automated checks normal, all seven still-enabled lanes on time, no pull request waiting, your local copy up to date, git housekeeping ran 15 minutes ago and reported normally.
+All green. Live site current, automated checks normal, all seven still-enabled lanes on time, no pull request waiting, your local copy clean and up to date, git housekeeping ran 15 minutes ago and reported normally.
 
-- Two visibility lines, no action from you on either. The lane-silence probe still reports the 10.8-hour quiet stretch of 12–13 August, the nightly shape you already ruled normal; it is a week old and aging out of the window, and it does not see this morning's pause, which is recorded above. Separately, this lane found a bookkeeping slip of its own: the image-credit question above has been on your page for a while but was never registered with the doorbell, so it had never actually rung. Registered tonight, which is why you got a message about an ask that is not new. It will not repeat.
+- One visibility line, no action from you. The lane-silence probe still reports the 10.8-hour quiet stretch of 12–13 August — the nightly shape you already ruled normal. It is a week old and aging out of the probe's window; it does not see this morning's pause, which is recorded above.
