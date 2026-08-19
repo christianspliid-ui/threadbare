@@ -26,7 +26,6 @@ import {
   getRoadsTo,
   getAllRoads,
   getAdjacentLocationIds,
-  getTradeRoutes,
   getAgentCurrentAction,
   getControlledBy,
   getControllers,
@@ -102,9 +101,6 @@ function buildGraph(): WorldGraph {
 
   // Roads
   g.addEdge({ id: 'e.road_1_2', source: 'loc.1', target: 'loc.2', type: 'road', properties: { roadType: 'major' } });
-
-  // Trade
-  g.addEdge({ id: 'e.trade_f1_a3', source: 'faction.1', target: 'agent.3', type: 'trades_with', properties: { volume: 10 } });
 
   // Performing action
   g.addNode({ id: 'action.1', type: 'action_template', name: 'Patrol', properties: {} });
@@ -410,24 +406,6 @@ describe('getAdjacentLocationIds', () => {
     g.addEdge({ id: 'e.adj_2_1', source: 'loc.2', target: 'loc.1', type: 'adjacent', properties: {} });
     const adj = getAdjacentLocationIds(g, 'loc.1');
     expect(adj).toEqual(['loc.2']); // not duplicated
-  });
-});
-
-// ─── Economic queries ─────────────────────────────────────────────
-
-describe('getTradeRoutes', () => {
-  it('returns outgoing trade routes', () => {
-    const g = buildGraph();
-    const routes = getTradeRoutes(g, 'faction.1');
-    expect(routes).toHaveLength(1);
-    expect(routes[0].partner.id).toBe('agent.3');
-  });
-
-  it('returns incoming trade routes', () => {
-    const g = buildGraph();
-    const routes = getTradeRoutes(g, 'agent.3');
-    expect(routes).toHaveLength(1);
-    expect(routes[0].partner.id).toBe('faction.1');
   });
 });
 

@@ -63,7 +63,7 @@ describe('phaseTradeRouteDecay', () => {
   // ── Fail-soft: no trades_with edges ────────────────────────────────────
 
   it('does nothing when there are no trades_with edges', () => {
-    graph.addNode({ id: 'actor.a', type: 'actor', name: 'A', properties: {} });
+    graph.addNode({ id: 'loc.a', type: 'location', name: 'A', properties: {} });
     phaseTradeRouteDecay(makeState(graph));
     expect(graph.getAllEdges()).toHaveLength(0);
   });
@@ -71,12 +71,12 @@ describe('phaseTradeRouteDecay', () => {
   // ── Fresh route: no decay ───────────────────────────────────────────────
 
   it('does NOT decay a fresh route (lastTraded within freshness window)', () => {
-    graph.addNode({ id: 'actor.a', type: 'actor', name: 'A', properties: {} });
-    graph.addNode({ id: 'actor.b', type: 'actor', name: 'B', properties: {} });
+    graph.addNode({ id: 'loc.a', type: 'location', name: 'A', properties: {} });
+    graph.addNode({ id: 'loc.b', type: 'location', name: 'B', properties: {} });
     graph.addEdge({
       id: 'route.1',
-      source: 'actor.a',
-      target: 'actor.b',
+      source: 'loc.a',
+      target: 'loc.b',
       type: 'trades_with',
       properties: { volume: 5, lastTraded: 1, established: 1 },
     });
@@ -92,13 +92,13 @@ describe('phaseTradeRouteDecay', () => {
   // ── Stale route: decays volume ──────────────────────────────────────────
 
   it('decays volume by TRADE_ROUTE_DECAY_RATE on a stale route', () => {
-    graph.addNode({ id: 'actor.a', type: 'actor', name: 'A', properties: {} });
-    graph.addNode({ id: 'actor.b', type: 'actor', name: 'B', properties: {} });
+    graph.addNode({ id: 'loc.a', type: 'location', name: 'A', properties: {} });
+    graph.addNode({ id: 'loc.b', type: 'location', name: 'B', properties: {} });
     const initialVolume = 5;
     graph.addEdge({
       id: 'route.1',
-      source: 'actor.a',
-      target: 'actor.b',
+      source: 'loc.a',
+      target: 'loc.b',
       type: 'trades_with',
       properties: { volume: initialVolume, lastTraded: 1, established: 1 },
     });
@@ -114,12 +114,12 @@ describe('phaseTradeRouteDecay', () => {
   // ── Route dies: edge removed ────────────────────────────────────────────
 
   it('removes the edge when volume decays to 0', () => {
-    graph.addNode({ id: 'actor.a', type: 'actor', name: 'A', properties: {} });
-    graph.addNode({ id: 'actor.b', type: 'actor', name: 'B', properties: {} });
+    graph.addNode({ id: 'loc.a', type: 'location', name: 'A', properties: {} });
+    graph.addNode({ id: 'loc.b', type: 'location', name: 'B', properties: {} });
     graph.addEdge({
       id: 'route.1',
-      source: 'actor.a',
-      target: 'actor.b',
+      source: 'loc.a',
+      target: 'loc.b',
       type: 'trades_with',
       properties: { volume: 1, lastTraded: 1, established: 1 },
     });
@@ -133,13 +133,13 @@ describe('phaseTradeRouteDecay', () => {
   });
 
   it('removes the edge when volume would go below 0', () => {
-    graph.addNode({ id: 'actor.a', type: 'actor', name: 'A', properties: {} });
-    graph.addNode({ id: 'actor.b', type: 'actor', name: 'B', properties: {} });
+    graph.addNode({ id: 'loc.a', type: 'location', name: 'A', properties: {} });
+    graph.addNode({ id: 'loc.b', type: 'location', name: 'B', properties: {} });
     // Legacy edge with no volume field — readTradeRouteProps defaults to 1
     graph.addEdge({
       id: 'route.1',
-      source: 'actor.a',
-      target: 'actor.b',
+      source: 'loc.a',
+      target: 'loc.b',
       type: 'trades_with',
       properties: { lastTraded: 0, established: 0 },
     });
@@ -154,12 +154,12 @@ describe('phaseTradeRouteDecay', () => {
   // ── Trace emission ──────────────────────────────────────────────────────
 
   it('emits a trade_route_volume_change trace on decay', () => {
-    graph.addNode({ id: 'actor.a', type: 'actor', name: 'A', properties: {} });
-    graph.addNode({ id: 'actor.b', type: 'actor', name: 'B', properties: {} });
+    graph.addNode({ id: 'loc.a', type: 'location', name: 'A', properties: {} });
+    graph.addNode({ id: 'loc.b', type: 'location', name: 'B', properties: {} });
     graph.addEdge({
       id: 'route.1',
-      source: 'actor.a',
-      target: 'actor.b',
+      source: 'loc.a',
+      target: 'loc.b',
       type: 'trades_with',
       properties: { volume: 5, lastTraded: 1, established: 1 },
     });
@@ -177,12 +177,12 @@ describe('phaseTradeRouteDecay', () => {
   });
 
   it('emits a trade_route_dissolved trace when route dies', () => {
-    graph.addNode({ id: 'actor.a', type: 'actor', name: 'A', properties: {} });
-    graph.addNode({ id: 'actor.b', type: 'actor', name: 'B', properties: {} });
+    graph.addNode({ id: 'loc.a', type: 'location', name: 'A', properties: {} });
+    graph.addNode({ id: 'loc.b', type: 'location', name: 'B', properties: {} });
     graph.addEdge({
       id: 'route.1',
-      source: 'actor.a',
-      target: 'actor.b',
+      source: 'loc.a',
+      target: 'loc.b',
       type: 'trades_with',
       properties: { volume: 1, lastTraded: 1, established: 1 },
     });
@@ -201,9 +201,9 @@ describe('phaseTradeRouteDecay', () => {
   // ── Multiple routes ─────────────────────────────────────────────────────
 
   it('handles multiple routes independently', () => {
-    graph.addNode({ id: 'actor.a', type: 'actor', name: 'A', properties: {} });
-    graph.addNode({ id: 'actor.b', type: 'actor', name: 'B', properties: {} });
-    graph.addNode({ id: 'actor.c', type: 'actor', name: 'C', properties: {} });
+    graph.addNode({ id: 'loc.a', type: 'location', name: 'A', properties: {} });
+    graph.addNode({ id: 'loc.b', type: 'location', name: 'B', properties: {} });
+    graph.addNode({ id: 'loc.c', type: 'location', name: 'C', properties: {} });
 
     const freshTick = 10;
     const currentTick = freshTick + TRADE_ROUTE_FRESHNESS_WINDOW + 1;
@@ -211,16 +211,16 @@ describe('phaseTradeRouteDecay', () => {
     // Fresh route — should not decay
     graph.addEdge({
       id: 'route.fresh',
-      source: 'actor.a',
-      target: 'actor.b',
+      source: 'loc.a',
+      target: 'loc.b',
       type: 'trades_with',
       properties: { volume: 5, lastTraded: currentTick, established: 1 },
     });
     // Stale route — should decay
     graph.addEdge({
       id: 'route.stale',
-      source: 'actor.b',
-      target: 'actor.c',
+      source: 'loc.b',
+      target: 'loc.c',
       type: 'trades_with',
       properties: { volume: 3, lastTraded: 1, established: 1 },
     });
@@ -241,17 +241,17 @@ describe('phaseTradeRouteDecay', () => {
 
   it('does not crash when an endpoint node is removed after edge was created', () => {
     // Add both nodes first (WorldGraph enforces referential integrity at addEdge time)
-    graph.addNode({ id: 'actor.a', type: 'actor', name: 'A', properties: {} });
-    graph.addNode({ id: 'actor.gone', type: 'actor', name: 'Gone', properties: {} });
+    graph.addNode({ id: 'loc.a', type: 'location', name: 'A', properties: {} });
+    graph.addNode({ id: 'loc.gone', type: 'location', name: 'Gone', properties: {} });
     graph.addEdge({
       id: 'route.orphan',
-      source: 'actor.a',
-      target: 'actor.gone',
+      source: 'loc.a',
+      target: 'loc.gone',
       type: 'trades_with',
       properties: { volume: 3, lastTraded: 0, established: 0 },
     });
     // Simulate endpoint removal after route was established
-    graph.removeNode('actor.gone');
+    graph.removeNode('loc.gone');
 
     expect(() => {
       phaseTradeRouteDecay(makeState(graph, TRADE_ROUTE_FRESHNESS_WINDOW + 2));

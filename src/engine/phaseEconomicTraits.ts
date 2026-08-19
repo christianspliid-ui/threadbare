@@ -57,16 +57,21 @@ function hasTrait(graph: WorldGraph, actorId: string, traitId: string): boolean 
 /**
  * Count trade routes controlled by this actor.
  * Walks all trades_with edges in the graph and counts those with controlledBy === actorId.
+ *
+ * THR-830: this used to reach the routes by scanning every `actor` node's outgoing
+ * edges, on the premise recorded in the deleted comment — "trades_with edges are
+ * between actors". They are not: `createTradeRoute` writes location -> location and
+ * the EDGE_SCHEMA row now says so, which made this count structurally zero for every
+ * actor in the live world. `controlledBy` is a property of the route, not of an
+ * endpoint, so the whole traversal was incidental — reading the family directly is
+ * both the fix and the simpler expression, and matches `economicPower.ts`, which has
+ * always used `getEdgesByType` here.
  */
 function countControlledRoutes(graph: WorldGraph, actorId: string): number {
   let count = 0;
-  // trades_with edges are between actors — scan all actors for routes controlled by this actor
-  for (const actor of graph.getNodesByType('actor')) {
-    const routes = graph.getOutgoingEdges(actor.id, 'trades_with');
-    for (const edge of routes) {
-      const props = readTradeRouteProps(edge.properties);
-      if (props.controlledBy === actorId) count++;
-    }
+  for (const edge of graph.getEdgesByType('trades_with')) {
+    const props = readTradeRouteProps(edge.properties);
+    if (props.controlledBy === actorId) count++;
   }
   return count;
 }

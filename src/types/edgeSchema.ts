@@ -379,12 +379,26 @@ export const EDGE_SCHEMA: Record<EdgeType, EdgeSchema> = {
   // ── Economic ───────────────────────────────────────────────
   trades_with: {
     type: 'trades_with',
-    sourceNodeType: 'actor',
-    targetNodeType: 'actor',
+    // Location-anchored, not actor-anchored (THR-830). The row said `actor` on both
+    // ends from the start and no shipped producer ever agreed: `createTradeRoute`
+    // (`strategicGraphOps.ts`) takes two location ids, and a 120-tick seeded run lands
+    // its routes location -> location, 100% of them, warning twice per route the whole
+    // time. Every actor -> actor site in the tree is a test fixture.
+    //
+    // Narrowed rather than widened to the `['actor','location']` union deliberately.
+    // The union would have silenced the warning while proving nothing, and it would
+    // additionally have *unblocked* `action.gold.establish-trade`, whose op writes
+    // `$actor -> $target` and whose `$target` is always the location
+    // (`unifiedCandidates.ts` — "target is always the location"). That op therefore
+    // writes a third shape, `actor -> location`, which neither candidate row permits;
+    // it is refused at the THR-1177 chokepoint today and stays refused here, which is
+    // correct. It is a separate content defect, tracked as THR-1188.
+    sourceNodeType: 'location',
+    targetNodeType: 'location',
     direction: 'bidirectional',
     cardinality: 'many-to-many',
     requiredProperties: [],
-    description: 'Trade route between actors. Edge properties: volume, goodsType, manifest (cargo — THR-616), controlledBy, threatened.',
+    description: 'Trade route between two locations. Edge properties: volume, goodsType, manifest (cargo — THR-616), controlledBy, threatened.',
   },
   // ── Construction ──────────────────────────────────────────
   constructed_by: {

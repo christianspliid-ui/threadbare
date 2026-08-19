@@ -261,8 +261,22 @@ function isLocationRoutesCursed(props: Record<string, unknown> | undefined, curr
  * prosperity. Cursed status is checked per-route via the source/target node.
  */
 function computeTradeTarget(graph: WorldGraph, locationId: string, currentTick: number): { activeRoutes: number; tradeBonus: number; cursedRoutesSkipped: number } {
-  const actorEdges = graph.getIncomingEdges(locationId, 'located_at');
-  if (actorEdges.length === 0) return { activeRoutes: 0, tradeBonus: 0, cursedRoutesSkipped: 0 };
+  // THR-830: the routes serving a settlement hang off the settlement, not off the
+  // people standing in it. This function used to reach them by walking incoming
+  // `located_at` edges to the actors here and reading *their* outgoing `trades_with`
+  // — a traversal that returns nothing in the live world, because `createTradeRoute`
+  // writes location -> location and the EDGE_SCHEMA row now declares that shape. The
+  // effect was that no settlement has ever received a trade bonus. Reading the
+  // location's own routes is what the function's name and doc comment always claimed.
+  //
+  // Both directions: the family is bidirectional, so this settlement may be either
+  // endpoint. The old walk read outgoing only, which would have halved the count even
+  // on a world that fed it.
+  const routes = [
+    ...graph.getOutgoingEdges(locationId, 'trades_with'),
+    ...graph.getIncomingEdges(locationId, 'trades_with'),
+  ];
+  if (routes.length === 0) return { activeRoutes: 0, tradeBonus: 0, cursedRoutesSkipped: 0 };
 
   // THR-401: if this settlement's roads are cursed, all routes zero out.
   const ownLocation = graph.getNode(locationId);
@@ -270,15 +284,12 @@ function computeTradeTarget(graph: WorldGraph, locationId: string, currentTick: 
     // Still count routes for trace fidelity, but contribute 0 bonus.
     let cursedRoutesSkipped = 0;
     const seenEdgesLocal = new Set<string>();
-    for (const actorEdge of actorEdges) {
-      const tradeEdges = graph.getOutgoingEdges(actorEdge.source, 'trades_with');
-      for (const edge of tradeEdges) {
-        const edgeKey = [edge.source, edge.target].sort().join(':');
-        if (seenEdgesLocal.has(edgeKey)) continue;
-        seenEdgesLocal.add(edgeKey);
-        if (edge.properties?.threatened === true) continue;
-        cursedRoutesSkipped++;
-      }
+    for (const edge of routes) {
+      const edgeKey = [edge.source, edge.target].sort().join(':');
+      if (seenEdgesLocal.has(edgeKey)) continue;
+      seenEdgesLocal.add(edgeKey);
+      if (edge.properties?.threatened === true) continue;
+      cursedRoutesSkipped++;
     }
     return { activeRoutes: 0, tradeBonus: 0, cursedRoutesSkipped };
   }
@@ -288,33 +299,28 @@ function computeTradeTarget(graph: WorldGraph, locationId: string, currentTick: 
   let activeRoutes = 0;
   let cursedRoutesSkipped = 0;
 
-  for (const actorEdge of actorEdges) {
-    const actorId = actorEdge.source;
-    const tradeEdges = graph.getOutgoingEdges(actorId, 'trades_with');
-    for (const edge of tradeEdges) {
-      const edgeKey = [edge.source, edge.target].sort().join(':');
-      if (seenEdges.has(edgeKey)) continue;
-      seenEdges.add(edgeKey);
+  for (const edge of routes) {
+    const edgeKey = [edge.source, edge.target].sort().join(':');
+    if (seenEdges.has(edgeKey)) continue;
+    seenEdges.add(edgeKey);
 
-      // Threatened routes don't contribute to equilibrium target
-      if (edge.properties?.threatened === true) continue;
+    // Threatened routes don't contribute to equilibrium target
+    if (edge.properties?.threatened === true) continue;
 
-      // THR-401: if the partner endpoint has cursed roads, skip too
-      const partnerId = edge.source === actorId ? edge.target : edge.source;
-      const partner = graph.getNode(partnerId);
-      // partnerId is an actor; their location lives on a `located_at` edge
-      const partnerLocEdge = partner ? graph.getOutgoingEdges(partner.id, 'located_at')[0] : undefined;
-      const partnerLoc = partnerLocEdge ? graph.getNode(partnerLocEdge.target) : undefined;
-      if (partnerLoc && isLocationRoutesCursed(partnerLoc.properties, currentTick)) {
-        cursedRoutesSkipped++;
-        continue;
-      }
-
-      const volume = typeof edge.properties?.volume === 'number' ? edge.properties.volume : 1;
-      const normVolume = Math.min(Math.max(volume / 10, 0), 1);
-      totalBonus += PROSPERITY_TRADE_BONUS_PER_ROUTE * normVolume;
-      activeRoutes++;
+    // THR-401: if the partner endpoint has cursed roads, skip too. The partner is now
+    // the far location itself, so the old actor -> `located_at` -> location hop that
+    // used to resolve it is gone with the traversal that needed it.
+    const partnerId = edge.source === locationId ? edge.target : edge.source;
+    const partnerLoc = graph.getNode(partnerId);
+    if (partnerLoc && isLocationRoutesCursed(partnerLoc.properties, currentTick)) {
+      cursedRoutesSkipped++;
+      continue;
     }
+
+    const volume = typeof edge.properties?.volume === 'number' ? edge.properties.volume : 1;
+    const normVolume = Math.min(Math.max(volume / 10, 0), 1);
+    totalBonus += PROSPERITY_TRADE_BONUS_PER_ROUTE * normVolume;
+    activeRoutes++;
   }
 
   return { activeRoutes, tradeBonus: totalBonus, cursedRoutesSkipped };

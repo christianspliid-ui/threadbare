@@ -139,12 +139,10 @@ describe('evaluateConditionalPredicate', () => {
     expect(evaluateConditionalPredicate('guild_wealth >= 30', 'loc.1', graph)).toBe(false);
   });
 
-  it('evaluates "trade_route_present" when actor at location has trades_with edge', () => {
+  it('evaluates "trade_route_present" when the location is an endpoint of a trades_with edge', () => {
     graph.addNode({ id: 'loc.1', type: 'location', name: 'Town', properties: {} });
-    graph.addNode({ id: 'actor.a', type: 'actor', name: 'A', properties: {} });
-    graph.addNode({ id: 'actor.b', type: 'actor', name: 'B', properties: {} });
-    graph.addEdge({ id: 'e1', source: 'actor.a', target: 'loc.1', type: 'located_at', properties: {} });
-    graph.addEdge({ id: 'e2', source: 'actor.a', target: 'actor.b', type: 'trades_with', properties: { volume: 3 } });
+    graph.addNode({ id: 'loc.2', type: 'location', name: 'Partner', properties: {} });
+    graph.addEdge({ id: 'e2', source: 'loc.1', target: 'loc.2', type: 'trades_with', properties: { volume: 3 } });
 
     expect(evaluateConditionalPredicate('trade_route_present', 'loc.1', graph)).toBe(true);
   });
@@ -312,10 +310,8 @@ describe('phaseSublocations', () => {
 
   it('spawns Caravan Rest when a trade route is present at location', () => {
     graph.addNode({ id: 'loc.1', type: 'location', name: 'Town', properties: { locationSubtype: 'town' } });
-    graph.addNode({ id: 'actor.a', type: 'actor', name: 'A', properties: {} });
-    graph.addNode({ id: 'actor.b', type: 'actor', name: 'B', properties: {} });
-    graph.addEdge({ id: 'e1', source: 'actor.a', target: 'loc.1', type: 'located_at', properties: {} });
-    graph.addEdge({ id: 'e2', source: 'actor.a', target: 'actor.b', type: 'trades_with', properties: { volume: 3 } });
+    graph.addNode({ id: 'loc.2', type: 'location', name: 'Partner', properties: { locationSubtype: 'town' } });
+    graph.addEdge({ id: 'e2', source: 'loc.1', target: 'loc.2', type: 'trades_with', properties: { volume: 3 } });
 
     phaseSublocations(makeState(graph));
     const sublocs = getSublocationsAtLocation(graph, 'loc.1');

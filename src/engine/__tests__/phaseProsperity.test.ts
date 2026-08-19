@@ -196,10 +196,8 @@ describe('phaseProsperity — Equilibrium Model', () => {
 
   it('trade routes raise equilibrium target', () => {
     graph.addNode({ id: 'loc.1', type: 'location', name: 'Market', properties: { locationSubtype: 'town', prosperity: 0 } });
-    graph.addNode({ id: 'actor.a', type: 'actor', name: 'Trader A', properties: {} });
-    graph.addNode({ id: 'actor.b', type: 'actor', name: 'Trader B', properties: {} });
-    graph.addEdge({ id: 'e1', source: 'actor.a', target: 'loc.1', type: 'located_at', properties: {} });
-    graph.addEdge({ id: 'e2', source: 'actor.a', target: 'actor.b', type: 'trades_with', properties: { volume: 10 } });
+    graph.addNode({ id: 'loc.partner', type: 'location', name: 'Partner', properties: { locationSubtype: 'town', prosperity: 0 } });
+    graph.addEdge({ id: 'e2', source: 'loc.1', target: 'loc.partner', type: 'trades_with', properties: { volume: 10 } });
 
     phaseProsperity(makeState(graph));
 
@@ -210,10 +208,8 @@ describe('phaseProsperity — Equilibrium Model', () => {
 
   it('threatened trade routes do not contribute to target', () => {
     graph.addNode({ id: 'loc.1', type: 'location', name: 'Market', properties: { locationSubtype: 'town', prosperity: 0 } });
-    graph.addNode({ id: 'actor.a', type: 'actor', name: 'Trader A', properties: {} });
-    graph.addNode({ id: 'actor.b', type: 'actor', name: 'Trader B', properties: {} });
-    graph.addEdge({ id: 'e1', source: 'actor.a', target: 'loc.1', type: 'located_at', properties: {} });
-    graph.addEdge({ id: 'e2', source: 'actor.a', target: 'actor.b', type: 'trades_with', properties: { volume: 10, threatened: true } });
+    graph.addNode({ id: 'loc.partner', type: 'location', name: 'Partner', properties: { locationSubtype: 'town', prosperity: 0 } });
+    graph.addEdge({ id: 'e2', source: 'loc.1', target: 'loc.partner', type: 'trades_with', properties: { volume: 10, threatened: true } });
 
     phaseProsperity(makeState(graph));
 

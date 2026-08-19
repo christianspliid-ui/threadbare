@@ -120,7 +120,7 @@ function setupSettlementBattle(graph: WorldGraph, opts?: {
   // Trade routes
   for (let i = 0; i < (opts?.addTradeRoutes ?? 0); i++) {
     const partnerId = `trade_partner_${i}`;
-    graph.addNode({ id: partnerId, type: 'actor', name: `Trade Partner ${i}`, properties: { actorType: 'faction' } });
+    graph.addNode({ id: partnerId, type: 'location', name: `Trade Partner ${i}`, properties: { locationSubtype: 'town' } });
     graph.addEdge({ id: `e_trade_${i}`, source: 'settlement1', target: partnerId, type: 'trades_with', properties: { volume: 10, threatened: false } });
   }
 

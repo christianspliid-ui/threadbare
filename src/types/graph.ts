@@ -107,7 +107,7 @@ export type EdgeType =
   | 'spawns_from'      // encounter_template → location|actor: encounter is sourced from this node
   | 'enables'          // encounter_template → encounter_template: soft prereq (completion scores target higher)
   // Economic
-  | 'trades_with'      // actor ↔ actor trade route (volume, goodsType, controlledBy, threatened)
+  | 'trades_with'      // location ↔ location trade route (volume, goodsType, controlledBy, threatened) — THR-830
   // Encounter History (TB-077)
   | 'participated_in'  // actor → event (encounter outcome participation)
   | 'occurred_at'      // event → location (encounter happened here)
