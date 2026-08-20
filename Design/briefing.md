@@ -1,7 +1,7 @@
 # Briefing
-**Generated:** 2026-08-20 21:00 local (19:00 UTC) · keep-work-flowing-cc
+**Generated:** 2026-08-20 21:56 local (19:56 UTC) · keep-work-flowing-cc
 
-*Twelfth quiet hour. Nothing has changed since the last brief — no Discord message, no Linear issue touched since Wednesday afternoon, `main` unmoved since yesterday 15:41, every probe green. Re-queried, not copied. The page below is short because there is nothing new to say, and saying it at length would not make it truer.*
+*Thirteenth quiet hour. Re-queried from scratch, not copied: no Discord message, no Linear issue touched since Wednesday 15:27, `main` unmoved, every probe green. The page is short because nothing new happened.*
 
 ## The one thing
 
@@ -11,7 +11,7 @@ An agent puts five candidates in front of you — hunger vocabulary, consequence
 
 Say *"run the wave-1 sitting."*
 
-Unchanged at the front for twelve hours, for the same reason: with the builders paused at your request, the only asks that pay are the ones whose output is a *decision*. This one closes [the architecture map](https://linear.app/threadbare/issue/THR-1157/typed-game-state-architecture-machinery-first-wave-wayfinder-map) and carves it into design sessions — the single queued item that turns into new buildable work.
+Still at the front, for the same reason it has been all day: with the builders paused at your request, the asks that pay are the ones whose output is a *decision*. This one closes [the architecture map](https://linear.app/threadbare/issue/THR-1157/typed-game-state-architecture-machinery-first-wave-wayfinder-map) and carves it into design sessions — the only queued item that turns into new buildable work.
 
 ## Also waiting (5)
 
@@ -27,13 +27,13 @@ Two design sessions sit behind the sitting whenever you want them: [unify the ca
 
 **4 ready, 2 in flight, nothing moving — because you paused the lanes.** Both implementation lanes are still switched off with their crons intact; they last fired Tuesday morning. The other seven lanes are on time. Nothing is wrong. Say *"resume the threadbearer lanes"* when you want them back.
 
-- **The shelf is cleanup-only** — all four ready jobs are Low-priority defect follow-ons ([THR-1183](https://linear.app/threadbare/issue/THR-1183/sublocations-are-minted-in-two-incompatible-node-shapes), [THR-1184](https://linear.app/threadbare/issue/THR-1184/sacred-route-is-registered-but-has-zero-consumers-an-eight-tick), [THR-857](https://linear.app/threadbare/issue/THR-857/possession-subcategory-vocabulary-has-3-off-union-strays-intelligence), plus the pixel sweep above) — roughly two runs of work, nothing in design behind them. This morning's grooming lane read it the same way and added nothing new: *"resuming the two paused lanes does not by itself refill the shelf … recommend the sitting first, lanes second."* — from daily-backlog-grooming
+- **The shelf is cleanup-only** — all four ready jobs are Low-priority defect follow-ons ([THR-1183](https://linear.app/threadbare/issue/THR-1183/sublocations-are-minted-in-two-incompatible-node-shapes), [THR-1184](https://linear.app/threadbare/issue/THR-1184/sacred-route-is-registered-but-has-zero-consumers-an-eight-tick), [THR-857](https://linear.app/threadbare/issue/THR-857/possession-subcategory-vocabulary-has-3-off-union-strays-intelligence), plus the pixel sweep above) — roughly two runs of work, with nothing in design behind them. This morning's grooming lane read it the same way: *"resuming the two paused lanes does not by itself refill the shelf … recommend the sitting first, lanes second."* — from daily-backlog-grooming
 - **Both parked jobs are parked correctly** — re-verified this run, both holding the `assignee: null` ∧ `In Dev` shape. The [encounter retrofit](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to) still holds its two-encounter sample verdict back on purpose, because The Grateful Kin's payoff opens onto the unwritten room in ask 2. Say the word and the playable links come over as they stand.
 
 ## Health
 
 All green. Live site current, automated checks normal, all seven still-enabled lanes on time, no pull request waiting, your local copy clean and up to date.
 
-- Git housekeeping ran at 20:40, on schedule.
+- Git housekeeping ran at 21:40, on schedule.
 - One visibility line, no action from you: the fleet-silence probe again reports last night's 9.2 hours of quiet (22:56 → 08:11) as unexplained, because it cannot see that you paused two lanes deliberately. That is the nightly shape you already ruled normal.
 - Housekeeping counts 112 registered worktrees, three flagged for disposition. Harming nothing today; it belongs to tomorrow's retro, not to you.
