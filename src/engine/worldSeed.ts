@@ -14,6 +14,7 @@ import { SPHERE_NAMES } from '../types/index';
 import type { AxiologicalProfile } from '../types/agent';
 import { VALUE_PAIRS } from '../types/agent';
 import type { ReachDomain } from '../types/traits';
+import type { PossessionSubcategory } from '../types/attachments';
 import type { EchoDefinition } from '../types/echo';
 import type { ActiveInjection } from './echo';
 import { NARRATIVE_ARCHETYPES } from '../data/archetype-content';
@@ -165,7 +166,26 @@ const FACTION_NAMES = [
 const ARTIFACT_NAMES = [
   'The Crown of Echoes', 'Griefender', 'The Aegis of Dawn',
   'The Soulweaver', 'Voidthorn', 'The Lantern of Stars',
-];
+] as const;
+
+/**
+ * Canonical possession subcategory for each seeded world artifact (THR-857).
+ *
+ * These nodes shipped with no `subcategory` at all, which is worse than a stray
+ * value: the art registry has nothing to key on, so a world-legendary rendered
+ * blank, and `resolveSlotTag` returned `undefined`, so it sat in `uncategorized`
+ * and counted against no slot cap. Typing the record against the name tuple makes
+ * the pairing exhaustive — a seventh artifact name fails to compile until it is
+ * given a category, which is the property that stops this recurring.
+ */
+const ARTIFACT_SUBCATEGORY: Record<(typeof ARTIFACT_NAMES)[number], PossessionSubcategory> = {
+  'The Crown of Echoes': 'vestments',
+  Griefender: 'arms',
+  'The Aegis of Dawn': 'arms',
+  'The Soulweaver': 'relics_talismans',
+  Voidthorn: 'arms',
+  'The Lantern of Stars': 'tools_instruments',
+};
 
 export const LOCATION_NAMES = [
   'Ardenmor Keep', 'The Shattered Sanctum', 'Thornhaven', 'The Sunken Library',
@@ -1579,6 +1599,7 @@ export function seedWorld(
       type: 'artifact',
       name: ARTIFACT_NAMES[nameIdx],
       properties: {
+        subcategory: ARTIFACT_SUBCATEGORY[ARTIFACT_NAMES[nameIdx]],
         sphereAffinity,
         locationId: pickRandom(rng, locationIds),
         echoOrigin: questInjection ? true : false,

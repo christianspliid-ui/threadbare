@@ -74,26 +74,16 @@ export const CATEGORY_REACH_TINT: Record<PossessionSubcategory, string> = {
   provisions: '#ff9933',        // Time — concentric ripples
 };
 
-/**
- * Off-taxonomy `subcategory` values that live content actually writes, mapped
- * to the canonical value whose plate fits.
- *
- * These are real: `reward-attachment-catalog.ts` and one branching encounter
- * write `intelligence`, `talisman` and `charm`, none of which are members of
- * `PossessionSubcategory`. They survive because the catalog entries are not
- * checked against the union, so the strays are invisible to the type system and
- * would otherwise be invisible to this registry too — 5 nodes rendering blank
- * for a reason no one could see from here.
- *
- * Aliasing rather than rewriting the content is deliberate: the raw field stays
- * exactly as authored, so nothing that reads `subcategory` for slotting or
- * scoring changes behavior. Reconciling the vocabulary itself is THR-857.
- */
-export const SUBCATEGORY_ART_ALIASES: Record<string, PossessionSubcategory> = {
-  talisman: 'relics_talismans',
-  charm: 'relics_talismans',
-  intelligence: 'tomes_scrolls',
-};
+// ─── Retired: SUBCATEGORY_ART_ALIASES (THR-857, 2026-08-22) ──────
+//
+// This registry used to carry an alias map — `talisman`/`charm` → `relics_talismans`,
+// `intelligence` → `tomes_scrolls` — so that five content sites writing off-union
+// `subcategory` values rendered a plate instead of a blank. That was a mitigation
+// with the reconciliation deliberately deferred to THR-857, which is this change:
+// the five sites now write canonical values, so the aliases have no live input and
+// were removed rather than left as a second vocabulary nothing feeds. Content that
+// wants a plate declares a canonical `PossessionSubcategory`; there is no longer a
+// side door that makes an off-union value look like it works.
 
 /** True when `value` is a canonical `PossessionSubcategory`. */
 function isCanonicalSubcategory(value: string): value is PossessionSubcategory {
@@ -101,16 +91,14 @@ function isCanonicalSubcategory(value: string): value is PossessionSubcategory {
 }
 
 /**
- * Resolve the category plate for a subcategory, following the alias map.
- * Returns null for an absent or unrecognised subcategory.
+ * Resolve the category plate for a subcategory.
+ * Returns null for an absent or non-canonical subcategory.
  */
 export function getArtifactCategoryArtUrl(
   subcategory: string | null | undefined,
 ): string | null {
   if (typeof subcategory !== 'string' || subcategory === '') return null;
-  if (isCanonicalSubcategory(subcategory)) return ARTIFACT_CATEGORY_ART[subcategory];
-  const aliased = SUBCATEGORY_ART_ALIASES[subcategory];
-  return aliased ? ARTIFACT_CATEGORY_ART[aliased] : null;
+  return isCanonicalSubcategory(subcategory) ? ARTIFACT_CATEGORY_ART[subcategory] : null;
 }
 
 /**

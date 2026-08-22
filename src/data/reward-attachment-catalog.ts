@@ -1735,7 +1735,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Vessen Shrine Map',
     properties: {
-      subcategory: 'intelligence',
+      subcategory: 'tomes_scrolls',
       tier: 2,
       tags: ['#shadow', '#intelligence', '#shrine_location', '#rival_god'],
       mechanicalSummary: '+0.03 Shadow, reveals encounters within 2 hexes, +0.02 Shadow in exploration',
@@ -1760,7 +1760,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Trade Route Dossier',
     properties: {
-      subcategory: 'intelligence',
+      subcategory: 'tomes_scrolls',
       tier: 2,
       tags: ['#shadow', '#intelligence', '#trade', '#economic'],
       mechanicalSummary: '+0.03 Shadow, +0.02 Gold, +1 awareness range, +0.02 Gold in social encounters',
@@ -2518,7 +2518,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: "Pilgrim's Wayfinding Stone",
     properties: {
-      subcategory: 'talisman',
+      subcategory: 'relics_talismans',
       tier: 1,
       tags: ['#quintessence', '#travel', '#mystical'],
       mechanicalSummary: '+3 quintessence on movement arrival (6-tick cooldown)',
@@ -2540,7 +2540,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Battle Spoils Talisman',
     properties: {
-      subcategory: 'charm',
+      subcategory: 'relics_talismans',
       tier: 1,
       tags: ['#essence', '#combat', '#consumable'],
       mechanicalSummary: '+5 essence on encounter success (10 uses total)',
