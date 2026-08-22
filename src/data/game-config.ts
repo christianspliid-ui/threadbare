@@ -57,6 +57,15 @@ export const MANDATE_CHECKPOINT_THRESHOLDS = [0.40, 0.60, 0.80, 1.00] as const;
 /** How far ahead of a checkpoint target the player must be to earn a counter-omen. */
 export const MANDATE_COUNTER_OMEN_MARGIN = 0.02;
 
+/**
+ * Significance of the tick event a mandate stage advance emits (THR-1197).
+ * Below completion (1.0) and failure (0.95) — the spine turning, not the spine ending.
+ */
+export const MANDATE_MILESTONE_EVENT_SIGNIFICANCE = 0.85;
+
+/** Significance of the tick event a mandate failure emits (THR-1197). */
+export const MANDATE_FAILURE_EVENT_SIGNIFICANCE = 0.95;
+
 /** Default secondary-objective targets by court shape. */
 export const MANDATE_WEB_SECONDARY_TARGET = 8;
 export const MANDATE_CIRCLE_SECONDARY_TARGET = 3;

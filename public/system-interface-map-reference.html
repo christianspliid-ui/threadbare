@@ -575,6 +575,17 @@
   </div>
 
   <div class="section">
+    <h2>Spotlight &mdash; The spine that narrated nothing
+      <span class="lead">Audited 2026-08-22 (audit-on-touch, THR-1197). Forty-eight authored strings, a loader that threw to defend them, and no reader at all.</span>
+    </h2>
+
+    <ul class="contracts">
+      <li class="partial"><span class="flow">Mandate milestone prose <span class="arrow">&#10230;</span> Tick events &mdash; the campaign spine narrates its own turns in the mandate's authored voice</span><span class="chip partial">PARTIAL</span>
+        <span class="note">THR-1197. <code>MANDATE_MILESTONE_PROSE</code> &mdash; 48 strings across the 12 mandate JSON files, four required transitions each &mdash; had <strong>zero production importers repo-wide</strong>, while <code>mandate-loader</code> hard-<em>threw</em> on any mandate missing a prose key. So a content author was blocked from shipping a mandate without writing prose that then reached no player, and <code>mandate-content.test.ts</code> stayed green throughout on shape-only assertions: the green-tests-on-a-dead-contract pathology this map exists to kill, in its purest form. Meanwhile <code>phaseMandate</code> emitted <strong>no tick event at all</strong> for a stage advance &mdash; only sphere pressure &mdash; and its one completion event carried a hardcoded <code>Victory! Mandate "&hellip;" fulfilled!</code> while that same mandate's authored <code>completed</code> line sat unread in the same process. <strong>The modelling call was to keep the keyed map, not add a field to <code>MandateDefinition</code></strong>: remembrance mandates are generated at runtime and never pass through the loader, so the field would be structurally <code>undefined</code> on every mandate a live game creates &mdash; and a field that is always empty reads as "this mandate has no prose" when the truth is "this family has none authored at all". Both evaluators now resolve through <code>resolveMilestoneProse</code>, fail-soft to the generated line (NFP #4), and trace <code>mandate_milestone_prose</code> with an <code>authored</code> flag so a fallback is inspectable rather than silent. The <code>failed</code> key was <strong>wired, not deferred</strong> &mdash; <code>failed = !completed &amp;&amp; doomClock.expired</code> is a real firing site in the live evaluator. <strong>Badged PARTIAL rather than the LIVE the generator assigns mechanically, and the reason is the whole point of the row:</strong> the consumer half is real and tested, but the producer half does not reach it. Both <code>gameInit</code> writers call <code>generateRememberedMandate</code>, so every live run holds a <em>generated</em> id (<code>mandate.remembrance.chaos_energy</code> on seed 42/medium at tick 60), and <code>generateMandate</code> &mdash; the only route to a <code>MANDATE_TEMPLATES</code> id &mdash; has <strong>no production caller</strong>. The 48 strings are keyed to 12 ids no live game instantiates, so every live resolution takes the fallback branch. That is a genuine creative fork &mdash; does the run's spine come from what the god <em>remembers</em>, or from a named campaign the world <em>offers</em>? &mdash; so it went for a ruling rather than being invented at the wiring site. Remediation: THR-1198.</span></li>
+    </ul>
+  </div>
+
+  <div class="section">
     <h2>How this map stays true
       <span class="lead">A hand-drawn diagram is a lie waiting to happen. This one is designed to become a projection.</span>
     </h2>

@@ -458,6 +458,27 @@ export const CONTRACTS: readonly Contract[] = [
     verifiedLive: { date: '2026-07-23', evidence: `15-tick cadence; milestone events observed firing. ${AUDIT_EVIDENCE}` },
   },
   {
+    id: 'mandate-milestone-prose-narrates-transitions',
+    producerSystem: 'Mandate',
+    consumerSystem: NARRATIVE,
+    intent:
+      'The campaign spine narrates its own turns — a mandate stage advance, completion or failure reads in the authored voice of that mandate, not a generated stub.',
+    ulTerms: ['Victory Mandate'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['resolveMilestoneProse', 'MANDATE_MILESTONE_PROSE'],
+      module: 'src/engine/mandateMilestoneProse.ts',
+    },
+    writeSites: ['src/data/mandates/**', 'src/data/mandate-loader.ts', 'src/data/mandate-content.ts'],
+    readSites: ['src/engine/mandateMilestoneProse.ts', 'src/engine/phaseMandate.ts'],
+    badgeOverride: {
+      badge: 'PARTIAL',
+      reason:
+        'THR-1197 wired both phaseMandate evaluators through resolveMilestoneProse, so the consumer half is real and traced. The producer half does not reach it: the 48 authored strings are keyed to the 12 template mandate ids, and no live game instantiates one — both gameInit writers call generateRememberedMandate, and generateMandate has no production caller. Every live resolution therefore takes the fallback branch. Mechanically LIVE, in effect PARTIAL until the fork is ruled.',
+      deferralTicket: 'THR-1198',
+    },
+  },
+  {
     id: 'ambition-biases-encounter-choice',
     producerSystem: AMBITIONS,
     consumerSystem: ENCOUNTERS,

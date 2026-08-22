@@ -75,7 +75,7 @@ export type TraceCategory =
   | 'encounter_cache' | 'encounter_filter' | 'idle_decision'
   | 'encounter_scoring' | 'road_hex_transition' | 'agent_reroute'
   | 'return_resolution' | 'ripple_consequence' | 'control_effect'
-  | 'doom_card' | 'mandate_checkpoint'
+  | 'doom_card' | 'mandate_checkpoint' | 'mandate_milestone_prose'
   | 'revelation' | 'tick_health' | 'tick_crash'
   | 'agent_revelation' | 'interaction_depth'
   | 'faction_ambition'
@@ -453,7 +453,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'encounter_cache', 'encounter_filter', 'idle_decision',
   'encounter_scoring', 'road_hex_transition', 'agent_reroute',
   'return_resolution', 'ripple_consequence', 'control_effect',
-  'doom_card', 'mandate_checkpoint',
+  'doom_card', 'mandate_checkpoint', 'mandate_milestone_prose',
   'revelation', 'tick_health', 'tick_crash',
   'agent_revelation', 'interaction_depth',
   'faction_ambition',
@@ -1338,6 +1338,15 @@ export interface MandateCheckpointTrace extends TraceBase {
   exceeded: boolean;
   counterOmensDelta: number;
   severityPenaltyDelta: number;
+}
+
+/** Trace: a mandate stage transition resolved its narration (THR-1197). */
+export interface MandateMilestoneProseTrace extends TraceBase {
+  category: 'mandate_milestone_prose';
+  mandateId: string;
+  transition: string;
+  /** False when no line was authored for this mandate and the fallback stood in. */
+  authored: boolean;
 }
 
 /** Trace: control effect ticked (per-tick drain, income, threshold check) */
@@ -2420,6 +2429,7 @@ export type TraceEntry =
   | RippleConsequenceTrace
   | DoomCardTrace
   | MandateCheckpointTrace
+  | MandateMilestoneProseTrace
   | ControlEffectTickTrace
   | ControlEffectLapseTrace
   | ControlEffectEstablishedTrace

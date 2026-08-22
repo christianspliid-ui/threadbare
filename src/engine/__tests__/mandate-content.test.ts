@@ -12,6 +12,10 @@
 
 import { describe, it, expect } from 'vitest';
 import { MANDATE_TEMPLATES, MANDATE_MILESTONE_PROSE } from '../../data/mandate-content';
+import {
+  resolveMilestoneProse,
+  type MandateProseTransition,
+} from '../mandateMilestoneProse';
 import type { MandateType, MandateStage, MandateCondition } from '../../types/mandate';
 import type { SphereName } from '../../types/index';
 
@@ -382,5 +386,42 @@ describe('Mandate Content Data', () => {
         expect(MANDATE_MILESTONE_PROSE[key].length).toBeGreaterThan(10);
       });
     });
+  });
+
+  // ─────────────────────────────────────────────────────────────
+  // Consumption (THR-1197)
+  //
+  // The assertions above are shape-only: they were green for as long as the
+  // prose had no production reader at all. This one joins them by going through
+  // the production resolver, so the payload is proven *reachable*, not just
+  // well-formed.
+  // ─────────────────────────────────────────────────────────────
+
+  it('every authored transition is reachable through the production resolver', () => {
+    const transitions: MandateProseTransition[] = [
+      'setup_to_escalation',
+      'escalation_to_culmination',
+      'completed',
+      'failed',
+    ];
+    const sentinel = '__NO_AUTHORED_PROSE__';
+
+    MANDATE_TEMPLATES.forEach((template) => {
+      transitions.forEach((transition) => {
+        const resolved = resolveMilestoneProse(template.id, transition, sentinel);
+        expect(resolved.authored, `${template.id}.${transition} unreachable`).toBe(true);
+        expect(resolved.text).not.toBe(sentinel);
+      });
+    });
+  });
+
+  it('resolves a mandate id with no authored prose to the caller fallback', () => {
+    const resolved = resolveMilestoneProse(
+      'mandate.remembrance.witness',
+      'completed',
+      'fallback line',
+    );
+    expect(resolved.authored).toBe(false);
+    expect(resolved.text).toBe('fallback line');
   });
 });

@@ -16,11 +16,11 @@ remediation ticket or the build fails.
 | Badge | Count |
 |---|---|
 | 🟢 LIVE | 50 |
-| 🟠 PARTIAL | 1 |
+| 🟠 PARTIAL | 2 |
 | 🔴 LEAKED | 7 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 14 |
-| **Total** | **72** |
+| **Total** | **73** |
 
 ## Contracts by producing subsystem
 
@@ -125,6 +125,12 @@ remediation ticket or the build fails.
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
 | `guild-rank-gates-senior-content` | A guild's senior and elite work reaches only members who have earned standing in that guild — a passer-by cannot take a captain's commission because they happened to be standing in the hall. | function: `minRank`, `meetsFactionRankRequirement`, `RANK_GATED_QUEST_TYPES` | Encounters & Dilemmas | 🟢 LIVE | — |
+
+### Mandate
+
+| Contract | Intent | Mechanism | Consumer | Status | Ticket |
+|---|---|---|---|---|---|
+| `mandate-milestone-prose-narrates-transitions` | The campaign spine narrates its own turns — a mandate stage advance, completion or failure reads in the authored voice of that mandate, not a generated stub. | function: `resolveMilestoneProse`, `MANDATE_MILESTONE_PROSE` | Attention, Chronicle & Narrative | 🟠 PARTIAL | THR-1198 |
 
 ### Mortal Economy & Prosperity
 
@@ -674,6 +680,17 @@ remediation ticket or the build fails.
 - **Read sites:** `src/components/Game/LocationProfileModal.tsx`, `src/engine/movementCost.ts`, `src/engine/targetContextBuilders.ts`
 - **Other hits:** `src/components/Game/encounter-stage/NarrativeSegments.tsx`, `src/components/Game/EncounterVeil.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/HexSidebar.tsx`, `src/components/Game/useDebugOpenModal.ts` +2 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
+### `mandate-milestone-prose-narrates-transitions` — 🟠 PARTIAL
+
+- **Intent:** The campaign spine narrates its own turns — a mandate stage advance, completion or failure reads in the authored voice of that mandate, not a generated stub.
+- **Producer → Consumer:** Mandate → Attention, Chronicle & Narrative
+- **UL terms:** *Victory Mandate*
+- **Module:** `src/engine/mandateMilestoneProse.ts`
+- **Production hits:** 4 total — 2 write, 2 read, 0 unclassified
+- **Write sites:** `src/data/mandate-content.ts`, `src/data/mandate-loader.ts`
+- **Read sites:** `src/engine/mandateMilestoneProse.ts`, `src/engine/phaseMandate.ts`
+- **Verdict:** Pinned by badgeOverride: THR-1197 wired both phaseMandate evaluators through resolveMilestoneProse, so the consumer half is real and traced. The producer half does not reach it: the 48 authored strings are keyed to the 12 template mandate ids, and no live game instantiates one — both gameInit writers call generateRememberedMandate, and generateMandate has no production caller. Every live resolution therefore takes the fallback branch. Mechanically LIVE, in effect PARTIAL until the fork is ruled.
 
 ### `meeting-trait-seeds-land-as-narrative-descriptors` — 🟢 LIVE
 

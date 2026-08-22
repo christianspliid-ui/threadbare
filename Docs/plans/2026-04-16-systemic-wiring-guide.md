@@ -2970,3 +2970,42 @@ that is THR-1082, which replaces those chips with a typed icon + noun +
 direction, on Christian's 2026-08-10 ruling that consequence chips become
 authored and reserved. Once that lands the generated half stops feeding the
 surface and every consequence line the player reads is yours.
+
+## Capability: Mandate milestone prose — the campaign spine narrates in your voice (THR-1197)
+
+A mandate is the run's spine: three stages, `setup → escalation → culmination`,
+then completion or failure against the doom clock. Every one of those turns is
+now a place you can write.
+
+**What you write.** Each mandate JSON in `src/data/mandates/` carries a `prose`
+object with four required keys — `setup_to_escalation`,
+`escalation_to_culmination`, `completed`, `failed`. The loader
+(`src/data/mandate-loader.ts`) refuses to load a mandate missing any of them, so
+the four are a hard contract, not a suggestion.
+
+**What the engine does with it.** `phaseMandate` resolves the authored line for
+`{mandate_id}.{transition}` on every stage advance, on completion, and on
+failure, and emits it as a `mandate_progress` `TickEvent`. Before THR-1197 a
+stage advance emitted *no tick event at all* — only sphere pressure — so the
+spine turned in silence and the completion event carried a hardcoded
+`Victory! …` string while your `completed` line sat unread.
+
+**Fail-soft, by design.** A mandate with no authored line for a transition falls
+back to generated text (NFP #4). Resolution never throws, so a half-authored
+mandate degrades to plain narration rather than crashing the tick loop.
+
+**How to check your prose actually fired.** Watch the `mandate_milestone_prose`
+trace. It carries `mandateId`, `transition`, and an `authored` flag:
+
+- `authored: true` — the player read your line.
+- `authored: false` — the fallback stood in, and the generated text is on screen.
+
+**The gap to know about before you write (THR-1198).** The 48 strings that exist
+today are keyed to the 12 *template* mandate ids (`dominion_of_stone`,
+`builders_legacy`, …), and **no live game instantiates one**. Every run holds a
+*remembrance* mandate whose id is generated (`mandate.remembrance.{hunger}`), so
+every live resolution currently takes the fallback branch. The wiring is real and
+waiting; what it is waiting on is a ruling on whether the spine comes from what
+the god remembers or from a named campaign the world offers. Until that lands,
+authoring more prose against the template ids adds no player-visible text —
+check THR-1198's state before starting.
