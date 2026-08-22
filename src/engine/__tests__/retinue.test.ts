@@ -924,7 +924,10 @@ describe('getSustainedControlNodes', () => {
       id: 'sub.spring',
       type: 'location',
       name: 'the Spring of Withered Light',
-      properties: { hexCol: 5, hexRow: 3, locationSubtype: 'sublocation' },
+      // THR-1183: the production sublocation shape — a `location` node carrying
+      // `parentLocationId`. This fixture used to say `locationSubtype: 'sublocation'`,
+      // a spelling no writer has ever emitted, so it verified fiction.
+      properties: { hexCol: 5, hexRow: 3, parentLocationId: 'loc.haven', sublocationTypeId: 'sublocation-type.spring' },
     });
     const effects = [makeEffect({ effectId: 'e2', targetNodeId: 'sub.spring' })];
     const result = getSustainedControlNodes(graph, ascendantId, effects, { spirit: 100 });
@@ -1053,7 +1056,8 @@ describe('getSustainedControlNodes', () => {
     // Build sublocation + location nodes for source/location category tests
     graph.addNode({
       id: 'sub.a', type: 'location', name: 'A Source',
-      properties: { hexCol: 0, hexRow: 0, locationSubtype: 'sublocation' },
+      // THR-1183: production sublocation shape (see the note on `sub.spring` above).
+      properties: { hexCol: 0, hexRow: 0, parentLocationId: 'loc.a', sublocationTypeId: 'sublocation-type.spring' },
     });
     graph.addNode({
       id: 'loc.a', type: 'location', name: 'A Loc',

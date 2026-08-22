@@ -299,6 +299,11 @@ const HEX_ACTION_GRAPH_OPS: Readonly<Record<string, GraphOp[]>> = {
   'hex.restore_fragment': [
     {
       op: 'add_node',
+      // TODO(THR-1193): the last production writer of `type: 'sublocation'`. It carries
+      // no `parentLocationId` and attaches by `located_at` rather than `contains`, so it
+      // is not a sublocation by the THR-1183 discriminator — a different thing wearing
+      // the name. Left as-is deliberately: `executeAddNode` copies `properties` verbatim
+      // without resolving `$`-refs, so it cannot be given a runtime parent yet.
       nodeType: 'sublocation',
       properties: { name: 'Restored Fragment', subtype: 'restored_ruin', hidden: false },
     },

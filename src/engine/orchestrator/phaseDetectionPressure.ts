@@ -12,6 +12,7 @@ import {
   getDetectionThresholdCrossings,
 } from '../encounters/detectionPressure';
 import { emitTrace } from '../traceBuffer';
+import { resolveToParentLocation } from '../sublocationShape';
 
 const RIVAL_DETECTION_ENCOUNTER_FAMILY = 'shadow.rival_strike';
 const RIVAL_DETECTION_SEED_PREFIX = 'detection.escalation';
@@ -28,13 +29,12 @@ function resolveRegionIdForAgent(state: GameState, agentId: string): string | nu
   const locatedAt = state.graph.getOutgoingEdges(agentId, 'located_at')[0];
   if (!locatedAt) return null;
 
-  let node = state.graph.getNode(locatedAt.target);
-  if (!node) return null;
-  if (node.type === 'sublocation') {
-    const parentId = node.properties?.parentLocationId;
-    if (typeof parentId !== 'string') return null;
-    node = state.graph.getNode(parentId);
-  }
+  // THR-1183: resolve through the shared discriminator. The old `node.type ===
+  // 'sublocation'` test skipped the resolve for a canonical sublocation (a `location`
+  // node with a `parentLocationId`), which then fell through and read `regionId` off the
+  // sublocation itself — a property the sublocation writers do not copy — so every agent
+  // standing in a worldgen sublocation resolved to no region at all.
+  const node = resolveToParentLocation(state.graph, state.graph.getNode(locatedAt.target));
   if (!node || node.type !== 'location') return null;
 
   const regionId = node.properties?.regionId;
