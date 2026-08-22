@@ -15,7 +15,7 @@
  * tell a working recipe from one whose refs and edge types resolve to nothing, which is
  * exactly how all three shipped green.
  */
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { WorldGraph } from '../graph';
 import {
   resolveHexActionFull,
@@ -172,6 +172,41 @@ describe('hex.send_herald places its herald at a real location (THR-1194)', () =
   });
 });
 
+describe('hex.spark_encounter stamps its occurred_at edge with the tick (THR-1196)', () => {
+  it('the landed edge carries the tick, not just the event node', () => {
+    const graph = worldWithPlace();
+    const { batch } = cast(graph, 'hex.spark_encounter');
+
+    expect(batch.allSucceeded).toBe(true);
+
+    const events = graph.getNodesByType('event');
+    expect(events).toHaveLength(1);
+    expect(events[0].properties?.eventType).toBe('divine_spark');
+
+    // Read back from the graph rather than the op array: the op-level guard below
+    // proves the recipe *asks* for the property, this proves it survives execution.
+    const occurred = graph.getOutgoingEdges(events[0].id, 'occurred_at');
+    expect(occurred).toHaveLength(1);
+    expect(occurred[0].target).toBe('loc_hold');
+    expect(occurred[0].properties?.tick).toBe(10);
+  });
+
+  it('fires without a [GraphSchema] warning', () => {
+    const graph = worldWithPlace();
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    try {
+      cast(graph, 'hex.spark_encounter');
+      const schemaWarnings = warn.mock.calls
+        .map(args => args.map(String).join(' '))
+        .filter(line => line.includes('[GraphSchema]'));
+      expect(schemaWarnings).toEqual([]);
+    } finally {
+      warn.mockRestore();
+    }
+  });
+});
+
 describe('no hex action recipe names an unregistered edge type (THR-1194)', () => {
   // The ticket's membership predicate, as a standing guard: every `add_edge` a hex
   // action emits must name a type the schema knows. `possessed_by` passed review twice
@@ -200,6 +235,36 @@ describe('no hex action recipe names an unregistered edge type (THR-1194)', () =
 
     for (const edgeType of edgeTypes) {
       expect(Object.keys(EDGE_SCHEMA)).toContain(edgeType);
+    }
+  });
+
+  // THR-1196: the type check above is only the outer layer. `hex.spark_encounter`
+  // passed it — `occurred_at` is registered — and then tripped `requiredProperties`
+  // one layer down, emitting the edge with no `tick`. Unlike THR-1194's `possessed_by`
+  // this is a *warning*, not a refusal, so the edge reached the graph half-formed and
+  // nothing failed. Widened to the full schema row so the predicate is covered rather
+  // than the one member that happened to be noticed.
+  it.each(TEMPLATE_IDS)('%s emits every property its edge schema requires', templateId => {
+    const graph = worldWithPlace();
+    graph.addNode({
+      id: 'loc_ruin',
+      type: 'location',
+      name: 'Wolf Remnant',
+      properties: { hexCol: COL, hexRow: ROW, locationSubtype: 'ruins' },
+    });
+
+    const { ops } = cast(graph, templateId);
+
+    for (const op of ops.filter(o => o.op === 'add_edge')) {
+      const required = EDGE_SCHEMA[op.edgeType!]?.requiredProperties ?? [];
+      const carried = Object.keys(op.properties ?? {});
+      // Reported as a labelled object rather than a bare property list, so a failure
+      // names the recipe and the edge type instead of leaving two bags to diff by eye.
+      expect({
+        recipe: templateId,
+        edgeType: op.edgeType,
+        missing: required.filter(property => !carried.includes(property)),
+      }).toEqual({ recipe: templateId, edgeType: op.edgeType, missing: [] });
     }
   });
 });
