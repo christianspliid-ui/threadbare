@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-22 16:53 local (14:53 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-22 17:58 local (15:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -69,6 +69,7 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
+- 2026-08-22: **a two-minute Linear setting you were going to be asked about does not exist** — [THR-1190](https://linear.app/threadbare/issue/THR-1190/the-park-decay-remedy-is-a-christian-owned-linear-setting-with-no): finished tickets kept going quietly invisible on your page, and the remedy was assumed to be a switch only you could flip. Every workspace control that could cause it was read directly this afternoon — all already set the way we want. GitHub's own integration re-assigns the ticket whenever a pull request names its number, which no setting here governs. The fix is a writing rule the lanes follow. This leaves your list without ever reaching it.
 - 2026-08-22: **a divine spark now records when it happened** — [THR-1196](https://linear.app/threadbare/issue/THR-1196/hexspark-encounter-writes-an-occurred-at-edge-without-the-tick-its) ([PR #1573](https://github.com/christianspliid-ui/threadbare/pull/1573)): sparking an encounter onto a hex left a mark in the world's history with no date on it — the record existed but could never be placed in time. It carries its tick now.
 - 2026-08-22: **the campaign's spine narrates from its own writing** — [THR-1197](https://linear.app/threadbare/issue/THR-1197/wire-the-48-authored-mandate-milestone-prose-strings-into-stage): forty-eight authored milestone lines were read by nothing; stage advances, completions and failures now speak them. Filed, built and deployed inside three hours of your wave-1 ruling. Its own honest limit became ask 2 above.
 - 2026-08-22: **two divine actions that forged an artifact for nobody now hand it over** — [THR-1194](https://linear.app/threadbare/issue/THR-1194/hexforge-seer-token-and-hexforge-instrument-bind-their-artifact-with) ([PR #1571](https://github.com/christianspliid-ui/threadbare/pull/1571)): forging a seer's token and forging an instrument each reported success and gave the item to no one.
@@ -78,7 +79,6 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 - 2026-08-22: **a consecrated route now buys the pilgrimage it promised** — [THR-1184](https://linear.app/threadbare/issue/THR-1184/sacred-route-is-registered-but-has-zero-consumers-an-eight-tick) ([PR #1568](https://github.com/christianspliid-ui/threadbare/pull/1568)): the game knew what a sacred route was and nothing in it could ever use one. It can now.
 - 2026-08-22: **a room inside a town is now built one way, not two** — [THR-1183](https://linear.app/threadbare/issue/THR-1183/sublocations-are-minted-in-two-incompatible-node-shapes) ([PR #1567](https://github.com/christianspliid-ui/threadbare/pull/1567)): two parts of the game each built the same kind of place differently, so each half was invisible to the other half's eyes. One shape now.
 - 2026-08-22: **the words for what a thing can be no longer disagree with themselves** — [THR-857](https://linear.app/threadbare/issue/THR-857/possession-subcategory-vocabulary-has-3-off-union-strays-intelligence) ([PR #1566](https://github.com/christianspliid-ui/threadbare/pull/1566)): three stray labels outside the agreed set, reconciled.
-- 2026-08-19: **four trade cards that promised a deal and delivered nothing now deliver it** — [THR-1188](https://linear.app/threadbare/issue/THR-1188/the-four-actiongold-trade-ops-write-actor-location-a-shape-no-trades) ([PR #1563](https://github.com/christianspliid-ui/threadbare/pull/1563)): flagged as possibly needing your ruling because the cheap repair was to delete all four; the agent found the better path and the cards write real trade routes instead.
 
 ---
 
