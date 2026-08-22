@@ -10,7 +10,7 @@ description: >
   by Cowork after writing any plan doc in Docs/plans/ or Docs/audits/ and
   before the Linear state transitions to Ready for Dev.
   Also callable manually via `/intent-judge <plan-doc-path>`.
-last_validated_against: 2026-08-03
+last_validated_against: 2026-08-22
 ---
 
 # Intent Judge
@@ -239,7 +239,7 @@ has no file yet.
 | Latency (s) | Spawner-measured wall clock, `~` prefix |
 | Anti-corr slipped | `Anti-correlation guard slipped` from the verdict's metrics block |
 
-| Overridden | Optional. `yes` / `no` — did the user override this verdict? Leave blank if unknown |
+| Overridden | **Mandatory on every new row (2026-08-22 retro — two cycles of new rows shipped without it).** `yes` / `no` — did the user override this verdict? Write `no` when no override is known at write time; a later session that learns of an override edits the row to `yes`. Historical rows stay blank — they cannot be backfilled honestly |
 
 **`retrospective` § Step 5c reads this directory (THR-957, wired 2026-08-03).** It
 aggregates every file, reports verdict distribution / escalation rate / median
@@ -251,10 +251,13 @@ and never had, so the aggregation had never run once.
 **Two of the four kill criteria are still not computable from these rows**, and the
 consumer reports them as `NOT MEASURABLE` rather than as satisfied. Both are keyed
 on user overrides and nothing recorded one — which is why the `Overridden` column
-above now exists. It is optional because no historical row can be backfilled
-honestly; the criteria become falsifiable once rows carry it, and until then a
-consumer reporting `0% override rate` would be laundering an unmeasured criterion
-into a passing one.
+above now exists. It was optional at introduction because no historical row can be
+backfilled honestly; after two consecutive cycles of new rows shipping without it
+(retro 2026-08-14 set the trigger, retro 2026-08-22 pulled it), it is **mandatory on
+new rows** — default `no`, edited to `yes` when an override is learned. The criteria
+become falsifiable as rows accumulate; until enough carry it, a consumer reporting
+`0% override rate` would be laundering an unmeasured criterion into a passing one,
+so the retro reports the measured-row count alongside any rate.
 
 **Write the table in the column order above.** Six historical files carry four
 different shapes — two have an extra `Linear` column, and `2026-W29.md` uses
