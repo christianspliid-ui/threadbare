@@ -1,12 +1,19 @@
-import { describe, expect, it } from "vitest";
+import { execFileSync } from "node:child_process";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
   EXEMPTION_TOKEN,
   parseExemptionReason,
+  collectChangedFilesWith,
   computeStaleWarnings,
   describeBase,
   globToRegExp,
   missingInputExitCode,
+  resolveDiffBase,
   splitRemoteTrackingBase,
+  type GitRunner,
   type ManifestPage,
 } from "../check-wiki-freshness";
 
@@ -250,4 +257,190 @@ describe("globToRegExp", () => {
     expect(re.test("src/a.b.ts")).toBe(true);
     expect(re.test("src/aXbats")).toBe(false);
   });
+});
+
+
+// ---------------------------------------------------------------------------
+// collectChangedFilesWith / resolveDiffBase — the changed set is scoped to the
+// branch's OWN commits, not to everything `main` did since the branch point
+// (THR-1191). Exercised against real throwaway git repos: the defect is a
+// property of git's two-dot range semantics, so a mocked runner would only
+// re-assert the fixture's own opinion of what git does.
+//
+// Every read-only assertion shares ONE fixture. Each repo costs ~11 git spawns,
+// and process spawn is the contended resource once the full suite runs 1000+
+// files: building a repo per test measurably starved a sibling git-shelling
+// test into a 5s timeout that passed in 532ms alone. Share the fixture, and
+// only pay for a fresh repo where a test actually mutates one.
+// ---------------------------------------------------------------------------
+
+/**
+ * These tests shell git against a throwaway repo — well under a second alone, but
+ * competing with every other worker in a full run. Budget the real cost rather than
+ * shipping a test that goes red on machine load (THR-1191).
+ */
+const GIT_FIXTURE_TIMEOUT_MS = 60_000;
+
+const tmpRepos: string[] = [];
+
+afterAll(() => {
+  while (tmpRepos.length) {
+    try {
+      fs.rmSync(tmpRepos.pop()!, { recursive: true, force: true });
+    } catch {
+      // Windows can hold a handle on a just-closed git index; leaking a temp dir
+      // is not worth failing a green test over.
+    }
+  }
+});
+
+/** A throwaway git repo plus a GitRunner bound to it. */
+function makeRepo(): { dir: string; run: GitRunner; git: (...args: string[]) => string } {
+  const dir = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "wiki-fresh-")));
+  tmpRepos.push(dir);
+
+  const run: GitRunner = (args) => {
+    try {
+      return execFileSync("git", args, { cwd: dir, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] });
+    } catch {
+      return null;
+    }
+  };
+  // Throwing variant for setup, so a broken fixture fails loudly instead of
+  // silently producing an empty repo that passes every assertion vacuously.
+  const g = (...args: string[]): string =>
+    execFileSync("git", args, { cwd: dir, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+
+  g("init", "-q");
+  g("config", "user.email", "test@example.com");
+  g("config", "user.name", "Test");
+  g("config", "commit.gpgsign", "false");
+  return { dir, run, git: g };
+}
+
+function writeFixtureFile(dir: string, rel: string, body: string): void {
+  const abs = path.join(dir, rel);
+  fs.mkdirSync(path.dirname(abs), { recursive: true });
+  fs.writeFileSync(abs, body, "utf8");
+}
+
+/**
+ * The THR-1191 repro: a `base` branch that has ADVANCED past the branch point by
+ * touching a wiki-declared source, and a `feature` branch that never touched it.
+ */
+function makeAdvancedBaseRepo(): { dir: string; run: GitRunner; git: (...args: string[]) => string } {
+  const repo = makeRepo();
+  const { dir, git: g } = repo;
+
+  writeFixtureFile(dir, "README.md", "start\n");
+  g("add", "-A");
+  g("commit", "-qm", "root");
+  g("branch", "-M", "base");
+
+  g("checkout", "-q", "-b", "feature");
+  writeFixtureFile(dir, "src/components/Game/PremonitionModal.tsx", "feature work\n");
+  g("add", "-A");
+  g("commit", "-qm", "feature commit");
+
+  // `base` moves on underneath the branch — the THR-1141-merged-during-CI shape.
+  g("checkout", "-q", "base");
+  writeFixtureFile(dir, "src/types/unifiedAction.ts", "someone else's change\n");
+  g("add", "-A");
+  g("commit", "-qm", "unrelated main commit touching a wiki source");
+
+  g("checkout", "-q", "feature");
+  return repo;
+}
+
+describe("collectChangedFilesWith / resolveDiffBase — advanced base (THR-1191)", () => {
+  let shared: { dir: string; run: GitRunner; git: (...args: string[]) => string };
+
+  beforeAll(() => {
+    shared = makeAdvancedBaseRepo();
+  }, GIT_FIXTURE_TIMEOUT_MS);
+
+  it("excludes a file the base branch changed after the branch point", () => {
+    const changed = collectChangedFilesWith(shared.run, "base");
+
+    expect(changed).not.toBeNull();
+    expect(changed!.has("src/components/Game/PremonitionModal.tsx")).toBe(true);
+    expect(changed!.has("src/types/unifiedAction.ts")).toBe(false);
+  });
+
+  it("control arm: the old two-dot diff DOES pick up the base's own commit", () => {
+    // Without this, the test above could pass for the wrong reason — e.g. a fixture
+    // that never actually advanced `base`. Asserting the buggy behaviour on the same
+    // repo proves the repro is real and that the fix is what removes it.
+    const twoDot = (shared.run(["diff", "--name-only", "base", "--"]) ?? "").split("\n").map((l) => l.trim());
+
+    expect(twoDot).toContain("src/types/unifiedAction.ts");
+  });
+
+  it("resolves the diff base to the merge base, not the base ref tip", () => {
+    const resolved = resolveDiffBase(shared.run, "base");
+    const baseTip = shared.run(["rev-parse", "base"])!.trim();
+    const mergeBase = shared.run(["merge-base", "base", "HEAD"])!.trim();
+
+    expect(resolved).toBe(mergeBase);
+    expect(resolved).not.toBe(baseTip);
+  });
+
+  it("returns null when the base ref does not resolve (shallow clone, unfetched remote)", () => {
+    expect(resolveDiffBase(shared.run, "origin/nonexistent")).toBeNull();
+    expect(collectChangedFilesWith(shared.run, "origin/nonexistent")).toBeNull();
+  });
+
+  it("still reports a source the branch itself changed, so the gate can still fail", () => {
+    // Adds a commit, so it gets its own repo rather than dirtying the shared one.
+    const { dir, run, git: g } = makeAdvancedBaseRepo();
+
+    writeFixtureFile(dir, "src/engine/encounterResolution.ts", "genuinely touched by this branch\n");
+    g("add", "-A");
+    g("commit", "-qm", "branch touches a declared source");
+
+    const changed = collectChangedFilesWith(run, "base")!;
+    expect(changed.has("src/engine/encounterResolution.ts")).toBe(true);
+
+    // Compose with the detector: a touched source whose page did not change is stale.
+    const page: ManifestPage = {
+      id: "encounters",
+      file: "encounters-reference.html",
+      sources: ["src/engine/**"],
+    };
+    const warnings = computeStaleWarnings([page], changed, "blocking");
+    expect(warnings).toHaveLength(1);
+    expect(warnings[0]).toContain("is stale");
+  }, GIT_FIXTURE_TIMEOUT_MS);
+
+  it("counts uncommitted and untracked work, which `git diff A...B` would drop", () => {
+    // Dirties the working tree, so it gets its own repo.
+    const { dir, run } = makeAdvancedBaseRepo();
+
+    writeFixtureFile(dir, "src/components/Game/PremonitionModal.tsx", "feature work\nedited, not committed\n");
+    writeFixtureFile(dir, "src/components/Game/BrandNew.tsx", "untracked\n");
+
+    const changed = collectChangedFilesWith(run, "base")!;
+
+    expect(changed.has("src/components/Game/PremonitionModal.tsx")).toBe(true);
+    expect(changed.has("src/components/Game/BrandNew.tsx")).toBe(true);
+    // And the advanced-base exclusion still holds alongside the working tree.
+    expect(changed.has("src/types/unifiedAction.ts")).toBe(false);
+  }, GIT_FIXTURE_TIMEOUT_MS);
+
+  it("falls back to the base ref when there is no common ancestor", () => {
+    const { dir, run, git: g } = makeRepo();
+
+    writeFixtureFile(dir, "README.md", "start\n");
+    g("add", "-A");
+    g("commit", "-qm", "root");
+    g("branch", "-M", "base");
+
+    // An orphan branch shares no history with `base`, so merge-base yields nothing.
+    g("checkout", "-q", "--orphan", "feature");
+    writeFixtureFile(dir, "other.txt", "unrelated\n");
+    g("add", "-A");
+    g("commit", "-qm", "orphan root");
+
+    expect(resolveDiffBase(run, "base")).toBe("base");
+  }, GIT_FIXTURE_TIMEOUT_MS);
 });
