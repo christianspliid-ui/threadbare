@@ -283,7 +283,7 @@ export const ACTION_TECHNICAL_EFFECTS: Readonly<Record<string, string>> = {
   'hex.attune_leyline':
     "Engine bridge: on success, raises the hex-tile's `divineInfluence` by HEX_ATTUNE_LEYLINE_INFLUENCE_DELTA. No effect on failure.",
   'hex.forge_seer_token':
-    "Engine bridge: on success, spawns a divination-focus `artifact` node ('Seer's Token') and binds it to the actor via a `possessed_by` edge.",
+    "Engine bridge: on success, spawns a divination-focus `artifact` node ('Seer's Token') and binds it to the actor via a `possesses` edge (actor → artifact).",
   'hex.read_currents':
     'Engine bridge (read): on success, reveals the hex’s `soul` narrative layer and uncovers hidden sites. No tile mutation.',
   'hex.shift_dominion':
@@ -295,9 +295,9 @@ export const ACTION_TECHNICAL_EFFECTS: Readonly<Record<string, string>> = {
   'hex.dispel_wild':
     "Engine bridge: on success, raises the hex-tile's `divineInfluence` by HEX_DISPEL_WILD_INFLUENCE_DELTA. No effect on failure.",
   'hex.send_herald':
-    "Engine bridge: on success, spawns a herald `agent` node at a location on the hex, places it there (`located_at`), and threads it to the actor (auto-resolve tier-1 thread).",
+    "Engine bridge: on success, spawns a herald `agent` node at the first place-tier location on the hex, places it there (`located_at`), and threads it to the actor (auto-resolve tier-1 thread). No-op if the hex has no place-tier location.",
   'hex.forge_instrument':
-    "Engine bridge: on success, spawns a ritual-focus `artifact` node ('Divine Instrument') bound to the actor via a `possessed_by` edge.",
+    "Engine bridge: on success, spawns a ritual-focus `artifact` node ('Divine Instrument') bound to the actor via a `possesses` edge (actor → artifact).",
   'hex.spark_encounter':
     "Engine bridge: on success, creates a `divine_spark` `event` node at the first location on the hex and links it with an `occurred_at` edge. No-op if the hex has no locations.",
   'hex.stir_people':

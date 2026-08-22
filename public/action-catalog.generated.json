@@ -3586,7 +3586,7 @@
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
       "description": "Shapes a fragment of divine will into mortal form and sends it forth into the world as a herald bearing the deity's message and intent. The herald is a living agent aligned to the deity's sphere, capable of independent action in pursuit of the divine agenda. Failed manifestation leaves the divine essence formless and dissipated.",
-      "technicalEffect": "Engine bridge: on success, spawns a herald `agent` node at a location on the hex, places it there (`located_at`), and threads it to the actor (auto-resolve tier-1 thread).",
+      "technicalEffect": "Engine bridge: on success, spawns a herald `agent` node at the first place-tier location on the hex, places it there (`located_at`), and threads it to the actor (auto-resolve tier-1 thread). No-op if the hex has no place-tier location.",
       "effectSource": "engine-bridge"
     },
     {
@@ -3856,7 +3856,7 @@
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
       "description": "Condenses divine perceptive power into a physical vessel, creating an object that carries the gift of sphere awareness wherever its bearer travels. The token hums with latent sight, making the invisible sphere currents of any location apparent to a trained eye. Failure causes the essence to dissipate before it can crystallize into form.",
-      "technicalEffect": "Engine bridge: on success, spawns a divination-focus `artifact` node ('Seer's Token') and binds it to the actor via a `possessed_by` edge.",
+      "technicalEffect": "Engine bridge: on success, spawns a divination-focus `artifact` node ('Seer's Token') and binds it to the actor via a `possesses` edge (actor → artifact).",
       "effectSource": "engine-bridge"
     },
     {
@@ -4306,7 +4306,7 @@
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
       "description": "Shapes raw divine power into a physical instrument of focused purpose, imbuing it with the essence of a specific reach domain. The resulting tool amplifies its bearer's capabilities in that domain beyond natural limits. The forging is demanding and failure shatters the incomplete instrument entirely.",
-      "technicalEffect": "Engine bridge: on success, spawns a ritual-focus `artifact` node ('Divine Instrument') bound to the actor via a `possessed_by` edge.",
+      "technicalEffect": "Engine bridge: on success, spawns a ritual-focus `artifact` node ('Divine Instrument') bound to the actor via a `possesses` edge (actor → artifact).",
       "effectSource": "engine-bridge"
     },
     {
