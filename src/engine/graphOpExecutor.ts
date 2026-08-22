@@ -128,8 +128,30 @@ export function executeGraphOps(
   const results: GraphOpResult[] = [];
   const createdIds: Record<string, string> = {};
 
+  // ── Positional created-node refs (THR-1193) ───────────────────────────────
+  // A recipe that mints a node and then edges it needs to name the node it just
+  // made, and six sites across `hexActionBridge` already spelled that `$created_0`
+  // — but nothing resolved it. `createdIds` is keyed by the *generated* id
+  // (`createdIds[id] = id`), and `resolveRef` never consulted it either way, so
+  // every such edge failed `Source node not found: $created_0` and the minted node
+  // was left orphaned with no edges at all. The action still reported success,
+  // because a failed op inside a fail-soft batch is a per-op flag nobody read.
+  //
+  // Resolution rides `GraphOpContext.extras`, which `resolveRef` has always
+  // checked — so this adds no new resolution surface and no new syntax, it makes
+  // the existing spelling mean what its six callers already assumed. `$created_N`
+  // is positional over the *node-creating* ops of this batch, 0-indexed.
+  //
+  // The working ctx is a copy: `ctx` belongs to the caller, and the batch must not
+  // leak its created refs back into a context that outlives it.
+  const workingCtx: GraphOpContext = { ...ctx, extras: { ...ctx.extras } };
+  let createdNodeIndex = 0;
+
   for (const op of ops) {
-    const result = executeSingleOp(graph, op, ctx, createdIds);
+    const result = executeSingleOp(graph, op, workingCtx, createdIds);
+    if (result.success && result.createdId && op.op === 'add_node') {
+      workingCtx.extras![`$created_${createdNodeIndex++}`] = result.createdId;
+    }
     results.push(result);
   }
 

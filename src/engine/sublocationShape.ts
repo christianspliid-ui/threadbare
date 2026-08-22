@@ -12,10 +12,12 @@
  * The resolution (THR-1183): **one mint shape — `type: 'location'` carrying
  * `parentLocationId`** — and one predicate, this module, through which every reader
  * asks the question. `'sublocation'` stays a registered `NodeType` (THR-1177) and is
- * still *accepted* here, because saved worlds and the `hex.restore_fragment` graph-op
- * recipe can still carry it; it is simply no longer *written* by any sublocation
- * producer. Tolerating it costs one `||` and is what NFP #4 (fail-soft) asks for — a
- * legacy node must degrade to "still a sublocation", never to "invisible".
+ * still *accepted* here, because **saved worlds** can carry it; since THR-1193 it has
+ * **no production writer at all**. (THR-1183 left one behind — the
+ * `hex.restore_fragment` graph-op recipe — and THR-1193 converted it, so the tolerance
+ * below is now a pure back-compat read path.) Tolerating it costs one `||` and is what
+ * NFP #4 (fail-soft) asks for — a legacy node must degrade to "still a sublocation",
+ * never to "invisible".
  *
  * The discriminator is `parentLocationId`, not a subtype string, because that is what
  * `encounterAftermath` already treated as authoritative when deciding whether `$target`
@@ -36,8 +38,9 @@ import type { WorldGraph } from './graph';
 import type { GraphNode, NodeType } from '../types/graph';
 
 /**
- * The legacy node type retired as a *write* shape by THR-1183 and still accepted as a
- * *read* shape. Named rather than inlined so every tolerance site greps to one symbol.
+ * The legacy node type retired as a *write* shape by THR-1183 (last writer converted
+ * under THR-1193) and still accepted as a *read* shape for saved worlds. Named rather
+ * than inlined so every tolerance site greps to one symbol.
  */
 export const LEGACY_SUBLOCATION_NODE_TYPE: NodeType = 'sublocation';
 

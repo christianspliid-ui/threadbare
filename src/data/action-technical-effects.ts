@@ -323,7 +323,7 @@ export const ACTION_TECHNICAL_EFFECTS: Readonly<Record<string, string>> = {
   'hex.consecrate_past':
     "Engine bridge: on success, raises the hex-tile's `divineInfluence` by HEX_CONSECRATE_PAST_INFLUENCE_DELTA. No effect on failure.",
   'hex.restore_fragment':
-    "Engine bridge: on success, spawns a restored-ruin `sublocation` node on the hex and places it via a `located_at` edge.",
+    "Engine bridge: on success, mints a permanent `sublocation-type.ruins` sublocation named “Restored Fragment” under a place-tier location on the hex — preferring a ruins location — attached by a `contains` edge from that parent. No-op on a hex holding no place-tier location.",
   'hex.rewrite_history':
     "Engine bridge: on success, updates the target location's `culturalLegacy` to `rewritten` and stamps the rewrite tick.",
   'hex.bury_past':
