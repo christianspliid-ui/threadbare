@@ -529,3 +529,87 @@ describe('EncounterCacheManager.getEntriesNearHex — probe/scan equivalence (TH
     expect(cache.getEntriesNearHex(0, 0, 7)).toEqual([]);
   });
 });
+
+// ─── Sacred route destinations (THR-1184) ───────────────────────
+
+/**
+ * The `sacred_route` edge was registered by THR-1177 with no consumer at all — four live
+ * edges in a seeded world, read by nothing. These tests pin the consumer that resolves it.
+ *
+ * The literal 'encounter.pilgrimage_trial' is deliberate rather than a reference to
+ * SACRED_ROUTE_DESTINATION_ENCOUNTER_IDS: asserting against the same constant the
+ * production path reads would make the test a tautology that passes on an empty list.
+ */
+describe('sacred route destinations (THR-1184)', () => {
+  function addSacredRoute(graph: WorldGraph, factionId: string, locationId: string): void {
+    graph.addNode({ id: factionId, type: 'actor', name: 'Zealot Order', properties: {} });
+    graph.addEdge({
+      id: `sacred_route_${factionId}_${locationId}_7`,
+      source: factionId,
+      target: locationId,
+      type: 'sacred_route',
+      properties: { establishedTick: 7, routeType: 'pilgrimage' },
+    });
+  }
+
+  function templateIdsAt(graph: WorldGraph, locationId: string): string[] {
+    const cache = new EncounterCacheManager();
+    cache.buildFullCache(graph);
+    return cache.getEntriesForLocation(locationId).map(e => e.templateId);
+  }
+
+  it('a town with no sacred route does NOT pool the pilgrimage — the gate is real', () => {
+    const graph = makeGraph();
+    addLocation(graph, 'loc.town', 'Ashford', 'town');
+
+    expect(templateIdsAt(graph, 'loc.town')).not.toContain('encounter.pilgrimage_trial');
+  });
+
+  it('a consecrated town pools the pilgrimage its completion prose promises', () => {
+    const graph = makeGraph();
+    addLocation(graph, 'loc.town', 'Ashford', 'town');
+    addSacredRoute(graph, 'faction.zealots', 'loc.town');
+
+    expect(templateIdsAt(graph, 'loc.town')).toContain('encounter.pilgrimage_trial');
+  });
+
+  it('the route supplements only its own destination, not every town', () => {
+    const graph = makeGraph();
+    addLocation(graph, 'loc.consecrated', 'Ashford', 'town');
+    addLocation(graph, 'loc.ordinary', 'Miller\'s Rest', 'town');
+    addSacredRoute(graph, 'faction.zealots', 'loc.consecrated');
+
+    expect(templateIdsAt(graph, 'loc.consecrated')).toContain('encounter.pilgrimage_trial');
+    expect(templateIdsAt(graph, 'loc.ordinary')).not.toContain('encounter.pilgrimage_trial');
+  });
+
+  it('a consecrated shrine pools the pilgrimage exactly once (no double-add)', () => {
+    const graph = makeGraph();
+    addLocation(graph, 'loc.shrine', 'The Weeping Stone', 'shrine');
+
+    const before = templateIdsAt(graph, 'loc.shrine')
+      .filter(id => id === 'encounter.pilgrimage_trial').length;
+    // Guard the premise: a shrine must already pool it by subtype, or the dedupe
+    // assertion below would pass for the wrong reason.
+    expect(before).toBe(1);
+
+    addSacredRoute(graph, 'faction.zealots', 'loc.shrine');
+    const after = templateIdsAt(graph, 'loc.shrine')
+      .filter(id => id === 'encounter.pilgrimage_trial').length;
+    expect(after).toBe(1);
+  });
+
+  it('a consecrated town gains ONLY the pilgrimage — no other pool drift', () => {
+    const graph = makeGraph();
+    addLocation(graph, 'loc.town', 'Ashford', 'town');
+    const plain = templateIdsAt(graph, 'loc.town');
+
+    const graph2 = makeGraph();
+    addLocation(graph2, 'loc.town', 'Ashford', 'town');
+    addSacredRoute(graph2, 'faction.zealots', 'loc.town');
+    const consecrated = templateIdsAt(graph2, 'loc.town');
+
+    const added = consecrated.filter(id => !plain.includes(id));
+    expect(added).toEqual(['encounter.pilgrimage_trial']);
+  });
+});

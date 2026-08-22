@@ -75,3 +75,38 @@ export const STRATEGIC_SCORE_FLOOR = 0.08;
 
 /** Normalization multiplier to bring strategic scores into encounter score range */
 export const STRATEGIC_ENCOUNTER_SCORE_BRIDGE = 0.85;
+
+// ─── Sacred routes (THR-1184) ───────────────────────────────────────
+
+/**
+ * Encounter templates a consecrated pilgrimage route unlocks at its destination.
+ *
+ * `strategic_establish_sacred_route` targets `['shrine', 'temple', 'town', 'city']`, but
+ * every pilgrimage encounter is gated `['shrine', 'temple']` — so the two settlement
+ * targets consecrated a route to a place that could never host the pilgrimage its own
+ * completion prose promises ("Pilgrims will follow where the faithful walked first").
+ * A location carrying an incoming `sacred_route` edge pools these regardless of subtype:
+ * the eight ticks and 30 wealth buy the destination the encounter, which is the whole
+ * fiction of the verb.
+ *
+ * Tunable (NFP #1): widening a route's payoff is editing this list, not the cache.
+ * Ids are resolved through `getAnyEncounterById` and silently skipped when unknown,
+ * so a retired template degrades to "no supplement" rather than breaking the pool.
+ */
+export const SACRED_ROUTE_DESTINATION_ENCOUNTER_IDS: readonly string[] = [
+  'encounter.pilgrimage_trial',
+];
+
+/**
+ * Edge types whose creation changes what encounters a location can host.
+ *
+ * Minting one of these must refresh the destination's encounter-cache entries, or the
+ * new pool is invisible until some unrelated system happens to invalidate the cache.
+ * Measured on seed 42 / medium at tick 120 before this wiring existed: four
+ * `sacred_route` edges, of which exactly **one** destination had its pilgrimage pooled —
+ * the other three sat inert behind a cache built before their route was minted, which is
+ * the same "changes nothing" defect THR-1184 set out to fix, only harder to see.
+ */
+export const ENCOUNTER_POOL_INVALIDATING_EDGE_TYPES: ReadonlySet<string> = new Set([
+  'sacred_route',
+]);

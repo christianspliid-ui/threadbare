@@ -350,6 +350,42 @@ describe('hint-driven execution', () => {
     expect(edges[0].target).toBe('loc_shrine');
   });
 
+  it('a minted sacred_route reports its destination for encounter-pool refresh (THR-1184)', () => {
+    const graph = buildMultiFamilyGraph();
+    const state = makeMinimalGameState(graph);
+    const rng = mulberry32(42);
+
+    const candidate = makeCandidateForTemplate(
+      'strategic_establish_sacred_route', 'actor_versatile', 'ambition_spread_faith', 'loc_shrine',
+    );
+    const result = executeStrategicAction(
+      state, graph, { ...candidate, executionMode: 'instant' as const }, 10, rng,
+    );
+
+    // The caller owns the cache refresh, so the mutation must NAME the location.
+    // Without this the destination keeps whatever pool it was built with — measured as
+    // 3 of 4 consecrated destinations staying inert through tick 120 on seed 42.
+    expect(result.poolInvalidatedLocationIds).toEqual(['loc_shrine']);
+  });
+
+  it('a mutation that mints no pool-invalidating edge reports no location (THR-1184)', () => {
+    const graph = buildMultiFamilyGraph();
+    const state = makeMinimalGameState(graph);
+    const rng = mulberry32(42);
+
+    // `strategic_consecrate_site` mutates a property rather than minting an edge, so it
+    // must not trigger a refresh — pins that the trigger is the edge type, not "any
+    // strategic completion touching a location".
+    const candidate = makeCandidateForTemplate(
+      'strategic_consecrate_site', 'actor_versatile', 'ambition_spread_faith', 'loc_shrine',
+    );
+    const result = executeStrategicAction(
+      state, graph, { ...candidate, executionMode: 'instant' as const }, 10, rng,
+    );
+
+    expect(result.poolInvalidatedLocationIds ?? []).toEqual([]);
+  });
+
   it('no_mutation hint produces zero graph ops', () => {
     const graph = buildMultiFamilyGraph();
     const state = makeMinimalGameState(graph);

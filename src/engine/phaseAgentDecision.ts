@@ -52,7 +52,7 @@ import { resolveLocationToHex } from './encounterAwareness';
 import { hexDistance } from '../lib/hexMath';
 import { MAX_AWARENESS_HOPS, EDGE_HEX_AWARENESS_BONUS } from '../data/agent-behavior-constants';
 import type { SimulationRuntime } from './simulationRuntime';
-import { touchWorld } from './simulationRuntime';
+import { touchWorld, applyEncounterCacheUpdate } from './simulationRuntime';
 import { resolveRelocationIntentForAgent } from './relocationIntent';
 import { observeResidence } from './agentResidence';
 import { recordBalanceEvent } from './balanceTelemetry';
@@ -804,6 +804,16 @@ export function phaseAgentDecision(
           // Accumulate strategic state for return + downstream agents
           if (stratResult.strategicState) {
             accumulatedStrategicState = stratResult.strategicState;
+          }
+
+          // THR-1184: an instant mutation can mint an edge that changes what a location
+          // can host. Refresh that location's encounter pool now, or it waits for an
+          // unrelated structural invalidation. (The eight-tick sacred-route project
+          // completes on the phaseStrategicProjects path, which does the same.)
+          if (runtime && stratResult.poolInvalidatedLocationIds?.length) {
+            for (const locationId of stratResult.poolInvalidatedLocationIds) {
+              applyEncounterCacheUpdate(runtime, cache => cache.onLocationTypeChanged(graph, locationId));
+            }
           }
 
           emitTrace({

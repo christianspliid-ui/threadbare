@@ -28,7 +28,12 @@ import type { ValuePair } from '../types/agent';
 import type { HexTile, SphereName } from '../types/index';
 import type { GraphNode } from '../types/graph';
 import type { WorldGraph } from './graph';
-import { getEncountersByLocationType, getEncountersBySublocationAndLocation } from '../data/encounter-content';
+import {
+  getEncountersByLocationType,
+  getEncountersBySublocationAndLocation,
+  getAnyEncounterById,
+} from '../data/encounter-content';
+import { SACRED_ROUTE_DESTINATION_ENCOUNTER_IDS } from '../data/strategic-action-constants';
 import {
   LOCATION_BRANCHING_ENCOUNTER_TEMPLATES,
   CACHE_REGISTERED_REGIONAL_TEMPLATES,
@@ -248,6 +253,37 @@ function buildEntryUnified(
 }
 
 /**
+ * Templates a consecrated pilgrimage route unlocks at its destination (THR-1184).
+ *
+ * `sacred_route` is actor → location: a faction spent an eight-tick project and 30 wealth
+ * consecrating a pilgrimage route *to this place*. Until now nothing anywhere read the
+ * edge, so the project changed the world by exactly zero — the defect this resolves.
+ *
+ * Reading it here rather than at the mint site is deliberate: the cache is the one place
+ * that already decides what a location can host, so a route's payoff arrives through the
+ * same pooling every other location feature uses, and needs no new firing mechanism
+ * (THR-1161's ruled substrate). It is also read from the live graph on every rebuild, so
+ * a route minted mid-game takes effect at the next structural invalidation rather than
+ * requiring bespoke cache-invalidation wiring through `strategicActionLifecycle`.
+ *
+ * Fail-soft (NFP #4): no edges → empty array, unknown template id → skipped.
+ */
+function sacredRouteDestinationTemplates(
+  graph: WorldGraph,
+  locationId: string,
+): UnifiedActionTemplate[] {
+  const routes = graph.getIncomingEdges(locationId, 'sacred_route');
+  if (routes.length === 0) return [];
+
+  const templates: UnifiedActionTemplate[] = [];
+  for (const id of SACRED_ROUTE_DESTINATION_ENCOUNTER_IDS) {
+    const tmpl = getAnyEncounterById(id);
+    if (tmpl) templates.push(tmpl);
+  }
+  return templates;
+}
+
+/**
  * Build cache entries for a location and all its sublocations.
  * If sublocations exist: creates entries per sublocation using sublocation-aware template lookup.
  * If no sublocations: falls back to location-level template lookup (sublocationId: null).
@@ -290,6 +326,16 @@ function buildEntriesForLocationAndSublocations(
     if (tmpl.locationSubtypes?.includes(locationType as never)) {
       entries.push(buildEntryUnified(tmpl, locationId, null, null, difficultyMultiplier));
     }
+  }
+
+  // Consecrated pilgrimage destinations (THR-1184). Deliberately NOT subtype-gated —
+  // the whole point is that a town or city the zealots consecrated a route to can host
+  // the pilgrimage that shrine/temple gating would otherwise deny it. Deduped by
+  // templateId so a shrine, which already pools these by subtype above, is unaffected.
+  const alreadyPooled = new Set(entries.map(e => e.templateId));
+  for (const tmpl of sacredRouteDestinationTemplates(graph, locationId)) {
+    if (alreadyPooled.has(tmpl.id)) continue;
+    entries.push(buildEntryUnified(tmpl, locationId, null, null, difficultyMultiplier));
   }
 
   return entries;

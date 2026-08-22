@@ -25,6 +25,7 @@ import {
   STRATEGIC_CONTROL_NEGLECT_GRACE_TICKS,
   STRATEGIC_CONTROL_DEGRADATION_RATE,
   STRATEGIC_HISTORY_WINDOW_TICKS,
+  ENCOUNTER_POOL_INVALIDATING_EDGE_TYPES,
 } from '../data/strategic-action-constants';
 import {
   createTradeRoute,
@@ -46,6 +47,24 @@ export interface StrategicExecutionResult {
   strategicState: StrategicRuntimeState;
   graphOps: GraphOpResult[];
   catalystSeeded: boolean;
+  /**
+   * Locations whose encounter pool changed because this execution minted a
+   * pool-invalidating edge (THR-1184). The caller owns the refresh — it holds the
+   * `SimulationRuntime`, which this module deliberately does not.
+   *
+   * Optional and absent on every path that mints no such edge, so existing callers
+   * are unaffected.
+   */
+  poolInvalidatedLocationIds?: string[];
+}
+
+/**
+ * Result of a hint-driven mutation: the graph ops, plus any location whose encounter
+ * pool the mutation changed (THR-1184).
+ */
+interface InstantMutationResult {
+  ops: GraphOpResult[];
+  poolInvalidatedLocationIds: string[];
 }
 
 /**
@@ -66,7 +85,7 @@ export function executeStrategicAction(
   switch (candidate.executionMode) {
     case 'instant': {
       // Execute the graph mutation immediately
-      const ops = executeInstantMutation(graph, candidate, tick);
+      const { ops, poolInvalidatedLocationIds } = executeInstantMutation(graph, candidate, tick);
       graphOps.push(...ops);
 
       // Check for catalyst seeding
@@ -80,6 +99,7 @@ export function executeStrategicAction(
         strategicState: { ...currentState, history: updatedHistory },
         graphOps,
         catalystSeeded,
+        poolInvalidatedLocationIds,
       };
     }
 
@@ -184,10 +204,16 @@ export function advanceStrategicProjects(
   graph: WorldGraph,
   tick: number,
   rng: () => number,
-): { strategicState: StrategicRuntimeState; events: import('../types/gameState').TickEvent[] } {
+): {
+  strategicState: StrategicRuntimeState;
+  events: import('../types/gameState').TickEvent[];
+  /** Locations whose encounter pool a completing project changed (THR-1184). */
+  poolInvalidatedLocationIds: string[];
+} {
   const currentState = state.strategicState ?? { projects: [], controls: [], history: [] };
   const updatedProjects: StrategicProjectRuntime[] = [];
   const completedOps: GraphOpResult[] = [];
+  const poolInvalidatedLocationIds: string[] = [];
   const newHistory: StrategicHistoryEntry[] = [];
   const events: import('../types/gameState').TickEvent[] = [];
 
@@ -254,8 +280,10 @@ export function advanceStrategicProjects(
         generationReason: 'ambition_progression',
       };
 
-      const ops = executeInstantMutation(graph, candidate, tick);
+      const mutation = executeInstantMutation(graph, candidate, tick);
+      const ops = mutation.ops;
       completedOps.push(...ops);
+      poolInvalidatedLocationIds.push(...mutation.poolInvalidatedLocationIds);
 
       const catalystSeeded = maybeSeedCatalyst(state, candidate, tick, rng);
 
@@ -340,6 +368,7 @@ export function advanceStrategicProjects(
       history: updatedHistoryFull,
     },
     events,
+    poolInvalidatedLocationIds,
   };
 }
 
@@ -353,8 +382,9 @@ function executeInstantMutation(
   graph: WorldGraph,
   candidate: StrategicActionCandidate,
   tick: number,
-): GraphOpResult[] {
+): InstantMutationResult {
   const ops: GraphOpResult[] = [];
+  const poolInvalidatedLocationIds: string[] = [];
   const targetId = candidate.targetNodeId;
 
   // ── Hint-driven dispatch: templates declare their mutation via mutationHint ──
@@ -403,7 +433,16 @@ function executeInstantMutation(
           const [source, target] = hint.direction === 'actor_to_target'
             ? [candidate.actorId, targetId]
             : [targetId, candidate.actorId];
-          ops.push(createRelationEdge(graph, source, target, hint.edgeType, tick, hint.properties));
+          const result = createRelationEdge(graph, source, target, hint.edgeType, tick, hint.properties);
+          ops.push(result);
+          // THR-1184: a minted `sacred_route` changes what its destination can host, and
+          // the encounter cache is only rebuilt on structural invalidation — so without
+          // this the new pool waits for an unrelated system to notice. Report the
+          // location; the caller (which owns the runtime) does the refresh.
+          if (result.success && ENCOUNTER_POOL_INVALIDATING_EDGE_TYPES.has(hint.edgeType)) {
+            const destination = graph.getNode(target);
+            if (destination?.type === 'location') poolInvalidatedLocationIds.push(target);
+          }
         }
         break;
       }
@@ -473,7 +512,7 @@ function executeInstantMutation(
     } as TraceEntry);
   }
 
-  return ops;
+  return { ops, poolInvalidatedLocationIds };
 }
 
 // ─── Catalyst Seeding ───────────────────────────────────────────────

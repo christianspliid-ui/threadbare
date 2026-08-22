@@ -488,9 +488,11 @@ export const EDGE_SCHEMA: Record<EdgeType, EdgeSchema> = {
     // seeded world — and no existing edge type carries "this actor consecrated a
     // pilgrimage route to this place", so the rewrite would have had to destroy the
     // fiction to satisfy the registry (NFP #5 and #6 both point the other way).
-    // KNOWN GAP: zero consumers — nothing reads this edge yet, so it is inert rather
-    // than wrong. Tracked as THR-1184; do not read that gap as a reason to unregister.
-    description: 'Actor established a consecrated pilgrimage route to a location. Written by zealotStrategicPack via createRelationEdge. KNOWN GAP: no consumers yet (THR-1184).',
+    // Consumed since THR-1184: a location carrying an incoming `sacred_route` pools the
+    // pilgrimage encounters in SACRED_ROUTE_DESTINATION_ENCOUNTER_IDS regardless of its
+    // subtype, so consecrating a route to a town buys that town the pilgrimage its
+    // completion prose promises. Widen a route's payoff by editing that list.
+    description: 'Actor established a consecrated pilgrimage route to a location. Written by zealotStrategicPack via createRelationEdge; read by encounterCache to pool pilgrimage encounters at the destination (THR-1184).',
   },
 
   // ── Ruins Layer (THR-149, THR-150) ────────────────────────────────────────
