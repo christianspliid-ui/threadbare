@@ -20,6 +20,7 @@ import type { WorldGraph } from './graph';
 import type { GraphOp } from '../types/graphOp';
 import { getLocationsInHex } from './hexZoom';
 import { getAgentsAtLocation } from './graphQueries';
+import { isPlaceTierLocation } from './sublocationShape';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -49,6 +50,28 @@ export const PLANT_DREAM_STRENGTH = 0.5;
 /** Lifespan of the temporary `ruin_seeker` trait `hex.plant_dream` grants, in ticks. */
 export const PLANT_DREAM_TRAIT_DURATION_TICKS = 25;
 export const SUMMON_CONGREGATION_STRENGTH = 0.4;
+
+// THR-1193: `hex.restore_fragment` — what a Restored Fragment *is*.
+/**
+ * Display name of the sublocation `hex.restore_fragment` mints.
+ * Passed as the op's `nodeName`, not only as a `properties.name`: `executeAddNode`
+ * falls back to the generated id for the node's top-level `name`, so a properties-only
+ * name leaves the fragment reading as `gen_location_7` everywhere `node.name` is shown.
+ */
+export const RESTORE_FRAGMENT_NAME = 'Restored Fragment';
+/**
+ * The sublocation type a restored fragment registers as.
+ *
+ * `sublocation-type.ruins` rather than a bespoke `restored_ruin` type, because
+ * `sublocationTypeId` is what encounter gating matches against (`locationSubtypes` in
+ * `encounter-content`), and an unregistered type gates *no* encounters — the fragment
+ * would be inert scenery rather than the "functional sublocation" the action's own
+ * description promises. The restored-ness is carried by {@link RESTORE_FRAGMENT_SUBTYPE}
+ * for prose and art, which no gate reads.
+ */
+export const RESTORE_FRAGMENT_SUBLOCATION_TYPE_ID = 'sublocation-type.ruins';
+/** Descriptive flavour subtype, preserved from the pre-THR-1193 recipe. */
+export const RESTORE_FRAGMENT_SUBTYPE = 'restored_ruin';
 
 // Ruins exploration constants (re-exported from central tuning file)
 import {
@@ -177,7 +200,7 @@ const HEX_ACTION_MUTATIONS: Readonly<Record<string, HexActionMutationDef>> = {
   // hex.plant_dream — no hex mutation; dynamic GraphOp generator (TB-081)
   // hex.read_stones — no mutation (observation only)
   // hex.whisper_intuition — no hex mutation; dynamic GraphOp generator
-  // hex.restore_fragment — no hex mutation; GraphOp creates sublocation (see HEX_ACTION_GRAPH_OPS)
+  // hex.restore_fragment — no hex mutation; dynamic GraphOp generator mints a sublocation (THR-1193)
   // hex.rewrite_history — no hex mutation; GraphOp updates location (see HEX_ACTION_GRAPH_OPS)
 };
 
@@ -296,24 +319,10 @@ const HEX_ACTION_GRAPH_OPS: Readonly<Record<string, GraphOp[]>> = {
       target: '$actor',
     },
   ],
-  'hex.restore_fragment': [
-    {
-      op: 'add_node',
-      // TODO(THR-1193): the last production writer of `type: 'sublocation'`. It carries
-      // no `parentLocationId` and attaches by `located_at` rather than `contains`, so it
-      // is not a sublocation by the THR-1183 discriminator — a different thing wearing
-      // the name. Left as-is deliberately: `executeAddNode` copies `properties` verbatim
-      // without resolving `$`-refs, so it cannot be given a runtime parent yet.
-      nodeType: 'sublocation',
-      properties: { name: 'Restored Fragment', subtype: 'restored_ruin', hidden: false },
-    },
-    {
-      op: 'add_edge',
-      edgeType: 'located_at',
-      source: '$created_0',
-      target: '$location',
-    },
-  ],
+  // THR-1193: `hex.restore_fragment` moved to HEX_ACTION_GRAPH_OP_GENERATORS. A
+  // Restored Fragment is a sublocation, and a sublocation needs a *runtime* parent —
+  // which a static recipe cannot name, because a hex action's `$location` is the hex
+  // target id (`hex_31_5`), not a graph node. See the generator for the full story.
   'hex.rewrite_history': [
     {
       op: 'update_node',
@@ -386,6 +395,81 @@ const HEX_ACTION_GRAPH_OP_GENERATORS: Readonly<Record<string, GraphOpGenerator>>
       });
     }
     return ops;
+  },
+
+  /**
+   * THR-1193 — restore a ruin fragment into a real sublocation.
+   *
+   * **What a Restored Fragment is.** A sublocation. That is not a new decision: the
+   * template's own description says the fragment "becomes a functional sublocation",
+   * its success prose says "a blended sublocation bridging past and present", and the
+   * 2026-03-26 hex-actions design doc row reads "Partially rebuild ruin → create
+   * functional blended sublocation". THR-1193 asked for the decision to be *recorded*;
+   * the design had already made it, and the node shape had drifted away from it.
+   *
+   * **What it was doing instead.** It minted `type: 'sublocation'` — the shape THR-1183
+   * retired — with no `parentLocationId`, then tried to attach it with `located_at` to
+   * `$location`. Two independent reasons that could never work: `$location` for a hex
+   * action resolves to the hex target id (`hex_31_5`), and hexes are not graph nodes
+   * (a seeded medium world has zero); and `$created_0` resolved to nothing at all, so
+   * the edge failed on its *source* before the dangling target mattered. Net effect:
+   * every successful cast left an orphan node with no parent, no edges, and the name
+   * `gen_sublocation_N`, invisible to every sweep. The action reported success because
+   * a failed op inside a fail-soft batch is a per-op flag nobody read.
+   *
+   * **Why a generator and not a static recipe.** A sublocation's parent is a runtime
+   * value; a static recipe can only name context sentinels, and no sentinel here names
+   * a location node. THR-1193 anticipated fixing this by teaching `executeAddNode` to
+   * substitute `$`-refs inside `properties` — but that would resolve `parentLocationId:
+   * '$location'` to `hex_31_5` and write a *dangling* parent, satisfying the letter of
+   * the fix and none of its point. A generator queries the graph and emits literal ids,
+   * which needs no new executor capability and no behaviour change to the ~40 other
+   * `add_node` recipes that a properties-wide `$` scan would newly reach (NFP #6).
+   *
+   * Fail-soft (NFP #4): a hex with no place-tier location yields no ops. The action
+   * still resolves and narrates; it simply has nothing to restore the fragment onto.
+   */
+  'hex.restore_fragment': (graph, col, row, tick) => {
+    // Place-tier only. `getLocationsInHex` returns BOTH tiers (it sweeps a bare
+    // `getNodesByType('location')`, the THR-1183 trap), so an unfiltered pick could
+    // parent a sublocation to a sublocation.
+    const places = getLocationsInHex(graph, col, row).filter(isPlaceTierLocation);
+    if (places.length === 0) return [];
+
+    // Prefer ruins — this is a *restoration*, and the template's `narrativeLayer` is
+    // 'ruins'. Falls back to any place on the hex rather than refusing: the fragment
+    // has to land somewhere, and refusing would make a successful cast a silent no-op.
+    const parent =
+      places.find(p => String(p.properties?.locationSubtype ?? '').includes('ruin')) ?? places[0];
+
+    return [
+      {
+        op: 'add_node',
+        nodeType: 'location',
+        nodeName: RESTORE_FRAGMENT_NAME,
+        properties: {
+          // The canonical sublocation shape, matching `strategicGraphOps.createSublocation`.
+          sublocationTypeId: RESTORE_FRAGMENT_SUBLOCATION_TYPE_ID,
+          parentLocationId: parent.id,
+          // `persistence` is required by `SublocationProperties`, and omitting it is what
+          // crashed `checkDissolutions` under THR-1183. A rebuilt ruin is permanent.
+          persistence: { type: 'permanent' },
+          hexCol: col,
+          hexRow: row,
+          subtype: RESTORE_FRAGMENT_SUBTYPE,
+          hidden: false,
+          createdTick: tick,
+        },
+      },
+      {
+        // `contains`, parent → fragment: the attachment convention every other
+        // sublocation uses. The old `located_at` edge made this a third convention.
+        op: 'add_edge',
+        edgeType: 'contains',
+        source: parent.id,
+        target: '$created_0',
+      },
+    ];
   },
 
   'hex.spark_encounter': (graph, col, row, tick) => {

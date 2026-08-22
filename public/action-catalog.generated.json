@@ -4186,7 +4186,7 @@
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
       "description": "Undertakes the painstaking work of reassembling a portion of ruins, using divine will to guide the reconstruction of shattered stone and faded enchantment. The restored fragment becomes a functional sublocation that bridges the ancient past and the present day. Damage that is too deep or too diffuse resists even divine restoration efforts.",
-      "technicalEffect": "Engine bridge: on success, spawns a restored-ruin `sublocation` node on the hex and places it via a `located_at` edge.",
+      "technicalEffect": "Engine bridge: on success, mints a permanent `sublocation-type.ruins` sublocation named “Restored Fragment” under a place-tier location on the hex — preferring a ruins location — attached by a `contains` edge from that parent. No-op on a hex holding no place-tier location.",
       "effectSource": "engine-bridge"
     },
     {
