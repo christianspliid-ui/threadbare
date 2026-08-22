@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-20 21:56 local (19:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-22 09:15 local (07:15 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -10,7 +10,7 @@ No queue mechanic is in the way; there is simply no attended session. This is th
 
 - **[Rank five parts of the game for rebuilding](https://linear.app/threadbare/issue/THR-1163/wave-1-selection-which-seams-make-the-first-wave-in-what-order-under)** — an agent puts five candidates in front of you (hunger vocabulary, consequence chips, region identity, mandate prose, follow-on tags), ranked against stated criteria; you rule on the order in chat. One sitting, no code, research finished. Resolving it closes [the architecture map](https://linear.app/threadbare/issue/THR-1157/typed-game-state-architecture-machinery-first-wave-wayfinder-map) and carves it into design sessions — the only thing that refills a shelf now holding cleanup and nothing else. Say *"run the wave-1 sitting."*
 - **[Unify the card grammar](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** — your 6 August note: action cards are too wordy, you cannot tell what they do, and playing one gives no feedback, while encounter cards already read the way you wanted. Staged with its reading list gathered.
-- **[Traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)** — in design and assigned to you since Friday, untouched. Either give it the hour or say *"put Traits wave 2 back in the pile."*
+- **[Traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)** — in design and assigned to you for a week, untouched. Either give it the hour or say *"put Traits wave 2 back in the pile."*
 
 Four more sit behind these whenever you want them: [the anchor prototype](https://linear.app/threadbare/issue/THR-1162/anchor-type-on-a-second-seam-throwaway-prototype-proving-the-pilots), [the encounter slice verdict](https://linear.app/threadbare/issue/THR-907/slice-verdict-session-christian-rules-on-prose-firing-ui-and-game), and your own two asks — [nations simulated rather than drawn](https://linear.app/threadbare/issue/THR-1155/nations-and-named-areas-are-rendered-not-simulated-promote-both-to) and [the one-button snapshot](https://linear.app/threadbare/issue/THR-1134/shareable-game-state-snapshot-one-button-incident-bundle-that-works-in). The wave-1 sitting may decide the *scope* of the nations one, so designing nations first risks designing the narrow version.
 
@@ -26,7 +26,7 @@ It is the smallest ask on this list and needs only you. It also gates one other 
 
 There is a finished, unused piece of sound design: when you commit to a nudge, roughly 1.6 seconds where a tone draws tight, holds, then releases — and only then does the outcome land. Nothing plays it today; the visual it accompanied was deleted, so what is left is the pacing alone.
 
-**The question: does committing feel better with that beat, or should the outcome land immediately?** Pure feel, no measurement settles it. Either answer closes the ticket — wired to the encounter veil, or retired with its constants and tests. Open five days, and it closes whether or not the builders are running. The lane's recommendation: no — unskippable on every commit turns tense into waiting, and the timings stay recoverable from history.
+**The question: does committing feel better with that beat, or should the outcome land immediately?** Pure feel, no measurement settles it. Either answer closes the ticket — wired to the encounter veil, or retired with its constants and tests. Open since Monday, and it closes whether or not the builders are running. The lane's recommendation: no — unskippable on every commit turns tense into waiting, and the timings stay recoverable from history.
 
 ### 4. One attended dev-server session — [THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server)
 
