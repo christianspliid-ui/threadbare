@@ -3029,7 +3029,7 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   {
     const stratProjRng = mulberry32(state.seed + state.tick * 59);
     {
-      const r = runInlinePhase('strategic_projects', s, () => phaseStrategicProjects(s, stratProjRng));
+      const r = runInlinePhase('strategic_projects', s, () => phaseStrategicProjects(s, stratProjRng, runtime));
       s = r.next;
       phaseEventCounts['strategic_projects'] = r.eventDelta;
     }
