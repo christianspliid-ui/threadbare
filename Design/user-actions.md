@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-22 17:58 local (15:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-22 18:58 local (16:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -15,18 +15,18 @@ Six encounters were rebuilt to the new bar. Two are waiting on your eyes, live o
 
 **The question: are these two worth meeting a second time?** A yes releases batch 2 — the remaining nine of fifteen. A no tells the line what the bar is still missing before nine more are written against it.
 
-**Correction, recorded 2026-08-22:** earlier briefs listed this as held back until the Grateful Kin return visit exists. That was wrong — the return visit is downstream, not a precondition. The stated precondition (the rewrite visibly live on the deployed build) was met 2026-08-17 and the site serves it. This was playable and waiting five days while being reported as blocked.
+Waiting five days. As of this evening the board is empty, so this is also the largest single release available.
 
 ### 2. What is a run *about*? — [THR-1198](https://linear.app/threadbare/issue/THR-1198/the-48-authored-mandate-strings-are-wired-but-unreachable-no-live-game)
 
-**New 2026-08-22, and a genuine fork.** Forty-eight authored lines narrate the campaign's milestones — a stage advancing, a mandate completing, a mandate failing. As of this afternoon they are wired up and working. But they are written for **twelve named campaigns**, and every live game instead derives its spine from **what your god remembers**. The prose is correct, connected, and still unreachable; the game falls back to generated text and nothing is broken.
+Forty-eight authored lines narrate the campaign's milestones — a stage advancing, a mandate completing, a mandate failing. They are wired up and working. But they are written for **twelve named campaigns**, and every live game instead derives its spine from **what your god remembers**. The prose is correct, connected, and still unreachable; the game falls back to generated text and nothing is broken.
 
 **The question, in game terms: does a run's spine come from what the god remembers, or from a named campaign the world offers?** Today the code says the first and the writing says the second.
 
 - **Remembrance** — write the milestone prose for the twelve hungers instead. The existing forty-eight lines stay unread.
 - **Named campaigns** — give the twelve authored mandates a route back into play. That changes how a run's purpose is *chosen*, not just what it reads like.
 
-Nothing is blocked while you decide. If you rule out the second, the unused machinery gets retired rather than left as a passing test on a dead path.
+Nothing is blocked while you decide, and either answer is immediately buildable — the cheapest thing on this list to put work back on the shelf. If you rule out the second, the unused machinery gets retired rather than left as a passing test on a dead path.
 
 ### 3. Ten minutes to shape one encounter — [THR-1182](https://linear.app/threadbare/issue/THR-1182/the-grateful-kins-standing-welcome-has-no-return-visit-author-the)
 
@@ -40,16 +40,19 @@ It sits downstream of ask 1 and edits the same file, so taking them in that orde
 
 There is a finished, unused piece of sound design: when you commit to a nudge, roughly 1.6 seconds where a tone draws tight, holds, then releases — and only then does the outcome land. Nothing plays it today; the visual it accompanied was deleted, so what is left is the pacing alone.
 
-**The question: does committing feel better with that beat, or should the outcome land immediately?** Pure feel, no measurement settles it. Either answer closes the ticket — wired to the encounter veil, or retired with its constants and tests. Open since Monday. Two lanes now recommend **no**: unskippable on every commit turns tense into waiting, and the timings stay recoverable from history.
+**The question: does committing feel better with that beat, or should the outcome land immediately?** Pure feel, no measurement settles it. Either answer closes the ticket — wired to the encounter veil, or retired with its constants and tests. Open since Monday. Two lanes recommend **no**: unskippable on every commit turns tense into waiting, and the timings stay recoverable from history.
 
-### 5. A design hour — two jobs waiting for it
+This is now a single question. The ticket originally held two sounds; the second — a small cue on each consequence chip — was retired on its own merits, because the vocabulary it was keyed to no longer exists.
 
-The wave-1 sitting is **done** (see below). Its three follow-on sessions all need you in a chat — no lane can prepare them away, which corrects an earlier note here saying they were being carved. Two further design efforts also want an attended hour, in the order I would take them:
+### 5. A design hour — and this is the bottleneck
 
-- **[Unify the card grammar](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** — your 6 August note: action cards are too wordy, you cannot tell what they do, and playing one gives no feedback, while encounter cards already read the way you wanted. Staged with its reading list gathered.
+**Nothing unattended can refill the shelf. Only a session with you can.** In the order you set:
+
+- **The three wave-1 sessions** you ruled on — shared machinery first, the hunger vocabulary second, [nations and named areas simulated rather than drawn](https://linear.app/threadbare/issue/THR-1155/nations-and-named-areas-are-rendered-not-simulated-promote-both-to) third. All three need you in a chat; no lane can prepare them away.
+- **[Unify the card grammar](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** — your 6 August note: action cards are too wordy, you cannot tell what they do, and playing one gives no feedback, while encounter cards already read the way you wanted. Staged with its reading list gathered; it has held the single design slot ~110 hours.
 - **[Traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)** — in design and assigned to you for a week, untouched. Either give it the hour or say *"put Traits wave 2 back in the pile."*
 
-Behind these whenever you want them: [the anchor prototype](https://linear.app/threadbare/issue/THR-1162/anchor-type-on-a-second-seam-throwaway-prototype-proving-the-pilots), [the encounter slice verdict](https://linear.app/threadbare/issue/THR-907/slice-verdict-session-christian-rules-on-prose-firing-ui-and-game), and your own [one-button snapshot](https://linear.app/threadbare/issue/THR-1134/shareable-game-state-snapshot-one-button-incident-bundle-that-works-in). [Nations simulated rather than drawn](https://linear.app/threadbare/issue/THR-1155/nations-and-named-areas-are-rendered-not-simulated-promote-both-to) is scheduled third in wave 1 by your own ruling.
+Behind these whenever you want them: [the anchor prototype](https://linear.app/threadbare/issue/THR-1162/anchor-type-on-a-second-seam-throwaway-prototype-proving-the-pilots), [the encounter slice verdict](https://linear.app/threadbare/issue/THR-907/slice-verdict-session-christian-rules-on-prose-firing-ui-and-game), and your own [one-button snapshot](https://linear.app/threadbare/issue/THR-1134/shareable-game-state-snapshot-one-button-incident-bundle-that-works-in).
 
 ### 6. One attended dev-server session — [THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server)
 
@@ -69,7 +72,9 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
-- 2026-08-22: **a two-minute Linear setting you were going to be asked about does not exist** — [THR-1190](https://linear.app/threadbare/issue/THR-1190/the-park-decay-remedy-is-a-christian-owned-linear-setting-with-no): finished tickets kept going quietly invisible on your page, and the remedy was assumed to be a switch only you could flip. Every workspace control that could cause it was read directly this afternoon — all already set the way we want. GitHub's own integration re-assigns the ticket whenever a pull request names its number, which no setting here governs. The fix is a writing rule the lanes follow. This leaves your list without ever reaching it.
+- 2026-08-22: **a stale-file check no longer fails forever over invisible line endings** — [THR-1192](https://linear.app/threadbare/issue/THR-1192/checkgenerated-freshness-byte-compares-disk-vs-blob-with-no-eol): a working copy written with Windows line endings failed the check permanently, blaming the wrong file and offering a fix that could not work.
+- 2026-08-22: **a generated file stopped looking changed when it was not** — [THR-714](https://linear.app/threadbare/issue/THR-714/strip-the-volatile-timestamp-from-ul-dashboardgeneratedjson): it carried the moment it was built, so rebuilding it always produced a difference.
+- 2026-08-22: **a two-minute Linear setting you were going to be asked about does not exist** — [THR-1190](https://linear.app/threadbare/issue/THR-1190/the-park-decay-remedy-is-a-christian-owned-linear-setting-with-no): finished tickets kept going quietly invisible on your page, and the remedy was assumed to be a switch only you could flip. Every workspace control that could cause it was read directly — all already set the way we want. GitHub's own integration re-assigns the ticket whenever a pull request names its number, which no setting here governs. The fix is a writing rule the lanes follow. This left your list without ever reaching it.
 - 2026-08-22: **a divine spark now records when it happened** — [THR-1196](https://linear.app/threadbare/issue/THR-1196/hexspark-encounter-writes-an-occurred-at-edge-without-the-tick-its) ([PR #1573](https://github.com/christianspliid-ui/threadbare/pull/1573)): sparking an encounter onto a hex left a mark in the world's history with no date on it — the record existed but could never be placed in time. It carries its tick now.
 - 2026-08-22: **the campaign's spine narrates from its own writing** — [THR-1197](https://linear.app/threadbare/issue/THR-1197/wire-the-48-authored-mandate-milestone-prose-strings-into-stage): forty-eight authored milestone lines were read by nothing; stage advances, completions and failures now speak them. Filed, built and deployed inside three hours of your wave-1 ruling. Its own honest limit became ask 2 above.
 - 2026-08-22: **two divine actions that forged an artifact for nobody now hand it over** — [THR-1194](https://linear.app/threadbare/issue/THR-1194/hexforge-seer-token-and-hexforge-instrument-bind-their-artifact-with) ([PR #1571](https://github.com/christianspliid-ui/threadbare/pull/1571)): forging a seer's token and forging an instrument each reported success and gave the item to no one.
@@ -77,8 +82,6 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 - 2026-08-22: **a stale-file check stopped failing pull requests for the wrong reason** — [THR-1191](https://linear.app/threadbare/issue/THR-1191/checkwiki-freshnessblocking-diffs-two-dot-so-mains-own-advance-fails) ([PR #1570](https://github.com/christianspliid-ui/threadbare/pull/1570)): the gate blamed a branch for changes that had landed on main behind it. Now it looks only at the branch's own work.
 - 2026-08-22: **a restored fragment of the world is now a real place** — [THR-1193](https://linear.app/threadbare/issue/THR-1193/hexrestore-fragment-mints-a-sublocation-node-with-no-parent-a-tier) ([PR #1569](https://github.com/christianspliid-ui/threadbare/pull/1569)): mending a broken piece of the map used to build a room with no building around it and no address. It now belongs somewhere.
 - 2026-08-22: **a consecrated route now buys the pilgrimage it promised** — [THR-1184](https://linear.app/threadbare/issue/THR-1184/sacred-route-is-registered-but-has-zero-consumers-an-eight-tick) ([PR #1568](https://github.com/christianspliid-ui/threadbare/pull/1568)): the game knew what a sacred route was and nothing in it could ever use one. It can now.
-- 2026-08-22: **a room inside a town is now built one way, not two** — [THR-1183](https://linear.app/threadbare/issue/THR-1183/sublocations-are-minted-in-two-incompatible-node-shapes) ([PR #1567](https://github.com/christianspliid-ui/threadbare/pull/1567)): two parts of the game each built the same kind of place differently, so each half was invisible to the other half's eyes. One shape now.
-- 2026-08-22: **the words for what a thing can be no longer disagree with themselves** — [THR-857](https://linear.app/threadbare/issue/THR-857/possession-subcategory-vocabulary-has-3-off-union-strays-intelligence) ([PR #1566](https://github.com/christianspliid-ui/threadbare/pull/1566)): three stray labels outside the agreed set, reconciled.
 
 ---
 
