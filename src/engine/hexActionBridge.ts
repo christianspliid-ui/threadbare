@@ -561,6 +561,11 @@ const HEX_ACTION_GRAPH_OP_GENERATORS: Readonly<Record<string, GraphOpGenerator>>
         edgeType: 'occurred_at',
         source: '$created_0',
         target: locations[0].id,
+        // THR-1196: `occurred_at` lists `tick` in its schema row's requiredProperties.
+        // The edge landed anyway — the schema warns rather than refusing — so consumers
+        // reading `edge.properties.tick` on a divine spark got `undefined`, and the
+        // warning went to a console nobody reads.
+        properties: { tick },
       },
     ];
   },
