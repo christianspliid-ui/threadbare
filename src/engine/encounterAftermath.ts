@@ -130,6 +130,7 @@ import {
 import { computeAxisLeans, chooseAlignedReaction } from './encounters/reactionChooser';
 import { getAxisByReach, reachToAxisId } from '../types/axisRegistry';
 import type { AxiologicalProfile } from '../types/agent';
+import { isSublocationNode, isPlaceTierLocation } from './sublocationShape';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -698,14 +699,16 @@ function nodeMatchesSceneField(
     case 'faction':
       return nodeType === 'faction' || (nodeType === 'actor' && actorType === 'faction');
     case 'sublocation':
-      return nodeType === 'sublocation'
-        || (nodeType === 'location' && node.properties?.parentLocationId !== undefined);
+      // THR-1183: this predicate was the codebase's most honest sublocation test and is
+      // now the shared one — see `sublocationShape.ts`. Routed through it so the rule
+      // has exactly one definition to drift from.
+      return isSublocationNode(node);
     case 'location':
       // A place at the hex/settlement/waypoint tier — deliberately *excluding*
       // sublocations, which have their own field. A sublocation is a location node
       // with a `parentLocationId`; accepting it here would make `$target` bind the
       // same node to two fields with different tax and gating semantics.
-      return nodeType === 'location' && node.properties?.parentLocationId === undefined;
+      return isPlaceTierLocation(node);
   }
 }
 

@@ -34,6 +34,7 @@ import { getAgentLocationId } from './graphQueries';
 import { resolveLocationToHex } from './encounterAwareness';
 import { hexDistance } from '../lib/hexMath';
 import { scoreRoutePairBalance, ROUTE_FORMATION_BALANCE_BIAS } from './tradeRoute';
+import { getSublocationNodes } from './sublocationShape';
 import type { ReachDomain } from '../types/traits';
 
 // ─── Template Registry ──────────────────────────────────────────────
@@ -256,8 +257,11 @@ function findValidTargets(
     }
 
     case 'sublocation_type': {
-      // Find sublocations of the specified types
-      const allSublocations = graph.getNodesByType('sublocation');
+      // Find sublocations of the specified types.
+      // THR-1183: was `getNodesByType('sublocation')`, which saw only the strategic mint
+      // shape — every worldgen-minted sublocation (the overwhelming majority) was
+      // invisible here, so this rule matched almost nothing on a normal map.
+      const allSublocations = getSublocationNodes(graph);
       return allSublocations.filter(sub => {
         const typeId = sub.properties.sublocationTypeId as string | undefined;
         return typeId && rule.subtypeIds.includes(typeId);

@@ -15,6 +15,7 @@ import type { AxiologicalProfile, ValuePair } from '../types/agent';
 import type { SublocationProperties, SublocationPersistence, DivineOrigin } from '../types/sublocation';
 import { mulberry32 } from '../lib/prng';
 import { generateTavernName } from '../data/tavern-names';
+import { getSublocationNodes } from './sublocationShape';
 
 /** Sublocation type ID for taverns — used by social encounter generation. */
 export const TAVERN_SUBLOCATION_TYPE_ID = 'sublocation-type.tavern';
@@ -617,19 +618,23 @@ export function checkDissolutions(
 ): DissolutionEvent[] {
   const events: DissolutionEvent[] = [];
 
-  // Find all sublocation instance nodes
-  const allLocations = graph.getNodesByType('location');
-  const sublocations = allLocations.filter(node => {
-    const props = node.properties as Partial<SublocationProperties>;
-    return props.sublocationTypeId !== undefined;
-  });
+  // Find all sublocation instance nodes — both mint shapes (THR-1183), so a legacy
+  // node out of a saved world is dissolvable rather than immortal.
+  const sublocations = getSublocationNodes(graph);
 
   for (const sublocation of sublocations) {
-    const props = sublocation.properties as SublocationProperties;
+    const props = sublocation.properties as Partial<SublocationProperties>;
     const { persistence, parentLocationId } = props;
 
-    // Skip permanent sublocations
-    if (persistence.type === 'permanent') {
+    // Fail-soft (NFP #4), and the reason this guard exists: `persistence` is a required
+    // field of `SublocationProperties`, but `strategicGraphOps.createSublocation` did
+    // not write it until THR-1183 — and its nodes were invisible to this sweep, so the
+    // omission never surfaced. Unifying the mint shape brought them into range and this
+    // loop threw on the first one, crashing the tick. A sublocation with no stated
+    // persistence is treated as permanent: the tick loop must never crash, and refusing
+    // to dissolve is the recoverable direction (a node that lingers can still be removed;
+    // one dissolved by mistake is gone).
+    if (!persistence || persistence.type === 'permanent') {
       continue;
     }
 

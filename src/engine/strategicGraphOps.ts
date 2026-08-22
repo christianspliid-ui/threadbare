@@ -12,6 +12,7 @@ import { buildRouteManifest } from './tradeRoute';
 import { validateEdgeEndpoints } from '../types/edgeSchema';
 import { emitTrace } from './traceBuffer';
 import type { RouteCargoAssignedTrace, TraceEntry } from '../types/trace';
+import type { SublocationPersistence } from '../types/sublocation';
 
 export interface GraphOpResult {
   success: boolean;
@@ -94,7 +95,10 @@ export function createTradeRoute(
 
 /**
  * Create a sublocation (warehouse, guild chapter, etc.) at a location.
- * Uses the existing sublocation node type + contains/constructed_by edges.
+ *
+ * Mints the canonical sublocation shape — a `location` node carrying
+ * `parentLocationId` — plus contains/constructed_by edges. See `sublocationShape.ts`
+ * for why that is the one shape and how readers ask about it (THR-1183).
  */
 export function createSublocation(
   graph: WorldGraph,
@@ -112,13 +116,24 @@ export function createSublocation(
 
     const nodeId = `subloc_${sublocationTypeId}_${parentLocationId}_${tick}`;
 
+    // THR-1183: minted as a `location` node carrying `parentLocationId` — the same
+    // shape `sublocation.ts` has always produced. Minting `type: 'sublocation'` here
+    // put strategic sublocations outside every `getNodesByType('location')` sweep while
+    // canonical ones sat outside every `getNodesByType('sublocation')` sweep, so each
+    // shape was half-visible to the codebase in complementary halves. See
+    // `sublocationShape.ts` for the discriminator every reader now shares.
     graph.addNode({
       id: nodeId,
       name,
-      type: 'sublocation',
+      type: 'location',
       properties: {
         sublocationTypeId,
         parentLocationId,
+        // `persistence` is a required field of `SublocationProperties` that this writer
+        // never wrote — a contract violation that stayed invisible only because the old
+        // `type: 'sublocation'` node sat outside `checkDissolutions`' location sweep.
+        // A strategically-built structure is permanent, matching the canonical writer.
+        persistence: { type: 'permanent' } satisfies SublocationPersistence,
         hexCol: parent.properties.hexCol,
         hexRow: parent.properties.hexRow,
         createdTick: tick,

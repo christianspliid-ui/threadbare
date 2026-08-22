@@ -12,6 +12,7 @@ import type { InfluenceTier, ThreadEdgeProperties, CourtPosition } from '../type
 import { TIER_NAMES } from '../types/influence';
 import { getAgentPortraitUrlFromProperties } from '../data/portrait-assets';
 import { getAgentFaction } from './graphQueries';
+import { isSublocationNode } from './sublocationShape';
 import type { ControlEffect } from '../types/controlEffect';
 import type { SphereName } from '../types/index';
 
@@ -814,19 +815,14 @@ export function getSustainedControlNodes(
     }
 
     if (targetNode) {
-      // `'sublocation'` is used as a runtime node type literal in some seeded
-      // worlds (see `getNodesByType('sublocation')` in simulationRuntime.ts),
-      // even though `NodeType` doesn't list it. Cast to string so the
-      // comparison narrows correctly at runtime. Other paths also tag location
-      // nodes with `locationSubtype: 'sublocation'` on the properties bag —
-      // treat that as the same case.
+      // THR-1183: one discriminator for the sublocation tier, shared with every other
+      // reader. The old hand-rolled test accepted `locationSubtype: 'sublocation'` on
+      // the property bag — a spelling no production writer has ever emitted — so real
+      // sublocations fell through to the `location` branch and were categorised as
+      // locations rather than sources.
       const typeAsString = targetNode.type as string;
-      const subtype = (targetNode.properties as Record<string, unknown>).locationSubtype;
-      const isSublocationByType = typeAsString === 'sublocation';
-      const isSublocationByProperty =
-        typeAsString === 'location' && typeof subtype === 'string' && subtype === 'sublocation';
 
-      if (isSublocationByType || isSublocationByProperty) {
+      if (isSublocationNode(targetNode)) {
         category = 'source';
         displayName = targetNode.name || '(unnamed source)';
       } else if (typeAsString === 'location') {

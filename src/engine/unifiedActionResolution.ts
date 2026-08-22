@@ -188,6 +188,7 @@ import { applyActionTriggerPayloads } from './effects/actionTriggerPayloads';
 import type { ActionTriggerEvent, EffectRuntimeState } from '../types/effects';
 import { collectAttachmentEffects } from './effects/effectWalker';
 import { tierScaledDifficulty } from './targetTierScaling';
+import { resolveToParentLocation } from './sublocationShape';
 import {
   PLAYER_CAST_VARIANCE_ENABLED,
   PLAYER_CAST_OUTCOME_FLOOR,
@@ -2814,14 +2815,10 @@ function resolveSelfActionEffect(
     const avatar = avatars[0];
     const avatarLocationId = avatar.properties?.locationId as string | undefined;
     if (!avatarLocationId) return;
-    let locNode = state.graph.getNode(avatarLocationId);
+    // THR-1183: resolve through the shared discriminator so both sublocation mint
+    // shapes reach the parent location the same way.
+    const locNode = resolveToParentLocation(state.graph, state.graph.getNode(avatarLocationId));
     if (!locNode) return;
-    if (locNode.type === 'sublocation') {
-      const parentId = locNode.properties?.parentLocationId as string | undefined;
-      if (!parentId) return;
-      locNode = state.graph.getNode(parentId);
-      if (!locNode) return;
-    }
     const hexCol = locNode.properties?.hexCol as number | undefined;
     const hexRow = locNode.properties?.hexRow as number | undefined;
     if (hexCol === undefined || hexRow === undefined) return;
@@ -2834,14 +2831,8 @@ function resolveSelfActionEffect(
     for (const actor of allActors) {
       const actorLocationId = actor.properties?.locationId as string | undefined;
       if (!actorLocationId) continue;
-      let actorLoc = state.graph.getNode(actorLocationId);
+      const actorLoc = resolveToParentLocation(state.graph, state.graph.getNode(actorLocationId));
       if (!actorLoc) continue;
-      if (actorLoc.type === 'sublocation') {
-        const parentId = actorLoc.properties?.parentLocationId as string | undefined;
-        if (!parentId) continue;
-        actorLoc = state.graph.getNode(parentId);
-        if (!actorLoc) continue;
-      }
       const aCol = actorLoc.properties?.hexCol as number | undefined;
       const aRow = actorLoc.properties?.hexRow as number | undefined;
       if (aCol !== hexCol || aRow !== hexRow) continue;

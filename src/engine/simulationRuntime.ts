@@ -349,6 +349,9 @@ export function ensureEncounterCache(
       tick,
       agentId: undefined,
       reason,
+      // Both mint shapes counted: `location` covers the canonical shape (and, since
+      // THR-1183, every sublocation), `sublocation` covers legacy nodes in saved worlds.
+      // A node has exactly one type, so the sum never double-counts.
       locationCount: graph.getNodesByType('location').length + graph.getNodesByType('sublocation').length,
       totalRebuildsThisSession: runtime.encounterCacheRebuildCount,
       durationMs,
