@@ -619,6 +619,31 @@ The pre-push hook (Gate 2) still checks that `changelog.md`, `project-status.md`
 - **Ready for Codex** — retired with the single-executor consolidation (THR-486). Confirm the queue is empty, then archive so nothing can route there.
 - **In Review** — retired with merge = Done (THR-487). `linear-autoclose.yml` now goes straight to Done; archive once confirmed empty.
 
+### Christian-owned Linear settings — the standing record
+
+Two behaviours in this workflow are governed by Linear settings rather than by anything in this repo. Both are recorded here so no session has to re-derive which surface owns them.
+
+**1. Native auto-close (THR-738).** Linear's native GitHub integration closes an issue from the branch name and the PR title, independently of `.github/workflows/linear-autoclose.yml`. Disabling it leaves the deterministic, line-anchored workflow as the sole closer, which is what kills the phantom-Done vectors 2 and 3. The Christian-owned action is recorded on `Design/user-actions.md` (the `ops` branch — `git show origin/ops:Design/user-actions.md`); the team-level surface is **Team settings → Workflows & automations → Pull request and commit automations**.
+
+**2. Auto-assign on PR open — no such setting exists (surveyed 2026-08-22, THR-1190).**
+
+The park-decay class (impediments #306, #380, #508, #607, #657 ×2) was believed to be fixable by a Christian-owned toggle disabling the GitHub integration's auto-assign, on the model of the auto-close change above. **A direct read of the live settings falsifies that.** Every control in the workspace that can write an assignee is already in the desired state, and the GitHub integration page carries no assignee control at all:
+
+| Surface | Control (literal label) | State, read 2026-08-22 |
+| -- | -- | -- |
+| Settings → Preferences → *Automations and workflows* | **Auto-assign to self** — "When creating new issues, always assign them to yourself by default" | **off** |
+| Settings → Preferences → *Automations and workflows* | **On move to started status, assign to yourself** — "When you move an unassigned issue to started, it will be automatically assigned to you" | **off** |
+| Team settings → Workflows & automations → *Pull request and commit automations* | On draft PR open / On PR or commit open / On PR review request or activity / On PR ready for merge / On PR or commit merge, move to… | all **No action** |
+| Settings → Account → Code & reviews | On git branch copy, move issue to started status | **on** — writes *status*, never assignee |
+| Settings → Account → Code & reviews | On open in coding tool, move issue to started status | **on** — writes *status*, never assignee |
+| Settings → Integrations → GitHub | — | **no assignee control exists**; the substring `assign` does not occur anywhere on the page |
+
+Three consequences, so this is not re-hunted:
+
+- **There is nothing to ask Christian to click.** THR-1190 was filed expecting a ~2-minute toggle; the toggle does not exist. Do not add one to `Design/user-actions.md`, and do not park an issue waiting on it.
+- **The authorial workaround in `CLAUDE.md` § Known Sandbox Limitations is the standing remedy, not an interim one** — keep the issue id out of the body, title and branch name of any PR not meant to close that issue, and verify the park *after* opening the PR. It is what we have, so it has to be remembered rather than superseded.
+- **If the reversion recurs with every control above still in the state shown, it is non-configurable product behaviour, not a misconfiguration.** The only surface that names the acting party is the issue's **activity feed** at the instant of the revert; capture that. Do not re-run field-level MCP probes — THR-1058 already exhausted seven controlled arms and all of them preserved the null.
+
 ---
 
 ## Migration (completed 2026-04-13)
