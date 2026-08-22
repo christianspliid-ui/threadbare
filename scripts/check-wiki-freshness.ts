@@ -55,9 +55,29 @@
  * result may be unreliable. Set WIKI_FRESHNESS_NO_FETCH=1 to skip the fetch entirely
  * (hermetic/offline runs); the label reports that too.
  *
- * Note the deliberate non-fix: three-dot `origin/main...HEAD` does NOT close this. The
- * merge base is computed from the same stale ref, so it only changes which commits are
- * attributed.
+ * Two directions, two fixes — do not collapse them (THR-1191). The base ref can be wrong
+ * in either direction, and each has its own remedy:
+ *
+ *   - STALE BASE (the THR-819 direction above): `origin/main` trails its remote, so the
+ *     diff is too WIDE and the gate false-PASSes. Fixed by the fetch, not by the diff
+ *     syntax — three-dot would recompute the merge base from the same stale ref and only
+ *     change which commits are attributed. That is why three-dot was rejected here, and
+ *     the rejection was right *for this direction*.
+ *   - ADVANCED BASE (the THR-1191 direction): `origin/main` is perfectly fresh and has
+ *     moved AHEAD of the branch point. A two-dot `git diff origin/main` is symmetric, so
+ *     every file `main` changed since the branch point enters the PR's "changed set" and
+ *     the gate false-FAILS on someone else's commit. The fetch cannot help — it is what
+ *     supplies the newer tip. Fixed by taking the diff against the MERGE BASE of
+ *     `origin/main` and `HEAD`, which is what three-dot means. Measured: PR #1504 sat 172
+ *     minutes armed-but-red over `src/types/unifiedAction.ts`, a file it never touched,
+ *     because THR-1141 merged during its CI run. Structural since strict mode was dropped
+ *     (THR-983) — sitting behind `main` is now the normal state, not an anomaly.
+ *
+ * The diff base is therefore the merge base, while the base REF stays `origin/main` and
+ * stays fetched. We use an explicit `git merge-base` rather than `A...B` syntax because
+ * the changed set must keep counting UNCOMMITTED and untracked work: `git diff A...B`
+ * compares two commits and would silently drop the working tree, which is precisely what
+ * the local pre-commit path (CLAUDE.md step 3c) runs the gate to inspect.
  *
  * Run via `npm run check:wiki-freshness` (advisory, chained into `check:process`)
  * or `npm run check:wiki-freshness:blocking` (blocking, the CI gate).
@@ -271,14 +291,42 @@ export function parseExemptionReason(commitBodies: string): string | null {
   return null;
 }
 
-/** Collect files that differ from the base ref (committed + uncommitted + untracked). */
-function collectChangedFiles(): Set<string> | null {
-  // Base ref must resolve, or we cannot compute a diff (shallow CI, unfetched remote, etc.).
-  if (git(["rev-parse", "--verify", "--quiet", WIKI_FRESHNESS_BASE]) === null) return null;
+/**
+ * Minimal git surface the changed-set collection needs. Injected so the collector can be
+ * exercised against a real throwaway repo in tests without the script's REPO_ROOT pinning
+ * (the module resolves REPO_ROOT from its own file location, so it can only ever shell
+ * against *this* repo).
+ */
+export type GitRunner = (args: string[]) => string | null;
 
-  const tracked = git(["diff", "--name-only", WIKI_FRESHNESS_BASE, "--"]);
+/**
+ * The commit the diff should be taken against: the merge base of the base ref and HEAD
+ * (THR-1191). Returns null when the base ref does not resolve at all — shallow CI clone,
+ * unfetched remote — which is the caller's signal to bail as a missing input.
+ *
+ * Falls back to the base ref itself when `merge-base` yields nothing. That happens on
+ * unrelated histories and on some shallow clones, where no common ancestor is known; the
+ * old two-dot behavior is the safe landing there, because it errs toward flagging too
+ * much (a false FAIL a human can read and waive) rather than too little (a false PASS
+ * that ships a stale page silently).
+ */
+export function resolveDiffBase(run: GitRunner, baseRef: string): string | null {
+  if (run(["rev-parse", "--verify", "--quiet", baseRef]) === null) return null;
+  const mergeBase = run(["merge-base", baseRef, "HEAD"])?.trim();
+  return mergeBase ? mergeBase : baseRef;
+}
+
+/**
+ * Collect files this branch changed (committed + uncommitted + untracked), relative to the
+ * merge base rather than the base ref tip — see the ADVANCED BASE note in the header.
+ */
+export function collectChangedFilesWith(run: GitRunner, baseRef: string): Set<string> | null {
+  const diffBase = resolveDiffBase(run, baseRef);
+  if (diffBase === null) return null;
+
+  const tracked = run(["diff", "--name-only", diffBase, "--"]);
   if (tracked === null) return null;
-  const untracked = git(["ls-files", "--others", "--exclude-standard"]) ?? "";
+  const untracked = run(["ls-files", "--others", "--exclude-standard"]) ?? "";
 
   const files = new Set<string>();
   for (const line of `${tracked}\n${untracked}`.split("\n")) {
@@ -286,6 +334,11 @@ function collectChangedFiles(): Set<string> | null {
     if (trimmed) files.add(trimmed);
   }
   return files;
+}
+
+/** Collect files this branch changed, against the repo's configured base ref. */
+function collectChangedFiles(): Set<string> | null {
+  return collectChangedFilesWith(git, WIKI_FRESHNESS_BASE);
 }
 
 /**
