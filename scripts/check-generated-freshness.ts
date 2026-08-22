@@ -40,6 +40,10 @@
  * PRs that both ran `prebuild` conflicted on every cascade merge. Prefer making
  * a generator deterministic over registering its volatility here.
  *
+ * Line endings: a CRLF-only difference is reported, not failed (THR-1192). These
+ * paths are `eol=lf` in `.gitattributes`, so git erases CRLF at `git add` — a gate
+ * stricter than the commit it guards is the defect. See `compareArtifact`.
+ *
  * This gate is deliberately NOT fail-soft. NFP #4 (fail-soft) governs the tick
  * loop, where a thrown exception costs the player their run; a build gate that
  * silently passes when it cannot verify is the gate theater THR-686 named. Any
@@ -333,8 +337,10 @@ function dirtyTrackedFiles(): Set<string> {
  * byte equality. Unparseable JSON falls back to verbatim comparison — an
  * artifact that stopped being valid JSON is itself a finding worth surfacing.
  */
-function normalize(content: string, relPath: string): string {
-  const volatileKeys = VOLATILE_JSON_KEYS[relPath];
+export function stripVolatileKeys(
+  content: string,
+  volatileKeys: readonly string[] | undefined,
+): string {
   if (!volatileKeys || volatileKeys.length === 0) return content;
   try {
     const parsed = JSON.parse(content) as Record<string, unknown>;
@@ -343,6 +349,84 @@ function normalize(content: string, relPath: string): string {
   } catch {
     return content;
   }
+}
+
+/** Collapse CRLF to LF, matching what `.gitattributes` (`eol=lf`) does at `git add`. */
+function stripCrlf(content: string): string {
+  return content.replaceAll("\r\n", "\n");
+}
+
+/** How a working-tree artifact relates to its committed copy. */
+export type ArtifactComparison = "identical" | "volatile-only" | "eol-only" | "stale";
+
+/**
+ * Classify one artifact's working-tree content against its committed copy (THR-1192).
+ *
+ * `eol-only` exists because this gate used to compare raw bytes, while the commit it
+ * guards does not: `.gitattributes` pins these paths to `eol=lf`, so git normalizes
+ * CRLF away at `git add` and the committed blob is already correct. A Windows
+ * text-mode write (Python's `open(p, "w")`) therefore produced a working copy that
+ * `git status`, `git diff` and `git diff --ignore-cr-at-eol` all called clean while
+ * this gate failed forever — and failed prescribing the generator, the one action
+ * that cannot help, since regenerating rewrites the same CRLF. Four impediments in
+ * one week (#630, #662, #671, #689) burned 10–15 min each on that dead end, and CI
+ * could never reproduce it (a Linux checkout writes LF). A gate stricter than the
+ * commit it guards is the defect, so a CRLF-only difference is not staleness.
+ *
+ * It stays a *distinct* verdict rather than folding into `identical` because CRLF on
+ * disk is still a local hazard worth naming — impediment #677 had it silently defeat
+ * a source-parsing gate whose regex excluded `\r` — and because the repair is a
+ * binary rewrite, not `git checkout --`, which no-ops on a file git calls unmodified.
+ *
+ * The volatile-key path is deliberately untouched: for an artifact with volatile
+ * keys, `stripVolatileKeys` round-trips it through JSON and re-emits LF, so both sides are
+ * already EOL-agnostic before this ever runs.
+ */
+export function classifyContent(
+  fresh: string,
+  committed: string,
+  volatileKeys?: readonly string[],
+): ArtifactComparison {
+  const freshNormalized = stripVolatileKeys(fresh, volatileKeys);
+  const committedNormalized = stripVolatileKeys(committed, volatileKeys);
+  if (freshNormalized === committedNormalized) {
+    return fresh === committed ? "identical" : "volatile-only";
+  }
+  if (stripCrlf(freshNormalized) === stripCrlf(committedNormalized)) return "eol-only";
+  return "stale";
+}
+
+/** `classifyContent` with the volatile keys registered for this path. */
+export function compareArtifact(
+  fresh: string,
+  committed: string,
+  relPath: string,
+): ArtifactComparison {
+  return classifyContent(fresh, committed, VOLATILE_JSON_KEYS[relPath]);
+}
+
+/**
+ * Surface CRLF working copies without failing on them (THR-1192). Non-blocking by
+ * construction: the committed blob is already correct, so there is nothing to fix
+ * before merging — but the message has to name line endings and the binary rewrite,
+ * because the generator advice printed below is actively misleading for this shape.
+ */
+function reportLineEndings(eolOnly: readonly string[]): void {
+  if (eolOnly.length === 0) return;
+  console.warn(
+    `check-generated-freshness: ${eolOnly.length} artifact(s) sit CRLF on disk but match ` +
+      `${BASELINE_REF} once line endings are normalized. This is NOT staleness.`,
+  );
+  for (const relPath of eolOnly) console.warn(`  - ${relPath}`);
+  console.warn(
+    "  `.gitattributes` (`eol=lf`) normalizes these at `git add`, so the committed copy is already\n" +
+      "  correct and re-running the generator cannot change it. The usual producer is a Windows\n" +
+      "  text-mode write (Python's `open(p, \"w\")` — pass `newline=\"\"`). Worth repairing anyway:\n" +
+      "  CRLF also defeats source-parsing gates whose regexes exclude `\\r` (impediment #677).\n" +
+      "  Repair (binary rewrite — `git checkout --` no-ops, git considers the file unmodified):\n" +
+      "    node -e \"const fs=require('fs');for(const p of process.argv.slice(1))" +
+      "fs.writeFileSync(p,fs.readFileSync(p,'utf8').replace(/\\r\\n/g,'\\n'))\" <path>",
+  );
 }
 
 function main(): void {
@@ -409,6 +493,7 @@ function main(): void {
   }
 
   const stale: string[] = [];
+  const eolOnly: string[] = [];
   let volatileOnly = 0;
   let checked = 0;
 
@@ -427,10 +512,18 @@ function main(): void {
 
     checked++;
     const fresh = fs.readFileSync(absolute, "utf8");
-    if (normalize(fresh, relPath) !== normalize(committed, relPath)) {
-      stale.push(`${relPath} — regenerating changed it`);
-    } else if (fresh !== committed) {
-      volatileOnly++;
+    switch (compareArtifact(fresh, committed, relPath)) {
+      case "stale":
+        stale.push(`${relPath} — regenerating changed it`);
+        break;
+      case "eol-only":
+        eolOnly.push(relPath);
+        break;
+      case "volatile-only":
+        volatileOnly++;
+        break;
+      case "identical":
+        break;
     }
   }
 
@@ -469,8 +562,14 @@ function main(): void {
     );
   }
 
+  reportLineEndings(eolOnly);
+
   if (stale.length === 0) {
-    const note = volatileOnly > 0 ? `, ${volatileOnly} volatile-only change(s) ignored` : "";
+    const notes = [
+      volatileOnly > 0 ? `${volatileOnly} volatile-only change(s) ignored` : "",
+      eolOnly.length > 0 ? `${eolOnly.length} line-ending-only difference(s) ignored` : "",
+    ].filter(Boolean);
+    const note = notes.length > 0 ? `, ${notes.join(", ")}` : "";
     console.log(`check-generated-freshness: OK — ${checked} generated artifact(s) match ${BASELINE_REF}${note}.`);
     return;
   }
@@ -490,4 +589,10 @@ function main(): void {
   process.exit(1);
 }
 
-main();
+// Run only as the gate's own entry point, never on import from a test (THR-1192).
+// `check:generated-freshness` invokes this file directly and nothing bundles it, so
+// the argv comparison is sufficient here — see build-authoring-brief.ts for the
+// esbuild --bundle case where it is not.
+if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1] ?? "")) {
+  main();
+}
