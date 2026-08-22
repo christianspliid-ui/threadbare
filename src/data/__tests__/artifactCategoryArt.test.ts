@@ -24,7 +24,6 @@ import type { GameState } from '../../types/gameState';
 import {
   ARTIFACT_CATEGORY_ART,
   CATEGORY_REACH_TINT,
-  SUBCATEGORY_ART_ALIASES,
   getArtifactCategoryArtUrl,
   getAttachmentArtUrl,
 } from '../artifact-category-art';
@@ -71,11 +70,13 @@ describe('artifact category art — resolution', () => {
     expect(getArtifactCategoryArtUrl('provisions')).toBe(ARTIFACT_CATEGORY_ART.provisions);
   });
 
-  it('resolves each off-union stray through the alias map', () => {
-    // These three values are written by live content but are not members of
-    // PossessionSubcategory (THR-857). Without aliasing they render blank.
-    for (const [alias, canonical] of Object.entries(SUBCATEGORY_ART_ALIASES)) {
-      expect(getArtifactCategoryArtUrl(alias), alias).toBe(ARTIFACT_CATEGORY_ART[canonical]);
+  it('no longer resolves the retired off-union aliases', () => {
+    // THR-857 rewrote the five content sites to canonical values and deleted the
+    // alias map. Asserting the *absence* is the point: while aliasing existed, a
+    // new off-union value could be made to render by adding a row here, which is
+    // how a second vocabulary grows. These must now read as unknown.
+    for (const retired of ['talisman', 'charm', 'intelligence']) {
+      expect(getArtifactCategoryArtUrl(retired), retired).toBeNull();
     }
   });
 
@@ -141,14 +142,17 @@ describe('artifact category art — coverage against a seeded world', () => {
     expect(unresolved).toEqual([]);
   });
 
-  it('holds the unresolvable remainder to nodes with no subcategory at all', () => {
-    // The honest coverage statement: everything that declares a category gets a
-    // plate, and the only blanks left are nodes carrying no category to key on.
-    // If this number grows, a producer started emitting subcategory-less items.
+  it('leaves no artifact node without a subcategory at all', () => {
+    // Was `<= 2` until THR-857. The two were `artifact_0` and its reward-instance
+    // clone, both minted by `seedWorld` with no category to key on — so a
+    // world-legendary rendered blank and slotted as `uncategorized`. `seedWorld`
+    // now assigns from `ARTIFACT_SUBCATEGORY`, so the allowance is zero and a
+    // producer that starts emitting category-less items fails here rather than
+    // being absorbed by a tolerance.
     const noSubcategory = artifactNodes.filter(
       n => (n.properties?.subcategory as string | undefined) === undefined,
     );
-    expect(noSubcategory.length).toBeLessThanOrEqual(2);
+    expect(noSubcategory.map(n => n.id)).toEqual([]);
   });
 
   it('reaches most of the population through the category tier, not the bespoke tier', () => {

@@ -112,7 +112,7 @@ const step1AcceptExtraction: ActionStep = {
       nodeType: 'artifact' as const,
       properties: {
         name: 'Vessen Shrine Map',
-        subcategory: 'intelligence',
+        subcategory: 'tomes_scrolls',
         tier: 2,
         tags: ['#shadow', '#intelligence', '#shrine_location', '#rival_god'],
         mechanicalSummary: '+0.03 Shadow reach',
