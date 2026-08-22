@@ -16,7 +16,16 @@ import type { SpherePressureEvent } from '../types/sphereAffinity';
 import { MANDATE_PRESSURE_MILESTONE, MANDATE_PRESSURE_COMPLETION } from '../types/sphereAffinity';
 import { evaluateMandate, advanceMandateStage } from './mandate';
 import { emitTrace } from './traceBuffer';
-import { MANDATE_COUNTER_OMEN_MARGIN } from '../data/game-config';
+import {
+  MANDATE_COUNTER_OMEN_MARGIN,
+  MANDATE_MILESTONE_EVENT_SIGNIFICANCE,
+  MANDATE_FAILURE_EVENT_SIGNIFICANCE,
+} from '../data/game-config';
+import {
+  resolveMilestoneProse,
+  transitionForStageChange,
+  type MandateProseTransition,
+} from './mandateMilestoneProse';
 
 const STAGE_ORDER: MandateStage[] = ['setup', 'escalation', 'culmination'];
 const SETTLEMENT_SUBTYPES = new Set(['hamlet', 'town', 'city', 'capital']);
@@ -39,6 +48,47 @@ function nextEventId(tick: number): string {
 
 function clamp01(value: number): number {
   return Math.max(0, Math.min(1, value));
+}
+
+/**
+ * Build the tick event for a mandate transition (THR-1197), preferring the line
+ * authored for this mandate in its JSON and falling back to the generated text
+ * when none was written (NFP #4 — a missing key narrates, it never throws).
+ *
+ * Traces the resolution either way so a fallback is inspectable rather than silent:
+ * a mandate family with no authored prose is a content gap, and the trace is where
+ * it shows up.
+ */
+function buildMandateProseEvent(
+  state: GameState,
+  definition: MandateDefinition,
+  transition: MandateProseTransition,
+  fallback: string,
+  significance: number,
+  notification: TickEvent['notification'],
+): TickEvent {
+  const resolved = resolveMilestoneProse(definition.id, transition, fallback);
+
+  emitTrace({
+    category: 'mandate_milestone_prose',
+    tick: state.tick,
+    agentId: state.ascendantId,
+    summary: resolved.authored
+      ? `Mandate "${definition.name}" narrates its ${transition} beat from authored prose.`
+      : `Mandate "${definition.name}" has no authored ${transition} prose; the generated line stands in.`,
+    mandateId: definition.id,
+    transition,
+    authored: resolved.authored,
+  });
+
+  return {
+    id: nextEventId(state.tick),
+    tick: state.tick,
+    type: 'mandate_progress',
+    message: resolved.text,
+    significance,
+    notification,
+  };
 }
 
 function computeSphereDelta(current: number, baseline: number): number {
@@ -272,6 +322,25 @@ function evaluateSphereGrowthMandate(state: GameState): Partial<GameState> {
     });
   }
 
+  // THR-1197 — the spine used to turn in silence here: a milestone advance emitted
+  // sphere pressure and no tick event at all. Not gated on primarySphere: the beat
+  // is worth narrating whether or not the mandate carries a sphere to press on.
+  if (milestoneReached) {
+    const transition = transitionForStageChange(mandateState.currentStage, currentStage);
+    if (transition) {
+      events.push(
+        buildMandateProseEvent(
+          state,
+          definition,
+          transition,
+          `Mandate "${definition.name}" crosses into ${currentStage}.`,
+          MANDATE_MILESTONE_EVENT_SIGNIFICANCE,
+          { channel: 'alert', icon: 'mandate' },
+        ),
+      );
+    }
+  }
+
   if (completed && !mandateState.completed && definition.primarySphere) {
     pressures.push({
       targetEntityId: state.ascendantId,
@@ -280,34 +349,35 @@ function evaluateSphereGrowthMandate(state: GameState): Partial<GameState> {
       source: 'mandate',
       sourceId: definition.id,
     });
-    events.push({
-      id: nextEventId(state.tick),
-      tick: state.tick,
-      type: 'mandate_progress',
-      message: `Victory! Mandate "${definition.name}" fulfilled before the final doom closes.`,
-      significance: 1.0,
-      notification: {
-        channel: 'alert',
-        icon: 'mandate',
-      },
-    });
+    events.push(
+      buildMandateProseEvent(
+        state,
+        definition,
+        'completed',
+        `Victory! Mandate "${definition.name}" fulfilled before the final doom closes.`,
+        1.0,
+        { channel: 'alert', icon: 'mandate' },
+      ),
+    );
   }
 
   if (failed && !mandateState.failed) {
-    events.push({
-      id: nextEventId(state.tick),
-      tick: state.tick,
-      type: 'mandate_progress',
-      message: `Mandate failed. ${definition.name} did not crest before doom expired.`,
-      significance: 0.95,
-      notification: {
-        channel: 'popup',
-        popup: {
-          title: 'Mandate Failed',
-          body: `${definition.name} fell short before the doom clock expired.`,
+    events.push(
+      buildMandateProseEvent(
+        state,
+        definition,
+        'failed',
+        `Mandate failed. ${definition.name} did not crest before doom expired.`,
+        MANDATE_FAILURE_EVENT_SIGNIFICANCE,
+        {
+          channel: 'popup',
+          popup: {
+            title: 'Mandate Failed',
+            body: `${definition.name} fell short before the doom clock expired.`,
+          },
         },
-      },
-    });
+      ),
+    );
   }
 
   const updatedState: MandateState = {
@@ -382,18 +452,37 @@ function evaluateLegacyMandate(state: GameState): Partial<GameState> {
     }
   }
 
+  // THR-1197 — a non-completing stage advance narrated nothing here either.
+  if (wasStageAdvanced && !advanced.completed) {
+    const transition = transitionForStageChange(
+      state.mandateState.currentStage,
+      advanced.currentStage,
+    );
+    if (transition) {
+      events.push(
+        buildMandateProseEvent(
+          state,
+          state.mandateDefinition,
+          transition,
+          `Mandate "${state.mandateDefinition.name}" crosses into ${advanced.currentStage}.`,
+          MANDATE_MILESTONE_EVENT_SIGNIFICANCE,
+          { channel: 'alert', icon: 'mandate' },
+        ),
+      );
+    }
+  }
+
   if (advanced.completed && !state.mandateState.completed) {
-    events.push({
-      id: nextEventId(state.tick),
-      tick: state.tick,
-      type: 'mandate_progress',
-      message: `Victory! Mandate "${state.mandateDefinition.name}" fulfilled!`,
-      significance: 1.0,
-      notification: {
-        channel: 'alert',
-        icon: 'mandate',
-      },
-    });
+    events.push(
+      buildMandateProseEvent(
+        state,
+        state.mandateDefinition,
+        'completed',
+        `Victory! Mandate "${state.mandateDefinition.name}" fulfilled!`,
+        1.0,
+        { channel: 'alert', icon: 'mandate' },
+      ),
+    );
   }
 
   return {

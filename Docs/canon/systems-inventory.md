@@ -305,7 +305,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `lair` (2) | `lairEscalation.ts`, `lairSeeding.ts` | `M2.5`, `Phase 2` |
 | `lake` (2) | `lakeGeneration.ts`, `lakeOutflow.ts` | — |
 | `magic` (1) | `magicPower.ts` | — |
-| `mandate` (2) | `mandate.ts`, `mandateGenerator.ts` | — |
+| `mandate` (3) | `mandate.ts`, `mandateGenerator.ts`, `mandateMilestoneProse.ts` | `THR-1197`, `THR-1198` |
 | `meeting` (1) | `meetingEncounter.ts` | — |
 | `mentorship` (1) | `mentorshipOutcomes.ts` | `THR-75` |
 | `modifiers` (1) | `modifiers.ts` | — |
@@ -393,4 +393,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 26 registered subsystems (1 dormant) · 101 tick phases · 172 engine domains · 498 modules._
+_Counts: 26 registered subsystems (1 dormant) · 101 tick phases · 172 engine domains · 499 modules._
