@@ -73,6 +73,17 @@ export const RESTORE_FRAGMENT_SUBLOCATION_TYPE_ID = 'sublocation-type.ruins';
 /** Descriptive flavour subtype, preserved from the pre-THR-1193 recipe. */
 export const RESTORE_FRAGMENT_SUBTYPE = 'restored_ruin';
 
+// THR-1194: the three hex actions that mint a node need their display names for the
+// op's `nodeName`, for the same reason RESTORE_FRAGMENT_NAME exists — `executeAddNode`
+// reads the node's top-level `name` from `op.nodeName` and falls back to the generated
+// id, so a `properties.name` alone leaves the thing reading as `gen_artifact_7`.
+/** Display name of the artifact `hex.forge_seer_token` mints. */
+export const FORGE_SEER_TOKEN_NAME = "Seer's Token";
+/** Display name of the artifact `hex.forge_instrument` mints. */
+export const FORGE_INSTRUMENT_NAME = 'Divine Instrument';
+/** Display name of the actor `hex.send_herald` mints. */
+export const SEND_HERALD_NAME = 'Divine Herald';
+
 // Ruins exploration constants (re-exported from central tuning file)
 import {
   MARK_GROUND_ATTRACTION_STRENGTH,
@@ -273,50 +284,53 @@ export interface HexActionResult {
  * These are actions whose effects are graph mutations rather than hex tile changes.
  */
 const HEX_ACTION_GRAPH_OPS: Readonly<Record<string, GraphOp[]>> = {
+  // THR-1194: `possesses`, actor → artifact.
+  //
+  // These two recipes spelled `possessed_by`, artifact → actor — wrong in both the name
+  // and the direction. `possessed_by` is not a registered edge type and never was: it
+  // appears nowhere in the codebase but here, so `executeAddEdge`'s schema chokepoint
+  // refused the op and each cast minted a `storied` artifact that reached nobody. The
+  // failure was invisible because a per-op flag inside a fail-soft batch has no consumer
+  // (impediment #699), and invisible *twice* until THR-1193, whose `$created_N` fix is
+  // what let the batch get far enough to be refused here rather than one layer earlier.
+  //
+  // Registering `possessed_by` was the alternative and is strictly worse: `possesses`
+  // already carries this exact relationship (schema row `actor` → `artifact`), and every
+  // consumer reads it in that direction — `agentAttachments` sweeps
+  // `getOutgoingEdges(agentId, 'possesses')`, and `ascendantBeatSeeding` writes the same
+  // shape for the Divine Gift. A second spelling would mint artifacts no possession
+  // reader can see, which is the orphan this ticket exists to stop.
   'hex.forge_seer_token': [
     {
       op: 'add_node',
       nodeType: 'artifact',
-      properties: { name: "Seer's Token", subtype: 'divination_focus', tier: 'storied' },
+      nodeName: FORGE_SEER_TOKEN_NAME,
+      properties: { name: FORGE_SEER_TOKEN_NAME, subtype: 'divination_focus', tier: 'storied' },
     },
     {
       op: 'add_edge',
-      edgeType: 'possessed_by',
-      source: '$created_0',
-      target: '$actor',
-    },
-  ],
-  'hex.send_herald': [
-    {
-      op: 'add_node',
-      nodeType: 'actor',
-      properties: { name: 'Divine Herald', archetype: 'herald', isHerald: true },
-    },
-    {
-      op: 'add_edge',
-      edgeType: 'located_at',
-      source: '$created_0',
-      target: '$location',
-    },
-    {
-      op: 'add_edge',
-      edgeType: 'thread',
+      edgeType: 'possesses',
       source: '$actor',
       target: '$created_0',
-      properties: { tier: 1, attentionMode: 'auto_resolve' },
     },
   ],
+  // THR-1194: `hex.send_herald` moved to HEX_ACTION_GRAPH_OP_GENERATORS. Its
+  // `located_at` edge needs a *runtime* location id, which a static recipe cannot name
+  // — the same reason `hex.restore_fragment` moved under THR-1193. See the generator.
+  // THR-1194 — see the note on `hex.forge_seer_token` for why this is `possesses`,
+  // actor → artifact, and not a newly registered `possessed_by`.
   'hex.forge_instrument': [
     {
       op: 'add_node',
       nodeType: 'artifact',
-      properties: { name: 'Divine Instrument', subtype: 'ritual_focus', tier: 'storied' },
+      nodeName: FORGE_INSTRUMENT_NAME,
+      properties: { name: FORGE_INSTRUMENT_NAME, subtype: 'ritual_focus', tier: 'storied' },
     },
     {
       op: 'add_edge',
-      edgeType: 'possessed_by',
-      source: '$created_0',
-      target: '$actor',
+      edgeType: 'possesses',
+      source: '$actor',
+      target: '$created_0',
     },
   ],
   // THR-1193: `hex.restore_fragment` moved to HEX_ACTION_GRAPH_OP_GENERATORS. A
@@ -468,6 +482,60 @@ const HEX_ACTION_GRAPH_OP_GENERATORS: Readonly<Record<string, GraphOpGenerator>>
         edgeType: 'contains',
         source: parent.id,
         target: '$created_0',
+      },
+    ];
+  },
+
+  /**
+   * THR-1194 — send a herald who actually arrives somewhere.
+   *
+   * **Found in passing while fixing the two forge recipes**, and the same failure their
+   * ticket is named for: the herald reached the graph as an orphan. The static recipe
+   * attached it with `located_at` to `$location`, and a hex action's `$location`
+   * resolves to the hex *target* id (`hex_3_5`) — hexes are not graph nodes, so the op
+   * failed `Target node not found` on every cast. THR-1193 fixed the `$created_0` half
+   * of this recipe and left the `$location` half, because it was out of that scope;
+   * measured here, the herald still landed with a thread and no location, invisible to
+   * every location sweep. Same cause, same shape, one line from the ops being edited.
+   *
+   * **Why a generator.** Identical to `hex.restore_fragment`: the target is a runtime
+   * value and no context sentinel names a location node on the hex, so the recipe has
+   * to query the graph and emit a literal id.
+   *
+   * **Place-tier only**, for the THR-1183 reason — `getLocationsInHex` sweeps a bare
+   * `getNodesByType('location')` and so returns sublocations too; a herald posted to a
+   * sublocation would be legal under the schema but is not what "arrives at the hex"
+   * means. Fail-soft (NFP #4): a hex with no place-tier location yields no ops. Minting
+   * a located-nowhere herald is the very orphan this fixes, so refusing beats shipping.
+   */
+  'hex.send_herald': (graph, col, row) => {
+    const places = getLocationsInHex(graph, col, row).filter(isPlaceTierLocation);
+    if (places.length === 0) return [];
+    const destination = places[0];
+
+    return [
+      {
+        op: 'add_node',
+        nodeType: 'actor',
+        nodeName: SEND_HERALD_NAME,
+        properties: {
+          name: SEND_HERALD_NAME,
+          archetype: 'herald',
+          isHerald: true,
+        },
+      },
+      {
+        op: 'add_edge',
+        edgeType: 'located_at',
+        source: '$created_0',
+        target: destination.id,
+      },
+      {
+        op: 'add_edge',
+        edgeType: 'thread',
+        source: '$actor',
+        target: '$created_0',
+        properties: { tier: 1, attentionMode: 'auto_resolve' },
       },
     ];
   },
