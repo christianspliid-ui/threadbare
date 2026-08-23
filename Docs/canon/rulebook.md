@@ -403,6 +403,19 @@ Why: TheFantasyWorldSimulator/Vision/02-non-negotiables.md (§1 — the player t
 
 ---
 
+## 10.6 Reputation
+
+**Reputation is the social score that modifies interactions between a and b** — one concept, one banded word vocabulary, wherever two parties stand in some regard: a mortal and a town, a mortal and a guild, a mortal and another mortal [DESIGN — director ruling 2026-08-23, THR-1206; plan [Docs/plans/2026-08-23-thr-1206-reputation-unification.md](../plans/2026-08-23-thr-1206-reputation-unification.md)]. You never read a number: standing arrives as a word, on the mortal's sheet and on the place's profile, and every reputation chip in an aftermath clicks through to the party it names. Reputation opens doors (some encounters are eligible only above a standing), shifts social scenes (a known name walks into a parley with leverage), and fades slowly toward unremarkable when nothing feeds it. Faction rank remains reputation's ladder inside a membership; a stranger can now also earn a name in a place without joining anything. Reputation belongs to mortals and communities — the god reads it and nudges the deeds that move it, never sets it by fiat.
+
+```
+Owns: synthesis only.
+Definitions: Reputation UL entry — pending UL-proposal (THR-1206 execution closeout)
+Spec: Docs/plans/2026-08-23-thr-1206-reputation-unification.md
+Why: TheFantasyWorldSimulator/Vision/02-non-negotiables.md (§1 — the god reads and nudges, never sets; §3 — words, never numbers)
+```
+
+---
+
 ## 11. Winning and Losing
 
 A run ends one of two ways. **The Mandate completes** — your declared win-state is satisfied. The Doom Clock had not yet culminated, so the world survives and *you* shaped what survives. **The Doom Clock culminates** — the Unmaking arrives before the Mandate is satisfied. The world is remade or unmade, depending on the archetype.
