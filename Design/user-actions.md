@@ -1,19 +1,17 @@
 # User Action Required
 
-**Last updated:** 2026-08-23 16:55 local (14:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-23 17:54 local (15:54 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
-### 1. Play two encounters and rule on them — [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to)
+### 1. Finish the sitting — the verdict on two encounters — [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to)
 
-Six encounters were rebuilt to the new bar. Two are waiting on your eyes, live on the deployed build:
+You played The Grateful Kin at 17:17 today and found a real fault — the bond chip renders red with an up arrow and hides its effect in prose. **That is captured, scoped and queued for a builder** ([THR-1205](https://linear.app/threadbare/issue/THR-1205/bond-chip-renders-red-with-an-up-arrow-and-hides-its-effect-in-prose)); you do not need to repeat it.
 
 - **The Grateful Kin** — [play it](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin) · [good ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin&outcome=critical_success) · [bad ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin&outcome=critical_failure)
 - **The Unsafe Bridge** — [play it](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge) · [good ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge&outcome=critical_success) · [costly ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge&outcome=success_at_cost)
 
-**What changed since you last played these**, from your own three findings: the bond chip names the mechanic and both ends, and clicking it opens the person who owes the favour rather than you; fifteen chips reporting a number you can never see are retired, and the rule forbidding them is now an enforced gate; the writing was re-passed to your density note — one named person on stage, props only where you can act on them.
-
-**Are these two worth meeting a second time?** A yes releases batch 2 — the remaining nine of fifteen. A no tells the line what the bar is still missing before nine more are written against it. Waiting seven days; with the build shelf now empty, it is the largest release available and one of the few that moves anything at all.
+**Are these two worth meeting a second time?** A yes releases batch 2 — the remaining nine of fifteen. A no tells the line what the bar is still missing before nine more are written against it, exactly as the chip finding just did. Waiting seven days; it is the largest release on this page.
 
 ### 2. What is a run *about*? — [THR-1198](https://linear.app/threadbare/issue/THR-1198/the-48-authored-mandate-strings-are-wired-but-unreachable-no-live-game)
 
