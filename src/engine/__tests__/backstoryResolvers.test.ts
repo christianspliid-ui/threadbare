@@ -26,7 +26,7 @@ import {
 } from '../backstoryResolvers';
 import type { BackstoryLayer } from '../../types/prose';
 import { FEAR_PROSE } from '../../data/backstory-content';
-import { FEAR_DESCRIPTIONS, VALUE_LABELS } from '../../data/strand-content';
+import { FEAR_DESCRIPTIONS, VALUE_LABELS, VALUE_NOUNS } from '../../data/strand-content';
 
 // ─── Graph builders ──────────────────────────────────────────────────────────
 
@@ -581,9 +581,16 @@ describe('fearResolver', () => {
     expect(honest.every((t) => t.includes('Mira'))).toBe(true);
     expect(cunning.every((t) => t.includes('Mira'))).toBe(true);
 
-    // The label each pole renders.
-    expect(honest.every((t) => t.includes('Honest') && !t.includes('Cunning'))).toBe(true);
-    expect(cunning.every((t) => t.includes('Cunning') && !t.includes('Honest'))).toBe(true);
+    // The value noun each pole renders. THR-1200 moved {value} from the VALUE_LABELS
+    // adjective ('Honest'/'Cunning') to the VALUE_NOUNS noun ('honesty'/'cunning'), because
+    // every slot in this table is a noun slot.
+    expect(honest.every((t) => t.includes('honesty'))).toBe(true);
+    expect(cunning.every((t) => t.includes('cunning'))).toBe(true);
+    // The cross-check runs one way only, and the asymmetry is real rather than an oversight:
+    // no body contains the literal string 'honesty', but one honest-pole body names
+    // third-party cunning outright ('watches the cunning prosper'), so the mirror assertion
+    // would fail on correct content. The body-identity assertions below carry that direction.
+    expect(cunning.every((t) => !t.includes('honesty'))).toBe(true);
 
     // The fear each pole is committed to, read off the table the resolver no longer joins.
     // Each pole fears the undoing of what that pole is committed to: Honest fears having to
@@ -675,7 +682,7 @@ describe('fearResolver', () => {
       const text = fearResolver('a', graph, 3)[0].text;
       const substituted = FEAR_PROSE.courage_prudence_positive
         .map((body) => {
-          const rendered = body.replace(/\{name\}/g, 'Mira').replace(/\{value\}/g, 'Courageous');
+          const rendered = body.replace(/\{name\}/g, 'Mira').replace(/\{value\}/g, 'courage');
           const pattern = new RegExp(
             rendered.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\\\{fear\\\}/g, '(.+?)'),
           );
@@ -688,15 +695,90 @@ describe('fearResolver', () => {
       expect(substituted).not.toMatch(/\s/);
     });
 
+    // ─── THR-1200 — {value} renders the NOUN register, not the adjective ──────
+    //
+    // Same blindness as THR-1199, one placeholder over: the pins checked that {value} was
+    // present in the template and absent from the rendered text, and an adjective dropped
+    // into a noun slot satisfies both. All 109 {value} slots across this table sit after a
+    // determiner or possessive, or stand as a bare subject, so VALUE_LABELS rendered "that
+    // Courageous is maintained", "their Prudent is partly about", "Mira's Honest contains".
+    //
+    // These read what {value} actually substituted to, rather than asserting on the
+    // surrounding prose — a shape check would pass on any lowercase word.
+
+    it.each(keys)('$key substitutes {value} as the abstract noun, never the label', ({ key, pair, pole }) => {
+      const expectedNoun = VALUE_NOUNS[pair as keyof typeof VALUE_NOUNS][pole === 'positive' ? 0 : 1];
+      const adjective = VALUE_LABELS[pair as keyof typeof VALUE_LABELS][pole === 'positive' ? 0 : 1];
+      const rendered = new Set(renderKey(pair, pole));
+
+      // Recover the substituted value from each body by matching the body's own literal
+      // text around the placeholder. This is what makes the assertion non-vacuous: it reads
+      // the substituted token itself, not the sentence it landed in.
+      let matched = 0;
+      for (const body of FEAR_PROSE[key]) {
+        if (!body.includes('{value}')) continue;
+        const pattern = new RegExp(
+          '^' + body
+            .replace(/\{name\}/g, 'Mira')
+            .replace(/\{fear\}/g, 'fear')
+            .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+            .replace(/\\\{value\\\}/g, '(.+?)') + '$',
+        );
+        for (const text of rendered) {
+          const hit = text.match(pattern);
+          if (!hit) continue;
+          matched++;
+          for (const captured of hit.slice(1)) {
+            expect(captured).toBe(expectedNoun);
+            expect(captured).not.toBe(adjective);
+            // The noun register is lowercase — every slot in this table is mid-sentence.
+            expect(captured).toBe(captured.toLowerCase());
+          }
+          break;
+        }
+      }
+      // Guards the vacuous shape: a pattern that matched nothing would assert nothing.
+      expect(matched).toBe(FEAR_PROSE[key].filter((b) => b.includes('{value}')).length);
+    });
+
+    it.each(keys)('$key agrees its indefinite articles with the substituted noun', ({ pair, pole }) => {
+      const noun = VALUE_NOUNS[pair as keyof typeof VALUE_NOUNS][pole === 'positive' ? 0 : 1];
+      // Four value nouns are vowel-initial (asceticism, extravagance, innovation, ambition),
+      // so a body written "a {value}" breaks on exactly those keys and reads fine on the
+      // rest. loyalty_ambition_negative carried one and shipped as "a Ambitious" under the
+      // old label register; it is authored "an {value}" now.
+      // Only the article that DISAGREES with this noun is forbidden. Asserting both
+      // directions would reject "an ambition", which is the correct form.
+      const wrongArticle = /^[aeiou]/.test(noun) ? String.raw`\ba ` : String.raw`\ban `;
+      for (const text of new Set(renderKey(pair, pole))) {
+        expect(text).not.toMatch(new RegExp(wrongArticle + noun + String.raw`\b`, 'i'));
+      }
+    });
+
+    it('the article probe fires on a known-bad string', () => {
+      // The probe above is a negative assertion over correct content, which passes just as
+      // happily when the regex is inert — the failure mode that hid this whole defect class,
+      // and which bit this very test during authoring (a Bash heredoc ate the `\b` down to a
+      // backspace escape, and the sweep reported a clean table it never inspected).
+      const wrongFor = (noun: string) => new RegExp(
+        (/^[aeiou]/.test(noun) ? String.raw`\ba ` : String.raw`\ban `) + noun + String.raw`\b`, 'i',
+      );
+      expect('bound by a ambition they did not choose').toMatch(wrongFor('ambition'));
+      expect('an courage they never had').toMatch(wrongFor('courage'));
+      // ...and does NOT fire on the correct forms, or it would forbid all of them.
+      expect('bound by an ambition they did not choose').not.toMatch(wrongFor('ambition'));
+      expect('a courage they never had').not.toMatch(wrongFor('courage'));
+    });
+
     // A per-key golden sample. The reviewed composed line for each of the 18 keys, so the
     // sentence a player reads is checked-in text rather than something only assembled at
     // runtime — the surface both THR-1187 and THR-1199 were invisible on.
     it.each(keys)('$key golden render reads correctly', ({ key, pair, pole }) => {
       const first = FEAR_PROSE[key][0];
-      const label = VALUE_LABELS[pair as keyof typeof VALUE_LABELS][pole === 'positive' ? 0 : 1];
+      const noun = VALUE_NOUNS[pair as keyof typeof VALUE_NOUNS][pole === 'positive' ? 0 : 1];
       const expected = first
         .replace(/\{name\}/g, 'Mira')
-        .replace(/\{value\}/g, label)
+        .replace(/\{value\}/g, noun)
         .replace(/\{fear\}/g, 'fear');
 
       expect(new Set(renderKey(pair, pole))).toContain(expected);

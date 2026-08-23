@@ -8,6 +8,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   VALUE_LABELS,
+  VALUE_NOUNS,
   INTENSITY_VALUE_LABELS,
   FEAR_DESCRIPTIONS,
   REACH_BASED_FEARS,
@@ -64,6 +65,75 @@ describe('Strand Content', () => {
       for (const axis of Object.keys(VALUE_LABELS)) {
         expect(axis).toMatch(/^[a-z]+_[a-z]+$/);
       }
+    });
+  });
+
+  // ==========================================================================
+  // § 1b VALUE_NOUNS TESTS (THR-1200)
+  // ==========================================================================
+
+  describe('VALUE_NOUNS', () => {
+    it('has at least the expected minimum count', () => {
+      expect(Object.keys(VALUE_NOUNS).length).toBeGreaterThanOrEqual(CONTENT_COUNTS.VALUE_NOUNS);
+    });
+
+    it('covers exactly the same axes as VALUE_LABELS', () => {
+      expect(Object.keys(VALUE_NOUNS).sort()).toEqual(Object.keys(VALUE_LABELS).sort());
+    });
+
+    it('each axis has exactly 2 non-empty poles', () => {
+      for (const poles of Object.values(VALUE_NOUNS)) {
+        expect(poles.length).toBe(2);
+        expect(poles[0].length).toBeGreaterThan(0);
+        expect(poles[1].length).toBeGreaterThan(0);
+      }
+    });
+
+    it('is the lowercase noun register — every pole is a single lowercase word', () => {
+      // The register contract the FEAR_PROSE bodies are authored against: every {value}
+      // slot in that table is mid-sentence and takes a bare noun, so a capitalised or
+      // multi-word entry here is the defect THR-1200 fixed, arriving from the other side.
+      for (const poles of Object.values(VALUE_NOUNS)) {
+        for (const noun of poles) {
+          expect(noun).toBe(noun.toLowerCase());
+          expect(noun).toMatch(/^[a-z]+$/);
+        }
+      }
+    });
+
+    it('shares a spelling with VALUE_LABELS on exactly one pole', () => {
+      // If a noun silently becomes its adjective, the register split has collapsed and every
+      // assertion that distinguishes the two tables goes vacuous. So enumerate the overlap
+      // rather than forbidding it: "cunning" is genuinely both an adjective and a noun in
+      // English and is the one legitimate coincidence. Any second entry appearing here is
+      // the register collapsing, not a new coincidence.
+      const shared: string[] = [];
+      for (const axis of Object.keys(VALUE_NOUNS) as (keyof typeof VALUE_NOUNS)[]) {
+        for (const i of [0, 1] as const) {
+          if (VALUE_NOUNS[axis][i].toLowerCase() === VALUE_LABELS[axis][i].toLowerCase()) {
+            shared.push(`${axis}[${i}]`);
+          }
+        }
+      }
+      expect(shared).toEqual(['honesty_cunning[1]']);
+    });
+
+    it('matches the reviewed noun table', () => {
+      // Pinned literally, like the VALUE_LABELS/FEAR_DESCRIPTIONS alignment table above: the
+      // words a player reads are checked-in text, not something assembled at runtime.
+      // Two entries deliberately do not echo their ValuePair key, both evidenced by the
+      // prose — see the VALUE_NOUNS doc comment in src/data/strand-content.ts.
+      expect(VALUE_NOUNS).toEqual({
+        mercy_ruthlessness: ['mercy', 'ruthlessness'],
+        asceticism_extravagance: ['asceticism', 'extravagance'],
+        honesty_cunning: ['honesty', 'cunning'],
+        tradition_novelty: ['tradition', 'innovation'],
+        loyalty_ambition: ['loyalty', 'ambition'],
+        revelation_discretion: ['candour', 'discretion'],
+        preservation_transformation: ['preservation', 'transformation'],
+        sacrifice_survival: ['sacrifice', 'survival'],
+        courage_prudence: ['courage', 'prudence'],
+      });
     });
   });
 

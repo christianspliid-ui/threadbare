@@ -35,6 +35,52 @@ export const VALUE_LABELS: Record<ValuePair, [string, string]> = {
 };
 
 // ============================================================================
+// § 1b VALUE NOUNS
+// ============================================================================
+
+/**
+ * The abstract noun naming each pole of a value axis.
+ * Structure: valuePair → [positive pole, negative pole], same index convention as
+ * VALUE_LABELS — index 0 pairs with a `value >= 0` profile reading.
+ *
+ * This is the NOUN register. VALUE_LABELS holds the adjective register and stays the
+ * display name ("Strongly Merciful", "moderately merciful"); these are what prose bodies
+ * want when the placeholder sits after a determiner or possessive, or stands as a bare
+ * subject. Lowercase, because every consuming slot is mid-sentence.
+ *
+ * THR-1200: `fearResolver` substituted VALUE_LABELS into FEAR_PROSE's `{value}`, and all
+ * 109 of that table's `{value}` slots are noun slots — "that Courageous is maintained",
+ * "their Prudent is partly about", "Mira's Honest contains". One body proved it by writing
+ * the noun literally beside the placeholder: "Beneath the {value} in {name} ... that the
+ * courage they display would [...]". Adding a register rather than rewriting ~100 bodies.
+ *
+ * Two entries deliberately do not echo their ValuePair key, and both are evidenced by the
+ * prose rather than chosen for taste:
+ *   - tradition_novelty negative is `innovation`, not `novelty`. A body names it outright
+ *     ("discovering that innovation runs out before it arrives somewhere stable"), and
+ *     `novelty` renders the tautology "novelty is not appetite for the new".
+ *   - revelation_discretion positive is `candour`, not `revelation`. Every body treats the
+ *     placeholder as a standing disposition about plain speech ("the truth, spoken
+ *     plainly", "says what needs saying"); `revelation` names an event, not a trait.
+ *
+ * Do NOT repoint the other VALUE_LABELS consumers at this table. `strands.ts`,
+ * `agentDetail.ts` and the CMS registry want the adjective and are correct as they stand;
+ * `turningPointResolver` wants the noun and has the same defect, tracked separately in
+ * THR-1201 so its ~54 bodies get their own render review.
+ */
+export const VALUE_NOUNS: Record<ValuePair, [string, string]> = {
+  mercy_ruthlessness: ['mercy', 'ruthlessness'],
+  asceticism_extravagance: ['asceticism', 'extravagance'],
+  honesty_cunning: ['honesty', 'cunning'],
+  tradition_novelty: ['tradition', 'innovation'],
+  loyalty_ambition: ['loyalty', 'ambition'],
+  revelation_discretion: ['candour', 'discretion'],
+  preservation_transformation: ['preservation', 'transformation'],
+  sacrifice_survival: ['sacrifice', 'survival'],
+  courage_prudence: ['courage', 'prudence'],
+};
+
+// ============================================================================
 // § 2 INTENSITY VALUE LABELS
 // ============================================================================
 
@@ -233,6 +279,7 @@ export const REACH_FEAR_LABELS: Record<string, [string, string]> = {
  */
 export const CONTENT_COUNTS = {
   VALUE_LABELS: 9,
+  VALUE_NOUNS: 9,
   INTENSITY_VALUE_LABELS: 9,
   FEAR_DESCRIPTIONS: 9,
   REACH_BASED_FEARS: 8,

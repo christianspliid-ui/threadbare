@@ -91,7 +91,7 @@ import {
   POPULATION_PROSE_TEMPLATES, WEALTH_PROSE, PROSPERITY_PROSE, PROSPERITY_TERRAIN_PROSE,
 } from '../../data/prose-layer-content';
 import { TERRAIN_OPENINGS } from '../../data/hex-vignette-content';
-import { VALUE_LABELS, FEAR_DESCRIPTIONS } from '../../data/strand-content';
+import { VALUE_LABELS, VALUE_NOUNS, FEAR_DESCRIPTIONS } from '../../data/strand-content';
 
 // Configuration
 import { IA_SURFACES } from '../../data/ia-manifest';
@@ -1110,6 +1110,15 @@ export const CONTENT_REGISTRY: ContentRegistryEntry[] = [
     category: 'Narrative & Prose',
     description: 'Display labels for the 10 axiological value pairs.',
     data: VALUE_LABELS,
+    viewer: 'record',
+    sourceFile: 'src/data/strand-content.ts',
+  },
+  {
+    id: 'value-nouns',
+    label: 'Value Pair Nouns',
+    category: 'Narrative & Prose',
+    description: 'Abstract-noun register per value pair, for prose slots that need a noun rather than the display adjective.',
+    data: VALUE_NOUNS,
     viewer: 'record',
     sourceFile: 'src/data/strand-content.ts',
   },

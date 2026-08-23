@@ -31,7 +31,7 @@ import {
   STORY_ARC_PROSE,
   DIVINE_TRANSFORMATION_PROSE,
 } from '../data/backstory-content';
-import { VALUE_LABELS } from '../data/strand-content';
+import { VALUE_LABELS, VALUE_NOUNS } from '../data/strand-content';
 import type { ValuePair } from '../types/agent';
 
 // ─── Shared utilities ─────────────────────────────────────────────────────────
@@ -405,7 +405,14 @@ const FEAR_NOUN = 'fear';
  * Category: 'character'
  * Stratum: 3
  *
- * Agent → axiologicalProfile → strongest value pair → VALUE_LABELS → FEAR_PROSE.
+ * Agent → axiologicalProfile → strongest value pair → VALUE_NOUNS → FEAR_PROSE.
+ *
+ * THR-1200: the joined table was VALUE_LABELS, which holds the *adjective* register
+ * (`Courageous`, `Prudent`, `Honest`). All 109 `{value}` slots across this table's 100
+ * placeholder-carrying bodies are *noun* slots — after a determiner or possessive, or as a
+ * bare subject — so it rendered `that Courageous is maintained`, `their Prudent is partly
+ * about`, `Mira's Honest contains`. Measured before the switch: 0 sentence-initial slots
+ * and 0 adjective slots, so the noun register is correct on every one of them.
  */
 export function fearResolver(
   nodeId: string,
@@ -440,16 +447,16 @@ export function fearResolver(
   const template = pickTemplate(templates, seed);
   if (!template) return [];
 
-  // Derive value label
-  const labels = VALUE_LABELS[topPair as ValuePair];
-  const valueLabel = labels
-    ? (pairValue >= 0 ? labels[0] : labels[1])
+  // Derive the value NOUN — not VALUE_LABELS, which is the adjective register (THR-1200).
+  const nouns = VALUE_NOUNS[topPair as ValuePair];
+  const valueNoun = nouns
+    ? (pairValue >= 0 ? nouns[0] : nouns[1])
     : topPair;
 
   const text = replacePlaceholders(template, {
     name: node.name,
     fear: FEAR_NOUN,
-    value: valueLabel,
+    value: valueNoun,
   });
 
   return [{
