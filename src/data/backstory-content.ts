@@ -742,19 +742,29 @@ export const FEAR_PROSE: Record<string, string[]> = {
     'What {name} will never admit is that the {value} has cost them continuity, and that the {fear} of stopping outweighs every reason they give for moving.',
   ],
   // preservation_transformation
+  // THR-1202: the first four bodies of each key were rewritten 2026-08-23. They had been
+  // authored against a control/authority axis that ValuePair does not carry — _positive ran
+  // four bodies about management and delegation ("cannot delegate without checking", "the
+  // chaos that {value} keeps at bay") under the noun "preservation", and _negative ran four
+  // about withholding power ("the {fear} of being forced into dominance", "a practiced
+  // smallness") under "transformation". The axis authority is FEAR_DESCRIPTIONS: positive
+  // fears all they have built crumbling to nothing, negative fears being enslaved by what
+  // they cannot change. Not a swap — there is no partner key these eight belonged to — so
+  // they were rewritten onto their own poles rather than re-homed. The trailing two bodies
+  // of each key were already on-axis and were left alone.
   preservation_transformation_positive: [
-    'What {name} will never admit is that the {value} they exercise is maintained partly against the {fear} of losing it — that control, once relinquished, cannot be recovered.',
-    'Beneath the {value} in {name} is the {fear} that things without direction will not simply stall but collapse — that the absence of their intervention is not neutrality but catastrophe.',
-    'The {fear} behind {name}\'s {value} is visible in its emergency form: the quality of attention given to situations that might escape management — not tyranny, but the specific anxiety of believing that without intervention, things collapse in unrecoverable ways.',
-    '{name} cannot delegate without checking. Cannot leave a room without arranging it. Cannot sleep without knowing what happens next. The {fear} is not of others failing — it is of the chaos that {value} keeps at bay being real, and permanent, and patient.',
+    'What {name} will never admit is that the {value} is not patience but a {fear} — that everything they have kept standing is already failing somewhere they cannot see, and that the work has only ever been slowing it down.',
+    'Beneath the {value} in {name} is the {fear} that the thing they guard holds a fixed amount of life, and that every year of care spends some of what is left.',
+    'The {fear} under {name}\'s {value} is exact: that maintenance is not the opposite of collapse but its slower form — that the roof they keep patching will come down anyway, on a schedule nobody has shown them, and that the difference their whole life made will be counted in seasons.',
+    '{name} walks the same round every evening. The same walls, the same joins, the same places where water gets in. The {fear} is not of the night it finally goes. It is of learning that the round never mattered, and that the {value} was only a way of being there when it went.',
     'What {name} will never admit is that the {value} is partly nostalgia wearing the clothes of duty. The {fear} is that what they guard was already gone before they took the post.',
     'The {fear} beneath {name}\'s {value} is of being the last person who remembers why the thing mattered, and of being asked to explain it.',
   ],
   preservation_transformation_negative: [
-    'What {name} will never admit is that the {value} they display contains the {fear} of being forced into dominance — of authority arriving like a sentence rather than a choice.',
-    'The {value} in {name} is maintained against the {fear} that if they occupied more space, they would do damage they could not take back. The restraint is not only principle.',
-    'The {fear} at the center of {name}\'s {value} is not of responsibility avoided. It is of what responsibility reveals — the possibility that the capacity they are withholding, exercised, would confirm something about themselves they cannot currently claim is absent.',
-    '{name} speaks last in every council and sits nearest the door. The {fear} is of being looked at — truly looked at — and found to contain something large enough to require the room. The {value} is a practiced smallness that costs more than it appears.',
+    'What {name} will never admit is that the {value} they push for runs ahead of a {fear} of the immovable — of meeting the one thing that will not be argued with, and having to live beside it.',
+    'The {value} in {name} is maintained against the {fear} of being held in place: that somewhere ahead is an arrangement they cannot alter, and that the rest of their life will be conducted inside it.',
+    'The {fear} at the center of {name}\'s {value} is not of the old order winning. It is of finding out how little was ever up for a vote — the weather, the blood, the century they were born into — and that the changing they have done was permitted, and at the edges, and counted for less than the effort it cost.',
+    '{name} signs nothing for longer than a season and keeps nothing that cannot be carried. The {fear} is of the door that closes behind them — one debt, one post, one binding with no way back out — and the {value} is the practice of staying light enough to leave.',
     '{name} does not keep things. The {fear} is that {value} is not vision but an allergy to whatever refuses to change, and that the difference matters.',
     'What {name} will never admit is that the {value} has left a trail of half-finished work. The {fear} is that the trail is the actual output.',
   ],

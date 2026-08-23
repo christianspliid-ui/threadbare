@@ -293,6 +293,13 @@ describe('FEAR_PROSE', () => {
   // directions of the check below. The manifest is asserted to cover ALL_FEAR_KEYS, so a
   // new value pair cannot be added without someone reading its bodies and choosing a
   // fragment — which is the review this table exists to force.
+  //
+  // What it does NOT cover, measured under THR-1202 and deferred as THR-1203: each key
+  // holds six bodies and this manifest pins one. An off-axis body in any of the other five
+  // slots is invisible — swapping body 2 of preservation_transformation_positive back to
+  // its pre-fix control/authority text left the suite 272/272 green, while the same swap on
+  // the pinned body went red on exactly that key. So this catches a pole SWAP, and catches
+  // an off-axis rewrite only when it lands on the pinned body.
   const POLE_MANIFEST: Record<string, string> = {
     courage_prudence_positive: 'volunteers first for every danger',
     courage_prudence_negative: 'the lists, the contingencies, the plans within plans',
@@ -304,8 +311,14 @@ describe('FEAR_PROSE', () => {
     loyalty_ambition_negative: 'never kept a promise longer than it was useful',
     tradition_novelty_positive: 'tends rituals that no one else remembers',
     tradition_novelty_negative: 'dismantles things that still work',
-    preservation_transformation_positive: 'Cannot leave a room without arranging it',
-    preservation_transformation_negative: 'speaks last in every council and sits nearest the door',
+    // THR-1202 re-reviewed both fragments. The prior two were read off bodies authored for
+    // a control/authority axis ('Cannot leave a room without arranging it', 'speaks last in
+    // every council and sits nearest the door') — they discriminated between the two keys
+    // perfectly well, which is why this manifest stayed green through the whole defect. A
+    // fragment proves a body sits on its own pole rather than its sibling's; it cannot say
+    // the pair is the right pair. These two are read off the rewritten bodies.
+    preservation_transformation_positive: 'walks the same round every evening',
+    preservation_transformation_negative: 'keeps nothing that cannot be carried',
     mercy_ruthlessness_positive: 'breaks things when alone',
     mercy_ruthlessness_negative: 'what the calm is sitting on',
     asceticism_extravagance_positive: 'coins, stores, alliances, debts owed',
