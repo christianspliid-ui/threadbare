@@ -631,6 +631,17 @@ export const DECISIVE_NATURE_PROSE: string[] = [
 // of loss" on every one of these keys. Pinned by the composed-sentence assertions in
 // src/engine/__tests__/backstoryResolvers.test.ts — placeholder-presence checks cannot see
 // this class, which is why it survived to ship.
+//
+// {value} is the ABSTRACT NOUN for the agent's dominant pole — "courage", "prudence",
+// "honesty" — drawn from VALUE_NOUNS, not the adjective in VALUE_LABELS. Write it where a
+// noun goes ("the {value} in {name}", "their {value} is partly about", "{name}'s {value}
+// contains") and lowercase, since no body opens a sentence with it. THR-1200: it used to
+// substitute VALUE_LABELS, which rendered "that Courageous is maintained", "their Prudent
+// is partly about" and "Mira's Honest contains" across all 109 slots.
+//
+// Four of the nouns are vowel-initial — asceticism, extravagance, innovation, ambition — so
+// a body that puts an indefinite article before {value} has to agree with the noun its own
+// key resolves to. Pinned by the article assertion in backstoryResolvers.test.ts.
 
 export const FEAR_PROSE: Record<string, string[]> = {
   // mercy_ruthlessness
@@ -698,8 +709,10 @@ export const FEAR_PROSE: Record<string, string[]> = {
     'What {name} will never admit is that the {value} has been convenient so far. The {fear} is of the day it is not, and of what they will find themselves choosing.',
     'The {fear} beneath {name}\'s {value} is of arriving at the end of it and discovering the people it was for did not notice.',
   ],
+  // The first body reads "an {value}" deliberately: this key always resolves {value} to
+  // "ambition". Do not normalise it to "a" — THR-1200.
   loyalty_ambition_negative: [
-    'What {name} will never admit is that behind every turn they make is the {fear} of being bound by a {value} they did not choose — loyalty as chain rather than bond.',
+    'What {name} will never admit is that behind every turn they make is the {fear} of being bound by an {value} they did not choose — loyalty as chain rather than bond.',
     'The {value} in {name} is partly a response to the {fear} of being owned by commitments, of discovery that the cost of keeping faith exceeds any benefit.',
     'Behind the {value} that {name} practices is not coldness but a {fear} with a specific shape: the discovery that their defection, in the wrong circumstance, will be toward something they value less than what they abandoned.',
     '{name} has never kept a promise longer than it was useful and has never stopped counting the cost. The {fear} is not of obligation but of the door it closes — the specific future where {value} has been traded for a cage, and the key handed to someone who does not deserve it.',
