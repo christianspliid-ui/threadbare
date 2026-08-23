@@ -25,7 +25,7 @@ import {
   divineTransformationResolver,
 } from '../backstoryResolvers';
 import type { BackstoryLayer } from '../../types/prose';
-import { FEAR_PROSE } from '../../data/backstory-content';
+import { FEAR_PROSE, TURNING_POINT_PROSE } from '../../data/backstory-content';
 import { FEAR_DESCRIPTIONS, VALUE_LABELS, VALUE_NOUNS } from '../../data/strand-content';
 
 // ─── Graph builders ──────────────────────────────────────────────────────────
@@ -434,6 +434,123 @@ describe('turningPointResolver', () => {
     const a = turningPointResolver(agentId, graph, 3);
     const b = turningPointResolver(agentId, graph, 3);
     expect(a[0].text).toBe(b[0].text);
+  });
+
+  // ─── THR-1201 — assertions that read the COMPOSED sentence ──────────────────
+  //
+  // The same defect class as THR-1199/THR-1200, one table over, and it shipped past the
+  // same two green checks: backstory-content.test.ts asserts each key HAS a template
+  // carrying {value}, and 'replaces {name} placeholder' above asserts the rendered text no
+  // longer CONTAINS the literal '{value}'. An adjective dropped into a noun slot satisfies
+  // both. Every {value} slot in this table follows a verb, preposition or possessive, so
+  // VALUE_LABELS rendered "when they chose Merciful", "Mira's relationship with Merciful",
+  // "settled into Ascetic" across all 9 pairs.
+  //
+  // So these read the sentence a player sees, and the token that actually substituted in.
+  describe('composed sentence (THR-1201)', () => {
+    /** Render one pole of one pair through the real resolver, sweeping seeds. */
+    function renderKey(pair: string, pole: 'positive' | 'negative'): string[] {
+      const graph = new WorldGraph();
+      graph.addNode({
+        id: 'a',
+        type: 'actor',
+        name: 'Mira',
+        properties: { axiologicalProfile: { [pair]: pole === 'positive' ? 0.8 : -0.8 } },
+      } as GraphNode);
+      return Array.from({ length: 200 }, (_, i) => turningPointResolver('a', graph, i)[0]?.text ?? '');
+    }
+
+    const keys = Object.keys(TURNING_POINT_PROSE).flatMap((pair) =>
+      (['positive', 'negative'] as const).map((pole) => ({ key: `${pair}_${pole}`, pair, pole })),
+    );
+
+    // Guards the sweep against the vacuous-probe shape: an empty or partial population
+    // would pass every assertion below without reading a single defective sentence.
+    it('sweeps every TURNING_POINT_PROSE key, both poles, and every body within', () => {
+      expect(keys.length).toBe(18);
+      for (const { pair, pole } of keys) {
+        const rendered = new Set(renderKey(pair, pole));
+        expect(rendered.has('')).toBe(false);
+        expect(rendered.size).toBe(TURNING_POINT_PROSE[pair].length);
+      }
+    });
+
+    it.each(keys)('$key substitutes {value} as the abstract noun, never the label', ({ pair, pole }) => {
+      const expectedNoun = VALUE_NOUNS[pair as keyof typeof VALUE_NOUNS][pole === 'positive' ? 0 : 1];
+      const adjective = VALUE_LABELS[pair as keyof typeof VALUE_LABELS][pole === 'positive' ? 0 : 1];
+      const rendered = new Set(renderKey(pair, pole));
+
+      // Recover the substituted token by matching each body's own literal text around the
+      // placeholder. This is what makes the assertion non-vacuous: it reads the token
+      // itself, not the sentence it landed in — a shape check would pass on any lowercase
+      // word, which is exactly how the adjective register survived two prior pins.
+      let matched = 0;
+      for (const body of TURNING_POINT_PROSE[pair]) {
+        if (!body.includes('{value}')) continue;
+        const pattern = new RegExp(
+          '^' + body
+            .replace(/\{name\}/g, 'Mira')
+            .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+            .replace(/\\\{value\\\}/g, '(.+?)') + '$',
+        );
+        for (const text of rendered) {
+          const hit = text.match(pattern);
+          if (!hit) continue;
+          matched++;
+          for (const captured of hit.slice(1)) {
+            expect(captured).toBe(expectedNoun);
+            expect(captured).not.toBe(adjective);
+            // The noun register is lowercase — every slot in this table is mid-sentence.
+            expect(captured).toBe(captured.toLowerCase());
+          }
+          break;
+        }
+      }
+      // Guards the vacuous shape: a pattern that matched nothing would assert nothing.
+      expect(matched).toBe(TURNING_POINT_PROSE[pair].filter((b) => b.includes('{value}')).length);
+    });
+
+    // This table's distinctive failure class. THR-1200's table needed an article probe
+    // because bodies there wrote "a {value}"; no body here puts a determiner before the
+    // placeholder at all, so that probe would be vacuous. What this table has instead is
+    // bodies that OPEN a sentence with {value} — harmless while the register was the
+    // capitalized adjective, a lowercase noun in a capital position the moment it is not.
+    // Two bodies did (loyalty_ambition, revelation_discretion); both read "Their {value}"
+    // now.
+    it.each(keys)('$key never opens a sentence with the lowercase noun', ({ pair, pole }) => {
+      const noun = VALUE_NOUNS[pair as keyof typeof VALUE_NOUNS][pole === 'positive' ? 0 : 1];
+      const sentenceInitial = new RegExp(String.raw`(^|[.!?]\s)` + noun + String.raw`\b`);
+      for (const text of new Set(renderKey(pair, pole))) {
+        expect(text).not.toMatch(sentenceInitial);
+      }
+    });
+
+    it('the sentence-initial probe fires on a known-bad string', () => {
+      // The probe above is a negative assertion over correct content, which passes just as
+      // happily when the regex is inert — the failure mode that hid this whole defect
+      // class. Falsify it explicitly rather than trusting a green negative.
+      const probe = (noun: string) => new RegExp(String.raw`(^|[.!?]\s)` + noun + String.raw`\b`);
+      expect('leaving someone behind. loyalty is the record').toMatch(probe('loyalty'));
+      expect('candour has held since.').toMatch(probe('candour'));
+      // ...and does NOT fire mid-sentence, or it would forbid every correct body.
+      expect('leaving someone behind. Their loyalty is the record').not.toMatch(probe('loyalty'));
+      expect('Their candour has held since.').not.toMatch(probe('candour'));
+    });
+
+    // A per-key golden sample. The reviewed composed line for each of the 18 pole-keys, so
+    // the sentence a player reads is checked-in text rather than something only assembled
+    // at runtime — the surface THR-1199 measured as catching 16 of 18 keys that the regex
+    // shapes alone missed.
+    it.each(keys)('$key golden render reads correctly', ({ pair, pole }) => {
+      const noun = VALUE_NOUNS[pair as keyof typeof VALUE_NOUNS][pole === 'positive' ? 0 : 1];
+      const expected = TURNING_POINT_PROSE[pair][0]
+        .replace(/\{name\}/g, 'Mira')
+        .replace(/\{value\}/g, noun);
+
+      expect(new Set(renderKey(pair, pole))).toContain(expected);
+      expect(expected).toMatch(/^[A-Z"']/);
+      expect(expected.trimEnd()).toMatch(/[.!?]$/);
+    });
   });
 });
 

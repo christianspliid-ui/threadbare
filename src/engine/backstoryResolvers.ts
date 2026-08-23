@@ -287,16 +287,19 @@ export function turningPointResolver(
   const template = pickTemplate(templates, seed);
   if (!template) return [];
 
-  // Determine dominant pole label
+  // Determine the dominant pole's NOUN — not VALUE_LABELS, which is the adjective
+  // register (THR-1201, the same defect THR-1200 fixed one table over). Every {value}
+  // slot in TURNING_POINT_PROSE follows a verb, preposition or possessive, so the
+  // adjective rendered "when they chose Merciful", "settled into Ascetic".
   const pairValue = profile[topPair] ?? 0;
-  const labels = VALUE_LABELS[topPair as ValuePair];
-  const dominantPoleLabel = labels
-    ? (pairValue >= 0 ? labels[0] : labels[1])
+  const nouns = VALUE_NOUNS[topPair as ValuePair];
+  const dominantPoleNoun = nouns
+    ? (pairValue >= 0 ? nouns[0] : nouns[1])
     : topPair;
 
   const text = replacePlaceholders(template, {
     name: node.name,
-    value: dominantPoleLabel,
+    value: dominantPoleNoun,
   });
 
   return [{

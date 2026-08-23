@@ -443,7 +443,12 @@ export const TRAIT_ORIGIN_PROSE: Record<string, string[]> = {
 
 // ─── Table 6: TURNING_POINT_PROSE ────────────────────────────────────────────
 // Stratum 2. The moment when the dominant axiological value crystallized.
-// Key: ValuePair. Placeholders: {name}, {value} (the dominant pole label).
+// Key: ValuePair. Placeholders: {name}, {value} (the dominant pole's abstract NOUN —
+// "mercy", "asceticism" — drawn from VALUE_NOUNS, not the adjective in VALUE_LABELS).
+// Every {value} slot here follows a verb, preposition or possessive, so write it where a
+// noun goes. THR-1201: turningPointResolver used to substitute VALUE_LABELS, which
+// rendered "when they chose Merciful", "settled into Ascetic" across all 9 pairs.
+// Do not open a sentence with {value} — the noun register is lowercase.
 // Tone: Pivotal moment. "Something shifted in {name} the day they chose {value}..."
 
 export const TURNING_POINT_PROSE: Record<string, string[]> = {
@@ -484,7 +489,7 @@ export const TURNING_POINT_PROSE: Record<string, string[]> = {
     '{name}\'s relationship with {value} was not always settled. There was a moment when the alternative was genuinely available, and the choice made then has been the organizing fact since.',
     'Something shifted in {name} when {value} was tested against something that made it genuinely costly. The test was passed. The passing left a mark.',
     'The moment that settled which of the two was primary arrived through a situation where both were genuinely available and only one could be chosen. The choosing happened faster than {name} expected. That speed was the information — the hierarchy was already there, below the level of deliberation.',
-    'The turn came when {name} was offered something good that required leaving someone behind. {value} is the record of what they answered.',
+    'The turn came when {name} was offered something good that required leaving someone behind. Their {value} is the record of what they answered.',
     '{name} settled {value} on a day when both options were genuinely available. Choices made under constraint reveal less. This one was not constrained.',
   ],
   revelation_discretion: [
@@ -493,7 +498,7 @@ export const TURNING_POINT_PROSE: Record<string, string[]> = {
     'The turning point for {name} and {value} arrived through a situation where what they knew could protect someone or destroy them depending on how it was handled. The handling defined them.',
     'The day {name} chose {value} came through holding a dangerous secret — the kind that could topple a person, a house, a quiet arrangement that had lasted decades. How they held it told them what kind of truth-seeker or secret-keeper they were.',
     'What crystallized {value} for {name} was a piece of information they were the only one holding.',
-    '{name} learned what they were by watching themselves decide whether to speak. The decision took a moment. {value} has held since.',
+    '{name} learned what they were by watching themselves decide whether to speak. The decision took a moment. Their {value} has held since.',
   ],
   preservation_transformation: [
     'Something shifted in {name} the day they chose {value} in a situation where the other posture was available. The choice was a statement about what kind of authority they intended to exercise.',
