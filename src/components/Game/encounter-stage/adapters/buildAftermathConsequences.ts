@@ -295,14 +295,43 @@ function isCost(polarity: EncounterAftermathChangePolarity): boolean {
   return polarity === 'loss' || polarity === 'mixed';
 }
 
+/**
+ * The chip's colour — **one signal channel with the arrow, never a second one**
+ * (THR-1205).
+ *
+ * Colour and cluster used to be derived from two independent authored fields,
+ * `polarity` and `direction`, which are free to disagree — and on
+ * `slice.kin.a_cooler_welcome` they did: `polarity: 'mixed'` painted the chip
+ * red while `direction: 'gain'` drew an up arrow, so a bond the ending had
+ * genuinely granted rendered as a red rise. The director's reading, verbatim:
+ * *"it is red, and with a red arrow up, signifying bad? arrow up or down? i am
+ * confused"*. Two channels that can contradict is not a content bug to fix
+ * chip by chip — every `mixed`+`gain` chip renders that way by construction.
+ *
+ * So **direction wins wherever a direction exists**, and `polarity` survives
+ * only as the tiebreak for direction-less chips (all pre-THR-1082 authored
+ * content, which keeps rendering exactly as it did — NFP #6). A weaker-than-
+ * hoped gain is a *smaller* green cluster, never a red one; when an ending
+ * genuinely costs something as well as granting it, that is two chips, or the
+ * cost stays in the band's prose. `deltaClusterFor` reads the same field, so
+ * the pair cannot drift again — see the invariant test.
+ *
+ * Note this deliberately sits **above** the `toll`/`wound` rule: those kinds
+ * only ever classify from a costing polarity, so a toll that declares a rise
+ * is a contradiction of exactly the kind this function exists to make
+ * unrepresentable, not a case to preserve.
+ */
 function toneFor(
   kind: EncounterStageConsequenceKind,
-  polarity: EncounterAftermathChangePolarity,
+  change: EncounterAftermathChange,
 ): EncounterStageConsequenceTone {
   if (kind === 'seed') return 'seed';
+  // `opens` has no gain/loss axis, so it falls through to the polarity rule.
+  if (change.direction === 'gain') return 'gain';
+  if (change.direction === 'loss') return 'loss';
   if (kind === 'toll' || kind === 'wound') return 'loss';
-  if (polarity === 'gain') return 'gain';
-  if (isCost(polarity)) return 'loss';
+  if (change.polarity === 'gain') return 'gain';
+  if (isCost(change.polarity)) return 'loss';
   return 'info';
 }
 
@@ -625,7 +654,23 @@ export function buildAftermathConsequences(
     // tile; `concepts` merely decorates the sentence, so it is the fallback.
     const iconConcept = (stateNoun?.visualKind ? stateNoun : undefined)
       ?? concepts?.find(c => c.visualKind);
-    const nounText = stateNoun?.text;
+    // THR-1205 — the noun is enriched like the sentence is, so it can name
+    // *where* the state changed and not only *what* did.
+    //
+    // The director's second reading of the same chip: a BOND that says only
+    // "A STANDING WELCOME" states a mechanic with no referent, and the place it
+    // was granted at — the thing that makes the grant worth anything — was
+    // reachable only by reading the flavour sentence underneath. *"the effect
+    // … must be easily visible here. so e.g. improved reputation in sacred
+    // grove (green arrow up)"*. An author can now write `a standing welcome at
+    // {target}` and have the tag and the cluster label both say the place, the
+    // way `detail` already could.
+    //
+    // Enriches only the *display* text: `iconConcept` still reads the raw ref,
+    // so the tile and the link resolve off the declared anchor exactly as they
+    // did (they route by `entityId`, never by this string). Identity for text
+    // with no placeholders, so every existing noun is untouched (NFP #6).
+    const nounText = stateNoun?.text ? enrich(stateNoun.text) : undefined;
     chips.push({
       id,
       kind,
@@ -653,7 +698,7 @@ export function buildAftermathConsequences(
       // who wrote a cause clause meant it to be read, so it always overrides.
       compact: change.storyWeight === 'incidental' && !causeClause,
       delta: deltaClusterFor(change, nounText),
-      tone: toneFor(kind, change.polarity),
+      tone: toneFor(kind, change),
       icon: iconConcept && resolveIcon ? resolveIcon(iconConcept) : undefined,
     });
   }

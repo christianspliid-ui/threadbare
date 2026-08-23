@@ -135,6 +135,28 @@ export const SLICE_KIN_WELCOME_INTENSITY_WARM = 0.75;
 /** The welcome when the thanks is fumbled — kin are stubborn, but it is cooler. */
 export const SLICE_KIN_WELCOME_INTENSITY_FUMBLED = 0.3;
 
+/**
+ * THR-1205 — the same three bands as a drawn magnitude, so the chip's cluster
+ * scales with the door the reaction actually opens.
+ *
+ * The intensities above are what the engine writes; these are what the player
+ * sees, on the `reputation` ladder's ascending rung index. They are declared
+ * beside the intensities on purpose: a band whose door widens without its
+ * cluster following is the "hidden in prose" failure THR-1205 was filed for,
+ * and keeping the pair adjacent is the cheapest thing that keeps them honest.
+ *
+ * Before this, all three bands drew a single triangle — `deltaClusterFor`
+ * defaults to one when no magnitude is declared — so a warm welcome and a
+ * fumbled one were indistinguishable at a glance, and the *only* thing that
+ * told them apart was the flavour sentence.
+ */
+/** Taken well — a clear amount (two marks). */
+export const SLICE_KIN_WELCOME_BAND = 2;
+/** The room carries it — a great amount (three marks). */
+export const SLICE_KIN_WELCOME_BAND_WARM = 3;
+/** Fumbled — a slight amount (one mark). The door still opens. */
+export const SLICE_KIN_WELCOME_BAND_FUMBLED = 0;
+
 export const SLICE_TEMPLATE_IDS = {
   bridge: 'encounter.slice.unsafe_bridge',
   pass: 'encounter.slice.snow_on_the_pass',
@@ -3646,10 +3668,19 @@ export const SLICE_GRATEFUL_KIN: UnifiedActionTemplate = {
           polarity: 'gain',
           category: 'bond',
           direction: 'gain',
+          // THR-1205 — the cluster now says how wide the door opened, matching
+          // the intensity the reaction below writes. See the band constants.
+          magnitude: { ladder: 'reputation', band: SLICE_KIN_WELCOME_BAND },
           // `visualKind: 'location'`, not `'agent'`. The old value was the second
           // half of the same bug: a location entityId declared as an agent, which
           // is what rendered the fallback "A" tile in the director's screenshot.
-          stateNoun: { text: 'a standing welcome', entityId: '$target', visualKind: 'location', tooltipId: 'ui.standing_welcome' },
+          //
+          // THR-1205 — the noun names the *place*, not only the mechanic. A tag
+          // reading `BOND · A STANDING WELCOME` states a thing with no referent;
+          // the grant is only worth something because it is at this town. The
+          // adapter enriches the noun, so `{target}` resolves here exactly as it
+          // does in `detail`.
+          stateNoun: { text: 'a standing welcome at {target}', entityId: '$target', visualKind: 'location', tooltipId: 'ui.standing_welcome' },
           concepts: [{ text: 'a bed and a hearing' }],
         },
       ],
@@ -3694,7 +3725,9 @@ export const SLICE_GRATEFUL_KIN: UnifiedActionTemplate = {
               polarity: 'gain',
               category: 'bond',
               direction: 'gain',
-              stateNoun: { text: 'a standing welcome', entityId: '$target', visualKind: 'location', tooltipId: 'ui.standing_welcome' },
+              // THR-1205 — the warm band writes the widest door, and now draws it.
+              magnitude: { ladder: 'reputation', band: SLICE_KIN_WELCOME_BAND_WARM },
+              stateNoun: { text: 'a standing welcome at {target}', entityId: '$target', visualKind: 'location', tooltipId: 'ui.standing_welcome' },
               concepts: [{ text: 'a standing welcome' }],
             },
             {
@@ -3764,10 +3797,18 @@ export const SLICE_GRATEFUL_KIN: UnifiedActionTemplate = {
               title: 'A Standing Welcome, an Evening Spent',
               causeClause: 'The thanks was taken three times over, with a toast, and the bowl went cold twice',
               detail: '{target} keeps a door open for them, and they paid for it with most of a night of being talked about.',
-              polarity: 'mixed',
+              // THR-1205 — was `mixed`, which painted this chip red under a
+              // green-meaning up arrow. The welcome is a gain; the evening it
+              // cost is not a write, so it stays in the band's `overview` and
+              // this sentence rather than becoming a second chip (Law 56).
+              polarity: 'gain',
               category: 'bond',
               direction: 'gain',
-              stateNoun: { text: 'a standing welcome', entityId: '$target', visualKind: 'location', tooltipId: 'ui.standing_welcome' },
+              // Same door as the plain success — the base reaction writes
+              // `SLICE_KIN_WELCOME_INTENSITY` here. What the band cost was time,
+              // not warmth, so the cluster must not shrink to imply otherwise.
+              magnitude: { ladder: 'reputation', band: SLICE_KIN_WELCOME_BAND },
+              stateNoun: { text: 'a standing welcome at {target}', entityId: '$target', visualKind: 'location', tooltipId: 'ui.standing_welcome' },
               concepts: [{ text: 'a standing welcome' }],
             },
           ],
@@ -3788,10 +3829,15 @@ export const SLICE_GRATEFUL_KIN: UnifiedActionTemplate = {
               title: 'A Cooler Welcome',
               causeClause: 'The thanks was honest, public, and long, and they stood it badly',
               detail: '{target} keeps the door open anyway. It opens less wide than it was going to.',
-              polarity: 'mixed',
+              // THR-1205 — the chip the director screenshotted. `mixed` made it
+              // red; it is a gain, just the smallest one this beat can produce.
+              // A weaker-than-hoped grant is a *smaller green* cluster, never a
+              // red one — that is what the fumbled band constant below draws.
+              polarity: 'gain',
               category: 'bond',
               direction: 'gain',
-              stateNoun: { text: 'a standing welcome', entityId: '$target', visualKind: 'location', tooltipId: 'ui.standing_welcome' },
+              magnitude: { ladder: 'reputation', band: SLICE_KIN_WELCOME_BAND_FUMBLED },
+              stateNoun: { text: 'a standing welcome at {target}', entityId: '$target', visualKind: 'location', tooltipId: 'ui.standing_welcome' },
               concepts: [{ text: 'a standing welcome' }],
             },
           ],
