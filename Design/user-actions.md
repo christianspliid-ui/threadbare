@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-23 10:55 local (08:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-23 11:56 local (09:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -70,6 +70,7 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
+- 2026-08-23: **mortal backstories no longer stutter** — [THR-1199](https://linear.app/threadbare/issue/THR-1199/fear-prose-renders-fear-as-the-whole-fear-description-producing-the) ([PR #1578](https://github.com/christianspliid-ui/threadbare/pull/1578)): every character's description read *"behind the Cunning they practice is the being outwitted of being outwitted"* — a whole phrase dropped into a slot meant for one word. Found while fixing the entry below it, and shipped the same morning.
 - 2026-08-23: **character backstories no longer read backwards** — [THR-1187](https://linear.app/threadbare/issue/THR-1187/fear-strata-honesty-cunning-poles-read-inverted-the-positive-body) ([PR #1577](https://github.com/christianspliid-ui/threadbare/pull/1577)): an *Honest* mortal was described as fearing their deception would be exposed, and a *Cunning* one as embarrassingly bad at lying — the two descriptions sat in each other's slots. Idea to deployed in 70 minutes with nothing asked of you.
 - 2026-08-22: **a stale-file check no longer fails forever over invisible line endings** — [THR-1192](https://linear.app/threadbare/issue/THR-1192/checkgenerated-freshness-byte-compares-disk-vs-blob-with-no-eol): a working copy written with Windows line endings failed the check permanently, blaming the wrong file and offering a fix that could not work.
 - 2026-08-22: **a generated file stopped looking changed when it was not** — [THR-714](https://linear.app/threadbare/issue/THR-714/strip-the-volatile-timestamp-from-ul-dashboardgeneratedjson): it carried the moment it was built, so rebuilding it always produced a difference.
@@ -79,7 +80,6 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 - 2026-08-22: **two divine actions that forged an artifact for nobody now hand it over** — [THR-1194](https://linear.app/threadbare/issue/THR-1194/hexforge-seer-token-and-hexforge-instrument-bind-their-artifact-with) ([PR #1571](https://github.com/christianspliid-ui/threadbare/pull/1571)): forging a seer's token and forging an instrument each reported success and gave the item to no one.
 - 2026-08-22: **you ruled the wave-1 slate and unfroze the design program** — [THR-1163](https://linear.app/threadbare/issue/THR-1163/wave-1-selection-which-seams-make-the-first-wave-in-what-order-under): shared machinery first, hunger vocabulary second, the widened region identity third; three plan docs rather than six. Five days as the top ask, closed live in chat.
 - 2026-08-22: **a stale-file check stopped failing pull requests for the wrong reason** — [THR-1191](https://linear.app/threadbare/issue/THR-1191/checkwiki-freshnessblocking-diffs-two-dot-so-mains-own-advance-fails) ([PR #1570](https://github.com/christianspliid-ui/threadbare/pull/1570)): the gate blamed a branch for changes that had landed on main behind it. Now it looks only at the branch's own work.
-- 2026-08-22: **a restored fragment of the world is now a real place** — [THR-1193](https://linear.app/threadbare/issue/THR-1193/hexrestore-fragment-mints-a-sublocation-node-with-no-parent-a-tier) ([PR #1569](https://github.com/christianspliid-ui/threadbare/pull/1569)): mending a broken piece of the map used to build a room with no building around it and no address. It now belongs somewhere.
 
 ---
 

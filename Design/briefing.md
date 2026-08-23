@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-08-23 10:55 local (08:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-08-23 11:56 local (09:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -28,15 +28,15 @@ These are the two you played and criticised, with your three findings addressed:
 
 ## Queue
 
-**The pipeline ran a full lap on its own this morning — and it is the first one in about a week.**
+**Two repairs shipped this morning without you, and the shelf is down to one job.**
 
-- **A repair went from idea to live in 70 minutes, untouched by you.** [THR-1187](https://linear.app/threadbare/issue/THR-1187/fear-strata-honesty-cunning-poles-read-inverted-the-positive-body) — the character backstories that read backwards, where an *Honest* mortal was described as living in fear their deception would be exposed — was picked up at 09:31, built, merged and closed at 10:41, and the live site is already serving it. Nobody asked you anything to make that happen.
-- **One job on the shelf, and the builders can start it without you.** [THR-1199](https://linear.app/threadbare/issue/THR-1199/fear-prose-renders-fear-as-the-whole-fear-description-producing-the) — found *while* fixing the one above, in the same table. Every mortal's backstory currently renders a broken sentence: *"behind the Cunning they practice is the **being outwitted of being outwitted**"*. It affects all eighteen variations, so essentially every character a player reads. It needs no ruling from you; the next builder run takes it.
+- **The doubled-word sentences are fixed and live.** [THR-1199](https://linear.app/threadbare/issue/THR-1199/fear-prose-renders-fear-as-the-whole-fear-description-producing-the) — the character backstories reading *"behind the Cunning they practice is the being outwitted of being outwitted"* — was picked up, built, merged and closed while the previous brief was still being written. That is the second full lap in three hours, both untouched by you.
+- **One job left on the shelf, and it needs nothing from you.** [THR-1200](https://linear.app/threadbare/issue/THR-1200/fear-prose-renders-value-as-an-adjective-in-a-noun-slot-that) — found inside the last repair, in the same table: every mortal's backstory drops an adjective where the sentence needs a noun, so players read *"their **Prudent** is partly about the fear of their own recklessness"* and *"that **Courageous** is maintained"*. 97 of 108 lines. The next builder run takes it.
 - **Three parks still held correctly** — `In Dev`, unassigned, carrying the label that stops the automatic sweep from releasing them and hiding their questions.
-- **Two small repairs are not a refilled shelf.** Both of this morning's tickets were faults found inside other work, not new work anybody planned. Everything substantial still needs a decision from you, and there are six of those above.
+- **Everything the builders have done today, they found themselves — inside the previous job.** Three repairs, all from one content table, and nothing new has entered the pipeline from outside. A queue that feeds on itself empties when that table runs clean, which is close. The six things above are what refills it.
 
 ## Health
 
-All green. Live site current, automated checks normal, both background jobs on schedule, no pull request waiting, all nine scheduled lanes on time, your local copy clean and current.
+All green. Live site current, automated checks normal, both background jobs on schedule, no pull request waiting, all nine scheduled lanes on time, the worktree reaper current, your local copy clean and current.
 
 - **The 35-hour quiet from Thursday evening to Saturday morning was the computer being off, not a fault — no action from you.** Already verified twice against a separate scheduler showing the same window dark. The silence probe keeps re-reporting it because it cannot see a powered-down machine. Recorded, not asked.
