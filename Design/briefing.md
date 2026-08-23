@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-08-23 11:56 local (09:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-08-23 12:58 local (10:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -28,12 +28,12 @@ These are the two you played and criticised, with your three findings addressed:
 
 ## Queue
 
-**Two repairs shipped this morning without you, and the shelf is down to one job.**
+**A third repair shipped and deployed this hour, and it found two more of itself on the way out.**
 
-- **The doubled-word sentences are fixed and live.** [THR-1199](https://linear.app/threadbare/issue/THR-1199/fear-prose-renders-fear-as-the-whole-fear-description-producing-the) — the character backstories reading *"behind the Cunning they practice is the being outwitted of being outwitted"* — was picked up, built, merged and closed while the previous brief was still being written. That is the second full lap in three hours, both untouched by you.
-- **One job left on the shelf, and it needs nothing from you.** [THR-1200](https://linear.app/threadbare/issue/THR-1200/fear-prose-renders-value-as-an-adjective-in-a-noun-slot-that) — found inside the last repair, in the same table: every mortal's backstory drops an adjective where the sentence needs a noun, so players read *"their **Prudent** is partly about the fear of their own recklessness"* and *"that **Courageous** is maintained"*. 97 of 108 lines. The next builder run takes it.
+- **The adjective-in-a-noun-slot repair is live.** [THR-1200](https://linear.app/threadbare/issue/THR-1200/fear-prose-renders-value-as-an-adjective-in-a-noun-slot-that) ([PR #1579](https://github.com/christianspliid-ui/threadbare/pull/1579)) — every mortal's backstory read *"their **Prudent** is partly about the fear of their own recklessness"*, dropping an adjective where the sentence needed a noun, on 97 of 108 lines. Picked up 35 minutes after it hit the shelf, merged and deployed inside the hour. Third full lap today, none of them yours.
+- **Two new jobs on the shelf, both found inside that one** — [THR-1201](https://linear.app/threadbare/issue/THR-1201/turning-point-prose-renders-value-as-an-adjective-in-a-noun-slot-when) (the same adjective fault in a second table of backstory text) and [THR-1202](https://linear.app/threadbare/issue/THR-1202/fear-prose-preservation-transformation-the-first-four-bodies-of-both) (eight passages written about a subject the game no longer has). Both need nothing from you.
 - **Three parks still held correctly** — `In Dev`, unassigned, carrying the label that stops the automatic sweep from releasing them and hiding their questions.
-- **Everything the builders have done today, they found themselves — inside the previous job.** Three repairs, all from one content table, and nothing new has entered the pipeline from outside. A queue that feeds on itself empties when that table runs clean, which is close. The six things above are what refills it.
+- **Five defects in a row, all from the same table of character-backstory text, every one found by a builder inside the previous job.** The queue is feeding entirely on itself: nothing has entered the pipeline from outside in over four hours, and the shelf empties the moment that table runs clean. The six things above are what refills it, and the design hour is the one that matters.
 
 ## Health
 
