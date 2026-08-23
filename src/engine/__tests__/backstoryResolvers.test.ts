@@ -25,6 +25,8 @@ import {
   divineTransformationResolver,
 } from '../backstoryResolvers';
 import type { BackstoryLayer } from '../../types/prose';
+import { FEAR_PROSE } from '../../data/backstory-content';
+import { FEAR_DESCRIPTIONS, VALUE_LABELS } from '../../data/strand-content';
 
 // ─── Graph builders ──────────────────────────────────────────────────────────
 
@@ -550,11 +552,16 @@ describe('fearResolver', () => {
 
   // THR-1187 — the rendered join, which is where the defect was actually visible.
   //
-  // fearResolver reads three sources that have to agree: VALUE_LABELS for {value},
-  // FEAR_DESCRIPTIONS for {fear}, and the FEAR_PROSE body keyed by the same sign. Each file
-  // has its own pin, but only the composed line shows whether they agree with each other,
-  // and only running BOTH poles shows it — on the shipped arrangement the two bodies fit
-  // each other's keys, so a one-pole check passes on the inversion.
+  // fearResolver reads two sources that have to agree: VALUE_LABELS for {value} and the
+  // FEAR_PROSE body keyed by the same sign. Only the composed line shows whether they agree
+  // with each other, and only running BOTH poles shows it — on the shipped arrangement the
+  // two bodies fit each other's keys, so a one-pole check passes on the inversion.
+  //
+  // THR-1199 note: this used to be THREE sources — FEAR_DESCRIPTIONS supplied {fear}. It no
+  // longer does (the bodies want a bare noun, not the whole phrase), so the fear each pole
+  // renders is no longer visible in this line and is asserted against the table directly
+  // below instead. The pole→description alignment itself stays pinned by the literal table
+  // in src/data/__tests__/strand-content.test.ts.
   it('renders honesty_cunning with each pole on its own body, label and fear', () => {
     function renderPole(pairValue: number): string[] {
       const graph = new WorldGraph();
@@ -578,11 +585,16 @@ describe('fearResolver', () => {
     expect(honest.every((t) => t.includes('Honest') && !t.includes('Cunning'))).toBe(true);
     expect(cunning.every((t) => t.includes('Cunning') && !t.includes('Honest'))).toBe(true);
 
-    // The fear each pole renders, stripped of its leading "Fears " by the resolver.
-    expect(honest.some((t) => t.includes('having to deceive'))).toBe(true);
-    expect(honest.some((t) => t.includes('being outwitted'))).toBe(false);
-    expect(cunning.some((t) => t.includes('being outwitted'))).toBe(true);
-    expect(cunning.some((t) => t.includes('having to deceive'))).toBe(false);
+    // The fear each pole is committed to, read off the table the resolver no longer joins.
+    // Each pole fears the undoing of what that pole is committed to: Honest fears having to
+    // deceive, Cunning fears being outwitted.
+    expect(FEAR_DESCRIPTIONS.honesty_cunning).toEqual([
+      'Fears having to deceive',
+      'Fears being outwitted',
+    ]);
+    // The bodies still name the fear themselves, so the pole-specific content is in the line.
+    expect(cunning.some((t) => t.includes('the fear of being outwitted'))).toBe(true);
+    expect(honest.some((t) => t.includes('the fear of being outwitted'))).toBe(false);
 
     // The body each pole draws from. "watches the cunning prosper" is an outsider looking at
     // cunning people, so it belongs to the honest agent; "keeps no journal, writes no
@@ -592,6 +604,105 @@ describe('fearResolver', () => {
     expect(cunning.some((t) => t.includes('keeps no journal, writes no letters'))).toBe(true);
     expect(honest.some((t) => t.includes('keeps no journal, writes no letters'))).toBe(false);
     expect(cunning.some((t) => t.includes('watches the cunning prosper'))).toBe(false);
+  });
+
+  // ─── THR-1199 — assertions that read the COMPOSED sentence ──────────────────
+  //
+  // The defect this pins shipped past two green checks: backstory-content.test.ts asserts
+  // each key HAS a template containing {fear}, and the test above asserts the rendered text
+  // no longer CONTAINS the literal '{fear}'. Substituting a grammatically wrong value
+  // satisfies both. {fear} was the whole FEAR_DESCRIPTIONS phrase while every body puts the
+  // placeholder in bare-noun position, so all 18 keys rendered lines like "the being
+  // outwitted of being outwitted" and "the the loss of the old ways of loss".
+  //
+  // So these assertions read the sentence the player sees, not the placeholder.
+  describe('composed sentence (THR-1199)', () => {
+    /** Render one pole of one pair through the real resolver, sweeping seeds. */
+    function renderKey(pair: string, pole: 'positive' | 'negative'): string[] {
+      const graph = new WorldGraph();
+      graph.addNode({
+        id: 'a',
+        type: 'actor',
+        name: 'Mira',
+        properties: { axiologicalProfile: { [pair]: pole === 'positive' ? 0.8 : -0.8 } },
+      } as GraphNode);
+      const seeds = Array.from({ length: 200 }, (_, i) => i);
+      return seeds.map((s) => fearResolver('a', graph, s)[0]?.text ?? '');
+    }
+
+    const keys = Object.keys(FEAR_PROSE).map((key) => {
+      const match = key.match(/^(.*)_(positive|negative)$/);
+      return { key, pair: match![1], pole: match![2] as 'positive' | 'negative' };
+    });
+
+    // Guards the sweep against the vacuous-probe shape: an empty or partial population
+    // would pass every assertion below without reading a single defective sentence.
+    it('sweeps every FEAR_PROSE key and every body within it', () => {
+      expect(keys.length).toBe(18);
+      for (const { key, pair, pole } of keys) {
+        const rendered = new Set(renderKey(pair, pole));
+        expect(rendered.has('')).toBe(false);
+        expect(rendered.size).toBe(FEAR_PROSE[key].length);
+      }
+    });
+
+    it.each(keys)('renders $key as grammatical prose on every body', ({ pair, pole }) => {
+      for (const text of new Set(renderKey(pair, pole))) {
+        // No placeholder survives substitution.
+        expect(text).not.toMatch(/\{[a-z]+\}/i);
+        // "the the loss of the old ways" — the phrase arriving in a slot that already has
+        // its own article.
+        expect(text).not.toMatch(/\b(the|a|an) (the|a|an)\b/i);
+        // "of of", "in in" — the phrase carrying a preposition the body also supplies.
+        expect(text).not.toMatch(/\b(of|in|at|to|for|with|beneath|behind) \1\b/i);
+        // "the being outwitted of being outwitted" — the fear slot filled with a phrase,
+        // leaving the body's own trailing preposition stranded on a repeat of it.
+        expect(text).not.toMatch(/\bfear \w+ of \w+ of\b/i);
+      }
+    });
+
+    it('substitutes {fear} as a bare singular noun, not a phrase', () => {
+      // The contract the 107 placeholder-carrying bodies were authored against. A phrase
+      // here is the whole defect: every body puts {fear} after an article or adjective and
+      // before a verb or preposition, which only a single noun can occupy.
+      const graph = new WorldGraph();
+      graph.addNode({
+        id: 'a',
+        type: 'actor',
+        name: 'Mira',
+        properties: { axiologicalProfile: { courage_prudence: 0.8 } },
+      } as GraphNode);
+      const text = fearResolver('a', graph, 3)[0].text;
+      const substituted = FEAR_PROSE.courage_prudence_positive
+        .map((body) => {
+          const rendered = body.replace(/\{name\}/g, 'Mira').replace(/\{value\}/g, 'Courageous');
+          const pattern = new RegExp(
+            rendered.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\\\{fear\\\}/g, '(.+?)'),
+          );
+          return text.match(pattern)?.[1];
+        })
+        .find((v): v is string => v !== undefined);
+
+      expect(substituted).toBeDefined();
+      expect(substituted).toBe('fear');
+      expect(substituted).not.toMatch(/\s/);
+    });
+
+    // A per-key golden sample. The reviewed composed line for each of the 18 keys, so the
+    // sentence a player reads is checked-in text rather than something only assembled at
+    // runtime — the surface both THR-1187 and THR-1199 were invisible on.
+    it.each(keys)('$key golden render reads correctly', ({ key, pair, pole }) => {
+      const first = FEAR_PROSE[key][0];
+      const label = VALUE_LABELS[pair as keyof typeof VALUE_LABELS][pole === 'positive' ? 0 : 1];
+      const expected = first
+        .replace(/\{name\}/g, 'Mira')
+        .replace(/\{value\}/g, label)
+        .replace(/\{fear\}/g, 'fear');
+
+      expect(new Set(renderKey(pair, pole))).toContain(expected);
+      expect(expected).toMatch(/^[A-Z"']/);
+      expect(expected.trimEnd()).toMatch(/[.!?]$/);
+    });
   });
 });
 

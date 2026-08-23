@@ -31,7 +31,7 @@ import {
   STORY_ARC_PROSE,
   DIVINE_TRANSFORMATION_PROSE,
 } from '../data/backstory-content';
-import { FEAR_DESCRIPTIONS, VALUE_LABELS } from '../data/strand-content';
+import { VALUE_LABELS } from '../data/strand-content';
 import type { ValuePair } from '../types/agent';
 
 // ─── Shared utilities ─────────────────────────────────────────────────────────
@@ -384,12 +384,28 @@ export function contradictionResolver(
 }
 
 /**
+ * The noun `{fear}` substitutes to in a FEAR_PROSE body.
+ *
+ * THR-1199: this was `FEAR_DESCRIPTIONS[pair][pole]` with the leading `Fears ` stripped —
+ * a noun *phrase* (`being outwitted`, `the loss of the old ways`). Every one of the 107
+ * bodies that carry the placeholder puts it in bare-singular-noun position: preceded by
+ * `The` / `the` / `a` / an adjective, followed by `is` / `of` / `that` / `beneath`. So the
+ * phrase rendered as `the being outwitted of being outwitted` and `the the loss of the old
+ * ways of loss` — ungrammatical on all 18 keys, ~108 bodies.
+ *
+ * The bodies name their own fear inline (`the {fear} of being outwitted`), so no content is
+ * lost by substituting the bare noun, and FEAR_DESCRIPTIONS is not orphaned by the change:
+ * `strands.ts` renders it whole in the Fears strand insight and the CMS registry browses it.
+ */
+const FEAR_NOUN = 'fear';
+
+/**
  * fearResolver — shadow fear derived from strongest axiological value.
  * Priority: 80
  * Category: 'character'
  * Stratum: 3
  *
- * Agent → axiologicalProfile → strongest value pair → FEAR_DESCRIPTIONS → FEAR_PROSE.
+ * Agent → axiologicalProfile → strongest value pair → VALUE_LABELS → FEAR_PROSE.
  */
 export function fearResolver(
   nodeId: string,
@@ -424,12 +440,6 @@ export function fearResolver(
   const template = pickTemplate(templates, seed);
   if (!template) return [];
 
-  // Derive fear description from FEAR_DESCRIPTIONS
-  const fearDescriptions = FEAR_DESCRIPTIONS[topPair as ValuePair];
-  const fearText = fearDescriptions
-    ? (pole === 'positive' ? fearDescriptions[0] : fearDescriptions[1]).toLowerCase().replace(/^fears /, '')
-    : 'the unknown';
-
   // Derive value label
   const labels = VALUE_LABELS[topPair as ValuePair];
   const valueLabel = labels
@@ -438,7 +448,7 @@ export function fearResolver(
 
   const text = replacePlaceholders(template, {
     name: node.name,
-    fear: fearText,
+    fear: FEAR_NOUN,
     value: valueLabel,
   });
 

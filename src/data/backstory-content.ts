@@ -622,6 +622,15 @@ export const DECISIVE_NATURE_PROSE: string[] = [
 // Key: valuePair_positive (fear from positive pole) or valuePair_negative (fear from negative pole).
 // Placeholders: {name}, {fear}, {value}.
 // Tone: Vulnerability exposed. "What {name} will never admit..."
+//
+// {fear} is a BARE SINGULAR NOUN — it renders the word "fear" and nothing else. Write it in
+// noun position ("the {fear} of exposure", "a {fear} that ...", "The {fear} is not of the
+// danger") and name the specific fear inline in the body; do not write it as though it were
+// the whole fear phrase. THR-1199: it used to substitute the full FEAR_DESCRIPTIONS string,
+// which rendered "the being outwitted of being outwitted" and "the the loss of the old ways
+// of loss" on every one of these keys. Pinned by the composed-sentence assertions in
+// src/engine/__tests__/backstoryResolvers.test.ts — placeholder-presence checks cannot see
+// this class, which is why it survived to ship.
 
 export const FEAR_PROSE: Record<string, string[]> = {
   // mercy_ruthlessness
