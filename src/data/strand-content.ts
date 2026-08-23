@@ -115,6 +115,11 @@ export const INTENSITY_VALUE_LABELS: Record<
  *
  * All prose: terse, evocative, haunted tone.
  */
+// Consumers: `strands.ts` renders these whole in the Fears strand insight, and the CMS
+// registry browses the table. THR-1199 removed the third consumer — `fearResolver` used to
+// strip the leading "Fears " and substitute the remainder into FEAR_PROSE's `{fear}`, which
+// expects a bare noun, not a phrase. Do not reintroduce that path; the FEAR_PROSE bodies
+// name their own fear inline.
 export const FEAR_DESCRIPTIONS: Record<ValuePair, [string, string]> = {
   // Axiological fears — [virtue-extreme fear, flaw-extreme fear]
   // The convention every entry follows: each pole fears the UNDOING of what that pole is
