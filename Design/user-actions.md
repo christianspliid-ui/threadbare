@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-23 09:25 local (07:25 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-23 10:05 local (08:05 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -47,8 +47,8 @@ This is now a single question. The ticket originally held two sounds; the second
 **Nothing unattended can refill the shelf. Only a session with you can.** In the order you set:
 
 - **The three wave-1 sessions** you ruled on — shared machinery first, the hunger vocabulary second, [nations and named areas simulated rather than drawn](https://linear.app/threadbare/issue/THR-1155/nations-and-named-areas-are-rendered-not-simulated-promote-both-to) third. All three need you in a chat; no lane can prepare them away.
-- **[Unify the card grammar](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** — your 6 August note: action cards are too wordy, you cannot tell what they do, and playing one gives no feedback, while encounter cards already read the way you wanted. Staged with its reading list gathered; it has held the single design slot ~126 hours.
-- **[Traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)** — in design and assigned to you for a week, untouched. Either give it the hour or say *"put Traits wave 2 back in the pile."*
+- **[Unify the card grammar](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** — your 6 August note: action cards are too wordy, you cannot tell what they do, and playing one gives no feedback, while encounter cards already read the way you wanted. Staged with its reading list gathered; it has held the single design slot since 19 August.
+- **[Traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)** — in design and assigned to you for eight days, untouched. Either give it the hour or say *"put Traits wave 2 back in the pile."*
 
 Behind these whenever you want them: [the anchor prototype](https://linear.app/threadbare/issue/THR-1162/anchor-type-on-a-second-seam-throwaway-prototype-proving-the-pilots), [the encounter slice verdict](https://linear.app/threadbare/issue/THR-907/slice-verdict-session-christian-rules-on-prose-firing-ui-and-game), and your own [one-button snapshot](https://linear.app/threadbare/issue/THR-1134/shareable-game-state-snapshot-one-button-incident-bundle-that-works-in).
 
