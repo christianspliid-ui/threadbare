@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-22 21:53 local (19:53 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-23 09:25 local (07:25 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -13,7 +13,7 @@ Six encounters were rebuilt to the new bar. Two are waiting on your eyes, live o
 
 **What changed since you last played these**, from your own three findings: the bond chip names the mechanic and both ends, and clicking it opens the person who actually owes the favour rather than you; fifteen chips reporting a number you can never see are retired, and the rule forbidding them is now an enforced gate; the writing was re-passed to your density note — one named person on stage, props only where you can act on them.
 
-**Are these two worth meeting a second time?** A yes releases batch 2 — the remaining nine of fifteen. A no tells the line what the bar is still missing before nine more are written against it. Waiting six days, and with the board now empty this is the largest single release available.
+**Are these two worth meeting a second time?** A yes releases batch 2 — the remaining nine of fifteen. A no tells the line what the bar is still missing before nine more are written against it. Waiting seven days, and with the board still empty this is the largest single release available.
 
 ### 2. What is a run *about*? — [THR-1198](https://linear.app/threadbare/issue/THR-1198/the-48-authored-mandate-strings-are-wired-but-unreachable-no-live-game)
 
@@ -38,7 +38,7 @@ It sits downstream of ask 1 and edits the same file, so taking them in that orde
 
 There is a finished, unused piece of sound design: when you commit to a nudge, roughly 1.6 seconds where a tone draws tight, holds, then releases — and only then does the outcome land. Nothing plays it today; the visual it accompanied was deleted, so what is left is the pacing alone.
 
-**Does committing feel better with that beat, or should the outcome land immediately?** Pure feel, no measurement settles it. Either answer closes the ticket — wired to the encounter veil, or retired with its constants and tests. Open since Monday. Two lanes recommend **no**: unskippable on every commit turns tense into waiting, and the timings stay recoverable from history.
+**Does committing feel better with that beat, or should the outcome land immediately?** Pure feel, no measurement settles it. Either answer closes the ticket — wired to the encounter veil, or retired with its constants and tests. Open since Monday, now seven days. Two lanes recommend **no**: unskippable on every commit turns tense into waiting, and the timings stay recoverable from history.
 
 This is now a single question. The ticket originally held two sounds; the second — a small cue on each consequence chip — was retired on its own merits, because the vocabulary it was keyed to no longer exists.
 
@@ -47,7 +47,7 @@ This is now a single question. The ticket originally held two sounds; the second
 **Nothing unattended can refill the shelf. Only a session with you can.** In the order you set:
 
 - **The three wave-1 sessions** you ruled on — shared machinery first, the hunger vocabulary second, [nations and named areas simulated rather than drawn](https://linear.app/threadbare/issue/THR-1155/nations-and-named-areas-are-rendered-not-simulated-promote-both-to) third. All three need you in a chat; no lane can prepare them away.
-- **[Unify the card grammar](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** — your 6 August note: action cards are too wordy, you cannot tell what they do, and playing one gives no feedback, while encounter cards already read the way you wanted. Staged with its reading list gathered; it has held the single design slot ~114 hours.
+- **[Unify the card grammar](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** — your 6 August note: action cards are too wordy, you cannot tell what they do, and playing one gives no feedback, while encounter cards already read the way you wanted. Staged with its reading list gathered; it has held the single design slot ~126 hours.
 - **[Traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)** — in design and assigned to you for a week, untouched. Either give it the hour or say *"put Traits wave 2 back in the pile."*
 
 Behind these whenever you want them: [the anchor prototype](https://linear.app/threadbare/issue/THR-1162/anchor-type-on-a-second-seam-throwaway-prototype-proving-the-pilots), [the encounter slice verdict](https://linear.app/threadbare/issue/THR-907/slice-verdict-session-christian-rules-on-prose-firing-ui-and-game), and your own [one-button snapshot](https://linear.app/threadbare/issue/THR-1134/shareable-game-state-snapshot-one-button-incident-bundle-that-works-in).
@@ -56,7 +56,7 @@ Behind these whenever you want them: [the anchor prototype](https://linear.app/t
 
 One `npm run dev` and a browser at 1920×1080: nine surfaces, at least 19 screenshots. Every one is a shipped UI change that carries test-level proof but no picture, because a scheduled run is refused a dev server and so structurally cannot capture one.
 
-**Parked off the shelf at 20:01 today** — the builder lane recognised it cannot be discharged without you and moved it aside rather than leaving it as phantom depth. That is why the board now reads zero: this was the last item on it.
+**Parked off the shelf on 22 August** — the builder lane recognised it cannot be discharged without you and moved it aside rather than leaving it as phantom depth. That is why the board now reads zero: this was the last item on it.
 
 It keeps growing as more UI work ships behind the same wall. This replaces four separate tickets (THR-1109, THR-1125, THR-1126, THR-1127), consolidated 2026-08-16 — a merge, not a prune. If you only get through part of it, say which, and the remainder is re-expanded rather than closed whole.
 
