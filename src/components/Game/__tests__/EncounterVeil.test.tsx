@@ -13,6 +13,7 @@ import {
   buildAftermathConsequences,
 } from '../encounter-stage/adapters/buildAftermathConsequences';
 import type { ChipSentenceLinker } from '../encounter-stage/adapters/buildAftermathConsequences';
+import { SLICE_GRATEFUL_KIN } from '../../../data/encounters/vertical-slice';
 import { WorldGraph } from '../../../engine/graph';
 import type { UnifiedActionTemplate } from '../../../types/unifiedAction';
 import type { EncounterNotification } from '../../../types/encounterVisibility';
@@ -1610,6 +1611,115 @@ describe('aftermath mode', () => {
     expect(screen.queryByTestId('aftermath-reaction-label-slice.bridge.walk_on-seg-0'))
       .not.toBeInTheDocument();
   });
+
+  // ── THR-1205 — the chip states one signal, and states it exactly ────────
+  //
+  // Browser-verify substitution (unattended run, no startable dev server):
+  // these assert the *rendered surface* built from the real authored content,
+  // which is the half a pure adapter test cannot reach — the colour the arrow
+  // is painted in, the words the tag actually shows, and the magnitude drawn
+  // beside them.
+  //
+  // The defect, from the director's review screenshot of the Grateful Kin
+  // ending: the `critical_failure` BOND chip painted red under an up arrow
+  // (*"it is red, and with a red arrow up, signifying bad? arrow up or down? i
+  // am confused"*), and named a mechanic with no place attached, so the only
+  // thing carrying the effect was the flavour prose underneath it.
+  describe('the Grateful Kin welcome states one exact effect (THR-1205)', () => {
+    const BANDS = [
+      { band: 'critical_success', chipId: 'slice.kin.a_standing_welcome_well', marks: '3' },
+      { band: 'success', chipId: 'slice.kin.a_standing_welcome', marks: '2' },
+      { band: 'success_at_cost', chipId: 'slice.kin.a_standing_welcome_dearly', marks: '2' },
+      { band: 'critical_failure', chipId: 'slice.kin.a_cooler_welcome', marks: '1' },
+    ] as const;
+
+    /**
+     * Find an authored change by id anywhere in the template.
+     *
+     * Structural rather than path-based on purpose: aftermath sits at several
+     * depths (`aftermathConfig.fallback.changes`, each `byOutcome` band's
+     * `changes`, and per-variant blocks), and that shape has moved before. A
+     * hard-coded path silently finds nothing when a container is renamed, which
+     * turns these assertions into a guard that cannot fail.
+     */
+    function findChange(root: unknown, id: string, seen = new Set<unknown>()): unknown {
+      if (typeof root !== 'object' || root === null || seen.has(root)) return undefined;
+      seen.add(root);
+      if (!Array.isArray(root) && (root as { id?: unknown }).id === id
+        && typeof (root as { detail?: unknown }).detail === 'string') {
+        return root;
+      }
+      for (const value of Object.values(root as Record<string, unknown>)) {
+        const hit = findChange(value, id, seen);
+        if (hit) return hit;
+      }
+      return undefined;
+    }
+
+    function veilModelFor(chipId: string): EncounterStageModel {
+      const change = findChange(SLICE_GRATEFUL_KIN, chipId);
+      expect(change, `${chipId} must still be authored on The Grateful Kin`).toBeDefined();
+      const consequences = buildAftermathConsequences({
+        changes: [change as never],
+        // The one placeholder these chips carry, resolved the way the live
+        // enricher resolves it — this beat's town.
+        enrich: (text: string) => text.replace(/\{target\}/g, 'Sacred Grove'),
+        link: (id, text) => ({ id, segments: [{ text }] }),
+      });
+      return {
+        ...chipModel,
+        aftermath: { ...chipModel.aftermath!, consequences },
+      };
+    }
+
+    it.each(BANDS)(
+      'renders $band as a green rise of $marks, naming the welcome and the place',
+      ({ chipId, marks }) => {
+        render(<EncounterVeil {...defaultProps} model={veilModelFor(chipId)} />);
+
+        const chip = screen.getByTestId('consequence-chip-standing');
+        const cluster = within(chip).getByTestId('delta-cluster');
+
+        // The arrow points up on every band — the welcome is granted even when
+        // the thanks is fumbled; only how wide the door opens changes.
+        expect(cluster).toHaveAttribute('data-direction', 'gain');
+        expect(cluster).toHaveAttribute('data-count', marks);
+
+        // …and it is painted with the *gain* token, never the loss one. This is
+        // the assertion the shipped defect fails: red glyphs under an up arrow.
+        expect(cluster.getAttribute('style')).toContain('--veil-gain-rgb');
+        expect(cluster.getAttribute('style')).not.toContain('--veil-loss-rgb');
+
+        // The exact effect, on the chip, in game vocabulary — the mechanic noun
+        // plus the place it applies at, legible without reading the sentence.
+        expect(within(chip).getByText('BOND')).toBeInTheDocument();
+        expect(
+          within(chip).getByText('A STANDING WELCOME AT SACRED GROVE'),
+        ).toBeInTheDocument();
+
+        // The cluster's spoken reading says the same thing, so the hover and
+        // screen-reader tiers do not fall back to the bare mechanic.
+        expect(cluster.getAttribute('aria-label')).toContain('Sacred Grove');
+      },
+    );
+
+    it('scales the drawn magnitude with the band, so warm and fumbled do not read alike', () => {
+      // The falsification the per-band cases cannot make on their own: before
+      // this, every band drew a single triangle, so all four chips were
+      // identical at a glance and the only thing telling them apart was prose.
+      const counts = BANDS.map(({ chipId }) => {
+        const { unmount } = render(
+          <EncounterVeil {...defaultProps} model={veilModelFor(chipId)} />,
+        );
+        const count = screen.getByTestId('delta-cluster').getAttribute('data-count');
+        unmount();
+        return count;
+      });
+      expect(new Set(counts).size).toBeGreaterThan(1);
+      expect(counts).toEqual(['3', '2', '2', '1']);
+    });
+  });
+
 });
 
 // ─── THR-1041: cast strip and fallout preview ───────────────────────

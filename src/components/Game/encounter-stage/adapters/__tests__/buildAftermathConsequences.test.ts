@@ -1065,3 +1065,142 @@ describe('declared anchors are resolved against the live world (THR-1164)', () =
     expect(chips[0].icon?.entityId).toBe('actor.faction.dawn.7');
   });
 });
+
+describe('one signal channel — colour and arrow cannot contradict (THR-1205)', () => {
+  const POLARITIES: EncounterAftermathChange['polarity'][] = ['gain', 'loss', 'mixed', 'info'];
+  const DIRECTIONS: (EncounterAftermathChange['direction'])[] =
+    ['gain', 'loss', 'opens', undefined];
+  const KINDS: EncounterAftermathChange['kind'][] = [
+    'growth', 'trait', 'item', 'reputation',
+    'faction_reputation', 'reputation_tally', 'shell_state', 'future_hook',
+  ];
+
+  /**
+   * The defect, exactly: `polarity: 'mixed'` painted the chip red while
+   * `direction: 'gain'` drew an up arrow, so the ending granted a bond and
+   * rendered it as a loss. Pinned on the authored shape that shipped it.
+   */
+  it('paints a mixed-polarity gain green, not red', () => {
+    const chips = buildAftermathConsequences({
+      changes: [change({
+        kind: 'reputation',
+        polarity: 'mixed',
+        category: 'bond',
+        direction: 'gain',
+        stateNoun: { text: 'a standing welcome at Sacred Grove' },
+        detail: 'Sacred Grove keeps the door open anyway.',
+      })],
+      ...passthrough,
+    });
+    expect(chips[0].tone).toBe('gain');
+    expect(chips[0].delta?.direction).toBe('gain');
+  });
+
+  /**
+   * The invariant the ticket asks for: not "no authored chip does this today"
+   * but "no chip *can*". Exhaustive over the three unions that feed the two
+   * channels, so a future polarity or direction member added without a rule
+   * here fails rather than reintroducing the contradiction quietly.
+   */
+  it('cannot represent a loss tone beside a gain arrow, over every kind × polarity × direction', () => {
+    const offenders: string[] = [];
+    for (const kind of KINDS) {
+      for (const polarity of POLARITIES) {
+        for (const direction of DIRECTIONS) {
+          const [chip] = buildAftermathConsequences({
+            changes: [change({ kind, polarity, direction, stateNoun: { text: 'a thing' } })],
+            ...passthrough,
+          });
+          const arrow = chip.delta?.direction;
+          const contradiction =
+            (chip.tone === 'loss' && arrow === 'gain')
+            || (chip.tone === 'gain' && arrow === 'loss');
+          if (contradiction) {
+            offenders.push(`${kind}/${polarity}/${direction ?? 'no-direction'} → tone=${chip.tone} arrow=${arrow}`);
+          }
+        }
+      }
+    }
+    expect(offenders).toEqual([]);
+  });
+
+  it('still reads polarity for a direction-less chip, so pre-THR-1082 content is untouched', () => {
+    const [gain] = buildAftermathConsequences({
+      changes: [change({ kind: 'reputation', polarity: 'gain' })],
+      ...passthrough,
+    });
+    const [loss] = buildAftermathConsequences({
+      changes: [change({ kind: 'reputation', polarity: 'loss' })],
+      ...passthrough,
+    });
+    expect(gain.tone).toBe('gain');
+    expect(loss.tone).toBe('loss');
+    expect(gain.delta).toBeUndefined();
+    expect(loss.delta).toBeUndefined();
+  });
+
+  it('leaves a planted seed on its own tone, which no arrow contradicts', () => {
+    const [chip] = buildAftermathConsequences({
+      changes: [change({ kind: 'future_hook', polarity: 'info', direction: 'opens' })],
+      ...passthrough,
+    });
+    expect(chip.tone).toBe('seed');
+  });
+});
+
+describe('the state noun names where the state changed (THR-1205)', () => {
+  it('enriches the noun, so a chip can say the place and not only the mechanic', () => {
+    const chips = buildAftermathConsequences({
+      changes: [change({
+        kind: 'reputation',
+        polarity: 'gain',
+        direction: 'gain',
+        stateNoun: { text: 'a standing welcome at {target}' },
+      })],
+      link: passthrough.link,
+      enrich: (text) => text.replace('{target}', 'Sacred Grove'),
+    });
+    expect(chips[0].nounLabel).toBe('A STANDING WELCOME AT SACRED GROVE');
+    // The cluster's reading is built from the same noun, so the hover tier says
+    // the place too rather than falling back to the bare mechanic.
+    expect(chips[0].delta?.label).toContain('Sacred Grove');
+  });
+
+  it('leaves a placeholder-free noun exactly as authored', () => {
+    const chips = buildAftermathConsequences({
+      changes: [change({
+        kind: 'growth',
+        polarity: 'gain',
+        direction: 'gain',
+        stateNoun: { text: 'Stone', tooltipId: 'reach.stone' },
+      })],
+      ...passthrough,
+    });
+    expect(chips[0].nounLabel).toBe('STONE');
+  });
+
+  it('resolves the tile off the declared anchor, never off the enriched text', () => {
+    const chips = buildAftermathConsequences({
+      changes: [change({
+        kind: 'reputation',
+        polarity: 'gain',
+        direction: 'gain',
+        stateNoun: {
+          text: 'a standing welcome at {target}',
+          entityId: '$target',
+          visualKind: 'location',
+        },
+      })],
+      link: passthrough.link,
+      enrich: (text) => text.replace('{target}', 'Sacred Grove'),
+      resolveAnchor: () => 'location.sacred_grove.3',
+      resolveIcon: (concept) => ({
+        entityId: concept.entityId ?? concept.text,
+        kind: 'faction',
+        name: concept.text,
+      }),
+    });
+    expect(chips[0].icon?.entityId).toBe('location.sacred_grove.3');
+    expect(chips[0].nounEntityId).toBe('location.sacred_grove.3');
+  });
+});
