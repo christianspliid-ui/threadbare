@@ -547,6 +547,52 @@ describe('fearResolver', () => {
     const b = fearResolver(agentId, graph, 11);
     expect(a[0].text).toBe(b[0].text);
   });
+
+  // THR-1187 — the rendered join, which is where the defect was actually visible.
+  //
+  // fearResolver reads three sources that have to agree: VALUE_LABELS for {value},
+  // FEAR_DESCRIPTIONS for {fear}, and the FEAR_PROSE body keyed by the same sign. Each file
+  // has its own pin, but only the composed line shows whether they agree with each other,
+  // and only running BOTH poles shows it — on the shipped arrangement the two bodies fit
+  // each other's keys, so a one-pole check passes on the inversion.
+  it('renders honesty_cunning with each pole on its own body, label and fear', () => {
+    function renderPole(pairValue: number): string[] {
+      const graph = new WorldGraph();
+      graph.addNode({
+        id: 'a',
+        type: 'actor',
+        name: 'Mira',
+        properties: { axiologicalProfile: { honesty_cunning: pairValue } },
+      });
+      // Sweep seeds so the assertion sees the whole variant pool, not one draw.
+      return [1, 7, 13, 42, 99, 123, 256, 777].map((s) => fearResolver('a', graph, s)[0]?.text ?? '');
+    }
+
+    const honest = renderPole(0.8);
+    const cunning = renderPole(-0.8);
+
+    expect(honest.every((t) => t.includes('Mira'))).toBe(true);
+    expect(cunning.every((t) => t.includes('Mira'))).toBe(true);
+
+    // The label each pole renders.
+    expect(honest.every((t) => t.includes('Honest') && !t.includes('Cunning'))).toBe(true);
+    expect(cunning.every((t) => t.includes('Cunning') && !t.includes('Honest'))).toBe(true);
+
+    // The fear each pole renders, stripped of its leading "Fears " by the resolver.
+    expect(honest.some((t) => t.includes('having to deceive'))).toBe(true);
+    expect(honest.some((t) => t.includes('being outwitted'))).toBe(false);
+    expect(cunning.some((t) => t.includes('being outwitted'))).toBe(true);
+    expect(cunning.some((t) => t.includes('having to deceive'))).toBe(false);
+
+    // The body each pole draws from. "watches the cunning prosper" is an outsider looking at
+    // cunning people, so it belongs to the honest agent; "keeps no journal, writes no
+    // letters" is tradecraft, so it belongs to the cunning one. These sat on the opposite
+    // keys before this ticket.
+    expect(honest.some((t) => t.includes('watches the cunning prosper'))).toBe(true);
+    expect(cunning.some((t) => t.includes('keeps no journal, writes no letters'))).toBe(true);
+    expect(honest.some((t) => t.includes('keeps no journal, writes no letters'))).toBe(false);
+    expect(cunning.some((t) => t.includes('watches the cunning prosper'))).toBe(false);
+  });
 });
 
 // ─── hiddenMotiveResolver ─────────────────────────────────────────────────────

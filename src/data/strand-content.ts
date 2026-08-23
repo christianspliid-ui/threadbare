@@ -117,9 +117,18 @@ export const INTENSITY_VALUE_LABELS: Record<
  */
 export const FEAR_DESCRIPTIONS: Record<ValuePair, [string, string]> = {
   // Axiological fears — [virtue-extreme fear, flaw-extreme fear]
+  // The convention every entry follows: each pole fears the UNDOING of what that pole is
+  // committed to. Loyal fears betrayal; Traditional fears the loss of the old ways;
+  // Preserving fears what they built crumbling; Courageous fears showing weakness.
+  // Index 0 pairs with VALUE_LABELS[pair][0], index 1 with VALUE_LABELS[pair][1] — every
+  // consumer indexes both by the same `value >= 0` test. Pinned by the alignment table in
+  // src/data/__tests__/strand-content.test.ts; add a reviewed entry there for any new pair.
   mercy_ruthlessness: ['Fears vulnerability from showing mercy', 'Fears becoming heartless'],
   asceticism_extravagance: ['Fears poverty and scarcity', 'Fears becoming selfish'],
-  honesty_cunning: ['Fears being outwitted', 'Fears having to deceive'],
+  // THR-1187: swapped 2026-08-23. Shipped as ['Fears being outwitted', 'Fears having to
+  // deceive'], which gave Honest the cunning agent's fear and vice versa — the only pair
+  // that violated the convention above.
+  honesty_cunning: ['Fears having to deceive', 'Fears being outwitted'],
   tradition_novelty: ['Fears the loss of the old ways', 'Fears stagnation'],
   loyalty_ambition: ['Fears betrayal by those they trust', 'Fears irrelevance and failure'],
   revelation_discretion: ['Fears being kept blind by those they trust', 'Fears the harm their knowledge might cause'],

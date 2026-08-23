@@ -642,19 +642,24 @@ export const FEAR_PROSE: Record<string, string[]> = {
     'What {name} will never admit is that the {value} is not wisdom. It is the {fear} of finding out what they would do without time to think.',
   ],
   // honesty_cunning
+  // THR-1187: the first four bodies of each key were swapped 2026-08-23. They had been
+  // authored against the inverted FEAR_DESCRIPTIONS.honesty_cunning (corrected in the same
+  // change), so _positive rendered {value} = "Honest" over bodies about practising deception
+  // and _negative rendered "Cunning" over bodies about being bad at it. The trailing two
+  // bodies of each key are pole-agnostic and stayed on the key they were authored for.
   honesty_cunning_positive: [
-    'What {name} will never admit is that behind the {value} they practice is the {fear} of being outwitted — found by someone better at the same game, aimed in the other direction.',
-    'The {value} in {name} is maintained partly against the {fear} that the deception, if discovered, will define everything that came before it. The fear makes the practice more careful and no less present.',
-    'The specific {fear} beneath {name}\'s {value} is erosion: the question of whether the practice, maintained long enough, has made them into something that cannot return to the alternative even when the alternative becomes necessary.',
-    '{name} keeps no journal, writes no letters, avoids being alone with people who ask direct questions. The {fear} is not of enemies knowing the truth. It is of anyone knowing — because {value}, practiced long enough, has left {name} uncertain which version is the original.',
-    'What {name} will never admit is that the {value} has made them predictable. The {fear} is of the person who has already worked out how to use it.',
-    'The {fear} beneath {name}\'s {value} is not exposure. It is the day the {value} costs someone else something, and the accounting arrives at {name}.',
-  ],
-  honesty_cunning_negative: [
     'What {name} will never admit is that their {value} sits next to a {fear} that circumstances will require deception and that they will be visibly bad at it.',
     'Beneath the {value} in {name} is a {fear} of what it would cost them to lie in a situation that demanded it — not moral cost, but the simpler fear of the lie being seen.',
     '{name}\'s {value} contains a quiet, specific {fear}: that the world will present a situation where {value} is not sufficient and deception would have been, and that in that moment they will be unable to deploy it in time.',
     '{name} watches the cunning prosper and says nothing. The {fear} is not that {value} is wrong. It is that {value} is expensive — and that the invoice arrives in the form of people they could have protected if they had been willing to lie.',
+    'What {name} will never admit is that the {value} has made them predictable. The {fear} is of the person who has already worked out how to use it.',
+    'The {fear} beneath {name}\'s {value} is not exposure. It is the day the {value} costs someone else something, and the accounting arrives at {name}.',
+  ],
+  honesty_cunning_negative: [
+    'What {name} will never admit is that behind the {value} they practice is the {fear} of being outwitted — found by someone better at the same game, aimed in the other direction.',
+    'The {value} in {name} is maintained partly against the {fear} that the deception, if discovered, will define everything that came before it. The fear makes the practice more careful and no less present.',
+    'The specific {fear} beneath {name}\'s {value} is erosion: the question of whether the practice, maintained long enough, has made them into something that cannot return to the alternative even when the alternative becomes necessary.',
+    '{name} keeps no journal, writes no letters, avoids being alone with people who ask direct questions. The {fear} is not of enemies knowing the truth. It is of anyone knowing — because {value}, practiced long enough, has left {name} uncertain which version is the original.',
     '{name} has kept the {value} intact for years. The {fear} is that it stayed intact because nothing has yet asked a high enough price.',
     'What {name} will never admit is that the {value} needs an audience to hold its shape. The {fear} is of what remains once the room empties.',
   ],

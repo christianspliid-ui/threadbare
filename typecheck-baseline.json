@@ -1,5 +1,5 @@
 {
-  "total": 3123,
+  "total": 3014,
   "command": "npx tsc -b --force --pretty false",
   "perFile": {
     "scripts/lint-encounter-content.ts": 2,
@@ -145,7 +145,6 @@
     "src/data/__tests__/agenda-content.test.ts": 2,
     "src/data/__tests__/archetype-content.test.ts": 6,
     "src/data/__tests__/ascendant-content.test.ts": 1,
-    "src/data/__tests__/backstory-content.test.ts": 109,
     "src/data/__tests__/builders-fellowship-content.test.ts": 3,
     "src/data/__tests__/culture-content.test.ts": 13,
     "src/data/__tests__/domain-words.test.ts": 4,
