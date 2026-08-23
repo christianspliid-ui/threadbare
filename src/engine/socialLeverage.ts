@@ -41,6 +41,7 @@ import type { WorldGraph } from './graph';
 import type { LeverageHistoryEntry } from '../types/encounter';
 import { getTrust } from './trustMechanics';
 import { computeCapability } from './domainCapability';
+import { reputationLeverageTerm } from './reputation';
 import { STRONG_BOND_THRESHOLD, FACTION_RANK_MAX } from '../data/agent-behavior-constants';
 import {
   SECRET_LEVERAGE_MULTIPLIER,
@@ -224,6 +225,21 @@ export function computeInitialLeverage(
     const favorBonus = favorMagnitude * FAVOR_LEVERAGE_MULTIPLIER;
     leverage += favorBonus;
     history.push({ stepIndex: -1, delta: favorBonus, source: 'favor_bonus' });
+  }
+
+  // ─── Reputation with the target (THR-1206) ───────────────────────
+  // The director's definition doing its literal job: "the social score that modifies
+  // interactions between a and b". Signed and centred on neutral, so standing that
+  // has soured opens the scene behind — the other terms here are one-directional
+  // bonuses, and a reputation that could only help would not be a reputation.
+  //
+  // Reads through `getReputationWith`, so a guild member's rank, a town's welcome and
+  // a personal bond all reach the same opening through one call rather than three
+  // bespoke terms that could disagree.
+  const reputationTerm = reputationLeverageTerm(graph, actorId, targetId);
+  if (reputationTerm !== 0) {
+    leverage += reputationTerm;
+    history.push({ stepIndex: -1, delta: reputationTerm, source: 'reputation_bonus' });
   }
 
   // Clamp to cap — can't start with a dominant advantage

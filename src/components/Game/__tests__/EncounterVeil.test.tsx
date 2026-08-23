@@ -1673,7 +1673,7 @@ describe('aftermath mode', () => {
     }
 
     it.each(BANDS)(
-      'renders $band as a green rise of $marks, naming the welcome and the place',
+      'renders $band as a green rise of $marks, naming the reputation and the place',
       ({ chipId, marks }) => {
         render(<EncounterVeil {...defaultProps} model={veilModelFor(chipId)} />);
 
@@ -1692,9 +1692,15 @@ describe('aftermath mode', () => {
 
         // The exact effect, on the chip, in game vocabulary — the mechanic noun
         // plus the place it applies at, legible without reading the sentence.
+        //
+        // THR-1206 — the mechanic noun is `reputation`, not the bespoke `a standing
+        // welcome` this band used to name. The director's ruling retired custom
+        // concepts from player surfaces, and the write behind the chip moved with it:
+        // the band now writes a `reputation_with` edge the Location Profile reads, so
+        // the chip is reporting the mechanism that actually ran (Law 56).
         expect(within(chip).getByText('BOND')).toBeInTheDocument();
         expect(
-          within(chip).getByText('A STANDING WELCOME AT SACRED GROVE'),
+          within(chip).getByText('REPUTATION WITH SACRED GROVE'),
         ).toBeInTheDocument();
 
         // The cluster's spoken reading says the same thing, so the hover and

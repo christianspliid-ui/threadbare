@@ -146,6 +146,10 @@ const REPUTATION_EFFECT_KINDS: ReadonlySet<string> = new Set([
   'reputation_tally',
   'reputation_set',
   'faction_reputation_gain',
+  // THR-1206 — the pairwise leg. Listed here rather than only in the chip-backing
+  // set because it *is* a reputation surface, so an encounter whose only standing
+  // move is this one still scores as touching reputation.
+  'reputation_with',
 ]);
 
 /** Effect kinds that touch a faction as an entity, not merely its standing. */

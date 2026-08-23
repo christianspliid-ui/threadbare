@@ -40,6 +40,7 @@ import { durationLabel } from '../../engine/aftermathWords';
 import type { TerrainType } from '../../types';
 import type { SphereInfluence } from '../../engine/hexZoom';
 import type { WorldGraph } from '../../engine/graph';
+import { getReputationWith } from '../../engine/reputation';
 
 interface LocationProfileModalProps {
   name: string;
@@ -47,6 +48,16 @@ interface LocationProfileModalProps {
   /** Graph node id — enables the visual and the information block. */
   locationId?: string;
   graph?: WorldGraph | null;
+  /**
+   * The agent whose standing with this place is shown (THR-1206) — the avatar, on
+   * every live route.
+   *
+   * The modal was written location-absolute, which is why standing needed a viewer
+   * threaded in at all: "how this place regards you" is the one thing on the sheet
+   * that is not a property of the place. Omitted → the Standing row does not render,
+   * which is the correct behaviour for a surface with no viewer (the codex, tests).
+   */
+  viewerAgentId?: string;
 }
 
 /** Copy shown when the graph holds no prose for this place (a designed state, Law 4). */
@@ -113,6 +124,7 @@ export const LocationProfileModal = React.memo(function LocationProfileModal({
   onClose,
   locationId,
   graph,
+  viewerAgentId,
 }: LocationProfileModalProps) {
   const node = locationId && graph ? graph.getNode(locationId) : undefined;
   const props = node?.properties ?? {};
@@ -128,6 +140,22 @@ export const LocationProfileModal = React.memo(function LocationProfileModal({
   // Hints the concept-art scorer needs; both live on the location node itself.
   const terrain = typeof props.terrain === 'string' ? (props.terrain as TerrainType) : undefined;
   const sphereInfluence = (props.sphereInfluence ?? null) as SphereInfluence | null;
+
+  // THR-1206 — the viewer's reputation with this place, in the one word vocabulary
+  // every standing on every surface shares. `source: 'default'` means nothing has
+  // happened between them, and a row reading "Accepted" for every town the player has
+  // never visited is noise, not information — so absence is designed (Law 4), not a
+  // placeholder.
+  const standing = React.useMemo(
+    () => {
+      if (!graph || !locationId || !viewerAgentId) return null;
+      const reading = getReputationWith(graph, viewerAgentId, locationId);
+      return reading.source === 'default' ? null : reading;
+    },
+    // Same in-place-mutation reasoning as `conditions` below: the modal remounts per
+    // open, and that is this surface's refresh.
+    [graph, locationId, viewerAgentId],
+  );
 
   // THR-1143 — what the world has done to this place, and for how much longer.
   const conditions = React.useMemo(
@@ -192,6 +220,33 @@ export const LocationProfileModal = React.memo(function LocationProfileModal({
           >
             {flavor ?? NO_DETAIL_COPY}
           </p>
+
+          {/* Standing (THR-1206) — the social score between the viewer and this place,
+              as a word and never a number (Law 13). The tooltip is the one registry
+              entry that covers standing with a person, a faction and a place alike,
+              which is the whole point of the unification: one concept to learn. */}
+          {standing && (
+            <div data-testid="location-profile-standing">
+              <SectionHeading>Standing</SectionHeading>
+              <ListRow
+                trailing={
+                  <span
+                    style={{
+                      fontSize: 'var(--text-xs)',
+                      color: 'var(--text-secondary)',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {standing.band}
+                  </span>
+                }
+              >
+                <Tooltip id="ui.reputation_with">
+                  <ListRow.Title>Your reputation here</ListRow.Title>
+                </Tooltip>
+              </ListRow>
+            </div>
+          )}
 
           {/* Active conditions (THR-1143) — the place's timed states, each hoverable
               through the one tooltip registry (`attachment.*`, Laws 3/17) and each

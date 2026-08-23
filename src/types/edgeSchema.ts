@@ -495,6 +495,19 @@ export const EDGE_SCHEMA: Record<EdgeType, EdgeSchema> = {
     description: 'Actor established a consecrated pilgrimage route to a location. Written by zealotStrategicPack via createRelationEdge; read by encounterCache to pool pilgrimage encounters at the destination (THR-1184).',
   },
 
+  // ── Reputation (THR-1206) ─────────────────────────────────────────────────
+  reputation_with: {
+    type: 'reputation_with',
+    // Faction nodes are `actor` + actorType 'faction', so non-member faction
+    // standing needs no special case here — it is the same row as agent↔agent.
+    sourceNodeType: 'actor',
+    targetNodeType: ['actor', 'location'],
+    direction: 'directed',
+    cardinality: 'many-to-many',
+    requiredProperties: ['score', 'lastChangedTick'],
+    description: 'Source actor\'s standing WITH the target — the social score that modifies interactions between a and b (THR-1206). Properties: score (0–1, neutral REPUTATION_WITH_DEFAULT), lastChangedTick. Written only by applyReputationWithDelta; read through getReputationWith, which also dispatches to member_of.reputation (membership leg) and relates_to.trust (personal leg). Sparse: minted on first write, deleted by phase 6.6 once decay returns it to neutral.',
+  },
+
   // ── Ruins Layer (THR-149, THR-150) ────────────────────────────────────────
   knows_clue_of: {
     type: 'knows_clue_of',

@@ -159,7 +159,15 @@ describe('authored consequence chips speak with one signal (THR-1205)', () => {
       expect(chip.delta?.count, `${band.id} magnitude`).toBe(band.count);
       // The director's second ask: the chip states the place, not only the
       // mechanic, without anyone having to read the flavour sentence.
-      expect(chip.nounLabel, `${band.id} noun`).toBe('A STANDING WELCOME AT SACRED GROVE');
+      //
+      // THR-1206 — the mechanic half is now `reputation`, not `a standing welcome`.
+      // The director's follow-up ruling: *"custom concepts are difficult for players
+      // to learn and understand. if we do have reputation as our concept for 'the
+      // social score that modifies interactions between a and b', then lets use that
+      // everywhere."* The write behind the chip changed to match — a `reputation_with`
+      // edge, which the Location Profile reads — so the noun is not a rename, it is the
+      // chip catching up to what the engine now does (Law 56).
+      expect(chip.nounLabel, `${band.id} noun`).toBe('REPUTATION WITH SACRED GROVE');
     }
   });
 });

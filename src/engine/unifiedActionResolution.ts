@@ -811,7 +811,14 @@ function buildEncounterAftermathReactions(
       closeAfterSelection: true,
       effects: [
         { kind: 'clearance_gate_tag', runtimeId: gateRuntimeId, tag: '#witness_story_followed' },
-        { kind: 'reputation_tally', key: 'gate_duty.witness_story_followed', delta: 1 },
+        // THR-1206 — was `gate_duty.witness_story_followed`, an off-axis key the
+        // aftermath handler rejects: `isValidReputationTallyKey` accepts only
+        // `<reach>.positive|negative`, so this write was traced and discarded on
+        // every resolution since it shipped. Following a mortal's telling of the
+        // night is Heart work, which is the reach the tally machinery can actually
+        // carry. (`SUGGESTED_TALLY_REPLACEMENT` names it `hearth.positive`; the
+        // reach is spelled `heart` — the hint's typo, not a ninth reach.)
+        { kind: 'reputation_tally', key: 'heart.positive', delta: 1 },
         {
           kind: 'recent_event',
           eventType: 'ripple_consequence',
@@ -827,7 +834,11 @@ function buildEncounterAftermathReactions(
       closeAfterSelection: true,
       effects: [
         { kind: 'clearance_gate_tag', runtimeId: gateRuntimeId, tag: '#captain_marked_for_later' },
-        { kind: 'reputation_tally', key: 'gate_duty.captain_marked', delta: 1 },
+        // THR-1206 — was `gate_duty.captain_marked`, discarded for the same reason.
+        // The fiction is standing inside the watch whose gate this is, which is what
+        // `faction_reputation_gain` exists to carry — the replacement
+        // `SUGGESTED_TALLY_REPLACEMENT` has named since the leak was first traced.
+        { kind: 'faction_reputation_gain', factionId: 'civic_guard', amount: 0.05 },
         {
           kind: 'recent_event',
           eventType: 'narrative',
@@ -843,7 +854,15 @@ function buildEncounterAftermathReactions(
       closeAfterSelection: true,
       effects: [
         { kind: 'clearance_gate_tag', runtimeId: gateRuntimeId, tag: '#district_left_to_carry_it' },
-        { kind: 'reputation_tally', key: 'gate_duty.left_to_settle', delta: 1 },
+        // THR-1206 — was `gate_duty.left_to_settle`, discarded for the same reason.
+        // Declining to press is not a reach the tallies score; it is a quiet note
+        // about how this god handles a district, which is what a hidden mark is for.
+        {
+          kind: 'hidden_mark',
+          category: 'reputation_note',
+          severity: 0.2,
+          label: 'Left the district to carry it',
+        },
         {
           kind: 'recent_event',
           eventType: 'ripple_consequence',

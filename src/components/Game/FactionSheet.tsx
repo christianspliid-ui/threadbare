@@ -13,6 +13,7 @@ import type {
 } from '../../engine/factionNetwork';
 import { getFactionNetworkSummary } from '../../engine/factionNetwork';
 import type { FactionActionRecord } from '../../types/factionAction';
+import { getReputationWord } from '../../data/domain-words';
 
 interface FactionSheetProps {
   factionId: string;
@@ -426,7 +427,12 @@ export const FactionSheet = React.memo(function FactionSheet({
                   <div key={tier.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 'var(--text-xs)' }}>
                     <span style={{ color: 'var(--text-primary)' }}>{tier.name}</span>
                     <span style={{ color: 'var(--text-tertiary)' }}>
-                      rep {(tier.minReputation * 100).toFixed(0)}%+
+                      {/* THR-1206 — was `rep 60%+`, a raw magnitude on a
+                          player-reachable surface (Law 13) and a *second* vocabulary
+                          for the one score the unification exists to give one word.
+                          The band a tier opens at says the same thing in the language
+                          every standing on every other surface now speaks. */}
+                      {getReputationWord(tier.minReputation)} and above
                       {tier.maxSlots != null ? ` (${tier.maxSlots} slot${tier.maxSlots !== 1 ? 's' : ''})` : ''}
                     </span>
                   </div>
@@ -576,8 +582,11 @@ function MemberRow({
         <div style={{ flex: 1, height: '5px', borderRadius: '999px', overflow: 'hidden', background: 'var(--bg-raised)' }}>
           <div style={{ width: `${Math.round(member.reputation * 100)}%`, height: '100%', background: color, opacity: 0.85 }} />
         </div>
-        <span style={{ width: '40px', textAlign: 'right', color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>
-          {Math.round(member.reputation * 100)}%
+        {/* THR-1206 — was the same number the bar already draws, printed as a
+            percentage (Law 13). The bar carries the magnitude; the word carries the
+            meaning, and it is the same word the member's own profile shows. */}
+        <span style={{ textAlign: 'right', color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)', whiteSpace: 'nowrap' }}>
+          {getReputationWord(member.reputation)}
         </span>
       </div>
     </div>

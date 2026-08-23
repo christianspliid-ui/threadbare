@@ -303,7 +303,12 @@ export interface LeverageHistoryEntry {
     | 'rank_bonus'
     | 'divine_tip_scales'
     | 'secret_bonus'   // THR-30: actor holds unrevealed secret about target
-    | 'favor_bonus';   // THR-30: target owes actor a favor
+    | 'favor_bonus'    // THR-30: target owes actor a favor
+    // THR-1206: the actor's reputation with the target. Signed, unlike its siblings
+    // — every other opening term is a bonus that only ever adds, but standing that
+    // has gone sour is exactly as real as standing that has been earned, and a
+    // one-directional term could not say so.
+    | 'reputation_bonus';
 }
 
 // ─── Group Encounter Participant ────────────────────────────────

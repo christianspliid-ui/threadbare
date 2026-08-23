@@ -180,7 +180,7 @@ export const CONSEQUENCE_FAMILY_EFFECT_KINDS: Readonly<
 > = {
   relationship: ['bond_change'],
   companion: ['grant_companion', 'remove_companion'],
-  standing: ['reputation_score', 'reputation_tally', 'reputation_set', 'faction_reputation_gain'],
+  standing: ['reputation_score', 'reputation_tally', 'reputation_set', 'faction_reputation_gain', 'reputation_with'],
   possession: ['spawn_artifact', 'attachment_grant', 'reward_draw'],
   condition: ['condition_attachment', 'apply_condition', 'remove_condition', 'attachment_grant'],
   knowledge: ['intelligence', 'spawn_clue'],

@@ -373,6 +373,14 @@ export const EDGE_TYPE_ROWS: Readonly<Record<string, AnchorRow>> = {
     'KNOWN GAP: nothing consumes this edge yet (THR-1184), so a chip naming it would ' +
     'report a write that changes nothing — do not anchor one until a consumer exists.',
   ),
+  // Reputation (THR-1206) — the pairwise social score. Unlike `sacred_route` above,
+  // this ships with its consumers in the same change (eligibility gate, social-scene
+  // opening leverage, the Location Profile standing row, the Overview standings), so
+  // a chip naming it reports a write that something reads.
+  reputation_with: RELATIONAL(
+    'The counterparty profile — the Location Profile standing row, or the agent Standings section',
+    'Anchor the *counterparty*, not the edge: the chip says "reputation with X", so X is what the player clicks through to.',
+  ),
   thread: RELATIONAL('The thread row, and the thread detail view'),
   aspect_of: RELATIONAL('The thread detail view'),
   mentors: RELATIONAL('Both parties\' sheets', 'Carries domain, progress and phase a player can watch move.'),

@@ -134,6 +134,9 @@ export type TraceCategory =
   // Multi-target aftermath traces (THR-114)
   | 'aftermath_target_resolved'
   | 'faction_reputation_changed'
+  // Reputation unification (THR-1206)
+  | 'reputation_with_changed'
+  | 'reputation_with_pruned'
   | 'reputation_set_applied'
   | 'condition_applied'
   | 'condition_removed'
@@ -513,6 +516,9 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   // Multi-target aftermath traces (THR-114)
   'aftermath_target_resolved',
   'faction_reputation_changed',
+  // Reputation unification (THR-1206)
+  'reputation_with_changed',
+  'reputation_with_pruned',
   'reputation_set_applied',
   'condition_applied',
   'condition_removed',
@@ -1703,7 +1709,12 @@ export interface EncounterAftermathEffectTrace extends TraceBase {
     // THR-1150 — added so this arm emits its four traces unlaundered. It is also
     // the arm that most needed checking: its "no member" no-op was silent, and the
     // trace that now reports it would otherwise have gone in behind a cast.
-    | 'faction_reputation_gain';
+    | 'faction_reputation_gain'
+    // THR-1206 — added here rather than cast at the call site, which is the
+    // direction of travel this union's own note describes. Its arm emits four
+    // traces (no-actor, no-counterparty, refused write, applied) and all four go
+    // in unlaundered.
+    | 'reputation_with';
   /** Kind-specific payload for inspection */
   effectDetail: Readonly<Record<string, unknown>>;
   success: boolean;
@@ -2038,6 +2049,42 @@ export interface FactionReputationChangedTrace extends TraceBase {
   reactionId: string;
 }
 
+/**
+ * Trace: a `reputation_with` edge moved (THR-1206).
+ *
+ * Emitted on every edge-leg write, including the mint. `cause` carries the effect id,
+ * the migration tag, or `'decay'` — a standing that changed with no story behind it is
+ * the failure mode this field exists to make impossible to miss (NFP #2).
+ *
+ * The membership and bond legs keep their own traces (`faction_reputation_changed`,
+ * the trust helpers), because they are separate stores with separate consumers; this
+ * one covers only the edge the unification added.
+ */
+export interface ReputationWithChangedTrace extends TraceBase {
+  category: 'reputation_with_changed';
+  /** a — whose standing moved. */
+  sourceId: string;
+  /** b — with whom, or where. A sublocation target is already resolved to its place. */
+  targetId: string;
+  delta: number;
+  newScore: number;
+  cause: string;
+}
+
+/**
+ * Trace: a `reputation_with` edge decayed back to neutral and was deleted (THR-1206).
+ *
+ * The deletion is the fade-out, and it is what keeps the family sparse — so the prune
+ * is traced rather than silent, or a standing would vanish from the profile with
+ * nothing in the causal trail saying when or why.
+ */
+export interface ReputationWithPrunedTrace extends TraceBase {
+  category: 'reputation_with_pruned';
+  sourceId: string;
+  targetId: string;
+  finalScore: number;
+}
+
 /** Trace: reputation_set effect applied (absolute assignment) */
 export interface ReputationSetAppliedTrace extends TraceBase {
   category: 'reputation_set_applied';
@@ -2255,7 +2302,12 @@ export interface AftermathTargetInvalidTrace extends TraceBase {
   effectKind: string;
   attemptedTargetKind?: 'agent' | 'faction' | 'sublocation';
   attemptedTargetId?: string;
-  reason: 'target_node_missing' | 'target_kind_not_supported' | 'condition_template_missing' | 'no_actor_id' | 'participant_unresolved' | 'multiple_targets_specified';
+  reason: 'target_node_missing' | 'target_kind_not_supported' | 'condition_template_missing' | 'no_actor_id' | 'participant_unresolved' | 'multiple_targets_specified'
+    // THR-1206 — a `reputation_with` that named nobody to have standing with. The
+    // target resolver falls back to the actor when no counterparty field is set, and
+    // standing with yourself is not a thing, so the arm refuses loudly rather than
+    // minting a self-edge no consumer can read.
+    | 'no_counterparty';
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -2488,6 +2540,8 @@ export type TraceEntry =
   // Multi-target aftermath traces (THR-114)
   | AftermathTargetResolvedTrace
   | FactionReputationChangedTrace
+  | ReputationWithChangedTrace
+  | ReputationWithPrunedTrace
   | ReputationSetAppliedTrace
   | ConditionAppliedTrace
   | LocationConditionAppliedTrace

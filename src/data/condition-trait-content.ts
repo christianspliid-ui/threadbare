@@ -366,6 +366,20 @@ export const CONDITION_TRAIT_DEFINITIONS: GraphNode[] = [
     // is eligible only where this condition is live, so the welcome is what makes
     // the return visit possible. No movement tax: being welcome somewhere does not
     // change how long the road takes, the same reasoning `under_watch` carries.
+    //
+    // DEPRECATED (THR-1206) — **zero writers**. The director's ruling retired the
+    // custom noun on player surfaces: *"if we do have reputation as our concept for
+    // 'the social score that modifies interactions between a and b', then lets use
+    // that everywhere."* A standing welcome at a town IS the traveler's reputation
+    // with that town, so the Grateful Kin bands now write a `reputation_with` edge
+    // and the return-visit gate asks `requiredReputationWith` instead of naming this
+    // trait. Plan: `Docs/plans/2026-08-23-thr-1206-reputation-unification.md`.
+    //
+    // The definition stays **registered on purpose** — the THR-1177/1183 read-
+    // tolerance pattern. Worlds saved before this ticket carry live `has_trait` edges
+    // pointing here, and deleting the definition would render them as a raw id (UI
+    // Law 14) or drop them silently. It costs one unwritten row to let those worlds
+    // finish their season honestly. Do not author new writers against it.
     id: 'trait.condition.location.standing_welcome',
     type: 'trait',
     name: 'A Standing Welcome',

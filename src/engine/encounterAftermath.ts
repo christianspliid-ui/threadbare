@@ -11,6 +11,7 @@ import type {
   UnifiedAction,
 } from '../types/unifiedAction';
 import { emitTrace } from './traceBuffer';
+import { applyReputationWithDelta } from './reputation';
 import { grantAspect } from './aspects';
 import {
   ASPECT_CHRONICLE_TITLE,
@@ -813,6 +814,10 @@ export function bindAftermathSceneTargets(
  */
 const FACTION_ID_FIELDS_BY_KIND: Readonly<Record<string, readonly string[]>> = {
   faction_reputation_gain: ['factionId'],
+  // THR-1206 — standing with a faction you are *not* in. Authors write the same
+  // definition id here that every faction content file already carries, so it needs
+  // the same rewrite to a node id, or the edge would point at nothing.
+  reputation_with: ['targetFactionId'],
   faction_dissolve: ['factionId'],
   signature_warhost: ['factionId'],
   faction_absorb: ['absorbingFactionId', 'absorbedFactionId'],
@@ -1281,6 +1286,90 @@ export function applyEncounterAftermathReaction(
           success: true,
           effectiveTargetId: effect.factionId, effectiveTargetKind: 'faction',
           summary: `faction_reputation_gain[${i}]: ${actorAgentId} in ${effect.factionId} ${clampedAmount >= 0 ? '+' : ''}${clampedAmount.toFixed(3)}${result.rankChanged ? ` → rank ${result.newRank}` : ''}`,
+        });
+        break;
+      }
+
+      // THR-1206 — the write behind every "reputation with X" chip, and the general
+      // form of the concept: a's standing with b, wherever b is a place, a person, or
+      // a faction a does not belong to. `faction_reputation_gain` stays the right
+      // effect for a member (it carries rank and access); this is the pair that one
+      // structurally cannot serve.
+      case 'reputation_with': {
+        if (!actorAgentId) {
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'reputation_with', effectDetail: { delta: effect.delta },
+            success: false, failReason: 'no_actor_id',
+            effectiveTargetId: '', effectiveTargetKind: 'actor_fallback',
+            summary: `reputation_with[${i}] skipped: no actorId`,
+          });
+          break;
+        }
+        // `actor_fallback` means the effect named no counterparty and the resolver fell
+        // back to the actor. A standing with yourself is not a thing, so refuse loudly
+        // rather than minting a self-edge no consumer can read.
+        if (target.kind === 'actor_fallback' || !target.id || target.id === actorAgentId) {
+          emitTrace({
+            tick, category: 'aftermath_target_invalid', agentId: actorAgentId,
+            // No `actionId`: `AftermathTargetInvalidTrace` does not declare one. Two
+            // older call sites in this file pass it anyway and are red in the
+            // baseline; this arm matches the type instead of joining them.
+            encounterId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'reputation_with',
+            attemptedTargetId: target.kind !== 'actor_fallback' ? target.id : '',
+            // `AftermathTargetInvalidTrace.attemptedTargetKind` predates location
+            // targeting (THR-1143) and still omits `'location'`. Widening it would
+            // move a shared type for one arm's benefit; this branch only fires on
+            // `actor_fallback` or a self-target, both of which are agents, so 'agent'
+            // is the accurate value here rather than a narrowing convenience.
+            attemptedTargetKind: 'agent',
+            reason: 'no_counterparty',
+            summary: `reputation_with[${i}] skipped: names no counterparty (add targetLocationId / targetAgentId / targetFactionId)`,
+          });
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'reputation_with', effectDetail: { delta: effect.delta },
+            success: false, failReason: 'no_counterparty',
+            effectiveTargetId: '', effectiveTargetKind: 'actor_fallback',
+            summary: `reputation_with[${i}] skipped: no counterparty`,
+          });
+          break;
+        }
+        const repResult = applyReputationWithDelta(
+          state.graph, actorAgentId, target.id, effect.delta, tick,
+          `encounter_aftermath:${encounterId}:${reaction.id}`,
+        );
+        if (!repResult.applied) {
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'reputation_with',
+            effectDetail: { targetId: target.id, delta: effect.delta },
+            success: false, failReason: repResult.reason ?? 'write_refused',
+            effectiveTargetId: target.id,
+            effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'location' | 'actor_fallback',
+            summary: `reputation_with[${i}] skipped: ${repResult.reason ?? 'write refused'} (${target.id})`,
+          });
+          break;
+        }
+        mutationSummary.touchedWorld = true;
+        emitTrace({
+          tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+          encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+          effectKind: 'reputation_with',
+          effectDetail: {
+            targetId: repResult.effectiveTargetId ?? target.id,
+            delta: effect.delta, newScore: repResult.score, band: repResult.band,
+            ...(repResult.clamped ? { clamped: true } : {}),
+          },
+          success: true,
+          effectiveTargetId: repResult.effectiveTargetId ?? target.id,
+          effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'location' | 'actor_fallback',
+          summary: `reputation_with[${i}]: ${actorAgentId} with ${repResult.effectiveTargetId ?? target.id} `
+            + `${effect.delta >= 0 ? '+' : ''}${effect.delta.toFixed(3)} → ${repResult.band}`,
         });
         break;
       }

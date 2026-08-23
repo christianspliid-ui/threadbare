@@ -45,7 +45,6 @@ import type {
 } from '../../types/encounter';
 import { DEFAULT_SETTING_SUPPORT_BUNDLES } from '../default-support-bundles';
 import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
-import { CONDITION_STANDING_WELCOME_DURATION } from '../condition-trait-content';
 
 // ─── Slice tuning (NFP #1) ───────────────────────────────────────────
 
@@ -134,6 +133,33 @@ export const SLICE_KIN_WELCOME_INTENSITY = 0.55;
 export const SLICE_KIN_WELCOME_INTENSITY_WARM = 0.75;
 /** The welcome when the thanks is fumbled — kin are stubborn, but it is cooler. */
 export const SLICE_KIN_WELCOME_INTENSITY_FUMBLED = 0.3;
+
+/**
+ * THR-1206 — the same three bands as **reputation** deltas.
+ *
+ * The director's ruling retired the bespoke noun these replaced: *"custom concepts
+ * are difficult for players to learn and understand. if we do have reputation as our
+ * concept for 'the social score that modifies interactions between a and b', then
+ * lets use that everywhere."* A standing welcome at Sacred Grove **is** the
+ * traveler's reputation with Sacred Grove, so it is now written as one — a
+ * `reputation_with` edge the Location Profile reads and every other standing on any
+ * surface shares a word vocabulary with.
+ *
+ * The intensities above stay exported: `trait.condition.location.standing_welcome`
+ * remains a registered definition so saved worlds that already carry it still render
+ * (THR-1177/1183 read-tolerance pattern). They have no writer left here.
+ *
+ * Scaled against `REPUTATION_WITH_MAX_DELTA_PER_OUTCOME` (0.15), which is the cap a
+ * single outcome may move: the warm band spends most of one scene's allowance, the
+ * fumbled band a quarter of it. Ordering is what the chips promise — warm > normal >
+ * fumbled — and is pinned by test.
+ */
+/** Taken well — a clear step up in the town's regard. */
+export const SLICE_KIN_WELCOME_DELTA = 0.08;
+/** The room carries it — the widest a single evening opens the door. */
+export const SLICE_KIN_WELCOME_DELTA_WARM = 0.12;
+/** Fumbled — kin are stubborn. The door still opens, less far. */
+export const SLICE_KIN_WELCOME_DELTA_FUMBLED = 0.04;
 
 /**
  * THR-1205 — the same three bands as a drawn magnitude, so the chip's cluster
@@ -3680,7 +3706,7 @@ export const SLICE_GRATEFUL_KIN: UnifiedActionTemplate = {
           // the grant is only worth something because it is at this town. The
           // adapter enriches the noun, so `{target}` resolves here exactly as it
           // does in `detail`.
-          stateNoun: { text: 'a standing welcome at {target}', entityId: '$target', visualKind: 'location', tooltipId: 'ui.standing_welcome' },
+          stateNoun: { text: 'reputation with {target}', entityId: '$target', visualKind: 'location', tooltipId: 'ui.reputation_with' },
           concepts: [{ text: 'a bed and a hearing' }],
         },
       ],
@@ -3691,15 +3717,18 @@ export const SLICE_GRATEFUL_KIN: UnifiedActionTemplate = {
           intent: 'A meal, a story told rightly, and a standing welcome.',
           effects: [
             {
-              // THR-1175 — was `favor_creation`, which minted a favour owed by a
-              // town. `$target` binds the location the scene is standing in; the
-              // sentinel refuses to bind anything that is not a place, so this
-              // no-ops loudly rather than landing somewhere wrong.
-              kind: 'apply_condition',
-              conditionTraitId: 'trait.condition.location.standing_welcome',
+              // THR-1206 — was `apply_condition → standing_welcome`, itself the
+              // THR-1175 repair of a `favor_creation` that minted a favour owed by a
+              // town. Both were the right *shape* and the wrong *noun*: the fiction
+              // has always been "this town thinks well of you now", which is
+              // reputation, and the director has ruled that reputation is the one
+              // concept a player has to learn for it. `$target` binds the location
+              // the scene is standing in; a sentinel that binds anything else is
+              // refused, so this still no-ops loudly rather than landing somewhere
+              // wrong.
+              kind: 'reputation_with',
               targetLocationId: '$target',
-              durationTicks: CONDITION_STANDING_WELCOME_DURATION,
-              intensity: SLICE_KIN_WELCOME_INTENSITY,
+              delta: SLICE_KIN_WELCOME_DELTA,
             },
           ],
         },
@@ -3727,7 +3756,7 @@ export const SLICE_GRATEFUL_KIN: UnifiedActionTemplate = {
               direction: 'gain',
               // THR-1205 — the warm band writes the widest door, and now draws it.
               magnitude: { ladder: 'reputation', band: SLICE_KIN_WELCOME_BAND_WARM },
-              stateNoun: { text: 'a standing welcome at {target}', entityId: '$target', visualKind: 'location', tooltipId: 'ui.standing_welcome' },
+              stateNoun: { text: 'reputation with {target}', entityId: '$target', visualKind: 'location', tooltipId: 'ui.reputation_with' },
               concepts: [{ text: 'a standing welcome' }],
             },
             {
@@ -3755,15 +3784,13 @@ export const SLICE_GRATEFUL_KIN: UnifiedActionTemplate = {
               intent: 'A meal, a story told rightly, a standing welcome — and a room that will repeat it.',
               effects: [
                 {
-                  // THR-1175 — see 'slice.kin.a_standing_welcome'. The crit band
-                  // writes the same condition at a stronger intensity rather than
-                  // a different kind of thing, so the chip can say *warmer*
-                  // without the player having to learn a second mechanic.
-                  kind: 'apply_condition',
-                  conditionTraitId: 'trait.condition.location.standing_welcome',
+                  // THR-1206 — see 'slice.kin.a_standing_welcome'. The crit band
+                  // moves the same score further rather than writing a different
+                  // kind of thing, so the chip can say *warmer* without the player
+                  // having to learn a second mechanic.
+                  kind: 'reputation_with',
                   targetLocationId: '$target',
-                  durationTicks: CONDITION_STANDING_WELCOME_DURATION,
-                  intensity: SLICE_KIN_WELCOME_INTENSITY_WARM,
+                  delta: SLICE_KIN_WELCOME_DELTA_WARM,
                 },
                 {
                   kind: 'reputation_tally',
@@ -3808,7 +3835,7 @@ export const SLICE_GRATEFUL_KIN: UnifiedActionTemplate = {
               // `SLICE_KIN_WELCOME_INTENSITY` here. What the band cost was time,
               // not warmth, so the cluster must not shrink to imply otherwise.
               magnitude: { ladder: 'reputation', band: SLICE_KIN_WELCOME_BAND },
-              stateNoun: { text: 'a standing welcome at {target}', entityId: '$target', visualKind: 'location', tooltipId: 'ui.standing_welcome' },
+              stateNoun: { text: 'reputation with {target}', entityId: '$target', visualKind: 'location', tooltipId: 'ui.reputation_with' },
               concepts: [{ text: 'a standing welcome' }],
             },
           ],
@@ -3837,7 +3864,7 @@ export const SLICE_GRATEFUL_KIN: UnifiedActionTemplate = {
               category: 'bond',
               direction: 'gain',
               magnitude: { ladder: 'reputation', band: SLICE_KIN_WELCOME_BAND_FUMBLED },
-              stateNoun: { text: 'a standing welcome at {target}', entityId: '$target', visualKind: 'location', tooltipId: 'ui.standing_welcome' },
+              stateNoun: { text: 'reputation with {target}', entityId: '$target', visualKind: 'location', tooltipId: 'ui.reputation_with' },
               concepts: [{ text: 'a standing welcome' }],
             },
           ],
@@ -3848,14 +3875,12 @@ export const SLICE_GRATEFUL_KIN: UnifiedActionTemplate = {
               intent: 'Badly received is still received. She meant every word of it.',
               effects: [
                 {
-                  // THR-1175 — see 'slice.kin.a_standing_welcome'. Fumbled
-                  // intensity, same condition: kin are stubborn, the door stays
-                  // open, it just does not open as wide.
-                  kind: 'apply_condition',
-                  conditionTraitId: 'trait.condition.location.standing_welcome',
+                  // THR-1206 — see 'slice.kin.a_standing_welcome'. Fumbled delta,
+                  // same score: kin are stubborn, the door stays open, it just does
+                  // not open as wide.
+                  kind: 'reputation_with',
                   targetLocationId: '$target',
-                  durationTicks: CONDITION_STANDING_WELCOME_DURATION,
-                  intensity: SLICE_KIN_WELCOME_INTENSITY_FUMBLED,
+                  delta: SLICE_KIN_WELCOME_DELTA_FUMBLED,
                 },
               ],
             },
