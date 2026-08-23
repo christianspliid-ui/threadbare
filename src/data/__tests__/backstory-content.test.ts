@@ -294,61 +294,289 @@ describe('FEAR_PROSE', () => {
   // new value pair cannot be added without someone reading its bodies and choosing a
   // fragment — which is the review this table exists to force.
   //
-  // What it does NOT cover, measured under THR-1202 and deferred as THR-1203: each key
-  // holds six bodies and this manifest pins one. An off-axis body in any of the other five
-  // slots is invisible — swapping body 2 of preservation_transformation_positive back to
-  // its pre-fix control/authority text left the suite 272/272 green, while the same swap on
-  // the pinned body went red on exactly that key. So this catches a pole SWAP, and catches
-  // an off-axis rewrite only when it lands on the pinned body.
-  const POLE_MANIFEST: Record<string, string> = {
-    courage_prudence_positive: 'volunteers first for every danger',
-    courage_prudence_negative: 'the lists, the contingencies, the plans within plans',
-    honesty_cunning_positive: 'watches the cunning prosper',
-    honesty_cunning_negative: 'keeps no journal, writes no letters',
-    sacrifice_survival_positive: 'the way a gardener tends a plant in drought',
-    sacrifice_survival_negative: 'leaves before being asked to stay',
-    loyalty_ambition_positive: 'small betrayals staged to see who notices',
-    loyalty_ambition_negative: 'never kept a promise longer than it was useful',
-    tradition_novelty_positive: 'tends rituals that no one else remembers',
-    tradition_novelty_negative: 'dismantles things that still work',
-    // THR-1202 re-reviewed both fragments. The prior two were read off bodies authored for
-    // a control/authority axis ('Cannot leave a room without arranging it', 'speaks last in
-    // every council and sits nearest the door') — they discriminated between the two keys
-    // perfectly well, which is why this manifest stayed green through the whole defect. A
-    // fragment proves a body sits on its own pole rather than its sibling's; it cannot say
-    // the pair is the right pair. These two are read off the rewritten bodies.
-    preservation_transformation_positive: 'walks the same round every evening',
-    preservation_transformation_negative: 'keeps nothing that cannot be carried',
-    mercy_ruthlessness_positive: 'breaks things when alone',
-    mercy_ruthlessness_negative: 'what the calm is sitting on',
-    asceticism_extravagance_positive: 'coins, stores, alliances, debts owed',
-    asceticism_extravagance_negative: 'gives until it hurts and then gives past the hurting',
-    revelation_discretion_positive: 'in the conversations everyone else is avoiding',
-    revelation_discretion_negative: 'deflects every question that probes too close',
+  // THR-1203 widened the manifest from one entry per KEY to one entry per BODY.
+  //
+  // The bound it closes, measured under THR-1202: each key holds six bodies and the old
+  // manifest pinned one, so an off-axis body in any of the other five slots was invisible.
+  // Swapping body 2 of preservation_transformation_positive back to its pre-fix
+  // control/authority text left the suite 272/272 green; the same swap on the pinned body
+  // went red on exactly that key. THR-1202's own defect sat in bodies 1-4 — had it landed
+  // only in bodies 2-3 this manifest would have stayed green through it.
+  //
+  // All 108 bodies were read against the pole authority (FEAR_DESCRIPTIONS in
+  // src/data/strand-content.ts: each pole fears the undoing of what that pole is committed
+  // to) and assigned individually. The fragments are NOT generated from the table — a
+  // generated set would launder unaudited content as audited, and the reading is the whole
+  // product here.
+  //
+  // `witness` is the honest part, and it is on every line because a partial manifest that
+  // does not say so reads as full coverage:
+  //
+  //   'pole' — the fragment names something only this pole's fear could produce. Move the
+  //     body to the sibling key and a reader would see it is wrong. A red here is a real
+  //     aboutness failure.
+  //   'edit' — the body is pole-agnostic: it reads equally well under either noun, so no
+  //     fragment drawn from it can witness a swap. The entry still pins the text against a
+  //     silent rewrite, and the sibling-absence check still passes non-vacuously, but a
+  //     GREEN here says nothing about which pole the body belongs on. Eleven bodies are in
+  //     this class; the count is pinned below so it cannot grow unnoticed.
+  type ReviewedBody = { fragment: string; witness: 'pole' | 'edit' };
+
+  const POLE_MANIFEST: Record<string, ReviewedBody[]> = {
+    // courage / fears showing weakness
+    courage_prudence_positive: [
+      { fragment: 'the strength they project would be revealed as calculation in disguise', witness: 'pole' },
+      { fragment: 'reveal itself as performed rather than real', witness: 'pole' },
+      { fragment: 'not cowardice, but something more specific', witness: 'pole' },
+      { fragment: 'volunteers first for every danger', witness: 'pole' },
+      { fragment: 'takes the front position without being asked', witness: 'pole' },
+      { fragment: 'someone whose version of it costs nothing', witness: 'pole' },
+    ],
+    // prudence / fears reckless consequences
+    courage_prudence_negative: [
+      { fragment: 'without careful calculation, something catastrophic would result', witness: 'pole' },
+      { fragment: 'when calculation fails and impulse takes over', witness: 'pole' },
+      { fragment: 'the instinct turns out to have been wrong about what it understood', witness: 'pole' },
+      { fragment: 'the lists, the contingencies, the plans within plans', witness: 'pole' },
+      { fragment: 'has never once been caught unprepared', witness: 'pole' },
+      { fragment: 'what they would do without time to think', witness: 'pole' },
+    ],
+    // honesty / fears having to deceive. Bodies 5-6 of both keys were authored pole-agnostic
+    // and stayed on the key they were written for through THR-1187 — they are the reason
+    // this manifest needs a witness field rather than a longer fragment list.
+    honesty_cunning_positive: [
+      { fragment: 'circumstances will require deception and that they will be visibly bad at it', witness: 'pole' },
+      { fragment: 'the simpler fear of the lie being seen', witness: 'pole' },
+      { fragment: 'deception would have been, and that in that moment they will be unable to deploy it', witness: 'pole' },
+      { fragment: 'watches the cunning prosper', witness: 'pole' },
+      { fragment: 'has made them predictable', witness: 'edit' },
+      { fragment: 'the accounting arrives at', witness: 'edit' },
+    ],
+    // cunning / fears being outwitted
+    honesty_cunning_negative: [
+      { fragment: 'found by someone better at the same game', witness: 'pole' },
+      { fragment: 'the deception, if discovered, will define everything that came before it', witness: 'pole' },
+      { fragment: 'cannot return to the alternative even when the alternative becomes necessary', witness: 'pole' },
+      { fragment: 'keeps no journal, writes no letters', witness: 'pole' },
+      { fragment: 'nothing has yet asked a high enough price', witness: 'edit' },
+      { fragment: 'needs an audience to hold its shape', witness: 'edit' },
+    ],
+    // sacrifice / fears abandonment by their cause
+    sacrifice_survival_positive: [
+      { fragment: 'the thing they organized around was unworthy', witness: 'pole' },
+      { fragment: 'require something they cannot give', witness: 'pole' },
+      { fragment: 'dependency wearing a more respectable name', witness: 'pole' },
+      { fragment: 'the way a gardener tends a plant in drought', witness: 'pole' },
+      { fragment: 'the version with nobody watching', witness: 'edit' },
+      { fragment: 'did not buy what it was supposed to buy', witness: 'pole' },
+    ],
+    // survival / fears losing freedom
+    sacrifice_survival_negative: [
+      { fragment: 'obligation so total it leaves no remainder of themselves', witness: 'pole' },
+      { fragment: 'belonging has closed around them', witness: 'pole' },
+      { fragment: 'the independence is elaborate avoidance', witness: 'pole' },
+      { fragment: 'leaves before being asked to stay', witness: 'pole' },
+      { fragment: 'has stayed alive through things that took other people', witness: 'pole' },
+      // "makes a certain arithmetic easy" — the arithmetic of who to leave behind reads as
+      // survival, the arithmetic of what to give up reads as sacrifice. Neither is excluded.
+      { fragment: 'makes a certain arithmetic easy', witness: 'edit' },
+    ],
+    // loyalty / fears betrayal by those they trust
+    loyalty_ambition_positive: [
+      { fragment: 'betrayal by those they have trusted most', witness: 'pole' },
+      { fragment: 'prove to have been bound to something else all along', witness: 'pole' },
+      { fragment: 'had the giving made into a liability', witness: 'pole' },
+      { fragment: 'small betrayals staged to see who notices', witness: 'pole' },
+      { fragment: 'has been convenient so far', witness: 'edit' },
+      { fragment: 'discovering the people it was for did not notice', witness: 'pole' },
+    ],
+    // ambition / fears irrelevance and failure
+    loyalty_ambition_negative: [
+      { fragment: 'loyalty as chain rather than bond', witness: 'pole' },
+      { fragment: 'the cost of keeping faith exceeds any benefit', witness: 'pole' },
+      { fragment: 'their defection, in the wrong circumstance', witness: 'pole' },
+      { fragment: 'never kept a promise longer than it was useful', witness: 'pole' },
+      { fragment: 'somebody else is keeping it', witness: 'edit' },
+      { fragment: 'no amount will read as enough', witness: 'pole' },
+    ],
+    // tradition / fears the loss of the old ways
+    tradition_novelty_positive: [
+      { fragment: 'the old ways are irreplaceable', witness: 'pole' },
+      { fragment: 'discarded by people who do not understand what it cost', witness: 'pole' },
+      { fragment: 'accumulated investment is let go by people who did not pay the cost', witness: 'pole' },
+      { fragment: 'tends rituals that no one else remembers', witness: 'pole' },
+      { fragment: 'was inherited rather than chosen', witness: 'pole' },
+      { fragment: 'the shape of the place they came from', witness: 'pole' },
+    ],
+    // innovation / fears stagnation
+    tradition_novelty_negative: [
+      { fragment: 'the past with different furniture', witness: 'pole' },
+      { fragment: 'the world has moved and they have not', witness: 'pole' },
+      { fragment: 'innovation runs out before it arrives somewhere stable', witness: 'pole' },
+      { fragment: 'dismantles things that still work', witness: 'pole' },
+      { fragment: 'an inability to stay long enough to be judged', witness: 'pole' },
+      { fragment: 'has cost them continuity', witness: 'pole' },
+    ],
+    // preservation / fears all they have built crumbling to nothing.
+    // THR-1202 rewrote bodies 1-4 of both keys off a control/authority axis ValuePair does
+    // not carry; bodies 5-6 were already on-axis. All six of each are read fresh here.
+    preservation_transformation_positive: [
+      { fragment: 'already failing somewhere they cannot see', witness: 'pole' },
+      { fragment: 'every year of care spends some of what is left', witness: 'pole' },
+      { fragment: 'maintenance is not the opposite of collapse but its slower form', witness: 'pole' },
+      { fragment: 'walks the same round every evening', witness: 'pole' },
+      { fragment: 'already gone before they took the post', witness: 'pole' },
+      { fragment: 'the last person who remembers why the thing mattered', witness: 'pole' },
+    ],
+    // transformation / fears being enslaved by what they cannot change
+    preservation_transformation_negative: [
+      { fragment: 'the one thing that will not be argued with', witness: 'pole' },
+      { fragment: 'an arrangement they cannot alter', witness: 'pole' },
+      { fragment: 'how little was ever up for a vote', witness: 'pole' },
+      { fragment: 'keeps nothing that cannot be carried', witness: 'pole' },
+      { fragment: 'an allergy to whatever refuses to change', witness: 'pole' },
+      { fragment: 'the trail is the actual output', witness: 'pole' },
+    ],
+    // mercy / fears vulnerability from showing mercy (plus the Iron and Shadow reach fears
+    // integrated into this pole: powerlessness, exposure)
+    mercy_ruthlessness_positive: [
+      { fragment: 'having reason for anger and finding that the anger accomplishes nothing', witness: 'pole' },
+      { fragment: 'would not stop at the appropriate moment', witness: 'pole' },
+      { fragment: 'the alternative is only grief', witness: 'pole' },
+      { fragment: 'breaks things when alone', witness: 'pole' },
+      { fragment: 'a way of not finding out what they are capable of', witness: 'pole' },
+      { fragment: 'has never been cruel where anyone could witness it', witness: 'pole' },
+    ],
+    // ruthlessness / fears becoming heartless.
+    // Bodies 1-3 carry the right FEAR for this pole (restraint exhausting into someone who
+    // cannot feel) while describing that restraint as "the patience", which reads oddly
+    // beside {value} = "ruthlessness". On-axis but noun-mismatched — filed as THR-1204, not
+    // fixed here, because this ticket widens the manifest rather than rewriting bodies.
+    mercy_ruthlessness_negative: [
+      { fragment: 'the patience finally exhausts itself in an unrecoverable way', witness: 'pole' },
+      // Near-synonymous with _positive body 2 ("something that, once released, would not
+      // stop"). Two bodies saying the same thing on opposite poles cannot witness a swap.
+      { fragment: 'it is larger than they have admitted', witness: 'edit' },
+      { fragment: 'leave a person who cannot feel it anymore', witness: 'pole' },
+      { fragment: 'what the calm is sitting on', witness: 'pole' },
+      { fragment: 'indistinguishable from appetite', witness: 'pole' },
+      { fragment: 'began as a decision and has been running on its own', witness: 'pole' },
+    ],
+    // asceticism / fears poverty and scarcity
+    asceticism_extravagance_positive: [
+      { fragment: 'the hollow interior state that scarcity produces', witness: 'pole' },
+      { fragment: 'the margin between sufficient and insufficient is thinner than it looks', witness: 'pole' },
+      { fragment: 'hunger that does not know how to recognize satisfaction', witness: 'pole' },
+      { fragment: 'coins, stores, alliances, debts owed', witness: 'pole' },
+      { fragment: 'a way of owing nobody anything', witness: 'pole' },
+      // "would not know how to stop" reads as easily on giving as on withholding.
+      { fragment: 'smaller than it looks from outside', witness: 'edit' },
+    ],
+    // extravagance / fears becoming selfish
+    asceticism_extravagance_negative: [
+      { fragment: 'the generosity will eventually reach a limit', witness: 'pole' },
+      { fragment: 'what will emerge is not what they have shown the world', witness: 'edit' },
+      { fragment: 'the generosity is generous partly because they are afraid', witness: 'pole' },
+      { fragment: 'gives until it hurts and then gives past the hurting', witness: 'pole' },
+      { fragment: 'gives more than they can spare', witness: 'pole' },
+      { fragment: 'is loud on purpose', witness: 'pole' },
+    ],
+    // candour / fears being kept blind by those they trust
+    revelation_discretion_positive: [
+      { fragment: 'the truth, spoken plainly, costs more than the silence it replaces', witness: 'pole' },
+      { fragment: 'bluntness, in the wrong moment', witness: 'pole' },
+      { fragment: 'the true thing said at the wrong moment', witness: 'pole' },
+      { fragment: 'in the conversations everyone else is avoiding', witness: 'pole' },
+      { fragment: 'the silence they would otherwise have to hold', witness: 'pole' },
+      { fragment: 'has been mistaken for courage, when it has mostly been relief', witness: 'pole' },
+    ],
+    // discretion / fears the harm their knowledge might cause
+    revelation_discretion_negative: [
+      { fragment: 'the raw, unpolished self seen by someone who matters', witness: 'pole' },
+      { fragment: 'The propriety is armour', witness: 'pole' },
+      { fragment: 'control of the sequence', witness: 'pole' },
+      { fragment: 'deflects every question that probes too close', witness: 'pole' },
+      { fragment: 'the holding has become the point', witness: 'pole' },
+      { fragment: 'left them alone in a way they did not plan for', witness: 'pole' },
+    ],
   };
 
-  test('every fear key carries a reviewed pole-manifest entry', () => {
+  test('every fear key carries a reviewed entry for every one of its bodies', () => {
     expect(Object.keys(POLE_MANIFEST).sort()).toEqual([...ALL_FEAR_KEYS].sort());
+
+    ALL_FEAR_KEYS.forEach((key) => {
+      expect(
+        POLE_MANIFEST[key].length,
+        `${key} has ${FEAR_PROSE[key].length} bodies but ${POLE_MANIFEST[key].length} reviewed entries — ` +
+          'every body needs one, and the fragment must be read off the body rather than generated from it',
+      ).toBe(FEAR_PROSE[key].length);
+    });
   });
 
-  test('each reviewed fragment sits on its own pole and not on the opposite one', () => {
-    for (const [key, fragment] of Object.entries(POLE_MANIFEST)) {
+  // Without this, six fragments could all be read off the same body and the manifest would
+  // report per-body coverage it does not have. Asserting a bijection rather than an index
+  // match keeps it robust to reordering the bodies.
+  test('the reviewed fragments of a key pin six different bodies, one each', () => {
+    ALL_FEAR_KEYS.forEach((key) => {
+      const matched = POLE_MANIFEST[key].map(({ fragment }) => {
+        const hits = FEAR_PROSE[key]
+          .map((body, i) => (body.includes(fragment) ? i : -1))
+          .filter((i) => i >= 0);
+
+        expect(
+          hits.length,
+          `${key}: fragment "${fragment}" matches ${hits.length} bodies — it must match exactly one`,
+        ).toBe(1);
+
+        return hits[0];
+      });
+
+      expect(
+        new Set(matched).size,
+        `${key}: the six fragments matched bodies [${matched.join(', ')}] — two of them read off the same body`,
+      ).toBe(matched.length);
+    });
+  });
+
+  test('each reviewed fragment is present on its own key and absent from the opposite pole', () => {
+    for (const [key, entries] of Object.entries(POLE_MANIFEST)) {
       const sibling = key.endsWith('_positive')
         ? key.replace(/_positive$/, '_negative')
         : key.replace(/_negative$/, '_positive');
 
-      expect(
-        FEAR_PROSE[key].some((t) => t.includes(fragment)),
-        `${key} should contain its reviewed fragment "${fragment}"`,
-      ).toBe(true);
+      for (const { fragment } of entries) {
+        expect(
+          FEAR_PROSE[key].some((t) => t.includes(fragment)),
+          `${key} should contain its reviewed fragment "${fragment}"`,
+        ).toBe(true);
 
-      // The half that catches a swap. It also proves the fragment discriminates at all —
-      // a fragment common to both poles would fail here rather than passing vacuously.
-      expect(
-        FEAR_PROSE[sibling].some((t) => t.includes(fragment)),
-        `${sibling} should NOT contain ${key}'s reviewed fragment "${fragment}"`,
-      ).toBe(false);
+        // The half that catches a swap. It also proves the fragment discriminates at all —
+        // a fragment common to both poles would fail here rather than passing vacuously.
+        // Note this is a TEXT check on all 108: for a witness:'edit' entry it holds without
+        // saying anything about pole, which is what the witness field records.
+        expect(
+          FEAR_PROSE[sibling].some((t) => t.includes(fragment)),
+          `${sibling} should NOT contain ${key}'s reviewed fragment "${fragment}"`,
+        ).toBe(false);
+      }
     }
+  });
+
+  // The gap, as a number someone has to look at. A body that cannot witness a pole swap is
+  // a real hole in this manifest's coverage; pinning the count means the hole can only grow
+  // by a deliberate edit here, never by a new pole-agnostic body slipping in unremarked.
+  test('the number of bodies that cannot witness a pole swap is pinned', () => {
+    const editOnly = Object.entries(POLE_MANIFEST).flatMap(([key, entries]) =>
+      entries.filter((e) => e.witness === 'edit').map((e) => `${key}: "${e.fragment}"`),
+    );
+
+    expect(
+      editOnly.length,
+      `pole-agnostic bodies changed. Currently:\n  ${editOnly.join('\n  ')}\n` +
+        'If a body was rewritten onto its own pole, lower this number and flip its witness to ' +
+        "'pole'. If a new pole-agnostic body was added, raise it deliberately — do not flip a " +
+        "witness to 'pole' to make this pass.",
+    ).toBe(11);
   });
 
   test('_positive and _negative variants exist for every value pair', () => {
