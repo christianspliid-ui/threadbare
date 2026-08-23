@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-23 15:55 local (13:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-23 16:55 local (14:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -13,7 +13,7 @@ Six encounters were rebuilt to the new bar. Two are waiting on your eyes, live o
 
 **What changed since you last played these**, from your own three findings: the bond chip names the mechanic and both ends, and clicking it opens the person who owes the favour rather than you; fifteen chips reporting a number you can never see are retired, and the rule forbidding them is now an enforced gate; the writing was re-passed to your density note — one named person on stage, props only where you can act on them.
 
-**Are these two worth meeting a second time?** A yes releases batch 2 — the remaining nine of fifteen. A no tells the line what the bar is still missing before nine more are written against it. Waiting seven days; the largest single release available.
+**Are these two worth meeting a second time?** A yes releases batch 2 — the remaining nine of fifteen. A no tells the line what the bar is still missing before nine more are written against it. Waiting seven days; with the build shelf now empty, it is the largest release available and one of the few that moves anything at all.
 
 ### 2. What is a run *about*? — [THR-1198](https://linear.app/threadbare/issue/THR-1198/the-48-authored-mandate-strings-are-wired-but-unreachable-no-live-game)
 
@@ -42,7 +42,7 @@ There is a finished, unused piece of sound design: when you commit to a nudge, r
 
 ### 5. A design hour — and this is the bottleneck
 
-**Nothing unattended can refill the shelf. Only a session with you can.** In the order you set:
+**Nothing unattended can refill the shelf. Only a session with you can.** As of this evening the shelf is at zero, so this is no longer a forecast. In the order you set:
 
 - **The three wave-1 sessions** you ruled on — shared machinery first, the hunger vocabulary second, [nations and named areas simulated rather than drawn](https://linear.app/threadbare/issue/THR-1155/nations-and-named-areas-are-rendered-not-simulated-promote-both-to) third. All three need you in a chat; no lane can prepare them away.
 - **[Unify the card grammar](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** — your 6 August note: action cards are too wordy, you cannot tell what they do, and playing one gives no feedback, while encounter cards already read the way you wanted. Staged with its reading list gathered; it has held the single design slot since 19 August.
@@ -68,6 +68,7 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
+- 2026-08-23: **two backstories stop calling a mortal's ruthlessness "the patience"** — [THR-1204](https://linear.app/threadbare/issue/THR-1204/mercy-ruthlessness-negative-bodies-1-and-3-call-the-disposition-the) ([PR #1583](https://github.com/christianspliid-ui/threadbare/pull/1583)): two sentences named the quality and then contradicted it three words later. Found by the widened check below, on its first pass.
 - 2026-08-23: **the check that catches this whole run of faults now reads every passage** — [THR-1203](https://linear.app/threadbare/issue/THR-1203/pole-manifest-pins-one-body-per-fear-prose-key-the-other-five-are) ([PR #1582](https://github.com/christianspliid-ui/threadbare/pull/1582)): it pinned one passage per key and treated the other five as covered, which is how eight faults of the same kind shipped before anyone saw them. It now reads all six and names where it still cannot see.
 - 2026-08-23: **eight character backstories stop describing the wrong quality** — [THR-1202](https://linear.app/threadbare/issue/THR-1202/fear-prose-preservation-transformation-the-first-four-bodies-of-both) ([PR #1581](https://github.com/christianspliid-ui/threadbare/pull/1581)): a *Preserving* mortal was written as someone who cannot delegate or leave a room unarranged, a *Transforming* one as someone withholding power — passages authored for an axis the game no longer has.
 - 2026-08-23: **the turning-point text uses the right word too** — [THR-1201](https://linear.app/threadbare/issue/THR-1201/turning-point-prose-renders-value-as-an-adjective-in-a-noun-slot-when) ([PR #1580](https://github.com/christianspliid-ui/threadbare/pull/1580)): the same adjective-where-a-noun-belongs fault as the entry below, in a second table of character-backstory writing. Found inside that fix, shipped and deployed within the hour.
@@ -77,9 +78,8 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 - 2026-08-22: **a stale-file check no longer fails forever over invisible line endings** — [THR-1192](https://linear.app/threadbare/issue/THR-1192/checkgenerated-freshness-byte-compares-disk-vs-blob-with-no-eol): a working copy written with Windows line endings failed the check permanently, blaming the wrong file and offering a fix that could not work.
 - 2026-08-22: **a generated file stopped looking changed when it was not** — [THR-714](https://linear.app/threadbare/issue/THR-714/strip-the-volatile-timestamp-from-ul-dashboardgeneratedjson): it carried the moment it was built, so rebuilding it always produced a difference.
 - 2026-08-22: **a two-minute Linear setting you were going to be asked about does not exist** — [THR-1190](https://linear.app/threadbare/issue/THR-1190/the-park-decay-remedy-is-a-christian-owned-linear-setting-with-no): finished tickets kept going quietly invisible on your page, and the remedy was assumed to be a switch only you could flip. Every workspace control was read directly — all already set the way we want; the fix is a writing rule the lanes follow. This left your list without ever reaching it.
-- 2026-08-22: **a divine spark now records when it happened** — [THR-1196](https://linear.app/threadbare/issue/THR-1196/hexspark-encounter-writes-an-occurred-at-edge-without-the-tick-its) ([PR #1573](https://github.com/christianspliid-ui/threadbare/pull/1573)): sparking an encounter onto a hex left a mark in the world's history with no date on it — the record existed but could never be placed in time.
 
 ---
 
-Full history of this file, including every resolved item older than the ten above: `git log -p origin/ops -- Design/user-actions.md`.
-Live queue state and health: `Design/briefing.md`, refreshed hourly by `keep-work-flowing-cc`.
+Older resolved entries and every run's full measurements: `git log -p origin/ops -- Design/user-actions.md`.
+Live queue and health each hour: `git show origin/ops:Design/briefing.md`.

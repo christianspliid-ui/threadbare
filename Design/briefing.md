@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-08-23 15:55 local (13:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-08-23 16:55 local (14:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -14,7 +14,7 @@ These are the two you played and criticised, with your three findings addressed:
 
 **The question: are these worth meeting a second time?** A yes releases the remaining nine. A no tells the line what the bar is still missing.
 
-**Seven days waiting.** Nothing else on your list releases as much work, and nothing else finishes by clicking a link.
+**Seven days waiting — and as of this hour it is the only thing that moves anything.** The build shelf is now empty; see Queue.
 
 ## Also waiting (6)
 
@@ -28,15 +28,17 @@ These are the two you played and criticised, with your three findings addressed:
 
 ## Queue
 
-**Eighth lap of the day shipped and deployed. The shelf holds one job, and that job was found inside the eighth.**
+**The ninth repair of the day shipped and deployed, and behind it the shelf is empty. Zero jobs ready to build.**
 
-- **The eighth repair shipped** — [THR-1203](https://linear.app/threadbare/issue/THR-1203/pole-manifest-pins-one-body-per-fear-prose-key-the-other-five-are) ([PR #1582](https://github.com/christianspliid-ui/threadbare/pull/1582), merged 15:33): the check that catches this whole run of prose faults was reading one passage per key and calling six of them covered. It now reads all six, and says out loud where it still cannot see. This is the one that stops the lineage from producing a ninth of the same kind unseen.
-- **One job left on the shelf** — [THR-1204](https://linear.app/threadbare/issue/THR-1204/mercy-ruthlessness-negative-bodies-1-and-3-call-the-disposition-the): two sentences that name a character's *ruthlessness* and then call it "the patience" three words later. Any player reading that backstory would catch it. Found inside THR-1203 while widening the check — which is the widened check doing its job on its first pass.
+- **The ninth shipped** — [THR-1204](https://linear.app/threadbare/issue/THR-1204/mercy-ruthlessness-negative-bodies-1-and-3-call-the-disposition-the) ([PR #1583](https://github.com/christianspliid-ui/threadbare/pull/1583)): two character backstories named a mortal's *ruthlessness* and then called it "the patience" three words later. Found by the widened check that shipped an hour before it — the check doing exactly what it was widened to do.
+- **Ready for Dev is at zero.** Nine jobs today, every one found by a builder inside the previous job, all in the same body of character-backstory writing. That chain has now run out: the tenth did not appear, because the ninth found nothing left of its kind.
+- **Nothing has entered the pipeline from outside since 07:24 this morning — nine and a half hours.** The queue has no exit left and still no entrance.
+- **Five jobs sit on the board that no builder may take**, because each opens with *decide what this should be*: whether a Divine Herald is a person or a thing, which Spheres two actions belong to, whether a toll the player is shown should actually be charged. Those are questions about what the game means, which is why they are on your list and not the builders'.
 - **Three parks still held correctly** — `In Dev`, unassigned, carrying the label that stops the automatic sweep from releasing them and hiding their questions.
-- **Eight defects in a row, every one found by a builder inside the previous job, all in the same body of character-backstory text.** Nothing has entered the pipeline from outside since 07:24 this morning — eight and a half hours. The queue has one exit and no entrance. The six items above are the entrance, and the design hour is the one that matters; this is the seventh consecutive hour of saying so.
+- **The design entrance has been shut six days.** This is the eighth consecutive hour of reporting it, and the first hour where there is no build work left to soften it.
 
 ## Health
 
-All green. Live site serving the current commit, automated checks normal, both background jobs on schedule, no pull request waiting, all nine scheduled lanes on time, the worktree reaper current (15:40), your local copy clean and current.
+All green. Live site serving the current commit (64f4014a), automated checks normal, both background jobs on schedule, no pull request waiting, all nine scheduled lanes on time, the worktree reaper current (16:40), your local copy clean and current.
 
 - **The 35-hour quiet from Thursday evening to Saturday morning was the computer being off, not a fault — no action from you.** Already verified twice against a separate scheduler showing the same window dark. The silence probe keeps re-reporting it because it cannot see a powered-down machine. Recorded, not asked.
