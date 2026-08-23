@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-23 19:55 local (17:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-23 20:56 local (18:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -38,9 +38,9 @@ There is a finished, unused piece of sound design: on committing a nudge, roughl
 
 **Does committing feel better with that beat, or should the outcome land immediately?** Pure feel; no measurement settles it. Either answer closes the ticket — wired to the encounter veil, or retired with its constants and tests. Open seven days. Two lanes recommend **no**: unskippable on every commit turns tense into waiting, and the timings stay recoverable from history.
 
-### 5. More design hours — and this evening proved the point
+### 5. More design hours — and this evening proved it in both directions
 
-**Nothing unattended can refill the shelf. Only a session with you can — and one just did.** Your reputation sitting ran 16:40 → 17:15 and produced a merged design plus two buildable jobs, the first program work to reach the board in six days. In the order you set:
+**Nothing unattended refills the shelf. Only a session with you does — and the builders empty it faster than that.** Your reputation sitting ran 16:40 → 17:15 and produced a merged design plus two buildable jobs, the first program work to reach the board in six days. By 20:52 the larger of the two was built and waiting on its checks ([PR #1586](https://github.com/christianspliid-ui/threadbare/pull/1586)), and one job is left on the shelf. Thirty-five minutes of you bought about two hours of building. In the order you set:
 
 - **The three wave-1 sessions** you ruled on — shared machinery first, the hunger vocabulary second, [nations and named areas simulated rather than drawn](https://linear.app/threadbare/issue/THR-1155/nations-and-named-areas-are-rendered-not-simulated-promote-both-to) third. Your own handoff puts the reputation build *after* the shared machinery, so that sitting now gates the most.
 - **[Unify the card grammar](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** — your 6 August note: action cards are too wordy, you cannot tell what they do, playing one gives no feedback, while encounter cards already read the way you wanted. Staged with its reading list gathered; holding the single design slot since 19 August.

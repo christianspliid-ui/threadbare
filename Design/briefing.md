@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-08-23 19:55 local (17:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-08-23 20:56 local (18:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -17,23 +17,22 @@ You opened this review at 17:17, found the bond chip was wrong, and left. The ch
 - **What is a run *about* — what your god remembers, or a campaign the world offers?** — [THR-1198](https://linear.app/threadbare/issue/THR-1198/the-48-authored-mandate-strings-are-wired-but-unreachable-no-live-game). One sentence, either answer immediately buildable.
 - **Ten minutes to shape one encounter** — [THR-1182](https://linear.app/threadbare/issue/THR-1182/the-grateful-kins-standing-welcome-has-no-return-visit-author-the). The Grateful Kin's open door, and nobody has written what is behind it. Same file as the verdict above, so take them together.
 - **Should committing a nudge carry ~1.6 seconds of held breath?** — [THR-1168](https://linear.app/threadbare/issue/THR-1168/two-authored-encounter-audio-moments-have-no-live-caller-wire-or). Pure feel, 30 seconds, either answer closes it. Two lanes recommend **no**.
-- **More design hours — and this hour proved they work.** The three wave-1 sessions you ordered ([shared machinery, the hunger vocabulary, then making regions real](https://linear.app/threadbare/issue/THR-1155/nations-and-named-areas-are-rendered-not-simulated-promote-both-to)), plus [the card-grammar unification](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card) holding the single design slot since 19 August and [Traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools), assigned to you and untouched for eight days.
+- **More design hours — and tonight is the proof, in both directions.** Your one sitting filled the shelf; the builders emptied it again inside two hours. The three wave-1 sessions you ordered ([shared machinery, the hunger vocabulary, then making regions real](https://linear.app/threadbare/issue/THR-1155/nations-and-named-areas-are-rendered-not-simulated-promote-both-to)), plus [the card-grammar unification](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card) holding the single design slot since 19 August and [Traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools), assigned to you and untouched for eight days.
 - **One attended dev-server session, ~30 minutes** — [THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server). Nine surfaces, 19 screenshots a scheduled run is structurally refused.
 - **Image credits — gated on you, or decided and reported?** [THR-876](https://linear.app/threadbare/issue/THR-876/regenerate-the-5-quarantined-meet-the-first-scene-assets-doctrine) waits on your word; the standing question is whether it should.
 - *(A Tenacious-style trait stays parked. Nothing waits on it; listed so it is not silently dropped.)*
 
 ## Queue
 
-**Not empty any more — and you refilled it yourself, in thirty-five minutes.**
+**Your reputation work is already being built — and the shelf is nearly bare again.**
 
-- **Ready for Dev: 2**, up from 0 an hour ago. Your reputation sitting (16:40 → 17:15) produced a design, a merged plan doc and two buildable jobs. The builder lane picks the first one up at 20:00 local.
-- **[Make reputation the one social score between any two parties](https://linear.app/threadbare/issue/THR-1206/reputation-is-the-social-score-between-any-two-parties-unify-faction)** — High, engine + content + UI, roughly a week of work. This is the piece eleven hourly briefs have been asking for.
-- **[Eighteen chips claim a reputation change that never happens](https://linear.app/threadbare/issue/THR-1208/18-cast-fate-chips-wear-kindreputation-with-no-reputation-write-behind)** — Medium, buildable now, found inside the same sitting.
-- **This is the whole argument for the design hours in one line.** Nothing automated refilled this shelf in six days. One sitting of yours did it in thirty-five minutes.
+- **[Make reputation the one social score between any two parties](https://linear.app/threadbare/issue/THR-1206/reputation-is-the-social-score-between-any-two-parties-unify-faction)** left the shelf at 20:00 and has a finished change waiting on its safety checks ([PR #1586](https://github.com/christianspliid-ui/threadbare/pull/1586), opened 20:52, merges by itself when green). Roughly ninety minutes from your handoff to a built change.
+- **Ready for Dev: 1** — only [the eighteen chips that claim a reputation change that never happens](https://linear.app/threadbare/issue/THR-1208/18-cast-fate-chips-wear-kindreputation-with-no-reputation-write-behind), which the builder lane takes at 21:00. After that the shelf is empty again.
+- **This is the shape of the whole problem in one evening.** Thirty-five minutes of your time produced about two hours of building. Nothing automated adds to that shelf; the builders only subtract from it.
 - **Three parks held correctly** — unassigned, In Dev, labelled so the automatic sweep cannot release them and hide their questions.
 
 ## Health
 
-All green. Live site serving the current commit (f5cd7c1c), automated checks normal, both background jobs on schedule, no pull request waiting, all nine scheduled lanes on time, the worktree reaper current (19:40), your local copy clean and current.
+All green. Live site serving the current commit (f5cd7c1c), automated checks normal, both background jobs on schedule, the one open pull request armed and waiting on green, all nine scheduled lanes on time, the worktree reaper current (20:40), your local copy clean and current.
 
 - **The 35-hour quiet from Thursday evening to Saturday morning was the computer being off, not a fault — no action from you.** Recorded, not asked; the silence probe cannot see a powered-down machine, so it keeps re-reporting it.
