@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-23 14:56 local (12:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-23 15:55 local (13:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -68,6 +68,7 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
+- 2026-08-23: **the check that catches this whole run of faults now reads every passage** — [THR-1203](https://linear.app/threadbare/issue/THR-1203/pole-manifest-pins-one-body-per-fear-prose-key-the-other-five-are) ([PR #1582](https://github.com/christianspliid-ui/threadbare/pull/1582)): it pinned one passage per key and treated the other five as covered, which is how eight faults of the same kind shipped before anyone saw them. It now reads all six and names where it still cannot see.
 - 2026-08-23: **eight character backstories stop describing the wrong quality** — [THR-1202](https://linear.app/threadbare/issue/THR-1202/fear-prose-preservation-transformation-the-first-four-bodies-of-both) ([PR #1581](https://github.com/christianspliid-ui/threadbare/pull/1581)): a *Preserving* mortal was written as someone who cannot delegate or leave a room unarranged, a *Transforming* one as someone withholding power — passages authored for an axis the game no longer has.
 - 2026-08-23: **the turning-point text uses the right word too** — [THR-1201](https://linear.app/threadbare/issue/THR-1201/turning-point-prose-renders-value-as-an-adjective-in-a-noun-slot-when) ([PR #1580](https://github.com/christianspliid-ui/threadbare/pull/1580)): the same adjective-where-a-noun-belongs fault as the entry below, in a second table of character-backstory writing. Found inside that fix, shipped and deployed within the hour.
 - 2026-08-23: **mortal backstories use the right word for the thing they name** — [THR-1200](https://linear.app/threadbare/issue/THR-1200/fear-prose-renders-value-as-an-adjective-in-a-noun-slot-that) ([PR #1579](https://github.com/christianspliid-ui/threadbare/pull/1579)): 97 of 108 character descriptions read *"their **Prudent** is partly about the fear of their own recklessness"* — the label where the sentence needed the quality itself.
@@ -80,4 +81,5 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ---
 
-Older resolved entries and every run's measurements live in the file's history: `git log -p origin/ops -- Design/user-actions.md`.
+Full history of this file, including every resolved item older than the ten above: `git log -p origin/ops -- Design/user-actions.md`.
+Live queue state and health: `Design/briefing.md`, refreshed hourly by `keep-work-flowing-cc`.

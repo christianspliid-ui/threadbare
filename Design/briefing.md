@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-08-23 14:56 local (12:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-08-23 15:55 local (13:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -28,15 +28,15 @@ These are the two you played and criticised, with your three findings addressed:
 
 ## Queue
 
-**Seventh lap of the day shipped. The shelf is down to one job, and that job was found inside the sixth.**
+**Eighth lap of the day shipped and deployed. The shelf holds one job, and that job was found inside the eighth.**
 
-- **The seventh repair shipped and deployed** — [THR-1202](https://linear.app/threadbare/issue/THR-1202/fear-prose-preservation-transformation-the-first-four-bodies-of-both) ([PR #1581](https://github.com/christianspliid-ui/threadbare/pull/1581)): eight passages of character-backstory writing that described the wrong quality entirely — a *Preserving* mortal written as someone who cannot delegate, a *Transforming* one as someone withholding power. Idea to live in about two hours; nothing in it needed you.
-- **One job left on the shelf** — [THR-1203](https://linear.app/threadbare/issue/THR-1203/pole-manifest-pins-one-body-per-fear-prose-key-the-other-five-are), widening the check that catches this class of fault so it reads all six passages per key instead of one. Found inside THR-1202 while fixing it. The next pickup takes it.
+- **The eighth repair shipped** — [THR-1203](https://linear.app/threadbare/issue/THR-1203/pole-manifest-pins-one-body-per-fear-prose-key-the-other-five-are) ([PR #1582](https://github.com/christianspliid-ui/threadbare/pull/1582), merged 15:33): the check that catches this whole run of prose faults was reading one passage per key and calling six of them covered. It now reads all six, and says out loud where it still cannot see. This is the one that stops the lineage from producing a ninth of the same kind unseen.
+- **One job left on the shelf** — [THR-1204](https://linear.app/threadbare/issue/THR-1204/mercy-ruthlessness-negative-bodies-1-and-3-call-the-disposition-the): two sentences that name a character's *ruthlessness* and then call it "the patience" three words later. Any player reading that backstory would catch it. Found inside THR-1203 while widening the check — which is the widened check doing its job on its first pass.
 - **Three parks still held correctly** — `In Dev`, unassigned, carrying the label that stops the automatic sweep from releasing them and hiding their questions.
-- **Seven defects in a row, every one found by a builder inside the previous job, all in the same body of character-backstory text.** Nothing has entered the pipeline from outside since 07:24 this morning — five and a half hours. The queue has one exit and no entrance. The six items above are the entrance, and the design hour is the one that matters; this is the sixth consecutive hour of saying so.
+- **Eight defects in a row, every one found by a builder inside the previous job, all in the same body of character-backstory text.** Nothing has entered the pipeline from outside since 07:24 this morning — eight and a half hours. The queue has one exit and no entrance. The six items above are the entrance, and the design hour is the one that matters; this is the seventh consecutive hour of saying so.
 
 ## Health
 
-All green. Live site current, automated checks normal, both background jobs on schedule, no pull request waiting, all nine scheduled lanes on time, the worktree reaper current (14:40), your local copy clean and current.
+All green. Live site serving the current commit, automated checks normal, both background jobs on schedule, no pull request waiting, all nine scheduled lanes on time, the worktree reaper current (15:40), your local copy clean and current.
 
 - **The 35-hour quiet from Thursday evening to Saturday morning was the computer being off, not a fault — no action from you.** Already verified twice against a separate scheduler showing the same window dark. The silence probe keeps re-reporting it because it cannot see a powered-down machine. Recorded, not asked.
