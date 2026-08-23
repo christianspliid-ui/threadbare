@@ -66,6 +66,7 @@ import {
 import { RETROFIT_PENDING, isRetrofitPending } from '../src/data/content-eval/retrofitPending';
 import { auditTemplate } from '../src/data/content-eval/nudgeAuditDetectors';
 import { validateNudgeGrantRefs, validateRewardDrawPools, validateFavorDebtors } from '../src/engine/nudgeGrantLiveness';
+import { invalidTallyKeyProblems } from '../src/data/content-eval/tallyKeys';
 import { NUDGE_GOLDEN_EXEMPLAR } from '../src/data/__fixtures__/nudge-exemplar/swollen-ford-exemplar';
 
 // ─── Args ────────────────────────────────────────────────────────────
@@ -221,6 +222,16 @@ function runOne(template: UnifiedActionTemplate): TemplateResult {
       u => `${u.site} favor_creation → no declared debtor `
         + `(add \`debtorAgentId\`, or express a place opening as apply_condition + encounter_seed)`,
     ),
+    // THR-1206 — the fourth liveness shape, and the commonest: a write the engine
+    // refuses outright. `reputation_tally` accepts only `<reach>.positive|negative`;
+    // 33% of authored tally writes were landing on keys the handler drops, so the
+    // encounter promised a consequence that never once occurred. Ratcheted against
+    // the surveyed backlog, so this fails only on *new* debt.
+    //
+    // The line that actually holds this class is the corpus-wide test
+    // (`tallyKeyCorpus.test.ts`): `--all` here sweeps `encounter.*` only, which is 8
+    // of the 78 leaked keys. This arm is the fast feedback for the template in hand.
+    ...invalidTallyKeyProblems(template, template.id),
   ];
   const tokens = tokenProblems(template);
   const forecast = forecastProblems(template);

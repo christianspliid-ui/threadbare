@@ -13,6 +13,7 @@ import { resolveTooltip } from '../../../engine/tooltipResolver';
 import type { WorldGraph } from '../../../engine/graph';
 import { getSphereColor } from '../../../data/sphereIcons';
 import { getReputationWord } from '../../../data/domain-words';
+import { getNotableStandings } from '../../../engine/reputation';
 import { CORE_CONTINUA, CORE_NEUTRAL } from '../../../types/coreRegistry';
 import { CANONICAL_AXES, signedToCanonical01 } from '../../../types/axisRegistry';
 
@@ -286,6 +287,16 @@ interface OverviewTabProps {
   onOpenFaction?: (factionNodeId: string, name: string) => void;
 }
 
+/**
+ * How many of an agent's standings the Overview lists (THR-1206).
+ *
+ * Five, not three: the section is a scan of who this person is known to, and a list
+ * cut so short that a fourth relationship is invisible reads as "they have three",
+ * which is a different and false statement. Five still fits the section without
+ * scrolling. Executor's call per the plan's grey zones; tune here (NFP #1).
+ */
+const OVERVIEW_MAX_STANDINGS = 5;
+
 export function OverviewTab({ card, profile: _profile, knowledge, onOpenEntity, graph, onOpenFaction }: OverviewTabProps) {
   // How many quotes to show: one per interaction depth point (max 5), or all if no knowledge
   const quoteCount = knowledge != null
@@ -299,6 +310,12 @@ export function OverviewTab({ card, profile: _profile, knowledge, onOpenEntity, 
   const reputationRevealed =
     (knowledge != null && knowledge.interactionDepth >= OVERVIEW_GOSSIP_THRESHOLD)
     || hasKnowledge(card.knowledgeLevel, 'known');
+
+  // THR-1206 — the agent's notable standings, strongest departure from neutral first.
+  // Read straight off the graph rather than through the card, because the card is
+  // built for the info popover and threading a sixth list through it would put a
+  // second producer on a store that already has one.
+  const standings = graph ? getNotableStandings(graph, card.id, OVERVIEW_MAX_STANDINGS) : [];
 
   // Whether origin/backstory is revealed
   const backstoryRevealed =
@@ -532,6 +549,53 @@ export function OverviewTab({ card, profile: _profile, knowledge, onOpenEntity, 
           </p>
         </section>
       ) : null}
+
+      {/* Standings (THR-1206) — who and where this person is known to, in the one
+          word vocabulary the Reputation section above and every chip already use.
+          Knowledge-gated with its siblings: what a stranger's standing is around
+          town is exactly the sort of thing you learn by asking about them.
+
+          Edge leg only. The Faction section above already shows the membership leg
+          for this agent, and repeating it here would show one relationship twice
+          under two headings. */}
+      {reputationRevealed && graph && standings.length > 0 && (
+        <section data-testid="overview-standings">
+          <SectionHeading as="h2">Standings</SectionHeading>
+          <div className="space-y-1">
+            {standings.map((standing) => {
+              const node = graph.getNode(standing.targetId);
+              const label = node?.name ?? standing.targetId;
+              const clickable = onOpenEntity != null && node != null;
+              return (
+                <div
+                  key={standing.targetId}
+                  className="flex items-center justify-between gap-3"
+                >
+                  {clickable ? (
+                    <button
+                      type="button"
+                      className="text-sm text-left underline decoration-dotted underline-offset-2"
+                      style={{ color: 'var(--text-secondary)' }}
+                      onClick={() => onOpenEntity?.(standing.targetId)}
+                    >
+                      {label}
+                    </button>
+                  ) : (
+                    <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                      {label}
+                    </span>
+                  )}
+                  <Tooltip id="ui.reputation_with">
+                    <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+                      {standing.band}
+                    </span>
+                  </Tooltip>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       {/* Personality — the layered moral story, intimate+:
             born as (origin vignettes) → marked by (permanent marks) → becoming

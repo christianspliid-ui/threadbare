@@ -281,6 +281,48 @@ if (import.meta.env.DEV) {
      * sanctity drift it will apply next tick) and the typed per-sphere income
      * breakdown. Read-only; returns { sources, sourceIncome } or { error }.
      */
+    /**
+     * THR-1206 — what is `a`'s reputation with `b`, and which store answered.
+     *
+     * The one read behind every standing surface: the Location Profile's row, the
+     * Overview's standings, the eligibility gate, the social-scene opening. `a`
+     * accepts the same fuzzy agent query as the rest of the bridge (`@hero`, an id,
+     * a partial name); `b` is a **node id** — a place, a person, or a faction — because
+     * the counterparty may be none of those things an agent resolver can find.
+     *
+     * `source` names the leg: `membership` (`member_of.reputation`), `edge`
+     * (`reputation_with`), `bond` (`relates_to.trust`), or `default` when nothing has
+     * happened between them. Reading `default` after an aftermath you expected to
+     * write is the signal that the effect did not land — check the
+     * `reputation_with_changed` trace, which carries the refusal reason.
+     *
+     * **Async** (`await` it) — this module has no static imports, so the engine module
+     * is pulled in on call; an unawaited call logs a Promise, not the reading.
+     */
+    getReputationWith: async (a: string, b: string) => {
+      const state = _gameStateProvider?.();
+      if (!state) return { error: 'no live game state' };
+      const actor = await resolveAgentNode(a);
+      if (!actor) return { error: `No agent matching '${a}'` };
+      const target = state.graph.getNode(b);
+      if (!target) return { error: `No node with id '${b}'` };
+      const { getReputationWith, getNotableStandings } = await import('./engine/reputation');
+      const reading = getReputationWith(state.graph, actor.id, target.id);
+      return {
+        ...reading,
+        actorId: actor.id,
+        actorName: actor.name ?? actor.id,
+        targetId: target.id,
+        targetName: target.name ?? target.id,
+        // Every standing this actor holds, so a reviewer can see at a glance whether
+        // the write landed somewhere other than where they were looking.
+        allStandings: getNotableStandings(state.graph, actor.id, 20).map(st => ({
+          ...st,
+          targetName: state.graph.getNode(st.targetId)?.name ?? st.targetId,
+        })),
+      };
+    },
+
     getEssenceSources: async () => {
       const state = _gameStateProvider?.();
       if (!state) return { error: 'no live game state' };

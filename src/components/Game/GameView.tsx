@@ -143,7 +143,7 @@ import {
 import type { MeetingEncounterState, MeetingEncounterResult } from '../../types/meetingEncounter';
 import type { JourneyVignetteData, PendingVignette } from '../../types/journeyEngine';
 import { applyBeatChoice } from '../../engine/journeyEngine';
-import { getThreadsFrom, getFactionMembershipEdges } from '../../engine/graphQueries';
+import { getThreadsFrom, getFactionMembershipEdges, getAvatarsOf } from '../../engine/graphQueries';
 import type { ThreadEdgeProperties } from '../../types/influence';
 import { createMeetingEncounterState, createAgentFromMeeting, isMeetTheFirstAvailable, MEETING_SETTLED_LOCATION_SUBTYPES } from '../../engine/meetingEncounter';
 import { buildStubAscendantLens } from '../../types/hunger';
@@ -4519,6 +4519,12 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                   name={nodeName}
                   locationId={nodeId}
                   graph={gameState.graph}
+                  // THR-1206 — the viewer whose standing with this place the sheet
+                  // shows. The avatar is the player's body in the world, so it is the
+                  // only honest answer to "your reputation here".
+                  viewerAgentId={
+                    getAvatarsOf(gameState.graph, gameState.ascendantId)[0]?.id
+                  }
                   onClose={onClose}
                 />
               );

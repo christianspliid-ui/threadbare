@@ -659,6 +659,45 @@ export interface DebugBridge {
     | { error: string }
   >;
 
+  /**
+   * THR-1206 — `a`'s reputation with `b`, and which of the four stores answered.
+   *
+   * The single read behind every standing surface. `a` takes the bridge's usual fuzzy
+   * agent query (`@hero`, an id, a partial name); `b` must be a **node id**, since the
+   * counterparty may be a place or a faction and no agent resolver would find it.
+   *
+   * `source` is the diagnostic: `membership` → `member_of.reputation`; `edge` →
+   * a `reputation_with` edge; `bond` → `relates_to.trust` remapped to [0,1];
+   * `default` → nothing has happened between them. A `default` where you expected a
+   * write means the effect did not land — the `reputation_with_changed` /
+   * `encounter_aftermath_effect` traces carry the refusal reason.
+   *
+   * `band` is the player-facing word, from the one vocabulary every reputation
+   * surface shares (`REPUTATION_WORDS`). `allStandings` lists every edge-leg standing
+   * the actor holds (up to 20, strongest first), so a write that landed on the wrong
+   * counterparty is visible rather than merely absent.
+   *
+   * **Async — `await` it.** An unawaited call logs a Promise, not the reading.
+   */
+  getReputationWith: (a: string, b: string) => Promise<
+    | {
+        score: number;
+        band: string;
+        source: 'membership' | 'edge' | 'bond' | 'default';
+        actorId: string;
+        actorName: string;
+        targetId: string;
+        targetName: string;
+        allStandings: Array<{
+          targetId: string;
+          targetName: string;
+          score: number;
+          band: string;
+        }>;
+      }
+    | { error: string }
+  >;
+
   getEssenceSources: () => Promise<
     | {
         sources: Array<{

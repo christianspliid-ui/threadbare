@@ -58,6 +58,7 @@ import { FACTION_ENCOUNTER_META } from '../data/faction-encounter-content';
 import { FACTION_DEFINITIONS } from '../data/faction-definitions';
 import type { FactionEncounterMeta } from '../types/faction';
 import { meetsFactionRankRequirement } from './factionReputation';
+import { meetsReputationWithRequirement } from './reputation';
 import type { EligibilityFunnelCounters } from './kpi/gameplayKpi';
 import { KPI_FUNNEL_MAX_TEMPLATES } from './kpi/kpiConstants';
 import { BRANCHING_QUEST_SKIP_OUTGROWTH, BRANCHING_CAP_RESERVE } from './encounter/branchingConstants';
@@ -376,6 +377,26 @@ export function filterByPrerequisites(
           }
           if (!meetsAll) continue;
         }
+      }
+    }
+
+    // Reputation gate (THR-1206) — the general form of "you have to be known here
+    // first". Sibling of the faction-rank gate below: rank asks about standing
+    // *inside* a group the agent belongs to, this asks about standing *with* the
+    // counterparty this encounter is about — the place it happens at, or the person
+    // it is with. A return-visit encounter that only makes sense once a town keeps a
+    // door open gates here rather than on a bespoke condition trait.
+    //
+    // Guarded on `template` because the field lives on the template and nowhere else,
+    // unlike the two meta-driven gates around it. An unresolvable template therefore
+    // passes: this gate can only ever *hide* content, so failing open on a missing
+    // lookup is the direction that cannot silently empty a pool.
+    if (template?.requiredReputationWith) {
+      const counterpartyId = entry.targetAgentId ?? entry.locationId;
+      if (counterpartyId
+        && !meetsReputationWithRequirement(
+          graph, agentId, counterpartyId, template.requiredReputationWith.atLeast)) {
+        continue;
       }
     }
 

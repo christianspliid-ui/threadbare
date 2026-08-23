@@ -15,12 +15,12 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 50 |
+| 🟢 LIVE | 51 |
 | 🟠 PARTIAL | 2 |
 | 🔴 LEAKED | 7 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 14 |
-| **Total** | **73** |
+| **Total** | **74** |
 
 ## Contracts by producing subsystem
 
@@ -125,6 +125,7 @@ remediation ticket or the build fails.
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
 | `guild-rank-gates-senior-content` | A guild's senior and elite work reaches only members who have earned standing in that guild — a passer-by cannot take a captain's commission because they happened to be standing in the hall. | function: `minRank`, `meetsFactionRankRequirement`, `RANK_GATED_QUEST_TYPES` | Encounters & Dilemmas | 🟢 LIVE | — |
+| `reputation-with-unified-read` | Reputation means one thing wherever the game asks it — the social score between a and b — so a standing earned in a town, a guild or a friendship reads in one vocabulary and moves the same things. | function: `getReputationWith`, `applyReputationWithDelta`, `meetsReputationWithRequirement`, `reputationLeverageTerm`, `getNotableStandings` | Encounters & Dilemmas | 🟢 LIVE | — |
 
 ### Mandate
 
@@ -388,10 +389,10 @@ remediation ticket or the build fails.
 - **Producer → Consumer:** Encounters & Dilemmas → Factions & Succession
 - **UL terms:** *Encounter*, *Faction*
 - **Module:** `src/engine/encounterAftermath.ts`
-- **Production hits:** 6 total — 1 write, 1 read, 4 unclassified
+- **Production hits:** 7 total — 1 write, 1 read, 5 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`
 - **Read sites:** `src/engine/factionReputation.ts`
-- **Other hits:** `src/engine/chosenFactionPowers.ts`, `src/engine/factionMembership.ts`, `src/engine/factionOutcome.ts`, `src/types/unifiedAction.ts`
+- **Other hits:** `src/engine/chosenFactionPowers.ts`, `src/engine/factionMembership.ts`, `src/engine/factionOutcome.ts`, `src/engine/reputation.ts`, `src/types/unifiedAction.ts`
 - **Verdict:** Verified 2026-08-17: THR-1150. `applyFactionReputationGain` matched memberships with `e.target === factionId`, a faction NODE id, while every authored `faction_reputation_gain` passes a DEFINITION id ('mercenary_company', 'temple_of_spheres', 'underking_court', 'rangers_brotherhood', 'lorekeepers_covenant'). `factionSeeding` keys the node `faction_def_<definitionId><chapterSuffix>`, so the authored id matched no node and no edge target: every faction-standing consequence in the shipped game was a no-op. Both halves are now proven against a real `initializeGameState(seed 42, medium)` world rather than a fixture — `src/engine/__tests__/factionReputationSeededWorld.test.ts` asserts the seeded node id contains the definition id AND that the definition id resolves to no node, then fires the effect with the authored value and reads the reputation move off the seeded edge. Falsified at 1-of-3 red with the fix reverted; the two arms that stay green are the deliberate controls (the premise assertion, and the already-tracing faction_not_found path). Resolution is widening-only by `resolveFactionNodeId`'s exact-node-id-first order, so the three pre-existing node-id callers (`processFactionEncounterReputation`, `factionOutcome`, `chosenFactionPowers`) resolve to themselves — pinned by the 'explicit faction node id still works' arm in `aftermathFactionDefinitionId.test.ts`, 4-of-6 red without the fix. The second half is the trace: the `newRank === 'none'` sentinel used to `break` SILENTLY, which is why a corpus-wide dead effect survived to be found by an unrelated ticket. It now emits `encounter_aftermath_effect` with `failReason: 'not_a_member' | 'faction_not_found'`, and `faction_reputation_gain` was added to `EncounterAftermathEffectTrace.effectKind` so all four traces in the arm emit unlaundered — the cast ratchet (THR-1065) fell 110 → 107. Corpus pinned by `src/testing/__tests__/factionEffectIds.lint.test.ts`, which deep-walks UNIFIED_ACTION_TEMPLATES for all eight faction-carrying effect kinds and fails on any id naming no FACTION_DEFINITIONS entry — with a population guard, since a `<=` over an empty walk is the vacuous pass this lint exists to avoid.
 
 ### `authored-nudge-hand-reaches-resolution` — 🔵 UNVERIFIED-OK
@@ -811,10 +812,10 @@ remediation ticket or the build fails.
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 204 total — 1 write, 1 read, 202 unclassified
+- **Production hits:** 209 total — 1 write, 1 read, 207 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts` +197 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts` +202 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `relocation-intent-steers-agent-movement` — 🔵 UNVERIFIED-OK
@@ -828,6 +829,18 @@ remediation ticket or the build fails.
 - **Read sites:** `src/engine/encounterScoring.ts`, `src/engine/phaseAgentDecision.ts`
 - **Other hits:** `src/engine/relocationIntent.ts`, `src/types/movement.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
+### `reputation-with-unified-read` — 🟢 LIVE
+
+- **Intent:** Reputation means one thing wherever the game asks it — the social score between a and b — so a standing earned in a town, a guild or a friendship reads in one vocabulary and moves the same things.
+- **Producer → Consumer:** Factions & Succession → Encounters & Dilemmas
+- **UL terms:** *Reputation*
+- **Module:** `src/engine/reputation.ts`
+- **Production hits:** 10 total — 2 write, 5 read, 3 unclassified
+- **Write sites:** `src/engine/encounterAftermath.ts`, `src/engine/reputation.ts`
+- **Read sites:** `src/components/Game/LocationProfileModal.tsx`, `src/components/Game/tabs/OverviewTab.tsx`, `src/engine/encounterFilterPipeline.ts`, `src/engine/socialLeverage.ts`, `src/engine/targetActions.ts`
+- **Other hits:** `src/debug-bridge.ts`, `src/types/edgeSchema.ts`, `src/types/unifiedAction.ts`
+- **Verdict:** Verified 2026-08-23: THR-1206, director ruling. Six mechanisms wore the word `reputation` and disagreed; a seventh (`trait.condition.location.standing_welcome`) did reputation's job under a bespoke noun the director vetoed on player surfaces. This is a READ unification plus one new store, deliberately NOT a store migration (strangler ruling in the plan): `getReputationWith` dispatches membership (`member_of.reputation`) → edge (`reputation_with`) → bond (`relates_to.trust`, remapped [-1,1]→[0,1]) → default, and every leg's band word comes from the single `getReputationWord` vocabulary, which is what makes the stores one concept on every surface. The new `reputation_with` edge family (actor → actor|location, required `score`+`lastChangedTick`) fills the two pairs no store covered: agent↔location, and agent↔faction WITHOUT membership — `applyFactionReputationGain` no-ops with `not_a_member`, so a non-member could never earn standing with a community at all. Sparse by construction: minted on first write, decayed toward neutral in phase 6.6 and DELETED once inside `REPUTATION_WITH_PRUNE_EPSILON`, so the sweep is O(edges that exist) and there is no N×M scan. Every consumer ships in the same change, so this is not a write nobody reads (the THR-1154 flaw): the `requiredReputationWith` eligibility gate at both filter sites, the signed opening-leverage term in `computeInitialLeverage` (signed, unlike its bonus-only siblings — standing that has soured is as real as standing earned), and two profile surfaces. Non-vacuous by `src/engine/__tests__/reputation.test.ts` (22 tests: all four dispatch legs in BOTH polarities, priority order between legs, directionality, the cap/clamp/mint/sublocation-resolve write behaviour, decay from both sides, and the prune) — falsified 2-of-22 red with the sublocation resolve reverted — plus `src/components/Game/__tests__/reputationSurfaces.test.tsx` (8 render assertions on the real components, falsified 2-of-8 red with the FactionSheet banding reverted). The first migrated content is the Grateful Kin gratitude beat, whose three bands replaced `apply_condition → standing_welcome` with `reputation_with` deltas and whose four chips now state 'reputation with {target}' — pinned by the corpus and veil suites, which were red on the old noun until updated.
 
 ### `reunion-reads-the-edges-not-the-roster` — 🟢 LIVE
 

@@ -143,6 +143,11 @@ export type EdgeType =
   // `createRelationEdge`, which accepted any string as an edge type. Registered rather
   // than rejected: see the EDGE_SCHEMA row for the reasoning.
   | 'sacred_route'     // actor → location: a consecrated pilgrimage route
+  // Reputation (THR-1206) — the pairwise social score between any two parties.
+  // Fills the two pairs no existing store covers: agent↔location, and agent↔faction
+  // *without* membership (`member_of.reputation` no-ops for non-members). Sparse by
+  // construction: minted on first write, pruned by phase 6.6 once it decays to neutral.
+  | 'reputation_with' // actor → actor|location: A's standing with B (score 0–1, lastChangedTick)
   // Rival schemes (THR-66)
   | 'sponsors_scheme';     // rival/notable actor → materialized target node (location it is scheming against; THR-66 rivals, THR-630 notable agendas — edge properties carry family + sponsorKind)
 

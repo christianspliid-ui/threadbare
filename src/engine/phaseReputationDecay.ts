@@ -9,6 +9,7 @@ import type { GameState } from '../types/gameState';
 import { decayReputation } from './disposition';
 import { DEFAULT_REPUTATION } from '../types/disposition';
 import { decayAllTrust } from './trustMechanics';
+import { decayReputationWithEdges } from './reputation';
 
 export function phaseReputationDecay(state: GameState): Partial<GameState> {
   const graph = state.graph;
@@ -25,6 +26,12 @@ export function phaseReputationDecay(state: GameState): Partial<GameState> {
 
   // Decay trust on all relates_to edges (social fabric)
   decayAllTrust(graph);
+
+  // THR-1206 — the reputation-unification edge leg decays here too, so all three
+  // stores that hold a social score fade on the same phase rather than in three
+  // places a reader has to find. Sparse by construction: the sweep is over edges
+  // that exist, and an edge that reaches neutral is deleted rather than kept.
+  decayReputationWithEdges(graph, state.tick);
 
   return {};
 }

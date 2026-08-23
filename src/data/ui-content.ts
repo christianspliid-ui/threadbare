@@ -376,6 +376,16 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'A Standing Welcome',
     desc: 'A place that opens for someone who earned it. It sits on the ground rather than on a person, holds for a season, and shows on the location itself.',
   },
+  // THR-1206 — the noun that replaced `ui.standing_welcome` on the chip surface.
+  // The director's ruling, verbatim: *"custom concepts are difficult for players to
+  // learn and understand. if we do have reputation as our concept for 'the social
+  // score that modifies interactions between a and b', then lets use that
+  // everywhere."* One tooltip now covers standing with a town, a person, and a guild
+  // you have not joined, because it is one score behind all three.
+  'ui.reputation_with': {
+    label: 'Reputation',
+    desc: 'The social score between you and someone — a person, a faction, or a place. It shifts what they offer, what they let you near, and what they hear you out about. It fades if nothing keeps it alive.',
+  },
   'ui.aftermath_toll': {
     label: 'A Toll',
     desc: 'Something the ending took. A toll is a price already paid, not a threat — the scene resolved, and this is what it cost the mortal to get there.',

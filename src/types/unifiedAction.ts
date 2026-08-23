@@ -1060,6 +1060,43 @@ export type EncounterAftermathReactionEffect =
   }
   | {
     /**
+     * THR-1206 — move the actor's **reputation with** a place, a person, or a
+     * faction they do not belong to.
+     *
+     * The general form of the concept the director ruled is the game's one social
+     * score: *"reputation … the social score that modifies interactions between a
+     * and b"*. Use this when the standing is earned **with** someone or somewhere:
+     *
+     * - a **place** (`targetLocationId`) — a town that keeps a door open for you.
+     *   This is what replaced the bespoke `standing_welcome` condition, which was
+     *   a property of the place rather than a score between two parties.
+     * - a **person** (`targetAgentId`) — where no `relates_to` bond exists to carry
+     *   it, or where the standing is public regard rather than private trust.
+     * - a **faction you are not in** (`targetFactionId`) — the pair
+     *   `faction_reputation_gain` structurally cannot serve, since
+     *   `applyFactionReputationGain` no-ops with `not_a_member`.
+     *
+     * Prefer `faction_reputation_gain` when the actor **is** a member: that leg
+     * carries rank, access and expulsion, and this one deliberately does not
+     * duplicate it (`getReputationWith` reads membership first for the same reason).
+     *
+     * All three target fields accept scene sentinels. `delta` is capped at
+     * `REPUTATION_WITH_MAX_DELTA_PER_OUTCOME` per outcome; a sublocation target
+     * resolves up to its parent place before the write.
+     */
+    readonly kind: 'reputation_with';
+    /** Standing with a place. Accepts `$target` when the action targets a location. */
+    readonly targetLocationId?: string;
+    /** Standing with a person. Accepts `$target` / `$cast:<key>`. */
+    readonly targetAgentId?: string;
+    /** Standing with a faction the actor need not belong to. Accepts `$target`. */
+    readonly targetFactionId?: string;
+    /** Signed change, capped at ±REPUTATION_WITH_MAX_DELTA_PER_OUTCOME at runtime. */
+    readonly delta: number;
+    readonly when?: EffectPredicate;
+  }
+  | {
+    /**
      * THR-1144 — move **one person** in, out, or up a faction as the consequence
      * of an encounter: a recruitment, an expulsion, a defection, a promotion.
      *
@@ -2123,6 +2160,28 @@ export interface UnifiedActionTemplate {
    * Omit or empty → no trait restriction.
    */
   readonly requiredTargetTraits?: readonly string[];
+
+  /**
+   * THR-1206 — the actor's **reputation with this template's target** must reach a
+   * band before the template is offered at all.
+   *
+   * The general form of "you have to be known here first", and the sibling of the
+   * faction-rank gate: rank asks about standing *inside* a group you belong to, this
+   * asks about standing *with* anyone or anywhere. A return-visit encounter that only
+   * makes sense once a town keeps a door open for you gates on
+   * `{ atLeast: 'Respected' }` rather than on a bespoke condition trait, which is what
+   * this replaced.
+   *
+   * `atLeast` names a band from the single vocabulary (`REPUTATION_WORDS`), never a
+   * number — a band that is not in that list never satisfies the gate, so a typo
+   * closes the door rather than opening it.
+   *
+   * Fail-open by omission at both check sites: a surface built without a graph or a
+   * viewer in scope (tests, the codex) skips the gate rather than hiding everything.
+   */
+  readonly requiredReputationWith?: {
+    readonly atLeast: string;
+  };
 
   // ── Layer revelation gating ─────────────────────────────────────
 

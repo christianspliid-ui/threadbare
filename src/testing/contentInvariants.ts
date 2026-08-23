@@ -50,6 +50,7 @@ const KNOWN_AFTERMATH_EFFECT_KINDS = new Set<EncounterAftermathReactionEffect['k
   'secret_discovery',
   'favor_creation',
   'faction_reputation_gain',
+  'reputation_with',
   'axiological_mark_apply',
   'signature_warhost',
   'sphere_influence_amplify',

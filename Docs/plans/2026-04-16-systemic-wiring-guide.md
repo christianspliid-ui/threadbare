@@ -205,7 +205,7 @@ onFailure: { narrative: "...", reputationDelta: -0.02 }
 
 **Reputation Tallies** (named counters): Accumulate over time, cross thresholds to grant traits.
 ```typescript
-{ kind: 'reputation_tally', key: 'gate_duty.witness_story_followed', delta: 1 }
+{ kind: 'reputation_tally', key: 'heart.positive', delta: 1 }
 ```
 
 Tallies accumulate and decay (2% per tick). When they cross thresholds (3 → "Whispered", 8 → "Known", 15 → "Legendary"), reputation traits are assigned based on the agent's capability tier.
@@ -220,6 +220,49 @@ Polarity determines whether reputation grows in the "virtuous" or "notorious" di
 **Why this changes what you write:** Reputation isn't decoration — it feeds back into the scoring pipeline (higher reputation agents get different encounter access) and into prose (reputation traits become `{title}` in enrichment, biography resolvers describe the agent's track record). **Write encounters where the reputation consequence is proportional to the moral weight of the choice.** A trivial task shouldn't swing reputation. A betrayal should leave a mark that the whole reputation system carries forward.
 
 **Reach-polarity tallies now do double duty — they pick which reaction a non-hero agent takes (THR-530).** A `reputation_tally` whose `key` is a valid `${reach}.positive` / `${reach}.negative` (and an actor-self `reputation_score` delta) is the **moral-pole signal** the autonomous in-encounter chooser reads. When a non-player, non-threaded agent resolves an encounter with **two or more** authored aftermath reactions, the engine picks the reaction whose inferred reach-pole best matches the agent's live moral axes (their `axiologicalProfile` + drift) — a Generous agent reaches for the `gold.positive` reaction, a Greedy one for `gold.negative`. So: **author your divergent reactions with opposing reach-polarity signals** and personality will visibly steer which one fires. Reactions with no reach signal (off-axis keys like `cg.watch_work`, faction/other-agent–targeted effects, pure `recent_event` flavor) carry no pole, so the chooser fails soft to the first authored reaction — front-load the "default" reaction and let the signal-bearing alternatives earn the in-character pick. Variety scales with how many reactions you give a real pole.
+
+**A tally key that is not `<reach>.positive|negative` is DISCARDED — and now fails the gate (THR-1206).** `isValidReputationTallyKey` accepts only the sixteen reach-polarity keys; everything else is traced and dropped, so the encounter promises a consequence that has never once occurred. Measured at survey: **171 of 518 authored tally writes (33%), across 78 distinct keys.** `check:encounter` and a corpus-wide test now fail any *new* off-axis key, with a ratchet freezing the shipped backlog while the sweep drains it (`src/data/content-eval/tallyKeys.ts`). If your consequence is not "what this mortal is becoming known for", it is not a tally — see Capability 22.
+
+---
+
+### Capability 22: Reputation With Someone — The Social Score Between Two Parties (THR-1206)
+
+The director's ruling, verbatim: *"custom concepts are difficult for players to learn and understand. if we do have reputation as our concept for 'the social score that modifies interactions between a and b', then lets use that everywhere."*
+
+So there is now **one** effect for "they think better/worse of you" wherever the counterparty is a place, a person, or a faction the actor does not belong to:
+
+```typescript
+// Standing with a place — `$target` binds when the action targets a location.
+{ kind: 'reputation_with', targetLocationId: '$target', delta: 0.08 }
+// Standing with a person, where no bond carries it.
+{ kind: 'reputation_with', targetAgentId: '$cast:kin', delta: -0.06 }
+// Standing with a faction you are NOT in (definition id, like every faction effect).
+{ kind: 'reputation_with', targetFactionId: 'arcane_circle', delta: 0.1 }
+```
+
+**Which reputation effect to reach for.** Getting this wrong is how the corpus accumulated 171 dead writes:
+
+| The fiction | The effect | Why |
+|---|---|---|
+| The guild you belong to thinks better of you | `faction_reputation_gain` | The only leg carrying rank, access, bonuses and expulsion |
+| A town / a stranger / a guild you have not joined | `reputation_with` | `faction_reputation_gain` no-ops with `not_a_member` — it structurally cannot serve this pair |
+| What this mortal is becoming *known for* | `reputation_tally` on `<reach>.positive|negative` | Not standing with anyone; it feeds reputation traits and `{title}` |
+| A private note about them nobody has read yet | `hidden_mark` | Not a score at all |
+
+**What reads it.** All three consumers ship with the effect, so this is never a write nobody reads:
+
+1. **Eligibility** — a template may declare `requiredReputationWith: { atLeast: 'Respected' }`, gating the whole encounter on the actor's standing with its target. The band names come from the one vocabulary (`REPUTATION_WORDS`: Distrusted / Unknown / Accepted / Respected / Revered); **a band the vocabulary does not know closes the gate**, so a typo hides content rather than opening it.
+2. **Social scenes** — standing is a *signed* term in the opening leverage. Every other opening bonus only ever adds; this one subtracts when standing has soured, because a reputation that could only help would not be a reputation.
+3. **Player surfaces** — the Location Profile's Standing row and the agent Overview's Standings list, so every `reputation_with` chip has an inspectable backing (UI Law 56).
+
+**Authoring rules.**
+- **Say it as reputation on the chip.** `stateNoun: { text: 'reputation with {target}', entityId: '$target', visualKind: 'location', tooltipId: 'ui.reputation_with' }`. Do not invent a bespoke noun for a standing — that is exactly what this capability retired (`standing_welcome`).
+- **Deltas are capped** at `REPUTATION_WITH_MAX_DELTA_PER_OUTCOME` (0.15) per outcome. One scene cannot take a stranger to revered.
+- **Bands scale with the door you opened.** If three outcome bands write different deltas, give their chips different `magnitude.band` values — a warm welcome and a fumbled one that draw the same cluster are indistinguishable at a glance.
+- **A sublocation target resolves to its parent place.** Standing at the shrine and standing in the town that holds it are one number, deliberately.
+- **Standing fades.** Phase 6.6 drifts every edge toward neutral and deletes it once it arrives, so a consequence you want to *last* belongs in a condition or an attachment, not here.
+
+**Read it anywhere** with `getReputationWith(graph, a, b)` — it dispatches across membership, this edge, a personal bond, and neutral, and always returns the same five words. Never read the stores directly; that is how six vocabularies grew.
 
 ---
 

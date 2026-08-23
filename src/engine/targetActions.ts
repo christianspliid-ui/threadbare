@@ -9,6 +9,7 @@
  *   2.  Subtype gate         — template.targetSubtypes includes target.subtype (if specified)
  *   3.  Trait gate           — all template.requiredTargetTraits present in target.traitIds
  *   3b. Node-property gate   — all template.requiredNodeProperties match target.properties
+ *   3c. Reputation gate      — viewer's reputation with the target reaches template.requiredReputationWith
  *   4.  Sphere gate          — template.sphereAffinity is null OR in accessibleSpheres
  *   5.  Essence gate         — player can afford template.essenceCost
  *   6.  Range gate           — target in range from avatar (if positions available)
@@ -25,6 +26,8 @@ import { REACH_DOMAINS } from '../types/traits';
 import type { HexPosition } from './delivery';
 import { hexDistance } from './delivery';
 import { hexKey } from '../lib/hexKey';
+import type { WorldGraph } from './graph';
+import { meetsReputationWithRequirement } from './reputation';
 import { isActionRevealed } from './actionUnlock';
 import { REACH_GATE_MIN_AFFINITY } from '../data/influence-content';
 import { effectSourceFor } from '../data/actionEffectSource';
@@ -158,6 +161,18 @@ export interface TargetActionParams {
    * the authored difficulty — that fallback is the defect THR-998 removed.
    */
   ascendantCastCapabilities?: Partial<Record<ReachDomain, number>>;
+  /**
+   * World graph and the agent whose standing the reputation gate reads (THR-1206).
+   *
+   * Both are required together and both are optional: a surface with no graph or no
+   * viewer in scope (tests, the codex, any listing that is not "what can *this* agent
+   * do here") skips gate 3c entirely rather than hiding every gated template. Same
+   * fail-open contract as `ascendantDomainAffinities` above, and for the same reason
+   * — a gate that silently empties a catalog is worse than one that does not run.
+   */
+  graph?: WorldGraph;
+  /** The agent whose reputation with the target is checked. See {@link graph}. */
+  viewerAgentId?: string;
 }
 
 // ─── Filter result (for trace) ──────────────────────────────────────────────
@@ -174,6 +189,7 @@ interface FilterCounts {
   byRevelation: number;
   byUnlock: number;
   byReach: number;
+  byReputation: number;
 }
 
 // ─── Main function ───────────────────────────────────────────────────────────
@@ -197,6 +213,8 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
     unlockedActionIds,
     ascendantDomainAffinities,
     ascendantCastCapabilities,
+    graph,
+    viewerAgentId,
   } = params;
 
   const counts: FilterCounts = {
@@ -211,6 +229,7 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
     byRevelation: 0,
     byUnlock: 0,
     byReach: 0,
+    byReputation: 0,
   };
 
   const slots: WheelSlot[] = [];
@@ -280,6 +299,22 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
           counts.byNodeProperties++;
           continue;
         }
+      }
+    }
+
+    // 3c. Reputation gate (THR-1206) — the viewer's standing WITH this target must
+    //     reach the authored band. The sibling of the faction-rank gate in the
+    //     encounter filter pipeline: rank asks about standing inside a group you
+    //     belong to, this asks about standing with anyone or anywhere.
+    //
+    //     Fail-open when the caller supplied no graph/viewer (see TargetActionParams).
+    if (template.requiredReputationWith && graph && viewerAgentId) {
+      const clears = meetsReputationWithRequirement(
+        graph, viewerAgentId, target.nodeId, template.requiredReputationWith.atLeast,
+      );
+      if (!clears) {
+        counts.byReputation++;
+        continue;
       }
     }
 
