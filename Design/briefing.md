@@ -1,11 +1,11 @@
 # Briefing
-**Generated:** 2026-08-23 12:58 local (10:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-08-23 13:56 local (11:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
 **Play two encounters and say whether they are worth meeting twice** — [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to)
 
-Unchanged, and still the largest release available. Two rebuilt encounters are live on the deployed build, one click each:
+Two rebuilt encounters are live on the deployed build, one click each:
 
 - **The Grateful Kin** — [play it](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin) · [good ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin&outcome=critical_success) · [bad ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin&outcome=critical_failure)
 - **The Unsafe Bridge** — [play it](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge) · [good ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge&outcome=critical_success) · [costly ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge&outcome=success_at_cost)
@@ -28,15 +28,15 @@ These are the two you played and criticised, with your three findings addressed:
 
 ## Queue
 
-**A third repair shipped and deployed this hour, and it found two more of itself on the way out.**
+**The sixth repair of the day is live, and it was the last one this seam could produce.**
 
-- **The adjective-in-a-noun-slot repair is live.** [THR-1200](https://linear.app/threadbare/issue/THR-1200/fear-prose-renders-value-as-an-adjective-in-a-noun-slot-that) ([PR #1579](https://github.com/christianspliid-ui/threadbare/pull/1579)) — every mortal's backstory read *"their **Prudent** is partly about the fear of their own recklessness"*, dropping an adjective where the sentence needed a noun, on 97 of 108 lines. Picked up 35 minutes after it hit the shelf, merged and deployed inside the hour. Third full lap today, none of them yours.
-- **Two new jobs on the shelf, both found inside that one** — [THR-1201](https://linear.app/threadbare/issue/THR-1201/turning-point-prose-renders-value-as-an-adjective-in-a-noun-slot-when) (the same adjective fault in a second table of backstory text) and [THR-1202](https://linear.app/threadbare/issue/THR-1202/fear-prose-preservation-transformation-the-first-four-bodies-of-both) (eight passages written about a subject the game no longer has). Both need nothing from you.
+- **The second adjective-in-a-noun-slot repair shipped and deployed.** [THR-1201](https://linear.app/threadbare/issue/THR-1201/turning-point-prose-renders-value-as-an-adjective-in-a-noun-slot-when) ([PR #1580](https://github.com/christianspliid-ui/threadbare/pull/1580)) — the same fault as this morning's fix, in a second table of character-backstory text. Merged 11:28 UTC, live on the site now. Sixth full lap today; none of them yours.
+- **One job left on the shelf** — [THR-1202](https://linear.app/threadbare/issue/THR-1202/fear-prose-preservation-transformation-the-first-four-bodies-of-both), eight passages written about a subject the game no longer has. Its blocker cleared at 11:31 when both partners merged; the next pickup takes it. Nothing in it needs you.
 - **Three parks still held correctly** — `In Dev`, unassigned, carrying the label that stops the automatic sweep from releasing them and hiding their questions.
-- **Five defects in a row, all from the same table of character-backstory text, every one found by a builder inside the previous job.** The queue is feeding entirely on itself: nothing has entered the pipeline from outside in over four hours, and the shelf empties the moment that table runs clean. The six things above are what refills it, and the design hour is the one that matters.
+- **Six defects in a row, every one found by a builder inside the previous job, all in the same body of character-backstory text.** Nothing has entered the pipeline from outside since 07:24 this morning. When THR-1202 is picked up the shelf is empty unless a seventh fault is found inside it. The six things above are what refills it, and the design hour is the one that matters — this is the fifth consecutive hour of saying so.
 
 ## Health
 
-All green. Live site current, automated checks normal, both background jobs on schedule, no pull request waiting, all nine scheduled lanes on time, the worktree reaper current, your local copy clean and current.
+All green. Live site current, automated checks normal, both background jobs on schedule, no pull request waiting, all nine scheduled lanes on time, the worktree reaper current (13:40), your local copy clean and current.
 
 - **The 35-hour quiet from Thursday evening to Saturday morning was the computer being off, not a fault — no action from you.** Already verified twice against a separate scheduler showing the same window dark. The silence probe keeps re-reporting it because it cannot see a powered-down machine. Recorded, not asked.
