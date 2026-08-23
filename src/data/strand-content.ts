@@ -64,9 +64,14 @@ export const VALUE_LABELS: Record<ValuePair, [string, string]> = {
  *     plainly", "says what needs saying"); `revelation` names an event, not a trait.
  *
  * Do NOT repoint the other VALUE_LABELS consumers at this table. `strands.ts`,
- * `agentDetail.ts` and the CMS registry want the adjective and are correct as they stand;
- * `turningPointResolver` wants the noun and has the same defect, tracked separately in
- * THR-1201 so its ~54 bodies get their own render review.
+ * `agentDetail.ts` and the CMS registry want the adjective and are correct as they stand.
+ *
+ * THR-1201 repointed the second consumer: `turningPointResolver` had the same defect over
+ * TURNING_POINT_PROSE, whose 55 bodies got their own render review. All 110 renders (9
+ * pairs x 2 poles) are noun slots, and no body there puts a determiner before the
+ * placeholder — so that table's failure class was two bodies OPENING a sentence with
+ * {value}, harmless under the capitalized adjective and a lowercase noun in a capital
+ * position under this register. Both read "Their {value}" now.
  */
 export const VALUE_NOUNS: Record<ValuePair, [string, string]> = {
   mercy_ruthlessness: ['mercy', 'ruthlessness'],
