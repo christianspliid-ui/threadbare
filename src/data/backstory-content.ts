@@ -777,10 +777,17 @@ export const FEAR_PROSE: Record<string, string[]> = {
     'What {name} will never admit is that the {value} is partly a way of not finding out what they are capable of. The {fear} is of the answer.',
     '{name} has never been cruel where anyone could witness it. The {fear} is that the restraint is circumstantial, and that {value} has never been tested against a real temptation.',
   ],
+  // THR-1204: bodies 1-3 rewritten 2026-08-23. All three carried the right fear for this
+  // pole (becoming heartless) but named the agent's disposition "the patience" — the mercy
+  // pole's word — in the same sentence that renders {value} = "ruthlessness"; body 2 also
+  // read as a restrained agent's fear of their own anger, near-synonymous with _positive
+  // body 2. On-axis but noun-mismatched, so neither THR-1187 (pole swap) nor THR-1202
+  // (off-axis) covered it, and POLE_MANIFEST cannot: a fragment witnesses which pole a body
+  // sits on, not whether the body's own nouns agree with what {value} resolves to.
   mercy_ruthlessness_negative: [
-    'What {name} will never admit is that the {value} they display contains within it the {fear} of what happens when it runs out — the moment when the patience finally exhausts itself in an unrecoverable way.',
-    'Beneath the {value} in {name} is a {fear} of their own anger: not that it doesn\'t exist, but that it is larger than they have admitted, and that one day the occasion for it will arrive.',
-    'What the {value} in {name} covers is not simply anger but the {fear} of its own extinction — the possibility that the patience, held long enough, will finally exhaust itself and leave a person who cannot feel it anymore.',
+    'What {name} will never admit is that the {value} they display has never once been stopped by what was in front of it. The {fear} is of the day something arrives that should stop it and nothing does.',
+    'Beneath the {value} in {name} is a {fear} that has nothing to do with anger. Anger would at least be feeling, and what {name} watches for is the absence of it.',
+    'What the {value} in {name} covers is not simply anger but a {fear} of what it is wearing down. Each hard call comes easier than the last, and {name} has noticed.',
     'People praise {name}\'s calm and {name} accepts the praise and does not mention what the calm is sitting on. The {fear} is geological — something buried deep enough that no one measures it, building pressure on a timeline longer than the conversations about it.',
     'The {fear} beneath {name}\'s {value} is that it will one day be indistinguishable from appetite. They watch for the line and are not certain where it sits.',
     'What {name} will never admit is that the {value} began as a decision and has been running on its own for some time. The {fear} is that stopping is no longer on offer.',

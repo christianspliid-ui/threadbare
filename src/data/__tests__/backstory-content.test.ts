@@ -318,7 +318,7 @@ describe('FEAR_PROSE', () => {
   //   'edit' — the body is pole-agnostic: it reads equally well under either noun, so no
   //     fragment drawn from it can witness a swap. The entry still pins the text against a
   //     silent rewrite, and the sibling-absence check still passes non-vacuously, but a
-  //     GREEN here says nothing about which pole the body belongs on. Eleven bodies are in
+  //     GREEN here says nothing about which pole the body belongs on. Ten bodies are in
   //     this class; the count is pinned below so it cannot grow unnoticed.
   type ReviewedBody = { fragment: string; witness: 'pole' | 'edit' };
 
@@ -448,16 +448,18 @@ describe('FEAR_PROSE', () => {
       { fragment: 'has never been cruel where anyone could witness it', witness: 'pole' },
     ],
     // ruthlessness / fears becoming heartless.
-    // Bodies 1-3 carry the right FEAR for this pole (restraint exhausting into someone who
-    // cannot feel) while describing that restraint as "the patience", which reads oddly
-    // beside {value} = "ruthlessness". On-axis but noun-mismatched — filed as THR-1204, not
-    // fixed here, because this ticket widens the manifest rather than rewriting bodies.
+    // THR-1204 rewrote bodies 1-3, which carried the right fear for this pole while naming
+    // the disposition "the patience" — the mercy pole's word — beside {value} =
+    // "ruthlessness". All three fragments below are read off the replacement text. Body 2
+    // was the witness:'edit' entry here: it read as a restrained agent's fear of their own
+    // anger, near-synonymous with _positive body 2, and two bodies saying the same thing on
+    // opposite poles cannot witness a swap. Rewritten onto its own pole (the fear is now of
+    // anger's ABSENCE, which only this pole fears), so it flips to 'pole' and the
+    // pole-agnostic count below drops 11 → 10.
     mercy_ruthlessness_negative: [
-      { fragment: 'the patience finally exhausts itself in an unrecoverable way', witness: 'pole' },
-      // Near-synonymous with _positive body 2 ("something that, once released, would not
-      // stop"). Two bodies saying the same thing on opposite poles cannot witness a swap.
-      { fragment: 'it is larger than they have admitted', witness: 'edit' },
-      { fragment: 'leave a person who cannot feel it anymore', witness: 'pole' },
+      { fragment: 'never once been stopped by what was in front of it', witness: 'pole' },
+      { fragment: 'Anger would at least be feeling', witness: 'pole' },
+      { fragment: 'Each hard call comes easier than the last', witness: 'pole' },
       { fragment: 'what the calm is sitting on', witness: 'pole' },
       { fragment: 'indistinguishable from appetite', witness: 'pole' },
       { fragment: 'began as a decision and has been running on its own', witness: 'pole' },
@@ -576,7 +578,7 @@ describe('FEAR_PROSE', () => {
         'If a body was rewritten onto its own pole, lower this number and flip its witness to ' +
         "'pole'. If a new pole-agnostic body was added, raise it deliberately — do not flip a " +
         "witness to 'pole' to make this pass.",
-    ).toBe(11);
+    ).toBe(10);
   });
 
   test('_positive and _negative variants exist for every value pair', () => {
