@@ -204,6 +204,75 @@ describe('Strand Content', () => {
         expect(bothValid).toBe(true);
       }
     });
+
+    // THR-1187 — reviewed label/fear alignment.
+    //
+    // `honesty_cunning` shipped as ['Fears being outwitted', 'Fears having to deceive'],
+    // giving Honest the cunning agent's fear and Cunning the honest agent's. Every test
+    // above passed on it: they check count, shape, non-emptiness, tone and opening word,
+    // none of which can see which pole a fear belongs to.
+    //
+    // The table is written as literals rather than derived from FEAR_DESCRIPTIONS — a check
+    // built from the constant it is checking cannot fail. Each row states the pole LABEL it
+    // was reviewed against, so the pairing is legible without opening strand-content.ts, and
+    // the labels are asserted against VALUE_LABELS below so the two files cannot drift apart
+    // silently. Because this is a whole-record toEqual, a new value pair fails until someone
+    // adds a reviewed row.
+    //
+    // The convention every row follows: each pole fears the UNDOING of what that pole is
+    // committed to. Loyal fears betrayal, not disloyalty in others generally; Traditional
+    // fears the loss of the old ways; Courageous fears showing weakness.
+    it('pairs each fear with the correct pole label (reviewed alignment)', () => {
+      const REVIEWED: Record<string, { positive: [string, string]; negative: [string, string] }> = {
+        // pair: { positive: [label, fear], negative: [label, fear] }
+        mercy_ruthlessness: {
+          positive: ['Merciful', 'Fears vulnerability from showing mercy'],
+          negative: ['Ruthless', 'Fears becoming heartless'],
+        },
+        asceticism_extravagance: {
+          positive: ['Ascetic', 'Fears poverty and scarcity'],
+          negative: ['Extravagant', 'Fears becoming selfish'],
+        },
+        honesty_cunning: {
+          positive: ['Honest', 'Fears having to deceive'],
+          negative: ['Cunning', 'Fears being outwitted'],
+        },
+        tradition_novelty: {
+          positive: ['Traditional', 'Fears the loss of the old ways'],
+          negative: ['Innovative', 'Fears stagnation'],
+        },
+        loyalty_ambition: {
+          positive: ['Loyal', 'Fears betrayal by those they trust'],
+          negative: ['Ambitious', 'Fears irrelevance and failure'],
+        },
+        revelation_discretion: {
+          positive: ['Revealing', 'Fears being kept blind by those they trust'],
+          negative: ['Discreet', 'Fears the harm their knowledge might cause'],
+        },
+        preservation_transformation: {
+          positive: ['Preserving', 'Fears all they have built crumbling to nothing'],
+          negative: ['Transforming', 'Fears being enslaved by what they cannot change'],
+        },
+        sacrifice_survival: {
+          positive: ['Self-Sacrificing', 'Fears abandonment by their cause'],
+          negative: ['Self-Preserving', 'Fears losing freedom'],
+        },
+        courage_prudence: {
+          positive: ['Courageous', 'Fears showing weakness'],
+          negative: ['Prudent', 'Fears reckless consequences'],
+        },
+      };
+
+      const expectedFears = Object.fromEntries(
+        Object.entries(REVIEWED).map(([pair, r]) => [pair, [r.positive[1], r.negative[1]]]),
+      );
+      const expectedLabels = Object.fromEntries(
+        Object.entries(REVIEWED).map(([pair, r]) => [pair, [r.positive[0], r.negative[0]]]),
+      );
+
+      expect(FEAR_DESCRIPTIONS).toEqual(expectedFears);
+      expect(VALUE_LABELS).toEqual(expectedLabels);
+    });
   });
 
   // ==========================================================================

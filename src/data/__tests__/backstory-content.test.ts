@@ -6,6 +6,7 @@
  * Design doc: Docs/plans/2026-03-17-tiered-backstory-generation-design.md
  */
 
+import { describe, test, expect } from 'vitest';
 import {
   SURFACE_ORIGIN_PROSE,
   SURFACE_SPHERE_PROSE,
@@ -277,6 +278,64 @@ describe('FEAR_PROSE', () => {
       expect(hasFear).toBe(true);
       expect(hasValue).toBe(true);
     });
+  });
+
+  // THR-1187 — reviewed pole manifest.
+  //
+  // Why this exists: `honesty_cunning_positive` and `_negative` shipped with each other's
+  // bodies, so the _positive key rendered {value} = "Honest" over four bodies about
+  // practising deception. Every structural test above passed on that arrangement — key
+  // coverage, density, placeholder presence and distinctness are all blind to which pole a
+  // body belongs to. Nothing in the suite could see it.
+  //
+  // Each entry is one distinctive fragment from a body a human read and assigned to that
+  // pole. A swap between two keys lands both fragments on the wrong key and fails both
+  // directions of the check below. The manifest is asserted to cover ALL_FEAR_KEYS, so a
+  // new value pair cannot be added without someone reading its bodies and choosing a
+  // fragment — which is the review this table exists to force.
+  const POLE_MANIFEST: Record<string, string> = {
+    courage_prudence_positive: 'volunteers first for every danger',
+    courage_prudence_negative: 'the lists, the contingencies, the plans within plans',
+    honesty_cunning_positive: 'watches the cunning prosper',
+    honesty_cunning_negative: 'keeps no journal, writes no letters',
+    sacrifice_survival_positive: 'the way a gardener tends a plant in drought',
+    sacrifice_survival_negative: 'leaves before being asked to stay',
+    loyalty_ambition_positive: 'small betrayals staged to see who notices',
+    loyalty_ambition_negative: 'never kept a promise longer than it was useful',
+    tradition_novelty_positive: 'tends rituals that no one else remembers',
+    tradition_novelty_negative: 'dismantles things that still work',
+    preservation_transformation_positive: 'Cannot leave a room without arranging it',
+    preservation_transformation_negative: 'speaks last in every council and sits nearest the door',
+    mercy_ruthlessness_positive: 'breaks things when alone',
+    mercy_ruthlessness_negative: 'what the calm is sitting on',
+    asceticism_extravagance_positive: 'coins, stores, alliances, debts owed',
+    asceticism_extravagance_negative: 'gives until it hurts and then gives past the hurting',
+    revelation_discretion_positive: 'in the conversations everyone else is avoiding',
+    revelation_discretion_negative: 'deflects every question that probes too close',
+  };
+
+  test('every fear key carries a reviewed pole-manifest entry', () => {
+    expect(Object.keys(POLE_MANIFEST).sort()).toEqual([...ALL_FEAR_KEYS].sort());
+  });
+
+  test('each reviewed fragment sits on its own pole and not on the opposite one', () => {
+    for (const [key, fragment] of Object.entries(POLE_MANIFEST)) {
+      const sibling = key.endsWith('_positive')
+        ? key.replace(/_positive$/, '_negative')
+        : key.replace(/_negative$/, '_positive');
+
+      expect(
+        FEAR_PROSE[key].some((t) => t.includes(fragment)),
+        `${key} should contain its reviewed fragment "${fragment}"`,
+      ).toBe(true);
+
+      // The half that catches a swap. It also proves the fragment discriminates at all —
+      // a fragment common to both poles would fail here rather than passing vacuously.
+      expect(
+        FEAR_PROSE[sibling].some((t) => t.includes(fragment)),
+        `${sibling} should NOT contain ${key}'s reviewed fragment "${fragment}"`,
+      ).toBe(false);
+    }
   });
 
   test('_positive and _negative variants exist for every value pair', () => {
