@@ -1,17 +1,17 @@
 # User Action Required
 
-**Last updated:** 2026-08-23 18:54 local (16:54 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-23 19:55 local (17:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
 ### 1. Finish the sitting — the verdict on two encounters — [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to)
 
-You played The Grateful Kin at 17:17, said the bond chip was wrong, and it is **already fixed and live** — filed 17:17, merged 18:35, deployed ([THR-1205](https://linear.app/threadbare/issue/THR-1205/bond-chip-renders-red-with-an-up-arrow-and-hides-its-effect-in-prose) · [PR #1584](https://github.com/christianspliid-ui/threadbare/pull/1584)). Reopen the encounter and the chip reads correctly.
+You played The Grateful Kin at 17:17, said the bond chip was wrong, and it is **already fixed and live** ([THR-1205](https://linear.app/threadbare/issue/THR-1205/bond-chip-renders-red-with-an-up-arrow-and-hides-its-effect-in-prose) · [PR #1584](https://github.com/christianspliid-ui/threadbare/pull/1584)). Reopen the encounter and the chip reads correctly. The verdict itself is still open.
 
 - **The Grateful Kin** — [play it](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin) · [good ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin&outcome=critical_success) · [bad ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin&outcome=critical_failure)
 - **The Unsafe Bridge** — [play it](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge) · [good ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge&outcome=critical_success) · [costly ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge&outcome=success_at_cost)
 
-**Are these two worth meeting a second time?** Yes releases batch 2 — the remaining nine of fifteen. No tells the line what the bar is still missing before nine more are written against it, exactly as the chip complaint just did. Waiting seven days; the build queue is now empty behind it.
+**Are these two worth meeting a second time?** Yes releases batch 2 — the remaining nine of fifteen. No tells the line what the bar is still missing before nine more are written against it, exactly as the chip complaint just did. Waiting seven days.
 
 ### 2. What is a run *about*? — [THR-1198](https://linear.app/threadbare/issue/THR-1198/the-48-authored-mandate-strings-are-wired-but-unreachable-no-live-game)
 
@@ -38,11 +38,11 @@ There is a finished, unused piece of sound design: on committing a nudge, roughl
 
 **Does committing feel better with that beat, or should the outcome land immediately?** Pure feel; no measurement settles it. Either answer closes the ticket — wired to the encounter veil, or retired with its constants and tests. Open seven days. Two lanes recommend **no**: unskippable on every commit turns tense into waiting, and the timings stay recoverable from history.
 
-### 5. A design hour — and this is the bottleneck
+### 5. More design hours — and this evening proved the point
 
-**Nothing unattended can refill the shelf. Only a session with you can.** Ready for Dev is at zero as of this evening, so this is no longer a forecast. In the order you set:
+**Nothing unattended can refill the shelf. Only a session with you can — and one just did.** Your reputation sitting ran 16:40 → 17:15 and produced a merged design plus two buildable jobs, the first program work to reach the board in six days. In the order you set:
 
-- **The three wave-1 sessions** you ruled on — shared machinery first, the hunger vocabulary second, [nations and named areas simulated rather than drawn](https://linear.app/threadbare/issue/THR-1155/nations-and-named-areas-are-rendered-not-simulated-promote-both-to) third. All three need you in a chat.
+- **The three wave-1 sessions** you ruled on — shared machinery first, the hunger vocabulary second, [nations and named areas simulated rather than drawn](https://linear.app/threadbare/issue/THR-1155/nations-and-named-areas-are-rendered-not-simulated-promote-both-to) third. Your own handoff puts the reputation build *after* the shared machinery, so that sitting now gates the most.
 - **[Unify the card grammar](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** — your 6 August note: action cards are too wordy, you cannot tell what they do, playing one gives no feedback, while encounter cards already read the way you wanted. Staged with its reading list gathered; holding the single design slot since 19 August.
 - **[Traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)** — in design and assigned to you for eight days, untouched. Either give it the hour or say *"put Traits wave 2 back in the pile."*
 
@@ -75,7 +75,6 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 - 2026-08-23: **mortal backstories no longer stutter** — [THR-1199](https://linear.app/threadbare/issue/THR-1199/fear-prose-renders-fear-as-the-whole-fear-description-producing-the) ([PR #1578](https://github.com/christianspliid-ui/threadbare/pull/1578)): every character's description read *"behind the Cunning they practice is the being outwitted of being outwitted"* — a whole phrase dropped into a slot meant for one word.
 - 2026-08-23: **character backstories no longer read backwards** — [THR-1187](https://linear.app/threadbare/issue/THR-1187/fear-strata-honesty-cunning-poles-read-inverted-the-positive-body) ([PR #1577](https://github.com/christianspliid-ui/threadbare/pull/1577)): an *Honest* mortal was described as fearing their deception would be exposed, and a *Cunning* one as embarrassingly bad at lying — the two descriptions sat in each other's slots.
 - 2026-08-22: **a stale-file check no longer fails forever over invisible line endings** — [THR-1192](https://linear.app/threadbare/issue/THR-1192/checkgenerated-freshness-byte-compares-disk-vs-blob-with-no-eol): a working copy written with Windows line endings failed the check permanently, blaming the wrong file and offering a fix that could not work.
-- 2026-08-22: **a generated file stopped looking changed when it was not** — [THR-714](https://linear.app/threadbare/issue/THR-714/strip-the-volatile-timestamp-from-ul-dashboardgeneratedjson): it carried the moment it was built, so rebuilding it always produced a difference.
 
 ---
 
