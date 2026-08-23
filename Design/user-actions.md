@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-23 10:05 local (08:05 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-23 10:55 local (08:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -13,7 +13,7 @@ Six encounters were rebuilt to the new bar. Two are waiting on your eyes, live o
 
 **What changed since you last played these**, from your own three findings: the bond chip names the mechanic and both ends, and clicking it opens the person who actually owes the favour rather than you; fifteen chips reporting a number you can never see are retired, and the rule forbidding them is now an enforced gate; the writing was re-passed to your density note — one named person on stage, props only where you can act on them.
 
-**Are these two worth meeting a second time?** A yes releases batch 2 — the remaining nine of fifteen. A no tells the line what the bar is still missing before nine more are written against it. Waiting seven days, and with the board still empty this is the largest single release available.
+**Are these two worth meeting a second time?** A yes releases batch 2 — the remaining nine of fifteen. A no tells the line what the bar is still missing before nine more are written against it. Waiting seven days; the largest single release available.
 
 ### 2. What is a run *about*? — [THR-1198](https://linear.app/threadbare/issue/THR-1198/the-48-authored-mandate-strings-are-wired-but-unreachable-no-live-game)
 
@@ -24,7 +24,7 @@ Forty-eight authored lines narrate the campaign's milestones — a stage advanci
 - **Remembrance** — write the milestone prose for the twelve hungers instead. The existing forty-eight lines stay unread.
 - **Named campaigns** — give the twelve authored mandates a route back into play. That changes how a run's purpose is *chosen*, not just what it reads like.
 
-Nothing is blocked while you decide, and either answer is immediately buildable — the cheapest thing on this list to put work back on the shelf. If you rule out the second, the unused machinery gets retired rather than left as a passing test on a dead path.
+Nothing is blocked while you decide, and either answer is immediately buildable — the cheapest thing on this list to put work back on the shelf.
 
 ### 3. Ten minutes to shape one encounter — [THR-1182](https://linear.app/threadbare/issue/THR-1182/the-grateful-kins-standing-welcome-has-no-return-visit-author-the)
 
@@ -40,8 +40,6 @@ There is a finished, unused piece of sound design: when you commit to a nudge, r
 
 **Does committing feel better with that beat, or should the outcome land immediately?** Pure feel, no measurement settles it. Either answer closes the ticket — wired to the encounter veil, or retired with its constants and tests. Open since Monday, now seven days. Two lanes recommend **no**: unskippable on every commit turns tense into waiting, and the timings stay recoverable from history.
 
-This is now a single question. The ticket originally held two sounds; the second — a small cue on each consequence chip — was retired on its own merits, because the vocabulary it was keyed to no longer exists.
-
 ### 5. A design hour — and this is the bottleneck
 
 **Nothing unattended can refill the shelf. Only a session with you can.** In the order you set:
@@ -56,7 +54,7 @@ Behind these whenever you want them: [the anchor prototype](https://linear.app/t
 
 One `npm run dev` and a browser at 1920×1080: nine surfaces, at least 19 screenshots. Every one is a shipped UI change that carries test-level proof but no picture, because a scheduled run is refused a dev server and so structurally cannot capture one.
 
-**Parked off the shelf on 22 August** — the builder lane recognised it cannot be discharged without you and moved it aside rather than leaving it as phantom depth. That is why the board now reads zero: this was the last item on it.
+**Parked off the shelf on 22 August** — the builder lane recognised it cannot be discharged without you and moved it aside rather than leaving it as phantom depth.
 
 It keeps growing as more UI work ships behind the same wall. This replaces four separate tickets (THR-1109, THR-1125, THR-1126, THR-1127), consolidated 2026-08-16 — a merge, not a prune. If you only get through part of it, say which, and the remainder is re-expanded rather than closed whole.
 
@@ -72,16 +70,16 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
+- 2026-08-23: **character backstories no longer read backwards** — [THR-1187](https://linear.app/threadbare/issue/THR-1187/fear-strata-honesty-cunning-poles-read-inverted-the-positive-body) ([PR #1577](https://github.com/christianspliid-ui/threadbare/pull/1577)): an *Honest* mortal was described as fearing their deception would be exposed, and a *Cunning* one as embarrassingly bad at lying — the two descriptions sat in each other's slots. Idea to deployed in 70 minutes with nothing asked of you.
 - 2026-08-22: **a stale-file check no longer fails forever over invisible line endings** — [THR-1192](https://linear.app/threadbare/issue/THR-1192/checkgenerated-freshness-byte-compares-disk-vs-blob-with-no-eol): a working copy written with Windows line endings failed the check permanently, blaming the wrong file and offering a fix that could not work.
 - 2026-08-22: **a generated file stopped looking changed when it was not** — [THR-714](https://linear.app/threadbare/issue/THR-714/strip-the-volatile-timestamp-from-ul-dashboardgeneratedjson): it carried the moment it was built, so rebuilding it always produced a difference.
-- 2026-08-22: **a two-minute Linear setting you were going to be asked about does not exist** — [THR-1190](https://linear.app/threadbare/issue/THR-1190/the-park-decay-remedy-is-a-christian-owned-linear-setting-with-no): finished tickets kept going quietly invisible on your page, and the remedy was assumed to be a switch only you could flip. Every workspace control that could cause it was read directly — all already set the way we want. GitHub's own integration re-assigns the ticket whenever a pull request names its number, which no setting here governs. The fix is a writing rule the lanes follow. This left your list without ever reaching it.
-- 2026-08-22: **a divine spark now records when it happened** — [THR-1196](https://linear.app/threadbare/issue/THR-1196/hexspark-encounter-writes-an-occurred-at-edge-without-the-tick-its) ([PR #1573](https://github.com/christianspliid-ui/threadbare/pull/1573)): sparking an encounter onto a hex left a mark in the world's history with no date on it — the record existed but could never be placed in time. It carries its tick now.
-- 2026-08-22: **the campaign's spine narrates from its own writing** — [THR-1197](https://linear.app/threadbare/issue/THR-1197/wire-the-48-authored-mandate-milestone-prose-strings-into-stage): forty-eight authored milestone lines were read by nothing; stage advances, completions and failures now speak them. Filed, built and deployed inside three hours of your wave-1 ruling. Its own honest limit became ask 2 above.
+- 2026-08-22: **a two-minute Linear setting you were going to be asked about does not exist** — [THR-1190](https://linear.app/threadbare/issue/THR-1190/the-park-decay-remedy-is-a-christian-owned-linear-setting-with-no): finished tickets kept going quietly invisible on your page, and the remedy was assumed to be a switch only you could flip. Every workspace control was read directly — all already set the way we want; the fix is a writing rule the lanes follow. This left your list without ever reaching it.
+- 2026-08-22: **a divine spark now records when it happened** — [THR-1196](https://linear.app/threadbare/issue/THR-1196/hexspark-encounter-writes-an-occurred-at-edge-without-the-tick-its) ([PR #1573](https://github.com/christianspliid-ui/threadbare/pull/1573)): sparking an encounter onto a hex left a mark in the world's history with no date on it — the record existed but could never be placed in time.
+- 2026-08-22: **the campaign's spine narrates from its own writing** — [THR-1197](https://linear.app/threadbare/issue/THR-1197/wire-the-48-authored-mandate-milestone-prose-strings-into-stage): forty-eight authored milestone lines were read by nothing; stage advances, completions and failures now speak them. Built and deployed inside three hours of your wave-1 ruling. Its own honest limit became ask 2 above.
 - 2026-08-22: **two divine actions that forged an artifact for nobody now hand it over** — [THR-1194](https://linear.app/threadbare/issue/THR-1194/hexforge-seer-token-and-hexforge-instrument-bind-their-artifact-with) ([PR #1571](https://github.com/christianspliid-ui/threadbare/pull/1571)): forging a seer's token and forging an instrument each reported success and gave the item to no one.
-- 2026-08-22: **you ruled the wave-1 slate and unfroze the design program** — [THR-1163](https://linear.app/threadbare/issue/THR-1163/wave-1-selection-which-seams-make-the-first-wave-in-what-order-under): shared machinery first, hunger vocabulary second, the widened region identity third; three plan docs rather than six; mandate prose wired rather than deleted. Five days as the top ask, closed live in chat.
+- 2026-08-22: **you ruled the wave-1 slate and unfroze the design program** — [THR-1163](https://linear.app/threadbare/issue/THR-1163/wave-1-selection-which-seams-make-the-first-wave-in-what-order-under): shared machinery first, hunger vocabulary second, the widened region identity third; three plan docs rather than six. Five days as the top ask, closed live in chat.
 - 2026-08-22: **a stale-file check stopped failing pull requests for the wrong reason** — [THR-1191](https://linear.app/threadbare/issue/THR-1191/checkwiki-freshnessblocking-diffs-two-dot-so-mains-own-advance-fails) ([PR #1570](https://github.com/christianspliid-ui/threadbare/pull/1570)): the gate blamed a branch for changes that had landed on main behind it. Now it looks only at the branch's own work.
 - 2026-08-22: **a restored fragment of the world is now a real place** — [THR-1193](https://linear.app/threadbare/issue/THR-1193/hexrestore-fragment-mints-a-sublocation-node-with-no-parent-a-tier) ([PR #1569](https://github.com/christianspliid-ui/threadbare/pull/1569)): mending a broken piece of the map used to build a room with no building around it and no address. It now belongs somewhere.
-- 2026-08-22: **a consecrated route now buys the pilgrimage it promised** — [THR-1184](https://linear.app/threadbare/issue/THR-1184/sacred-route-is-registered-but-has-zero-consumers-an-eight-tick) ([PR #1568](https://github.com/christianspliid-ui/threadbare/pull/1568)): the game knew what a sacred route was and nothing in it could ever use one. It can now.
 
 ---
 

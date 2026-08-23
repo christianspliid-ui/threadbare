@@ -1,11 +1,11 @@
 # Briefing
-**Generated:** 2026-08-23 10:05 local (08:05 UTC) · keep-work-flowing-cc
+**Generated:** 2026-08-23 10:55 local (08:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
 **Play two encounters and say whether they are worth meeting twice** — [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to)
 
-Unchanged from the 09:25 brief, and still the largest release available. Two rebuilt encounters are live on the deployed build, one click each:
+Unchanged, and still the largest release available. Two rebuilt encounters are live on the deployed build, one click each:
 
 - **The Grateful Kin** — [play it](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin) · [good ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin&outcome=critical_success) · [bad ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin&outcome=critical_failure)
 - **The Unsafe Bridge** — [play it](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge) · [good ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge&outcome=critical_success) · [costly ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge&outcome=success_at_cost)
@@ -28,16 +28,15 @@ These are the two you played and criticised, with your three findings addressed:
 
 ## Queue
 
-**The board is off zero — one job on the shelf, and the builders can start it without you.**
+**The pipeline ran a full lap on its own this morning — and it is the first one in about a week.**
 
-- **[THR-1187](https://linear.app/threadbare/issue/THR-1187/fear-strata-honesty-cunning-poles-read-inverted-the-positive-body) — character backstory that reads backwards.** A mortal described as *Honest* is written as living in fear their deception will be discovered; a *Cunning* one is written as embarrassingly bad at lying. The two descriptions were put in each other's slots and have been showing that way to players. It needs no ruling from you, so it went straight to the shelf and the next builder run can take it.
-- **Worth knowing why it took four days to surface.** It was filed in a board column the hourly sweep never read. That is fixed going forward, and the wider sweep also found a second ticket already fixed and never closed. Several recent "nothing to promote" reports were partly blindness rather than an empty cupboard — a lane correction, nothing for you.
+- **A repair went from idea to live in 70 minutes, untouched by you.** [THR-1187](https://linear.app/threadbare/issue/THR-1187/fear-strata-honesty-cunning-poles-read-inverted-the-positive-body) — the character backstories that read backwards, where an *Honest* mortal was described as living in fear their deception would be exposed — was picked up at 09:31, built, merged and closed at 10:41, and the live site is already serving it. Nobody asked you anything to make that happen.
+- **One job on the shelf, and the builders can start it without you.** [THR-1199](https://linear.app/threadbare/issue/THR-1199/fear-prose-renders-fear-as-the-whole-fear-description-producing-the) — found *while* fixing the one above, in the same table. Every mortal's backstory currently renders a broken sentence: *"behind the Cunning they practice is the **being outwitted of being outwitted**"*. It affects all eighteen variations, so essentially every character a player reads. It needs no ruling from you; the next builder run takes it.
 - **Three parks still held correctly** — `In Dev`, unassigned, carrying the label that stops the automatic sweep from releasing them and hiding their questions.
-- **One small ticket is not a refilled shelf.** Everything substantial still needs a decision from you, and there are six of those above.
+- **Two small repairs are not a refilled shelf.** Both of this morning's tickets were faults found inside other work, not new work anybody planned. Everything substantial still needs a decision from you, and there are six of those above.
 
 ## Health
 
-Live site current, automated checks normal, both background jobs on schedule, no pull request waiting, all nine scheduled lanes on time, your local copy clean and current.
+All green. Live site current, automated checks normal, both background jobs on schedule, no pull request waiting, all nine scheduled lanes on time, your local copy clean and current.
 
-- **The 35-hour quiet from Thursday evening to Saturday morning was the computer being off, not a fault — no action from you.** Already verified twice against a completely separate scheduler that shows the same window dark. The silence probe keeps re-reporting it because it cannot see a powered-down machine. Recorded, not asked.
-- **Both alarms from the 09:25 brief have cleared on their own** — the lane that looked eleven slots behind has run, and the schedule check is green across all nine lanes. Nothing was done to them; they were the same overnight sleep.
+- **The 35-hour quiet from Thursday evening to Saturday morning was the computer being off, not a fault — no action from you.** Already verified twice against a separate scheduler showing the same window dark. The silence probe keeps re-reporting it because it cannot see a powered-down machine. Recorded, not asked.
