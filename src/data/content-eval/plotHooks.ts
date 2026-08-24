@@ -615,7 +615,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['protection', 'conflict'],
     reaches: ['iron', 'heart'],
     source: 'vault: Archetypes/Ordeal — Defense of the Innocent',
-    usedBy: [],
+    usedBy: ['encounter.border.standing_the_line'],
   },
   {
     id: 'hook.impossible_choice',
