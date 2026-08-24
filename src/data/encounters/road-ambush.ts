@@ -175,6 +175,16 @@ const step1Branch: ActionStepBranch = {
 
 // ─── Aftermath Config ────────────────────────────────────────────
 
+// THR-1208 — the real writes behind the standing chips below. Under THR-1206 a
+// chip that says reputation must be backed by a reputation write; these are the
+// `reputation_with` deltas (god ↔ named cast member) that back the three chips
+// whose fiction genuinely is pairwise standing. Duplicated across both reactions
+// of a band because the feeling comes from the rescue itself, not from which
+// thread the god keeps afterward. Capped at REPUTATION_WITH_MAX_DELTA_PER_OUTCOME.
+const ROAD_AMBUSH_SORAYA_GRATITUDE_DELTA = 0.08;
+const ROAD_AMBUSH_SORAYA_WARINESS_DELTA = -0.04;
+const ROAD_AMBUSH_DRAGAN_RESENTMENT_DELTA = -0.05;
+
 const SHIELD_ROAD_AFTERMATH = {
   overview:
     'The caravan reformed slowly, the way hurt things reconstitute when the threat passes. {cast:soraya} climbed down from the third wagon and walked to the front of the line, stepping over the felled oak without looking at it, and knelt beside her driver. The bolt was deep but clean -- the bone was intact, the joint still moved, and the bleeding had slowed to a seep that said survival rather than crisis. She pressed a folded cloth against the wound and told him to hold it there and not to be brave about the pain. Then she stood and looked down the road where the bandits had disappeared, and her face held the expression of someone who had been afraid and was now angry and did not yet know which feeling would win.\n\nThe waymarker stones stood in the afternoon light with the patience of objects that have outlasted every ambush, every war, every season of neglect. The road was quiet. A split sack of grain leaked a thin trail of barley into the wheel ruts, and sparrows were already landing to feed. The violence was over. What it had meant -- whether the road was safer now or only empty -- remained an open question that the settlements on either end of this stretch would answer in the coming weeks by whether they sent their wagons or kept them home.',
@@ -183,12 +193,12 @@ const SHIELD_ROAD_AFTERMATH = {
       id: 'shield_soraya_grateful',
       kind: 'reputation' as const,
       title: '{cast:soraya}',
-      detail: 'Alive, grateful. Disposition toward the god: positive and specific. She may become a trade contact along the route.',
+      detail: 'Alive, grateful — and her regard for whatever held the road is positive and specific. She may become a trade contact along the route.',
       polarity: 'gain' as const,
     },
     {
       id: 'shield_driver_surviving',
-      kind: 'reputation' as const,
+      kind: 'shell_state' as const,
       title: 'Lead Driver',
       detail: 'Wounded but surviving. The scar is a story the caravan will tell.',
       polarity: 'mixed' as const,
@@ -197,7 +207,7 @@ const SHIELD_ROAD_AFTERMATH = {
       id: 'shield_dragan_retreated',
       kind: 'reputation' as const,
       title: '{cast:dragan}',
-      detail: 'Retreated, diminished. He knows something intervened, though he cannot name it. Disposition: wary resentment.',
+      detail: 'Retreated, diminished. He knows something intervened, though he cannot name it — and what he holds toward it is wary resentment.',
       polarity: 'mixed' as const,
     },
     {
@@ -231,6 +241,17 @@ const SHIELD_ROAD_AFTERMATH = {
           message: 'Merchants along the route hear that the ambush at the waymarker stones failed. Trade traffic may recover.',
           significance: 0.4,
         },
+        // THR-1208 — the writes behind the two standing chips of this band.
+        {
+          kind: 'reputation_with' as const,
+          targetAgentId: '$cast:soraya',
+          delta: ROAD_AMBUSH_SORAYA_GRATITUDE_DELTA,
+        },
+        {
+          kind: 'reputation_with' as const,
+          targetAgentId: '$cast:dragan',
+          delta: ROAD_AMBUSH_DRAGAN_RESENTMENT_DELTA,
+        },
       ],
       closeAfterSelection: true,
     },
@@ -245,6 +266,18 @@ const SHIELD_ROAD_AFTERMATH = {
           severity: 0.4,
           label: 'Merchant marked for divine favor — trade intelligence thread',
           revealFamilies: ['liminal.quest', 'trade'],
+        },
+        // THR-1208 — same standing writes as the other reaction: the gratitude and
+        // the resentment come from the rescue itself, not from the god's pick here.
+        {
+          kind: 'reputation_with' as const,
+          targetAgentId: '$cast:soraya',
+          delta: ROAD_AMBUSH_SORAYA_GRATITUDE_DELTA,
+        },
+        {
+          kind: 'reputation_with' as const,
+          targetAgentId: '$cast:dragan',
+          delta: ROAD_AMBUSH_DRAGAN_RESENTMENT_DELTA,
         },
       ],
       closeAfterSelection: true,
@@ -261,14 +294,14 @@ const TURN_CHAOS_AFTERMATH = {
       id: 'chaos_soraya_unsettled',
       kind: 'reputation' as const,
       title: '{cast:soraya}',
-      detail: 'Alive, unsettled. Disposition: wary, not grateful. She survived but was not protected. She will trade along this road again but trust is not part of the transaction.',
+      detail: 'Alive, unsettled — wary, not grateful. She survived but was not protected, and she knows the difference. She will trade along this road again but trust is not part of the transaction.',
       polarity: 'mixed' as const,
     },
     {
       id: 'chaos_dragan_touched',
-      kind: 'reputation' as const,
+      kind: 'shell_state' as const,
       title: '{cast:dragan}',
-      detail: 'Withdrawn with a thread of divine attention. Disposition: confused, vulnerable, susceptible. Potential divine asset, unformed.',
+      detail: 'Withdrawn with a thread of divine attention still on him. Confused, vulnerable, susceptible — a potential divine asset, unformed.',
       polarity: 'mixed' as const,
     },
     {
@@ -298,6 +331,12 @@ const TURN_CHAOS_AFTERMATH = {
           message: 'The thread to {cast:dragan} is released. Whatever door opened in his mind closes quietly behind him.',
           significance: 0.3,
         },
+        // THR-1208 — the write behind the standing chip: survived, not protected.
+        {
+          kind: 'reputation_with' as const,
+          targetAgentId: '$cast:soraya',
+          delta: ROAD_AMBUSH_SORAYA_WARINESS_DELTA,
+        },
       ],
       closeAfterSelection: true,
     },
@@ -312,6 +351,13 @@ const TURN_CHAOS_AFTERMATH = {
           severity: 0.5,
           label: '{cast:dragan} — potential divine asset, thread maintained',
           revealFamilies: ['liminal.quest', 'road', 'iron'],
+        },
+        // THR-1208 — same standing write as the other reaction: her wariness comes
+        // from the ambush, not from what the god does with the bandit captain.
+        {
+          kind: 'reputation_with' as const,
+          targetAgentId: '$cast:soraya',
+          delta: ROAD_AMBUSH_SORAYA_WARINESS_DELTA,
         },
       ],
       closeAfterSelection: true,
