@@ -27,6 +27,11 @@ import type {
 } from '../../../types/unifiedAction';
 import { isActionStepBranch } from '../../../types/unifiedAction';
 import {
+  SLICE_KIN_WELCOME_DELTA,
+  SLICE_KIN_WELCOME_DELTA_FUMBLED,
+  SLICE_KIN_WELCOME_DELTA_WARM,
+  SLICE_TABLE_DELAY_TICKS,
+  SLICE_TABLE_GATE_BAND,
   SLICE_TEMPLATE_IDS,
   VERTICAL_SLICE_TEMPLATES,
 } from '../vertical-slice';
@@ -39,6 +44,16 @@ import {
   NATURAL_INDEFINITE_TERMS,
 } from '../../content-eval/nudgeAuditDetectors';
 import { validateNudgeGrantRefs, formatDeadNudgeGrantRefs } from '../../../engine/nudgeGrantLiveness';
+import { WorldGraph } from '../../../engine/graph';
+import {
+  applyReputationWithDelta,
+  decayReputationWithEdges,
+  getReputationWith,
+  meetsReputationWithRequirement,
+  REPUTATION_WITH_DECAY_PER_TICK,
+  REPUTATION_WITH_DEFAULT,
+  REPUTATION_WITH_PRUNE_EPSILON,
+} from '../../../engine/reputation';
 
 /**
  * The typed change vocabulary, exhaustively.
@@ -136,6 +151,9 @@ describe('vertical slice — the Seeded Sequel rule', () => {
       SLICE_TEMPLATE_IDS.fullMoon,
       SLICE_TEMPLATE_IDS.swindlerFound,
       SLICE_TEMPLATE_IDS.gratefulKin,
+      // THR-1182 — the Kin's own sequel. Its parent is itself a sequel, so this
+      // is the first two-deep chain in the slice.
+      SLICE_TEMPLATE_IDS.tableThatHolds,
     ]) {
       expect(seeded.has(sequelId), `sequel ${sequelId} is planted by no parent`).toBe(true);
     }
@@ -160,8 +178,9 @@ describe('vertical slice — agent-decided forks (THR-894)', () => {
       .map((b) => [t.name, t, b] as const),
   );
 
-  it('the slice designs three agent-decided forks', () => {
-    expect(forked.length).toBe(3);
+  // THR-1182 added the fourth: The Table That Holds forks on courage_prudence.
+  it('the slice designs four agent-decided forks', () => {
+    expect(forked.length).toBe(4);
   });
 
   it.each(forked)('%s keys its variants on exactly the two poles', (_name, _t, branch) => {
@@ -517,7 +536,7 @@ describe('vertical slice — a declared attachment grant is the one its band wri
 });
 
 describe('vertical slice — registration', () => {
-  it('all eight templates are in the live pool', () => {
+  it('all nine templates are in the live pool', () => {
     const poolIds = new Set(UNIFIED_ACTION_TEMPLATES.map((t) => t.id));
     for (const id of Object.values(SLICE_TEMPLATE_IDS)) {
       expect(poolIds.has(id), `${id} is not registered`).toBe(true);
@@ -590,5 +609,141 @@ describe('vertical slice — the bridge PATH chip stays folded (THR-1153)', () =
     expect(kinds, 'the ford intelligence record left with the chip it backed').not.toContain(
       'intelligence',
     );
+  });
+});
+
+/**
+ * THR-1182 — The Table That Holds: the gate rejects, and the seed ripens in time.
+ *
+ * Two Done-whens, and both are written to be falsifiable rather than decorative.
+ *
+ * The gate half asserts **both polarities**, because a gate that never rejects
+ * is not a gate — and on this particular gate that is a live hazard rather than
+ * a slogan. `REPUTATION_WITH_DEFAULT` is 0.5, which `getReputationWord` bands as
+ * `Accepted`, so the obvious-looking `{ atLeast: 'Accepted' }` is satisfied by
+ * every stranger who has never been to the place. The third assertion below
+ * pins exactly that: it shows the vacuous band passing at the town with no
+ * standing, which is what makes the second assertion evidence about the band
+ * this template chose rather than about reputation in general.
+ *
+ * The timing half drives the real decay phase rather than re-deriving its
+ * arithmetic in the test. Literals are asserted on both sides on purpose (the
+ * constant-as-fixture tautology): `12` and `20` are written out, so a change to
+ * `REPUTATION_WITH_DECAY_PER_TICK`, `REPUTATION_WITH_PRUNE_EPSILON` or any Kin
+ * delta breaks this loudly instead of silently stranding the sequel behind a
+ * welcome that has already faded.
+ */
+describe('vertical slice — The Table That Holds (THR-1182)', () => {
+  const HERO = 'agent.hero';
+  const WELCOMING_TOWN = 'loc.welcoming';
+  const STRANGE_TOWN = 'loc.strange';
+
+  function worldWithTowns(): WorldGraph {
+    const graph = new WorldGraph();
+    graph.addNode({
+      id: HERO, type: 'actor', name: 'Hero', properties: { actorType: 'individual' },
+    });
+    for (const id of [WELCOMING_TOWN, STRANGE_TOWN]) {
+      graph.addNode({
+        id, type: 'location', name: id, properties: { locationSubtype: 'hamlet' },
+      });
+    }
+    return graph;
+  }
+
+  const table = VERTICAL_SLICE_TEMPLATES.find(
+    (t) => t.id === SLICE_TEMPLATE_IDS.tableThatHolds,
+  )!;
+
+  it('gates on a reputation band, not on the retired standing-welcome condition', () => {
+    // THR-1206 left `trait.condition.location.standing_welcome` with zero
+    // writers, so a `requiredTargetTraits` gate naming it would be a dead gate.
+    expect(table.requiredReputationWith?.atLeast).toBe(SLICE_TABLE_GATE_BAND);
+    expect(table.requiredTargetTraits ?? []).not.toContain(
+      'trait.condition.location.standing_welcome',
+    );
+  });
+
+  it('opens where the welcome was earned and refuses where it was not', () => {
+    const graph = worldWithTowns();
+    // The warm band is the one that reaches `Respected` (0.5 + 0.12 = 0.62).
+    applyReputationWithDelta(graph, HERO, WELCOMING_TOWN, SLICE_KIN_WELCOME_DELTA_WARM, 0, 'test');
+
+    expect(
+      meetsReputationWithRequirement(graph, HERO, WELCOMING_TOWN, SLICE_TABLE_GATE_BAND),
+      'the town that kept a door open does not open the scene',
+    ).toBe(true);
+
+    expect(
+      meetsReputationWithRequirement(graph, HERO, STRANGE_TOWN, SLICE_TABLE_GATE_BAND),
+      'a town the traveler has never helped still opens the scene — the gate never rejects',
+    ).toBe(false);
+
+    // Anti-vacuity: the refusal above is a property of the band this template
+    // picked, not of the machinery. At the neutral default, `Accepted` passes.
+    expect(getReputationWith(graph, HERO, STRANGE_TOWN).band).toBe('Accepted');
+    expect(meetsReputationWithRequirement(graph, HERO, STRANGE_TOWN, 'Accepted')).toBe(true);
+  });
+
+  it('is planted from all three Grateful Kin bands, at one delay', () => {
+    const kin = VERTICAL_SLICE_TEMPLATES.find((t) => t.id === SLICE_TEMPLATE_IDS.gratefulKin)!;
+    const seeds = allAftermathEffects(kin).filter(
+      (e): e is Extract<EncounterAftermathReactionEffect, { kind: 'encounter_seed' }> =>
+        e.kind === 'encounter_seed' && e.templateId === SLICE_TEMPLATE_IDS.tableThatHolds,
+    );
+    // Base reaction (the plain welcome) plus the two crit bands, which replace
+    // `reactions` wholesale and so must restate the seed.
+    expect(seeds.length).toBe(3);
+    for (const seed of seeds) {
+      expect(seed.delayTicks).toBe(SLICE_TABLE_DELAY_TICKS);
+      // Without this the sequel would fire at a town-shaped place rather than
+      // at the town whose regard the same reaction just moved.
+      expect(seed.inheritContext).toBe(true);
+    }
+  });
+
+  it('ripens while every band that planted it still has a welcome to call in', () => {
+    // Literal on both sides — a constant read into its own expectation proves
+    // nothing (the tautology this project keeps re-learning).
+    expect(SLICE_TABLE_DELAY_TICKS).toBe(12);
+
+    const fumbledWindow =
+      (SLICE_KIN_WELCOME_DELTA_FUMBLED - REPUTATION_WITH_PRUNE_EPSILON)
+      / REPUTATION_WITH_DECAY_PER_TICK;
+    expect(Math.round(fumbledWindow)).toBe(20);
+    expect(SLICE_TABLE_DELAY_TICKS).toBeLessThan(fumbledWindow);
+
+    // Not arithmetic — the real decay phase, run for the seed's own delay.
+    for (const [label, delta] of [
+      ['warm', SLICE_KIN_WELCOME_DELTA_WARM],
+      ['normal', SLICE_KIN_WELCOME_DELTA],
+      ['fumbled', SLICE_KIN_WELCOME_DELTA_FUMBLED],
+    ] as const) {
+      const graph = worldWithTowns();
+      applyReputationWithDelta(graph, HERO, WELCOMING_TOWN, delta, 0, 'test');
+      for (let tick = 1; tick <= SLICE_TABLE_DELAY_TICKS; tick++) {
+        decayReputationWithEdges(graph, tick);
+      }
+      const reading = getReputationWith(graph, HERO, WELCOMING_TOWN);
+      expect(
+        reading.source,
+        `the ${label} band's welcome is already gone when its own seed ripens`,
+      ).toBe('edge');
+      expect(reading.score).toBeGreaterThan(REPUTATION_WITH_DEFAULT);
+    }
+  });
+
+  it('still clears its own gate off the warm band when the seed ripens', () => {
+    // The seeded path bypasses the filter (a `templateId` seed spawns directly),
+    // so this is not what makes the sequel arrive. It is what keeps the seeded
+    // and organic paths telling the player the same story about the same town.
+    const graph = worldWithTowns();
+    applyReputationWithDelta(graph, HERO, WELCOMING_TOWN, SLICE_KIN_WELCOME_DELTA_WARM, 0, 'test');
+    for (let tick = 1; tick <= SLICE_TABLE_DELAY_TICKS; tick++) {
+      decayReputationWithEdges(graph, tick);
+    }
+    expect(
+      meetsReputationWithRequirement(graph, HERO, WELCOMING_TOWN, SLICE_TABLE_GATE_BAND),
+    ).toBe(true);
   });
 });

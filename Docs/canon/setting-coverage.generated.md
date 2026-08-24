@@ -13,10 +13,10 @@ document fails a build. A thin cell is a scene not yet written.
 
 | | count |
 |---|---:|
-| templates in the pool | 687 |
-| drawable at ≥1 location subtype | 453 |
+| templates in the pool | 688 |
+| drawable at ≥1 location subtype | 454 |
 | drawable but at no *authorable* subtype | 22 |
-| declaring a setting envelope | 13 |
+| declaring a setting envelope | 14 |
 
 The third row counts templates placed only at worldgen overlay subtypes (wonders,
 lairs, anomalies) that no setting class claims — see the scope note on
@@ -31,8 +31,8 @@ be dealt?", not "how many templates exist".
 
 | setting | iron | gold | shadow | veil | heart | eye | stone | star | **total** |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| `rural` | 27 | 19 | 10 | 4 | 17 | 13 | 13 | 7 | **110** |
-| `urban` | 49 | 49 | 43 | 17 | 40 | 48 | 24 | 24 | **294** |
+| `rural` | 27 | 19 | 10 | 4 | 18 | 13 | 13 | 7 | **111** |
+| `urban` | 49 | 49 | 43 | 17 | 41 | 48 | 24 | 24 | **295** |
 | `stronghold` | 25 | 6 | 8 | 4 | 12 | 16 | 7 | 5 | **83** |
 | `sacred` | 8 | 9 | 3 | 17 | 12 | 9 | 6 | 23 | **87** |
 | `arcane` | 6 | 5 | 6 | 20 | 7 | 28 | 5 | 11 | **88** |
@@ -57,7 +57,7 @@ more, else the first). That is a proxy for authorial grouping, not a curated tax
 | family | carded templates | cards | composition |
 |---|---:|---:|---|
 | `encounter` | 7 | 85 | push 15, rider 0, sphere 60, trait 10, free 0 |
-| `encounter.slice` | 8 | 50 | push 10, rider 3, sphere 37, trait 0, free 0 |
+| `encounter.slice` | 9 | 56 | push 11, rider 3, sphere 42, trait 0, free 0 |
 | `encounter.company` | 4 | 20 | push 4, rider 0, sphere 16, trait 0, free 0 |
 | `cg.quest` | 1 | 9 | push 6, rider 0, sphere 0, trait 0, free 3 |
 | `encounter.apotheosis` | 1 | 7 | push 1, rider 1, sphere 5, trait 0, free 0 |
@@ -65,5 +65,5 @@ more, else the first). That is a proxy for authorial grouping, not a curated tax
 **Hand monotony (advisory)** — one card kind dominates:
 
 - `encounter` — 71% `sphere` across 85 cards
-- `encounter.slice` — 74% `sphere` across 50 cards
+- `encounter.slice` — 75% `sphere` across 56 cards
 - `encounter.company` — 80% `sphere` across 20 cards
