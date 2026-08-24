@@ -21,6 +21,7 @@ import type { WorldGraph } from './graph';
 import type { GraphNode } from '../types/graph';
 import type { SecretType, SecretSource, KnowsSecretOfEdgeProperties } from '../types/secretsFavors';
 import { MAX_SECRETS_PER_AGENT, MAX_FAVORS_PER_AGENT } from '../types/secretsFavors';
+import { getReputationWith, REPUTATION_WITH_DEFAULT } from './reputation';
 import { emitTrace } from './traceBuffer';
 
 // ─── Score thresholds ─────────────────────────────────────────────────────
@@ -177,12 +178,26 @@ function buildCandidates(agent: GraphNode, graph: WorldGraph): Candidate[] {
   }
 
   // ─── past_crime ─────────────────────────────────────────────────────────
-  // Agent has a negative reputation with a neutral or allied faction
+  // Agent stands poorly with a party that is not one of their own factions.
+  //
+  // THR-1211 item 1: this branch could never fire. It read
+  // `relates_to.properties.reputation`, and nothing writes that property — the
+  // `relates_to` edge carries `sentiment`, `strength`, `basis`, and `trust`
+  // (`RelatesToEdgeProperties`, and the `EDGE_SCHEMA` description says the same).
+  // So `rep` was always `?? 0`, `0 < 0` is false, and no agent has ever been dealt a
+  // `past_crime` secret since the read was written. Verified on the assignment side,
+  // not the read side, per the standing trap.
+  //
+  // Pointed at `getReputationWith`, which is what the branch was reaching for: the one
+  // social score between two parties (THR-1206). It returns the neutral default when
+  // nothing covers the pair, so an agent with no standing anywhere still does not
+  // qualify — the branch stays selective rather than becoming always-true.
   const memberFactionIds = memberEdges.map(e => e.target);
-  const reputationEdges = graph.getOutgoingEdges(agentId, 'relates_to');
-  for (const edge of reputationEdges) {
-    const rep = (edge.properties.reputation as number) ?? 0;
-    if (rep < 0 && !memberFactionIds.includes(edge.target)) {
+  const relationEdges = graph.getOutgoingEdges(agentId, 'relates_to');
+  for (const edge of relationEdges) {
+    if (memberFactionIds.includes(edge.target)) continue;
+    const standing = getReputationWith(graph, agentId, edge.target);
+    if (standing.score < REPUTATION_WITH_DEFAULT) {
       candidates.push({
         secretType: 'past_crime',
         baseMagnitude: 0.50,

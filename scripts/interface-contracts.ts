@@ -131,6 +131,9 @@ export const CONTRACTS: readonly Contract[] = [
       'src/engine/targetActions.ts',
       'src/engine/encounterFilterPipeline.ts',
       'src/engine/socialLeverage.ts',
+      // THR-1211: the `past_crime` secret branch, which used to read a
+      // `relates_to.properties.reputation` that nothing writes.
+      'src/engine/secretGeneration.ts',
       'src/components/Game/LocationProfileModal.tsx',
       'src/components/Game/tabs/OverviewTab.tsx',
     ],

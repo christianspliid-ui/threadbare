@@ -4,7 +4,10 @@
  * Three bonus types:
  * - encounter_reward_multiplier: Multiplies faction reputation gain from quests
  * - scoring_boost: Additive boost to encounter scoring for faction encounters
- * - reputation_walk_bonus: Additive trust bonus via guild network (future)
+ * - reputation_walk_bonus: Additive trust bonus via guild network. Applied in
+ *   `reputationWalk.computeWalkedReputation` step 8b, once per faction the source
+ *   shares with a path intermediary (THR-1211 item 2 — it read "(future)" here and
+ *   had no consumer at all, while nine faction definitions authored values for it).
  *
  * Design doc: Docs/plans/2026-03-27-faction-vertical-slice-design.md — Phase 4
  * NFP: Tunability (values on FactionRankTier.bonuses), Fail-soft (no bonus → 1.0/0.0).
