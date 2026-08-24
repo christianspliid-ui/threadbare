@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-24 22:00 local (20:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-24 23:00 local (21:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -73,7 +73,7 @@ The scheduled lanes stopped for **35 hours** (20 Aug 21:57 local → 22 Aug 09:1
 
 ## Resolved this period
 
-- 2026-08-24: **the six-encounter batch became real work** — [THR-1221](https://linear.app/threadbare/issue/THR-1221/run-the-border-perils-batch-6-new-encounters-through-the-full-factory) filed on your 18:08 yes, High priority, brief attached, claimable now. The four-hour untracked-brief problem is closed with it.
+- 2026-08-24: **the six-encounter batch is running** — [THR-1221](https://linear.app/threadbare/issue/THR-1221/run-the-border-perils-batch-6-new-encounters-through-the-full-factory) filed on your 18:08 yes and claimed at 22:02; six new encounters on dangerous ground are going through the factory line now. The four-hour untracked-brief problem is closed with it.
 - 2026-08-24: **[THR-977](https://linear.app/threadbare/issue/THR-977) shipped** — capability pips and odds-effect pips no longer look identical on the encounter test panel. Promoted 18:30, merged 19:45, after 22 days shelved against a question you had already answered.
 - 2026-08-24: **four shelved tickets re-read against your 12 August rule, three came off your page without you** — [THR-831](https://linear.app/threadbare/issue/THR-831) (**shipped the same hour, with the agent overruling the ticket's own retune as arithmetically backwards**), [THR-1095](https://linear.app/threadbare/issue/THR-1095), [THR-977](https://linear.app/threadbare/issue/THR-977) and [THR-1094](https://linear.app/threadbare/issue/THR-1094) queued; [THR-1198](https://linear.app/threadbare/issue/THR-1198) stayed yours. **Say the word if any should have come to you and it comes straight back.**
 - 2026-08-24: **you approved the first encounter batch** — *"Go agenda"* / *"Ahead"* at 18:08, the last gate in [the Encounter Factory](https://linear.app/threadbare/issue/THR-1043/the-encounter-factory-agentic-workflow-for-composition-complete).
