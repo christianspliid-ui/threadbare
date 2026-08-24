@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-24 19:02 local (17:02 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-24 19:55 local (17:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -16,7 +16,7 @@ Your answer settles the five above and every batch after them. Until you say oth
 
 Both design maps closed 2026-08-24: [the typed game-state map](https://linear.app/threadbare/issue/THR-1157/typed-game-state-architecture-machinery-first-wave-wayfinder-map) at 07:52, [the vertical-slice map](https://linear.app/threadbare/issue/THR-902/encounter-experience-redesign-vertical-slice-wayfinder-map) at 16:27 with all five verdicts in. **Nothing is being charted now.** The slice map's charter names its successor: **the hub — the player reaching factions, war, economy and divine actions from inside the encounter interface.**
 
-**Advice as of 24 August: wait one cycle.** Your [integrated slice checkpoint](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with) names a slice pass as this map's entry condition. Its last blocker cleared at 17:40 and only an agent pre-flight stands in front of it now — so the checkpoint should reach you shortly, and chartering from a validated base is the better order. **Only you can charter a map** — say *"chart the hub map"* in a chat session whenever you want it.
+**Advice as of 24 August: wait one cycle.** Your [integrated slice checkpoint](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with) names a slice pass as this map's entry condition, and only an agent pre-flight now stands in front of it — so chartering from a validated base is the better order. **Only you can charter a map** — say *"chart the hub map"* in a chat session whenever you want it.
 
 ### 3. More design hours — three sittings stacked
 
@@ -57,7 +57,8 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
-- 2026-08-24: **you approved the first encounter batch** — *"Go agenda"* / *"Ahead"* at 18:08, the last gate in [the Encounter Factory](https://linear.app/threadbare/issue/THR-1043/the-encounter-factory-agentic-workflow-for-composition-complete). Six encounters on dangerous ground are cleared to be written; the fifteen-encounter retrofit becomes batch 2, which also takes its two-encounter verdict off your page. Recorded as your ruling on THR-1043 so the lanes can act on it.
+- 2026-08-24: **two shelved tickets came off your page without you** — [THR-831](https://linear.app/threadbare/issue/THR-831) and [THR-1095](https://linear.app/threadbare/issue/THR-1095) were re-read against your 12 August rule, found to be the agent's own call rather than yours, and queued. The lane also retracted this morning's "the reserve is a decision backlog" reading as judged by the wrong test. **Say the word if either should have come to you and it comes straight back.**
+- 2026-08-24: **you approved the first encounter batch** — *"Go agenda"* / *"Ahead"* at 18:08, the last gate in [the Encounter Factory](https://linear.app/threadbare/issue/THR-1043/the-encounter-factory-agentic-workflow-for-composition-complete). Six encounters on dangerous ground are cleared to be written; the fifteen-encounter retrofit becomes batch 2, which also takes its two-encounter verdict off your page.
 - 2026-08-24: **siege goes first** — [THR-1216](https://linear.app/threadbare/issue/THR-1216/director-ruling-the-encounter-target-mix-does-siege-go-first) settled rather than defaulted, by the same yes. The order below siege stays open to a later word.
 - 2026-08-24: **the slice prose meets your 08-15 standard** — [THR-1219](https://linear.app/threadbare/issue/THR-1219/rewrite-the-slice-prose-to-the-2026-08-15-standard-direct-pass) ([PR #1596](https://github.com/christianspliid-ui/threadbare/pull/1596)), filed by you at 16:33 and merged at 17:40. This was the last component below standard; your [integrated checkpoint](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with) now waits only on an agent pre-flight.
 - 2026-08-24: **four dead reputation reads answered** — [THR-1211](https://linear.app/threadbare/issue/THR-1211/four-reputation-adjacent-dead-reads-found-in-the-thr-1206-survey-a) ([PR #1597](https://github.com/christianspliid-ui/threadbare/pull/1597)): three wired to live readers, the fourth recorded with a verdict.
@@ -66,7 +67,6 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 - 2026-08-24: **the word "reputation" gets one definition and the other five get named** — [THR-1210](https://linear.app/threadbare/issue/THR-1210/ul-proposal-reputation-the-social-score-that-modifies-interactions) ([PR #1594](https://github.com/christianspliid-ui/threadbare/pull/1594)): the glossary entry behind your unification ruling, so the next author cannot re-blur it.
 - 2026-08-24: **thirty-one percent of the game's reputation writes stop being thrown away** — [THR-1207](https://linear.app/threadbare/issue/THR-1207/dead-reputation-tally-keys-re-author-every-off-axis-tally-write-to-the) ([PR #1591](https://github.com/christianspliid-ui/threadbare/pull/1591)): guild lines where a mortal built standing that never existed now name the mechanism their fiction meant.
 - 2026-08-24: **your 1,200 story hooks are in the repo** — you answered *"yes"* at 10:35 and [THR-1217](https://linear.app/threadbare/issue/THR-1217/publish-the-1200-hook-quest-corpus-christian-approved-it-design-still) merged at 13:24 ([PR #1592](https://github.com/christianspliid-ui/threadbare/pull/1592)). Thirteen files, live where the encounter factory reads them.
-- 2026-08-24: **"The Table That Holds" is live** — you answered *"fine"* at 10:36 and [THR-1182](https://linear.app/threadbare/issue/THR-1182/the-grateful-kins-standing-welcome-has-no-return-visit-author-the) merged at 14:39 ([PR #1593](https://github.com/christianspliid-ui/threadbare/pull/1593)). [The town keeps its door open for you](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.the_table_that_holds) — six hours from approval to on screen.
 
 ---
 
