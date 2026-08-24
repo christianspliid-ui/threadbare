@@ -17,13 +17,25 @@ export const WIRING_GUIDE_RELPATH = "Docs/plans/2026-04-16-systemic-wiring-guide
 export const DIRECTION_DOC_RELPATH = "Docs/plans/2026-04-16-game-design-direction.md";
 export const AUTHORING_BRIEF_SOURCES = [WIRING_GUIDE_RELPATH, DIRECTION_DOC_RELPATH] as const;
 
-// Sections D and E are stable content from the encounter-pipeline skill — hardcoded here
-// so they don't require reading the skill file at generation time.
+// Sections D and E are content from the encounter-pipeline skill — hardcoded here so they
+// don't require reading the skill file at generation time.
+//
+// They are NOT "stable" and must not be treated as such (THR-1185). Both blocks sat on the
+// pre-THR-772 nudge pivot for months while every gate stayed green: the freshness check
+// compares only AUTHORING_BRIEF_SOURCES, and main() short-circuits on those same two hashes,
+// so editing a constant here used to produce no regeneration at all. Section E trigger 7 was
+// still ordering authors to write per-step approach cards — the rejected model that the live
+// skill's own trigger 14 then rejects — on the surface the pipeline tells agents to read FIRST.
+//
+// AUTHORING_BRIEF_HARDCODED_SECTIONS_HASH below closes that: the sections are stamped into the
+// brief's header and compared like any other source, so a reword here invalidates the cached
+// brief and `check:authoring-brief` / `check:generated-freshness` both cover it. When the live
+// SKILL.md changes these passages, update them here in the same PR — nothing derives them.
 const SECTION_D_PLAYER_AS_GOD = `## Section D: Player-as-God Framing Constraint
 
-The player is a god who observes through threads and intervenes indirectly. They **NEVER** make choices for the character. When writing encounter choices, intervention options, or any player-facing decision point: the choices must be what the *god* does (whisper, send vision, steady, strengthen, withdraw), never what the *mortal* does (say this, go there, fight). The mortal acts according to their personality and the god's influence. "Let them handle it" must always be a valid option.
+The player is a god who observes through threads and intervenes indirectly. They **NEVER** make choices for the character. Every player-facing option is a **nudge** — a concrete, sphere-flavoured exercise of the god's influence on the scene or on the mortal's inner weather (a stumble on loose stone, an urge arriving in sleep, a sense that this has happened before, an old ambition catching light again, a face nobody afterwards quite recalls, a wound that closes cleaner than it should), never an instruction to the mortal (say this, go there, fight) and never a choice between authored endings. **Influence, never authorship.** The mortal acts according to their personality and the god's influence. Playing nothing must always be viable: a hand is an offer, not a toll gate.
 
-**Auto-REVISE trigger:** Any encounter where the player "chooses how the character responds" must be rejected and reframed as divine intervention.
+**Auto-REVISE trigger:** Any encounter where the player "chooses how the character responds" must be rejected and reframed as a nudge hand.
 
 > Source: encounter-pipeline SKILL.md — player-as-god framing constraint`;
 
@@ -37,8 +49,25 @@ The following trigger **REVISE BEFORE CONTINUING** (non-negotiable — address b
 4. Missing aftermath reaction choices — scale medium+ must offer branching aftermath reactions
 5. Reporter prose — outcomes tell what happened ("they succeeded") rather than how it felt
 6. No concept art recommendation — brief omitted or too vague to paint a scene
-7. Missing per-step approach cards — steps lack god-verb intervention options (whisper / send vision / steady / strengthen / withdraw)
-8. Player "chooses how the character responds" — player-as-god framing violated (see Section D)
+7. A hand outside 4–8 authored cards on a nudge-bearing step
+8. Fewer than 4 distinct spheres, or no ungated common (sphere-less) option, in a hand
+9. Any nudge with no failure-band fragment — or a big-delta nudge (\`forecastDelta ≥ 0.15\`) missing either failure band
+10. A \`StepOutcome\` band no fragment in the hand covers
+11. A number or \`%\` in an \`effectLine\` — words only; the pip row renders magnitude
+12. Trait-hook step skipped, or a hook naming a ref \`validateTraitRefs()\` reports dead
+13. A nudge-specific payoff written into the base band text — it must read correctly with any subset of the hand active
+14. A player-facing option that instructs the mortal rather than exerting the god's influence on the scene or the mortal's inner weather — the rejected authored-futures model. Range is not the test: a dream, an omen, a kindled desire are lawful; "tell them to run" is not
+15. Any detector hit: a vagueness-lexicon word, or more than one annotation clause across the encounter
+16. Scene-bespoke prose on a card face — a title, effect line, or flavor quote that only reads in this encounter (the communication pivot: prose does the scene, cards do the rules)
+17. An effect line that states mood instead of mechanism — it must say what the god does and why that moves the odds
+18. No setting envelope, or a declared class with no opening — or a spine/afterimage that names class scenery
+19. Two rider cards in one hand, or a rider with no justifying comment
+20. A zero-essence non-trait card with no other cost channel, or a grant naming content that does not exist (\`validateNudgeGrantRefs\`)
+21. Two encounters in the same family with an identical card-type composition
+22. A seam echo — a repeated image, repeated sentence shape, or near-identical phrasing across a paragraph boundary (the class the automated detectors cannot see; check every opening→spine and spine→band seam explicitly)
+23. A static authored factor line — any \`factorLines\` entry that would read identically on every run of the encounter (the variance rule: factors come from the broader game context — agent, hex, global modifiers, earlier steps — all derived; scene facts are priced into the difficulty and live in the prose)
+24. The agent as bystander — a set-piece scene the acting agent merely watches, without the design block's written justification; the default shape is the opportunity/complication/danger landing on the agent or in their path
+25. Announced outcome mechanics in scene prose — explicit "pass and X / fail and Y" framing; stakes are foreshadowed in the scene's furniture, outcomes live in afterimages and band prose
 
 > Source: encounter-pipeline SKILL.md — Automatic REVISE triggers`;
 
@@ -52,6 +81,17 @@ export function hashContent(content: string | Buffer): string {
     .update(typeof content === "string" ? Buffer.from(content, "utf8") : content)
     .digest("hex");
 }
+
+/**
+ * Identity of the two hardcoded skill-derived sections (D and E).
+ *
+ * Stamped into the brief header alongside the source-doc hashes so that rewording a constant
+ * invalidates the cached brief exactly as editing a source doc does. Without this the sections
+ * were outside every freshness gate by construction (THR-1185).
+ */
+export const AUTHORING_BRIEF_HARDCODED_SECTIONS_HASH = hashContent(
+  `${SECTION_D_PLAYER_AS_GOD}\n${SECTION_E_REJECTION_TRIGGERS}`,
+);
 
 /**
  * Extract lines from the line matching startPattern (inclusive) up to but not including
@@ -231,6 +271,7 @@ export function buildBrief(
     `> **Sources:**`,
     `>   - ${WIRING_GUIDE_RELPATH} (${AUTHORING_BRIEF_HASH_ALGORITHM}: ${wiringHash})`,
     `>   - ${DIRECTION_DOC_RELPATH} (${AUTHORING_BRIEF_HASH_ALGORITHM}: ${directionHash})`,
+    `>   - encounter-pipeline SKILL.md sections D/E, hardcoded in the generator (${AUTHORING_BRIEF_HASH_ALGORITHM}: ${AUTHORING_BRIEF_HARDCODED_SECTIONS_HASH})`,
     "> **Do not hand-edit.** Regenerate via `npm run build-authoring-brief`.",
     "",
     "---",
@@ -269,10 +310,18 @@ export function buildBrief(
 
 const HASH_LINE_PATTERN = /sha1:\s*([0-9a-f]{40})/gi;
 
-export function extractHashesFromBrief(briefContent: string): { wiringHash: string; directionHash: string } | null {
+export function extractHashesFromBrief(
+  briefContent: string,
+): { wiringHash: string; directionHash: string; sectionsHash: string | null } | null {
   const matches = [...briefContent.matchAll(HASH_LINE_PATTERN)];
   if (matches.length < 2) return null;
-  return { wiringHash: matches[0][1], directionHash: matches[1][1] };
+  // A brief generated before THR-1185 carries only the two source stamps. Report the missing
+  // third as null rather than absent, so callers treat it as drifted and regenerate.
+  return {
+    wiringHash: matches[0][1],
+    directionHash: matches[1][1],
+    sectionsHash: matches[2]?.[1] ?? null,
+  };
 }
 
 // --- Main ---
@@ -306,7 +355,8 @@ async function main(): Promise<void> {
     if (
       existingHashes &&
       existingHashes.wiringHash === wiringHash &&
-      existingHashes.directionHash === directionHash
+      existingHashes.directionHash === directionHash &&
+      existingHashes.sectionsHash === AUTHORING_BRIEF_HARDCODED_SECTIONS_HASH
     ) {
       console.info("info: brief is up to date — no changes written.");
       process.exit(0);

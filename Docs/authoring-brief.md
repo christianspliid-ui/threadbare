@@ -1,9 +1,10 @@
 # Authoring Brief
 
-> **Generated:** 2026-07-21 by scripts/build-authoring-brief.ts
+> **Generated:** 2026-08-24 by scripts/build-authoring-brief.ts
 > **Sources:**
->   - Docs/plans/2026-04-16-systemic-wiring-guide.md (sha1: e065a9697130cb2f0e095ba0f91cbdb13cf59166)
+>   - Docs/plans/2026-04-16-systemic-wiring-guide.md (sha1: 780aff21cc45189ed899e30f3284897fa9be503a)
 >   - Docs/plans/2026-04-16-game-design-direction.md (sha1: 1444ec0943c1644f65a451a6fc1c967b930ee01d)
+>   - encounter-pipeline SKILL.md sections D/E, hardcoded in the generator (sha1: 8967cc06663288bc6cbaffa81f16f6e1aea73cde)
 > **Do not hand-edit.** Regenerate via `npm run build-authoring-brief`.
 
 ---
@@ -37,6 +38,13 @@ Every `narrative` field in steps and outcomes supports dynamic text substitution
 | `{doom_verb}` | Doom archetype vocabulary — action verb | "fractures" (breach) / "gathers" (convergence) |
 | `{doom_adj}` | Doom archetype vocabulary — adjective | "fractured" (breach) / "inexorable" (convergence) |
 | `{doom_atmosphere}` | Doom archetype vocabulary — atmospheric phrase | "something presses through" (breach) |
+| `{target}` | Scene target — the entity the encounter is *with* (THR-694). Falls back to "the other party" | "Serafina" |
+| `{target:they\|them\|their\|s}` (+ capitalized) | Target's pronouns; neutral fallback | "she/her/her/s" |
+| `{target:faction}` | Target's faction name; falls back to "their people" | "The Iron Wardens" |
+| `{cast:<key>}` | Scene cast — a `supportBundle` member by spec key (THR-696). Renders the *bound* entity's live name | "Captain Merrow" |
+| `{econ_adj}` | Economic mood adjective (THR-725) — boom/bust coloration of the settlement the scene plays out in. Strips silently in the neutral prosperity band | "grain-heavy" (boom) / "shuttered" (bust) |
+| `{econ_noun}` | Economic mood noun phrase | "wagons queued past the gate" / "shuttered stalls" |
+| `{econ_atmosphere}` | Economic mood atmospheric phrase | "nobody is counting carefully" / "people watch each other's hands" |
 
 **Why this changes what you write:** When you know prose can branch on whether the agent has allies or artifacts, you write scenes that *use* those relationships. A betrayal scene where the agent has no allies reads differently from one where their strongest ally might hear about it. A discovery scene where the agent carries a storied artifact reads differently from one where they have nothing. These aren't cosmetic — they change the emotional texture of the moment. **Write scenes where the conditionals matter, not scenes where they're decoration.**
 
@@ -49,10 +57,11 @@ Aftermath reactions can plant `encounter_seed` effects that spawn new encounters
   kind: 'encounter_seed',
   templateId: 'broker.quest.shrine_confrontation',  // Specific encounter to spawn
   // OR:
-  encounterFamily: 'investigation',                  // Family tag (v1: narrative event)
+  encounterFamily: 'broker.quest',                   // Family prefix — the engine draws + spawns a member (THR-697)
   targetAgentId: '$actor',       // Who gets the follow-up (defaults to current agent)
   delayTicks: 15,                // When it becomes eligible
   priority: 1.2,                 // Higher = spawns sooner when eligible
+  inheritContext: true,          // (opt-in) carry this action's target + cast into the follow-up (THR-697)
   seedLabel: "The shrine map burns in their pocket — someone will come asking"
 }
 ```
@@ -122,16 +131,19 @@ Two aftermath reaction types give agents tangible knowledge or items:
 
 ### Capability 7: Divine Intervention Choices — The Player's Voice
 
-The player is a god. Their choices are always divine interventions, never direct character control. The engine generates intervention choices based on the agent's court position:
+The player is a god. Their choices are always divine interventions, never direct character control.
 
-| Court Position | Choices Available | Prose Depth |
-|---|---|---|
-| `the_first` | Supportive (+3%, 1 essence) + Coercive (+15%, 5 essence) + Withdrawn (free) | Full (3-5 sentences) |
-| `retinue` | Supportive + Withdrawn | Medium (2-3 sentences) |
-| `watched` | Observation only | Peek (1-2 sentences) |
-| `dormant` | None | None |
+```ts
+{
+  id: 'turn_the_chaos', label: 'Turn the Chaos', /* …prose… */
+  interventionType: 'coercive',
+  moralAxis: 'iron',     // which Reach's virtue↔vice axis this choice moves (defaults to the choice's reach)
+  pole: 'vice',          // 'virtue' tilts toward the reach's virtue pole, 'vice' toward the vice pole
+  magnitude: 0.15,       // unsigned drift strength, canonical 0.05–0.20 (PERSONALITY_DRIFT_DELTA_*)
+}
+```
 
-**Why this changes what you write:** You're not writing choices for a character — you're writing moments where divine observation creates tension. The god sees the agent struggling and must decide: pour power in, or let them find their own way? **Write moments where the intervention decision is genuinely difficult — where supporting has a cost beyond essence, and withdrawing has consequences beyond failure probability.** The intervention ratio is tracked. A god who always meddles creates a different story than one who watches.
+**Why this changes what you write:** You're not writing choices for a character — you're writing moments where divine observation creates tension. The god sees the agent struggling and must decide: pour power in, or let them find their own way? **Write moments where the intervention decision is genuinely difficult — where supporting has a cost beyond essence, and withdrawing has consequences beyond failure probability.** That last clause is now the *whole* of it rather than a stretch goal: since THR-1121 withdrawing has no failure-probability consequence to be "beyond", because no choice carries one. The interesting difference between meddling and watching has to be in the fiction and the aftermath, or it is nowhere. The intervention ratio is still tracked, and a god who always meddles still creates a different story than one who watches.
 
 ---
 
@@ -164,9 +176,9 @@ Within a single encounter, the emotional trajectory should shift — hope rises,
 
 ## Section D: Player-as-God Framing Constraint
 
-The player is a god who observes through threads and intervenes indirectly. They **NEVER** make choices for the character. When writing encounter choices, intervention options, or any player-facing decision point: the choices must be what the *god* does (whisper, send vision, steady, strengthen, withdraw), never what the *mortal* does (say this, go there, fight). The mortal acts according to their personality and the god's influence. "Let them handle it" must always be a valid option.
+The player is a god who observes through threads and intervenes indirectly. They **NEVER** make choices for the character. Every player-facing option is a **nudge** — a concrete, sphere-flavoured exercise of the god's influence on the scene or on the mortal's inner weather (a stumble on loose stone, an urge arriving in sleep, a sense that this has happened before, an old ambition catching light again, a face nobody afterwards quite recalls, a wound that closes cleaner than it should), never an instruction to the mortal (say this, go there, fight) and never a choice between authored endings. **Influence, never authorship.** The mortal acts according to their personality and the god's influence. Playing nothing must always be viable: a hand is an offer, not a toll gate.
 
-**Auto-REVISE trigger:** Any encounter where the player "chooses how the character responds" must be rejected and reframed as divine intervention.
+**Auto-REVISE trigger:** Any encounter where the player "chooses how the character responds" must be rejected and reframed as a nudge hand.
 
 > Source: encounter-pipeline SKILL.md — player-as-god framing constraint
 
@@ -182,7 +194,24 @@ The following trigger **REVISE BEFORE CONTINUING** (non-negotiable — address b
 4. Missing aftermath reaction choices — scale medium+ must offer branching aftermath reactions
 5. Reporter prose — outcomes tell what happened ("they succeeded") rather than how it felt
 6. No concept art recommendation — brief omitted or too vague to paint a scene
-7. Missing per-step approach cards — steps lack god-verb intervention options (whisper / send vision / steady / strengthen / withdraw)
-8. Player "chooses how the character responds" — player-as-god framing violated (see Section D)
+7. A hand outside 4–8 authored cards on a nudge-bearing step
+8. Fewer than 4 distinct spheres, or no ungated common (sphere-less) option, in a hand
+9. Any nudge with no failure-band fragment — or a big-delta nudge (`forecastDelta ≥ 0.15`) missing either failure band
+10. A `StepOutcome` band no fragment in the hand covers
+11. A number or `%` in an `effectLine` — words only; the pip row renders magnitude
+12. Trait-hook step skipped, or a hook naming a ref `validateTraitRefs()` reports dead
+13. A nudge-specific payoff written into the base band text — it must read correctly with any subset of the hand active
+14. A player-facing option that instructs the mortal rather than exerting the god's influence on the scene or the mortal's inner weather — the rejected authored-futures model. Range is not the test: a dream, an omen, a kindled desire are lawful; "tell them to run" is not
+15. Any detector hit: a vagueness-lexicon word, or more than one annotation clause across the encounter
+16. Scene-bespoke prose on a card face — a title, effect line, or flavor quote that only reads in this encounter (the communication pivot: prose does the scene, cards do the rules)
+17. An effect line that states mood instead of mechanism — it must say what the god does and why that moves the odds
+18. No setting envelope, or a declared class with no opening — or a spine/afterimage that names class scenery
+19. Two rider cards in one hand, or a rider with no justifying comment
+20. A zero-essence non-trait card with no other cost channel, or a grant naming content that does not exist (`validateNudgeGrantRefs`)
+21. Two encounters in the same family with an identical card-type composition
+22. A seam echo — a repeated image, repeated sentence shape, or near-identical phrasing across a paragraph boundary (the class the automated detectors cannot see; check every opening→spine and spine→band seam explicitly)
+23. A static authored factor line — any `factorLines` entry that would read identically on every run of the encounter (the variance rule: factors come from the broader game context — agent, hex, global modifiers, earlier steps — all derived; scene facts are priced into the difficulty and live in the prose)
+24. The agent as bystander — a set-piece scene the acting agent merely watches, without the design block's written justification; the default shape is the opportunity/complication/danger landing on the agent or in their path
+25. Announced outcome mechanics in scene prose — explicit "pass and X / fail and Y" framing; stakes are foreshadowed in the scene's furniture, outcomes live in afterimages and band prose
 
 > Source: encounter-pipeline SKILL.md — Automatic REVISE triggers
