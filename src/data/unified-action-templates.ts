@@ -194,6 +194,7 @@ import { ROAD_AMBUSH_TEMPLATE } from './encounters/road-ambush';
 import { THE_UNCLAIMED_RELIC_TEMPLATE } from './encounters/the-unclaimed-relic';
 import { ONE_BODY_SHORT_TEMPLATE } from './encounters/one-body-short';
 import { TOLL_OF_BLADES_TEMPLATE } from './encounters/toll-of-blades';
+import { THE_SIGN_OVER_THE_RUIN_TEMPLATE } from './encounters/the-sign-over-the-ruin';
 import { COURTYARD_DUEL_TEMPLATE } from './encounters/the-courtyard-duel';
 import { BRINK_RESCUE_TEMPLATE } from './encounters/the-brink-rescue';
 import { LETTERS_OF_INTRODUCTION_TEMPLATE } from './encounters/the-letters-of-introduction';
@@ -5594,6 +5595,7 @@ const RAW_UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   THE_UNCLAIMED_RELIC_TEMPLATE,
   ONE_BODY_SHORT_TEMPLATE,
   TOLL_OF_BLADES_TEMPLATE,
+  THE_SIGN_OVER_THE_RUIN_TEMPLATE,
   COURTYARD_DUEL_TEMPLATE,
   BRINK_RESCUE_TEMPLATE,
   LETTERS_OF_INTRODUCTION_TEMPLATE,
@@ -5685,6 +5687,7 @@ export const LOCATION_BRANCHING_ENCOUNTER_TEMPLATES: readonly UnifiedActionTempl
   THE_UNCLAIMED_RELIC_TEMPLATE,
   ONE_BODY_SHORT_TEMPLATE,
   TOLL_OF_BLADES_TEMPLATE,
+  THE_SIGN_OVER_THE_RUIN_TEMPLATE,
   COURTYARD_DUEL_TEMPLATE,
   BRINK_RESCUE_TEMPLATE,
   LETTERS_OF_INTRODUCTION_TEMPLATE,

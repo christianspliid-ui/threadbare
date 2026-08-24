@@ -311,9 +311,9 @@ locationSubtypes: expandSettings(['stronghold', 'ruin', 'wayside', 'battlefield'
 > | `critical_success` | Both steps ran, clean, a crit landed somewhere (`computeFinalActionOutcome`) | Always | Step 1 `successMetadata` — fires ✅ |
 > | `success` | Both steps ran, plain successes only | Always | Step 1 `successMetadata` — fires ✅ |
 > | `success_at_cost` | Both steps ran; step 0 or step 1 incurred a cost/near-miss/non-critical failure that did not hard-fail | Always | No `changes` authored on this band (deliberate) — N/A |
-> | `failure` | Step 1 itself resolves `failure` (its own `failBehavior: 'fail_action'` ends the action there) | Always (step 1 is what produced the outcome) | Step 1 `failureMetadata` — fires ✅ |
+> | `failure` | Step 1 itself resolves `failure` (its own `failBehavior: 'fail_action'` ends the action there) | Always (step 1 is what produced the outcome) | Step 1 `failureMetadata` — fires ✅. **When step 0 itself also resolved a plain `failure` on the way here** (the commonest route to this band, since `continue_weakened` carries a −0.06 carryover into a step already at 0.42), step 0's own `failureMetadata` fires too — see the doubling note below. |
 > | `critical_failure`, path A | **Step 0 alone** resolves `critical_failure` — immediate hard-fail, bypassing `continue_weakened` | **No** | Step 1 `failureMetadata` never fires — **was unbacked; now backed by step 0's own `failureMetadata` (added above)** |
-> | `critical_failure`, path B | Step 0 continues (any non-critical outcome), then step 1 itself resolves `critical_failure` | Yes | Step 1 `failureMetadata` — fires ✅ (and step 0's new `failureMetadata` also fires if step 0's own outcome was a plain `failure` — harmless: `condition_attachment`/`agent_relocation` are idempotent-ish under a repeat write, and the action is ending in `critical_failure` regardless, so both firings back the same chips) |
+> | `critical_failure`, path B | Step 0 continues (any non-critical outcome), then step 1 itself resolves `critical_failure` | Yes | Step 1 `failureMetadata` — fires ✅ (and step 0's new `failureMetadata` also fires if step 0's own outcome was a plain `failure` — see the doubling note below; both firings back the same chips, so backing is not in question, only the state write underneath it) |
 >
 > **The fix.** Step 0's `failureMetadata` is added, above, duplicating step 1's two `critical_failure`-band
 > effects. This closes path A completely — the chips are now backed on every path that reaches the
@@ -321,18 +321,50 @@ locationSubtypes: expandSettings(['stronghold', 'ruin', 'wayside', 'battlefield'
 > `failureMetadata` fires on *any* `isStepFailure` outcome, and the two-bucket
 > (`successMetadata`/`failureMetadata`) schema has no way to gate an effect to *only* a step's own
 > `critical_failure` and not its plain `failure` — no `EffectPredicate` member reads step-outcome
-> severity (`src/types/effects.ts:30-56`). So on the rare compound path "step 0 fails plainly, the
-> action continues, step 1 later succeeds" (final outcome `success_at_cost`, which authors no
-> `changes` by design), the Terrified condition and the away-relocation intent now silently fire
-> **unchipped**. This is not a rule violation — an un-chipped write is an already-established,
-> already-sanctioned pattern in this very packet (§ 9.3's `success` band deliberately leaves the
-> `under_watch` write unchipped for an analogous reason) — but it is a narrative rough edge worth one
-> line in the batch report: a mortal who stumbled on the reading and then still got it said may walk
-> away quietly Terrified and drifting off-hex with no chip explaining why. Closing that fully would
-> require a step-outcome-severity predicate the effect schema does not have — a small, real primitive
-> gap, logged in the systems audit (`the-sign-over-the-ruin-systems.md` § "Missing Primitives, revised")
-> as BACKLOG rather than BUILD NOW, since the fix above already closes the load-bearing defect (a
-> named, scripted ending's chips claiming an unfired write) without it.
+> severity (`src/types/effects.ts:30-56`). So on the compound path "step 0 fails plainly, step 1 also
+> resolves `failure` or `critical_failure`" — which is not rare; it is the ordinary route to the
+> template's own most likely bad ending — both steps' `failureMetadata` fire.
+>
+> **Measured behaviour of the repeat write, corrected at Pass 3b (package critic) from this section's
+> original claim of "harmless… idempotent-ish":**
+> - **`agent_relocation` is genuinely idempotent.** `setRelocationIntent`
+>   (`relocationIntent.ts:248-253`) writes through `graph.updateNode`, replacing any intent already
+>   there. Last write wins; a repeat firing changes nothing.
+> - **`condition_attachment` is not idempotent in any sense.** The handler
+>   (`encounterAftermath.ts:2345-2364`) adds a `has_trait` edge **unconditionally** — there is no
+>   already-holds-it check anywhere in the case — and the edge id is keyed on the tick
+>   (`has_trait_${target}_${templateId}_${tick}_${i}_s${s}`). Step 0 and step 1 resolve on different
+>   ticks (step 0 carries `duration: { min: 1, max: 2 }`), so the two firings write **two distinct
+>   edges**, not one edge twice.
+>
+> **Three consequences of the two edges, none of them cosmetic:** (1) `collectAttachmentEffects`
+> (`effects/effectWalker.ts:66-93`) iterates every `has_trait` edge with no dedupe by node id, so
+> Terrified's iron −0.06 / shadow +0.04 modifier is pushed twice and sums to −0.12 / +0.08; (2) the
+> Attachments sheet shows two rows with two independent `ticksRemaining` countdowns; (3) the mercy
+> reaction (`sign.take_the_fear_off_them`) declared `remove_condition` with no `removeAll`, and the
+> handler removes only the **oldest** edge — so the click promising "let them put it down" left the
+> mortal still Terrified on exactly this path.
+>
+> **The compensating change, applied:** `sign.take_the_fear_off_them` now sets `removeAll: true`, so
+> the reaction actually delivers what it promises regardless of how many Terrified edges are present.
+> This does not eliminate the double write — the double is **accepted**, as the only shape the
+> two-bucket schema admits that still backs path A's chips — it only repairs the one player-facing
+> symptom (a click that silently under-delivered). The reach-modifier stacking (iron/shadow doubling)
+> and the two-row sheet are cosmetic-but-real remainders of the accepted trade, left as the narrative
+> rough edge the paragraph below describes. The only clean route to a *single* write on this path is
+> the step-outcome-severity `EffectPredicate` the effect schema does not have today — logged in the
+> systems audit (`the-sign-over-the-ruin-systems.md` § "Missing Primitives, revised") as BACKLOG, not
+> attempted here, since `removeAll: true` already closes the load-bearing player-facing defect (a
+> reaction that silently did half of what it said) without it.
+>
+> On the narrower compound path "step 0 fails plainly, the action continues, step 1 later succeeds"
+> (final outcome `success_at_cost`, which authors no `changes` by design), the Terrified condition and
+> the away-relocation intent fire once each and **unchipped**. This is not a rule violation — an
+> un-chipped write is an already-established, already-sanctioned pattern in this very packet (§ 9.3's
+> `success` band deliberately leaves the `under_watch` write unchipped for an analogous reason) — but
+> it is a narrative rough edge worth one line in the batch report: a mortal who stumbled on the
+> reading and then still got it said may walk away quietly Terrified and drifting off-hex with no chip
+> explaining why.
 
 ### Step 1 — `eye` · *Say what is there*
 

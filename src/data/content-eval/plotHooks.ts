@@ -381,7 +381,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['faith', 'discovery'],
     reaches: ['veil', 'star'],
     source: 'vault: Archetypes/Event — Miracle/Celestial Sign',
-    usedBy: [],
+    usedBy: ['encounter.border.the_sign_over_the_ruin'],
   },
   {
     id: 'hook.natural_disaster',
