@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-08-24 12:54 local (10:54 UTC) · keep-work-flowing-cc
+**Generated:** 2026-08-24 13:57 local (11:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -10,6 +10,8 @@ You said the encounters converge on travel-and-meet-people. [The assessment you 
 The recommended order to build next: **siege and the war-band (6)**, then ruins and the delve (5), monsters and the hunt (4), prophecy (3), deep magic (3), factional collapse (3). Not on the list, because they are not gaps: trade, camp chores, building.
 
 **Does siege lead at six — or do you want a different category first, or different counts?** Say the word and the next factory run takes its category from your answer. **Say nothing and we build siege first** — the default is already set, so this costs you nothing to leave.
+
+Since the last brief the machine behind that answer got its missing piece: **your 1,200 story hooks are in the repo** (below). The next factory run now rolls real hooks instead of falling back to a placeholder.
 
 ## Also waiting (7)
 
@@ -23,15 +25,15 @@ The recommended order to build next: **siege and the war-band (6)**, then ruins 
 
 ## Queue
 
-**Healthy — 3 claimable, and the one piece of work that was in flight last hour has shipped.**
+**Thin — 2 claimable, both spun-off deferrals. The hour's one piece of work shipped.**
 
-- **[THR-1207](https://linear.app/threadbare/issue/THR-1207/dead-reputation-tally-keys-re-author-every-off-axis-tally-write-to-the) merged at 12:43 local** ([PR #1591](https://github.com/christianspliid-ui/threadbare/pull/1591)). Thirty-one percent of the game's reputation writes were being thrown away silently — guild lines where a mortal built standing that never existed. Every one of those now names the mechanism its fiction meant. Nothing was pending on you; this is the hour's one closure.
-- **[THR-1217](https://linear.app/threadbare/issue/THR-1217/publish-the-1200-hook-quest-corpus-christian-approved-it-design-still) (High) — your 1,200 story hooks go into the repo.** Still the recommended next pickup; unclaimed since 11:31 local, and the next pickup run is at 13:01.
-- **[THR-1182](https://linear.app/threadbare/issue/THR-1182/the-grateful-kins-standing-welcome-has-no-return-visit-author-the) (Medium) — "The Table That Holds"**, approved on your *"fine"*. Authoring is claimable now.
+- **[THR-1217](https://linear.app/threadbare/issue/THR-1217/publish-the-1200-hook-quest-corpus-christian-approved-it-design-still) merged at 13:24 local** ([PR #1592](https://github.com/christianspliid-ui/threadbare/pull/1592)). Your *"yes"* this morning is now on `main`: 1,200 quest hooks, thirteen files, live in the repo where the encounter factory reads them. It also closes a gate that had been passing while broken — the factory's hook step used to fall back silently to a placeholder and still report success, so every run *looked* like it had consulted the corpus. With THR-1216 about to set the next build category, that mattered this week rather than someday. Nothing was pending on you.
+- **[THR-1182](https://linear.app/threadbare/issue/THR-1182/the-grateful-kins-standing-welcome-has-no-return-visit-author-the) (Medium) — "The Table That Holds"**, approved on your *"fine"*. Authoring is claimable now; next pickup run is at 15:01 local.
 - **[THR-1210](https://linear.app/threadbare/issue/THR-1210/ul-proposal-reputation-the-social-score-that-modifies-interactions) (Medium)** — docs-track, rides any run.
+- **Shelf note, not an ask:** both claimable items are `Deferral`s spun out of finished work — **zero fresh program work is queued**, for the second day running. The fix is upstream: either the design hours above, or your ruling on THR-1216 which sets the next factory batch going. The executor lane is not the constraint — THR-1215 went from promoted to merged in thirteen minutes this morning, and THR-1217 in under two hours from filing.
 - **Four parks, all on you and all listed above:** THR-1216 (this morning), THR-1130 (7 days), THR-1133 (9 days), THR-1168 (6 days). Park shape intact on all four.
 
 ## Health
 
-- **All probes green** — deploy (live site on 51bf4db0), CI, background jobs, armed PRs, scheduled-task heartbeat, home tree, worktree reaper (last swept 12:40 local).
+- **All probes green** — deploy (live site on 51bf4db0; today's doc-only commits correctly skipped a rebuild), CI, background jobs, armed PRs, scheduled-task heartbeat (all 9 lanes on time), home tree, worktree reaper (last swept 13:40 local).
 - **Lane silence:** the 35-hour gap of 20–22 August is still on the record with no pause marker covering it. Lanes have run normally since; the three later gaps are overnight-shaped and declined per your 8 August ruling. Visibility only — nothing for you to do, and it will keep appearing here until it ages out.

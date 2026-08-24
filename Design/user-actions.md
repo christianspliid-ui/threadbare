@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-24 12:54 local (10:54 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-24 13:57 local (11:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -67,7 +67,7 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 ## Resolved this period
 
 - 2026-08-24: **thirty-one percent of the game's reputation writes stop being thrown away** — [THR-1207](https://linear.app/threadbare/issue/THR-1207/dead-reputation-tally-keys-re-author-every-off-axis-tally-write-to-the) ([PR #1591](https://github.com/christianspliid-ui/threadbare/pull/1591)): guild lines where a mortal built standing that never existed now name the mechanism their fiction meant.
-- 2026-08-24: **your 1,200 story hooks may go into the repo** — you answered *"yes"* at 10:35, and the work now has a ticket: [THR-1217](https://linear.app/threadbare/issue/THR-1217/publish-the-1200-hook-quest-corpus-christian-approved-it-design-still), High, in the dev queue since 11:31 local. Nothing of yours is left loose here.
+- 2026-08-24: **your 1,200 story hooks are in the repo** — you answered *"yes"* at 10:35 and [THR-1217](https://linear.app/threadbare/issue/THR-1217/publish-the-1200-hook-quest-corpus-christian-approved-it-design-still) merged at 13:24 ([PR #1592](https://github.com/christianspliid-ui/threadbare/pull/1592)). Thirteen files, live where the encounter factory reads them — and the factory's hook step no longer reports success while quietly using a placeholder.
 - 2026-08-24: **"The Table That Holds" is approved** — you answered *"fine"* at 10:36, [recorded on THR-1182](https://linear.app/threadbare/issue/THR-1182/the-grateful-kins-standing-welcome-has-no-return-visit-author-the), which moved into the dev queue the same hour. Authoring is claimable; the combat-adjacency flag rides with it as a writing constraint, not a new question for you.
 - 2026-08-24: **you settled how encounters get built** — [PR #1589](https://github.com/christianspliid-ui/threadbare/pull/1589), recorded on [THR-1043](https://linear.app/threadbare/issue/THR-1043/the-encounter-factory-agentic-workflow-for-composition-complete): game design first, then roll hooks, then judge candidates. Step 1 — [what encounter types the game needs](https://linear.app/threadbare/issue/THR-1215/encounter-portfolio-assessment-what-encounter-types-the-game-needs-and) — shipped the same morning and is the source of ask 1 above.
 - 2026-08-24: **eighteen chips stop claiming a standing change that never happened** — [THR-1208](https://linear.app/threadbare/issue/THR-1208/18-cast-fate-chips-wear-kindreputation-with-no-reputation-write-behind): each now names the effect actually behind it.
