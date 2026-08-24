@@ -319,3 +319,59 @@ machine gate audits **step 0's hand only** and counts one plain step. Four of it
 are inside branches and no automated gate will ever look at them. Those four were audited by
 hand against the full checklist in the editorial pass, which is recorded there as the
 substitute. Filed alongside finding 1.
+
+### 5. The seam audit the drafts wrote misses the seams where the misses actually are
+
+Every draft in this batch wrote a seam table covering `opening→spine` and `spine→band`, and
+every one of them stopped there. Two critics independently found that **all** their echoes
+lived in the seams that table does not cover — the ones *inside a single ending*, where the
+step afterimage, the band `overview`, the `narrativeTemplates` line and up to six card
+fragments land on the player together, in order, seconds apart.
+
+- Encounter 3: five afterimage→overview restatements, two of them the same sentence one word
+  apart, on the band a rarity-1 open-draw `stone` test rolls most often — plus two verbatim
+  `causeClause` pairs sitting side by side inside one band.
+- Encounter 5: six echoes, all in those seams, including two verbatim repeats between card
+  fragments that can be active on the **same** band.
+
+The seam classes a draft must check, and which this batch's editorial passes were widened to:
+afterimage→overview · base band text→card fragment · card fragment→card fragment (for
+fragments that can be co-active on one band) · chip→chip within one band · and, for a fork,
+pole→pole across equivalent bands.
+
+**REVISE trigger 22's own wording is too narrow for this** — it says "across a paragraph
+boundary", which does not describe several of these. The intent is the rule; the letter
+under-describes it. Recorded here rather than changed: editing the trigger is a skill change,
+not an authoring-session judgement.
+
+### 6. The spec page and the detector code disagree about two field classes
+
+`src/data/content-eval/nudgeAuditDetectors.ts` pushes `body.overview` as **`scene`** (line
+389) and `change.detail` as **`outcome`** (line 392), with a doc comment at line 345 —
+*"Why `overview` is `scene` and `detail` is `outcome`"* — giving the reasoning. The spec page
+implies the reverse.
+
+This matters because the vagueness lexicon is **scoped by class** (THR-899): evasive terms are
+banned everywhere, but natural indefinites (`someone`, `way`, `nothing`) are enforced in
+*outcome* prose only and are ordinary English in scene setup. So an author who self-scans by
+the spec page checks the wrong two surfaces, and a "clean" claim from such a scan is not
+evidence — one draft in this batch claimed "0 in outcome prose" and was wrong for exactly
+this reason.
+
+The code is deliberate and self-documenting, so the spec page is the drift. `check:encounter`
+runs the real detectors at Stage 3, so this fails a gate rather than shipping — but it costs
+a bounce, and it silently devalues every draft's self-audit section.
+
+### 7. Smaller gate facts worth carrying to the next batch
+
+- **`compositionContract.ts` requires a non-empty `concepts` on *every* change**, not on some.
+  One draft declared it on one chip of five and failed that block four times, not once.
+- **`allAftermathEffects` does not walk card `grants`.** A consequence family satisfied only
+  by a card's grant does not satisfy the gate — it must be wired in the aftermath proper.
+- **`applyAftermathOutcomeBand` substitutes `reactions` wholesale rather than merging**, so a
+  band that declares its own reactions must re-declare every stance, and a permanent grant
+  belongs on the winning step's `successMetadata.effects` (THR-783) rather than on a reaction
+  a band could drop by omission.
+- **`SUCCESS_BANDS` includes `success_at_cost`**, so `failureMetadata` cannot reach it. A chip
+  on that band backed only by `failureMetadata` is a live Law 56 violation that the gate's
+  documented floor would nonetheless pass.
