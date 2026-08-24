@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-24 23:56 local (21:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-25 00:55 local (22:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -8,7 +8,7 @@
 
 **The camp seven** — shrine offering, sharpening blades, warding the camp, a small prayer, rest and reflection, tending wounds, scouting the perimeter. All seven ship today and all seven are thin: the census found **no typed consequences at all** in that set, only bare standing nudges. This batch puts them through the same factory line the border-perils six are cleared for.
 
-**Why it is first:** [your integrated slice checkpoint](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with) has exactly one item in front of it, and **the shrine offering is roster encounter #1 of that sitting.** The checkpoint cannot invite you while that encounter is below standard.
+**Why it is first:** [your integrated slice checkpoint](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with) has exactly one item in front of it, and **the shrine offering is roster encounter #1 of that sitting.** The checkpoint cannot invite you while that encounter is below standard. The [border-perils six](https://linear.app/threadbare/issue/THR-1221) are in their final checks as of 00:55 — when they land, this is the only game work left to pick up.
 
 **Brief:** [`retrofit-batch-2-brief.md`](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/retrofit-batch-2-brief.md), merged to `main`.
 
@@ -33,7 +33,7 @@ Both design maps closed 2026-08-24: [the typed game-state map](https://linear.ap
 In the order you set:
 
 - **[Unify the card grammar](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** — your 6 August note: action cards are too wordy, you cannot tell what they do, playing one gives no feedback, while encounter cards already read the way you wanted. Holding the single design slot since 19 August.
-- **[Traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)** — in design, assigned to you, untouched nine days. Either give it the hour or say *"put Traits wave 2 back in the pile."*
+- **[Traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)** — in design, assigned to you, untouched ten days. Either give it the hour or say *"put Traits wave 2 back in the pile."*
 - **The wave-1 sessions** — [shared machinery](https://linear.app/threadbare/issue/THR-1212/wave-1-design-a-shared-anchor-machinery-the-typed-anchor-the-generated) first, [the hunger vocabulary](https://linear.app/threadbare/issue/THR-1213/wave-1-design-b-hunger-vocabulary-unification-one-catalog-one-key) second, [nations and named areas simulated rather than drawn](https://linear.app/threadbare/issue/THR-1155/nations-and-named-areas-are-rendered-not-simulated-promote-both-to) third.
 
 Available whenever you want it: your own [one-button snapshot](https://linear.app/threadbare/issue/THR-1134/shareable-game-state-snapshot-one-button-incident-bundle-that-works-in).
