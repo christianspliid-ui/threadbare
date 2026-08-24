@@ -75,10 +75,10 @@ SCAR is one of **four** consequence categories — SCAR, `[[BOND]]`, `[[BOON]]`,
 ### BOND
 
 **Aliases:** BOND chip, bond consequence
-**Also see:** `[[SCAR]]`, `[[BOON]]`, `[[PATH]]`, `[[Bond Reception]]`, `[[Aftermath]]`
+**Also see:** `[[SCAR]]`, `[[BOON]]`, `[[PATH]]`, `[[Bond Reception]]`, `[[Aftermath]]`, `[[Reputation]]`
 **Status:** canonical
 
-A consequence category: **who now stands with or against the character** — a companion joining them, faction standing, personal reputation. Absorbs the retired `STANDING` display kind. See `[[SCAR]]` for the taxonomy the four categories belong to.
+A consequence category: **who now stands with or against the character** — a companion joining them, faction standing, personal reputation. Absorbs the retired `STANDING` display kind. See `[[SCAR]]` for the taxonomy the four categories belong to, and `[[Reputation]]` for the quantity a standing move actually writes.
 
 BOND is the category a companion attachment renders as when an encounter grants one (THR-1096), which is what makes "saved by a passing wanderer, who now walks with you" a single readable consequence rather than an inventory line.
 

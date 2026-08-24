@@ -14,7 +14,7 @@
       "filename": "Agents.md",
       "title": "Agents",
       "contentAdjacent": true,
-      "termCount": 30,
+      "termCount": 35,
       "blurb": "Content-adjacent shard. Terms covering entities in the simulation: agents, actors, Ascendant, factions, and their relationships."
     },
     {
@@ -565,6 +565,159 @@
         }
       ],
       "sourcePath": "Docs/ubiquitous-language/Agents.md#faction",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "agents",
+      "slug": "reputation",
+      "name": "Reputation",
+      "aliases": [
+        "Standing",
+        "Reputation With"
+      ],
+      "status": "canonical",
+      "oneLiner": "the social score that modifies interactions between a and b; directional, band-worded, four legs behind one `getReputationWith`",
+      "body": "**The social score that modifies interactions between a and b.** (Director's wording, verbatim, 2026-08-23.)\n\nReputation is **directional**: a's reputation with b is not b's reputation with a. Every leg reads outgoing edges from a only. It is always displayed as a **band word**, never a number — `Distrusted / Unknown / Accepted / Respected / Revered` (`REPUTATION_WORDS`). Note the neutral default `REPUTATION_WITH_DEFAULT` (0.5) already bands as **`Accepted`**, so a gate that means \"this person has earned something\" must test `Respected` or above; gating at `Accepted` admits everyone who has never met you.\n\nFour legs answer it, read through the single API `getReputationWith(graph, aId, bId)` in strict priority order — the first leg that matches wins, and the reading carries which one did as `source`:\n\n| Leg | Store | Covers |\n|---|---|---|\n| `membership` | `member_of.reputation` | a faction a belongs to — the only leg carrying rank, access, and expulsion |\n| `edge` | `reputation_with` edge (THR-1206) | a place, a person, or a faction a does **not** belong to |\n| `bond` | `relates_to.trust`, remapped `[-1,1]` → `[0,1]` | a personal relationship |\n| `default` | — | nothing has happened between a and b |\n\nOnly the **edge** leg is written through this module (`adjustReputationWith`); membership and bond keep their own writers, so a write against a faction a belongs to does not silently mint a second, competing standing.\n\nUntil 2026-08-23 the UL defined **none** of the six mechanisms that wore this word, which is how they were able to disagree for as long as they did. Three of the six are separate concepts that keep the word and must not be conflated with this one — `[[Reputation Tally]]`, `[[Reputation Score]]`, and the deprecated `[[reputation_set]]`.\n\nCode anchors: `src/engine/reputation.ts` (`getReputationWith`, `adjustReputationWith`, `REPUTATION_WITH_DEFAULT`), `src/data/domain-words.ts` (`REPUTATION_WORDS`).",
+      "seeAlso": [
+        {
+          "raw": "Reputation Tally",
+          "termName": "Reputation Tally",
+          "resolvedSlug": "agents#reputation-tally"
+        },
+        {
+          "raw": "Reputation Score",
+          "termName": "Reputation Score",
+          "resolvedSlug": "agents#reputation-score"
+        },
+        {
+          "raw": "Faction",
+          "termName": "Faction",
+          "resolvedSlug": "agents#faction"
+        },
+        {
+          "raw": "BOND",
+          "termName": "BOND",
+          "resolvedSlug": "encounters#bond"
+        },
+        {
+          "raw": "standing_welcome",
+          "termName": "standing_welcome",
+          "resolvedSlug": "agents#standing_welcome"
+        },
+        {
+          "raw": "reputation_set",
+          "termName": "reputation_set",
+          "resolvedSlug": "agents#reputation_set"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Agents.md#reputation",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "agents",
+      "slug": "reputation-tally",
+      "name": "Reputation Tally",
+      "aliases": [
+        "reputation_tally",
+        "reputationTallies"
+      ],
+      "status": "canonical",
+      "oneLiner": "what a mortal is becoming known *for*, on a `<reach>.<polarity>` key; not reputation with anyone",
+      "body": "**What a mortal is becoming known for** — not reputation with anyone. Stored as `reputationTallies` on the actor node, a partial map keyed `<reach>.<polarity>` (`ReputationTallyKey` = `` `${ReachDomain}.${'positive' | 'negative'}` ``, e.g. `heart.positive`, `iron.negative`). Encounter completions increment the key their outcome earned; `phaseReputationTraits` decays every tally by `REPUTATION_TALLY_DECAY_PER_TICK` and mints or removes `reputation`-category traits at the `REPUTATION_LEVEL_*` thresholds, which in turn feed the agent's `{title}`.\n\nThe distinction is load-bearing, not pedantic: a tally is one-sided and *about a subject*, where `[[Reputation]]` is directional and *about a pair*. Conflating the two is what produced 171 dead tally writes on keys nothing reads (THR-1207) — a write to an off-axis key is discarded silently, so the fiction reads as if it landed.\n\nCode anchors: `src/types/agent.ts` (`ReputationTallyKey`, `ReputationTallies`), `src/engine/phaseReputationTraits.ts`, `src/data/reputation-trait-content.ts`.",
+      "seeAlso": [
+        {
+          "raw": "Reputation",
+          "termName": "Reputation",
+          "resolvedSlug": "agents#reputation"
+        },
+        {
+          "raw": "Trait Category",
+          "termName": "Trait Category",
+          "resolvedSlug": "traits#trait-category"
+        },
+        {
+          "raw": "Reputation Score",
+          "termName": "Reputation Score",
+          "resolvedSlug": "agents#reputation-score"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Agents.md#reputation-tally",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "agents",
+      "slug": "reputation-score",
+      "name": "Reputation Score",
+      "aliases": [
+        "reputationScore",
+        "world renown"
+      ],
+      "status": "canonical",
+      "oneLiner": "one-sided world renown (\"how the world at large regards X\"); shares the band vocabulary, not the concept",
+      "body": "**How the world at large regards X** — one-sided renown, with no second party in it. A `0–1` number on the actor node's `reputationScore` property, defaulting to `DEFAULT_REPUTATION`, moved by aftermath and complication effects. Retained as a distinct concept, and it **shares the band vocabulary** (`REPUTATION_WORDS`), which is exactly why it reads as the same thing on screen and is not.\n\nChoosing between the three: ask *who is regarding whom*. A pair → `[[Reputation]]`. Everyone, about one subject → Reputation Score. What that subject is becoming known **for** → `[[Reputation Tally]]`.\n\nCode anchors: `src/engine/agentLifecycle.ts`, `src/engine/complicationEffects.ts`, `src/engine/encounterAftermath.ts`.",
+      "seeAlso": [
+        {
+          "raw": "Reputation",
+          "termName": "Reputation",
+          "resolvedSlug": "agents#reputation"
+        },
+        {
+          "raw": "Reputation Tally",
+          "termName": "Reputation Tally",
+          "resolvedSlug": "agents#reputation-tally"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Agents.md#reputation-score",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "agents",
+      "slug": "reputation_set",
+      "name": "reputation_set",
+      "aliases": [
+        "reputation_set effect kind"
+      ],
+      "status": "deprecated",
+      "oneLiner": "*deprecated*: absolute-value standing effect; retired from authoring, handler retained for saved worlds",
+      "body": "An aftermath effect kind that **set** a reputation surface to an absolute value. Retired from the authoring vocabulary by THR-1206 — new content expresses a standing move as a *delta* against the pairwise leg instead, so two encounters can no longer overwrite each other's outcome. The handler in `src/engine/encounterAftermath.ts` is deliberately **retained** so saved worlds and already-authored templates keep resolving; do not author new uses, and do not delete the handler.",
+      "seeAlso": [
+        {
+          "raw": "Reputation",
+          "termName": "Reputation",
+          "resolvedSlug": "agents#reputation"
+        },
+        {
+          "raw": "Reputation Score",
+          "termName": "Reputation Score",
+          "resolvedSlug": "agents#reputation-score"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Agents.md#reputation_set",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "agents",
+      "slug": "standing_welcome",
+      "name": "standing_welcome",
+      "aliases": [
+        "trait.condition.location.standing_welcome"
+      ],
+      "status": "deprecated",
+      "oneLiner": "*deprecated*: bespoke welcome condition, zero writers; superseded by reputation-with-a-place",
+      "body": "A location-scoped condition marking a person as welcome at a place — the bespoke predecessor of reputation-with-a-place. **Superseded by `[[Reputation]]`'s `edge` leg**, which expresses the same fiction as a directional standing rather than a timed condition. THR-1206 left it with **zero writers**; the definition and its duration constant survive only so saved worlds resolve. A returning-welcome beat is authored as a `reputation_with` move on the place, never by applying this condition.",
+      "seeAlso": [
+        {
+          "raw": "Reputation",
+          "termName": "Reputation",
+          "resolvedSlug": "agents#reputation"
+        },
+        {
+          "raw": "Trait Category",
+          "termName": "Trait Category",
+          "resolvedSlug": "traits#trait-category"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Agents.md#standing_welcome",
       "contentAdjacent": true
     },
     {
@@ -1524,7 +1677,7 @@
       ],
       "status": "canonical",
       "oneLiner": "consequence category: who now stands with or against the character; absorbs STANDING; not Bond Reception",
-      "body": "A consequence category: **who now stands with or against the character** — a companion joining them, faction standing, personal reputation. Absorbs the retired `STANDING` display kind. See `[[SCAR]]` for the taxonomy the four categories belong to.\n\nBOND is the category a companion attachment renders as when an encounter grants one (THR-1096), which is what makes \"saved by a passing wanderer, who now walks with you\" a single readable consequence rather than an inventory line.\n\n**Not `[[Bond Reception]]`, and not `bondQuality`.** Three different senses of *bond* now coexist and the disambiguation is load-bearing: BOND is a consequence category covering a mortal's ties to other people; `[[Bond Reception]]` is how a mortal receives the *god* at the Meet-The-First climax; `bondQuality` (Agents shard) is the health of a mentorship edge. A BOND chip never reports the god↔mortal `[[Thread]]`.",
+      "body": "A consequence category: **who now stands with or against the character** — a companion joining them, faction standing, personal reputation. Absorbs the retired `STANDING` display kind. See `[[SCAR]]` for the taxonomy the four categories belong to, and `[[Reputation]]` for the quantity a standing move actually writes.\n\nBOND is the category a companion attachment renders as when an encounter grants one (THR-1096), which is what makes \"saved by a passing wanderer, who now walks with you\" a single readable consequence rather than an inventory line.\n\n**Not `[[Bond Reception]]`, and not `bondQuality`.** Three different senses of *bond* now coexist and the disambiguation is load-bearing: BOND is a consequence category covering a mortal's ties to other people; `[[Bond Reception]]` is how a mortal receives the *god* at the Meet-The-First climax; `bondQuality` (Agents shard) is the health of a mentorship edge. A BOND chip never reports the god↔mortal `[[Thread]]`.",
       "seeAlso": [
         {
           "raw": "SCAR",
@@ -1550,6 +1703,11 @@
           "raw": "Aftermath",
           "termName": "Aftermath",
           "resolvedSlug": "encounters#aftermath"
+        },
+        {
+          "raw": "Reputation",
+          "termName": "Reputation",
+          "resolvedSlug": "agents#reputation"
         }
       ],
       "sourcePath": "Docs/ubiquitous-language/Encounters.md#bond",
