@@ -13,12 +13,19 @@ note from the same sitting: the game is **epic fantasy**, not slice-of-life.
 `UNIFIED_ACTION_TEMPLATES` array and counting it — not by reading files. The counts below
 are machine-true unless a row says otherwise.
 
-**One input was unavailable.** Task step 2 names the 1,200-hook corpus at
-`Design/research/quest-hooks/`. Those files are not in the repository — `.gitignore:73`
-(`Design/*`) hides them, and a worktree cut from `main` finds an empty path. The breadth
-reference was therefore **not consulted**; the genre gap list below is built from the
-director's stated bar plus the spec's recorded mechanical gaps. Nothing in the census half
-depends on it.
+**One input was unavailable when this was written, and is available now.** Task step 2
+names the 1,200-hook corpus at `Design/research/quest-hooks/`. At the time of measurement
+those files were not in the repository — `.gitignore:73` (`Design/*`) hid them, and a
+worktree cut from `main` found an empty path. The breadth reference was therefore **not
+consulted**, and the genre gap list below is built from the director's stated bar plus the
+spec's recorded mechanical gaps. Nothing in the census half depends on it.
+
+**The corpus was published 2026-08-24 (THR-1217)** and now reads from any worktree. The
+gap list below has *not* been re-derived against it — treat the ranking as the
+director-bar-plus-mechanical-gaps product it says it is. Anyone re-ranking the target mix
+should read `Design/research/quest-hooks/README.md` § Measured distributions first; its
+two named gaps (`stronghold` empty, `iron` thinnest at 52) are independent evidence about
+the same question this assessment answers, and they were not in view here.
 
 ---
 
