@@ -1,35 +1,27 @@
 # User Action Required
 
-**Last updated:** 2026-08-24 10:00 local (08:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-24 11:00 local (09:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
-### 1. May the 1,200 story hooks go into the repo?
+### 1. Does siege go first? — [THR-1216](https://linear.app/threadbare/issue/THR-1216/director-ruling-the-encounter-target-mix-does-siege-go-first)
 
-The twelve quest-hook files you wrote on 31 July — 1,200 tagged story situations, 340 KB, village feuds through sieges through buried ruins — exist on your machine only. One line in the repo's ignore list (`Design/*`) hides the whole folder from git and nothing re-includes the research directory, so no agent can read them.
+You said the corpus converges on travel-and-meet-people vignettes. [The assessment](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/audits/2026-08-24-encounter-portfolio-assessment.md) confirms it with numbers: **six of eight slice encounters open on a roadside**, thirteen templates say where they happen at all, and **nothing in the game fights on a battlefield**. The epic bands are not missing — they are *old*: 23 ruin-and-delve, 20 war-and-siege, 13 deep-magic premises, all legacy format. Everything in the new nudge voice is camp chores, roadside vignettes and company scenes.
 
-The rule you set this morning tells every factory run to roll a hook from that corpus and aim at a thin part of the range. With the folder invisible each run falls back to "original" and the corpus steers nothing. [The portfolio assessment](https://linear.app/threadbare/issue/THR-1215/encounter-portfolio-assessment-what-encounter-types-the-game-needs-and) names those same files as the reference for what the encounter range should look like.
+Recommended build order: **siege and the war-band (6)**, ruins and the delve (5), monsters and the hunt (4), prophecy (3), deep magic and wards (3), factional collapse (3). Deliberately excluded as non-gaps: trade, camp chores, building.
 
-**It needs you for exactly one reason: the repo is public.** Publishing 340 KB of your design research is your call. Yes → one line added and the files committed, a few minutes. No → the tickets get rewritten to work without them.
+**Does siege lead at six, or do you want a different category first, or different counts?** The next factory run takes its category from your answer. **Silence means siege first** — the default is set, so leaving this costs nothing.
 
-### 2. Approve one encounter brief — [THR-1182](https://linear.app/threadbare/issue/THR-1182/the-grateful-kins-standing-welcome-has-no-return-visit-author-the)
-
-**"The Table That Holds."** The town you helped has split into armed camps — the households the swindler took from, and the swindler's kin — with raiders coming up the fen road. You are the one person both camps will still sit at a table with, and the roof that owes you a favour is where that table is. Two steps, a fate-leaning fork, a hand that can cost more than essence.
-
-Built in the order you set: game design fixed first, hooks rolled after, three candidates written inside those constraints. Two review agents ranked them independently and **both put this one first**. Both flagged the same risk: step 2 is combat-adjacent and the game has no nudge-native combat vocabulary yet.
-
-**Yes, or say what it is missing.** Your Factory rule puts your approval before any prose. The ticket moved out of the dev queue behind the portfolio assessment; the approval is unaffected.
-
-### 3. The verdict on two encounters — [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to)
+### 2. The verdict on two encounters — [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to)
 
 - **The Grateful Kin** — [play it](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin) · [good ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin&outcome=critical_success) · [bad ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin&outcome=critical_failure)
 - **The Unsafe Bridge** — [play it](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge) · [good ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge&outcome=critical_success) · [costly ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge&outcome=success_at_cost)
 
 **Are these two worth meeting a second time?** Nine days open — the oldest ask on the board.
 
-A yes no longer releases the remaining nine on its own: your ordering ruling puts the portfolio assessment in front of every future batch, retrofit included. So this is feedback on whether the bar is met, not a release valve. Worth ten minutes anyway — it is the only read on whether the execution landed.
+A yes no longer releases the remaining nine on its own: your ordering ruling puts the portfolio work in front of every future batch, retrofit included. So this is feedback on whether the bar is met, not a release valve. Worth ten minutes anyway — it is the only read on whether the execution landed.
 
-### 4. More design hours — only a sitting with you adds new ground
+### 3. More design hours — only a sitting with you adds new ground
 
 Everything shipped this week was follow-through on ground already agreed. In the order you set:
 
@@ -39,7 +31,7 @@ Everything shipped this week was follow-through on ground already agreed. In the
 
 Behind these whenever you want them: [the encounter slice verdict](https://linear.app/threadbare/issue/THR-907/slice-verdict-session-christian-rules-on-prose-firing-ui-and-game) and your own [one-button snapshot](https://linear.app/threadbare/issue/THR-1134/shareable-game-state-snapshot-one-button-incident-bundle-that-works-in).
 
-### 5. What is a run *about*? — [THR-1198](https://linear.app/threadbare/issue/THR-1198/the-48-authored-mandate-strings-are-wired-but-unreachable-no-live-game)
+### 4. What is a run *about*? — [THR-1198](https://linear.app/threadbare/issue/THR-1198/the-48-authored-mandate-strings-are-wired-but-unreachable-no-live-game)
 
 Forty-eight authored lines narrate a campaign's milestones — a stage advancing, a mandate completing, a mandate failing. They are wired and working, but written for **twelve named campaigns**, while every live game derives its spine from **what your god remembers**. Correct, connected, unreachable; the game falls back to generated text and nothing is broken.
 
@@ -50,40 +42,40 @@ Forty-eight authored lines narrate a campaign's milestones — a stage advancing
 
 No urgency: [the wiring shipped on its own](https://linear.app/threadbare/issue/THR-1197/wire-the-48-authored-mandate-milestone-prose-strings-into-stage) and nothing downstream is waiting.
 
-### 6. Should committing a nudge be followed by a held breath? — [THR-1168](https://linear.app/threadbare/issue/THR-1168/two-authored-encounter-audio-moments-have-no-live-caller-wire-or)
+### 5. Should committing a nudge be followed by a held breath? — [THR-1168](https://linear.app/threadbare/issue/THR-1168/two-authored-encounter-audio-moments-have-no-live-caller-wire-or)
 
 There is a finished, unused piece of sound design: on committing a nudge, roughly 1.6 seconds where a tone draws tight, holds, then releases — and only then does the outcome land. Nothing plays it today; the visual it accompanied was deleted, so what remains is the pacing alone.
 
 **Does committing feel better with that beat, or should the outcome land immediately?** Pure feel; no measurement settles it. Either answer closes the ticket — wired to the encounter veil, or retired with its constants and tests. Open nine days. Two lanes recommend **no**: unskippable on every commit turns tense into waiting, and the timings stay recoverable from history.
 
-### 7. One attended dev-server session — [THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server)
+### 6. One attended dev-server session — [THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server)
 
 One `npm run dev` and a browser at 1920×1080: nine surfaces, at least 19 screenshots. Every one is a shipped UI change carrying test-level proof but no picture, because a scheduled run is refused a dev server and so structurally cannot capture one.
 
 **Parked off the shelf on 22 August** — the builder lane recognised it cannot be discharged without you and moved it aside rather than leaving it as phantom depth. It keeps growing as more UI work ships behind the same wall. This replaces four separate tickets (THR-1109, THR-1125, THR-1126, THR-1127), consolidated 2026-08-16 — a merge, not a prune. If you only get through part of it, say which, and the remainder is re-expanded rather than closed whole.
 
-### 8. Image credits — who decides the spend?
+### 7. Image credits — who decides the spend?
 
 **[THR-876](https://linear.app/threadbare/issue/THR-876/regenerate-the-5-quarantined-meet-the-first-scene-assets-doctrine) — five scene images that break the art rule.** Ready to run whenever you say. Nothing is broken; substitutes cover those slots. It is on your page only because it spends credits.
 
 **The question underneath it.** The opening beat's three missing plates ([THR-1170](https://linear.app/threadbare/issue/THR-1170/every-meet-the-first-nudge-card-renders-the-same-plate-424-imagetags)) were listed here as your call for the same reason, and a lane made them anyway — taking the arm the ticket recommended, rejecting the free remap because a third of the cards would have gained nothing by it. The judgment looks right. So: **do you want image spends gated on you at all, or decided by the lane and reported after?** Your answer settles the five above and every batch after them. Until you say otherwise the lane keeps the standing rule: *remap where a match is honest, come to you only when it is not.*
 
-### 9. Parked option, no urgency: a Tenacious-style trait
+### 8. Parked option, no urgency: a Tenacious-style trait
 
 An open design option with no ticket behind it. Explicitly not urgent — the safe default is that it stays parked, and nothing downstream is waiting on it. Listed only so it is not silently forgotten; say the word if you want it opened, and it will be given a ticket and a design pass.
 
 ## Resolved this period
 
-- 2026-08-24: **you settled how encounters get built** — [PR #1589](https://github.com/christianspliid-ui/threadbare/pull/1589), recorded on [THR-1043](https://linear.app/threadbare/issue/THR-1043/the-encounter-factory-agentic-workflow-for-composition-complete): game design first, then roll hooks, then judge candidates. Fiction-first briefs are now rejected on sight, and step 1 — [what encounter types the game needs](https://linear.app/threadbare/issue/THR-1215/encounter-portfolio-assessment-what-encounter-types-the-game-needs-and) — is its own job, now in the dev queue.
+- 2026-08-24: **your 1,200 story hooks may go into the repo** — you answered *"yes"* at 10:35. The decision is closed; the doing is not. An agent still owes the re-include line, the commit, and the removal of the "missing folder" warnings from the factory tickets. Tracked in the briefing's *From Christian* section until it lands.
+- 2026-08-24: **"The Table That Holds" is approved** — you answered *"fine"* at 10:36, [recorded on THR-1182](https://linear.app/threadbare/issue/THR-1182/the-grateful-kins-standing-welcome-has-no-return-visit-author-the) as the chat gate your Factory rule requires. Authoring may start; the combat-adjacency flag rides with it as a writing constraint, not a new question for you.
+- 2026-08-24: **you settled how encounters get built** — [PR #1589](https://github.com/christianspliid-ui/threadbare/pull/1589), recorded on [THR-1043](https://linear.app/threadbare/issue/THR-1043/the-encounter-factory-agentic-workflow-for-composition-complete): game design first, then roll hooks, then judge candidates. Step 1 — [what encounter types the game needs](https://linear.app/threadbare/issue/THR-1215/encounter-portfolio-assessment-what-encounter-types-the-game-needs-and) — shipped the same morning and is the source of ask 1 above.
 - 2026-08-24: **eighteen chips stop claiming a standing change that never happened** — [THR-1208](https://linear.app/threadbare/issue/THR-1208/18-cast-fate-chips-wear-kindreputation-with-no-reputation-write-behind): each now names the effect actually behind it.
 - 2026-08-24: **the campaign's spine narrates itself** — [THR-1197](https://linear.app/threadbare/issue/THR-1197/wire-the-48-authored-mandate-milestone-prose-strings-into-stage): the 48 authored milestone lines now fire at stage transitions instead of sitting unread.
-- 2026-08-24: **a rollable table of story seeds** — [THR-1147](https://linear.app/threadbare/issue/THR-1147/plot-hook-table-rollable-story-seed-inspiration-for-the-encounter): used for real within the hour, by the brief in ask 2.
+- 2026-08-24: **a rollable table of story seeds** — [THR-1147](https://linear.app/threadbare/issue/THR-1147/plot-hook-table-rollable-story-seed-inspiration-for-the-encounter): used for real within the hour, by the brief you approved this morning.
 - 2026-08-24: **reputation is now one thing** — [THR-1206](https://linear.app/threadbare/issue/THR-1206/reputation-is-the-social-score-between-any-two-parties-unify-faction) ([PR #1586](https://github.com/christianspliid-ui/threadbare/pull/1586)): six different scores wore the word; your ruling made it the one social score between any two parties. From your 16:40 chat to merged and live, unattended, before morning.
 - 2026-08-23: **the bond chip stops arguing with itself** — [THR-1205](https://linear.app/threadbare/issue/THR-1205/bond-chip-renders-red-with-an-up-arrow-and-hides-its-effect-in-prose) ([PR #1584](https://github.com/christianspliid-ui/threadbare/pull/1584)): you found it at 17:17 playing The Grateful Kin — red with an up arrow, effect hidden in prose. Filed, built, merged and deployed in eighty minutes.
 - 2026-08-23: **two backstories stop calling a mortal's ruthlessness "the patience"** — [THR-1204](https://linear.app/threadbare/issue/THR-1204/mercy-ruthlessness-negative-bodies-1-and-3-call-the-disposition-the) ([PR #1583](https://github.com/christianspliid-ui/threadbare/pull/1583)): two sentences named the quality and then contradicted it three words later.
 - 2026-08-23: **the check that catches this whole run of faults now reads every passage** — [THR-1203](https://linear.app/threadbare/issue/THR-1203/pole-manifest-pins-one-body-per-fear-prose-key-the-other-five-are) ([PR #1582](https://github.com/christianspliid-ui/threadbare/pull/1582)): it pinned one passage per key and treated the other five as covered, which is how eight faults of the same kind shipped before anyone saw them.
-- 2026-08-23: **eight character backstories stop describing the wrong quality** — [THR-1202](https://linear.app/threadbare/issue/THR-1202/fear-prose-preservation-transformation-the-first-four-bodies-of-both) ([PR #1581](https://github.com/christianspliid-ui/threadbare/pull/1581)): passages authored for an axis the game no longer has.
-- 2026-08-23: **mortal backstories use the right word for the thing they name** — [THR-1200](https://linear.app/threadbare/issue/THR-1200/fear-prose-renders-value-as-an-adjective-in-a-noun-slot-that) ([PR #1579](https://github.com/christianspliid-ui/threadbare/pull/1579)): 97 of 108 character descriptions put the label where the sentence needed the quality itself.
 
 ---
 
