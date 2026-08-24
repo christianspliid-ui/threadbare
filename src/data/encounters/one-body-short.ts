@@ -593,8 +593,28 @@ export const ONE_BODY_SHORT_TEMPLATE: UnifiedActionTemplate = {
             'know either, and has stopped trying to guess.',
           changes: [
             {
+              // `kind: 'trait'` because the chip anchors an *attachment* node
+              // (`stateNoun.entityId: 'trait.condition.grieving'`,
+              // `visualKind: 'attachment'`) — the same form both proved
+              // siblings use (`standing-the-line.ts:1002`,
+              // `the-sign-over-the-ruin.ts:731`). It was `shell_state`, which
+              // is the kind for a state on the shell with no attachment node
+              // behind it (`short.something_gave` below is correctly that).
+              // The mis-declaration was not cosmetic: `classifyChangeKind`
+              // renders `shell_state`+loss as a **toll** rather than a
+              // **wound** (`buildAftermathConsequences.ts:403-421`), and
+              // `buildEncounterAftermathOverview` counts it among *hooks*
+              // rather than traits (`unifiedActionResolution.ts:779-782`), so
+              // the shell reported a toll and a hook while the agent walked
+              // off carrying a live `grieving` edge. It also made the change
+              // contribute to no system connection at all in
+              // `systemsOfChange`, which is what Stage 4 read as an unapplied
+              // condition. Backing write: step 0 `failureMetadata`
+              // `condition_attachment` — traced live at
+              // `condition_attachment[0]: trait.condition.grieving →
+              // asc.archetype.chaos_0 ×1`.
               id: 'short.grief_without_a_grave',
-              kind: 'shell_state',
+              kind: 'trait',
               category: 'scar',
               direction: 'loss',
               title: 'Grief without a grave',
@@ -612,8 +632,28 @@ export const ONE_BODY_SHORT_TEMPLATE: UnifiedActionTemplate = {
             'arm and walks them off it. The count is never made.',
           changes: [
             {
+              // `kind: 'trait'` because the chip anchors an *attachment* node
+              // (`stateNoun.entityId: 'trait.condition.grieving'`,
+              // `visualKind: 'attachment'`) — the same form both proved
+              // siblings use (`standing-the-line.ts:1002`,
+              // `the-sign-over-the-ruin.ts:731`). It was `shell_state`, which
+              // is the kind for a state on the shell with no attachment node
+              // behind it (`short.something_gave` below is correctly that).
+              // The mis-declaration was not cosmetic: `classifyChangeKind`
+              // renders `shell_state`+loss as a **toll** rather than a
+              // **wound** (`buildAftermathConsequences.ts:403-421`), and
+              // `buildEncounterAftermathOverview` counts it among *hooks*
+              // rather than traits (`unifiedActionResolution.ts:779-782`), so
+              // the shell reported a toll and a hook while the agent walked
+              // off carrying a live `grieving` edge. It also made the change
+              // contribute to no system connection at all in
+              // `systemsOfChange`, which is what Stage 4 read as an unapplied
+              // condition. Backing write: step 0 `failureMetadata`
+              // `condition_attachment` — traced live at
+              // `condition_attachment[0]: trait.condition.grieving →
+              // asc.archetype.chaos_0 ×1`.
               id: 'short.grief_without_a_grave',
-              kind: 'shell_state',
+              kind: 'trait',
               category: 'scar',
               direction: 'loss',
               title: 'Grief without a grave',

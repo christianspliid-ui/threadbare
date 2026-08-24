@@ -604,7 +604,42 @@ export const TOLL_OF_BLADES_TEMPLATE: UnifiedActionTemplate = {
           id: 'toll.let_them_rest',
           label: 'Let them rest before the road',
           intent: 'The god spends the moment on the body in front of them. The person matters more than the story.',
-          effects: [{ kind: 'remove_condition', conditionTraitId: 'trait.condition.exhausted' }],
+          /**
+           * `remove_condition` alone made this an **empty mercy on most
+           * histories**. `exhausted` has exactly one minter — step 1's own
+           * `failureMetadata` — and these reactions live on `fallback`, so the
+           * card is offered on all five bands. On every history where step 1
+           * did not fail there is nothing to lift, and the removal traces
+           * `removed 0 edge(s)` while still reporting `success: true`. Two of
+           * the five bands (`critical_success`, `success`) require a clean
+           * step 1 by construction, so on those it could *never* do anything;
+           * `success_at_cost` reaches it both ways and the pure-`near_miss`
+           * history — the one seed 42 rolls — is the empty one.
+           *
+           * The fix is the one the sibling already shipped for the identical
+           * shape: `gp.walk_it_off` in `the-garrisons-price.ts` rides a
+           * `bond_change` alongside its own conditional `remove_condition`
+           * *"so this reaction is never a pure no-op on a reachable path"*.
+           * Here the always-landing write is body-facing rather than
+           * story-facing, because that is what this card's `intent` promises
+           * and because `toll.let_the_story_travel` already owns the story
+           * side. `quintessence_shift` is the person-wear channel this batch
+           * already uses (`one-body-short.ts` spends it as -0.06 for what a
+           * failed count costs the counter); +0.06 is the same notch spent
+           * the other way. Positive delta = recovery
+           * (`unifiedAction.ts:467`), and the applier only skips on a missing
+           * actor or an unresolvable target, neither of which an aftermath
+           * reaction can reach — so this arm lands on every path the card is
+           * offered on.
+           *
+           * The removal stays, second, as the conditional bonus: on the
+           * histories where step 1 did fail it lifts the exhaustion it was
+           * written for. It is no longer the card's only promise.
+           */
+          effects: [
+            { kind: 'quintessence_shift', delta: 0.06, source: 'toll_of_blades.let_them_rest' },
+            { kind: 'remove_condition', conditionTraitId: 'trait.condition.exhausted' },
+          ],
         },
         {
           id: 'toll.let_the_story_travel',

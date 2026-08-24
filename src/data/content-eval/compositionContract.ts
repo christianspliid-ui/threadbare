@@ -1039,14 +1039,44 @@ function locatedAuthoring(template: UnifiedActionTemplate): readonly LocatedAuth
     }
   }
 
-  // Step-outcome metadata (THR-783) fires with the step, not with an aftermath
-  // pick, so it is unconditional and band-agnostic here. A `rewardPool` recipe
-  // is the same: it is the other authoring route `hasReward` accepts.
+  // Step-outcome metadata (THR-783) fires with the step rather than with an
+  // aftermath pick, so it needs no reaction id. Whether it is *band*-agnostic is
+  // a separate question, and the answer is "usually, but not always" — this
+  // comment previously said "unconditional and band-agnostic", which is false in
+  // one provable case and cost a false positive (THR-1221).
+  //
+  // The subtlety: `failureMetadata` fires on that STEP's own outcome, while the
+  // band is the ACTION's aggregate. `computeFinalActionOutcome` returns
+  // `success_at_cost` whenever any step failed, so on a `continue_weakened` step
+  // a failure both fires `failureMetadata` *and* lands on a success-side band.
+  // Tagging that to the failure bands would be wrong. Symmetrically, a step can
+  // succeed while a later one fails, so `successMetadata` reaches failure bands.
+  // Band-agnostic is therefore the correct default and stays.
+  //
+  // The one provable exception: when a step declares `fail_action`, a failure
+  // there resolves the action immediately (`unifiedActionLifecycle.ts:177-190`),
+  // so that metadata can only ever be read on a failure-side band. Tagging it is
+  // a TIGHTENING — it can move a system from `unconditional` to `otherBand` for a
+  // success-side run, never the reverse — so it cannot launder a missing write
+  // into a pass. It is also the only case where the implication actually holds.
+  const failureOnlyBands = FAILURE_BANDS;
   for (const step of plainSteps(template)) {
     for (const effect of step.successMetadata?.effects ?? []) push(systemsOfEffect(effect));
-    for (const effect of step.failureMetadata?.effects ?? []) push(systemsOfEffect(effect));
-    if (step.successMetadata?.rewardPool || step.failureMetadata?.rewardPool) {
-      push(['rewards']);
+    const failureResolvesAction = step.failBehavior === 'fail_action';
+    for (const effect of step.failureMetadata?.effects ?? []) {
+      if (failureResolvesAction) {
+        for (const band of failureOnlyBands) push(systemsOfEffect(effect), undefined, band);
+      } else {
+        push(systemsOfEffect(effect));
+      }
+    }
+    if (step.successMetadata?.rewardPool) push(['rewards']);
+    if (step.failureMetadata?.rewardPool) {
+      if (failureResolvesAction) {
+        for (const band of failureOnlyBands) push(['rewards'], undefined, band);
+      } else {
+        push(['rewards']);
+      }
     }
   }
 
