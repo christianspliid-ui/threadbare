@@ -30,7 +30,19 @@ const ESSENCE_COLOR = 'var(--veil-gold)';
 const PIP_LETTER_SPACING = '0.14em';
 
 export interface OddsPipsProps {
-  /** Raw 0–1 magnitude — a `forecastDelta` or a success probability. */
+  /**
+   * Raw 0–1 magnitude, and it must be a quantity in **odds-space** — either a
+   * movement of the odds (`forecastDelta`, signed) or where they stand (a
+   * success probability). Both readings are intended: THR-890 put the forecast
+   * into the card row's language on purpose, so the player reads one vocabulary
+   * across the surface.
+   *
+   * What may *not* be passed is a number that is merely 0–1 shaped. THR-977:
+   * the derived skill line fed its absolute capability here, and the row then
+   * said "this moves the roll by ~85%" about a value meaning "she is very good
+   * at stone". If a quantity does not answer "what are the odds, or what moves
+   * them", it does not belong in this vocabulary — THR-972's ruling.
+   */
   value: number;
   /** Glyph size in px. */
   size?: number;

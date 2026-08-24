@@ -636,8 +636,14 @@ describe('buildNudgePhaseModel — derived factor lines (THR-892)', () => {
     expect(skill!.text).toContain('Sera Vance');
     expect(skill!.text).not.toContain(':');
     expect(skill!.polarity).toBe('for');
-    // The model carries the number so the row can draw pips.
-    expect(typeof skill!.delta).toBe('number');
+    // THR-977: the line carries NO delta and so draws no pips. Capability is not
+    // an effect on the odds, and the pip row speaks only the odds vocabulary
+    // (THR-972). The magnitude reaches the player through the sentence's word.
+    expect(skill!.delta).toBeUndefined();
+    // The line itself survives — this pins the absence of the pips, not the
+    // absence of the factor. The counter-arm that not every delta was nuked is
+    // the equipment test below, which still pins a literal 0.06.
+    expect(skill!.text.length).toBeGreaterThan(0);
   });
 
   it('derives an equipment line from a carried artifact, and drops it when the artifact is gone', () => {
