@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-24 14:54 local (12:54 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-24 15:55 local (13:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -16,7 +16,7 @@ Recommended build order: **siege and the war-band (6)**, ruins and the delve (5)
 
 - **The Grateful Kin** — [play it](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin) · [good ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin&outcome=critical_success) · [bad ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin&outcome=critical_failure)
 - **The Unsafe Bridge** — [play it](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge) · [good ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge&outcome=critical_success) · [costly ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge&outcome=success_at_cost)
-- **The Table That Holds** — [play it](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.the_table_that_holds) · [good ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.the_table_that_holds&outcome=critical_success). Shipped 24 August: the Kin's welcome finally paying off, from your one-word approval the same morning. New, so no verdict is owed on it yet — but it is the freshest read on where the voice has landed.
+- **The Table That Holds** — [play it](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.the_table_that_holds) · [good ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.the_table_that_holds&outcome=critical_success). Shipped 24 August from your one-word approval the same morning. No verdict owed on it yet — but it is the freshest read on where the voice has landed.
 
 **Are these two worth meeting a second time?** Nine days open — the oldest ask on the board.
 
@@ -67,6 +67,7 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
+- 2026-08-24: **the word "reputation" gets one definition and the other five get named** — [THR-1210](https://linear.app/threadbare/issue/THR-1210/ul-proposal-reputation-the-social-score-that-modifies-interactions) ([PR #1594](https://github.com/christianspliid-ui/threadbare/pull/1594)): the glossary entry behind your unification ruling, so the next author cannot re-blur it.
 - 2026-08-24: **thirty-one percent of the game's reputation writes stop being thrown away** — [THR-1207](https://linear.app/threadbare/issue/THR-1207/dead-reputation-tally-keys-re-author-every-off-axis-tally-write-to-the) ([PR #1591](https://github.com/christianspliid-ui/threadbare/pull/1591)): guild lines where a mortal built standing that never existed now name the mechanism their fiction meant.
 - 2026-08-24: **your 1,200 story hooks are in the repo** — you answered *"yes"* at 10:35 and [THR-1217](https://linear.app/threadbare/issue/THR-1217/publish-the-1200-hook-quest-corpus-christian-approved-it-design-still) merged at 13:24 ([PR #1592](https://github.com/christianspliid-ui/threadbare/pull/1592)). Thirteen files, live where the encounter factory reads them — and the factory's hook step no longer reports success while quietly using a placeholder.
 - 2026-08-24: **"The Table That Holds" is live** — you answered *"fine"* at 10:36 and [THR-1182](https://linear.app/threadbare/issue/THR-1182/the-grateful-kins-standing-welcome-has-no-return-visit-author-the) merged at 14:39 ([PR #1593](https://github.com/christianspliid-ui/threadbare/pull/1593)). The Grateful Kin has promised since THR-1175 that a town keeps its door open for you; [now the world acts on it](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.the_table_that_holds). Six hours from approval to on screen.
@@ -76,7 +77,6 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 - 2026-08-24: **a rollable table of story seeds** — [THR-1147](https://linear.app/threadbare/issue/THR-1147/plot-hook-table-rollable-story-seed-inspiration-for-the-encounter): used for real within the hour, by the brief you approved this morning.
 - 2026-08-24: **reputation is now one thing** — [THR-1206](https://linear.app/threadbare/issue/THR-1206/reputation-is-the-social-score-between-any-two-parties-unify-faction) ([PR #1586](https://github.com/christianspliid-ui/threadbare/pull/1586)): six different scores wore the word; your ruling made it the one social score between any two parties. From your 16:40 chat to merged and live, unattended, before morning.
 - 2026-08-23: **the bond chip stops arguing with itself** — [THR-1205](https://linear.app/threadbare/issue/THR-1205/bond-chip-renders-red-with-an-up-arrow-and-hides-its-effect-in-prose) ([PR #1584](https://github.com/christianspliid-ui/threadbare/pull/1584)): you found it at 17:17 playing The Grateful Kin — red with an up arrow, effect hidden in prose. Filed, built, merged and deployed in eighty minutes.
-- 2026-08-23: **two backstories stop calling a mortal's ruthlessness "the patience"** — [THR-1204](https://linear.app/threadbare/issue/THR-1204/mercy-ruthlessness-negative-bodies-1-and-3-call-the-disposition-the) ([PR #1583](https://github.com/christianspliid-ui/threadbare/pull/1583)): two sentences named the quality and then contradicted it three words later.
 
 ---
 
