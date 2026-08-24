@@ -687,7 +687,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['bargain', 'scarcity'],
     reaches: ['gold', 'shadow'],
     source: 'vault: Archetypes/Ordeal — The Impossible Bargain',
-    usedBy: [],
+    usedBy: ['encounter.border.the_garrisons_price'],
   },
   {
     id: 'hook.forbidden_knowledge_price',

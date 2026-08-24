@@ -41,6 +41,7 @@ const OUTSIDE_CONTRACT_MIGRATION: readonly string[] = [
   'encounter.border.toll_of_blades',
   'encounter.border.the_sign_over_the_ruin',
   'encounter.border.standing_the_line',
+  'encounter.border.the_garrisons_price',
 ];
 
 describe('branching encounters migrate to encoded EncounterContract metadata', () => {

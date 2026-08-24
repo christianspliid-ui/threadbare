@@ -196,6 +196,7 @@ import { ONE_BODY_SHORT_TEMPLATE } from './encounters/one-body-short';
 import { TOLL_OF_BLADES_TEMPLATE } from './encounters/toll-of-blades';
 import { THE_SIGN_OVER_THE_RUIN_TEMPLATE } from './encounters/the-sign-over-the-ruin';
 import { STANDING_THE_LINE_TEMPLATE } from './encounters/standing-the-line';
+import { THE_GARRISONS_PRICE_TEMPLATE } from './encounters/the-garrisons-price';
 import { COURTYARD_DUEL_TEMPLATE } from './encounters/the-courtyard-duel';
 import { BRINK_RESCUE_TEMPLATE } from './encounters/the-brink-rescue';
 import { LETTERS_OF_INTRODUCTION_TEMPLATE } from './encounters/the-letters-of-introduction';
@@ -5598,6 +5599,7 @@ const RAW_UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   TOLL_OF_BLADES_TEMPLATE,
   THE_SIGN_OVER_THE_RUIN_TEMPLATE,
   STANDING_THE_LINE_TEMPLATE,
+  THE_GARRISONS_PRICE_TEMPLATE,
   COURTYARD_DUEL_TEMPLATE,
   BRINK_RESCUE_TEMPLATE,
   LETTERS_OF_INTRODUCTION_TEMPLATE,
@@ -5691,6 +5693,7 @@ export const LOCATION_BRANCHING_ENCOUNTER_TEMPLATES: readonly UnifiedActionTempl
   TOLL_OF_BLADES_TEMPLATE,
   THE_SIGN_OVER_THE_RUIN_TEMPLATE,
   STANDING_THE_LINE_TEMPLATE,
+  THE_GARRISONS_PRICE_TEMPLATE,
   COURTYARD_DUEL_TEMPLATE,
   BRINK_RESCUE_TEMPLATE,
   LETTERS_OF_INTRODUCTION_TEMPLATE,
