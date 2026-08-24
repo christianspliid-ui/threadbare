@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-24 07:39 local (05:39 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-24 07:55 local (05:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -11,7 +11,7 @@ You played The Grateful Kin yesterday at 17:17, said the bond chip was wrong, an
 - **The Grateful Kin** — [play it](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin) · [good ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin&outcome=critical_success) · [bad ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin&outcome=critical_failure)
 - **The Unsafe Bridge** — [play it](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge) · [good ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge&outcome=critical_success) · [costly ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge&outcome=success_at_cost)
 
-**Are these two worth meeting a second time?** Yes releases batch 2 — the remaining nine of fifteen, work the builders can start today on a shelf that is otherwise down to one small job. No tells the line what the bar is still missing, exactly as the chip complaint did. Waiting eight days.
+**Are these two worth meeting a second time?** Yes releases batch 2 — the remaining nine of fifteen, work the builders can start today on a shelf that is otherwise down to one small job. No tells the line what the bar is still missing, exactly as the chip complaint did. Waiting eight days — the oldest open ask on the board.
 
 ### 2. What is a run *about*? — [THR-1198](https://linear.app/threadbare/issue/THR-1198/the-48-authored-mandate-strings-are-wired-but-unreachable-no-live-game)
 
@@ -22,7 +22,7 @@ Forty-eight authored lines narrate a campaign's milestones — a stage advancing
 - **Remembrance** — write the milestone prose for the twelve hungers instead; the existing forty-eight stay unread.
 - **Named campaigns** — give the twelve authored mandates a route back into play. That changes how a run's purpose is *chosen*, not just what it reads like.
 
-Nothing is blocked while you decide, and either answer is immediately buildable — the cheapest thing here to put work back on the shelf.
+**This stopped being free to leave open.** At 07:54 the builders put [THR-1214](https://linear.app/threadbare/issue/THR-1214/wire-mandate-milestone-prose-the-48-authored-strings-surface-at) on the shelf, from your wave-1 *"wire, not delete"* ruling. Its finish line is *all forty-eight lines reach a player* — which is exactly what the question above decides. The wiring half can proceed; that half cannot. Either answer is immediately buildable.
 
 ### 3. Ten minutes to shape one encounter — [THR-1182](https://linear.app/threadbare/issue/THR-1182/the-grateful-kins-standing-welcome-has-no-return-visit-author-the)
 
@@ -38,9 +38,9 @@ There is a finished, unused piece of sound design: on committing a nudge, roughl
 
 **Does committing feel better with that beat, or should the outcome land immediately?** Pure feel; no measurement settles it. Either answer closes the ticket — wired to the encounter veil, or retired with its constants and tests. Open eight days. Two lanes recommend **no**: unskippable on every commit turns tense into waiting, and the timings stay recoverable from history.
 
-### 5. More design hours — last night proved it in both directions
+### 5. More design hours — only a sitting with you adds new ground
 
-**Nothing unattended refills the shelf. Only a session with you does — and the builders empty it faster than that.** Your reputation sitting ran 16:40 → 17:15 and produced a merged design plus two buildable jobs, the first program work to reach the board in six days. It was built, merged and live before you woke, and the shelf is now down to one documentation job. Thirty-five minutes of you bought roughly two hours of building. In the order you set:
+**Only a sitting with you puts *new* design on the shelf.** Your reputation sitting ran 16:40 → 17:15 and produced a merged design plus two buildable jobs — the first program work to reach the board in six days, built and live before you woke. Thirty-five minutes of you bought roughly two hours of building. The shelf has since refilled to three jobs, but all three are follow-through on ground already agreed, not new ground. In the order you set:
 
 - **The three wave-1 sessions** you ruled on — shared machinery first, the hunger vocabulary second, [nations and named areas simulated rather than drawn](https://linear.app/threadbare/issue/THR-1155/nations-and-named-areas-are-rendered-not-simulated-promote-both-to) third. Your own handoff puts the reputation build *after* the shared machinery, so that sitting now gates the most.
 - **[Unify the card grammar](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** — your 6 August note: action cards are too wordy, you cannot tell what they do, playing one gives no feedback, while encounter cards already read the way you wanted. Staged with its reading list gathered; holding the single design slot since 19 August.
