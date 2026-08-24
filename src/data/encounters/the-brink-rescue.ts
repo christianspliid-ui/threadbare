@@ -172,14 +172,14 @@ const THREAD_OUT_AFTERMATH = {
   changes: [
     {
       id: 'thread_pell_survived',
-      kind: 'reputation' as const,
+      kind: 'shell_state' as const,
       title: '{cast:survivor}',
       detail: 'Alive. Carries the ward without knowing what it is. The quintessence-thread has returned to normal tension.',
       polarity: 'gain' as const,
     },
     {
       id: 'thread_nessa_present',
-      kind: 'reputation' as const,
+      kind: 'shell_state' as const,
       title: '{cast:bystander}',
       detail: 'Held the perimeter with a rope. Did not need to go in. She does not know why she was certain she did not need to.',
       polarity: 'mixed' as const,
@@ -239,14 +239,14 @@ const BYSTANDER_AFTERMATH = {
   changes: [
     {
       id: 'bystander_pell_survived',
-      kind: 'reputation' as const,
+      kind: 'shell_state' as const,
       title: '{cast:survivor}',
       detail: 'Alive, rescued by {cast:bystander}. Carries the ward without understanding it. The thread is slack.',
       polarity: 'gain' as const,
     },
     {
       id: 'bystander_nessa_marked',
-      kind: 'reputation' as const,
+      kind: 'shell_state' as const,
       title: '{cast:bystander}',
       detail: 'Did something she cannot fully explain. The courage that moved her past the threshold was real — it was also not entirely hers.',
       polarity: 'gain' as const,

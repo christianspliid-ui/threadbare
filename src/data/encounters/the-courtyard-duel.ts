@@ -182,16 +182,16 @@ const TIP_SKILL_AFTERMATH = {
   changes: [
     {
       id: 'skill_vaera_standing',
-      kind: 'reputation' as const,
+      kind: 'shell_state' as const,
       title: '{cast:vaera}',
-      detail: 'The accusation is formally unproven. Her standing survives, shaken but intact. The token is in her possession.',
+      detail: 'The accusation is formally unproven. She leaves the courtyard under no judgment, shaken but intact, the token in her possession.',
       polarity: 'gain' as const,
     },
     {
       id: 'skill_breck_diminished',
-      kind: 'reputation' as const,
+      kind: 'shell_state' as const,
       title: '{cast:challenger}',
-      detail: 'Lost a bout he was favored to win, publicly. His standing behind the accusation is compromised.',
+      detail: 'Lost a bout he was favored to win, publicly. The accusation he brought now rests on a loser\'s word.',
       polarity: 'mixed' as const,
     },
     {
@@ -249,14 +249,14 @@ const MANIPULATE_TERMS_AFTERMATH = {
   changes: [
     {
       id: 'terms_vaera_escaped',
-      kind: 'reputation' as const,
+      kind: 'shell_state' as const,
       title: '{cast:vaera}',
-      detail: 'Standing intact through technical finding. Not vindicated — escaped. She knows something intervened.',
+      detail: 'Escaped through a technical finding, not vindicated. She knows something intervened.',
       polarity: 'mixed' as const,
     },
     {
       id: 'terms_breck_contested',
-      kind: 'reputation' as const,
+      kind: 'shell_state' as const,
       title: '{cast:challenger}',
       detail: 'Physically won but formally inconclusive. His accusation is unresolved, which may be worse than losing.',
       polarity: 'mixed' as const,
