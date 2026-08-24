@@ -1,13 +1,13 @@
 # Briefing
-**Generated:** 2026-08-24 23:00 local (21:00 UTC) · keep-work-flowing-cc
+**Generated:** 2026-08-24 23:56 local (21:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**Say yes to the batch-2 brief. It is now the only thing between you and the play session — the other half of the pair started running this hour.**
+**Say yes to the batch-2 brief. It is still the only thing between you and the play session — and it is now the only unstarted item on the board.**
 
 [Retrofit batch 2](https://linear.app/threadbare/issue/THR-1222/run-retrofit-batch-2-the-camp-seven-through-the-factory-line-shrine) — the **camp seven**: shrine offering, sharpening blades, warding the camp, a small prayer, rest and reflection, tending wounds, scouting the perimeter. All seven exist today and all seven are thin — the census behind the brief found **no typed consequences at all** in that set, only bare standing nudges that leave no mark on the world.
 
-**What changed since the last brief:** the [border-perils batch](https://linear.app/threadbare/issue/THR-1221/run-the-border-perils-batch-6-new-encounters-through-the-full-factory) — the six you approved at 18:08 — **was claimed at 22:02 and is running through the factory line right now.** Six new encounters on dangerous ground are being authored while you read this. Batch 2 is the twin that has not started, and the only reason it has not is that its brief has not been said yes to.
+**Where things stand this hour:** the [border-perils batch](https://linear.app/threadbare/issue/THR-1221/run-the-border-perils-batch-6-new-encounters-through-the-full-factory) — the six you approved at 18:08 — has been running through the factory line for about two hours and is still working. Nothing to do there; a six-encounter batch is a long run by design. Batch 2 is its twin, and the only reason it has not started is that its brief has not been said yes to.
 
 **Why it is still the one thing:** [your integrated checkpoint](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with) — *you play all five encounters with every component at standard, in one sitting* — has exactly one item in front of it, and **the shrine offering is roster encounter #1 of that sitting.** The checkpoint cannot invite you while that encounter is below standard.
 
@@ -28,16 +28,16 @@
 
 ## Queue
 
-**One batch in flight, and the shelf behind it is bare.** [THR-1221](https://linear.app/threadbare/issue/THR-1221/run-the-border-perils-batch-6-new-encounters-through-the-full-factory) left the queue at 22:02 and is being worked — that is the good news and the reason the count dropped. What remains claimable is two Low accessibility deferrals and nothing else.
+**One batch in flight, and the shelf behind it is still bare.** [THR-1221](https://linear.app/threadbare/issue/THR-1221/run-the-border-perils-batch-6-new-encounters-through-the-full-factory) has been claimed and worked for ~2h — long by design for six encounters, and not yet stale. What remains claimable is two Low accessibility deferrals and nothing else.
 
 - [**THR-1094**](https://linear.app/threadbare/issue/THR-1094/conditions-are-named-on-player-surfaces-but-are-not-a-tooltip-class) — Low. The game calls an agent *exhausted*, *grieving*, *cursed*, and hovering the word gives nothing back.
 - [**THR-1095**](https://linear.app/threadbare/issue/THR-1095/the-shared-tooltip-trigger-is-not-focusable-so-every-tooltip-in-the) — Low. Tooltips answer only to a mouse, so a keyboard player cannot read the game's own vocabulary.
 
-**This is the shape your yes above fixes.** The next real product work on the shelf is batch 2; without it, the hour after next has only Low deferrals to pull. Nothing merged between 22:00 and 23:00 — the batch run is long by design.
+**This is the shape your yes above fixes.** The next real product work on the shelf is batch 2; without it, the pickup lane's next turn has only Low deferrals to pull. Nothing merged between 23:00 and 00:00, and no PR is open — consistent with a batch mid-run.
 
 **Four parks, all intact** (no assignee, `In Dev`): [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to) (9 days — superseded in sequence by the two live batches), [THR-1216](https://linear.app/threadbare/issue/THR-1216/director-ruling-the-encounter-target-mix-does-siege-go-first) (your siege ruling recorded; closing it is a lane's job), [THR-1168](https://linear.app/threadbare/issue/THR-1168/two-authored-encounter-audio-moments-have-no-live-caller-wire-or) (7 days), [THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server) (9 days).
 
 ## Health
 
-- **All probes green.** Live site serving `cbacc8d7`. CI healthy, both background jobs healthy, no PRs open or waiting to merge, all 9 scheduled lanes within schedule, home tree clean and level with `origin/main`, worktree reaper swept 22:40 local.
-- **Lane silence:** the 35-hour gap of 20–22 August is still on the record with no pause marker covering it — promoted to your list above, since one word from you closes it and nothing else can. The three later gaps are overnight-shaped and declined per your 8 August ruling.
+- **All probes green.** Live site serving `cbacc8d7`. CI healthy, both background jobs healthy, no PRs open or waiting to merge, all 9 scheduled lanes within schedule, home tree clean and level with `origin/main`, worktree reaper swept 23:40 local.
+- **Lane silence:** the 35-hour gap of 20–22 August is still on the record with no pause marker covering it — it stays on your list above, since one word from you closes it and nothing else can. The three later gaps are overnight-shaped and declined per your 8 August ruling.
