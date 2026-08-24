@@ -122,34 +122,102 @@ to a concrete image (*"they went down on the first spear-butt and stayed down"*)
 ## 2 · Seam echoes (trigger 22) — the class the detectors cannot see
 
 The draft ships a seam table, which is the right instinct, and **the table checks the wrong
-seams**. It checks opening→spine and spine→band. The actual render order is
+seams**. It checks `opening→spine` and `spine→band` and stops. That is the narrow audit every
+draft in this batch wrote, and the misses cluster in exactly the part it skips.
+
+Two things about trigger 22 need saying before the table. First, its own wording — *"across a
+paragraph boundary"* — does not describe most of what follows, because the worst echoes here
+are not between paragraphs at all: they are between **surfaces that render together on one
+screen**. Read the trigger's intent. Second, the render order is longer than the draft's
+model of it:
 
 ```
-opening  →  narrativeTemplates.initiation  →  step-1 spine  →  step-1 band prose
-         →  step-2 spine  →  step-2 band prose  →  aftermath overview  →  chips
+opening → narrativeTemplates.initiation → step-1 spine → step-1 base band text
+        + step-1 card fragments (up to three, layered)
+        → step-2 spine → step-2 base band text + step-2 card fragments
+        → aftermath overview → chips (title · causeClause · detail), up to three
+        → narrativeTemplates.success/.failure
 ```
 
-so `opening→initiation`, `initiation→spine`, `band→overview` and `overview→chip` are all
-seams, and none of them was read. Every one of them carries an echo.
+So the seam set is: `opening→initiation`, `initiation→spine`, `spine→base band text`,
+**`base band text→card fragment`**, **`card fragment→card fragment` for fragments active on
+the same band**, `band→overview`, `overview→chip`, **`chip→chip` within one band**, and
+`narrativeTemplates.*` against everything it renders beside. The draft read two of nine.
 
-| Seam | The echo | Verdict |
-|---|---|---|
-| **opening → initiation** (all four classes) | Opening: *"**A column has halted** along the verge"* / *"**The column has stopped** inside it"* / *"**A column has halted** on that ground"*. Initiation, next paragraph: *"**A column has stopped** across the road…"* | **Fires.** Same subject, same verb, same information, back to back. Worst at `ruin` and `wayside`, where it is nearly word for word |
-| **initiation → spine 1** | Initiation: *"the toll is set by **the serjeant** working down the line with **a wax tablet**"*. Spine: *"**A serjeant** works down it … **wax tablet** in hand"* | **Fires.** The serjeant and the tablet are introduced twice in consecutive paragraphs. The draft's own checklist answer A3 says the serjeant *"is introduced in the setting-neutral spine"* — the initiation contradicts it |
-| **step-2 `critical_success` band → `critical_success` overview** | Afterimage: *"The last wagon **went by** and the serjeant lifted two fingers off **the tablet** **as it passed**."* Overview, immediately below: *"The column **went past** … wrote it in the margin of **the tablet**."* | **Fires.** These two render on one screen |
-| **step-2 `failure` band → `failure` overview** | Afterimage: *"**They sat down in the verge** before the herd was through, and **the rest of the column stepped around them**."* Overview: *"They were walked off the road, and the column took the pack on the way past."* | **Fires twice over** — see § 3, this pair is also a contradiction |
-| **step-1 `success` afterimage → `success` overview** | *"**The stylus moved** on down the tablet"* → *"**The stylus moved** past their row without stopping"* | **Fires** |
-| **step-2 `critical_failure` band → overview** | *"…and **took the pack** on the way past"* → *"What the column did not **take**, the mud did"* | **Fires** (mild) |
-| **spine 2 → step-1 `success` afterimage** | *"The **pack stayed on** the agent's back"* → *"The agent stays where they are, **pack still on**"* | **Fires** (mild). The pack is the stake and a through-line is legitimate; the near-identical phrasing two paragraphs apart is not |
-| **`success` overview → `success` chip detail** | *"the column's **officers heard about** it by evening"* → *"The **officers heard about** the row that never got written"* | **Fires.** Overview sits directly above its chips |
-| **`critical_success` overview → PATH chip causeClause** | *"**asked for a name**"* → *"**A name asked for** at the tail of the column"* | **Fires** |
-| **`success_at_cost` overview → BOND chip causeClause** | *"closed **the tablet two rows early**"* → *"The **tablet** shut **two rows** short"* | **Fires** |
+### 2a · What fired
 
-Seams re-read after revision, named individually, all clean: `wayside`→initiation ·
-`ruin`→initiation · `battlefield`→initiation · `stronghold`→initiation · initiation→spine 1
-· spine 1→each of the five step-1 band texts · spine 1→spine 2 (via the intervening band
-text) · spine 2→each of the five step-2 band texts · each step-2 band text→its own overview
-· each overview→its own chips · and the four openings against each other.
+**Between paragraphs**
+
+| Seam | The echo |
+|---|---|
+| **opening → initiation** (all four classes) | Opening: *"**A column has halted** along the verge"* / *"**The column has stopped** inside it"* / *"**A column has halted** on that ground"*. Initiation, next paragraph: *"**A column has stopped** across the road…"* Same subject, same verb, same information, back to back |
+| **initiation → spine 1** | Initiation: *"the toll is set by **the serjeant** working down the line with **a wax tablet**"*. Spine: *"**A serjeant** works down it … **wax tablet** in hand"*. Both introduce the same two things. The draft's own checklist answer A3 says the serjeant *"is introduced in the setting-neutral spine"* — the initiation contradicts it |
+| **spine 2 → step-1 `success` afterimage** | *"The **pack stayed on** the agent's back"* → *"The agent stays where they are, **pack still on"***. The pack is the stake and a through-line is legitimate; near-identical phrasing two paragraphs apart is not |
+
+**Inside one ending — the surfaces that land together**
+
+| Seam | The echo |
+|---|---|
+| **step-1 `critical_success`: base → fragment** | Base: *"The serjeant **looked** at the road, **looked** at them, and left the **row blank**."* Full Weight: *"…The line **looked** at that."* No Middle Ground: *"…the **row stayed blank**."* *Looked* three times, *row blank* twice, one screen |
+| **step-1 `critical_success`: fragment → fragment** | Full Weight *"The two **spears came up**"* against No Middle Ground *"The **spears came back**"* — both active together |
+| **step-1 `failure`: fragment → fragment** | A Sudden Surge *"The column **had more bodies**"* against Full Weight *"the column simply **had more of it**"* — same construction, same punchline, both active |
+| **step-1 `critical_failure`: base → fragment** | Base *"They **went down** in the verge"* against the gambit's *"…it went the other direction"* rewrite candidate, and against Full Weight's *"the road came up fast"* — the fall told twice, sometimes three times |
+| **step-1 `success_at_cost`: base → fragment** | Base *"The column **took** a sack"* → A Sudden Surge *"the shoulder that **took** the spear-shaft"* (plus *shoulder* twice inside the fragment) |
+| **step-2 `success_at_cost`: base → fragment** | Base *"They were still **standing** when the tail cleared"* → By The Book *"**Standing** to the end had been bought already"* |
+| **step-2 `failure`: base → fragment → fragment** | Base *"They **sat down**"*, Full Weight *"and then they **folded**"*, Shared Watch *"and **went down** together"* — the collapse narrated three times in one band. Plus The Slow Push *"The afternoon was **longer than** the push"* against Shared Watch's comparative, the same shape twice |
+| **step-2 `critical_failure`: base → fragment** | Base *"**stepped over** them"* → By The Book *"a body the herd has already **walked over**"* |
+| **step-2 `critical_success`: band → overview** | Afterimage *"The last wagon **went by** and the serjeant lifted two fingers off **the tablet** **as it passed**"* → overview *"The column **went past** … wrote it in the margin of **the tablet**"* |
+| **step-2 `failure`: band → overview** | Afterimage *"They sat down in the verge … the rest of the column stepped around them"* → overview *"They were walked off the road…"*. Also a contradiction — § 3 |
+| **step-1 `success` → `success` overview** | *"**The stylus moved** on down the tablet"* → *"**The stylus moved** past their row without stopping"* |
+| **step-2 `critical_failure`: band → overview** | *"…and **took the pack** on the way past"* → *"What the column did not **take**, the mud did"*; plus *"**The last** of the column"* → *"the **last** cart"* |
+| **`success` overview → chip detail** | *"the column's **officers heard about** it by evening"* → *"The **officers heard about** the row that never got written"* |
+| **`critical_success` overview → PATH causeClause** | *"**asked for a name**"* → *"**A name asked for** at the tail of the column"* |
+| **`success_at_cost` overview → BOND causeClause and detail** | *"closed **the tablet two rows early** … **in front of the whole line**"* → causeClause *"The **tablet** shut **two rows** short"*, detail *"**the line** watched it happen"* — three surfaces, one screen |
+| **`critical_success`: chip → chip** | Title *"Standing with the **column**"* sitting beside `stateNoun` *"standing with the **company**"* on the same chip and *"the **company**'s member list"* on the next — column and company used interchangeably where the player is being told which body they now belong to |
+| **`critical_failure`: chip → chip** | causeClause *"The **column** came through where the agent was standing"* beside causeClause *"A row the **column** found easy"* |
+| **`narrativeTemplates.success` → step-2 `success` afterimage** | *"the **agent is still on it**"* → *"the **agent was still standing on it**"* |
+| **`narrativeTemplates.failure` → `failure` overview** | *"a **long walk** and a body that will feel this for **days**"* → *"Getting up takes a while, and **walking** takes longer"* / *"the next few **days** of road"* |
+
+**Nineteen.** Twelve of them are inside a single ending, which is the region the draft's table
+did not model at all.
+
+### 2b · Seams re-read after revision — enumerated
+
+Every seam this encounter has, named, and checked against the final text. Two steps, two
+hands of six, four openings, five authored bands.
+
+- `wayside`→initiation · `ruin`→initiation · `battlefield`→initiation · `stronghold`→initiation
+- initiation→spine 1 · spine 1→spine 2 (across the intervening step-1 band text)
+- spine 1→each of the five step-1 base band texts (`near_miss` has no afterimage field)
+- spine 2→each of the five step-2 base band texts
+- step-1 base→fragment, and fragment→fragment, on all six `StepOutcome`s:
+  `critical_success` {4,5} · `success` {1,3,6} · `success_at_cost` {2} · `near_miss` {1,6} ·
+  `failure` {2,3,4} · `critical_failure` {4,5}
+- step-2 base→fragment, and fragment→fragment, on all six:
+  `critical_success` {4,6} · `success` {2,3} · `success_at_cost` {1,5} · `near_miss` {2,5} ·
+  `failure` {3,4,6} · `critical_failure` {1,4}
+- step-2 base band text→its own overview, on all five authored bands
+- each overview→each of its own chips (title, causeClause, detail)
+- chip→chip within `critical_success` (three chips) and within `critical_failure` (two)
+- `narrativeTemplates.success` and `.failure` against the overviews and afterimages they
+  render beside
+- the four openings against each other
+
+All clean. The two that needed the most work were step-2 `failure` (three collapse verbs
+across base and two fragments — now one) and `critical_success`'s three-chip stack (three
+causeClauses that all named the column or the name — now distinct).
+
+**One deliberate non-echo, recorded so a later pass does not "fix" it.** All four openings
+open on *the road* as the grammatical subject, each naming what the road does at that class
+(runs open / runs through / crosses / ends). Only one opening ever renders, so the player
+never sees the repetition; it is a structural signature, not a seam. Kept.
+
+**One deliberate motif, kept.** *"Step aside"* appears in the trait factor line (*"Being
+Proud, they will not be seen to step aside"*) and in the `critical_success` overview (*"The
+company keeps a list of people who do not step aside"*). That is the trait's flaw paying off
+as the ending's recruiting criterion — the best design idea in the packet. The draft used
+the phrase a **third** time, in the `success` carryover line, where it competed with the
+overview; that instance is cut and the motif is now exactly two beats, pre-roll and ending.
 
 **One deliberate non-echo, recorded so a later pass does not "fix" it.** All four openings
 open on *the road* as the grammatical subject, each naming what the road does at that class
@@ -216,7 +284,24 @@ Both rewritten against objects the spine establishes.
 
 `way` is a natural indefinite. `EncounterAftermathChange.detail` is **`outcome`** field class
 (`nudgeAuditDetectors.ts` → `pushAftermathVariant`: `push(change.detail, 'outcome')`), where
-natural indefinites are enforced at zero. `check:encounter` fails on this. Fixed.
+the spec's target is zero. Fixed.
+
+**One precision, because the difference matters to whoever reads this next.** The gate is a
+**density** threshold, not a count: `vaguenessDensity >= VAGUENESS_DENSITY_FAIL` (2.0 per
+100 words), summed across all three classes over the whole template. At roughly 1,200
+authored words this encounter would need about two dozen hits to go red, so *this one hit
+would not have failed `check:encounter` on its own*. It is a standards fix, not a gate
+rescue. Saying otherwise would overstate the finding — and, worse, would teach the next
+author that one hit is survivable arithmetic rather than a target of zero.
+
+**A related note that belongs to the library, not to this encounter.** `something` is on the
+**evasive** list, which is enforced in every class including `interactive` — and
+`card.stumble.signature.chaos`'s shipped title is **"Something Gives Way"**. So the library's
+own face contributes an evasive hit to every encounter that deals it, and this batch's
+`stumble` debut is the first. It is one hit against a 2.0/100w density gate, so nothing fails;
+the encounter cannot fix it either, since library membership and content are out of scope
+batch-wide. Recorded for whoever owns `CARD_CONTENT` (§ 13, item 22), not counted against
+this draft.
 
 ### The draft's field-class map is wrong in two places, and one of them is why the hit survived
 
@@ -245,7 +330,8 @@ packet carries a corrected map so Pass 3 does not inherit the false one.
 | Annotation (`notButClause`, `emDashNot`) | ≤1 per encounter | **0.** Every em-dash in the packet is followed by a noun or a list. Budget unspent |
 | Divine outcome-authorship | all | **0.** Every `effectLine` describes the god's own act; no decision verb takes a world-clause |
 | Digits / `%` in an `effectLine` | — | **0** across all twelve cards |
-| Abstraction-as-subject (by hand) | scene prose | Pass. Subjects: *the road, the roof, a column, travelers, horses, the turf, crows, the gate, wagons, two soldiers, the line, a serjeant, the stylus, the agent, the body, the company, the spears, the tablet, the herd, the mud.* Two abstractions were doing concrete work and are gone: *"the late demand"* (The Slow Push) and *"the half-measures wash out"* (No Middle Ground) |
+| Second person on a mortal-drawn template | `outcome` + `scene` only (`countSecondPerson`, carved out for `interactive` by THR-1045 so a correctly-authored `effectLine` saying *"You steady them"* does not fail) | **0**, against a `SECOND_PERSON_FAIL` of 2. This template has no `ascendant` in `actorAffinities`, so it *is* mortal-drawn and the gate is live for it. Every opening, spine, afterimage, fragment and overview is third person |
+| Abstraction-as-subject (by hand) | scene prose | Pass — and note this one is a **warning**, not a gate (THR-1092, demoted on measurement: 129 of 683 templates failed it and nothing else). Subjects: *the road, the roof, a column, travelers, horses, the turf, crows, the gate, wagons, two soldiers, the line, a serjeant, the stylus, the agent, the body, the company, the spears, the tablet, the herd, the mud.* Two abstractions were doing concrete work and are gone: *"the late demand"* (The Slow Push) and *"the half-measures wash out"* (No Middle Ground) |
 | Static authored `factorLines` (THR-892, trigger 23) | — | **0 authored.** Both steps leave `factorLines` unset; the only authored panel lines are the trait variant's (renders only for the holder) and step 2's six carryover lines (keyed on the band step 1 rolled). Verified against `StepFactorLine` — `polarity` is required and authored, `forecastDelta` optional |
 
 ---
@@ -644,7 +730,7 @@ rather than defect, but it is worth knowing the reaction is conditional in pract
 |---|---|---|
 | **15** | Detector hit | `way` in `toll.an_easy_row.detail`, an `outcome`-class field (§ 4) |
 | **17** | Effect line states shape, not mechanism | `No Middle Ground` (§ 5a) |
-| **22** | Seam echo | Ten, across four seam classes the draft's own table did not check (§ 2) |
+| **22** | Seam echo | **Nineteen**, across seven seam classes the draft's own table did not check — twelve of them inside a single ending, where the base band text, the card fragments, the overview and the chips land on the player together (§ 2) |
 | **25** | Announced mechanics in scene prose | The initiation's conditional imperatives (§ 1d) — mild instance |
 | **26** | Design-block breach | *"The picket"* named in two carryover lines and in § 4's prose claim, present in no prose; and a carryover line asserting an injury its band never described (§ 3) |
 | **29** | Unreadable compression | *"ground a battle already used"* (§ 1b) |
@@ -681,8 +767,10 @@ into the encounter's carryover made playable.
 
 **Must fix — applied**
 
-1. Ten seam echoes across `opening→initiation`, `initiation→spine`, `band→overview` and
-   `overview→chip` (§ 2).
+1. Nineteen seam echoes across `opening→initiation`, `initiation→spine`, `base band
+   text→fragment`, `fragment→fragment`, `band→overview`, `overview→chip`, `chip→chip` and
+   `narrativeTemplates.*` (§ 2). The full seam enumeration for this encounter — every one
+   checked by name — is § 2b.
 2. `failure` overview contradicting the step-2 `failure` afterimage (§ 3).
 3. *"The picket"* — an object named on a panel surface that exists in no prose; and a
    carryover line asserting an injury its band never described (§ 3).
@@ -718,5 +806,11 @@ into the encounter's carryover made playable.
 20. `crudType: 'update'` — confirm `reputationPolarity` infers positive, else set it
      explicitly.
 21. `plotHooks.ts` `usedBy` stamp for `stronghold_mobilization` at closeout.
+22. **For the `CARD_CONTENT` owner, not for this encounter:** `card.stumble.signature.chaos`
+     is titled *"Something Gives Way"*, and `something` is on the **evasive** lexicon, which
+     is enforced in every class. Every hand that deals the library's Stumble inherits one
+     evasive hit it cannot author away. One hit against a 2.0/100w density gate fails
+     nothing, and library content is out of scope for this batch — but the corpus is about
+     to start dealing this card, so the face is worth a look before it is in twenty hands.
 
 PASS WITH REVISIONS

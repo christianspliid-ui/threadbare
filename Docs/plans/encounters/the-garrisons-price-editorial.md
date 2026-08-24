@@ -380,9 +380,13 @@ the revised `initiation`.
    senseless.
 4. **Reader feels something from prose alone?** **YES.** The banner over somebody else's
    arms does it in one image.
-   **4b. No seam echoes?** **NO — four found.** This is the one gate question the draft fails
-   on its own text, and it is the class the automated detectors structurally cannot see. See
-   §9. All four fixed.
+   **4b. No seam echoes?** **NO — fourteen found**, across seven seam classes. This is the
+   one gate question the draft fails on its own text, and it is the class the automated
+   detectors structurally cannot see. Four are at the seams the draft's own audit checks;
+   **ten are inside a single ending**, where the afterimage, the `narrativeTemplates` line,
+   the band `overview` and the co-active card fragments land in sequence — and three of
+   those are verbatim repeats, including one sentence rendered three times in one failure
+   ending. See §9. All fourteen fixed.
 5. **Every card face library-generic, zero scene-bespoke prose?** **YES**, and verified
    against source rather than the draft's claim — see §10.
 6. **Every effect line states mechanism, every price real?** **YES** — see §10.
@@ -416,9 +420,39 @@ the revised `initiation`.
 
 ---
 
-## 9. Seam echoes — four found, all fixed (REVISE trigger 22)
+## 9. Seam echoes — **fourteen** found across seven seam classes, all fixed (REVISE trigger 22)
 
-Checked every opening→spine seam, the spine→band seams on both steps, and the step→step seam.
+> **Audit widened mid-pass on the orchestrator's finding, and the widening is the story.**
+> My first pass checked what the draft checked — `opening→spine`, `spine→band`, `step→step`
+> — and found **four**. Two sibling critics in this batch reported that all of *their*
+> echoes lived in a place that audit does not look: the seams **inside a single ending**,
+> where the step afterimage, the `narrativeTemplates` line, the band `overview` and up to
+> five card fragments land on the player in sequence, seconds apart. I re-ran the audit with
+> those classes enumerated and found **ten more**, three of them verbatim repeats — a rate
+> that says the narrow audit is not a lighter version of the right one, it is the wrong one.
+>
+> **Trigger 22's own wording is part of the problem.** "Across a paragraph boundary" does
+> not describe an afterimage sitting above an overview, or two card fragments rendering into
+> the same block. Read the intent: *the player is told the same thing twice in a row*. These
+> are worse than paragraph echoes, because the surfaces are closer together than paragraphs.
+
+**Every seam class enumerated: 2 steps × 6 `StepOutcome`s for base/fragment, 5 `byOutcome`
+bands for the ending seams, 5 chips across 5 bands.**
+
+| Seam class | Instances checked | Found |
+|---|---|---|
+| opening → spine | 4 | **2** |
+| `initiation` → spine | 1 | **1** |
+| afterimage → band `overview` | 10 | **5** |
+| `narrativeTemplates.success`/`.failure` → afterimage / `overview` | 12 | **3** |
+| base band text → card fragment | 12 | **1** (plus 3 fixed as part of the above) |
+| card fragment ↔ card fragment (co-active on one band) | 12 | **2** |
+| chip ↔ chip within one band | 5 | **2** |
+| step → step | 1 | 0 |
+
+The four from the first pass are §9a; the ten the widening added are §9b.
+
+### 9a — the seams the narrow audit reaches
 
 **1 · stronghold opening → spine: "plank table".**
 > opening closes: "Inside the arch, **a plank table** has been set across the passage."
@@ -458,9 +492,72 @@ the light and the turned book, the carryover keeps the cheapest line.
 
 Same three words, rendered consecutively. Fixed on the fragment side.
 
-**Seams checked and clean:** ruin→spine, battlefield→spine, spine→band on step 1 (after fix
-3), step 1→step 2 (step 1's afterimages all close on the book; step 2's spine opens on the
-paying, which is a genuine handoff, not a restatement).
+**Clean in this class:** ruin→spine, battlefield→spine, step 1→step 2 (step 1's afterimages
+all close on the book; step 2's spine opens on the paying — a genuine handoff).
+
+### 9b — the seams inside a single ending
+
+**5 · `initiation` → spine, four shared nouns.** The drafted `initiation` read *"A company
+holds the only gate on this road, and their book has a price in it for every traveler. Pay
+one and the road stays a road…"* and the spine's very next sentences are *"The road stops at
+a barrier the company put across it. Their quartermaster keeps a ledger… and reads the
+prices out of it."* The **company on the gate**, the **book**, the **price** and the
+**barrier** — all four introduced twice in adjacent surfaces. Fixed by dividing the labour:
+the `initiation` now owns only the road's exclusivity and the exit's price (*"There is no
+other road through these hills but this one, and a company is sitting on it. The low track
+goes around, three days east."*), the spine owns the book, the table and the barrier.
+
+**6–10 · afterimage → band `overview`, on all five bands.** Every drafted overview restated
+the afterimage that renders directly above it. This is the class the batch's other critics
+found and it is where this packet was weakest:
+
+| Band | Afterimage | Drafted overview | Verdict |
+|---|---|---|---|
+| `critical_success` | "They paid, the quartermaster **struck the line** through…" | "…The quartermaster **struck the line** out…" | near-verbatim |
+| `success` | "They **paid** the line out in full and **walked through the barrier** with the **road** ahead…" | "The figure was payable and it got **paid**. The **barrier** went up, and the **road** on the far side…" | both halves restated |
+| `success_at_cost` | "The ledger **closed**, and a second line went in…" | "The line **closed**, and it **closed** heavy." | same verb ×3 |
+| `failure` | "The **barrier stayed down**." (step 1) | "The **barrier stayed down** and the afternoon…" | verbatim |
+| `critical_failure` | "…and **the day went into the book** as well." | "…and **wrote the day down**." | same fact |
+
+All five overviews are rewritten so that each says what its **chips** are about rather than
+saying the afterimage again — the standing and the list a company keeps at
+`critical_success`, the ordinariness of a plain success, the honest price at
+`success_at_cost`, the fact that they will pass this post again at `failure`, and one dry
+line about arithmetic at `critical_failure`.
+
+**11–13 · `narrativeTemplates` → the band surfaces, three verbatim repeats.**
+`narrativeTemplates.failure` opens *"The barrier stayed down."*; the drafted `failure`
+overview opened with the same five words, and step 1's drafted `failureAfterimage` **closed**
+with them. **The same sentence three times inside one ending.** *"Three days east by the low
+track"* likewise sat in the narrative line and in both failure overviews.
+`narrativeTemplates.success` restated step 2's `successAfterimage` on the barrier and the
+road. Fixed on the afterimage and overview sides; the two `narrativeTemplates` lines are the
+encounter-card text and are left intact.
+
+**14 · card fragment ↔ card fragment, two pairs.** This is the class that only surfaces when
+you ask *which of these can be active at the same time*. On step 1's `failure` band, Boost
+(*"the book still did not move"*), Heavy Hand (*"the price came out unchanged"*) and Side-bet
+(*"The table went nowhere"*) were three cards saying nothing moved, and all three are
+playable on one run. On `success`, Boost (*"the figure came down"*) and Bargain (*"The figure
+came out light"*) opened the same way about the same noun. Both clusters re-angled: the Heavy
+Hand now shows the company **recomputing and getting the same figure** — which reinforces the
+honest antagonist instead of repeating a sibling — and the Side-bet keeps the reading rather
+than restating the stall.
+
+**15–16 · chip ↔ chip within one band, two pairs.** On `critical_success` both chip `detail`s
+used the same em-dash-appositive construction back to back. On both failure bands two
+adjacent `causeClause`s opened *"Argued the figure…"* / *"Argued the book…"*, and both
+`detail`s ended on the same *and it will follow you* beat (*"at the next post"* / *"next time
+they come through"*). Rewritten so each chip carries its own content: the standing chip owns
+the future, the bond chip owns the person's view.
+
+**One I introduced and caught on the final sweep, recorded because it is the honest record
+of how easy this class is.** My rewrite of the step-2 Heavy Hand `critical_failure` fragment
+read *"…it came to the same figure either way"* — which puts `way`, a natural indefinite, into
+a `bandProse` fragment, an **outcome**-class field. Fixed to *"…and the book had already
+decided what a day was."* Two rewrites of the `critical_success` overview were likewise
+needed: the first fixed the fragment opener and then restated step **2**'s afterimage
+instead of step 1's.
 
 ---
 
@@ -697,6 +794,35 @@ Run by hand against `nudgeAuditDetectors.ts`, which is the authority. `outcome`-
 enforce evasive **and** natural indefinites at zero; `scene` and `interactive` enforce evasive
 only.
 
+> **The spec page and the code disagree about two field classes, and the code wins.** Flagged
+> by the orchestrator, verified at `collectClassedTemplateProse` /
+> `pushAftermathVariant`: `body.overview` is pushed as **`scene`**, `change.detail` as
+> **`outcome`**. The spec's table says aftermath overviews are outcome-class; that is the
+> drift. The code carries its own reasoning and its own measurement in a doc comment titled
+> *"Why `overview` is `scene` and `detail` is `outcome`"* — `change.detail` is the **only**
+> statement of its consequence, so an indefinite there is the writer withholding what the
+> player cannot get anywhere else, while an `overview` sits directly above the typed chips,
+> which name every consequence explicitly. Measured over 295 templates, reading `overview`
+> as outcome flags 165 fields on indefinites against 57 genuinely evasive ones, and in the
+> reviewed slice every indefinite flag is prose like *"Nothing was promised. Nothing was
+> taken."*
+>
+> **This inverts which surfaces an author scans hardest, so a self-scan built on the spec's
+> classes is evidence about the wrong two fields.** I re-ran both. Result: the five chip
+> `detail`s are clean of natural indefinites under the strict reading, and the band
+> `overview`s — which would have been *allowed* them — happen not to use any. No verdict
+> changes; the claim is now grounded in the right check. Recorded here because the next
+> author will reasonably trust the spec table. **Worth a spec-drift ticket**; nothing in this
+> encounter depends on which way it is resolved.
+>
+> Full map as the code has it: `initiation` and each step's `narrativeTemplate` → `scene`;
+> `narrativeTemplates.success`/`.failure`, all five afterimages, every `bandProse` fragment,
+> and `change.detail` → **`outcome`**; `name`, `effectLine`, `purposeLine`, factor lines,
+> `change.title`, `reactionPrompt` and every `reaction.label`/`intent` → `interactive`; a
+> card's `fiction` and every `overview` → `scene`. `causeClause` and `stateNoun.text` are
+> **not swept at all** — written to the same bar here anyway, since a gate that does not look
+> is not a licence.
+
 | # | Field | Term | Class | Drafted | Fix |
 |---|---|---|---|---|---|
 | 1 | step-1 Boost `failure` fragment | `way` | outcome | "Steady all the **way** through, and the book still did not move." | "Steady to the end, and the book still did not move." |
@@ -808,6 +934,28 @@ maturity gate — factions are deferred-tier, so a real write is fine and a depe
 is not a member, and `applyFactionReputationGain` no-ops with `not_a_member` for a
 non-member. Correct call, kept.
 
+### Two contract rules checked on the orchestrator's flag
+
+**`concepts` is required non-empty on *every* change** — `compositionContract.ts` adds one
+violation per bare change, so declaring it on one chip of five fails the Aftermath block four
+times. **All five chips here declare a non-empty `concepts`**, each entry carries an
+`entityId` or a `tooltipId` (a list where no entry carries either is a separate violation),
+and every concept `text` is a literal substring of its chip's `detail`. Verified chip by chip.
+
+**`allAftermathEffects` does not walk card `grants`** — it walks reaction effects,
+`byOutcome` reaction effects, and both steps' `successMetadata`/`failureMetadata`, and stops
+there. Two consequences, both checked:
+
+- **The `drive` wiring is safe.** `plant_compulsion` is authored on both steps'
+  `failureMetadata`, not on a card, so the swapped-in family is visible to the draw check.
+  Had I wired it as a card grant — which would have been the tidier-looking place for it —
+  the swap would have been recorded, fictionally honest, and **invisible to the gate**.
+- **The Rewards row needed moving.** The draft counted `favor_creation` toward the Systems
+  quota's `rewards` connection; it is a *card grant* and does not count. `bond_change` in
+  step metadata carries the block on its own, so the count is unchanged at five — but the
+  packet now says which effect it is standing on. `favor_creation` and `intelligence` remain
+  real world writes at runtime; they are simply not load-bearing for the quota.
+
 ### Law 56 — every chip, after the fix
 
 | Chip | Anchor | Catalog status | Backed by |
@@ -867,7 +1015,7 @@ an inline edit in the revised packet; none is waved.
 | # | Trigger | Instances | Disposition |
 |---|---|---|---|
 | 1 | **15** — detector hit (vagueness lexicon, outcome class) | 3 | word-level rewrites, §13 |
-| 2 | **22** — seam echo | 4 | rewritten, §9 |
+| 2 | **22** — seam echo (read for intent, not for the "paragraph boundary" letter) | **14** across 7 classes | rewritten, §9 |
 | 3 | **26** — design-block breach: a declared mechanic the packet never wires (§1's standing shave) | 1 | step-1 `failureMetadata` authored, §6a |
 | 4 | **26** — design-block breach: prose contradicting the design block's binding word (`honest`) | 2 | rewritten, §1 |
 | 5 | **Consequences rule 0 / UI Law 56** — chips claiming state nothing wrote on a reachable path | 2 chips × 2 bands | aftermath rewired, §6a |
@@ -949,8 +1097,18 @@ does.
 3. **Honest-antagonist breaches** ×2 (+1 softened) — the company no longer "stops
    pretending" and no longer "finds more work".
 4. **Detector hits** ×3 — `way` ×2, `somewhere` ×1, all in outcome-class band fragments.
-5. **Seam echoes** ×4 — stronghold/plank table, wayside/barrier, the `critical_success`
-   "smallest price on the page" cluster, step-2 "let them go early".
+5. **Seam echoes** ×14 across seven classes — the four at opening/spine/band seams, plus the
+   `initiation`→spine four-noun overlap, five afterimage→`overview` restatements (one per
+   band), three `narrativeTemplates`→band repeats (one of them the same sentence three times
+   in a failure ending), two co-active fragment pairs, and two chip↔chip pairs. See §9.
+5b. **Field classes re-scanned against the code**, not the spec page — `overview` is `scene`,
+   `change.detail` is `outcome`. No verdict changed; the clean claim is now grounded in the
+   right check. Spec-drift ticket recommended.
+5c. **Rewards quota moved off card grants** — `allAftermathEffects` does not walk them.
+   `bond_change` in step metadata carries the block; count unchanged at five. Confirmed the
+   `drive` wiring sits in step metadata and is therefore visible to the draw check.
+5d. **`concepts` confirmed non-empty on all five chips**, each with an `entityId` or
+   `tooltipId`, each `text` a substring of its `detail`.
 6. **The step-2 `failureAfterimage` contradiction** — "the barrier lifted" on a band where
    the barrier stayed down.
 7. **`gp.walk_it_off` could be a pure no-op** — now always writes.
@@ -991,5 +1149,10 @@ repaired, and the opt-in gate is the real thing rather than a toll wearing the w
 aftermath was wired for a path the engine does not always take, and that was worth catching
 before it shipped — but it is a wiring error inside a correct design, not a broken design,
 and it is fully specified and applied in the revised packet.
+
+The prose needed more work than the first read suggested, and that is the more transferable
+finding: the fourteen echoes are not a weakness of this draft in particular, they are what a
+narrow seam audit leaves behind in every draft that runs one. Ten of the fourteen sat where
+the audit does not look.
 
 **PASS WITH REVISIONS**

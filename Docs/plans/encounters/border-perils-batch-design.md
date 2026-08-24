@@ -197,6 +197,22 @@ Allocated above, the batch reaches **all 21 types** and **all eight** zero-use t
 `stumble` (#1), `veil` (#2), `cache` (#3), `compulsion` + `signature` (#4), `long_game`
 (#5), `favor` + `side_bet` (#6).
 
+> **Correction (2026-08-24, raised by encounter 1's editorial critic against this document,
+> not against any draft).** The sentence above overclaims, and four card slots cannot satisfy
+> it by construction. `side_bet`, `signature` and `fellowship` have **zero members** in
+> `NUDGE_CARD_LIBRARY` (finding 3 below), so a card of those types can carry no
+> `libraryCardId` — it is a one-off by necessity, not by choice.
+>
+> Read the row as: the batch **authors** cards of all 21 types, and **18 of them** can set a
+> `libraryCardId`. The `libraryCardId` requirement therefore binds every slot **except**
+> those four — one `fellowship` in #1, one `fellowship` and one `signature` in #4, one
+> `side_bet` in #6 — each of which ships as a recorded one-off with its reason.
+>
+> The tension is real and is not the drafters' to resolve: the brief asks for these debuts
+> *and* asks that every card feed `cardPlayTally`, and for a memberless type those two asks
+> are incompatible. It goes to the director in the batch report. Corrected here rather than
+> re-argued in six packets, which is where three drafters were independently paying for it.
+
 `libraryCardId` id scheme (`src/data/nudge-card-library.ts`): `card.<typeId>.core` ·
 `card.<typeId>.signature.<sphere>` · `card.<typeId>.hunger.<hungerId>` · declared
 variations. A card genuinely outside the library stays a one-off — a choice, recorded in a

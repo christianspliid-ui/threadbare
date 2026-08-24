@@ -4,7 +4,7 @@
 > Date: 2026-08-24 | Pipeline version: 3.0 (Encounter Factory line)
 > templateId: `encounter.border.standing_the_line` | Batch: border-perils (THR-1221)
 
-**Verdict: PASS WITH REVISIONS.** Six automatic REVISE triggers fired in the draft. All six are repaired inline in `standing-the-line-revised.md`. Two items cross a draft boundary and are handed forward with named owners (§ 12).
+**Verdict: PASS WITH REVISIONS.** Seven automatic REVISE triggers fired in the draft, plus one hard `check:encounter` block the draft's self-audit claimed as PASS. All eight are repaired inline in `standing-the-line-revised.md`. Two items cross a draft boundary and are handed forward with named owners (§ 12).
 
 ---
 
@@ -54,6 +54,8 @@ Neither walks `variants` / `fallback`. `allRunnableSteps` (`compositionContract.
 | No two cards buy the same certainty | ✓ | ✓ | ✓ (the two Boosts buy *when* vs *how hard*) | ✓ | ✓ |
 | Zero scene-bespoke prose on any face | **FAIL — 1** (card 4) | **FAIL — 1** (card 2) | ✓ | **FAIL — 1** (card 5) | ✓ |
 | Zero evasive-vagueness term on any face | **FAIL — 1** (`the moment`, card 7) | **FAIL — 2** (`the moment` card 1, `something` card 2) | ✓ | ✓ | **FAIL — 1** (`the moment`, card 1) |
+| Zero outcome-class vagueness in any fragment | **FAIL — 3** | **FAIL — 8** | **FAIL — 2** | **FAIL — 5** | **FAIL — 4** |
+| No two fragments converge **within one band** | **FAIL — 1** (`near_miss`: three of four cards on *running out of time*) | **FAIL — 1** (`success`) | **FAIL — 1** (`failure`) | ✓ | **FAIL — 1** (card 2's two fragments open identically) |
 | Library face verbatim where `libraryCardId` set | ✓ | ✓ | ✓ | ✓ | ✓ |
 
 **Band coverage, spelled out** (the row the machine would have checked and cannot):
@@ -74,7 +76,7 @@ All five hands cover all six bands. Every card pays off in failure. The arithmet
 - **5.4 (s2 `positive`, `gold`, 5 cards) — PASS after one fix.** One scene-bespoke Fellowship line. This is also the flattest hand — it is the only one where I could not name a card I would be excited to click.
 - **5.5 (s2 `negative`, `iron`, 5 cards) — PASS after two fixes.** One evasive term, one seam echo against 5.3 (two cards opening `Nothing in them …`).
 
-**Nine defects in the four ungated hands. Every one would have shipped.** The gate would have reported green on step 0's hand alone and counted one plain step. Do not read a green `check:encounter` as coverage of §§ 5.2–5.5, and put that sentence in the batch report.
+**Twenty-two defects in the four ungated hands** — three scene-bespoke faces, three evasive terms, nineteen outcome-class vagueness hits, and three in-band fragment convergences. **Every one would have shipped.** The gate would have reported green on step 0's hand alone and counted one plain step. Do not read a green `check:encounter` as coverage of §§ 5.2–5.5, and put that sentence in the batch report.
 
 ---
 
@@ -271,26 +273,54 @@ Peak surfaces are used sparingly and in the right places: the final step's band 
 3. **One dry line, not two.** Held on every band but one. `positive.critical_success` carried two ironic turns on the same beat — the hand-up *and* the leg — and the second was also the unreadable one. Rewritten to one.
 4. **Density.** Held, and deliberately. One named person on stage (`{cast:survivor}`). No third party who mentions a fourth. Props only where the player can act on them: the pack, the leg, the narrow place, the riders. Nobody has a brother in another town. This is the cleanest density in the batch and the draft should be told so.
 
-### Seam echoes (trigger 22) — the ones I checked, by name
+### Seam echoes (trigger 22) — and the class the trigger's wording hides
 
-A five-hand encounter has more seams than any linear one, so I read them explicitly rather than sampling. Seams checked: four opening→spine, spine→initiation, spine→step-0 bands, step-0 bands→both s1 carryover tables, s1 bands→s2 bands within each pole, each pole's s2 bands→that pole's five overviews, and every card's two fragments against each other. Pole→pole seams are noted but do not co-render.
+**The seam audit every draft in this batch ran is too narrow, and in this encounter the misses cluster entirely in the part it skips.** Trigger 22 says "across a paragraph boundary", which reads as opening→spine and spine→band. Those are one seam each per run. What a player actually reads in a single ending is twenty-plus authored strings on one screen, in order:
 
-Four genuine echoes, all repaired:
+> step-0 afterimage → up to 4 step-0 fragments → step-1 afterimage → up to 3 step-1 fragments → the step-2 carryover line → step-2 afterimage → up to 3 step-2 fragments → `narrativeTemplates.success`/`.failure` → the band `overview` → 1–3 chips (`title` · `causeClause` · `detail`) → 1–2 reaction labels and intents
 
-1. **stronghold opening → spine.** The opening ends *"no **way** round, and no **way** back down that is not the **way** up"*; the spine opens *"A pilgrim sits where the **way** goes narrow."* Four in two sentences across a seam a quarter of runs will see. The opening's closer is rewritten.
-2. **spine → initiation.** The spine ends *"Nothing on this road obliges them to stop"*; the initiation opens *"…four riders are coming who have no reason to go around"* — same fact, adjacent sentence shape, and *stranger* appears in both. The draft argues only one renders above the fold; that is an assumption about a surface, not a property of the text. The initiation is rewritten to add the clock instead of restating the fact.
-3. **s1 `negative` band → `negative.critical_failure` overview.** *"The traveler went in at four men and found out how many four is"* against *"went up the road alone to meet four men and found out, in about the time it takes to say so, exactly what four men are."* Same joke, same shape, and they render **one after the other in the same run**. The draft's echo check missed it entirely. Overview rewritten; the afterimage keeps the better line.
-4. **`line.s1b.the_easier_way` → `line.s2b.the_easier_way`.** *"Nothing in them asked whether this was necessary"* → *"Nothing in them said stop."* Consecutive steps on the same pole, same construction. Both rewritten (also the vagueness fix).
+Five hands and ten endings put this packet's surface for that class several times above any linear encounter's, and it sits directly on top of the gate blind spot in § 0. I enumerated it per pole. **Twenty-one echoes, nineteen of them inside a single ending.**
 
-One more worth recording though it is not a within-run seam: **three of four openings begin "The road…"**. Only one renders per run, so no player sees the repetition — but the draft's echo note claims the four openings *"share no image"*, and they share the first noun. Left as-is, flagged so the claim in the packet is honest.
+| Seam | Checked | Found |
+|---|---|---|
+| card fragment → card fragment, same band, both active | all 30 multi-card bands across 5 hands | 3 |
+| card fragment → card fragment, same library card, consecutive steps | 6 repeated faces along pole paths | 2 |
+| step afterimage → carryover line on the next step's panel | 12 pairs (6 bands × 2 poles) | 6 |
+| base band text → card fragment on the same band | all 25 afterimages against their hands | 2 |
+| step-2 afterimage → band `overview` | 10 pairs | 5 |
+| `narrativeTemplates` line → `overview` | 2 lines × the bands each reaches | 2 |
+| chip → chip within one band | all 21 chip instances | 1 |
+| pole → pole, equivalent bands | 5 pairs | 0 |
+| opening → spine → initiation (**the only one the draft checked**) | 4 + 1 | 2 |
 
-### Detectors
+The highest-yield seams, named:
 
-- **Vagueness — the draft claims zero; it is not zero.** Field class matters, and the draft's claim reads as though it were checked. Twenty-eight enforced hits in `outcome`-class fields (band base text, band fragments, all five afterimages, aftermath overviews, `narrativeTemplates.success`/`.failure`), plus **four evasive hits that are banned in every class**: `the moment` ×3 on the Mercy faces and `something` in `line.s1a.something_to_want`'s effect line. Worst offenders were `nothing` (11), `something` (6, four of them evasive), `way`/`ways` (5), `somewhere` (3), `thing`/`things` (3), `anything` (1), `whatever` (1).
-  All repaired to **zero**. The scene-class and interactive-class fields are clean and were always clean — `Nothing has moved here all afternoon` in the `ruin` opening is correct scene prose and stays.
-  Two notes for the record: the machine gate is a *density* fail at `VAGUENESS_DENSITY_FAIL = 2.0` per 100 words, and at ~3,500 authored words this packet would have needed ~71 hits to trip it. It would have passed `check:encounter` at 28. The authoring bar is zero and the gate is not the bar.
-- **Annotation clauses — ≤1 across the encounter.** Player-facing count is **zero**, in a 1,032-line packet where breaching this would have been easy. `NOT_X_BUT_Y_PATTERNS` matches nothing in any authored field; note `was not` does not satisfy the `(is|was|are|were)n'?t` arm, so the several *"was not the end"* constructions are safe. The draft's self-audit charges itself one for *"not heroism — calculation under a deadline"* in the art direction, which is not a template field. Honest and conservative; left as written.
+1. **step afterimage → the very next panel's carryover line, six times.** Three per pole, and every one a restatement authored a hundred lines apart in the packet: *"They named a price and the riders named it back"* against the step-1 afterimage *"The lead rider heard the price … and named it back"*; *"Two went down before anyone drew"* against *"Two were down before the third had the reins gathered"*; *"They saw it coming"* against *"They had seen it coming from further off than anyone thought"*. This is the tightest seam in the encounter and nobody checks it, because the two halves live in different sections of the doc.
+2. **step-2 afterimage → the overview directly beneath it, five times.** *"They took the price, and then took a little more"* landing above an overview whose middle sentence is *"one of them reached for more than had been agreed"*; *"the riders went on through"* above *"the riders … went through"*; *"The last two turned their horses"* above *"The other two … went back the way they came."*
+3. **step-0 `near_miss`: three of four cards on the same idea.** Four cards author that band and all four can be active at once — *"ran out of time"*, *"arrived a beat after it would have mattered"*, *"one mind short of enough time"*. The most-rolled band on the deciding step, and the god who buys the biggest hand gets the most repetition.
+4. **`negative.critical_failure` overview → the step-1 afterimage four lines above it.** *"went up the road alone to meet four men and found out … exactly what four men are"* against *"The traveler went in at four men and found out how many four is."* Same joke, same shape, same screen. The afterimage keeps the better line.
+5. **`narrativeTemplates.failure` → two overviews it lands beside**, both containing *"came through the narrow place"*.
+
+Two pole→pole mirrors are kept deliberately and recorded in the packet: the poles' `critical_failure` overviews both close on the pilgrim — taken on one, spared on the other — and both worst bands carry the same single reaction label with different intents. Neither pair ever co-renders, so that is contrast between playthroughs, which is what a fork is for.
+
+One accepted repetition: three of four openings begin with the noun *road*. Only one renders per run. The draft's echo note claims the openings *"share no image"*; they share the first noun. Left as-is, flagged so the packet's claim is honest.
+
+### Detectors — and the two surfaces the draft scanned in the wrong class
+
+**The spec page and `nudgeAuditDetectors.ts` disagree about field classes, and the code is the contract.** `pushAftermathVariant` (`:377-398`) pushes `body.overview` as **`scene`** and `change.detail` as **`outcome`** — the reverse of what an author reading the spec page would assume. The doc comment at `:345-375` is explicit that this is deliberate and measured: `change.detail` **is** the only statement of its consequence, so an indefinite there withholds what the player has no other source for; `overview` sits directly above typed chips that name every consequence, so the player has another source. Reading `overview` as `outcome` across 295 templates flags 165 fields on indefinites against 57 genuinely evasive, and in the director-reviewed slice every one of those 165 is prose like *"Nothing was promised. Nothing was taken."* — the contortion THR-899 split the lexicon to end. `change.title`, `reactionPrompt`, `reaction.label` and `reaction.intent` are `interactive`; `causeClause` is **not swept at all**.
+
+**The draft self-scanned with those two surfaces reversed**, so its "vagueness zero" claim is evidence about the wrong fields. Re-scanned against the code:
+
+- **`overview` (scene, 10 fields):** zero evasive. The natural indefinites in them — *somewhere at the end of them*, *Nothing was handed over* — are legal, and several are the better line, so they stay. My first pass had rewritten four of these; I put them back.
+- **`change.detail` (outcome, strict, 4 distinct):** zero, before and after. *"wherever they are going"* is not in either term list.
+- **Band fragments, afterimages, `narrativeTemplates.success`/`.failure` (outcome, strict): 22 hits.** `nothing` ×9, `something` ×5, `thing`/`things` ×3, `way` ×4, `anything` ×1.
+- **`effectLine` / `name` / factor lines / `fiction` / chip titles / labels / intents (evasive-only): 4 hits**, all evasive and therefore banned in every class — `the moment` on all three Mercy faces and `something` in `line.s1a.something_to_want`'s effect line.
+
+**26 total, all repaired to zero.** For the record: the machine gate is a *density* fail at `VAGUENESS_DENSITY_FAIL = 2.0` per 100 words, and at ~3,500 authored words this packet needed ~71 hits to trip it. It would have passed `check:encounter` at 26. The gate is not the bar.
+
+- **Annotation clauses — ≤1 across the whole encounter, and this is the batch's longest packet.** Counted by hand against `NOT_X_BUT_Y_PATTERNS` over every swept field: **zero**. Two near-misses recorded so nobody writes around them: `(is|was|are|were)n'?t` needs the contraction, so the several *"was not the end"* constructions are clean; `less\s+[a-z]+\s+than` needs an intervening word, so *"took less than half of it"* is clean. The one clause in the document is *"Not heroism — calculation under a deadline"* in the § 12 art brief, which is not a template field and is not swept. One in the document, zero shipped — at the cap, not over it.
 - **Divine outcome-authorship — zero.** Checked against the actual regexes, not the prose description. See § 2.
+- **`concepts` — a hard `check:encounter` block the draft claimed as PASS.** `compositionContract.ts:1248-1249` requires a **non-empty `concepts` list on every change**, and a `stateNoun` does *not* discharge it — that satisfies the separate anchor clause at `:680`. `:734-739` additionally fires when concepts exist but none carries an `entityId` or `tooltipId`. The draft declares `concepts` on **zero** of its changes while its self-audit row reads *"every change declares `concepts`/`stateNoun` — **PASS**"*, which is the row conflating the two rules. With three chip shapes across ten endings this is 21 chip instances failing one block. All three shapes now declare a concept carrying an `entityId` (§ 8.1b of the revised packet). Worth carrying to the batch report: the rule's own comment says `concepts` is authored nowhere in the corpus and is a large share of why the ratchet holds all 191 existing templates — so every draft in this batch should be checked for the same claim.
 - **Abstraction-as-subject.** Run by hand down every paragraph. Grammatical subjects across the openings, spine, endings and afterimages: *the road, the ground, the wind, the air, a pilgrim, four riders, the pilgrim, the traveler, the riders, the lead rider, two, the last two, the goods, the bargain, the price, the count, the offer, the strike, it*. Two abstractions in the subject slot — *the count*, *the bargain* — both of which are the literal thing the scene is about. Clean.
 
 ### Prose rule 7 — no invented game state
@@ -399,7 +429,7 @@ Recorded in the revised packet with the third reason added, so a reviewer can st
 2. Prose has its own voice? — **YES.** Long approach sentences in the openings, short flat ones in the endings, the worst bands the shortest. The cadence is consistent across 27 card faces and 35 prose surfaces without going uniform.
 3. Scene prose names elements that become player choices? — **YES.** The narrow place, the leg, the pack, the four riders, the pilgrim's distrust. Every one of the 27 cards acts on one of them.
 4. Reader feels something from prose alone? — **YES.** *"Nothing on this road obliges them to stop"* is the whole encounter with no mechanics under it.
-4b. No seam echoes? — **NO in the draft** (four, § 6) → **YES after revision.**
+4b. No seam echoes? — **NO in the draft** (twenty-one, nineteen of them in-ending; § 6) → **YES after revision.**
 
 **Choices & Intervention**
 5. Every card face library-generic, zero scene-bespoke prose? — **NO in the draft** (three effect lines) → **YES after revision.**
@@ -422,20 +452,22 @@ Recorded in the revised packet with the third reason added, so a reviewer can st
 
 ## 12. Verdict and revision summary
 
-Six automatic REVISE triggers fired in the draft:
+Seven automatic REVISE triggers fired in the draft, plus one hard `check:encounter` block:
 
 | # | Trigger | Instances |
 |---|---|---|
-| 15 | Detector hit — vagueness lexicon | 28 in `outcome` class, 4 evasive (banned in every class) |
+| 15 | Detector hit — vagueness lexicon | 26: 22 outcome-class, 4 evasive (banned in every class) |
 | 16 | Scene-bespoke prose on a card face | 3 |
 | 18 | Class scenery below the opening | 5 |
-| 22 | Seam echo | 4 |
+| 22 | Seam echo | **21 — nineteen of them inside a single ending**, the class the trigger's "paragraph boundary" wording does not describe |
 | 26 | Design-block breach — an ending the steps that produce it cannot produce | 2 |
 | 30 | Shape breach — a Seeded Sequel whose parent seeds bands the sequel's scene cannot open on | 1 (2 bands) |
+| 13 | Nudge-specific payoff mis-scoped — three card faces carried `the moment`, a nominalised placeholder standing in for the scene the fragment should name | 3 |
+| — | **`check:encounter` block:** `concepts` absent on every change (`compositionContract.ts:1248`), claimed as PASS | 21 chip instances / 3 shapes |
 
-**All six are repaired inline. `standing-the-line-revised.md` is complete and self-contained.**
+**All eight are repaired inline. `standing-the-line-revised.md` is complete and self-contained.**
 
-I chose `PASS WITH REVISIONS` over the letter of the trigger rule deliberately, and here is the reasoning so it can be overruled: five of the six are word-level and paragraph-level defects that a re-dispatched draft agent would fix exactly as I have, at the cost of a full redraft of a 1,032-line packet. The sixth (the sequel-premise break) is the one that genuinely warrants a stop — but its fix is contained entirely inside the parent, it improves the design rather than patching it, and stopping the line would not put the sequel's author in the room. Both cross-draft items are named with owners below instead.
+I chose `PASS WITH REVISIONS` over the letter of the trigger rule deliberately, and here is the reasoning so it can be overruled: six of the eight are word-level and paragraph-level defects that a re-dispatched draft agent would fix exactly as I have, at the cost of a full redraft of a 1,032-line packet — and one of them, the seam class, is a defect the draft agent could not have found, because the audit that finds it is not the one any prompt in this pipeline currently asks for. The eighth (the sequel-premise break) is the one that genuinely warrants a stop — but its fix is contained entirely inside the parent, it improves the design rather than patching it, and stopping the line would not put the sequel's author in the room. Both cross-draft items are named with owners below instead.
 
 ### Must fix — done in the revised packet
 
@@ -443,9 +475,10 @@ I chose `PASS WITH REVISIONS` over the letter of the trigger rule deliberately, 
 2. `positive.critical_success` rewritten to be consistent with the two steps that produce it; the unreadable closer split into two plain sentences.
 3. `negative.failure` rewritten so the agent makes the count it is recorded as knowing.
 4. `poleLean` weights made symmetric; the arithmetic note rewritten to say something true.
-5. Twenty-eight `outcome`-class vagueness hits and four evasive hits repaired to zero.
+5. Twenty-two `outcome`-class vagueness hits and four evasive hits repaired to zero, re-scanned against the **code's** field classes (`overview` is `scene`, `change.detail` is `outcome` — the reverse of the spec page, and of what the draft scanned).
+5b. `concepts` authored on all three chip shapes, each carrying a resolvable `entityId`.
 6. Five envelope leaks repaired.
-7. Four seam echoes repaired.
+7. Twenty-one seam echoes repaired, nineteen of them in-ending. Seven of the twenty-five base afterimages and six of the twenty-four carryover lines were rewritten for this alone.
 8. Three scene-bespoke effect lines rewritten.
 9. `{cast:survivor}` added to the ruthless pole's two seeded bands.
 10. Two false source citations and two wrong numbers corrected; every source claim now carries a `file:line`.
@@ -460,6 +493,8 @@ I chose `PASS WITH REVISIONS` over the letter of the trigger rule deliberately, 
 - **Pass 3 (systems):** confirm the four `signature` one-offs are dealt gated on the god holding their sphere. Every one of their effect lines opens *"Where you hold force / light / time…"*, which is a promise the data must keep or the line must lose.
 - **The sequel's editorial pass:** restate `one-body-short-draft.md:606` (*"Both poles end with dead on the ground"*) as a constraint the parent satisfies, not an observation about the parent.
 - **Batch report:** carry the gate blind spot verbatim. Four of five hands in this encounter are invisible to `check:encounter`, and the first branching template authored after this one will inherit the same blindness.
+- **Batch report, second item:** the in-ending seam class (§ 6) and the reversed field classes (§ 6) are not specific to this encounter. Every draft in this batch ran the narrow seam check and every one is at risk of having self-scanned `overview` and `change.detail` in the wrong class. Two sibling critics independently found their echoes in the same place. This belongs in the pipeline's editorial prompt, not in six separate editorial files.
+- **Batch report, third item:** `concepts` is authored nowhere in the corpus and `compositionContract.ts:1248` requires it on every change. Any draft in this batch whose self-audit pairs `concepts` with `stateNoun` in one row is claiming a PASS it has not earned.
 
 ### Consider
 

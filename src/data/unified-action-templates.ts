@@ -191,6 +191,7 @@ import {
 import { SOUL_FERRYMAN_TEMPLATE } from './encounters/soul-ferryman';
 import { APOTHEOSIS_ASCENSION_TEMPLATE } from './encounters/apotheosis-ascension';
 import { ROAD_AMBUSH_TEMPLATE } from './encounters/road-ambush';
+import { THE_UNCLAIMED_RELIC_TEMPLATE } from './encounters/the-unclaimed-relic';
 import { COURTYARD_DUEL_TEMPLATE } from './encounters/the-courtyard-duel';
 import { BRINK_RESCUE_TEMPLATE } from './encounters/the-brink-rescue';
 import { LETTERS_OF_INTRODUCTION_TEMPLATE } from './encounters/the-letters-of-introduction';
@@ -5588,6 +5589,7 @@ const RAW_UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   // Apotheosis capstone — Aspect apex milestone (THR-479)
   APOTHEOSIS_ASCENSION_TEMPLATE,
   ROAD_AMBUSH_TEMPLATE,
+  THE_UNCLAIMED_RELIC_TEMPLATE,
   COURTYARD_DUEL_TEMPLATE,
   BRINK_RESCUE_TEMPLATE,
   LETTERS_OF_INTRODUCTION_TEMPLATE,
@@ -5676,6 +5678,7 @@ export const LOCATION_BRANCHING_ENCOUNTER_TEMPLATES: readonly UnifiedActionTempl
   GRANARIES_IN_THE_FAMINE_YEAR_TEMPLATE,
   SOUL_FERRYMAN_TEMPLATE,
   ROAD_AMBUSH_TEMPLATE,
+  THE_UNCLAIMED_RELIC_TEMPLATE,
   COURTYARD_DUEL_TEMPLATE,
   BRINK_RESCUE_TEMPLATE,
   LETTERS_OF_INTRODUCTION_TEMPLATE,
