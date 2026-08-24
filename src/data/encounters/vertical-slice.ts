@@ -846,7 +846,7 @@ const PASS_NIGHT_HAND: readonly StepNudge[] = [
     forecastDelta: 0.06,
     imageTag: 'generic.dark',
     effectLine: 'You still the dark around the camp, so nothing in it costs them sleep or nerve. A small help.',
-    fiction: 'Some nights the dark is on your side.',
+    fiction: 'Some nights the dark keeps to itself.',
     bandProse: {
       critical_success: 'The night passed like a held breath, and dawn came kind.',
       failure: 'The dark stayed quiet. The cold did all the talking.',
@@ -901,7 +901,7 @@ const PASS_NIGHT_STEP: ActionStep = {
       forecastDelta: 0.02,
     },
     near_miss: {
-      text: 'Caught short of the saddle, they make camp in the scrub.',
+      text: 'They came up short of the saddle and camped in the scrub.',
       polarity: 'against',
     },
     failure: {
@@ -961,8 +961,8 @@ export const SLICE_SNOW_ON_THE_PASS: UnifiedActionTemplate = {
     variants: {},
     fallback: {
       overview:
-        'The pass stays open behind them or closes for the season, and in both tellings the ' +
-        'mountain keeps the toll it took.',
+        'The first snow is down, and the switchbacks behind them are filling in. Whatever the ' +
+        'climb took out of them, they are not getting it back on the way down.',
       changes: [
         {
           id: 'slice.pass.the_season',
@@ -1019,11 +1019,10 @@ export const SLICE_SNOW_ON_THE_PASS: UnifiedActionTemplate = {
           // The woodpile was already the overview's closing image, so the fold
           // costs the scene nothing.
           overview:
-            'They beat the storm with light to spare, slept warm through the worst of it, and ' +
-            'came out to a pass already clearing. They left the woodpile higher than they ' +
-            'found it, which is the only rent the hut has ever asked of anyone. The next ' +
-            'traveler over will owe their night to a stranger, and the road will have a name ' +
-            'for them by then.',
+            'They beat the storm to the hut with light to spare, slept warm through the worst ' +
+            'of it, and came out to a pass already clearing. They split more wood than they ' +
+            'burned and stacked it dry by the hearth. The next traveler over the saddle will ' +
+            'find it there, and will never know who to thank.',
           changes: [
             {
               id: 'slice.pass.a_night_that_held',
@@ -1065,8 +1064,8 @@ export const SLICE_SNOW_ON_THE_PASS: UnifiedActionTemplate = {
         success_at_cost: {
           overview:
             'The hut took them in with the first drifts at their heels and nothing dry left ' +
-            'to give it. The night was survived rather than passed, and the far side of the ' +
-            'mountain got a traveler who had already spent the day.',
+            'to give it. They got through the night without sleeping much of it. The far side ' +
+            'starts tomorrow on legs that already did today.',
           changes: [
             {
               id: 'slice.pass.spent_to_the_bone',
@@ -1095,7 +1094,7 @@ export const SLICE_SNOW_ON_THE_PASS: UnifiedActionTemplate = {
           overview:
             'The snow caught them below the saddle, and the night went to the work of heat: ' +
             'making it out of wet kindling, keeping it out of wind, and not spending what was ' +
-            'left of it on fear. Morning came. It did not come generously.',
+            'left of it on fear. Morning came. The kindling was gone and the wind had not dropped.',
           changes: [
             {
               id: 'slice.pass.a_night_in_the_open',
@@ -1113,8 +1112,10 @@ export const SLICE_SNOW_ON_THE_PASS: UnifiedActionTemplate = {
               kind: 'trait',
               title: 'What the Dark Took',
               causeClause:
-                'Most of that night went on not spending what was left of their nerve on being afraid',
-              detail: 'Some of it went anyway. They come off the mountain less sure of themselves than they went up.',
+                'They spent the night talking themselves out of being afraid, hour by hour',
+              detail:
+                'They come off the mountain less sure of themselves than they went up. It shows the '
+                + 'next time a road offers them a choice.',
               polarity: 'loss',
               category: 'scar',
               direction: 'loss',
@@ -1125,7 +1126,7 @@ export const SLICE_SNOW_ON_THE_PASS: UnifiedActionTemplate = {
             {
               id: 'slice.pass.walk_down_worn',
               label: 'Walk down the far side',
-              intent: 'Down is easier than up. That is all that can be said for it.',
+              intent: 'The road is below the snow line. They take it slowly.',
               effects: [
                 { kind: 'condition_attachment', templateId: 'trait.condition.exhausted' },
                 {
@@ -1141,7 +1142,7 @@ export const SLICE_SNOW_ON_THE_PASS: UnifiedActionTemplate = {
           overview:
             'The storm came down the slope to meet them and the climb ended where it stood. ' +
             'The mountain held them two days on open ground and fed them poorly the whole ' +
-            'stay. They came off it in the end. Less of them came off than went up.',
+            'stay. They came off it on the third morning, walking badly, with frost in both hands.',
           changes: [
             {
               id: 'slice.pass.the_mountain_kept_them',
@@ -1159,7 +1160,7 @@ export const SLICE_SNOW_ON_THE_PASS: UnifiedActionTemplate = {
             {
               id: 'slice.pass.come_down_hurt',
               label: 'Come down off it',
-              intent: 'The road is below the snow line. So is everything else.',
+              intent: 'Get down to the road, slowly, on the feet that still work.',
               effects: [
                 { kind: 'condition_attachment', templateId: 'trait.condition.wounded' },
                 { kind: 'condition_attachment', templateId: 'trait.condition.exhausted' },
@@ -1229,7 +1230,7 @@ const CARAVAN_FIND_HAND: readonly StepNudge[] = [
     fiction: 'No river is the first river.',
     bandProse: {
       success_at_cost: 'The wrong story showed itself. So did the traveler’s interest in it.',
-      failure: 'Every story in the column had a crack in it. Roads do that to stories.',
+      failure: 'Every story in the column had a crack in it, and none of the cracks lined up.',
     },
   },
   {
@@ -1261,7 +1262,7 @@ const CARAVAN_FIND_HAND: readonly StepNudge[] = [
     fiction: 'A pack always inventories its owner.',
     bandProse: {
       near_miss: 'One kit argued with its owner’s story. So, on a second look, did two others.',
-      failure: 'Everyone on a long road carries one item above their station. The trick points at half the column.',
+      failure: 'Half the column owned one item too good for them. The trick pointed at all of it at once.',
     },
   },
   {
@@ -1338,7 +1339,7 @@ const CARAVAN_SLIP_HAND: readonly StepNudge[] = [
     effectLine: 'However the night goes, the hunted one is out of the column by morning. The price, if it comes due, is paid in noise and hours.',
     fiction: 'Arrive first. Count the cost after.',
     bandProse: {
-      success_at_cost: 'They got clear because getting clear had been arranged twice over. The second arrangement was loud.',
+      success_at_cost: 'They got clear because two routes out had been readied. Taking the second one woke half the camp.',
       critical_failure: 'The route out held. What it opened onto had riders already on it.',
     },
   },
@@ -1368,9 +1369,10 @@ const CARAVAN_FIND_STEP: ActionStep = {
   onFailure: [],
   failBehavior: 'continue_weakened',
   narrativeTemplate:
-    '“You joined us last, and you knew none of us before. That makes you the only walker ' +
-    'I can rule out.” He keeps his eyes on the oxen while he says it. He wants a name ' +
-    'before the town gates, and he wants the column not to know it is being weighed.',
+    'The master walks a half mile beside the traveler before he says it. “Last to join, and ' +
+    'a stranger to every face here. That makes one walker I can rule out.” He keeps his eyes ' +
+    'on the oxen the whole time. He wants a name before the town gates, and he wants the ' +
+    'column not to know it is being weighed.',
   successAfterimage: 'By the third night fire, the traveler knew which bedroll the riders were waiting on.',
   failureAfterimage: 'Four days of watching bought suspicions, and the gates arrived before certainty did.',
   successAtCostAfterimage: 'The name came clear, and so did a rumor that questions were being asked.',
@@ -1416,7 +1418,7 @@ const CARAVAN_SLIP_STEP: ActionStep = {
   narrativeTemplate:
     'The last camp before the gates sits in a river bend, fires low, the ridge dark and not ' +
     'empty. Whoever leaves the column has to leave tonight, quietly, and in a direction the ' +
-    'riders have not thought to own yet.',
+    'riders have not thought to watch yet.',
   successAfterimage: 'The morning count came up one short, and the column walked through the gates unbothered.',
   failureAfterimage: 'The leaving failed, and the column reached the gates with the riders still choosing their hour.',
   successAtCostAfterimage: 'The hunted one got clear, and the noise of it will be paid for in the town.',
@@ -1489,8 +1491,8 @@ export const SLICE_RIDERS_BEHIND_CARAVAN: UnifiedActionTemplate = {
     variants: {},
     fallback: {
       overview:
-        'The gates take the column in, one walker lighter or one secret heavier, and the ' +
-        'riders on the ridge make their own arithmetic about it.',
+        'The column goes in through the gates. The two riders come down off the ridge and ' +
+        'follow it in at a walk, in no more hurry than they were four days ago.',
       changes: [
         {
           id: 'slice.caravan.the_column',
@@ -1545,7 +1547,8 @@ export const SLICE_RIDERS_BEHIND_CARAVAN: UnifiedActionTemplate = {
           overview:
             'By dawn the hunted one was a day gone on a road with no watchers, and the riders ' +
             'were following a cart that mattered to no one. The master says nothing at the ' +
-            'gates and means all of it, and twenty-nine people walk through knowing why.',
+            'gates. He does not have to — twenty-nine people watched a bedroll stay empty and ' +
+            'worked the rest out for themselves.',
           // THR-1130 — `slice.caravan.the_masters_word` deleted, not folded (Law
           // 13 parity). Deliberately *not* folded: its sentence claimed the
           // master "owes them a debt", and no effect on this band writes an
@@ -1582,7 +1585,8 @@ export const SLICE_RIDERS_BEHIND_CARAVAN: UnifiedActionTemplate = {
               causeClause:
                 'Somebody in the column watched them ask the questions, and the riders reach the gate tomorrow',
               detail:
-                'They are carrying a secret with their own face attached to it, and they will not choose when it surfaces.',
+                'A walker in that column can point them out by face, and will, the first time the '
+                + 'riders make it worth doing.',
               polarity: 'loss',
               category: 'scar',
               direction: 'loss',
@@ -1593,7 +1597,7 @@ export const SLICE_RIDERS_BEHIND_CARAVAN: UnifiedActionTemplate = {
             {
               id: 'slice.caravan.part_ways_marked',
               label: 'Part ways at the gates',
-              intent: 'The column scatters into the town. So does the story of who asked what.',
+              intent: 'The column scatters into the town, and so does everyone who saw them asking.',
               effects: [
                 {
                   kind: 'hidden_mark',
@@ -1608,8 +1612,8 @@ export const SLICE_RIDERS_BEHIND_CARAVAN: UnifiedActionTemplate = {
         failure: {
           overview:
             'Nobody left the column. The gates take all thirty in, the riders come down off ' +
-            'the ridge at their leisure, and whatever happens next happens inside walls with ' +
-            'the hunted one still standing in the middle of it.',
+            'the ridge at their leisure, and the hunted one walks to an inn they will not walk ' +
+            'out of.',
           changes: [
             {
               id: 'slice.caravan.the_hunt_unbroken',
@@ -1618,7 +1622,8 @@ export const SLICE_RIDERS_BEHIND_CARAVAN: UnifiedActionTemplate = {
               causeClause:
                 'They spent four days on the wrong questions and nobody left the column before the gates',
               detail:
-                'They walk into town certain the riders will finish this indoors, and just as certain they could not stop it.',
+                'They walk in through the gates knowing how this ends, and knowing they had four '
+                + 'days to stop it.',
               polarity: 'loss',
               category: 'scar',
               direction: 'loss',
@@ -1642,9 +1647,9 @@ export const SLICE_RIDERS_BEHIND_CARAVAN: UnifiedActionTemplate = {
         },
         critical_failure: {
           overview:
-            'The riders came down at the worst hour and the camp woke to shouting. What they ' +
-            'wanted, they took. What stood between them and it got moved. The column reached ' +
-            'the gates in daylight, quiet, and shorter than it had been.',
+            'The riders came down at the worst hour and the camp woke to shouting. They took ' +
+            'what they came for and put down what stood in the way. The column reached the ' +
+            'gates in daylight, quiet, and shorter than it had been.',
           changes: [
             {
               id: 'slice.caravan.stood_in_the_way',
@@ -1840,10 +1845,10 @@ const CROSSROADS_MEASURE_STEP: ActionStep = {
     'and does not come back. Give a word to a stranger who knows too much, or keep it and ' +
     'keep walking.',
   successAfterimage: 'The traveler took the stranger’s measure and kept their own counsel about it.',
-  failureAfterimage: 'The stranger measured easier than he read, and gave back only manners.',
+  failureAfterimage: 'The stranger was easy to look at and impossible to read, and gave back only manners.',
   successAtCostAfterimage: 'The reading told them truths they would have preferred to learn from further away.',
   criticalSuccessAfterimage: 'For one clear look, the traveler saw the shape of the bargain whole.',
-  criticalFailureAfterimage: 'The look went wrong behind the eyes, and the crossroads kept the answer.',
+  criticalFailureAfterimage: 'The look went wrong behind the eyes, and they came away knowing less than when they started.',
   nudges: CROSSROADS_HAND,
 };
 
@@ -1863,7 +1868,7 @@ const CROSSROADS_ACCEPT_STEP: ActionStep = {
   successAfterimage: 'The promise was given plainly, and the stranger treated it like currency.',
   failureAfterimage: 'The word came out hedged, and the stranger accepted the hedge with a smile that said it did not matter.',
   successAtCostAfterimage: 'The promise was given, and giving it cost a night’s easy sleep.',
-  criticalSuccessAfterimage: 'The word was given clean, and for a heartbeat the crossroads felt like a signed ledger.',
+  criticalSuccessAfterimage: 'The word was given clean, and the stranger repeated it back to them once, exactly.',
   criticalFailureAfterimage: 'The promise left the traveler’s mouth and did not feel like theirs anymore.',
 };
 
@@ -1883,7 +1888,7 @@ const CROSSROADS_REFUSE_STEP: ActionStep = {
   successAfterimage: 'They walked on with their word unspent, and the road stayed ordinary.',
   failureAfterimage: 'They walked on, and the offer walked with them for a mile or two before it faded.',
   successAtCostAfterimage: 'They refused him plainly, and spent the evening rehearsing the refusal.',
-  criticalSuccessAfterimage: 'The refusal cost them not one copper, which was its own quiet answer about the man.',
+  criticalSuccessAfterimage: 'The refusal cost them not one copper, and the stranger did not argue it even once.',
   criticalFailureAfterimage: 'They refused, and the wanting he had named kept them company far past the treeline.',
 };
 
@@ -1945,8 +1950,8 @@ export const SLICE_BARGAIN_AT_CROSSROADS: UnifiedActionTemplate = {
         // only. A band that authored `reactions` would replace this one — and
         // with it the Full Moon seed, which is the whole point of the path.
         overview:
-          'The bargain is struck. The stranger folds back into the evening like a ledger ' +
-          'closing, and the full moon is already on the calendar.',
+          'The bargain is struck. The stranger steps back under the dead tree and is gone ' +
+          'before they finish turning, and the full moon is already on the calendar.',
         changes: [
           {
             id: 'slice.crossroads.the_word_given',
@@ -2070,15 +2075,14 @@ export const SLICE_BARGAIN_AT_CROSSROADS: UnifiedActionTemplate = {
       positive: {
         // THR-1130 — `slice.crossroads.word_unspent` folded (Law 13 parity).
         overview:
-          'The offer was real, and so was the refusal. The road east keeps its ordinary ' +
-          'evening, which suddenly counts for more than it did this morning. They walk it ' +
-          'owing nobody.',
+          'The offer was real, and so was the refusal. The road east is the same road it was ' +
+          'this morning, and they walk it owing nobody.',
         changes: [],
         reactions: [
           {
             id: 'slice.crossroads.walk_on',
             label: 'Walk on',
-            intent: 'An unspent word weighs less with every mile.',
+            intent: 'The road goes on east, and they still have their word.',
             effects: [
               {
                 kind: 'reputation_tally',
@@ -2127,7 +2131,7 @@ export const SLICE_BARGAIN_AT_CROSSROADS: UnifiedActionTemplate = {
               {
                 id: 'slice.crossroads.walk_on_read',
                 label: 'Walk on',
-                intent: 'The word is unspent. The wanting behind it is not a secret anymore.',
+                intent: 'They keep their word, and the stranger keeps what they told him.',
                 effects: [
                   {
                     kind: 'reputation_tally',
@@ -2148,7 +2152,9 @@ export const SLICE_BARGAIN_AT_CROSSROADS: UnifiedActionTemplate = {
       },
     },
     fallback: {
-      overview: 'The crossroads empties as crossroads do, one road at a time.',
+      overview:
+        'The crossroads empties one road at a time, and the stone under the dead tree stays '
+        + 'where it stands.',
       changes: [
         {
           id: 'slice.crossroads.the_marker',
@@ -2209,7 +2215,7 @@ export const SLICE_BARGAIN_AT_CROSSROADS: UnifiedActionTemplate = {
   },
   description:
     'A stranger at a crossroads knows the traveler’s name and offers a bargain priced in ' +
-    'promises rather than coin. Whether it is taken turns on who the traveler is — and on ' +
+    'promises instead of coin. Whether it is taken turns on who the traveler is — and on ' +
     'how heavily the god leans.',
 };
 
@@ -2299,7 +2305,7 @@ const FULL_MOON_HAND: readonly StepNudge[] = [
     effectLine: 'You quiet the wanting the stranger once read in them, so nothing tonight is priced off it. A small help.',
     fiction: 'Want nothing at a bargain.',
     bandProse: {
-      near_miss: 'The wanting stayed quiet. The stranger priced the night off something else.',
+      near_miss: 'The wanting stayed quiet. The stranger set his price off a different hunger.',
       critical_failure: 'The wanting stayed quiet all night, and he noticed that too.',
     },
   },
@@ -2355,8 +2361,8 @@ export const SLICE_FULL_MOON_COLLECTION: UnifiedActionTemplate = {
       // only. The gift is a `spawn_artifact` on this reaction, and a band that
       // authored its own reactions would replace the reaction the gift rides on.
       overview:
-        'The promise is spent and the gift is real. Whatever the stranger does with kept ' +
-        'promises, he does it somewhere else.',
+        'The promise is spent and the gift is real. The stranger takes what he came for and ' +
+        'walks off west, and the road stops feeling watched.',
       changes: [
         {
           id: 'slice.fullmoon.the_gift',
@@ -2518,7 +2524,7 @@ export const SLICE_FULL_MOON_COLLECTION: UnifiedActionTemplate = {
               title: 'The Ledger, Open',
               causeClause: 'He bowed, took the kept promise, and looked at them like unfinished business',
               detail:
-                'The promise is paid in full and they are still on his books. The page he keeps them on is not full yet.',
+                'The promise is paid in full, and he still keeps their name on a list.',
               polarity: 'loss',
               category: 'bond',
               direction: 'loss',
@@ -2731,7 +2737,7 @@ const FAMILY_MEETING_STEP: ActionStep = {
     'unmarked and easy to miss even when told. The children wave as the cart creaks past. ' +
     'The next town is an easy walk by dark.',
   successAfterimage: 'The family’s story was heard start to finish, paper and all.',
-  failureAfterimage: 'The story came out sideways and slow, and the light spent itself on the telling.',
+  failureAfterimage: 'The story came out sideways and slow, and the sun was down before the end of it.',
   successAtCostAfterimage: 'They heard it all, and some of it will be hard to put down again.',
   criticalSuccessAfterimage: 'The whole tale came out in order, and with it the name of the man who sold the paper.',
   criticalFailureAfterimage: 'The telling went wrong, and the man walked off mid-sentence to stand by his cart.',
@@ -2755,7 +2761,7 @@ const FAMILY_GUIDE_STEP: ActionStep = {
   failureAfterimage: 'The turn hid past dusk, and the family camped one more night on hope and thin bread.',
   successAtCostAfterimage: 'The turn was found late, and the traveler’s own road is now a day longer.',
   criticalSuccessAfterimage: 'The turn, a cairn, and a first green look at the river country, all before dark.',
-  criticalFailureAfterimage: 'The country fought the reading all day, and the family’s faith in strangers thinned with the light.',
+  criticalFailureAfterimage: 'The country fought the reading all day, and by dusk the family had stopped asking the traveler for directions.',
   nudges: FAMILY_GUIDE_HAND,
 };
 
@@ -2773,9 +2779,9 @@ const FAMILY_PASS_STEP: ActionStep = {
     'For a while the road behind stays loud with children’s voices, and then the country ' +
     'folds them away.',
   successAfterimage: 'The traveler made the town by dark, as planned.',
-  failureAfterimage: 'The town came by dark, and the supper tasted like the word swindle.',
+  failureAfterimage: 'The town came by dark, and the supper went down badly with the family still out on the fen road.',
   successAtCostAfterimage: 'The road stayed easy. The evening did not.',
-  criticalSuccessAfterimage: 'They made the town, the bed, and an early start, and owed nobody anything for any of it.',
+  criticalSuccessAfterimage: 'They made the town, the bed, and an early start, and owed no one a copper for any of it.',
   criticalFailureAfterimage: 'All evening the fen kept coming to mind, salt-grey and patient.',
 };
 
@@ -2937,8 +2943,8 @@ export const SLICE_SWINDLED_FAMILY: UnifiedActionTemplate = {
       },
       negative: {
         overview:
-          'The family keeps the road east, and the traveler keeps their own. What happens ' +
-          'out in the fen now happens without witnesses.',
+          'The family keeps the road east, and the traveler keeps their own. The fen is four ' +
+          'days on, and nobody will be there to see what it makes of them.',
         changes: [
           {
             id: 'slice.family.east_is_theirs',
@@ -2997,7 +3003,7 @@ export const SLICE_SWINDLED_FAMILY: UnifiedActionTemplate = {
                 kind: 'trait',
                 title: 'The Fen, in Mind',
                 causeClause:
-                  'The evening was quiet, and the quiet had the fen in it',
+                  'The evening was quiet, and they spent it thinking about the fen',
                 detail:
                   'They made the town on schedule and lie awake counting what it cost somebody else.',
                 // SCAR on the spirit. Nothing was taken from them by anyone
@@ -3140,7 +3146,7 @@ const SWINDLER_MARK_HAND: readonly StepNudge[] = [
     forecastDelta: 0.07,
     imageTag: 'generic.focus',
     effectLine: 'You hold their look calm and unhurried, so the man is confirmed without feeling watched. A small help.',
-    fiction: 'Stare with your ears.',
+    fiction: 'The ears catch what the eyes miss.',
     bandProse: {
       success: 'It was him: same coat, same cadence, same paper held up like a lamp.',
       near_miss: 'It was him past all doubt. Doubt was not the one watching back.',
@@ -3154,7 +3160,7 @@ const SWINDLER_MARK_HAND: readonly StepNudge[] = [
     essenceCost: 2,
     forecastDelta: 0.08,
     imageTag: 'generic.rumor',
-    effectLine: 'You read the market’s temper — who believes him, who wavers, who would turn — so the moment to act is chosen, never stumbled into. A real help.',
+    effectLine: 'You read the market’s temper — who believes him, who wavers, who would turn — so they speak up on the turn of the crowd instead of against it. A real help.',
     fiction: 'A crowd is one animal with many opinions.',
     bandProse: {
       success_at_cost: 'The crowd’s temper read true, and reading it meant standing close enough to be remembered.',
@@ -3223,7 +3229,7 @@ const SWINDLER_MARK_STEP: ActionStep = {
     'The town has wardens, a lockup, and a market bell; the man has a satchel, an exit ' +
     'through the crowd, and no idea who is watching him work.',
   successAfterimage: 'The man was marked, his patter noted, his exits counted.',
-  failureAfterimage: 'The man worked the crowd like a professional, and professionals watch for watchers.',
+  failureAfterimage: 'The man worked the crowd like a professional, and had already spotted the traveler doing the same.',
   successAtCostAfterimage: 'He was marked, and once, briefly, he looked straight back.',
   criticalSuccessAfterimage: 'He was marked and mapped, his next pitch predicted to the sentence.',
   criticalFailureAfterimage: 'He was gone from the scales between one look and the next, the market suddenly short one voice.',
@@ -3338,9 +3344,10 @@ export const SLICE_SWINDLER_FOUND: UnifiedActionTemplate = {
       positive: {
         // THR-1130 — `slice.swindler.the_ledger_way` folded (Law 13 parity).
         overview:
-          'The town’s justice has the man, the paper, and the pattern. A lockup is ' +
-          'slower than anger, and it holds. The market knows them as the stranger who ' +
-          'used its own law instead of an alley.',
+          'The town’s justice has the man, the paper, and a list of everyone else he sold it ' +
+          'to. The wardens were slower than a mob would have been, and the lockup held ' +
+          'anyway. The market knows them as the stranger who used its own law instead of an ' +
+          'alley.',
         changes: [],
         reactions: [
           {
@@ -3407,9 +3414,8 @@ export const SLICE_SWINDLER_FOUND: UnifiedActionTemplate = {
       negative: {
         // THR-1130 — `slice.swindler.collected_in_person` folded (Law 13 parity).
         overview:
-          'The debt was collected in person. The market will tell the story in its own words, ' +
-          'and the story will grow a knife it may or may not have had. It is not the kind ' +
-          'version.',
+          'The debt was collected in person. By the third telling in the market there is a ' +
+          'knife in the story that nobody remembers seeing, and it is not the kind version.',
         changes: [],
         reactions: [
           {
@@ -3437,7 +3443,7 @@ export const SLICE_SWINDLER_FOUND: UnifiedActionTemplate = {
                 kind: 'trait',
                 title: 'The Argument',
                 causeClause: 'He paid all of it in the alley and he did not pay quietly',
-                detail: 'The satchel is back where it belongs. The bruises will outlast the satisfaction.',
+                detail: 'The satchel is back where it belongs. The bruises will last longer than the money does.',
                 polarity: 'loss',
                 category: 'scar',
                 direction: 'loss',
@@ -3503,7 +3509,9 @@ export const SLICE_SWINDLER_FOUND: UnifiedActionTemplate = {
       },
     },
     fallback: {
-      overview: 'The market closes around the space where the voice was.',
+      overview:
+        'The stalls fold for the evening and the pitch by the corn scales stays empty. He was '
+        + 'gone before anyone thought to look for him.',
       changes: [
         {
           id: 'slice.swindler.the_square_empties',
@@ -3684,7 +3692,7 @@ const KIN_STEP: ActionStep = {
     'She means to thank the traveler properly, out loud, in front of everyone — and it ' +
     'has to be stood in graciously.',
   successAfterimage: 'The thanks was taken well, and the room warmed accordingly.',
-  failureAfterimage: 'The thanks was shrugged at, and the shrug landed harder than meant.',
+  failureAfterimage: 'The thanks was shrugged at, and the whole room saw the shrug.',
   successAtCostAfterimage: 'The thanks was taken, along with three retellings and a toast.',
   criticalSuccessAfterimage: 'By the second bowl the whole room owned a piece of the story, and was glad of the teller.',
   criticalFailureAfterimage: 'The thanks ran long in front of the whole room, and the traveler wore it all evening.',
@@ -3728,8 +3736,8 @@ export const SLICE_GRATEFUL_KIN: UnifiedActionTemplate = {
     variants: {},
     fallback: {
       overview:
-        'The family keeps accounts, and tonight the traveler went into them. There is a ' +
-        'roof in this town that opens for them now.',
+        'The family remembers who helped, and tonight they wrote the traveler down. There is ' +
+        'a roof in this town that opens for them now.',
       changes: [
         // THR-1130 — the chip the director read out loud. Verbatim: *"the bond…
         // the roof they are owed: again this simply doesn't communicate what game
@@ -3965,7 +3973,7 @@ export const SLICE_GRATEFUL_KIN: UnifiedActionTemplate = {
               kind: 'reputation',
               title: 'A Cooler Welcome',
               causeClause: 'The thanks was honest, public, and long, and they stood it badly',
-              detail: '{target} keeps the door open anyway. It opens less wide than it was going to.',
+              detail: '{target} keeps the door open anyway. It is a narrower door than it was going to be.',
               // THR-1205 — the chip the director screenshotted. `mixed` made it
               // red; it is a gain, just the smallest one this beat can produce.
               // A weaker-than-hoped grant is a *smaller green* cluster, never a
@@ -3982,7 +3990,7 @@ export const SLICE_GRATEFUL_KIN: UnifiedActionTemplate = {
             {
               id: 'slice.kin.accept_the_debt_awkwardly',
               label: 'Take the thanks anyway',
-              intent: 'Badly received is still received. She meant every word of it.',
+              intent: 'She meant every word of it, and said so again at the door.',
               effects: [
                 {
                   // THR-1206 — see 'slice.kin.a_standing_welcome'. Fumbled delta,
@@ -4160,7 +4168,7 @@ const TABLE_HAND: readonly StepNudge[] = [
     costs: { detectionDelta: 0.15 },
     effectLine:
       'The room goes still and stays still while the traveler speaks, and every hand rests flat where it can be seen. Rival gods can hardly miss the hand that did it.',
-    fiction: 'Stillness is a kind of loudness.',
+    fiction: 'Everyone hears a room stop talking.',
     bandProse: {
       critical_success: 'The stillness held through the whole plan, and both camps heard all of it.',
       failure: 'The room went still on cue, and the stillness turned out to be two camps waiting.',
@@ -4459,7 +4467,7 @@ export const SLICE_TABLE_THAT_HOLDS: UnifiedActionTemplate = {
             overview:
               'The riders turned at a distance and never came close enough to test the line. ' +
               'The town is still telling it the following week, and telling it as one story ' +
-              'rather than two.',
+              'instead of two.',
             changes: [
               tableStandingChip(
                 'slice.table.the_causeway_night',
