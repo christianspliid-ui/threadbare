@@ -281,7 +281,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `engine` (1) | `engineEffectRegistry.ts` | `THR-604`, `THR-996` |
 | `essence` (5) | `essenceEarned.ts`, `essenceEconomyBridge.ts`, `essenceIncome.ts`, `essenceSourceSeeding.ts`, `essenceSources.ts` | `THR-1180`, `THR-611`, `THR-615`, `THR-618` |
 | `event` (1) | `eventAggregation.ts` | `THR-456` |
-| `faction` (12) | `factionAmbitions.ts`, `factionAwareness.ts`, `factionGovernanceVerbs.ts`, `factionMemberWork.ts`, `factionMembership.ts`, `factionNetwork.ts`, `factionOutcome.ts`, `factionQuestGeneration.ts`, `factionRankBonus.ts`, `factionReputation.ts`, `factionSeeding.ts`, `factionTopology.ts` | `Phase 0`, `Phase 1`, `Phase 2`, `Phase 3`, `Phase 4`, `TB-061`, `TB-073`, `THR-1144`, `THR-400`, `THR-430`, `THR-711`, `THR-810`, `THR-814` |
+| `faction` (12) | `factionAmbitions.ts`, `factionAwareness.ts`, `factionGovernanceVerbs.ts`, `factionMemberWork.ts`, `factionMembership.ts`, `factionNetwork.ts`, `factionOutcome.ts`, `factionQuestGeneration.ts`, `factionRankBonus.ts`, `factionReputation.ts`, `factionSeeding.ts`, `factionTopology.ts` | `Phase 0`, `Phase 1`, `Phase 2`, `Phase 3`, `Phase 4`, `TB-061`, `TB-073`, `THR-1144`, `THR-1211`, `THR-400`, `THR-430`, `THR-711`, `THR-810`, `THR-814` |
 | `failure` (1) | `failureStoryArtifact.ts` | `THR-470`, `THR-571` |
 | `familiarity` (1) | `familiarity.ts` | — |
 | `force` (1) | `forceField.ts` | — |
