@@ -9,6 +9,7 @@ import {
   AUTHORING_BRIEF_MAX_LINES,
   AUTHORING_BRIEF_CAPABILITY_SECTION_MAX_LINES,
   AUTHORING_BRIEF_PRINCIPLE_SECTION_MAX_LINES,
+  AUTHORING_BRIEF_HARDCODED_SECTIONS_HASH,
 } from "../build-authoring-brief";
 
 // Minimal fake wiring guide with Capabilities 1-7
@@ -314,5 +315,71 @@ describe("extractHashesFromBrief", () => {
 
   it("returns null when hashes are missing", () => {
     expect(extractHashesFromBrief("# Authoring Brief\nNo hashes here.")).toBeNull();
+  });
+
+  it("extracts the hardcoded-sections hash as the third stamp", () => {
+    const brief = [
+      "# Authoring Brief",
+      "> **Generated:** 2026-08-24",
+      "> **Sources:**",
+      `>   - Docs/plans/2026-04-16-systemic-wiring-guide.md (sha1: ${"a".repeat(40)})`,
+      `>   - Docs/plans/2026-04-16-game-design-direction.md (sha1: ${"b".repeat(40)})`,
+      `>   - encounter-pipeline SKILL.md sections D/E, hardcoded in the generator (sha1: ${"c".repeat(40)})`,
+    ].join("\n");
+    expect(extractHashesFromBrief(brief)!.sectionsHash).toBe("c".repeat(40));
+  });
+
+  it("reports sectionsHash null for a pre-THR-1185 two-stamp brief, so callers regenerate", () => {
+    const brief = [
+      "# Authoring Brief",
+      `>   - Docs/plans/2026-04-16-systemic-wiring-guide.md (sha1: ${"a".repeat(40)})`,
+      `>   - Docs/plans/2026-04-16-game-design-direction.md (sha1: ${"b".repeat(40)})`,
+    ].join("\n");
+    const result = extractHashesFromBrief(brief);
+    expect(result!.sectionsHash).toBeNull();
+    expect(result!.sectionsHash).not.toBe(AUTHORING_BRIEF_HARDCODED_SECTIONS_HASH);
+  });
+});
+
+// THR-1185. Sections D and E are hardcoded generator constants that sat on the pre-THR-772
+// nudge pivot for months, because the freshness check compared only AUTHORING_BRIEF_SOURCES.
+// These pin the post-pivot wording with LITERAL strings rather than by re-reading the
+// constants, so the assertions cannot go tautological the way a constant-on-both-sides test
+// does — if someone reverts the constant, these fail.
+describe("Sections D/E carry the post-nudge-pivot model", () => {
+  const brief = buildBrief(
+    makeWiringGuide(),
+    makeDirectionDoc(),
+    hashContent(makeWiringGuide()),
+    hashContent(makeDirectionDoc()),
+    "2026-08-24",
+  );
+
+  it("does not instruct authors to write per-step approach cards", () => {
+    // The rejected model. Live SKILL.md trigger 14 rejects exactly what this used to demand.
+    expect(brief).not.toContain("Missing per-step approach cards");
+    expect(brief).not.toContain("approach cards");
+  });
+
+  it("does not present the pre-pivot god-verb menu as the choice vocabulary", () => {
+    expect(brief).not.toContain("whisper, send vision, steady, strengthen, withdraw");
+    expect(brief).not.toContain("whisper / send vision / steady / strengthen / withdraw");
+    expect(brief).not.toContain("reframed as divine intervention");
+  });
+
+  it("frames every player-facing option as a nudge", () => {
+    expect(brief).toContain("Influence, never authorship");
+    expect(brief).toContain("reframed as a nudge hand");
+    expect(brief).toContain("a hand is an offer, not a toll gate");
+  });
+
+  it("carries the live trigger list through trigger 25", () => {
+    expect(brief).toContain("25. Announced outcome mechanics in scene prose");
+    // Trigger 14 is the one that rejects the model the old trigger 7 demanded.
+    expect(brief).toContain("14. A player-facing option that instructs the mortal");
+  });
+
+  it("stamps the hardcoded sections into the header so a reword invalidates the brief", () => {
+    expect(brief).toContain(`sha1: ${AUTHORING_BRIEF_HARDCODED_SECTIONS_HASH}`);
   });
 });
