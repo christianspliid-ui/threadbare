@@ -1,19 +1,37 @@
 # User Action Required
 
-**Last updated:** 2026-08-24 07:55 local (05:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-24 08:50 local (06:50 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
-### 1. Finish the sitting — the verdict on two encounters — [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to)
+### 1. Approve one encounter brief — [THR-1182](https://linear.app/threadbare/issue/THR-1182/the-grateful-kins-standing-welcome-has-no-return-visit-author-the)
 
-You played The Grateful Kin yesterday at 17:17, said the bond chip was wrong, and it is **fixed and live** ([THR-1205](https://linear.app/threadbare/issue/THR-1205/bond-chip-renders-red-with-an-up-arrow-and-hides-its-effect-in-prose)). Reopen the encounter and the chip reads correctly. The verdict itself is still open.
+**"The Table That Holds."** The town you helped has split into armed camps — the households the swindler took from, and the swindler's kin — with raiders coming up the fen road. You are the one person both camps will still sit at a table with, and the roof that owes you a favour is where that table is. Two steps, a fate-leaning fork, a hand that can cost more than essence.
+
+Built in the order you set this morning: game design fixed first, hooks rolled after, three candidates written inside those constraints. Two review agents ranked them independently and **both put this one first**. Both flagged the same risk: step 2 is combat-adjacent and the game has no nudge-native combat vocabulary yet.
+
+**Yes, or say what it is missing.** Your Factory rule puts your approval before any prose, so nothing gets written until you answer.
+
+### 2. The verdict on two encounters — [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to)
 
 - **The Grateful Kin** — [play it](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin) · [good ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin&outcome=critical_success) · [bad ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin&outcome=critical_failure)
 - **The Unsafe Bridge** — [play it](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge) · [good ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge&outcome=critical_success) · [costly ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge&outcome=success_at_cost)
 
-**Are these two worth meeting a second time?** Yes releases batch 2 — the remaining nine of fifteen, work the builders can start today on a shelf that is otherwise down to one small job. No tells the line what the bar is still missing, exactly as the chip complaint did. Waiting eight days — the oldest open ask on the board.
+**Are these two worth meeting a second time?** Nine days open — the oldest ask on the board.
 
-### 2. What is a run *about*? — [THR-1198](https://linear.app/threadbare/issue/THR-1198/the-48-authored-mandate-strings-are-wired-but-unreachable-no-live-game)
+**What changed this morning, said plainly:** a yes no longer releases the remaining nine on its own. Your ordering ruling puts the portfolio assessment in front of every future batch, retrofit included. So this is now feedback on whether the bar is met, not a release valve — and your own note that the corpus skews to travel-and-meet-people, in a game that is epic fantasy, is already half an answer. Worth ten minutes anyway: it is the only read on whether the execution landed.
+
+### 3. More design hours — only a sitting with you adds new ground
+
+Everything shipped this week was follow-through on ground already agreed. In the order you set:
+
+- **[Unify the card grammar](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** — your 6 August note: action cards are too wordy, you cannot tell what they do, playing one gives no feedback, while encounter cards already read the way you wanted. Holding the single design slot since 19 August.
+- **[Traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)** — in design, assigned to you, untouched nine days. Either give it the hour or say *"put Traits wave 2 back in the pile."*
+- **The three wave-1 sessions** — [shared machinery](https://linear.app/threadbare/issue/THR-1212/wave-1-design-a-shared-anchor-machinery-the-typed-anchor-the-generated) first, [the hunger vocabulary](https://linear.app/threadbare/issue/THR-1213/wave-1-design-b-hunger-vocabulary-unification-one-catalog-one-key) second, [nations and named areas simulated rather than drawn](https://linear.app/threadbare/issue/THR-1155/nations-and-named-areas-are-rendered-not-simulated-promote-both-to) third.
+
+Behind these whenever you want them: [the encounter slice verdict](https://linear.app/threadbare/issue/THR-907/slice-verdict-session-christian-rules-on-prose-firing-ui-and-game) and your own [one-button snapshot](https://linear.app/threadbare/issue/THR-1134/shareable-game-state-snapshot-one-button-incident-bundle-that-works-in).
+
+### 4. What is a run *about*? — [THR-1198](https://linear.app/threadbare/issue/THR-1198/the-48-authored-mandate-strings-are-wired-but-unreachable-no-live-game)
 
 Forty-eight authored lines narrate a campaign's milestones — a stage advancing, a mandate completing, a mandate failing. They are wired and working, but written for **twelve named campaigns**, while every live game derives its spine from **what your god remembers**. Correct, connected, unreachable; the game falls back to generated text and nothing is broken.
 
@@ -22,31 +40,13 @@ Forty-eight authored lines narrate a campaign's milestones — a stage advancing
 - **Remembrance** — write the milestone prose for the twelve hungers instead; the existing forty-eight stay unread.
 - **Named campaigns** — give the twelve authored mandates a route back into play. That changes how a run's purpose is *chosen*, not just what it reads like.
 
-**This stopped being free to leave open.** At 07:54 the builders put [THR-1214](https://linear.app/threadbare/issue/THR-1214/wire-mandate-milestone-prose-the-48-authored-strings-surface-at) on the shelf, from your wave-1 *"wire, not delete"* ruling. Its finish line is *all forty-eight lines reach a player* — which is exactly what the question above decides. The wiring half can proceed; that half cannot. Either answer is immediately buildable.
+**Correction to yesterday's brief:** I said this had stopped being free to leave open, because a new job walked into it. That job was closed as a duplicate overnight and [the wiring shipped on its own](https://linear.app/threadbare/issue/THR-1197/wire-the-48-authored-mandate-milestone-prose-strings-into-stage). The fork is still real and still yours; the urgency I attached to it was not.
 
-### 3. Ten minutes to shape one encounter — [THR-1182](https://linear.app/threadbare/issue/THR-1182/the-grateful-kins-standing-welcome-has-no-return-visit-author-the)
-
-The town you helped keeps a door open — *A Standing Welcome*, ten game days, visible on the town's page and reachable from the chip. Nobody has written what happens when you walk back in.
-
-**One short chat where an agent drafts the brief with you** — what the return visit should be, who is there, what the welcome actually buys. The brief does not exist yet; drafting it *is* step one, and your own Factory rule puts your approval before any prose, so it cannot start unattended. Say *"draft the brief for the Grateful Kin return visit."*
-
-It sits downstream of ask 1 and edits the same file, so taking them in that order costs nothing and saves a rebase.
-
-### 4. Should committing a nudge be followed by a held breath? — [THR-1168](https://linear.app/threadbare/issue/THR-1168/two-authored-encounter-audio-moments-have-no-live-caller-wire-or)
+### 5. Should committing a nudge be followed by a held breath? — [THR-1168](https://linear.app/threadbare/issue/THR-1168/two-authored-encounter-audio-moments-have-no-live-caller-wire-or)
 
 There is a finished, unused piece of sound design: on committing a nudge, roughly 1.6 seconds where a tone draws tight, holds, then releases — and only then does the outcome land. Nothing plays it today; the visual it accompanied was deleted, so what remains is the pacing alone.
 
-**Does committing feel better with that beat, or should the outcome land immediately?** Pure feel; no measurement settles it. Either answer closes the ticket — wired to the encounter veil, or retired with its constants and tests. Open eight days. Two lanes recommend **no**: unskippable on every commit turns tense into waiting, and the timings stay recoverable from history.
-
-### 5. More design hours — only a sitting with you adds new ground
-
-**Only a sitting with you puts *new* design on the shelf.** Your reputation sitting ran 16:40 → 17:15 and produced a merged design plus two buildable jobs — the first program work to reach the board in six days, built and live before you woke. Thirty-five minutes of you bought roughly two hours of building. The shelf has since refilled to three jobs, but all three are follow-through on ground already agreed, not new ground. In the order you set:
-
-- **The three wave-1 sessions** you ruled on — shared machinery first, the hunger vocabulary second, [nations and named areas simulated rather than drawn](https://linear.app/threadbare/issue/THR-1155/nations-and-named-areas-are-rendered-not-simulated-promote-both-to) third. Your own handoff puts the reputation build *after* the shared machinery, so that sitting now gates the most.
-- **[Unify the card grammar](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** — your 6 August note: action cards are too wordy, you cannot tell what they do, playing one gives no feedback, while encounter cards already read the way you wanted. Staged with its reading list gathered; holding the single design slot since 19 August.
-- **[Traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)** — in design and assigned to you for nine days, untouched. Either give it the hour or say *"put Traits wave 2 back in the pile."*
-
-Behind these whenever you want them: [the anchor prototype](https://linear.app/threadbare/issue/THR-1162/anchor-type-on-a-second-seam-throwaway-prototype-proving-the-pilots), [the encounter slice verdict](https://linear.app/threadbare/issue/THR-907/slice-verdict-session-christian-rules-on-prose-firing-ui-and-game), and your own [one-button snapshot](https://linear.app/threadbare/issue/THR-1134/shareable-game-state-snapshot-one-button-incident-bundle-that-works-in).
+**Does committing feel better with that beat, or should the outcome land immediately?** Pure feel; no measurement settles it. Either answer closes the ticket — wired to the encounter veil, or retired with its constants and tests. Open nine days. Two lanes recommend **no**: unskippable on every commit turns tense into waiting, and the timings stay recoverable from history.
 
 ### 6. One attended dev-server session — [THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server)
 
@@ -66,15 +66,16 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
+- 2026-08-24: **you settled how encounters get built** — [PR #1589](https://github.com/christianspliid-ui/threadbare/pull/1589), recorded on [THR-1043](https://linear.app/threadbare/issue/THR-1043/the-encounter-factory-agentic-workflow-for-composition-complete): game design first, then roll hooks, then judge candidates. Fiction-first briefs are now rejected on sight, and step 1 — [what encounter types the game needs](https://linear.app/threadbare/issue/THR-1215/encounter-portfolio-assessment-what-encounter-types-the-game-needs-and) — is its own job.
+- 2026-08-24: **eighteen chips stop claiming a standing change that never happened** — [THR-1208](https://linear.app/threadbare/issue/THR-1208/18-cast-fate-chips-wear-kindreputation-with-no-reputation-write-behind): each now names the effect actually behind it.
+- 2026-08-24: **the campaign's spine narrates itself** — [THR-1197](https://linear.app/threadbare/issue/THR-1197/wire-the-48-authored-mandate-milestone-prose-strings-into-stage): the 48 authored milestone lines now fire at stage transitions instead of sitting unread.
+- 2026-08-24: **a rollable table of story seeds** — [THR-1147](https://linear.app/threadbare/issue/THR-1147/plot-hook-table-rollable-story-seed-inspiration-for-the-encounter): used for real within the hour, by the brief in ask 1.
 - 2026-08-24: **reputation is now one thing** — [THR-1206](https://linear.app/threadbare/issue/THR-1206/reputation-is-the-social-score-between-any-two-parties-unify-faction) ([PR #1586](https://github.com/christianspliid-ui/threadbare/pull/1586)): six different scores wore the word; your ruling made it the one social score between any two parties. From your 16:40 chat to merged and live, unattended, before morning.
 - 2026-08-23: **the bond chip stops arguing with itself** — [THR-1205](https://linear.app/threadbare/issue/THR-1205/bond-chip-renders-red-with-an-up-arrow-and-hides-its-effect-in-prose) ([PR #1584](https://github.com/christianspliid-ui/threadbare/pull/1584)): you found it at 17:17 playing The Grateful Kin — red with an up arrow, effect hidden in prose. Filed, built, merged and deployed in eighty minutes.
-- 2026-08-23: **two backstories stop calling a mortal's ruthlessness "the patience"** — [THR-1204](https://linear.app/threadbare/issue/THR-1204/mercy-ruthlessness-negative-bodies-1-and-3-call-the-disposition-the) ([PR #1583](https://github.com/christianspliid-ui/threadbare/pull/1583)): two sentences named the quality and then contradicted it three words later. Found by the widened check below, on its first pass.
-- 2026-08-23: **the check that catches this whole run of faults now reads every passage** — [THR-1203](https://linear.app/threadbare/issue/THR-1203/pole-manifest-pins-one-body-per-fear-prose-key-the-other-five-are) ([PR #1582](https://github.com/christianspliid-ui/threadbare/pull/1582)): it pinned one passage per key and treated the other five as covered, which is how eight faults of the same kind shipped before anyone saw them. It now reads all six and names where it still cannot see.
-- 2026-08-23: **eight character backstories stop describing the wrong quality** — [THR-1202](https://linear.app/threadbare/issue/THR-1202/fear-prose-preservation-transformation-the-first-four-bodies-of-both) ([PR #1581](https://github.com/christianspliid-ui/threadbare/pull/1581)): a *Preserving* mortal was written as someone who cannot delegate or leave a room unarranged, a *Transforming* one as someone withholding power — passages authored for an axis the game no longer has.
-- 2026-08-23: **the turning-point text uses the right word too** — [THR-1201](https://linear.app/threadbare/issue/THR-1201/turning-point-prose-renders-value-as-an-adjective-in-a-noun-slot-when) ([PR #1580](https://github.com/christianspliid-ui/threadbare/pull/1580)): the same adjective-where-a-noun-belongs fault as the entry below, in a second table of character-backstory writing. Found inside that fix, shipped and deployed within the hour.
-- 2026-08-23: **mortal backstories use the right word for the thing they name** — [THR-1200](https://linear.app/threadbare/issue/THR-1200/fear-prose-renders-value-as-an-adjective-in-a-noun-slot-that) ([PR #1579](https://github.com/christianspliid-ui/threadbare/pull/1579)): 97 of 108 character descriptions read *"their **Prudent** is partly about the fear of their own recklessness"* — the label where the sentence needed the quality itself.
-- 2026-08-23: **mortal backstories no longer stutter** — [THR-1199](https://linear.app/threadbare/issue/THR-1199/fear-prose-renders-fear-as-the-whole-fear-description-producing-the) ([PR #1578](https://github.com/christianspliid-ui/threadbare/pull/1578)): every character's description read *"behind the Cunning they practice is the being outwitted of being outwitted"* — a whole phrase dropped into a slot meant for one word.
-- 2026-08-23: **character backstories no longer read backwards** — [THR-1187](https://linear.app/threadbare/issue/THR-1187/fear-strata-honesty-cunning-poles-read-inverted-the-positive-body) ([PR #1577](https://github.com/christianspliid-ui/threadbare/pull/1577)): an *Honest* mortal was described as fearing their deception would be exposed, and a *Cunning* one as embarrassingly bad at lying — the two descriptions sat in each other's slots.
+- 2026-08-23: **two backstories stop calling a mortal's ruthlessness "the patience"** — [THR-1204](https://linear.app/threadbare/issue/THR-1204/mercy-ruthlessness-negative-bodies-1-and-3-call-the-disposition-the) ([PR #1583](https://github.com/christianspliid-ui/threadbare/pull/1583)): two sentences named the quality and then contradicted it three words later.
+- 2026-08-23: **the check that catches this whole run of faults now reads every passage** — [THR-1203](https://linear.app/threadbare/issue/THR-1203/pole-manifest-pins-one-body-per-fear-prose-key-the-other-five-are) ([PR #1582](https://github.com/christianspliid-ui/threadbare/pull/1582)): it pinned one passage per key and treated the other five as covered, which is how eight faults of the same kind shipped before anyone saw them.
+- 2026-08-23: **eight character backstories stop describing the wrong quality** — [THR-1202](https://linear.app/threadbare/issue/THR-1202/fear-prose-preservation-transformation-the-first-four-bodies-of-both) ([PR #1581](https://github.com/christianspliid-ui/threadbare/pull/1581)): passages authored for an axis the game no longer has.
+- 2026-08-23: **mortal backstories use the right word for the thing they name** — [THR-1200](https://linear.app/threadbare/issue/THR-1200/fear-prose-renders-value-as-an-adjective-in-a-noun-slot-that) ([PR #1579](https://github.com/christianspliid-ui/threadbare/pull/1579)): 97 of 108 character descriptions put the label where the sentence needed the quality itself.
 
 ---
 
