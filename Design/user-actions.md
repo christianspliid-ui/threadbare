@@ -1,36 +1,34 @@
 # User Action Required
 
-**Last updated:** 2026-08-24 15:55 local (13:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-24 16:57 local (14:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
-### 1. Does siege go first? — [THR-1216](https://linear.app/threadbare/issue/THR-1216/director-ruling-the-encounter-target-mix-does-siege-go-first)
+### 1. Chart the hub map
 
-You said the corpus converges on travel-and-meet-people vignettes. [The assessment](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/audits/2026-08-24-encounter-portfolio-assessment.md) confirms it with numbers: **six of eight slice encounters open on a roadside**, thirteen templates say where they happen at all, and **nothing in the game fights on a battlefield**. The epic bands are not missing — they are *old*: 23 ruin-and-delve, 20 war-and-siege, 13 deep-magic premises, all legacy format. Everything in the new nudge voice is camp chores, roadside vignettes and company scenes.
+Both design maps the project was carrying closed today: [the typed game-state map](https://linear.app/threadbare/issue/THR-1157/typed-game-state-architecture-machinery-first-wave-wayfinder-map) at 07:52 local, and [the vertical-slice map](https://linear.app/threadbare/issue/THR-902/encounter-experience-redesign-vertical-slice-wayfinder-map) at 16:27 with all five verdicts in — prose *change it*, firing *rhythm works, prune later*, UI *good enough*, game *the decisions land*. **Nothing is being charted now.**
+
+The slice map's charter names its successor and deliberately held it back so it could start from settled input: **the hub — the player reaching the game's other systems (factions, war, economy, divine actions) from inside the encounter interface.** It calls this the stated end-goal of the whole encounter redesign. The verdicts it was waiting on now exist.
+
+**Only you can charter a map.** Say *"chart the hub map"* in a chat session when you want it. Everything else on this page rules on ground already drawn; this is the only item that adds new ground.
+
+### 2. Does siege go first? — [THR-1216](https://linear.app/threadbare/issue/THR-1216/director-ruling-the-encounter-target-mix-does-siege-go-first)
+
+You said the corpus converges on travel-and-meet-people vignettes. [The assessment](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/audits/2026-08-24-encounter-portfolio-assessment.md) confirms it with numbers: **six of eight slice encounters open on a roadside**, and **nothing in the game fights on a battlefield**. The epic bands are not missing — they are *old*: 23 ruin-and-delve, 20 war-and-siege, 13 deep-magic premises, all legacy format.
 
 Recommended build order: **siege and the war-band (6)**, ruins and the delve (5), monsters and the hunt (4), prophecy (3), deep magic and wards (3), factional collapse (3). Deliberately excluded as non-gaps: trade, camp chores, building.
 
 **Does siege lead at six, or do you want a different category first, or different counts?** The next factory run takes its category from your answer. **Silence means siege first** — the default is set, so leaving this costs nothing.
 
-### 2. The verdict on two encounters — [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to)
+### 3. More design hours — three sittings stacked
 
-- **The Grateful Kin** — [play it](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin) · [good ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin&outcome=critical_success) · [bad ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin&outcome=critical_failure)
-- **The Unsafe Bridge** — [play it](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge) · [good ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge&outcome=critical_success) · [costly ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge&outcome=success_at_cost)
-- **The Table That Holds** — [play it](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.the_table_that_holds) · [good ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.the_table_that_holds&outcome=critical_success). Shipped 24 August from your one-word approval the same morning. No verdict owed on it yet — but it is the freshest read on where the voice has landed.
-
-**Are these two worth meeting a second time?** Nine days open — the oldest ask on the board.
-
-A yes no longer releases the remaining nine on its own: your ordering ruling puts the portfolio work in front of every future batch, retrofit included. So this is feedback on whether the bar is met, not a release valve. Worth ten minutes anyway — it is the only read on whether the execution landed.
-
-### 3. More design hours — only a sitting with you adds new ground
-
-Everything shipped this week was follow-through on ground already agreed. In the order you set:
+In the order you set:
 
 - **[Unify the card grammar](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** — your 6 August note: action cards are too wordy, you cannot tell what they do, playing one gives no feedback, while encounter cards already read the way you wanted. Holding the single design slot since 19 August.
 - **[Traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)** — in design, assigned to you, untouched nine days. Either give it the hour or say *"put Traits wave 2 back in the pile."*
-- **The three wave-1 sessions** — [shared machinery](https://linear.app/threadbare/issue/THR-1212/wave-1-design-a-shared-anchor-machinery-the-typed-anchor-the-generated) first, [the hunger vocabulary](https://linear.app/threadbare/issue/THR-1213/wave-1-design-b-hunger-vocabulary-unification-one-catalog-one-key) second, [nations and named areas simulated rather than drawn](https://linear.app/threadbare/issue/THR-1155/nations-and-named-areas-are-rendered-not-simulated-promote-both-to) third.
+- **The wave-1 sessions** — [shared machinery](https://linear.app/threadbare/issue/THR-1212/wave-1-design-a-shared-anchor-machinery-the-typed-anchor-the-generated) first, [the hunger vocabulary](https://linear.app/threadbare/issue/THR-1213/wave-1-design-b-hunger-vocabulary-unification-one-catalog-one-key) second, [nations and named areas simulated rather than drawn](https://linear.app/threadbare/issue/THR-1155/nations-and-named-areas-are-rendered-not-simulated-promote-both-to) third.
 
-Behind these whenever you want them: [the encounter slice verdict](https://linear.app/threadbare/issue/THR-907/slice-verdict-session-christian-rules-on-prose-firing-ui-and-game) and your own [one-button snapshot](https://linear.app/threadbare/issue/THR-1134/shareable-game-state-snapshot-one-button-incident-bundle-that-works-in).
+Available whenever you want it: your own [one-button snapshot](https://linear.app/threadbare/issue/THR-1134/shareable-game-state-snapshot-one-button-incident-bundle-that-works-in).
 
 ### 4. What is a run *about*? — [THR-1198](https://linear.app/threadbare/issue/THR-1198/the-48-authored-mandate-strings-are-wired-but-unreachable-no-live-game)
 
@@ -67,16 +65,16 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
+- 2026-08-24: **the vertical-slice map is closed** — [THR-902](https://linear.app/threadbare/issue/THR-902/encounter-experience-redesign-vertical-slice-wayfinder-map), all five verdicts ruled in one sitting; the slice prose rewrite is now [THR-1219](https://linear.app/threadbare/issue/THR-1219/rewrite-the-slice-prose-to-the-2026-08-15-standard-direct-pass) and your integrated read is [THR-1220](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with), which will not reach this page until every component is at standard.
+- 2026-08-24: **the encounter-authoring brief stops ordering writers to produce the rejected card format** — [THR-1185](https://linear.app/threadbare/issue/THR-1185/docsauthoring-briefmd-sections-de-carry-pre-nudge-pivot-vocabulary) ([PR #1595](https://github.com/christianspliid-ui/threadbare/pull/1595)), fixed before the next factory batch runs against it.
 - 2026-08-24: **the word "reputation" gets one definition and the other five get named** — [THR-1210](https://linear.app/threadbare/issue/THR-1210/ul-proposal-reputation-the-social-score-that-modifies-interactions) ([PR #1594](https://github.com/christianspliid-ui/threadbare/pull/1594)): the glossary entry behind your unification ruling, so the next author cannot re-blur it.
 - 2026-08-24: **thirty-one percent of the game's reputation writes stop being thrown away** — [THR-1207](https://linear.app/threadbare/issue/THR-1207/dead-reputation-tally-keys-re-author-every-off-axis-tally-write-to-the) ([PR #1591](https://github.com/christianspliid-ui/threadbare/pull/1591)): guild lines where a mortal built standing that never existed now name the mechanism their fiction meant.
-- 2026-08-24: **your 1,200 story hooks are in the repo** — you answered *"yes"* at 10:35 and [THR-1217](https://linear.app/threadbare/issue/THR-1217/publish-the-1200-hook-quest-corpus-christian-approved-it-design-still) merged at 13:24 ([PR #1592](https://github.com/christianspliid-ui/threadbare/pull/1592)). Thirteen files, live where the encounter factory reads them — and the factory's hook step no longer reports success while quietly using a placeholder.
-- 2026-08-24: **"The Table That Holds" is live** — you answered *"fine"* at 10:36 and [THR-1182](https://linear.app/threadbare/issue/THR-1182/the-grateful-kins-standing-welcome-has-no-return-visit-author-the) merged at 14:39 ([PR #1593](https://github.com/christianspliid-ui/threadbare/pull/1593)). The Grateful Kin has promised since THR-1175 that a town keeps its door open for you; [now the world acts on it](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.the_table_that_holds). Six hours from approval to on screen.
-- 2026-08-24: **you settled how encounters get built** — [PR #1589](https://github.com/christianspliid-ui/threadbare/pull/1589), recorded on [THR-1043](https://linear.app/threadbare/issue/THR-1043/the-encounter-factory-agentic-workflow-for-composition-complete): game design first, then roll hooks, then judge candidates. Step 1 — [what encounter types the game needs](https://linear.app/threadbare/issue/THR-1215/encounter-portfolio-assessment-what-encounter-types-the-game-needs-and) — shipped the same morning and is the source of ask 1 above.
+- 2026-08-24: **your 1,200 story hooks are in the repo** — you answered *"yes"* at 10:35 and [THR-1217](https://linear.app/threadbare/issue/THR-1217/publish-the-1200-hook-quest-corpus-christian-approved-it-design-still) merged at 13:24 ([PR #1592](https://github.com/christianspliid-ui/threadbare/pull/1592)). Thirteen files, live where the encounter factory reads them.
+- 2026-08-24: **"The Table That Holds" is live** — you answered *"fine"* at 10:36 and [THR-1182](https://linear.app/threadbare/issue/THR-1182/the-grateful-kins-standing-welcome-has-no-return-visit-author-the) merged at 14:39 ([PR #1593](https://github.com/christianspliid-ui/threadbare/pull/1593)). [The town keeps its door open for you](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.the_table_that_holds) — six hours from approval to on screen.
+- 2026-08-24: **you settled how encounters get built** — [PR #1589](https://github.com/christianspliid-ui/threadbare/pull/1589), recorded on [THR-1043](https://linear.app/threadbare/issue/THR-1043/the-encounter-factory-agentic-workflow-for-composition-complete): game design first, then roll hooks, then judge candidates. Step 1 — [what encounter types the game needs](https://linear.app/threadbare/issue/THR-1215/encounter-portfolio-assessment-what-encounter-types-the-game-needs-and) — shipped the same morning and is the source of ask 2 above.
 - 2026-08-24: **eighteen chips stop claiming a standing change that never happened** — [THR-1208](https://linear.app/threadbare/issue/THR-1208/18-cast-fate-chips-wear-kindreputation-with-no-reputation-write-behind): each now names the effect actually behind it.
 - 2026-08-24: **the campaign's spine narrates itself** — [THR-1197](https://linear.app/threadbare/issue/THR-1197/wire-the-48-authored-mandate-milestone-prose-strings-into-stage): the 48 authored milestone lines now fire at stage transitions instead of sitting unread.
 - 2026-08-24: **a rollable table of story seeds** — [THR-1147](https://linear.app/threadbare/issue/THR-1147/plot-hook-table-rollable-story-seed-inspiration-for-the-encounter): used for real within the hour, by the brief you approved this morning.
-- 2026-08-24: **reputation is now one thing** — [THR-1206](https://linear.app/threadbare/issue/THR-1206/reputation-is-the-social-score-between-any-two-parties-unify-faction) ([PR #1586](https://github.com/christianspliid-ui/threadbare/pull/1586)): six different scores wore the word; your ruling made it the one social score between any two parties. From your 16:40 chat to merged and live, unattended, before morning.
-- 2026-08-23: **the bond chip stops arguing with itself** — [THR-1205](https://linear.app/threadbare/issue/THR-1205/bond-chip-renders-red-with-an-up-arrow-and-hides-its-effect-in-prose) ([PR #1584](https://github.com/christianspliid-ui/threadbare/pull/1584)): you found it at 17:17 playing The Grateful Kin — red with an up arrow, effect hidden in prose. Filed, built, merged and deployed in eighty minutes.
 
 ---
 
