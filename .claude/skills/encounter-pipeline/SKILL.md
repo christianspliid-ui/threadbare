@@ -2,7 +2,7 @@
 name: encounter-pipeline
 description: Automated encounter pipeline v3 — the Encounter Factory line. Runs brief → draft → bounded critic loop → machine gates → live proof → batch report for composition-complete encounter delivery, one encounter or a batch of six. Triggers on "encounter pipeline", "draft encounter", "run encounter pipeline", "author encounter", "encounter batch", "run a batch", or "/encounter-pipeline".
 model: opus
-last_validated_against: 2026-08-18
+last_validated_against: 2026-08-24
 ---
 
 > **Load before authoring:** `Docs/canon/rulebook-quick-reference.md` (always — the synthesis layer for rules of play). Load `Docs/canon/rulebook.md` (full rulebook) when the work touches a specific rule of play and you need depth, status flags, or source citations.
@@ -205,10 +205,21 @@ Then the orchestrator reads the files the Canon page links to and injects them a
 
 If Obsidian MCP is unavailable, note it and proceed. The draft agent should not need to read these files itself.
 
-### Step 0a: Roll the Plot-Hook Draw (THR-1147)
+### Step 0a: Fix the game design, then roll the Plot-Hook Draw (THR-1147; order ruled 2026-08-24)
 
-Roll the premise **before** writing the brief — the hook is what the brief is about, so a
-brief written first has nothing left to roll for:
+**Game design comes first — all of it (director ruling, 2026-08-24; full text in
+`reference/nudge-authoring-spec.md` § Authoring order).** Before any premise exists:
+assess what encounter types the corpus needs and pick the category this run builds; then
+make every mechanical choice — structure (steps, forks, difficulty curve), the
+consequence hand (run Step 0b *now*, not after the premise), band-by-band payoffs,
+prizes, penalties, cost channels and grants — and record them in the brief as the
+constraints the story must live inside. A brief whose fiction was written first and had
+mechanics fitted afterwards is rejected on sight (the ruling's words: *"clearly written
+first, and then you are trying to mash it into a game"*).
+
+**Then** roll the premise — the hook feeds story candidates written inside the fixed
+design. Write 2–3 candidates from the rolled hooks and have review agents rank them
+against the design and the register rules before drafting:
 
 ```
 npm run draw:hooks -- <briefSlug> --reach <reach>

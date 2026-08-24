@@ -30,6 +30,41 @@ Read the exemplar before authoring. Every rule here is visible in it once.
 
 ---
 
+## Authoring order — game design first (director ruling 2026-08-24)
+
+Verbatim, from the sitting that rejected a fiction-first brief: *"assess what and how
+many types of each encounter we need. pick a category to start building the encounter.
+then build the game interface of the encounter (the payoffs, the prizes, the penalties,
+the structure) first to set constraints for the story. make all the game design choices
+first. THEN you roll a few encounter plot hooks on the table, and try to use them for
+building a great story within the constraints of the game design choices already made.
+pick the one you and your review agents think is the best."*
+
+The binding order, for every encounter and every batch:
+
+1. **Portfolio first.** Assess what encounter types the game needs and how many, and
+   pick the category this run builds. The corpus converges on travel-and-meet-people
+   vignettes when nobody checks, and the director's standing note from the same sitting
+   is that the game is **epic fantasy**, not slice-of-life. The recorded gap list on the
+   slice map (no nudge-native combat; near-zero grants/costs channel users; zero
+   fate-branching users) is the seed of this assessment — keep it current as gaps close.
+2. **Game design second — all of it.** Structure (steps, forks, difficulty curve), the
+   consequence hand (§ The Consequence Draw), band-by-band payoffs, prizes, penalties,
+   cost channels and grants — every mechanical choice, made and recorded in the brief
+   **before a word of fiction exists**. The design sets the constraints the story must
+   live inside.
+3. **Hooks third.** Roll the plot-hook draw (§ The Plot-Hook Draw) and build story
+   candidates *within* the constraints from step 2.
+4. **Candidates, then judgment.** Write 2–3 candidate premises from the rolled hooks;
+   review agents rank them against the fixed design and the register rules; the best
+   candidate goes to draft.
+
+A brief whose fiction was written first and had mechanics fitted afterwards is rejected
+on sight — that shape is what this ruling exists to kill (*"clearly written first, and
+then you are trying to mash it into a game"*).
+
+---
+
 ## What a nudge is
 
 > The god acts through their spheres on the fabric of the scene — matter, minds, dreams,
