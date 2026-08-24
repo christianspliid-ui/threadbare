@@ -48,6 +48,13 @@ The binding order, for every encounter and every batch:
    is that the game is **epic fantasy**, not slice-of-life. The recorded gap list on the
    slice map (no nudge-native combat; near-zero grants/costs channel users; zero
    fate-branching users) is the seed of this assessment — keep it current as gaps close.
+
+   **Do not re-derive the portfolio per run — read it.** The living reference is
+   `Docs/audits/2026-08-24-encounter-portfolio-assessment.md` (THR-1215): census by
+   family, composition tier, setting skew and genre band, plus the ranked target mix a
+   run picks its category from. Measured 2026-08-24 — six of the eight slice encounters
+   open on a roadside, and `battlefield` has one authored opening in the game. Refresh
+   its census when a batch ships; re-rank its target mix only on a director ruling.
 2. **Game design second — all of it.** Structure (steps, forks, difficulty curve), the
    consequence hand (§ The Consequence Draw), band-by-band payoffs, prizes, penalties,
    cost channels and grants — every mechanical choice, made and recorded in the brief
