@@ -196,13 +196,33 @@ const CONDITION_EFFECT_KINDS: ReadonlySet<string> = new Set([
  * practical effect is nil: the one swept chip whose fiction is an omen ("The
  * Season") is backed by an intelligence record alongside it.
  */
-const CHIP_BACKING_EFFECT_KINDS: ReadonlySet<string> = new Set([
+export const CHIP_BACKING_EFFECT_KINDS: ReadonlySet<string> = new Set([
   ...PERSISTENT_EFFECT_KINDS,
   ...REPUTATION_EFFECT_KINDS,
   'attachment_grant',
   'grant_companion',
   'remove_companion',
   'intelligence',
+  // THR-1221 — `membership_change` is the same "never decided about" class as the
+  // kinds above, and its absence was load-bearing rather than cosmetic: it is the
+  // *only* kind that satisfies the `membership` consequence family
+  // (`consequenceDraw.ts`), so an encounter that drew `membership`, wired it
+  // correctly, and chipped the result had its chip rejected as unbacked. The
+  // encounter's only remedies were to fold a legitimate consequence into prose or
+  // to disobey its own draw, and the gate audits the draw. This file already
+  // classifies the kind as durable in the other direction — `CAST_TARGET_PERSISTENT_KINDS`
+  // lists it, and that set's comment calls a membership "a durable fact written
+  // onto a specific someone". Two sets in one module disagreeing about one kind is
+  // the whole defect; this is the side that was wrong.
+  //
+  // `agent_relocation` is the same defect's second instance, found by the test that
+  // pins the two sets against each other rather than by inspection — it is the sole
+  // satisfier of the `movement` family, so it failed identically. A relocation
+  // rewrites the agent's `located_at` edge, which is core world state every spatial
+  // system reads afterwards, so it clears this set's stated bar ("did the engine
+  // write state a later system can read") without widening it toward dressing.
+  'membership_change',
+  'agent_relocation',
   'plant_compulsion',
   'quintessence_shift',
   'clearance_gate_tag',
@@ -735,7 +755,7 @@ export function chipAnchorViolations(template: UnifiedActionTemplate): readonly 
  * onto the wrong someone — or onto nobody — is the failure {@link castTargetViolations}
  * exists to catch.
  */
-const CAST_TARGET_PERSISTENT_KINDS: ReadonlySet<string> = new Set([
+export const CAST_TARGET_PERSISTENT_KINDS: ReadonlySet<string> = new Set([
   'bond_change',
   'hidden_mark',
   'attachment_grant',
