@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-08-24 11:55 local (09:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-08-24 12:54 local (10:54 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -23,15 +23,15 @@ The recommended order to build next: **siege and the war-band (6)**, then ruins 
 
 ## Queue
 
-**Healthy — 3 claimable, and for the first time in three runs one of them is real program work.** Both of this morning's answers are now carried by tickets; nothing you said is sitting loose.
+**Healthy — 3 claimable, and the one piece of work that was in flight last hour has shipped.**
 
-- **[THR-1217](https://linear.app/threadbare/issue/THR-1217/publish-the-1200-hook-quest-corpus-christian-approved-it-design-still) (High) — your 1,200 story hooks go into the repo.** The 11:00 brief said this was owed with nothing carrying it, and that if it were still loose at this hour it would be the failure to look at. It is not: it was ticketed at 09:31Z with the exact commands. It also corrects a path this brief had wrong — the corpus is at `Design/research/quest-hooks/`, not `Design/quest-hooks/`. Recommended next pickup.
-- **[THR-1182](https://linear.app/threadbare/issue/THR-1182/the-grateful-kins-standing-welcome-has-no-return-visit-author-the) (Medium) — "The Table That Holds"** moved from `Todo` into the dev queue on your *"fine"*. Authoring is claimable now.
+- **[THR-1207](https://linear.app/threadbare/issue/THR-1207/dead-reputation-tally-keys-re-author-every-off-axis-tally-write-to-the) merged at 12:43 local** ([PR #1591](https://github.com/christianspliid-ui/threadbare/pull/1591)). Thirty-one percent of the game's reputation writes were being thrown away silently — guild lines where a mortal built standing that never existed. Every one of those now names the mechanism its fiction meant. Nothing was pending on you; this is the hour's one closure.
+- **[THR-1217](https://linear.app/threadbare/issue/THR-1217/publish-the-1200-hook-quest-corpus-christian-approved-it-design-still) (High) — your 1,200 story hooks go into the repo.** Still the recommended next pickup; unclaimed since 11:31 local, and the next pickup run is at 13:01.
+- **[THR-1182](https://linear.app/threadbare/issue/THR-1182/the-grateful-kins-standing-welcome-has-no-return-visit-author-the) (Medium) — "The Table That Holds"**, approved on your *"fine"*. Authoring is claimable now.
 - **[THR-1210](https://linear.app/threadbare/issue/THR-1210/ul-proposal-reputation-the-social-score-that-modifies-interactions) (Medium)** — docs-track, rides any run.
-- **In flight:** [THR-1207](https://linear.app/threadbare/issue/THR-1207/dead-reputation-tally-keys-re-author-every-off-axis-tally-write-to-the) was claimed and is being worked — the 31% of reputation-tally writes that are discarded silently.
 - **Four parks, all on you and all listed above:** THR-1216 (this morning), THR-1130 (7 days), THR-1133 (9 days), THR-1168 (6 days). Park shape intact on all four.
 
 ## Health
 
-- **All probes green** — deploy, CI, background jobs, armed PRs, scheduled-task heartbeat, home tree, worktree reaper (last swept 11:40 local).
+- **All probes green** — deploy (live site on 51bf4db0), CI, background jobs, armed PRs, scheduled-task heartbeat, home tree, worktree reaper (last swept 12:40 local).
 - **Lane silence:** the 35-hour gap of 20–22 August is still on the record with no pause marker covering it. Lanes have run normally since; the three later gaps are overnight-shaped and declined per your 8 August ruling. Visibility only — nothing for you to do, and it will keep appearing here until it ages out.
