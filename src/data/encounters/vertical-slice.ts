@@ -15,6 +15,7 @@
  *   5. The Swindled Family      — Opt-in Complication        (Hook #204)
  *      ├─ The Swindler Found       (Seeded Sequel of 5)
  *      └─ The Grateful Kin         (Seeded Sequel of 5)
+ *         └─ The Table That Holds  (Seeded Sequel of the Kin — THR-1182)
  *
  * Every design block is in the doc comment above its template. The Seeded
  * Sequel rule is enforced by `__tests__/vertical-slice.test.ts`: every
@@ -36,6 +37,7 @@
 import type {
   ActionStep,
   ActionStepBranch,
+  EncounterAftermathReactionEffect,
   StepNudge,
   UnifiedActionTemplate,
 } from '../../types/unifiedAction';
@@ -201,6 +203,47 @@ export const SLICE_KIN_WELCOME_BAND_WARM = 3;
 /** Fumbled — a slight amount (one mark). The door still opens. */
 export const SLICE_KIN_WELCOME_BAND_FUMBLED = 0;
 
+/**
+ * Ticks until the town that keeps a door open calls the traveler back to it
+ * (THR-1182). One game day, and the number is load-bearing rather than a mood.
+ *
+ * The welcome The Grateful Kin writes is a `reputation_with` edge, and phase 6.6
+ * drifts every such edge toward neutral at `REPUTATION_WITH_DECAY_PER_TICK`,
+ * deleting it once inside `REPUTATION_WITH_PRUNE_EPSILON` of neutral. So each of
+ * the three planting bands has its own window in which the roof still owes
+ * anything, and the seed has to ripen inside the **shortest** of them:
+ *
+ *   fumbled  0.04 above neutral → pruned after (0.04 − 0.02) / 0.001 = 20 ticks
+ *   warm     0.12 above neutral → below `Respected` after (0.12 − 0.10) / 0.001 = 20 ticks
+ *
+ * Twelve is comfortably inside both, which is what makes the return visit a
+ * scene rather than a promise: at ripening the fumbled welcome still exists, and
+ * the warm one still clears the organic gate below. Pinned against literals in
+ * `__tests__/vertical-slice.test.ts` so a change to either engine constant
+ * breaks loudly instead of quietly stranding the sequel.
+ *
+ * **Why the decay constants and not `CONDITION_STANDING_WELCOME_DURATION`**
+ * (THR-1182 Done-when 4, author's call, recorded): that constant governed the
+ * retired `trait.condition.location.standing_welcome`, which THR-1206 left with
+ * zero writers. Pinning to it would assert against a mechanism no band on this
+ * chain writes any more — the dead-gate shape one layer along, which is this
+ * ticket's own defect class.
+ */
+export const SLICE_TABLE_DELAY_TICKS = 12;
+
+/**
+ * The band a town's regard must reach before the table scene can be *drawn*
+ * (as opposed to planted). THR-1182.
+ *
+ * `'Respected'` is the only band that gates anything here, and that is
+ * arithmetic rather than taste: `REPUTATION_WITH_DEFAULT` is 0.5, which
+ * `getReputationWord` bands as `Accepted`, so a gate at `Accepted` is satisfied
+ * by every stranger who ever walks in. `Respected` (≥ 0.6) is reachable off the
+ * warm band alone (0.5 + 0.12), which is the reading the scene wants: the town
+ * calls in the one traveler it actually thinks well of.
+ */
+export const SLICE_TABLE_GATE_BAND = 'Respected';
+
 export const SLICE_TEMPLATE_IDS = {
   bridge: 'encounter.slice.unsafe_bridge',
   pass: 'encounter.slice.snow_on_the_pass',
@@ -210,7 +253,35 @@ export const SLICE_TEMPLATE_IDS = {
   family: 'encounter.slice.swindled_family',
   swindlerFound: 'encounter.slice.swindler_found',
   gratefulKin: 'encounter.slice.grateful_kin',
+  tableThatHolds: 'encounter.slice.the_table_that_holds',
 } as const;
+
+/**
+ * The one seed The Grateful Kin plants, declared once and referenced by all
+ * three of its bands (THR-1182).
+ *
+ * Shared rather than copied because the three planting sites are three *bands*
+ * of one beat, not three decisions: `applyAftermathOutcomeBand` replaces a
+ * variant's `reactions` wholesale, so each band that authors its own reaction
+ * has to restate the seed, and three hand-copied literals is three chances for
+ * one of them to drift a delay or a label. `inheritContext` is what makes the
+ * sequel a return *here* — it copies the source action's `targetId`, which for
+ * this beat is the town whose regard the same reaction just moved.
+ *
+ * No accompanying `future_hook` chip on any band, deliberately: a planted seed
+ * already renders its own chip from the effect, and re-authoring one is the
+ * double-source THR-971 closed (rule 2 in this file's aftermath header). The
+ * THR-1182 description asks for an authored chip; that line predates the rule
+ * and is superseded by it.
+ */
+const SLICE_TABLE_SEED: EncounterAftermathReactionEffect = {
+  kind: 'encounter_seed',
+  templateId: SLICE_TEMPLATE_IDS.tableThatHolds,
+  targetAgentId: '$actor',
+  delayTicks: SLICE_TABLE_DELAY_TICKS,
+  seedLabel: 'A town that keeps a door open has two families who will not sit together.',
+  inheritContext: true,
+};
 
 // ═════════════════════════════════════════════════════════════════════
 // 1. THE UNSAFE BRIDGE — Single Test (Hook #205)
@@ -3748,6 +3819,20 @@ export const SLICE_GRATEFUL_KIN: UnifiedActionTemplate = {
               targetLocationId: '$target',
               delta: SLICE_KIN_WELCOME_DELTA,
             },
+            // THR-1182 — the half the director's fix named second and THR-1175
+            // stopped short of: *"plus a seeded return encounter … the roof
+            // actually opens, on screen, as an encounter. That is what 'calling
+            // it in' feels like for a place."* Until now the welcome was honest,
+            // visible, and never once acted on — a promise the world held and
+            // never paid.
+            //
+            // `inheritContext: true` copies this action's `targetId`, so the
+            // return visit is at *this* town rather than a town-shaped one, and
+            // the standing the scene is about is the standing the reaction above
+            // just wrote. Planted from all three bands (here, and on the two
+            // reactions the crit bands substitute wholesale), because kin are
+            // stubborn at every band: the door opened, so the road bends back.
+            SLICE_TABLE_SEED,
           ],
         },
       ],
@@ -3824,6 +3909,13 @@ export const SLICE_GRATEFUL_KIN: UnifiedActionTemplate = {
                   nameOverride: 'The Pressed Keepsake',
                   messageOverride: 'A keepsake pressed into the traveler’s hand by the fen-road family’s kin.',
                 },
+                // THR-1182 — restated, not inherited. `applyAftermathOutcomeBand`
+                // replaces `reactions` WHOLESALE (rule 1 in this file's aftermath
+                // header), so a band that authors its own reaction drops the base
+                // reaction's seed by omission. This is the widest-door band; the
+                // return visit is the same scene, at the town that now says so to
+                // anyone who will listen.
+                SLICE_TABLE_SEED,
               ],
             },
           ],
@@ -3900,6 +3992,11 @@ export const SLICE_GRATEFUL_KIN: UnifiedActionTemplate = {
                   targetLocationId: '$target',
                   delta: SLICE_KIN_WELCOME_DELTA_FUMBLED,
                 },
+                // THR-1182 — restated for the same wholesale-replacement reason
+                // as the warm band. The fumbled welcome is the tightest window
+                // the seed has to ripen inside (20 ticks before the edge prunes),
+                // and `SLICE_TABLE_DELAY_TICKS` is set against exactly it.
+                SLICE_TABLE_SEED,
               ],
             },
           ],
@@ -3915,6 +4012,782 @@ export const SLICE_GRATEFUL_KIN: UnifiedActionTemplate = {
   description:
     'Word of the fen-road kindness has run ahead of the traveler, and the family means to ' +
     'repay it in front of company. A god can steady the thanks, or let it fumble.',
+};
+
+// ═════════════════════════════════════════════════════════════════════
+// 9. THE TABLE THAT HOLDS — Seeded Sequel of The Grateful Kin (THR-1182)
+// ═════════════════════════════════════════════════════════════════════
+//
+// Crux: the town that keeps a door open for the traveler has split into two
+//       camps that will not speak, and riders are on the fen road tonight.
+// Shape: Personality Fork · Setting: rural + urban · Pressure: fear ·
+// Form: division · Objective: broker · Stakes: the welcome itself ·
+// System: cards + forks + conditions + reputation.
+// Step 0: Heart — "Bring both camps" (the table, and whether it holds).
+// Fork:   the mortal's own answer on courage_prudence —
+//           positive → Stone, stand the fen road as one body;
+//           negative → Eye,   empty the fen-side steadings before dawn.
+// Why here: the parent minted the standing, and the seed carries this scene
+//       back to the same town (`inheritContext`).
+//
+// **The brief** (Christian, chat 2026-08-24, approval recorded on THR-1182):
+// "The Table That Holds", drawn from `hook.unlikely_alliance` under the
+// 2026-08-24 game-design-first authoring order. Both review agents ranked it
+// first and both flagged the same carry-forward risk — step 2 is
+// combat-adjacent and the corpus has **no nudge-native combat vocabulary**.
+// So neither fork variant is a fight. The riders are weather: the courage path
+// is about numbers, footing and nerve in a narrow place, and the prudence path
+// is about seeing what moves first and what gets left. Movement, wounds, hard
+// choices — the vocabulary the game already has.
+//
+// **Why the gate is `Respected` and not `Accepted`.** `REPUTATION_WITH_DEFAULT`
+// is 0.5, which bands as `Accepted`, so a gate at `Accepted` is cleared by a
+// stranger who has never been here — a gate that never rejects is not a gate.
+// See `SLICE_TABLE_GATE_BAND`. The gate binds the *organic* draw only: a
+// `templateId` seed spawns its template directly (`encounterSeeding.ts`), so the
+// return visit arrives from all three parent bands regardless, and the gate is
+// what lets the same scene also arise at any town whose regard the traveler has
+// genuinely earned.
+//
+// Connected systems (Q8): cast, rewards, reputation, conditions — four.
+// Choice: the mortal's, on courage_prudence. The god leans; fate settles it.
+// Promise→payoff: the opening promises a table and a road; both fork endings
+// answer both.
+
+/** The night's work done well — the door opens wider than it did. */
+export const SLICE_TABLE_WELCOME_DEEPENED = 0.1;
+/** Held, plainly. The welcome is renewed rather than spent. */
+export const SLICE_TABLE_WELCOME_RENEWED = 0.06;
+/** Held, and it cost the room something to hold. A smaller renewal. */
+export const SLICE_TABLE_WELCOME_TOLL = 0.02;
+/** The table broke. Calling in a welcome and wasting it spends it. */
+export const SLICE_TABLE_WELCOME_SPENT = -0.06;
+/** It broke badly, in front of everyone, and the town watched it break. */
+export const SLICE_TABLE_WELCOME_SPENT_HARD = -0.1;
+
+/**
+ * The same five moves as drawn magnitudes (THR-1205's rule, applied here at
+ * authoring time rather than retrofitted): the cluster the player sees scales
+ * with the door the reaction actually moves, in both directions.
+ */
+export const SLICE_TABLE_BAND_DEEPENED = 3;
+export const SLICE_TABLE_BAND_RENEWED = 2;
+export const SLICE_TABLE_BAND_TOLL = 0;
+export const SLICE_TABLE_BAND_SPENT = 2;
+export const SLICE_TABLE_BAND_SPENT_HARD = 3;
+
+const TABLE_HAND: readonly StepNudge[] = [
+  {
+    // Type: Boost — shared `focus` family, the common option.
+    id: 'slice.table.plain_words',
+    name: 'Plain Words',
+    essenceCost: 1,
+    forecastDelta: 0.06,
+    imageTag: 'generic.focus',
+    effectLine:
+      'You keep the traveler’s first sentence short and free of blame, so both camps hear the same one. A small help.',
+    fiction: 'Say the short version first.',
+    bandProse: {
+      success: 'The first sentence landed clean, and neither camp had to answer it.',
+      near_miss: 'The words stayed plain to the end. The night ran out before the agreement did.',
+    },
+  },
+  {
+    // Type: Boost — sphere-keyed (time), and one of the fork's two levers. It
+    // argues for standing: families who have shared a road that long can hold
+    // one narrow place together.
+    id: 'slice.table.long_neighbours',
+    name: 'Long Neighbours',
+    sphere: 'time',
+    essenceCost: 1,
+    forecastDelta: 0.07,
+    poleLean: { axis: 'courage_prudence', toward: 'positive' },
+    imageTag: 'generic.memory',
+    effectLine:
+      'You surface how long these two families have shared one road, so the quarrel looks its age. A small help, and it argues for standing.',
+    fiction: 'Neighbours quarrel. Neighbours remain.',
+    bandProse: {
+      critical_success: 'They worked back through forty years of shared road and found no year worth this.',
+      failure: 'The long memory came up, and both camps found different grievances in it.',
+    },
+  },
+  {
+    // Type: Boost — sphere-keyed (order), the fork's other lever. It argues for
+    // moving: a count of what can be carried is an argument against a road.
+    id: 'slice.table.cold_count',
+    name: 'Cold Count',
+    sphere: 'order',
+    essenceCost: 2,
+    forecastDelta: 0.08,
+    poleLean: { axis: 'courage_prudence', toward: 'negative' },
+    imageTag: 'generic.ward',
+    effectLine:
+      'You hold the room to a count of hands, carts and hours, so the plan is argued from a real number. A real help, and it argues for moving.',
+    fiction: 'Count first. Argue after.',
+    bandProse: {
+      success_at_cost: 'The count came out honest, and honest was lower than either camp had claimed.',
+      failure: 'The count was made twice and disputed both times, and the hours went into the disputing.',
+    },
+  },
+  {
+    // Type: Bargain — sphere-keyed (entropy). Free in essence, paid on the doom
+    // clock (THR-885 cost channel one of two).
+    id: 'slice.table.borrowed_hours',
+    name: 'Borrowed Hours',
+    sphere: 'entropy',
+    essenceCost: 0,
+    forecastDelta: 0.12,
+    imageTag: 'generic.decay',
+    costs: { doomDelta: 0.05 },
+    effectLine:
+      'No essence changes hands: the riders take the long bank of the fen and the world’s clock runs a shade faster for it. A strong help.',
+    fiction: 'Time is borrowed from someone.',
+    bandProse: {
+      success: 'The extra hours were spent well, and the table used every one of them.',
+      failure: 'The hours arrived. The argument grew to fill them exactly.',
+    },
+  },
+  {
+    // Type: Heavy Hand — sphere-keyed (force). Big delta, so both a `failure`
+    // and a `critical_failure` fragment are owed; paid in detection pressure
+    // (cost channel two).
+    id: 'slice.table.hands_on_the_table',
+    name: 'Hands on the Table',
+    sphere: 'force',
+    essenceCost: 2,
+    forecastDelta: 0.16,
+    imageTag: 'generic.energy',
+    costs: { detectionDelta: 0.15 },
+    effectLine:
+      'The room goes still and stays still while the traveler speaks, and every hand rests flat where it can be seen. Rival gods can hardly miss the hand that did it.',
+    fiction: 'Stillness is a kind of loudness.',
+    bandProse: {
+      critical_success: 'The stillness held through the whole plan, and both camps heard all of it.',
+      failure: 'The room went still on cue, and the stillness turned out to be two camps waiting.',
+      critical_failure:
+        'The stillness broke so hard that the breaking became the story the town told after.',
+    },
+  },
+  {
+    // Type: Omen — sphere-keyed (spirit). The hand's world-changing card: the
+    // grant plants a cultural omen through the existing `emit_omen` door, so
+    // later draws bend toward a fen road that is being watched.
+    id: 'slice.table.word_down_the_road',
+    name: 'Word Down the Road',
+    sphere: 'spirit',
+    essenceCost: 1,
+    forecastDelta: 0.05,
+    imageTag: 'generic.rumor',
+    effectLine:
+      'A faint help tonight, and the country downriver begins to talk about who is riding the fen. A small help.',
+    fiction: 'Roads carry more than carts.',
+    grants: [
+      {
+        kind: 'emit_omen',
+        category: 'cultural',
+        intensity: 0.3,
+        narrativeHook:
+          'Word is going down the fen road ahead of the riders, and the steadings on it have started keeping watch.',
+        scope: { kind: 'global' },
+        sphereAlignment: 'spirit',
+      },
+    ],
+    bandProse: {
+      success_at_cost: 'Word went out ahead of the riders, and it went out ahead of the plan as well.',
+      near_miss: 'The road carried word of the riders. It did not carry it fast enough.',
+    },
+  },
+];
+
+/**
+ * Step 0 — Heart. Difficulty 0.40, inside the open-draw ceiling
+ * (`NUDGE_OFF_REACH_MAX_DIFFICULTY`, 0.45) because this is `background` tier.
+ *
+ * `continue_weakened`, not `fail_action`: a table that breaks up still leaves
+ * the town with riders on the road and a plan to make in two rooms instead of
+ * one. The fork below runs either way — that is the whole shape of the scene.
+ *
+ * The failure side mints the state the endings narrate (prose rule 7): a night
+ * spent arguing leaves the body spent, so `exhausted` is applied by the step
+ * outcome, and the fallback's rest reaction is the honest mercy on every band.
+ * No authored `factorLines` — the variance rule; every fact this scene holds is
+ * true on every run and is priced into 0.40.
+ */
+const TABLE_STEP: ActionStep = {
+  reach: 'heart',
+  duration: { min: 1, max: 2 },
+  difficulty: 0.4,
+  purposeLine: 'Bring both camps',
+  onSuccess: [],
+  onFailure: [],
+  failBehavior: 'continue_weakened',
+  failureMetadata: {
+    effects: [{ kind: 'apply_condition', conditionTraitId: 'trait.condition.exhausted' }],
+  },
+  narrativeTemplate:
+    'Both camps are at the table and neither will look across it. At a walking pace the ' +
+    'riders are half a night out. The keeper has said her piece and run out of words. ' +
+    'What is left is getting two families onto one plan before the light goes, and the ' +
+    'traveler is the only person here that both sides will hear out.',
+  successAfterimage: 'Both camps agreed to one plan and stayed at the table while it was laid out.',
+  failureAfterimage: 'The table broke up, and each camp went off to make its own arrangements.',
+  successAtCostAfterimage:
+    'They agreed, after one camp said aloud what it had been saving up for a year.',
+  criticalSuccessAfterimage:
+    'By the second round of the argument the two camps were finishing each other’s sentences.',
+  criticalFailureAfterimage:
+    'The table went over, and the rest of the night was argued in two separate rooms.',
+  nudges: TABLE_HAND,
+};
+
+/** Courage — the town goes out and holds the narrow place on the fen road. */
+const TABLE_STAND_STEP: ActionStep = {
+  reach: 'stone',
+  duration: { min: 1, max: 2 },
+  difficulty: 0.42,
+  purposeLine: 'Hold the road',
+  onSuccess: [],
+  onFailure: [],
+  failBehavior: 'fail_action',
+  narrativeTemplate:
+    'The fen road narrows to a causeway a cart wide, with black water on both sides of it. ' +
+    'Everyone the town can put on their feet stands across that width with lamps up. ' +
+    'The work is standing there: shoulder to shoulder, footing on wet stone, holding the ' +
+    'line long enough for the riders to count it and do the arithmetic.',
+  successAfterimage: 'The lamps held the causeway, and the riders counted them and turned.',
+  failureAfterimage: 'The line bent at one end, and the riders came through the gap it left.',
+  successAtCostAfterimage:
+    'The causeway held, and two of the town went into the fen water getting it held.',
+  criticalSuccessAfterimage:
+    'The line never moved, and the riders turned at a distance without testing it once.',
+  criticalFailureAfterimage:
+    'The line broke in the dark on wet stone, and the town came back off the causeway carrying people.',
+};
+
+/** Prudence — the fen-side steadings are emptied before the riders arrive. */
+const TABLE_MOVE_STEP: ActionStep = {
+  reach: 'eye',
+  duration: { min: 1, max: 2 },
+  difficulty: 0.38,
+  purposeLine: 'Empty the steadings',
+  onSuccess: [],
+  onFailure: [],
+  failBehavior: 'fail_action',
+  narrativeTemplate:
+    'The steadings on the fen side hold people, stock and a winter’s grain, and there are ' +
+    'hours enough to move two of those three. The work is seeing which two: which barn ' +
+    'stays shut, which cart goes first, which household is told to leave the year’s ' +
+    'threshing standing in the yard and walk.',
+  successAfterimage: 'The fen side was empty by dawn, and the grain was what stayed behind.',
+  failureAfterimage: 'The carts were still loading at first light, out where the road runs open.',
+  successAtCostAfterimage:
+    'Everyone came in behind the ditch, and half a winter’s grain stayed in the barns.',
+  criticalSuccessAfterimage:
+    'People, stock and grain all came in, because the order they went in was worked out first.',
+  criticalFailureAfterimage:
+    'The wrong barn was emptied first, and the household that was told to wait was still waiting at dawn.',
+};
+
+const TABLE_FORK: ActionStepBranch = {
+  branchOnStep: 0,
+  decidedBy: { axis: 'courage_prudence' },
+  variants: {
+    positive: TABLE_STAND_STEP,
+    negative: TABLE_MOVE_STEP,
+  },
+  fallback: TABLE_MOVE_STEP,
+};
+
+/**
+ * Cast (Composition Contract, ruling 6) — declared explicitly because the
+ * envelope spans two classes.
+ *
+ * Class-honesty is the rule this bundle has to satisfy: every bound person must
+ * exist at every class the envelope declares. Checked against
+ * `LOCATION_ROLE_ROSTERS` — `innkeeper` is 1.0 at hamlet, town, city and
+ * capital; `guard` runs 0.8–1.0 across all four; `healer` 0.5–1.0. The rural
+ * default's `elder` and the exemplar's `wanderer`/`pilgrim` are hamlet-only and
+ * would have been placeless at every urban subtype, which is exactly the failure
+ * the explicit-bundle rule exists to prevent.
+ *
+ * The keeper is the point of the scene: she is the roof the parent encounter's
+ * standing is *with*, so the return visit happens under it.
+ */
+const TABLE_SUPPORT_BUNDLE: EncounterSupportBundle = [
+  {
+    kind: 'actor',
+    key: 'keeper',
+    delivery: 'pre-seeded',
+    persistence: 'must-persist',
+    reuseNpcRoles: ['innkeeper', 'brewer'],
+    supportRole: 'roof_keeper',
+    spawnNpcRole: 'innkeeper',
+    spawnName: 'Hesta Ryle',
+  },
+  {
+    kind: 'actor',
+    key: 'warden',
+    delivery: 'pre-seeded',
+    persistence: 'must-persist',
+    reuseNpcRoles: ['guard'],
+    supportRole: 'town_watch',
+    spawnNpcRole: 'guard',
+    spawnName: 'Ode Fenwick',
+  },
+  {
+    kind: 'actor',
+    key: 'mender',
+    delivery: 'lazy-materialize-on-trigger',
+    persistence: 'must-persist',
+    reuseNpcRoles: ['healer'],
+    supportRole: 'town_healer',
+    spawnNpcRole: 'healer',
+    spawnName: 'Bern Attaway',
+  },
+];
+
+/** The chip every band on this encounter draws, at the size that band moved. */
+function tableStandingChip(
+  id: string,
+  title: string,
+  causeClause: string,
+  detail: string,
+  direction: 'gain' | 'loss',
+  band: number,
+) {
+  return {
+    id,
+    kind: 'reputation' as const,
+    title,
+    causeClause,
+    detail,
+    polarity: direction,
+    category: 'bond' as const,
+    direction,
+    magnitude: { ladder: 'reputation' as const, band },
+    stateNoun: {
+      text: 'reputation with {target}',
+      entityId: '$target',
+      visualKind: 'location' as const,
+      tooltipId: 'ui.reputation_with',
+    },
+    concepts: [{ text: 'the door they keep open' }],
+  };
+}
+
+/** The standing move each band writes. Ids are per-band; the shape is not. */
+function tableStandingReaction(id: string, label: string, intent: string, delta: number) {
+  return {
+    id,
+    label,
+    intent,
+    effects: [
+      {
+        kind: 'reputation_with' as const,
+        targetLocationId: '$target',
+        delta,
+      },
+    ],
+  };
+}
+
+export const SLICE_TABLE_THAT_HOLDS: UnifiedActionTemplate = {
+  id: SLICE_TEMPLATE_IDS.tableThatHolds,
+  rarityTier: 3,
+  intrinsicTier: 'background',
+  name: 'The Table That Holds',
+  reach: 'heart',
+  crudType: 'read',
+  scale: 'local',
+  steps: [TABLE_STEP, TABLE_FORK],
+  apCost: 1,
+  actorAffinities: ['individual'],
+  motivations: ['courage_prudence'],
+  /**
+   * THR-1182 — the organic gate. Not `requiredTargetTraits`: the condition that
+   * clause named (`trait.condition.location.standing_welcome`) was left with zero
+   * writers by THR-1206, so gating on it would gate on a thing nothing produces.
+   * Checked against this encounter's own target, which is the place the scene
+   * stands in, at both filter sites.
+   */
+  requiredReputationWith: { atLeast: SLICE_TABLE_GATE_BAND },
+  settings: ['rural', 'urban'],
+  openings: {
+    rural:
+      'Two families in this hamlet have stopped speaking, and everyone else has picked a ' +
+      'side behind one of them. At dusk a lookout counted riders on the fen road, coming ' +
+      'this way. The keeper who keeps a door open for the traveler has dragged a table ' +
+      'into the middle of her floor and sat both camps down at it.',
+    urban:
+      'Two households on this street have stopped speaking, and the ward has picked sides ' +
+      'behind them. Riders were counted on the fen road at dusk, coming this way. The ' +
+      'keeper who keeps a door open for the traveler has cleared the long table in her ' +
+      'taproom and sat both camps down at it.',
+  },
+  locationSubtypes: expandSettings(['rural', 'urban']),
+  supportBundle: TABLE_SUPPORT_BUNDLE,
+  aftermathConfig: {
+    // The deciding step, not the fork's own index (THR-979). TABLE_FORK
+    // declares `branchOnStep: 0`.
+    branchOnStep: 0,
+    variants: {
+      positive: {
+        overview:
+          'The town went out to the causeway together and came back off it together. ' +
+          'Whatever the two families still hold against each other, they held one width ' +
+          'of wet stone first.',
+        changes: [
+          tableStandingChip(
+            'slice.table.stood_together',
+            'A Welcome Renewed',
+            'They put two camps on one causeway and the causeway held',
+            '{target} keeps the door open for them, and the households on both ends of the quarrel know why.',
+            'gain',
+            SLICE_TABLE_BAND_RENEWED,
+          ),
+        ],
+        reactions: [
+          tableStandingReaction(
+            'slice.table.stand_taken',
+            'Stand with them',
+            'Lamps up on the causeway until the riders do the arithmetic.',
+            SLICE_TABLE_WELCOME_RENEWED,
+          ),
+        ],
+        byOutcome: {
+          critical_success: {
+            overview:
+              'The riders turned at a distance and never came close enough to test the line. ' +
+              'The town is still telling it the following week, and telling it as one story ' +
+              'rather than two.',
+            changes: [
+              tableStandingChip(
+                'slice.table.the_causeway_night',
+                'A Welcome Deepened',
+                'The line never moved, and the riders turned without testing it',
+                '{target} keeps the door open wider than before, and says so to the road.',
+                'gain',
+                SLICE_TABLE_BAND_DEEPENED,
+              ),
+              {
+                id: 'slice.table.the_lamp',
+                kind: 'item' as const,
+                title: 'The Causeway Lamp',
+                causeClause: 'The keeper put it in their hand at the near end and did not ask for it back',
+                detail: 'They carry the lamp that stood at the near end of the causeway that night.',
+                polarity: 'gain' as const,
+                category: 'boon' as const,
+                direction: 'gain' as const,
+                stateNoun: {
+                  text: 'the lamp they carry',
+                  entityId: '$actor',
+                  visualKind: 'agent' as const,
+                },
+                concepts: [{ text: 'the causeway lamp' }],
+              },
+            ],
+            // ONE reaction carrying both writes, not two the player chooses
+            // between. The band economy owes this ending a deepened welcome
+            // *and* a prize; authored as two reactions they become rivals,
+            // because a run applies exactly one — so the crit band would have
+            // paid out half of what it promised, whichever half was picked.
+            reactions: [
+              {
+                id: 'slice.table.stand_taken_well',
+                label: 'Stand with them',
+                intent: 'Lamps up, the line does not move, and the keeper presses the lamp on them after.',
+                effects: [
+                  {
+                    kind: 'reputation_with' as const,
+                    targetLocationId: '$target',
+                    delta: SLICE_TABLE_WELCOME_DEEPENED,
+                  },
+                  {
+                    kind: 'spawn_artifact' as const,
+                    category: 'mundane' as const,
+                    targetAgentId: '$actor',
+                    nameOverride: 'The Causeway Lamp',
+                    messageOverride:
+                      'A lamp that stood at the near end of a fen causeway while two families held it together.',
+                  },
+                ],
+              },
+            ],
+          },
+          success_at_cost: {
+            overview:
+              'The causeway held and two of the town went into the fen water holding it. ' +
+              'They were pulled out cold and coughing, and the argument about whose fault ' +
+              'that was started before they were dry.',
+            changes: [
+              tableStandingChip(
+                'slice.table.held_wet',
+                'A Welcome Renewed, a Night Paid For',
+                'The line held, and two of the town went into the water holding it',
+                '{target} keeps the door open for them, and counts what the night cost while doing it.',
+                'gain',
+                SLICE_TABLE_BAND_TOLL,
+              ),
+            ],
+            reactions: [
+              tableStandingReaction(
+                'slice.table.stand_taken_wet',
+                'Stand with them',
+                'Hold the width, and pull out whoever goes in.',
+                SLICE_TABLE_WELCOME_TOLL,
+              ),
+            ],
+          },
+          failure: {
+            overview:
+              'The line bent at the end where the two families met, and the riders came ' +
+              'through the gap it left. The town spent the rest of the night deciding which ' +
+              'camp had bent first.',
+            changes: [
+              tableStandingChip(
+                'slice.table.the_gap',
+                'A Welcome Spent',
+                'They put the town on a causeway and the causeway opened at the seam',
+                '{target} keeps a cooler door for them now — the plan was theirs, and it had a gap in it.',
+                'loss',
+                SLICE_TABLE_BAND_SPENT,
+              ),
+            ],
+            reactions: [
+              tableStandingReaction(
+                'slice.table.stand_broken',
+                'Take the blame for the plan',
+                'It was their plan, and the gap was in it.',
+                SLICE_TABLE_WELCOME_SPENT,
+              ),
+            ],
+          },
+          critical_failure: {
+            overview:
+              'The line went down in the dark on wet stone and the town came back off the ' +
+              'causeway carrying people. It is {cast:mender} who works through the small ' +
+              'hours, and the traveler who stood at the door counting them in.',
+            changes: [
+              tableStandingChip(
+                'slice.table.carried_back',
+                'A Welcome Spent Badly',
+                'They put the town on a causeway in the dark and the town came back carrying people',
+                '{target} keeps the door open out of habit now, and the habit is thinner than it was.',
+                'loss',
+                SLICE_TABLE_BAND_SPENT_HARD,
+              ),
+            ],
+            reactions: [
+              tableStandingReaction(
+                'slice.table.stand_ruined',
+                'Take the blame for the plan',
+                'They stood where the traveler put them.',
+                SLICE_TABLE_WELCOME_SPENT_HARD,
+              ),
+            ],
+          },
+        },
+      },
+      negative: {
+        overview:
+          'The fen side came in behind the ditch overnight — people first, stock after, ' +
+          'and the grain left standing where it was. Two families did the carrying in the ' +
+          'same carts, which is further than they had got in a year.',
+        changes: [
+          tableStandingChip(
+            'slice.table.moved_in_time',
+            'A Welcome Renewed',
+            'They emptied the fen side overnight and both camps loaded the same carts',
+            '{target} keeps the door open for them, and the households that walked in know whose count it was.',
+            'gain',
+            SLICE_TABLE_BAND_RENEWED,
+          ),
+        ],
+        reactions: [
+          tableStandingReaction(
+            'slice.table.move_taken',
+            'Move them tonight',
+            'People first, stock after, the grain left standing.',
+            SLICE_TABLE_WELCOME_RENEWED,
+          ),
+        ],
+        byOutcome: {
+          critical_success: {
+            overview:
+              'People, stock and grain all came in behind the ditch, because the order they ' +
+              'went in was worked out before the first cart moved. The riders found empty ' +
+              'yards and shut barns and rode on down the fen.',
+            changes: [
+              tableStandingChip(
+                'slice.table.nothing_left_out',
+                'A Welcome Deepened',
+                'The order was worked out first, and the riders found empty yards',
+                '{target} keeps the door open wider than before, and the barns are still full.',
+                'gain',
+                SLICE_TABLE_BAND_DEEPENED,
+              ),
+              {
+                id: 'slice.table.the_ledger',
+                kind: 'item' as const,
+                title: 'The Loading Order',
+                causeClause: 'The keeper copied it out fair and pressed the copy on them at the gate',
+                detail: 'They carry a fair copy of the order the fen side was emptied in.',
+                polarity: 'gain' as const,
+                category: 'boon' as const,
+                direction: 'gain' as const,
+                stateNoun: {
+                  text: 'the loading order they carry',
+                  entityId: '$actor',
+                  visualKind: 'agent' as const,
+                },
+                concepts: [{ text: 'the loading order' }],
+              },
+            ],
+            // One reaction, both writes — see the note on the causeway band.
+            reactions: [
+              {
+                id: 'slice.table.move_taken_well',
+                label: 'Move them tonight',
+                intent: 'Every cart in an order worked out before it rolled, and the keeper copies it out fair after.',
+                effects: [
+                  {
+                    kind: 'reputation_with' as const,
+                    targetLocationId: '$target',
+                    delta: SLICE_TABLE_WELCOME_DEEPENED,
+                  },
+                  {
+                    kind: 'spawn_artifact' as const,
+                    category: 'mundane' as const,
+                    targetAgentId: '$actor',
+                    nameOverride: 'The Loading Order',
+                    messageOverride:
+                      'A fair copy of the order a fen-side hamlet was emptied in, one night ahead of riders.',
+                  },
+                ],
+              },
+            ],
+          },
+          success_at_cost: {
+            overview:
+              'Everyone came in behind the ditch and half a winter’s grain stayed in the ' +
+              'barns for the riders to find. The households that lost theirs are counting it ' +
+              'out loud, and counting it at the traveler.',
+            changes: [
+              tableStandingChip(
+                'slice.table.grain_left',
+                'A Welcome Renewed, a Winter Short',
+                'Every household walked in, and half the winter’s grain stayed in the barns',
+                '{target} keeps the door open for them, and two households are short a winter because of the order.',
+                'gain',
+                SLICE_TABLE_BAND_TOLL,
+              ),
+            ],
+            reactions: [
+              tableStandingReaction(
+                'slice.table.move_taken_short',
+                'Move them tonight',
+                'People and stock. The grain can be grown again.',
+                SLICE_TABLE_WELCOME_TOLL,
+              ),
+            ],
+          },
+          failure: {
+            overview:
+              'The carts were still loading at first light, out where the fen road runs ' +
+              'open, and what the riders took they took off the road. Both camps had loaded ' +
+              'their own barns first.',
+            changes: [
+              tableStandingChip(
+                'slice.table.still_loading',
+                'A Welcome Spent',
+                'Their order put both camps on the open road at first light',
+                '{target} keeps a cooler door for them now — the order was theirs, and it ran long.',
+                'loss',
+                SLICE_TABLE_BAND_SPENT,
+              ),
+            ],
+            reactions: [
+              tableStandingReaction(
+                'slice.table.move_failed',
+                'Take the blame for the order',
+                'It was their order, and it ran past dawn.',
+                SLICE_TABLE_WELCOME_SPENT,
+              ),
+            ],
+          },
+          critical_failure: {
+            overview:
+              'The wrong barn was emptied first and the household told to wait was still ' +
+              'waiting at dawn on the fen side. It is {cast:mender} who goes out to them ' +
+              'with the warden at midday, and the town watches the traveler while they go.',
+            changes: [
+              tableStandingChip(
+                'slice.table.left_waiting',
+                'A Welcome Spent Badly',
+                'Their order emptied the wrong barn first and left a household on the fen side',
+                '{target} keeps the door open out of habit now, and the habit is thinner than it was.',
+                'loss',
+                SLICE_TABLE_BAND_SPENT_HARD,
+              ),
+            ],
+            reactions: [
+              tableStandingReaction(
+                'slice.table.move_ruined',
+                'Take the blame for the order',
+                'They waited because the traveler’s order told them to.',
+                SLICE_TABLE_WELCOME_SPENT_HARD,
+              ),
+            ],
+          },
+        },
+      },
+    },
+    fallback: {
+      overview:
+        'The riders came up the fen road and the town met them the way the table had ' +
+        'settled it. By morning the keeper’s floor is a floor again.',
+      changes: [
+        tableStandingChip(
+          'slice.table.the_night_at_the_table',
+          'A Welcome Renewed',
+          'They were called in on a standing welcome and sat at the table until it settled',
+          '{target} keeps the door open for them, and now keeps it open for a reason the whole town watched.',
+          'gain',
+          SLICE_TABLE_BAND_RENEWED,
+        ),
+      ],
+      // One reaction carrying both writes, for the same reason the crit bands
+      // do: a run applies exactly one, so a mercy split off into its own pick
+      // would make resting and being remembered rivals.
+      reactions: [
+        {
+          id: 'slice.table.stay_until_settled',
+          label: 'Stay until it is settled',
+          intent: 'See the night out with them, then sleep before the road.',
+          effects: [
+            {
+              kind: 'reputation_with' as const,
+              targetLocationId: '$target',
+              delta: SLICE_TABLE_WELCOME_RENEWED,
+            },
+            { kind: 'remove_condition', conditionTraitId: 'trait.condition.exhausted' },
+          ],
+        },
+      ],
+    },
+  },
+  narrativeTemplates: {
+    initiation:
+      'The town that keeps a door open for the traveler has two families in it who will ' +
+      'not sit together, and riders on the fen road tonight.',
+    success: 'Two camps agreed on one plan in time, and the town met the road as one town.',
+    failure: 'The table came apart, and the fen road found a town that had made two plans.',
+  },
+  description:
+    'A two-step return visit at a town whose regard the traveler has earned: bring two ' +
+    'feuding camps onto one plan before riders reach the fen road, then hold the causeway ' +
+    'or empty the steadings, whichever way the mortal leans. A god can sway the table; ' +
+    'fate settles what the night does with it.',
 };
 
 // ─── The slice, assembled ────────────────────────────────────────────
@@ -3936,4 +4809,5 @@ export const VERTICAL_SLICE_TEMPLATES: readonly UnifiedActionTemplate[] = [
   SLICE_SWINDLED_FAMILY,
   SLICE_SWINDLER_FOUND,
   SLICE_GRATEFUL_KIN,
+  SLICE_TABLE_THAT_HOLDS,
 ].map(compileOpeningEnvelope);
