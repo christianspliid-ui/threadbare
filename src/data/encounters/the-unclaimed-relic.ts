@@ -431,7 +431,13 @@ export const THE_UNCLAIMED_RELIC_TEMPLATE: UnifiedActionTemplate = {
               detail:
                 '{target} is under watch now: people come to see whether there is a second one, and quiet work ' +
                 'here is seen.',
-              stateNoun: { text: 'a place under watch', entityId: '$target' },
+              // THR-1172 — `visualKind: 'location'` makes this a live click, not merely a
+              // legal name: the chip draws the place's tile and opens its profile. Added
+              // 2026-08-24 after the anchor catalog was found to hard-code the pre-THR-1172
+              // claim that no such member existed; this chip's first pass followed the
+              // catalog and omitted it, which left it rendering a tier below its sibling in
+              // the same batch.
+              stateNoun: { text: 'a place under watch', entityId: '$target', visualKind: 'location' },
               concepts: [
                 { text: 'under watch', entityId: 'trait.condition.location.under_watch', visualKind: 'attachment' },
               ],

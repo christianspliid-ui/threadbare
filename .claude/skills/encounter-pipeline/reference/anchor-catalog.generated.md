@@ -26,7 +26,7 @@
 | Member | Anchor | Status | How the chip declares it | Where the player sees it |
 |---|---|---|---|---|
 | `actor` | Actor (see the Actor table below) | 🔗 linked | `entityId` = the actor node id, `visualKind` per its `actorType` | Routed by `actorType` — see the Actor subtype rows |
-| `location` | Location / sublocation | 📍 named | `entityId` = the location node id; **no `visualKind` member exists** | The hex detail view and the location's own page, reached from the map |
+| `location` | Location / sublocation | 🔗 linked | `entityId` = the location node id, `visualKind: 'location'` | The location's own profile, opened from the chip; plus the hex detail view from the map |
 | `trait` | Trait | 📍 named | `tooltipId` on the concept; no `entityId` | The tooltip, and the bearer's trait list on their sheet |
 | `artifact` | Artifact (common) | 🔗 linked | `entityId` = the artifact node id, `visualKind: 'artifact'` | The artifact sheet, and the bearer's possessions |
 | `artifact_legendary` | Artifact (legendary) | 🔗 linked | `entityId` = the artifact node id, `visualKind: 'artifact'` | The artifact sheet, and the bearer's possessions |
@@ -42,7 +42,7 @@
 | `companion` | Companion | 📍 named | `entityId` = the companion node id, `visualKind: 'companion'` | The Companions row on the bearer's own surface |
 
 - **`actor`** — The umbrella row. `actorType` decides the anchor kind and the route.
-- **`location`** — A real, resolvable, named object — legal to anchor to and legal to name in the sentence. It simply cannot carry the click today: `visualKind` has no `location` member, so `openEntity` has no route. Name the place; do not promise a link.
+- **`location`** — A real, resolvable object that **does** carry the click, since THR-1172. Declare `visualKind: 'location'` — the member exists on `EncounterAftermathConceptRef` (`unifiedAction.ts`), `EncounterVeil.openEntity` routes it, and `onSelectEntity` accepts it, so the chip both draws the place's tile and opens its sheet. Reach for it through an anchor sentinel rather than a literal id: the instance is minted per world, exactly as a faction's is. **Corrected 2026-08-24 (THR-1221):** this row previously read "no `visualKind` member exists" and told authors to name the place without promising a link. That predated THR-1172 and contradicted this same file's own preamble, which has always listed `location` among the `visualKind` members. It was not stale output — the sentence is hand-written here, so the generator reported the catalog current while it said the opposite of the type. A package pass followed it and omitted `visualKind` from a shipped chip, leaving two location anchors in one batch rendering at different tiers.
 - **`trait`** — A trait is a concept, not an entity with art — it takes a tooltip and no tile, rather than a wrong one.
 - **`artifact_legendary`** — Same declaration as a common artifact; legendary ones carry their own trait graph.
 - **`action_template`** — Action template — a definition, not an object in the world the player can be pointed at

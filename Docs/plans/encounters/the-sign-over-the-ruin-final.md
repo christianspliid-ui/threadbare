@@ -12,7 +12,7 @@
 |------|---------|-------|
 | Draft | Complete | Puzzle–Investigation–Resolution, `veil→eye`, four-class envelope; declared its Investigation prize but never wrote it into prose. |
 | Editorial | PASS WITH REVISIONS | Delivered the withheld prize into step 0's bands, fixed four seam echoes and four verbless-fragment/aphoristic-inversion violations, rebalanced the Veil-member swap across both hands, retired the one annotation clause, and corrected three factual claims (the `under_watch` reader claim, the `success_at_cost` no-chip rationale, and where the clue's words live) against the live code. |
-| Systems | READY FOR IMPLEMENTATION | Every id, effect kind, gate constant and mechanism verified live against source. One real defect found and fixed directly: the `critical_success` chip's `PATH` category on a write nothing reads, re-categorised to `SCAR` (matching an independently-arrived-at precedent in `the-unclaimed-relic-revised.md`). Both open Pass-3 questions from the revised file's § 16 (`$target` binding, `stateNoun.entityId` resolution) confirmed working by tracing the actual code paths. No missing primitives, no new engine work. |
+| Systems | READY FOR IMPLEMENTATION | Every id, effect kind, gate constant and mechanism verified live against source. Two real defects found and fixed directly: the `critical_success` chip's `PATH` category on a write nothing reads (re-categorised to `SCAR`), and the `critical_failure` action band's chips being unbacked on the path where step 0 alone rolls `critical_failure` and step 1 never runs (fixed by adding step 0's own `failureMetadata`). Both open Pass-3 questions from the revised file's § 16 (`$target` binding, `stateNoun.entityId` resolution) confirmed working by tracing the actual code paths. One small, non-blocking primitive gap logged as BACKLOG; no new engine work required to ship. |
 
 ### Caveats / Blockers
 
@@ -65,9 +65,21 @@ not left as an implementer's caveat. Both open Pass-3 verification items the rev
 flagged were resolved by tracing the actual code: `$target` binds to the location for this template
 family by construction (`generateUnifiedCandidates` always sets `targetId: locationId` for a
 `locationSubtypes`-gated candidate), and `stateNoun.entityId` sentinels resolve through a dedicated,
-gate-checked mechanism (`resolveAnchorDeclaration` / `chipAnchorViolations`). Full detail, including
-the Composition Contract walked block by block against the live gate functions:
-[`the-sign-over-the-ruin-systems.md`](the-sign-over-the-ruin-systems.md).
+gate-checked mechanism (`resolveAnchorDeclaration` / `chipAnchorViolations`).
+
+A second, more consequential defect was found independently, matching a pattern the orchestrator
+relayed from encounter 6's own critic mid-pass: **a chip can be backed by a write on a step that
+never runs, and the static contract gate cannot see it.** Verified against the engine's own
+`advanceStep`: a step's own `critical_failure` outcome *always* ends the action immediately,
+overriding `continue_weakened` — so step 0 rolling `critical_failure` skips step 1 entirely. The
+action-level `critical_failure` band's two chips were authored against step 1's `failureMetadata`
+only, which never fires on that path — a live Law 56 violation invisible to `chipBackingViolations`,
+which checks effect *presence* in the template, not step *reachability* on the band claiming it.
+Fixed by duplicating the two effects onto step 0's own `failureMetadata` (§ 4), with one documented,
+accepted trade-off on a rare compound path (an unchipped write, the same already-sanctioned pattern
+the packet's own `success` band uses for `under_watch`). Full detail, including the full band-by-band
+reachability table and the Composition Contract walked block by block against the live gate
+functions: [`the-sign-over-the-ruin-systems.md`](the-sign-over-the-ruin-systems.md).
 
 ### Implementation File Map
 
@@ -91,10 +103,12 @@ mechanism this encounter needs already exists.
 **Authoring contract:** `.claude/skills/encounter-pipeline/reference/nudge-authoring-spec.md`.
 **Worked example copied for shape:** `src/data/__fixtures__/nudge-exemplar/swollen-ford-exemplar.ts`.
 
-This packet is prose + data specification, carried forward from the revised file with one Pass-3
-data correction applied (§ 9.3's `critical_success` chip category — see the callout there) and one
-factual correction noted (§ 9.4). **Prose is unchanged from the revised file.** No TypeScript was
-written and nothing under `src/` was edited by this pass.
+This packet is prose + data specification, carried forward from the revised file with three Pass-3
+data corrections applied: § 9.3's `critical_success` chip category (`PATH` → `SCAR`), § 9.4's family
+attribution for the same write, and § 4's addition of `failureMetadata` to step 0 (closing an
+unbacked-chip path on the `critical_failure` band) — each called out where it lands, with the full
+reasoning in `the-sign-over-the-ruin-systems.md`. **Prose is unchanged from the revised file.** No
+TypeScript was written and nothing under `src/` was edited by this pass.
 
 ---
 
@@ -264,12 +278,61 @@ locationSubtypes: expandSettings(['stronghold', 'ruin', 'wayside', 'battlefield'
 | `purposeLine` | **"Read the sign"** (3 words, ≤ `REACH_PURPOSE_MAX_WORDS`) |
 | `difficulty` | `0.40` → renders **fair**; inside the open-draw ceiling (0.45) |
 | `duration` | `{ min: 1, max: 2 }` |
-| `failBehavior` | `continue_weakened` — a bad reading is still a reading, and step 1 has to carry it |
+| `failBehavior` | `continue_weakened` — a bad reading is still a reading, and step 1 has to carry it. **Except for `critical_failure`, which the engine always treats as an immediate `fail_action` regardless of this setting — see the Pass-3 note below.** |
 | `factorLines` | **none authored** (the variance rule, THR-892) |
 | `successMetadata` | `rewardPool: { categoryWeights: { possession: 1.0 } }` · `effects: [spawn_clue]` |
+| `failureMetadata` | **added, Pass 3.** `effects: [condition_attachment → terrified on $actor, agent_relocation → away(3) on $actor]` — see the note immediately below |
 | `nudges` | Hand A (§ 5.1) |
 
 **Why no authored factor lines.** "The remnant does not move like light", "the glare is bad", "everyone here already has an opinion" are true on *every* run of this encounter, so they are priced into `difficulty: 0.40` and carried by the prose. What fills the panel is derived: the actor's `veil` capability, terrain and place modifiers, equipment, live conditions, divine attention. No `tagFilters` on the reward pool — a filter naming a tag no attachment template carries is a silently empty pool.
+
+> **Systems-pass finding and fix: `critical_failure` at step 0 was unreachable-backed for the
+> action-level `critical_failure` chips.** Verified against `advanceStep`
+> (`src/engine/unifiedActionLifecycle.ts:167-194`): a step's own `critical_failure` outcome
+> **always** triggers the hard `fail_action` branch — *"critical_failure always triggers fail_action
+> regardless of template setting"* (the function's own doc comment) — so step 0's
+> `failBehavior: 'continue_weakened'` does **not** save a `critical_failure` roll the way it saves a
+> plain `failure`. When step 0 itself resolves `critical_failure`, the action ends immediately with
+> `outcome: 'critical_failure'` and **step 1 never runs**. Before this fix, the action-level
+> `critical_failure` band's two chips (§ 9.3: `sign.what_the_looking_cost_worse` — Terrified,
+> `sign.run_off_the_ground` — the relocation) were backed **only** by step 1's `failureMetadata` —
+> which on this reachable path never fires, because step 1 never starts. That is a live Law 56
+> violation reachable at runtime, invisible to `chipBackingViolations` because that gate checks
+> whether an effect is *declared somewhere in the template*, not whether the step carrying it is
+> *reachable on the band in question* — the same defect class independently found by encounter 6's
+> critic in this batch, applied here via a different mechanism (a hard-coded severity override
+> rather than a plain `fail_action` first step).
+>
+> **Reachability, band by band** (both steps' outcomes are recorded in `stepOutcomes`; the action's
+> own outcome is `computeFinalActionOutcome`'s result, or the immediate hard-failure override):
+>
+> | Action band | How reached | Step 1 runs? | Chip backing |
+> |---|---|---|---|
+> | `critical_success` | Both steps ran, clean, a crit landed somewhere (`computeFinalActionOutcome`) | Always | Step 1 `successMetadata` — fires ✅ |
+> | `success` | Both steps ran, plain successes only | Always | Step 1 `successMetadata` — fires ✅ |
+> | `success_at_cost` | Both steps ran; step 0 or step 1 incurred a cost/near-miss/non-critical failure that did not hard-fail | Always | No `changes` authored on this band (deliberate) — N/A |
+> | `failure` | Step 1 itself resolves `failure` (its own `failBehavior: 'fail_action'` ends the action there) | Always (step 1 is what produced the outcome) | Step 1 `failureMetadata` — fires ✅ |
+> | `critical_failure`, path A | **Step 0 alone** resolves `critical_failure` — immediate hard-fail, bypassing `continue_weakened` | **No** | Step 1 `failureMetadata` never fires — **was unbacked; now backed by step 0's own `failureMetadata` (added above)** |
+> | `critical_failure`, path B | Step 0 continues (any non-critical outcome), then step 1 itself resolves `critical_failure` | Yes | Step 1 `failureMetadata` — fires ✅ (and step 0's new `failureMetadata` also fires if step 0's own outcome was a plain `failure` — harmless: `condition_attachment`/`agent_relocation` are idempotent-ish under a repeat write, and the action is ending in `critical_failure` regardless, so both firings back the same chips) |
+>
+> **The fix.** Step 0's `failureMetadata` is added, above, duplicating step 1's two `critical_failure`-band
+> effects. This closes path A completely — the chips are now backed on every path that reaches the
+> `critical_failure` band. **One accepted, deliberate trade-off, not a new violation:** step 0's
+> `failureMetadata` fires on *any* `isStepFailure` outcome, and the two-bucket
+> (`successMetadata`/`failureMetadata`) schema has no way to gate an effect to *only* a step's own
+> `critical_failure` and not its plain `failure` — no `EffectPredicate` member reads step-outcome
+> severity (`src/types/effects.ts:30-56`). So on the rare compound path "step 0 fails plainly, the
+> action continues, step 1 later succeeds" (final outcome `success_at_cost`, which authors no
+> `changes` by design), the Terrified condition and the away-relocation intent now silently fire
+> **unchipped**. This is not a rule violation — an un-chipped write is an already-established,
+> already-sanctioned pattern in this very packet (§ 9.3's `success` band deliberately leaves the
+> `under_watch` write unchipped for an analogous reason) — but it is a narrative rough edge worth one
+> line in the batch report: a mortal who stumbled on the reading and then still got it said may walk
+> away quietly Terrified and drifting off-hex with no chip explaining why. Closing that fully would
+> require a step-outcome-severity predicate the effect schema does not have — a small, real primitive
+> gap, logged in the systems audit (`the-sign-over-the-ruin-systems.md` § "Missing Primitives, revised")
+> as BACKLOG rather than BUILD NOW, since the fix above already closes the load-bearing defect (a
+> named, scripted ending's chips claiming an unfired write) without it.
 
 ### Step 1 — `eye` · *Say what is there*
 
@@ -946,10 +1009,33 @@ Encounter-specific; card art is not. Until the manifest carries the tag the fall
 4. **The two repeated card faces.** Verified forced: `SPHERE_SIGNATURES` signs one type per sphere, only `whisper` and `veil` have a second sphere-carrying member, so two repeats is the minimum this budget admits (§ 5). It does not read as impoverished, because the two instances are two different plays — but the fix, if the batch wants one, is upstream in row 2's type budget.
 5. **Grim, earned.** Upheld. The grimness is plain and concrete throughout — no archaism, no elevated diction, no mood-noun in a subject slot. The failure bands read as plot, and the pilgrim refusing to say which reading was right is the encounter's best beat.
 
-### Open for Pass 3 — systems questions the editorial pass could not close
+### Resolved by Pass 3 — every systems question the editorial pass could not close
 
-1. **`$target` binding on `targetLocationId`.** `SCENE_SENTINEL_FIELDS` binds it **only when the action's target node is a location** (`nodeMatchesSceneField`). Confirm an ambient `encounter.border.*` draw targets the location. If it targets the acting agent, the `under_watch` write never fires and the `critical_success` chip claims state nothing wrote — on the batch's own location-anchor row.
-2. **Sentinels inside `stateNoun.entityId`.** Two chips carry `$target` / `$actor` there. Confirm the aftermath resolves sentinels in that field and not only in `detail` / `causeClause`; `stateNoun.text` is known **not** to enrich, which is why it carries no placeholder.
-3. **`trait.condition.location.under_watch` has no consumer.** Excluded from the movement tax by design, and no shipped template gates on it. The definition is live and well-authored; nothing reads it. A note for the portfolio, not a blocker for this encounter.
-4. **`card.whisper.attunement.light` unlocks at 60 lifetime essence through light** — hand B's largest card is a late-run unlock by construction. Intended, and recorded so it is a decision rather than a side effect.
-5. **Action-band mapping for a two-step action.** § 9.3's `success_at_cost` reasoning assumes the action band tracks step 1's band closely enough that `successMetadata` has fired whenever that ending renders. Worth one confirmation, because it is what makes that band's chipless ending correct rather than an under-report.
+1. **`$target` binding on `targetLocationId` — CONFIRMED WORKING.** `generateUnifiedCandidates`
+   (`src/engine/unifiedCandidates.ts:169-175`) sets `targetId: locationId` unconditionally for every
+   candidate built against a `locationSubtypes`-gated template ("target is always the location"),
+   and every one of the envelope's eleven expanded subtypes is a place-tier location, never a
+   sublocation. The `critical_success` chip's backing write fires as intended.
+2. **Sentinels inside `stateNoun.entityId` — CONFIRMED RESOLVED.** A dedicated mechanism —
+   `resolveAnchorDeclaration` (`src/data/content-eval/chipAnchorDeclarations.ts:155-172`) — resolves
+   `$target`/`$actor` in exactly this field, gate-checked at authoring time by
+   `chipAnchorViolations`. Not the same code path as `detail`/`causeClause` (`enrichProse`'s curly-
+   brace tokens), by design — two different mechanisms for two different jobs, both live.
+3. **`trait.condition.location.under_watch` has no consumer — CONFIRMED, and acted on.** This is
+   what drove the `PATH` → `SCAR` recategorisation of the `critical_success` chip (§ 9.3). Still a
+   portfolio-level note, not a blocker for this encounter: `the-sign-over-the-ruin-systems.md` § 15.
+4. **`card.whisper.attunement.light` unlocks at 60 lifetime essence through light** — confirmed
+   against `nudge-card-library.ts:508-512`. Intended, recorded as a decision, no change needed.
+5. **Action-band mapping for a two-step action — CONFIRMED, `success_at_cost` is safe.**
+   `computeFinalActionOutcome` (`src/engine/unifiedActionLifecycle.ts:290-317`) is the **only**
+   producer of a `success_at_cost` action outcome, and it only runs once the final step has been
+   reached without an intermediate hard-fail — so `success_at_cost` is reachable **exclusively**
+   through paths where both steps ran and step 1's `successMetadata` fired (`isStepSuccess` counts
+   `near_miss`/`success_at_cost` as success). § 9.3's reasoning holds exactly as written.
+6. **A sixth question, found by this pass rather than carried into it: `critical_failure` was
+   reachable through a path where step 1 never runs.** The engine's hard-coded rule — a step's own
+   `critical_failure` always ends the action immediately, overriding `continue_weakened` — means step
+   0 rolling `critical_failure` bypasses step 1 entirely, and the action-level `critical_failure`
+   band's two chips were backed only by step 1's `failureMetadata`. Fixed by duplicating those two
+   effects onto step 0's own `failureMetadata` (§ 4). Full reachability table and the one accepted
+   trade-off: `the-sign-over-the-ruin-systems.md` § 1a.

@@ -128,6 +128,97 @@ reads it inherits the wrong justification for a right answer.
 
 ---
 
+## 1a. A second, independently-found defect: `critical_failure` at step 0 skips step 1 entirely, unbacking two chips
+
+**Relayed from the orchestrator mid-pass:** encounter 6's editorial critic found the same defect
+class in its own packet — a step whose `failBehavior: 'fail_action'` ends the action before a later
+step's metadata-authored writes can fire, while `chipBackingViolations` still reports the resulting
+chips as backed because it checks effect *presence* in the template, not step *reachability* on the
+band in question. The orchestrator's standing rule, adopted batch-wide: **every chip must be backed
+by step metadata, never a reaction** (a reaction only fires if the player clicks it —
+`AftermathVariant` carries no unconditional `effects`), **and the per-chip test is: name the step
+whose metadata backs it, and prove that step runs on the band claiming it.**
+
+Applying that test to this packet found a variant of the same defect, via a different mechanism.
+
+**The mechanism, verified against `advanceStep` (`src/engine/unifiedActionLifecycle.ts:167-194`).**
+A step's own `critical_failure` outcome **always** triggers the hard `fail_action` branch — the
+function's own comment states it in terms: *"critical_failure always triggers fail_action regardless
+of template setting."* Step 0 declares `failBehavior: 'continue_weakened'`, which saves every other
+failure severity (`failure`, `near_miss`) from ending the action early — but **not** `critical_failure`,
+which the engine overrides unconditionally. So when step 0 itself rolls `critical_failure`, the
+action ends immediately with `outcome: 'critical_failure'`, and **step 1 never starts.**
+
+**The reachability table, band by band:**
+
+| Action band | Path | Step 1 runs? | Backing step | Reachable-on-that-path? |
+|---|---|---|---|---|
+| `critical_success` | Both steps run clean, a crit lands somewhere (`computeFinalActionOutcome`) | Always | Step 1 `successMetadata` | ✅ yes |
+| `success` | Both steps run, plain successes only | Always | Step 1 `successMetadata` | ✅ yes |
+| `success_at_cost` | Both steps run; a cost/near-miss/non-critical failure occurred but nothing hard-failed | Always | N/A — no `changes` authored on this band, deliberately | N/A |
+| `failure` | Step 1 itself resolves `failure` (its own `failBehavior: 'fail_action'` ends the action there) | Always (it's what produced the outcome) | Step 1 `failureMetadata` | ✅ yes |
+| `critical_failure`, **path A** | **Step 0 alone** resolves `critical_failure` | **No** | Step 1 `failureMetadata` (as originally authored) | ❌ **NO — was unbacked** |
+| `critical_failure`, path B | Step 0 continues, step 1 itself resolves `critical_failure` | Yes | Step 1 `failureMetadata` | ✅ yes |
+
+**Before the fix:** the `critical_failure` action band — the packet's most dramatic scripted ending,
+where the pilgrim silently walks the agent off the ground — was reachable via path A with its two
+chips (`sign.what_the_looking_cost_worse` Terrified, `sign.run_off_the_ground` the relocation) *fully
+authored and gate-passing*, while the writes backing them (step 1's `failureMetadata`) never fired,
+because step 1 never ran. `chipBackingViolations` cannot catch this: it walks `allRunnableSteps` and
+credits a face with *any* step's metadata matching the right half of the ladder
+(`stepWritesReachFace`, `compositionContract.ts:471-479`), with no model of which steps the actual
+control-flow graph reaches on a given path. This is a genuine, live Law 56 violation on a real
+playthrough path, invisible to every machine gate that exists.
+
+**The fix, applied in the final doc's § 4 (step 0's table):** duplicate step 1's two `critical_failure`-
+relevant effects onto step 0's own `failureMetadata`. This closes path A: step 0's own resolution now
+backs the chips whenever step 0 alone produces the terminal `critical_failure`.
+
+**Why this is safe rather than a new defect in the other direction.** The two-bucket
+`successMetadata`/`failureMetadata` schema (`src/types/unifiedAction.ts:1711-1712`) has no
+severity-specific hook — `EffectPredicate` (`src/types/effects.ts:30-59`) carries no member that
+reads a step's own outcome band, so step 0's new `failureMetadata` necessarily fires on its *plain*
+`failure` too, not only `critical_failure`. Traced the one path this touches: step 0 fails plainly →
+`continue_weakened` still advances to step 1 → step 1 succeeds in any flavor → `computeFinalActionOutcome`'s
+`hasAnyFailure` rule collapses the final outcome to `success_at_cost` regardless of step 1's own band
+→ that band deliberately authors **no** `changes` (§ 9.3's own stated reason: *"this packet reserves
+each write to the band it's about"*). So on this one rare compound path, the Terrified condition and
+the away-relocation intent fire **unchipped**. This is not a rule violation — it is the same accepted
+pattern the packet's own `success` band already uses for the `under_watch` write (§ 9.3: *"deliberately
+left unchipped here... a chip that appears on every success-side band stops being reserved"*) — but
+it is real, and worth naming rather than discovering later. Closing it fully needs a step-outcome-
+severity predicate the effect schema does not have.
+
+**On the compound path where BOTH firings occur** (step 0 fails plainly, action continues, step 1
+*also* later resolves `critical_failure`): both step 0's and step 1's `failureMetadata` fire, applying
+the same two effects twice. Harmless — `condition_attachment` refreshes an existing condition's
+duration rather than erroring or double-stacking incorrectly, and a second `agent_relocation` write
+simply overwrites the first intent with an identical one — and the action is ending in
+`critical_failure` regardless, so both firings back the same, correctly-rendered chips. No new
+defect.
+
+**Missing primitive, logged as BACKLOG, not BUILD NOW.** A per-severity hook on step-outcome
+metadata — something like `ActionStep.criticalFailureMetadata`, or an `EffectPredicate` member that
+reads the current step's own resolved `StepOutcome` — would let an author express "only on this
+step's own critical failure, never its plain failure" without the collateral unchipped-write
+trade-off above. Real gap, but not load-bearing here: the fix already applied closes the actual
+Law 56 violation (a named, scripted ending's chips claiming an unfired write); the residual is a
+narrative rough edge on a rare compound-RNG path, not a rule breach. Scope estimate: a type addition
+plus one new branch in whichever function reads `successMetadata`/`failureMetadata` from a resolved
+step outcome (`unifiedActionResolution.ts`) — roughly half a day including tests, if the batch or a
+later encounter needs it badly enough to justify it.
+
+**Card-grants check, per the orchestrator's second relay.** `allAftermathEffects`
+(`compositionContract.ts:280-300`) walks reactions and step metadata but not nudge-card `grants` — a
+consequence family satisfied only by a card grant would be invisible to `checkConsequenceDraw`.
+Checked against this packet: `spawn_clue` (the `knowledge` family's satisfier) lives on step 0's own
+`successMetadata.effects`, not on any card's `grants` — confirmed in § 4's table. The only card
+`grants` in this packet is A3's `emit_omen` (`grants: [{ kind: 'emit_omen', ... }]`), and `emit_omen`
+is deliberately excluded from every consequence family and from `CHIP_BACKING_EFFECT_KINDS` — so
+this gap does not touch this packet at all. Confirmed clean.
+
+---
+
 ## 2. Support Bundle Honesty
 
 | Support object | Delivery mode | Realistic? | Persistence | Verdict |
@@ -418,11 +509,20 @@ task brief exactly.** No third registration point exists for this template famil
 
 ## 14. Missing Primitives
 
-**None.** Every effect kind, condition id, trait id, library card id, image tag, cast role, and
-sentinel form the packet declares is live and correctly used. The gaps found (§ 1's category
+**One, real, non-blocking, logged as BACKLOG.** § 1a found a step-outcome-severity gap: no
+`EffectPredicate` member (`src/types/effects.ts:30-59`) reads a step's own resolved `StepOutcome`
+band, so a step's `failureMetadata` cannot be scoped to "only this step's `critical_failure`, not its
+plain `failure`." That is what forced the accepted, documented trade-off in § 1a's fix (an unchipped
+write on one rare compound path) rather than a fully clean one. Scope: roughly half a day, a type
+addition (e.g. `ActionStep.criticalFailureMetadata`, or a step-outcome-reading `EffectPredicate`
+member) plus one new branch wherever a resolved step outcome selects `successMetadata`/
+`failureMetadata` (`unifiedActionResolution.ts`). Not load-bearing for this encounter — the fix
+already applied in § 4 closes the actual Law 56 violation.
+
+Every other declared id, effect kind, condition id, trait id, library card id, image tag, cast role,
+and sentinel form in the packet is live and correctly used. The remaining gaps found (§ 1's category
 mismatch, § 6's dealt-hand framing, § 8's stale generated doc, § 8's cast-reuse over-generalisation)
-are documentation/data-field corrections, not capability gaps. Nothing here required inventing a
-primitive to make the encounter work.
+are documentation/data-field corrections, not capability gaps.
 
 ---
 
@@ -453,6 +553,8 @@ No changes required to `src/types/unifiedAction.ts`, `src/types/encounter.ts`,
 `src/types/gameState.ts`, `src/engine/unifiedActionLifecycle.ts`, `src/engine/encounterAftermath.ts`,
 `src/data/condition-trait-content.ts`, `src/data/nudge-card-library.ts`, or
 `src/data/encounter-image-library.ts` — every id and mechanism this encounter needs already exists.
+**Step 0's `failureMetadata` (§ 1a's fix) is a field on the content file being created, not an
+engine change** — nothing under `src/engine/` or `src/types/` needs touching to author it.
 
 **Implementation note carried into the final doc, not a file-map item:** B6's authored `StepNudge.id`
 must literally be `'sign.a_reading_offered'` — that is the id `traitVariants[0].addNudgeIds`
@@ -464,7 +566,12 @@ write.
 
 ## 17. Primitive Disposition
 
-No missing primitives identified. Nothing to BUILD NOW or BACKLOG.
+**One item, BACKLOG.** A step-outcome-severity `EffectPredicate` member (or a dedicated
+`criticalFailureMetadata` field) — spec above, § 14 and § 1a. Not required for this encounter to
+ship; the load-bearing defect it would have prevented is already closed by duplicating the two
+effects onto step 0's `failureMetadata`. Worth a Linear ticket at the batch report stage if encounter
+6's independent discovery of the same defect class makes this a recurring pattern worth a real fix,
+rather than a per-encounter workaround each time.
 
 ---
 
@@ -473,11 +580,19 @@ No missing primitives identified. Nothing to BUILD NOW or BACKLOG.
 **READY FOR IMPLEMENTATION**
 
 Every id, effect kind, gate constant, and mechanism this packet declares is live and correctly
-used, confirmed against source rather than against the packet's own claims. The one real defect
-found — the `critical_success` chip's `PATH` category on a write nothing reads — is resolved in
-this pass (re-categorised to `SCAR`, matching an independently-arrived-at precedent already shipped
-in `the-unclaimed-relic-revised.md`) and applied directly in the final merged doc, not left as a
-caveat for the implementer to resolve. The two open Pass-3 questions the revised file's § 16 flagged
-($target binding, `stateNoun.entityId` sentinel resolution) are both confirmed working by tracing
-the actual candidate-generation and anchor-resolution code paths, not assumed. No missing
-primitives, no new engine work, no new node types.
+used, confirmed against source rather than against the packet's own claims. Two real defects were
+found and both are resolved directly in the final merged doc, not left as caveats:
+
+1. The `critical_success` chip's `PATH` category on a write nothing reads — re-categorised to
+   `SCAR`, matching an independently-arrived-at precedent already shipped in
+   `the-unclaimed-relic-revised.md` (§ 1).
+2. The `critical_failure` action band's two chips were unbacked on the reachable path where step 0
+   alone rolls `critical_failure` and step 1 never runs — fixed by duplicating the two effects onto
+   step 0's own `failureMetadata`, with one documented, accepted trade-off on a rare compound path
+   (§ 1a).
+
+Both open Pass-3 verification questions the revised file's § 16 flagged ($target binding,
+`stateNoun.entityId` sentinel resolution) are confirmed working by tracing the actual code paths, not
+assumed — as is the `success_at_cost` action-band reasoning the editorial pass could not itself
+close. No missing primitives block this encounter; one small, non-blocking primitive gap is logged
+as BACKLOG. No new engine work is required to ship it.
