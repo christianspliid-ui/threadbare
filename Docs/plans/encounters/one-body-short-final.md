@@ -1,7 +1,7 @@
 # Encounter Pipeline: One Body Short
 > Scale: short (1 step) | Slug: one-body-short | Pass: final
 > Date: 2026-08-24 | Pipeline version: 3.0 (Encounter Factory)
-> Status: **READY WITH CAVEATS**
+> Status: **READY** (was READY WITH CAVEATS; both caveats closed 2026-08-24 — see the correction below)
 
 ---
 
@@ -11,9 +11,48 @@
 |------|---------|-------|
 | Draft | Complete | Eleven ⚠ items reported open; drafted the batch's sequel-payoff half with a `thread`-family draw that could not resolve against the live scene-sentinel table. |
 | Editorial | Complete (revisions applied) | All eleven draft-reported items closed: consequence swap `thread` → `omen` ruled and recorded; `concepts` declared and entity-anchored on all five chips; the `success_at_cost` grief chip re-backed on its own band reactions; two vagueness-detector hits and six seam echoes fixed; the `wayside` opening rewritten so the ground testifies rather than narrating the fight's course; four plainness-move rewrites. |
-| Systems | READY WITH CAVEATS | Every declared id, effect kind, category member, and constant verified live against the runtime — none dead, none invented. The consequence swap verified by an actual run of `npm run draw:consequences`, matching the packet's arithmetic exactly. Two caveats found, both open coordination/tooling items rather than defects in this template's own authored content: (1) the sequel's target-binding still depends on `standing_the_line` declaring its own action's target, unresolved on that side; (2) the bare `?spawn=` review route does not correctly exercise the `critical_success`/`success` bands, because `prepareDebugEncounterSpawn` always targets the acting agent's location rather than an actor — traced end to end, confirmed a review-tooling gap, not a template defect. |
+| Systems | READY WITH CAVEATS | Every declared id, effect kind, category member, and constant verified live against the runtime — none dead, none invented. The consequence swap verified by an actual run of `npm run draw:consequences`, matching the packet's arithmetic exactly. Two caveats found, both open coordination/tooling items rather than defects in this template's own authored content: (1) the sequel's target-binding still depends on `standing_the_line` declaring its own action's target, unresolved on that side; (2) the bare `?spawn=` review route does not correctly exercise the `critical_success`/`success` bands, because `prepareDebugEncounterSpawn` always targets the acting agent's location rather than an actor — traced end to end, confirmed a review-tooling gap, not a template defect. **Superseded 2026-08-24:** both caveats were one misdiagnosis — no template can declare its action's target, so (1) was never row 4's to fix and the write was dead on every route. The `secret` family moved to `hidden_mark` on `$cast:survivor`, which closes (2) with it. |
+| Law 56 correction | Applied | `secret_discovery` → `hidden_mark` (`$cast:survivor`); `short.the_unsaid` rewritten and re-anchored. Same `secret` family row, so the recorded draw and the swap budget are untouched. Guard added to the template's test suite: no authored effect may be of a kind that resolves its person from `action.targetId`, and no chip may anchor `$target`. |
 
-### Caveats / Blockers
+### Correction, 2026-08-24 — the `secret` family is a `hidden_mark`, and caveats 1 and 2 are closed
+
+**Both caveats below were the same mistake, and the mistake was in the diagnosis, not in row 4.**
+They recorded the target question as an *open reconciliation* — something `standing_the_line`
+could settle by declaring its action's target as the crossing person. It cannot, and no draft on
+either side could have. `action.targetId` is set once, from
+`sel.entry.targetAgentId ?? sel.entry.locationId` (`phaseAgentDecision.ts:1059`), and
+`entry.targetAgentId` is populated **only** by `socialEncounterGeneration.ts`, for scenes aimed at
+an agent who already exists. A `supportBundle` actor is materialized *using* the resolved target
+as an input, so it can never be that target, and **no template field routes targeting through a
+cast key.** The `?spawn=` route hard-codes the location; the seeded route copies the parent's own
+`targetId`, a location by the same argument. So `action.targetId` was the location on **every**
+firing route, `createSecretEdge` refused the endpoint (`secretGeneration.ts`, THR-1175), and
+`secret_discovery` always no-opped while `check:encounter` passed it on kind presence.
+
+That is the Unsafe Bridge defect, and the packet shipped it: `short.the_unsaid` — the package
+critic's nominated *strongest* connection — reported a `knows_secret_of` edge that never existed
+on any run.
+
+**The fix, applied.** `secret_discovery` → `hidden_mark` on `successMetadata`, targeting
+`$cast:survivor`. `hidden_mark` carries its own `targetAgentId`, a `SCENE_SENTINEL_FIELDS` member,
+so the write binds the person the scene cast and does not depend on `action.targetId` at all. It
+is in the same `secret` family row (`consequenceDraw.ts`: `['hidden_mark', 'secret_discovery',
+'favor_creation']`), so the recorded draw is unchanged and no second swap is spent; it is in
+`CHIP_BACKING_EFFECT_KINDS` (via `PERSISTENT_EFFECT_KINDS`), so the chip stays backed. The chip
+was rewritten to describe what is now written — a mark on the survivor, invisible, that a later
+`encounter.border` scene can surface — and re-anchored to `$cast:survivor` (§ 7.4).
+
+**Caveat 2 closes as a side effect.** With anchor and write both on `$cast:survivor`, the two
+`?spawn=` failures disappear: `prepareDebugEncounterSpawn` prepares the support bundle before
+creating the action, so the binding exists on that route too. The review link now renders those
+two bands honestly, and the CLI workaround is no longer needed.
+
+**What the next author should take from this:** a deferral that names another draft as the owner
+is only legitimate once you have checked that the other draft *can* own it. This one could not,
+and the deferral bought a shipped dead write.
+
+<details>
+<summary>Caveats / Blockers as originally recorded (superseded by the correction above)</summary>
 
 1. **Row 4 target-binding reconciliation (not this template's code to fix).**
    `encounter.border.standing_the_line` must declare its own action's `targetId` as the crossing
@@ -35,6 +74,8 @@
    `targetQuery` option on `DebugSpawnEncounterOptions` (small, two files); review these two
    bands via the seeded route or the CLI's `spawn encounter-context ... --agent <survivor>`
    in the meantime. Full trace: `Docs/plans/encounters/one-body-short-systems.md` § 1, § 5.
+
+</details>
 
 Nothing else is open. No missing primitive blocks compile; every effect kind, sentinel, trait id,
 condition id, library card id, image tag, and constant this packet declares was checked against
@@ -128,10 +169,10 @@ Neither `plotHookRolled` nor `plotHookTaken` is a template field — they live h
 | Cast binding (`survivor`) | Inherited from the parent through `inheritContext`; falls back to this template's own spawn spec | **state read** (support binding) *and* **write** (spawn when unbound) |
 | Trait `trait.core.core_warmth.virtue` (Warm) | `traitVariant` + the trait-only card | **state read** (gate) |
 | Condition `trait.condition.grieving` | `condition_attachment` on the failure side, and on the `success_at_cost` band's own reactions | **state write** (step `failureMetadata`; band reactions) |
-| `knows_secret_of` edge | `secret_discovery` on the success side | **state write** (step `successMetadata`) |
+| Hidden mark on the survivor | `hidden_mark` on the success side, `targetAgentId: '$cast:survivor'` (was `secret_discovery` — see the correction at the head of this doc) | **state write** (step `successMetadata`) |
 | Quintessence | `quintessence_shift` on the failure side and on one reaction | **state write** |
 | Omen | The Omen card's grant, **and** the `short.say_the_count` reaction — the consequence draw's `omen` family (§ 9) | **state write** (card grant; reaction effect) |
-| Hidden mark | The Long Game card's grant, revealing on `encounter.border` | **state write** (card grant) |
+| Hidden mark on the actor | The Long Game card's grant, revealing on `encounter.border`. A **different** mark from the row above: no target, so it falls through to the acting agent, and it exists only if the god spends on the card | **state write** (card grant) |
 | Intelligence record | The Whisper card's grant | **state write** (card grant) |
 | Reward pool | Possession draw on step success — the blade nobody is lying beside | **state write** |
 
@@ -151,7 +192,7 @@ Every mechanic declared here is used. No base-prose sentence asserts agent histo
 | Possession draw on the step's success | `rewards` | `successMetadata.rewardPool` |
 | `trait.condition.grieving` applied | `conditions` | `failureMetadata.effects` + the `success_at_cost` band reactions |
 
-**Three from the authored manifest — the contract floor.** Beyond the floor and not counted by the gate: the trait gate + trait card, the `knows_secret_of` write, the quintessence writes, the reaction's omen, and three card grants (mark, intelligence, omen). Personalization: the cast surface carries the name (`{cast:survivor}` in two endings), and the trait card is an attribute read — the encounter is different for a Warm mortal in the hand, the factor panel, and two bands.
+**Three from the authored manifest — the contract floor.** Beyond the floor and not counted by the gate: the trait gate + trait card, the survivor's `hidden_mark`, the quintessence writes, the reaction's omen, and three card grants (the actor's mark, intelligence, omen). Personalization: the cast surface carries the name (`{cast:survivor}` in two endings), and the trait card is an attribute read — the encounter is different for a Warm mortal in the hand, the factor panel, and two bands.
 
 **9. Consequence draw (binding — `check:encounter` recomputes it from the template id).**
 
@@ -160,7 +201,7 @@ consequenceDraw: ['secret', 'omen']
 consequenceSwap: { from: 'thread', to: 'omen', reason: <below> }
 ```
 
-- **`secret`** → `secret_discovery` (step `successMetadata`). *In context:* reading the ground truly does not just close the count — it tells the agent what the other survivor did not say. The secret is not bolted onto the ending; it *is* the ending.
+- **`secret`** → `hidden_mark` on the survivor (step `successMetadata`, `targetAgentId: '$cast:survivor'`). *In context:* reading the ground truly does not just close the count — it shows the agent that the other survivor is holding something back, and that silence goes with the survivor onto the next border road. The secret is not bolted onto the ending; it *is* the ending. **Corrected 2026-08-24** — this family was drafted as `secret_discovery`, which reads `action.targetId` and could never reach the survivor on any firing route; see the correction at the head of this doc. `hidden_mark` is in the same family row, so the recorded draw is unchanged and the swap budget is untouched.
 - **`omen`** → `emit_omen` (aftermath reaction "Let them say the count out loud"). *In context:* a mortal who says aloud, in a country that already has this kind of news, that the dead here got up and walked, is a mortal who has just started the telling. Pick the other stance and there is no omen, because nobody heard it. The family is a reason this scene does that thing, not a bolt-on at the ending.
 
 **The one swap, recorded** (spec § The Consequence Draw — one swap, zero unrecorded deviations):
@@ -522,7 +563,12 @@ aftermathConfig: { branchOnStep: 0, variants: {}, fallback: { … } }
 successMetadata: {
   rewardPool: { categoryWeights: { possession: 1.0 } },
   effects: [
-    { kind: 'secret_discovery', source: 'observation', magnitudeBonus: 0.1 },
+    { kind: 'hidden_mark',
+      category: 'secret_knowledge',
+      severity: 0.45,
+      label: 'the death on this ground with no body under it',
+      revealFamilies: ['encounter.border'],
+      targetAgentId: '$cast:survivor' },
   ],
 },
 failureMetadata: {
@@ -617,18 +663,22 @@ changes:
 ```
 {
   id: 'short.the_unsaid',
-  kind: 'shell_state',
-  category: 'bond',
-  direction: 'gain',
+  kind: 'future_hook',
+  category: 'path',
+  direction: 'opens',
   title: 'What was not said',
-  stateNoun: { text: 'a secret held', entityId: '$target', visualKind: 'agent' },
-  detail: 'They now hold a secret about {target}: what {target} watched leave this ground and did not report.',
-  polarity: 'mixed',
+  stateNoun: { text: 'a mark nobody can see', entityId: '$cast:survivor', visualKind: 'agent' },
+  detail: '{cast:survivor} watched the missing one walk off this ground and told nobody. What is left on {cast:survivor} is a mark nobody can see, and a later road along the border can bring it up.',
+  polarity: 'info',
   causeClause: 'Reading the drag-marks to their end',
-  concepts: [{ text: 'a secret', entityId: '$target', visualKind: 'agent' }],
+  concepts: [{ text: 'a mark nobody can see', entityId: '$cast:survivor', visualKind: 'agent' }],
 }
 ```
-*Backed by:* `secret_discovery` on `successMetadata` — a real `knows_secret_of` edge, actor → target. **Anchored on `$target`**, because `secret_discovery` itself reads `action.targetId` and carries no `targetAgentId` override, so the chip points at the exact endpoint the write used (rule 0c). `stateNoun` names the mechanic (`a secret held`), `detail` names the endpoints, the fiction goes last. The `concepts` entry names the substring `a secret` and anchors the same person.
+*Backed by:* `hidden_mark` on `successMetadata` — a real mark on the survivor, `secret_knowledge`, revealing on `encounter.border`. **Anchored on `$cast:survivor`**, which is the *same binding the write uses* (`targetAgentId: '$cast:survivor'`), so anchor and write still point at one endpoint — rule 0c, unchanged in principle and now actually true. `stateNoun` names the mechanic (`a mark nobody can see`), `detail` names the person and what the world will do with it, the fiction goes last. The `concepts` entry decorates the same phrase and anchors the same person.
+
+**Corrected 2026-08-24 — this chip was false as shipped.** It read *"They now hold a secret about {target}: what {target} watched leave this ground and did not report"*, `kind: 'shell_state'`, `category: 'bond'`, `direction: 'gain'`, `polarity: 'mixed'`, anchored on `$target`, and claimed a `knows_secret_of` edge that **never existed on any firing route** (head-of-doc correction). The four classification fields changed because the fact changed, not for taste: a `knows_secret_of` edge is a bond somebody gains; a hidden mark with a reveal family is a door a later system can open, which is what `path` / `opens` / `future_hook` say. `polarity: 'info'` because there is no gain/loss axis here for the acting agent, and because `mixed` would have painted the chip as a cost while `opens` drew the opposite cluster — two signals disagreeing (THR-1205).
+
+**The `?spawn=` falsity the package critic recorded is gone with it.** `{target}` used to substitute the location's *name* into that sentence; `{cast:survivor}` substitutes the survivor's, on every route, because the support bundle is prepared before the action is created on all of them.
 
 ---
 
@@ -636,7 +686,7 @@ changes:
 
 > overview: The account closes. The place where the missing one went down is as plain as the places that still have somebody lying in them, and it is empty.
 
-changes: the same `short.the_unsaid` chip, minus the `causeClause` (they got the answer without the drag-marks), and with `detail`: *They now hold a secret about {target}: what was not said about the body that is not here.* Same `stateNoun`, same `concepts`, backed by the same `secret_discovery` write.
+changes: the same `short.the_unsaid` chip, minus the `causeClause` (they got the answer without the drag-marks), and with `detail`: *{cast:survivor} knows why one place on this ground is empty and did not say it. What is left on {cast:survivor} is a mark nobody can see, and a later road along the border can bring it up.* Same `stateNoun`, same `concepts`, same classification fields, backed by the same `hidden_mark` write. (Corrected 2026-08-24 with the `critical_success` band above; it previously read *"They now hold a secret about {target}: what was not said about the body that is not here."*)
 
 ---
 
@@ -685,7 +735,7 @@ reactions (this band re-declares both stances, each carrying the condition):
 ]
 ```
 
-> **Why the band re-declares its reactions — a Law 56 fix, not a flourish.** `success_at_cost` is a member of `SUCCESS_BANDS`, so `stepWritesReachFace` routes `successMetadata` and not `failureMetadata` to this face: the grieving condition on `failureMetadata` **cannot fire here**. As first drafted this chip claimed a condition nothing applied — a Law 56 rule-0 violation that the machine gate would have passed, because `chipBackingViolations` is a floor rather than a semantic match and this face already performs two qualifying writes (`secret_discovery` and the `rewardPool` draw). The fix is the band's own reactions. `applyAftermathOutcomeBand` substitutes rather than merges (`reactions: band.reactions ?? variant.reactions`), so **both** stances must be re-declared, and **both** carry the condition — the condition therefore lands on every path through the band and the chip is true whichever stance the player takes. Backing is `reactionBackingForFace`; `condition_attachment` is in `PERSISTENT_EFFECT_KINDS`.
+> **Why the band re-declares its reactions — a Law 56 fix, not a flourish.** `success_at_cost` is a member of `SUCCESS_BANDS`, so `stepWritesReachFace` routes `successMetadata` and not `failureMetadata` to this face: the grieving condition on `failureMetadata` **cannot fire here**. As first drafted this chip claimed a condition nothing applied — a Law 56 rule-0 violation that the machine gate would have passed, because `chipBackingViolations` is a floor rather than a semantic match and this face already performs two qualifying writes (the survivor's `hidden_mark` — `secret_discovery` when this paragraph was written — and the `rewardPool` draw). The fix is the band's own reactions. `applyAftermathOutcomeBand` substitutes rather than merges (`reactions: band.reactions ?? variant.reactions`), so **both** stances must be re-declared, and **both** carry the condition — the condition therefore lands on every path through the band and the chip is true whichever stance the player takes. Backing is `reactionBackingForFace`; `condition_attachment` is in `PERSISTENT_EFFECT_KINDS`.
 >
 > Two rejected alternatives, recorded so they are not re-proposed. Moving the condition to `successMetadata.effects` would grieve the agent on `critical_success`, `success` and `near_miss` as well — the "tax on playing well" § 7.2 argues against. Gating it with a predicate is impossible: `EffectPredicate` has no outcome-band member.
 
@@ -750,11 +800,11 @@ changes:
 | `byOutcome` floor: ≥3 bands, one success-side, one failure-side, one extreme | 5 bands; `critical_success`, `critical_failure` and `success_at_cost` are all extremes ✓ |
 | Every variant carries an `overview` | fallback + 5 bands ✓ |
 | Every change declares `concepts` | **5 of 5** ✓ (was 1 of 5 in the draft) |
-| Every declared anchor classifies | `$target` ✓ · `$actor` ✓ · `trait.condition.grieving` → `attachment_template` (in `CONDITION_TRAIT_DEFINITIONS`, therefore in `ATTACHMENT_TEMPLATE_SOURCES`) ✓ |
+| Every declared anchor classifies | `$cast:survivor` ✓ (key declared by `supportBundle`) · `$actor` ✓ · `trait.condition.grieving` → `attachment_template` (in `CONDITION_TRAIT_DEFINITIONS`, therefore in `ATTACHMENT_TEMPLATE_SOURCES`) ✓ |
 | No dangling `tooltipId` | none declared ✓ |
 | Every chip backed by a write **on that band** | **5 of 5** ✓ (`success_at_cost` resolved via band reactions) |
-| Something persists (Rewards block) | `rewardPool` draw **and** `secret_discovery` **and** `condition_attachment` ✓ |
-| PATH used only for an opening the game acts on | **no PATH chip authored** — the sequel's opening was the *parent's* to claim ✓ |
+| Something persists (Rewards block) | `rewardPool` draw **and** `hidden_mark` **and** `condition_attachment` ✓ |
+| PATH used only for an opening the game acts on | **one PATH chip**, `short.the_unsaid` — backed by the survivor's `hidden_mark`, which `evaluateMarkReveals` reads when scoring that agent's later `encounter.border` candidates and `consumeMatchingMarks` spends at their resolution. A door a later system opens, which is the category's own definition ✓ *(this row read "no PATH chip authored" before the 2026-08-24 correction, when the chip claimed a bond)* |
 | Prizes/tolls as object references, not inline prose | `rewardPool` draw + the condition template id ✓ |
 | Tolls in words | "grieving", "worn through" — no numbers ✓ |
 
@@ -773,7 +823,7 @@ Exactly two facts, and nothing else:
 1. **There was a fight here and it is over.** The ground carries what a fight leaves.
 2. **One other person came through it and is here.** Bound as the cast key `survivor`.
 
-Everything else in the prose is **scene-local invention** with no life outside this encounter (the firepit, the banging door, the dropped blade, the empty place) or a **read through a sanctioned surface** (the trait gate, the cast binding, the reward draw). The `critical_success` reveal is the third case and the legitimate one: it looks like invented state and is not, because the encounter's own `secret_discovery` mints the `knows_secret_of` edge and the prose narrates the fact only after the mechanics produce it — the production half of prose rule 7.
+Everything else in the prose is **scene-local invention** with no life outside this encounter (the firepit, the banging door, the dropped blade, the empty place) or a **read through a sanctioned surface** (the trait gate, the cast binding, the reward draw). The `critical_success` reveal is the third case and the legitimate one: it looks like invented state and is not, because the encounter's own `hidden_mark` writes the survivor's silence onto the survivor and the prose narrates the fact only after the mechanics produce it — the production half of prose rule 7. *(This sentence named `secret_discovery` and the `knows_secret_of` edge before the 2026-08-24 correction, when it was the one claim in this section that was not actually produced.)*
 
 ### 8.3 What this encounter may **not** assume — the pole-agnostic contract
 
@@ -792,14 +842,15 @@ The parent is a `Personality Fork` on `mercy_ruthlessness`, resolved by the *mor
 
 **Verified line by line in this revision.** Every player-facing string — four openings, the spine, three `narrativeTemplates`, five afterimages, twelve fragments, six overviews, five `details`, two reaction labels and intents, six card faces — was read against both poles and against a bare `?spawn=` firing with no parent. After the `wayside` correction, no line names a pole, assumes the agent's presence at the fight, or gives the survivor a pronoun.
 
-### 8.4 Cross-draft and cross-corpus wiring — **two dependencies, one ask**
+### 8.4 Cross-draft and cross-corpus wiring — **one dependency, one ask**
 
 **(a) The cast key must be `survivor`.** This packet declares `supportBundle` with `key: 'survivor'`. `encounter.border.standing_the_line` must bind the crossing person under the **same key** for the inherited binding to line up. If it does not, this template's own spec materializes a fresh person and the scene still reads — a declared key always resolves (THR-696) — but the sequel callback loses its point. **Reconcile with row 4's draft before compile.**
 
-**(b) `secret_discovery` reads `action.targetId`, which must be an actor — under *both* firing routes.** The effect has no `targetAgentId` override: `encounterAftermath.ts` reads `action?.targetId`, and `createSecretEdge` refuses an endpoint that is not an actor node, tracing the refusal. Two consequences, and the second is wider than the draft recorded:
+**(b) RESOLVED, 2026-08-24 — and it was never row 4's to resolve.** This item read *"`secret_discovery` reads `action.targetId`, which must be an actor"*, and made it a reconciliation with `standing_the_line`: if the parent declared its target as the crossing person, the write would land. **That premise is false. A template cannot declare its action's target at all.** `action.targetId` is `sel.entry.targetAgentId ?? sel.entry.locationId` (`phaseAgentDecision.ts:1059`), and `entry.targetAgentId` is written only by `socialEncounterGeneration.ts`, for scenes aimed at an agent who already exists in the world. A `supportBundle` actor is materialized *using* the resolved target as an input, so it is structurally downstream of the target and can never be it; there is no template field that routes targeting through a cast key. `?spawn=` hard-codes `targetId: locationId` (`debugEncounterTools.ts:434-440`), and `inheritContext` copies the parent's `targetId`, a location by the same argument.
 
-- **Under `inheritContext`** the target is copied from the parent, so **the parent must target the crossing person, not the location.** If row 4 targets a place, this encounter's `secret` family is wired at the gate and inert at runtime — the exact rot Law 56 exists to stop. **Reconcile with row 4's draft before compile;** if the parent must target a location, the `secret` family here has to move to `hidden_mark` (which takes `targetAgentId`) and the swap recorded. *Note the swap budget is already spent on `thread` → `omen`, so a second change here is a design escalation, not another swap.*
-- **Under a bare `?spawn=` review firing** there is no parent to supply a target, and `?spawn=` stages the template on `@hero`. If `targetId` resolves to the acting agent or to a location, `secret_discovery` refuses and traces, and the `$target` anchor on `short.the_unsaid` resolves to the wrong node or to nothing. This is a runtime-feasibility question rather than a prose one — **flagged for Pass 3**, which owns it. The prose is unaffected either way, because no line depends on the secret having been written.
+So the write was dead on **every** route from the first compile, and this section's own escape hatch — *"if the parent must target a location, the `secret` family here has to move to `hidden_mark` (which takes `targetAgentId`)"* — was the correct answer all along, minus the conditional. It has been taken. `hidden_mark` is in the same `secret` family row, so **no second swap was spent** and the escalation this section warned about was never needed.
+
+The instructive part is the shape of the error, not the effect kind: **the deferral named another draft as the owner without first checking that the other draft could own it.** Row 4 could have declared its target in prose a dozen times over and this write would still have refused. A cross-draft dependency is only real once you have found the field the other draft would set.
 
 **(c) A `secret.*` tooltip concept does not exist and would serve the whole corpus.** Four consequence families — `secret`, `knowledge`, `story_seed`, `drive` — have no tooltip prefix, so every chip about them must anchor by entity and leave its concept unexplained (§ 7.4). A small addition to `ui-content.ts` would close it. Not this batch's work; recorded as a corpus-wide ask.
 
@@ -837,7 +888,7 @@ Reuse is opportunistic and covers `wayside` + `stronghold`; `ruin` and `battlefi
 
 `{cast:survivor}` is used **twice**, both times where the name earns something: the `critical_success` reveal and the `critical_failure` rescue. Everywhere else the role noun carries it — ruling 6's default register.
 
-**Other world objects:** the dead (scenery, no bindings — they are the count, not cast); the dropped blade (scene-local, and the object the reward draw stands in for); `trait.condition.grieving`; `trait.core.core_warmth.virtue`; the `knows_secret_of` edge; the hidden mark; the intelligence record; the two emitted omens.
+**Other world objects:** the dead (scenery, no bindings — they are the count, not cast); the dropped blade (scene-local, and the object the reward draw stands in for); `trait.condition.grieving`; `trait.core.core_warmth.virtue`; **two hidden marks** — one on the survivor from the step's success, one on the actor from the Long Game card; the intelligence record; the two emitted omens.
 
 ---
 
@@ -845,17 +896,17 @@ Reuse is opportunistic and covers `wayside` + `stronghold`; `ruin` and `battlefi
 
 | Support object | Delivery | Source | Persistence | Future references | Status |
 |---|---|---|---|---|---|
-| `survivor` (actor) | lazy-materialize-on-trigger, or inherited | parent's `supportBindings` → roster reuse → spawn | **must-persist** | `{cast:survivor}` on 2 bands; `$target` anchor on the secret chip | built (spec authored here) |
+| `survivor` (actor) | lazy-materialize-on-trigger, or inherited | parent's `supportBindings` → roster reuse → spawn | **must-persist** | `{cast:survivor}` on 2 band overviews and in both `short.the_unsaid` details; `$cast:survivor` anchor on that chip; `targetAgentId` of the step's `hidden_mark` | built (spec authored here) |
 | `trait.core.core_warmth.virtue` | pre-seeded | `core-trait-content.ts` (Core continuum `core_warmth`) | must-persist | trait gate, variant, trait card | live |
 | `trait.condition.grieving` | on-trigger | `condition-trait-content.ts` | duration-bounded | 3 chips across 3 bands; `attachment_template` anchor | live |
 | Possession draw | on-trigger | `rewardPool` over `possession` | must-persist | PRIZE chip (engine-rendered) | live |
-| Hidden mark `secret_knowledge` | on-trigger (card grant) | `hidden_mark` effect | decays after grace | reveals on `encounter.border` | live |
+| Hidden mark `secret_knowledge` — **on the actor** | on-trigger (Long Game card grant, severity 0.55) | `hidden_mark` effect, no target → falls through to the acting agent | decays after grace | reveals on `encounter.border` when the *actor* draws one | live |
 | Intelligence record `military_position` | on-trigger (card grant) | `intelligence` effect | must-persist | future intel reads | live |
 | Cultural omen — recurrence | on-trigger (card grant) | `emit_omen` effect | `durationTicks` default | draw bias, chronicle, `{omen}` enrichment | live |
 | Cultural omen — the telling | on-trigger (reaction) | `emit_omen` effect | `durationTicks` default | satisfies the `omen` consequence family | live |
-| `knows_secret_of` edge | on-trigger | `secret_discovery` | must-persist | secret chip; leverage readers | **needs § 8.4(b) reconciliation** |
+| Hidden mark `secret_knowledge` — **on the survivor** | on-trigger (step `successMetadata`, severity 0.45) | `hidden_mark` effect, `targetAgentId: '$cast:survivor'` | decays after grace | `short.the_unsaid` chip; reveals on `encounter.border` when the *survivor* draws one, and boosts those candidates for them meanwhile | live *(was a `knows_secret_of` edge from `secret_discovery`, which never wrote — corrected 2026-08-24)* |
 
-No blocked primitives remain: the thread row is gone with the family, and § 8.4(b) is a target-binding reconciliation with row 4 rather than a missing engine capability.
+No blocked primitives remain: the thread row is gone with the family, and § 8.4(b) is resolved rather than deferred — see the correction at the head of this doc.
 
 ---
 
@@ -927,15 +978,15 @@ Residue, not events. Absence, not presence. The whole encounter is in the one fl
 | **Hand** | 6 cards on the one nudge-bearing step; full `checkNudgeHand` audit in § 4 ✓ |
 | **Setting** | 4 classes declared, 4 openings written, `locationSubtypes` derived ✓ |
 | **Cast** | 1 actor binding, class-honest at all four classes (verified against the rosters); both `{cast:survivor}` tokens name the declared key ✓ |
-| **Rewards** | `rewardPool` draw + `condition_attachment` + `secret_discovery` — three persistent routes ✓ |
+| **Rewards** | `rewardPool` draw + `condition_attachment` + `hidden_mark` — three persistent routes ✓ |
 | **Aftermath** | `aftermathConfig` present, 5 `byOutcome` bands (floor 3), every variant has an `overview`, **every change declares `concepts`**, **every chip backed on its own band** ✓ |
 | **Systems** | 3 from the authored manifest (`cast`, `rewards`, `conditions`) ✓ |
 | **Images** | 6 of 6 card tags resolve to real library rows; no `illustrationUrl` declared ✓ |
-| **Consequence draw** | `['secret', 'omen']` with one recorded swap; `secret_discovery` and `emit_omen` both authored in the aftermath walk ✓ |
+| **Consequence draw** | `['secret', 'omen']` with one recorded swap; `hidden_mark` and `emit_omen` both authored in the aftermath walk ✓ |
 | **A one-step encounter owes the full contract (ruling 3)** | Every block above is present. No exemption claimed, none requested ✓ |
 | **`RETROFIT_PENDING`** | Not listed and must never be — new content never starts on the ratchet ✓ |
 
-**Open surface, honestly counted.** The draft reported two ⚠ items; the real count was eleven, and all eleven are closed in this revision. What remains open is **one cross-draft reconciliation** — § 8.4(a)/(b), the cast key and the target binding, both owned by row 4 — plus **two recorded asks that do not block compile**: the `secret.*` tooltip concept (§ 8.4c) and the thread-effect engine ticket that batch row 6 still needs (§ 8.4d). Nothing else is deferred.
+**Open surface, honestly counted.** The draft reported two ⚠ items; the real count was eleven, and all eleven are closed in this revision. What remains open is **one cross-draft reconciliation** — § 8.4(a), the cast key, owned by row 4; § 8.4(b), the target binding, is closed and was never row 4's — plus **two recorded asks that do not block compile**: the `secret.*` tooltip concept (§ 8.4c) and the thread-effect engine ticket that batch row 6 still needs (§ 8.4d). Nothing else is deferred.
 
 ---
 
@@ -972,7 +1023,7 @@ Residue, not events. Absence, not presence. The whole encounter is in the one fl
 
 ## 16. What Pass 3 should attack first
 
-1. **§ 8.4(a) and (b)** — the cast key and the target binding, both to be reconciled with row 4's draft before either compiles. (b) additionally needs a runtime answer for the bare `?spawn=` route, which is Pass 3's lane: what `action.targetId` resolves to when the template is staged on `@hero` with no parent, and whether `secret_discovery` and the `$target` anchor survive it.
+1. ~~**§ 8.4(a) and (b)**~~ — **(b) is closed** (2026-08-24): `action.targetId` is the location on every route, no template can change that, and the `secret` family moved to `hidden_mark` on `$cast:survivor`. **(a) stands** — the cast key must still be `survivor` on row 4's side for the sequel callback to land, though the encounter is correct either way.
 2. **The `success_at_cost` band's re-declared reactions** (§ 7.4) — the substitution semantics of `applyAftermathOutcomeBand` are the load-bearing assumption. Confirm both stances render on that band and that `condition_attachment` fires on either pick.
 3. **The two `emit_omen` sites** (§ 4 card 4, § 7.3) — confirm they read as two different omens at runtime and that the reaction's satisfies `checkConsequenceDraw`'s `omen` family. The card grant deliberately does not, and must not be relied on.
 4. **The `long_game` one-off** (§ 4 card 5) — no `libraryCardId` is intentional and argued; confirm nothing in the compile path requires one.

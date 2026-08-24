@@ -18,6 +18,9 @@
  * - Aftermath variant resolution for all five authored bands
  * - The consequence draw: `consequenceDraw` + `consequenceSwap` clear the
  *   `draw` block (checkConsequenceDraw / checkCompositionContract)
+ * - **No authored effect depends on `action.targetId` resolving to an agent** —
+ *   the defect this template shipped with and the reason it is asserted here
+ *   rather than left to review
  * - Support bundle actor resolution for the `survivor` key
  * - `traitVariants` resolution for `trait.core.core_warmth.virtue`
  * - No gendered pronoun anywhere in the template's authored prose
@@ -28,15 +31,25 @@ import { describe, it, expect } from 'vitest';
 import { ONE_BODY_SHORT_TEMPLATE } from '../one-body-short';
 import { UNIFIED_ACTION_TEMPLATES } from '../../unified-action-templates';
 import { isActionStepBranch } from '../../../types/unifiedAction';
-import type { ActionStep, StepOutcome } from '../../../types/unifiedAction';
+import type {
+  ActionStep,
+  EncounterAftermathReactionEffect,
+  StepOutcome,
+} from '../../../types/unifiedAction';
 import { expandSettings } from '../../settingClasses';
 import { WorldGraph } from '../../../engine/graph';
 import { getPlaceTierLocations, isPlaceTierLocation } from '../../../engine/sublocationShape';
 import { nudgeCardMember } from '../../nudge-card-library';
 import { ENCOUNTER_IMAGE_LIBRARY } from '../../encounter-image-library';
 import { checkNudgeHand } from '../../content-eval/nudgeHandChecklist';
-import { checkCompositionContract } from '../../content-eval/compositionContract';
-import { checkConsequenceDraw, familiesWiredByEffects, drawnHandForTemplate } from '../../content-eval/consequenceDraw';
+import { checkCompositionContract, CHIP_BACKING_EFFECT_KINDS } from '../../content-eval/compositionContract';
+import {
+  checkConsequenceDraw,
+  familiesWiredByEffects,
+  drawnHandForTemplate,
+  CONSEQUENCE_FAMILY_EFFECT_KINDS,
+} from '../../content-eval/consequenceDraw';
+import { classifyAnchorDeclaration } from '../../content-eval/chipAnchorDeclarations';
 
 const ALL_BAND_OUTCOMES: readonly StepOutcome[] = [
   'critical_success',
@@ -51,6 +64,67 @@ const FAILURE_BAND_OUTCOMES: readonly StepOutcome[] = ['near_miss', 'failure', '
 
 const step0 = ONE_BODY_SHORT_TEMPLATE.steps[0] as ActionStep;
 const hand = step0.nudges ?? [];
+
+/** Cast keys the supportBundle declares — what a `$cast:<key>` sentinel may name. */
+const SUPPORT_KEYS = new Set(
+  (ONE_BODY_SHORT_TEMPLATE.supportBundle ?? []).map((spec) => spec.key),
+);
+
+/**
+ * Every effect this template authors, at every site — step-outcome metadata,
+ * fallback reactions, band reactions, **and** nudge-card grants.
+ *
+ * Deliberately wider than `compositionContract`'s own `allAftermathEffects`,
+ * which does not walk card grants: a grant that fell into the `action.targetId`
+ * trap would be exactly as dead as one in step metadata, and the gate would
+ * never see it.
+ */
+function allAuthoredEffects(): { site: string; effect: EncounterAftermathReactionEffect }[] {
+  const out: { site: string; effect: EncounterAftermathReactionEffect }[] = [];
+  const step = ONE_BODY_SHORT_TEMPLATE.steps[0] as ActionStep;
+  for (const e of step.successMetadata?.effects ?? []) out.push({ site: 'step0.successMetadata', effect: e });
+  for (const e of step.failureMetadata?.effects ?? []) out.push({ site: 'step0.failureMetadata', effect: e });
+  for (const nudge of step.nudges ?? []) {
+    for (const e of nudge.grants ?? []) out.push({ site: `nudge '${nudge.id}'.grants`, effect: e });
+  }
+  const fallback = ONE_BODY_SHORT_TEMPLATE.aftermathConfig?.fallback;
+  for (const r of fallback?.reactions ?? []) {
+    for (const e of r.effects ?? []) out.push({ site: `fallback reaction '${r.id}'`, effect: e });
+  }
+  for (const [band, cfg] of Object.entries(fallback?.byOutcome ?? {})) {
+    for (const r of cfg?.reactions ?? []) {
+      for (const e of r.effects ?? []) out.push({ site: `${band} reaction '${r.id}'`, effect: e });
+    }
+  }
+  return out;
+}
+
+/**
+ * Effect kinds that resolve the person they act on from `action.targetId` and
+ * carry no field to say otherwise.
+ *
+ * `action.targetId` is `sel.entry.targetAgentId ?? sel.entry.locationId`
+ * (`phaseAgentDecision.ts`), and `entry.targetAgentId` is populated *only* by
+ * `socialEncounterGeneration.ts`, for scenes aimed at an agent who already
+ * exists. It is never a `supportBundle` actor — the bundle is materialized
+ * *using* the resolved target as an input. The `?spawn=` route hard-codes the
+ * location; the seeded route copies the parent's `targetId`, a location by the
+ * same argument.
+ *
+ * This template casts its second person through the bundle, so any effect on
+ * this list is dead here by construction — declared at the gate, refused at
+ * runtime. `secret_discovery` is how it shipped, and this is the assertion that
+ * would have caught it.
+ */
+const TARGET_ID_DEPENDENT_EFFECT_KINDS: readonly string[] = ['secret_discovery'];
+
+/** Person-shaped effect fields — anywhere `$target` would name the wrong node. */
+const PERSON_FIELDS: readonly string[] = [
+  'targetAgentId',
+  'withAgentId',
+  'debtorAgentId',
+  'counterpartyId',
+];
 
 describe('One Body Short — template structure', () => {
   it('is registered and resolvable in UNIFIED_ACTION_TEMPLATES', () => {
@@ -277,6 +351,160 @@ describe('One Body Short — the consequence draw', () => {
     const wired = familiesWiredByEffects(effects, hasRewardPool);
     const violations = checkConsequenceDraw(ONE_BODY_SHORT_TEMPLATE, wired);
     expect(violations).toEqual([]);
+  });
+});
+
+describe('One Body Short — nothing depends on action.targetId being an agent', () => {
+  it('authors no effect of a kind that resolves its person from action.targetId', () => {
+    const offenders = allAuthoredEffects()
+      .filter(({ effect }) => TARGET_ID_DEPENDENT_EFFECT_KINDS.includes(effect.kind))
+      .map(({ site, effect }) => `${site}: ${effect.kind}`);
+    expect(
+      offenders,
+      'these effect kinds read action.targetId, which is this template\'s location on every '
+      + 'firing route — the write is refused at runtime while check:encounter passes it',
+    ).toEqual([]);
+  });
+
+  it('never names $target on a person-shaped effect field', () => {
+    const offenders: string[] = [];
+    for (const { site, effect } of allAuthoredEffects()) {
+      const bag = effect as unknown as Record<string, unknown>;
+      for (const field of PERSON_FIELDS) {
+        if (bag[field] === '$target') offenders.push(`${site}: ${effect.kind}.${field}`);
+      }
+    }
+    expect(offenders).toEqual([]);
+  });
+
+  it('never anchors a chip on $target', () => {
+    const offenders: string[] = [];
+    const fallback = ONE_BODY_SHORT_TEMPLATE.aftermathConfig?.fallback;
+    for (const [band, cfg] of Object.entries(fallback?.byOutcome ?? {})) {
+      for (const change of cfg?.changes ?? []) {
+        const anchors = [change.stateNoun, ...(change.concepts ?? [])];
+        for (const anchor of anchors) {
+          if (anchor?.entityId === '$target') offenders.push(`${band}/${change.id}`);
+        }
+      }
+    }
+    expect(offenders).toEqual([]);
+  });
+
+  it('every cast sentinel it does use names a key the supportBundle declares', () => {
+    const sentinels = new Set<string>();
+    for (const { effect } of allAuthoredEffects()) {
+      const bag = effect as unknown as Record<string, unknown>;
+      for (const field of PERSON_FIELDS) {
+        const value = bag[field];
+        if (typeof value === 'string' && value.startsWith('$cast:')) sentinels.add(value);
+      }
+    }
+    const fallback = ONE_BODY_SHORT_TEMPLATE.aftermathConfig?.fallback;
+    for (const cfg of Object.values(fallback?.byOutcome ?? {})) {
+      for (const change of cfg?.changes ?? []) {
+        for (const anchor of [change.stateNoun, ...(change.concepts ?? [])]) {
+          if (anchor?.entityId?.startsWith('$cast:')) sentinels.add(anchor.entityId);
+        }
+      }
+    }
+    expect(sentinels.size).toBeGreaterThan(0);
+    for (const sentinel of sentinels) {
+      const verdict = classifyAnchorDeclaration(sentinel, { supportKeys: SUPPORT_KEYS });
+      expect(verdict.ok, `${sentinel}: ${verdict.ok ? '' : verdict.reason}`).toBe(true);
+    }
+  });
+});
+
+describe('One Body Short — the secret consequence is a hidden mark on the survivor', () => {
+  const successEffects = step0.successMetadata?.effects ?? [];
+  const mark = successEffects.find((e) => e.kind === 'hidden_mark');
+
+  it('wires exactly one step-success effect, a hidden_mark', () => {
+    expect(successEffects.map((e) => e.kind)).toEqual(['hidden_mark']);
+  });
+
+  it('places the mark on the survivor via $cast:survivor, not on action.targetId', () => {
+    expect(mark).toBeDefined();
+    const m = mark as Extract<EncounterAftermathReactionEffect, { kind: 'hidden_mark' }>;
+    expect(m.targetAgentId).toBe('$cast:survivor');
+    expect(SUPPORT_KEYS.has('survivor')).toBe(true);
+    expect(m.category).toBe('secret_knowledge');
+    expect(m.revealFamilies).toEqual(['encounter.border']);
+    expect(m.severity).toBeGreaterThan(0);
+    expect(m.severity).toBeLessThanOrEqual(1);
+    expect(m.label.trim().length).toBeGreaterThan(0);
+  });
+
+  it('is a different mark from the Long Game card grant — different bearer, different label', () => {
+    const cardMark = hand
+      .find((n) => n.id === 'short.left_for_later')
+      ?.grants?.find((g) => g.kind === 'hidden_mark') as
+      | Extract<EncounterAftermathReactionEffect, { kind: 'hidden_mark' }>
+      | undefined;
+    expect(cardMark).toBeDefined();
+    // The card grant names no target, so it falls through to the action's actor.
+    expect(cardMark?.targetAgentId).toBeUndefined();
+    const stepMark = mark as Extract<EncounterAftermathReactionEffect, { kind: 'hidden_mark' }>;
+    expect(stepMark.targetAgentId).toBeDefined();
+    expect(stepMark.label).not.toBe(cardMark?.label);
+  });
+
+  it('still satisfies the `secret` consequence family', () => {
+    expect(CONSEQUENCE_FAMILY_EFFECT_KINDS.secret).toContain('hidden_mark');
+    const wired = familiesWiredByEffects(
+      allAuthoredEffects()
+        .filter(({ site }) => !site.startsWith('nudge '))
+        .map(({ effect }) => effect),
+      Boolean(step0.successMetadata?.rewardPool),
+    );
+    expect(wired.has('secret')).toBe(true);
+  });
+
+  it('still backs the chip — hidden_mark is a CHIP_BACKING_EFFECT_KINDS member', () => {
+    expect(CHIP_BACKING_EFFECT_KINDS.has('hidden_mark')).toBe(true);
+  });
+});
+
+describe('One Body Short — short.the_unsaid tells the truth', () => {
+  const byOutcome = ONE_BODY_SHORT_TEMPLATE.aftermathConfig?.fallback.byOutcome;
+  const chips = (['critical_success', 'success'] as const).map((band) => ({
+    band,
+    chip: byOutcome?.[band]?.changes?.find((c) => c.id === 'short.the_unsaid'),
+  }));
+
+  it('renders on both success-side bands and anchors the survivor', () => {
+    for (const { band, chip } of chips) {
+      expect(chip, `band "${band}" should carry short.the_unsaid`).toBeDefined();
+      expect(chip?.stateNoun?.entityId).toBe('$cast:survivor');
+      expect(chip?.stateNoun?.visualKind).toBe('agent');
+      for (const concept of chip?.concepts ?? []) {
+        expect(concept.entityId).toBe('$cast:survivor');
+      }
+    }
+  });
+
+  it('classifies as a path that opens, not a bond gained', () => {
+    for (const { band, chip } of chips) {
+      expect(chip?.category, band).toBe('path');
+      expect(chip?.direction, band).toBe('opens');
+      expect(chip?.kind, band).toBe('future_hook');
+    }
+  });
+
+  it('names the survivor through {cast:survivor}, never {target}', () => {
+    for (const { band, chip } of chips) {
+      expect(chip?.detail, band).toContain('{cast:survivor}');
+      expect(chip?.detail, band).not.toContain('{target}');
+    }
+  });
+
+  it('every declared concept decorates a substring that is actually in the detail', () => {
+    for (const { band, chip } of chips) {
+      for (const concept of chip?.concepts ?? []) {
+        expect(chip?.detail, `${band}: "${concept.text}"`).toContain(concept.text);
+      }
+    }
   });
 });
 

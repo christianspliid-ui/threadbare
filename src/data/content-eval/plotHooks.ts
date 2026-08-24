@@ -469,7 +469,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['conflict', 'power'],
     reaches: ['iron', 'gold'],
     source: 'vault: Archetypes/Event — The Stronghold Mobilization',
-    usedBy: [],
+    usedBy: ['encounter.border.toll_of_blades'],
   },
   {
     id: 'hook.relic_awakening',

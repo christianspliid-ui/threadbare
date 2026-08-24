@@ -263,15 +263,62 @@ const step0ReadTheGround: ActionStep = {
   criticalFailureAfterimage: 'The count broke apart in their hands and took the rest of the ground with it.',
   /**
    * `successMetadata` fires on `isStepSuccess`, which counts `near_miss` — a
-   * near miss got through, so the secret and the possession draw are correct
-   * there. `secret_discovery` reads `action.targetId`; under `inheritContext`
-   * that must be the crossing person, not a location (design doc § 8.4b —
-   * a cross-draft reconciliation with `standing_the_line`, not this
-   * template's code to fix).
+   * near miss got through, so the mark and the possession draw are correct
+   * there.
+   *
+   * **This was `secret_discovery`, and the deferral that stood here was wrong.**
+   * The draft recorded the target question as a cross-draft reconciliation with
+   * `standing_the_line` — something row 4 could fix by declaring its action's
+   * target as the crossing person. It cannot. `action.targetId` is set from
+   * `sel.entry.targetAgentId ?? sel.entry.locationId`
+   * (`phaseAgentDecision.ts:1059`), and `targetAgentId` is populated *only* by
+   * `socialEncounterGeneration.ts`, for scenes aimed at an agent who already
+   * exists. A `supportBundle` actor is materialized *using* the already-resolved
+   * target as an input, so it can never be that target, and no template field
+   * routes targeting through a cast key. The `?spawn=` route hard-codes
+   * `targetId: locationId` (`debugEncounterTools.ts:434-440`), and the seeded
+   * route copies the parent's own `targetId`, which is a location by the same
+   * argument. So `action.targetId` was the location on every firing route,
+   * `createSecretEdge` refuses a non-actor endpoint (`secretGeneration.ts`,
+   * THR-1175), and the write always no-opped — green at `check:encounter`,
+   * which passes on kind presence, and dead at runtime. That is the identical
+   * shape this template already swapped the `thread` family away from, and it
+   * should have been caught here rather than deferred.
+   *
+   * `hidden_mark` is the fix rather than a workaround. It carries its own
+   * `targetAgentId`, a `SCENE_SENTINEL_FIELDS` member, so `$cast:survivor` binds
+   * the person this scene actually cast and nothing depends on `action.targetId`
+   * at all. It sits in the same `secret` family row as `secret_discovery`
+   * (`consequenceDraw.ts`: `['hidden_mark', 'secret_discovery',
+   * 'favor_creation']`), so the recorded draw stays satisfied, and in
+   * `CHIP_BACKING_EFFECT_KINDS` (via `PERSISTENT_EFFECT_KINDS`), so
+   * `short.the_unsaid` stays a backed chip.
+   *
+   * **Not a second copy of the `short.left_for_later` grant.** That mark carries
+   * no target, so it falls through to the action's actor: it is what the *reader*
+   * walks off carrying, and it exists only if the god spends on the card. This
+   * one bears on the *survivor* — what the person who was already here is not
+   * saying — and fires on any success. Different bearer, different fact,
+   * different route. Same category and reveal family on purpose: both are
+   * knowledge a later border scene can put in the open, and the family's
+   * currency is exactly that.
    */
   successMetadata: {
     rewardPool: { categoryWeights: { possession: 1.0 } },
-    effects: [{ kind: 'secret_discovery', source: 'observation', magnitudeBonus: 0.1 }],
+    effects: [
+      {
+        kind: 'hidden_mark',
+        category: 'secret_knowledge',
+        severity: 0.45,
+        // Reads as a phrase somebody says out loud, because that is how the
+        // `secret_knowledge` reveal table spends `{mark_label}`. Deliberately
+        // the neutral fact — the mark fires on `success` and `near_miss` too,
+        // where nothing says the missing one walked.
+        label: 'the death on this ground with no body under it',
+        revealFamilies: ['encounter.border'],
+        targetAgentId: '$cast:survivor',
+      },
+    ],
   },
   /**
    * `failureMetadata` fires only on the two genuine failure bands. The grief
@@ -428,17 +475,29 @@ export const ONE_BODY_SHORT_TEMPLATE: UnifiedActionTemplate = {
             'that nobody dragged. Whoever went down here got up and walked out. {cast:survivor} watched it ' +
             'happen and has not mentioned it since.',
           changes: [
+            /**
+             * The chip reports the `hidden_mark` on `successMetadata`, and every
+             * field names that write: a mark on the survivor, invisible, that a
+             * later `encounter.border` scene can surface. It used to report a
+             * `knows_secret_of` edge, which never existed — see the note on
+             * `successMetadata`. `$cast:survivor` is the same binding the write
+             * uses, so anchor and write agree at the same endpoint (rule 0c),
+             * and they now agree under `?spawn=` as well, where `$target`
+             * resolved to a campsite.
+             */
             {
               id: 'short.the_unsaid',
-              kind: 'shell_state',
-              category: 'bond',
-              direction: 'gain',
+              kind: 'future_hook',
+              category: 'path',
+              direction: 'opens',
               title: 'What was not said',
-              stateNoun: { text: 'a secret held', entityId: '$target', visualKind: 'agent' },
-              detail: 'They now hold a secret about {target}: what {target} watched leave this ground and did not report.',
-              polarity: 'mixed',
+              stateNoun: { text: 'a mark nobody can see', entityId: '$cast:survivor', visualKind: 'agent' },
+              detail:
+                '{cast:survivor} watched the missing one walk off this ground and told nobody. What is left on ' +
+                '{cast:survivor} is a mark nobody can see, and a later road along the border can bring it up.',
+              polarity: 'info',
               causeClause: 'Reading the drag-marks to their end',
-              concepts: [{ text: 'a secret', entityId: '$target', visualKind: 'agent' }],
+              concepts: [{ text: 'a mark nobody can see', entityId: '$cast:survivor', visualKind: 'agent' }],
             },
           ],
         },
@@ -448,16 +507,20 @@ export const ONE_BODY_SHORT_TEMPLATE: UnifiedActionTemplate = {
             'still have somebody lying in them, and it is empty. {cast:survivor} does not explain it, and is ' +
             'not asked to.',
           changes: [
+            // Same chip, same write, minus the causeClause — they got the answer
+            // without the drag-marks, so this band cannot claim them.
             {
               id: 'short.the_unsaid',
-              kind: 'shell_state',
-              category: 'bond',
-              direction: 'gain',
+              kind: 'future_hook',
+              category: 'path',
+              direction: 'opens',
               title: 'What was not said',
-              stateNoun: { text: 'a secret held', entityId: '$target', visualKind: 'agent' },
-              detail: 'They now hold a secret about {target}: what was not said about the body that is not here.',
-              polarity: 'mixed',
-              concepts: [{ text: 'a secret', entityId: '$target', visualKind: 'agent' }],
+              stateNoun: { text: 'a mark nobody can see', entityId: '$cast:survivor', visualKind: 'agent' },
+              detail:
+                '{cast:survivor} knows why one place on this ground is empty and did not say it. What is left on ' +
+                '{cast:survivor} is a mark nobody can see, and a later road along the border can bring it up.',
+              polarity: 'info',
+              concepts: [{ text: 'a mark nobody can see', entityId: '$cast:survivor', visualKind: 'agent' }],
             },
           ],
         },
