@@ -197,7 +197,7 @@ const TRUTH_BURIED_AFTERMATH = {
       effects: [
         {
           kind: 'reputation_tally' as const,
-          key: 'page_comfort_blessed',
+          key: 'veil.positive',
           delta: 2,
         },
         {
@@ -228,7 +228,7 @@ const TRUTH_BURIED_AFTERMATH = {
       effects: [
         {
           kind: 'reputation_tally' as const,
-          key: 'page_keeper_eased',
+          key: 'veil.positive',
           delta: 1,
         },
         {
@@ -307,7 +307,7 @@ const TRUTH_SURFACED_AFTERMATH = {
       effects: [
         {
           kind: 'reputation_tally' as const,
-          key: 'page_grieving_tended',
+          key: 'veil.positive',
           delta: 1,
         },
         {
@@ -338,7 +338,7 @@ const TRUTH_SURFACED_AFTERMATH = {
       effects: [
         {
           kind: 'reputation_tally' as const,
-          key: 'page_new_faith_fathered',
+          key: 'veil.positive',
           delta: 2,
         },
         {

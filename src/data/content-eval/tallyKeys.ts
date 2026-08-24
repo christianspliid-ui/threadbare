@@ -60,30 +60,9 @@ export function isValidTallyKey(key: string): boolean {
  * any other off-axis key.
  */
 export const TALLY_KEY_RATCHET: readonly string[] = [
-  'ac.advanced_research', 'ac.breach_response', 'ac.enchantment_craft', 'ac.grand_thesis',
-  'ac.guild_membership', 'ac.guild_rank', 'ac.guild_work', 'ac.scholarship',
-  'ac.tower_security', 'ag.guild_contracts', 'age_held_anchor', 'age_held_watchful',
-  'age_turned_shepherd', 'age_turned_wanderer', 'army.command.banner_up',
-  'army.command.cohesion_held', 'army.command.disbandment', 'army.command.faction_strain',
-  'army.command.logistics_held', 'army.command.muster_held', 'army.command.mutiny_quelled',
-  'beasts_hunted', 'brinewall_preparation', 'calling_committed', 'calling_stalled',
-  'cg.checkpoint_work', 'cg.elite_command', 'cg.senior_work', 'cg.watch_work',
-  'community.refugee_welcome', 'company.standing', 'concealed_truth_accepted',
-  'cosmic.steward_of_fallen', 'deferred_reckoning_prepared', 'flesh.positive',
-  'forge_crisis_observer', 'forge_master_patronage', 'granaries_generous_guarded',
-  'granaries_patron_rooted', 'guild_self_governance', 'hammer_debt_pursued',
-  'hammer_record_kept', 'independent_intelligence_pursuit', 'inheritance_accepted',
-  'lairs_engaged', 'market_bonded_tended', 'market_debt_unmade', 'mentorship.bond',
-  'natural.apothecary_practice', 'natural.grove_harmony', 'natural.measured_taking',
-  'natural.restraint_observed', 'natural.spore_discipline', 'page_comfort_blessed',
-  'page_grieving_tended', 'page_keeper_eased', 'page_new_faith_fathered',
-  'patron_network_depth', 'roads_kept_clean', 'route.lifeline_kept', 'route.road_kept',
-  'route.toll_witnessed', 'shrine_intelligence_deployed', 'slice.road_repute',
-  'tessaly_monitored', 'tg.guild_camaraderie', 'tg.guild_infrastructure',
-  'tg.guild_membership', 'tg.guild_rank', 'tg.guild_war', 'tg.guild_work',
-  'tg.master_thief', 'verdict_ash_walked', 'verdict_law_enshrined',
-  'wall_consecrated_keeper', 'wall_far_side_tended', 'wall_unfinished_unmade',
-  'wall_unfinished_valley_carried',
+  // Drained to empty by THR-1207. Every one of the 78 keys was re-authored to the
+  // mechanism its fiction meant; none was deleted to make the gate go green.
+  // Nothing may be added here: the ratchet only ever shrank, and it has arrived.
 ];
 
 const RATCHET = new Set(TALLY_KEY_RATCHET);

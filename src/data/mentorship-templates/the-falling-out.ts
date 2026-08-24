@@ -24,6 +24,7 @@ import {
   MENTORSHIP_NEXT_MEETING_DELAY_TICKS,
   MENTORSHIP_SIDED_SENTIMENT,
   MENTORSHIP_TALLY_KEY,
+  MENTORSHIP_TALLY_KEY_ILL,
 } from './law56-backing';
 
 const step0Reckoning: ActionStep = {
@@ -195,7 +196,9 @@ export const MENTORSHIP_THE_FALLING_OUT_TEMPLATE: UnifiedActionTemplate = {
             label: 'Let it break',
             intent: 'The rupture stands, and no divine hand was on it.',
             effects: [
-              { kind: 'reputation_tally', key: MENTORSHIP_TALLY_KEY, delta: 1 },
+              // The one band in the three mentorship templates whose chip is
+              // authored `polarity: 'loss'` — a bond broken, not a bond marked.
+              { kind: 'reputation_tally', key: MENTORSHIP_TALLY_KEY_ILL, delta: 1 },
               {
                 kind: 'bond_change',
                 withAgentId: '$target',

@@ -90,12 +90,25 @@ export const COMPANY_GATE_RETURN_DELAY_TICKS = 156;
 /**
  * Standing tally the company writes to: what this company's name is worth to the
  * people who watched it leave somewhere under pressure.
+ *
+ * THR-1207 — was the off-axis `company.standing`, which the aftermath handler refused,
+ * so all fourteen writes were discarded. Naming who held the arch, walking out with
+ * the number intact, carrying the ones who cannot walk, refusing the buyer's coin:
+ * that is social conduct witnessed by the people who were there, so it bands to
+ * `heart`. Cohesion — the sweep's default mapping for company keys — is not reachable
+ * from authored aftermath at all (there is no cohesion effect kind), and would in any
+ * case record the company's health rather than the member's name, which is what these
+ * fourteen sentences claim.
+ *
+ * Polarity lives in the key, magnitude in the delta — the corpus idiom.
  */
-export const COMPANY_REPUTE_KEY = 'company.standing';
+export const COMPANY_REPUTE_KEY = 'heart.positive';
+/** The same standing, gone the other way. */
+export const COMPANY_REPUTE_KEY_ILL = 'heart.negative';
 /** One step of company standing earned. */
 export const COMPANY_REPUTE_GAIN = 1;
-/** The same step, spent the other way. */
-export const COMPANY_REPUTE_LOSS = -1;
+/** The same step, spent the other way — a magnitude on the negative key. */
+export const COMPANY_REPUTE_LOSS = 1;
 
 /**
  * Severity of the mark left when a company leaves someone at a gate and does not
@@ -548,7 +561,7 @@ export const COMPANY_GATE_HELD: UnifiedActionTemplate = {
               label: 'Regroup and move',
               intent: 'Everyone is out. The order they came out in is a thing to fix later.',
               effects: [
-                { kind: 'reputation_tally', key: COMPANY_REPUTE_KEY, delta: COMPANY_REPUTE_LOSS },
+                { kind: 'reputation_tally', key: COMPANY_REPUTE_KEY_ILL, delta: COMPANY_REPUTE_LOSS },
                 { kind: 'condition_attachment', templateId: 'trait.condition.exhausted' },
               ],
             },
@@ -585,7 +598,7 @@ export const COMPANY_GATE_HELD: UnifiedActionTemplate = {
               label: 'Carry what is left',
               intent: 'The ones still walking keep walking, and carry the rest as far as they can.',
               effects: [
-                { kind: 'reputation_tally', key: COMPANY_REPUTE_KEY, delta: COMPANY_REPUTE_LOSS },
+                { kind: 'reputation_tally', key: COMPANY_REPUTE_KEY_ILL, delta: COMPANY_REPUTE_LOSS },
                 { kind: 'condition_attachment', templateId: 'trait.condition.terrified' },
                 {
                   kind: 'encounter_seed',
@@ -961,7 +974,7 @@ export const COMPANY_TWO_ROADS_NAMED: UnifiedActionTemplate = {
               label: 'Camp, and start again at first light',
               intent: 'Nothing is getting decided tonight. Put it down properly.',
               effects: [
-                { kind: 'reputation_tally', key: COMPANY_REPUTE_KEY, delta: COMPANY_REPUTE_LOSS },
+                { kind: 'reputation_tally', key: COMPANY_REPUTE_KEY_ILL, delta: COMPANY_REPUTE_LOSS },
                 { kind: 'condition_attachment', templateId: 'trait.condition.exhausted' },
                 {
                   kind: 'encounter_seed',
@@ -1021,7 +1034,7 @@ export const COMPANY_TWO_ROADS_NAMED: UnifiedActionTemplate = {
               label: 'Take the river road',
               intent: 'The ones still here are still here. Walk, and count later.',
               effects: [
-                { kind: 'reputation_tally', key: COMPANY_REPUTE_KEY, delta: COMPANY_REPUTE_LOSS },
+                { kind: 'reputation_tally', key: COMPANY_REPUTE_KEY_ILL, delta: COMPANY_REPUTE_LOSS },
                 // A company that came apart at a fork in front of a stranger is
                 // doing a thing that can be found out. The mark anchors to the
                 // wayside witness — a cast actor this template declares and the
@@ -1510,7 +1523,7 @@ export const COMPANY_THIRD_WATCH: UnifiedActionTemplate = {
               label: 'Break the table up for the night',
               intent: 'Nothing said after this improves it. End the evening.',
               effects: [
-                { kind: 'reputation_tally', key: COMPANY_REPUTE_KEY, delta: COMPANY_REPUTE_LOSS },
+                { kind: 'reputation_tally', key: COMPANY_REPUTE_KEY_ILL, delta: COMPANY_REPUTE_LOSS },
                 // A company overheard agreeing who it will go back for first is
                 // doing a thing that can be found out. The mark anchors to the
                 // cast member who sat through it — a declared actor the world
@@ -2025,7 +2038,7 @@ export const COMPANY_QUIET_OFFER: UnifiedActionTemplate = {
               label: 'Take the coin and go back to work',
               intent: 'It was one small thing. Nobody is any worse off for it today.',
               effects: [
-                { kind: 'reputation_tally', key: COMPANY_REPUTE_KEY, delta: COMPANY_REPUTE_LOSS },
+                { kind: 'reputation_tally', key: COMPANY_REPUTE_KEY_ILL, delta: COMPANY_REPUTE_LOSS },
                 // No `targetAgentId`: the default is the actor, and the actor is
                 // the one who did the concealed thing. This is the only mark in
                 // the file that lands on the member rather than a witness, which

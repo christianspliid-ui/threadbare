@@ -151,7 +151,7 @@ export const THIEVES_GUILD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
               'The god observes and releases. The market absorbs the encounter into its ordinary noise. ' +
               '{name} carries the lesson forward unobserved.',
             effects: [
-              { kind: 'reputation_tally', key: 'tg.guild_work', delta: 1 },
+              { kind: 'faction_reputation_gain', factionId: 'thieves_guild', amount: 0.05 },
             ],
             closeAfterSelection: true,
           },
@@ -287,7 +287,7 @@ export const THIEVES_GUILD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                     '{name} reached for the fence\'s known back-routes and found the trade had moved — different waystations, different prices, the rumor describing a season already over.',
                 },
               },
-              { kind: 'reputation_tally', key: 'tg.guild_work', delta: 1 },
+              { kind: 'faction_reputation_gain', factionId: 'thieves_guild', amount: 0.05 },
             ],
             closeAfterSelection: true,
           },
@@ -296,7 +296,7 @@ export const THIEVES_GUILD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
             label: 'A transaction, nothing more.',
             intent: 'Coin changes hands. The god lets the exchange be what it is.',
             effects: [
-              { kind: 'reputation_tally', key: 'tg.guild_work', delta: 1 },
+              { kind: 'faction_reputation_gain', factionId: 'thieves_guild', amount: 0.05 },
             ],
             closeAfterSelection: true,
           },
@@ -426,7 +426,7 @@ export const THIEVES_GUILD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
             label: 'The god watches and says nothing.',
             intent: 'The intelligence exists. The god releases the thread.',
             effects: [
-              { kind: 'reputation_tally', key: 'tg.guild_work', delta: 1 },
+              { kind: 'faction_reputation_gain', factionId: 'thieves_guild', amount: 0.05 },
             ],
             closeAfterSelection: true,
           },
@@ -533,7 +533,7 @@ export const THIEVES_GUILD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
               'The god covers the exit. Whatever happened in that warehouse stays there — ' +
               'no witness strong enough to name a face, no evidence specific enough to pursue.',
             effects: [
-              { kind: 'reputation_tally', key: 'tg.guild_work', delta: 2 },
+              { kind: 'faction_reputation_gain', factionId: 'thieves_guild', amount: 0.1 },
             ],
             closeAfterSelection: true,
           },
@@ -690,7 +690,7 @@ export const THIEVES_GUILD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
             label: 'The guild keeps its own counsel.',
             intent: 'The leverage is noted and filed. No thread is extended — yet.',
             effects: [
-              { kind: 'reputation_tally', key: 'tg.guild_work', delta: 1 },
+              { kind: 'faction_reputation_gain', factionId: 'thieves_guild', amount: 0.05 },
             ],
             closeAfterSelection: true,
           },
@@ -821,7 +821,7 @@ export const THIEVES_GUILD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
               'The god smooths the exit — no threads, no witnesses who can say they saw ' +
               'anything specific. The heist becomes a mystery the jeweler will carry for years.',
             effects: [
-              { kind: 'reputation_tally', key: 'tg.master_thief', delta: 2 },
+              { kind: 'faction_reputation_gain', factionId: 'thieves_guild', amount: 0.1 },
               {
                 kind: 'recent_event',
                 message: 'The jewel heist in {location} is discussed in guild circles. A clean job.',
@@ -837,7 +837,7 @@ export const THIEVES_GUILD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
               'The ward breach was documented before it went dark. A guard post received a report. ' +
               'Somewhere in {location}\'s civic machinery, a file is being opened.',
             effects: [
-              { kind: 'reputation_tally', key: 'tg.master_thief', delta: 2 },
+              { kind: 'faction_reputation_gain', factionId: 'thieves_guild', amount: 0.1 },
               {
                 kind: 'hidden_mark',
                 category: 'concealed_action',
@@ -951,7 +951,7 @@ export const THIEVES_GUILD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
               'a recurring capability. The god marks it as a structural asset.',
             effects: [
               { kind: 'clearance_gate_tag', tag: 'tg.smuggler_route_open' },
-              { kind: 'reputation_tally', key: 'tg.guild_infrastructure', delta: 2 },
+              { kind: 'faction_reputation_gain', factionId: 'thieves_guild', amount: 0.1 },
             ],
             closeAfterSelection: true,
           },
@@ -1110,7 +1110,7 @@ export const THIEVES_GUILD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
               'The forged papers and the noble persona are retired. That door closes. ' +
               'A clean exit — the con happened, it\'s over, the guild has what it needed.',
             effects: [
-              { kind: 'reputation_tally', key: 'tg.guild_work', delta: 2 },
+              { kind: 'faction_reputation_gain', factionId: 'thieves_guild', amount: 0.1 },
             ],
             closeAfterSelection: true,
           },
@@ -1245,7 +1245,7 @@ export const THIEVES_GUILD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
               'The god steps back and lets the word travel — {name}\'s reputation building ' +
               'without drawing official attention.',
             effects: [
-              { kind: 'reputation_tally', key: 'tg.master_thief', delta: 3 },
+              { kind: 'faction_reputation_gain', factionId: 'thieves_guild', amount: 0.2 },
               {
                 kind: 'recent_event',
                 message: 'The vault break in {location} becomes the kind of story told in back rooms for years.',
@@ -1262,7 +1262,7 @@ export const THIEVES_GUILD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
               'a ward record that didn\'t erase cleanly. The city\'s investigative machinery ' +
               'is slow but thorough.',
             effects: [
-              { kind: 'reputation_tally', key: 'tg.master_thief', delta: 3 },
+              { kind: 'faction_reputation_gain', factionId: 'thieves_guild', amount: 0.2 },
               {
                 kind: 'hidden_mark',
                 category: 'concealed_action',
@@ -1288,7 +1288,7 @@ export const THIEVES_GUILD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
               'Not evidence — just direction. The kind of misdirection that costs {name} nothing ' +
               'and costs someone else considerable inconvenience.',
             effects: [
-              { kind: 'reputation_tally', key: 'tg.master_thief', delta: 3 },
+              { kind: 'faction_reputation_gain', factionId: 'thieves_guild', amount: 0.2 },
               {
                 kind: 'hidden_mark',
                 category: 'betrayal',
@@ -1426,7 +1426,7 @@ export const THIEVES_GUILD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
               'The territory is secured. The god marks the outcome in the guild\'s history — ' +
               'a decisive operation that removed a threat and defined the boundary.',
             effects: [
-              { kind: 'reputation_tally', key: 'tg.guild_war', delta: 3 },
+              { kind: 'faction_reputation_gain', factionId: 'thieves_guild', amount: 0.2 },
               {
                 kind: 'recent_event',
                 message: 'The rival guild\'s expansion into {location} is finished. Territory secured.',
@@ -1442,7 +1442,7 @@ export const THIEVES_GUILD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
               'Some of the rival operation scattered rather than collapsed. ' +
               'They\'ll rebuild somewhere, smaller and angrier. The god keeps a thread on them.',
             effects: [
-              { kind: 'reputation_tally', key: 'tg.guild_war', delta: 3 },
+              { kind: 'faction_reputation_gain', factionId: 'thieves_guild', amount: 0.2 },
               {
                 kind: 'encounter_seed',
                 encounterFamily: 'tg.quest',
@@ -1541,7 +1541,7 @@ export const THIEVES_GUILD_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
               'Guild bonds are built in back alleys as much as on jobs. ' +
               'The god notes the interaction — {name} among {their} own.',
             effects: [
-              { kind: 'reputation_tally', key: 'tg.guild_camaraderie', delta: 1 },
+              { kind: 'faction_reputation_gain', factionId: 'thieves_guild', amount: 0.05 },
             ],
             closeAfterSelection: true,
           },
@@ -1663,7 +1663,7 @@ export const THIEVES_GUILD_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
             label: 'A transaction, nothing more.',
             intent: 'Done. The god releases the thread.',
             effects: [
-              { kind: 'reputation_tally', key: 'tg.guild_work', delta: 1 },
+              { kind: 'faction_reputation_gain', factionId: 'thieves_guild', amount: 0.05 },
             ],
             closeAfterSelection: true,
           },
@@ -1763,7 +1763,7 @@ export const THIEVES_GUILD_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
             label: 'Noise, nothing more.',
             intent: 'The exchange is completed and released. The network moves on.',
             effects: [
-              { kind: 'reputation_tally', key: 'tg.guild_work', delta: 1 },
+              { kind: 'faction_reputation_gain', factionId: 'thieves_guild', amount: 0.05 },
             ],
             closeAfterSelection: true,
           },
@@ -1843,7 +1843,7 @@ export const TG_JOIN_TEMPLATE: UnifiedActionTemplate = {
             'Entry to the guild is a threshold. The god marks it — not with intervention, ' +
             'just with attention. The thread is picked up.',
           effects: [
-            { kind: 'reputation_tally', key: 'tg.guild_membership', delta: 2 },
+            { kind: 'faction_reputation_gain', factionId: 'thieves_guild', amount: 0.1 },
             {
               kind: 'recent_event',
               message: '{name} joins the Thieves Guild in {location}. A door opens.',
@@ -1931,7 +1931,7 @@ export const TG_PROMOTION_TEMPLATE: UnifiedActionTemplate = {
             'different risks. The god marks the transition.',
           effects: [
             { kind: 'clearance_gate_tag', tag: 'tg.rank_advanced' },
-            { kind: 'reputation_tally', key: 'tg.guild_rank', delta: 3 },
+            { kind: 'faction_reputation_gain', factionId: 'thieves_guild', amount: 0.2 },
             {
               kind: 'recent_event',
               message: '{name} advances within the Thieves Guild. The network takes note.',

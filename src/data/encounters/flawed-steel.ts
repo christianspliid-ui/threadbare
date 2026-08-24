@@ -357,7 +357,7 @@ const FORGE_TRUTH_AFTERMATH = {
       effects: [
         {
           kind: 'reputation_tally' as const,
-          key: 'guild_self_governance',
+          key: 'heart.positive',
           delta: 1,
         },
         {
@@ -386,7 +386,7 @@ const FORGE_TRUTH_AFTERMATH = {
         },
         {
           kind: 'reputation_tally' as const,
-          key: 'forge_master_patronage',
+          key: 'heart.positive',
           delta: 1,
         },
         {
@@ -466,7 +466,7 @@ const TEMPER_NARRATIVE_AFTERMATH = {
       effects: [
         {
           kind: 'reputation_tally' as const,
-          key: 'concealed_truth_accepted',
+          key: 'shadow.positive',
           delta: 1,
         },
         {
@@ -491,7 +491,7 @@ const TEMPER_NARRATIVE_AFTERMATH = {
       effects: [
         {
           kind: 'reputation_tally' as const,
-          key: 'deferred_reckoning_prepared',
+          key: 'eye.positive',
           delta: 1,
         },
         {
@@ -581,7 +581,7 @@ const WITHDRAWN_AFTERMATH = {
       effects: [
         {
           kind: 'reputation_tally' as const,
-          key: 'forge_crisis_observer',
+          key: 'eye.positive',
           delta: 1,
         },
         {

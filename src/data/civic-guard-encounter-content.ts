@@ -228,7 +228,7 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
             intent:
               'Clean work, documented. The watch record grows one entry more reliable.',
             effects: [
-              { kind: 'reputation_tally', key: 'cg.watch_work', delta: 1 },
+              { kind: 'faction_reputation_gain', factionId: 'civic_guard', amount: 0.05 },
             ],
             closeAfterSelection: true,
           },
@@ -611,7 +611,7 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
               'A checkpoint that functions is a checkpoint that builds trust — ' +
               'however the district tells the story afterward.',
             effects: [
-              { kind: 'reputation_tally', key: 'cg.checkpoint_work', delta: 1 },
+              { kind: 'faction_reputation_gain', factionId: 'civic_guard', amount: 0.05 },
             ],
             closeAfterSelection: true,
           },
@@ -733,7 +733,7 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
             label: 'Order restored. Move on.',
             intent: 'The street\'s ordinary arithmetic reasserts itself. The watch continues its route.',
             effects: [
-              { kind: 'reputation_tally', key: 'cg.watch_work', delta: 1 },
+              { kind: 'faction_reputation_gain', factionId: 'civic_guard', amount: 0.05 },
             ],
             closeAfterSelection: true,
           },
@@ -870,7 +870,7 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                   dubious: '{name} expected the gap at the fourth marker; the gap had moved, or had never been where the briefing put it, and the perimeter held closed.',
                 },
               },
-              { kind: 'reputation_tally', key: 'cg.watch_work', delta: 1 },
+              { kind: 'faction_reputation_gain', factionId: 'civic_guard', amount: 0.05 },
             ],
             closeAfterSelection: true,
           },
@@ -879,7 +879,7 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
             label: 'Duty done.',
             intent: 'The prisoner is in custody, or was not. Either way, the escort is over.',
             effects: [
-              { kind: 'reputation_tally', key: 'cg.watch_work', delta: 1 },
+              { kind: 'faction_reputation_gain', factionId: 'civic_guard', amount: 0.05 },
             ],
             closeAfterSelection: true,
           },
@@ -1003,7 +1003,7 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                 label: '{name} withheld investigation findings from a lower-ward disturbance in {location}',
                 revealFamilies: ['investigation', 'cg.elite', 'cg.senior'],
               },
-              { kind: 'reputation_tally', key: 'cg.watch_work', delta: 1 },
+              { kind: 'faction_reputation_gain', factionId: 'civic_guard', amount: 0.05 },
             ],
             closeAfterSelection: true,
           },
@@ -1013,7 +1013,7 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
             intent:
               'Everything found goes on the record. The captain can decide what it means.',
             effects: [
-              { kind: 'reputation_tally', key: 'cg.watch_work', delta: 2 },
+              { kind: 'faction_reputation_gain', factionId: 'civic_guard', amount: 0.1 },
             ],
             closeAfterSelection: true,
           },
@@ -1161,7 +1161,7 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
             intent:
               'Clean or compromised, the report goes up the chain. The watch did its work.',
             effects: [
-              { kind: 'reputation_tally', key: 'cg.senior_work', delta: 1 },
+              { kind: 'faction_reputation_gain', factionId: 'civic_guard', amount: 0.05 },
             ],
             closeAfterSelection: true,
           },
@@ -1296,7 +1296,7 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
             intent:
               'Whatever its cost, the defense succeeded. The watch held its post.',
             effects: [
-              { kind: 'reputation_tally', key: 'cg.senior_work', delta: 1 },
+              { kind: 'faction_reputation_gain', factionId: 'civic_guard', amount: 0.05 },
             ],
             closeAfterSelection: true,
           },
@@ -1428,7 +1428,7 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
               'Everything that happened is documented. Whatever comes of it ' +
               'is the captain\'s determination.',
             effects: [
-              { kind: 'reputation_tally', key: 'cg.senior_work', delta: 1 },
+              { kind: 'faction_reputation_gain', factionId: 'civic_guard', amount: 0.05 },
             ],
             closeAfterSelection: true,
           },
@@ -1587,7 +1587,7 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
               'Command during siege is a defining act. The watch\'s institutional memory ' +
               'and the city\'s public memory both carry it forward.',
             effects: [
-              { kind: 'reputation_tally', key: 'cg.elite_command', delta: 3 },
+              { kind: 'faction_reputation_gain', factionId: 'civic_guard', amount: 0.2 },
               {
                 kind: 'encounter_seed',
                 templateId: 'cg.elite.purge_corruption',
@@ -1605,7 +1605,7 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
               'The city survived because someone held the walls. ' +
               'That fact requires no amplification.',
             effects: [
-              { kind: 'reputation_tally', key: 'cg.elite_command', delta: 1 },
+              { kind: 'faction_reputation_gain', factionId: 'civic_guard', amount: 0.05 },
             ],
             closeAfterSelection: true,
           },
@@ -1765,7 +1765,7 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                 label: 'Corrupt guard officers escaped arrest and remain active in {location}',
                 revealFamilies: ['investigation', 'cg.elite'],
               },
-              { kind: 'reputation_tally', key: 'cg.elite_command', delta: 2 },
+              { kind: 'faction_reputation_gain', factionId: 'civic_guard', amount: 0.1 },
             ],
             closeAfterSelection: true,
           },
@@ -1776,7 +1776,7 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
               'The watch did what it could. The rest belongs to time ' +
               'and whatever the escaped officers do with their borrowed clarity.',
             effects: [
-              { kind: 'reputation_tally', key: 'cg.elite_command', delta: 1 },
+              { kind: 'faction_reputation_gain', factionId: 'civic_guard', amount: 0.05 },
             ],
             closeAfterSelection: true,
           },
@@ -1866,7 +1866,7 @@ export const CIVIC_GUARD_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
             intent:
               'Repetition is the training. The god notes what the drill has made automatic.',
             effects: [
-              { kind: 'reputation_tally', key: 'cg.watch_work', delta: 1 },
+              { kind: 'faction_reputation_gain', factionId: 'civic_guard', amount: 0.05 },
             ],
             closeAfterSelection: true,
           },
@@ -1954,7 +1954,7 @@ export const CIVIC_GUARD_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
               'A piece of information, a moment of recognition, a grudging acknowledgment. ' +
               'The barracks geography shifted.',
             effects: [
-              { kind: 'reputation_tally', key: 'cg.watch_work', delta: 1 },
+              { kind: 'faction_reputation_gain', factionId: 'civic_guard', amount: 0.05 },
             ],
             closeAfterSelection: true,
           },
@@ -2058,7 +2058,7 @@ export const CIVIC_GUARD_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
             label: 'The complaint was heard.',
             intent: 'The guard received the petition. The encounter is what it is.',
             effects: [
-              { kind: 'reputation_tally', key: 'cg.watch_work', delta: 1 },
+              { kind: 'faction_reputation_gain', factionId: 'civic_guard', amount: 0.05 },
             ],
             closeAfterSelection: true,
           },
@@ -2145,7 +2145,7 @@ export const CG_JOIN_TEMPLATE: UnifiedActionTemplate = {
           intent:
             'Passed. The world the guard is responsible for now includes {name}.',
           effects: [
-            { kind: 'reputation_tally', key: 'cg.watch_work', delta: 1 },
+            { kind: 'faction_reputation_gain', factionId: 'civic_guard', amount: 0.05 },
           ],
           closeAfterSelection: true,
         },
@@ -2228,7 +2228,7 @@ export const CG_PROMOTION_TEMPLATE: UnifiedActionTemplate = {
           label: 'The promotion was earned.',
           intent: 'The record was read. The decision followed. The god notes the advancement.',
           effects: [
-            { kind: 'reputation_tally', key: 'cg.watch_work', delta: 2 },
+            { kind: 'faction_reputation_gain', factionId: 'civic_guard', amount: 0.1 },
           ],
           closeAfterSelection: true,
         },

@@ -446,7 +446,7 @@ export const TAVERN_UNIFIED_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                 label: 'Won a drinking contest at {location} — crowd witnessed',
                 revealFamilies: ['social.investigate_reputation'],
               },
-              { kind: 'reputation_tally', key: 'flesh.positive', delta: 1 },
+              { kind: 'reputation_tally', key: 'iron.positive', delta: 1 },
             ],
             closeAfterSelection: true,
           },

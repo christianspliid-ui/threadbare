@@ -277,7 +277,7 @@ const ACCEPT_AFTERMATH = {
         },
         {
           kind: 'reputation_tally' as const,
-          key: 'brinewall_preparation',
+          key: 'heart.positive',
           delta: 1,
         },
         {
@@ -328,7 +328,7 @@ const ACCEPT_AFTERMATH = {
       effects: [
         {
           kind: 'reputation_tally' as const,
-          key: 'shrine_intelligence_deployed',
+          key: 'eye.positive',
           delta: 1,
         },
         {
@@ -419,7 +419,7 @@ const REFUSE_AFTERMATH = {
       effects: [
         {
           kind: 'reputation_tally' as const,
-          key: 'independent_intelligence_pursuit',
+          key: 'eye.positive',
           delta: 1,
         },
         {
@@ -444,7 +444,7 @@ const REFUSE_AFTERMATH = {
       effects: [
         {
           kind: 'reputation_tally' as const,
-          key: 'tessaly_monitored',
+          key: 'eye.positive',
           delta: 1,
         },
         {

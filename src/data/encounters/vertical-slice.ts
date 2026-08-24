@@ -90,12 +90,30 @@ export const SLICE_CARAVAN_MASTER_TRUST = 0.1;
 //      `future_hook` change. A `future_hook` change with no seed behind it is a
 //      chip promising a sequel that never arrives.
 
-/** Standing tally the slice writes to: the traveler's name on this stretch of road. */
-export const SLICE_ROAD_REPUTE_KEY = 'slice.road_repute';
+/**
+ * Standing tally the slice writes to: the traveler's name on this stretch of road.
+ *
+ * THR-1207 — was the off-axis `slice.road_repute`, which `isValidReputationTallyKey`
+ * refused, so all thirteen writes were discarded at runtime. A name carried between
+ * strangers on a road is social regard, so it bands to `heart`.
+ *
+ * Not `reputation_with`, despite the sweep's default mapping for place-shaped keys:
+ * these thirteen sites span six different scenes (bridge, pass, caravan, crossroads,
+ * swindler, kin), so the fiction is the traveler's renown rather than one town's
+ * opinion — and `targetLocationId: '$target'` only binds when the target really is a
+ * place-tier location, which would have swapped a discarded write for a refused one
+ * at the scenes that target a person.
+ *
+ * The polarity lives in the **key**, not in the delta's sign — that is the corpus
+ * idiom, and no shipped content writes a negative delta onto a polarity key.
+ */
+export const SLICE_ROAD_REPUTE_KEY = 'heart.positive';
+/** The same standing, gone the other way. */
+export const SLICE_ROAD_REPUTE_KEY_ILL = 'heart.negative';
 /** One step of road-standing earned. */
 export const SLICE_REPUTE_GAIN = 1;
-/** The same step, spent the other way. */
-export const SLICE_REPUTE_LOSS = -1;
+/** The same step, spent the other way — a magnitude on the negative key. */
+export const SLICE_REPUTE_LOSS = 1;
 /**
  * Nerve spent and not recovered — the authored quintessence erosion for a band
  * where the *character* was shaken rather than hurt (THR-1097, Christian's
@@ -492,7 +510,7 @@ export const SLICE_UNSAFE_BRIDGE: UnifiedActionTemplate = {
               effects: [
                 {
                   kind: 'reputation_tally',
-                  key: SLICE_ROAD_REPUTE_KEY,
+                  key: SLICE_ROAD_REPUTE_KEY_ILL,
                   delta: SLICE_REPUTE_LOSS,
                 },
               ],
@@ -2837,7 +2855,7 @@ export const SLICE_SWINDLED_FAMILY: UnifiedActionTemplate = {
                   },
                   {
                     kind: 'reputation_tally',
-                    key: SLICE_ROAD_REPUTE_KEY,
+                    key: SLICE_ROAD_REPUTE_KEY_ILL,
                     delta: SLICE_REPUTE_LOSS,
                   },
                 ],
@@ -3330,7 +3348,7 @@ export const SLICE_SWINDLER_FOUND: UnifiedActionTemplate = {
             effects: [
               {
                 kind: 'reputation_tally',
-                key: SLICE_ROAD_REPUTE_KEY,
+                key: SLICE_ROAD_REPUTE_KEY_ILL,
                 delta: SLICE_REPUTE_LOSS,
               },
             ],
@@ -3365,7 +3383,7 @@ export const SLICE_SWINDLER_FOUND: UnifiedActionTemplate = {
                   { kind: 'condition_attachment', templateId: 'trait.condition.wounded' },
                   {
                     kind: 'reputation_tally',
-                    key: SLICE_ROAD_REPUTE_KEY,
+                    key: SLICE_ROAD_REPUTE_KEY_ILL,
                     delta: SLICE_REPUTE_LOSS,
                   },
                 ],
@@ -3403,7 +3421,7 @@ export const SLICE_SWINDLER_FOUND: UnifiedActionTemplate = {
                   { kind: 'condition_attachment', templateId: 'trait.condition.wounded' },
                   {
                     kind: 'reputation_tally',
-                    key: SLICE_ROAD_REPUTE_KEY,
+                    key: SLICE_ROAD_REPUTE_KEY_ILL,
                     delta: SLICE_REPUTE_LOSS,
                   },
                 ],
