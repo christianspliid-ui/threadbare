@@ -563,8 +563,17 @@ Hand-building rules:
   Measured (THR-821, `npm run measure:nudge-headroom`, seeds 42/99;
   `Docs/audits/2026-07-27-thr-821-nudge-headroom.md`): a `notable`-tier mortal has
   capability 0.027–0.119 in a reach that is neither its primary nor its secondary. At
-  difficulty 0.45 that floors at `PROBABILITY_FLOOR` and stays floored through the
-  entire hand — the player spends essence and the forecast word does not move.
+  difficulty 0.45 that floors at `PROBABILITY_FLOOR` and stays floored across the hand a
+  *typical* god can play — the player spends essence and the forecast word does not move.
+
+  **Read "typical" strictly (THR-831).** The measured figure was one ascendant's
+  sphere-gated subset (+0.37), not the hand's ceiling. Sphere access is pool-driven, so a
+  god holding four or five of the hand's spheres plays +0.55 and the whole cohort *clears*
+  the floor. That is intended — broad essence buying reach is the point — and the ceiling
+  stays 0.45 regardless, because difficulty sits on the same side of the equation as the
+  floor: lowering it would make hands clear *more* easily, not less. What the number
+  bounds is the **worst** case an open-draw step can present to a narrow god, and that is
+  the case you are authoring against.
 
   So either **gate the encounter to actors who hold the reach** (role, faction, or
   late-run capability — what the retired Darkhollow Vault demonstrated), **or** keep an
