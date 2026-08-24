@@ -941,10 +941,17 @@ describe('nudge reachability against the probability floor (THR-821)', () => {
    * The step-0 subset the *measured* ascendant could play — limited by which
    * spheres their essence pool made accessible. Not the hand's ceiling: the five
    * non-trait-gated cards sum to 0.55, and at that total this cohort clears the
-   * floor (THR-827 corrected the label; THR-831 owns whether the 0.45 ceiling is
-   * calibrated right against it).
+   * floor (THR-827 corrected the label).
    */
   const MEASURED_SUBSET_DELTA = 0.37;
+
+  /**
+   * The retired Darkhollow exemplar's five non-trait-gated step-0 cards. A god
+   * holding essence in light/mind/time/entropy plays all five, so this is a
+   * *reachable* hand rather than one god's snapshot — which is what made it the
+   * counter-case THR-831 was filed on.
+   */
+  const FULL_NON_TRAIT_HAND_DELTA = 0.55;
 
   it('floors an off-reach notable mortal at NUDGE_OFF_REACH_MAX_DIFFICULTY, across a typical playable subset', () => {
     expect(offReachRaws.length).toBeGreaterThan(0);
@@ -964,6 +971,66 @@ describe('nudge reachability against the probability floor (THR-821)', () => {
         ).toBe(PROBABILITY_FLOOR);
       }
     }
+  });
+
+  // ─── The other side of the same boundary — THR-831 ─────────────────
+  //
+  // The test above pins only the floored side, which is how the ceiling's
+  // rationale came to claim more than it had measured: "stays floored through
+  // the hand" was true of the 0.37 subset and false of the 0.55 hand, and no
+  // assertion said so. These two pin the clearing side and the direction of the
+  // difficulty term, so the retune question cannot be re-derived from silence.
+
+  it('lets the whole off-reach cohort clear the floor at the ceiling once a full non-trait hand is played (THR-831)', () => {
+    // Expected probabilities are literals, not re-derived from the same
+    // capability/difficulty expressions under test — a constant used on both
+    // sides would assert only that arithmetic is arithmetic.
+    const expected = [0.1266, 0.1392, 0.1573, 0.1832, 0.2192];
+    expect(offReachRaws).toEqual([1, 2, 3, 4, 5]);
+
+    offReachRaws.forEach((raw, i) => {
+      const p = computeResolutionThreshold({
+        capability: capabilityOf(raw),
+        difficulty: NUDGE_OFF_REACH_MAX_DIFFICULTY,
+        actionModifiers: FULL_NON_TRAIT_HAND_DELTA,
+      } as Parameters<typeof computeResolutionThreshold>[0]);
+
+      expect(p, `raw=${raw} at full hand → p=${p}`).toBeGreaterThan(PROBABILITY_FLOOR);
+      expect(p, `raw=${raw} at full hand`).toBeCloseTo(expected[i], 3);
+    });
+  });
+
+  it('cannot be retuned downward to keep that cohort floored — difficulty sits on the floor\'s side (THR-831)', () => {
+    // The verdict this ticket recorded. `p = capability − difficulty +
+    // modifiers`, so *lowering* the ceiling raises p. "Lower it until 0.55 no
+    // longer clears" is backwards, and pinning that here is what stops the
+    // question being re-filed against the same arithmetic.
+    const strongest = capabilityOf(
+      NPC_CONSTANTS.NOTABLE_OTHER_BASE + NPC_CONSTANTS.NOTABLE_OTHER_RANGE - 1,
+    );
+    const pAt = (difficulty: number) => computeResolutionThreshold({
+      capability: strongest,
+      difficulty,
+      actionModifiers: FULL_NON_TRAIT_HAND_DELTA,
+    } as Parameters<typeof computeResolutionThreshold>[0]);
+
+    // Monotone: every step down from the ceiling clears by more, never less.
+    const sweep = [0.45, 0.40, 0.35, 0.30, 0.25].map(pAt);
+    for (let i = 1; i < sweep.length; i += 1) {
+      expect(sweep[i], `descending sweep index ${i}`).toBeGreaterThan(sweep[i - 1]);
+    }
+    expect(sweep.every(p => p > PROBABILITY_FLOOR)).toBe(true);
+
+    // The only difficulty that would floor it is *above* the ceiling, and above
+    // the `severe` band floor (0.60) that open-draw content is kept out of.
+    const requiredToFloor = strongest + FULL_NON_TRAIT_HAND_DELTA - PROBABILITY_FLOOR;
+    expect(requiredToFloor).toBeCloseTo(0.6192, 3);
+    expect(requiredToFloor).toBeGreaterThan(NUDGE_OFF_REACH_MAX_DIFFICULTY);
+    // `toBeCloseTo`, not `toBe`: this difficulty is the exact crossover, so the
+    // clamp lands on the floor to within float residue rather than on it.
+    expect(pAt(requiredToFloor)).toBeCloseTo(PROBABILITY_FLOOR, 10);
+    // One notch steeper and it is unambiguously pinned.
+    expect(pAt(requiredToFloor + 0.01)).toBe(PROBABILITY_FLOOR);
   });
 
   it('clears the floor for the same mortal once the step drops below the off-reach ceiling', () => {

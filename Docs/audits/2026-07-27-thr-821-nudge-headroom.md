@@ -79,7 +79,8 @@ Fraction above `PROBABILITY_FLOOR`:
 | secondary | 50% / 100% / 100% | 0% / 50% / 83% | 0% / 17% / 50% |
 | **other** | 0% / 20% / 100% | **0% / 0% / 0%** | **0% / 0% / 0%** |
 
-*(cells are `unaided / +2 cards (0.22) / +full hand (0.37)`)*
+*(cells are `unaided / +2 cards (0.22) / +the measured ascendant's playable subset (0.37)`
+— **not** the hand's ceiling; see the correction under § *Open question spun out*)*
 
 **A nudge hand cannot rescue an off-reach `steep`-or-worse step for a notable-tier
 mortal** — not with two cards, not with the whole hand, and not at the documented
@@ -162,7 +163,8 @@ Actions taken under THR-827:
 * The `±0.20` notes on `ResolutionInput.actionModifiers` and `ResolutionModifiers.total`
   are replaced with the real contract; `resolutionService.ts` documents it at the
   computation.
-* `NUDGE_HAND_MAX_TOTAL_DELTA` (0.65) added to
+* `NUDGE_HAND_MAX_TOTAL_DELTA` (0.70 — 0.65 was this bullet's first value and the
+  conformance test rejected it; the exemplar's step 1 sums to 0.68) added to
   `data/content-eval/nudgeAuthoringConstants.ts` — the authoring-time bound on hand
   strength, warn-level and director-tunable, asserted against the golden exemplar. There
   is deliberately **no** runtime clamp.
@@ -177,3 +179,60 @@ entropy plays all five. At 0.55 the off-reach cohort in § C **clears** the floo
 (0.127..0.219 across raws 1–5) rather than staying pinned to it. `NUDGE_OFF_REACH_MAX_DIFFICULTY`
 is therefore calibrated to the common case, not the reachable worst case; whether that is
 the intended calibration is spun out as THR-831.
+
+## § B verdict — answered 2026-08-24 (THR-831)
+
+**`NUDGE_OFF_REACH_MAX_DIFFICULTY = 0.45` stands. The floored-cohort measurement was
+never an invariant to preserve — it described the pathology the ceiling exists to
+prevent, observed at the boundary.**
+
+THR-831 offered two readings: (1) the constant is right and its justification was
+overstated, or (2) the constant is mis-set and wants *lowering* until a 0.55 hand no
+longer clears the floor. Re-derived from `computeResolutionThreshold`, reading 2 does
+not exist in the direction it names:
+
+```
+p = capability − difficulty + modifiers,  clamped to [0.05, 0.95]
+floored  ⟺  difficulty ≥ capability + modifiers − 0.05
+```
+
+Difficulty sits on the **same side as the floor**. Lowering this ceiling makes a hand
+clear the floor *more* easily, never less. To keep even the strongest off-reach notable
+(capability 0.119) pinned against a 0.55 hand you would have to **raise** the ceiling to
+**0.6192** — past the `severe` band floor (0.60), the band this rule exists to keep
+open-draw content out of. The retune option was arithmetically backwards, so the
+ceiling's *direction* was always right and only its rationale was wrong.
+
+Measured at the ceiling (d = 0.45), across the notable off-reach cohort (raws 1–5):
+
+| hand played | raw 1 | raw 2 | raw 3 | raw 4 | raw 5 | reading |
+| -- | -- | -- | -- | -- | -- | -- |
+| unaided (0) | 0.050 | 0.050 | 0.050 | 0.050 | 0.050 | all floored |
+| +2 cards (0.22) | 0.050 | 0.050 | 0.050 | 0.050 | 0.050 | all floored |
+| measured subset (0.37) | 0.050 | 0.050 | 0.050 | 0.050 | 0.050 | all floored |
+| Swollen Ford step 0 (0.46) | 0.050 | 0.050 | **0.067** | **0.093** | **0.129** | graded |
+| full non-trait hand (0.55) | **0.127** | **0.139** | **0.157** | **0.183** | **0.219** | all clear |
+| rubric maximum (0.70) | **0.277** | **0.289** | **0.307** | **0.333** | **0.369** | all clear |
+
+The graded row is the answer in game terms. **A god with essence across many spheres
+lifting an off-reach mortal off the floor is the feature working, not a leak.** You are
+still bending a mortal's odds rather than substituting your competence for theirs
+(`rulebook.md` § *The nudge*) — but a wide pool bends them further than a narrow one, and
+the cohort's own spread still decides who benefits. A ceiling tuned to keep the cohort
+floored *through* a full hand would make broad sphere access buy nothing, which is the
+decorative-hand failure in its other form.
+
+Note the crossover sits between 0.3808 (strongest floored below this) and 0.4734
+(weakest floored below this) — so the shipped exemplar's own 0.46 step-0 hand already
+lands inside the graded band. This is not a hypothetical about a retired fixture.
+
+Actions taken under THR-831:
+
+* Verdict recorded on `NUDGE_OFF_REACH_MAX_DIFFICULTY` in
+  [nudgeAuthoringConstants.ts](../../src/data/content-eval/nudgeAuthoringConstants.ts).
+  No constant changed.
+* `nudgeModel.test.ts` pins the boundary in **both** directions — the floored side it
+  already had, plus the whole cohort clearing at a full non-trait hand (probabilities as
+  literals) and the monotonicity of the difficulty term, so the retune question cannot be
+  re-derived from silence. Pinning only the floored side is how the rationale came to
+  claim more than it had measured.

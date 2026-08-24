@@ -104,9 +104,36 @@ export const HAND_COMMON_OPTIONS_MIN = 1;
  * taken against the retired Darkhollow Vault exemplar, whose five
  * non-trait-gated step-0 cards summed to 0.55 — at that total the whole cohort
  * cleared the floor (0.127..0.219). Sphere access is pool-driven
- * (`buildNudgePhaseModel`: any sphere with essence > 0). The ceiling is
- * calibrated to the common case, not the reachable worst case; whether that is
- * the intended calibration is THR-831.
+ * (`buildNudgePhaseModel`: any sphere with essence > 0), so 0.55 is reachable.
+ *
+ * ─── Verdict on that gap (THR-831) ──────────────────────────────────
+ * **0.45 stands. The measurement was never an invariant to preserve — it
+ * described the pathology this ceiling exists to prevent, at the boundary.**
+ *
+ * THR-831 asked whether the constant was mis-set because a full hand clears a
+ * floor its justification said held. Re-derived, the alternative does not exist
+ * in the direction the question names. `computeResolutionThreshold` is
+ * `p = capability − difficulty + modifiers` clamped at `PROBABILITY_FLOOR`, so a
+ * step is floored exactly when `difficulty ≥ capability + modifiers − 0.05`.
+ * Difficulty sits on the *same* side as the floor: **lowering this ceiling makes
+ * a hand clear the floor more easily, never less.** Keeping the off-reach cohort
+ * pinned against a 0.55 hand would mean *raising* it to ≥ 0.62 — into `severe`,
+ * the band the rule exists to keep open-draw content out of. The retune option
+ * was arithmetically backwards.
+ *
+ * So the ceiling's direction was always right and only its rationale was wrong.
+ * And the game-feel answer falls out of the same arithmetic: a god holding
+ * essence across light/mind/time/entropy lifting an off-reach mortal off the
+ * floor is the feature working. That is what broad sphere access buys — you are
+ * still bending a mortal's odds rather than substituting your competence for
+ * theirs (`rulebook.md` § The nudge), but a wide pool bends them further than a
+ * narrow one. A ceiling tuned to keep the cohort floored *through* a full hand
+ * would make broad access buy nothing, which is the decorative-hand failure in
+ * its other form.
+ *
+ * `nudgeModel.test.ts` pins the boundary in both directions rather than leaving
+ * the clearing side implicit: floored across the measured subset, clearing for
+ * the whole cohort at a full non-trait hand, and graded in between.
  *
  * A hand that cannot move the forecast word is decorative — the player spends
  * essence and watches the forecast word hold still. So: an off-reach step stays
