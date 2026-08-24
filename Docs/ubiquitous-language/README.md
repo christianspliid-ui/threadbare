@@ -47,6 +47,11 @@ Load this file at session start (referenced from CLAUDE.md). Load specific shard
 - **[Thread](./Agents.md#thread)** — a `thread` edge from Ascendant to mortal; the mechanism for divine influence
 - **[Retinue](./Agents.md#retinue)** — the mortals an Ascendant holds close (`CourtPosition: 'retinue'`); arbitrated 2026-08-13 to the divine-court sense only, never a mortal's companions
 - **[Faction](./Agents.md#faction)** — structured social entity; `actorType: 'faction'`; agents join via `member_of` edges
+- **[Reputation](./Agents.md#reputation)** — the social score that modifies interactions between a and b; directional, band-worded, four legs behind one `getReputationWith`
+- **[Reputation Tally](./Agents.md#reputation-tally)** — what a mortal is becoming known *for*, on a `<reach>.<polarity>` key; not reputation with anyone
+- **[Reputation Score](./Agents.md#reputation-score)** — one-sided world renown ("how the world at large regards X"); shares the band vocabulary, not the concept
+- **[reputation_set](./Agents.md#reputation_set)** — *deprecated*: absolute-value standing effect; retired from authoring, handler retained for saved worlds
+- **[standing_welcome](./Agents.md#standing_welcome)** — *deprecated*: bespoke welcome condition, zero writers; superseded by reputation-with-a-place
 - **[Rival](./Agents.md#rival)** — competing divine entity generated from the World-Soul; always procedural, never hand-authored
 - **[Portfolio Pin](./Agents.md#portfolio-pin)** — player-marked agent (`isPortfolioPinned: true`) with elevated narrative prominence
 - **[Avatar](./Agents.md#avatar)** — a physical Ascendant manifestation connected via `avatar_of` edge

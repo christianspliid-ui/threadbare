@@ -90,6 +90,81 @@ A structured social entity modeled as an actor node with `actorType: 'faction'`.
 
 ---
 
+### Reputation
+
+**Aliases:** Standing, Reputation With
+**Also see:** `[[Reputation Tally]]`, `[[Reputation Score]]`, `[[Faction]]`, `[[BOND]]`, `[[standing_welcome]]`, `[[reputation_set]]`
+**Status:** canonical
+
+**The social score that modifies interactions between a and b.** (Director's wording, verbatim, 2026-08-23.)
+
+Reputation is **directional**: a's reputation with b is not b's reputation with a. Every leg reads outgoing edges from a only. It is always displayed as a **band word**, never a number — `Distrusted / Unknown / Accepted / Respected / Revered` (`REPUTATION_WORDS`). Note the neutral default `REPUTATION_WITH_DEFAULT` (0.5) already bands as **`Accepted`**, so a gate that means "this person has earned something" must test `Respected` or above; gating at `Accepted` admits everyone who has never met you.
+
+Four legs answer it, read through the single API `getReputationWith(graph, aId, bId)` in strict priority order — the first leg that matches wins, and the reading carries which one did as `source`:
+
+| Leg | Store | Covers |
+|---|---|---|
+| `membership` | `member_of.reputation` | a faction a belongs to — the only leg carrying rank, access, and expulsion |
+| `edge` | `reputation_with` edge (THR-1206) | a place, a person, or a faction a does **not** belong to |
+| `bond` | `relates_to.trust`, remapped `[-1,1]` → `[0,1]` | a personal relationship |
+| `default` | — | nothing has happened between a and b |
+
+Only the **edge** leg is written through this module (`adjustReputationWith`); membership and bond keep their own writers, so a write against a faction a belongs to does not silently mint a second, competing standing.
+
+Until 2026-08-23 the UL defined **none** of the six mechanisms that wore this word, which is how they were able to disagree for as long as they did. Three of the six are separate concepts that keep the word and must not be conflated with this one — `[[Reputation Tally]]`, `[[Reputation Score]]`, and the deprecated `[[reputation_set]]`.
+
+Code anchors: `src/engine/reputation.ts` (`getReputationWith`, `adjustReputationWith`, `REPUTATION_WITH_DEFAULT`), `src/data/domain-words.ts` (`REPUTATION_WORDS`).
+
+---
+
+### Reputation Tally
+
+**Aliases:** reputation_tally, reputationTallies
+**Also see:** `[[Reputation]]`, `[[Trait Category]]`, `[[Reputation Score]]`
+**Status:** canonical
+
+**What a mortal is becoming known for** — not reputation with anyone. Stored as `reputationTallies` on the actor node, a partial map keyed `<reach>.<polarity>` (`ReputationTallyKey` = `` `${ReachDomain}.${'positive' | 'negative'}` ``, e.g. `heart.positive`, `iron.negative`). Encounter completions increment the key their outcome earned; `phaseReputationTraits` decays every tally by `REPUTATION_TALLY_DECAY_PER_TICK` and mints or removes `reputation`-category traits at the `REPUTATION_LEVEL_*` thresholds, which in turn feed the agent's `{title}`.
+
+The distinction is load-bearing, not pedantic: a tally is one-sided and *about a subject*, where `[[Reputation]]` is directional and *about a pair*. Conflating the two is what produced 171 dead tally writes on keys nothing reads (THR-1207) — a write to an off-axis key is discarded silently, so the fiction reads as if it landed.
+
+Code anchors: `src/types/agent.ts` (`ReputationTallyKey`, `ReputationTallies`), `src/engine/phaseReputationTraits.ts`, `src/data/reputation-trait-content.ts`.
+
+---
+
+### Reputation Score
+
+**Aliases:** reputationScore, world renown
+**Also see:** `[[Reputation]]`, `[[Reputation Tally]]`
+**Status:** canonical
+
+**How the world at large regards X** — one-sided renown, with no second party in it. A `0–1` number on the actor node's `reputationScore` property, defaulting to `DEFAULT_REPUTATION`, moved by aftermath and complication effects. Retained as a distinct concept, and it **shares the band vocabulary** (`REPUTATION_WORDS`), which is exactly why it reads as the same thing on screen and is not.
+
+Choosing between the three: ask *who is regarding whom*. A pair → `[[Reputation]]`. Everyone, about one subject → Reputation Score. What that subject is becoming known **for** → `[[Reputation Tally]]`.
+
+Code anchors: `src/engine/agentLifecycle.ts`, `src/engine/complicationEffects.ts`, `src/engine/encounterAftermath.ts`.
+
+---
+
+### reputation_set
+
+**Aliases:** reputation_set effect kind
+**Also see:** `[[Reputation]]`, `[[Reputation Score]]`
+**Status:** deprecated
+
+An aftermath effect kind that **set** a reputation surface to an absolute value. Retired from the authoring vocabulary by THR-1206 — new content expresses a standing move as a *delta* against the pairwise leg instead, so two encounters can no longer overwrite each other's outcome. The handler in `src/engine/encounterAftermath.ts` is deliberately **retained** so saved worlds and already-authored templates keep resolving; do not author new uses, and do not delete the handler.
+
+---
+
+### standing_welcome
+
+**Aliases:** trait.condition.location.standing_welcome
+**Also see:** `[[Reputation]]`, `[[Trait Category]]`
+**Status:** deprecated
+
+A location-scoped condition marking a person as welcome at a place — the bespoke predecessor of reputation-with-a-place. **Superseded by `[[Reputation]]`'s `edge` leg**, which expresses the same fiction as a directional standing rather than a timed condition. THR-1206 left it with **zero writers**; the definition and its duration constant survive only so saved worlds resolve. A returning-welcome beat is authored as a `reputation_with` move on the place, never by applying this condition.
+
+---
+
 ### Rival
 
 **Aliases:** Rival God, Rival Ascendant
