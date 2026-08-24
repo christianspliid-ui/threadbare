@@ -104,6 +104,18 @@ const PLAN_DOC_SKIP_PATTERNS = [
   /-brainstorm\.md$/u,
   /-grill-me\.md$/u,
   /\/\.intent-proposals\//u, // intent-judge action proposals, a different document type (THR-692)
+  // THR-1221 — Encounter Factory packets. Same reasoning as `.intent-proposals/`
+  // above: everything in this directory is a stage artifact of the encounter line
+  // (brief, draft, editorial, revised, systems, final, package, parked, batch
+  // report), not a three-pillar plan doc, and none of them will ever grow an
+  // `## Engine pillar` or a `## Coordination block`. Scoped to the directory rather
+  // than to a filename suffix because the stage names are the skill's to change.
+  //
+  // Left un-skipped, each packet emits ~15 deterministic false findings, and a
+  // single six-encounter batch writes around thirty packets — enough noise to bury
+  // a real finding in the advisory output, which is the only way this lint pays for
+  // itself while it stabilises.
+  /\/plans\/encounters\//u,
 ] as const;
 // Opt-out marker for standing reference docs that live in Docs/plans/ but are not
 // dated plan docs and never will be (THR-686). A filename/date-prefix rule cannot
