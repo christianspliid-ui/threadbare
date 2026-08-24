@@ -671,6 +671,11 @@ export function buildNudgePhaseModel(
       text: line.text,
       polarity: line.polarity,
       source: line.source,
+      // Three cases collapse to two here. A line may state a real contribution,
+      // state that its contribution is measurably zero (the Whisper reveal), or
+      // have no contribution to state at all (the skill line — THR-977). The
+      // last two both mean "draw no pips": the model's `delta` is absent, never
+      // zero, because a zero would draw an empty row promising a magnitude.
       delta: line.delta === 0 ? undefined : line.delta,
     });
   }

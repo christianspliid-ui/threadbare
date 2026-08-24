@@ -80,8 +80,16 @@ export interface DerivedFactorLine {
   readonly polarity: 'for' | 'against';
   /** Named modifier source, matching the resolution channel where one exists. */
   readonly source: string;
-  /** Raw 0–1 magnitude, for the pip row. Signed: negative reads as a penalty. */
-  readonly delta: number;
+  /**
+   * The line's signed forecast contribution — how much this factor moves the
+   * odds — for the pip row. Negative reads as a penalty.
+   *
+   * THR-977: this is a contribution and nothing else. Absent means the line has
+   * no odds effect to report, and the pip row draws nothing at all rather than
+   * drawing zero pips. A quantity that is merely 0–1 shaped does not belong
+   * here — see {@link deriveSkillLine}, whose capability is not an odds effect.
+   */
+  readonly delta?: number;
 }
 
 export interface DeriveFactorLinesArgs {
@@ -113,6 +121,9 @@ function substitute(
  * low capability is reported by the *word* ("meek") rather than by flipping the
  * line's polarity. Flipping it would double-count — the difficulty word beside it
  * already carries the "this is hard" signal.
+ *
+ * Carries no `delta` and so draws no pips (THR-977): capability is not an effect
+ * on the odds, and the odds vocabulary is the only one the pip row speaks.
  */
 export function deriveSkillLine(args: {
   actorName: string | undefined;
@@ -135,7 +146,19 @@ export function deriveSkillLine(args: {
     }),
     polarity: 'for',
     source: `skill:${reach}`,
-    delta: safeCapability,
+    // No `delta` — deliberately, and this is the whole of THR-977.
+    //
+    // Capability is not an effect on the odds. It is the actor's standing that
+    // the difficulty is weighed *against*, so rendering it through the odds pip
+    // vocabulary said "this factor moves the roll by ~85%" about a number that
+    // means "she is very good at stone". Measured 2026-08-02, the `skill:stone`
+    // line read "Fated, 2 of 5" beside a modifier line reading "Faint, 2 of 5"
+    // that genuinely was a contribution — two readings the player cannot tell
+    // apart, adjacent in one list. THR-972's shipped ruling is that pips mean
+    // only "effect on the odds" everywhere, so the number had to leave the row.
+    //
+    // Nothing is lost: the sentence already states the magnitude in its word
+    // ("meek", "monumental"), which is why this line's polarity never flips.
   };
 }
 

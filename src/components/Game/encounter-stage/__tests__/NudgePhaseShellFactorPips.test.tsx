@@ -77,6 +77,9 @@ const TEMPLATE: UnifiedActionTemplate = {
   },
 };
 
+/** The artifact's iron bonus — the fixture's delta-bearing line, THR-977. */
+const RUSTED_KEY_IRON_BONUS = 0.06;
+
 function buildGraph(): WorldGraph {
   const graph = new WorldGraph();
   graph.addNode({
@@ -86,6 +89,23 @@ function buildGraph(): WorldGraph {
     properties: { actorType: 'individual' },
   });
   graph.addNode({ id: 'loc.vault', type: 'location', name: 'Darkhollow Vault', properties: {} });
+  // A carried artifact, so the fixture holds a line that genuinely contributes
+  // to the odds. Before THR-977 the derived skill line filled that role — but
+  // it was filling it with absolute capability, which is the defect that ticket
+  // fixed. Without a real contributor here both arms below go vacuous.
+  graph.addNode({
+    id: 'item.rusted_key',
+    type: 'artifact',
+    name: 'the Rusted Key',
+    properties: { reachBonus: { iron: RUSTED_KEY_IRON_BONUS } },
+  });
+  graph.addEdge({
+    id: 'e.carry',
+    source: 'agent.thief',
+    target: 'item.rusted_key',
+    type: 'possesses',
+    properties: {},
+  });
   return graph;
 }
 
@@ -163,13 +183,39 @@ describe('NudgePhaseShell — factor-line magnitude pips (THR-970)', () => {
     }
   });
 
-  it('the authored line is the delta-less one and the derived skill line the delta-bearing one', () => {
+  it('the equipment line is the delta-bearing one; authored and skill lines carry none', () => {
     // Pins WHICH lines populate each arm above, so a future adapter change that
     // silently drops every delta cannot leave both arms vacuously passing.
     const phase = renderShell();
     const byId = new Map(phase.testPanel.factors.map((f) => [f.id, f]));
 
     expect(byId.get('authored:0')?.delta).toBeUndefined();
-    expect(typeof byId.get('skill:iron')?.delta).toBe('number');
+    // THR-977 — the skill line moved from the delta-bearing arm to this one.
+    // Capability is not an effect on the odds, so it states no contribution at
+    // all rather than a zero one, and the pip row draws nothing.
+    expect(byId.get('skill:iron')).toBeDefined();
+    expect(byId.get('skill:iron')?.delta).toBeUndefined();
+    // Literal expected value, not the constant under test on both sides: the
+    // carried artifact contributes 0.06 to the iron roll and says so in pips.
+    expect(byId.get('equipment:item.rusted_key')?.delta).toBeCloseTo(0.06, 5);
+  });
+
+  it('the skill line renders its sentence while drawing no pip row (THR-977)', () => {
+    // The regression this ticket exists to prevent, stated directly: measured
+    // 2026-08-02, `skill:stone` drew "Fated, 2 of 5" — the top odds tier — off
+    // an ~0.85 capability, indistinguishable from the genuine contribution line
+    // beside it. The sentence must survive; only the odds claim goes.
+    renderShell();
+
+    expect(screen.getByTestId('nudge-factor-skill:iron')).toBeTruthy();
+    expect(screen.queryByTestId('nudge-factor-pips-skill:iron')).toBeNull();
+
+    // Falsification twin: the assertion above must be capable of failing, so
+    // pin that a pip row IS drawn for the line that legitimately has one.
+    expect(screen.getByTestId('nudge-factor-pips-equipment:item.rusted_key')).toBeTruthy();
+
+    // And the capability still reaches the player — through the word, which is
+    // why dropping the pips loses nothing (`deriveSkillLine`'s own contract).
+    expect(screen.getByTestId('nudge-factor-skill:iron').textContent).toContain('Sera Vance');
   });
 });
