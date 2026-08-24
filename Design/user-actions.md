@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-25 00:55 local (22:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-25 01:55 local (23:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -8,7 +8,7 @@
 
 **The camp seven** — shrine offering, sharpening blades, warding the camp, a small prayer, rest and reflection, tending wounds, scouting the perimeter. All seven ship today and all seven are thin: the census found **no typed consequences at all** in that set, only bare standing nudges. This batch puts them through the same factory line the border-perils six are cleared for.
 
-**Why it is first:** [your integrated slice checkpoint](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with) has exactly one item in front of it, and **the shrine offering is roster encounter #1 of that sitting.** The checkpoint cannot invite you while that encounter is below standard. The [border-perils six](https://linear.app/threadbare/issue/THR-1221) are in their final checks as of 00:55 — when they land, this is the only game work left to pick up.
+**Why it is first:** [your integrated slice checkpoint](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with) has exactly one item in front of it, and **the shrine offering is roster encounter #1 of that sitting.** The checkpoint cannot invite you while that encounter is below standard. The [border-perils six](https://linear.app/threadbare/issue/THR-1221) finished writing at 00:55 and are committed and pushed — with them done, this is the only game work left to pick up.
 
 **Brief:** [`retrofit-batch-2-brief.md`](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/retrofit-batch-2-brief.md), merged to `main`.
 
