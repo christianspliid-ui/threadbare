@@ -90,6 +90,22 @@ Design/*
 # pattern excludes.
 !Design/mockups/
 !Design/mockups/**/*.png
+# ...and the quest-hook research corpus (THR-1217).
+#
+# `Design/research/quest-hooks/` is the 1,200-situation idea bank that step 0d of the
+# nudge authoring spec tells every factory run to draw from. It was written 2026-07-31
+# and `Design/*` hid all 13 files from every git query for the whole of its life —
+# the identical failure the `mockups/` re-include above was added to fix, repeated in
+# the folder next door five days later. `git status` read clean throughout, so no
+# sweep ever flagged it; the spec's `or Hook: original` fallback always passed, so the
+# gate reported success while the corpus it exists to consult was unreadable
+# (impediment #720). Christian approved publication in chat 2026-08-24.
+#
+# Scoped to `research/` deliberately. `Design/*` must NOT be widened: `briefing.md`
+# and `user-actions.md` are re-included one at a time above for the same reason, and
+# the repo is public, so an over-broad negation here publishes by accident.
+!Design/research/
+!Design/research/**
 # ...and the impediment dashboard's TEMPLATE — but deliberately NOT its render.
 #
 # `Design/impediment-dashboard.html` is generated from this template plus
