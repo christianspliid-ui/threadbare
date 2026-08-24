@@ -207,7 +207,7 @@ const WALL_RAISED_AFTERMATH = {
       effects: [
         {
           kind: 'reputation_tally' as const,
-          key: 'wall_consecrated_keeper',
+          key: 'stone.positive',
           delta: 2,
         },
         {
@@ -237,7 +237,7 @@ const WALL_RAISED_AFTERMATH = {
       effects: [
         {
           kind: 'reputation_tally' as const,
-          key: 'wall_far_side_tended',
+          key: 'stone.positive',
           delta: 1,
         },
         {
@@ -315,7 +315,7 @@ const WALL_UNFINISHED_AFTERMATH = {
       effects: [
         {
           kind: 'reputation_tally' as const,
-          key: 'wall_unfinished_valley_carried',
+          key: 'stone.positive',
           delta: 1,
         },
         {
@@ -346,7 +346,7 @@ const WALL_UNFINISHED_AFTERMATH = {
       effects: [
         {
           kind: 'reputation_tally' as const,
-          key: 'wall_unfinished_unmade',
+          key: 'stone.positive',
           delta: 2,
         },
         {

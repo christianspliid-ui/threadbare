@@ -18,8 +18,20 @@
  * correctly against each other.
  */
 
-/** The tally key the settlement marks an apprenticeship under. */
-export const MENTORSHIP_TALLY_KEY = 'mentorship.bond';
+/**
+ * The tally key the settlement marks an apprenticeship under.
+ *
+ * THR-1207 — was the off-axis `mentorship.bond`, which the aftermath handler refused,
+ * so all nine writes were discarded and the Law-56 chips above them had nothing
+ * behind them after all. Taking a teacher, graduating under one, or parting badly
+ * from one is what the settlement knows you for, so it bands to `heart`.
+ */
+export const MENTORSHIP_TALLY_KEY = 'heart.positive';
+/**
+ * The same mark, the other way — used only by the falling-out's `break` band, the
+ * one reaction across the three templates whose chip is authored `polarity: 'loss'`.
+ */
+export const MENTORSHIP_TALLY_KEY_ILL = 'heart.negative';
 
 /** An offer accepted with a steady hand under it. The smallest rung. */
 export const MENTORSHIP_STEADY_SENTIMENT = 0.15;

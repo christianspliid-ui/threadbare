@@ -226,6 +226,10 @@ function isValidReputationTallyKey(k: string): boolean {
 }
 
 // Curated hint map for known off-axis keys — author guidance only, not a fallback write.
+// THR-1207 drained every one of these from `src/data/**`, so nothing shipped reaches it
+// now; it survives for pre-sweep saved worlds. New off-axis keys are stopped at
+// authoring time by `check:encounter` and `tallyKeyCorpus.test.ts`, whose shared
+// shape-based hint (`suggestTallyReplacement`) is the surface to extend, not this map.
 const SUGGESTED_TALLY_REPLACEMENT: Readonly<Record<string, string>> = {
   'bf.craft_work':       'faction_reputation_gain → faction.builders-fellowship',
   'bf.construction_work':'faction_reputation_gain → faction.builders-fellowship',
@@ -234,7 +238,9 @@ const SUGGESTED_TALLY_REPLACEMENT: Readonly<Record<string, string>> = {
   'cg.watch_work':       'faction_reputation_gain → faction.civic-guard',
   'cg.checkpoint_work':  'faction_reputation_gain → faction.civic-guard',
   'cg.senior_work':      'faction_reputation_gain → faction.civic-guard',
-  'gate_duty.witness_story_followed': 'hearth.positive',
+  // THR-1207: was `hearth.positive`. There is no `hearth` reach — the reach is
+  // spelled `heart`, so this hint named a key as invalid as the one it replaced.
+  'gate_duty.witness_story_followed': 'heart.positive',
   'gate_duty.captain_marked':         'faction_reputation_gain → faction.civic-guard',
   'gate_duty.left_to_settle':         'hidden_mark (settlement_history)',
 };

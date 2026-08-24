@@ -200,7 +200,7 @@ const TURNING_AFTERMATH = {
       effects: [
         {
           kind: 'reputation_tally' as const,
-          key: 'age_turned_wanderer',
+          key: 'star.positive',
           delta: 2,
         },
         {
@@ -230,7 +230,7 @@ const TURNING_AFTERMATH = {
       effects: [
         {
           kind: 'reputation_tally' as const,
-          key: 'age_turned_shepherd',
+          key: 'star.positive',
           delta: 1,
         },
         {
@@ -306,7 +306,7 @@ const ANCHORED_AFTERMATH = {
       effects: [
         {
           kind: 'reputation_tally' as const,
-          key: 'age_held_anchor',
+          key: 'star.positive',
           delta: 2,
         },
         {
@@ -336,7 +336,7 @@ const ANCHORED_AFTERMATH = {
       effects: [
         {
           kind: 'reputation_tally' as const,
-          key: 'age_held_watchful',
+          key: 'star.positive',
           delta: 1,
         },
         {

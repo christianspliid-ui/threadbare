@@ -159,7 +159,7 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
             effects: [
               {
                 kind: 'reputation_tally',
-                key: 'roads_kept_clean',
+                key: 'iron.positive',
                 delta: 1,
               },
             ],

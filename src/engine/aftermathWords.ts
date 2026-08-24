@@ -228,17 +228,23 @@ export function humanizeKeySegment(raw: string): string {
 /**
  * A reputation tally key, resolved into something a mortal can read.
  *
- * Two shapes exist in production and both are handled:
+ * **One shape exists in production:** `<reach>.positive` / `<reach>.negative`, the
+ * typed `ReputationTallyKey` (`types/agent.ts`). It renders as the reach's name plus
+ * what the tally is counting, and carries the `reach.*` tooltip id so the word is
+ * explainable.
  *
- * - `<reach>.positive` / `<reach>.negative` — the typed `ReputationTallyKey`
- *   (`types/agent.ts`). Renders as the reach's name plus what the tally is
- *   counting, and carries the `reach.*` tooltip id so the word is explainable.
- * - `<namespace>.<authored_key>` — a free-form authored tally
- *   (`ac.guild_work`, `army.command.banner_up`). The namespace is engine
- *   bookkeeping and is dropped; the tail is humanised.
+ * The free-form `<namespace>.<authored_key>` branch below (`ac.guild_work`,
+ * `army.command.banner_up`) used to be the *other* production shape, and describing
+ * it that way was this function's part in hiding THR-1206's leak: it rendered a
+ * readable sentence for keys the aftermath handler had already refused to write, so
+ * the surface looked healthy over 171 discarded writes. THR-1207 re-authored the last
+ * of them and `TALLY_KEY_RATCHET` is empty, so no shipped content reaches that branch
+ * any more.
  *
- * Fail-soft (NFP #4): an unrecognised key is humanised whole rather than
- * thrown away — a strange phrase beats a missing sentence.
+ * It stays as a **defensive fallback only** (NFP #4) — a saved world written before
+ * the sweep still carries old keys in `reputationTallies`, and a strange phrase beats
+ * a missing sentence. It is not an authoring surface: a new off-axis key fails
+ * `check:encounter` and `tallyKeyCorpus.test.ts` before it can ever get here.
  */
 export function describeTallyKey(key: string): {
   readonly phrase: string;
@@ -259,7 +265,8 @@ export function describeTallyKey(key: string): {
     };
   }
 
-  // Free-form authored key: drop the namespace, humanise what is left.
+  // Defensive fallback for a key no current content authors — a pre-sweep saved
+  // world, or an engine-side key. Drop the namespace, humanise what is left.
   const meaningful = segments.length > 1 ? segments.slice(1).join(' ') : key;
   return { phrase: `record of ${humanizeKeySegment(meaningful)}` };
 }

@@ -223,7 +223,7 @@ const VERDICT_DELIVERED_AFTERMATH = {
       effects: [
         {
           kind: 'reputation_tally' as const,
-          key: 'verdict_law_enshrined',
+          key: 'eye.positive',
           delta: 2,
         },
         {
@@ -254,7 +254,7 @@ const VERDICT_DELIVERED_AFTERMATH = {
       effects: [
         {
           kind: 'reputation_tally' as const,
-          key: 'verdict_ash_walked',
+          key: 'eye.positive',
           delta: 1,
         },
         {
@@ -335,7 +335,7 @@ const HAMMER_WITHHELD_AFTERMATH = {
       effects: [
         {
           kind: 'reputation_tally' as const,
-          key: 'hammer_record_kept',
+          key: 'eye.positive',
           delta: 2,
         },
         {
@@ -366,7 +366,7 @@ const HAMMER_WITHHELD_AFTERMATH = {
       effects: [
         {
           kind: 'reputation_tally' as const,
-          key: 'hammer_debt_pursued',
+          key: 'eye.positive',
           delta: 1,
         },
         {

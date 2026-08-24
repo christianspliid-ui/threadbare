@@ -361,7 +361,7 @@ export const FACTION_INHERITANCE_TEMPLATE: UnifiedActionTemplate = {
             'They inherit the faction with its current state — debts, alliances, rivalries, ambitions — ' +
             'and the next act of governance will be their first.',
           effects: [
-            { kind: 'reputation_tally', key: 'inheritance_accepted', delta: 1 },
+            { kind: 'reputation_tally', key: 'iron.positive', delta: 1 },
             {
               kind: 'recent_event',
               eventType: 'narrative',
@@ -509,7 +509,7 @@ export const FACTION_CALLING_NAMED_TEMPLATE: UnifiedActionTemplate = {
             'The leadership commits. The calling becomes a campaign, not a thought. ' +
             'Whatever comes next will carry the weight of the gather that named it.',
           effects: [
-            { kind: 'reputation_tally', key: 'calling_committed', delta: 1 },
+            { kind: 'reputation_tally', key: 'heart.positive', delta: 1 },
             {
               kind: 'recent_event',
               eventType: 'narrative',
@@ -535,7 +535,7 @@ export const FACTION_CALLING_NAMED_TEMPLATE: UnifiedActionTemplate = {
             'The leadership names the want but does not commit. The heat fades. The faction ' +
             'carries a small dishonor — for one breath the room had a calling, and let it go.',
           effects: [
-            { kind: 'reputation_tally', key: 'calling_stalled', delta: 1 },
+            { kind: 'reputation_tally', key: 'heart.negative', delta: 1 },
             {
               kind: 'hidden_mark',
               category: 'concealed_action',

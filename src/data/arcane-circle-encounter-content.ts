@@ -174,7 +174,7 @@ export const ARCANE_CIRCLE_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                   'Consistent readings would confirm a convergence point or a disturbance.',
                 reliability: 0.75,
               },
-              { kind: 'reputation_tally', key: 'ac.guild_work', delta: 1 },
+              { kind: 'faction_reputation_gain', factionId: 'arcane_circle', amount: 0.05 },
             ],
             closeAfterSelection: true,
           },
@@ -193,7 +193,7 @@ export const ARCANE_CIRCLE_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                 seedLabel: 'The ley deviation at the third marker requires a dedicated investigation',
                 inheritContext: true, // same site, third marker
               },
-              { kind: 'reputation_tally', key: 'ac.guild_work', delta: 1 },
+              { kind: 'faction_reputation_gain', factionId: 'arcane_circle', amount: 0.05 },
             ],
             closeAfterSelection: true,
           },
@@ -311,7 +311,7 @@ export const ARCANE_CIRCLE_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                   'components that don\'t appear in the public formulary.',
                 reliability: 0.8,
               },
-              { kind: 'reputation_tally', key: 'ac.guild_work', delta: 1 },
+              { kind: 'faction_reputation_gain', factionId: 'arcane_circle', amount: 0.05 },
             ],
             closeAfterSelection: true,
           },
@@ -320,7 +320,7 @@ export const ARCANE_CIRCLE_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
             label: 'The circle is supplied. Nothing more.',
             intent: 'Stores filled, task complete. The god releases the thread.',
             effects: [
-              { kind: 'reputation_tally', key: 'ac.guild_work', delta: 1 },
+              { kind: 'faction_reputation_gain', factionId: 'arcane_circle', amount: 0.05 },
             ],
             closeAfterSelection: true,
           },
@@ -462,7 +462,7 @@ export const ARCANE_CIRCLE_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
               'One anomalous data point doesn\'t confirm a threat. The god notes ' +
               'the discrepancy and keeps a thread on whether it recurs.',
             effects: [
-              { kind: 'reputation_tally', key: 'ac.tower_security', delta: 1 },
+              { kind: 'faction_reputation_gain', factionId: 'arcane_circle', amount: 0.05 },
             ],
             closeAfterSelection: true,
           },
@@ -600,7 +600,7 @@ export const ARCANE_CIRCLE_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                   'described in sufficient detail to suggest the author had tested it.',
                 reliability: 0.9,
               },
-              { kind: 'reputation_tally', key: 'ac.scholarship', delta: 1 },
+              { kind: 'faction_reputation_gain', factionId: 'arcane_circle', amount: 0.05 },
             ],
             closeAfterSelection: true,
           },
@@ -747,7 +747,7 @@ export const ARCANE_CIRCLE_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                 seedLabel: 'The anomaly at {location} develops into something the circle can\'t ignore',
                 inheritContext: true, // the SAME anomaly develops
               },
-              { kind: 'reputation_tally', key: 'ac.guild_work', delta: 1 },
+              { kind: 'faction_reputation_gain', factionId: 'arcane_circle', amount: 0.05 },
             ],
             closeAfterSelection: true,
           },
@@ -758,7 +758,7 @@ export const ARCANE_CIRCLE_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
               'The report is filed. Senior mages will review it. ' +
               'The god observes and does not intervene in institutional procedure.',
             effects: [
-              { kind: 'reputation_tally', key: 'ac.guild_work', delta: 1 },
+              { kind: 'faction_reputation_gain', factionId: 'arcane_circle', amount: 0.05 },
             ],
             closeAfterSelection: true,
           },
@@ -900,7 +900,7 @@ export const ARCANE_CIRCLE_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                   'The boundary is stable but occupied.',
                 reliability: 0.85,
               },
-              { kind: 'reputation_tally', key: 'ac.advanced_research', delta: 2 },
+              { kind: 'faction_reputation_gain', factionId: 'arcane_circle', amount: 0.1 },
             ],
             closeAfterSelection: true,
           },
@@ -1062,7 +1062,7 @@ export const ARCANE_CIRCLE_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                   dubious: '{name} reached for the contacts the rumor had named, and reached past them — the network had reformed around different centers, and the old map ended in dead corners.',
                 },
               },
-              { kind: 'reputation_tally', key: 'ac.enchantment_craft', delta: 1 },
+              { kind: 'faction_reputation_gain', factionId: 'arcane_circle', amount: 0.05 },
             ],
             closeAfterSelection: true,
           },
@@ -1071,7 +1071,7 @@ export const ARCANE_CIRCLE_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
             label: 'The work is done. Release it.',
             intent: 'Made and delivered. The god does not track what it does next.',
             effects: [
-              { kind: 'reputation_tally', key: 'ac.guild_work', delta: 1 },
+              { kind: 'faction_reputation_gain', factionId: 'arcane_circle', amount: 0.05 },
             ],
             closeAfterSelection: true,
           },
@@ -1210,7 +1210,7 @@ export const ARCANE_CIRCLE_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                   'Accessible with preparation.',
                 reliability: 0.85,
               },
-              { kind: 'reputation_tally', key: 'ac.advanced_research', delta: 2 },
+              { kind: 'faction_reputation_gain', factionId: 'arcane_circle', amount: 0.1 },
             ],
             closeAfterSelection: true,
           },
@@ -1229,7 +1229,7 @@ export const ARCANE_CIRCLE_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                 seedLabel: 'The ruin\'s central chamber activates and begins drawing attention',
                 inheritContext: true, // the SAME ruin activates
               },
-              { kind: 'reputation_tally', key: 'ac.advanced_research', delta: 2 },
+              { kind: 'faction_reputation_gain', factionId: 'arcane_circle', amount: 0.1 },
             ],
             closeAfterSelection: true,
           },
@@ -1402,7 +1402,7 @@ export const ARCANE_CIRCLE_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                 message: '{name}\'s grand thesis demonstration at {location} moves the circle\'s understanding of arcane mechanics.',
                 significance: 0.8,
               },
-              { kind: 'reputation_tally', key: 'ac.grand_thesis', delta: 3 },
+              { kind: 'faction_reputation_gain', factionId: 'arcane_circle', amount: 0.2 },
             ],
             closeAfterSelection: true,
           },
@@ -1414,7 +1414,7 @@ export const ARCANE_CIRCLE_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
               'that will not stay unanswered — by the circle, by {name}, or by ' +
               'whatever the working touched when it went past the predicted limit.',
             effects: [
-              { kind: 'reputation_tally', key: 'ac.grand_thesis', delta: 3 },
+              { kind: 'faction_reputation_gain', factionId: 'arcane_circle', amount: 0.2 },
               {
                 kind: 'hidden_mark',
                 category: 'concealed_action',
@@ -1588,7 +1588,7 @@ export const ARCANE_CIRCLE_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                   'Planar breach at {location} was deliberately initiated — external agency confirmed, identity unknown',
                 revealFamilies: ['ac.elite', 'investigation'],
               },
-              { kind: 'reputation_tally', key: 'ac.breach_response', delta: 3 },
+              { kind: 'faction_reputation_gain', factionId: 'arcane_circle', amount: 0.2 },
             ],
             closeAfterSelection: true,
           },
@@ -1604,7 +1604,7 @@ export const ARCANE_CIRCLE_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                 message: '{name} seals a planar breach near {location}. The circle takes note.',
                 significance: 0.75,
               },
-              { kind: 'reputation_tally', key: 'ac.breach_response', delta: 3 },
+              { kind: 'faction_reputation_gain', factionId: 'arcane_circle', amount: 0.2 },
             ],
             closeAfterSelection: true,
           },
@@ -1729,7 +1729,7 @@ export const ARCANE_CIRCLE_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
             label: 'Absorbed and released.',
             intent: 'The knowledge was taken. The god does not track what {name} does with it.',
             effects: [
-              { kind: 'reputation_tally', key: 'ac.scholarship', delta: 1 },
+              { kind: 'faction_reputation_gain', factionId: 'arcane_circle', amount: 0.05 },
             ],
             closeAfterSelection: true,
           },
@@ -1834,7 +1834,7 @@ export const ARCANE_CIRCLE_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
             label: 'The formula is useful. That\'s enough.',
             intent: 'The exchange was complete. The god releases the thread.',
             effects: [
-              { kind: 'reputation_tally', key: 'ac.guild_work', delta: 1 },
+              { kind: 'faction_reputation_gain', factionId: 'arcane_circle', amount: 0.05 },
             ],
             closeAfterSelection: true,
           },
@@ -1939,7 +1939,7 @@ export const ARCANE_CIRCLE_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
             label: 'A productive afternoon in the stacks.',
             intent: 'The library was used. The god observes and moves on.',
             effects: [
-              { kind: 'reputation_tally', key: 'ac.scholarship', delta: 1 },
+              { kind: 'faction_reputation_gain', factionId: 'arcane_circle', amount: 0.05 },
             ],
             closeAfterSelection: true,
           },
@@ -2029,7 +2029,7 @@ export const AC_JOIN_TEMPLATE: UnifiedActionTemplate = {
             'Entry to the circle is a threshold that changes what knowledge is available ' +
             'and what responsibilities accumulate. The god marks it.',
           effects: [
-            { kind: 'reputation_tally', key: 'ac.guild_membership', delta: 2 },
+            { kind: 'faction_reputation_gain', factionId: 'arcane_circle', amount: 0.1 },
             {
               kind: 'recent_event',
               message: '{name} joins the Arcane Circle in {location}. The circle opens.',
@@ -2127,7 +2127,7 @@ export const AC_PROMOTION_TEMPLATE: UnifiedActionTemplate = {
             'and different expectations. The god marks the transition and what it opens.',
           effects: [
             { kind: 'clearance_gate_tag', tag: 'ac.rank_advanced' },
-            { kind: 'reputation_tally', key: 'ac.guild_rank', delta: 3 },
+            { kind: 'faction_reputation_gain', factionId: 'arcane_circle', amount: 0.2 },
             {
               kind: 'recent_event',
               message: '{name} advances within the Arcane Circle in {location}. The registry is updated.',

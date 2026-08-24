@@ -443,7 +443,7 @@ export const ANOMALY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
               'Living systems in this world notice how they\'re treated. The grove won\'t remember {name} by name, ' +
               'but its memory is structural â€” agents who take carefully are more welcome next time.',
             effects: [
-              { kind: 'reputation_tally', key: 'natural.grove_harmony', delta: 1 },
+              { kind: 'reputation_tally', key: 'heart.positive', delta: 1 },
             ],
             closeAfterSelection: true,
           },
@@ -564,7 +564,7 @@ export const ANOMALY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
               'The distinction between foraging and stewardship is sometimes the only thing that keeps a garden alive. ' +
               'Whatever {name} took, {they} took{s} it knowing what the network could afford.',
             effects: [
-              { kind: 'reputation_tally', key: 'natural.apothecary_practice', delta: 1 },
+              { kind: 'reputation_tally', key: 'eye.positive', delta: 1 },
             ],
             closeAfterSelection: true,
           },
@@ -1120,7 +1120,7 @@ export const ANOMALY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                 priority: 0.75,
                 seedLabel: 'The partial excavation at the star-metal crater has drawn the attention of forge-masters and collectors',
               },
-              { kind: 'reputation_tally', key: 'natural.measured_taking', delta: 1 },
+              { kind: 'reputation_tally', key: 'stone.positive', delta: 1 },
             ],
             closeAfterSelection: true,
           },
@@ -1140,7 +1140,7 @@ export const ANOMALY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                   'A covered crater containing star metal fused to bedrock. The deposit is intact and unknown to others.',
                 reliability: 0.95,
               },
-              { kind: 'reputation_tally', key: 'cosmic.steward_of_fallen', delta: 1 },
+              { kind: 'reputation_tally', key: 'stone.positive', delta: 1 },
             ],
             closeAfterSelection: true,
           },
@@ -1375,7 +1375,7 @@ export const ANOMALY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
               '{name} extracted material value from the hollow without being changed by it. ' +
               'That is the professional choice. The hollow will continue to offer what it offers to whoever comes next.',
             effects: [
-              { kind: 'reputation_tally', key: 'natural.spore_discipline', delta: 1 },
+              { kind: 'reputation_tally', key: 'veil.positive', delta: 1 },
               {
                 kind: 'encounter_seed',
                 encounterFamily: 'investigation',
@@ -1437,7 +1437,7 @@ export const ANOMALY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                   'The hollow pulses at three-second intervals and the spore density is significant.',
                 reliability: 0.95,
               },
-              { kind: 'reputation_tally', key: 'natural.restraint_observed', delta: 1 },
+              { kind: 'reputation_tally', key: 'veil.positive', delta: 1 },
             ],
             closeAfterSelection: true,
           },

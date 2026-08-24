@@ -245,7 +245,7 @@ const FORMAL_CHANNEL_AFTERMATH = {
       effects: [
         {
           kind: 'reputation_tally' as const,
-          key: 'patron_network_depth',
+          key: 'heart.positive',
           delta: 1,
         },
         {

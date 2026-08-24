@@ -202,7 +202,7 @@ export const ARMY_RAISE_TEMPLATE: UnifiedActionTemplate = {
             'Men signed for {name}; the houses paid; the column marches under {their} command. ' +
             'That fact propagates through the chronicle of the region.',
           effects: [
-            { kind: 'reputation_tally', key: 'army.command.muster_held', delta: 2 },
+            { kind: 'reputation_tally', key: 'iron.positive', delta: 2 },
             {
               kind: 'recent_event',
               message: '{name} raises an army at {location}. The muster ground stands full.',
@@ -258,7 +258,7 @@ export const ARMY_RAISE_TEMPLATE: UnifiedActionTemplate = {
               priority: 0.75,
               seedLabel: 'The army raised at {location} has been observed on the march — interested parties are calculating.',
             },
-            { kind: 'reputation_tally', key: 'army.command.banner_up', delta: 1 },
+            { kind: 'reputation_tally', key: 'iron.positive', delta: 1 },
           ],
           closeAfterSelection: true,
         },
@@ -369,7 +369,7 @@ export const ARMY_THRESHOLD_SUPPLY_CRISIS_TEMPLATE: UnifiedActionTemplate = {
             '{name} solved a logistics problem at the right speed. The men know it. ' +
             'In army life, food at the right time is the difference between a column and a mob.',
           effects: [
-            { kind: 'reputation_tally', key: 'army.command.logistics_held', delta: 2 },
+            { kind: 'reputation_tally', key: 'iron.positive', delta: 2 },
             {
               kind: 'intelligence',
               category: 'trade_route',
@@ -512,7 +512,7 @@ export const ARMY_THRESHOLD_DESERTION_TEMPLATE: UnifiedActionTemplate = {
             'Holding men in the line through a desertion wave is the work command was made for. ' +
             'The remaining soldiers know who held them. The reputation is earned in the particular way only soldiers can grant it.',
           effects: [
-            { kind: 'reputation_tally', key: 'army.command.cohesion_held', delta: 2 },
+            { kind: 'reputation_tally', key: 'iron.positive', delta: 2 },
             {
               kind: 'recent_event',
               message: '{name}\'s column survived a desertion wave. The remaining men hold their oath.',
@@ -671,7 +671,7 @@ export const ARMY_THRESHOLD_MUTINY_TEMPLATE: UnifiedActionTemplate = {
             '{name} passed it. The story will travel — to the rival captains, to the houses that fielded the column, ' +
             'to the bards who write the campaign history later.',
           effects: [
-            { kind: 'reputation_tally', key: 'army.command.mutiny_quelled', delta: 3 },
+            { kind: 'reputation_tally', key: 'iron.positive', delta: 3 },
             {
               kind: 'recent_event',
               message: '{name} put down a mutiny in the field. The ringleaders are named in the despatches.',
@@ -722,7 +722,7 @@ export const ARMY_THRESHOLD_MUTINY_TEMPLATE: UnifiedActionTemplate = {
               priority: 0.7,
               seedLabel: 'News of {name}\'s mutiny is spreading through the houses — alliances are being recalculated.',
             },
-            { kind: 'reputation_tally', key: 'army.command.faction_strain', delta: 1 },
+            { kind: 'reputation_tally', key: 'iron.negative', delta: 1 },
           ],
           closeAfterSelection: true,
         },
@@ -811,7 +811,7 @@ export const ARMY_THRESHOLD_DISBANDMENT_TEMPLATE: UnifiedActionTemplate = {
             'There is no spinning a disbandment. The chronicle will record what happened, ' +
             'and the next muster {name} attempts will begin with that chapter already in the room.',
           effects: [
-            { kind: 'reputation_tally', key: 'army.command.disbandment', delta: 2 },
+            { kind: 'reputation_tally', key: 'iron.negative', delta: 2 },
             {
               kind: 'recent_event',
               message: '{name}\'s army disbands at {location}. The standard is left at the camp.',
@@ -980,7 +980,7 @@ export const REFUGEE_AFTERMATH_TEMPLATE: UnifiedActionTemplate = {
             'The story will move through the chronicle with {name}\'s name attached, ' +
             'and the houses that hear it will form their own opinion.',
           effects: [
-            { kind: 'reputation_tally', key: 'community.refugee_welcome', delta: 2 },
+            { kind: 'reputation_tally', key: 'heart.positive', delta: 2 },
             {
               kind: 'recent_event',
               message: '{location} took in refugees from a broken column under {name}\'s direction. The story is travelling.',
@@ -1158,7 +1158,7 @@ export const ARMY_SUPPLY_FORAGE_TEMPLATE: UnifiedActionTemplate = {
             '{name} kept a distinction that armies lose almost by default — ' +
             'the one between requisition and pillage. It cost time and it will be remembered.',
           effects: [
-            { kind: 'reputation_tally', key: 'army.command.logistics_held', delta: 1 },
+            { kind: 'reputation_tally', key: 'iron.positive', delta: 1 },
             {
               kind: 'recent_event',
               message: 'The country {name} foraged is still willing to sell to that banner.',
@@ -1301,7 +1301,7 @@ export const ARMY_SUPPLY_SIEGE_LIFTED_TEMPLATE: UnifiedActionTemplate = {
             '{name} spent the siege and kept the instrument. ' +
             'A commander who can call off their own campaign is rarer than one who can start it.',
           effects: [
-            { kind: 'reputation_tally', key: 'army.command.cohesion_held', delta: 2 },
+            { kind: 'reputation_tally', key: 'iron.positive', delta: 2 },
             {
               kind: 'recent_event',
               message: '{name} lifts the siege and brings the column away intact.',

@@ -203,7 +203,7 @@ const GRANARIES_OPENED_AFTERMATH = {
       effects: [
         {
           kind: 'reputation_tally' as const,
-          key: 'granaries_patron_rooted',
+          key: 'gold.positive',
           delta: 2,
         },
         {
@@ -242,7 +242,7 @@ const GRANARIES_OPENED_AFTERMATH = {
       effects: [
         {
           kind: 'reputation_tally' as const,
-          key: 'granaries_generous_guarded',
+          key: 'gold.positive',
           delta: 1,
         },
         {
@@ -320,7 +320,7 @@ const MARKET_CLOSED_AFTERMATH = {
       effects: [
         {
           kind: 'reputation_tally' as const,
-          key: 'market_bonded_tended',
+          key: 'gold.positive',
           delta: 1,
         },
         {
@@ -359,7 +359,7 @@ const MARKET_CLOSED_AFTERMATH = {
       effects: [
         {
           kind: 'reputation_tally' as const,
-          key: 'market_debt_unmade',
+          key: 'gold.positive',
           delta: 2,
         },
         {

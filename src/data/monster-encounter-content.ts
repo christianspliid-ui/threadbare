@@ -189,7 +189,7 @@ export const MONSTER_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
             effects: [
               {
                 kind: 'reputation_tally',
-                key: 'beasts_hunted',
+                key: 'iron.positive',
                 delta: 1,
               },
             ],
@@ -679,7 +679,7 @@ export const MONSTER_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
             effects: [
               {
                 kind: 'reputation_tally',
-                key: 'lairs_engaged',
+                key: 'iron.positive',
                 delta: 1,
               },
             ],

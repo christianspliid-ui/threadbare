@@ -1068,9 +1068,12 @@ function buildAftermathConfig(templateId: string, templateName: string): BranchA
 
   const baseEffects = [
     {
-      kind: 'reputation_tally' as const,
-      key: 'ag.guild_contracts',
-      delta: 1,
+      // Guild contract work by a member — the leg that carries rank and access
+      // (THR-1207). Was a `reputation_tally` on an off-axis key, which the
+      // aftermath handler discarded on every resolution.
+      kind: 'faction_reputation_gain' as const,
+      factionId: 'adventuring_guild',
+      amount: 0.05,
     },
   ];
 

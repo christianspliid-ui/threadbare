@@ -138,7 +138,7 @@ export const ROUTE_EVENT_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
             label: 'The road is settled. Let it carry wagons.',
             intent: 'Handled. The god releases the thread and lets trade resume.',
             effects: [
-              { kind: 'reputation_tally', key: 'route.road_kept', delta: 1 },
+              { kind: 'reputation_tally', key: 'iron.positive', delta: 1 },
             ],
             closeAfterSelection: true,
           },
@@ -237,7 +237,7 @@ export const ROUTE_EVENT_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
             label: 'A road quarrel, settled or not. Move on.',
             intent: 'The god releases the thread. Roads have quarrels the way rivers have stones.',
             effects: [
-              { kind: 'reputation_tally', key: 'route.toll_witnessed', delta: 1 },
+              { kind: 'reputation_tally', key: 'gold.positive', delta: 1 },
             ],
             closeAfterSelection: true,
           },
@@ -360,7 +360,7 @@ export const ROUTE_EVENT_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
             label: 'The town eats. That is the whole of it.',
             intent: 'Outcomes over authors. The god releases the thread.',
             effects: [
-              { kind: 'reputation_tally', key: 'route.lifeline_kept', delta: 1 },
+              { kind: 'reputation_tally', key: 'gold.positive', delta: 1 },
             ],
             closeAfterSelection: true,
           },
