@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-08-24 11:00 local (09:00 UTC) · keep-work-flowing-cc
+**Generated:** 2026-08-24 11:55 local (09:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -21,24 +21,17 @@ The recommended order to build next: **siege and the war-band (6)**, then ruins 
 - **[THR-876](https://linear.app/threadbare/issue/THR-876/regenerate-the-5-quarantined-meet-the-first-scene-assets-doctrine) — do you want image spends gated on you at all,** or decided by the lane and reported after?
 - **A Tenacious-style trait** — parked option, no ticket, nothing waiting on it. Listed so it is not silently forgotten.
 
-## From Christian
-
-Two answers came in at 10:35 and 10:36 this morning. Both are recorded; here is what each one set moving.
-
-- **"yes" — the 1,200 story hooks may go into the repo.** Your call was the only thing holding it, and it is now made. **This still needs an agent to do it** and no ticket carries it, because a scheduled lane may not file one. Concretely owed: re-include `Design/quest-hooks/` in the ignore list, commit the twelve files, and drop the "do not hunt for the missing folder" warning from the factory tickets that carry it. Until that lands, every factory run still falls back to "original" and the corpus steers nothing — so this is the first thing an executor or the next orchestrator run should pick up. If it is still owed in the next brief, that is the failure to look at.
-- **"fine" — "The Table That Holds" is approved.** Recorded on [THR-1182](https://linear.app/threadbare/issue/THR-1182/the-grateful-kins-standing-welcome-has-no-return-visit-author-the) as the chat gate your Factory rule requires, so authoring may start; the ticket is `Todo` and claimable. The reviewers' flag rides with it: step 2 is combat-adjacent and there is no nudge-native combat vocabulary, so the author writes it with movement, wounds and hard choices rather than inventing combat verbs. That is the same reading the assessment took — a rules question, settled by us, not one for you.
-
 ## Queue
 
-**Starved — 2 claimable, both `Deferral`s.** Third consecutive run below the floor of two non-deferral items. The shelf refills from the design hours above, not from any hourly lane.
+**Healthy — 3 claimable, and for the first time in three runs one of them is real program work.** Both of this morning's answers are now carried by tickets; nothing you said is sitting loose.
 
-- [THR-1207](https://linear.app/threadbare/issue/THR-1207/dead-reputation-tally-keys-re-author-every-off-axis-tally-write-to-the) (Medium) — recommended next pickup; 31% of authored reputation-tally writes are discarded silently.
-- [THR-1210](https://linear.app/threadbare/issue/THR-1210/ul-proposal-reputation-the-social-score-that-modifies-interactions) (Medium) — docs-track, rides any run.
-- [THR-1215](https://linear.app/threadbare/issue/THR-1215/encounter-portfolio-assessment-what-encounter-types-the-game-needs-and) shipped and closed at 08:16Z — step 1 of this morning's rule, done inside two hours of being filed. [PR #1590](https://github.com/christianspliid-ui/threadbare/pull/1590).
-- **Four parks, all on you and all listed above:** THR-1216 (new, this morning), THR-1130 (7 days), THR-1133 (9 days), THR-1168 (6 days). Park shape intact on all four.
-- [THR-1182](https://linear.app/threadbare/issue/THR-1182/the-grateful-kins-standing-welcome-has-no-return-visit-author-the) is unblocked as of this run and sits in `Todo`, not the dev queue — deliberately behind the portfolio work under your ordering.
+- **[THR-1217](https://linear.app/threadbare/issue/THR-1217/publish-the-1200-hook-quest-corpus-christian-approved-it-design-still) (High) — your 1,200 story hooks go into the repo.** The 11:00 brief said this was owed with nothing carrying it, and that if it were still loose at this hour it would be the failure to look at. It is not: it was ticketed at 09:31Z with the exact commands. It also corrects a path this brief had wrong — the corpus is at `Design/research/quest-hooks/`, not `Design/quest-hooks/`. Recommended next pickup.
+- **[THR-1182](https://linear.app/threadbare/issue/THR-1182/the-grateful-kins-standing-welcome-has-no-return-visit-author-the) (Medium) — "The Table That Holds"** moved from `Todo` into the dev queue on your *"fine"*. Authoring is claimable now.
+- **[THR-1210](https://linear.app/threadbare/issue/THR-1210/ul-proposal-reputation-the-social-score-that-modifies-interactions) (Medium)** — docs-track, rides any run.
+- **In flight:** [THR-1207](https://linear.app/threadbare/issue/THR-1207/dead-reputation-tally-keys-re-author-every-off-axis-tally-write-to-the) was claimed and is being worked — the 31% of reputation-tally writes that are discarded silently.
+- **Four parks, all on you and all listed above:** THR-1216 (this morning), THR-1130 (7 days), THR-1133 (9 days), THR-1168 (6 days). Park shape intact on all four.
 
 ## Health
 
-- **All probes green** — deploy, CI, background jobs, armed PRs, scheduled-task heartbeat, home tree, worktree reaper (last swept 10:41 local).
-- **Lane silence:** the 35-hour gap of 20–22 August remains on the record with no pause marker covering it. Lanes have run normally since; the three later gaps are overnight-shaped and declined per your 8 August ruling. Visibility only — nothing for you to do, and it will keep appearing here until it ages out.
+- **All probes green** — deploy, CI, background jobs, armed PRs, scheduled-task heartbeat, home tree, worktree reaper (last swept 11:40 local).
+- **Lane silence:** the 35-hour gap of 20–22 August is still on the record with no pause marker covering it. Lanes have run normally since; the three later gaps are overnight-shaped and declined per your 8 August ruling. Visibility only — nothing for you to do, and it will keep appearing here until it ages out.

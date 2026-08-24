@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-24 11:00 local (09:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-24 11:55 local (09:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -66,8 +66,8 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
-- 2026-08-24: **your 1,200 story hooks may go into the repo** — you answered *"yes"* at 10:35. The decision is closed; the doing is not. An agent still owes the re-include line, the commit, and the removal of the "missing folder" warnings from the factory tickets. Tracked in the briefing's *From Christian* section until it lands.
-- 2026-08-24: **"The Table That Holds" is approved** — you answered *"fine"* at 10:36, [recorded on THR-1182](https://linear.app/threadbare/issue/THR-1182/the-grateful-kins-standing-welcome-has-no-return-visit-author-the) as the chat gate your Factory rule requires. Authoring may start; the combat-adjacency flag rides with it as a writing constraint, not a new question for you.
+- 2026-08-24: **your 1,200 story hooks may go into the repo** — you answered *"yes"* at 10:35, and the work now has a ticket: [THR-1217](https://linear.app/threadbare/issue/THR-1217/publish-the-1200-hook-quest-corpus-christian-approved-it-design-still), High, in the dev queue since 11:31 local. Nothing of yours is left loose here.
+- 2026-08-24: **"The Table That Holds" is approved** — you answered *"fine"* at 10:36, [recorded on THR-1182](https://linear.app/threadbare/issue/THR-1182/the-grateful-kins-standing-welcome-has-no-return-visit-author-the), which moved into the dev queue the same hour. Authoring is claimable; the combat-adjacency flag rides with it as a writing constraint, not a new question for you.
 - 2026-08-24: **you settled how encounters get built** — [PR #1589](https://github.com/christianspliid-ui/threadbare/pull/1589), recorded on [THR-1043](https://linear.app/threadbare/issue/THR-1043/the-encounter-factory-agentic-workflow-for-composition-complete): game design first, then roll hooks, then judge candidates. Step 1 — [what encounter types the game needs](https://linear.app/threadbare/issue/THR-1215/encounter-portfolio-assessment-what-encounter-types-the-game-needs-and) — shipped the same morning and is the source of ask 1 above.
 - 2026-08-24: **eighteen chips stop claiming a standing change that never happened** — [THR-1208](https://linear.app/threadbare/issue/THR-1208/18-cast-fate-chips-wear-kindreputation-with-no-reputation-write-behind): each now names the effect actually behind it.
 - 2026-08-24: **the campaign's spine narrates itself** — [THR-1197](https://linear.app/threadbare/issue/THR-1197/wire-the-48-authored-mandate-milestone-prose-strings-into-stage): the 48 authored milestone lines now fire at stage transitions instead of sitting unread.
