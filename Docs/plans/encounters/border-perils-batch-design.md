@@ -239,3 +239,83 @@ name that particular object (Law 56: a chip with no state write behind it is rej
 War/army mechanics · nudge pricing and essence balance (placeholder prices) · the
 15-encounter retrofit (batch 2) · urban/civic/devotional content · any change to card
 library membership.
+
+---
+
+## Findings from the drafting pass, and what the batch did about them
+
+Three things the drafters found that the brief could not have known. All were verified in
+source by the orchestrator before anything was decided on them; two drafters found the
+first one independently.
+
+### 1. The `thread` family is unwireable from an encounter aftermath — both holders swapped off it
+
+`thread_strengthen` / `thread_weaken` / `thread_break` / `thread_branch` take literal
+`ascendantId` and `mortalId`. Neither field is in `SCENE_SENTINEL_FIELDS`
+(`src/engine/encounterAftermath.ts`), so `$actor` / `$target` / `$cast:` cannot bind — and
+the ascendant node id is minted per run, so there is no literal an author could ever write.
+The effect no-ops with `thread_mutation_skipped`. Corpus check: **zero** shipped templates
+use any `thread_*` effect; the only example (`example.thread_bond_tested.ts`) is
+`@ts-ignore`'d, registered nowhere, and writes `'self'`/`'actor'`, which resolve to nothing.
+
+`check:encounter` passes the family regardless, because it checks *kind presence*, not
+resolvability — so an encounter can obey its draw, satisfy the gate, and write nothing. That
+is the Law 56 pathology exactly, one layer further down than the chip rule reaches.
+
+Both holders take the spec's **one recorded swap** (§ The Consequence Draw). Swap-ins
+verified against `CONSEQUENCE_FAMILY_WEIGHTS` for the ≥2-in-reach bar:
+
+| # | Encounter | Reach | Swap | Weight | Why this family |
+|---|---|---|---|---|---|
+| 5 | `one_body_short` | `eye` | `thread` → **`omen`** | 4 | `emit_omen`; a death-and-return premise wants "what the sky says is coming", not a tie to the divine |
+| 6 | `the_garrisons_price` | `gold` | `thread` → **`drive`** | 4 | `plant_compulsion` / `assign_ambition`; an honest ruinous price becoming something they cannot stop working at. Adds a 10th family to the batch |
+
+Neither had spent its swap. The engine gap is **filed, not fixed here** — this is a Content
+ticket whose own Done-when expects no engine files touched, and registering a `mortalId`
+sentinel plus an `$ascendant` binding carries design questions (what `$ascendant` means, what
+`thread_break` owes a player) that belong to a design pass.
+
+Note for whoever takes that ticket: `emit_omen` is deliberately **excluded** from
+`CHIP_BACKING_EFFECT_KINDS` — the module classifies it as scene dressing and says so — so #5's
+omen is wired and unchipped by design, not by oversight.
+
+### 2. Two persistent kinds could not back a Law 56 chip — fixed in this PR
+
+`membership_change` and `agent_relocation` sat in `CAST_TARGET_PERSISTENT_KINDS` (whose
+comment calls them "a durable fact written onto a specific someone") and were absent from
+`CHIP_BACKING_EFFECT_KINDS`. Each is the **sole** satisfier of a consequence family —
+`membership` and `movement` respectively — and the draw is binding, so an encounter that drew
+one, wired it correctly, and chipped the result had the chip rejected as unbacked. Its only
+remedies were to fold a real consequence into prose or disobey a gate-audited draw.
+
+Fixed in commit `659962a9` with three tests. The third pins the two sets against each other
+rather than asserting one kind's membership — written for `membership_change` alone, it went
+red naming `agent_relocation`, which is how the second instance was found rather than guessed
+at. Encounters 1 and 2 hold those two families.
+
+### 3. Three card types have no library member at all — the brief's debut list overlaps them
+
+Measured across `NUDGE_CARD_LIBRARY`: **37 members spanning 18 of the 21 types**.
+`side_bet`, `signature` and `fellowship` have **zero**. The naming is a trap worth recording:
+`card.<type>.signature.<sphere>` denotes a *signature member of another family*, not a member
+of the Signature type.
+
+This puts two of the brief's own instructions in tension for exactly these types. The brief
+asks the batch to debut eight zero-use types — `side_bet` and `signature` among them — **and**
+asks that every card matching a library member set `libraryCardId` "so the tally, twilight
+harvest, and echo card finally receive data". A card of a memberless type cannot do both: it
+is necessarily a one-off, and therefore invisible to `cardPlayTally` and the echo-card system,
+which is the very gap the `libraryCardId` instruction exists to close.
+
+The batch ships those cards as **recorded one-offs with reasons**, which the brief explicitly
+permits ("a choice, not the default"). Library membership is out of scope for this batch by
+the brief's own § Out of scope, so this is **surfaced to the director in the batch report**
+rather than fixed. It is a finding about the library, not about the encounters.
+
+### 4. `check:encounter` cannot see a fork's hands
+
+`nudgeBearingSteps` / `plainSteps` filter out `ActionStepBranch`, so for encounter 4 the
+machine gate audits **step 0's hand only** and counts one plain step. Four of its five hands
+are inside branches and no automated gate will ever look at them. Those four were audited by
+hand against the full checklist in the editorial pass, which is recorded there as the
+substitute. Filed alongside finding 1.
