@@ -35,6 +35,7 @@
 
 import type { EncounterCacheEntry } from './encounterCache';
 import type { WorldGraph } from './graph';
+import { getDerivedMembershipRank } from './factionReputation';
 import type { ReachDomain } from '../types/traits';
 
 // ─── Constants (re-exported from central tuning file) ───────────
@@ -123,8 +124,10 @@ export function getFactionAwarenessEntries(
     const reaches = deriveReaches(reachPreferences);
     if (!reaches) continue;
 
-    const edgeProps = memberEdge.properties as Record<string, unknown>;
-    const rank = typeof edgeProps.rank === 'number' ? edgeProps.rank : FACTION_DEFAULT_RANK;
+    // THR-1211 item 3: derived from `reputation` where a definition resolves, falling
+    // back to the cached `rank` and then to FACTION_DEFAULT_RANK — the same fallback
+    // this line always used. See `getDerivedMembershipRank`.
+    const rank = getDerivedMembershipRank(memberEdge, FACTION_DEFAULT_RANK);
 
     if (rank < FACTION_MIN_RANK_FOR_INTEL) continue;
 

@@ -33,6 +33,8 @@
 import type { WorldGraph } from './graph';
 import { findAllPaths } from './graphUtils';
 import { computeCapability } from './domainCapability';
+import { getDerivedMembershipRank } from './factionReputation';
+import { getAgentFactionBonuses } from './factionRankBonus';
 import { emitTrace } from './traceBuffer';
 
 // ─── Constants (re-exported from central tuning file) ───────────
@@ -136,6 +138,7 @@ export function perceiveReputation(
   // Step 8: Faction rank bonus
   let rankBonus = 0;
   const sourceFactions = getAgentFactions(graph, sourceId);
+  const sharedFactionIds = new Set<string>();
 
   for (const intermediaryId of intermediaryIds) {
     const intermediaryFactions = getAgentFactions(graph, intermediaryId);
@@ -144,9 +147,29 @@ export function perceiveReputation(
       for (const inf of intermediaryFactions) {
         if (sf.factionId === inf.factionId) {
           rankBonus += (inf.rank ?? 0) * FACTION_RANK_TRUST_BONUS;
+          sharedFactionIds.add(sf.factionId);
         }
       }
     }
+  }
+
+  // Step 8b: the authored `reputation_walk_bonus` (THR-1211 item 2).
+  //
+  // Nine faction definitions declare this bonus on their upper rank tiers — it is the
+  // most-authored of the three `FactionRankBonusType`s — and until now nothing read it.
+  // `factionRankBonus.ts` shipped application functions for the other two
+  // (`getEncounterRewardMultiplier`, `getScoringBoost`) and left this one described as
+  // "(future)". So the ticket's framing was inverted: the type had no *consumer*, not
+  // no producer, and the authored numbers had never once moved a result.
+  //
+  // This is the walk it was named for. Applied **once per shared faction** rather than
+  // once per intermediary: the bonus means "your guild network vouches for you", which
+  // is a property of the shared membership, not a toll paid per hop. Accumulating it
+  // per intermediary would let a long path multiply a flat authored value into the clamp.
+  const walkBonuses = getAgentFactionBonuses(graph, sourceId, 'reputation_walk_bonus');
+  for (const shared of sharedFactionIds) {
+    const authored = walkBonuses.find(b => b.factionNodeId === shared);
+    if (authored) rankBonus += authored.bonus.value;
   }
 
   // Step 9: Combine and clamp
@@ -211,7 +234,10 @@ function getAgentFactions(
   for (const edge of memberEdges) {
     results.push({
       factionId: edge.target,
-      rank: (edge.properties.rank as number) ?? 0,
+      // THR-1211 item 3: derived from `reputation`, not the cached `rank`. This read
+      // is also where `armySpawning`'s `rank: 'army'` string used to become `NaN` and
+      // poison the whole walk — `?? 0` never caught it. See `getDerivedMembershipRank`.
+      rank: getDerivedMembershipRank(edge),
     });
   }
 

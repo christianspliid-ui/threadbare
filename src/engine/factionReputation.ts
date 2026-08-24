@@ -10,6 +10,7 @@
  */
 
 import type { WorldGraph } from './graph';
+import type { GraphEdge } from '../types/graph';
 import type { FactionDefinition, FactionReputationTrace } from '../types/faction';
 import { computeRankFromReputation } from '../types/faction';
 import type { MemberOfEdgeProperties } from '../types/disposition';
@@ -177,6 +178,56 @@ export function meetsFactionRankRequirement(
   }
 
   return false; // not a member — gate closed
+}
+
+/**
+ * The membership rank as a 0–1 scalar, **derived from `reputation`** rather than read
+ * from the cached `member_of.rank`.
+ *
+ * Rank was read two ways and they disagreed (THR-1211 item 3). The gate above
+ * (`meetsFactionRankRequirement`) recomputes from `reputation` on every check; three
+ * scalar readers — `socialLeverage.getHighestFactionRank`, `factionAwareness`, and
+ * `reputationWalk.getAgentFactions` — read `edge.rank` instead. The ticket framed the
+ * divergence as decay drift, but both write paths above rewrite `rank` on every tier
+ * change, so a *decaying* member stays consistent. The disagreement is **minted in**,
+ * and because `rank` is then only ever rewritten on a tier change, it does not heal:
+ *
+ * - `npcSeeding.ts` mints `rank: 0.1` beside `reputation: 0.12` (and `rank: 0.16`
+ *   beside `reputation: 0.22` for leadership roles), all carrying a `factionDefId`.
+ *   Both reputations sit in the entry tier, so the gate reads index 0 → `0.0` while
+ *   the scalar readers read `0.1` / `0.16`. That is every seeded faction NPC, from
+ *   tick 0, and nothing rewrites it until they cross a tier boundary.
+ * - `armySpawning.ts` writes `rank: 'army'`, a **string** in a numeric field. `?? 0`
+ *   does not catch it (it is neither null nor undefined), so `reputationWalk`'s
+ *   `rank * FACTION_RANK_TRUST_BONUS` evaluated to `NaN` and poisoned the entire walk
+ *   through `clamp(raw + distortion + NaN)`.
+ *
+ * The mints that carry no `factionDefId` at all — the splinter and drift memberships in
+ * `encounterAftermath.ts`, `factionTopology.ts`, `bandSpawner.ts`, and the seeded
+ * membership in `worldSeed.ts` — have no definition to derive from and are left on the
+ * fallback below. They are not a disagreement: the gate matches on `factionDefId` and
+ * so does not see those edges either.
+ *
+ * Deriving is the answer the ticket asked for ("pick derived — it cannot go stale"),
+ * and caching bought nothing: `rank` is a pure function of `reputation` plus the
+ * definition, so the cache could only ever agree or be wrong.
+ *
+ * **Fail-soft (NFP #4):** memberships with no resolvable `FactionDefinition` — armies,
+ * bands, and bare fixture factions — have nothing to derive *from*, so they keep the
+ * cached value when it is a finite number and take `fallback` otherwise. That is what
+ * makes the `'army'` string safe rather than merely rarer.
+ */
+export function getDerivedMembershipRank(edge: GraphEdge, fallback = 0): number {
+  const props = edge.properties as Partial<MemberOfEdgeProperties>;
+
+  const definition = props.factionDefId ? FACTION_DEFINITIONS.get(props.factionDefId) : undefined;
+  if (definition && typeof props.reputation === 'number' && Number.isFinite(props.reputation)) {
+    const tier = computeRankFromReputation(props.reputation, definition);
+    return definition.rankTiers.indexOf(tier) / Math.max(definition.rankTiers.length - 1, 1);
+  }
+
+  const cached = props.rank;
+  return typeof cached === 'number' && Number.isFinite(cached) ? cached : fallback;
 }
 
 // ─── Reputation Decay ────────────────────────────────────────────────────

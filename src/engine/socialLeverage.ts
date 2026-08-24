@@ -38,6 +38,7 @@
  */
 
 import type { WorldGraph } from './graph';
+import { getDerivedMembershipRank } from './factionReputation';
 import type { LeverageHistoryEntry } from '../types/encounter';
 import { getTrust } from './trustMechanics';
 import { computeCapability } from './domainCapability';
@@ -130,7 +131,10 @@ export function getHighestFactionRank(graph: WorldGraph, agentId: string): numbe
       || targetActorType === 'group';
     if (!isMembershipTarget) continue;
 
-    const rank = (edge.properties.rank as number) ?? 0;
+    // THR-1211 item 3: derived from `reputation`, not read off the cached `rank`.
+    // The two disagreed by construction at several mint sites, and one of them wrote
+    // a string into this field. See `getDerivedMembershipRank`.
+    const rank = getDerivedMembershipRank(edge);
     if (rank > highest) highest = rank;
   }
 
