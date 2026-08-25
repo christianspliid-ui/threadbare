@@ -42,6 +42,10 @@ const OUTSIDE_CONTRACT_MIGRATION: readonly string[] = [
   'encounter.border.the_sign_over_the_ruin',
   'encounter.border.standing_the_line',
   'encounter.border.the_garrisons_price',
+  // Nudge-native delves (Encounter Factory v3, the deep-places batch) — no
+  // authoredChoices, so nothing to encode.
+  'encounter.delve.the_broken_seal',
+  'encounter.delve.the_drowned_archive',
 ];
 
 describe('branching encounters migrate to encoded EncounterContract metadata', () => {

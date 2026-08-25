@@ -192,6 +192,8 @@ import { SOUL_FERRYMAN_TEMPLATE } from './encounters/soul-ferryman';
 import { APOTHEOSIS_ASCENSION_TEMPLATE } from './encounters/apotheosis-ascension';
 import { ROAD_AMBUSH_TEMPLATE } from './encounters/road-ambush';
 import { THE_UNCLAIMED_RELIC_TEMPLATE } from './encounters/the-unclaimed-relic';
+import { THE_BROKEN_SEAL_TEMPLATE } from './encounters/the-broken-seal';
+import { THE_DROWNED_ARCHIVE_TEMPLATE } from './encounters/the-drowned-archive';
 import { ONE_BODY_SHORT_TEMPLATE } from './encounters/one-body-short';
 import { TOLL_OF_BLADES_TEMPLATE } from './encounters/toll-of-blades';
 import { THE_SIGN_OVER_THE_RUIN_TEMPLATE } from './encounters/the-sign-over-the-ruin';
@@ -5595,6 +5597,8 @@ const RAW_UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   APOTHEOSIS_ASCENSION_TEMPLATE,
   ROAD_AMBUSH_TEMPLATE,
   THE_UNCLAIMED_RELIC_TEMPLATE,
+  THE_BROKEN_SEAL_TEMPLATE,
+  THE_DROWNED_ARCHIVE_TEMPLATE,
   ONE_BODY_SHORT_TEMPLATE,
   TOLL_OF_BLADES_TEMPLATE,
   THE_SIGN_OVER_THE_RUIN_TEMPLATE,
@@ -5689,6 +5693,8 @@ export const LOCATION_BRANCHING_ENCOUNTER_TEMPLATES: readonly UnifiedActionTempl
   SOUL_FERRYMAN_TEMPLATE,
   ROAD_AMBUSH_TEMPLATE,
   THE_UNCLAIMED_RELIC_TEMPLATE,
+  THE_BROKEN_SEAL_TEMPLATE,
+  THE_DROWNED_ARCHIVE_TEMPLATE,
   ONE_BODY_SHORT_TEMPLATE,
   TOLL_OF_BLADES_TEMPLATE,
   THE_SIGN_OVER_THE_RUIN_TEMPLATE,

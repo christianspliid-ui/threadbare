@@ -441,7 +441,10 @@ export type TraceCategory =
   | 'rival.scheme_phase_advanced'
   // Effect vocabulary activation (THR-1239)
   | 'effect.event_raised'
-  | 'effect.charge_spent';
+  | 'effect.charge_spent'
+  // Overlay / rule-override persistence (THR-1240)
+  | 'effect.overlay_applied'
+  | 'effect.overlay_expired';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'edge_schema_refused',
@@ -801,6 +804,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'rival.scheme_phase_advanced',
   'effect.event_raised',
   'effect.charge_spent',
+  'effect.overlay_applied',
+  'effect.overlay_expired',
 ];
 
 /** Base shape for all trace entries */
@@ -872,6 +877,30 @@ export interface EffectChargeSpentTrace extends TraceBase {
   chargesRemaining: number;
   /** True when this spend emptied the attachment and `destroyOnEmpty` is set. */
   destroyed: boolean;
+}
+
+/**
+ * Trace: a terrain overlay or rule override was persisted, or expired off.
+ *
+ * These are the two halves of one lifecycle and share a shape deliberately — the
+ * question a reader asks of the buffer is "what is currently in force on this hex
+ * / this agent, and when does it lift?", which is answered by pairing an
+ * `applied` against its `expired`. Splitting them into unrelated shapes would
+ * make that pairing a join rather than a filter.
+ *
+ * `key` is the collection key, not the source: `hexKey(col, row)` for a terrain
+ * overlay, the agent id for a rule override.
+ */
+export interface EffectOverlayTrace extends TraceBase {
+  category: 'effect.overlay_applied' | 'effect.overlay_expired';
+  kind: 'terrain' | 'rule';
+  /** `hexKey(col,row)` for terrain, agent id for rule. */
+  key: string;
+  /** `TerrainOverlayType` for terrain, `RuleOverrideKey` for rule. */
+  overlay: string;
+  sourceAttachmentId: string;
+  /** Ticks left at emit time; 0 on expiry, and on an overlay dropped fail-soft. */
+  ticksRemaining: number;
 }
 
 export interface TraceBase {
@@ -2520,6 +2549,7 @@ export type TraceEntry =
   // Effect vocabulary activation (THR-1239)
   | EffectEventRaisedTrace
   | EffectChargeSpentTrace
+  | EffectOverlayTrace
   | FilterPipelineTrace
   | ScoringTrace
   | MovementTrace

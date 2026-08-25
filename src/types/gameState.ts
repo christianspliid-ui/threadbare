@@ -373,6 +373,38 @@ export interface GameState {
   // Ticked by phaseEffectTick.
   effectStates?: Map<string, import('./effects').EffectRuntimeState>;
 
+  // ─── Persisted effect overlays / rule overrides (THR-1240) ──────────
+  //
+  // `alter_terrain` and `modify_rules` executors have always *produced*
+  // ActiveTerrainOverlay / ActiveRuleOverride on ExecutionResult; until this
+  // landed, every consumer read `.mutations` and dropped the other two fields on
+  // the floor, so both primitives executed and discarded. These are the
+  // collections that give them somewhere to live.
+  //
+  // Keyed for O(1) point lookup because the stage-3 consumers are hot paths
+  // (movement cost per step, awareness range per encounter scan) — a flat array
+  // would make every one of them a scan. Overlays are hex-keyed via
+  // `hexKey(col, row)`; overrides are agent-keyed.
+  //
+  // Deliberately GameState and not node properties: an overlay is transient
+  // rule-state, not a world fact, and keeping it off the graph leaves the graph
+  // clean and the drain symmetrical with `pendingHexMutations`.
+  activeTerrainOverlays?: Record<string, import('./effects').ActiveTerrainOverlay[]>;
+  activeRuleOverrides?: Record<string, import('./effects').ActiveRuleOverride[]>;
+
+  // Set by any overlay/override apply or expiry, cleared by the orchestrator's
+  // effect-tick phase after it calls touchWorld()/touchStructure().
+  //
+  // The producing sites (phaseMovement, phaseDoom, battleResolution) have no
+  // SimulationRuntime in scope and so cannot touch the version counters
+  // themselves; the orchestrator does, and it runs the expiry pass every tick
+  // anyway. This flag is how a phase tells it "something changed, bump the
+  // counters" — the same deferred-drain shape as `pendingHexMutations`.
+  overlayStateDirty?: boolean;
+  // Set alongside the above when the change affects movement, which additionally
+  // invalidates the distance matrix (touchStructure, not just touchWorld).
+  overlayStateStructural?: boolean;
+
   // Delve variant state (THR-152 — PR 4 of Ruins Layer)
   activeDelves?: ActiveDelve[];
   delveAdmissionQueue?: DelveQueueEntry[];

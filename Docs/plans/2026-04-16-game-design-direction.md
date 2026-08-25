@@ -92,37 +92,45 @@ Continuous real-time play actively works against the core experience. If the gam
 
 ## Encounter Design Principles
 
-Encounters are the linchpin. They're where the player's emotional investment pays off or deepens. Every encounter design must satisfy these principles:
+Encounters are the linchpin — the curated moments where the game says "pay attention". Every encounter design must satisfy these principles, and every one of them is subject to the register model: `Docs/canon/prose.md` § the register model and § narrator mode — Prose Doctrine v2.
+
+> **Amended 2026-08-25 (THR-1250).** This section is compiled verbatim into the authoring brief that every encounter draft agent reads first, so an April framing here is an April framing in every draft. Principle 2 was replaced (it taught the rejected authored-futures model), principle 7 was retitled, and each principle gained a register clamp. The supersession notes sit in a second paragraph per principle, which the brief's extractor does not compile — the record stays here, the instruction that reaches authors is the current one.
 
 ### 1. Not a Coin Flip (for the Player's Moments)
 
-The binary model (invest essence → succeed/fail) produces two bad states: frustration ("I wasted my investment") or indifference ("I succeeded, next"). Neither keeps the player in the scene. An encounter the player is *present for* must be an experience, not a transaction.
+The binary model (invest essence → succeed/fail) produces two bad states: frustration ("I wasted my investment") or indifference ("I succeeded, next"). Neither keeps the player in the scene. An encounter the player is *present for* must be an experience, not a transaction. **Register clamp:** the richness lives in the mechanism — a hand worth thinking about, bands worth reading — never in the ornateness of the sentences describing it.
 
 **Important distinction:** Binary resolution is fine as a background mechanic. The world simulation runs thousands of small encounters that resolve through success/failure and change world state — factions gain or lose territory, NPCs gain or lose reputation, trade routes open or close. This is the engine of continuous change and evolution that makes the world feel alive. But these are not where the player spends their time. The *player-facing* encounters — the curated moments where the game says "pay attention" — must be richer than a coin flip.
 
-### 2. Multiple Meaningful Choices
+### 2. Multiple Meaningful Nudges
 
-The player should face several decision points within an encounter, each a genuine dilemma. "Do I push him to fight or to flee? Fighting might win but might break him. Fleeing preserves him but costs reputation." The choices should require understanding the protagonist — their personality, capabilities, current state — not just resource math.
+The player is a god, not the protagonist: they never choose the mortal's response. What varies inside an encounter is which **nudges** the player spends — each a concrete exercise of influence on the scene or on the mortal's inner weather, each with a real cost and a real risk. The dilemma is *whether and where to spend*, and reading it requires understanding the protagonist — personality, capabilities, current state — not just resource math. Playing nothing must stay viable. **Register clamp:** a card face states what the god does and why that moves the odds, in plain interactive text; the scene does the fiction, the cards do the rules.
+
+*Superseded 2026-08-25 (THR-1250).* This principle previously read "Multiple Meaningful Choices" and taught the rejected authored-futures model, in these words: *"The player should face several decision points within an encounter, each a genuine dilemma. 'Do I push him to fight or to flee? Fighting might win but might break him. Fleeing preserves him but costs reputation.'"* That is a choice between authored endings made **for** the mortal — exactly what the nudge pivot (THR-772) rejected and what the brief's own Section D and rejection trigger 14 reject. It survived here for four months and was compiled, unlabelled, into the preamble every draft agent reads first.
 
 ### 3. No Obviously Right Answer
 
-If one choice is clearly optimal, it's not a dilemma. The best encounters create situations where every option has real upside and real risk, and the "right" answer depends on what you value: safety vs. glory, short-term survival vs. long-term arc, the protagonist's nature vs. what you want them to become.
+If one option is clearly optimal, it's not a dilemma. The best encounters create situations where every option has real upside and real risk, and the "right" answer depends on what you value: safety vs. glory, short-term survival vs. long-term arc, the protagonist's nature vs. what you want them to become. **Register clamp:** state each option's upside and cost plainly on the card face — a dilemma the player has to decode is not a dilemma.
 
 ### 4. Failure Must Be Cool
 
-Every failure outcome should create narrative texture — new conditions, new traits, new story hooks — that makes the next chapter more interesting. Capture, loss, injury, shame, exile: these aren't punishment, they're *plot*. The player should think "oh no — oh, that's actually interesting" rather than "that sucked, I want to reload."
+Every failure outcome should create narrative texture — new conditions, new traits, new story hooks — that makes the next chapter more interesting. Capture, loss, injury, shame, exile: these aren't punishment, they're *plot*. The player should think "oh no — oh, that's actually interesting" rather than "that sucked, I want to reload." **Register clamp:** name the consequence in plain words — what changed, what it cost, what is owed now — and let that be the texture.
 
 ### 5. Consequences Reshape Trajectory
 
-Both success and failure should visibly change the protagonist's emotional state, capabilities, relationships, and opportunities. The player should see the aftermath and think "they're different now." The arc has turned.
+Both success and failure should visibly change the protagonist's standing, capabilities, relationships, and opportunities. The player should read the aftermath and be able to say what is different. The arc has turned. **Register clamp:** report the change as events and state the player can inspect, never as an interior condition the narrator asserts on the mortal's behalf.
 
-### 6. Emotionally Resonant Stakes
+### 6. Stakes Stated Before the Hand
 
-Before choices appear, the player must understand the stakes in *human* terms. Not "DC 15 Strength check" but "he's exhausted and alone, and if he fails here, he'll believe he was never meant to be more than a beggar." The game sets up empathy before it asks for decisions.
+Before the hand appears, the player must understand what this costs the protagonist if it goes wrong. Not "DC 15 Strength check" but the concrete price: the debt falls due, the guild strikes his name, he walks back the way he came with nothing. The game states the stake before it offers the nudges. **Register clamp:** stakes are facts and costs in the narrator's voice from outside the scene — never the mortal's interior weather, and never foreshadowed for the reader to decode.
 
-### 7. The Roller Coaster
+*Retitled 2026-08-25 (THR-1250)* from "Emotionally Resonant Stakes", whose worked example — *"he'll believe he was never meant to be more than a beggar"* — modelled the interiority Prose Doctrine v2 bans. The principle survives; the example was the drift.
 
-Within a single encounter, the emotional trajectory should shift — hope rises, complications appear, the tide turns, a final moment of uncertainty. The player should feel carried through an arc, not presented with a menu.
+### 7. The Situation Turns
+
+Within a single encounter the situation should turn: a complication lands, a cost is paid, the odds move. The player is reading a sequence of events, not picking from a menu. **Register clamp:** the turn is made of things that happen and prices that get paid — one fact per sentence, the ≤80-word beat budget — never of prose reaching for an arc.
+
+*Retitled 2026-08-25 (THR-1250)* from "The Roller Coaster", which asked authors to make the player "feel carried through" an emotional trajectory. That is a brief for atmosphere, and atmosphere is not a job (Prose Doctrine v2).
 
 ---
 
@@ -229,6 +237,8 @@ The world must feel vibrant and alive *independently of the player*. This is not
 - **Turn compatibility** — every feature works in quick turns (background, ambient, auto-resolved) *and* deep turns (focused, scene-level, branching encounters)
 
 ### Existing Benchmarks (what's closest to working)
+
+*Superseded 2026-08-25 (THR-1252).* Both benchmarks below are described in their pre-nudge shape — "narrative choices" and "branching encounter through choices" are the rejected authored-futures model; Meet The First has been nudge-native since WS6 (THR-868), and the current quality bar is the Swollen Ford exemplar + Prose Doctrine v2 (`Docs/exemplars.md`). The *aspiration* the closing sentence names — prose, meaningful interaction, identity-and-relationship payoff — still stands; the choice mechanics named here do not.
 
 Two features in the current prototype are closest to delivering the real game experience:
 

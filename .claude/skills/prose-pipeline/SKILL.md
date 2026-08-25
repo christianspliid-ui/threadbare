@@ -13,7 +13,7 @@ description: >
   "prose composer", "prose pipeline", "prose architecture", "graph-walking",
   "resolver registry".
 model: opus
-last_validated_against: 2026-07-05
+last_validated_against: 2026-08-25
 ---
 
 > **Load before authoring:** `Docs/canon/rulebook-quick-reference.md` (always — the synthesis layer for rules of play). Load `Docs/canon/rulebook.md` (full rulebook) when the work touches a specific rule of play and you need depth, status flags, or source citations.
@@ -165,7 +165,7 @@ All prose follows the project's aesthetic:
 **Plainness is the baseline; lyricism is the rationed exception, not the default.** Every player-facing string belongs to one of three registers:
 - **baseline** (default — the large majority of what the player reads): plain, concrete, active; one idea per sentence; dry understatement over ornament. If a word would send a reader to a dictionary, it does not belong here.
 - **character** (dialogue / agent-attributed lines): idiosyncratic but comprehension-first, wit over ornament; the narration *around* dialogue stays baseline.
-- **peak** (rationed lyricism): only on doom stage transitions, the Twilight Phase, encounter climax steps, major aftermath beats, and World-Soul / Echo prose. At most one figurative image per paragraph.
+- **peak** (rationed lyricism): only on the non-encounter surfaces — doom stage transitions, the Twilight Phase, and World-Soul / Echo prose (encounter climaxes and aftermath beats lost peak status 2026-08-25, Doctrine v2). At most one figurative image per paragraph.
 
 **Hard rule — interactive text is always plain.** Labels, card names, IPK keywords, tooltips, headings: no metaphor, no archaic words. Declare a non-default register with the additive `register?: 'baseline' | 'character' | 'peak'` field on the content entry (absent → baseline). Full model + before/after examples: [`Docs/canon/prose.md` § the register model](../../../Docs/canon/prose.md). Deterministic floor: the prose-QA `registerCompliance` dimension (`window.__DEBUG.proseQualityReport()`) — a `warn` may ship with editorial sign-off; a `fail` needs a rewrite or an honest register re-declaration.
 

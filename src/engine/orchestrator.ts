@@ -225,9 +225,11 @@ import { RARITY_TIER_NAMES } from '../types/rarity';
 import { hexDistance } from '../lib/hexMath';
 import {
   touchWorld,
+  touchStructure,
   ensureEncounterCache,
   ensureDistanceMatrix,
 } from './simulationRuntime';
+import { expireOverlays } from './effects/effectOverlayStore';
 import { recordBalanceEvent } from './balanceTelemetry';
 import { checkMidEncounterPromotion, isNotableEntry } from './attentionTier';
 import type { EncounterPromotionTrace, DigestEntry } from '../types/attention';
@@ -2991,9 +2993,35 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
       durationMs: tickProfilingEnabled ? performance.now() - effectStart : undefined,
       summary: `effect_tick: ${processedEffectActors}/${agents.length} actors processed`,
     });
+    // THR-1240: expire persisted terrain overlays and rule overrides, then bump
+    // the version counters if anything changed this tick — either here, or at a
+    // producing site earlier in the tick that had no runtime in scope and left
+    // the `overlayStateDirty` flag instead.
+    //
+    // Expiry runs even when no actor bore an effect this tick: the collections
+    // are keyed by hex and agent, not walked per bearer, so an overlay outlives
+    // the agent that cast it and must still lift on schedule.
+    const overlayDelta = expireOverlays(s, s.tick);
+    const overlayDirty = overlayDelta.changed || s.overlayStateDirty === true;
+    const overlayStructural = overlayDelta.structural || s.overlayStateStructural === true;
+    if (overlayDirty && runtime) {
+      // `runTick` already bumps `worldVersion` at end of tick (TB-086), so this
+      // call is belt-and-braces rather than load-bearing. Kept deliberately: it
+      // makes the overlay collections' visibility a property of this phase
+      // instead of an inherited invariant from another file.
+      touchWorld(runtime);
+      // This one IS load-bearing — nothing else invalidates the distance matrix,
+      // and terrain overlays change the hex character it is built from.
+      if (overlayStructural) touchStructure(runtime);
+    }
+
     const existingHexMutations = s.pendingHexMutations ?? [];
     s = { ...s, effectStates: updatedEffectStates,
-      pendingHexMutations: [...existingHexMutations, ...effectHexMutations] };
+      pendingHexMutations: [...existingHexMutations, ...effectHexMutations],
+      // Cleared unconditionally: the flag's whole job is to survive from a
+      // runtime-less producing site to this phase, and it has now been read.
+      overlayStateDirty: false,
+      overlayStateStructural: false };
   }
 
   // Phase 2a.5: Encounter Progression — advance active encounters whose current step has elapsed

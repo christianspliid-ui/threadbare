@@ -15,12 +15,12 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 52 |
+| 🟢 LIVE | 53 |
 | 🟠 PARTIAL | 2 |
 | 🔴 LEAKED | 7 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 14 |
-| **Total** | **75** |
+| **Total** | **76** |
 
 ## Contracts by producing subsystem
 
@@ -91,6 +91,12 @@ remediation ticket or the build fails.
 | `reunion-reads-the-edges-not-the-roster` | Who once rode with a company survives its ending — the record is the membership edges dissolution stamped, never the roster it emptied. | property: `leftAtTick` | Companies & Group Travel | 🟢 LIVE | — |
 | `reunite-rides-draw-together-convergence` | A god calling a dead company back does not invent a new kind of pull — the scattered feel exactly the tug Draw Together uses, so their own encounter choices bend homeward. | property: `convergePullHexCol`, `convergePullHexRow`, `convergePullUntilTick` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `sunder-window-amplifies-company-decay` | A sundered company comes apart faster and more visibly — quarrels bite harder, people leave sooner, and the drama pool starts telling the story before the numbers justify it. | function: `isGroupSundered` | Companies & Group Travel | 🟢 LIVE | — |
+
+### Effects & Conditions
+
+| Contract | Intent | Mechanism | Consumer | Status | Ticket |
+|---|---|---|---|---|---|
+| `effect-executor-overlay-persistence` | Terrain overlays and rule overrides an executor produces are persisted on GameState, expire on schedule, and are readable by the systems they govern. | function: `applyExecutionOverlays`, `expireOverlays`, `getPersistedRuleOverride` | Effects & Conditions | 🟢 LIVE | — |
 
 ### Encounters & Dilemmas
 
@@ -292,10 +298,10 @@ remediation ticket or the build fails.
 
 - **Intent:** Game events reach event-triggered effect primitives (reactive, until_event, stacking, transform, one-shot resource_manipulate) on the agents they happen to.
 - **Producer → Consumer:** Attachments, Items & Possessions → Effects & Conditions
-- **Production hits:** 8 total — 4 write, 2 read, 2 unclassified
+- **Production hits:** 9 total — 4 write, 2 read, 3 unclassified
 - **Write sites:** `src/engine/battleResolution.ts`, `src/engine/orchestrator.ts`, `src/engine/phaseDoom.ts`, `src/engine/phaseMovement.ts`
 - **Read sites:** `src/engine/effects/effectEventDispatch.ts`, `src/engine/effects/effectEvents.ts`
-- **Other hits:** `src/engine/effects/index.ts`, `src/engine/effectTick.ts`
+- **Other hits:** `src/engine/effects/effectOverlayStore.ts`, `src/engine/effects/index.ts`, `src/engine/effectTick.ts`
 - **Verdict:** Verified 2026-08-25: THR-1239. The consumer half was always live and the producer half was almost entirely missing: outside the single encounter_outcome raise in the orchestrator, no site in the engine ever constructed an EffectEvent, so the whole executor family (teleport, spawn, compel, cascade, ...) was unreachable in normal play while looking wired. Movement arrival now raises entered_hex and battle create/resolve raise combat_started/combat_ended, all four sites through the shared raiseEffectEvent; the orchestrator site was migrated onto it rather than kept as a second copy. Every raise emits effect.event_raised carrying its site and reactive count, so a live-but-unheard producer is distinguishable from an unwired one. Live evidence: seeded medium CLI run, `printf "tick 30
 traces 5000
 exit
@@ -427,10 +433,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Spheres & Quintessence
 - **UL terms:** *Quintessence*, *Aftermath*
 - **Module:** `src/engine/encounterAftermath.ts`
-- **Production hits:** 15 total — 1 write, 1 read, 13 unclassified
+- **Production hits:** 16 total — 1 write, 1 read, 14 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`
 - **Read sites:** `src/engine/phaseQuintessence.ts`
-- **Other hits:** `src/data/content-eval/compositionContract.ts`, `src/data/encounters/apotheosis-ascension.ts`, `src/data/encounters/one-body-short.ts`, `src/data/encounters/toll-of-blades.ts`, `src/data/encounters/vertical-slice.ts` +8 more
+- **Other hits:** `src/data/content-eval/compositionContract.ts`, `src/data/encounters/apotheosis-ascension.ts`, `src/data/encounters/one-body-short.ts`, `src/data/encounters/the-broken-seal.ts`, `src/data/encounters/toll-of-blades.ts` +9 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `authored-step-difficulty-player-resolution` — 🟢 LIVE
@@ -439,10 +445,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Domain Capability*, *UnifiedActionTemplate*
 - **Module:** `src/engine/unifiedActionResolution.ts`
-- **Production hits:** 152 total — 1 write, 2 read, 149 unclassified
+- **Production hits:** 153 total — 1 write, 2 read, 150 unclassified
 - **Write sites:** `src/data/unified-action-templates.ts`
 - **Read sites:** `src/engine/targetActions.ts`, `src/engine/unifiedActionResolution.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/ActionDrawer.tsx` +144 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/ActionDrawer.tsx` +145 more
 - **Verdict:** Verified 2026-07-25: THR-728: `unified-action-templates.ts` authors `steps[].difficulty`; `resolveUncontestedStep` reads it for `source === 'player'` (the auto-success early-return is now gated behind `PLAYER_CAST_VARIANCE_ENABLED`), and `targetActions.ts` reads the same field via `maxStepDifficulty` to render the focused card's risk line. Measured over 400 seeds: the outcome set for a positive-difficulty cast is >1 band. THR-1073 rerouted both read sites through `tierScaledDifficulty`: a step declaring `difficultyContext: 'target_tier_scaled'` treats its authored `difficulty` as a tier-1 baseline and resolves the real value from the target's tier. Both sites resolve through the same helper, so the card's risk line cannot drift from the roll; a step without the marker is returned unchanged.
 
 ### `authored-tier-ramp-target-scaled-price` — 🟢 LIVE
@@ -637,6 +643,16 @@ exit
 - **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DecisionBreakdown.tsx`, `src/components/Game/LocationProfileModal.tsx` +56 more
 - **Verdict:** Verified 2026-07-23: THR-725: end-to-end in the CLI (seed 42, medium) — applied `loc.blight`'s -10 prosperity write to Thornhaven at tick 20; tick 21 emitted `econ_shock_seeded` (bust, -10.0) planting `encounter.debt_collection` and `encounter.aid_refugees`; by tick 27 both had matured into live scenes on the seeded agents. The verb now produces story, not just a number.
 
+### `effect-executor-overlay-persistence` — 🟢 LIVE
+
+- **Intent:** Terrain overlays and rule overrides an executor produces are persisted on GameState, expire on schedule, and are readable by the systems they govern.
+- **Producer → Consumer:** Effects & Conditions → Effects & Conditions
+- **Production hits:** 5 total — 1 write, 3 read, 1 unclassified
+- **Write sites:** `src/engine/effects/effectEventDispatch.ts`
+- **Read sites:** `src/engine/effects/effectOverlayStore.ts`, `src/engine/effects/effectQueries.ts`, `src/engine/orchestrator.ts`
+- **Other hits:** `src/engine/effects/index.ts`
+- **Verdict:** Verified 2026-08-25: THR-1240. Both halves of this contract existed and were never joined: executeAlterTerrain and executeModifyRules have always returned populated terrainOverlays/ruleOverrides on ExecutionResult, and every consumer looped result.mutations — which both executors leave EMPTY — applied nothing, and dropped the other two fields. The primitives therefore returned success: true and changed nothing, which is the value-level deadness this registry exists to catch: symbol-matching greps both sides green. GameState.activeTerrainOverlays (hex-keyed) and activeRuleOverrides (agent-keyed) are the destination; the drain moved into applyExecutionResult so there is ONE apply path (phaseDoom's duplicated inline mutation loop was migrated onto it rather than left as a second copy that could keep dropping fields). Expiry runs world-level once per tick in the orchestrator effect-tick phase, since an overlay outlives the agent that cast it. Non-vacuous by falsification: disabling the single drain line fails exactly the two end-to-end tests and no others (2 failed / 19 passed), so the tests assert the wiring rather than the store. Unit coverage: src/engine/effects/__tests__/effectOverlayStore.test.ts (21 tests), driving the REAL executors rather than hand-built overlay literals — a fixture that builds its own ActiveTerrainOverlay would pass identically against the broken build, because the break was never in the store. Reach note: the catalog's own alter_terrain uses (artifact-templates.ts) sit behind artifact activation, which is still dormant; the live producer today is a reactive nested effect, which THR-1239 made reachable. Stage 4 migrates create_barrier onto alter_terrain and is what puts catalog content on this path.
+
 ### `essence-earned-unlocks-attunement-cards` — 🟢 LIVE
 
 - **Intent:** Working a sphere teaches you its deeper tricks: essence drawn through a sphere over a lifetime widens what that sphere deals you, so a god who actually uses their power ends the run holding more of it than a god who hoarded.
@@ -770,10 +786,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Ambitions & Initiatives
 - **UL terms:** *Nudge*, *Ambition*
 - **Module:** `src/engine/encounters/nudgeDispatch.ts`
-- **Production hits:** 6 total — 1 write, 2 read, 3 unclassified
+- **Production hits:** 7 total — 1 write, 2 read, 4 unclassified
 - **Write sites:** `src/engine/phases/phaseAutonomousAftermath.ts`
 - **Read sites:** `src/engine/ambitionAssignment.ts`, `src/engine/encounterAftermath.ts`
-- **Other hits:** `src/engine/encounters/nudgeDispatch.ts`, `src/engine/encounters/poleLean.ts`, `src/types/unifiedAction.ts`
+- **Other hits:** `src/data/encounters/the-broken-seal.ts`, `src/engine/encounters/nudgeDispatch.ts`, `src/engine/encounters/poleLean.ts`, `src/types/unifiedAction.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `nudge-hand-runtime-filters-and-sphere-discount` — 🔵 UNVERIFIED-OK
@@ -826,10 +842,10 @@ exit
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 218 total — 1 write, 1 read, 216 unclassified
+- **Production hits:** 220 total — 1 write, 1 read, 218 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts` +211 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts` +213 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `relocation-intent-steers-agent-movement` — 🔵 UNVERIFIED-OK
@@ -838,10 +854,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Encounter*, *Agent*
 - **Module:** `src/engine/relocationIntent.ts`
-- **Production hits:** 6 total — 1 write, 2 read, 3 unclassified
+- **Production hits:** 7 total — 1 write, 2 read, 4 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`
 - **Read sites:** `src/engine/encounterScoring.ts`, `src/engine/phaseAgentDecision.ts`
-- **Other hits:** `src/data/encounters/the-sign-over-the-ruin.ts`, `src/engine/relocationIntent.ts`, `src/types/movement.ts`
+- **Other hits:** `src/data/encounters/the-broken-seal.ts`, `src/data/encounters/the-sign-over-the-ruin.ts`, `src/engine/relocationIntent.ts`, `src/types/movement.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `reputation-with-unified-read` — 🟢 LIVE
@@ -963,10 +979,10 @@ exit
 - **Producer → Consumer:** Personality & Emergent Traits → Ambitions & Initiatives
 - **UL terms:** *Trait*
 - **Module:** `src/engine/traitRefValidation.ts` — **no production importers**
-- **Production hits:** 19 total — 3 write, 2 read, 14 unclassified
+- **Production hits:** 21 total — 3 write, 2 read, 16 unclassified
 - **Write sites:** `src/data/artifact-templates.ts`, `src/data/choice-set-catalog.ts`, `src/data/reward-attachment-catalog.ts`
 - **Read sites:** `src/debug-bridge.ts`, `src/engine/traitRefValidation.ts`
-- **Other hits:** `src/data/__fixtures__/nudge-exemplar/swollen-ford-exemplar.ts`, `src/data/anomaly-reward-catalog.ts`, `src/data/encounter-content.ts`, `src/data/encounters/one-body-short.ts`, `src/data/encounters/the-garrisons-price.ts` +9 more
+- **Other hits:** `src/data/__fixtures__/nudge-exemplar/swollen-ford-exemplar.ts`, `src/data/anomaly-reward-catalog.ts`, `src/data/encounter-content.ts`, `src/data/encounters/one-body-short.ts`, `src/data/encounters/the-broken-seal.ts` +11 more
 - **Verdict:** Pinned by badgeOverride: Detector shipped and measured (THR-786): 62 of the authored trait refs resolve to no trait definition, so those gates can never pass. Reconciling the authoring vocabulary against the minted definitions is content work outside the predicate floor.
 
 ### `twilight-harvest-preserves-defining-card` — 🔵 UNVERIFIED-OK

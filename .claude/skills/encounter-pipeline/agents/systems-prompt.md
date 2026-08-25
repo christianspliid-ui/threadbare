@@ -19,8 +19,8 @@ Also read these source files to understand current runtime capabilities:
 - `src/engine/unifiedActionLifecycle.ts`
 - `src/engine/unifiedActionResolution.ts`
 - `src/data/unified-action-templates.ts` (what already exists — registration itself is compiler-owned since THR-1246, so audit against it, never plan edits to it)
-- `src/data/encounters/flawed-steel.ts` (canonical branching example)
-- `Docs/encounter-building-checklist.md` (support bundle and primitive-gap rules)
+- `src/data/__fixtures__/nudge-exemplar/swollen-ford-exemplar.ts` (canonical format exemplar); `src/data/encounters/flawed-steel.ts` only as a *wiring* reference — its prose and choice model predate the nudge pivot and Doctrine v2
+- `Docs/encounter-support-network.md` (support bundle, registration audit, and primitive-gap rules)
 
 ## What You Must Produce
 

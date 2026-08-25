@@ -1,5 +1,7 @@
 # Encounter Branching Templates
 
+> **SUPERSEDED (2026-08-25, THR-1252).** This branch-grammar library serves the retired authored-choice surface ("choices reveal what kind of god the player is being" — the player picks no branches under the Nudge Model). Situation variety is owned by the Seed Dice / batch packet tables in the nudge authoring spec (THR-1245). Grammars here may still inspire *situation shapes*; do not use them as a choice-design source. Kept for history; nothing loads it as live guidance.
+
 > Added 2026-04-04. A reusable branching-template library for encounter authors and agents. Use this alongside the encounter-building checklist to avoid repeating the same branch grammar across every serious encounter.
 
 ## Purpose

@@ -70,7 +70,7 @@ Every `narrative` field in steps and outcomes supports dynamic text substitution
 | `{omen_adj}` | Active omen flavor | "whispering" |
 | `{omen_verb}` | Active omen action | "unravels" |
 | `{omen_noun}` | Active omen object | "the membrane" |
-| `{omen_atmosphere}` | Active omen mood | "the air thickens" |
+| `{omen_atmosphere}` | Active omen fact, stated plainly (Doctrine v2: atmosphere must do a job) | "ravens have not left the roofline since dawn" |
 | `{doom_verb}` | Doom archetype vocabulary — action verb | "fractures" (breach) / "gathers" (convergence) |
 | `{doom_adj}` | Doom archetype vocabulary — adjective | "fractured" (breach) / "inexorable" (convergence) |
 | `{doom_atmosphere}` | Doom archetype vocabulary — atmospheric phrase | "something presses through" (breach) |
@@ -423,7 +423,7 @@ The player is a god. Their choices are always divine interventions, never direct
 
 **Why this changes what you write:** You're not writing choices for a character — you're writing moments where divine observation creates tension. The god sees the agent struggling and must decide: pour power in, or let them find their own way? **Write moments where the intervention decision is genuinely difficult — where supporting has a cost beyond essence, and withdrawing has consequences beyond failure probability.** That last clause is now the *whole* of it rather than a stretch goal: since THR-1121 withdrawing has no failure-probability consequence to be "beyond", because no choice carries one. The interesting difference between meddling and watching has to be in the fiction and the aftermath, or it is nowhere. The intervention ratio is still tracked, and a god who always meddles still creates a different story than one who watches.
 
-**Authored moral-axis poles on choice cards (THR-528).** An `AuthoredChoiceCard` (the cards under a template's `authoredChoices`) can now *declare* which way a choice tilts the acting agent's personality, instead of letting the engine infer it from `interventionType`:
+**Authored moral-axis poles on choice cards (THR-528). Legacy surface (2026-08-25 note):** `authoredChoices` is the rejected authored-futures model — no new template authors it (WS5 complete, THR-1086); the render layer survives only for un-migrated saves and the drift mechanics below apply to nudge pole-leans through the same resolvers. An `AuthoredChoiceCard` can *declare* which way a choice tilts the acting agent's personality, instead of letting the engine infer it from `interventionType`:
 
 ```ts
 {
@@ -3095,3 +3095,47 @@ waiting; what it is waiting on is a ruling on whether the spine comes from what
 the god remembers or from a named campaign the world offers. Until that lands,
 authoring more prose against the template ids adds no player-visible text —
 check THR-1198's state before starting.
+
+### Capability 23: Terrain Overlays and Rule Overrides — Effects That Outlive the Scene (THR-1240)
+
+Two primitives that an author could always *write* and that never *did* anything:
+
+```ts
+{ type: 'alter_terrain', target: 'self_hex', terrainEffect: 'blighted', ticks: 6 }
+{ type: 'modify_rules', rule: 'movement_cost_multiplier', value: 0.5,
+  scope: { scope: 'self' }, ticks: 8 }
+```
+
+Both executors have always returned `success: true` carrying a fully-formed
+result. Every consumer read `result.mutations` — which these two leave empty —
+and dropped the rest, so the blight never landed and the multiplier never
+applied. Stage 2 gave them somewhere to live.
+
+**What an author can now rely on.** An `alter_terrain` effect marks a hex for a
+stated number of ticks (or `'permanent'`), and lifts on schedule. A
+`modify_rules` effect sets one of the thirteen `RuleOverrideKey` values on its
+bearer for a stated duration. Omit `ticks` and you get
+`OVERLAY_DEFAULT_DURATION_TICKS` (24 — two in-game days), *not* permanence: a
+missing duration is an authoring omission, and defaulting the other way lets one
+unreviewed entry blight a hex for the rest of the run.
+
+**Stacking is decided for you, per key family** — you do not need to reason about
+what happens when two sources land on the same key:
+
+| Key shape | Fold | Neutral |
+|---|---|---|
+| `*_multiplier` | multiplied together, clamped to `[1/3, 3]` | `1.0` |
+| `*_bonus`, `*_modifier` | summed | `0` |
+| `death_prevented` | boolean-OR — one source granting is enough | `false` |
+| string / struct (`encounter_reach_override`) | first-wins | — |
+
+The clamp matters most downward. Nothing bounds how many attachments an agent
+may carry, and an unclamped stacked reduction does not slow the system it gates,
+it stops it.
+
+**What is not yet true.** The eleven rule keys still have no consumer at their
+owning sites — that is stage 3 (THR-1241). A `movement_cost_multiplier` you
+author today is stored, folded and expired correctly, and movement does not yet
+read it. Check THR-1241's state before authoring content that depends on a
+particular key actually biting; `death_prevented`, `movement_cost_multiplier`
+and `awareness_range_bonus` are the three named to land first.

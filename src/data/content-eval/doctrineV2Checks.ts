@@ -77,7 +77,7 @@ export const IMPERATIVE_VERB_LEXICON: readonly string[] = [
   'lay', 'lead', 'lend', 'lift', 'light', 'loose', 'loosen', 'mark', 'mend',
   'move', 'name', 'nudge', 'offer', 'open', 'part', 'pay', 'pin', 'plant',
   'press', 'pull', 'push', 'quicken', 'quiet', 'raise', 'reach', 'read',
-  'ready', 'reveal', 'risk', 'root', 'rouse', 'salt', 'save', 'seal', 'seed',
+  'ready', 'reveal', 'risk', 'root', 'rouse', 'salt', 'salvage', 'save', 'seal', 'seed',
   'sell', 'send', 'set', 'settle', 'shade', 'sharpen', 'shelter', 'shield',
   'shift', 'show', 'silence', 'slow', 'smother', 'soften', 'sound', 'spare',
   'speed', 'spend', 'split', 'spread', 'stall', 'stand', 'starve', 'steady',
