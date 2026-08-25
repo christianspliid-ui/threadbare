@@ -632,11 +632,13 @@ Pass 3b (Package, Opus) ──────→ <slug>-package.md
     ├── PACKAGE PARK? → <slug>-parked.md, continue the batch (ruling 4)
     │
     ▼
-Pass 4 (Implementation, Sonnet) ──→ src/data/encounters/<slug>.ts
-                                     src/data/encounters/__tests__/<slug>.test.ts
-                                     public/concept-art/encounters/<slug>.jpg
-                                     src/data/unified-action-templates.ts (modified)
-    │
+Pass 4 (Implementation, Sonnet) ──→ Docs/plans/encounters/<slug>.package.json
+    │                                (the content package — THR-1246; prose verbatim)
+    ▼
+npm run compile:encounter ─────────→ src/data/encounters/<slug>.ts
+    │                                src/data/encounters/__tests__/<slug>.test.ts
+    │                                src/data/unified-action-templates.ts (registered)
+    │                                + concept art: public/concept-art/encounters/<slug>.jpg
     ▼
 Stage 3 (Machine gates) ──→ npm run check:encounter -- <id>          [green = PR may exist]
     │
