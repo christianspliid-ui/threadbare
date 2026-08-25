@@ -128,6 +128,20 @@ export const STATIC_ARTIFACT_SOURCES: Readonly<Record<string, readonly string[]>
   // closeout PR stays on the docs track, which is the whole point of a closeout.
   // Registered by THR-1016 as an EXTERNAL_GENERATED_ARTIFACTS member.
   "Docs/project-status.md": ["Docs/status/", "scripts/generate-project-status.ts"],
+  // build-authoring-brief: two plan docs plus the encounter-pipeline SKILL in, a `.md`
+  // out — the harmless direction, so no DOC_TO_CODE_ALLOWLIST entry is needed, and a
+  // SKILL or plan-doc edit keeps its docs-track PR. Registered by THR-1250 as an
+  // EXTERNAL_GENERATED_ARTIFACTS member: its own `check:authoring-brief` sits in the
+  // advisory `check:process` chain, which is how the compiled Section E sat six
+  // rejection triggers behind the live SKILL with no gate ever failing. Note the
+  // generator only hashes the SKILL's trigger block, so the coupling is narrower than
+  // this row implies — the row asks the doc-versus-code question, nothing finer.
+  "Docs/authoring-brief.md": [
+    "Docs/plans/2026-04-16-systemic-wiring-guide.md",
+    "Docs/plans/2026-04-16-game-design-direction.md",
+    ".claude/skills/encounter-pipeline/SKILL.md",
+    "scripts/build-authoring-brief.ts",
+  ],
 };
 
 /**

@@ -421,7 +421,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['discovery', 'power'],
     reaches: ['eye', 'shadow'],
     source: 'vault: Archetypes/Event — Discovery / The Scholar\'s Dangerous Discovery',
-    usedBy: [],
+    usedBy: ['encounter.delve.the_drowned_archive'],
   },
   {
     id: 'hook.apotheosis',
@@ -599,7 +599,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['journey', 'discovery'],
     reaches: ['shadow', 'stone'],
     source: 'vault: Archetypes/Ordeal — Descent Into Darkness',
-    usedBy: [],
+    usedBy: ['encounter.delve.the_broken_seal'],
   },
   {
     id: 'hook.mentors_test',

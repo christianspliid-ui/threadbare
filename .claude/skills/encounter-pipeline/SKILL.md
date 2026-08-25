@@ -7,7 +7,7 @@ last_validated_against: 2026-08-25
 
 > **Load before authoring:** `Docs/canon/rulebook-quick-reference.md` (always — the synthesis layer for rules of play). Load `Docs/canon/rulebook.md` (full rulebook) when the work touches a specific rule of play and you need depth, status flags, or source citations.
 >
-> **Load before drafting a single card:** [`reference/nudge-authoring-spec.md`](reference/nudge-authoring-spec.md) — the canonical authoring contract in the locked THR-883 format: the communication pivot (prose does the scene, cards do the rules), the scene-writer's 14-question checklist, setting envelopes, the 21-type card library, the prose rubric, and the verbatim detector spec. It is shared verbatim with `template-encounter-rewrite`; where this skill and that spec appear to disagree, **the spec wins**.
+> **Load before drafting a single card:** [`reference/nudge-authoring-spec.md`](reference/nudge-authoring-spec.md) — the canonical authoring contract in the locked THR-883 format: the communication pivot (prose does the scene, cards do the rules), **§ Prose doctrine v2 (narrator mode — the binding prose contract)**, the narrator's 12-question checklist, setting envelopes, the 21-type card library, the prose rubric, and the verbatim detector spec. It is shared verbatim with `template-encounter-rewrite`; where this skill and that spec appear to disagree, **the spec wins**.
 
 # Encounter Pipeline v3 — the Encounter Factory line
 
@@ -102,7 +102,7 @@ If `Docs/canon/encounters.md` is missing or inaccessible, fall back to the pre-r
 
 ## Systemic Wiring — READ BEFORE AUTHORING
 
-**Before running the pipeline, read `Docs/authoring-brief.md`** — the compiled preamble covering all 7 engine capabilities and the editorial rejection triggers. It is faster to read and more consistent than the full source. If `Docs/authoring-brief.md` is missing or `npm run check:authoring-brief` reports it stale, fall back to reading `Docs/plans/2026-04-16-systemic-wiring-guide.md` directly.
+**Before running the pipeline, read `Docs/authoring-brief.md`** — the compiled preamble covering register and narrator mode (Section A), all 7 engine capabilities, the design principles, and the editorial rejection triggers. It is faster to read and more consistent than the full source. **Read it in order: Section A governs every section after it**, and any of them that implies a voice loses to it. If `Docs/authoring-brief.md` is missing or `npm run check:authoring-brief` reports it stale, fall back to reading `Docs/plans/2026-04-16-systemic-wiring-guide.md` and `Docs/canon/prose.md` directly.
 
 **Wounds and conditions in aftermath (THR-117):** To apply a physical or mental condition (wound, exhaustion, disease, blessing, …) in a `UnifiedActionTemplate` aftermath reaction, use the `condition_attachment` effect kind — not a legacy `content_grant` (which is not an aftermath effect kind) and not `appliesWound` (which is `EncounterTemplate`-only). Example: `{ kind: 'condition_attachment', templateId: 'trait.condition.wounded' }`. Applying the wound condition automatically triggers mid-encounter tier promotion from `background → shaping` (so the combat failure becomes visible in the chronicle) and feeds into the overflow pipeline (third wound → incapacitation check). You do not need to wire the overflow — it fires automatically. See the "Conditions and wounds" subsection of `Docs/plans/2026-04-16-systemic-wiring-guide.md` for all five subcategories and relevant constants.
 
@@ -112,13 +112,13 @@ If `Docs/canon/encounters.md` is missing or inaccessible, fall back to the pre-r
 
 **Before running the pipeline, read the issue's design doc in `Docs/plans/`.** If the design doc has Section 9 benchmark moments, inject them into the draft agent's prompt as the quality bar. Every encounter authored in this pipeline must meet or exceed the benchmark's emotional specificity and forward-hook quality.
 
-**Inject the design direction principles into the draft agent's context.** The principles are compiled into `Docs/authoring-brief.md` (Section C). Prefer the brief; fall back to `Docs/plans/2026-04-16-game-design-direction.md` when the brief is absent.
+**Inject the design direction principles into the draft agent's context.** The principles are compiled into `Docs/authoring-brief.md` (Section C). **Inject Section A with them, always** — Section C reached draft agents on its own for four months carrying an April aesthetic frame and no voice constraint, which is how three consecutive register rulings failed to hold in shipped prose (THR-1250). Prefer the brief; fall back to `Docs/plans/2026-04-16-game-design-direction.md` plus `Docs/canon/prose.md` when the brief is absent.
 
 **Player-as-god framing constraint.** The player is a god who observes through threads and intervenes indirectly. They NEVER make choices for the character. Every player-facing option is a **nudge** — a concrete, sphere-flavoured exercise of the god's influence on the scene or on the mortal's inner weather (a stumble on loose stone, an urge arriving in sleep, a sense that this has happened before, an old ambition catching light again, a face nobody afterwards quite recalls, a wound that closes cleaner than it should), never an instruction to the mortal (say this, go there, fight) and never a choice between authored endings. Influence, never authorship. The mortal acts according to their personality and the god's influence. Playing nothing must always be viable: a hand is an offer, not a toll gate.
 
 **The editorial agent must check against these principles.** If a draft has structurally correct encounters but emotionally inert prose — if failure is just "you failed" with a number change, if the hand has an obvious dominant card, if the player wouldn't care about the outcome — the editorial agent should REVISE, not PASS. **Additionally, any encounter where the player "chooses how the character responds" must be rejected and reframed as a nudge hand.**
 
-**Register enforcement (plainspoken Malazan, THR-609).** The editorial agent must also check register, per the spec's *Register assignment per authored field* table. **Baseline is the default:** step narration, `fiction` bodies, band base text, and aftermath overviews are plain, concrete, one idea per sentence, dry wit over ornament — no archaic diction, no stacked metaphor, no word that sends a reader to a dictionary. **Card names, `effectLine`s, factor lines and purpose lines are interactive text — always plain** (no metaphor, no ambiguity about what the click does). The **only** place sustained lyricism is earned is a declared **peak** surface: the final step's band prose, the fate-reveal line, and major aftermath beats — and even there, one figurative image per paragraph. A draft that reaches for lyricism in ordinary narration should REVISE. Declare non-default fields with the additive `register?: 'baseline' | 'character' | 'peak'` field (absent → baseline). Canon: [`Docs/canon/prose.md` § the register model](../../../Docs/canon/prose.md); deterministic floor: `registerCompliance` in `window.__DEBUG.proseQualityReport()`.
+**Register + narrator mode (Doctrine v2, 2026-08-25 — authoritative in the spec § Prose doctrine v2; register model canonical in [`Docs/canon/prose.md`](../../../Docs/canon/prose.md)).** The editorial agent judges register per the spec's table and prose *mode* per v2: narrator mode on every encounter surface — state facts plainly, never inhabit the scene. Baseline plain is the default everywhere; **card names, `effectLine`s, factor lines and purpose lines are interactive text — always plain**. **Peak lyricism is retired for encounter surfaces** (2026-08-25); the remaining peak surfaces (doom transitions, Twilight, World-Soul) are non-encounter prose and out of this pipeline's scope. A draft that reaches for lyricism, or for in-situ immersion, should REVISE. Deterministic floor: `registerCompliance` in `window.__DEBUG.proseQualityReport()`.
 
 ## Quality Exemplar
 
@@ -195,8 +195,7 @@ Then the orchestrator reads the files the Canon page links to and injects them a
 0c. `public/nudge-cards-reference.html` — the 21-type card library and pip vocabulary the hand is cut from.
 0d. [`reference/anchor-catalog.generated.md`](reference/anchor-catalog.generated.md) — **mandatory**, every legal anchor a consequence chip may point at, how it is declared, and which surface shows it. Generated from the live type unions. Inject it into the draft prompt as well as the critics': a chip's referent is chosen while the prose is being written, and an author who has not seen this list writes toward fiction and gets the chip folded three stages later.
 1. `Docs/authoring-brief.md` — compiled capability + principle preamble (preferred). If missing or stale, fall back: read `Docs/plans/2026-04-16-systemic-wiring-guide.md` and `Docs/plans/2026-04-16-game-design-direction.md` instead.
-2. `Docs/encounter-building-checklist.md` — structural packet template. **Its per-step "approach card" sections describe the pre-nudge model**; where it conflicts with the spec above, the spec wins.
-3. `Docs/encounter-branching-templates.md`
+2. `Docs/encounter-support-network.md` — support-bundle contract, registration/tick-lifecycle audit, support matrix, primitive-gap and escalation rules. (Supersedes `Docs/encounter-building-checklist.md` and `Docs/encounter-branching-templates.md`, both retired 2026-08-25 — THR-1252; do not load them as live guidance.)
 3. Obsidian vault pages via MCP:
    - `TheFantasyWorldSimulator/Systems/Thematic Pillars.md`
    - `TheFantasyWorldSimulator/Systems/Anti-Patterns.md`
@@ -504,12 +503,12 @@ The editorial agent:
 5. **If REVISE BEFORE CONTINUING:** produces only the editorial file. Pipeline auto-retries once.
 
 **Automatic REVISE triggers** (non-negotiable):
-1. No approach prose
-2. Generic god-verbs
-3. No thread integration
-4. Missing aftermath reaction choices (medium+)
-5. Reporter prose
-6. No concept art recommendation
+1. **No approach prose** — steps lack descriptive setup before the hand appears
+2. **Generic god-verbs** — "intervene" / "help" / "act" with no specific divine framing
+3. **No thread integration** — the encounter does not acknowledge the agent's relationships, history, or traits
+4. **Missing aftermath reaction choices** — scale medium+ must offer branching aftermath reactions
+5. **Reporter prose** — outcomes state that something happened ("they succeeded") without stating what changed and what it cost
+6. **No concept art recommendation** — brief omitted, or too vague to paint a scene
 7. **A hand outside 4–8 authored cards on a nudge-bearing step**
 8. **Fewer than 4 distinct spheres, or no ungated common (sphere-less) option, in a hand**
 9. **Any nudge with no failure-band fragment** — or a big-delta nudge (`forecastDelta ≥ 0.15`) missing either failure band
@@ -519,7 +518,7 @@ The editorial agent:
 13. **A nudge-specific payoff written into the base band text** — it must read correctly with any subset of the hand active
 14. **A player-facing option that instructs the mortal** rather than exerting the god's influence on the scene or the mortal's inner weather — the rejected authored-futures model. Range is not the test: a dream, an omen, a kindled desire are lawful; "tell them to run" is not
 15. **Any detector hit**: a vagueness-lexicon word, or more than one annotation clause across the encounter
-16. **Scene-bespoke prose on a card face** — a title, effect line, or flavor quote that only reads in this encounter (the communication pivot: prose does the scene, cards do the rules)
+16. **Scene-bespoke prose on a card face** — a title or effect line that only reads in this encounter (the communication pivot: prose does the scene, cards do the rules) — or any flavor quote at all (retired 2026-08-25; cards read like spells)
 17. **An effect line that states mood instead of mechanism** — it must say what the god does and why that moves the odds
 18. **No setting envelope, or a declared class with no opening** — or a spine/afterimage that names class scenery
 19. **Two rider cards in one hand**, or a rider with no justifying comment
@@ -528,7 +527,7 @@ The editorial agent:
 22. **A seam echo** — a repeated image, repeated sentence shape, or near-identical phrasing across a paragraph boundary (the class the automated detectors cannot see; check every opening→spine and spine→band seam explicitly)
 23. **A static authored factor line** — any `factorLines` entry that would read identically on every run of the encounter (the variance rule: factors come from the broader game context — agent, hex, global modifiers, earlier steps — all derived; scene facts are priced into the difficulty and live in the prose)
 24. **The agent as bystander** — a set-piece scene the acting agent merely watches, without the design block's written justification; the default shape is the opportunity/complication/danger landing on the agent or in their path
-25. **Announced outcome mechanics in scene prose** — explicit "pass and X / fail and Y" framing; stakes are foreshadowed in the scene's furniture, outcomes live in afterimages and band prose
+25. **Announced outcome mechanics in scene prose** — explicit "pass and X / fail and Y" framing; the outcome ladder lives in afterimages and band prose. The *stake* is the opposite: state it plainly in P3, as a fact and a cost (Prose Doctrine v2 reversed foreshadow-never-announce — do not encode a stake in the scene's furniture for the reader to decode)
 26. **A design-block breach** — a declared mechanic or object the prose never uses, a step whose prose does not test its declared reach, a mortal choice with no named value axis, or a promise (mystery, hook) with no designed payoff
 27. **A title that fails the glance test** — a player reading only the title cannot say what the complication or objective is ("The Broken Wheel" passes; "The Held Commission" does not)
 28. **A missing or verbose crux** — the design block does not open with the one plain-grammar sentence stating the complication from the agent's point of view, or needs a paragraph to say it

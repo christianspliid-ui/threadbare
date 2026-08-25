@@ -1,5 +1,7 @@
 # Encounter Building Checklist
 
+> **SUPERSEDED (2026-08-25, THR-1252).** This checklist predates the Nudge Model and Prose Doctrine v2: its per-step approach cards and `authoredChoices` requirements are the rejected choice model, and its §4c prose standard ("atmospheric color… encouraged", scene cadence) is the retired register. **Do not author against it.** Current contracts: `.claude/skills/encounter-pipeline/reference/nudge-authoring-spec.md` (prose + hands, § Prose doctrine v2), `Docs/canon/encounters.md` (format), and `Docs/encounter-support-network.md` (the still-current support-bundle/registration/support-matrix rules, extracted verbatim from §§7–7b and the audit sections below). Kept for history; nothing loads it as live guidance.
+
 > Added 2026-04-03. Source-of-truth checklist for building high-quality encounters that ship with a coherent supporting network of NPCs, factions, locations, items, reputation channels, and follow-on world pressure.
 
 ## Purpose

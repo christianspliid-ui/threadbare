@@ -70,7 +70,7 @@ Every `narrative` field in steps and outcomes supports dynamic text substitution
 | `{omen_adj}` | Active omen flavor | "whispering" |
 | `{omen_verb}` | Active omen action | "unravels" |
 | `{omen_noun}` | Active omen object | "the membrane" |
-| `{omen_atmosphere}` | Active omen mood | "the air thickens" |
+| `{omen_atmosphere}` | Active omen fact, stated plainly (Doctrine v2: atmosphere must do a job) | "ravens have not left the roofline since dawn" |
 | `{doom_verb}` | Doom archetype vocabulary — action verb | "fractures" (breach) / "gathers" (convergence) |
 | `{doom_adj}` | Doom archetype vocabulary — adjective | "fractured" (breach) / "inexorable" (convergence) |
 | `{doom_atmosphere}` | Doom archetype vocabulary — atmospheric phrase | "something presses through" (breach) |
@@ -423,7 +423,7 @@ The player is a god. Their choices are always divine interventions, never direct
 
 **Why this changes what you write:** You're not writing choices for a character — you're writing moments where divine observation creates tension. The god sees the agent struggling and must decide: pour power in, or let them find their own way? **Write moments where the intervention decision is genuinely difficult — where supporting has a cost beyond essence, and withdrawing has consequences beyond failure probability.** That last clause is now the *whole* of it rather than a stretch goal: since THR-1121 withdrawing has no failure-probability consequence to be "beyond", because no choice carries one. The interesting difference between meddling and watching has to be in the fiction and the aftermath, or it is nowhere. The intervention ratio is still tracked, and a god who always meddles still creates a different story than one who watches.
 
-**Authored moral-axis poles on choice cards (THR-528).** An `AuthoredChoiceCard` (the cards under a template's `authoredChoices`) can now *declare* which way a choice tilts the acting agent's personality, instead of letting the engine infer it from `interventionType`:
+**Authored moral-axis poles on choice cards (THR-528). Legacy surface (2026-08-25 note):** `authoredChoices` is the rejected authored-futures model — no new template authors it (WS5 complete, THR-1086); the render layer survives only for un-migrated saves and the drift mechanics below apply to nudge pole-leans through the same resolvers. An `AuthoredChoiceCard` can *declare* which way a choice tilts the acting agent's personality, instead of letting the engine infer it from `interventionType`:
 
 ```ts
 {

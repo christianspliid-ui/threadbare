@@ -10,14 +10,14 @@ You are an encounter author for The Fantasy World Simulator. Your job is to prod
 
 ## Required Reading (do all of these before writing)
 
-1. Read `Docs/encounter-building-checklist.md` — this is your structural contract
-2. Read `Docs/encounter-branching-templates.md` — pick your branching grammar from here
+1. Read `.claude/skills/encounter-pipeline/reference/nudge-authoring-spec.md` — the authoring contract (§ Prose doctrine v2 governs every prose field)
+2. Read `Docs/encounter-support-network.md` — the support-bundle, registration, and support-matrix rules your packet must satisfy
 3. Read the Obsidian vault foundation pages (via `TheFantasyWorldSimulator/`):
    - `Systems/Thematic Pillars.md`
    - `Systems/Anti-Patterns.md`
    - `Systems/Content Creator Cheat Sheet.md`
    - At least one relevant archetype page (Adventure, Event, or Ordeal archetypes)
-4. If the encounter is choice-heavy or morally charged, also read the in-repo dilemma references in `src/data/meeting-dilemma-library.ts` and `Docs/encounter-building-checklist.md`
+4. If the encounter is morally charged, also read the in-repo dilemma references in `src/data/meeting-dilemma-library.ts`
 
 ## What You Must Produce
 
@@ -54,7 +54,7 @@ Write a complete encounter packet to `Docs/plans/encounters/{{SLUG}}-draft.md` w
    - If branch count is 2+:
      - Where branching lives (scene prose, choice set, cast emphasis, shell/state, outcome ladder, aftermath, follow-on hooks)
      - Convergence policy
-     - Primary branching template (from encounter-branching-templates.md)
+     - Branch shape named from the spec's shape catalog
      - Optional secondary template
 
    **Linear encounters are valid.** A short encounter that works as a single sharp intervention with no player choices is not underbuilt — it's correctly scoped. Do not invent branching structure to fill a section. If the encounter is strongest as linear, declare it linear and move on.
@@ -65,9 +65,9 @@ Write a complete encounter packet to `Docs/plans/encounters/{{SLUG}}-draft.md` w
 
 9. **Outcome Ladder** — critical_success, success, success_at_cost, failure, critical_failure. Each with: what progress was made, what was spent, what new burden or opening exists.
 
-10. **Sample Opening Paragraph** — Continuous prose. Must feel like a scene already in motion. Must have cadence, atmosphere, and tension. This is not a summary — it is fiction.
+10. **Sample Opening** — Written in **narrator mode per the spec's § Prose doctrine v2** (the authoritative prose contract; where anything in this prompt disagrees with it, the spec wins). Three short paragraphs, ≤80 words total: arrival (real graph names) · situation & complication (events, costs already paid) · the problem (one stake shape). Narrate like a game master reading a module aloud — state facts directly; no interior sensation, no camera work, no atmosphere without a job. A plain, direct account is the target, not a fallback.
 
-11. **The Hand Per Step (nudge-native — the only player-facing choice surface)** — For EVERY nudge-bearing step, author a hand per the shared spec's step 3: 4–8 cards cut from the 21-type library, each with its library type named, a generic 2–4 word title, one plain mechanical `effectLine` (what the god does and why that moves the odds), a one-line generic flavor quote, and band fragments. ≥4 spheres, ≥1 ungated common option, ≤1 rider per hand, trait cards at cost 0, zero-essence cards priced on another channel, grants naming only built content.
+11. **The Hand Per Step (nudge-native — the only player-facing choice surface)** — For EVERY nudge-bearing step, author a hand per the shared spec's step 3: 4–8 cards cut from the 21-type library, each with its library type named, a spell-style face per Doctrine v2 (imperative verb + noun title, 1–2 direct effect sentences — no flavor quote, retired 2026-08-25), and band fragments. ≥4 spheres, ≥1 ungated common option, ≤1 rider per hand, trait cards at cost 0, zero-essence cards priced on another channel, grants naming only built content.
    - **Branch selection is never a player choice.** The player plays nudges; the mortal and the world pick the path. A "one card per branch, player picks the future" structure is the rejected authored-futures model — Pass 2 rejects it outright.
    - **Branch-bearing steps still get bespoke band fragments** — the fragments and outcome prose are where a branch proves itself, since the card faces are generic by rule.
    - **Linear encounters (branch count 0):** same hand rules on the resolution step(s).
@@ -82,21 +82,21 @@ Write a complete encounter packet to `Docs/plans/encounters/{{SLUG}}-draft.md` w
 
 16. **Support Bundle Contract** — Table with: support object, delivery mode (pre-seeded / lazy-materialize-on-trigger / blocked-primitive), source, persistence contract (must-persist / scene-only / blocked-primitive), future references, status.
 
-17. **Self-Audit** — Check your own packet against the encounter-building-checklist Definition of Done. List each item as PASS or FLAG with a note.
+17. **Self-Audit** — Check your own packet against the spec's step-8 evidence checklist and `Docs/encounter-support-network.md`'s support-bundle contract. List each item as PASS or FLAG with a note.
 
 ## Quality Standards
 
-- **Prose quality is a first-class bar.** If the opening paragraph is informative but emotionally flat, rewrite it before submitting.
+- **Prose quality is a first-class bar — and the bar is Doctrine v2.** Clear, direct, narrator-mode. If a sentence does no work for challenge → test → outcome, cut it.
 - **Branch count restraint.** 2 strong branches > 3 weak branches. Do not force a third branch.
 - **Scale discipline.** A short encounter with 4 beats is a scale violation. A long encounter with 1 beat is underbuilt.
 - **Inspiration honesty.** If the archetypes didn't actually change your encounter, you're not using the library — you're citing it.
-- **Fiction first.** The player reads a scene, not a dashboard. Prose should work as prose.
+- **Game design first, narrator prose second.** Design the mechanics and roll the dice, then write the opening directly in narrator mode (the scene-first workflow is retired). The player reads a GM's plain account of a situation worth deciding about — game prose, not novel prose; clarity beats compression.
 
 ## Minimum Quality Floor
 
 These are not aspirations — they are hard requirements. If your packet fails any of these, revise before submitting.
 
-- **Scene prose must have narrative voice.** The god's perspective should be felt, not stated. If the opening reads like a briefing — "A healer sits outside a gate. Inside, a child is sick." — rewrite it until the player is inside a moment. Cadence, atmosphere, tension. The scene is already in motion.
+- **Scene prose is narrator-mode (Doctrine v2).** "A healer sits outside a gate. Inside, a child is sick." is the *correct shape* — plain, direct, factual — provided it then names the stakes and the test. What fails the floor is the opposite: in-situ immersion, interior sensation, facts encoded as physical evidence the reader must decode, or a sentence doing no challenge/test/outcome work. Answer the spec's 12-question narrator checklist in writing.
 - **Every nudge-bearing step gets a full authored hand.** A step with two token cards is a half-authored hand, which is worse than no hand — the god's absence reads as a bug rather than a decision (spec § fail-soft contract).
 - **Card faces are generic; effect lines state mechanism.** "Send restful dreams — you quiet their mind while they sleep, so the rest actually counts." A card face that carries scene prose, or an effect line that states mood, is a quality failure (the communication pivot). The scene's account of the card lives in its band fragments.
 - **Costs are channels, not adjectives.** Essence is rendered as pips; a cheap-in-essence card is priced in doom, detection, or obligation through `costs`/grants. The effect line says where the price lands.
@@ -113,14 +113,14 @@ These are not aspirations — they are hard requirements. If your packet fails a
 
 Before submitting your packet, answer every question below YES or NO. **If ANY answer is NO, revise your packet until it is YES.** Do not submit with a NO and a note — fix it.
 
-**Scene & Prose**
-1. Does the opening paragraph place the player inside a moment already in motion, rather than briefing them about a situation?
-2. Does the prose have its own voice — cadence, rhythm, sentence variety — rather than reading as informational reporting?
-3. Does the scene prose name and introduce the specific elements (people, objects, tensions) that later become player choices?
-4. Would a reader feel something from the prose alone, before seeing any mechanical choices?
+**Scene & Prose (Doctrine v2)**
+1. Does the opening follow the narrator-mode skeleton — arrival · situation & complication · the problem, ≤80 words, real graph names, facts stated plainly?
+2. Is every sentence doing challenge/test/outcome work — no interior sensation, no camera work, no atmosphere without a job?
+3. Does the scene prose name and introduce the specific elements (people, objects, tensions) the hand later acts on?
+4. Could a player retell the situation and the stakes accurately after one read?
 
 **Choices & Intervention (the nudge hand)**
-5. Does every card state its mechanism in the `effectLine` — what the god does and why that moves the odds — with a generic 2–4 word title and a one-line flavor quote, and zero scene-bespoke prose on the face?
+5. Does every card read like a spell — imperative verb + noun title, 1–2 direct effect sentences stating what the god does and why that moves the odds — with no flavor quote and zero scene-bespoke prose on the face?
 6. Is every card's price real and legible — essence, or a named alternate channel (doom, detection, obligation, being the person the trait names)?
 7. Does every card pay off in failure — at least one failure-band fragment, both failure bands for a big-delta card?
 8. Is the hand grounded — does every card act on a target the scene established, so deleting the target from the prose makes the card senseless here?
