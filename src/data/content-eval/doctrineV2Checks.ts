@@ -69,11 +69,11 @@ import {
 export const IMPERATIVE_VERB_LEXICON: readonly string[] = [
   'anchor', 'aim', 'answer', 'arm', 'ask', 'banish', 'bend', 'bind', 'blind',
   'blunt', 'bolster', 'break', 'bribe', 'bury', 'buy', 'calm', 'call', 'carry', 'cast',
-  'catch', 'claim', 'clear', 'close', 'cloud', 'cool', 'cover', 'crack', 'cut',
+  'catch', 'claim', 'clear', 'close', 'cloud', 'cool', 'count', 'cover', 'crack', 'cut',
   'dampen', 'deepen', 'delay', 'deny', 'dim', 'divert', 'draw', 'drive', 'drop',
   'dull', 'ease', 'empty', 'end', 'fan', 'feed', 'fill', 'find', 'fix', 'flood',
   'follow', 'force', 'free', 'freeze', 'gather', 'give', 'grant', 'guard',
-  'guide', 'halt', 'harden', 'hasten', 'hide', 'hold', 'hound', 'kindle',
+  'guide', 'halt', 'harden', 'hasten', 'hide', 'hold', 'hound', 'keep', 'kindle',
   'lay', 'lead', 'lend', 'lift', 'light', 'loose', 'loosen', 'mark', 'mend',
   'move', 'name', 'nudge', 'offer', 'open', 'part', 'pay', 'pin', 'plant',
   'press', 'pull', 'push', 'quicken', 'quiet', 'raise', 'reach', 'read',
@@ -83,8 +83,8 @@ export const IMPERATIVE_VERB_LEXICON: readonly string[] = [
   'speed', 'spend', 'split', 'spread', 'stall', 'stand', 'starve', 'steady',
   'steal', 'steer', 'stiffen', 'still', 'stir', 'stoke', 'stop', 'strike',
   'sway', 'sweeten', 'swell', 'take', 'tally', 'tame', 'tempt', 'test',
-  'thin', 'throw', 'tie', 'tilt', 'trade', 'turn', 'twist', 'uncover', 'unmake',
-  'veil', 'wake', 'ward', 'warn', 'weigh', 'widen', 'win', 'withhold', 'witness',
+  'thicken', 'thin', 'throw', 'tie', 'tilt', 'trade', 'turn', 'twist', 'uncover', 'unmake',
+  'veil', 'wake', 'ward', 'warm', 'warn', 'weigh', 'widen', 'win', 'withhold', 'witness',
 ];
 
 const IMPERATIVE_VERBS: ReadonlySet<string> = new Set(IMPERATIVE_VERB_LEXICON);
