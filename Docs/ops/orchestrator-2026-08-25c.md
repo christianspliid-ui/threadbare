@@ -40,6 +40,8 @@ The skill's T1 step 2 reads *"For each `Todo` / `Idea` candidate"*, but § *1. S
 
 `list_issues(state:"Idea")` returns **50+ items** (paginated). Two were assessed against the code. **The other ~48 were not** — this is a spot-check, not a sweep, and nothing below should be read as coverage of the `Idea` backlog.
 
+`Implementation Planning` — the other state the scan spec omits and that has held promotable work before — was queried in the same pass and is **empty**. So the states covered this run are `Todo`, `Ready for Dev`, `In Dev`, `In Design`, `Implementation Planning` (all four exhaustively) and `Idea` (spot-check only).
+
 **Neither assessed candidate is promotable, and the reasons differ:**
 
 | Issue | Verdict | Evidence |
