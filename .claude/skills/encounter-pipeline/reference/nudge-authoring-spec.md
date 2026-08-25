@@ -825,6 +825,34 @@ Right (narrator mode, the skeleton):
 > No one dares approach it now. Guard Captain \<name> is at his wits' end and asks
 > for help.
 
+**Second exemplar — the director-approved rewrite of the same encounter's live spine
+(THR-1223 batch 1, 2026-08-25).** The first attempt at this rewrite *modified* the old
+text and was rejected: *"you did not do a rewrite from scratch … it is still crap …
+too high brow and not basic game master language."* Two corrections from that
+exchange bind every draft:
+
+1. **"Clever specificity" is the residue tell of the old mode.** Measured counts
+   ("ten counts"), paces ("three paces out"), and writerly participles ("working up a
+   second try") read as literary even when every fact is stated. Basic game-master
+   language uses common words and simple clauses. Throw the old text out and write
+   from the skeleton — never edit the old prose toward the doctrine.
+2. **A card's effect line never repeats a word from the card's name.** "Steady Grip —
+   *Strengthen their grip*" fails; "Steady Grip — *Strengthen their hands*" passes.
+
+The approved spine, verbatim (P1 varies by setting class above it):
+
+> There \{they} find a magic relic lying in the open: black iron, freezing cold.
+> Everyone who tried to carry it away got frostbitten hands and dropped it. No one
+> dares to touch it now.
+>
+> The relic is unclaimed — whoever carries it out may keep it. Another treasure
+> hunter, \{cast:claimant}, is waiting nearby, ready to try again.
+
+And the approved card register: **Steady Grip** — *"Strengthen their hands — they
+hold on long after their strength should fail."* · **Bind Outcome** — *"Guarantee
+success — they will carry the relic out, but pay for it in skin and gear."* ·
+**Banish Fear** — *"Grant them calm — they reach in unafraid and stay that way."*
+
 ### What survives from v1 (restated here so nothing retired needs reading)
 
 - **Clarity beats compression** — a sentence that needs two readings is a defect;

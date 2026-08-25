@@ -1,10 +1,39 @@
 /**
- * The Unclaimed Relic — a single-step `stone` endurance test: a relic sitting in
- * the open, a cold with a radius that has stopped everyone else from carrying it
- * out, and one other claimant working up to a second try.
+ * The Unclaimed Relic — a single-step `stone` endurance test: a freezing relic
+ * in the open, everyone who tried to carry it out frostbitten, and one other
+ * claimant waiting to try again.
  *
  * Batch: border-perils (THR-1221), row 3. Encounter Factory v3, nudge-native,
  * THR-1045 Composition Contract — no exemptions, even at one step.
+ *
+ * ── Prose Doctrine v2 (THR-1223 batch 1 — THE CALIBRATION CASE) ──
+ * Rewritten 2026-08-25 in narrator mode, approved by the director in chat with
+ * two corrections that now bind the whole rewrite: (a) rewrite from scratch in
+ * basic game-master language — "clever specificity" (measured counts, paces,
+ * writerly participles) is the residue tell of the old mode; (b) a card's
+ * effect line never repeats a word from the card's name.
+ * Stake shape (Seed Dice, die 1): Opportunity + Contest.
+ *
+ * Narrator's checklist (12 questions), answered:
+ *  1. P1 arrival with {name} and the place, one per setting class — yes.
+ *  2. P2 states the find and the cost already paid (frostbitten hands,
+ *     dropped relic) — yes.
+ *  3. P3 lands Opportunity + Contest, compounded on purpose — yes.
+ *  4. Opening ≤80 words with any P1 (~66) — yes.
+ *  5. Every sentence a narrator's report; no interior sensation, no camera —
+ *     yes.
+ *  6. Facts stated, never encoded (the chalk line and sweepings are gone) —
+ *     yes.
+ *  7. Every sentence serves challenge (the cold) / test (stone) / outcome
+ *     (relic or frostbite) — yes.
+ *  8. Nothing referenced before introduction; the claimant enters in the
+ *     spine — yes.
+ *  9. One named person on stage: {cast:claimant} — yes.
+ * 10. Stake in one sentence: carry it out and keep it, or drop it frostbitten
+ *     — yes.
+ * 11. Cards named imperative verb+noun; effect lines are game effects; no
+ *     name-word repetition — yes.
+ * 12. All four declared classes have a skeleton opening — yes.
  *
  * Design doc: `Docs/plans/encounters/the-unclaimed-relic-final.md`
  * Systems audit: `Docs/plans/encounters/the-unclaimed-relic-systems.md`
@@ -75,16 +104,15 @@ const STEP_0_HAND: readonly StepNudge[] = [
     // Type: Boost — universal core, the hand's ungated common option.
     id: 'relic.a_little_more',
     libraryCardId: 'card.boost.core',
-    name: 'A Little More',
+    name: 'Steady Grip',
     essenceCost: 1,
     forecastDelta: 0.06,
     imageTag: 'generic.focus',
-    effectLine:
-      'You steady them at the point where effort usually gives out, so the last of it counts. A small help.',
+    effectLine: 'Strengthen their hands — they hold on long after their strength should fail.',
     fiction: 'Most things fail by a margin.',
     bandProse: {
-      success: 'The last of the strength was there when it was asked for.',
-      failure: 'The steadying held right up until their hands stopped answering.',
+      success: 'Their grip held to the end.',
+      failure: 'The steadying held until the last moment — then their hands gave out anyway.',
     },
   },
   {
@@ -93,13 +121,12 @@ const STEP_0_HAND: readonly StepNudge[] = [
     // usable.
     id: 'relic.left_behind',
     libraryCardId: 'card.cache.signature.matter',
-    name: 'Left Behind',
+    name: 'Uncover Cache',
     sphere: 'matter',
     essenceCost: 2,
     forecastDelta: 0.08,
     imageTag: 'generic.matter',
-    effectLine:
-      'You turn up what an earlier hand set down and never came back for, and put it where they will find it. A real help, and it stays theirs after.',
+    effectLine: 'Reveal abandoned gear nearby — iron tongs they can use and keep.',
     fiction: 'Matter keeps its promises longer than people do.',
     grants: [
       {
@@ -122,18 +149,17 @@ const STEP_0_HAND: readonly StepNudge[] = [
     // reachable while the card is active.
     id: 'relic.by_the_book',
     libraryCardId: 'card.insurance.signature.order',
-    name: 'By The Book',
+    name: 'Bind Outcome',
     sphere: 'order',
     essenceCost: 3,
     forecastDelta: 0.04,
     rider: 'floor_at_cost',
     imageTag: 'generic.ward',
-    effectLine:
-      'However badly it goes, they come away holding what they came for. The price, if it comes due, is paid in skin and in gear.',
+    effectLine: 'Guarantee success — they will carry the relic out, but pay for it in skin and gear.',
     fiction: 'Rules exist so the worst case has a name.',
     bandProse: {
-      success_at_cost: 'The floor had been bought before they reached in. The cost came off their hands.',
-      critical_failure: 'A bought floor still needs a hand to stand on it, and both of theirs had stopped.',
+      success_at_cost: 'The bargain held: they have the relic, and the price came out of their hands.',
+      critical_failure: 'Even a bound outcome needs working hands, and both of theirs had failed.',
     },
   },
   {
@@ -142,18 +168,17 @@ const STEP_0_HAND: readonly StepNudge[] = [
     // never forks, and poleLean moves nothing when a step does not fork.
     id: 'relic.the_easier_way',
     libraryCardId: 'card.undertow.signature.darkness',
-    name: 'The Easier Way',
+    name: 'Feed Greed',
     sphere: 'darkness',
     essenceCost: 2,
     forecastDelta: 0.16,
     valueDrift: { axis: 'asceticism_extravagance', toward: 'negative' },
     imageTag: 'generic.dark',
-    effectLine:
-      'You let the wanting run out ahead of the caution, so they hold on past the point they would have let go. A strong help, and they will want the next thing this badly too.',
+    effectLine: 'Fill them with hunger for the prize — they will not let go, even when they should.',
     fiction: 'It works. That is the problem.',
     bandProse: {
       critical_success: 'They held on past every reason to stop, and it came free in their hands.',
-      failure: 'Wanting it did not warm their fingers. They let go a long time after they should have.',
+      failure: 'The hunger made them hold on too long, and the cold won anyway.',
       critical_failure: 'They would not let go, and the cold went up their arms and put them on the ground.',
     },
   },
@@ -162,19 +187,18 @@ const STEP_0_HAND: readonly StepNudge[] = [
     // of, through the existing remove_condition door.
     id: 'relic.it_passes',
     libraryCardId: 'card.balm.signature.life',
-    name: 'It Passes',
+    name: 'Banish Fear',
     sphere: 'life',
     essenceCost: 2,
     forecastDelta: 0.05,
     imageTag: 'generic.warmth',
-    effectLine:
-      'The fear goes out of them before they reach in, and does not come back while they work. A faint help, and it stays gone after.',
+    effectLine: 'Grant them calm — they reach in unafraid and stay that way.',
     fiction: 'Most suffering ends. This one ends sooner.',
     grants: [{ kind: 'remove_condition', conditionTraitId: 'trait.condition.terrified' }],
     bandProse: {
-      success: 'They took their time about it, unhurried, and time was what it needed.',
-      near_miss: 'The fear stayed gone. Their hands went before their nerve did.',
-      failure: 'Fear never entered it. The cold did not need help.',
+      success: 'They worked calmly and without hurry, and it was enough.',
+      near_miss: 'The fear stayed gone. Their hands failed before their nerve did.',
+      failure: 'They stayed calm the whole time. The cold beat them anyway.',
     },
   },
   {
@@ -184,13 +208,12 @@ const STEP_0_HAND: readonly StepNudge[] = [
     // physics.
     id: 'relic.a_sudden_surge',
     libraryCardId: 'card.boost.signature.energy',
-    name: 'A Sudden Surge',
+    name: 'Kindle Blood',
     sphere: 'energy',
     essenceCost: 2,
     forecastDelta: 0.1,
     imageTag: 'generic.energy',
-    effectLine:
-      'You drive a hard pulse of heat through them at the moment it is needed, so the body answers instead of stalling. A real help.',
+    effectLine: 'Send a surge of heat through their body — the cold cannot stall them.',
     fiction: 'Bodies hold more than they admit.',
     bandProse: {
       critical_success: 'The heat arrived, and they worked as if the cold had never touched them.',
@@ -219,20 +242,20 @@ const step0HoldOnToIt: ActionStep = {
   onSuccess: [],
   onFailure: [],
   failBehavior: 'fail_action',
-  // The setting-neutral spine. The declared opening lands above this at
-  // instantiation (the converter compiles `openings` onto the reserved
-  // `opening` fragment slot). Order: relic -> the cold -> the ring of dropped
-  // gear -> the other claimant. The claimant is introduced here, in the
-  // setting-neutral spine, before any later prose refers to them.
+  // The setting-neutral P2+P3 spine. The per-class P1 arrival lands above this
+  // at instantiation (the converter compiles `openings` onto the reserved
+  // `opening` fragment slot). The claimant is introduced here, before any
+  // later prose refers to them.
   narrativeTemplate:
-    'The relic sits where it was left: black iron, the size of a loaf. The air around it pulls the heat out ' +
-    'of a hand in about ten counts. Packs and a dropped boot lie in a rough ring three paces out. Someone ' +
-    'else is already here, waiting at that ring, chafing warmth back into both hands.',
-  successAfterimage: 'They got it up and got clear, hands dead to the wrist.',
-  failureAfterimage: 'Their grip opened before the count ran out, and the relic dropped back into its own frost.',
+    'There {they} find a magic relic lying in the open: black iron, freezing cold. Everyone who tried to ' +
+    'carry it away got frostbitten hands and dropped it. No one dares to touch it now.\n\n' +
+    'The relic is unclaimed — whoever carries it out may keep it. Another treasure hunter, {cast:claimant}, ' +
+    'is waiting nearby, ready to try again.',
+  successAfterimage: 'They carried it out. Their hands are numb to the wrist.',
+  failureAfterimage: 'Their grip failed and the relic dropped back into the frost.',
   successAtCostAfterimage: 'They came out with it and left skin on the iron.',
   criticalSuccessAfterimage: 'They lifted it clean and walked out of the cold with it under one arm.',
-  criticalFailureAfterimage: 'They went down beside it, and the cold had them until the other one hauled them clear.',
+  criticalFailureAfterimage: 'They collapsed beside it, and the other claimant hauled them clear.',
   /**
    * `successMetadata` fires on `isStepSuccess`, which counts `near_miss` as a
    * success — so the prize rides every success-side band, unconditionally
@@ -305,23 +328,12 @@ export const THE_UNCLAIMED_RELIC_TEMPLATE: UnifiedActionTemplate = compileOpenin
    * design doc).
    */
   settings: ['stronghold', 'ruin', 'wayside', 'battlefield'],
+  // P1 arrival, one per class — the P2/P3 spine lands below it (narrativeTemplate).
   openings: {
-    wayside:
-      'A cart track runs out here into scrub and stops at a hollow where people have camped for years. Old ' +
-      'fire-scars, a windbreak of piled thorn. The wind carries dust and dry sage across it. Nothing has ' +
-      'been burned in the pit for a long while, and the thorn wall has gone grey.',
-    ruin:
-      'Half a hall stands, roof long gone, the floor under a mat of frost-burnt grass. Rooks argue on the ' +
-      'wall-heads and will not come lower. The stone holds none of the afternoon in it, and a steady ' +
-      'draught crosses the doorway at ankle height.',
-    battlefield:
-      'The field slopes down to a ditch that was dug in a hurry and filled in worse. Crows work the far end ' +
-      'of it. The ground gives underfoot, soft with a season of rain, and the smell that comes up is wet ' +
-      'clay and old rot.',
-    stronghold:
-      "The fort's yard is swept and the gate is manned. This corner is used by nobody. Someone chalked a " +
-      'line across the flags and nothing crosses it — the boots on the wall walk come that far and turn ' +
-      'back, and the sweepings pile against the chalk. The flags inside the line are cold through a boot sole.',
+    wayside: '{name} stops to rest at {location}, an old camp off the cart track.',
+    ruin: 'Travelling through the hills, {name} stops to shelter in the ruins of {location}.',
+    battlefield: 'The shortest road runs across the old battlefield at {location}, and {name} takes it.',
+    stronghold: '{name} arrives at the fortress of {location} at break of dawn.',
   },
   locationSubtypes: expandSettings(['stronghold', 'ruin', 'wayside', 'battlefield']),
 
@@ -329,15 +341,12 @@ export const THE_UNCLAIMED_RELIC_TEMPLATE: UnifiedActionTemplate = compileOpenin
 
   narrativeTemplates: {
     initiation:
-      'Nobody who has come here has carried it out. That is the whole of what is known about it. Take it ' +
-      'and it is theirs, to sell or to keep. Leave it, and the road is a road again by nightfall and the ' +
-      'relic waits for whoever comes next.',
+      'Take the relic and it is theirs to keep or sell. Leave it, and someone else will claim it. The only ' +
+      'guard it has is the cold.',
     success:
-      'The cold gave it up. It came out of the ring in a pair of hands that will not close properly until ' +
-      'evening.',
+      '{name} carried the relic out. Their frozen hands will not close properly until evening.',
     failure:
-      'The cold won the argument. The relic sits where it sat, and there is one more pair of hands that ' +
-      'could not hold it.',
+      '{name} could not hold on and dropped the relic. It lies where it lay, and no one has claimed it.',
   },
 
   /**
@@ -354,13 +363,13 @@ export const THE_UNCLAIMED_RELIC_TEMPLATE: UnifiedActionTemplate = compileOpenin
     branchOnStep: 0,
     variants: {},
     fallback: {
-      overview: 'The cold has not moved. It will be here tomorrow, and the day after, and it will be exactly this cold.',
+      overview: 'The relic lies where it lay, as cold as ever.',
       changes: [],
       byOutcome: {
         critical_success: {
           overview:
-            '{cast:claimant} has not moved from the ring, and asks, plainly, how it was done. The frost holds the ' +
-            'shape it sat in, a clean black circle the other claimant will not step into.',
+            '{actor} lifted the relic out clean on the first try. {cast:claimant} watched it happen and asks how ' +
+            'it was done.',
           changes: [
             {
               id: 'relic.crit.prize',
@@ -380,8 +389,8 @@ export const THE_UNCLAIMED_RELIC_TEMPLATE: UnifiedActionTemplate = compileOpenin
               category: 'bond',
               direction: 'gain',
               polarity: 'gain',
-              title: 'Two who were there',
-              causeClause: 'The answer was given at the ring instead of kept',
+              title: 'Respect Earned',
+              causeClause: 'They told the other claimant how it was done',
               detail: '{cast:claimant} thinks better of them for it, and says so.',
               stateNoun: { text: 'a bond warmed', entityId: '$cast:claimant', visualKind: 'agent' },
               concepts: [{ text: 'bond' }],
@@ -391,7 +400,7 @@ export const THE_UNCLAIMED_RELIC_TEMPLATE: UnifiedActionTemplate = compileOpenin
             {
               id: 'relic.tell_them_how',
               label: 'Let them be told how',
-              intent: 'The answer is given at the ring, hands still numb, and taken well.',
+              intent: 'The secret is shared, and taken well.',
               effects: [
                 {
                   kind: 'bond_change',
@@ -405,8 +414,8 @@ export const THE_UNCLAIMED_RELIC_TEMPLATE: UnifiedActionTemplate = compileOpenin
         },
         success: {
           overview:
-            'Their hands stayed shut for an hour afterwards, and the other claimant worked the fingers open one ' +
-            'at a time. That is a story now, and it will be told at the next fire.',
+            '{actor} carried the relic out on the third try, hands frozen shut for an hour after. ' +
+            '{cast:claimant} saw all of it and will tell the story.',
           changes: [
             {
               id: 'relic.success.prize',
@@ -426,7 +435,7 @@ export const THE_UNCLAIMED_RELIC_TEMPLATE: UnifiedActionTemplate = compileOpenin
               category: 'scar',
               direction: 'loss',
               polarity: 'loss',
-              title: 'Word about this place',
+              title: 'The Place Is Watched',
               causeClause: 'It was taken in front of a witness who will not keep quiet',
               detail:
                 '{target} is under watch now: people come to see whether there is a second one, and quiet work ' +
@@ -447,7 +456,7 @@ export const THE_UNCLAIMED_RELIC_TEMPLATE: UnifiedActionTemplate = compileOpenin
             {
               id: 'relic.let_the_word_travel',
               label: 'Let the word travel',
-              intent: 'The telling is not muddied, and by morning the place has visitors.',
+              intent: 'The story spreads, and by morning the place has visitors.',
               effects: [
                 {
                   kind: 'condition_attachment',
@@ -460,8 +469,8 @@ export const THE_UNCLAIMED_RELIC_TEMPLATE: UnifiedActionTemplate = compileOpenin
         },
         success_at_cost: {
           overview:
-            'The iron kept a strip off both palms, and it did not bleed until the warmth came back. The other ' +
-            'claimant is already going through the dropped packs for a clean rag.',
+            '{actor} carried it out, but the frozen iron took skin off both palms. {cast:claimant} is looking ' +
+            'for a clean rag among the dropped packs.',
           changes: [
             {
               id: 'relic.cost.prize',
@@ -481,9 +490,9 @@ export const THE_UNCLAIMED_RELIC_TEMPLATE: UnifiedActionTemplate = compileOpenin
               category: 'scar',
               direction: 'loss',
               polarity: 'loss',
-              title: 'Hands that will not close',
+              title: 'Wounded Hands',
               causeClause: 'Both palms came off the iron raw',
-              detail: '{actor} is carrying a wound that will make a fist an argument for a while.',
+              detail: '{actor} is wounded — gripping anything will hurt for a while.',
               stateNoun: { text: 'Wounded', entityId: 'trait.condition.wounded', visualKind: 'attachment' },
               concepts: [{ text: 'wound', entityId: 'trait.condition.wounded', visualKind: 'attachment' }],
             },
@@ -505,8 +514,7 @@ export const THE_UNCLAIMED_RELIC_TEMPLATE: UnifiedActionTemplate = compileOpenin
         },
         failure: {
           overview:
-            'Their own pack is on the ground now, three paces out, in the ring with the others. The other ' +
-            'claimant did not remark on it, and that was decent.',
+            '{actor} could not hold on and dropped the relic. {cast:claimant} saw it happen and said nothing.',
           changes: [
             {
               id: 'relic.fail.the_fear_stayed',
@@ -514,9 +522,9 @@ export const THE_UNCLAIMED_RELIC_TEMPLATE: UnifiedActionTemplate = compileOpenin
               category: 'scar',
               direction: 'loss',
               polarity: 'loss',
-              title: 'What did not let go',
-              causeClause: 'Their hands opened before the cold did',
-              detail: '{actor} is carrying the fright out of here with them, and it will be a couple of days before it goes.',
+              title: 'Lasting Fright',
+              causeClause: 'Their hands gave out before they got clear',
+              detail: '{actor} is left badly shaken. It will pass in a couple of days.',
               stateNoun: { text: 'Terrified', entityId: 'trait.condition.terrified', visualKind: 'attachment' },
               concepts: [{ text: 'fright', entityId: 'trait.condition.terrified', visualKind: 'attachment' }],
             },
@@ -526,9 +534,9 @@ export const THE_UNCLAIMED_RELIC_TEMPLATE: UnifiedActionTemplate = compileOpenin
               category: 'bond',
               direction: 'gain',
               polarity: 'gain',
-              title: 'Two who failed at it',
+              title: 'Shared Failure',
               causeClause: 'They failed at the same thing in front of each other',
-              detail: '{cast:claimant} counts them as a known quantity now.',
+              detail: '{cast:claimant} knows them now, and thinks no less of them.',
               stateNoun: { text: 'a bond warmed', entityId: '$cast:claimant', visualKind: 'agent' },
               concepts: [{ text: 'bond' }],
             },
@@ -551,8 +559,8 @@ export const THE_UNCLAIMED_RELIC_TEMPLATE: UnifiedActionTemplate = compileOpenin
         },
         critical_failure: {
           overview:
-            '{cast:claimant} swore about it the whole way out, and was still swearing when the arms came ' +
-            'unlocked. Afterwards the ring got a stride wider, and the two of them kept opposite sides of it.',
+            '{actor} would not let go and collapsed in the cold. {cast:claimant} dragged them clear, swearing ' +
+            'the whole time. The two keep their distance now.',
           changes: [
             {
               id: 'relic.crit_fail.the_fear_stayed',
@@ -560,9 +568,9 @@ export const THE_UNCLAIMED_RELIC_TEMPLATE: UnifiedActionTemplate = compileOpenin
               category: 'scar',
               direction: 'loss',
               polarity: 'loss',
-              title: 'What did not let go',
+              title: 'Lasting Fright',
               causeClause: 'They had to be dragged clear of it',
-              detail: '{actor} is carrying the fright out of here with them, and it will be a couple of days before it goes.',
+              detail: '{actor} is left badly shaken. It will pass in a couple of days.',
               stateNoun: { text: 'Terrified', entityId: 'trait.condition.terrified', visualKind: 'attachment' },
               concepts: [{ text: 'fright', entityId: 'trait.condition.terrified', visualKind: 'attachment' }],
             },
@@ -572,9 +580,9 @@ export const THE_UNCLAIMED_RELIC_TEMPLATE: UnifiedActionTemplate = compileOpenin
               category: 'bond',
               direction: 'loss',
               polarity: 'loss',
-              title: 'Hauled out, and held off',
-              causeClause: 'A stranger had to put hands on them to get them out',
-              detail: '{cast:claimant} pulled them out and has kept a stride between them since.',
+              title: 'Kept at a Distance',
+              causeClause: 'A stranger had to drag them out of the cold',
+              detail: '{cast:claimant} pulled them out, and has kept their distance since.',
               stateNoun: { text: 'a bond soured', entityId: '$cast:claimant', visualKind: 'agent' },
               concepts: [{ text: 'bond' }],
             },
@@ -583,7 +591,7 @@ export const THE_UNCLAIMED_RELIC_TEMPLATE: UnifiedActionTemplate = compileOpenin
             {
               id: 'relic.let_the_distance_stand',
               label: 'Let the distance stand',
-              intent: 'The thanks does not get said, and the ring stays a stride wider.',
+              intent: 'No thanks is said, and the distance stays.',
               effects: [
                 {
                   kind: 'bond_change',
@@ -600,6 +608,6 @@ export const THE_UNCLAIMED_RELIC_TEMPLATE: UnifiedActionTemplate = compileOpenin
   },
 
   description:
-    'A single-step recovery: a relic in the open, a cold that has stopped everyone else, and one other ' +
-    'person still working up to a second try.',
+    'A single-step recovery: a freezing relic in the open, everyone before them frostbitten, and a rival ' +
+    'claimant waiting to try again.',
 });

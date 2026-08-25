@@ -222,6 +222,24 @@ describe('templateOpeningProblems', () => {
   it('returns nothing for a template that declares no openings', () => {
     expect(templateOpeningProblems({ id: 'x' } as unknown as UnifiedActionTemplate)).toEqual([]);
   });
+
+  it('composes the class opening with the step-0 spine before judging the skeleton', () => {
+    // The converter lands the declared opening above the setting-neutral
+    // narrativeTemplate, so a P1-only opening + a P2/P3 spine IS the skeleton.
+    // Judging the opening field alone flagged that architecture as
+    // "1 paragraph" once per declared class (THR-1223 batch 1).
+    const template = {
+      id: 'encounter.test.spine',
+      openings: { stronghold: '{name} arrives at the fortress of {location} at dawn.' },
+      steps: [
+        {
+          narrativeTemplate:
+            'There {they} find trouble.\n\nThe problem stands, and someone must solve it.',
+        },
+      ],
+    } as unknown as UnifiedActionTemplate;
+    expect(templateOpeningProblems(template)).toEqual([]);
+  });
 });
 
 // ─── The combined channel ────────────────────────────────────────────
