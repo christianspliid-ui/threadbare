@@ -964,6 +964,13 @@ export interface EffectRuntimeState {
   actionTriggerFireCount?: number;
   /** Action trigger: tick when cooldown expires (trigger cannot fire before this tick) */
   actionTriggerCooldownUntil?: number;
+  /**
+   * `resource_manipulate` with `mode: 'one_shot'` has fired for this attachment.
+   * Set once and never cleared — a one-shot is spent, not cooled down (THR-1239).
+   * It is also set on a fail-soft skip (no resolvable `other_agent` target), so a
+   * one-shot that cannot land does not re-attempt on every later event.
+   */
+  oneShotFired?: boolean;
 }
 
 // ═══════════════════════════════════════════════════════════════════

@@ -354,7 +354,10 @@ function tickHexEffect(
 /**
  * Resource manipulate (per_tick mode) — drain or restore essence/quintessence each tick.
  * Mutates agent node property in place. Clamps to [0, ∞).
- * one_shot mode is handled by the event handler (processEffectEvent), not here.
+ *
+ * `one_shot` mode is handled in `processEffectEvent`, on the bearer's first
+ * `encounter_outcome` after attach (THR-1239). Until then this line claimed a
+ * handler that did not exist and the mode was dead in both places.
  */
 function tickResourceManipulate(
   effect: { type: 'resource_manipulate'; resource: 'essence' | 'quintessence'; target: string; amount: number; mode: 'per_tick' | 'one_shot' },

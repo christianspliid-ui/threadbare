@@ -759,6 +759,24 @@ export function executeEffect(
     case 'haste':
     case 'slow':
     case 'freeze_duration':
+    // THR-1239: the query/tick-layer families were absent from this arm, so every
+    // one of them fell to the old `default` and reported `success: false` with an
+    // "Unknown effect type" warning — an honest-looking failure for effects that
+    // are working exactly as designed elsewhere (resolver, tick, walker, or the
+    // action-trigger path). They are modifier/state effects like the block above.
+    case 'resource_delta':
+    case 'action_trigger':
+    case 'behavior_weight':
+    case 'social_modifier':
+    case 'action_gate':
+    case 'axiological_drift':
+    case 'range_modifier':
+    case 'tag_immunity':
+    case 'resource_manipulate':
+    case 'hex_effect':
+    case 'graph_mutation':
+    case 'slot_bonus':
+    case 'stat_contribution':
       return {
         success: true,
         mutations: [],
@@ -768,14 +786,20 @@ export function executeEffect(
           details: { note: 'Modifier/state effect — applied by resolver/tick, not executor' },
         }],
       };
-    default:
-      return {
-        success: false,
-        mutations: [],
-        traces: [],
-        warnings: [`Unknown effect type: ${(effect as { type: string }).type}`],
-      };
   }
+
+  // THR-1239: exhaustiveness guard. Every member of `AttachmentEffect` is handled
+  // above, so this line is unreachable — and a future union member added without a
+  // case here is a COMPILE error rather than a silent runtime `success: false`.
+  // This is the one deliberate non-fail-soft failure in the effects engine
+  // (NFP #4's stated exception): it fires at build time, never in the tick loop.
+  const _exhaustive: never = effect;
+  return {
+    success: false,
+    mutations: [],
+    traces: [],
+    warnings: [`Unknown effect type: ${(_exhaustive as { type: string }).type}`],
+  };
 }
 
 // ═══════════════════════════════════════════════════════════════════

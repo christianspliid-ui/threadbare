@@ -280,6 +280,20 @@ function fireDoomThresholdEffects(
     for (const trace of eventResult.traces) {
       emitTrace(trace as unknown as TraceEntry);
     }
+
+    // THR-1239: every raise site traces. A doom raise fans out over every agent,
+    // so this is the one place `effect.event_raised` is high-volume — it is still
+    // worth it, because "the doom threshold fired and nothing was listening" and
+    // "the doom threshold never fired" are otherwise indistinguishable.
+    emitTrace({
+      category: 'effect.event_raised',
+      tick: state.tick,
+      agentId: agent.id,
+      event: 'doom_threshold',
+      reactivesFired: eventResult.reactivesFired.length,
+      site: 'doom_threshold',
+      summary: `doom_threshold raised at doom_threshold for ${agent.id} (${eventResult.reactivesFired.length} reactive${eventResult.reactivesFired.length === 1 ? '' : 's'} fired)`,
+    } as TraceEntry);
   }
 
   return states;
