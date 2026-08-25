@@ -35,7 +35,7 @@
 
 import type { ActionStep, StepNudge, TraitVariant, UnifiedActionTemplate } from '../../types/unifiedAction';
 import type { EncounterSupportActorSpec, EncounterSupportBundle } from '../../types/encounter';
-import { expandSettings } from '../settingClasses';
+import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
 
 // ─── Support Bundle ──────────────────────────────────────────────
 
@@ -510,7 +510,7 @@ const step2OutlastTheColumn: ActionStep = {
 // `fallback` and are available on every band (neither band overrides
 // `reactions`).
 
-export const TOLL_OF_BLADES_TEMPLATE: UnifiedActionTemplate = {
+export const TOLL_OF_BLADES_TEMPLATE: UnifiedActionTemplate = compileOpeningEnvelope({
   id: 'encounter.border.toll_of_blades',
   rarityTier: 1,
   intrinsicTier: 'background',
@@ -816,4 +816,4 @@ export const TOLL_OF_BLADES_TEMPLATE: UnifiedActionTemplate = {
   description:
     'A two-step endurance test: a war column stopped across the road, taking a toll from everyone who ' +
     'passes, and an afternoon that has to be outlasted before it clears.',
-};
+});

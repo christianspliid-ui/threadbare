@@ -126,7 +126,17 @@ export function applySecretRevelationConsequences(
   const typeProse = secretTypeProse(secret.secretType);
 
   const event: TickEvent = {
-    id: `secret_revealed_${revealerId}_${subjectId}_${tick}`,
+    // Revealer + subject + tick is NOT unique (THR-1221). One revealer can
+    // reveal two different secrets about the same subject in one tick, or the
+    // same secret to two different people, and both collided on this id —
+    // measured as a duplicate in the 300-tick sweep
+    // (`secret_revealed_elite_lair_8_50_npc_221_200`, minted twice on tick 200).
+    // React keys the chronicle list on it, so duplicates render doubled or
+    // dropped rows. The recipient and the secret's own identity (type + the tick
+    // it was discovered) close both cases while staying deterministic — no
+    // counter, so the same seed still mints the same id (NFP #3).
+    id: `secret_revealed_${revealerId}_${subjectId}_${revealedToId}`
+      + `_${secret.secretType}_${secret.discoveredTick}_${tick}`,
     tick,
     type: 'ripple_consequence',
     message: `The truth about ${subjectName}'s ${typeProse} has come to light.`,

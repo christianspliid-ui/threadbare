@@ -42,7 +42,7 @@
 
 import type { ActionStep, StepNudge, TraitVariant, UnifiedActionTemplate } from '../../types/unifiedAction';
 import type { EncounterSupportActorSpec, EncounterSupportBundle } from '../../types/encounter';
-import { expandSettings } from '../settingClasses';
+import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
 
 // ─── Support Bundle ──────────────────────────────────────────────
 
@@ -504,7 +504,7 @@ const step1SayWhatIsThere: ActionStep = {
 // a fork), so the five bands hang off `fallback.byOutcome`. Reactions live
 // on `fallback` and are available on every band.
 
-export const THE_SIGN_OVER_THE_RUIN_TEMPLATE: UnifiedActionTemplate = {
+export const THE_SIGN_OVER_THE_RUIN_TEMPLATE: UnifiedActionTemplate = compileOpeningEnvelope({
   id: 'encounter.border.the_sign_over_the_ruin',
   /**
    * `rarityTier: 3` — required for `drawnHandForTemplate` to actually draw
@@ -785,4 +785,4 @@ export const THE_SIGN_OVER_THE_RUIN_TEMPLATE: UnifiedActionTemplate = {
   description:
     'A two-step Puzzle-Investigation: a remnant hanging over a broken stone that resists being read, two ' +
     'readings already hardened into factions, and a true report that has to land in a room that has voted.',
-};
+});

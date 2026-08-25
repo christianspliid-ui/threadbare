@@ -20,7 +20,7 @@
 
 import type { ActionStep, StepNudge, TraitVariant, UnifiedActionTemplate } from '../../types/unifiedAction';
 import type { EncounterSupportActorSpec, EncounterSupportBundle } from '../../types/encounter';
-import { expandSettings } from '../settingClasses';
+import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
 
 // ─── Support Bundle ──────────────────────────────────────────────
 
@@ -346,7 +346,7 @@ const step0ReadTheGround: ActionStep = {
 // it is a SUCCESS_BANDS member and `applyAftermathOutcomeBand` substitutes
 // reactions wholesale (design doc § 7.4).
 
-export const ONE_BODY_SHORT_TEMPLATE: UnifiedActionTemplate = {
+export const ONE_BODY_SHORT_TEMPLATE: UnifiedActionTemplate = compileOpeningEnvelope({
   id: 'encounter.border.one_body_short',
   rarityTier: 2,
   intrinsicTier: 'story_beat',
@@ -683,4 +683,4 @@ export const ONE_BODY_SHORT_TEMPLATE: UnifiedActionTemplate = {
   description:
     'A single-step reading: a fight already over, a ground that has to be accounted for, and a count that ' +
     'comes out one short.',
-};
+});

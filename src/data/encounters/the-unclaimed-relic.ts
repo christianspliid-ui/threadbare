@@ -23,7 +23,7 @@
 
 import type { ActionStep, StepNudge, TraitVariant, UnifiedActionTemplate } from '../../types/unifiedAction';
 import type { EncounterSupportActorSpec, EncounterSupportBundle } from '../../types/encounter';
-import { expandSettings } from '../settingClasses';
+import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
 
 // ─── Support Bundle ──────────────────────────────────────────────
 
@@ -273,7 +273,7 @@ const step0HoldOnToIt: ActionStep = {
 // independent optional siblings, so a band's chips render regardless of which
 // of its (here, exactly one) reactions the player picks.
 
-export const THE_UNCLAIMED_RELIC_TEMPLATE: UnifiedActionTemplate = {
+export const THE_UNCLAIMED_RELIC_TEMPLATE: UnifiedActionTemplate = compileOpeningEnvelope({
   id: 'encounter.border.the_unclaimed_relic',
   rarityTier: 1,
   intrinsicTier: 'background',
@@ -602,4 +602,4 @@ export const THE_UNCLAIMED_RELIC_TEMPLATE: UnifiedActionTemplate = {
   description:
     'A single-step recovery: a relic in the open, a cold that has stopped everyone else, and one other ' +
     'person still working up to a second try.',
-};
+});

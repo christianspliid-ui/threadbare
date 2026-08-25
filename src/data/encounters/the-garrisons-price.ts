@@ -62,7 +62,7 @@
 
 import type { ActionStep, StepNudge, TraitVariant, UnifiedActionTemplate } from '../../types/unifiedAction';
 import type { EncounterSupportActorSpec, EncounterSupportBundle } from '../../types/encounter';
-import { expandSettings } from '../settingClasses';
+import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
 
 // ─── Support Bundle ──────────────────────────────────────────────
 
@@ -515,7 +515,7 @@ const step2GetOutFromUnder: ActionStep = {
 // chip this encounter authors is backed by a band-specific write, so every
 // chip lives on its band, never on the un-banded variant.
 
-export const THE_GARRISONS_PRICE_TEMPLATE: UnifiedActionTemplate = {
+export const THE_GARRISONS_PRICE_TEMPLATE: UnifiedActionTemplate = compileOpeningEnvelope({
   id: 'encounter.border.the_garrisons_price',
   rarityTier: 2,
   intrinsicTier: 'background',
@@ -924,4 +924,4 @@ export const THE_GARRISONS_PRICE_TEMPLATE: UnifiedActionTemplate = {
   description:
     'A two-step negotiation: a free company sitting on the only road, an honest price named for passage, and ' +
     'the work of getting clear of the figure once it is settled.',
-};
+});
