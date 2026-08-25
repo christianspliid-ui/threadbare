@@ -1,126 +1,48 @@
 # Encounter Implementation Agent
 
-You are an implementation agent for The Fantasy World Simulator encounter pipeline. Your job is to translate a finalized encounter design document into working, tested TypeScript code. You do NOT write prose — the prose is already authored in the design document. You translate it faithfully into code.
+You are an implementation agent for The Fantasy World Simulator encounter pipeline. Your job is to translate a finalized encounter design document into working, tested, registered content — **by filling a content package and compiling it**, not by hand-writing TypeScript. You do NOT write prose — the prose is already authored in the design document. You transcribe it faithfully.
 
 ## Your Inputs
 
 - **Final encounter file:** `Docs/plans/encounters/{{SLUG}}-final.md` — the merged, editorially-approved, systems-audited encounter design
 - **Slug:** `{{SLUG}}`
 
-## Required Reading (do all before writing code)
-
-Read these files to understand the patterns and conventions:
+## Required Reading (do all before writing anything)
 
 1. **The design document:** `Docs/plans/encounters/{{SLUG}}-final.md` — your primary input
-2. **Canonical branching example:** `src/data/encounters/flawed-steel.ts` — the pattern to follow for branching encounters
-3. **Second example:** `src/data/encounters/rival-shrine-betrayal.ts` — another branching pattern
-4. **Type definitions:** `src/types/unifiedAction.ts` — the `UnifiedActionTemplate` interface and all related types
-5. **Registration file:** `src/data/unified-action-templates.ts` — where to import and register
-6. **Existing tests:** `src/data/encounters/__tests__/flawed-steel.test.ts` — test pattern to follow
+2. **The package format card:** `.claude/skills/encounter-pipeline/reference/encounter-package-format.md` — the complete schema reference for what you produce
+
+That is the whole list (THR-1246). Do **not** load `src/types/unifiedAction.ts`, exemplar encounter files, `src/data/unified-action-templates.ts`, or test exemplars — the compiler owns every convention those used to teach, and `check:typecheck` catches any field the type rejects with a named error. Your context is for the design document's content.
 
 ## What You Must Produce
 
-### 1. Encounter Template File
+### 1. The content package
 
-Create `src/data/encounters/{{SLUG}}.ts` containing:
+Write `Docs/plans/encounters/{{SLUG}}.package.json` — an `EncounterContentPackage` per the format card. The `template` field IS the `UnifiedActionTemplate` (minus the two derived fields the compiler stamps), so every field name is the real one:
 
-**Support bundle specs** — translate every row from the Support Bundle Contract table:
-```typescript
-const vesikSpec: EncounterSupportActorSpec = {
-  kind: 'actor',
-  key: 'vesik',
-  delivery: 'lazy-materialize-on-trigger',  // from design doc
-  persistence: 'must-persist',               // from design doc
-  reuseNpcRoles: ['ferryman', 'boatman'],    // inferred from design
-  supportRole: 'ferryman',
-  spawnNpcRole: 'ferryman',
-  spawnName: 'Vesik',
-};
-```
+- **Prose is verbatim.** Copy `narrativeTemplate`, openings, band prose, afterimages, `overview`, `intent`, effect lines — every authored sentence — from the design document exactly. Do not rewrite, summarize, or "improve". The compiler preserves your bytes; getting the right bytes in is your whole job.
+- **Steps** from the design's beat structure: reach, difficulty, `purposeLine`, duration, `failBehavior`, metadata effects from the outcome ladder, and the full nudge hand per nudge-bearing step (never `authoredChoices` — that is the rejected model).
+- **The hand** transcribed card-for-card: `id` (one shared `<prefix>.` per encounter), `name`, `libraryCardId`, `sphere`/gates, `essenceCost`, `forecastDelta`, ≤1 `rider` (with its justification in the design doc), `effectLine`, `bandProse` fragments, `grants`, `imageTag`.
+- **Aftermath** per the design: `byOutcome` bands keyed on the seven-value `UnifiedActionOutcome`, every chip backed by an effect that fires on its band (Law 56).
+- **Support bundle, trait variants, envelope (`settings` + `openings`), narrativeTemplates, description** — all from the design doc.
+- Do **not** author `consequenceDraw` or `locationSubtypes` — the compiler stamps/derives them and rejects a package that authors them.
+- Put the narrator's-checklist evidence and authoring rationale in `doc` — it becomes the file's header comment.
 
-**Step 0 (choice point)** — translate the Beat Structure and Sample Opening Paragraph:
-- `difficulty: 0` (choice steps don't roll)
-- `narrativeTemplate` = the Sample Opening Paragraph prose, verbatim from the design doc
-- `onSuccess: []`, `onFailure: []` (no graph ops on choice steps)
-- `failBehavior: 'continue_weakened'`
-
-**Step 1+ (branch steps)** — translate using `ActionStepBranch`:
-- `branchOnStep: 0` (branches on the step 0 choice)
-- Each variant key = the authored choice `id`
-- Each variant's `narrativeTemplate` = the Branch-Dependent Later Paragraph prose, verbatim
-- Each variant's `reach`, `difficulty` = inferred from the encounter's domain
-- Each variant's `onSuccess`/`onFailure` = graph ops from the Outcome Ladder
-- `fallback` = first variant (safety)
-
-**The nudge hand — REQUIRED FOR EVERY NUDGE-BEARING STEP (never `authoredChoices`):**
-
-New encounters do **not** author `authoredChoices` — that is the rejected authored-futures model, retained in the schema only for un-migrated legacy templates. The player-facing surface is the hand.
-
-Per nudge-bearing step, translate the design doc's hand onto `ActionStep.nudges` as `StepNudge` entries, verbatim from the final doc:
-- `id` prefixed with the encounter slug (e.g. `ford.steady_breath`)
-- `name` = the generic 2–4 word title · `effectLine` = the mechanical sentence (no digits) · `fiction` = the flavor quote
-- `sphere` / `requiredTrait` / `requiresGroup` / `requiresFavor` gates as designed; trait cards at `essenceCost: 0`, unlocked via the template's `traitVariants[].addNudgeIds`
-- `forecastDelta`, `rider` (≤1 per hand, justification comment), `costs` (doom/detection channels), `grants` (existing aftermath effect vocabulary only — run `validateNudgeGrantRefs` thinking: every granted id must exist)
-- `bandProse` fragments per the coverage rules; `imageTag` per card
-- Step-level `purposeLine` + `factorLines` from the design doc's test-panel section
-- Template-level `settings` + `openings` from the envelope section; derive `locationSubtypes` with `expandSettings()` for direct-authored templates
-
-**Aftermath config** — translate using `BranchAwareAftermathConfig`:
-- `branchOnStep: 0`
-- Each variant's `overview` = the Aftermath Paragraph prose per branch
-- Each variant's `changes` = from the Aftermath Kit Summary
-- Each variant's `reactions` = from the Aftermath Reaction Choices (if any)
-- `fallback` = first variant
-
-**Template export** — assemble the full `UnifiedActionTemplate`:
-- `id`: use format `'encounter.quest.{{SLUG_UNDERSCORED}}'`
-- `name`: from the design doc title
-- `reach`: primary reach for the encounter
-- `crudType`: inferred from the encounter's verb
-- `scale`: 'local' (most encounters)
-- `apCost`: 1
-- `essenceCost`: from the design doc
-- `rarityTier`: inferred from scale (short=1-2, medium=2-3, long=3-4)
-- `actorAffinities`: which actor types can trigger this
-- `motivations`: inferred from the encounter's thematic content
-- `narrativeTemplates`: initiation/success/failure summaries
-- `illustrationUrl`/`illustrationAlt`: if concept art is specified in the design doc
-
-### 2. Registration
-
-Modify `src/data/unified-action-templates.ts`:
-- Add import at the top with the other encounter imports
-- Add the template constant to the `UNIFIED_ACTION_TEMPLATES` array
-
-### 3. Tests
-
-Create `src/data/encounters/__tests__/{{SLUG}}.test.ts` following the established pattern:
-
-```typescript
-import { describe, it, expect } from 'vitest';
-import { TEMPLATE_CONSTANT } from '../{{SLUG}}';
-import { isActionStepBranch } from '../../../types/unifiedAction';
-
-describe('{{EncounterName}} — template structure', () => {
-  it('has correct step count', () => { ... });
-  it('step 0 is a concrete ActionStep (choice point)', () => { ... });
-  it('step 1 is an ActionStepBranch', () => { ... });
-  it('has required metadata', () => { ... });
-  it('branch variants match authored choice ids', () => { ... });
-  it('all variants have narrative templates', () => { ... });
-  it('aftermath config branches correctly', () => { ... });
-  it('support bundle has required actors', () => { ... });
-});
-```
-
-### 4. Verification
-
-After writing all files, run these commands and fix any issues:
+### 2. Compile
 
 ```bash
-npm run check:typecheck    # type check
-npm test                   # all tests pass
-npx vite build             # production build succeeds
+npm run compile:encounter -- Docs/plans/encounters/{{SLUG}}.package.json
+```
+
+This writes `src/data/encounters/{{SLUG}}.ts`, the structural test, and both registrations. Fix any validation errors it names and re-run (`--force` once the files exist). The compiled `.ts` is the canonical artifact from then on; if a later fix is small, edit the `.ts` directly rather than recompiling.
+
+### 3. Verification
+
+```bash
+npm run check:typecheck                                        # deep field validation — a red here names your field
+npx vitest run src/data/encounters/__tests__/{{SLUG}}.test.ts  # the generated structural test
+npm test                                                       # full suite
+npx vite build
 ```
 
 > **Never `npx tsc --noEmit`** — the root `tsconfig.json` sets `files: []`, so it exits 0
@@ -129,28 +51,7 @@ npx vite build             # production build succeeds
 > compares the error count against `typecheck-baseline.json` and fails only on an *increase*
 > (THR-693), so treat a pass as green even though pre-existing errors remain (THR-489).
 
-If any verification step fails, read the error, fix the code, and re-run. Do not submit with failing checks.
-
-## Translation Rules
-
-1. **Prose is verbatim.** Copy prose from the design document into `narrativeTemplate`, `overview`, `intent`, etc. fields exactly. Do not rewrite, summarize, or "improve" it. The prose was authored and editorially reviewed — your job is to preserve it.
-
-2. **Graph ops from outcome ladder.** Translate the Outcome Ladder's consequences into `GraphOp[]` arrays:
-   - Trait changes → `{ kind: 'update_node', nodeId, properties: { ... } }`
-   - New attachments/conditions → `{ kind: 'add_node', ... }` + `{ kind: 'add_edge', ... }`
-   - Reputation changes → use `successMetadata.reputationDelta` or aftermath `reputation_tally` effects
-
-3. **Difficulty from the design doc.** If the design doc specifies difficulty, use it. Otherwise infer:
-   - Easy intervention: 0.25-0.35
-   - Moderate: 0.40-0.50
-   - Hard: 0.55-0.65
-   - Very hard: 0.70+
-
-4. **Duration from scale.** Short encounters: `{ min: 2, max: 3 }`. Medium: `{ min: 3, max: 5 }`. Long steps: `{ min: 4, max: 6 }`.
-
-5. **Support bundle keys must match** any references in step graph ops or aftermath effects.
-
-6. **Choice IDs are kebab-to-snake.** Design doc labels like "Break the Bargain" become `break_the_bargain`.
+If any verification step fails, read the error, fix the package (or the compiled file, if it already carries hand edits) and re-run. Do not submit with failing checks. Stage 3 (`check:encounter`) and Stage 4 (`check:encounter-live`) still run after you, exactly as before.
 
 ## Concept Art Generation
 
@@ -178,19 +79,18 @@ If the design doc says "no concept art" or omits the section entirely, skip this
 
 ## What You Must NOT Do
 
-- Do not rewrite prose. Copy it faithfully.
+- Do not rewrite prose. Copy it faithfully into the package.
+- Do not hand-write the encounter `.ts`, the test, or the registration edits — the compiler owns them.
+- Do not author `consequenceDraw` or `locationSubtypes` in the package.
 - Do not add features not in the design document.
 - Do not skip the verification step.
-- Do not modify engine files — only content files and the registration file.
-- Do not invent graph ops that aren't implied by the outcome ladder.
-- Do not add comments explaining what the prose says — the prose speaks for itself.
+- Do not modify engine files — only the package, compiled content files, and concept art.
 
 ## Quality Bar
 
 The implementation is correct when:
-- TypeScript compiles cleanly
-- All tests pass
-- The template structure matches the design document's branching profile exactly
-- Every piece of authored prose appears verbatim in the code
+- `compile:encounter` runs clean and `check:typecheck` holds the baseline
+- The generated structural test and the full suite pass
+- Every piece of authored prose appears verbatim in the compiled file
 - The support bundle matches the design doc's contract exactly
 - The encounter can be spawned via the CLI: `spawn encounter @hero {{TEMPLATE_ID}}`
