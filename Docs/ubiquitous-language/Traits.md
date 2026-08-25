@@ -1,6 +1,6 @@
 # Ubiquitous Language — Traits
 
-Content-adjacent shard. Terms covering the trait layer: definitions and assignments, the ten category contracts, how an authored ref resolves to a definition, and the hooks content authors write against.
+Content-adjacent shard. Terms covering the trait layer: definitions and assignments, the ten category contracts, how an authored ref resolves to a definition, and the hooks content authors write against — plus the parallel **attachment** layer that shares its borne-by-a-bearer shape: the Attachment umbrella, the Effect substrate, and the Power family (spell, bestowal, innate power) seated here at THR-1238 because two of the three power variants collide by name with a trait category (`bestowed`, `innate`) and are best read beside the categories they are not.
 
 ---
 
@@ -121,3 +121,79 @@ The law governing what a trait is allowed to change. **Selection steering** — 
 Stated precisely, because the shorthand "never crossed" is wrong: `personality`-category traits never gain competence effects at all, and `reputation` traits **do** carry capped `domainContributions` today. The rule is not that reputation never touches competence — it is that competence only ever moves through the capped channels. A trait reaction may add a competence modifier only through those channels, never as a bespoke uncapped bonus.
 
 A third field is separate from both: `axisContributions` steers the *moral flavor* of an agent's personality baseline at birth and is read only by the baseline computation. It is neither selection nor competence, and nothing reads it for prerequisites or resolution.
+
+---
+
+### Attachment
+
+**Aliases:** Attachment System
+**Also see:** `[[Effect]]`, `[[Power]]`, `[[Companion]]`, `[[Trait]]`
+**Status:** canonical
+
+The broad **code umbrella** for anything that connects to a bearer and modifies what they can do, unlock, or experience. `AttachmentCategory` (`src/types/attachments.ts`) has eight members: `possession`, `condition`, `blessing`, `curse`, `bestowed_power`, `agreement`, `spell`, `companion`.
+
+**Disambiguation.** Attachment is a code word, not a player-facing family name — no surface says "you gained an attachment." `[[Power]]` names a *subset* of the umbrella (spells, bestowals, innate powers), never a replacement for it; the possession, condition, agreement and `[[Companion]]` members stay outside that subset. Distinguish also from `[[Trait]]`, which sits on a parallel layer with the same node-plus-edge shape: a trait is **inert on its bearer** and carries no behavior of its own, while an attachment carries `[[Effect]]`s directly.
+
+---
+
+### Effect
+
+**Aliases:** AttachmentEffect
+**Also see:** `[[Attachment]]`, `[[Power]]`, `[[Trait]]`
+**Status:** canonical
+
+The **substrate** word: the primitives of the `AttachmentEffect` union (`src/types/effects.ts`), from which powers, items, blessings and curses are all built. The union is tiered — Gear, Spell, God-tier — and its members are atoms such as `PassiveEffect`, `OutcomeShiftEffect`, `TraitGrantEffect`, `TeleportEffect`.
+
+**Disambiguation — Effect is never player-facing as a family name.** It names the atoms only. The two-level ambiguity, where "effects" means both the primitives *and* the family of things assembled from them, is exactly what `[[Power]]` was minted to prevent: **"Effects" was considered as the family name and rejected** (ratified 2026-08-25). When you mean the things a bearer holds, say power, possession, or attachment; reserve *effect* for the primitive.
+
+---
+
+### Power
+
+**Aliases:** the Power family
+**Also see:** `[[Spell]]`, `[[Bestowal]]`, `[[Innate Power]]`, `[[Attachment]]`, `[[Effect]]`
+**Status:** canonical
+
+The **player-facing family name** for a carried, capability-granting thing an entity holds — an `[[Agent]]`, `[[The First]]`, a monster, a faction. A power expands what its bearer can do. Three variants: `[[Spell]]` (learned from a tradition), `[[Bestowal]]` (god-given), `[[Innate Power]]` (anatomy).
+
+A power is **not** a possession, a condition, or an agreement, though it shares the `[[Attachment]]` substrate with all three and is built from the same `[[Effect]]` primitives.
+
+**Power is a conceptual family, not a code identifier — there is no `'power'` `AttachmentCategory`.** Its variants sit as *sibling* category members (`'spell'`, `'bestowed_power'`), so nothing in the union corresponds to the family as a whole; code that means "any power" enumerates the variants rather than reaching for one name. Content and UI say *power*; the type layer keeps the variants.
+
+---
+
+### Spell
+
+**Aliases:** the `'spell'` `AttachmentCategory`
+**Also see:** `[[Power]]`, `[[Bestowal]]`, `[[Innate Power]]`, `[[Attachment]]`
+**Status:** canonical
+
+A `[[Power]]` a caster **learns from a magic tradition**. Casters are an earned identity, never a starting class — a mortal becomes one through the world, which is what keeps spells story-priced rather than character-sheet-priced.
+
+Three authored axes carry a spell's design: **agency** (fate-woven or deliberate), **arena** (encounter or map), and **price** (free → strain → gamble → transgression). Code anchor: the `'spell'` member of `AttachmentCategory`.
+
+---
+
+### Bestowal
+
+**Aliases:** bestowed power, the `'bestowed_power'` `AttachmentCategory`
+**Also see:** `[[Power]]`, `[[Spell]]`, `[[Innate Power]]`, `[[Trait Category]]`
+**Status:** canonical
+
+A **god-given** `[[Power]]`. This is the player-facing rename of the existing `bestowed_power` attachment kind: **the code identifier stays**, and this entry is the mapping between them. Prose and UI say *bestowal*; the union member is still `'bestowed_power'`, so a rename ticket is not implied by this vocabulary landing.
+
+**Do not confuse a bestowal with the `bestowed` `[[Trait Category]]`.** They share the god-grants-it-and-can-revoke-it fiction but sit on different layers: a bestowed *trait* is a name the world recognizes, inert on its bearer; a bestowal is a power carrying `[[Effect]]`s of its own.
+
+---
+
+### Innate Power
+
+**Aliases:** innate ability
+**Also see:** `[[Power]]`, `[[Spell]]`, `[[Bestowal]]`, `[[Trait Category]]`
+**Status:** canonical
+
+A `[[Power]]` that is **anatomy**: stamped at seeding on monsters and unusual beings, with no learning fiction behind it. Nothing was taught and nothing was granted — the bearer simply is the kind of thing that can do this.
+
+**No code anchor yet.** Unlike its two siblings there is no `AttachmentCategory` member for it as of this entry's landing (2026-08-25); the term is ratified vocabulary awaiting implementation, so content that means it should not reach for an existing category as a stand-in.
+
+**Do not confuse it with the `innate` `[[Trait Category]]`**, which is a worldgen-minted, permanent *trait* class. The collision is exact in wording and empty in substance: one is a name minted at worldgen, the other a capability stamped at seeding.
