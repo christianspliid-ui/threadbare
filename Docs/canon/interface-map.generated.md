@@ -16,11 +16,11 @@ remediation ticket or the build fails.
 | Badge | Count |
 |---|---|
 | 🟢 LIVE | 54 |
-| 🟠 PARTIAL | 2 |
+| 🟠 PARTIAL | 3 |
 | 🔴 LEAKED | 7 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 14 |
-| **Total** | **77** |
+| **Total** | **78** |
 
 ## Contracts by producing subsystem
 
@@ -122,6 +122,7 @@ remediation ticket or the build fails.
 | `player-action-receipts-queue` | A resolved player cast queues a Divine Receipt the UI surfaces as a toast or a receipt dialogue. | node-prop: `playerActionReceipts` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `receipt-event-band-toast` | A receipt toast carries its outcome band so the toast accent matches how the cast landed. | event: `band` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `relocation-intent-steers-agent-movement` | An ending that says someone left actually sends them — and the leaving is a journey the player can watch, not a body appearing elsewhere. | function: `computeRelocationIntentBonus`, `resolveRelocationIntentForAgent`, `setRelocationIntent` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
+| `repertoire-deals-into-encounter-hand` | A hand reads as *this god's* hand in any scene: the encounter authors only the cards it alone could offer, and the god's own Repertoire supplies the rest. Without this read, an encounter can only ever show the cards its author happened to write, and the repertoire progression the player earned stays invisible in play. | function: `dealHand`, `mintDealtNudge`, `composeDealtStep`, `composeDealtStepFromState` | Encounters & Dilemmas | 🟠 PARTIAL | THR-1254 |
 | `reward-draw-shares-one-seeded-draw-with-the-step-route` | A specific ending can hand out a random matching prize — and it draws it exactly the way the step route does, so the two can never pay out differently. | function: `drawSeededReward`, `mapActionOutcomeToRewardOutcome`, `rewardCategoryNodeQuery`, `rewardCandidateMatchesTags` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `secrets-generation` | Secrets are born from scenes — mortals learn things about each other worth holding. | function: `generateSecret`, `createSecretEdge` | Secrets & Favors | 🟢 LIVE | — |
 | `seeded-opponent-survives-to-spawn` | A grudge planted against a named band is collected against that same band — or, if it died in the meantime, quietly becomes an ordinary encounter instead of pointing at a corpse. | node-prop: `opposingGroupId`, `resolveSeedOpposition` | Companies & Group Travel | 🟢 LIVE | — |
@@ -432,10 +433,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Nudge*, *Encounter*, *UnifiedActionTemplate*
 - **Module:** `src/engine/encounters/nudges.ts`
-- **Production hits:** 10 total — 1 write, 2 read, 7 unclassified
+- **Production hits:** 11 total — 1 write, 2 read, 8 unclassified
 - **Write sites:** `src/types/unifiedAction.ts`
 - **Read sites:** `src/debug-bridge.ts`, `src/engine/unifiedActionResolution.ts`
-- **Other hits:** `src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts`, `src/components/Game/encounter-stage/nudgeCommit.ts`, `src/components/Game/encounter-stage/types.ts`, `src/engine/encounters/nudgeDispatch.ts`, `src/engine/encounters/nudges.ts` +2 more
+- **Other hits:** `src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts`, `src/components/Game/encounter-stage/nudgeCommit.ts`, `src/components/Game/encounter-stage/types.ts`, `src/engine/encounters/dealHand.ts`, `src/engine/encounters/nudgeDispatch.ts` +3 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `authored-quintessence-shift` — 🔵 UNVERIFIED-OK
@@ -444,10 +445,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Spheres & Quintessence
 - **UL terms:** *Quintessence*, *Aftermath*
 - **Module:** `src/engine/encounterAftermath.ts`
-- **Production hits:** 16 total — 1 write, 1 read, 14 unclassified
+- **Production hits:** 17 total — 1 write, 1 read, 15 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`
 - **Read sites:** `src/engine/phaseQuintessence.ts`
-- **Other hits:** `src/data/content-eval/compositionContract.ts`, `src/data/encounters/apotheosis-ascension.ts`, `src/data/encounters/one-body-short.ts`, `src/data/encounters/the-broken-seal.ts`, `src/data/encounters/toll-of-blades.ts` +9 more
+- **Other hits:** `src/data/content-eval/compositionContract.ts`, `src/data/encounters/apotheosis-ascension.ts`, `src/data/encounters/one-body-short.ts`, `src/data/encounters/the-broken-seal.ts`, `src/data/encounters/toll-of-blades.ts` +10 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `authored-step-difficulty-player-resolution` — 🟢 LIVE
@@ -456,10 +457,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Domain Capability*, *UnifiedActionTemplate*
 - **Module:** `src/engine/unifiedActionResolution.ts`
-- **Production hits:** 153 total — 1 write, 2 read, 150 unclassified
+- **Production hits:** 154 total — 1 write, 2 read, 151 unclassified
 - **Write sites:** `src/data/unified-action-templates.ts`
 - **Read sites:** `src/engine/targetActions.ts`, `src/engine/unifiedActionResolution.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/ActionDrawer.tsx` +145 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/ActionDrawer.tsx` +146 more
 - **Verdict:** Verified 2026-07-25: THR-728: `unified-action-templates.ts` authors `steps[].difficulty`; `resolveUncontestedStep` reads it for `source === 'player'` (the auto-success early-return is now gated behind `PLAYER_CAST_VARIANCE_ENABLED`), and `targetActions.ts` reads the same field via `maxStepDifficulty` to render the focused card's risk line. Measured over 400 seeds: the outcome set for a positive-difficulty cast is >1 band. THR-1073 rerouted both read sites through `tierScaledDifficulty`: a step declaring `difficultyContext: 'target_tier_scaled'` treats its authored `difficulty` as a tier-1 baseline and resolves the real value from the target's tier. Both sites resolve through the same helper, so the card's risk line cannot drift from the roll; a step without the marker is returned unchanged.
 
 ### `authored-tier-ramp-target-scaled-price` — 🟢 LIVE
@@ -670,10 +671,10 @@ exit
 - **Producer → Consumer:** Spheres & Quintessence → Encounters & Dilemmas
 - **UL terms:** *Nudge*, *Sphere*, *Essence*
 - **Module:** `src/engine/essenceEarned.ts`
-- **Production hits:** 6 total — 1 write, 2 read, 3 unclassified
+- **Production hits:** 7 total — 1 write, 2 read, 4 unclassified
 - **Write sites:** `src/engine/essenceEarned.ts`
 - **Read sites:** `src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts`, `src/engine/nudgeCardRepertoire.ts`
-- **Other hits:** `src/data/nudge-card-library.ts`, `src/debug-bridge.ts`, `src/types/gameState.ts`
+- **Other hits:** `src/data/nudge-card-library.ts`, `src/debug-bridge.ts`, `src/engine/encounters/dealHand.ts`, `src/types/gameState.ts`
 - **Verdict:** Verified 2026-08-19: Headless CLI, seed 42 medium: with the pool drained to 1/sphere the counter reached chaos 19.250000000000007 by tick 55 and 21.000000000000014 by tick 60 — identical across repeat runs, so same seed ⇒ same unlock tick. src/engine/__tests__/essenceEarned.test.ts drives the reader end-to-end: buildRepertoire with the counter one short of the mark omits every seeded attunement member and with the counter at the mark contains all of them, and the off-sphere arm asserts a god attuned to everything gains no member on a sphere they do not hold. Each arm falsified by breaking its guard (access gate, threshold comparison, monotonicity) and confirming the red.
 
 ### `faction-ambitions-drive-action` — 🟢 LIVE
@@ -763,10 +764,10 @@ exit
 - **Producer → Consumer:** Ascendant Beats & Progression → Encounters & Dilemmas
 - **UL terms:** *Nudge*, *Ascendant Beat*
 - **Module:** `src/engine/nudgeCardRepertoire.ts`
-- **Production hits:** 5 total — 1 write, 1 read, 3 unclassified
+- **Production hits:** 6 total — 1 write, 1 read, 4 unclassified
 - **Write sites:** `src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts`
 - **Read sites:** `src/engine/encounters/nudges.ts`
-- **Other hits:** `src/data/nudge-card-library.ts`, `src/debug-bridge.ts`, `src/engine/nudgeCardRepertoire.ts`
+- **Other hits:** `src/data/nudge-card-library.ts`, `src/debug-bridge.ts`, `src/engine/encounters/dealHand.ts`, `src/engine/nudgeCardRepertoire.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `minted-ambition-provenance` — 🟢 LIVE
@@ -797,10 +798,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Ambitions & Initiatives
 - **UL terms:** *Nudge*, *Ambition*
 - **Module:** `src/engine/encounters/nudgeDispatch.ts`
-- **Production hits:** 7 total — 1 write, 2 read, 4 unclassified
+- **Production hits:** 9 total — 1 write, 2 read, 6 unclassified
 - **Write sites:** `src/engine/phases/phaseAutonomousAftermath.ts`
 - **Read sites:** `src/engine/ambitionAssignment.ts`, `src/engine/encounterAftermath.ts`
-- **Other hits:** `src/data/encounters/the-broken-seal.ts`, `src/engine/encounters/nudgeDispatch.ts`, `src/engine/encounters/poleLean.ts`, `src/types/unifiedAction.ts`
+- **Other hits:** `src/data/encounters/the-broken-seal.ts`, `src/engine/encounters/dealHand.ts`, `src/engine/encounters/nudgeDispatch.ts`, `src/engine/encounters/poleLean.ts`, `src/engine/unifiedActionResolution.ts` +1 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `nudge-hand-runtime-filters-and-sphere-discount` — 🔵 UNVERIFIED-OK
@@ -809,10 +810,10 @@ exit
 - **Producer → Consumer:** Spheres & Quintessence → Encounters & Dilemmas
 - **UL terms:** *Nudge*, *Sphere*, *Essence*
 - **Module:** `src/engine/encounters/nudges.ts`
-- **Production hits:** 10 total — 1 write, 2 read, 7 unclassified
+- **Production hits:** 11 total — 1 write, 2 read, 8 unclassified
 - **Write sites:** `src/data/nudge-constants.ts`
 - **Read sites:** `src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts`, `src/engine/meetingEncounter.ts`
-- **Other hits:** `src/components/Game/encounter-stage/nudgeCommit.ts`, `src/components/Game/encounter-stage/types.ts`, `src/debug-bridge.ts`, `src/engine/encounters/nudgeDispatch.ts`, `src/engine/encounters/nudges.ts` +2 more
+- **Other hits:** `src/components/Game/encounter-stage/nudgeCommit.ts`, `src/components/Game/encounter-stage/types.ts`, `src/debug-bridge.ts`, `src/engine/encounters/dealHand.ts`, `src/engine/encounters/nudgeDispatch.ts` +3 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `player-action-aftermath-read` — 🔵 UNVERIFIED-OK
@@ -853,10 +854,10 @@ exit
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 220 total — 1 write, 1 read, 218 unclassified
+- **Production hits:** 223 total — 1 write, 1 read, 221 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts` +213 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts` +216 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `relocation-intent-steers-agent-movement` — 🔵 UNVERIFIED-OK
@@ -870,6 +871,18 @@ exit
 - **Read sites:** `src/engine/encounterScoring.ts`, `src/engine/phaseAgentDecision.ts`
 - **Other hits:** `src/data/encounters/the-broken-seal.ts`, `src/data/encounters/the-sign-over-the-ruin.ts`, `src/engine/relocationIntent.ts`, `src/types/movement.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
+### `repertoire-deals-into-encounter-hand` — 🟠 PARTIAL
+
+- **Intent:** A hand reads as *this god's* hand in any scene: the encounter authors only the cards it alone could offer, and the god's own Repertoire supplies the rest. Without this read, an encounter can only ever show the cards its author happened to write, and the repertoire progression the player earned stays invisible in play.
+- **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
+- **UL terms:** *Nudge*, *Encounter*, *UnifiedActionTemplate*
+- **Module:** `src/engine/encounters/dealHand.ts`
+- **Production hits:** 8 total — 3 write, 3 read, 2 unclassified
+- **Write sites:** `src/data/nudge-card-library.ts`, `src/data/nudge-constants.ts`, `src/types/unifiedAction.ts`
+- **Read sites:** `src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts`, `src/debug-bridge.ts`, `src/engine/unifiedActionResolution.ts`
+- **Other hits:** `src/engine/encounters/dealHand.ts`, `src/engine/nudgeCardRepertoire.ts`
+- **Verdict:** Pinned by badgeOverride: Engine, adapter and debug read sites are wired and covered by tests, and the play-profile corpus is complete (`profiledCardCount() === NUDGE_CARD_LIBRARY.length`, pinned). No shipped encounter declares `ActionStep.deal` yet, so the deal never runs in a real playthrough; the first composed encounter is THR-1254.
 
 ### `reputation-with-unified-read` — 🟢 LIVE
 
@@ -1002,10 +1015,10 @@ exit
 - **Producer → Consumer:** Attention, Chronicle & Narrative → Encounters & Dilemmas
 - **UL terms:** *Nudge*, *Echo*, *World-Soul*
 - **Module:** `src/engine/nudgeCardRepertoire.ts`
-- **Production hits:** 7 total — 1 write, 1 read, 5 unclassified
+- **Production hits:** 8 total — 1 write, 1 read, 6 unclassified
 - **Write sites:** `src/engine/cycleEnd.ts`
 - **Read sites:** `src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts`
-- **Other hits:** `src/debug-bridge.ts`, `src/engine/echo.ts`, `src/engine/nudgeCardRepertoire.ts`, `src/types/echo.ts`, `src/types/gameState.ts`
+- **Other hits:** `src/debug-bridge.ts`, `src/engine/echo.ts`, `src/engine/encounters/dealHand.ts`, `src/engine/nudgeCardRepertoire.ts`, `src/types/echo.ts` +1 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `undertow-card-drifts-mortal-values` — 🔴 LEAKED
@@ -1014,10 +1027,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Personality & Emergent Traits
 - **UL terms:** *Archetype Drift*, *Nudge*
 - **Module:** `src/engine/encounters/nudgeDispatch.ts`
-- **Production hits:** 3 total — 1 write, 0 read, 2 unclassified
+- **Production hits:** 5 total — 1 write, 0 read, 4 unclassified
 - **Write sites:** `src/engine/encounters/branchDecision.ts`
 - **Read sites:** —
-- **Other hits:** `src/engine/encounters/nudgeDispatch.ts`, `src/engine/phases/phaseAutonomousAftermath.ts`
+- **Other hits:** `src/engine/encounters/dealHand.ts`, `src/engine/encounters/nudgeDispatch.ts`, `src/engine/phases/phaseAutonomousAftermath.ts`, `src/engine/unifiedActionResolution.ts`
 - **Verdict:** Tier 2: write sites present, declared read sites empty — the consumer is starving. — or the declared symbol does not appear at the declared site: grep 'dispatchNudgeCommitments' src/engine/encounters/driftAccumulator.ts before treating this as a leak.
 
 ### `world-events-mint-ambitions` — 🟢 LIVE
