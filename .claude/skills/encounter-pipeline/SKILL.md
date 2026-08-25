@@ -2,7 +2,7 @@
 name: encounter-pipeline
 description: Automated encounter pipeline v3 — the Encounter Factory line. Runs brief → draft → bounded critic loop → machine gates → live proof → batch report for composition-complete encounter delivery, one encounter or a batch of six. Triggers on "encounter pipeline", "draft encounter", "run encounter pipeline", "author encounter", "encounter batch", "run a batch", or "/encounter-pipeline".
 model: opus
-last_validated_against: 2026-08-24
+last_validated_against: 2026-08-25
 ---
 
 > **Load before authoring:** `Docs/canon/rulebook-quick-reference.md` (always — the synthesis layer for rules of play). Load `Docs/canon/rulebook.md` (full rulebook) when the work touches a specific rule of play and you need depth, status flags, or source citations.
@@ -126,11 +126,11 @@ If `Docs/canon/encounters.md` is missing or inaccessible, fall back to the pre-r
 
 Every encounter must meet its bar:
 
-- A declared setting envelope with one scene-built opening per class, and a setting-neutral spine — the scene-writer's 14 questions answered in writing
+- A declared setting envelope with one opening per class in the three-paragraph skeleton (arrival · situation · problem), and a setting-neutral spine — the narrator's 12 questions answered in writing (Doctrine v2, 2026-08-25: narrate, never inhabit)
 - Threads discovered inside the prose, not in a separate menu
 - A **4–8 card authored hand on every nudge-bearing step** (dealt 4–6 after filters), spanning ≥4 spheres, with ≥1 ungated common option, no two cards answering the same question
-- Generic card faces ("Steady Breath", not "Steady the hands against the vault lock") — the scene grounds the card, the face never carries the scene
-- Effect lines that state mechanism: what the god does and why that moves the odds
+- Generic card faces named **imperative verb + noun** ("Inspire Courage", never "A Little More") — the scene grounds the card, the face never carries the scene
+- Effect lines that read like spell descriptions: one or two direct sentences of what the nudge does ("Fill them with blazing resolve — inspire them to bravery"), no odds-talk
 - **Every card pays off in failure** — at least one failure-band fragment per nudge, both failure bands for a big-delta card
 - Aftermath with reflective prose, actor-centered consequences, and reaction choices (medium+)
 - **Cool failure at every band** — the failure path must be as narratively interesting as the success path. If the failure outcome reads like punishment, it's not done.
@@ -457,14 +457,14 @@ Zero every reference he sees is something he can click.
 The draft agent produces a complete encounter packet by walking the **8-step checklist**
 in [`reference/nudge-authoring-spec.md`](reference/nudge-authoring-spec.md) in order:
 
-1. **Envelope + vignette** — setting envelope declared; one opening per class + setting-neutral spine, written under the 14-question scene-writer's checklist; motive hooks, quintessence stakes, and scene tag declared; premise started from the Step 0a plot hook (drift away from it is fine — an unrecorded roll is not)
+1. **Envelope + skeleton openings** — setting envelope declared; one three-paragraph opening per class (arrival · situation · problem) + setting-neutral spine, written under the 12-question narrator's checklist; premise started from the Step 0a plot hook and the brief's Seed Dice rolls (drift from the hook is fine — an unrecorded roll is not; the rolled stake shape binds unless overridden with a reason)
 2. **Test panel data** — per step: reach(es) + ≤4-word purpose line, difficulty, 2–4 factor lines each naming its source
 3. **The hand** — 4–8 `StepNudge`s per nudge-bearing step cut from the 21-type library: generic faces, mechanism-stating effect lines, ≥4 spheres, ≥1 ungated common option, ≤1 rider per hand, trait-only cards at cost 0, zero-essence cards priced on another channel, grants naming only built content
 4. **Band prose** — all six `StepOutcome`s covered; every nudge ≥1 failure-band fragment; big-delta cards cover both failure bands
 5. **Trait hooks** — all four questions answered explicitly (gate / variant / trait-only nudge / trait fragment); live refs only
 6. **Aftermath** — prizes, tolls, seeds as object references; tolls in words; **every family in the Step 0b consequence hand wired in context**, recorded in `consequenceDraw` (one recorded `consequenceSwap` allowed)
 7. **Images** — one generic image tag per library card + scene tag; genericity test documented
-8. **Evidence** — register scorer + detectors clean; 14-question answers recorded in the file doc comment
+8. **Evidence** — register scorer + detectors clean; 12-question narrator's-checklist answers recorded in the file doc comment
 
 Plus: all structural sections (inspiration anchors, pressure knot, cast, beat structure,
 branching profile, outcome ladder, support bundle, self-audit), a sample opening

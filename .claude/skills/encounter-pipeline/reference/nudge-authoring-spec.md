@@ -60,8 +60,10 @@ The binding order, for every encounter and every batch:
    cost channels and grants — every mechanical choice, made and recorded in the brief
    **before a word of fiction exists**. The design sets the constraints the story must
    live inside.
-3. **Hooks third.** Roll the plot-hook draw (§ The Plot-Hook Draw) and build story
-   candidates *within* the constraints from step 2.
+3. **Hooks and dice third.** Roll the plot-hook draw (§ The Plot-Hook Draw) **and the
+   five Seed Dice** (§ The Seed Dice — stake shape, opposition, disposition, agent's
+   role, scale), then build story candidates *within* the constraints from step 2 and
+   the rolls.
 4. **Candidates, then judgment.** Write 2–3 candidate premises from the rolled hooks;
    review agents rank them against the fixed design and the register rules; the best
    candidate goes to draft.
@@ -129,14 +131,16 @@ The card face and how the schema carries it:
 |---|---|---|
 | Picture | `imageTag` | One generic image per library card; fallback chain ends at a type icon on a tinted band |
 | Keyword + icon | *(code comment until THR-887 lands the library schema)* | The card's library type — player-facing vocabulary |
-| Title | `name` | 2–4 generic words, reusable everywhere ("Steady Breath", "Pay It Later") |
+| Title | `name` | **Imperative verb + noun, 2–4 words, like a spell** — "Inspire Courage", "Ward the Gate", "Dull the Cold". Never a fragment or a mood: "A Little More" is the banned shape (director ruling 2026-08-25) |
 | Cost | `essenceCost` + `costs` | Essence pips · free · alternate channels (detection, doom, obligation) |
-| Effect | `effectLine` | **One plain mechanical sentence: what the god does and why that moves the odds.** No digits, no `%` — the pip row renders magnitude |
-| Flavor quote | `fiction` | One short generic line, the card's only prose |
+| Effect | `effectLine` | **One or two direct sentences saying what the nudge does** — evocative but unambiguous: "Fill them with blazing resolve — inspire them to bravery." No digits, no `%`, no meta-commentary about effort or odds — the pip row carries magnitude |
+| ~~Flavor quote~~ | `fiction` | **Retired (director ruling 2026-08-25).** The effect line is the card's only prose. Existing `fiction` strings are dead content pending the schema/UI cleanup ticket; author none |
 
-**The effect line states mechanism, not mood** (checklist Q14). Eldritch Horror register:
-"Send restful dreams — you quiet their mind while they sleep, so the rest actually
-counts." Take the space the reasoning needs; never take refuge in atmosphere.
+**The effect line reads like a spell description** (checklist Q14, amended 2026-08-25):
+state the effect directly, in the plain command register of a rulebook. The earlier
+"explain the causal mechanism of the odds" framing produced convoluted lines ("You steady
+them at the point where effort usually gives out, so the last of it counts") — that shape
+is retired. Say what the god does; let the pips say how hard.
 
 **Grounding moved from prose to binding** (checklist Q13). A generic card is grounded
 because it *acts on* a target the scene established — the light on the water, the rope,
@@ -252,47 +256,43 @@ systems quota exists to stop.
 
 ---
 
-## The scene-writer's checklist (14 questions + the envelope question)
+## The narrator's checklist (12 questions)
 
-Locked 2026-07-30 (frameworks plan § Decision 1). Every encounter's prose is validated
-against these before it ships. The authoring agent answers each **in writing, per
-scene** — the exemplar's header comment is the template; any "no" means rewrite first.
+Locked 2026-08-25 (**Doctrine v2 — narrator mode**; supersedes the 2026-07-30
+scene-writer's checklist after the director's border-perils read: *"you are still writing
+in situ instead of just describing."* The old section A — build the scene, two senses
+beyond sight, complication last — is **retired by name**; it commanded the in-situ mode).
+The authoring agent answers each **in writing, per encounter**; any "no" means rewrite
+first.
 
-**A. Build the scene, in this order**
-1. *Where are we?* Place described concretely enough to sketch — ground, structures,
-   light — before anything else happens.
-2. *How does it feel?* At least two senses beyond sight: sound, smell, temperature, the
-   hour.
-3. *Who is here?* Everyone present or implied is shown or accounted for. If a fire is
-   lit, we know who lit it.
-4. *What must we know?* Relevant context — why the character is here, what state they're
-   in — before it matters.
-5. *Does the complication come last*, landing on a scene already built?
+**A. The opening skeleton (§ Doctrine v2 below)**
+1. *Does P1 say how the agent arrived*, with real graph names — agent, place, region?
+2. *Does P2 state what is happening and what has gone wrong* — events, with costs
+   already paid ("three guards to the infirmary"), never scenery?
+3. *Does P3 land exactly one stake shape from the table* (two at most, compounded on
+   purpose), matching the shape declared in the brief?
+4. *Is the whole opening ≤80 words* — subject-verb-object, one fact per sentence?
 
-**B. Internal logic**
-6. *Nothing referred to before it's introduced.* Every object/person/feature a sentence
-   uses already exists in the text.
-7. *Every event has a visible cause.*
-8. *Nothing contradicts what's established* — time of day, weather, who's present, what's
-   in hand.
+**B. Narrator mode**
+5. *Could a game master read every sentence aloud as a report?* No interior sensation,
+   no camera work, no atmosphere without a job.
+6. *Is every fact stated, never encoded?* If the fact is "no one dares approach it,"
+   that sentence appears — not the chalk line and the sweepings that imply it.
+7. *Does every sentence serve challenge, test, or outcome?* Anything else is cut.
 
-**C. Human realism, fantasy-adjusted**
-9. *Would a real person in this world do this?* Strangers' camps aren't walked into;
-   doors are knocked on; space has owners.
-10. *Do people react to each other like people?* Greetings, wariness, permission,
-    obligation.
-11. *Do actions carry their true cost* — fatigue, hunger, fear, time?
+**C. Internal logic (survives v1)**
+8. *Nothing referred to before it's introduced; every event has a visible cause;
+   nothing contradicts what's established.*
+9. *One named person on stage per beat, named over unnamed* — "Guard Captain Hessa asks
+   for help," never "someone is already here, waiting."
 
 **D. The interactive layer**
-12. *Can the player restate the stake in one sentence* — what's being decided, what a
-    good and a bad outcome each concretely look like? (Stake lines are several sentences
-    and concrete — "will the rest take?" is too thin.)
-13. *Is every card grounded?* It acts on a target the scene established — deleting the
-    card's target from the prose should make the card senseless in this hand.
-14. *Does every card state mechanism, not mood?* What the god does, and why that moves
-    the odds, in the plain mechanical `effectLine`.
-15. *Does every setting class the envelope declares have an opening written for it?*
-    (Enforced by `validateSettingEnvelope` — build-time, fail loud.)
+10. *Can the player restate the stake in one sentence?*
+11. *Is every card named verb+noun and described like a spell* — direct effect, no
+    mood, no odds-talk?
+12. *Does every setting class the envelope declares have an opening written for it — in
+    the skeleton, per class?* (Enforced by `validateSettingEnvelope` — build-time,
+    fail loud.)
 
 ---
 
@@ -427,8 +427,8 @@ before the first sentence of prose**:
    - **Seeds**: outcomes that plant designed futures (see the Seeded Sequel shape).
 
 Then declare the **setting envelope**, the **scene tag** (WS4 vocabulary; fallback
-chain ends at EntityVisual), and write the openings + spine under the scene-writer's
-checklist above.
+chain ends at EntityVisual), and write the openings + spine in the three-paragraph
+skeleton under the narrator's checklist above.
 
 ---
 
@@ -706,7 +706,7 @@ the detectors, grant liveness, the enrichment dry-run, and forecast arithmetic i
 command, and its output is the evidence a closeout quotes.
 
 Run the register scorer and the detectors below on all new prose — openings included. An
-encounter is not finished until they are clean, and until the scene-writer's checklist is
+encounter is not finished until they are clean, and until the narrator's checklist is
 answered in writing in the file's doc comment.
 
 **Then a second agent reads it (mandatory — Christian, chat 2026-07-30).** Before any
@@ -715,7 +715,7 @@ encounter prose is delivered — to the corpus, to a review, or to Christian in 
 session) reads the full prose top to bottom **together with the step-1 mechanical
 design block** and reports against:
 
-1. the 14-question scene-writer's checklist, answered independently;
+1. the 12-question narrator's checklist, answered independently;
 2. **design conformance** — the prose held to the design block: is the agent the
    protagonist; does each step actually test its declared reach; does every designed
    mechanic and object appear in the prose or gate an outcome (an unused hook is a
@@ -750,156 +750,130 @@ Absent declaration ⇒ **baseline**. Canon: `Docs/canon/prose.md` § the registe
 | Field | Register |
 |---|---|
 | `name`, `effectLine`, factor lines, purpose lines | **interactive-plain** |
-| Openings, spine, band base text, `fiction` (the flavor quote) | **baseline** |
-| Final-step band prose, the fate-reveal line | **peak-eligible** |
+| Openings, spine, band base text | **narrator mode** (Doctrine v2 below) |
+| Final-step band prose, the fate-reveal line | narrator mode; peak lyricism retired for encounter surfaces (2026-08-25) |
 
 **The hard plainness rule.** Interactive text is always plain — no metaphor, no ambiguity
-about what the click does. The picturable-anchor rule below applies to *prose* fields;
-it never applies to a label. A label's job is to be unmistakable. The flavor quote is the
-one card element allowed a dry aphorism ("Rest is armor.") — still one plain idea, never
-stacked metaphor.
-
-"Peak-eligible" means permitted, not required. Most encounters never need it.
+about what the click does. A label's job is to be unmistakable. The `fiction` flavor
+quote is retired (2026-08-25) — see the card-face table above.
 
 ---
 
-## Prose rubric (hard rules)
+## Prose doctrine v2 — narrator mode (hard rules)
 
-### Rule zero — game prose, not novel prose (Christian, 2026-07-30, supersedes anything below that conflicts)
+### Rule zero — narrate, never inhabit (Christian, 2026-08-25, supersedes everything that conflicts)
 
-**We are not writing novels; we are making a game.** The prose exists so the player
-understands the scene, the complication, and what is happening — fast, on one read.
+Ruled from the border-perils read (*"it is still borderline unreadable … you are still
+writing in situ instead of just describing"*): the recurring failure was never
+vocabulary, it was **mode**. Write as a **game master reading a module aloud** — a
+narrator reporting events to the player from outside the scene. The player is a god
+reading a chronicle, not a body in the yard.
 
-- **Simple grammar carries the crux.** A subject, a verb, an object, and the vibe:
-  "Someone is asking around after the agent, and not in a good way." If the natural
-  plain sentence uses an everyday word, use it — do not contort a sentence to satisfy
-  a detector. The detectors exist to kill *evasive* vagueness in outcome prose ("it
-  cost them something"), never to ban ordinary language from scene setup.
-- **Clarity beats compression.** A sentence that needs two readings is a defect, even
-  if every word in it is good. Splitting a dense sentence into two plain ones is
-  always the right trade. Cool words lose to clear words.
-- **Dialogue is welcome.** A guard saying "No one crosses at night — we have lost two
-  travelers in a fortnight" beats a paragraph implying it.
-- **One thought per sentence, complication stated early.** The player should know what
-  the scene is about by the end of the first paragraph without effort.
+- **Banned: in-situ writing.** Sensations from inside the scene ("cold through a boot
+  sole"), camera work ("the boots on the wall walk come that far and turn back"),
+  atmosphere with no job.
+- **State facts — never encode them.** If the fact is "no one dares approach it,"
+  write exactly that sentence. Never dress a fact as physical evidence for the reader
+  to decode (the chalk line, the sweepings piled against it).
+- **Everything serves challenge → test → outcome.** The encounter's whole job is a
+  tension, a test, a result. Every sentence does one of those three jobs or is cut.
+  "It builds atmosphere" is not a job.
 
-The older rules below still apply *inside* that frame — concrete beats abstract, shown
-beats told — but where any of them pushes a sentence away from plain readability, rule
-zero wins.
+### The opening skeleton — three short paragraphs, always
 
-### The three plainness moves (THR-974 ruling, Christian, 2026-08-15 — binds every draft and both critic passes)
+**P1 — Arrival.** How the agent got here, with real names from the graph.
+Formats: *"\<agent> arrives at \<place> at \<time-of-day>."* · *"Travelling through
+\<region>, \<agent> stops for a rest at \<place>."*
 
-Prose that satisfies rule zero and every detector can still fail the director's read on
-*rhetorical habit*. His standard, from a hand-edit of 10 live aftermath passages
-(verbatim in THR-974's resolution comment): *"keep the rhythm but cut the inversions,
-the aphorisms, and the abstract nouns doing concrete work."*
+**P2 — Situation & complication.** What is happening and what has gone wrong, stated
+as events with **costs already paid**: *"There she finds the garrison in disarray. A
+magic relic has been found below the west guard tower. Its freezing aura has already
+sent three guards to the infirmary."*
 
-1. **Subject first — never open on a fragment.** *"The far bank, and behind them a
-   plank going end over end…"* → *"They reach the far bank. Behind them, a plank
-   tumbles end over end into the water."*
-2. **Swap abstract nouns for what actually happened.** *"Public gratitude curdled into
-   public performance"* → *"The thanks went on too long, in front of too many
-   people."*
-3. **One dry line carries the irony, not two.** A concrete dry closer earns its keep
-   (*"it will have opinions about stairs"*); a second ironic turn on the same beat is
-   drift — cut the weaker one.
+**P3 — The problem.** Exactly one stake shape from § The Seed Dice (two at most,
+compounded on purpose), matching the brief's declared shape: *"No one dares approach
+it now. Guard Captain \<name> is at his wits' end and asks for help."* Not every
+problem has a "who" — see the stake table.
 
-4. **Density — fewer specifics, so the ones left can land (Christian, 2026-08-17,
-   THR-1130).** Added after the batch-1 sample play, on The Grateful Kin. Verbatim:
-   *"the concepts here are again very weak, as if the agent who wrote them has created
-   a more complex story that it wants to relate in too little space. the writing is in
-   situ with specific people mentioning other specific people. this is a problem
-   because there is not enough room to write so many details into the story and keep it
-   gamey and understandable."*
+**Budget: ≤80 words across all three paragraphs.** Later steps reuse the same logic —
+what changed, what it cost, what is asked now.
 
-   The failure is not vagueness — every sentence was concrete, which is what moves 1–3
-   ask for. It is **too many concrete things at once**. The opening carried an
-   innkeeper, her brother, his family, three children, a nine-day walk, a letter and a
-   pair of boots, in sixty words, to set up "someone is thanking you in public". A
-   third party who mentions a fourth is backstory competing with the beat.
+### Sentence rules
 
-   Practically: **one named person on stage**, and props only where the player can act
-   on them. Cut a specific whenever the scene still reads without it — a letter that
-   exists only to explain how the thanks came about is a detail the beat does not need.
-   Judge it at game speed: the player has one read to know who is in front of them and
-   what is being asked.
+Subject–verb–object. One fact per sentence. Present tense, third person — the agent is
+always named, never "you". Named people over unnamed figures; **one named person on
+stage per beat**. Dialogue is welcome — a guard saying "No one crosses at night — we
+have lost two travelers in a fortnight" beats a paragraph implying it. No exclamation
+marks. The dark-world tone is carried by **what happens**, never by scenery.
 
-The editorial critic checks these by name; a draft that fails any of the four revises
-before the systems pass runs.
+### Calibration exemplar (the director's rewrite, 2026-08-25 — match this)
 
-1. **Concrete anchors by default.** Prefer sentences the reader can see. Plain
-   functional sentences that move the scene along are fine — the anchor rule is a
-   default, not a per-sentence quota.
-2. **Abstractions only as stakes, and cashed in-sentence.** You may stake "their
-   reputation"; you may not leave it uncashed. Name what reputation *looks like* here.
-2b. **Foreshadow, never announce (Christian, 2026-07-30).** Scene prose does not state
-   outcome mechanics — "Pass, and the seal opens every site; fail, and the arch goes to
-   the rubble cart" is rules text wearing prose. Show the stakes in the scene's
-   furniture (the rubble cart already standing by the door) and let afterimages and
-   band prose carry the concrete outcomes. The on-the-nose register belongs to
-   `effectLine` alone.
-3. **Evasive vagueness targets zero in outcome prose.** "It cost them something" hides
-   what happened — that is the detector's real prey. **The detectors now enforce
-   exactly this scope** (THR-899, shipped 2026-08-01): natural indefinites like
-   `someone` are enforced in *outcome* prose only, and are ordinary English in scene
-   setup. Write the plain sentence; do not write around the detector. The older
-   guidance to "flag lexicon collisions instead of writing around them" is retired —
-   there is no longer a collision to flag.
-4. **≤1 not-X-but-Y construction per encounter.** See the detector.
-5. **God-action as witnessed effect.** In *scene-side prose* (band fragments, outcome
-   text), never "the god grants courage" — write what happens in the room. The
-   `effectLine` is the exception by design: it is the rules text, and it says what the
-   god does plainly.
-5b. **The god sways, never decides (Christian, 2026-08-17 — THR-1166).** Verbatim, from
-   an attended read of The Grateful Kin's description: *"the concept that the god decides
-   anything is wrong. the god does not decide, but sways the odds and influences the
-   outcomes."* This is the nudge model's founding charter (THR-772) and it binds every
-   player-facing prose field. Never write the god as the author of a **result** — "the
-   god decides whether the thanks is taken gracefully or fumbled". Present the fork and
-   the god's weight on it: *sways, tips, presses, leans, steadies, steers*. → "A god can
-   steady the thanks, or let it fumble."
+Wrong (the shipped border-perils opening — in-situ):
 
-   The god choosing its **own action** is untouched by this rule and stays correct —
-   "the god chose how to pull", "the god may press to break the bargain" — because
-   picking which card to play is the game. The `divine outcome-authorship` detector
-   enforces exactly that line: a decision verb followed by a clause about the world
-   fails; followed by an infinitive it passes. See the detector spec below.
-6. **Every sentence has a job the player can feel (Christian, 2026-07-31).** For each
-   sentence, name what the player should feel or understand from it. "It satisfies a
-   design rule" is not an answer: pole staging, mechanic seeding, and payoff planting
-   must still read as story — "Nobody sits between the traveler and the door" stages
-   the exit as a *feeling*; "The back stair is behind the third door, and the yard
-   door stands open" is a floor plan installed to tick the staging rule. A sentence
-   with no nameable job is cut, and detail that belongs to one branch's road moves
-   into that branch's own prose.
-7. **Prose may not invent game state (Christian, 2026-07-31).** Base scene prose may
-   only claim facts that are either **scene-local** (the wainwright of this scene, the
-   stranger's two cups — inventions with no life outside the encounter) or **actual
-   reads of game state** through a sanctioned surface (cast binding, enrichment
-   placeholders, trait variants, favor/group/trait card gates, carryover lines). The
-   agent's history with the world — relationships, debts, prior visits, standings —
-   is game state: if the graph holds it, *consume* it through a gate or placeholder;
-   if the encounter should create it, *produce* it through grants or aftermath (spawn
-   the innkeeper agent, write the favor edge) — the prose narrates the new
-   relationship only after the mechanics mint it. "The landlord owes them a favor
-   from the winter the cellar flooded", written into base prose of a random
-   encounter, asserts an edge no node holds: the player clicks the landlord and finds
-   no relationship, a later favor-reading encounter finds no debt, and the template
-   fires in towns the agent has never entered. A favor-gated card
-   (`requiresFavor` — dealt only when a real favor edge exists) is the correct home
-   for exactly that fiction.
-6. **Card-discipline budgets** (`NUDGE_WORD_BUDGETS`, warn-level):
+> The fort's yard is swept and the gate is manned. This corner is used by nobody.
+> Someone chalked a line across the flags and nothing crosses it — the boots on the
+> wall walk come that far and turn back, and the sweepings pile against the chalk.
+> The flags inside the line are cold through a boot sole.
+
+Right (narrator mode, the skeleton):
+
+> \<agent> arrives at the fortress of \<fortress name> at the break of dawn.
+>
+> There \<they> find the garrison in disarray. A magic relic has been found below the
+> west guard tower. Its freezing aura has already sent three guards to the infirmary.
+>
+> No one dares approach it now. Guard Captain \<name> is at his wits' end and asks
+> for help.
+
+### What survives from v1 (restated here so nothing retired needs reading)
+
+- **Clarity beats compression** — a sentence that needs two readings is a defect;
+  split it.
+- **No numerals, no `%`, no second person** on any mortal-facing surface.
+- **The god sways, never decides** (THR-1166) — never the grammatical author of a
+  result; the divine outcome-authorship detector enforces the line. The god choosing
+  its **own action** stays correct ("the god may press to break the bargain").
+- **Prose may not invent game state** (2026-07-31) — a fact is either scene-local
+  invention with no life outside the encounter, or an actual read of game state
+  through a sanctioned surface (cast binding, enrichment placeholder, trait gate,
+  carryover line). History, debts, and standings live in the graph: consume them
+  through gates, or mint them through grants and aftermath — never assert them in
+  base prose.
+- **Evasive vagueness targets zero** — "it cost them something" fails in every field
+  class; the scoped lexicon in the detector spec below is unchanged.
+- **Band-prose mechanics** (checklist step 4) — six-band coverage, base text that
+  reads with no hand active, failure fragments for every nudge — unchanged; the
+  *register* of every band is narrator mode.
+
+### Retired by name (v1 rules; critics stop enforcing them today)
+
+Two-senses-beyond-sight · complication-comes-last · **foreshadow-never-announce**
+(reversed — announce plainly) · show-don't-tell as a default (reversed — tell) ·
+write-the-scene-first workflow · the picturable-anchor default · the flavor quote ·
+"one dry line carries the irony" (the irony budget is zero unless a character speaks
+it) · the "moment, not label" bar (a plainly stated fact is not a defect) ·
+sensory concreteness as a virtue — concreteness now means **named things and stated
+events**, never textures.
+
+### Word budgets (warn-level, `NUDGE_WORD_BUDGETS` — code aligns via the doctrine tooling ticket)
 
 | Field | Budget |
 |---|---|
-| Scene / each opening | 60 words |
+| Opening (all three paragraphs together) | 80 words |
 | Factor line | 12 words |
-| `fiction` (flavor quote) | 30 words — aim far lower; a quote is one line |
 | Band base | 60 words |
 | Band fragment | 25 words |
-| `name` | 6 words (`NUDGE_NAME_MAX_WORDS`) — aim for 2–4 |
+| `effectLine` | 25 words |
+| `name` | 4 words — imperative verb + noun |
 
-Over budget is a signal the field is carrying another field's job, not an error.
+### Lineage note
+
+Doctrine v2 absorbs and supersedes: rule zero v1 ("game prose, not novel prose",
+2026-07-30), the three plainness moves + the density rule (THR-974 / THR-1130 — their
+subject-first, abstract-noun and one-named-person content is folded into the sentence
+rules above), and the numbered rubric rules 1–7 (2026-07-25 → 2026-08-17). Their full
+text lives in this file's git history. Two of the old rules are *reversed*, not
+absorbed — see § Retired by name.
 
 ---
 
@@ -1236,6 +1210,110 @@ carries the variety.
 > searched 2026-08-17 across all three. Those four numbers are preserved on their hooks;
 > the rest never had one, and none were invented, because a fabricated number would read as
 > recovered provenance.
+
+---
+
+## The Seed Dice (director ruling 2026-08-25)
+
+**Every axis where an unconstrained author would default gets a die; rolls propose,
+design disposes.** The Plot-Hook Draw fixes the premise and the Consequence Draw fixes
+the back end; these five dice fix the axes in between, because without them the corpus
+converges — every problem a plea, every agent a helpful passerby, every opposition a
+bandit, everything personal-scale, everything hostile. Rolled per encounter slot at
+brief time, recorded on the brief beside `plotHookTaken`:
+
+```
+p3Shape:     obstruction
+opposition:  terrain (motive: indifference) · activity: blocking the only ford
+disposition: n/a  (no willed opposition)
+agentRole:   bystander pulled in
+scale:       company
+```
+
+Survey grounding: the axes match what the field's generators roll (OSR reaction +
+activity procedure, DMG villain/quandary tables, WWN tags, Ironsworn quest rank,
+Dungeon World impulses), diffed 2026-08-25; the agent's-role die is our own.
+
+### Die 1 — the stake (P3 shape), 8 faces · batch cap ≤2
+
+What shape the problem takes when the opening closes. **Not every problem has a
+"who"** — only Plea and Contest require a named NPC to own it (the cast binding still
+exists for the others; that person just isn't the problem).
+
+| # | Shape | P2 must establish | Closing-line format |
+|---|---|---|---|
+| 1 | **Plea** | a named person in trouble | "Guard Captain \<name> is at his wits' end and asks for help." |
+| 2 | **Obstruction** | a barrier between the agent and where they're going | "The bridge is down. The ford is the only crossing before nightfall." |
+| 3 | **Threat** | danger approaching on a clock | "The riders will reach the camp by dusk." |
+| 4 | **Opportunity** | something valuable, takeable, at a cost | "The relic is unclaimed. Whoever carries it out owns it." |
+| 5 | **Contest** | a rival present, wanting the same thing | "Another claimant is already waiting beside it." |
+| 6 | **Choice** | two courses, both costly | "Sharing the water saves the strangers and leaves the company short." |
+| 7 | **Unmitigated risk** | nothing attacking yet — continuing without acting invites it | "The pass is open, but the snow above is loaded and the light is going." |
+| 8 | **Mystery** | something wrong and unexplained | "No one in the village will say where the miller went." |
+
+A shape may compound once (the relic scene is Opportunity + Contest); a third shape
+means P2 is overloaded. Hook themes suggest shapes, non-bindingly, printed with the
+roll:
+
+| Hook theme | Natural shapes | Hook theme | Natural shapes |
+|---|---|---|---|
+| protection | threat · plea | scarcity | choice · opportunity |
+| journey | obstruction · risk | conflict | threat · contest |
+| discovery | opportunity · mystery | power | contest · threat |
+| bargain | choice · contest | betrayal | mystery · choice |
+| faith | plea · choice | craft | obstruction · opportunity |
+| justice | plea · mystery | transformation | risk · choice |
+
+### Die 2 — the opposition (what resists), 8 faces · batch cap ≤2
+
+| Opposition | Motive column (roll or pick one) |
+|---|---|
+| rival agent | greed · fear · orders · pride |
+| faction / institution | orders · doctrine · territory |
+| beast | hunger · territory · panic |
+| terrain / the elements | indifference |
+| the uncanny (threads, relics, spirits) | its own law |
+| the law / custom of the place | duty · precedent |
+| time itself | the clock is the enemy |
+| the mortal's own trait | read from the graph — their `stubborn`, their `oathbound` |
+
+Optional sub-roll, **activity when found** (texture for P2): eating · fighting
+something else · wounded · working · sleeping · arguing · fleeing · waiting.
+
+### Die 3 — disposition (the reaction roll), 5 faces · batch floor: not everything hostile
+
+The oldest die in the hobby, and it was missing: the opposition's stance when the
+agent arrives — **hostile · wary · neutral · open · friendly**. One opposition × five
+dispositions is five different encounters (the wary beast, the friendly rival).
+Disposition is a pre-test state of the world: nudges may sway it, fate resolves it —
+exactly the model. Terrain and time roll `n/a`.
+
+### Die 4 — the agent's role (their relationship to the problem), 7 faces · batch cap ≤2
+
+The corpus's strongest default is "helpful passerby". One roll here changes an
+encounter more than any other die, for free:
+
+bystander pulled in · the target · **the suspect or cause** ("the garrison thinks the
+relic followed *her* here") · the judge asked to rule · the competitor · the client
+who is owed · the trespasser.
+
+### Die 5 — scale (who the outcome touches), 4 faces · batch floor: ≥1 settlement-or-larger
+
+**personal → company → settlement → region.** The standing director note is that this
+is epic fantasy, not slice-of-life; the portfolio census measures the skew, this die
+pushes against it per encounter.
+
+### Enforcement tiers (so nothing here is ad-hoc)
+
+| Tier | Axes | Mechanism |
+|---|---|---|
+| **Binding** | consequence hand, composition contract | the gate recomputes it |
+| **Capped** | stake, opposition, disposition, role, scale + reach/setting/structure/tone | batch-brief variance rows; the batch report prints the spread |
+| **Advisory** | hook, theme→shape suggestion | recorded on the brief so coverage is measurable; never enforced |
+
+The dice stop at the brief. Everything inside the constraints — the fiction, the
+cards, the specific people — the author owns. A fully rolled encounter would be
+mad-libs; an unrolled one is the same encounter forever.
 
 ---
 
