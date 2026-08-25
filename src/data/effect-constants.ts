@@ -243,3 +243,32 @@ export const DUPLICATE_WORSEN_DEFAULT_MAX = 3;
  * an agent's gear, so a charge that needed opting into would never be spent.
  */
 export const CONSUMABLE_CHARGE_SPEND_PER_STEP = 1;
+
+// ─── Overlay / rule-override persistence (THR-1240) ────────────────
+
+/**
+ * Lifetime, in ticks, of a terrain overlay or rule override that arrives with no
+ * explicit duration. 24 ticks is two in-game days at the 12-tick day.
+ *
+ * `alter_terrain` and `modify_rules` may both express a permanent effect
+ * (`ticks: 'permanent'` → `expiryTick: null`), so this default applies only to
+ * the *unspecified* case. A missing duration is an authoring omission, not a
+ * request for permanence — defaulting the other way would let one unreviewed
+ * catalog entry blight a hex for the rest of the run.
+ */
+export const OVERLAY_DEFAULT_DURATION_TICKS = 24;
+
+/**
+ * Clamp on any aggregated `*_multiplier` rule-override value (NFP #4).
+ *
+ * Multiplier keys stack multiplicatively, so three stacked 2× overrides reach 8×
+ * and nothing in the effect vocabulary bounds how many attachments an agent may
+ * carry. The cap is a fail-soft floor/ceiling against stacking runaway rather
+ * than a balance number: it bounds the pathological case without touching the
+ * ordinary one, where a single override is far below it.
+ *
+ * Applied symmetrically — values are clamped into `[1 / CAP, CAP]`, so a
+ * stacking *reduction* cannot drive a multiplier to zero and freeze the system
+ * it gates.
+ */
+export const RULE_OVERRIDE_VALUE_CAP = 3.0;

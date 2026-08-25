@@ -3095,3 +3095,47 @@ waiting; what it is waiting on is a ruling on whether the spine comes from what
 the god remembers or from a named campaign the world offers. Until that lands,
 authoring more prose against the template ids adds no player-visible text —
 check THR-1198's state before starting.
+
+### Capability 23: Terrain Overlays and Rule Overrides — Effects That Outlive the Scene (THR-1240)
+
+Two primitives that an author could always *write* and that never *did* anything:
+
+```ts
+{ type: 'alter_terrain', target: 'self_hex', terrainEffect: 'blighted', ticks: 6 }
+{ type: 'modify_rules', rule: 'movement_cost_multiplier', value: 0.5,
+  scope: { scope: 'self' }, ticks: 8 }
+```
+
+Both executors have always returned `success: true` carrying a fully-formed
+result. Every consumer read `result.mutations` — which these two leave empty —
+and dropped the rest, so the blight never landed and the multiplier never
+applied. Stage 2 gave them somewhere to live.
+
+**What an author can now rely on.** An `alter_terrain` effect marks a hex for a
+stated number of ticks (or `'permanent'`), and lifts on schedule. A
+`modify_rules` effect sets one of the thirteen `RuleOverrideKey` values on its
+bearer for a stated duration. Omit `ticks` and you get
+`OVERLAY_DEFAULT_DURATION_TICKS` (24 — two in-game days), *not* permanence: a
+missing duration is an authoring omission, and defaulting the other way lets one
+unreviewed entry blight a hex for the rest of the run.
+
+**Stacking is decided for you, per key family** — you do not need to reason about
+what happens when two sources land on the same key:
+
+| Key shape | Fold | Neutral |
+|---|---|---|
+| `*_multiplier` | multiplied together, clamped to `[1/3, 3]` | `1.0` |
+| `*_bonus`, `*_modifier` | summed | `0` |
+| `death_prevented` | boolean-OR — one source granting is enough | `false` |
+| string / struct (`encounter_reach_override`) | first-wins | — |
+
+The clamp matters most downward. Nothing bounds how many attachments an agent
+may carry, and an unclamped stacked reduction does not slow the system it gates,
+it stops it.
+
+**What is not yet true.** The eleven rule keys still have no consumer at their
+owning sites — that is stage 3 (THR-1241). A `movement_cost_multiplier` you
+author today is stored, folded and expired correctly, and movement does not yet
+read it. Check THR-1241's state before authoring content that depends on a
+particular key actually biting; `death_prevented`, `movement_cost_multiplier`
+and `awareness_range_bonus` are the three named to land first.
