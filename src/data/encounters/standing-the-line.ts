@@ -15,6 +15,37 @@
  * Package critique:  `Docs/plans/encounters/standing-the-line-package.md` (verdict: PACKAGE FIX)
  * Reference fork shape: `src/data/encounters/apotheosis-ascension.ts`
  *
+ * ── Prose Doctrine v2 (THR-1223 batch 3) ──
+ * Rewritten 2026-08-25 in narrator mode under the batch-1 calibration rulings:
+ * rewrite from scratch in basic game-master language ("clever specificity" is
+ * the residue tell of the old mode), and a card's effect line never repeats a
+ * word from the card's name. Zero mechanical changes — same steps, effects,
+ * seeds, bands, hands; the F1/F2/F3 band-guarantee constraints below are
+ * preserved verbatim in meaning.
+ * Stake shape (Seed Dice, die 1): Threat + Choice, compounded on purpose.
+ *
+ * Narrator's checklist (12 questions), answered:
+ *  1. P1 arrival with {name} and {location}, one per setting class — yes.
+ *  2. P2 states the pilgrim's state and the riders coming, costs standing
+ *     (a leg walked on since morning, no obligation to stop) — yes.
+ *  3. P3 lands Threat (riders on a clock) + Choice (talk them down, or break
+ *     them first) — yes.
+ *  4. Opening ≤80 words composed with any P1 (64–68) — yes.
+ *  5. Every sentence a narrator's report; no interior sensation, no camera —
+ *     yes.
+ *  6. Facts stated, never encoded — "cannot walk further" is said outright —
+ *     yes.
+ *  7. Every sentence serves challenge (the riders) / test (heart, then the
+ *     fork) / outcome (who stands at the end) — yes.
+ *  8. Nothing referenced before introduction; {cast:survivor} enters in the
+ *     spine — yes.
+ *  9. One named person on stage: {cast:survivor} — yes.
+ * 10. Stake in one sentence: get the pilgrim through the riders' arrival, by
+ *     word or by blade — yes.
+ * 11. Cards named imperative verb+noun; effect lines are game effects; no
+ *     name-word repetition — yes.
+ * 12. All four declared classes have a skeleton opening — yes.
+ *
  * ─── The package fix list, applied (THR-1221 Pass 4) ──────────────────
  *
  * `computeFinalActionOutcome` (`unifiedActionLifecycle.ts:300-319`) returns
@@ -169,59 +200,57 @@ const STEP_0_HAND: readonly StepNudge[] = [
     // Type: Boost — common pool, ungated. Abstains from the fork.
     id: 'line.s0.a_little_more',
     libraryCardId: 'card.boost.core',
-    name: 'A Little More',
+    name: 'Steady the Voice',
     essenceCost: 1,
     forecastDelta: 0.06,
     imageTag: 'generic.focus',
-    effectLine:
-      'You steady the hands and the voice a little, so what gets said comes out level. A small help, and it argues for neither answer.',
+    effectLine: 'Keep their words and hands level. It argues for neither answer.',
     fiction: 'Most things fail by a margin.',
     bandProse: {
       success: 'Level was enough. The pilgrim listened instead of talking.',
-      near_miss: 'The voice held steady all the way through. It ran out of time, not nerve.',
+      near_miss: 'The words held level the whole way. There was not enough time.',
     },
   },
   {
     // Type: Compulsion — sphere mind. Leans Mercy.
     id: 'line.s0.an_urge_in_sleep',
     libraryCardId: 'card.compulsion.signature.mind',
-    name: 'An Urge In Sleep',
+    name: 'Plant an Urge',
     sphere: 'mind',
     essenceCost: 2,
     forecastDelta: 0.08,
     poleLean: { axis: 'mercy_ruthlessness', toward: 'positive' },
     imageTag: 'generic.memory',
     effectLine:
-      'You put a want under their thinking where they will not find the edge of it, and it is a want to bring everyone out of this. A real help, and it leans them toward mercy.',
+      'Put a want under their thinking — a want to bring everyone out of this alive. It leans them toward mercy.',
     fiction: 'By morning it feels like their own idea.',
     bandProse: {
-      success_at_cost: 'The want held all the way through, and it cost them the answer they had ready.',
-      failure: 'The urge was there and so was the fear, and the fear was louder.',
+      success_at_cost: 'The want held to the end, and it cost them the answer they had ready.',
+      failure: 'The want was there, and so was the fear, and the fear was louder.',
     },
   },
   {
     // Type: Kindled ambition — sphere spirit. Leans Mercy.
     id: 'line.s0.something_to_want',
     libraryCardId: 'card.kindled_ambition.signature.spirit',
-    name: 'Something To Want',
+    name: 'Kindle Hope',
     sphere: 'spirit',
     essenceCost: 2,
     forecastDelta: 0.09,
     poleLean: { axis: 'mercy_ruthlessness', toward: 'positive' },
     imageTag: 'generic.blessing',
-    effectLine:
-      'You give them a thing to want out of this that is larger than getting through it. A real help, and it leans them toward mercy.',
+    effectLine: 'Give them something to want beyond getting through this. It leans them toward mercy.',
     fiction: 'A life turns on what it reaches for.',
     bandProse: {
       critical_success: 'They wanted this to end well, and wanting it made them convincing.',
-      near_miss: 'The wanting was real, and the leg was realer.',
+      near_miss: 'The wanting was real. The leg was worse.',
     },
   },
   {
     // Type: Undertow — sphere darkness. Leans Ruthless, permanent drift.
     id: 'line.s0.the_easier_way',
     libraryCardId: 'card.undertow.signature.darkness',
-    name: 'The Easier Way',
+    name: 'Offer the Shortcut',
     sphere: 'darkness',
     essenceCost: 2,
     forecastDelta: 0.14,
@@ -229,62 +258,61 @@ const STEP_0_HAND: readonly StepNudge[] = [
     valueDrift: { axis: 'mercy_ruthlessness', toward: 'negative' },
     imageTag: 'generic.dark',
     effectLine:
-      'You surface the shorter, uglier answer and make it feel obvious, so it arrives before the patient one does. A strong help, it leans them toward the ruthless answer, and it moves them that way for good.',
+      'Surface the quick, ugly answer so it arrives first. It leans them toward the ruthless answer, and moves them that way for good.',
     fiction: 'It works. That is the problem.',
     bandProse: {
-      success: 'The short answer arrived first and got itself said before the long one could.',
-      critical_failure: 'The short answer was the only one left in them, and it came out at the wrong person.',
+      success: 'The quick answer arrived first and got itself said before the patient one could.',
+      critical_failure: 'The quick answer was the only one left in them, and it came out at the wrong person.',
     },
   },
   {
     // Type: Signature (one-off — no `signature`-typed library member exists). Sphere force. Leans Ruthless.
     id: 'line.s0.weight_behind_it',
-    name: 'Weight Behind It',
+    name: 'Press the Weight',
     sphere: 'force',
     essenceCost: 2,
     forecastDelta: 0.08,
     poleLean: { axis: 'mercy_ruthlessness', toward: 'negative' },
     imageTag: 'generic.strength',
     effectLine:
-      'Where you hold force, the ground and the air answer to you first: things feel heavier, closer, more decidable by hand. A real help, and it leans them toward the ruthless answer.',
+      'Make the world feel heavier and closer, more decidable by hand. It leans them toward the ruthless answer.',
     fiction: 'Some gods are felt before they are heard.',
     bandProse: {
       success_at_cost: 'Everything felt solvable by hand, and their hand moved before their mouth did.',
-      failure: 'The world went heavy and stayed heavy, and heavy is not the same as simple.',
+      failure: 'The world went heavy and stayed heavy. Heavy did not make it simple.',
     },
   },
   {
     // Type: Fellowship (one-off — the type has no library member). Sphere order. Abstains.
     id: 'line.s0.one_rope_many_hands',
-    name: 'One Rope, Many Hands',
+    name: 'Bind the Company',
     sphere: 'order',
     requiresGroup: true,
     essenceCost: 2,
     forecastDelta: 0.09,
     imageTag: 'generic.oath',
     effectLine:
-      'Only in company: you tighten what the group already has, so nobody has to be persuaded twice. A real help, and it argues for neither answer.',
+      'Only in a group: tighten what they already share, so nobody has to be persuaded twice. It argues for neither answer.',
     fiction: 'A company decides faster than a person does.',
     bandProse: {
-      critical_success: 'The company moved as one, and the pilgrim believed the company before the person.',
-      near_miss: 'The company spoke with one voice, and the pilgrim had already decided not to hear it.',
+      critical_success: 'The group moved as one, and the pilgrim believed the group before the person.',
+      near_miss: 'The group spoke with one voice. The pilgrim had already decided not to hear it.',
     },
   },
   {
     // Type: Mercy — common pool, ungated. Rider no_crit_fail: the hand's only rider.
     id: 'line.s0.not_the_worst',
     libraryCardId: 'card.mercy.core',
-    name: 'Not The Worst',
+    name: 'Soften the Fall',
     essenceCost: 3,
     forecastDelta: 0.04,
     rider: 'no_crit_fail',
     imageTag: 'generic.mercy',
-    effectLine:
-      'You put a floor under it so it cannot come apart at the worst seam. Little help with the odds, and the disaster is off the table.',
+    effectLine: 'Put a floor under the worst — it can still go badly, but not all the way down.',
     fiction: 'Failing is survivable. Some failures are not.',
     bandProse: {
-      near_miss: 'It went badly and stopped there, which was the whole purchase.',
-      failure: 'It came apart, and a floor under it kept the pieces small.',
+      near_miss: 'It went badly and stopped there.',
+      failure: 'It came apart, and the floor kept the pieces small.',
     },
   },
 ];
@@ -300,85 +328,81 @@ const STEP_1_POSITIVE_HAND: readonly StepNudge[] = [
     // Type: Mercy — common, ungated. Rider no_crit_fail: the hand's only rider.
     id: 'line.s1a.not_the_worst',
     libraryCardId: 'card.mercy.core',
-    name: 'Not The Worst',
+    name: 'Soften the Fall',
     essenceCost: 3,
     forecastDelta: 0.04,
     rider: 'no_crit_fail',
     imageTag: 'generic.mercy',
-    effectLine:
-      'You put a floor under it so it cannot come apart at the worst seam. Little help with the odds, and the disaster is off the table.',
+    effectLine: 'Put a floor under the worst — it can still go badly, but not all the way down.',
     fiction: 'Failing is survivable. Some failures are not.',
     bandProse: {
-      near_miss: 'No price was agreed and no blade came out, and the second half of that was bought.',
-      failure: 'It went wrong and stayed ordinary, which was the ceiling on how wrong it could go.',
+      near_miss: 'No price was agreed, and no blade came out. The second half of that was bought.',
+      failure: 'It went wrong and went no further.',
     },
   },
   {
     // Type: Kindled ambition — sphere spirit.
     id: 'line.s1a.something_to_want',
     libraryCardId: 'card.kindled_ambition.signature.spirit',
-    name: 'Something To Want',
+    name: 'Kindle Appetite',
     sphere: 'spirit',
     essenceCost: 2,
     forecastDelta: 0.11,
     imageTag: 'generic.blessing',
-    effectLine:
-      'You wake an appetite in the ones being talked to for what they cannot get here, so staying stops being worth their while. A real help.',
+    effectLine: 'Wake in the riders a hunger for what they cannot get here — staying stops being worth it.',
     fiction: 'A life turns on what it reaches for.',
     bandProse: {
       critical_success: 'They were already thinking about somewhere else, and somewhere else won.',
-      near_miss: 'A road further on had their attention. Not enough of it, and not yet.',
+      near_miss: 'A road further on had their attention. Not enough of it.',
     },
   },
   {
     // Type: Undertow — sphere darkness, big delta, permanent drift.
     id: 'line.s1a.the_easier_way',
     libraryCardId: 'card.undertow.signature.darkness',
-    name: 'The Easier Way',
+    name: 'Arm the Offer',
     sphere: 'darkness',
     essenceCost: 2,
     forecastDelta: 0.15,
     valueDrift: { axis: 'mercy_ruthlessness', toward: 'negative' },
     imageTag: 'generic.dark',
     effectLine:
-      'You put a threat behind the offer that nobody has to say out loud. A strong help, and it moves the one making the offer toward the ruthless end for good.',
+      'Put an unspoken threat behind what is proposed. It moves the one proposing it toward the ruthless end for good.',
     fiction: 'It works. That is the problem.',
     bandProse: {
-      success: 'The offer was taken. What stood behind the offer was what got taken seriously.',
+      success: 'The terms were taken. What stood behind the terms was what got taken seriously.',
       failure: 'The threat got heard without being said, and being threatened made the price an insult.',
-      critical_failure: 'They heard the threat, believed it, and decided to answer it now rather than later.',
+      critical_failure: 'They heard the threat, believed it, and decided to answer it now instead of later.',
     },
   },
   {
     // Type: Signature (one-off). Sphere light.
     id: 'line.s1a.made_plain',
-    name: 'Made Plain',
+    name: 'Show the Worth',
     sphere: 'light',
     essenceCost: 2,
     forecastDelta: 0.09,
     imageTag: 'generic.light',
-    effectLine:
-      'Where you hold light, you decide what is easy to see: you put a clean edge on what is being offered so it reads as worth taking. A real help.',
+    effectLine: 'Put a clean edge on what is offered, so it looks like a fair trade.',
     fiction: 'Half of worth is what the light does to it.',
     bandProse: {
       success_at_cost: 'It all looked better than it was, and they took a little extra for the trouble of looking.',
-      near_miss: 'It looked worth having right up until somebody picked it up.',
+      near_miss: 'It looked good right up until somebody picked it up.',
     },
   },
   {
     // Type: Boost (one-off — the library signs no `matter` Boost). Sphere matter.
     id: 'line.s1a.sound_goods',
-    name: 'Sound Goods',
+    name: 'Mend the Goods',
     sphere: 'matter',
     essenceCost: 1,
     forecastDelta: 0.07,
     imageTag: 'generic.matter',
-    effectLine:
-      'Where you hold matter, you can make a thing be what it looks like — the seams tight, the metal true, the weight right in the hand. A small help.',
+    effectLine: 'Make each thing be what it looks like — seams tight, metal true, weight right.',
     fiction: 'A good object argues for itself.',
     bandProse: {
-      success: 'The goods were exactly what they looked like, and nobody needed a second look at them.',
-      failure: 'The goods were sound. The goods were never the argument.',
+      success: 'Everything offered was exactly what it looked like, and nobody needed a second look.',
+      failure: 'Everything offered was sound. The offer was never the argument.',
     },
   },
 ];
@@ -394,32 +418,30 @@ const STEP_1_NEGATIVE_HAND: readonly StepNudge[] = [
     // Type: Boost — common, ungated.
     id: 'line.s1b.a_little_more',
     libraryCardId: 'card.boost.core',
-    name: 'A Little More',
+    name: 'Quicken the Hand',
     essenceCost: 1,
     forecastDelta: 0.07,
     imageTag: 'generic.focus',
-    effectLine:
-      'You shave a moment off the wrong side of the timing, so the first move goes when it should rather than a breath late. A small help.',
+    effectLine: 'Shave a moment off the timing — the first move goes when it should, not a breath late.',
     fiction: 'Most things fail by a margin.',
     bandProse: {
-      success: 'It went a half-beat early, which was the half-beat that mattered.',
-      near_miss: 'The timing was right. Everything after the timing took too long.',
+      success: 'It went a half-beat early, and the half-beat mattered.',
+      near_miss: 'The timing was right. Everything after it took too long.',
     },
   },
   {
     // Type: Boost — sphere energy, second and last Boost (cap 2).
     id: 'line.s1b.a_sudden_surge',
     libraryCardId: 'card.boost.signature.energy',
-    name: 'A Sudden Surge',
+    name: 'Kindle Blood',
     sphere: 'energy',
     essenceCost: 2,
     forecastDelta: 0.11,
     imageTag: 'generic.energy',
-    effectLine:
-      'Where you hold energy, a body will spend more than it has: you put everything it was saving into the next few seconds. A real help.',
+    effectLine: 'The body spends everything it was saving in the next few seconds.',
     fiction: 'Bodies hold more than they admit.',
     bandProse: {
-      critical_success: 'The body gave everything at once and had nothing left afterward, because there was no afterward.',
+      critical_success: 'The body gave everything at once, and it was enough.',
       failure: 'Everything went into it, and it went into the wrong man.',
     },
   },
@@ -427,33 +449,31 @@ const STEP_1_NEGATIVE_HAND: readonly StepNudge[] = [
     // Type: Compulsion — sphere mind.
     id: 'line.s1b.an_urge_in_sleep',
     libraryCardId: 'card.compulsion.signature.mind',
-    name: 'An Urge In Sleep',
+    name: 'Turn Their Eyes',
     sphere: 'mind',
     essenceCost: 2,
     forecastDelta: 0.10,
     imageTag: 'generic.memory',
-    effectLine:
-      'You put an urge in the ones about to be hit — to check a strap, to look the other way, to be a moment behind. A real help.',
+    effectLine: 'Give the riders something else to mind — a strap to check, a moment to lose.',
     fiction: 'By morning it feels like their own idea.',
     bandProse: {
-      success_at_cost: 'Two of them were looking at the wrong thing, and the third was not.',
-      near_miss: 'Everyone looked away at once, which men on a road notice.',
+      success_at_cost: 'Two of them were looking at the wrong thing. The third was not.',
+      near_miss: 'All four looked away at the same moment, and noticed that they had.',
     },
   },
   {
     // Type: Fellowship (one-off). Sphere order.
     id: 'line.s1b.one_rope_many_hands',
-    name: 'One Rope, Many Hands',
+    name: 'Call the Count',
     sphere: 'order',
     requiresGroup: true,
     essenceCost: 2,
     forecastDelta: 0.12,
     imageTag: 'generic.oath',
-    effectLine:
-      'Only in company: you set an order under the group so everyone moves on the same count without being told. A real help.',
+    effectLine: 'Only in a group: they all move on the same beat without being told.',
     fiction: 'A company decides faster than a person does.',
     bandProse: {
-      critical_success: 'They went in on one count, and one count is what four scattered riders cannot answer.',
+      critical_success: 'They went in together on one beat, and four scattered riders could not answer it.',
       failure: 'Everyone moved together, into the same wrong place, at the same time.',
     },
   },
@@ -461,18 +481,18 @@ const STEP_1_NEGATIVE_HAND: readonly StepNudge[] = [
     // Type: Undertow — sphere darkness, big delta, permanent drift.
     id: 'line.s1b.the_easier_way',
     libraryCardId: 'card.undertow.signature.darkness',
-    name: 'The Easier Way',
+    name: 'Cut the Doubt',
     sphere: 'darkness',
     essenceCost: 2,
     forecastDelta: 0.15,
     valueDrift: { axis: 'mercy_ruthlessness', toward: 'negative' },
     imageTag: 'generic.dark',
     effectLine:
-      'You take the hesitation out — the half-beat where a person checks whether this is necessary. A strong help, and it moves them toward the ruthless end for good.',
+      'Take out the half-beat where a person checks whether this is necessary. It moves them toward the ruthless end for good.',
     fiction: 'It works. That is the problem.',
     bandProse: {
-      success: 'They never asked whether this was necessary, and not asking is what made it fast.',
-      failure: 'There was no hesitation and no advantage in having none.',
+      success: 'They never asked whether this was necessary, and not asking made it fast.',
+      failure: 'There was no hesitation, and no advantage in having none.',
       critical_failure: 'They went in without the pause that would have told them how many there were.',
     },
   },
@@ -488,27 +508,27 @@ const STEP_2_POSITIVE_HAND: readonly StepNudge[] = [
     // Type: Boost — common, ungated.
     id: 'line.s2a.a_little_more',
     libraryCardId: 'card.boost.core',
-    name: 'A Little More',
+    name: 'Steady the Hands',
     essenceCost: 1,
     forecastDelta: 0.06,
     imageTag: 'generic.focus',
-    effectLine: 'You keep the hands from shaking through the part where nothing can be taken back. A small help.',
+    effectLine: 'Keep the shaking out of the part where nothing can be taken back.',
     fiction: 'Most things fail by a margin.',
     bandProse: {
-      success: 'The hands stayed steady, and steady hands are most of what a handover is.',
-      near_miss: 'The hands never shook. The counting did.',
+      success: 'Nothing shook, and a calm handover is most of a handover.',
+      near_miss: 'Nothing shook. The counting went wrong anyway.',
     },
   },
   {
     // Type: Compulsion — sphere mind.
     id: 'line.s2a.an_urge_in_sleep',
     libraryCardId: 'card.compulsion.signature.mind',
-    name: 'An Urge In Sleep',
+    name: 'Plant Weariness',
     sphere: 'mind',
     essenceCost: 2,
     forecastDelta: 0.10,
     imageTag: 'generic.memory',
-    effectLine: 'You leave a wish to be done with this under the thinking of everyone holding a weapon. A real help.',
+    effectLine: 'Leave a wish to be done with this under the thinking of everyone holding a weapon.',
     fiction: 'By morning it feels like their own idea.',
     bandProse: {
       critical_success: 'Every one of them wanted to be somewhere else, and men who want to leave leave fast.',
@@ -519,48 +539,47 @@ const STEP_2_POSITIVE_HAND: readonly StepNudge[] = [
     // Type: Kindled ambition — sphere spirit.
     id: 'line.s2a.something_to_want',
     libraryCardId: 'card.kindled_ambition.signature.spirit',
-    name: 'Something To Want',
+    name: 'Kindle Honor',
     sphere: 'spirit',
     essenceCost: 2,
     forecastDelta: 0.09,
     imageTag: 'generic.blessing',
-    effectLine: 'You give one of them a reason to be the sort of person who keeps a bargain. A real help.',
+    effectLine: 'Give one of them a reason to be the sort of person who keeps a bargain.',
     fiction: 'A life turns on what it reaches for.',
     bandProse: {
-      success_at_cost: 'One of them held the others to it, and made sure everyone saw who had.',
-      near_miss: 'Somebody wanted to be better than this and was outvoted.',
+      success_at_cost: 'One of them held the others to the bargain, and made sure everyone saw who had.',
+      near_miss: 'Somebody wanted to be better than this, and was outvoted.',
     },
   },
   {
     // Type: Signature (one-off). Sphere time.
     id: 'line.s2a.not_the_first_time',
-    name: 'Not The First Time',
+    name: 'Dull the Edge',
     sphere: 'time',
     essenceCost: 2,
     forecastDelta: 0.08,
     imageTag: 'generic.time-slow',
-    effectLine:
-      'Where you hold time, a moment can be made to feel worn: this has happened before, it went the ordinary way, and it will go that way again. A real help.',
+    effectLine: 'Make the moment feel worn and ordinary — this has happened before, and it went the plain way.',
     fiction: 'Nothing happens only once.',
     bandProse: {
-      success: 'It felt like a job they had done before, and they did it the same as they did it then.',
+      success: 'It felt like a job they had done before, and they did it the same way.',
       critical_failure: 'It felt familiar, and what it reminded them of was a time somebody had cheated them.',
     },
   },
   {
     // Type: Fellowship (one-off). Sphere order.
     id: 'line.s2a.one_rope_many_hands',
-    name: 'One Rope, Many Hands',
+    name: 'Hold the Line',
     sphere: 'order',
     requiresGroup: true,
     essenceCost: 2,
     forecastDelta: 0.10,
     imageTag: 'generic.oath',
-    effectLine: 'Only in company: you hold the group’s own order steady so nobody in it moves before they are meant to. A real help.',
+    effectLine: 'Only in a group: keep their order steady, so nobody moves before they are meant to.',
     fiction: 'A company decides faster than a person does.',
     bandProse: {
       critical_success: 'Nobody on either side moved early, and nobody had to be told not to.',
-      failure: 'Somebody at the back of the company moved, and it was read as the start of a fight.',
+      failure: 'Somebody at the back moved, and it was read as the start of a fight.',
     },
   },
 ];
@@ -575,30 +594,29 @@ const STEP_2_NEGATIVE_HAND: readonly StepNudge[] = [
     // Type: Mercy — common, ungated. Rider no_crit_fail: the hand's only rider.
     id: 'line.s2b.not_the_worst',
     libraryCardId: 'card.mercy.core',
-    name: 'Not The Worst',
+    name: 'Soften the Fall',
     essenceCost: 3,
     forecastDelta: 0.04,
     rider: 'no_crit_fail',
     imageTag: 'generic.mercy',
-    effectLine:
-      'You put a floor under it so it cannot come apart at the worst seam. Little help with the odds, and the disaster is off the table.',
+    effectLine: 'Put a floor under the worst — it can still go badly, but not all the way down.',
     fiction: 'Failing is survivable. Some failures are not.',
     bandProse: {
-      near_miss: 'It ended badly and stopped ending, which was the purchase.',
-      failure: 'It went wrong, and a floor under it held how far wrong it was allowed to go.',
+      near_miss: 'It ended badly, and it ended there.',
+      failure: 'It went wrong, and the floor held how far wrong it could go.',
     },
   },
   {
     // Type: Undertow — sphere darkness, permanent drift.
     id: 'line.s2b.the_easier_way',
     libraryCardId: 'card.undertow.signature.darkness',
-    name: 'The Easier Way',
+    name: 'Silence Mercy',
     sphere: 'darkness',
     essenceCost: 2,
     forecastDelta: 0.13,
     valueDrift: { axis: 'mercy_ruthlessness', toward: 'negative' },
     imageTag: 'generic.dark',
-    effectLine: 'You take away the instinct to stop once someone is down. A strong help, and it moves them toward the ruthless end for good.',
+    effectLine: 'Take away the instinct to stop once someone is down. It moves them toward the ruthless end for good.',
     fiction: 'It works. That is the problem.',
     bandProse: {
       success: 'The instinct to stop never arrived, and it was over while the others were still deciding.',
@@ -609,28 +627,27 @@ const STEP_2_NEGATIVE_HAND: readonly StepNudge[] = [
     // Type: Boost — sphere energy.
     id: 'line.s2b.a_sudden_surge',
     libraryCardId: 'card.boost.signature.energy',
-    name: 'A Sudden Surge',
+    name: 'Kindle Blood',
     sphere: 'energy',
     essenceCost: 2,
     forecastDelta: 0.10,
     imageTag: 'generic.energy',
-    effectLine: 'Where you hold energy, a body will spend more than it has: when the arms go dead, there is one more in them. A real help.',
+    effectLine: 'When the arms go dead, there is one more blow in them.',
     fiction: 'Bodies hold more than they admit.',
     bandProse: {
-      critical_success: 'There was one more in them, and one more was the whole of it.',
+      critical_success: 'There was one more in them, and one more was all it took.',
       near_miss: 'There was one more in them. The road wanted three.',
     },
   },
   {
     // Type: Signature (one-off). Sphere force.
     id: 'line.s2b.weight_behind_it',
-    name: 'Weight Behind It',
+    name: 'Anchor the Feet',
     sphere: 'force',
     essenceCost: 2,
     forecastDelta: 0.12,
     imageTag: 'generic.strength',
-    effectLine:
-      'Where you hold force, the ground and the air answer to you first: footing holds where it should slip, and a blow lands with more behind it than the arm had. A real help.',
+    effectLine: 'Footing holds where it should slip, and a blow lands with more behind it than the arm had.',
     fiction: 'Some gods are felt before they are heard.',
     bandProse: {
       success_at_cost: 'The ground held under one of them and not the other, and both of them noticed.',
@@ -641,16 +658,16 @@ const STEP_2_NEGATIVE_HAND: readonly StepNudge[] = [
     // Type: Kindled ambition — sphere spirit.
     id: 'line.s2b.something_to_want',
     libraryCardId: 'card.kindled_ambition.signature.spirit',
-    name: 'Something To Want',
+    name: 'Kindle Longing',
     sphere: 'spirit',
     essenceCost: 2,
     forecastDelta: 0.08,
     imageTag: 'generic.blessing',
-    effectLine: 'You wake in the ones still standing a want to be alive somewhere else tomorrow. A real help.',
+    effectLine: 'Wake in the ones still standing a want to be alive somewhere else tomorrow.',
     fiction: 'A life turns on what it reaches for.',
     bandProse: {
-      success: 'One of them decided he would rather be alive elsewhere, and the rest followed him out.',
-      near_miss: 'Two of them wanted to be elsewhere and went, and two of them stayed.',
+      success: 'One of them decided being alive elsewhere was the better trade, and the rest followed him out.',
+      near_miss: 'Two of them wanted to be elsewhere and went. Two of them stayed.',
     },
   },
 ];
@@ -676,16 +693,19 @@ const step0WinTheirTrust: ActionStep = {
   onFailure: [],
   failBehavior: 'continue_weakened',
   nudges: STEP_0_HAND,
+  // The setting-neutral P2+P3 spine (Doctrine v2). The per-class P1 arrival
+  // lands above this at instantiation. The pilgrim is introduced here by cast
+  // token, before any later prose refers to them.
   narrativeTemplate:
-    'A pilgrim sits where the way goes narrow, one leg straight out and wrong, still wearing the pack. They ' +
-    'have walked on it since morning and will not walk further. Four riders are coming up, unhurried. Nothing ' +
-    'on this road obliges them to stop, and the pilgrim does not know the traveler standing over them from any ' +
-    'other stranger.',
+    'A pilgrim, {cast:survivor}, sits where the way narrows, one leg ruined, unable to walk further. Four ' +
+    'riders are coming up the road, and nothing obliges them to stop.\n\n' +
+    'There is time for one thing: get the pilgrim off the road and meet the riders with words, or go up the ' +
+    'road and break them first.',
   successAfterimage: 'The pilgrim let themselves be moved, and stopped asking why.',
-  failureAfterimage: 'The pilgrim would not be moved by a stranger, and the pack stayed on.',
-  successAtCostAfterimage: 'The pilgrim moved, still arguing, and the arguing was loud enough to carry.',
-  criticalSuccessAfterimage: 'The pilgrim took the offered arm before the offer was finished, and asked what to do.',
-  criticalFailureAfterimage: 'The pilgrim decided the traveler was the danger, and said so at the top of their voice.',
+  failureAfterimage: 'The pilgrim would not be moved by a stranger, and stayed in the open.',
+  successAtCostAfterimage: 'The pilgrim moved, still arguing, and the arguing carried a long way.',
+  criticalSuccessAfterimage: 'The pilgrim took the offered arm at once and asked what to do.',
+  criticalFailureAfterimage: 'The pilgrim decided the traveler was the danger, and shouted it.',
 };
 
 /**
@@ -710,12 +730,12 @@ const step1HoldTheRoad: ActionStep = {
     critical_failure: { text: 'The pilgrim is shouting, and the riders have heard it.', polarity: 'against', forecastDelta: -0.08 },
   },
   narrativeTemplate:
-    'The riders are close enough now to see clearly, four of them, unhurried. There is time for one thing ' +
-    'before they reach the narrow place: an offer, made plainly, for the road to stay quiet.',
-  successAfterimage: 'They listened all the way to the end of it, which was more than they had to do.',
-  failureAfterimage: 'They let the talking finish out of politeness and came on anyway.',
+    'The four riders are close now, and unhurried. There is time for one offer, made plainly, before they ' +
+    'reach the narrow place.',
+  successAfterimage: 'They listened to the end of it, which was more than they had to do.',
+  failureAfterimage: 'They let the talking finish and came on anyway.',
   successAtCostAfterimage: 'They took the offer and added to it while it was being made.',
-  criticalSuccessAfterimage: 'The lead rider heard the price, looked at what was standing in the road, and named it back.',
+  criticalSuccessAfterimage: 'The lead rider heard the price, looked at who was standing in the road, and agreed to it.',
   criticalFailureAfterimage: 'The offer told them exactly how much there was to take.',
 };
 
@@ -741,13 +761,13 @@ const step1BreakThePursuit: ActionStep = {
     critical_failure: { text: 'The pilgrim is shouting after them, which carries a long way.', polarity: 'against', forecastDelta: -0.08 },
   },
   narrativeTemplate:
-    'The riders are close enough now to see clearly, four of them, unhurried. There is time for one thing ' +
-    'before they reach the narrow place: going up to meet them before they arrive strung out and unready.',
-  successAfterimage: 'The first exchange went the traveler’s way, and the riders came off the road to think about it.',
+    'The four riders are close now, and unhurried. There is time to go up and meet them before they arrive ' +
+    'together and ready.',
+  successAfterimage: 'The first exchange went the traveler’s way, and the riders pulled off the road to think.',
   failureAfterimage: 'They had seen it coming from further off than anyone thought.',
-  successAtCostAfterimage: 'It landed, and a blade came back the other way at the same time.',
-  criticalSuccessAfterimage: 'Two were down before the third had the reins gathered.',
-  criticalFailureAfterimage: 'The traveler went in at four men and found out how many four is.',
+  successAtCostAfterimage: 'The strike landed, and a blade came back the other way at the same time.',
+  criticalSuccessAfterimage: 'Two were down before the third had gathered the reins.',
+  criticalFailureAfterimage: 'The traveler went in at four men, and four was too many.',
 };
 
 /**
@@ -787,11 +807,11 @@ const step2MakeItHold: ActionStep = {
     critical_failure: { text: 'They were insulted by it and have not let it go.', polarity: 'against', forecastDelta: -0.10 },
   },
   narrativeTemplate:
-    'What was said has to survive being paid. The goods change hands here, or the offer was only ever words.',
+    'What was said has to survive being paid. The goods change hands here, or the offer was only words.',
   successAfterimage: 'The goods changed hands. Nobody touched anybody, and nobody said much.',
-  failureAfterimage: 'Halfway through the counting somebody decided the whole pile was already theirs.',
-  successAtCostAfterimage: 'They took the price, and then stood there deciding whether it was all of it.',
-  criticalSuccessAfterimage: 'They counted it once, and one of them said a word that was almost civil.',
+  failureAfterimage: 'Halfway through the counting, somebody decided the whole pile was already theirs.',
+  successAtCostAfterimage: 'They took the price, then stood there deciding whether it was all of it.',
+  criticalSuccessAfterimage: 'They counted it once and were satisfied, and one of them was almost civil about it.',
   criticalFailureAfterimage: 'The bargain came apart in the counting, and it came apart fast.',
 };
 
@@ -817,11 +837,11 @@ const step2FinishIt: ActionStep = {
     critical_failure: { text: 'The traveler is on the ground and the road is theirs.', polarity: 'against', forecastDelta: -0.10 },
   },
   narrativeTemplate:
-    'It does not end because it started well. It ends because it is finished, or it follows them the rest of the day.',
-  successAfterimage: 'Nobody on the ground was going to get up, and the ones still mounted knew it.',
-  failureAfterimage: 'Nobody finished it. It stopped because both sides had had enough of it.',
-  successAtCostAfterimage: 'It ended. What it cost came out of the traveler and not out of anybody else.',
-  criticalSuccessAfterimage: 'It stopped because they stopped it, and the road was empty inside a minute.',
+    'It ends here because it is finished, or it follows them the rest of the day.',
+  successAfterimage: 'Nobody on the ground was getting up, and the ones still mounted knew it.',
+  failureAfterimage: 'Nobody finished it. It stopped because both sides had had enough.',
+  successAtCostAfterimage: 'It ended. The cost came out of the traveler and nobody else.',
+  criticalSuccessAfterimage: 'They ended it, and the road was empty inside a minute.',
   criticalFailureAfterimage: 'It ended with the traveler on the ground and the road belonging to somebody else.',
 };
 
@@ -1014,9 +1034,8 @@ function scarChip(id: string, causeClause: string, detail: string): EncounterAft
 
 const HOLD_THE_ROAD = {
   overview:
-    'The riders took the price and went through, and the traveler did not move until the last of them was ' +
-    'out the far side. Nobody reached for anything. The traveler is lighter by most of what they were ' +
-    'carrying. {cast:survivor} is asking, from the ground, what happens now.',
+    'The riders took the price and went through. Nobody reached for a weapon. The traveler is lighter by ' +
+    'most of what they carried. {cast:survivor} asks, from the ground, what happens now.',
   changes: [bondChip('standing_the_line.hold.success.bond', 'Stood in the road and paid to keep it that way')],
   reactionPrompt: REACTION_PROMPT,
   reactions: [
@@ -1026,10 +1045,9 @@ const HOLD_THE_ROAD = {
   byOutcome: {
     critical_success: {
       overview:
-        'Somebody at the front of the four looked at the price, looked at what was standing in the road, and ' +
-        'took less than half of it. The line went by at a walk with the width of the road between them and the ' +
-        'pilgrim. The traveler stayed on their feet until all four were out the other end. {cast:survivor} ' +
-        'spends a while insisting the leg is fine. It is not.',
+        'The lead rider looked at the price, looked at who was standing in the road, and took less than half ' +
+        'of it. All four went by at a walk and kept their distance from the pilgrim. {cast:survivor} keeps ' +
+        'insisting the leg is fine. It is not.',
       changes: [bondChip('standing_the_line.hold.critical_success.bond', 'Named a price four armed men decided not to argue with')],
       reactionPrompt: REACTION_PROMPT,
       reactions: [
@@ -1044,10 +1062,10 @@ const HOLD_THE_ROAD = {
     // reachable history, including [failure, critical_success, critical_success].
     success_at_cost: {
       overview:
-        'The price was paid, and it cost more than it should have. Somewhere in the paying the traveler took a ' +
-        'boot to the ribs for arguing the last of it, and by the end two of the four riders were not getting ' +
-        'back up. The rest rode through and did not look back. Two are lying where the way goes narrow. ' +
-        '{cast:survivor} is asking, from the ground, what happens now.',
+        'The price was paid, and it cost more than it should have. The traveler took a boot to the ribs for ' +
+        'arguing the last of it, and by the end two of the four riders were not getting back up. The rest ' +
+        'rode through without looking back. Two are lying where the way goes narrow. {cast:survivor} asks, ' +
+        'from the ground, what happens now.',
       changes: [
         bondChip('standing_the_line.hold.success_at_cost.bond', 'Stood in the road while a bargain came apart in their hands'),
         pathChip('standing_the_line.hold.success_at_cost.path'),
@@ -1069,17 +1087,17 @@ const HOLD_THE_ROAD = {
     // handover, which `failure` (step-2-only) does guarantee broke.
     failure: {
       overview:
-        'The bargain was struck, and it came apart in the paying. They took what was worth taking on the way ' +
-        'past and put the traveler down for arguing about it. The traveler did not go down for free — two of ' +
-        'theirs are on the road and are not riding anywhere. The rest went on together. {cast:survivor} was ' +
-        'under a cloak by then, and not being worth the trouble is the whole reason they are still there.',
+        'The bargain came apart in the paying. They took what was worth taking and put the traveler down for ' +
+        'arguing about it. The traveler did not go down for free — two of theirs lie on the road and are not ' +
+        'riding anywhere. The rest went on together. {cast:survivor} was under a cloak by then, and was not ' +
+        'worth the trouble, and that is why they are still there.',
       changes: [
         scarChip(
           'standing_the_line.hold.failure.scar',
-          'Argued rather than stepped aside, and was put down for it',
+          'Argued instead of stepping aside, and was put down for it',
           'Bruises that will still be there a week after the argument is forgotten.',
         ),
-        bondChip('standing_the_line.hold.failure.bond', 'Took a beating in the road rather than step out of it'),
+        bondChip('standing_the_line.hold.failure.bond', 'Took a beating in the road instead of stepping out of it'),
         pathChip('standing_the_line.hold.failure.path'),
       ],
       reactionPrompt: REACTION_PROMPT,
@@ -1091,10 +1109,9 @@ const HOLD_THE_ROAD = {
     // No change needed — names no step, reads correctly from all three truncations.
     critical_failure: {
       overview:
-        'The traveler went down early and stayed down, and the four of them were unhurried about the rest of ' +
-        'it. When there was light enough to see by, the place beside the road where the pilgrim had been ' +
-        'sitting was empty, and the pack was gone from it, and the road north had a great many hoofprints on ' +
-        'it. {cast:survivor} is somewhere at the end of them.',
+        'The traveler went down early and stayed down, and the four took their time with the rest. By first ' +
+        'light, the place where the pilgrim had been sitting was empty, the pack was gone, and the road north ' +
+        'was full of hoofprints. {cast:survivor} is somewhere at the end of them.',
       changes: [
         scarChip(
           'standing_the_line.hold.critical_failure.scar',
@@ -1119,9 +1136,8 @@ const HOLD_THE_ROAD = {
 const BREAK_THE_PURSUIT = {
   overview:
     'The traveler met them where the way is narrowest, and four riders strung out in a narrow place are not ' +
-    'four riders. Two came off. The other two took one look at the arithmetic and went back the way they came, ' +
-    'and the road stayed empty for as long as it took to walk back. Everyone who came up that road is ' +
-    'accounted for. {cast:survivor} heard all of it and has not asked a single question about it.',
+    'four riders. Two went down. The other two turned and rode back the way they came. Everyone who came up ' +
+    'the road is accounted for. {cast:survivor} heard all of it and asks no questions.',
   changes: [bondChip('standing_the_line.break.success.bond', 'Went up the road alone so that nobody had to come down it')],
   reactionPrompt: REACTION_PROMPT,
   reactions: [
@@ -1131,9 +1147,8 @@ const BREAK_THE_PURSUIT = {
   byOutcome: {
     critical_success: {
       overview:
-        'It was over in one exchange and nobody died in it. Two of them are going to remember the narrow place ' +
-        'for a long time, and all four went back down at a pace that had nothing dignified about it. The ' +
-        'pilgrim, who had been told to stay still, stayed still.',
+        'It was over in one exchange and nobody died. Two of them will remember the narrow place for a long ' +
+        'time, and all four rode back down fast. The pilgrim, told to stay still, stayed still.',
       changes: [bondChip('standing_the_line.break.critical_success.bond', 'Ended it in one exchange without ending anybody')],
       reactionPrompt: REACTION_PROMPT,
       reactions: [
@@ -1143,11 +1158,10 @@ const BREAK_THE_PURSUIT = {
     },
     success_at_cost: {
       overview:
-        'It worked, and it was ugly the whole way through, and somewhere in the middle of it the traveler ' +
-        'stopped a blade with an arm. The road is clear. Two of them are lying where the way goes narrow and ' +
-        'the rest went back down. When there was light enough to walk it and count what was on it, the count ' +
-        'came out one short of what had come up. {cast:survivor} heard all of it from where they were sitting ' +
-        'and has not mentioned it since.',
+        'It worked, and it was ugly. Somewhere in the middle of it the traveler stopped a blade with an arm. ' +
+        'The road is clear: two of them lie where the way narrows, and the rest went back down. When there ' +
+        'was light enough to count the ground, the count came out one short of what had come up. ' +
+        '{cast:survivor} heard all of it and has not mentioned it since.',
       changes: [
         bondChip('standing_the_line.break.success_at_cost.bond', 'Went up the road alone and came back down it bleeding'),
         pathChip('standing_the_line.break.success_at_cost.path'),
@@ -1170,8 +1184,8 @@ const BREAK_THE_PURSUIT = {
       overview:
         'It started well and would not end. The traveler got back to the narrow place a half-step ahead of ' +
         'them and made the rest of it expensive. The riders decided the road was not worth the price and ' +
-        'pulled off it. Two of theirs stayed where they fell. What went back down that road did not match ' +
-        'what had come up, and {cast:survivor} has not moved from where they were told to sit.',
+        'pulled off it. Two of theirs stayed where they fell. What went back down the road did not match what ' +
+        'came up it. {cast:survivor} has not moved from where they were told to sit.',
       changes: [
         scarChip(
           'standing_the_line.break.failure.scar',
@@ -1192,9 +1206,9 @@ const BREAK_THE_PURSUIT = {
     // the riders in motion instead of the traveler; the rest is unchanged.
     critical_failure: {
       overview:
-        'The traveler got about three steps into whatever it was going to be. The riders came the rest of the ' +
-        'way down at a walk, went past the narrow place without slowing, and did not look at what was sitting ' +
-        'in it — which is the only reason there is still somebody sitting in it.',
+        'The traveler got three steps into it. The riders came the rest of the way down at a walk, went past ' +
+        'the narrow place without slowing, and did not look at who was sitting in it — which is the only ' +
+        'reason somebody is still sitting there.',
       changes: [
         scarChip(
           'standing_the_line.break.critical_failure.scar',
@@ -1238,23 +1252,13 @@ export const STANDING_THE_LINE_TEMPLATE: UnifiedActionTemplate = compileOpeningE
   motivations: ['mercy_ruthlessness', 'loyalty_ambition'],
 
   settings: [...STANDING_THE_LINE_SETTINGS],
+  // P1 arrival, one per class (Doctrine v2) — the P2/P3 spine lands below it
+  // (step 0 narrativeTemplate).
   openings: {
-    wayside:
-      'The road runs down through gorse and does not bend for a mile. Two banks pinch it narrow at the ' +
-      'bottom, where old wheel-ruts have baked hard. Nothing else stands between here and the low sun. The ' +
-      'wind smells of dust and hot stone, and there is no shade in an hour’s walk either way.',
-    ruin:
-      'The road goes in through what used to be a gate and out the far side of a town nobody has swept in ' +
-      'forty years. Fallen courses narrow it to a gap two carts wide. In the shadow of the walls the air is ' +
-      'cold and smells of wet ash. Nothing has moved here all afternoon.',
-    battlefield:
-      'The ground here was fought over and never tidied. Broken shafts stand out of the turf at angles no ' +
-      'plough would leave. The road crosses on a raised causeway with a ditch to either side, and the whole ' +
-      'flat smells of turned earth and old iron. The wind comes across it without meeting anything.',
-    stronghold:
-      'The road climbs to a gate that is shut and stays shut. Whoever holds this place has decided not to ' +
-      'know. The approach is a stair between two walls, two abreast and no wider, cold, smelling of stone and ' +
-      'smoke long dead. There is nothing to go round, and the only road back down is the one they came up.',
+    wayside: '{name} follows the long road down toward {location}.',
+    ruin: 'The road takes {name} through the ruined town of {location}.',
+    battlefield: '{name} crosses the old battlefield at {location} by the raised road.',
+    stronghold: '{name} climbs the narrow approach to the shut gates of {location}.',
   },
   locationSubtypes: expandSettings([...STANDING_THE_LINE_SETTINGS]),
 
@@ -1263,14 +1267,12 @@ export const STANDING_THE_LINE_TEMPLATE: UnifiedActionTemplate = compileOpeningE
 
   narrativeTemplates: {
     initiation:
-      'The riders will reach the narrow place in the time it takes to walk a field. Whatever the traveler ' +
-      'means to do about a person who cannot be moved, it has to be done before then.',
+      'The riders will reach the narrow place in the time it takes to walk a field. Whatever is to be done ' +
+      'must be done before then.',
     success:
-      'The road behind is quiet. The pilgrim is off it, walking can wait until morning, and the traveler is ' +
-      'still standing where they stood.',
+      'The road is quiet again. The pilgrim is off it, and the traveler is still standing.',
     failure:
-      'Four riders went up that road and four riders went on. What is left behind them is not what was ' +
-      'standing there.',
+      'Four riders came up the road and went on. What is left behind is not what was standing there.',
   },
 
   // Verified live: `npm run draw:consequences -- encounter.border.standing_the_line
