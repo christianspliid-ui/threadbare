@@ -380,9 +380,19 @@ function reachDomainFor(concept: EncounterAftermathConceptRef | undefined): stri
  * concept and the registry answers. A word whose id resolves to nothing is
  * drawn as plain text by `NarrativeSegments`, which gates its underline on
  * `tooltipResolves` — so an unshipped template cannot become a dead link.
+ *
+ * **Exported for the Law 17 corpus sweep (THR-1094).** The sweep in
+ * `conceptTooltipIds.test.ts` scans authored `tooltipId:` literals, and a concept
+ * that takes this route has none — its id is derived here from `entityId`, so it
+ * was invisible to the one gate that exists to catch a dangling id. The sweep
+ * calls *this* function rather than rebuilding `attachment.` + id, because a
+ * rebuilt copy would keep passing after the derivation rule changed underneath
+ * it: the short-circuit on an explicit `tooltipId` and the `visualKind` guard are
+ * both part of what decides whether a word is explainable, and a test that
+ * re-implements them is testing itself.
  */
 const ATTACHMENT_TOOLTIP_PREFIX = 'attachment.';
-function attachmentTooltipIdFor(
+export function attachmentTooltipIdFor(
   concept: EncounterAftermathConceptRef,
 ): string | undefined {
   if (concept.tooltipId) return concept.tooltipId;
