@@ -42,6 +42,7 @@ import { executeEffect } from '../effectExecutors';
 import { instantiateReward } from '../rewardPool';
 import { emitTrace } from '../traceBuffer';
 import { processEffectEvent, applyEffectEventResult, type EffectEvent } from './effectEvents';
+import { applyExecutionOverlays } from './effectOverlayStore';
 
 /** Where a raise came from — carried on the trace so the producer is one grep away. */
 export type EffectEventSite =
@@ -89,6 +90,24 @@ export interface RaiseEffectEventResult {
  */
 function emitLegacyEffectTrace(payload: object): void {
   emitTrace(payload as unknown as TraceEntry);
+}
+
+/**
+ * Apply everything an executed effect produced — graph writes *and* persistence.
+ *
+ * Named `applyExecutionResult` rather than `...Mutations` because the narrower
+ * name was the bug: every consumer read `.mutations`, which looked complete, and
+ * silently discarded `terrainOverlays` / `ruleOverrides`. Routing both through
+ * one function means the next production site cannot repeat the omission — there
+ * is no longer a call that applies only part of a result (THR-1240).
+ */
+export function applyExecutionResult(
+  state: GameState,
+  exec: ExecutionResult,
+  tick: number,
+): void {
+  applyExecutionMutations(state.graph, exec.mutations);
+  applyExecutionOverlays(state, exec.terrainOverlays, exec.ruleOverrides, tick);
 }
 
 /**
@@ -177,7 +196,7 @@ export function raiseEffectEvent(
           tick: state.tick,
           graph: state.graph,
         });
-        applyExecutionMutations(state.graph, exec.mutations);
+        applyExecutionResult(state, exec, state.tick);
         for (const trace of exec.traces) emitLegacyEffectTrace(trace);
       } catch {
         /* fail-soft: one bad reactive must not stop the others */
