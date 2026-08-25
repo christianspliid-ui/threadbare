@@ -15,12 +15,12 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 53 |
+| 🟢 LIVE | 54 |
 | 🟠 PARTIAL | 2 |
 | 🔴 LEAKED | 7 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 14 |
-| **Total** | **76** |
+| **Total** | **77** |
 
 ## Contracts by producing subsystem
 
@@ -96,6 +96,7 @@ remediation ticket or the build fails.
 
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
+| `aura-reaches-resolution-modifiers` | A nearby agent's aura tilts the step someone else is resolving — the one modifier the acting agent does not carry, named on the panel like every other. | function: `collectAuraEffectsNear`, `selectAuraEmitters`, `resolveAuraModifiers`, `collectAuraContributions` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `effect-executor-overlay-persistence` | Terrain overlays and rule overrides an executor produces are persisted on GameState, expire on schedule, and are readable by the systems they govern. | function: `applyExecutionOverlays`, `expireOverlays`, `getPersistedRuleOverride` | Effects & Conditions | 🟢 LIVE | — |
 
 ### Encounters & Dilemmas
@@ -402,6 +403,16 @@ exit
 - **Read sites:** `src/engine/worldSeed.ts`
 - **Other hits:** `src/engine/nudgeGrantLiveness.ts`
 - **Verdict:** Verified 2026-07-23: 7 possesses edges present at tick 0. Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified)
+
+### `aura-reaches-resolution-modifiers` — 🟢 LIVE
+
+- **Intent:** A nearby agent's aura tilts the step someone else is resolving — the one modifier the acting agent does not carry, named on the panel like every other.
+- **Producer → Consumer:** Effects & Conditions → Encounters & Dilemmas
+- **Module:** `src/engine/effectAura.ts`
+- **Production hits:** 2 total — 1 write, 1 read, 0 unclassified
+- **Write sites:** `src/engine/effectAura.ts`
+- **Read sites:** `src/engine/resolutionModifiers.ts`
+- **Verdict:** Verified 2026-08-25: THR-1243. effectAura.ts shipped complete and tested with ZERO production importers — both halves written, never joined, which is the deadness this registry exists to catch (a symbol grep found resolveAuraModifiers only in its own module and its own test). The reason it was never wired is structural: an aura is the only resolution modifier sourced from an agent other than the one being resolved, so there was no per-agent walk to hang it on, and hanging it on the tick loop meant an O(agents²) proximity scan for a number almost nobody reads. It is resolved lazily instead, for one agent, at the moment a step resolves. collectAuraEffectsNear moves the distance test BEFORE the attachment walk, so the expensive half runs only for agents within AURA_MAX_RADIUS. Two bounds do different jobs: AURA_STACKING_CAP (3) bounds how many emitters may speak, EFFECT_MODIFIER_CAP clamps how loud the answer may be — without the first a crowded settlement hex decides a step by attendance. Non-vacuous by falsification: forcing the distance test true fails exactly one test (the out-of-range drop) and removing the `aura` prose pair fails exactly one other (the factor line), 2 failed / 51 passed, so the tests assert the wiring and the naming rather than the aggregator. Content pillar: DERIVED_FACTOR_SENTENCES gained an `aura` pair naming the EMITTING AGENT, not its item — deriveContributionLines silently drops any kind with no authored sentence, so without it the modifier would have moved the roll as an unnamed number, which is the exact failure the factor panel exists to prevent. Reach note: no shipped catalog entry authors an `aura` effect yet, so the live producer today is content this unlocks rather than content already waiting; the mechanism is proven end-to-end through computeResolutionModifiers against real graph fixtures (auraModifier, totalModifier, and a named contribution), not through a hand-built AuraEntry literal.
 
 ### `authored-faction-ids-resolve-to-seeded-faction-nodes` — 🟢 LIVE
 

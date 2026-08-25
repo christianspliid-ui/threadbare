@@ -1214,6 +1214,38 @@ With the markers, `artifact.enchant` / `artifact.empower` charge 4 essence at di
 
 **Where to find the implementation:** `raiseEffectEvent` in `src/engine/effects/effectEventDispatch.ts` (the shared raise path, called from `phaseMovement`, `battleResolution`, `orchestrator` and `phaseDoom`), the dispatch itself in `src/engine/effects/effectEvents.ts`, and the charge spend in `src/engine/effects/consumableCharges.ts`. Every raise emits an `effect.event_raised` trace naming its site and how many reactives fired — filter the trace viewer on it to check whether *your* gear is being reached.
 
+### Capability 24: Auras — Gear That Helps the People Standing Nearby (THR-1243)
+
+**What it does:** the `aura` attachment primitive now reaches resolution. An item, bond or trait carrying an `aura` effect tilts the encounter steps of *other* agents standing within a couple of hexes — the only modifier in the game sourced from somebody other than the person rolling.
+
+**Why you want it:** every other bonus an agent receives is something they carry themselves. An aura is how you author presence — a captain whose company fights better around him, a relic whose hum unsettles anyone who comes near, a healer whose neighbours endure more than they should. Until this ticket the primitive was fully implemented and had **zero production callers**, so an aura you authored resolved to nothing at all, silently. If a "rallying banner" you wrote never seemed to matter, that was not your authoring.
+
+**How to author it:**
+
+```ts
+// A banner that steadies allies who fight near its bearer.
+{ type: 'aura', radius: 1, target: 'allies', reach: 'iron', value: 0.06 }
+
+// A cursed relic that unsettles anyone nearby, friend or not.
+{ type: 'aura', radius: 2, target: 'all', reach: 'mind', value: -0.04 }
+
+// A war-standard that only rattles the enemy.
+{ type: 'aura', radius: 1, target: 'enemies', reach: 'iron', value: -0.05 }
+```
+
+**What an author must know — four things:**
+
+1. **`radius` is in hexes, and 0 means co-located only.** It is clamped at `AURA_MAX_RADIUS` (2), so a radius of 9 is a radius of 2. Distance is hex distance, not travel time: an agent two hexes away across a mountain range is as near as one two hexes away down a road.
+2. **`target` is a faction test, not a proximity test.** `allies` requires the emitter and the receiver to share a faction id; `enemies` requires the two factions to be *actually hostile* (a rival edge), so a neutral stranger is neither. An agent with no faction receives only `all` auras — worth knowing before you author an aura aimed at wandering hermits.
+3. **`reach` must match the step being resolved.** An aura on `iron` does nothing to a `mind` step. Auras are not general presence; they help with one kind of doing.
+4. **Only three emitters are heard at once.** `AURA_STACKING_CAP` (3) bounds how many *nearby agents* aggregate into one roll — the strongest first, one emitter counted once however many aura items they carry — and `EFFECT_MODIFIER_CAP` then clamps the total like any other effect. Both bounds exist for the same reason: without them, a step resolved in a crowded capital would read differently from the identical step in a hamlet, for reasons no player could see or influence.
+
+**The player is told.** An aura that moves a roll draws its own factor line on the test panel, naming *the agent whose presence did it* — "Having Kael Thornweaver near steadies her" — never the item they carry, which the acting mortal does not own and cannot see. So an aura is a visible cause, not a hidden hand: author values you are content to have named out loud.
+
+**Where to find the implementation:** `collectAuraEffectsNear` / `selectAuraEmitters` / `resolveAuraModifiers` in `src/engine/effectAura.ts`, called from `collectAuraContributions` in `src/engine/resolutionModifiers.ts`. It is resolved **lazily, at the moment a step resolves** — never as a per-tick proximity sweep — so an aura costs nothing until somebody near it actually rolls.
+
+---
+
 ---
 
 ## Part 3: The Wiring Checklist — Ask These Before You Write

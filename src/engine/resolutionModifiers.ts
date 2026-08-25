@@ -16,6 +16,9 @@
  * | HOSTILE_TERRITORY_PENALTY | -0.05   | Penalty for acting in hostile-controlled territory|
  * | TRAIT_BONUS_CAP           | 0.10    | Max total trait resolution bonus                 |
  * | TRAIT_PER_BONUS_CAP       | 0.05    | Max modifier from a single trait                 |
+ * | AURA_STACKING_CAP         | 3       | Max distinct nearby aura emitters aggregated     |
+ * | AURA_MAX_RADIUS           | 2       | Hex radius an aura can reach (existing constant) |
+ * | EFFECT_MODIFIER_CAP       | 0.30    | Clamp on the aggregated aura total               |
  *
  * ─── Tracing ────────────────────────────────────────────────────
  * Returns ModifierBreakdown for inclusion in EncounterResolutionTrace.
@@ -31,6 +34,8 @@
  * | Missing terrain data on location      | terrainModifier = 0       |
  * | Missing resolutionBonus on trait      | Skip trait                |
  * | No location node                      | terrainModifier = 0       |
+ * | Agent position unresolvable to a hex  | auraModifier = 0          |
+ * | Aura emitter with no resolvable hex   | emitter excluded, continue|
  *
  * ─── PRNG ───────────────────────────────────────────────────────
  * None — all modifiers are deterministic graph walks.
@@ -44,6 +49,13 @@ import { SPHERE_OPPOSITIONS } from './cosmology';
 import { getDivineAttention } from './divineAttention';
 import { resolveEffectModifiers, buildPredicateContext, hasEffectsFormat } from './effectResolver';
 import { getActiveRuleOverride } from './effects/effectQueries';
+import {
+  collectAuraEffectsNear,
+  resolveAuraModifiers,
+  resolveAgentPosition,
+  selectAuraEmitters,
+} from './effectAura';
+import { AURA_STACKING_CAP, EFFECT_MODIFIER_CAP } from '../data/effect-constants';
 
 // ─── Constants (re-exported from central tuning file) ───────────
 export {
@@ -91,7 +103,9 @@ export type ModifierSourceKind =
   | 'sphere'
   | 'divine'
   | 'rule'
-  | 'effect';
+  | 'effect'
+  /** A nearby agent's aura (THR-1243) — the one modifier sourced from someone else. */
+  | 'aura';
 
 export interface NamedModifierContribution {
   readonly kind: ModifierSourceKind;
@@ -117,6 +131,12 @@ export interface ModifierBreakdown {
   testShapers?: EffectModifierResult['testShapers'];
   /** Modifier from modify_rules encounter_difficulty_modifier on the agent */
   ruleModifier: number;
+  /**
+   * Modifier from nearby agents' `aura` effects (THR-1243). Aggregated lazily at
+   * resolution over at most {@link AURA_STACKING_CAP} emitters, then clamped by
+   * `EFFECT_MODIFIER_CAP` like any other effect-system total.
+   */
+  auraModifier: number;
   totalModifier: number;
   /**
    * THR-892 — the named causes behind the totals above, for surfaces that must
@@ -481,6 +501,68 @@ export function computeDivineInterventionModifier(
   return 0;
 }
 
+/**
+ * The named nearby presences tilting this step — THR-1243.
+ *
+ * ## Why this is computed here, and only here
+ *
+ * An aura is the only resolution modifier whose source is an agent *other than*
+ * the one being resolved, which is exactly why it was never wired: `effectAura.ts`
+ * shipped complete, with tests, and zero production callers, because there was no
+ * obvious per-agent walk to hang it on. Hanging it on the tick loop would have
+ * meant a proximity scan over every agent pair every tick — O(agents²) for a
+ * number almost none of those agents will consult before it goes stale. So it is
+ * resolved *lazily, for one agent, at the moment a step is actually being
+ * resolved*, which is the only moment the number is read.
+ *
+ * ## Two bounds, doing different jobs
+ *
+ * {@link AURA_STACKING_CAP} bounds how many emitters may speak; `EFFECT_MODIFIER_CAP`
+ * bounds how loud the answer may be. Both are needed: the cap alone would let
+ * three enormous auras run away, and the clamp alone would let a crowded hex
+ * decide a step through sheer attendance.
+ *
+ * ## Fail-soft (NFP #4)
+ *
+ * An agent whose position will not resolve — no `located_at`, a location with no
+ * hex, a sublocation whose parent is missing — contributes no auras and no error.
+ * Standing nowhere the map can name is not a resolution failure; it just means
+ * proximity is undefined, so nothing is near.
+ */
+export function collectAuraContributions(
+  graph: WorldGraph,
+  agentId: string,
+  stepReach: ReachDomain,
+): NamedModifierContribution[] {
+  const targetPos = resolveAgentPosition(graph, agentId);
+  if (!targetPos) return [];
+
+  const nearby = collectAuraEffectsNear(graph, targetPos);
+  if (nearby.length === 0) return [];
+
+  const emitters = selectAuraEmitters(
+    graph, nearby, agentId, targetPos, stepReach, AURA_STACKING_CAP,
+  );
+
+  const raw: NamedModifierContribution[] = [];
+  for (const [emitterId, entries] of emitters) {
+    // Summed through `resolveAuraModifiers` rather than by adding the entries
+    // here, so the per-emitter line and any whole-list total are produced by the
+    // same aggregator and cannot drift apart.
+    const value = resolveAuraModifiers(graph, entries, agentId, targetPos)[stepReach] ?? 0;
+    if (value === 0) continue;
+
+    raw.push({
+      kind: 'aura',
+      sourceId: emitterId,
+      sourceName: graph.getNode(emitterId)?.name ?? emitterId,
+      value,
+    });
+  }
+
+  return clampContributions(raw, EFFECT_MODIFIER_CAP);
+}
+
 // ─── Main Pipeline ───────────────────────────────────────────────
 
 /**
@@ -522,6 +604,10 @@ export function computeResolutionModifiers(
   // Rule override: modify_rules encounter_difficulty_modifier shifts the agent's effective difficulty
   const ruleModifier = getActiveRuleOverride(graph, agentId, 'encounter_difficulty_modifier', effectStates);
 
+  // Aura: nearby agents' proximity effects, resolved lazily here (THR-1243)
+  const auraContributions = collectAuraContributions(graph, agentId, stepReach);
+  const auraModifier = sumContributions(auraContributions);
+
   const totalModifier =
     sphereAlignmentBonus +
     equipmentModifier +
@@ -529,7 +615,8 @@ export function computeResolutionModifiers(
     traitBonus +
     divineInterventionModifier +
     effectModifier +
-    ruleModifier;
+    ruleModifier +
+    auraModifier;
 
   // THR-892 — the named causes, in the same order the totals are summed above.
   // `effectResult.contributions` is already named and already reach-filtered, so
@@ -547,6 +634,7 @@ export function computeResolutionModifiers(
     ...equipmentContributions,
     ...terrainContributions,
     ...traitContributions,
+    ...auraContributions,
     ...(effectResult?.contributions ?? [])
       .filter((c) => c.active && c.reach === stepReach && c.value !== 0)
       .map((c) => ({
@@ -583,6 +671,7 @@ export function computeResolutionModifiers(
     effectResult,
     testShapers: effectResult?.testShapers ?? [],
     ruleModifier,
+    auraModifier,
     totalModifier,
     contributions,
   };

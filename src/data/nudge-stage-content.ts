@@ -209,6 +209,16 @@ export const DERIVED_FACTOR_SENTENCES: Readonly<
     for: 'Something has bent the rules of this place.',
     against: 'Something has bent the rules of this place.',
   },
+  // THR-1243. `{source}` is the *emitting agent*, not an item: an aura is the one
+  // factor sourced from somebody else standing nearby, and naming the artifact
+  // would credit gear the actor does not carry. Without this pair the modifier
+  // would still move the roll while `deriveContributionLines` dropped its line —
+  // an unnamed number changing the odds, which is what the factor panel exists
+  // to prevent.
+  aura: {
+    for: 'Having {source} near steadies {actor}.',
+    against: 'Having {source} near unsettles {actor}.',
+  },
 };
 
 /**
