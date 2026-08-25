@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-25 15:55 local (13:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-25 16:55 local (14:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -23,7 +23,7 @@ Say **"work the powers map"** or **"work the item map"** in a chat session.
 
 ### 3. More design hours — four sittings stacked
 
-**Besides ask 1, this is the only thing that can put parallel work back on the board.** In the order you set:
+The effect-activation program you filed this morning is now feeding the shelf on its own (stage 1 shipped in under two hours; five stages queue behind it). That buys time — it does not replace design hours. In the order you set:
 
 - **[Unify the card grammar](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** — your 6 August note: action cards are too wordy, you cannot tell what they do, playing one gives no feedback, while encounter cards already read the way you wanted. Holding the single design slot since 19 August.
 - **[Traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)** — in design, assigned to you, untouched ten days. Either give it the hour or say *"put Traits wave 2 back in the pile."*
@@ -78,6 +78,7 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
+- 2026-08-25: **the effect-activation program shipped its first stage without you** — [THR-1239](https://linear.app/threadbare/issue/THR-1239) went from your design sitting to merged ([PR #1619](https://github.com/christianspliid-ui/threadbare/pull/1619)) in under two hours, and unblocked three of the five stages behind it.
 - 2026-08-25: **the prose rewrite finished without you** — all five batches of [THR-1223](https://linear.app/threadbare/issue/THR-1223) are written; [batch 3](https://github.com/christianspliid-ui/threadbare/pull/1613) and [batch 4](https://github.com/christianspliid-ui/threadbare/pull/1615) merged, batch 5 sits in [PR #1618](https://github.com/christianspliid-ui/threadbare/pull/1618) needing only a conflict resolved. The 14:57 DM asking for three more Fable sessions was already wrong when it sent.
 - 2026-08-25: **"who writes the prose rewrite?" is closed** — you answered it in chat and the Fable sessions ran; the 13:58 message asking the question was an hour behind the work, a briefing fault, logged.
 - 2026-08-25: **two power-system design questions answered without you** — [THR-1230](https://linear.app/threadbare/issue/THR-1230) (what a power is) and [THR-1233](https://linear.app/threadbare/issue/THR-1233) (what to call it) closed inside the hour they were surfaced. Say the word if either should have come to you.
@@ -87,7 +88,6 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 - 2026-08-25: **three faction pairs stopped flying the same banner** — [THR-854](https://linear.app/threadbare/issue/THR-854) shipped at 08:33, promoted on agent judgement under a veto nobody exercised.
 - 2026-08-25: **the keyboard can now read the game's own vocabulary** — [THR-1095](https://linear.app/threadbare/issue/THR-1095) merged at 04:31 ([PR #1604](https://github.com/christianspliid-ui/threadbare/pull/1604)). Every tooltip in the game had answered only to a mouse.
 - 2026-08-25: **the six new encounters shipped** — [THR-1221](https://linear.app/threadbare/issue/THR-1221) merged at 03:45 via [PR #1603](https://github.com/christianspliid-ui/threadbare/pull/1603) and deployed. Six of six gates green, none vacuous.
-- 2026-08-24: **[THR-977](https://linear.app/threadbare/issue/THR-977) shipped** — capability pips and odds-effect pips no longer look identical on the encounter test panel, after 22 days shelved against a question you had already answered.
 
 ---
 
