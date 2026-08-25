@@ -15,7 +15,15 @@
  * - doom.* → doom-content.ts stage names or hardcoded definitions
  * - quintessence.* → ascendant-bar-content.ts band tooltips
  * - attachment.* → attachmentTemplateIndex.ts shipped attachment templates
+ *                  (conditions, blessings, curses, bestowed powers, possessions)
  * - location.* → world-model location kinds, or a live location node (THR-1172)
+ * - agent.* → live agent, gated by familiarity; needs a context (THR-1159)
+ * - knowledge.* → the five familiarity tiers
+ * - mandate.* → mandate-content.ts templates
+ *
+ * This table and Law 17's copy of it are the same list; amend both when adding a
+ * prefix (THR-1094 — the law's copy sat four prefixes stale long enough for a
+ * ticket to be filed asking for a route that already existed).
  */
 
 import type { TooltipContent } from '../types/tooltip';

@@ -32,6 +32,7 @@ import {
 
   reachTooltipId,
 } from '../aftermathWords';
+import { attachmentTooltipIdFor } from '../../components/Game/encounter-stage/adapters/buildAftermathConsequences';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const srcRoot = resolve(here, '../..');
@@ -51,6 +52,17 @@ interface AuthoredId {
  */
 function authoredTooltipIds(): AuthoredId[] {
   const found: AuthoredId[] = [];
+  for (const { where, text } of sourceFiles()) {
+    for (const match of text.matchAll(/tooltipId:\s*'([^']+)'/g)) {
+      found.push({ id: match[1], where });
+    }
+  }
+  return found;
+}
+
+/** Every `.ts`/`.tsx` file under `src/`, minus this scanner's own prose. */
+function sourceFiles(): Array<{ where: string; text: string }> {
+  const files: Array<{ where: string; text: string }> = [];
   const walk = (dir: string) => {
     for (const entry of readdirSync(dir)) {
       const full = join(dir, entry);
@@ -61,13 +73,48 @@ function authoredTooltipIds(): AuthoredId[] {
       if (!entry.endsWith('.ts') && !entry.endsWith('.tsx')) continue;
       const where = relative(srcRoot, full).replace(/\\/g, '/');
       if (where === SCANNER_SELF) continue;
-      const text = readFileSync(full, 'utf8');
-      for (const match of text.matchAll(/tooltipId:\s*'([^']+)'/g)) {
-        found.push({ id: match[1], where });
-      }
+      files.push({ where, text: readFileSync(full, 'utf8') });
     }
   };
   walk(srcRoot);
+  return files;
+}
+
+/**
+ * Every attachment concept authored as `entityId` + `visualKind: 'attachment'`,
+ * carrying the registry id `attachmentTooltipIdFor` will derive from it.
+ *
+ * **The blind spot this closes (THR-1094).** The sweep above scans `tooltipId:`
+ * literals, and a concept on this route deliberately has none — THR-1122 derives
+ * the id from `entityId` so that ~12 authored call sites do not repeat it in a
+ * second field. The consequence was that the *derived* half of the corpus was
+ * invisible to the only gate that catches a dangling id: a typo'd
+ * `entityId: 'trait.condition.exhusted'` resolves to nothing, and the chip draws
+ * the word plain while the ticket trail says the concept is explainable.
+ *
+ * The two orderings are matched separately because an object literal writes its
+ * keys in one order or the other; `[^{}]` keeps each match inside a single
+ * literal rather than pairing a key with its neighbour's value.
+ */
+const ATTACHMENT_CONCEPT_PATTERNS: readonly RegExp[] = [
+  /entityId:\s*'([^']+)'[^{}]*?visualKind:\s*'attachment'/g,
+  /visualKind:\s*'attachment'[^{}]*?entityId:\s*'([^']+)'/g,
+];
+
+function authoredAttachmentConceptIds(): AuthoredId[] {
+  const found: AuthoredId[] = [];
+  for (const { where, text } of sourceFiles()) {
+    for (const pattern of ATTACHMENT_CONCEPT_PATTERNS) {
+      for (const match of text.matchAll(pattern)) {
+        const id = attachmentTooltipIdFor({
+          text: '(scanned)',
+          entityId: match[1],
+          visualKind: 'attachment',
+        });
+        if (id) found.push({ id, where });
+      }
+    }
+  }
   return found;
 }
 
@@ -91,6 +138,50 @@ describe('concept tooltip ids (THR-1033)', () => {
         ? `Tooltip ids that resolve to nothing (they render as dead underlines — Law 21):\n${dangling.join('\n')}`
         : '',
     ).toEqual([]);
+  });
+
+  it('the derived-attachment corpus is non-empty — otherwise the sweep below is vacuous', () => {
+    // Same guard as the corpus check above, and it earns its place here: this
+    // scan pairs two keys by regex, so a change to how concepts are written
+    // (reordered keys, a wrapping helper) would silently empty it and the sweep
+    // would go green by finding nothing rather than by finding nothing wrong.
+    expect(authoredAttachmentConceptIds().length).toBeGreaterThan(5);
+  });
+
+  it('LAW 17: every attachment concept resolves through the id the adapter derives', () => {
+    // THR-1094's substantive answer. Conditions *are* a tooltip class — Law 1
+    // says every concept the player meets by name explains itself, and THR-1122
+    // gave them the route via `attachment.*` rather than the `condition.*`
+    // prefix the ticket proposed. What was missing was this gate: the route
+    // worked and nothing proved it kept working.
+    const dangling = authoredAttachmentConceptIds()
+      .filter(({ id }) => !tooltipResolves(id))
+      .map(({ id, where }) => `${where} → '${id}'`);
+
+    expect(
+      dangling,
+      dangling.length > 0
+        ? `Attachment concepts whose derived tooltip id resolves to nothing (the chip names a grant it cannot explain — Law 1/21):\n${dangling.join('\n')}`
+        : '',
+    ).toEqual([]);
+  });
+
+  it('the derivation is the shipped one — an unshipped template yields a dangling id, not silence', () => {
+    // Falsifies the guard above: if `attachmentTooltipIdFor` stopped deriving,
+    // or `tooltipResolves` started answering true for anything, the sweep would
+    // pass while blind. A template id that is deliberately not in the index must
+    // still *produce* an id and that id must *not* resolve.
+    const derived = attachmentTooltipIdFor({
+      text: 'exhaustion',
+      entityId: 'trait.condition.exhusted', // shipped spelling is `exhausted`
+      visualKind: 'attachment',
+    });
+    expect(derived).toBe('attachment.trait.condition.exhusted');
+    expect(tooltipResolves(derived)).toBe(false);
+
+    // And the shipped spelling does resolve, so the assertion above is about
+    // the typo rather than about `attachment.*` being unroutable in this suite.
+    expect(tooltipResolves('attachment.trait.condition.exhausted')).toBe(true);
   });
 
   it('LAW 17: the reach set this module offers ids for matches the registry', () => {
