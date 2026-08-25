@@ -6,6 +6,35 @@
  * Batch: border-perils (THR-1221), row 6. Encounter Factory v3, nudge-native,
  * THR-1045 Composition Contract.
  *
+ * ── Prose Doctrine v2 (THR-1223 batch 3) ──
+ * Rewritten 2026-08-25 in narrator mode under the batch-1 calibration rulings:
+ * rewrite from scratch in basic game-master language ("clever specificity" is
+ * the residue tell of the old mode), and a card's effect line never repeats a
+ * word from the card's name. Zero mechanical changes — same steps, effects,
+ * seeds, bands, hands.
+ * Stake shape (Seed Dice, die 1): Obstruction.
+ *
+ * Narrator's checklist (12 questions), answered:
+ *  1. P1 arrival with {name} and {location}, one per setting class — yes.
+ *  2. P2 states the barrier, the company, and the ledger of prices — the
+ *     standing arrangement every traveler this week has paid — yes.
+ *  3. P3 lands Obstruction: nobody goes past unpaid — yes.
+ *  4. Opening ≤80 words composed with any P1 (61–66) — yes.
+ *  5. Every sentence a narrator's report; no interior sensation, no camera —
+ *     yes.
+ *  6. Facts stated, never encoded — "nobody goes past unpaid" is said
+ *     outright — yes.
+ *  7. Every sentence serves challenge (the barrier) / test (gold, then
+ *     shadow) / outcome (through, or the low track) — yes.
+ *  8. Nothing referenced before introduction; {cast:officer} enters in the
+ *     spine — yes.
+ *  9. One named person on stage: {cast:officer} — yes.
+ * 10. Stake in one sentence: settle the price and get clear of it, or take
+ *     the three-day track around — yes.
+ * 11. Cards named imperative verb+noun; effect lines are game effects; no
+ *     name-word repetition — yes.
+ * 12. All four declared classes have a skeleton opening — yes.
+ *
  * Design doc: `Docs/plans/encounters/the-garrisons-price-final.md`
  * Systems audit: `Docs/plans/encounters/the-garrisons-price-systems.md`
  * Package critique: `Docs/plans/encounters/the-garrisons-price-package.md` —
@@ -46,7 +75,7 @@
  *
  * **One additional fix, found at implementation by `check:encounter` rather
  * than by any pipeline pass.** Two one-off card `fiction` lines (Side-bet's
- * "Worth Keeping" and the Favor call's "A Turn Called In") addressed the
+ * "Read the Table" and the Favor call's "Call the Debt") addressed the
  * reader as "you" — `fiction` is `scene`-class prose, and `countSecondPerson`
  * scans `scene` + `outcome` classes on any mortal-drawn template
  * (`nudgeAuditDetectors.ts`), where "you" wrongly casts the *mortal* as the
@@ -125,38 +154,37 @@ const TRAIT_VARIANTS: readonly TraitVariant[] = [
 // card-type budget for this row. 6 distinct types, 4 distinct spheres
 // (order, entropy, chaos, force), 2 ungated common options, 1 rider (No
 // Middle Ground's all_or_nothing). Sum forecastDelta 0.54, inside
-// NUDGE_HAND_MAX_TOTAL_DELTA (0.70). Full Weight (0.16) >= NUDGE_BIG_DELTA,
+// NUDGE_HAND_MAX_TOTAL_DELTA (0.70). Press the Scales (0.16) >= NUDGE_BIG_DELTA,
 // so it carries both failure bands.
 
 const STEP_1_HAND: readonly StepNudge[] = [
   {
     id: 'gp.a_little_more',
     libraryCardId: 'card.boost.core',
-    name: 'A Little More',
+    name: 'Steady the Nerve',
     essenceCost: 1,
     forecastDelta: 0.06,
     imageTag: 'generic.focus',
-    effectLine:
-      'You hold their nerve steady while the figure is read out, so they do not take the first number to end the silence. A small help.',
+    effectLine: 'Hold them calm while the figure is read out, so they do not take the first number to end the silence.',
     fiction: 'Most things fail by a margin.',
     bandProse: {
       success: 'They let the silence sit after the figure, and the figure came down.',
-      failure: 'Steady to the end, and the book still did not move.',
+      failure: 'They held calm to the end, and the book still did not move.',
     },
   },
   {
     id: 'gp.the_ledger_opens',
     libraryCardId: 'card.favor.signature.order',
-    name: 'The Ledger Opens',
+    name: 'Bind an Obligation',
     sphere: 'order',
     essenceCost: 2,
     forecastDelta: 0.10,
     imageTag: 'generic.oath',
-    // Pass-2 edit carried from the final doc: the drafted line asserted a
-    // prior obligation the graph does not hold, on the card whose whole job
-    // is to mint one. "Set" replaces "put an old".
+    // Pass-2 edit carried from the final doc: the line must not assert a
+    // prior obligation the graph does not hold — this card's whole job is to
+    // mint one. "Set" (mint now), never "recall an old".
     effectLine:
-      'You set an obligation in front of the one holding the book, and they deal like a person who owes a turn. A real help — and a turn is owed back afterwards.',
+      'Set a debt in front of the one holding the book, so they deal like a person who owes. A turn is owed back afterwards.',
     fiction: 'Order is only debt everyone agreed to honor.',
     grants: [
       {
@@ -167,8 +195,8 @@ const STEP_1_HAND: readonly StepNudge[] = [
       },
     ],
     bandProse: {
-      success_at_cost: 'The quartermaster dealt like a debtor and priced like one too — high, and honest about it.',
-      failure: 'An obligation went across the table and came back unrecognised.',
+      success_at_cost: 'The quartermaster dealt like a debtor and priced like one — high, and honest about it.',
+      failure: 'A debt went across the table and came back unrecognised.',
     },
   },
   {
@@ -180,7 +208,7 @@ const STEP_1_HAND: readonly StepNudge[] = [
     forecastDelta: 0.12,
     costs: { doomDelta: 0.05 },
     imageTag: 'generic.decay',
-    effectLine: 'No essence changes hands: the world\'s doom clock runs a shade faster instead. A strong help.',
+    effectLine: 'No essence changes hands — the world\'s doom clock runs a shade faster instead.',
     fiction: 'Nothing is free. Some prices are only slower.',
     bandProse: {
       success: 'Nobody at the table could say why it came out light. The clock ran on.',
@@ -190,16 +218,16 @@ const STEP_1_HAND: readonly StepNudge[] = [
   {
     id: 'gp.no_middle_ground',
     libraryCardId: 'card.gambit.signature.chaos',
-    name: 'No Middle Ground',
+    name: 'Empty the Middle',
     sphere: 'chaos',
     essenceCost: 1,
     forecastDelta: 0.03,
     rider: 'all_or_nothing',
     imageTag: 'generic.luck',
-    effectLine: 'The middling terms wash out: they walk away with the best line in the book or with none of it. The middle drops away.',
+    effectLine: 'They walk away with the best line in the book or with none of it — nothing in between survives.',
     fiction: 'Chaos has no use for the adequate.',
     bandProse: {
-      critical_success: 'No middle figure was ever put on the table. What was left was the one at the bottom.',
+      critical_success: 'No middling figure was ever put on the table. What was left was the one at the bottom.',
       failure: 'No middling figure survived to be agreed to.',
       critical_failure: 'There was one price left on the table by the end, and it was the worst one.',
     },
@@ -207,19 +235,19 @@ const STEP_1_HAND: readonly StepNudge[] = [
   {
     id: 'gp.full_weight',
     libraryCardId: 'card.heavy_hand.signature.force',
-    name: 'Full Weight',
+    name: 'Press the Scales',
     sphere: 'force',
     essenceCost: 2,
     forecastDelta: 0.16,
     costs: { detectionDelta: 0.15 },
     imageTag: 'generic.strength',
     effectLine:
-      'You press on the whole table at once and the company\'s own arithmetic comes out in the traveler\'s favour. Rival gods can hardly miss the hand that did it.',
+      "Lean on the whole table at once — the company's own arithmetic comes out in the traveler's favour. Rival gods can hardly miss it.",
     fiction: 'Subtlety is a choice. This is not it.',
     bandProse: {
       critical_success: 'The figures stopped agreeing with the company and started agreeing with the traveler.',
-      failure: 'The weight went on. The company added it up again and got the same figure.',
-      critical_failure: 'The pressure was plain enough that the picket stopped eating to watch, and the quartermaster closed the book.',
+      failure: 'The push went on. The company added it up again and got the same figure.',
+      critical_failure: 'The push was plain enough that the picket stopped eating to watch, and the quartermaster closed the book.',
     },
   },
   {
@@ -230,12 +258,11 @@ const STEP_1_HAND: readonly StepNudge[] = [
     // name. Forced, not chosen — do not "repair" this by pointing it at
     // another type's member.
     id: 'gp.worth_keeping',
-    name: 'Worth Keeping',
+    name: 'Read the Table',
     essenceCost: 2,
     forecastDelta: 0.07,
     imageTag: 'generic.matter',
-    effectLine:
-      'A modest help now, and win or lose the traveler leaves knowing what this company is short of. The knowledge keeps.',
+    effectLine: 'Win or lose, the traveler leaves knowing what this company is short of. The knowledge keeps.',
     fiction: 'Every table tells more than it means to.',
     grants: [
       {
@@ -248,8 +275,8 @@ const STEP_1_HAND: readonly StepNudge[] = [
       },
     ],
     bandProse: {
-      near_miss: 'The figure was never agreed, and the shortages behind it were counted anyway.',
-      failure: 'No figure was agreed. What they read off the table while it failed keeps.',
+      near_miss: 'The figure was never agreed. The shortages behind it were counted anyway.',
+      failure: 'No figure was agreed. What they learned while it failed keeps.',
     },
   },
 ];
@@ -267,33 +294,33 @@ const STEP_2_HAND: readonly StepNudge[] = [
   {
     id: 'gp.a_little_more_kept',
     libraryCardId: 'card.boost.core',
-    name: 'A Little More',
+    name: 'Guard the Count',
     essenceCost: 1,
     forecastDelta: 0.08,
     imageTag: 'generic.focus',
-    effectLine: 'You keep their attention on the count while it is made, so nothing is added to the tally behind them. A real help.',
+    effectLine: 'Keep their attention on the tally as it is made, so nothing extra goes in behind them.',
     fiction: 'Most things fail by a margin.',
     bandProse: {
-      success: 'They watched every mark go down, and the count ended where it should have.',
+      success: 'They watched every mark go down, and the tally ended where it should have.',
       near_miss: 'They caught the extra line going in. Catching it did not stop it.',
     },
   },
   {
     id: 'gp.full_weight_paid',
     libraryCardId: 'card.heavy_hand.signature.force',
-    name: 'Full Weight',
+    name: 'Drive the Work',
     sphere: 'force',
     essenceCost: 2,
     forecastDelta: 0.15,
     costs: { detectionDelta: 0.15 },
     imageTag: 'generic.strength',
     effectLine:
-      'You put strength into the work itself and the day\'s labour goes in a third of the day. Rival gods can hardly miss the hand that did it.',
+      "Put strength into the labour itself — a day's tally goes in a third of the day. Rival gods can hardly miss it.",
     fiction: 'Subtlety is a choice. This is not it.',
     bandProse: {
-      critical_success: 'The work went down so fast that the picket came round the wall to watch it.',
+      critical_success: 'The labour went down so fast that the picket came round the wall to watch.',
       failure: 'The strength went in and the tally kept taking it, mark after mark.',
-      critical_failure: 'They worked like three people in front of a company that counts, and the book had already decided what a day was.',
+      critical_failure: 'They laboured like three people in front of a company that counts, and the book had already decided what a day was.',
     },
   },
   {
@@ -305,7 +332,7 @@ const STEP_2_HAND: readonly StepNudge[] = [
     forecastDelta: 0.12,
     costs: { doomDelta: 0.06 },
     imageTag: 'generic.decay',
-    effectLine: 'No essence changes hands: the world\'s doom clock runs a shade faster instead. A strong help.',
+    effectLine: 'No essence changes hands — the world\'s doom clock runs a shade faster instead.',
     fiction: 'Nothing is free. Some prices are only slower.',
     bandProse: {
       success_at_cost: 'The overage went out to the world. The world will be a while paying it off.',
@@ -320,29 +347,29 @@ const STEP_2_HAND: readonly StepNudge[] = [
     // does not redeem the favor edge, so pricing it on an obligation
     // channel would claim a write nothing performs.
     id: 'gp.a_turn_called_in',
-    name: 'A Turn Called In',
+    name: 'Call the Debt',
     sphere: 'order',
     essenceCost: 1,
     forecastDelta: 0.10,
     requiresFavor: true,
     imageTag: 'generic.oath',
     effectLine:
-      'Only when the traveler is owed: you bring the debt to mind at the gate, and the one who owes it turns up to stand the work. A real help.',
+      'Only when the traveler is owed: bring what is owed to mind, and the one who owes it turns up to stand the work.',
     fiction: 'A debt is only useful on the day it is named.',
     bandProse: {
       success: 'Two pairs of hands finished a tally written for one, and the ledger closed on time.',
-      critical_failure: 'The debt was called and answered, and the book has a line for every pair of hands that comes through the gate.',
+      critical_failure: 'The debt was answered, and the book has a line for every pair of hands that comes through the gate.',
     },
   },
   {
     id: 'gp.a_sudden_surge',
     libraryCardId: 'card.boost.signature.energy',
-    name: 'A Sudden Surge',
+    name: 'Kindle Blood',
     sphere: 'energy',
     essenceCost: 2,
     forecastDelta: 0.08,
     imageTag: 'generic.energy',
-    effectLine: 'When the work outlasts them, the body finds the last hour of it. A real help.',
+    effectLine: 'When the work outlasts them, the body finds the last hour of it.',
     fiction: 'Bodies hold more than they admit.',
     bandProse: {
       success: 'The last hour came out of a reserve they had not budgeted for.',
@@ -374,20 +401,19 @@ const step1SettleThePrice: ActionStep = {
   onSuccess: [],
   onFailure: [],
   failBehavior: 'fail_action',
-  // The setting-neutral spine. The four declared openings land above this at
-  // instantiation and own the scenery (gatehouse, keep, tents, earthwork);
-  // this spine owns the book, the table, the quartermaster and the barrier —
-  // none of which any opening names, so nothing here is pre-spent.
+  // The setting-neutral P2+P3 spine (Doctrine v2). The per-class P1 arrival
+  // lands above this at instantiation. The quartermaster is introduced here
+  // by cast token, before any later prose refers to them.
   narrativeTemplate:
-    'The road stops at a barrier the company put across it. Their quartermaster keeps a ledger on a plank table ' +
-    'and reads the prices out of it — a day of work, a piece of kit, a name, an errand carried on. Nobody goes ' +
-    'past unpaid. The price has to be settled before the barrier lifts.',
-  successAfterimage: 'They settled on a figure and watched it go into the ledger in front of them.',
-  failureAfterimage: 'The quartermaster closed the book and put a hand flat on the cover.',
+    'A free company has put a barrier across the road and charges for passage. Their quartermaster, ' +
+    '{cast:officer}, keeps the prices in a ledger and reads them out — a day of work, a piece of kit, an ' +
+    'errand carried on.\n\n' +
+    'Nobody goes past unpaid. The price has to be settled before the barrier lifts.',
+  successAfterimage: 'They settled on a figure and watched it go into the ledger.',
+  failureAfterimage: 'No figure was agreed. The quartermaster closed the book.',
   successAtCostAfterimage: 'The figure went into the ledger heavier than the book\'s own line for it.',
   criticalSuccessAfterimage: 'The quartermaster read them the smallest price on the page and wrote it down.',
-  criticalFailureAfterimage:
-    'The haggling ran long, and the quartermaster read the same line back a third time, in the same voice.',
+  criticalFailureAfterimage: 'The haggling ran long and got nowhere. The book did not move.',
   /**
    * `failureMetadata` fires on `failure` and `critical_failure` — the two
    * outcomes `fail_action` ends the action on directly. This is the
@@ -453,13 +479,12 @@ const step2GetOutFromUnder: ActionStep = {
     near_miss: { text: 'The ledger says more than they remember saying.', polarity: 'against', forecastDelta: -0.05 },
   },
   narrativeTemplate:
-    'Saying the price was quick. Paying it is not. The company wants the full measure counted in front of ' +
-    'everyone, and a ledger with a mark still open on it is a ledger that grows. Getting clear of it before the ' +
-    'company finds a second line to add is the work now.',
+    'Naming the price was quick. Paying it is not. The company wants the full measure counted in front of ' +
+    'everyone, and a ledger with an open line is a ledger that grows.',
   successAfterimage: 'They counted it out in front of the picket, and the quartermaster called it settled.',
-  failureAfterimage: 'The tally ran past what they had left in them, and the quartermaster stopped counting.',
-  successAtCostAfterimage: 'The ledger closed, and a second line went in beside the first before it did.',
-  criticalSuccessAfterimage: 'They paid, the quartermaster struck the line through, and the company let them go early.',
+  failureAfterimage: 'The tally ran past what they had left, and the quartermaster stopped counting.',
+  successAtCostAfterimage: 'The ledger closed, but a second line went in beside the first before it did.',
+  criticalSuccessAfterimage: 'They paid, the line was struck through, and the company let them go early.',
   criticalFailureAfterimage: 'The company kept them a full day, and the day went into the book as well.',
   /**
    * `successMetadata` fires on `isStepSuccess`, which counts `near_miss` as
@@ -557,24 +582,13 @@ export const THE_GARRISONS_PRICE_TEMPLATE: UnifiedActionTemplate = compileOpenin
    * § 18).
    */
   settings: ['stronghold', 'ruin', 'wayside', 'battlefield'],
+  // P1 arrival, one per class (Doctrine v2) — the P2/P3 spine lands below it
+  // (step 1 narrativeTemplate).
   openings: {
-    stronghold:
-      'The road ends at a gatehouse, and the gatehouse is shut. A company banner hangs over the arch where ' +
-      'somebody else\'s arms used to be, wet through and left up anyway. Two soldiers stand the wicket with the ' +
-      'bored patience of people who do this all day. Neither of them reaches for the bolt.',
-    ruin:
-      'The road runs straight through what is left of a keep and the company has made a gate of the gap. Fallen ' +
-      'stone is stacked shoulder-high on both sides of the opening, and a beam has been dropped across it on two ' +
-      'forked posts. Somebody is cooking behind the wall. The smoke comes out through the roofless top.',
-    wayside:
-      'A pole lies across the track on two crutches, and a rope runs from it to a tent peg so it can be lifted ' +
-      'from a seat. Six tents stand back from the road in a line, and a picket line of horses behind them. Nobody ' +
-      'is hurrying. Nobody here has had to stand up all day.',
-    battlefield:
-      'The old earthworks still run across the valley, and the road crosses them at the one cut anybody ever ' +
-      'kept clear. The company has dug into the bank on both sides of the cut and filled the gap with what the ' +
-      'fighting left — cart beds, a broken door, a wagon wheel laid flat. The afternoon light is going yellow ' +
-      'and low.',
+    stronghold: '{name} comes up the road to the shut gatehouse of {location}.',
+    ruin: 'The road carries {name} through the ruined keep at {location}.',
+    wayside: '{name} follows the track toward {location}.',
+    battlefield: '{name} reaches the old earthworks at {location}.',
   },
   locationSubtypes: expandSettings(['stronghold', 'ruin', 'wayside', 'battlefield']),
 
@@ -582,14 +596,11 @@ export const THE_GARRISONS_PRICE_TEMPLATE: UnifiedActionTemplate = compileOpenin
 
   narrativeTemplates: {
     initiation:
-      'There is no other road through these hills but this one, and a company is sitting on it. The low track ' +
-      'goes around, three days east.',
+      'There is no other road through these hills. The low track around is three days east.',
     success:
-      'The line went into the ledger and came back out again struck through. The barrier lifted and the road ' +
-      'on the far side is theirs to walk.',
+      'The line in the ledger is struck through. The barrier lifted, and the road on is theirs to walk.',
     failure:
-      'The barrier stayed down. It is three days east by the low track now, on a body that has already spent ' +
-      'the afternoon.',
+      'The barrier stayed down. It is three days east by the low track now.',
   },
 
   /**
@@ -629,8 +640,7 @@ export const THE_GARRISONS_PRICE_TEMPLATE: UnifiedActionTemplate = compileOpenin
     variants: {},
     fallback: {
       overview:
-        'The book is the company\'s whole argument. Every traveler this week was read the same page, and the ' +
-        'road on the far side is still the road.',
+        'The book is the company\'s whole argument. Every traveler this week was read the same page.',
       changes: [],
       reactions: [
         {
@@ -727,8 +737,8 @@ export const THE_GARRISONS_PRICE_TEMPLATE: UnifiedActionTemplate = compileOpenin
         },
         success_at_cost: {
           overview:
-            'They are through, and the pack is lighter than the book’s own figure said it needed to be. The ' +
-            'company took what the page said and no more than that.',
+            'They are through, lighter than the book\'s own figure said they needed to be. The company took ' +
+            'what the page said and no more.',
           changes: [
             {
               // Backing write: step 2 successMetadata -> reputation_with
@@ -751,8 +761,8 @@ export const THE_GARRISONS_PRICE_TEMPLATE: UnifiedActionTemplate = compileOpenin
         },
         failure: {
           overview:
-            'They will pass this post again — everybody on this road does. The company’s book will still ' +
-            'have the line, and the figure will still be the figure.',
+            'They will pass this post again — everybody on this road does. The company\'s book keeps the ' +
+            'line, and the figure stays the figure.',
           changes: [
             {
               // Backing write: BOTH steps' failureMetadata -> reputation_with
@@ -839,7 +849,7 @@ export const THE_GARRISONS_PRICE_TEMPLATE: UnifiedActionTemplate = compileOpenin
           ],
         },
         critical_failure: {
-          overview: 'They came off the post at dusk. The company was sorry about it, as people are sorry about arithmetic.',
+          overview: 'They came off the post at dusk with the whole day in the book and nothing to show for it.',
           // Same three chips as `failure`, same backing writes. `byOutcome`
           // keys on the action's band, and nothing distinguishes which step
           // broke — claiming a different chip set here would claim a
@@ -890,7 +900,7 @@ export const THE_GARRISONS_PRICE_TEMPLATE: UnifiedActionTemplate = compileOpenin
             {
               id: 'gp.let_the_day_stand',
               label: 'Let the whole day stand',
-              intent: 'Leave the whole day on the account rather than spend anything to close it.',
+              intent: 'Leave the whole day on the account instead of spending anything to close it.',
               effects: [
                 {
                   kind: 'attachment_grant',
