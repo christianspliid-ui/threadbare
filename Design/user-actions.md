@@ -1,22 +1,22 @@
 # User Action Required
 
-**Last updated:** 2026-08-25 23:56 local (21:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-26 00:54 local (22:54 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
 ### 1. Approve the batch-2 brief — [THR-1222](https://linear.app/threadbare/issue/THR-1222/run-retrofit-batch-2-the-camp-seven-through-the-factory-line-shrine)
 
-**The camp seven** — shrine offering, sharpening blades, warding the camp, a small prayer, rest and reflection, tending wounds, scouting the perimeter. All seven are thin: the census found **no typed consequences at all** in that set, only bare standing nudges. With this morning's corpus rewrite shipped, they are the last encounters in the game below standard.
+**The camp seven** — shrine offering, sharpening blades, warding the camp, a small prayer, rest and reflection, tending wounds, scouting the perimeter. All seven are thin: the census found **no typed consequences at all** in that set, only bare standing nudges. With yesterday's corpus rewrite shipped, they are the last encounters in the game below standard.
 
-It binds [Prose Doctrine v2](https://github.com/christianspliid-ui/threadbare/blob/main/.claude/skills/encounter-pipeline/reference/nudge-authoring-spec.md) — the narrator mode you set this morning — now swept through every authoring surface ([THR-1251](https://linear.app/threadbare/issue/THR-1251), [THR-1252](https://linear.app/threadbare/issue/THR-1252), [THR-1250](https://linear.app/threadbare/issue/THR-1250) all shipped), so a batch run inherits the right standard automatically. And **`shrine_offering` is encounter #1 of [your integrated slice checkpoint](https://linear.app/threadbare/issue/THR-1220)**, which cannot invite you while the camp set is below standard.
+It binds [Prose Doctrine v2](https://github.com/christianspliid-ui/threadbare/blob/main/.claude/skills/encounter-pipeline/reference/nudge-authoring-spec.md) — the narrator mode you set — now swept through every authoring surface ([THR-1251](https://linear.app/threadbare/issue/THR-1251), [THR-1252](https://linear.app/threadbare/issue/THR-1252), [THR-1250](https://linear.app/threadbare/issue/THR-1250) all shipped), so a batch run inherits the right standard automatically. And **`shrine_offering` is encounter #1 of [your integrated slice checkpoint](https://linear.app/threadbare/issue/THR-1220)**, which cannot invite you while the camp set is below standard.
 
-**Now authored under the dealt-hand model** (checked 25 Aug 23:56): both halves of [dealt hands](https://linear.app/threadbare/issue/THR-1247) shipped this evening — [the full 37-card corpus](https://linear.app/threadbare/issue/THR-1248) landed at 21:50. Batch 2 therefore writes nought to two special cards per encounter and deals the rest from your Repertoire, instead of hand-writing every card. Better batch, same decision.
+It will also be authored under the **dealt-hand model** — both halves shipped last night, [the full 37-card corpus](https://linear.app/threadbare/issue/THR-1248) included. Batch 2 writes nought to two special cards per encounter and deals the rest from your Repertoire, instead of hand-writing every card.
 
 **The one judgement:** seven, not six — one family, one file; splitting the seventh costs a full cycle for no variance gain. *"Batch 2, seven is fine"* runs it; *"keep it six"* splits it 6+1. [The brief](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/retrofit-batch-2-brief.md) is merged and readable.
 
 ### 2. Two sketches ready to be built for you to react to
 
-Both wayfinder maps you chartered this morning finished their research half; these are the throwaway prototypes that come next. Every question they were waiting behind is now answered. Each needs a session to build the sketch first; then you look and react, and your reaction is the design decision.
+Both wayfinder maps you chartered finished their research half; these are the throwaway prototypes that come next. Every question they were waiting behind is now answered. Each needs a session to build the sketch first; then you look and react, and your reaction is the design decision.
 
 - [**Twenty generated spells**](https://linear.app/threadbare/issue/THR-1232) — do composed spells read as one coherent thing, or as parts bolted together?
 - [**Thirty generated items**](https://linear.app/threadbare/issue/THR-1236) — are they *cool*? That is the whole bar.
@@ -25,10 +25,10 @@ Say **"work the powers map"** or **"work the item map"** in a chat session.
 
 ### 3. More design hours — four sittings stacked
 
-Not pressing tonight: the shelf is holding at seven ready items and no lane is starved. The queue is still fed by programs you already approved, not by new design. In the order you set:
+Not pressing: the shelf is holding at seven ready items and no lane is starved. The queue is still fed by programs you already approved, not by new design. In the order you set:
 
 - **[Unify the card grammar](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** — your 6 August note: action cards are too wordy, you cannot tell what they do, playing one gives no feedback, while encounter cards already read the way you wanted. Holding the single design slot since 19 August.
-- **[Traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)** — in design, assigned to you, untouched ten days. Either give it the hour or say *"put Traits wave 2 back in the pile."*
+- **[Traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)** — in design, assigned to you, untouched eleven days. Either give it the hour or say *"put Traits wave 2 back in the pile."*
 - **The wave-1 sessions** — [shared machinery](https://linear.app/threadbare/issue/THR-1212) first, [the hunger vocabulary](https://linear.app/threadbare/issue/THR-1213) second, [nations and named areas simulated rather than drawn](https://linear.app/threadbare/issue/THR-1155) third.
 
 Available whenever you want it: your own [one-button snapshot](https://linear.app/threadbare/issue/THR-1134).
@@ -64,7 +64,7 @@ There is a finished, unused piece of sound design: on committing a nudge, roughl
 
 ### 8. Chart the hub map
 
-Both design maps closed 2026-08-24: [the typed game-state map](https://linear.app/threadbare/issue/THR-1157) and [the vertical-slice map](https://linear.app/threadbare/issue/THR-902). Two new maps were chartered this morning — [powers](https://linear.app/threadbare/issue/THR-1226) and [items](https://linear.app/threadbare/issue/THR-1227) — and the hub is still unchartered. The slice map's charter names it as the successor: **the player reaching factions, war, economy and divine actions from inside the encounter interface.**
+Both design maps closed 2026-08-24: [the typed game-state map](https://linear.app/threadbare/issue/THR-1157) and [the vertical-slice map](https://linear.app/threadbare/issue/THR-902). Two new maps were chartered yesterday — [powers](https://linear.app/threadbare/issue/THR-1226) and [items](https://linear.app/threadbare/issue/THR-1227) — and the hub is still unchartered. The slice map's charter names it as the successor: **the player reaching factions, war, economy and divine actions from inside the encounter interface.**
 
 **Advice: wait one cycle.** Your [integrated slice checkpoint](https://linear.app/threadbare/issue/THR-1220) is this map's entry condition, so chartering from a validated base is the better order. **Only you can charter a map** — say *"chart the hub map"* in a chat session whenever you want it.
 
