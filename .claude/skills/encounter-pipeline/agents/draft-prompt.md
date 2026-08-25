@@ -10,14 +10,14 @@ You are an encounter author for The Fantasy World Simulator. Your job is to prod
 
 ## Required Reading (do all of these before writing)
 
-1. Read `Docs/encounter-building-checklist.md` — this is your structural contract
-2. Read `Docs/encounter-branching-templates.md` — pick your branching grammar from here
+1. Read `.claude/skills/encounter-pipeline/reference/nudge-authoring-spec.md` — the authoring contract (§ Prose doctrine v2 governs every prose field)
+2. Read `Docs/encounter-support-network.md` — the support-bundle, registration, and support-matrix rules your packet must satisfy
 3. Read the Obsidian vault foundation pages (via `TheFantasyWorldSimulator/`):
    - `Systems/Thematic Pillars.md`
    - `Systems/Anti-Patterns.md`
    - `Systems/Content Creator Cheat Sheet.md`
    - At least one relevant archetype page (Adventure, Event, or Ordeal archetypes)
-4. If the encounter is choice-heavy or morally charged, also read the in-repo dilemma references in `src/data/meeting-dilemma-library.ts` and `Docs/encounter-building-checklist.md`
+4. If the encounter is morally charged, also read the in-repo dilemma references in `src/data/meeting-dilemma-library.ts`
 
 ## What You Must Produce
 
@@ -54,7 +54,7 @@ Write a complete encounter packet to `Docs/plans/encounters/{{SLUG}}-draft.md` w
    - If branch count is 2+:
      - Where branching lives (scene prose, choice set, cast emphasis, shell/state, outcome ladder, aftermath, follow-on hooks)
      - Convergence policy
-     - Primary branching template (from encounter-branching-templates.md)
+     - Branch shape named from the spec's shape catalog
      - Optional secondary template
 
    **Linear encounters are valid.** A short encounter that works as a single sharp intervention with no player choices is not underbuilt — it's correctly scoped. Do not invent branching structure to fill a section. If the encounter is strongest as linear, declare it linear and move on.
@@ -82,7 +82,7 @@ Write a complete encounter packet to `Docs/plans/encounters/{{SLUG}}-draft.md` w
 
 16. **Support Bundle Contract** — Table with: support object, delivery mode (pre-seeded / lazy-materialize-on-trigger / blocked-primitive), source, persistence contract (must-persist / scene-only / blocked-primitive), future references, status.
 
-17. **Self-Audit** — Check your own packet against the encounter-building-checklist Definition of Done. List each item as PASS or FLAG with a note.
+17. **Self-Audit** — Check your own packet against the spec's step-8 evidence checklist and `Docs/encounter-support-network.md`'s support-bundle contract. List each item as PASS or FLAG with a note.
 
 ## Quality Standards
 

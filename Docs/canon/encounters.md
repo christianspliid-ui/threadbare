@@ -153,7 +153,7 @@ From `2026-05-04-encounter-experience-design-plan.md` §1 — the executor's con
 
 ## Active design plans
 
-- [2026-05-04-encounter-experience-design-plan.md](../plans/2026-05-04-encounter-experience-design-plan.md) — current canonical encounter experience design (THR-300). Status: `current`. This is the executor's contract for all encounter implementation work.
+- [2026-05-04-encounter-experience-design-plan.md](../plans/2026-05-04-encounter-experience-design-plan.md) — encounter experience design (THR-300). Status: **partially superseded (2026-08-25, THR-1252)** — Rules 1/2/4 and the cast-tile/clickable-primitive decisions stand; Rule 3 (per-scene verb prose on choice cards), §3.4, and §4.3 (voice/Chronicle prose) are superseded by the nudge pivot + Prose Doctrine v2, marked in-file. Consult it for the surviving rules only.
 - [2026-05-04-encounter-experience-player-journey.md](../plans/2026-05-04-encounter-experience-player-journey.md) — player journey reference (companion to above)
 - [2026-05-04-encounter-experience-grill-me.md](../plans/2026-05-04-encounter-experience-grill-me.md) — pre-design synthesis; useful archaeology
 - [2026-05-04-encounter-toolkit-vision-audit.md](../plans/2026-05-04-encounter-toolkit-vision-audit.md) — vision audit **with one corrected row** (see note below)

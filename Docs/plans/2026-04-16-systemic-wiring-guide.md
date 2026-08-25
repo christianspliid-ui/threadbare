@@ -70,7 +70,7 @@ Every `narrative` field in steps and outcomes supports dynamic text substitution
 | `{omen_adj}` | Active omen flavor | "whispering" |
 | `{omen_verb}` | Active omen action | "unravels" |
 | `{omen_noun}` | Active omen object | "the membrane" |
-| `{omen_atmosphere}` | Active omen mood | "the air thickens" |
+| `{omen_atmosphere}` | Active omen fact, stated plainly (Doctrine v2: atmosphere must do a job) | "ravens have not left the roofline since dawn" |
 | `{doom_verb}` | Doom archetype vocabulary — action verb | "fractures" (breach) / "gathers" (convergence) |
 | `{doom_adj}` | Doom archetype vocabulary — adjective | "fractured" (breach) / "inexorable" (convergence) |
 | `{doom_atmosphere}` | Doom archetype vocabulary — atmospheric phrase | "something presses through" (breach) |

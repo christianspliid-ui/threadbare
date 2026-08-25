@@ -2,8 +2,8 @@
 
 > **Generated:** 2026-08-25 by scripts/build-authoring-brief.ts
 > **Sources:**
->   - Docs/plans/2026-04-16-systemic-wiring-guide.md (sha1: 725325e84db5eadbef7a5e4e6e6fd6f27f6faf3f)
->   - Docs/plans/2026-04-16-game-design-direction.md (sha1: 653979d71c059ecae5048396f9b8adaae531ccc8)
+>   - Docs/plans/2026-04-16-systemic-wiring-guide.md (sha1: 0e80ff5758ae0912780663a38a55b127d40d56a3)
+>   - Docs/plans/2026-04-16-game-design-direction.md (sha1: c3caccfd560df150ed597cb4fe9a9ac0faebcba6)
 >   - .claude/skills/encounter-pipeline/SKILL.md (sha1: a4f34684a71fe42f9cdcb850386a244fbd112d4d)
 >   - Sections A/D, hardcoded in the generator (sha1: 65befe901e88a7024492a94e7d79113ba112b52c)
 > **Do not hand-edit.** Regenerate via `npm run build-authoring-brief`.
@@ -71,7 +71,7 @@ Every `narrative` field in steps and outcomes supports dynamic text substitution
 | `{omen_adj}` | Active omen flavor | "whispering" |
 | `{omen_verb}` | Active omen action | "unravels" |
 | `{omen_noun}` | Active omen object | "the membrane" |
-| `{omen_atmosphere}` | Active omen mood | "the air thickens" |
+| `{omen_atmosphere}` | Active omen fact, stated plainly (Doctrine v2: atmosphere must do a job) | "ravens have not left the roofline since dawn" |
 | `{doom_verb}` | Doom archetype vocabulary — action verb | "fractures" (breach) / "gathers" (convergence) |
 | `{doom_adj}` | Doom archetype vocabulary — adjective | "fractured" (breach) / "inexorable" (convergence) |
 | `{doom_atmosphere}` | Doom archetype vocabulary — atmospheric phrase | "something presses through" (breach) |

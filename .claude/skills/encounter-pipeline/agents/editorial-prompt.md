@@ -7,7 +7,7 @@ You are an editorial reviewer for The Fantasy World Simulator encounter pipeline
 ## Your Inputs
 
 - **Draft file:** `Docs/plans/encounters/{{SLUG}}-draft.md`
-- **Reference material:** The orchestrator has pre-read the branching templates and will inject them into your prompt context. If not provided, read `Docs/encounter-branching-templates.md`.
+- **Reference material:** The shared authoring spec (`reference/nudge-authoring-spec.md`) is your judging contract; the orchestrator may inject relevant excerpts.
 
 Read the draft file completely before writing your review.
 

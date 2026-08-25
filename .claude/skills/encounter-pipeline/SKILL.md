@@ -195,8 +195,7 @@ Then the orchestrator reads the files the Canon page links to and injects them a
 0c. `public/nudge-cards-reference.html` — the 21-type card library and pip vocabulary the hand is cut from.
 0d. [`reference/anchor-catalog.generated.md`](reference/anchor-catalog.generated.md) — **mandatory**, every legal anchor a consequence chip may point at, how it is declared, and which surface shows it. Generated from the live type unions. Inject it into the draft prompt as well as the critics': a chip's referent is chosen while the prose is being written, and an author who has not seen this list writes toward fiction and gets the chip folded three stages later.
 1. `Docs/authoring-brief.md` — compiled capability + principle preamble (preferred). If missing or stale, fall back: read `Docs/plans/2026-04-16-systemic-wiring-guide.md` and `Docs/plans/2026-04-16-game-design-direction.md` instead.
-2. `Docs/encounter-building-checklist.md` — structural packet template. **Its per-step "approach card" sections describe the pre-nudge model**; where it conflicts with the spec above, the spec wins.
-3. `Docs/encounter-branching-templates.md`
+2. `Docs/encounter-support-network.md` — support-bundle contract, registration/tick-lifecycle audit, support matrix, primitive-gap and escalation rules. (Supersedes `Docs/encounter-building-checklist.md` and `Docs/encounter-branching-templates.md`, both retired 2026-08-25 — THR-1252; do not load them as live guidance.)
 3. Obsidian vault pages via MCP:
    - `TheFantasyWorldSimulator/Systems/Thematic Pillars.md`
    - `TheFantasyWorldSimulator/Systems/Anti-Patterns.md`
