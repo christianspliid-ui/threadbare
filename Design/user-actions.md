@@ -1,20 +1,31 @@
 # User Action Required
 
-**Last updated:** 2026-08-25 02:55 local (00:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-25 03:56 local (01:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
-### 1. Approve the batch-2 brief — [THR-1222](https://linear.app/threadbare/issue/THR-1222/run-retrofit-batch-2-the-camp-seven-through-the-factory-line-shrine)
+### 1. Read two of the new encounters — [THR-1221](https://linear.app/threadbare/issue/THR-1221/run-the-border-perils-batch-6-new-encounters-through-the-full-factory)
 
-**The camp seven** — shrine offering, sharpening blades, warding the camp, a small prayer, rest and reflection, tending wounds, scouting the perimeter. All seven ship today and all seven are thin: the census found **no typed consequences at all** in that set, only bare standing nudges. This batch puts them through the same factory line the border-perils six are cleared for.
+The border-perils six merged at 03:45 local and are **live on the deployed site now** — the first time the factory line has authored encounters from nothing and carried all six the whole way. Six of six gates green, six of six proved live, none of the proofs empty.
 
-**Why it is first:** [your integrated slice checkpoint](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with) has exactly one item in front of it, and **the shrine offering is roster encounter #1 of that sitting.** The checkpoint cannot invite you while that encounter is below standard. The [border-perils six](https://linear.app/threadbare/issue/THR-1221) are in their live-proof stage and still building — when they land, this is the only game work left to pick up.
+Two clicks, straight into the game:
+
+- **[The Unclaimed Relic](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.border.the_unclaimed_relic)** — a relic in the open, a cold that stopped everyone before, and one other claimant at the ring. Leave with it and it is a real object your agent keeps; the other claimant stays in the world, warmed or soured.
+- **[One Body Short](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.border.one_body_short)** — a survivor counts the dead and the count is wrong. The missing body is a mark nobody can see, which a later road can put in the open.
+
+**The question: do these two read like encounters worth meeting twice?** That verdict outranks any single batch approval, because the same line runs everything after it — including ask 2 below. Report: [`batch-report-2026-08-25.md`](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/batch-report-2026-08-25.md), which you should not need to open.
+
+### 2. Approve the batch-2 brief — [THR-1222](https://linear.app/threadbare/issue/THR-1222/run-retrofit-batch-2-the-camp-seven-through-the-factory-line-shrine)
+
+**The camp seven** — shrine offering, sharpening blades, warding the camp, a small prayer, rest and reflection, tending wounds, scouting the perimeter. All seven ship today and all seven are thin: the census found **no typed consequences at all** in that set, only bare standing nudges.
+
+**The shelf is now empty behind it.** The border-perils six have landed, so the machine's next job is one Low-priority tooltip repair and nothing else. It is also the last item in front of [your integrated slice checkpoint](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with) — **the shrine offering is roster encounter #1 of that sitting**, and the checkpoint cannot invite you while it is below standard.
 
 **Brief:** [`retrofit-batch-2-brief.md`](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/retrofit-batch-2-brief.md), merged to `main`.
 
 **The one judgement in it:** the batch is **seven, not six** — the camp set is one family in one file, and splitting the seventh costs a full cycle for no variance gain. *"Batch 2, seven is fine"* runs it; *"keep it six"* splits it 6+1.
 
-### 2. Image credits — should the spend be gated on you at all?
+### 3. Image credits — should the spend be gated on you at all?
 
 **[THR-876](https://linear.app/threadbare/issue/THR-876/regenerate-the-5-quarantined-meet-the-first-scene-assets-doctrine) — five Meet-The-First scene images that break the art rule.** Two have words painted into the picture, two show individual faces (which the doctrine reserves for portraits), one has the old choice buttons painted in as scenery. All five are switched off; substitutes cover the slots, so nothing is broken. Sizes, rules and acceptance check are settled. It waits on you for one reason: **it spends image credits.**
 
@@ -22,13 +33,13 @@
 
 Your answer settles the five above and every batch after them. Until you say otherwise the standing rule holds: *remap where a match is honest, come to you only when it is not.*
 
-### 3. Chart the hub map
+### 4. Chart the hub map
 
 Both design maps closed 2026-08-24: [the typed game-state map](https://linear.app/threadbare/issue/THR-1157/typed-game-state-architecture-machinery-first-wave-wayfinder-map) and [the vertical-slice map](https://linear.app/threadbare/issue/THR-902/encounter-experience-redesign-vertical-slice-wayfinder-map), all five verdicts in. **Nothing is being charted now.** The slice map's charter names its successor: **the hub — the player reaching factions, war, economy and divine actions from inside the encounter interface.**
 
 **Advice: wait one cycle.** Your [integrated slice checkpoint](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with) is this map's entry condition, so chartering from a validated base is the better order. **Only you can charter a map** — say *"chart the hub map"* in a chat session whenever you want it.
 
-### 4. More design hours — four sittings stacked
+### 5. More design hours — four sittings stacked
 
 In the order you set:
 
@@ -38,7 +49,7 @@ In the order you set:
 
 Available whenever you want it: your own [one-button snapshot](https://linear.app/threadbare/issue/THR-1134/shareable-game-state-snapshot-one-button-incident-bundle-that-works-in).
 
-### 5. What is a run *about*? — [THR-1198](https://linear.app/threadbare/issue/THR-1198/the-48-authored-mandate-strings-are-wired-but-unreachable-no-live-game)
+### 6. What is a run *about*? — [THR-1198](https://linear.app/threadbare/issue/THR-1198/the-48-authored-mandate-strings-are-wired-but-unreachable-no-live-game)
 
 Forty-eight authored lines narrate a campaign's milestones — a stage advancing, a mandate completing, a mandate failing. They are wired and working, but written for **twelve named campaigns**, while every live game derives its spine from **what your god remembers**. Correct, connected, unreachable; the game falls back to generated text and nothing is broken.
 
@@ -49,23 +60,23 @@ Forty-eight authored lines narrate a campaign's milestones — a stage advancing
 
 Deliberately left with you: it is a question about what the game means, not about how to wire it. No urgency — [the wiring shipped on its own](https://linear.app/threadbare/issue/THR-1197/wire-the-48-authored-mandate-milestone-prose-strings-into-stage) and nothing downstream is waiting.
 
-### 6. Should committing a nudge be followed by a held breath? — [THR-1168](https://linear.app/threadbare/issue/THR-1168/two-authored-encounter-audio-moments-have-no-live-caller-wire-or)
+### 7. Should committing a nudge be followed by a held breath? — [THR-1168](https://linear.app/threadbare/issue/THR-1168/two-authored-encounter-audio-moments-have-no-live-caller-wire-or)
 
 There is a finished, unused piece of sound design: on committing a nudge, roughly 1.6 seconds where a tone draws tight, holds, then releases — and only then does the outcome land. Nothing plays it today; the visual it accompanied was deleted, so what remains is the pacing alone.
 
 **Does committing feel better with that beat, or should the outcome land immediately?** Pure feel; no measurement settles it. Either answer closes the ticket — wired to the encounter veil, or retired with its constants and tests. Two lanes recommend **no**: unskippable on every commit turns tense into waiting, and the timings stay recoverable from history.
 
-### 7. One attended dev-server session — [THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server)
+### 8. One attended dev-server session — [THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server)
 
 One `npm run dev` and a browser at 1920×1080: nine surfaces, at least 19 screenshots. Every one is a shipped UI change carrying test-level proof but no picture, because a scheduled run is refused a dev server and so structurally cannot capture one.
 
 It keeps growing as more UI work ships behind the same wall. This replaces four separate tickets (THR-1109, THR-1125, THR-1126, THR-1127), consolidated 2026-08-16 — a merge, not a prune. If you only get through part of it, say which, and the remainder is re-expanded rather than closed whole.
 
-### 8. Parked option, no urgency: a Tenacious-style trait
+### 9. Parked option, no urgency: a Tenacious-style trait
 
 An open design option with no ticket behind it. Explicitly not urgent — the safe default is that it stays parked, and nothing downstream is waiting on it. Listed only so it is not silently forgotten; say the word if you want it opened, and it will be given a ticket and a design pass.
 
-### 9. Was the 20–22 August lane quiet deliberate?
+### 10. Was the 20–22 August lane quiet deliberate?
 
 The scheduled lanes stopped for **35 hours** (20 Aug 21:57 local → 22 Aug 09:15 local) and resumed on their own. No pause marker covers that window — the one on disk expired on 5 August. Lanes have run normally since, so nothing is broken now.
 
@@ -73,8 +84,8 @@ The scheduled lanes stopped for **35 hours** (20 Aug 21:57 local → 22 Aug 09:1
 
 ## Resolved this period
 
+- 2026-08-25: **the six new encounters shipped** — [THR-1221](https://linear.app/threadbare/issue/THR-1221/run-the-border-perils-batch-6-new-encounters-through-the-full-factory) merged at 03:45 via [PR #1603](https://github.com/christianspliid-ui/threadbare/pull/1603) and deployed. Six of six gates green, six of six proved live, none vacuous. Two of them are now ask 1 above.
 - 2026-08-25: **hovering a condition now explains it** — [THR-1094](https://linear.app/threadbare/issue/THR-1094/conditions-are-named-on-player-surfaces-but-are-not-a-tooltip-class) merged at 02:26 ([PR #1602](https://github.com/christianspliid-ui/threadbare/pull/1602)). The game called an agent *exhausted*, *grieving* or *cursed* and gave nothing back on hover; it does now.
-- 2026-08-24: **the six-encounter batch is running** — [THR-1221](https://linear.app/threadbare/issue/THR-1221/run-the-border-perils-batch-6-new-encounters-through-the-full-factory) filed on your 18:08 yes and claimed at 22:02; six new encounters on dangerous ground are going through the factory line now. The four-hour untracked-brief problem is closed with it.
 - 2026-08-24: **[THR-977](https://linear.app/threadbare/issue/THR-977) shipped** — capability pips and odds-effect pips no longer look identical on the encounter test panel. Promoted 18:30, merged 19:45, after 22 days shelved against a question you had already answered.
 - 2026-08-24: **four shelved tickets re-read against your 12 August rule, three came off your page without you** — [THR-831](https://linear.app/threadbare/issue/THR-831) (**shipped the same hour, with the agent overruling the ticket's own retune as arithmetically backwards**), [THR-1095](https://linear.app/threadbare/issue/THR-1095), [THR-977](https://linear.app/threadbare/issue/THR-977) and [THR-1094](https://linear.app/threadbare/issue/THR-1094) queued; [THR-1198](https://linear.app/threadbare/issue/THR-1198) stayed yours. **Say the word if any should have come to you and it comes straight back.**
 - 2026-08-24: **you approved the first encounter batch** — *"Go agenda"* / *"Ahead"* at 18:08, the last gate in [the Encounter Factory](https://linear.app/threadbare/issue/THR-1043/the-encounter-factory-agentic-workflow-for-composition-complete).
