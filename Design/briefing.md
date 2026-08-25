@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-08-25 16:55 local (14:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-08-25 17:56 local (15:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -23,13 +23,15 @@ Why it is still the lead: `shrine_offering` is encounter #1 of [your integrated 
 
 ## Queue
 
-**Starved — 0 ready, and that is the good kind of empty.** [THR-1239, effect activation stage 1](https://linear.app/threadbare/issue/THR-1239/effect-activation-1-exhaustiveness-guard-entered-hex-combat-events) landed on the shelf at 13:08 out of your design sitting and was **claimed, built and merged by 14:54** — [PR #1619](https://github.com/christianspliid-ui/threadbare/pull/1619). Under two hours from specification to shipped. Its completion unblocked stages [2](https://linear.app/threadbare/issue/THR-1240), [5](https://linear.app/threadbare/issue/THR-1243) and [6](https://linear.app/threadbare/issue/THR-1244); the orchestrator promotes them at :26, so the shelf refills on its own without you.
+**Healthy — 3 ready, refilled without you, exactly as forecast last hour.** The shelf was empty at 16:55; the orchestrator promoted [effect activation stage 2](https://linear.app/threadbare/issue/THR-1240), [stage 5](https://linear.app/threadbare/issue/THR-1243) and [stage 6](https://linear.app/threadbare/issue/THR-1244) at 17:28, all unblocked by the stage-1 merge two hours earlier. The program you specified this morning is now feeding itself.
 
-- **[THR-1223, the prose rewrite](https://linear.app/threadbare/issue/THR-1223/rewrite-the-shipped-nudge-corpus-to-prose-doctrine-v2-narrator-mode)** — all five batches written, four merged. Batch 5, the slice nine, still sits in [PR #1618](https://github.com/christianspliid-ui/threadbare/pull/1618) with a merge conflict: a session's job, not yours.
-- **[THR-1245](https://linear.app/threadbare/issue/THR-1245/encounter-factory-drawpacket-rolls-the-whole-batch)** opened this hour — the factory's batch dice, in an attended session. Three of its companions ([plot hooks](https://linear.app/threadbare/issue/THR-1147), [consequence draw](https://linear.app/threadbare/issue/THR-1145), [doctrine tooling](https://linear.app/threadbare/issue/THR-1224)) closed at 14:52.
+- **[THR-1245, the factory's batch dice](https://linear.app/threadbare/issue/THR-1245/encounter-factory-drawpacket-rolls-the-whole-batch)** shipped at 17:34 — opened, built and merged inside the hour ([PR #1621](https://github.com/christianspliid-ui/threadbare/pull/1621)).
+- **[THR-1246](https://linear.app/threadbare/issue/THR-1246/encounter-factory-compileencounter-turns-a-content-package-into) picked up straight after** — the step that turns a written package into configured game content. [PR #1622](https://github.com/christianspliid-ui/threadbare/pull/1622) is open and waiting on its checks; normal, 19 minutes old.
+- **[THR-1223, the prose rewrite](https://linear.app/threadbare/issue/THR-1223/rewrite-the-shipped-nudge-corpus-to-prose-doctrine-v2-narrator-mode)** — four batches merged; batch 5, the slice nine, still stuck in [PR #1618](https://github.com/christianspliid-ui/threadbare/pull/1618). See Health.
 - Three parks, unchanged: [THR-1130](https://linear.app/threadbare/issue/THR-1130) (superseded by the rewrite), [THR-1133](https://linear.app/threadbare/issue/THR-1133) and [THR-1168](https://linear.app/threadbare/issue/THR-1168), both on the list above.
 
 ## Health
 
-- **[PR #1618](https://github.com/christianspliid-ui/threadbare/pull/1618) still needs one session** — merge conflict against `main`, now 86 minutes old, and no checks were scheduled on it for most of that. `git merge origin/main`, resolve, push: that fixes the conflict and re-starts the checks. Nothing unsafe can merge meanwhile, and nothing already finished is at risk.
-- Everything else green: both background jobs healthy, all nine scheduled lanes on time, worktree reaper ran 16:40, and the deploy of the newest commit is in flight as normal.
+- **[PR #1618](https://github.com/christianspliid-ui/threadbare/pull/1618) has now waited 2½ hours for one session.** Merge conflict against `main`, and GitHub has stopped scheduling checks on it — that second part does not clear on its own. One `git merge origin/main`, resolve, push fixes both. Nothing unsafe can merge meanwhile and no finished work is at risk; the cost is only that batch 5 of your prose rewrite sits unshipped.
+- **[THR-1245 was built twice, by two lanes at once](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/impediments.md)** — caught at merge, logged as impediment #763, no work lost. Recorded for the weekly retro; nothing for you here.
+- Everything else green: deploy is serving the newest commit, both background jobs healthy, all nine scheduled lanes on time, worktree reaper ran 17:40.
