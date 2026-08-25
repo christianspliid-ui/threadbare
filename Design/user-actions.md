@@ -1,29 +1,31 @@
 # User Action Required
 
-**Last updated:** 2026-08-25 03:56 local (01:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-25 05:56 local (03:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
-### 1. Read two of the new encounters — [THR-1221](https://linear.app/threadbare/issue/THR-1221/run-the-border-perils-batch-6-new-encounters-through-the-full-factory)
+### 1. Approve the batch-2 brief — [THR-1222](https://linear.app/threadbare/issue/THR-1222/run-retrofit-batch-2-the-camp-seven-through-the-factory-line-shrine)
 
-The border-perils six merged at 03:45 local and are **live on the deployed site now** — the first time the factory line has authored encounters from nothing and carried all six the whole way. Six of six gates green, six of six proved live, none of the proofs empty.
+**The camp seven** — shrine offering, sharpening blades, warding the camp, a small prayer, rest and reflection, tending wounds, scouting the perimeter. All seven ship today and all seven are thin: the census found **no typed consequences at all** in that set, only bare standing nudges.
+
+**The shelf is now empty behind it — zero claimable items, nothing in flight.** The border-perils six landed at 03:45 and the tooltip repair behind them merged at 04:31; there is nothing left for the executor lane to pick up. Until this gets its yes, every hourly run finds an empty board.
+
+It is also the last item in front of [your integrated slice checkpoint](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with) — **the shrine offering is roster encounter #1 of that sitting**, and the checkpoint cannot invite you while it is below standard.
+
+**Brief:** [`retrofit-batch-2-brief.md`](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/retrofit-batch-2-brief.md), merged to `main`.
+
+**The one judgement in it:** the batch is **seven, not six** — the camp set is one family in one file, and splitting the seventh costs a full cycle for no variance gain. *"Batch 2, seven is fine"* runs it; *"keep it six"* splits it 6+1.
+
+### 2. Read two of the new encounters — [THR-1221](https://linear.app/threadbare/issue/THR-1221/run-the-border-perils-batch-6-new-encounters-through-the-full-factory)
+
+The border-perils six are **live on the deployed site now** — the first time the factory line has authored encounters from nothing and carried all six the whole way. Six of six gates green, six of six proved live, none of the proofs empty.
 
 Two clicks, straight into the game:
 
 - **[The Unclaimed Relic](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.border.the_unclaimed_relic)** — a relic in the open, a cold that stopped everyone before, and one other claimant at the ring. Leave with it and it is a real object your agent keeps; the other claimant stays in the world, warmed or soured.
 - **[One Body Short](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.border.one_body_short)** — a survivor counts the dead and the count is wrong. The missing body is a mark nobody can see, which a later road can put in the open.
 
-**The question: do these two read like encounters worth meeting twice?** That verdict outranks any single batch approval, because the same line runs everything after it — including ask 2 below. Report: [`batch-report-2026-08-25.md`](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/batch-report-2026-08-25.md), which you should not need to open.
-
-### 2. Approve the batch-2 brief — [THR-1222](https://linear.app/threadbare/issue/THR-1222/run-retrofit-batch-2-the-camp-seven-through-the-factory-line-shrine)
-
-**The camp seven** — shrine offering, sharpening blades, warding the camp, a small prayer, rest and reflection, tending wounds, scouting the perimeter. All seven ship today and all seven are thin: the census found **no typed consequences at all** in that set, only bare standing nudges.
-
-**The shelf is now empty behind it.** The border-perils six have landed, so the machine's next job is one Low-priority tooltip repair and nothing else. It is also the last item in front of [your integrated slice checkpoint](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with) — **the shrine offering is roster encounter #1 of that sitting**, and the checkpoint cannot invite you while it is below standard.
-
-**Brief:** [`retrofit-batch-2-brief.md`](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/retrofit-batch-2-brief.md), merged to `main`.
-
-**The one judgement in it:** the batch is **seven, not six** — the camp set is one family in one file, and splitting the seventh costs a full cycle for no variance gain. *"Batch 2, seven is fine"* runs it; *"keep it six"* splits it 6+1.
+**The question: do these two read like encounters worth meeting twice?** That verdict outlives any single batch approval, because the same line runs everything after it — including ask 1 above. Report: [`batch-report-2026-08-25.md`](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/batch-report-2026-08-25.md), which you should not need to open.
 
 ### 3. Image credits — should the spend be gated on you at all?
 
@@ -84,7 +86,8 @@ The scheduled lanes stopped for **35 hours** (20 Aug 21:57 local → 22 Aug 09:1
 
 ## Resolved this period
 
-- 2026-08-25: **the six new encounters shipped** — [THR-1221](https://linear.app/threadbare/issue/THR-1221/run-the-border-perils-batch-6-new-encounters-through-the-full-factory) merged at 03:45 via [PR #1603](https://github.com/christianspliid-ui/threadbare/pull/1603) and deployed. Six of six gates green, six of six proved live, none vacuous. Two of them are now ask 1 above.
+- 2026-08-25: **the keyboard can now read the game's own vocabulary** — [THR-1095](https://linear.app/threadbare/issue/THR-1095/the-shared-tooltip-trigger-is-not-focusable-so-every-tooltip-in-the) merged at 04:31 ([PR #1604](https://github.com/christianspliid-ui/threadbare/pull/1604)). Every tooltip in the game answered only to a mouse. It was also the last claimable item on the board.
+- 2026-08-25: **the six new encounters shipped** — [THR-1221](https://linear.app/threadbare/issue/THR-1221/run-the-border-perils-batch-6-new-encounters-through-the-full-factory) merged at 03:45 via [PR #1603](https://github.com/christianspliid-ui/threadbare/pull/1603) and deployed. Six of six gates green, six of six proved live, none vacuous. Two of them are now ask 2 above.
 - 2026-08-25: **hovering a condition now explains it** — [THR-1094](https://linear.app/threadbare/issue/THR-1094/conditions-are-named-on-player-surfaces-but-are-not-a-tooltip-class) merged at 02:26 ([PR #1602](https://github.com/christianspliid-ui/threadbare/pull/1602)). The game called an agent *exhausted*, *grieving* or *cursed* and gave nothing back on hover; it does now.
 - 2026-08-24: **[THR-977](https://linear.app/threadbare/issue/THR-977) shipped** — capability pips and odds-effect pips no longer look identical on the encounter test panel. Promoted 18:30, merged 19:45, after 22 days shelved against a question you had already answered.
 - 2026-08-24: **four shelved tickets re-read against your 12 August rule, three came off your page without you** — [THR-831](https://linear.app/threadbare/issue/THR-831) (**shipped the same hour, with the agent overruling the ticket's own retune as arithmetically backwards**), [THR-1095](https://linear.app/threadbare/issue/THR-1095), [THR-977](https://linear.app/threadbare/issue/THR-977) and [THR-1094](https://linear.app/threadbare/issue/THR-1094) queued; [THR-1198](https://linear.app/threadbare/issue/THR-1198) stayed yours. **Say the word if any should have come to you and it comes straight back.**
@@ -93,7 +96,6 @@ The scheduled lanes stopped for **35 hours** (20 Aug 21:57 local → 22 Aug 09:1
 - 2026-08-24: **the slice prose meets your 08-15 standard** — [THR-1219](https://linear.app/threadbare/issue/THR-1219/rewrite-the-slice-prose-to-the-2026-08-15-standard-direct-pass) ([PR #1596](https://github.com/christianspliid-ui/threadbare/pull/1596)), filed by you at 16:33 and merged at 17:40. The last component below standard.
 - 2026-08-24: **four dead reputation reads answered** — [THR-1211](https://linear.app/threadbare/issue/THR-1211/four-reputation-adjacent-dead-reads-found-in-the-thr-1206-survey-a) ([PR #1597](https://github.com/christianspliid-ui/threadbare/pull/1597)).
 - 2026-08-24: **the vertical-slice map is closed** — [THR-902](https://linear.app/threadbare/issue/THR-902/encounter-experience-redesign-vertical-slice-wayfinder-map), all five verdicts ruled in one sitting.
-- 2026-08-24: **the encounter-authoring brief stops ordering writers to produce the rejected card format** — [THR-1185](https://linear.app/threadbare/issue/THR-1185/docsauthoring-briefmd-sections-de-carry-pre-nudge-pivot-vocabulary) ([PR #1595](https://github.com/christianspliid-ui/threadbare/pull/1595)).
 
 ---
 
