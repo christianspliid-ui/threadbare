@@ -15,8 +15,8 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 54 |
-| 🟠 PARTIAL | 3 |
+| 🟢 LIVE | 55 |
+| 🟠 PARTIAL | 2 |
 | 🔴 LEAKED | 7 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 14 |
@@ -122,7 +122,7 @@ remediation ticket or the build fails.
 | `player-action-receipts-queue` | A resolved player cast queues a Divine Receipt the UI surfaces as a toast or a receipt dialogue. | node-prop: `playerActionReceipts` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `receipt-event-band-toast` | A receipt toast carries its outcome band so the toast accent matches how the cast landed. | event: `band` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `relocation-intent-steers-agent-movement` | An ending that says someone left actually sends them — and the leaving is a journey the player can watch, not a body appearing elsewhere. | function: `computeRelocationIntentBonus`, `resolveRelocationIntentForAgent`, `setRelocationIntent` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
-| `repertoire-deals-into-encounter-hand` | A hand reads as *this god's* hand in any scene: the encounter authors only the cards it alone could offer, and the god's own Repertoire supplies the rest. Without this read, an encounter can only ever show the cards its author happened to write, and the repertoire progression the player earned stays invisible in play. | function: `dealHand`, `mintDealtNudge`, `composeDealtStep`, `composeDealtStepFromState` | Encounters & Dilemmas | 🟠 PARTIAL | THR-1254 |
+| `repertoire-deals-into-encounter-hand` | A hand reads as *this god's* hand in any scene: the encounter authors only the cards it alone could offer, and the god's own Repertoire supplies the rest. Without this read, an encounter can only ever show the cards its author happened to write, and the repertoire progression the player earned stays invisible in play. | function: `dealHand`, `mintDealtNudge`, `composeDealtStep`, `composeDealtStepFromState` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `reward-draw-shares-one-seeded-draw-with-the-step-route` | A specific ending can hand out a random matching prize — and it draws it exactly the way the step route does, so the two can never pay out differently. | function: `drawSeededReward`, `mapActionOutcomeToRewardOutcome`, `rewardCategoryNodeQuery`, `rewardCandidateMatchesTags` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `secrets-generation` | Secrets are born from scenes — mortals learn things about each other worth holding. | function: `generateSecret`, `createSecretEdge` | Secrets & Favors | 🟢 LIVE | — |
 | `seeded-opponent-survives-to-spawn` | A grudge planted against a named band is collected against that same band — or, if it died in the meantime, quietly becomes an ordinary encounter instead of pointing at a corpse. | node-prop: `opposingGroupId`, `resolveSeedOpposition` | Companies & Group Travel | 🟢 LIVE | — |
@@ -457,10 +457,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Domain Capability*, *UnifiedActionTemplate*
 - **Module:** `src/engine/unifiedActionResolution.ts`
-- **Production hits:** 154 total — 1 write, 2 read, 151 unclassified
+- **Production hits:** 155 total — 1 write, 2 read, 152 unclassified
 - **Write sites:** `src/data/unified-action-templates.ts`
 - **Read sites:** `src/engine/targetActions.ts`, `src/engine/unifiedActionResolution.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/ActionDrawer.tsx` +146 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/ActionDrawer.tsx` +147 more
 - **Verdict:** Verified 2026-07-25: THR-728: `unified-action-templates.ts` authors `steps[].difficulty`; `resolveUncontestedStep` reads it for `source === 'player'` (the auto-success early-return is now gated behind `PLAYER_CAST_VARIANCE_ENABLED`), and `targetActions.ts` reads the same field via `maxStepDifficulty` to render the focused card's risk line. Measured over 400 seeds: the outcome set for a positive-difficulty cast is >1 band. THR-1073 rerouted both read sites through `tierScaledDifficulty`: a step declaring `difficultyContext: 'target_tier_scaled'` treats its authored `difficulty` as a tier-1 baseline and resolves the real value from the target's tier. Both sites resolve through the same helper, so the card's risk line cannot drift from the roll; a step without the marker is returned unchanged.
 
 ### `authored-tier-ramp-target-scaled-price` — 🟢 LIVE
@@ -854,10 +854,10 @@ exit
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 223 total — 1 write, 1 read, 221 unclassified
+- **Production hits:** 224 total — 1 write, 1 read, 222 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts` +216 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts` +217 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `relocation-intent-steers-agent-movement` — 🔵 UNVERIFIED-OK
@@ -872,7 +872,7 @@ exit
 - **Other hits:** `src/data/encounters/the-broken-seal.ts`, `src/data/encounters/the-sign-over-the-ruin.ts`, `src/engine/relocationIntent.ts`, `src/types/movement.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
-### `repertoire-deals-into-encounter-hand` — 🟠 PARTIAL
+### `repertoire-deals-into-encounter-hand` — 🟢 LIVE
 
 - **Intent:** A hand reads as *this god's* hand in any scene: the encounter authors only the cards it alone could offer, and the god's own Repertoire supplies the rest. Without this read, an encounter can only ever show the cards its author happened to write, and the repertoire progression the player earned stays invisible in play.
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
@@ -882,7 +882,7 @@ exit
 - **Write sites:** `src/data/nudge-card-library.ts`, `src/data/nudge-constants.ts`, `src/types/unifiedAction.ts`
 - **Read sites:** `src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts`, `src/debug-bridge.ts`, `src/engine/unifiedActionResolution.ts`
 - **Other hits:** `src/engine/encounters/dealHand.ts`, `src/engine/nudgeCardRepertoire.ts`
-- **Verdict:** Pinned by badgeOverride: Engine, adapter and debug read sites are wired and covered by tests, and the play-profile corpus is complete (`profiledCardCount() === NUDGE_CARD_LIBRARY.length`, pinned). No shipped encounter declares `ActionStep.deal` yet, so the deal never runs in a real playthrough; the first composed encounter is THR-1254.
+- **Verdict:** Verified 2026-08-26: THR-1254. The override this replaces named exactly one outstanding condition — "no shipped encounter declares `ActionStep.deal` yet, so the deal never runs in a real playthrough" — and `The Unfinished Rite` (`encounter.delve.the_unfinished_rite`) is that encounter: a registered, contract-clean template whose step 0 authors two specials and declares `deal: { count: 4, tags: ['insight','lore'] }`. Not a fixture and not the golden exemplar (which is registered in no pool and so can never prove Stage 4): it sits in both catalog arrays, and `npm run check:encounter-live -- encounter.delve.the_unfinished_rite` returns `proved`, having spawned it on the ascendant in a seeded world, committed a hand and ticked to resolution. Non-vacuous by `src/data/encounters/__tests__/the-unfinished-rite.test.ts` § *the composed hand*, which composes the SHIPPED template's step against a repertoire built by `buildRepertoire` from a real sphere identity — deliberately not a fixture holding the whole library, which would have asserted the fixture rather than the dealer — and pins that the dealer contributed on top of the specials (`report.dealt.length > 0`, composed > authored, both specials surviving, size inside DEAL_HAND_MIN..MAX) and that two composes of the same input agree, which is the zero-PRNG guarantee the resolution read site depends on. Measured across three sphere identities the same step composes three different six-card hands — darkness/order draws Follow The Book, Hide The Deed, Open The Ledger; light/life draws Show The Obvious, Ease The Suffering, Buy The Floor; force/matter draws Throw Full Weight, Find What Remains — with the two specials constant and at least one ungated common in each, which is the contract's intent line demonstrated rather than asserted. Both specials are things the dealer structurally cannot mint: `rite.loosen_their_nerve` binds `opposes: 'rival'` to a cast key only this scene declares, and `rite.kindle_heresy` grants `axiological_mark_apply` with `reach: 'veil'`, the reach-scoped case the authoring spec § 3b names. The compiler gap found on the way is part of this verification: `encounterPackageViolations` restated the whole-hand rules and was blind to `deal`, so the only sanctioned authoring path rejected every composed encounter while the shipped gate passed it; it now delegates to `checkComposedHand`.
 
 ### `reputation-with-unified-read` — 🟢 LIVE
 

@@ -143,13 +143,24 @@ definition uses `trait.<category>.<kebab>` ids / Title Case names / `#tags` — 
 vocabularies that have never intersected. Remediation: **THR-800**. Trait *minting*, decay,
 and display rows are still unwritten (waves 2–3, THR-790/THR-791).
 
-**Dealt hands** — 1 contract, written 2026-08-25 (THR-1247).
+**Dealt hands** — 1 contract, written 2026-08-25 (THR-1247), **LIVE since 2026-08-26 (THR-1254)**.
 `repertoire-deals-into-encounter-hand` covers the Repertoire supplying most of an encounter's
 hand: the encounter authors 0–2 specials and declares a fill, and `dealHand` mints the rest
-from cards the god already holds. Badged **PARTIAL** with `deferralTicket: THR-1248` — the
-path is wired, tested end to end and proven against two reference play profiles, but no
-shipped template declares `ActionStep.deal`, so nothing travels it in a real run. LIVE would
-be the THR-614 error class again.
+from cards the god already holds. It was badged **PARTIAL** through two tickets for one
+narrowing reason at a time — first that the play-profile corpus was thin (THR-1247), then
+that no *shipped* template declared `ActionStep.deal`, so nothing travelled the path in a
+real run (THR-1248). Badging LIVE on a wired path alone would have been the THR-614 error
+class again, which is why the override outlived the code by two tickets.
+
+What retired it is a shipped encounter, not an argument: **The Unfinished Rite**
+(`encounter.delve.the_unfinished_rite`) is registered in both catalog arrays and its step 0
+declares `deal`, so `check:encounter-live` can and does return `proved` for it. The golden
+exemplar could never have discharged this — it is registered in no pool, and an unregistered
+template never advances a step. The evidence worth carrying forward is that the *same* step
+composes a different hand per god: darkness/order is dealt Follow The Book, Hide The Deed and
+Open The Ledger where force/matter is dealt Throw Full Weight and Find What Remains, with the
+two authored specials constant across both. That is the contract's intent sentence
+demonstrated rather than asserted, and it is what a corpus-wide `deal` rollout now rests on.
 
 The row is worth reading for **which read sites it names**, because that is where the design
 nearly went wrong. It names two: the stage adapter *and* `unifiedActionResolution.ts`. The

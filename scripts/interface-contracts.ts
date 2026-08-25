@@ -1353,20 +1353,13 @@ export const CONTRACTS: readonly Contract[] = [
       'src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts',
       'src/debug-bridge.ts',
     ],
-    // Still not LIVE, but for a strictly smaller reason than at THR-1247. The
-    // corpus landed (THR-1248): every library member carries a play profile and
-    // band fragments, so the dealer now has a full pool rather than two
-    // reference entries. What remains is that no *shipped template* declares
-    // `deal`, so nothing travels the path in a real playthrough. Badging LIVE on
-    // a complete corpus alone would claim behaviour no player can reach — the
-    // THR-614 error class this map exists to catch.
-    badgeOverride: {
-      badge: 'PARTIAL',
-      reason:
-        'Engine, adapter and debug read sites are wired and covered by tests, and the play-profile corpus is complete (`profiledCardCount() === NUDGE_CARD_LIBRARY.length`, pinned). No shipped encounter declares `ActionStep.deal` yet, so the deal never runs in a real playthrough; the first composed encounter is THR-1254.',
-      deferralTicket: 'THR-1254',
+    // LIVE since THR-1254. The `badgeOverride` is deleted rather than reworded,
+    // because the single condition it named is now false — see `verifiedLive`.
+    verifiedLive: {
+      date: '2026-08-26',
+      evidence:
+        "THR-1254. The override this replaces named exactly one outstanding condition — \"no shipped encounter declares `ActionStep.deal` yet, so the deal never runs in a real playthrough\" — and `The Unfinished Rite` (`encounter.delve.the_unfinished_rite`) is that encounter: a registered, contract-clean template whose step 0 authors two specials and declares `deal: { count: 4, tags: ['insight','lore'] }`. Not a fixture and not the golden exemplar (which is registered in no pool and so can never prove Stage 4): it sits in both catalog arrays, and `npm run check:encounter-live -- encounter.delve.the_unfinished_rite` returns `proved`, having spawned it on the ascendant in a seeded world, committed a hand and ticked to resolution. Non-vacuous by `src/data/encounters/__tests__/the-unfinished-rite.test.ts` § *the composed hand*, which composes the SHIPPED template's step against a repertoire built by `buildRepertoire` from a real sphere identity — deliberately not a fixture holding the whole library, which would have asserted the fixture rather than the dealer — and pins that the dealer contributed on top of the specials (`report.dealt.length > 0`, composed > authored, both specials surviving, size inside DEAL_HAND_MIN..MAX) and that two composes of the same input agree, which is the zero-PRNG guarantee the resolution read site depends on. Measured across three sphere identities the same step composes three different six-card hands — darkness/order draws Follow The Book, Hide The Deed, Open The Ledger; light/life draws Show The Obvious, Ease The Suffering, Buy The Floor; force/matter draws Throw Full Weight, Find What Remains — with the two specials constant and at least one ungated common in each, which is the contract's intent line demonstrated rather than asserted. Both specials are things the dealer structurally cannot mint: `rite.loosen_their_nerve` binds `opposes: 'rival'` to a cast key only this scene declares, and `rite.kindle_heresy` grants `axiological_mark_apply` with `reach: 'veil'`, the reach-scoped case the authoring spec § 3b names. The compiler gap found on the way is part of this verification: `encounterPackageViolations` restated the whole-hand rules and was blind to `deal`, so the only sanctioned authoring path rejected every composed encounter while the shipped gate passed it; it now delegates to `checkComposedHand`.",
     },
-    deferralTicket: 'THR-1254',
   },
   // ── Nudge card dispatch → host systems (THR-885) ───────────────────────────
   // The god's hand is the activation surface several idle systems were missing.

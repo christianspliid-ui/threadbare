@@ -53,6 +53,7 @@ import {
   NUDGE_HAND_MIN,
 } from './nudgeAuthoringConstants';
 import { drawConsequenceHand } from './consequenceDraw';
+import { checkComposedHand } from './nudgeHandChecklist';
 
 // ─── Constants (NFP #1) ──────────────────────────────────────────────
 
@@ -226,32 +227,42 @@ export function encounterPackageViolations(pkg: EncounterContentPackage): readon
       problems.push(`step ${index}: difficulty ${step.difficulty} outside [0, 1]`);
     }
     const hand = (step.nudges ?? []) as readonly StepNudge[];
-    if (hand.length === 0) return;
+    // THR-1247/1254 — a step that declares `deal` composes its hand: the authored
+    // cards are *specials*, and the rest does not exist until the dealer runs. The
+    // whole-hand rules below (size, sphere spread, common-option floor) are about
+    // the hand the player is DEALT, so they stand down here exactly as they do in
+    // `checkNudgeHand`, and `checkComposedHand` owns the composed rules instead.
+    // Without this the compiler — the only sanctioned path for new content — could
+    // not emit a composed encounter at all, while the shipped runtime gate passed it.
+    const composed = step.deal !== undefined;
+    if (hand.length === 0 && !composed) return;
 
-    if (hand.length < NUDGE_HAND_MIN || hand.length > NUDGE_HAND_MAX) {
-      problems.push(
-        `step ${index}: hand of ${hand.length} outside ${NUDGE_HAND_MIN}–${NUDGE_HAND_MAX}`,
+    if (!composed) {
+      if (hand.length < NUDGE_HAND_MIN || hand.length > NUDGE_HAND_MAX) {
+        problems.push(
+          `step ${index}: hand of ${hand.length} outside ${NUDGE_HAND_MIN}–${NUDGE_HAND_MAX}`,
+        );
+      }
+      const spheres = new Set(hand.map(nudge => nudge.sphere).filter(Boolean));
+      if (spheres.size < HAND_SPHERE_COVERAGE_MIN) {
+        problems.push(
+          `step ${index}: ${spheres.size} distinct sphere(s) in the hand — floor is `
+            + `${HAND_SPHERE_COVERAGE_MIN}`,
+        );
+      }
+      const commons = hand.filter(
+        nudge =>
+          nudge.sphere === undefined
+          && nudge.requiredTrait === undefined
+          && nudge.requiresGroup === undefined
+          && nudge.requiresFavor === undefined,
       );
-    }
-    const spheres = new Set(hand.map(nudge => nudge.sphere).filter(Boolean));
-    if (spheres.size < HAND_SPHERE_COVERAGE_MIN) {
-      problems.push(
-        `step ${index}: ${spheres.size} distinct sphere(s) in the hand — floor is `
-          + `${HAND_SPHERE_COVERAGE_MIN}`,
-      );
-    }
-    const commons = hand.filter(
-      nudge =>
-        nudge.sphere === undefined
-        && nudge.requiredTrait === undefined
-        && nudge.requiresGroup === undefined
-        && nudge.requiresFavor === undefined,
-    );
-    if (commons.length < HAND_COMMON_OPTIONS_MIN) {
-      problems.push(
-        `step ${index}: ${commons.length} ungated common (sphere-less) option(s) — floor is `
-          + `${HAND_COMMON_OPTIONS_MIN}`,
-      );
+      if (commons.length < HAND_COMMON_OPTIONS_MIN) {
+        problems.push(
+          `step ${index}: ${commons.length} ungated common (sphere-less) option(s) — floor is `
+            + `${HAND_COMMON_OPTIONS_MIN}`,
+        );
+      }
     }
     const riders = hand.filter(nudge => nudge.rider !== undefined);
     if (riders.length > 1) {
@@ -296,6 +307,14 @@ export function encounterPackageViolations(pkg: EncounterContentPackage): readon
       problems.push(`step ${index}: duplicate nudge ids in the hand`);
     }
   });
+
+  // ── Composed hands ──
+  // Delegated, never restated. The module header's own rule: two copies of a rule
+  // are two rules that drift, and `checkComposedHand` is the authority `check:encounter`
+  // runs at Stage 3 — so the compiler and the gate cannot disagree about whether a
+  // `deal` declaration is legal. Returns [] for a template that declares none, which
+  // is every template that predates THR-1247.
+  problems.push(...checkComposedHand({ ...template, steps } as UnifiedActionTemplate));
 
   // ── Aftermath ──
   const byOutcome = template?.aftermathConfig?.fallback?.byOutcome;
