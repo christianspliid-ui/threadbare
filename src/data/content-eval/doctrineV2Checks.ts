@@ -67,8 +67,8 @@ import {
  * Sorted for diffability. Lowercase; matching is case-insensitive.
  */
 export const IMPERATIVE_VERB_LEXICON: readonly string[] = [
-  'anchor', 'aim', 'answer', 'arm', 'ask', 'bend', 'bind', 'blind', 'blunt',
-  'bolster', 'break', 'bribe', 'bury', 'buy', 'calm', 'call', 'carry', 'cast',
+  'anchor', 'aim', 'answer', 'arm', 'ask', 'banish', 'bend', 'bind', 'blind',
+  'blunt', 'bolster', 'break', 'bribe', 'bury', 'buy', 'calm', 'call', 'carry', 'cast',
   'catch', 'claim', 'clear', 'close', 'cloud', 'cool', 'cover', 'crack', 'cut',
   'dampen', 'deepen', 'delay', 'deny', 'dim', 'divert', 'draw', 'drive', 'drop',
   'dull', 'ease', 'empty', 'end', 'fan', 'feed', 'fill', 'find', 'fix', 'flood',
@@ -83,8 +83,8 @@ export const IMPERATIVE_VERB_LEXICON: readonly string[] = [
   'speed', 'spend', 'split', 'spread', 'stall', 'stand', 'starve', 'steady',
   'steal', 'steer', 'stiffen', 'still', 'stir', 'stoke', 'stop', 'strike',
   'sway', 'sweeten', 'swell', 'take', 'tally', 'tame', 'tempt', 'test',
-  'thin', 'throw', 'tie', 'tilt', 'trade', 'turn', 'twist', 'unmake', 'veil',
-  'wake', 'ward', 'warn', 'weigh', 'widen', 'win', 'withhold', 'witness',
+  'thin', 'throw', 'tie', 'tilt', 'trade', 'turn', 'twist', 'uncover', 'unmake',
+  'veil', 'wake', 'ward', 'warn', 'weigh', 'widen', 'win', 'withhold', 'witness',
 ];
 
 const IMPERATIVE_VERBS: ReadonlySet<string> = new Set(IMPERATIVE_VERB_LEXICON);
@@ -257,11 +257,24 @@ export function openingSkeletonProblems(text: string): readonly string[] {
   return problems;
 }
 
-/** Opening warnings for every declared setting class on a template. */
+/**
+ * Opening warnings for every declared setting class on a template.
+ *
+ * Judged on the **composed** surface: the converter lands a declared class
+ * opening above the first step's setting-neutral `narrativeTemplate`, so a
+ * template that puts P1 in each opening and P2/P3 in the spine holds the
+ * skeleton exactly as well as one that authors all three paragraphs per class.
+ * Counting the opening field alone reported that architecture as "1 paragraph"
+ * four times per template (THR-1223 batch 1 — the false-warning class this
+ * composition removes).
+ */
 export function templateOpeningProblems(template: UnifiedActionTemplate): readonly string[] {
   const problems: string[] = [];
+  const step0 = template.steps?.[0] as { narrativeTemplate?: string } | undefined;
+  const spine = step0?.narrativeTemplate?.trim();
   for (const [settingClass, text] of Object.entries(template.openings ?? {})) {
-    for (const problem of openingSkeletonProblems(text)) {
+    const composed = spine ? `${text}\n\n${spine}` : text;
+    for (const problem of openingSkeletonProblems(composed)) {
       problems.push(`openings.${settingClass}: ${problem}`);
     }
   }
