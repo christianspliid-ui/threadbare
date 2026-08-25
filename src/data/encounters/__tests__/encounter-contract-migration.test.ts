@@ -46,6 +46,13 @@ const OUTSIDE_CONTRACT_MIGRATION: readonly string[] = [
   // authoredChoices, so nothing to encode.
   'encounter.delve.the_broken_seal',
   'encounter.delve.the_drowned_archive',
+  // THR-1254, the corpus's first *composed* hand: two authored specials plus a
+  // `deal` fill. Nudge-native like the two above and excluded for the same
+  // reason — it authors no `authoredChoices`, which is the rejected model, so
+  // there are no choices whose poles could be encoded. Worth noting that a
+  // composed hand puts this further outside the migration rather than nearer
+  // it: most of what the player is offered does not exist until the dealer runs.
+  'encounter.delve.the_unfinished_rite',
 ];
 
 describe('branching encounters migrate to encoded EncounterContract metadata', () => {

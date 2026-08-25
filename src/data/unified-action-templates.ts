@@ -217,6 +217,7 @@ import { THE_UNMARKED_CROSSING_TEMPLATE } from './encounters/the-unmarked-crossi
 import { THE_SILENT_CHAMBER_TEMPLATE } from './encounters/the-silent-chamber';
 import { THE_JURY_OF_THE_RUINED_TEMPLATE } from './encounters/the-jury-of-the-ruined';
 import { THE_BLINDED_ORACLE_TEMPLATE } from './encounters/the-blinded-oracle';
+import { THE_UNFINISHED_RITE_TEMPLATE } from './encounters/the-unfinished-rite';
 import { EFFECT_SHELL_PROOF_TEMPLATES } from './effect-shell-proof-templates';
 import {
   PERCEIVE_CAST_ATTENTION_COST,
@@ -5627,6 +5628,7 @@ const RAW_UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   THE_BLINDED_ORACLE_TEMPLATE,
   // Effect shell proof pack — flip_table + result_bands (THR-53)
   ...EFFECT_SHELL_PROOF_TEMPLATES,
+  THE_UNFINISHED_RITE_TEMPLATE,
 ];
 
 /**
@@ -5718,6 +5720,7 @@ export const LOCATION_BRANCHING_ENCOUNTER_TEMPLATES: readonly UnifiedActionTempl
   THE_SILENT_CHAMBER_TEMPLATE,
   THE_JURY_OF_THE_RUINED_TEMPLATE,
   THE_BLINDED_ORACLE_TEMPLATE,
+  THE_UNFINISHED_RITE_TEMPLATE,
 ];
 
 /**

@@ -549,7 +549,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['transformation', 'faith'],
     reaches: ['veil', 'shadow'],
     source: 'vault: Archetypes/Event — The Ritual of Undeath',
-    usedBy: [],
+    usedBy: ['encounter.delve.the_unfinished_rite'],
   },
 
   // ── Ordeal archetypes (vault) ─────────────────────────────────────

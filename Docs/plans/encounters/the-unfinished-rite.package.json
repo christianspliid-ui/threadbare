@@ -1,0 +1,594 @@
+{
+  "slug": "the-unfinished-rite",
+  "constName": "THE_UNFINISHED_RITE_TEMPLATE",
+  "doc": [
+    "The Unfinished Rite — a single-step `veil` reading test: a settlement partway",
+    "through a working meant to end its own deaths, two of its makers already dead,",
+    "and a second reader on site who has been paid to call the thing sound.",
+    "",
+    "THR-1254 — the corpus's FIRST composed hand. This is the encounter that flips",
+    "`repertoire-deals-into-encounter-hand` from PARTIAL to LIVE: step 0 authors two",
+    "specials and declares `deal`, so the dealer runs in a real playthrough for the",
+    "first time. Everything else the dealt-hand model needs shipped under THR-1247",
+    "(engine) and THR-1248 (corpus + authoring surfaces).",
+    "",
+    "── Game design fixed BEFORE the fiction (director ruling, 2026-08-24) ──",
+    "Portfolio need first: `veil` is the corpus's thinnest reach (15 of 178 shipped",
+    "encounters) and `sacred`/`arcane`/`rural` its thinnest setting classes (3 each),",
+    "against `wayside`'s 12 — so this encounter is a veil test written for the three",
+    "starving classes, and deliberately not another roadside vignette. Family `delve`",
+    "is likewise the thinnest (2). Structure, difficulty, hand shape, cost channels,",
+    "persistence and both drawn consequence families were all settled before a",
+    "premise existed; the plot hook was rolled afterwards and written to fit them.",
+    "",
+    "Rolled constraints:",
+    "  plotHookRolled: hook.ritual_of_undeath, hook.betrayal_revealed, hook.trial_by_combat",
+    "  plotHookTaken:  hook.ritual_of_undeath  (weight 6.00, affinity)",
+    "  Seed Dice — p3Shape: contest (compounded once with plea, on purpose);",
+    "    agentRole: the judge asked to rule; scale: settlement.",
+    "  consequenceDraw (binding, compiler-stamped): place, omen",
+    "",
+    "── The composed hand (THR-1247/1248) ──",
+    "Two authored specials plus `deal: { count: 4, tags: ['insight','lore'] }` — a",
+    "composed hand of six. Both specials are things the dealer structurally cannot",
+    "produce, which is the whole specials rule:",
+    "  · `rite.loosen_their_nerve` is person-scoped — `opposes: 'rival'` sources the",
+    "    modifier from THIS scene's bound cast member, so the panel reports the other",
+    "    reader losing the room rather than a nameless tilt. A generic Stumble knows",
+    "    no cast key.",
+    "  · `rite.kindle_heresy` is reach-scoped — `axiological_mark_apply` needs a",
+    "    `reach`, and only this encounter knows the test is `veil`. This is the exact",
+    "    case the authoring spec § 3b names as the clearest special.",
+    "Neither is a plain odds boost and neither carries a rider: the spec retires both",
+    "as specials because every god already holds them in the Repertoire.",
+    "",
+    "No `exclude` list. The scene is a settlement with people in it, so no card type",
+    "is nonsense here, and the spec prefers a special over describing a hand by",
+    "subtraction.",
+    "",
+    "── Prose Doctrine v2 (narrator mode) ──",
+    "Narrator's checklist (12 questions), answered:",
+    " 1. P1 arrival with {name} and {location}, one per declared class — yes.",
+    " 2. P2 states the working and the cost already paid (two of the six makers",
+    "    dead) — yes.",
+    " 3. P3 lands contest (a rival reader already on site, wanting the same",
+    "    commission) compounded once with plea (asked to rule) — yes, on purpose.",
+    " 4. Opening <=80 words with any P1 (65 at the longest) — yes.",
+    " 5. Every sentence a narrator's report; no interior sensation, no camera — yes.",
+    " 6. Facts stated, never encoded — the rival's payment is said outright rather",
+    "    than implied by a purse — yes.",
+    " 7. Every sentence serves challenge (the rite) / test (veil) / outcome (the",
+    "    reading that stands) — yes.",
+    " 8. Nothing referenced before introduction; {cast:keeper} enters in P2, the",
+    "    rival in P3 — yes.",
+    " 9. One named person on stage per beat: keeper in P2, rival in P3 — yes.",
+    "10. Stake in one sentence: rule truly on a rite that is killing its makers,",
+    "    against a reader already paid to bless it — yes.",
+    "11. Cards named imperative verb+noun; effect lines state game effects; no",
+    "    effect line repeats a word from its own card name — yes.",
+    "12. All three declared classes have a skeleton opening — yes.",
+    "",
+    "── Load-bearing notes ──",
+    "`$target` binds to the location for this template family by construction:",
+    "`generateUnifiedCandidates` always sets `targetId: locationId` for a",
+    "`locationSubtypes`-gated candidate, and this template is gated by the derived",
+    "expansion of `settings`. That is what makes the drawn `place` family wireable",
+    "at all.",
+    "",
+    "The `place` family carries persistence, not `omen`. `emit_omen` is print-only",
+    "(`PERSISTENT_EFFECT_KINDS` excludes it), so the Rewards block rides the",
+    "location conditions on step metadata — which fire on the band class",
+    "unconditionally rather than behind a reaction click. `successMetadata` fires on",
+    "`isStepSuccess`, which counts `near_miss` as a success, so a true reading marks",
+    "the place on every success-side band.",
+    "",
+    "No authored `factorLines` (THR-892 variance rule): everything an earlier pass",
+    "wanted to list reads identically on every run, so it is priced into difficulty",
+    "0.40 (`fair`) and carried by the prose. 0.40 sits under",
+    "`NUDGE_OFF_REACH_MAX_DIFFICULTY` (0.45) because this is an open draw and `veil`",
+    "is off-reach for most mortals — a `severe` open-draw step is a decorative hand.",
+    "",
+    "Trait hooks (mandatory four questions, § 5): Gate? No — an open-draw rarity-1",
+    "encounter gates on nothing. Variant? Yes, `trait.core.core_integrity.virtue` —",
+    "a reader whose word matches their reading gives the true one anyway. Trait-only",
+    "nudge? No — the specials budget is spent on the two the dealer cannot produce,",
+    "and the Repertoire deals trait cards itself. Trait fragment? No."
+  ],
+  "template": {
+    "id": "encounter.delve.the_unfinished_rite",
+    "rarityTier": 1,
+    "intrinsicTier": "background",
+    "name": "The Unfinished Rite",
+    "reach": "veil",
+    "crudType": "read",
+    "scale": "local",
+    "apCost": 1,
+    "actorAffinities": [
+      "individual"
+    ],
+    "motivations": [
+      "tradition_novelty",
+      "sacrifice_survival"
+    ],
+    "settings": [
+      "sacred",
+      "arcane",
+      "rural"
+    ],
+    "openings": {
+      "sacred": "{name} arrives at the temple of {location} in the late afternoon.",
+      "arcane": "{name} arrives at the working-house of {location} before dark.",
+      "rural": "Travelling through the farmland, {name} stops at the village of {location}."
+    },
+    "steps": [
+      {
+        "reach": "veil",
+        "duration": {
+          "min": 1,
+          "max": 2
+        },
+        "difficulty": 0.4,
+        "purposeLine": "Read the working",
+        "onSuccess": [],
+        "onFailure": [],
+        "failBehavior": "fail_action",
+        "narrativeTemplate": "There {they} find a working half-finished. {cast:keeper} and five others began a rite to end their own deaths, and two of them are already dead.\n\nThey have asked {name} to read the working and say whether it will hold. Another reader, {cast:rival}, is already here, and has been paid to say that it will.",
+        "successAfterimage": "They read the working and gave their answer in front of everyone.",
+        "failureAfterimage": "They could not follow the working, and the other reader's answer stood.",
+        "successAtCostAfterimage": "They gave a true answer, and the makers will not speak to them now.",
+        "criticalSuccessAfterimage": "They read the whole shape of it and named what it would cost, and the makers listened.",
+        "criticalFailureAfterimage": "They lost their way inside the working, and the makers carried them out of it.",
+        "successMetadata": {
+          "effects": [
+            {
+              "kind": "condition_attachment",
+              "templateId": "trait.condition.location.under_watch",
+              "targetLocationId": "$target"
+            }
+          ]
+        },
+        "failureMetadata": {
+          "effects": [
+            {
+              "kind": "condition_attachment",
+              "templateId": "trait.condition.location.plague_scare",
+              "targetLocationId": "$target"
+            }
+          ]
+        },
+        "deal": {
+          "count": 4,
+          "tags": [
+            "insight",
+            "lore"
+          ]
+        },
+        "nudges": [
+          {
+            "id": "rite.loosen_their_nerve",
+            "libraryCardId": "card.stumble.signature.chaos",
+            "name": "Loosen Their Nerve",
+            "sphere": "chaos",
+            "essenceCost": 2,
+            "forecastDelta": 0.09,
+            "opposes": "rival",
+            "imageTag": "generic.dark",
+            "effectLine": "Set the other reader second-guessing — their answer comes out hedged, and the room hears it.",
+            "fiction": "Every structure has one loose piece.",
+            "bandProse": {
+              "success": "The other reader hedged, and the room listened to them instead.",
+              "near_miss": "The other reader lost the room. It bought time, not an answer.",
+              "failure": "The other reader hedged, and it changed nothing — they had no better reading to give."
+            }
+          },
+          {
+            "id": "rite.kindle_heresy",
+            "libraryCardId": "card.undertow.signature.darkness",
+            "name": "Kindle Heresy",
+            "sphere": "darkness",
+            "essenceCost": 3,
+            "forecastDelta": 0.16,
+            "imageTag": "generic.dark",
+            "effectLine": "Fill them with the conviction that the old rule about death was only ever a custom — they will judge as a maker.",
+            "fiction": "It works. That is the problem.",
+            "grants": [
+              {
+                "kind": "axiological_mark_apply",
+                "reach": "veil",
+                "signedMagnitude": -0.12,
+                "targetAgentId": "$actor"
+              }
+            ],
+            "bandProse": {
+              "critical_success": "They read it as its makers had, and saw the whole shape of it at once.",
+              "success": "They stopped arguing with the rite and started reading it, and it came open.",
+              "success_at_cost": "They got the reading, and something in them has stopped believing the old rule.",
+              "failure": "They read it as a maker would and still could not follow it.",
+              "critical_failure": "They had talked themselves into the working, and it took them further in than they could find their way back from."
+            }
+          }
+        ]
+      }
+    ],
+    "traitVariants": [
+      {
+        "traitId": "trait.core.core_integrity.virtue",
+        "forecastDelta": 0.05,
+        "difficultyDelta": -0.02,
+        "factorLine": "Being True, they will say what they read, not what they were asked to read."
+      }
+    ],
+    "supportBundle": [
+      {
+        "kind": "actor",
+        "key": "keeper",
+        "delivery": "lazy-materialize-on-trigger",
+        "persistence": "must-persist",
+        "reuseNpcRoles": [
+          "priest",
+          "elder",
+          "healer"
+        ],
+        "supportRole": "rite_keeper",
+        "spawnNpcRole": "priest",
+        "spawnName": "Halric Onn"
+      },
+      {
+        "kind": "actor",
+        "key": "rival",
+        "delivery": "lazy-materialize-on-trigger",
+        "persistence": "must-persist",
+        "reuseNpcRoles": [
+          "scholar",
+          "scribe",
+          "hermit"
+        ],
+        "supportRole": "rival_reader",
+        "spawnNpcRole": "scholar",
+        "spawnName": "Sefa Dorn"
+      }
+    ],
+    "narrativeTemplates": {
+      "initiation": "Say the working will hold and it goes on. Say it will not and the makers must stop, or go on without a reader behind them. The other reader has already been paid for one of those answers.",
+      "success": "{name} read the working and gave their answer where everyone could hear it. What happens to the rite now is the makers' to decide.",
+      "failure": "{name} could not follow the working far enough to judge it. The other reader's answer is the one that stands, and the rite goes on."
+    },
+    "aftermathConfig": {
+      "branchOnStep": 0,
+      "variants": {},
+      "fallback": {
+        "overview": "The working stands where it stood, half-finished.",
+        "changes": [],
+        "byOutcome": {
+          "critical_success": {
+            "overview": "{actor} read the whole working and named what it would take to finish — and what it would cost the six who started it. {cast:keeper} stopped the rite that evening. Word of the reading has left the settlement.",
+            "changes": [
+              {
+                "id": "rite.crit.watched",
+                "kind": "trait",
+                "category": "scar",
+                "direction": "gain",
+                "polarity": "gain",
+                "title": "The Place Is Watched",
+                "causeClause": "A true reading was given here in front of everyone",
+                "detail": "{location} is under watch now — people are coming to see where the rite was stopped.",
+                "stateNoun": {
+                  "text": "under watch",
+                  "entityId": "trait.condition.location.under_watch",
+                  "visualKind": "attachment"
+                },
+                "concepts": [
+                  {
+                    "text": "under watch",
+                    "entityId": "trait.condition.location.under_watch",
+                    "visualKind": "attachment"
+                  }
+                ]
+              },
+              {
+                "id": "rite.crit.telling",
+                "kind": "future_hook",
+                "category": "path",
+                "direction": "opens",
+                "polarity": "gain",
+                "title": "The Telling Spreads",
+                "causeClause": "The reading was given where everyone could hear it",
+                "detail": "The story of a rite against death, stopped by a reader, is being carried out of {location}.",
+                "stateNoun": {
+                  "text": "an omen abroad",
+                  "entityId": "$actor",
+                  "visualKind": "agent"
+                },
+                "concepts": [
+                  {
+                    "text": "omen"
+                  }
+                ]
+              }
+            ],
+            "reactions": [
+              {
+                "id": "rite.let_it_be_told",
+                "label": "Let the reading be told",
+                "intent": "The story travels, and the country hears what was attempted here.",
+                "effects": [
+                  {
+                    "kind": "emit_omen",
+                    "category": "cultural",
+                    "intensity": 0.4,
+                    "narrativeHook": "A people tried to put an end to their own deaths, and a reader stopped them before it was finished.",
+                    "scope": {
+                      "kind": "global"
+                    },
+                    "sphereAlignment": "spirit"
+                  }
+                ]
+              }
+            ]
+          },
+          "success": {
+            "overview": "{actor} followed the working far enough to say it would not hold, and said so. {cast:rival} did not argue it. {cast:keeper} has not decided what to do with the answer.",
+            "changes": [
+              {
+                "id": "rite.success.watched",
+                "kind": "trait",
+                "category": "scar",
+                "direction": "gain",
+                "polarity": "gain",
+                "title": "The Place Is Watched",
+                "causeClause": "A reader gave an answer here that the makers did not want",
+                "detail": "{location} is under watch now — the argument about the rite has not ended.",
+                "stateNoun": {
+                  "text": "under watch",
+                  "entityId": "trait.condition.location.under_watch",
+                  "visualKind": "attachment"
+                },
+                "concepts": [
+                  {
+                    "text": "under watch",
+                    "entityId": "trait.condition.location.under_watch",
+                    "visualKind": "attachment"
+                  }
+                ]
+              },
+              {
+                "id": "rite.success.telling",
+                "kind": "future_hook",
+                "category": "path",
+                "direction": "opens",
+                "polarity": "gain",
+                "title": "The Telling Spreads",
+                "causeClause": "The reading was given in front of the makers",
+                "detail": "Word of an unfinished rite against death is travelling out of {location}.",
+                "stateNoun": {
+                  "text": "an omen abroad",
+                  "entityId": "$actor",
+                  "visualKind": "agent"
+                },
+                "concepts": [
+                  {
+                    "text": "omen"
+                  }
+                ]
+              }
+            ],
+            "reactions": [
+              {
+                "id": "rite.let_the_word_go",
+                "label": "Let the word go with them",
+                "intent": "The reading is repeated on the road, and the country starts hearing it.",
+                "effects": [
+                  {
+                    "kind": "emit_omen",
+                    "category": "cultural",
+                    "intensity": 0.3,
+                    "narrativeHook": "There is a settlement where the dead were meant to stop dying, and the working was never finished.",
+                    "scope": {
+                      "kind": "global"
+                    },
+                    "sphereAlignment": "spirit"
+                  }
+                ]
+              }
+            ]
+          },
+          "success_at_cost": {
+            "overview": "{actor} gave a true answer and the makers will not speak to them now. {cast:keeper} asked them to leave before dark. The working has not been touched since.",
+            "changes": [
+              {
+                "id": "rite.cost.watched",
+                "kind": "trait",
+                "category": "scar",
+                "direction": "gain",
+                "polarity": "gain",
+                "title": "The Place Is Watched",
+                "causeClause": "The reading was given and the reader was sent away for it",
+                "detail": "{location} is under watch now, and the people there are counting who comes to look.",
+                "stateNoun": {
+                  "text": "under watch",
+                  "entityId": "trait.condition.location.under_watch",
+                  "visualKind": "attachment"
+                },
+                "concepts": [
+                  {
+                    "text": "under watch",
+                    "entityId": "trait.condition.location.under_watch",
+                    "visualKind": "attachment"
+                  }
+                ]
+              },
+              {
+                "id": "rite.cost.standing",
+                "kind": "growth",
+                "category": "bond",
+                "direction": "loss",
+                "polarity": "loss",
+                "title": "The Keeper Turned",
+                "causeClause": "They said the working would not hold, and said it out loud",
+                "detail": "{cast:keeper} does not want them back at {location}.",
+                "stateNoun": {
+                  "text": "a bond soured",
+                  "entityId": "$cast:keeper",
+                  "visualKind": "agent"
+                },
+                "concepts": [
+                  {
+                    "text": "bond"
+                  }
+                ]
+              }
+            ],
+            "reactions": [
+              {
+                "id": "rite.go_before_dark",
+                "label": "Let them go before dark",
+                "intent": "The reader leaves, and the answer stays behind without them.",
+                "effects": [
+                  {
+                    "kind": "bond_change",
+                    "withAgentId": "$cast:keeper",
+                    "sentimentDelta": -0.2,
+                    "trustDelta": -0.1
+                  }
+                ]
+              }
+            ]
+          },
+          "failure": {
+            "overview": "{actor} could not follow the working far enough to judge it. {cast:rival} gave the answer the makers had paid for, and the rite goes on tonight.",
+            "changes": [
+              {
+                "id": "rite.fail.scare",
+                "kind": "trait",
+                "category": "scar",
+                "direction": "loss",
+                "polarity": "loss",
+                "title": "The Place Is Feared",
+                "causeClause": "The rite went on with nobody able to say what it would do",
+                "detail": "{location} has a name now, and travellers are going around it.",
+                "stateNoun": {
+                  "text": "a plague scare",
+                  "entityId": "trait.condition.location.plague_scare",
+                  "visualKind": "attachment"
+                },
+                "concepts": [
+                  {
+                    "text": "plague scare",
+                    "entityId": "trait.condition.location.plague_scare",
+                    "visualKind": "attachment"
+                  }
+                ]
+              },
+              {
+                "id": "rite.fail.telling",
+                "kind": "future_hook",
+                "category": "path",
+                "direction": "opens",
+                "polarity": "loss",
+                "title": "The Telling Spreads",
+                "causeClause": "A paid reader blessed a working nobody had read",
+                "detail": "Word is travelling that a rite against death was blessed without being understood.",
+                "stateNoun": {
+                  "text": "an omen abroad",
+                  "entityId": "$actor",
+                  "visualKind": "agent"
+                },
+                "concepts": [
+                  {
+                    "text": "omen"
+                  }
+                ]
+              }
+            ],
+            "reactions": [
+              {
+                "id": "rite.let_them_finish",
+                "label": "Let them finish it",
+                "intent": "The rite goes on unread, and the country will hear about it either way.",
+                "effects": [
+                  {
+                    "kind": "emit_omen",
+                    "category": "cultural",
+                    "intensity": 0.35,
+                    "narrativeHook": "A working against death was blessed by a reader who had been paid in advance, and it is still running.",
+                    "scope": {
+                      "kind": "global"
+                    },
+                    "sphereAlignment": "entropy"
+                  }
+                ]
+              }
+            ]
+          },
+          "critical_failure": {
+            "overview": "{actor} went too far into the working and lost their way in it. {cast:keeper} and two others pulled them out. {cast:rival}'s answer stands unopposed, and the rite is being finished.",
+            "changes": [
+              {
+                "id": "rite.crit_fail.scare",
+                "kind": "trait",
+                "category": "scar",
+                "direction": "loss",
+                "polarity": "loss",
+                "title": "The Place Is Feared",
+                "causeClause": "A reader was carried out of the working in front of everyone",
+                "detail": "{location} is being avoided now, and the people there know it.",
+                "stateNoun": {
+                  "text": "a plague scare",
+                  "entityId": "trait.condition.location.plague_scare",
+                  "visualKind": "attachment"
+                },
+                "concepts": [
+                  {
+                    "text": "plague scare",
+                    "entityId": "trait.condition.location.plague_scare",
+                    "visualKind": "attachment"
+                  }
+                ]
+              },
+              {
+                "id": "rite.crit_fail.telling",
+                "kind": "future_hook",
+                "category": "path",
+                "direction": "opens",
+                "polarity": "loss",
+                "title": "The Telling Spreads",
+                "causeClause": "The reader who came to rule had to be carried out",
+                "detail": "The story leaving {location} is that the working beat the person sent to read it.",
+                "stateNoun": {
+                  "text": "an omen abroad",
+                  "entityId": "$actor",
+                  "visualKind": "agent"
+                },
+                "concepts": [
+                  {
+                    "text": "omen"
+                  }
+                ]
+              }
+            ],
+            "reactions": [
+              {
+                "id": "rite.carry_them_out",
+                "label": "Let them be carried out",
+                "intent": "The reader is dragged clear, and the story goes out ahead of them.",
+                "effects": [
+                  {
+                    "kind": "emit_omen",
+                    "category": "cultural",
+                    "intensity": 0.45,
+                    "narrativeHook": "A reader went into an unfinished working against death and had to be pulled back out of it.",
+                    "scope": {
+                      "kind": "global"
+                    },
+                    "sphereAlignment": "entropy"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    "description": "A settlement is partway through a rite meant to end its own deaths, two of the six makers are already dead, and a second reader has been paid to call the working sound. Read it and say whether it will hold."
+  }
+}
