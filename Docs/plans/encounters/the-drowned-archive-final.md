@@ -1028,27 +1028,32 @@ band on this ladder mints a knowledge record**, including both failures.
 
 | Chip | Anchor kind | Declaration | Status |
 |---|---|---|---|
-| `archive.crit.charter_known` | **location** | `entityId: '$actor'` | 📍 named |
+| `archive.crit.charter_known` | **actor carrier** | `entityId: '$actor'`, no `visualKind` | 📍 named |
 | `archive.crit.keeper_trusts` | **individual** | `entityId: '$cast:keeper'`, `visualKind: 'agent'` | 🔗 linked |
-| `archive.success.watched` | **location** | `entityId: '$actor'` | 📍 named |
-| `archive.success.charter_known` | **location** | `entityId: '$actor'` | 📍 named |
+| `archive.success.watched` | **location** | `entityId: '$target'`, `visualKind: 'location'` | 🔗 linked |
+| `archive.success.charter_known` | **actor carrier** | `entityId: '$actor'`, no `visualKind` | 📍 named |
 | `archive.cost.marked` | attachment | `entityId: 'trait.condition.cursed'`, `visualKind: 'attachment'` | 🔗 linked |
-| `archive.cost.charter_known` | **location** | `entityId: '$actor'` | 📍 named |
+| `archive.cost.charter_known` | **actor carrier** | `entityId: '$actor'`, no `visualKind` | 📍 named |
 | `archive.fail.shaken` | attachment | `entityId: 'trait.condition.terrified'`, `visualKind: 'attachment'` | 🔗 linked |
-| `archive.fail.kept_name` | **location** | `entityId: '$actor'` | 📍 named |
+| `archive.fail.kept_name` | **actor carrier** | `entityId: '$actor'`, no `visualKind` | 📍 named |
 | `archive.crit_fail.keeper_grieves` | attachment | `entityId: 'trait.condition.grieving'`, `visualKind: 'attachment'` | 🔗 linked |
-| `archive.crit_fail.one_line` | **location** | `entityId: '$actor'` | 📍 named |
+| `archive.crit_fail.one_line` | **actor carrier** | `entityId: '$actor'`, no `visualKind` | 📍 named |
 
-**Totals: 6 location · 3 attachment · 1 individual.** The brief's ceiling of one `individual`-anchored
-chip is met exactly. No `faction` anchor, per the brief. Every `entityId` passes
-`classifyAnchorDeclaration` (re-verified live at `src/data/content-eval/chipAnchorDeclarations.ts:86-107`
-for the `$target` and `$cast:keeper` forms specifically).
+**Totals: 1 location (linked) · 3 attachment (linked) · 1 individual (linked) · 5 actor carrier
+(named).** The brief's ceiling of one `individual`-anchored chip is met exactly — the five knowledge
+chips declare no `visualKind`, so they render at the `named` tier and are not `individual` anchors
+(`buildAftermathConsequences.ts:665,705` — both the tile and the click route off `visualKind`). The
+brief's ≥1 location-anchored-with-`visualKind` row is met by `archive.success.watched`. No `faction`
+anchor, per the brief. Every `entityId` passes `classifyAnchorDeclaration`
+(`src/data/content-eval/chipAnchorDeclarations.ts:86-137`); `npm run check:chip-anchors` is green
+across all 696 templates.
 
-**The five knowledge chips anchor the place, and here is the argument.** The `intelligence` write
-is a record *about* the charter of `{location}`; the chip's sentence names `{location}`; `$target`
-resolves to a real location node; `intelligence` is a member of `CHIP_BACKING_EFFECT_KINDS`. What
-would make this airtight rather than merely sound is `targetEntityId: '$target'` on the record
-itself, which today it cannot be (§ 17 finding 3).
+**The five knowledge chips anchor the actor, and here is why (package critic § A1).** The
+`intelligence` write has exactly one end — `agentId` = the actor. `targetEntityId` is absent from
+`SCENE_SENTINEL_FIELDS` and `targetRegion` takes a per-world string, so the record cannot be made to
+be *about* a place at all today (§ 17 finding 3, widened). Anchoring these chips at `$target` would
+have pointed the player's click at a settlement sheet where nothing this ending wrote can be found.
+`{location}` stays in each chip's `detail`, which is the right place for what the record is about.
 
 Note step 1's new hand grants (`favor_creation`, `assign_ambition`, `plant_compulsion`) are card
 grants, not aftermath `changes` — they are never chip-backed and carry no anchor obligation; Law 56

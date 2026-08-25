@@ -6,9 +6,9 @@
 > Batch sibling: `the-broken-seal-final.md` / `the-broken-seal-package.md` (slot 1)
 
 templateId: encounter.delve.the_drowned_archive
-packageVerdict: PACKAGE FIX
+packageVerdict: PACKAGE PASS
 packageConnection: connected
-packageLeaves: On the best ending the agent walks out with a clue about a real ruin somewhere in the world, and that clue is the strongest thing this encounter plants — the Adventurer's Guild reads it, and once the evidence at that ruin crosses its threshold with a guild hall within five hexes the guild posts a delve quest and a toast names the ruin and the direction to it, so the player watches a rumour they created turn into work somebody else takes; on the middle ending the vault's own settlement is marked Under Watch for a week of game time and that shows on the place's own sheet with a countdown, though nothing in the simulation yet acts on being watched; the keeper — a real person who stays in the world — ends up trusting the agent, or on the worst ending grieving the records they lost, both of which sit on their sheet; and every single ending mints an intelligence record the agent carries for the rest of their life, readable on their own sheet, which a later court, intrigue or ritual encounter will pick up as an advantage — but that record does **not** know which settlement it is about, because the engine has no way for an author to say so, so the charter's connection to the place it names lives only in the prose.
+packageLeaves: On the best ending the agent walks out with a clue about a real ruin somewhere in the world, and that clue is the strongest thing this encounter plants — the Adventurer's Guild reads it, and once the evidence at that ruin crosses its threshold with a guild hall within five hexes the guild posts a delve quest and a toast names the ruin and the direction to it, so the player watches a rumour they created turn into work somebody else takes; on the middle ending the vault's own settlement is marked Under Watch for a week of game time and that shows on the place's own sheet with a countdown, and its chip clicks straight through to that sheet, though nothing in the simulation yet acts on being watched; the keeper — a real person who stays in the world — ends up trusting the agent, or on the worst ending grieving the records they lost, both of which sit on their sheet; and every single ending mints an intelligence record the agent carries for the rest of their life, readable in the Intelligence section of their own sheet, which a later court, intrigue or ritual encounter will pick up as an advantage. That record does **not** know which settlement it is about — the engine has no way for an author to say so — and the shipped encounter no longer pretends otherwise: the five chips reporting it now point at the agent who carries it rather than at the settlement, so nothing sends the player to a place sheet where this ending wrote nothing, and the charter's tie to the ground it names lives in the chip's own sentence, where it is honest.
 
 ---
 
@@ -362,3 +362,150 @@ where nothing happened. The fix is five lines: point them at the agent instead, 
 as written.
 
 PACKAGE FIX
+
+---
+
+## Re-run after PACKAGE FIX — 2026-08-25
+
+Judged against the **shipped TypeScript**, not the packet. Everything above is kept as the record of
+what was found; this section records what is in the tree now. Line numbers are
+`src/data/encounters/the-drowned-archive.ts` unless stated.
+
+### A1 — the five knowledge chips, verified per chip
+
+All five carry `stateNoun: { text: 'a record gained', entityId: '$actor' }` with **no `visualKind`
+member**, exactly as prescribed:
+
+| Chip | Line | Shipped declaration | `title` / `causeClause` / `detail` / `concepts` |
+|---|---|---|---|
+| `archive.crit.charter_known` | chip 729, noun 744 | `{ text: 'a record gained', entityId: '$actor' }` | unchanged; `{location}` still in `detail` |
+| `archive.success.charter_known` | chip 821, noun 831 | same | unchanged; `{location}` still in `detail` |
+| `archive.cost.charter_known` | chip 882, noun 892 | same | unchanged; `{location}` still in `detail` |
+| `archive.fail.kept_name` | chip 938, noun 946 | same | unchanged; `{location}` still in `detail` |
+| `archive.crit_fail.one_line` | chip 1007, noun 1015 | same | unchanged; `{location}` still in `detail` |
+
+`grep -n "visualKind" ` over the whole file returns nine hits and **not one of them sits on a
+`'a record gained'` noun** — the five `visualKind: 'location'` declarations the fix targeted are
+gone, and none was replaced with `visualKind: 'agent'`. The write behind each is still the same
+single-ended `intelligence` effect with `targetAgentId: '$actor'` and no `targetEntityId`
+(effects at 768, 842, 903, 957, 1026), so anchor and write now name the same object. (A sixth
+`intelligence` write exists at 437, on the step-2 card `Salvage One Fact` — a card grant, outside the
+aftermath `changes` surface Law 56 audits, so it carries no chip and no anchor obligation.) The file's own
+header block (lines 20-28) and an inline comment at the crit-success chip (739-743) record the fix
+and say it was implemented as written and not reverted — so a later reader cannot mistake the
+`$actor` anchor for a drafting slip and "correct" it back.
+
+### A1's ceiling reasoning — verified, and it holds
+
+Slot 1's critic argued that dropping `visualKind` is what keeps a `$actor` sentinel from counting as
+an `individual` anchor. **That is correct here, at the code level, and not merely by catalog
+convention:**
+
+- The catalog's `individual` row requires `visualKind: 'agent'` on an actor node id
+  (`anchor-catalog.generated.md:67`) — the anchor *kind* is a property of the declaration, not of
+  what the sentinel happens to resolve to.
+- `buildAftermathConsequences.ts:665` picks the tile only from a ref that carries a `visualKind`
+  (`const iconConcept = (stateNoun?.visualKind ? stateNoun : undefined) ?? …`), and `:705` passes
+  `nounEntityKind: stateNoun?.visualKind` — the click route. With the member absent, both are
+  `undefined`: no tile, no click, `named` tier.
+
+So the encounter ships **exactly one** `individual`-anchored chip — `archive.crit.keeper_trusts`
+(757, `$cast:keeper` + `visualKind: 'agent'`) — and the brief's ≤1 ceiling
+(`deep-places-brief.md:139`) holds. Shipped totals: **1 location (linked) · 3 attachment (linked) ·
+1 individual (linked) · 5 actor carrier (named).**
+
+### A2 — `archive.success.watched` is unchanged and still correct
+
+Line 815: `stateNoun: { text: 'a place under watch', entityId: '$target', visualKind: 'location' }`,
+with `concepts` still declaring `trait.condition.location.under_watch` as an `attachment` (817). Its
+backing write is unchanged — `condition_attachment` / `templateId:
+'trait.condition.location.under_watch'` / `targetLocationId: '$target'` (853-857). Anchor and write
+still route the same sentinel through the same sentinel field. It is the encounter's one
+location-anchored-with-`visualKind` chip, which is the brief's `≥1` row
+(`deep-places-brief.md:135`) — and per that row's own THR-1221 warning, the `visualKind` was **not**
+dropped in the fix pass. The fix touched five chips and left this one alone, which is what was asked.
+
+### The other five chips — re-checked against rules 0, 0b, 0c, 0d, 1–4
+
+| Chip | Line | Rule 0 (backing write) | 0b (referent) | 0c (mechanic noun + endpoints) | 1 (cause → change) | 3 (category) |
+|---|---|---|---|---|---|---|
+| `archive.crit.keeper_trusts` | 748 | `bond_change` `withAgentId: '$cast:keeper'` (792) | `$cast:keeper`; key declared in `SUPPORT_BUNDLE` (44) | *a bond warmed*; `detail` names both parties | ✓ | `bond` ✓ |
+| `archive.success.watched` | 807 | `condition_attachment` on `$target` (850) | place-tier location node | *a place under watch* | ✓ | `scar` ✓ |
+| `archive.cost.marked` | 870 | `condition_attachment` `trait.condition.cursed` on `$actor` (911) | attachment template, live (`condition-trait-content.ts:207`) | *Cursed* | ✓ | `scar` ✓ |
+| `archive.fail.shaken` | 926 | `condition_attachment` `trait.condition.terrified` on `$actor` (965) | live (`:175`) | *Terrified* | ✓ | `scar` ✓ |
+| `archive.crit_fail.keeper_grieves` | 995 | `condition_attachment` `trait.condition.grieving` on `$cast:keeper` (1034) | live (`:244`) | *Grieving* | ✓ | `scar` ✓ |
+
+None was disturbed by implementation. **Rule 0d:** `grep -n "reputation_tally"` returns nothing —
+no tally chip of any kind. **Rule 0c clause 1:** no `stateNoun.text` in the file carries a
+placeholder, so the stale "the surface does not enrich `stateNoun`" clause (finding 5 above) is moot
+for this encounter either way. **Rule 4:** three `condition` attachments, a bond, a location
+condition, a clue, a seed and five intelligence records — palette breadth unchanged.
+
+### The two implementation-found classes — neither appears here
+
+1. **Dead ambition id.** The drowned archive's only `assign_ambition` is the step-1 card grant
+   `ambition_uncover_secrets` (287). Verified live: it sits at `ambition-templates.ts:490`, inside
+   `AMBITION_TEMPLATES` (opens at `:96`), **not** inside `EVENT_MINTED_AMBITION_TEMPLATES` (opens at
+   `:1013`). The id that failed grant-liveness — `ambition_chase_the_wonder` (`:1289`) — appears
+   nowhere in this file.
+2. **`polarity: 'mixed'` beside a declared `direction`.** No `'mixed'` anywhere in this file. Every
+   aftermath change pairs `direction: 'gain'` with `polarity: 'gain'` or `direction: 'loss'` with
+   `polarity: 'loss'` (732/733, 751/752, 810/811, 824/825, 873/874, 885/886, 929/930, 941/942,
+   998/999, 1010/1011). The `polarity: 'for' | 'against'` values at 537-619 are `TraitVariant`
+   polarities, a different field, and are not what the corpus test reads.
+
+### Sibling regression check — `the-broken-seal.ts`
+
+Both of slot 1's corrections landed and are recorded in the file:
+
+- **Chip 9 (`seal.crit_fail.the_wanting`, id at 810, noun at 827):** `stateNoun: { text: 'a new
+  ambition', entityId: '$actor' }` — `visualKind: 'agent'` is gone, `entityId` retained, with an
+  inline comment at 801-809 explaining the anchor-catalog carrier route. `seal.fail.driven_out`
+  (id 754, noun 762) is now the encounter's only `visualKind: 'agent'` chip, so slot 1's own ≤1
+  ceiling is met too.
+- **Both `assign_ambition` effects carry the `no_free_slot` comment:** critical_success at 612-619
+  (full text — `MAX_ACTIVE_AMBITIONS` = 2, no eviction, ~21% of actors in a mature world) and
+  critical_failure at 843-847 (back-reference to the first). Both grant
+  `ambition_uncover_secrets`, the live template — `ambition_chase_the_wonder` no longer appears in
+  the sibling either.
+- Slot 1's `polarity: 'mixed'` on `seal.fail.driven_out` (758) is **lawful and correctly left
+  alone**: the corpus predicate skips any change whose `direction === 'opens'`
+  (`consequenceSignalCorpus.test.ts:107`), and that chip declares `direction: 'opens'`. The Pass-4
+  comment at 814-822 states the rule slightly wider than the test enforces ("rejected outright
+  whenever a direction is declared"); harmless today, worth one word if the file is touched again.
+
+### Gates re-run for this pass
+
+```
+npm run check:chip-anchors
+  checked 696   templates failing 0   chips 0
+  every chip that names a referent anchors it, and every anchor resolves.
+
+npm run check:encounter -- encounter.delve.the_drowned_archive
+  checked 1   clean 1   failing 0   on ratchet 0   warnings 0
+  ✓ encounter.delve.the_drowned_archive  [systems: cast, rewards, seeds, conditions]
+
+npm run check:encounter -- encounter.delve.the_broken_seal
+  checked 1   clean 1   failing 0   on ratchet 0   warnings 0
+  ✓ encounter.delve.the_broken_seal  [systems: cast, rewards, seeds, conditions]
+```
+
+### One correction applied to the final packet, not to code
+
+Fix-list item 2 (correct § 14's totals) was applied **half-way** in
+`the-drowned-archive-final.md`: the *Declaration* column was rewritten to `entityId: '$actor'` on
+all six rows that previously read `$target` — including `archive.success.watched`, which ships
+`$target` + `visualKind: 'location'` — while the *Anchor kind* column and the `Totals:` line still
+read "6 location". The packet therefore described a shipped chip incorrectly, in the one direction
+that could get the encounter's only location-linked anchor "corrected" away by a later reader. I
+have rewritten § 14's table, its totals line, and the now-stale paragraph defending the `$target`
+anchoring, so the packet matches the tree. No code changed.
+
+### Half B — unchanged
+
+Nothing in the fix touched an effect, so every downstream trace in Half B above stands as written:
+the `critical_success` clue → `phaseRuinQuestHooks` → guild delve quest + toast is still the
+encounter's furthest reach; `under_watch` is still visible-and-inert; the intelligence records still
+match by category → templateId substring only. The seven batch-report findings stand unamended.
+
+PACKAGE PASS
