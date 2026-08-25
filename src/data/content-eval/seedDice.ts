@@ -363,12 +363,45 @@ export interface SeedDiceRoll {
   readonly scale: ScaleId;
 }
 
+/**
+ * Faces a caller wants kept out of the tables for this roll.
+ *
+ * Added for the batch packet (THR-1245), which enforces
+ * {@link SEED_DICE_BATCH_BOUNDS} **by construction** — a cap-hit face is
+ * excluded from later slots' tables rather than the batch being re-rolled until
+ * it happens to comply. Exclusion lives here rather than in the packet so there
+ * is still exactly one sampler: a packet that filtered faces itself would have
+ * to re-derive the motive and activity sub-rolls off the corrected opposition,
+ * and the second derivation is where a sampler drifts from the die it copies.
+ *
+ * **An empty or absent exclusion changes nothing.** The key list passes through
+ * untouched, so an unconstrained roll is byte-identical to what this function
+ * returned before the parameter existed — which is what lets the packet claim
+ * its slots match {@link rollSeedDice} exactly.
+ */
+export interface SeedDiceExclusions {
+  readonly stakes?: readonly StakeShape[];
+  readonly oppositions?: readonly OppositionId[];
+  readonly dispositions?: readonly Disposition[];
+  readonly agentRoles?: readonly AgentRoleId[];
+  readonly scales?: readonly ScaleId[];
+}
+
 export interface SeedDiceInput {
   /**
    * Stable per-brief string — the same slug the Plot-Hook Draw is seeded with,
    * so a brief's whole roll set recomputes from one recorded value.
    */
   readonly briefSeed: string;
+  /**
+   * Faces to keep out of this roll's tables. See {@link SeedDiceExclusions}.
+   *
+   * Excluding every face of a die is a caller bug, not a crash: the die falls
+   * back to its full table and rolls normally (NFP #4). A cap that cannot be
+   * honoured is reported by the packet's spread, never by a thrown error at
+   * brief time.
+   */
+  readonly exclude?: SeedDiceExclusions;
   /**
    * Hook themes, when the slot has already taken a hook.
    *
@@ -399,9 +432,19 @@ function rollOne<K extends string>(
   tableId: string,
   keys: readonly K[],
   briefSeed: string,
+  excluded?: readonly K[],
 ): K {
-  const [drawn] = drawFromTable(tableId, flatWeights(keys), briefSeed, 1);
-  return drawn ?? keys[0];
+  // Excluding everything leaves no die to roll, so fall back to the full table
+  // rather than returning undefined. A cap the batch cannot honour is a fact to
+  // report, not a reason to take down a brief-time script (NFP #4).
+  const eligible =
+    excluded === undefined || excluded.length === 0
+      ? keys
+      : keys.filter(key => !excluded.includes(key));
+  const table = eligible.length > 0 ? eligible : keys;
+
+  const [drawn] = drawFromTable(tableId, flatWeights(table), briefSeed, 1);
+  return drawn ?? table[0];
 }
 
 /**
@@ -412,12 +455,13 @@ function rollOne<K extends string>(
  * independent motives rather than the motive being a function of the slug alone.
  */
 export function rollSeedDice(input: SeedDiceInput): SeedDiceRoll {
-  const { briefSeed } = input;
+  const { briefSeed, exclude } = input;
 
   const stakeId = rollOne(
     STAKE_TABLE_ID,
     STAKE_FACES.map(face => face.id),
     briefSeed,
+    exclude?.stakes,
   );
   const stake = STAKE_FACES.find(face => face.id === stakeId) ?? STAKE_FACES[0];
 
@@ -425,6 +469,7 @@ export function rollSeedDice(input: SeedDiceInput): SeedDiceRoll {
     OPPOSITION_TABLE_ID,
     OPPOSITION_FACES.map(face => face.id),
     briefSeed,
+    exclude?.oppositions,
   );
   const opposition = OPPOSITION_FACES.find(face => face.id === oppositionId) ?? OPPOSITION_FACES[0];
 
@@ -435,17 +480,18 @@ export function rollSeedDice(input: SeedDiceInput): SeedDiceRoll {
     : undefined;
 
   const disposition = opposition.willed
-    ? rollOne(DISPOSITION_TABLE_ID, DISPOSITIONS, briefSeed)
+    ? rollOne(DISPOSITION_TABLE_ID, DISPOSITIONS, briefSeed, exclude?.dispositions)
     : undefined;
 
   const agentRoleId = rollOne(
     AGENT_ROLE_TABLE_ID,
     AGENT_ROLE_FACES.map(face => face.id),
     briefSeed,
+    exclude?.agentRoles,
   );
   const agentRole = AGENT_ROLE_FACES.find(face => face.id === agentRoleId) ?? AGENT_ROLE_FACES[0];
 
-  const scale = rollOne(SCALE_TABLE_ID, SCALE_FACES, briefSeed);
+  const scale = rollOne(SCALE_TABLE_ID, SCALE_FACES, briefSeed, exclude?.scales);
 
   const suggested = new Set<StakeShape>();
   for (const theme of input.themes ?? []) {

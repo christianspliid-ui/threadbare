@@ -187,6 +187,7 @@ import {
 import { applyActionTriggerPayloads } from './effects/actionTriggerPayloads';
 import type { ActionTriggerEvent, EffectRuntimeState } from '../types/effects';
 import { collectAttachmentEffects } from './effects/effectWalker';
+import { spendConsumableCharges } from './effects/consumableCharges';
 import { tierScaledDifficulty } from './targetTierScaling';
 import { resolveToParentLocation } from './sublocationShape';
 import {
@@ -2216,6 +2217,30 @@ export function executeStepResult(
     opsFailed: outcome === 'failure' ? ops.length : 0,
     duration: action.stepDuration,
   } as any);
+
+  // ── Consumable charges: spend one on a matching-reach step (THR-1239) ──
+  //
+  // Placed at STEP completion, not action completion: a charge is a use of the
+  // item, and a five-step encounter uses a matching item five times. The
+  // action-trigger block further down is gated on `finalAction.resolved`, which
+  // is the wrong granularity for this.
+  //
+  // `chargesRemaining` had no decrement anywhere before this, so the tick
+  // handler's destroy-at-0 branch was unreachable and every charged item was
+  // effectively unlimited.
+  if (step) {
+    const chargeStates = state.effectStates ?? new Map<string, EffectRuntimeState>();
+    const chargeResult = spendConsumableCharges(
+      state.graph,
+      action.actorId,
+      step.reach,
+      chargeStates,
+      tick,
+    );
+    if (chargeResult.spent > 0) {
+      state.effectStates = chargeResult.updatedStates;
+    }
+  }
 
   // Timeline: ACTION_STEP event
   if (step && resolutionStats) {

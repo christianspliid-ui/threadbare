@@ -229,3 +229,17 @@ export const RESULT_BAND_FALLBACK_ID = '__fallback__';
 
 /** Default maxApplications for DuplicateGainWorsenRule when not specified. */
 export const DUPLICATE_WORSEN_DEFAULT_MAX = 3;
+
+// ─── Consumable charges (THR-1239) ────────────────────────────────
+
+/**
+ * Charges a `consumable_charge` attachment spends when its bearer completes an
+ * encounter step whose reach matches the charge's `onUse.reach`.
+ *
+ * Until THR-1239 nothing decremented `chargesRemaining` anywhere: charges were
+ * initialised on the first tick and then sat at their starting value forever, so
+ * `destroyOnEmpty` was unreachable and every "3 uses" item in the catalog was in
+ * fact unlimited. Spending is automatic — there is no player "use item" verb for
+ * an agent's gear, so a charge that needed opting into would never be spent.
+ */
+export const CONSUMABLE_CHARGE_SPEND_PER_STEP = 1;

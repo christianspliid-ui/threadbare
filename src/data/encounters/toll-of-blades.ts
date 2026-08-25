@@ -6,6 +6,36 @@
  * Batch: border-perils (THR-1221), row 1. Encounter Factory v3, nudge-native,
  * THR-1045 Composition Contract.
  *
+ * ── Prose Doctrine v2 (THR-1223 batch 4) ──
+ * Rewritten 2026-08-25 in narrator mode under the batch-1 calibration rulings:
+ * rewrite from scratch in basic game-master language ("clever specificity" is
+ * the residue tell of the old mode), and a card's effect line never repeats a
+ * word from the card's name. Zero mechanical changes — same steps, effects,
+ * seeds, bands, hands; the five package fixes below are preserved verbatim in
+ * meaning.
+ * Stake shape (Seed Dice, die 1): Obstruction.
+ *
+ * Narrator's checklist (12 questions), answered:
+ *  1. P1 arrival with {name} and {location}, one per setting class — yes.
+ *  2. P2 states the halted column, the toll, and the serjeant working the
+ *     line — the cost every traveler ahead has already paid — yes.
+ *  3. P3 lands Obstruction: nothing moves until the toll is paid or refused —
+ *     yes.
+ *  4. Opening ≤80 words composed with any P1 (62–66) — yes.
+ *  5. Every sentence a narrator's report; no interior sensation, no camera —
+ *     yes.
+ *  6. Facts stated, never encoded — the toll is named outright — yes.
+ *  7. Every sentence serves challenge (the column) / test (iron, then stone)
+ *     / outcome (what stays in the pack) — yes.
+ *  8. Nothing referenced before introduction; {cast:serjeant} enters in the
+ *     spine — yes.
+ *  9. One named person on stage: {cast:serjeant} — yes.
+ * 10. Stake in one sentence: refuse the toll and outlast the column, or pay
+ *     a share of the pack — yes.
+ * 11. Cards named imperative verb+noun; effect lines are game effects; no
+ *     name-word repetition — yes.
+ * 12. All four declared classes have a skeleton opening — yes.
+ *
  * Design doc: `Docs/plans/encounters/toll-of-blades-final.md`
  * Systems audit: `Docs/plans/encounters/toll-of-blades-systems.md`
  * Package critique: `Docs/plans/encounters/toll-of-blades-package.md` — verdict
@@ -99,27 +129,26 @@ const STEP_1_HAND: readonly StepNudge[] = [
   {
     id: 'toll.a_little_more',
     libraryCardId: 'card.boost.core',
-    name: 'A Little More',
+    name: 'Hold Them Steady',
     essenceCost: 1,
     forecastDelta: 0.06,
     imageTag: 'generic.focus',
-    effectLine:
-      'You steady them at the moment it counts, so the attempt comes out at their best instead of their average. A small help.',
+    effectLine: 'The attempt comes out at its best instead of its average.',
     fiction: 'Most things fail by a margin.',
     bandProse: {
-      success: "They held the serjeant's eye through the whole reading of the row.",
+      success: "They met the serjeant's eye through the whole reading of the row.",
       near_miss: 'They did not blink through it. The row got written anyway.',
     },
   },
   {
     id: 'toll.a_sudden_surge',
     libraryCardId: 'card.boost.signature.energy',
-    name: 'A Sudden Surge',
+    name: 'Kindle Blood',
     sphere: 'energy',
     essenceCost: 2,
     forecastDelta: 0.10,
     imageTag: 'generic.energy',
-    effectLine: 'You pour energy into a body that is being asked for more than it has. A real help.',
+    effectLine: 'Pour fresh strength into a body that is being asked for more than it has.',
     fiction: 'Bodies hold more than they admit.',
     bandProse: {
       success_at_cost: 'The surge went into the shoulder the spear-shaft had found, and it kept them upright.',
@@ -132,14 +161,13 @@ const STEP_1_HAND: readonly StepNudge[] = [
     // footing, not a nameless tilt in the god's favour.
     id: 'toll.something_gives_way',
     libraryCardId: 'card.stumble.signature.chaos',
-    name: 'Something Gives Way',
+    name: 'Loosen the Ground',
     sphere: 'chaos',
     essenceCost: 2,
     forecastDelta: 0.12,
     opposes: 'serjeant',
     imageTag: 'generic.matter',
-    effectLine:
-      'You loosen the ground under the one standing against them. The odds move because the opposition slips, takes the fall badly, and carries it a while. A strong help.',
+    effectLine: 'The earth gives under the one standing against them — they slip, fall badly, and carry it a while.',
     fiction: 'Every structure has one loose piece.',
     grants: [
       {
@@ -158,36 +186,36 @@ const STEP_1_HAND: readonly StepNudge[] = [
   {
     id: 'toll.full_weight',
     libraryCardId: 'card.heavy_hand.signature.force',
-    name: 'Full Weight',
+    name: 'Press Back',
     sphere: 'force',
     essenceCost: 2,
     forecastDelta: 0.16,
     costs: { detectionDelta: 0.15 },
     imageTag: 'generic.strength',
     effectLine:
-      'You put force behind them where the pressure lands, and hold it there. Rival gods can hardly miss a hand this heavy.',
+      'Put force behind them where the pressure lands, and hold it there. Rival gods can hardly miss a hand this heavy.',
     fiction: 'Subtlety is a choice. This is not it.',
     bandProse: {
       critical_success:
-        'The two spears came up and could not come forward. Nobody behind them wanted to be the one who tried next.',
-      failure: 'Force met the column head-on, and the column came through it without changing step.',
+        'The two spears came up and could not come forward. Nobody behind them wanted to try next.',
+      failure: 'Force met the column head-on, and the column came through without changing step.',
       critical_failure: 'The push was so plain that four of them came for it at once.',
     },
   },
   {
     id: 'toll.no_middle_ground',
     libraryCardId: 'card.gambit.signature.chaos',
-    name: 'No Middle Ground',
+    name: 'Empty the Middle',
     sphere: 'chaos',
     essenceCost: 1,
     forecastDelta: 0.03,
     rider: 'all_or_nothing',
     imageTag: 'generic.luck',
-    effectLine: 'You strip the middle out of it, so what is left lands clean or lands hard, with nothing between.',
+    effectLine: 'What is left lands clean or lands hard, with nothing in between.',
     fiction: 'Chaos has no use for the adequate.',
     bandProse: {
       critical_success: 'One motion settled it, and the stylus never touched the wax.',
-      critical_failure: 'With no middle to land in, they were in the mud before the serjeant finished the row.',
+      critical_failure: 'With nowhere soft to land, they were in the mud before the serjeant finished the row.',
     },
   },
   {
@@ -195,18 +223,18 @@ const STEP_1_HAND: readonly StepNudge[] = [
     // `NUDGE_CARD_LIBRARY`); a recorded one-off, written to the library's
     // genericity bar.
     id: 'toll.shoulder_to_shoulder',
-    name: 'Shoulder To Shoulder',
+    name: 'Close the Ranks',
     sphere: 'spirit',
     essenceCost: 2,
     forecastDelta: 0.10,
     requiresGroup: true,
     imageTag: 'generic.blessing',
     effectLine:
-      'Only in company: the group closes up on both sides, so the column has to move a body of people instead of one traveler. A real help.',
+      'Only in a group: they pack in on both sides, so the column must move a body of people instead of one traveler.',
     fiction: 'One is moved. Several are negotiated with.',
     bandProse: {
-      success: 'The company came up on both sides and the road narrowed for the column instead.',
-      near_miss: 'The company held the line together. The serjeant took the lightest pack in the group and moved on.',
+      success: 'The group came up on both sides, and the road narrowed for the column instead.',
+      near_miss: 'The group held together. The serjeant took the lightest pack among them and moved on.',
     },
   },
 ];
@@ -227,13 +255,13 @@ const STEP_2_HAND: readonly StepNudge[] = [
   {
     id: 'toll.by_the_book',
     libraryCardId: 'card.insurance.signature.order',
-    name: 'By The Book',
+    name: 'Bind Outcome',
     sphere: 'order',
     essenceCost: 3,
     forecastDelta: 0.04,
     rider: 'floor_at_cost',
     imageTag: 'generic.ward',
-    effectLine: 'You set a floor under them. The afternoon can take gear and skin; it cannot take them off their feet.',
+    effectLine: 'Set a floor under them — the afternoon can take gear and skin, but it cannot put them down.',
     fiction: 'Rules exist so the worst case has a name.',
     bandProse: {
       success_at_cost: 'That had been paid for in advance. The column took its fee out of the pack.',
@@ -243,12 +271,11 @@ const STEP_2_HAND: readonly StepNudge[] = [
   {
     id: 'toll.a_little_more_again',
     libraryCardId: 'card.boost.core',
-    name: 'A Little More',
+    name: 'Hold Them Steady',
     essenceCost: 1,
     forecastDelta: 0.06,
     imageTag: 'generic.focus',
-    effectLine:
-      'You steady them at the moment it counts, so the attempt comes out at their best instead of their average. A small help.',
+    effectLine: 'The attempt comes out at its best instead of its average.',
     fiction: 'Most things fail by a margin.',
     bandProse: {
       success: 'The third hour was the one that decided it, and they were steady in it.',
@@ -258,13 +285,12 @@ const STEP_2_HAND: readonly StepNudge[] = [
   {
     id: 'toll.the_slow_push',
     libraryCardId: 'card.boost.variation.patient',
-    name: 'The Slow Push',
+    name: 'Spread the Strain',
     essenceCost: 1,
     forecastDelta: 0.08,
     requiredUnlock: 'divine.rekindle_thread',
     imageTag: 'generic.vigor',
-    effectLine:
-      'You lean on them from the first hour and keep leaning, so the worst of it arrives spread out instead of all at once. A real help.',
+    effectLine: 'Push from the first hour and keep pushing, so the worst arrives a little at a time instead of all at once.',
     fiction: 'Early pressure costs less than late force.',
     bandProse: {
       success: 'The push started at the first hour, and the legs never got the chance to argue.',
@@ -274,17 +300,17 @@ const STEP_2_HAND: readonly StepNudge[] = [
   {
     id: 'toll.full_weight_held',
     libraryCardId: 'card.heavy_hand.signature.force',
-    name: 'Full Weight',
+    name: 'Press Back',
     sphere: 'force',
     essenceCost: 2,
     forecastDelta: 0.16,
     costs: { detectionDelta: 0.12 },
     imageTag: 'generic.strength',
     effectLine:
-      'You put force behind them where the pressure lands, and hold it there. Rival gods can hardly miss a hand this heavy.',
+      'Put force behind them where the pressure lands, and hold it there. Rival gods can hardly miss a hand this heavy.',
     fiction: 'Subtlety is a choice. This is not it.',
     bandProse: {
-      critical_success: 'They stood through it like a post driven in, and the column had to go around the post.',
+      critical_success: 'They stood through it like a driven post, and the column had to go around the post.',
       failure: 'Force held them upright until the last of it ran out, and then they folded.',
       critical_failure: 'Every rider in the column saw a traveler standing too straight for too long, and then not standing.',
     },
@@ -294,13 +320,12 @@ const STEP_2_HAND: readonly StepNudge[] = [
     // failureMetadata mint of `exhausted`.
     id: 'toll.it_passes',
     libraryCardId: 'card.balm.signature.life',
-    name: 'It Passes',
+    name: 'Banish Weariness',
     sphere: 'life',
     essenceCost: 2,
     forecastDelta: 0.10,
     imageTag: 'generic.warmth',
-    effectLine:
-      'You take the tiredness out of the legs before the hours start counting, so the afternoon is met by a rested body. A real help.',
+    effectLine: 'Take the tiredness out of their legs before the hours start counting.',
     fiction: 'Most suffering ends. This one ends sooner.',
     grants: [{ kind: 'remove_condition', conditionTraitId: 'trait.condition.exhausted' }],
     bandProse: {
@@ -311,14 +336,13 @@ const STEP_2_HAND: readonly StepNudge[] = [
   {
     // Fellowship — no library member, same reasoning as step 1's.
     id: 'toll.shared_watch',
-    name: 'Shared Watch',
+    name: 'Split the Hours',
     sphere: 'spirit',
     essenceCost: 2,
     forecastDelta: 0.07,
     requiresGroup: true,
     imageTag: 'generic.blessing',
-    effectLine:
-      'Only in company: the group splits the standing into shifts, so the hours land on more than one set of legs. A real help.',
+    effectLine: 'Only in a group: they take the standing in turns, so the afternoon lands on more than one set of legs.',
     fiction: 'One watch, taken in turns.',
     grants: [
       { kind: 'apply_condition', conditionTraitId: 'trait.condition.inspired', targetAgentId: '$actor', durationTicks: 24 },
@@ -350,19 +374,19 @@ const step1HoldTheRoad: ActionStep = {
   onSuccess: [],
   onFailure: [],
   failBehavior: 'continue_weakened',
-  // The setting-neutral spine. The declared opening lands above this at
-  // instantiation. Order: two soldiers, the queue, the serjeant with the
-  // tablet, the stylus. The serjeant is introduced here, before any later
-  // prose refers to them.
+  // The setting-neutral P2+P3 spine (Doctrine v2). The per-class P1 arrival
+  // lands above this at instantiation. The serjeant is introduced here by cast
+  // token, before any later prose refers to them.
   narrativeTemplate:
-    'Two soldiers stand across the road with their spears grounded. The line of held travelers is short and ' +
-    'getting shorter. A serjeant walks down it through churned verge with a wax tablet and stylus, naming ' +
-    'what the column will take from each: a sack, a mule, a good knife. The stylus stops at the agent\'s row.',
-  successAfterimage: 'The stylus moved on down the tablet. The pack stayed on the agent\'s back.',
-  failureAfterimage: 'The spear-butts came up, and the agent was walked off the road with the tablet still open.',
+    'A war column has halted across the road and takes a toll from everyone who passes. Their serjeant, ' +
+    '{cast:serjeant}, walks the line of held travelers with a wax tablet, naming what the column will take ' +
+    'from each: a sack, a mule, a good knife.\n\n' +
+    'The stylus stops at their row. Give up a share of the pack, or refuse and hold the road.',
+  successAfterimage: 'The stylus moved on down the tablet. The pack stayed on their back.',
+  failureAfterimage: 'The spear-butts came up, and they were walked off the road with the tablet still open.',
   successAtCostAfterimage: 'The column took a sack and left the rest, and the serjeant did not look up again.',
   criticalSuccessAfterimage: 'The serjeant looked at the road, looked at them, and left the row blank.',
-  criticalFailureAfterimage: 'They went down in the verge with the column\'s boots going past at eye level.',
+  criticalFailureAfterimage: 'They went down in the verge, and the column walked past them.',
   /**
    * All durable success-side writes live on step 2, so a chip on any
    * success-side action band is provably backed. No successMetadata here.
@@ -446,14 +470,14 @@ const step2OutlastTheColumn: ActionStep = {
     },
   },
   narrativeTemplate:
-    'The agent is at the head of the line, and the column is long: wagons, then a driven herd, then more ' +
-    'wagons. The road belongs to it until the last axle is through, most of an afternoon away. What is left ' +
-    'to do is stand in it until then. The serjeant is further down the line, still looking back this way.',
-  successAfterimage: 'The road came back empty and the agent was still standing on it.',
-  failureAfterimage: 'They sat down in the verge before the herd was through, and the rest of the column stepped around them.',
-  successAtCostAfterimage: 'They were still standing when the tail cleared, on a leg that had stopped taking weight an hour before.',
-  criticalSuccessAfterimage: 'The last wagon went by, and the serjeant put two fingers up as it passed.',
-  criticalFailureAfterimage: 'The last of the column stepped over them where they had gone down, and did not slow to do it.',
+    'They are at the head of the line now, and the column is long: wagons, a driven herd, more wagons. The ' +
+    'road belongs to it until the last axle is through, most of an afternoon away. All that is left is to ' +
+    'stand and outlast it. {cast:serjeant} is further down the line, still watching them.',
+  successAfterimage: 'The road came back empty, and they were still standing on it.',
+  failureAfterimage: 'They sat down in the verge before the herd was through, and the column stepped around them.',
+  successAtCostAfterimage: 'They were still standing when the tail cleared, on a leg that had given out an hour before.',
+  criticalSuccessAfterimage: 'The last wagon went by, and the serjeant raised two fingers to them as it passed.',
+  criticalFailureAfterimage: 'The last of the column stepped over them where they had gone down, and did not slow.',
   /**
    * `successMetadata` fires on `isStepSuccess`, which counts `near_miss` as a
    * success, so every success-side write is unconditionally backed on every
@@ -549,25 +573,13 @@ export const TOLL_OF_BLADES_TEMPLATE: UnifiedActionTemplate = compileOpeningEnve
    * § 4).
    */
   settings: ['stronghold', 'ruin', 'wayside', 'battlefield'],
+  // P1 arrival, one per class (Doctrine v2) — the P2/P3 spine lands below it
+  // (step 1 narrativeTemplate).
   openings: {
-    wayside:
-      'The road runs open here. The nearest roof is half a day behind, and the next one further. A column ' +
-      'has halted along the verge and settled in: tethered horses stamping and blowing, cook-smoke lying flat ' +
-      'in the cold. Travelers stand with their loads on the ground, waiting their turn.',
-    ruin:
-      'The road here runs through a dead village, roofless walls and grass in the doorways. The column has ' +
-      'halted inside it and is taking the place apart for firewood: axes on old beams, the crack and grind of ' +
-      'a gable coming down, dust in the throat. A dozen travelers stand in the lane with their loads down, ' +
-      'watching.',
-    battlefield:
-      'The road crosses ground that a battle already used. The turf is broken in long ridges, crows go up and ' +
-      'settle again along them, and the smell has not finished leaving. A column has halted here and set ' +
-      'people to picking the field over — spear, boot, buckle — cartload by cartload. The queue of held-up ' +
-      'travelers reaches back out of sight.',
-    stronghold:
-      'The road ends at a fortress gate and starts again on the far side. It has stood open since dawn: ' +
-      'wagons rolling out loaded, new bread and axle-grease on the air, a clerk shouting tallies over the ' +
-      'noise. A column is forming up outside it, filling the road across its whole width.',
+    wayside: '{name} follows the open road past {location}.',
+    ruin: 'The road takes {name} through the dead village of {location}.',
+    battlefield: '{name} crosses an old battlefield near {location}.',
+    stronghold: '{name} comes up the road to the fortress gate of {location}.',
   },
   locationSubtypes: expandSettings(['stronghold', 'ruin', 'wayside', 'battlefield']),
 
@@ -575,11 +587,10 @@ export const TOLL_OF_BLADES_TEMPLATE: UnifiedActionTemplate = compileOpeningEnve
 
   narrativeTemplates: {
     initiation:
-      'The column takes what it needs on the way through, and nothing else moves until it has. Waiting for ' +
-      'it to clear costs the whole day. Going up to the head of the line costs a share of what the agent is ' +
-      'carrying.',
-    success: 'The column is gone and the road belongs to whoever is walking it again.',
-    failure: 'The column took its toll and moved on up the road. What it left behind, the agent carries.',
+      'The column takes what it needs on the way through, and nothing else moves until it has. Waiting it ' +
+      'out costs the whole day. Going up to the head of the line costs a share of the pack.',
+    success: 'The column is gone, and the road belongs to whoever walks it again.',
+    failure: 'The column took its toll and moved on. What it left behind, they carry.',
   },
 
   /**
