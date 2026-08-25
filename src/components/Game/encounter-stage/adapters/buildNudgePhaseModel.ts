@@ -517,7 +517,15 @@ export function buildNudgePhaseModel(
   // `allowEmptyHand` that guarantee is gone and an unauthored step would throw
   // there instead of rendering fate-alone.
   const authored = step.nudges ?? [];
-  if (authored.length === 0 && !args.allowEmptyHand) return undefined;
+  // THR-1248 — a step that declares a `deal` is nudge-bearing even with no
+  // authored specials. The composed model puts specials at **0**–2 (the spec's
+  // § 3b; `checkComposedHand` validates a declaration "with or without
+  // specials"), so a fully-dealt hand is legal content — and without this the
+  // builder returned `undefined` for it, which meant the god's own repertoire
+  // could be dealt into a hand no surface would ever build. The empty-hand
+  // dereference THR-1121 warns about is already handled below, so this rides
+  // the same safety it does rather than needing its own.
+  if (authored.length === 0 && step.deal === undefined && !args.allowEmptyHand) return undefined;
 
   const actorId = activeAction.actorId;
 

@@ -1333,17 +1333,20 @@ export const CONTRACTS: readonly Contract[] = [
       'src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts',
       'src/debug-bridge.ts',
     ],
-    // Not LIVE: the path is wired, tested end-to-end and proven against the two
-    // reference profiles, but no shipped template declares `deal`, so nothing
-    // travels it in a real run yet. Badging LIVE here would claim behaviour the
-    // corpus does not exercise — the THR-614 error class this map exists to catch.
+    // Still not LIVE, but for a strictly smaller reason than at THR-1247. The
+    // corpus landed (THR-1248): every library member carries a play profile and
+    // band fragments, so the dealer now has a full pool rather than two
+    // reference entries. What remains is that no *shipped template* declares
+    // `deal`, so nothing travels the path in a real playthrough. Badging LIVE on
+    // a complete corpus alone would claim behaviour no player can reach — the
+    // THR-614 error class this map exists to catch.
     badgeOverride: {
       badge: 'PARTIAL',
       reason:
-        'Engine, adapter and debug read sites are wired and covered by tests, and two reference play profiles prove both access paths. No shipped encounter declares `ActionStep.deal` yet, so the deal never runs in a real playthrough; the corpus and the first composed encounter are THR-1248.',
-      deferralTicket: 'THR-1248',
+        'Engine, adapter and debug read sites are wired and covered by tests, and the play-profile corpus is complete (`profiledCardCount() === NUDGE_CARD_LIBRARY.length`, pinned). No shipped encounter declares `ActionStep.deal` yet, so the deal never runs in a real playthrough; the first composed encounter is THR-1254.',
+      deferralTicket: 'THR-1254',
     },
-    deferralTicket: 'THR-1248',
+    deferralTicket: 'THR-1254',
   },
   // ── Nudge card dispatch → host systems (THR-885) ───────────────────────────
   // The god's hand is the activation surface several idle systems were missing.

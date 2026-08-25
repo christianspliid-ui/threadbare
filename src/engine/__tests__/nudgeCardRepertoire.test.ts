@@ -11,15 +11,19 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import type { NudgeCardMember } from '../../data/nudge-card-library';
 import {
+  BAND_FRAGMENTS,
   HUNGER_UNIQUE_CARDS,
   NUDGE_CARD_LIBRARY,
   NUDGE_CARD_TYPES,
+  PLAY_PROFILES,
   SPHERE_SIGNATURES,
   UNIVERSAL_CORE_TYPES,
   cardDisplayTitle,
+  dealableMembers,
   nudgeCardFamily,
   nudgeCardMember,
   nudgeCardType,
+  profiledCardCount,
   unauthoredCardCount,
 } from '../../data/nudge-card-library';
 import {
@@ -36,10 +40,15 @@ import {
   validateRepertoire,
 } from '../nudgeCardRepertoire';
 import {
+  DEAL_FAILURE_BAND_OUTCOMES,
   ECHO_CARD_SCAR_DISCOUNT,
   ECHO_CARD_SCAR_PENALTY,
   SECONDARY_SPHERE_DISCOUNT,
 } from '../../data/nudge-constants';
+import {
+  NUDGE_BIG_DELTA,
+  NUDGE_WORD_BUDGETS,
+} from '../../data/content-eval/nudgeAuthoringConstants';
 import { buildNudgeHand } from '../encounters/nudges';
 import { SPHERE_NAMES } from '../../types/index';
 import type { HungerId } from '../../types/hunger';
@@ -182,6 +191,146 @@ describe('library liveness', () => {
     const family = nudgeCardFamily('insurance');
     expect(family.length).toBeGreaterThan(1);
     expect(family.every((m) => m.typeId === 'insurance')).toBe(true);
+  });
+});
+
+// ─── The dealt-hand corpus (THR-1248) ────────────────────────────────
+
+/**
+ * Placeholders `enrichProse` actually resolves in an appended band fragment.
+ *
+ * Hardcoded rather than imported because it is a *content* rule, not a mirror
+ * of the resolver: the corpus is written to the pronoun/actor subset, and the
+ * scene-scoped placeholders (`{location}`, `{faction}`, `{group}`, the omen and
+ * economy families) are exactly what a generic fragment must never reach for —
+ * a fragment naming a location reads wrong in the other forty encounters it
+ * gets appended to.
+ *
+ * The gate exists because the failure is silent: an unresolved placeholder is
+ * not an error, it renders literally, so `{theirs}` would have shipped as the
+ * four characters `{the` … in front of a player. It was caught by hand during
+ * authoring; this is what catches the next one.
+ */
+const RESOLVABLE_FRAGMENT_PLACEHOLDERS: ReadonlySet<string> = new Set([
+  '{actor}', '{Actor}',
+  '{they}', '{They}',
+  '{them}', '{Them}',
+  '{their}', '{Their}',
+  '{themselves}', '{s}',
+]);
+
+describe('dealt-hand corpus', () => {
+  it('every library member carries a play profile', () => {
+    expect(NUDGE_CARD_LIBRARY.length).toBeGreaterThan(20);
+    // Named per member so a regression says *which* card lost its profile,
+    // exactly as the `unauthoredCardCount()` gate above does for faces.
+    const unprofiled = NUDGE_CARD_LIBRARY.filter((m) => PLAY_PROFILES[m.id] === undefined).map(
+      (m) => m.id,
+    );
+    expect(unprofiled).toEqual([]);
+    expect(profiledCardCount()).toBe(NUDGE_CARD_LIBRARY.length);
+  });
+
+  it('every library member is actually dealable — profile and payoff prose both', () => {
+    // `dealableMembers()` is the dealer's own candidate universe, so this
+    // asserts the property through the function the engine consults rather than
+    // re-deriving it. A member that is profiled but unpayable is invisible at
+    // runtime; that is the shape this pins against.
+    expect(dealableMembers().length).toBe(NUDGE_CARD_LIBRARY.length);
+
+    const report = validateRepertoire();
+    expect(report.unpayableProfiles).toEqual([]);
+    expect(report.profilelessFragments).toEqual([]);
+    expect(report.winOnlyFragments).toEqual([]);
+  });
+
+  it('every member pays off in at least one failure band', () => {
+    let checked = 0;
+    for (const member of NUDGE_CARD_LIBRARY) {
+      const bands = Object.keys(BAND_FRAGMENTS[member.id] ?? {});
+      expect(bands.length, `${member.id} has no band fragments`).toBeGreaterThan(0);
+      expect(
+        bands.some((b) => DEAL_FAILURE_BAND_OUTCOMES.includes(b as never)),
+        `${member.id} narrates only its wins`,
+      ).toBe(true);
+      checked++;
+    }
+    // Guard the guard: an empty library would make the loop above vacuous.
+    expect(checked).toBe(NUDGE_CARD_LIBRARY.length);
+    expect(checked).toBeGreaterThan(20);
+  });
+
+  it('a big-delta member reads its failure at both depths', () => {
+    const big = NUDGE_CARD_LIBRARY.filter(
+      (m) => PLAY_PROFILES[m.id]!.forecastDelta >= NUDGE_BIG_DELTA,
+    );
+    // Non-vacuous by construction: if the corpus ever holds no big-delta member
+    // this assertion fails rather than passing over an empty set.
+    expect(big.length).toBeGreaterThan(0);
+    for (const member of big) {
+      const bands = BAND_FRAGMENTS[member.id] ?? {};
+      expect(bands.failure, `${member.id} moved the odds hard and has no 'failure'`).toBeDefined();
+      expect(
+        bands.critical_failure,
+        `${member.id} moved the odds hard and has no 'critical_failure'`,
+      ).toBeDefined();
+    }
+  });
+
+  it('every fragment uses only placeholders the enricher resolves', () => {
+    let scanned = 0;
+    for (const [cardId, bands] of Object.entries(BAND_FRAGMENTS)) {
+      for (const [band, text] of Object.entries(bands)) {
+        for (const found of text.match(/\{[A-Za-z_:|]+\}/g) ?? []) {
+          expect(
+            RESOLVABLE_FRAGMENT_PLACEHOLDERS.has(found),
+            `${cardId}.${band} uses '${found}', which renders literally`,
+          ).toBe(true);
+        }
+        scanned++;
+      }
+    }
+    expect(scanned).toBeGreaterThan(20);
+  });
+
+  it('every fragment stays inside the band-fragment word budget', () => {
+    let scanned = 0;
+    for (const [cardId, bands] of Object.entries(BAND_FRAGMENTS)) {
+      for (const [band, text] of Object.entries(bands)) {
+        const words = text.trim().split(/\s+/).length;
+        expect(
+          words,
+          `${cardId}.${band} is ${words} words, over ${NUDGE_WORD_BUDGETS.bandFragment}`,
+        ).toBeLessThanOrEqual(NUDGE_WORD_BUDGETS.bandFragment);
+        scanned++;
+      }
+    }
+    expect(scanned).toBeGreaterThan(20);
+  });
+
+  it('every profile carries its own effect line, and none of them names a number', () => {
+    let checked = 0;
+    for (const member of NUDGE_CARD_LIBRARY) {
+      const profile = PLAY_PROFILES[member.id]!;
+      expect(profile.effectLine, `${member.id} falls back to its type keyword`).toBeDefined();
+      // The nudge law: words, never a numeral. A card that prints a number tells
+      // the player what the forecast word is for.
+      expect(profile.effectLine, `${member.id} effect line names a number`).not.toMatch(/\d/);
+      const words = profile.effectLine!.trim().split(/\s+/).length;
+      expect(words, `${member.id} effect line is ${words} words`).toBeLessThanOrEqual(
+        NUDGE_WORD_BUDGETS.effectLine,
+      );
+      checked++;
+    }
+    expect(checked).toBeGreaterThan(20);
+  });
+
+  it('effect lines are distinct, so two members of a family never read alike', () => {
+    // The reason `effectLine` exists at all (THR-1248): the type-keyword
+    // fallback is identical across a family, so three Boost members would deal
+    // as three copies of one sentence and the hand would stop being a decision.
+    const lines = NUDGE_CARD_LIBRARY.map((m) => PLAY_PROFILES[m.id]!.effectLine);
+    expect(new Set(lines).size).toBe(lines.length);
   });
 });
 

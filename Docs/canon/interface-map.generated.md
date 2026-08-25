@@ -121,7 +121,7 @@ remediation ticket or the build fails.
 | `player-action-receipts-queue` | A resolved player cast queues a Divine Receipt the UI surfaces as a toast or a receipt dialogue. | node-prop: `playerActionReceipts` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `receipt-event-band-toast` | A receipt toast carries its outcome band so the toast accent matches how the cast landed. | event: `band` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `relocation-intent-steers-agent-movement` | An ending that says someone left actually sends them — and the leaving is a journey the player can watch, not a body appearing elsewhere. | function: `computeRelocationIntentBonus`, `resolveRelocationIntentForAgent`, `setRelocationIntent` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
-| `repertoire-deals-into-encounter-hand` | A hand reads as *this god's* hand in any scene: the encounter authors only the cards it alone could offer, and the god's own Repertoire supplies the rest. Without this read, an encounter can only ever show the cards its author happened to write, and the repertoire progression the player earned stays invisible in play. | function: `dealHand`, `mintDealtNudge`, `composeDealtStep`, `composeDealtStepFromState` | Encounters & Dilemmas | 🟠 PARTIAL | THR-1248 |
+| `repertoire-deals-into-encounter-hand` | A hand reads as *this god's* hand in any scene: the encounter authors only the cards it alone could offer, and the god's own Repertoire supplies the rest. Without this read, an encounter can only ever show the cards its author happened to write, and the repertoire progression the player earned stays invisible in play. | function: `dealHand`, `mintDealtNudge`, `composeDealtStep`, `composeDealtStepFromState` | Encounters & Dilemmas | 🟠 PARTIAL | THR-1254 |
 | `reward-draw-shares-one-seeded-draw-with-the-step-route` | A specific ending can hand out a random matching prize — and it draws it exactly the way the step route does, so the two can never pay out differently. | function: `drawSeededReward`, `mapActionOutcomeToRewardOutcome`, `rewardCategoryNodeQuery`, `rewardCandidateMatchesTags` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `secrets-generation` | Secrets are born from scenes — mortals learn things about each other worth holding. | function: `generateSecret`, `createSecretEdge` | Secrets & Favors | 🟢 LIVE | — |
 | `seeded-opponent-survives-to-spawn` | A grudge planted against a named band is collected against that same band — or, if it died in the meantime, quietly becomes an ordinary encounter instead of pointing at a corpse. | node-prop: `opposingGroupId`, `resolveSeedOpposition` | Companies & Group Travel | 🟢 LIVE | — |
@@ -434,10 +434,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Spheres & Quintessence
 - **UL terms:** *Quintessence*, *Aftermath*
 - **Module:** `src/engine/encounterAftermath.ts`
-- **Production hits:** 16 total — 1 write, 1 read, 14 unclassified
+- **Production hits:** 17 total — 1 write, 1 read, 15 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`
 - **Read sites:** `src/engine/phaseQuintessence.ts`
-- **Other hits:** `src/data/content-eval/compositionContract.ts`, `src/data/encounters/apotheosis-ascension.ts`, `src/data/encounters/one-body-short.ts`, `src/data/encounters/the-broken-seal.ts`, `src/data/encounters/toll-of-blades.ts` +9 more
+- **Other hits:** `src/data/content-eval/compositionContract.ts`, `src/data/encounters/apotheosis-ascension.ts`, `src/data/encounters/one-body-short.ts`, `src/data/encounters/the-broken-seal.ts`, `src/data/encounters/toll-of-blades.ts` +10 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `authored-step-difficulty-player-resolution` — 🟢 LIVE
@@ -867,11 +867,11 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Nudge*, *Encounter*, *UnifiedActionTemplate*
 - **Module:** `src/engine/encounters/dealHand.ts`
-- **Production hits:** 7 total — 2 write, 3 read, 2 unclassified
-- **Write sites:** `src/data/nudge-constants.ts`, `src/types/unifiedAction.ts`
+- **Production hits:** 8 total — 3 write, 3 read, 2 unclassified
+- **Write sites:** `src/data/nudge-card-library.ts`, `src/data/nudge-constants.ts`, `src/types/unifiedAction.ts`
 - **Read sites:** `src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts`, `src/debug-bridge.ts`, `src/engine/unifiedActionResolution.ts`
 - **Other hits:** `src/engine/encounters/dealHand.ts`, `src/engine/nudgeCardRepertoire.ts`
-- **Verdict:** Pinned by badgeOverride: Engine, adapter and debug read sites are wired and covered by tests, and two reference play profiles prove both access paths. No shipped encounter declares `ActionStep.deal` yet, so the deal never runs in a real playthrough; the corpus and the first composed encounter are THR-1248.
+- **Verdict:** Pinned by badgeOverride: Engine, adapter and debug read sites are wired and covered by tests, and the play-profile corpus is complete (`profiledCardCount() === NUDGE_CARD_LIBRARY.length`, pinned). No shipped encounter declares `ActionStep.deal` yet, so the deal never runs in a real playthrough; the first composed encounter is THR-1254.
 
 ### `reputation-with-unified-read` — 🟢 LIVE
 
