@@ -49,7 +49,7 @@ are specified by this table plus their styleguide entry.
 | `SectionHeading` | `children`, `count?`, `as?`, `ornamental?` | Heading with optional count and ornamental rules. | #section-sectionheading |
 | `SphereIcon` | `sphere?`, `sphereName?`, `size?`, `monochrome?`, `useImage?`, `variant?` | SVG primary, PNG fallback. The sphere vocabulary (Law 9). | #section-spheres |
 | `StepDots` | `totalSteps`, `currentStepIndex`, `size?`, `variant?` | Discrete steps. No-op replay dots render **disabled, not clickable** (Law 25, THR-1003). | #section-stepdots |
-| `Tooltip` | `id?`, `label?`, `desc?`, `depth?`, `as?` | Tier 1 of the disclosure ladder. Copy resolves through `resolveTooltip`, ≤200 chars, chains to `TOOLTIP_MAX_CHAIN_DEPTH` (Laws 17–19). Components pass **ids**, never inline copy. | #section-tooltip |
+| `Tooltip` | `id?`, `label?`, `desc?`, `depth?`, `as?`, `focusable?` | Tier 1 of the disclosure ladder. Copy resolves through `resolveTooltip`, ≤200 chars, chains to `TOOLTIP_MAX_CHAIN_DEPTH` (Laws 17–19). Components pass **ids**, never inline copy. The trigger is keyboard-reachable by default — see `interactions.md` § Tooltip Pattern for the predicate and the one caller override. | #section-tooltip |
 
 > **The detail-page cluster — `Section`, `DetailBreadcrumb`, `DetailModal` — has no production
 > mount.** All three import only each other; THR-966 defers the mount-vs-prune decision to a

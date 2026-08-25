@@ -133,6 +133,37 @@ Every icon-only button and truncated text element needs a tooltip. Use the `<Too
 - Max width: 220px
 - Never on elements that already have expanded labels visible
 
+### Keyboard reachability (Laws 23/50; THR-1095)
+
+**The trigger is a tab stop by default — you do not opt in.** Until THR-1095 the
+trigger carried `onFocus`/`onBlur` and no `tabIndex`, so those handlers were dead
+for any child that was not itself focusable: a tooltip over plain prose was
+mouse-only, and Tier 1 of the disclosure ladder did not exist for a keyboard
+player. A tooltip wrapping a `<button>` worked only by accident.
+
+The default is bounded structurally rather than by caller memory, so it adds no
+stop nobody could use. `Tooltip` makes its wrapper focusable when **all** of:
+
+| Test | Why the stop is withheld otherwise |
+|---|---|
+| `as === 'span'` | `tabIndex` on SVG `<g>` is inconsistently honoured, and the `as="g"` callers are hex-map overlays — a stop per tile is the tab-order storm Law 46/50 warns about |
+| `depth === 0` | A concept link *inside* an open popup is unreachable by construction: the popup portals to the end of `<body>`, and the trigger's own blur closes it. Hover still works |
+| content resolves | A stop that opens no popup is a stop that does nothing (Law 21) |
+| children own no stop | Otherwise the wrapper adds a second stop for the same word |
+
+No `role` accompanies the stop. Law 23's `role="button"` clause governs elements
+that *act* when pressed; a tooltip trigger only describes, and Enter/Space do
+nothing on it. `aria-describedby` is the correct association.
+
+**The one caller override.** Pass `focusable={false}` and put `tabIndex={0}` +
+`className="focus-ring"` on a specific inner element when the wrapper's box is
+the wrong thing to draw a ring around — an inline-flex chip with a leading glyph,
+say. This is the sanctioned pattern, not legacy: `EncounterVeil.tsx`'s
+consequence chips and legend use it so the ring hugs the word that carries the
+meaning. The auto rule already stands down for it on its own, because the probe
+sees the child's stop; `focusable={false}` is only needed to say so explicitly.
+`focusable` (true) forces a stop the auto rule declines.
+
 ---
 
 ## Loading / Empty States

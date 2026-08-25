@@ -350,4 +350,117 @@ describe('Tooltip', () => {
     });
     expect(screen.getByRole('tooltip')).toBeInTheDocument();
   });
+
+  // ── Keyboard reachability of the trigger (THR-1095) ─────────────────────
+  //
+  // The trigger carried `onFocus`/`onBlur` and no `tabIndex`, so for any child
+  // that was not itself focusable those two handlers were dead code: nothing
+  // could receive focus, so they never fired. These pin the auto rule from
+  // BOTH sides — a stop where one was missing, and no stop where one already
+  // exists — because a rule tested only on the case it was written for is a
+  // rule that has not been falsified.
+  describe('keyboard reachability (THR-1095)', () => {
+    it('LAW 23: a tooltip over plain prose is a tab stop, so its handlers are reachable', () => {
+      render(<Tooltip label="Standing">standing</Tooltip>);
+      const trigger = screen.getByText('standing');
+      expect(trigger).toHaveAttribute('tabindex', '0');
+      expect(trigger).toHaveClass('focus-ring');
+    });
+
+    it('LAW 50: focusing that trigger opens the tooltip — the handler is live, not just present', () => {
+      render(<Tooltip label="Standing" desc="How the world reads you.">standing</Tooltip>);
+      const trigger = screen.getByText('standing');
+      expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
+
+      fireEvent.focus(trigger);
+      act(() => { vi.advanceTimersByTime(200); });
+
+      expect(screen.getByRole('tooltip')).toBeInTheDocument();
+      expect(screen.getByText('How the world reads you.')).toBeInTheDocument();
+    });
+
+    it('adds no second stop when the child is already focusable', () => {
+      render(
+        <Tooltip label="Standing">
+          <button>Hover me</button>
+        </Tooltip>
+      );
+      const wrapper = screen.getByText('Hover me').parentElement!;
+      expect(wrapper).not.toHaveAttribute('tabindex');
+      expect(wrapper).not.toHaveClass('focus-ring');
+    });
+
+    it('stands down for the sanctioned caller pattern — a hand-rolled tabIndex on an inner element', () => {
+      // The THR-1033 shape in EncounterVeil.tsx: the caller puts the stop on the
+      // word itself because the wrapper's box is the wrong thing to ring.
+      render(
+        <Tooltip label="Boon">
+          <span className="focus-ring" tabIndex={0} data-testid="inner">boon</span>
+        </Tooltip>
+      );
+      const inner = screen.getByTestId('inner');
+      expect(inner).toHaveAttribute('tabindex', '0');
+      expect(inner.parentElement!).not.toHaveAttribute('tabindex');
+    });
+
+    it('LAW 21: a tooltip that resolves nothing is not a stop that does nothing', () => {
+      render(<Tooltip id="nonexistent.concept.id">standing</Tooltip>);
+      const trigger = screen.getByText('standing');
+      expect(trigger).not.toHaveAttribute('tabindex');
+    });
+
+    it('never adds a stop inside an open popup (depth > 0) — it would be unreachable anyway', () => {
+      render(<Tooltip label="Standing" depth={1}>standing</Tooltip>);
+      expect(screen.getByText('standing')).not.toHaveAttribute('tabindex');
+    });
+
+    it('never adds a stop to an SVG trigger — the hex-map tab-order storm', () => {
+      const { container } = render(
+        <svg>
+          <Tooltip label="Standing" as="g"><text>tile</text></Tooltip>
+        </svg>
+      );
+      expect(container.querySelector('g')).not.toHaveAttribute('tabindex');
+    });
+
+    it('focusable={false} suppresses a stop the auto rule would add', () => {
+      render(<Tooltip label="Standing" focusable={false}>standing</Tooltip>);
+      expect(screen.getByText('standing')).not.toHaveAttribute('tabindex');
+    });
+
+    // Focus is proven by where it LANDS, not by the attribute being present.
+    // jsdom's `focus()` is a no-op on a non-focusable element — it consults the
+    // same focusable-area rules the browser does — so `document.activeElement`
+    // falsifies the attribute assertion rather than restating it. This is the
+    // jsdom stand-in for the `__DEBUG`/activeElement read the browser route
+    // would have done; see the substitution note in the commit body.
+    it('LAW 50: focus actually lands on the trigger', () => {
+      render(<Tooltip label="Standing">standing</Tooltip>);
+      const trigger = screen.getByText('standing');
+      trigger.focus();
+      expect(document.activeElement).toBe(trigger);
+    });
+
+    it('...and does not land when the stop is suppressed', () => {
+      // The other side of the same claim. Two independent renders rather than a
+      // rerender: a node that has already held focus keeps `activeElement`
+      // pointed at it after React withdraws the attribute, which would make the
+      // negative arm pass or fail on React's attribute bookkeeping instead of on
+      // whether the element is focusable.
+      render(<Tooltip label="Standing" focusable={false}>standing</Tooltip>);
+      const trigger = screen.getByText('standing');
+      trigger.focus();
+      expect(document.activeElement).not.toBe(trigger);
+      expect(document.activeElement).toBe(document.body);
+    });
+
+    it('focusable forces a stop the auto rule declines', () => {
+      render(
+        <Tooltip label="Standing" focusable>
+          <button>Hover me</button>
+        </Tooltip>
+      );
+      expect(screen.getByText('Hover me').parentElement!).toHaveAttribute('tabindex', '0');
+    });
+  });
 });
