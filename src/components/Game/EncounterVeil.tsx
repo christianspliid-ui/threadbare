@@ -889,6 +889,14 @@ export function EncounterVeil({
                         these four ids are a closed set shipped with the legend,
                         so a miss is a build-time content bug to fix rather than
                         a runtime case to fall back from. */}
+                    {/* The stop sits on the word, not on `Tooltip`'s wrapper — the
+                        sanctioned caller override (THR-1095, `interactions.md`
+                        § Tooltip Pattern → Keyboard reachability). `Tooltip` now
+                        makes its own wrapper focusable by default, but here the
+                        ring should hug the category word itself rather than the
+                        wrapper's box. Its probe sees this `tabIndex` and stands
+                        down, so there is exactly one stop either way. Same
+                        pattern on the legend entries below. */}
                     <Tooltip id={chip.categoryTooltipId}>
                       <span
                         className="focus-ring"

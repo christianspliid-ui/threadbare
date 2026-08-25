@@ -1,23 +1,7 @@
 import { useEffect, useCallback, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { IconButton } from './IconButton';
-
-/**
- * Elements Tab cycles through inside the panel (Law 50). Named so widening the
- * focus contract is a change to this list, not to the trap logic (NFP #1).
- *
- * Deliberately does not filter on visibility: `offsetParent` and
- * `getClientRects()` both read empty under jsdom, so a visibility filter would
- * make the trap untestable rather than more correct.
- */
-const FOCUSABLE_SELECTOR = [
-  'a[href]',
-  'button:not([disabled])',
-  'input:not([disabled])',
-  'select:not([disabled])',
-  'textarea:not([disabled])',
-  '[tabindex]:not([tabindex="-1"])',
-].join(', ');
+import { FOCUSABLE_SELECTOR } from './focusableSelector';
 
 /**
  * The modal band (Law 35 — z-index comes from the stacking table, never invented).

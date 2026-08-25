@@ -11,6 +11,7 @@ import {
   TOOLTIP_LINK_PATTERN,
 } from '../../types/tooltip';
 import { resolveTooltip } from '../../engine/tooltipResolver';
+import { FOCUSABLE_SELECTOR } from './focusableSelector';
 
 interface TooltipProps {
   id?: string;
@@ -19,6 +20,20 @@ interface TooltipProps {
   children: React.ReactNode;
   depth?: number;
   as?: 'span' | 'g';
+  /**
+   * Keyboard reachability of the trigger (THR-1095).
+   *
+   * Omit for the default: the trigger becomes a tab stop when it would
+   * otherwise be unreachable — see `autoFocusable` below for the exact
+   * predicate. Pass `false` to suppress a stop the auto rule would add, or
+   * `true` to force one the auto rule declines.
+   *
+   * The common reason to pass `false` is that the caller puts `tabIndex` on a
+   * specific inner element instead, because the wrapper's box is the wrong
+   * thing to draw a focus ring around — the sanctioned caller pattern, and the
+   * case the auto rule already stands down for on its own.
+   */
+  focusable?: boolean;
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -127,12 +142,19 @@ export const Tooltip = React.memo(function Tooltip({
   children,
   depth = 0,
   as = 'span',
+  focusable,
 }: TooltipProps) {
   const tooltipId = useId();
   const triggerRef = useRef<HTMLElement | SVGGElement>(null);
   const tooltipOuterRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [position, setPosition] = useState<TooltipPosition | null>(null);
+  /**
+   * Whether the children already contain a natively-focusable element.
+   * `undefined` until the probe below has run — deliberately *not* `false`,
+   * so the first render never renders a tab stop it is about to withdraw.
+   */
+  const [childFocusable, setChildFocusable] = useState<boolean | undefined>(undefined);
 
   const showTimerRef = useRef<NodeJS.Timeout>();
   const hideTimerRef = useRef<NodeJS.Timeout>();
@@ -144,6 +166,57 @@ export const Tooltip = React.memo(function Tooltip({
   const finalLabel = explicitLabel || resolvedContent?.label;
   const finalDesc = explicitDesc || resolvedContent?.desc;
   const hasContent = !!finalLabel;
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // Keyboard reachability (THR-1095)
+  // ──────────────────────────────────────────────────────────────────────────
+  //
+  // The trigger used to be a bare wrapper with `onFocus`/`onBlur` and no
+  // `tabIndex`, so those two handlers were dead for any child that was not
+  // itself focusable — every tooltip over plain prose was mouse-only, and the
+  // Tier-1 hover tier of the disclosure ladder simply did not exist for a
+  // keyboard player. Law 23 wants the handlers reachable; Law 50 wants focus to
+  // reach the surface that explains itself.
+  //
+  // The counter-pressure is tab-order volume: `<Tooltip` appears 146 times
+  // across 49 files, and making all of them stops unconditionally is its own
+  // Law 46/50 problem. So the default is bounded by three structural tests
+  // rather than by caller memory, each of which removes stops nobody could use:
+  //
+  //   `as === 'span'`      — never SVG. `tabIndex` on `<g>` is inconsistently
+  //                          honoured across browsers and the two `as="g"`
+  //                          callers are hex-map overlays, where a stop per
+  //                          tile is the tab-order storm.
+  //   `depth === 0`        — never a concept link *inside* an open popup. The
+  //                          popup portals to the end of `<body>`, and the
+  //                          trigger's own blur closes it, so a nested stop is
+  //                          unreachable by construction. Hover still works.
+  //   `hasContent`         — never a tooltip that resolves nothing. A stop that
+  //                          opens no popup is a stop that does nothing (Law 21).
+  //
+  // ...and by one measured test: the children must not already own a stop, or
+  // the wrapper would add a second one for the same word.
+  //
+  // No `role` is added with the stop. Law 23's `role="button"` clause is about
+  // elements that *act* when pressed; a tooltip trigger only describes, and
+  // Enter/Space do nothing on it. `aria-describedby` (below) is the correct
+  // association, and announcing a button that cannot be pressed would be the
+  // worse accessibility outcome, not the more compliant one.
+  const autoFocusable =
+    as === 'span' && depth === 0 && hasContent && childFocusable === false;
+  const isFocusable = focusable ?? autoFocusable;
+
+  // Probe once on mount, and again only when one of the structural tests could
+  // have flipped — deliberately NOT on `children`, whose identity changes every
+  // render and would put a `querySelector` in the render path of all 146 call
+  // sites. A child that changes its own focusability after mount keeps whatever
+  // the mount-time probe decided; no caller does that today.
+  useLayoutEffect(() => {
+    if (focusable !== undefined || as !== 'span' || depth > 0 || !hasContent) return;
+    const el = triggerRef.current as HTMLElement | null;
+    if (!el) return;
+    setChildFocusable(!!el.querySelector(FOCUSABLE_SELECTOR));
+  }, [focusable, as, depth, hasContent]);
 
   // ──────────────────────────────────────────────────────────────────────────
   // Position Calculation (Phase 1 — best guess before measuring)
@@ -473,6 +546,15 @@ export const Tooltip = React.memo(function Tooltip({
         onFocus={handleFocus}
         onBlur={handleBlur}
         aria-describedby={isVisible ? tooltipId : undefined}
+        {...(isFocusable
+          ? {
+              tabIndex: 0,
+              // The keyboard ring, without the click ring (Law 23 —
+              // `:focus-visible` is never suppressed, and it cannot be
+              // expressed inline, so it has to be the shared class).
+              className: 'focus-ring',
+            }
+          : {})}
         style={wrapperStyle}
       >
         {children}
