@@ -30,6 +30,13 @@
 import type { SphereName } from '../types/index';
 import { SPHERE_NAMES } from '../types/index';
 import type { HungerId } from '../types/hunger';
+import type {
+  DealContextTag,
+  EncounterAftermathReactionEffect,
+  NudgeCostChannels,
+  NudgeRider,
+  StepOutcome,
+} from '../types/unifiedAction';
 
 // ─── Card types (the 21 keywords) ────────────────────────────────────
 
@@ -793,4 +800,156 @@ export function cardDisplayTitle(member: NudgeCardMember): string {
  */
 export function unauthoredCardCount(): number {
   return NUDGE_CARD_LIBRARY.filter((m) => m.title === undefined || m.quote === undefined).length;
+}
+
+// ─── Play profiles — the mechanics a dealt card plays with (THR-1247) ──
+
+/**
+ * What a library member *does* when the Repertoire deals it into a hand.
+ *
+ * Until THR-1247 a member carried a face ({@link CARD_CONTENT}) and nothing
+ * else: every number a card played with — cost, odds, rider, alternate price,
+ * world grant — lived on a per-encounter authored `StepNudge`, which is why
+ * dealing was impossible and why authoring a hand was the most expensive part
+ * of writing an encounter. This table is the missing half.
+ *
+ * **A profile is generic by the same law as the face.** No scene-bespoke
+ * targets, no numbers tuned for one encounter's difficulty. A grant that needs
+ * something to point at (Cache's item, Balm's condition) uses the THR-885
+ * deal-time binding model — a typed selector resolved when the card is dealt,
+ * and **binding failure means the card is not dealt** rather than dealt broken.
+ *
+ * Profiles are authored per member, once, instead of per encounter, every time.
+ * That is the entire cost argument of the dealt-hand design.
+ */
+export interface NudgeCardPlayProfile {
+  /** Pre-discount essence price. Repertoire and signature discounts apply on top, as today. */
+  readonly essenceCost: number;
+  /** Named forecast contribution. `0` for a pure-rider or pure-grant card. */
+  readonly forecastDelta: number;
+  /** Band rider, for the insurance / mercy / gambit families. */
+  readonly rider?: NudgeRider;
+  /** Prices paid outside the essence pool — the Heavy Hand, the Veil, the Bargain. */
+  readonly costs?: NudgeCostChannels;
+  /** World changes, in the existing aftermath effect vocabulary (THR-885/1179). */
+  readonly grants?: readonly EncounterAftermathReactionEffect[];
+  /**
+   * When this member is *relevant*. The dealer scores a member up when a tag
+   * here matches one the step declared, which is how a Might-testing step tends
+   * to be dealt cards that bear on force without any of it being hardcoded.
+   *
+   * Absent ⇒ the member is universally relevant and scores on sphere and
+   * provenance alone — the right shape for the universal core.
+   */
+  readonly contextTags?: readonly DealContextTag[];
+}
+
+/**
+ * Play profiles, keyed by member id exactly as {@link CARD_CONTENT} is.
+ *
+ * **Two reference entries only, deliberately (THR-1247 scope).** The engine
+ * ticket ships the path; the corpus — a profile and fragments for every member
+ * — is THR-1248, which is blocked by this and authors into this table. The two
+ * chosen exercise both access paths the dealer must handle: `card.boost.core`
+ * is universal core (held by every god, never sphere-gated, the floor that
+ * keeps the deal pool from ever being empty), and `card.veil.signature.darkness`
+ * is a sphere signature (held only by a darkness-aligned god, discounted for
+ * them, and carrying an alternate cost channel rather than a large odds delta).
+ *
+ * A member with a profile but no {@link BAND_FRAGMENTS} row is **undealable**
+ * and named by `validateRepertoire()` — see that report's `unpayableProfiles`.
+ * That is the payoff-at-every-band law applied library-side: a card the god
+ * plays must be traceable in the prose of how it landed.
+ */
+export const PLAY_PROFILES: Readonly<Record<string, NudgeCardPlayProfile>> = {
+  // Universal core. Plainest possible mechanics: it costs a little and it moves
+  // the odds, which is the whole of what Boost promises.
+  'card.boost.core': {
+    essenceCost: 2,
+    forecastDelta: 0.1,
+  },
+  // Darkness signature. Pays in visibility rather than in odds — the Veil buys
+  // cover, and cover is not the same currency as luck.
+  'card.veil.signature.darkness': {
+    essenceCost: 1,
+    forecastDelta: 0.06,
+    costs: { detectionDelta: -2 },
+    contextTags: ['shadow', 'social', 'peril'],
+  },
+};
+
+/**
+ * Per-member band prose — what the god's influence *looked like* in each band.
+ *
+ * Authored once per member here rather than once per card per encounter, which
+ * is the same trade the profiles make. Two rules govern every entry:
+ *
+ * 1. **Every member carries at least one failure-band fragment**, and a member
+ *    whose profile moves the odds by `NUDGE_BIG_DELTA` or more carries both.
+ *    A hand that only narrates its wins teaches the player the god's touch is free.
+ * 2. **Fragments are generic and enrichment-grounded** — written to `{actor}` /
+ *    `{they}` and scene-neutral nouns, describing the *influence landing or
+ *    misfiring*, never the scene's furniture. The genericity test that governs
+ *    a card face applies here verbatim: a fragment that only reads correctly in
+ *    one encounter is a defect, because this one will be appended in forty.
+ *
+ * Appended through the existing `collectNudgeBandProse` path, so a dealt card's
+ * payoff prose reaches the player by exactly the route an authored card's does.
+ */
+export const BAND_FRAGMENTS: Readonly<Record<string, Partial<Record<StepOutcome, string>>>> = {
+  'card.boost.core': {
+    critical_success: 'The margin was never in doubt; something had leaned on it.',
+    success: 'The odds had been quietly widened, and {they} walked through the gap.',
+    success_at_cost: 'The push landed, but it had to be paid for somewhere.',
+    near_miss: 'The pressure was there, and it was not quite enough.',
+    failure: 'Whatever leaned on the moment leaned the wrong way.',
+    critical_failure: 'The help arrived, and made the fall further.',
+  },
+  'card.veil.signature.darkness': {
+    critical_success: 'Nobody could afterwards say who had been there at all.',
+    success: 'The dark held where it was asked to hold.',
+    success_at_cost: 'The cover held; something else was left uncovered.',
+    near_miss: 'The shadow thinned at the worst possible moment.',
+    failure: 'The dark drew the eye it was meant to turn aside.',
+  },
+};
+
+/** Play profile for a member id, or `undefined` for a member with none. */
+export function nudgeCardPlayProfile(id: string): NudgeCardPlayProfile | undefined {
+  return PLAY_PROFILES[id];
+}
+
+/** Band fragments for a member id, or `undefined` for a member with none. */
+export function nudgeCardBandFragments(
+  id: string,
+): Partial<Record<StepOutcome, string>> | undefined {
+  return BAND_FRAGMENTS[id];
+}
+
+/**
+ * Count of library members carrying a play profile — the members the dealer
+ * could deal if nothing else stood in the way.
+ *
+ * Mirrors {@link unauthoredCardCount} as a live gauge rather than a pass/fail:
+ * while the corpus lands (THR-1248) this climbs toward `NUDGE_CARD_LIBRARY.length`,
+ * and the test that pins it moves with the corpus. Reading it is how a caller
+ * tells "the dealer had nothing to offer" from "the dealer chose nothing".
+ */
+export function profiledCardCount(): number {
+  return NUDGE_CARD_LIBRARY.filter((m) => PLAY_PROFILES[m.id] !== undefined).length;
+}
+
+/**
+ * Members that are dealable *at all*: a play profile, and at least one band
+ * fragment to pay it off with.
+ *
+ * The dealer's candidate universe, before any repertoire or context filtering.
+ * A profile with no fragments is excluded here rather than dealt with silent
+ * prose — see {@link BAND_FRAGMENTS} rule 1.
+ */
+export function dealableMembers(): readonly NudgeCardMember[] {
+  return NUDGE_CARD_LIBRARY.filter(
+    (m) =>
+      PLAY_PROFILES[m.id] !== undefined && Object.keys(BAND_FRAGMENTS[m.id] ?? {}).length > 0,
+  );
 }

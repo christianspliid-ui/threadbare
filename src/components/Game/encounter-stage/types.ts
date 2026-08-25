@@ -599,6 +599,41 @@ export interface EncounterStageNudgeCardModel {
   blockedCode?: NudgeBlockedCode;
   /** Plain-language reason shown on a dimmed card. */
   blockedReason?: string;
+  /**
+   * THR-1247 — where this card came from, when it came from the god rather than
+   * the scene.
+   *
+   * Present only on a **dealt** card, and phrased as provenance rather than as a
+   * mechanic ("From your repertoire — Darkness signature"). A player needs to be
+   * able to tell the god's own cards from the ones this encounter wrote: one is
+   * who you are, the other is where you are. An authored card carries no line at
+   * all rather than a line announcing that it is ordinary.
+   *
+   * **Delivered in parts, not as a sentence, because of UI Law 2** — the surface
+   * never guesses which words are concepts; the producer declares them. "Darkness"
+   * here is a *sphere*, a first-class game concept that Law 1 says must carry its
+   * tooltip, and Law 17 says that tooltip comes from the one registry. Shipping
+   * this as one string would have forced the shell to find the sphere word inside
+   * English prose, which is precisely the parse Law 2 exists to forbid.
+   *
+   * Words only, never a numeral — Law 13 applies here as everywhere on the face.
+   */
+  provenance?: {
+    /** Leading clause, always present. */
+    readonly prefix: string;
+    /** The concept named in the line, if one is. Rendered with its tooltip. */
+    readonly conceptLabel?: string;
+    /** Registry id for {@link conceptLabel} (e.g. `sphere.darkness`). */
+    readonly conceptTooltipId?: string;
+    /** Trailing clause after the concept. Empty when the line ends on it. */
+    readonly suffix?: string;
+    /**
+     * The whole line as flat text, for any surface that cannot render a nested
+     * tooltip (the encounter package view, an accessible name, a test). Kept in
+     * sync with the parts by construction — it is assembled from them.
+     */
+    readonly text: string;
+  };
   /** Rider name, when this card carries one — designer view only. */
   riderLabel?: string;
   /** Named forecast contribution. Designer view only; never rendered as a numeral. */

@@ -31,19 +31,23 @@ import type { EchoDefinition } from '../types/echo';
 import type { HarvestType } from '../types/worldSoul';
 import type { NudgeCardMember, NudgeCardTypeId } from '../data/nudge-card-library';
 import {
+  BAND_FRAGMENTS,
   HUNGER_UNIQUE_CARDS,
   NUDGE_CARD_LIBRARY,
+  PLAY_PROFILES,
   SPHERE_SIGNATURES,
   UNIVERSAL_CORE_TYPES,
   nudgeCardMember,
 } from '../data/nudge-card-library';
 import {
+  DEAL_FAILURE_BAND_OUTCOMES,
   ECHO_CARD_SCAR_DISCOUNT,
   ECHO_CARD_SCAR_PENALTY,
   SECONDARY_SPHERE_DISCOUNT,
   SPHERE_ATTUNEMENT_THRESHOLDS,
 } from '../data/nudge-constants';
 import type { EssenceEarnedBySphere } from '../types/influence';
+import type { StepOutcome } from '../types/unifiedAction';
 
 // ─── Warnings ────────────────────────────────────────────────────────
 
@@ -458,6 +462,35 @@ export interface RepertoireLivenessReport {
    * is a `number`, so the type system has nothing to say about it (THR-1180).
    */
   readonly unreachableAttunementMembers: readonly string[];
+  /**
+   * THR-1247 — members carrying a play profile but no band fragments.
+   *
+   * **Undealable, and that is the point of naming them.** The payoff-at-every-band
+   * law says a card the god played must be traceable in the prose of how it
+   * landed; a profiled member with nothing to say in any band would deal, spend
+   * the player's essence, move the odds, and then vanish from the account of
+   * what happened. `dealHand` skips them, and this row is what stops that skip
+   * from being silent — a prose hole reported by name rather than a card that
+   * mysteriously never appears.
+   */
+  readonly unpayableProfiles: readonly string[];
+  /**
+   * THR-1247 — members carrying band fragments but no play profile.
+   *
+   * The mirror defect and the cheaper one: authored prose that can never be
+   * reached, because nothing can deal the card it belongs to. Harmless at
+   * runtime, which is exactly why it needs a report — it is invisible otherwise,
+   * and it means someone's authoring went nowhere.
+   */
+  readonly profilelessFragments: readonly string[];
+  /**
+   * THR-1247 — profiled members whose fragments cover no failure band.
+   *
+   * A hand that only narrates its wins teaches the player that the god's touch
+   * is free. This is the library-side restatement of the rule
+   * `checkNudgeHand` enforces per authored card.
+   */
+  readonly winOnlyFragments: readonly string[];
   /** Keys swept, so a caller can tell "all live" from "matched nothing". */
   readonly checkedKeys: number;
 }
@@ -505,10 +538,38 @@ export function validateRepertoire(): RepertoireLivenessReport {
     }
   }
 
+  // THR-1247 — the two library tables that make a member *dealable* must agree
+  // with each other. Neither half is checkable by the type system: both are
+  // `Record<string, …>` keyed on member ids, so a typo, a rename, or a
+  // half-finished authoring pass produces a silently undealable card (or
+  // silently unreachable prose) that nothing else would ever report.
+  const unpayableProfiles: string[] = [];
+  const profilelessFragments: string[] = [];
+  const winOnlyFragments: string[] = [];
+  for (const member of NUDGE_CARD_LIBRARY) {
+    checkedKeys++;
+    const profile = PLAY_PROFILES[member.id];
+    const bands = Object.keys(BAND_FRAGMENTS[member.id] ?? {}) as StepOutcome[];
+    if (profile && bands.length === 0) {
+      unpayableProfiles.push(member.id);
+      continue;
+    }
+    if (!profile && bands.length > 0) {
+      profilelessFragments.push(member.id);
+      continue;
+    }
+    if (profile && !bands.some((b) => DEAL_FAILURE_BAND_OUTCOMES.includes(b))) {
+      winOnlyFragments.push(member.id);
+    }
+  }
+
   return {
     deadHungerCards,
     unbuiltSignatureTypes,
     unreachableAttunementMembers,
+    unpayableProfiles,
+    profilelessFragments,
+    winOnlyFragments,
     checkedKeys,
   };
 }

@@ -52,6 +52,105 @@ function isNudgeBearing(step: unknown): step is NudgeBearingStep {
   return Array.isArray(s?.nudges) && s.nudges.length > 0;
 }
 
+/**
+ * THR-1247 — validation for a step whose hand is *composed* rather than wholly
+ * authored: 0–2 encounter specials plus a fill declared by `deal`.
+ *
+ * ─── What can and cannot be checked statically ──────────────────────
+ * The dealt half is a function of the *god's repertoire*, which does not exist
+ * at authoring time — a darkness god and an order god get different fills from
+ * the identical declaration, by design. So the rules below check the half the
+ * author controls and the *shape* of what they asked for, and deliberately do
+ * not attempt to predict a hand:
+ *
+ * - the declaration is coherent (a positive count that leaves the composed hand
+ *   inside the hand window);
+ * - the specials are genuinely special — 0–2 of them, not a full authored hand
+ *   with a fill bolted on;
+ * - every authored special still obeys every per-card rule (failure-band
+ *   fragment, no digits in the effect line, name budget, and the rest), because
+ *   those are the author's to satisfy whatever the dealer adds;
+ * - band coverage is **not** required of the specials alone. That rule exists so
+ *   a hand pays off at every band, and on a composed step the dealt cards carry
+ *   most of that load through `BAND_FRAGMENTS` — holding two specials to it
+ *   would force authors to write six bands per card for a hand of six, which is
+ *   the exact cost this design removes.
+ *
+ * The plan's kill criterion applies here: if a declared deal turns out not to be
+ * statically checkable at all, the declaration schema is under-specified and the
+ * design re-opens rather than the gate weakening.
+ */
+export const DEAL_MAX_AUTHORED_SPECIALS = 2;
+
+/** A step that composes its hand: a `deal` declaration, with or without specials. */
+type DealBearingStep = ActionStep & { deal: NonNullable<ActionStep['deal']> };
+
+function isDealBearing(step: unknown): step is DealBearingStep {
+  return (step as ActionStep)?.deal !== undefined;
+}
+
+/** Plain `ActionStep`s declaring a fill. */
+export function dealBearingSteps(template: UnifiedActionTemplate): DealBearingStep[] {
+  return (template.steps ?? []).filter(isDealBearing);
+}
+
+/**
+ * Composed-hand rules for every step of `template` that declares a `deal`.
+ *
+ * Returns `[]` for a template with no declaration — which is every shipped
+ * template, so this adds nothing to the corpus's current verdict.
+ */
+export function checkComposedHand(template: UnifiedActionTemplate): string[] {
+  const violations: string[] = [];
+
+  for (const step of dealBearingSteps(template)) {
+    const index = (template.steps ?? []).indexOf(step);
+    const where = `${template.id} step ${index} (${step.reach})`;
+    const specials = step.nudges ?? [];
+    const { count, tags, exclude } = step.deal;
+
+    if (!Number.isFinite(count) || count <= 0) {
+      violations.push(`${where}: deal.count is ${String(count)} — declare a positive fill or drop the declaration`);
+    }
+    if (specials.length + count > NUDGE_HAND_MAX) {
+      violations.push(
+        `${where}: ${specials.length} specials + fill of ${count} = ${specials.length + count}, over NUDGE_HAND_MAX ${NUDGE_HAND_MAX}`,
+      );
+    }
+    if (specials.length + count < NUDGE_HAND_MIN) {
+      violations.push(
+        `${where}: ${specials.length} specials + fill of ${count} = ${specials.length + count}, under NUDGE_HAND_MIN ${NUDGE_HAND_MIN}`,
+      );
+    }
+    if (specials.length > DEAL_MAX_AUTHORED_SPECIALS) {
+      violations.push(
+        `${where}: ${specials.length} authored specials, over DEAL_MAX_AUTHORED_SPECIALS ${DEAL_MAX_AUTHORED_SPECIALS}`
+        + ' — a composed hand authors only what this encounter alone could offer',
+      );
+    }
+    // A duplicate tag is not a scoring bug (the dealer counts matches, so a
+    // repeat would silently double a card's weight) but it is always a typo.
+    const seen = new Set<string>();
+    for (const tag of tags ?? []) {
+      if (seen.has(tag)) violations.push(`${where}: deal.tags repeats '${tag}'`);
+      seen.add(tag);
+    }
+    if (exclude && exclude.length > 0 && specials.length === 0 && count > 0) {
+      // Advisory in substance, a violation in form: a step that excludes types
+      // and authors nothing is describing a hand by subtraction, which is the
+      // shape the plan warns reads as "this step wants an authored hand".
+      if (exclude.length > DEAL_MAX_AUTHORED_SPECIALS) {
+        violations.push(
+          `${where}: excludes ${exclude.length} types with no authored special`
+          + ' — author the hand instead of describing it by subtraction',
+        );
+      }
+    }
+  }
+
+  return violations;
+}
+
 /** Plain `ActionStep`s only — branching variants are out of scope for linear templates. */
 export function nudgeBearingSteps(template: UnifiedActionTemplate): NudgeBearingStep[] {
   return (template.steps ?? []).filter(isNudgeBearing);
@@ -75,48 +174,62 @@ export function checkNudgeHand(template: UnifiedActionTemplate): string[] {
   const steps = nudgeBearingSteps(template);
 
   if (steps.length === 0) {
+    // THR-1247 — a step may compose its hand entirely from the Repertoire, with
+    // no authored special at all. That is a legal shape, not an empty template,
+    // so it is handed to `checkComposedHand` rather than reported as no-hand.
+    if (dealBearingSteps(template).length > 0) return [];
     return [`${template.id}: no nudge-bearing step — nothing to check`];
   }
 
   for (const [index, step] of steps.entries()) {
     const where = `${template.id} step ${index} (${step.reach})`;
     const hand = step.nudges;
+    // THR-1247 — on a composed step the authored cards are *specials*, not the
+    // hand. The whole-hand rules below (size, delta budget, sphere spread,
+    // common-option floor, band coverage) are about the hand the player is
+    // dealt, and most of that hand does not exist until the deal runs — so they
+    // are owned by `checkComposedHand` here, and the per-card rules further
+    // down still apply to every special.
+    const composed = step.deal !== undefined;
 
     // ─── Hand shape ───────────────────────────────────────────────
-    if (hand.length < NUDGE_HAND_MIN || hand.length > NUDGE_HAND_MAX) {
-      violations.push(
-        `${where}: hand of ${hand.length}, outside ${NUDGE_HAND_MIN}–${NUDGE_HAND_MAX}`,
-      );
-    }
+    // Skipped wholesale on a composed step — see `composed` above.
+    if (!composed) {
+      if (hand.length < NUDGE_HAND_MIN || hand.length > NUDGE_HAND_MAX) {
+        violations.push(
+          `${where}: hand of ${hand.length}, outside ${NUDGE_HAND_MIN}–${NUDGE_HAND_MAX}`,
+        );
+      }
 
-    const totalDelta = hand.reduce((sum, n) => sum + n.forecastDelta, 0);
-    if (totalDelta > NUDGE_HAND_MAX_TOTAL_DELTA + 1e-9) {
-      violations.push(
-        `${where}: hand sums to ${totalDelta.toFixed(2)}, over NUDGE_HAND_MAX_TOTAL_DELTA ${NUDGE_HAND_MAX_TOTAL_DELTA}`,
-      );
-    }
+      const totalDelta = hand.reduce((sum, n) => sum + n.forecastDelta, 0);
+      if (totalDelta > NUDGE_HAND_MAX_TOTAL_DELTA + 1e-9) {
+        violations.push(
+          `${where}: hand sums to ${totalDelta.toFixed(2)}, over NUDGE_HAND_MAX_TOTAL_DELTA ${NUDGE_HAND_MAX_TOTAL_DELTA}`,
+        );
+      }
 
-    const spheres = new Set(hand.map(n => n.sphere).filter(Boolean));
-    if (spheres.size < HAND_SPHERE_COVERAGE_MIN) {
-      violations.push(
-        `${where}: spans ${spheres.size} spheres, under HAND_SPHERE_COVERAGE_MIN ${HAND_SPHERE_COVERAGE_MIN}`,
-      );
-    }
+      const spheres = new Set(hand.map(n => n.sphere).filter(Boolean));
+      if (spheres.size < HAND_SPHERE_COVERAGE_MIN) {
+        violations.push(
+          `${where}: spans ${spheres.size} spheres, under HAND_SPHERE_COVERAGE_MIN ${HAND_SPHERE_COVERAGE_MIN}`,
+        );
+      }
 
-    const common = hand.filter(n => n.sphere === undefined);
-    if (common.length < HAND_COMMON_OPTIONS_MIN) {
-      violations.push(
-        `${where}: ${common.length} common (sphere-less) options, under HAND_COMMON_OPTIONS_MIN ${HAND_COMMON_OPTIONS_MIN}`,
-      );
-    }
+      const common = hand.filter(n => n.sphere === undefined);
+      if (common.length < HAND_COMMON_OPTIONS_MIN) {
+        violations.push(
+          `${where}: ${common.length} common (sphere-less) options, under HAND_COMMON_OPTIONS_MIN ${HAND_COMMON_OPTIONS_MIN}`,
+        );
+      }
 
-    // ─── Band coverage ────────────────────────────────────────────
-    const covered = new Set<StepOutcome>();
-    for (const nudge of hand) {
-      for (const band of Object.keys(nudge.bandProse ?? {}) as StepOutcome[]) covered.add(band);
-    }
-    for (const band of ALL_BAND_OUTCOMES) {
-      if (!covered.has(band)) violations.push(`${where}: never pays off the ${band} band`);
+      // ─── Band coverage ──────────────────────────────────────────
+      const covered = new Set<StepOutcome>();
+      for (const nudge of hand) {
+        for (const band of Object.keys(nudge.bandProse ?? {}) as StepOutcome[]) covered.add(band);
+      }
+      for (const band of ALL_BAND_OUTCOMES) {
+        if (!covered.has(band)) violations.push(`${where}: never pays off the ${band} band`);
+      }
     }
 
     for (const nudge of hand) {

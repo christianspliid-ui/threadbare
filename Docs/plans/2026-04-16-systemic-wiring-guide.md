@@ -2606,6 +2606,77 @@ the library file.
 
 ---
 
+## Capability: Dealt hands — stop authoring the whole hand (THR-1247)
+
+**Author only the cards this encounter alone could offer, and let the god's Repertoire
+fill the rest.** Authoring a 4–8 card hand per step was the most expensive part of
+writing an encounter, and it produced two problems beyond the cost: hands drifted
+toward each author's favourite three types, and the player's repertoire progression
+was invisible, because an encounter can only ever show the cards its author wrote.
+
+**What you write now:**
+
+```ts
+{
+  reach: 'shadow',
+  difficulty: 0.5,
+  purposeLine: 'Slip the cordon',
+  // 0–2 specials: cards nothing but THIS scene could offer.
+  nudges: [ /* the bribe only this gate-warden would take */ ],
+  // …and a declaration for the rest.
+  deal: {
+    count: 4,
+    tags: ['shadow', 'peril'],   // what the step is about
+    exclude: ['gambit'],          // rare; prefer authoring a special
+  },
+}
+```
+
+`deal` is **optional and additive**. Absent ⇒ no dealing and today's behavior
+byte-identical, which is why no shipped template changed when this landed.
+
+**What the engine does with it.** `dealHand` scores every member of the god's
+repertoire that carries a play profile — sphere identity (primary > secondary >
+common), context-tag match against your `tags`, and a bonus for members *earned*
+through play (attunement, milestone, hunger unique, echo) — breaks ties on member
+id, and fills while the composed hand stays inside the hand window and under the
+delta budget. It will never deal a type one of your specials already covers.
+
+**Two rules that will bite you if you forget them:**
+
+1. **A dealt card's mechanics live in the library, not in your template.**
+   `PLAY_PROFILES[memberId]` carries cost, odds, rider, alternate costs and grants;
+   `BAND_FRAGMENTS[memberId]` carries its band prose. A member with a profile but no
+   fragments is **undealable** and named by `validateRepertoire()` — that is the
+   payoff-at-every-band law applied library-side, not a bug.
+2. **Nothing is shuffled.** Dealing is pure and zero-PRNG: same god, same
+   declaration, same cards, on screen and at resolution and after a reload. Do not
+   reach for `Math.random()` to add variety — variety is the tags and the god's
+   growing repertoire. Shuffle-feel would be a new design decision needing a seeded
+   stream, not a tweak.
+
+**The tag vocabulary is closed** (`DealContextTag`): the eight reaches plus
+`social`, `peril`, `labor`, `journey`. Widening it is a spec change, not a
+convenience at the call site — a private synonym makes the dealer score against a
+vocabulary nobody agreed on.
+
+**Checked by** `check:encounter` (composed-hand rules: coherent count, 0–2 specials,
+composed size inside the window, no repeated tags). **Inspect a deal** with
+`window.__DEBUG.getRepertoire()` → `lastDeal`: every candidate, its three score
+terms, and why each was or was not taken. The encounter log gains a `dealt=` field
+on composed steps only.
+
+**Files:** `src/engine/encounters/dealHand.ts` (dealer, minting, composition),
+`src/data/nudge-card-library.ts` (`PLAY_PROFILES`, `BAND_FRAGMENTS`),
+`src/types/unifiedAction.ts` (`ActionStep.deal`, `DealContextTag`), constants in
+`src/data/nudge-constants.ts`.
+
+**Two reference profiles ship today** (`card.boost.core`, `card.veil.signature.darkness`)
+— enough to prove the path, not enough to author against. The full corpus, the spec's
+§ *dealt hand*, and the first composed encounter are THR-1248.
+
+---
+
 ## Capability: Agent-decided branches — the mortal picks the fork (THR-894)
 
 **Author a branch the acting mortal resolves from who they are, and let taking it
