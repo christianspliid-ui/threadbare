@@ -248,9 +248,23 @@ hook leaves no trace on the finished template by design, so nothing can stamp th
 an unstamped hook stays likelier than it deserves indefinitely. `npm run draw:hooks --
 --coverage` reports what has been spent.
 
-In batch mode, roll all six briefs before writing any of them, and check the spread: six
-hooks sharing a theme is worth re-rolling a brief for, and it is much cheaper to notice here
-than in the batch report.
+**In batch mode, roll the packet instead — one command for the whole batch** (THR-1245):
+
+```
+npm run draw:packet -- <briefSlug> --slots 6
+```
+
+It rolls every slot's hooks and Seed Dice at the same seeds and from the same samplers,
+adds the four capped axes nothing used to roll — **reach, decision shape, setting class
+(gap-weighted toward the corpus's thin classes), system target (maturity-gated)** — and
+enforces every cap and floor **by construction** rather than by re-rolling: a cap-hit face
+is dropped from later slots' tables, and the scale floor bites only at the last slot that
+can still meet it. Output is the brief's `Rolled constraints` block ready to paste plus the
+spread table, so the check you used to do by eye is done for you and printed. Pass `--ids`
+to get each slot's binding consequence hand in the same run (Step 0b below), and `--reaches`
+to aim a batch at a starving column. Deterministic off the brief slug — anyone can recompute
+it. Six hooks sharing a theme is still worth re-rolling a brief for; the packet prints the
+spread that makes it obvious here rather than in the batch report.
 
 ### Step 0b: Roll the Consequence Draw (THR-1145)
 

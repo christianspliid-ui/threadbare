@@ -105,6 +105,7 @@
     "check:encounter-live": "esbuild scripts/encounter-live-proof.ts --bundle --platform=node --format=esm --outfile=.cache/encounter-live-proof.mjs --external:fs --external:path --external:process --external:url && node .cache/encounter-live-proof.mjs",
     "draw:consequences": "esbuild scripts/draw-consequences.ts --bundle --platform=node --format=esm --outfile=.cache/draw-consequences.mjs --external:fs --external:path --external:process --external:url && node .cache/draw-consequences.mjs",
     "draw:hooks": "esbuild scripts/draw-plot-hooks.ts --bundle --platform=node --format=esm --outfile=.cache/draw-plot-hooks.mjs --external:fs --external:path --external:process --external:url && node .cache/draw-plot-hooks.mjs",
+    "draw:packet": "esbuild scripts/draw-packet.ts --bundle --platform=node --format=esm --outfile=.cache/draw-packet.mjs --external:fs --external:path --external:process --external:url && node .cache/draw-packet.mjs",
     "encounter:batch-report": "esbuild scripts/encounter-batch-report.ts --bundle --platform=node --format=esm --outfile=.cache/encounter-batch-report.mjs --external:fs --external:path --external:process --external:url --external:child_process && node .cache/encounter-batch-report.mjs",
     "check:node-modules": "node --experimental-strip-types scripts/node-modules-health.ts",
     "repair:donor-node-modules": "node --experimental-strip-types scripts/repair-donor-node-modules.ts",
