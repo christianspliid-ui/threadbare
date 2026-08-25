@@ -397,7 +397,19 @@ if (import.meta.env.DEV) {
         }))
         .sort((a, b) => b.earned - a.earned);
 
-      if (!identity) return { entries: [], essenceEarnedBySphere: earned, attunement };
+      // THR-1247 — the last deal, so "why did I get this hand" is answerable.
+      // Dealing emits no trace by design (pure, replayable, and on the render
+      // path where a trace would double-fire), so this readout and the
+      // encounter-log `dealt` column carry the whole inspectability requirement.
+      const { lastDealReport } = await import('./engine/encounters/dealHand');
+      const { profiledCardCount } = await import('./data/nudge-card-library');
+      const deal = lastDealReport();
+      const lastDeal = deal ? { templateId: deal.templateId, ...deal.report } : null;
+      const dealable = { profiled: profiledCardCount() };
+
+      if (!identity) {
+        return { entries: [], essenceEarnedBySphere: earned, attunement, lastDeal, dealable };
+      }
 
       const entries = buildRepertoire({
         primary: identity.sphereAlignment?.primary,
@@ -416,7 +428,7 @@ if (import.meta.env.DEV) {
         unlockKind: entry.member.unlock?.kind ?? 'starting',
       }));
 
-      return { entries, essenceEarnedBySphere: earned, attunement };
+      return { entries, essenceEarnedBySphere: earned, attunement, lastDeal, dealable };
     },
 
     /**

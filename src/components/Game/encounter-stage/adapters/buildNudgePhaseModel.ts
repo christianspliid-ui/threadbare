@@ -36,6 +36,7 @@ import {
   buildRepertoire,
   echoCardsFromDefinitions,
 } from '../../../../engine/nudgeCardRepertoire';
+import type { RepertoireEntry } from '../../../../engine/nudgeCardRepertoire';
 import type { ResolutionInput } from '../../../../types/resolution';
 import type { ForecastTier } from '../../../../types/traces/encounter-traces';
 import type {
@@ -48,6 +49,11 @@ import { isActionStepBranch } from '../../../../types/unifiedAction';
 import { computeCapability } from '../../../../engine/domainCapability';
 import { locationTypeFromProperties } from '../../../../engine/encounterCache';
 import { settingClassForSubtype } from '../../../../data/settingClasses';
+import {
+  composeDealtStep,
+  isDealtNudgeId,
+  recordDealReport,
+} from '../../../../engine/encounters/dealHand';
 import { computeResolutionModifiers } from '../../../../engine/resolutionModifiers';
 import { forecastAction } from '../../../../engine/resolutionService';
 import {
@@ -245,16 +251,85 @@ function costChannelsFor(nudge: StepNudge): EncounterStageCostChannelModel[] | u
  * setting-resolved string by this point — `buildNudgeHand` folds `fictionBySetting`
  * into it — so enriching here covers the variant as well as the default.
  */
+/**
+ * How the god came to hold a dealt card, in words.
+ *
+ * Provenance, not mechanics: the player is being told *whose* card this is, so
+ * they can read a hand as part their god and part this scene. An authored card
+ * gets no line — saying "this one is ordinary" would be noise on every card in
+ * the corpus to distinguish the few that are not.
+ *
+ * Prose Doctrine v2 governs this line as it governs the face: direct, no flavor
+ * quote, no numeral.
+ */
+function dealtProvenanceLine(
+  nudge: StepNudge,
+  sources: ReadonlyMap<string, RepertoireEntry['source']> | undefined,
+): EncounterStageNudgeCardModel['provenance'] {
+  if (!sources || !nudge.libraryCardId || !isDealtNudgeId(nudge.id)) return undefined;
+  const source = sources.get(nudge.libraryCardId);
+  if (!source) return undefined;
+
+  const PREFIX = 'From your repertoire';
+  const assemble = (
+    parts: { conceptLabel?: string; conceptTooltipId?: string; suffix?: string },
+  ): EncounterStageNudgeCardModel['provenance'] => ({
+    prefix: PREFIX,
+    ...parts,
+    text: [PREFIX, [parts.conceptLabel, parts.suffix].filter(Boolean).join(' ')]
+      .filter(Boolean)
+      .join(' — '),
+  });
+
+  // A sphere-derived source names its sphere, which is a game concept and so
+  // carries its own tooltip (Laws 1 + 17). Every other source names no concept
+  // and is a plain clause.
+  const sphere = nudge.sphere;
+  switch (source) {
+    case 'signature':
+    case 'sphere_attunement':
+      return sphere
+        ? assemble({
+            conceptLabel: capitalise(sphere),
+            conceptTooltipId: `sphere.${sphere}`,
+            suffix: source === 'signature' ? 'signature.' : 'attunement.',
+          })
+        : assemble({ suffix: 'yours by alignment.' });
+    case 'hunger':
+      return assemble({ suffix: 'born of your hunger.' });
+    case 'milestone':
+      return assemble({ suffix: 'earned as you rose.' });
+    case 'god_trait':
+      return assemble({ suffix: 'earned by what you became.' });
+    case 'echo':
+      return assemble({ suffix: 'carried out of a former age.' });
+    case 'core':
+    default:
+      return assemble({ suffix: 'always yours.' });
+  }
+}
+
+function capitalise(word: string): string {
+  return word.charAt(0).toUpperCase() + word.slice(1);
+}
+
 export function buildNudgeCardModel(
   nudge: StepNudge,
   accessibleSpheres: readonly SphereName[],
   state: 'playable' | 'dimmed',
   enrich: (text: string) => string,
   blocked?: NudgeBlockedCode,
+  /**
+   * THR-1247 — library card id → why the god holds it, for the dealt card's
+   * provenance line. Absent (every non-dealt caller) ⇒ no line, which is the
+   * correct rendering for a card the encounter authored.
+   */
+  repertoireSources?: ReadonlyMap<string, RepertoireEntry['source']>,
 ): EncounterStageNudgeCardModel {
   const cost = effectiveNudgeCost(nudge, accessibleSpheres);
   const keyword = nudgeCardKeyword(nudge.libraryCardId);
   return {
+    provenance: dealtProvenanceLine(nudge, repertoireSources),
     id: nudge.id,
     libraryCardId: nudge.libraryCardId,
     keyword: keyword?.keyword,
@@ -494,9 +569,12 @@ export function buildNudgePhaseModel(
   // card from those runs — a behavior change dressed as a fallback. Absent
   // identity ⇒ absent gate ⇒ today's behavior exactly (NFP #6).
   const identity = gameState?.ascendantIdentity;
-  const repertoireCardIds = identity
-    ? new Set(
-        buildRepertoire({
+  // THR-1247 — the full entries, not only their ids. The dealer scores on a
+  // member's provenance (`entry.source`) as well as its sphere, so it needs the
+  // repertoire rows themselves; the id set below is derived from them rather
+  // than built by a second `buildRepertoire` call.
+  const repertoireEntries = identity
+    ? buildRepertoire({
           primary: identity.sphereAlignment?.primary,
           secondary: identity.sphereAlignment?.secondary,
           // THR-891 — `hungerId` is stored dotted (`hunger.witness`) while the
@@ -510,12 +588,31 @@ export function buildNudgePhaseModel(
           // reads it as all-zero, so attunement members stay locked rather than
           // falling open on the saves least able to have earned them.
           essenceEarnedBySphere: gameState?.essenceEarnedBySphere,
-          echoCards: echoCardsFromDefinitions(gameState?.echoDefinitions ?? []),
-        }).map((entry) => entry.member.id),
-      )
+        echoCards: echoCardsFromDefinitions(gameState?.echoDefinitions ?? []),
+      })
+    : undefined;
+  const repertoireCardIds = repertoireEntries
+    ? new Set(repertoireEntries.map((entry) => entry.member.id))
     : undefined;
 
-  const hand = buildNudgeHand(step, template, {
+  // THR-1247 — the dealt hand. When this step declares `deal`, the god's
+  // Repertoire fills the hand around whatever the encounter authored; when it
+  // does not, `composeDealtStep` hands back the *same step object* and nothing
+  // downstream can tell dealing exists (NFP #6).
+  //
+  // Composed here, upstream of `buildNudgeHand`, which is deliberately
+  // untouched: a minted card is an ordinary `StepNudge`, so partitioning,
+  // pricing, gating and commit all treat it exactly as an authored one. If
+  // anything below this line ever needs to know a card was dealt, the design
+  // has been violated.
+  const { step: composedStep, report: dealReport } = composeDealtStep(step, repertoireEntries, {
+    primarySphere: identity?.sphereAlignment?.primary,
+    secondarySphere: identity?.sphereAlignment?.secondary,
+    tags: step.deal?.tags,
+  });
+  if (dealReport) recordDealReport(template.id, dealReport);
+
+  const hand = buildNudgeHand(composedStep, template, {
     availableEssence: availableEssenceFor,
     accessibleSpheres,
     unlockedTemplateIds: new Set(gameState?.unlockedActionIds ?? []),
@@ -587,9 +684,17 @@ export function buildNudgePhaseModel(
   // ── Cards ───────────────────────────────────────────────────────
   const cards: EncounterStageNudgeCardModel[] = [];
   const withheld: EncounterStageWithheldNudgeModel[] = [];
+  // THR-1247 — provenance for the dealt half of the hand. Empty map when this
+  // god has no repertoire, which yields no provenance lines and today's exact
+  // card face.
+  const repertoireSources = new Map(
+    (repertoireEntries ?? []).map((entry) => [entry.member.id, entry.source] as const),
+  );
 
   for (const entry of hand.playable) {
-    cards.push(buildNudgeCardModel(entry.nudge, accessibleSpheres, 'playable', enrich));
+    cards.push(
+      buildNudgeCardModel(entry.nudge, accessibleSpheres, 'playable', enrich, undefined, repertoireSources),
+    );
   }
 
   for (const entry of hand.dimmed) {
@@ -598,7 +703,9 @@ export function buildNudgePhaseModel(
       withheld.push({ id: nudge.id, name: enrich(nudge.name), blockedCode: blocked });
       continue;
     }
-    cards.push(buildNudgeCardModel(nudge, accessibleSpheres, 'dimmed', enrich, blocked));
+    cards.push(
+      buildNudgeCardModel(nudge, accessibleSpheres, 'dimmed', enrich, blocked, repertoireSources),
+    );
   }
 
   // Trait-gated cards the agent cannot hold: never in the player stage, listed
@@ -765,6 +872,10 @@ export function buildNudgePhaseModel(
     // quote the effective price: omitting it re-quotes a discounted hand at its
     // authored cost, so a reopened stage would report a total the commit path
     // never charged (THR-890).
-    committedCost: totalNudgeCost(step, committedIds, accessibleSpheres),
+    // THR-1247 — the *composed* step: a committed dealt card must be billed like
+    // any other, and `totalNudgeCost` prices by looking the id up in `nudges`.
+    // Reading the authored step here would show a dealt card's price on its face
+    // and then charge nothing for it.
+    committedCost: totalNudgeCost(composedStep, committedIds, accessibleSpheres),
   };
 }

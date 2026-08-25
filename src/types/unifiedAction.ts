@@ -16,6 +16,7 @@ import type { EffectPredicate } from './effects';
 import type { EncounterForeshadowingDefinition } from './foreshadowing';
 import type { AmbitionPriority } from './ambition';
 import type { RelocationDestination } from './movement';
+import type { NudgeCardTypeId } from '../data/nudge-card-library';
 
 export type ActionScale = 'cosmic' | 'regional' | 'local' | 'personal';
 export type ActionSource = 'agent' | 'player' | 'system';
@@ -1704,6 +1705,53 @@ export interface StepCarryoverFactorLine extends StepFactorLine {
   readonly forecastDelta?: number;
 }
 
+/**
+ * The closed vocabulary a step uses to say what its fill is *about* (THR-1247).
+ *
+ * Closed on purpose. A free-text tag would let every author invent a private
+ * synonym for the same idea, and the dealer's tag-match term would then score
+ * against a vocabulary nobody agreed on — which is a scoring bug that reads as
+ * a content bug. Widening this union is a spec change (the factory spec
+ * documents the list), never a convenience at the call site.
+ *
+ * First cut: the eight permanent reaches, plus four situation words that cut
+ * across them. A reach tag says *what the step tests*; a situation tag says
+ * *what kind of trouble it is*.
+ */
+export type DealContextTag =
+  | 'might'
+  | 'finesse'
+  | 'insight'
+  | 'presence'
+  | 'craft'
+  | 'lore'
+  | 'wild'
+  | 'shadow'
+  | 'social'
+  | 'peril'
+  | 'labor'
+  | 'journey';
+
+/** THR-1247 — a step's request for cards from the god's Repertoire. */
+export interface StepDealDeclaration {
+  /**
+   * How many cards to deal. Clamped by the dealer so the *composed* hand
+   * (authored specials + dealt fill) stays inside `NUDGE_HAND_MIN..MAX` and
+   * under `NUDGE_HAND_MAX_TOTAL_DELTA`; a step asking for more than the hand
+   * can hold gets what fits rather than an oversized hand or an error.
+   */
+  readonly count: number;
+  /** What this step is about, for the dealer's context-match term. Absent ⇒ scoring proceeds on sphere and provenance alone. */
+  readonly tags?: readonly DealContextTag[];
+  /**
+   * Card types this step refuses to be dealt — the escape hatch for a scene
+   * where a type would be nonsense (no Fellowship card in a solitary vigil).
+   * Prefer authoring a special over excluding widely: a long exclude list is a
+   * sign the step wants an authored hand, which is still legal.
+   */
+  readonly exclude?: readonly NudgeCardTypeId[];
+}
+
 export interface ActionStep {
   readonly reach: ReachDomain;
   readonly duration: { readonly min: number; readonly max: number };
@@ -1743,6 +1791,24 @@ export interface ActionStep {
   readonly criticalFailureAfterimage?: string;
   /** THR-773: authored nudge hand for this step. Absent ⇒ no hand, no nudge path. */
   readonly nudges?: readonly StepNudge[];
+  /**
+   * THR-1247 — the **deal declaration**: how many cards this step asks the god's
+   * Repertoire to fill the hand with, on top of whatever {@link nudges} authors.
+   *
+   * The hybrid landing. An encounter authors only its **specials** — the 0–2
+   * cards only *it* could offer — and declares a fill; the dealer supplies the
+   * rest from cards the player already holds, so a hand reads as *this god's*
+   * hand in any scene rather than as whatever its author happened to like.
+   *
+   * **Absent ⇒ no dealing, and today's behavior byte-identical** (NFP #6). Every
+   * shipped template is untouched by construction; a fully-authored hand stays
+   * legal forever.
+   *
+   * Dealing is pure and zero-PRNG (see `dealHand`): the same repertoire and the
+   * same declaration always produce the same fill, so a dealt hand replays from
+   * a save exactly as an authored one does.
+   */
+  readonly deal?: StepDealDeclaration;
   /**
    * THR-820: ≤`REACH_PURPOSE_MAX_WORDS` (4) words, plain — what this step is
    * *testing*, rendered beside the reach in the test panel. "Read the lock",

@@ -323,6 +323,51 @@ export function NudgeCard({
           </div>
         )}
 
+        {/* ── Provenance (THR-1247) ────────────────────────────
+            Only a *dealt* card carries this — the ones the god brought rather
+            than the ones the scene wrote. Set below the title and above the
+            effect so the reading order is what it is / where it came from /
+            what it does. Muted and small: it is an attribution, not a second
+            effect line, and it must never compete with the card's own promise.
+
+            An authored card renders nothing here, so today's corpus draws
+            exactly the face it drew before. */}
+        {card.provenance && (
+          <span
+            data-testid={`nudge-card-provenance-${card.id}`}
+            aria-label={card.provenance.text}
+            style={{
+              fontSize: 'var(--text-2xs, 11px)',
+              lineHeight: 1.4,
+              color: TEXT_WARM,
+              opacity: 0.85,
+            }}
+          >
+            {card.provenance.prefix}
+            {card.provenance.conceptLabel && (
+              <>
+                {' — '}
+                {/* Law 1 + 17: the sphere named here is a game concept, so it
+                    carries its tooltip from the one registry. The producer told
+                    us which word it is (Law 2) — we do not go looking for it in
+                    the sentence. */}
+                {card.provenance.conceptTooltipId ? (
+                  <Tooltip id={card.provenance.conceptTooltipId}>
+                    <span style={{ color: 'var(--text-secondary)' }}>
+                      {card.provenance.conceptLabel}
+                    </span>
+                  </Tooltip>
+                ) : (
+                  card.provenance.conceptLabel
+                )}
+              </>
+            )}
+            {card.provenance.suffix && (
+              <>{card.provenance.conceptLabel ? ' ' : ' — '}{card.provenance.suffix}</>
+            )}
+          </span>
+        )}
+
         {/* ── Effect + its odds, in the one pip vocabulary ─────── */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
           <span style={{ fontSize: 'var(--text-xs)', lineHeight: 1.5, color: TEXT_WHISPER }}>

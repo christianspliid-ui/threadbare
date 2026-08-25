@@ -625,6 +625,19 @@ export interface DebugBridge {
    * `ascendantIdentity`: no sphere identity, no repertoire to build. `attunement`
    * is still populated there, because the counter runs regardless of identity.
    *
+   * `lastDeal` (THR-1247) reports the most recent dealt hand — every candidate
+   * the dealer weighed, its score broken into the three terms, why each one was
+   * or was not taken, and the ids finally minted. It is `null` until something
+   * has been dealt this session, and it is **diagnostic only**: no gameplay path
+   * reads it, and dealing deliberately emits no trace (it is pure and replayable,
+   * and hand assembly runs on the render path where a trace would double-fire),
+   * so this readout is the inspectability surface for "why did I get this hand".
+   *
+   * `dealable.profiled` is how many library members carry a play profile at all
+   * — the gauge that separates "the dealer had nothing to offer" from "the
+   * dealer chose nothing". It climbs toward the library size as THR-1248's
+   * corpus lands.
+   *
    * Returns `{ error }` with no live session. **Async — `await` it** (the usual
    * forgotten-await trap reads as an empty object, impediment #405).
    */
@@ -655,6 +668,36 @@ export interface DebugBridge {
           /** The next mark, or `null` when every mark is reached. */
           nextMark: number | null;
         }>;
+        /** THR-1247 — the most recent deal, or `null` if nothing has been dealt. */
+        lastDeal: {
+          templateId: string;
+          /** Every member weighed, best score first. */
+          candidates: ReadonlyArray<{
+            cardId: string;
+            title: string;
+            score: number;
+            sphereTerm: number;
+            tagTerm: number;
+            provenanceTerm: number;
+            /** Absent ⇒ this one was dealt. Present ⇒ why it was not. */
+            eliminated?:
+              | 'no_profile'
+              | 'no_band_fragments'
+              | 'type_already_authored'
+              | 'type_excluded'
+              | 'hand_full'
+              | 'delta_budget'
+              | 'not_selected';
+          }>;
+          /** Minted ids, in hand order. */
+          dealt: readonly string[];
+          /** Cards asked for, after clamping to the room the hand had. */
+          requested: number;
+          /** Cards the encounter authored on that step. */
+          authored: number;
+        } | null;
+        /** THR-1247 — how much of the library the dealer can currently draw on. */
+        dealable: { profiled: number };
       }
     | { error: string }
   >;
