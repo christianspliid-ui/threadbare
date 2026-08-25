@@ -1258,7 +1258,15 @@ agentRole:   bystander pulled in
 scale:       company
 ```
 
-**Roll them with `npm run draw:hooks -- <briefSlug> --reach <reach>`** (THR-1224).
+**Briefing a batch? Roll the whole packet in one command instead:** `npm run
+draw:packet -- <briefSlug> [--slots 6]` (THR-1245). It rolls every slot's hooks and
+Seed Dice *plus* the four axes the tier table below lists as capped while nothing
+rolled them — reach, decision shape, setting class, system target — enforces every
+cap and floor **by construction**, and prints the brief's `Rolled constraints` block
+ready to paste along with the spread table. See § *The Packet Draw* at the end of this
+section. `draw:hooks` remains the single-slot command.
+
+**Roll one slot with `npm run draw:hooks -- <briefSlug> --reach <reach>`** (THR-1224).
 The same command that offers the hooks prints the five dice below it, seeded off the
 brief slug so a recorded roll is recomputable by anyone who doubts it. The tables live
 in `src/data/content-eval/seedDice.ts`; `--coverage` additionally reports which stake
@@ -1342,12 +1350,56 @@ pushes against it per encounter.
 | Tier | Axes | Mechanism |
 |---|---|---|
 | **Binding** | consequence hand, composition contract | the gate recomputes it |
-| **Capped** | stake, opposition, disposition, role, scale + reach/setting/structure/tone | batch-brief variance rows; the batch report prints the spread |
+| **Capped** | stake, opposition, disposition, role, scale + reach/setting/structure/tone | rolled and enforced by `draw:packet`; batch-brief variance rows; the batch report prints the spread |
 | **Advisory** | hook, theme→shape suggestion | recorded on the brief so coverage is measurable; never enforced |
 
 The dice stop at the brief. Everything inside the constraints — the fiction, the
 cards, the specific people — the author owns. A fully rolled encounter would be
 mad-libs; an unrolled one is the same encounter forever.
+
+## The Packet Draw (THR-1245)
+
+Director ruling (Christian, chat, 2026-08-25), after an investigation of the factory's
+rolled tables: *"just build it all directly."*
+
+```
+npm run draw:packet -- <briefSlug> [--slots 6] [--reaches iron,veil] [--ids a,b] [--json]
+```
+
+**One command rolls the batch.** Per slot it composes the Plot-Hook Draw and the five
+Seed Dice — unchanged, at the same seeds, from the same samplers — and adds the four
+axes the tier table above has always listed as *capped* while nothing anywhere rolled
+them:
+
+| Die | Faces | Bound | Source of truth |
+|---|---|---|---|
+| **Reach** | 8 | ≤2 per batch; `--reaches` overrides | `REACH_DOMAINS` |
+| **Decision shape** | 7 | ≤2 per batch | § *The shape catalog* above |
+| **Setting class** | 8, **gap-weighted against the live corpus** | ≤2 per batch | `encounter-catalogs.md` § 2 |
+| **System target** | 14, maturity-gated | mature freely · middling ≤1 per batch · deferred weight 0 | `encounter-catalogs.md` § 7 |
+
+The setting die is weighted toward what the corpus has least of — an uncovered class
+like `stronghold` rolls up to six times likelier than the densest one, tapering
+linearly with coverage. The counts are read off the live drawable pool the same way
+the THR-884 coverage matrix reads them, so the die follows the corpus rather than a
+hand-kept list.
+
+**Caps and floors are enforced by construction, not by retry.** A cap-hit face is
+excluded from later slots' tables; the scale floor forces settlement-or-larger only at
+the last slot that can still meet it. Re-rolling the batch until it complied would
+make the packet a function of how many attempts it took, which is not recomputable
+from the slug — and could loop forever on an unsatisfiable batch, where exclusion
+simply runs the table dry and **reports the bust**. Every correction is printed with
+the face the unconstrained table rolled and the cap that bit, so an author who
+re-rolls a slot by hand can see why it differs.
+
+**Tier discipline is unchanged.** The consequence hand stays binding (printed only for
+slots given a `--id`, since the hand is seeded by template id); the dice stay capped;
+the hooks stay advisory. No template field is added, and nothing recomputes a finished
+encounter against a rolled shape, setting or system — that would promote an advisory
+axis to binding by the back door.
+
+Tables: `src/data/content-eval/packetDice.ts`. Command: `scripts/draw-packet.ts`.
 
 ---
 
