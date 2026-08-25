@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-25 21:57 local (19:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-25 22:56 local (20:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -8,7 +8,9 @@
 
 **The camp seven** — shrine offering, sharpening blades, warding the camp, a small prayer, rest and reflection, tending wounds, scouting the perimeter. All seven are thin: the census found **no typed consequences at all** in that set, only bare standing nudges.
 
-It binds [Prose Doctrine v2](https://github.com/christianspliid-ui/threadbare/blob/main/.claude/skills/encounter-pipeline/reference/nudge-authoring-spec.md) — the narrator mode you set this morning. As of this evening that doctrine is fully swept through the authoring surfaces ([THR-1251](https://linear.app/threadbare/issue/THR-1251), [THR-1252](https://linear.app/threadbare/issue/THR-1252), [THR-1250](https://linear.app/threadbare/issue/THR-1250) all shipped), so a batch run now inherits the right standard automatically. And **`shrine_offering` is encounter #1 of [your integrated slice checkpoint](https://linear.app/threadbare/issue/THR-1220)**, which cannot invite you while the camp set is below standard.
+It binds [Prose Doctrine v2](https://github.com/christianspliid-ui/threadbare/blob/main/.claude/skills/encounter-pipeline/reference/nudge-authoring-spec.md) — the narrator mode you set this morning — which is now fully swept through the authoring surfaces ([THR-1251](https://linear.app/threadbare/issue/THR-1251), [THR-1252](https://linear.app/threadbare/issue/THR-1252), [THR-1250](https://linear.app/threadbare/issue/THR-1250) all shipped), so a batch run inherits the right standard automatically. And **`shrine_offering` is encounter #1 of [your integrated slice checkpoint](https://linear.app/threadbare/issue/THR-1220)**, which cannot invite you while the camp set is below standard.
+
+**Not superseded by dealt hands** (checked 25 Aug 22:56): [THR-1247](https://linear.app/threadbare/issue/THR-1247) sets the rule itself — dealt generic cards plus 0–2 encounter-authored specials, sequenced after or alongside the retrofit batches, never underneath them. Batch 2's authored work stays valid.
 
 **The one judgement:** seven, not six — one family, one file; splitting the seventh costs a full cycle for no variance gain. *"Batch 2, seven is fine"* runs it; *"keep it six"* splits it 6+1. [The brief](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/retrofit-batch-2-brief.md) is merged and readable.
 
@@ -23,7 +25,7 @@ Say **"work the powers map"** or **"work the item map"** in a chat session.
 
 ### 3. More design hours — four sittings stacked
 
-Less pressing tonight than this morning: the shelf refilled itself from two ready items to seven, so no lane is starved. The queue is still fed by programs you already approved, not by new design. In the order you set:
+Not pressing tonight: the shelf is holding at seven ready items and no lane is starved. The queue is still fed by programs you already approved, not by new design. In the order you set:
 
 - **[Unify the card grammar](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** — your 6 August note: action cards are too wordy, you cannot tell what they do, playing one gives no feedback, while encounter cards already read the way you wanted. Holding the single design slot since 19 August.
 - **[Traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)** — in design, assigned to you, untouched ten days. Either give it the hour or say *"put Traits wave 2 back in the pile."*
@@ -70,7 +72,7 @@ Both design maps closed 2026-08-24: [the typed game-state map](https://linear.ap
 
 > The scheduled lanes went silent for 35.3h (2026-08-20T19:57:53.000Z → 2026-08-22T07:15:24.000Z) and have since resumed, with no pause marker covering that window. If that was a deliberate pause, nothing recorded it; if it was not, this is the outage no lane reported at the time.
 
-In local terms: 20 Aug 21:57 → 22 Aug 09:15. The pause marker on disk expired on 5 August. Lanes have run normally since, so nothing is broken now. **Only you can answer it:** if that was a token or usage pause, say so and it is recorded and closed. The three later gaps are overnight-shaped and already declined per your 8 August ruling that overnight quiet is normal. A three-hour gap this evening was also declined — work shipped throughout it, so it read as usage, not fault.
+In local terms: 20 Aug 21:57 → 22 Aug 09:15. The pause marker on disk expired on 5 August. Lanes have run normally since, so nothing is broken now. **Only you can answer it:** if that was a token or usage pause, say so and it is recorded and closed. The three later gaps are overnight-shaped and already declined per your 8 August ruling that overnight quiet is normal. The three-hour gap flagged this evening has closed and no longer appears in the probe — work shipped throughout it, so it read as usage, not fault.
 
 ### 10. Parked option, no urgency: a Tenacious-style trait
 
