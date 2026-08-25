@@ -1,12 +1,12 @@
 # User Action Required
 
-**Last updated:** 2026-08-25 06:57 local (04:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-25 07:55 local (05:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
 ### 1. Approve the batch-2 brief — [THR-1222](https://linear.app/threadbare/issue/THR-1222/run-retrofit-batch-2-the-camp-seven-through-the-factory-line-shrine)
 
-**The build has stopped.** The last work merged at 04:31 local; the queue is now empty — zero claimable items, nothing in flight, and the four in-progress tickets are all parked. Every hourly run finds an empty board until this gets its yes.
+**The build has stopped — three and a half hours now.** The last work merged at 04:31 local; the queue is empty — zero claimable items, and the four in-progress tickets are all parked. The board has not moved once since: not a ticket, not a comment. Every hourly run finds an empty board until this gets its yes.
 
 **The camp seven** — shrine offering, sharpening blades, warding the camp, a small prayer, rest and reflection, tending wounds, scouting the perimeter. All seven are thin: the census found **no typed consequences at all** in that set, only bare standing nudges.
 
