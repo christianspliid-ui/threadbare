@@ -1,6 +1,6 @@
 ---
 domain: prose
-last_reviewed: 2026-07-05
+last_reviewed: 2026-08-25
 reviewer: claude-code
 ul_shards: [Prose, Encounters]
 status: live
@@ -113,15 +113,17 @@ the strictest scope, so pass the real class.
 - **Baseline** — wrong: *"The merchant's ambit had grown parlous, freighted with the weight of unspoken covenants."* right: *"The merchant owed too many people too much. He'd started checking the door."*
 - **Peak** (allowed, doom transition): *"The bells stopped. Whatever had been holding its breath beneath the city let it out."*
 
-### The three plainness moves (THR-974 ruling, Christian, 2026-08-15)
+### Narrator mode — Prose Doctrine v2 (Christian, 2026-08-25; supersedes the three plainness moves)
 
-Prose that passed every detector still failed the director's read — the drift is *rhetorical habit*, not vocabulary. His standard, from a hand-edit of 10 live aftermath passages (recorded verbatim in [THR-974](https://linear.app/threadbare/issue/THR-974/consequence-verdict-session-christian-rules-on-world-graph-consequence)'s resolution comment): *"keep the rhythm but cut the inversions, the aphorisms, and the abstract nouns doing concrete work."* Apply as three moves, in editorial passes and critic loops alike:
+The 08-15 plainness moves fixed sentences inside a mode that was wrong. The border-perils read named it: *"you are still writing in situ instead of just describing."* The recurring failure was never vocabulary — it was **mode**. The standard now, for every encounter surface:
 
-1. **Subject first — never open on a fragment.** *"The far bank, and behind them a plank going end over end…"* → *"They reach the far bank. Behind them, a plank tumbles end over end into the water."*
-2. **Swap abstract nouns for what actually happened.** *"Public gratitude curdled into public performance"* → *"The thanks went on too long, in front of too many people."*
-3. **One dry line carries the irony, not two.** Concrete dry closers earn their keep (*"it will have opinions about stairs"*); stacked ironic turns are drift.
+- **Narrate, never inhabit.** Write as a game master reading a module aloud — a narrator reporting events from outside the scene. No interior sensation, no camera work, no atmosphere without a job.
+- **State facts, never encode them.** If the fact is "no one dares approach it," write that sentence — never the physical evidence the reader must decode.
+- **The opening skeleton:** three short paragraphs — arrival (real graph names) · situation & complication (events, costs already paid) · the problem (one stake shape from the seed-dice table). ≤80 words total.
+- **Everything serves challenge → test → outcome.** A sentence doing none of those jobs is cut.
+- **Cards read like spells:** imperative verb + noun names ("Inspire Courage"), one or two direct sentences of effect. The flavor quote is retired.
 
-These bind every aftermath/encounter prose pass from 2026-08-15 on, including the Encounter Factory critic loop and the nudge-era retrofit.
+**The authoritative full text lives in the nudge authoring spec** — [`.claude/skills/encounter-pipeline/reference/nudge-authoring-spec.md`](../../.claude/skills/encounter-pipeline/reference/nudge-authoring-spec.md) § Prose doctrine v2, with the calibration exemplar (the director's rewrite of The Unclaimed Relic), the survives/retired lists, and the five Seed Dice. This binds every encounter prose pass from 2026-08-25 on, including the Encounter Factory critic loop; the plainness moves' subject-first and abstract-noun content is folded into it, and two v1 rules are explicitly **reversed**: foreshadow-never-announce (now: announce plainly) and show-don't-tell (now: tell).
 
 ## Per-template quality bar (5 questions, ask every time)
 
@@ -129,11 +131,11 @@ Every prose line must answer yes to all five:
 
 1. **Does this create a human condition the player recognizes?** Not "trust_decay -0.02" but "exposed," "indebted," "unexpectedly grateful." Mechanical changes without human texture get rewritten.
 2. **Does this make the player want to know what happens next?** Every line opens a question, creates a tension, or implies a consequence. *"The negotiation failed"* is dead. *"The negotiation failed — and the merchant's apprentice heard every word"* is a hook.
-3. **Does this work as a moment, not a label?** *"A rival noticed"* is a label. *"A figure at the edge of the market — one of the Thornweave scouts — paused mid-stride. Their eyes met. The scout turned and walked toward the guild quarter"* is a moment.
+3. **Is every fact stated, in narrator mode?** (Amended 2026-08-25 — this question used to demand "a moment, not a label," which trained the in-situ mode Doctrine v2 retired. A plainly stated fact is not a defect: *"A Thornweave scout saw it happen and has left for the guild quarter"* is the standard now — named, direct, consequential.)
 4. **Would the player sometimes prefer this outcome over success?** (Failure/complication content.) The best complications make the player think *"oh no — oh, that's actually interesting."* If failure is just punishment, it isn't cool failure.
 5. **Does this serve the three-beat loop?** Portfolio scan (Beat 1) / curated moments (Beat 2) / aftermath (Beat 3). Which beat does this content serve, and is it pulling its weight?
 
-**When in doubt, write the scene first** — paragraph of prose before template fields. Extract the fields from the scene afterwards. This produces dramatically better content than filling cells in order.
+**The scene-first workflow is retired** (2026-08-25, with Doctrine v2 — and the authoring order was already game-design-first per the 2026-08-24 ruling): design the mechanics, roll the dice, then write the three-paragraph opening directly in narrator mode. Writing a scene and extracting fields from it is how in-situ prose got in.
 
 ## Player-as-god framing (hard rule)
 
@@ -168,7 +170,10 @@ The THR-1101 rewrite campaign logged ~13 false-signal impediments in one week fr
 - ❌ **Single-variant content** — minimum 3–5 variants per key in any content table to avoid repetition. Resolvers use `pickTemplate(templates, seed + offset)` for deterministic selection across variants.
 - ❌ **Player chooses what the mortal does** — replaced by player-as-god framing (above). Drafts that put the player inside the character's head must be reframed.
 - ❌ **`{actor}` placeholder in routine templates** — replaced by `{name}` (THR-86). All new routine templates use `{name}` for consistency.
-- ❌ **Prose without scene-then-fields workflow** — filling template fields before writing the scene produces "label" prose, not "moment" prose. Reverse the order.
+- ❌ **The scene-then-fields workflow** — reversed twice over (2026-08-24 game-design-first ruling; 2026-08-25 Doctrine v2). Mechanics and dice first, then the opening written directly in narrator mode.
+- ❌ **In-situ scene prose** — sensory immersion, camera work, facts encoded as physical evidence ("the sweepings pile against the chalk"). Retired 2026-08-25 (Doctrine v2): narrate like a game master, state facts directly.
+- ❌ **Foreshadow-never-announce** — reversed 2026-08-25: stakes and situations are announced plainly ("Its freezing aura has already sent three guards to the infirmary"), not hidden in the scene's furniture.
+- ❌ **The card flavor quote (`fiction`)** — retired 2026-08-25; a card's only prose is its spell-style effect description.
 
 ## Open questions
 
@@ -179,4 +184,4 @@ The THR-1101 rewrite campaign logged ~13 false-signal impediments in one week fr
 
 ## Last-reviewed
 
-2026-08-15 by Claude Code (THR-974 ruling — added the three plainness moves to the register model). Previous: 2026-08-14 by Claude Code (weekly retro — added the corpus-verification-probe rules distilled from the THR-1101 campaign's false-signal cluster). Previous: 2026-08-01 by Claude Code (THR-899 — recorded the scoped vagueness model: evasive terms everywhere, natural indefinites in outcome prose only, intensifiers at warn; `nudgeAuditDetectors.ts` named the single authority). Previous edit: 2026-07-05 by Claude Code (THR-609 — added the register model section). Review trigger: monthly, or when any linked plan moves to `superseded`, or when the systemic wiring guide gains a new capability that prose authors must respect.
+2026-08-25 by Claude Code (Prose Doctrine v2 — narrator mode replaces the plainness moves; in-situ prose, foreshadow-never-announce, scene-first workflow and the card flavor quote retired; authoritative text in the nudge authoring spec). Previous: 2026-08-15 by Claude Code (THR-974 ruling — added the three plainness moves to the register model). Previous: 2026-08-14 by Claude Code (weekly retro — added the corpus-verification-probe rules distilled from the THR-1101 campaign's false-signal cluster). Previous: 2026-08-01 by Claude Code (THR-899 — recorded the scoped vagueness model: evasive terms everywhere, natural indefinites in outcome prose only, intensifiers at warn; `nudgeAuditDetectors.ts` named the single authority). Previous edit: 2026-07-05 by Claude Code (THR-609 — added the register model section). Review trigger: monthly, or when any linked plan moves to `superseded`, or when the systemic wiring guide gains a new capability that prose authors must respect.
