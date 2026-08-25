@@ -206,7 +206,18 @@ describe('dealHand', () => {
       expect(dealableIds.has(nudge.libraryCardId!)).toBe(true);
     }
     // And it really did consider — and reject — the rest of the library.
-    expect(result.report.candidates.some((c) => c.eliminated === 'no_profile')).toBe(true);
+    //
+    // **Repointed by THR-1248.** This asserted `no_profile` while the library
+    // held two reference profiles and everything else was unprofiled. The corpus
+    // landed, so that reason is now unreachable *by construction* — and a test
+    // asserting the dead side of a finished migration is the pathology, not the
+    // gate. The live rejection surface is selection pressure: more dealable
+    // members than the declared fill can hold.
+    expect(result.report.candidates.some((c) => c.eliminated !== undefined)).toBe(true);
+    expect(
+      result.report.candidates.some((c) => c.eliminated === 'no_profile'),
+      'every library member carries a profile since THR-1248',
+    ).toBe(false);
   });
 
   it('is deterministic — same inputs, same cards in the same order', () => {

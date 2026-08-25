@@ -35,6 +35,7 @@ import type { ActionStep, StepNudge, UnifiedAction, UnifiedActionTemplate } from
 import { buildNudgePhaseModel } from '../adapters/buildNudgePhaseModel';
 import { NudgePhaseShell } from '../shells/NudgePhaseShell';
 import { isDealtNudgeId } from '../../../../engine/encounters/dealHand';
+import { nudgeCardMember } from '../../../../data/nudge-card-library';
 
 // ─── Fixtures ─────────────────────────────────────────────────────
 
@@ -128,8 +129,12 @@ function darknessGod(): GameState {
   } as unknown as GameState;
 }
 
-function phaseFor(deal: ActionStep['deal'], state: GameState = darknessGod()) {
-  const step = stepWith(deal);
+function phaseFor(
+  deal: ActionStep['deal'],
+  state: GameState = darknessGod(),
+  nudges: StepNudge[] = [SPECIAL],
+) {
+  const step = stepWith(deal, nudges);
   return buildNudgePhaseModel({
     template: templateWith(step),
     activeAction: ACTION,
@@ -250,15 +255,42 @@ describe('THR-1247 · a dealt card on the encounter stage', () => {
   });
 
   it('names no concept on a card whose provenance has none', () => {
-    // The universal core is not sphere-derived, so there is no concept to
+    // A common-pool card is not sphere-derived, so there is no concept to
     // declare and none is invented — a tooltip id pointing at nothing would be
     // a dead underline (Law 17's failure mode).
-    const phase = phaseFor({ count: 4, tags: ['shadow'] });
-    const boost = phase.cards.find((c) => c.libraryCardId === 'card.boost.core');
-    expect(boost?.provenance).toBeDefined();
-    expect(boost!.provenance!.conceptLabel).toBeUndefined();
-    expect(boost!.provenance!.conceptTooltipId).toBeUndefined();
-    expect(boost!.provenance!.text).toBe('From your repertoire — always yours.');
+    //
+    // **Found by property, not by id (repointed THR-1248).** This named
+    // `card.boost.core` while the library held two reference profiles and the
+    // dealer had almost no choice. With the corpus complete, 37 members compete
+    // for four slots and a `shadow`-tagged step outscores the plain core — so
+    // the id was pinning an artefact of a sparse library, not the rule.
+    //
+    // Dealt with **no authored special**, which is what actually engages the
+    // rule under test: `DEAL_COMMON_OPTIONS_MIN` counts commons already in the
+    // composed hand, and `SPECIAL` is itself sphere-less — so the default
+    // fixture satisfies the floor before the dealer runs and no common is ever
+    // taken. A fully-dealt hand is a legal composed hand (specials are 0–2), and
+    // it is the one where the floor has work to do.
+    const phase = phaseFor({ count: 4, tags: ['shadow'] }, darknessGod(), []);
+    const common = phase.cards.find(
+      (c) => c.libraryCardId !== undefined && nudgeCardMember(c.libraryCardId)?.sphere === undefined,
+    );
+    // Non-vacuous: the common-option floor really did put one in the hand. If
+    // this trips, the floor stopped holding and that is the defect, not this.
+    expect(common, 'the dealer took no ungated common option').toBeDefined();
+    expect(common!.provenance).toBeDefined();
+    // The subject of this test: no concept declared, so nothing to underline.
+    expect(common!.provenance!.conceptLabel).toBeUndefined();
+    expect(common!.provenance!.conceptTooltipId).toBeUndefined();
+    // Still a real, complete line — and specifically not a sphere clause, which
+    // is the leak this arm exists to catch. The exact suffix is deliberately not
+    // pinned: provenance reads the repertoire *source*, and which sphere-less
+    // member wins a slot ("always yours" for the core, "born of your hunger" for
+    // a hunger unique) is a scoring outcome across 37 competing members, not a
+    // property of this rule. Pinning it would re-create the brittleness that
+    // made the hardcoded id above wrong.
+    expect(common!.provenance!.text).toMatch(/^From your repertoire — .+\.$/u);
+    expect(common!.provenance!.text).not.toMatch(/signature|attunement/iu);
   });
 
   it('draws no flavor quote on a dealt face (Prose Doctrine v2)', () => {

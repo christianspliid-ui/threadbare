@@ -205,12 +205,20 @@ export function mintDealtNudge(
 /**
  * The card's guidance line — words, never a numeral (the nudge law).
  *
- * Falls back to the type's own keyword when a member has no authored effect
- * phrasing, so a profiled member is always legible rather than blank. The
- * per-member phrasing the corpus will carry rides THR-1248; this is the floor
- * that keeps the two reference profiles honest in the meantime.
+ * Prefers the member's own authored phrasing (`PLAY_PROFILES[id].effectLine`,
+ * the corpus THR-1248 landed) and falls back to a line built from the type's
+ * keyword when a member has none, so a profiled member is always legible rather
+ * than blank.
+ *
+ * **The fallback is now the safety net, not the normal path**, and the
+ * distinction matters: the keyword line is identical for every member of a
+ * family, so a repertoire holding three Boost members would deal three cards
+ * reading the same sentence and the hand would stop being a decision. It exists
+ * for the member added tomorrow before its line is written — the same trade, and
+ * the same reasoning, as `cardDisplayTitle`'s title fallback next door.
  */
 function effectLineFor(member: NudgeCardMember, profile: NudgeCardPlayProfile): string {
+  if (profile.effectLine !== undefined) return profile.effectLine;
   const type = nudgeCardType(member.typeId);
   const keyword = type?.keyword ?? member.typeId;
   if (profile.forecastDelta > 0) return `${keyword} — leans the odds your way.`;

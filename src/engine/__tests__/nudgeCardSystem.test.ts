@@ -43,6 +43,7 @@ import { applyRawDetectionDelta, MAX_DETECTION_PRESSURE } from '../encounters/de
 import { assignAmbitionToActor, MAX_ACTIVE_AMBITIONS } from '../ambitionAssignment';
 import {
   formatDeadNudgeGrantRefs,
+  validateLibraryGrantRefs,
   validateNudgeGrantRefs,
 } from '../nudgeGrantLiveness';
 import { UNIFIED_ACTION_TEMPLATES } from '../../data/unified-action-templates';
@@ -362,6 +363,20 @@ describe('assignAmbitionToActor (The Kindled Ambition)', () => {
 // ─── 7. Grant liveness ───────────────────────────────────────────────
 
 describe('nudge grant liveness', () => {
+  it('has no library play profile granting content that was never built', () => {
+    // THR-1248. The template sweep below structurally cannot see this surface:
+    // `PLAY_PROFILES` grants are authored once per library member and minted at
+    // deal time, so `allTemplateEffects` never walks them. A dead id here is
+    // worse than a dead id in a template — it misfires in every encounter that
+    // member is ever dealt into, not in the one scene that named it.
+    const report = validateLibraryGrantRefs();
+    // Non-vacuity: the corpus really does author validatable refs (ambitions and
+    // conditions). If this floor trips, the sweep stopped finding the library.
+    expect(report.checkedRefs).toBeGreaterThan(0);
+    expect(report.sitesWithGrants).toBeGreaterThan(0);
+    expect(formatDeadNudgeGrantRefs(report.dead)).toBe('');
+  });
+
   it('has no effect naming content that was never built', () => {
     const report = validateNudgeGrantRefs(UNIFIED_ACTION_TEMPLATES);
     // Non-vacuity, asserted rather than assumed (THR-1171). Until the sweep was

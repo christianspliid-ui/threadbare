@@ -128,7 +128,7 @@ Every encounter must meet its bar:
 
 - A declared setting envelope with one opening per class in the three-paragraph skeleton (arrival · situation · problem), and a setting-neutral spine — the narrator's 12 questions answered in writing (Doctrine v2, 2026-08-25: narrate, never inhabit)
 - Threads discovered inside the prose, not in a separate menu
-- A **4–8 card authored hand on every nudge-bearing step** (dealt 4–6 after filters), spanning ≥4 spheres, with ≥1 ungated common option, no two cards answering the same question
+- A **composed 4–8 card hand on every nudge-bearing step** — 0–2 authored **specials** plus a declared `deal` fill from the god's Repertoire (dealt 4–6 after filters), spanning ≥4 spheres, with ≥1 ungated common option, no two cards answering the same question. A fully-authored hand stays legal; it is no longer the default
 - Generic card faces named **imperative verb + noun** ("Inspire Courage", never "A Little More") — the scene grounds the card, the face never carries the scene
 - Effect lines that read like spell descriptions: one or two direct sentences of what the nudge does ("Fill them with blazing resolve — inspire them to bravery"), no odds-talk
 - **Every card pays off in failure** — at least one failure-band fragment per nudge, both failure bands for a big-delta card
@@ -477,7 +477,7 @@ in [`reference/nudge-authoring-spec.md`](reference/nudge-authoring-spec.md) in o
 
 1. **Envelope + skeleton openings** — setting envelope declared; one three-paragraph opening per class (arrival · situation · problem) + setting-neutral spine, written under the 12-question narrator's checklist; premise started from the Step 0a plot hook and the brief's Seed Dice rolls (drift from the hook is fine — an unrecorded roll is not; the rolled stake shape binds unless overridden with a reason)
 2. **Test panel data** — per step: reach(es) + ≤4-word purpose line, difficulty, 2–4 factor lines each naming its source
-3. **The hand** — 4–8 `StepNudge`s per nudge-bearing step cut from the 21-type library: generic faces, mechanism-stating effect lines, ≥4 spheres, ≥1 ungated common option, ≤1 rider per hand, trait-only cards at cost 0, zero-essence cards priced on another channel, grants naming only built content
+3. **The hand** — compose 4–8 per nudge-bearing step: author the 0–2 **specials** only this encounter could offer, then declare the fill (`deal: { count, tags, exclude }` — see spec § 3b). Every rule binds the **composed** hand: generic faces, mechanism-stating effect lines, ≥4 spheres, ≥1 ungated common option, ≤1 rider, trait-only cards at cost 0, zero-essence cards priced on another channel, grants naming only built content
 4. **Band prose** — all six `StepOutcome`s covered; every nudge ≥1 failure-band fragment; big-delta cards cover both failure bands
 5. **Trait hooks** — all four questions answered explicitly (gate / variant / trait-only nudge / trait fragment); live refs only
 6. **Aftermath** — prizes, tolls, seeds as object references; tolls in words; **every family in the Step 0b consequence hand wired in context**, recorded in `consequenceDraw` (one recorded `consequenceSwap` allowed)
@@ -509,7 +509,7 @@ The editorial agent:
 4. **Missing aftermath reaction choices** — scale medium+ must offer branching aftermath reactions
 5. **Reporter prose** — outcomes state that something happened ("they succeeded") without stating what changed and what it cost
 6. **No concept art recommendation** — brief omitted, or too vague to paint a scene
-7. **A hand outside 4–8 authored cards on a nudge-bearing step**
+7. **A composed hand outside 4–8 cards on a nudge-bearing step** — or more than 2 authored specials (`DEAL_MAX_AUTHORED_SPECIALS`) alongside a `deal` declaration
 8. **Fewer than 4 distinct spheres, or no ungated common (sphere-less) option, in a hand**
 9. **Any nudge with no failure-band fragment** — or a big-delta nudge (`forecastDelta ≥ 0.15`) missing either failure band
 10. **A `StepOutcome` band no fragment in the hand covers**

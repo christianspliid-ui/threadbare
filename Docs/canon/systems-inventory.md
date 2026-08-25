@@ -315,7 +315,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `notable` (1) | `notableAgendas.ts` | `THR-225`, `THR-630`, `THR-66` |
 | `notification` (3) | `notificationRouter.ts`, `notificationThreadingGate.ts`, `notificationVisibilityFilter.ts` | `THR-666`, `THR-667`, `THR-727` |
 | `npc` (2) | `npcGraduation.ts`, `npcSeeding.ts` | — |
-| `nudge` (2) | `nudgeCardRepertoire.ts`, `nudgeGrantLiveness.ts` | `THR-1110`, `THR-791`, `THR-844`, `THR-885`, `THR-887` |
+| `nudge` (2) | `nudgeCardRepertoire.ts`, `nudgeGrantLiveness.ts` | `THR-1248`, `THR-791`, `THR-844`, `THR-885`, `THR-887` |
 | `orchestrator` (5) | `orchestrator.ts`, `orchestrator/phaseAscendantHandFilter.ts`, `orchestrator/phaseChoiceResolution.ts`, `orchestrator/phaseDetectionPressure.ts`, `orchestrator/phaseDriftDecay.ts` | `THR-1183`, `THR-528` |
 | `outcome` (1) | `outcomeConsequences.ts` | `Phase 6` |
 | `pacing` (1) | `pacingGovernor.ts` | — |
