@@ -16,6 +16,8 @@ import {
   TRAIT_PER_BONUS_CAP,
 } from '../resolutionModifiers';
 import { WorldGraph } from '../graph';
+import { AURA_MAX_RADIUS, AURA_STACKING_CAP, EFFECT_MODIFIER_CAP } from '../../data/effect-constants';
+import { deriveContributionLines } from '../encounters/stepFactorLines';
 
 // ─── Test Helpers ────────────────────────────────────────────────
 
@@ -536,5 +538,140 @@ describe('named modifier contributions', () => {
     const result = computeResolutionModifiers(graph, 'a1', 'loc1', 'iron', undefined);
     expect(result.contributions).toEqual([]);
     expect(result.totalModifier).toBe(0);
+  });
+});
+
+// ─── Aura (THR-1243) ─────────────────────────────────────────────
+//
+// The aura is the only modifier sourced from an agent other than the one being
+// resolved, so these tests pin both halves: that a neighbour's aura reaches the
+// roll, and that a neighbour standing too far away does not. Asserting only the
+// first would pass just as well against a wiring that ignored distance.
+
+describe('aura modifier', () => {
+  /** An agent standing on a real hex — the aura path needs a resolvable position. */
+  function addAgentOnHex(
+    graph: WorldGraph,
+    id: string,
+    col: number,
+    row: number,
+    factionId?: string,
+  ): void {
+    addAgent(graph, id, factionId ? { factionId } : {});
+    const locId = `loc-${id}`;
+    graph.addNode({
+      id: locId,
+      type: 'location',
+      name: `Location ${locId}`,
+      properties: { hexCol: col, hexRow: row },
+    });
+    graph.addEdge({ id: edgeId(), source: id, target: locId, type: 'located_at', properties: {} });
+  }
+
+  function addAura(graph: WorldGraph, agentId: string, attachId: string, value: number): void {
+    graph.addNode({
+      id: attachId,
+      type: 'artifact',
+      name: `Aura ${attachId}`,
+      properties: {
+        effects: [{ type: 'aura', radius: AURA_MAX_RADIUS, target: 'all', reach: 'iron', value }],
+      },
+    });
+    graph.addEdge({ id: edgeId(), source: agentId, target: attachId, type: 'possesses', properties: {} });
+  }
+
+  it("carries a nearby agent's aura into the total and names its emitter", () => {
+    const graph = makeGraph();
+    addAgentOnHex(graph, 'a1', 0, 0);
+    addAgentOnHex(graph, 'ally', 1, 0);
+    addAura(graph, 'ally', 'aura1', 0.06);
+
+    const result = computeResolutionModifiers(graph, 'a1', 'loc-a1', 'iron', undefined);
+
+    expect(result.auraModifier).toBeCloseTo(0.06, 10);
+    expect(result.totalModifier).toBeCloseTo(0.06, 10);
+
+    const auraLines = result.contributions.filter(c => c.kind === 'aura');
+    expect(auraLines).toHaveLength(1);
+    // Named by the emitting agent, not by the item it carries.
+    expect(auraLines[0].sourceId).toBe('ally');
+    expect(auraLines[0].sourceName).toBe('Agent ally');
+  });
+
+  it('ignores an emitter standing beyond the aura radius', () => {
+    const graph = makeGraph();
+    addAgentOnHex(graph, 'a1', 0, 0);
+    addAgentOnHex(graph, 'ally', AURA_MAX_RADIUS + 3, 0);
+    addAura(graph, 'ally', 'aura1', 0.06);
+
+    const result = computeResolutionModifiers(graph, 'a1', 'loc-a1', 'iron', undefined);
+
+    expect(result.auraModifier).toBe(0);
+    expect(result.contributions.filter(c => c.kind === 'aura')).toEqual([]);
+  });
+
+  it('clamps the aggregate at EFFECT_MODIFIER_CAP, and the named lines sum to it', () => {
+    const graph = makeGraph();
+    addAgentOnHex(graph, 'a1', 0, 0);
+    // Each emitter alone already exceeds the cap.
+    for (let i = 0; i < AURA_STACKING_CAP; i++) {
+      addAgentOnHex(graph, `ally${i}`, 0, 0);
+      addAura(graph, `ally${i}`, `aura${i}`, EFFECT_MODIFIER_CAP);
+    }
+
+    const result = computeResolutionModifiers(graph, 'a1', 'loc-a1', 'iron', undefined);
+    const auraLines = result.contributions.filter(c => c.kind === 'aura');
+
+    expect(result.auraModifier).toBeCloseTo(EFFECT_MODIFIER_CAP, 10);
+    expect(auraLines.length).toBeGreaterThan(0);
+    expect(auraLines.reduce((t, c) => t + c.value, 0)).toBeCloseTo(EFFECT_MODIFIER_CAP, 10);
+  });
+
+  it('aggregates at most AURA_STACKING_CAP emitters however many stand nearby', () => {
+    const graph = makeGraph();
+    addAgentOnHex(graph, 'a1', 0, 0);
+    // Small enough values that the cap, not the clamp, is what bounds the count.
+    const crowd = AURA_STACKING_CAP + 3;
+    for (let i = 0; i < crowd; i++) {
+      addAgentOnHex(graph, `ally${i}`, 0, 0);
+      addAura(graph, `ally${i}`, `aura${i}`, 0.01);
+    }
+
+    const result = computeResolutionModifiers(graph, 'a1', 'loc-a1', 'iron', undefined);
+    const auraLines = result.contributions.filter(c => c.kind === 'aura');
+
+    expect(auraLines).toHaveLength(AURA_STACKING_CAP);
+    expect(result.auraModifier).toBeCloseTo(0.01 * AURA_STACKING_CAP, 10);
+  });
+
+  it('contributes nothing when the acting agent stands nowhere the map can name', () => {
+    const graph = makeGraph();
+    addAgent(graph, 'a1'); // no located_at edge
+    addLocation(graph, 'loc1');
+    addAgentOnHex(graph, 'ally', 0, 0);
+    addAura(graph, 'ally', 'aura1', 0.06);
+
+    const result = computeResolutionModifiers(graph, 'a1', 'loc1', 'iron', undefined);
+
+    expect(result.auraModifier).toBe(0);
+    expect(result.totalModifier).toBe(0);
+  });
+
+  it('renders a factor line, so the modifier is never an unnamed number', () => {
+    // deriveContributionLines drops any kind with no authored sentence. Without
+    // the `aura` prose pair this passes silently while the roll still moves.
+    const graph = makeGraph();
+    addAgentOnHex(graph, 'a1', 0, 0);
+    addAgentOnHex(graph, 'ally', 1, 0);
+    addAura(graph, 'ally', 'aura1', 0.06);
+
+    const result = computeResolutionModifiers(graph, 'a1', 'loc-a1', 'iron', undefined);
+    const lines = deriveContributionLines(result.contributions, 'Kael');
+    const auraLine = lines.find(l => l.kind === 'aura');
+
+    expect(auraLine).toBeDefined();
+    expect(auraLine!.text).toContain('Agent ally');
+    expect(auraLine!.polarity).toBe('for');
+    expect(auraLine!.delta).toBeCloseTo(0.06, 10);
   });
 });

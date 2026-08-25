@@ -108,6 +108,7 @@ function buildForecastModifiers(
     { source: 'divine_intervention', delta: modifierBreakdown.divineInterventionModifier },
     { source: 'effect_system', delta: modifierBreakdown.effectModifier },
     { source: 'rule_override', delta: modifierBreakdown.ruleModifier },
+    { source: 'aura', delta: modifierBreakdown.auraModifier },
   ];
   return parts.filter((part) => part.delta !== 0);
 }

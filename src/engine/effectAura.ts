@@ -68,7 +68,15 @@ export interface AgentPosition {
   factionId?: string;
 }
 
-function resolveAgentPosition(
+/**
+ * Resolve an agent to the hex it stands on, via its single `located_at` edge.
+ *
+ * Exported since THR-1243 because resolution-time aura collection needs the
+ * *target's* position before it can decide which emitters are near enough to be
+ * worth walking — the same read, so an emitter and its target can never be
+ * measured on two different position models.
+ */
+export function resolveAgentPosition(
   graph: WorldGraph,
   agentId: string,
 ): AgentPosition | null {
@@ -154,6 +162,108 @@ export function collectAuraEffects(
 }
 
 /**
+ * Collect aura effects from emitters near enough to reach `targetPos` (THR-1243).
+ *
+ * The same walk as {@link collectAuraEffects}, with the distance test moved
+ * *before* the attachment walk. That ordering is the whole point: resolving an
+ * agent's position is one edge lookup and one or two node reads, while walking
+ * its three attachment edge types and every attached node's `effects` array is
+ * several times that. Testing distance first means the expensive half runs only
+ * for the handful of agents standing within {@link AURA_MAX_RADIUS}, which is
+ * what makes a resolution-time aura read affordable at all — the alternative,
+ * collecting every aura on the map on every step resolution, costs more per
+ * resolution than the per-tick proximity scan the plan ruled out.
+ *
+ * Pre-filters at the hard cap rather than at each aura's own radius, because the
+ * per-aura radius test still belongs to {@link resolveAuraModifiers} — this
+ * function only decides whose attachments are worth reading.
+ */
+export function collectAuraEffectsNear(
+  graph: WorldGraph,
+  targetPos: AgentPosition,
+  maxRadius: number = AURA_MAX_RADIUS,
+): AuraEntry[] {
+  const entries: AuraEntry[] = [];
+
+  const agents = graph.getNodesByType('actor')
+    .filter(n => n.properties.actorType === 'individual');
+
+  for (const agent of agents) {
+    if (agent.id === targetPos.agentId) continue;
+
+    const pos = resolveAgentPosition(graph, agent.id);
+    if (!pos) continue;
+
+    const dist = hexDistance(pos.hexCol, pos.hexRow, targetPos.hexCol, targetPos.hexRow);
+    if (dist > maxRadius) continue;
+
+    for (const edgeType of ['possesses', 'bonded_to', 'has_trait'] as const) {
+      const edges = graph.getOutgoingEdges(agent.id, edgeType);
+      for (const edge of edges) {
+        const node = graph.getNode(edge.target);
+        if (!node) continue;
+
+        const effects = node.properties.effects as AttachmentEffect[] | undefined;
+        if (!effects) continue;
+
+        for (const effect of effects) {
+          if (effect.type !== 'aura') continue;
+          const aura = effect as AuraEffect;
+
+          entries.push({
+            sourceAgentId: agent.id,
+            sourceAttachmentId: node.id,
+            sourceFactionId: pos.factionId,
+            radius: Math.min(aura.radius, AURA_MAX_RADIUS),
+            targetFilter: aura.target,
+            reach: aura.reach,
+            value: aura.value,
+            sourceHexCol: pos.hexCol,
+            sourceHexRow: pos.hexRow,
+          });
+        }
+      }
+    }
+  }
+
+  return entries;
+}
+
+/**
+ * Whether one aura entry reaches one target — distance, self-exclusion, faction.
+ *
+ * Extracted (THR-1243) so emitter *selection* and modifier *aggregation* ask the
+ * same question. A cap that ranked entries by a slightly different predicate than
+ * the one that later sums them would silently drop an emitter that does apply
+ * while keeping one that does not.
+ */
+export function auraApplies(
+  graph: WorldGraph,
+  aura: AuraEntry,
+  targetAgentId: string,
+  targetPos: AgentPosition,
+): boolean {
+  // Don't apply aura to its own source
+  if (aura.sourceAgentId === targetAgentId) return false;
+
+  // Check hex distance
+  const dist = hexDistance(
+    aura.sourceHexCol, aura.sourceHexRow,
+    targetPos.hexCol, targetPos.hexRow,
+  );
+  if (dist > aura.radius) return false;
+
+  // Check faction filter
+  if (aura.targetFilter === 'allies') {
+    if (!aura.sourceFactionId || aura.sourceFactionId !== targetPos.factionId) return false;
+  } else if (aura.targetFilter === 'enemies') {
+    if (!areFactionsHostile(graph, aura.sourceFactionId, targetPos.factionId)) return false;
+  }
+
+  return true;
+}
+
+/**
  * Resolve which aura effects apply to a specific agent.
  * Returns the total per-reach modifier from all applicable auras.
  */
@@ -166,27 +276,58 @@ export function resolveAuraModifiers(
   const modifiers: Record<string, number> = {};
 
   for (const aura of auras) {
-    // Don't apply aura to its own source
-    if (aura.sourceAgentId === targetAgentId) continue;
-
-    // Check hex distance
-    const dist = hexDistance(
-      aura.sourceHexCol, aura.sourceHexRow,
-      targetPos.hexCol, targetPos.hexRow,
-    );
-    if (dist > aura.radius) continue;
-
-    // Check faction filter
-    if (aura.targetFilter === 'allies') {
-      if (!aura.sourceFactionId || aura.sourceFactionId !== targetPos.factionId) continue;
-    } else if (aura.targetFilter === 'enemies') {
-      if (!areFactionsHostile(graph, aura.sourceFactionId, targetPos.factionId)) continue;
-    }
-
+    if (!auraApplies(graph, aura, targetAgentId, targetPos)) continue;
     modifiers[aura.reach] = (modifiers[aura.reach] ?? 0) + aura.value;
   }
 
   return modifiers;
+}
+
+/**
+ * The at-most-`cap` emitters whose auras actually reach the target, strongest
+ * first — THR-1243's stacking bound.
+ *
+ * Grouped by *source agent* rather than by aura entry, so one neighbour carrying
+ * three aura items counts once against the cap. Ranking is by the magnitude the
+ * emitter contributes to `reach`, with the emitter id as tie-break, so the same
+ * world always selects the same emitters (NFP #3) — insertion order alone would
+ * make the survivors depend on graph node order, which shifts as agents are born
+ * and die for reasons unconnected to who is standing nearby.
+ *
+ * Returns the surviving entries, still unsummed, so the caller can name each
+ * emitter's own contribution rather than one anonymous total.
+ */
+export function selectAuraEmitters(
+  graph: WorldGraph,
+  auras: readonly AuraEntry[],
+  targetAgentId: string,
+  targetPos: AgentPosition,
+  reach: string,
+  cap: number,
+): Map<string, AuraEntry[]> {
+  const byEmitter = new Map<string, AuraEntry[]>();
+
+  for (const aura of auras) {
+    if (aura.reach !== reach) continue;
+    if (!auraApplies(graph, aura, targetAgentId, targetPos)) continue;
+    const bucket = byEmitter.get(aura.sourceAgentId);
+    if (bucket) bucket.push(aura);
+    else byEmitter.set(aura.sourceAgentId, [aura]);
+  }
+
+  if (byEmitter.size <= cap) return byEmitter;
+
+  const ranked = [...byEmitter.entries()]
+    .map(([emitterId, entries]) => ({
+      emitterId,
+      entries,
+      magnitude: Math.abs(entries.reduce((sum, e) => sum + e.value, 0)),
+    }))
+    .sort((a, b) =>
+      b.magnitude - a.magnitude || (a.emitterId < b.emitterId ? -1 : a.emitterId > b.emitterId ? 1 : 0))
+    .slice(0, Math.max(0, cap));
+
+  return new Map(ranked.map(r => [r.emitterId, r.entries]));
 }
 
 // ═══════════════════════════════════════════════════════════════════

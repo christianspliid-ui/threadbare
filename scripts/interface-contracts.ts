@@ -282,6 +282,26 @@ export const CONTRACTS: readonly Contract[] = [
     },
   },
   {
+    id: 'aura-reaches-resolution-modifiers',
+    producerSystem: 'Effects & Conditions',
+    consumerSystem: ENCOUNTERS,
+    intent: "A nearby agent's aura tilts the step someone else is resolving — the one modifier the acting agent does not carry, named on the panel like every other.",
+    mechanism: {
+      kind: 'function',
+      symbols: ['collectAuraEffectsNear', 'selectAuraEmitters', 'resolveAuraModifiers', 'collectAuraContributions'],
+      module: 'src/engine/effectAura.ts',
+    },
+    writeSites: ['src/engine/effectAura.ts'],
+    readSites: [
+      'src/engine/resolutionModifiers.ts',
+      'src/engine/orchestrator/phaseAscendantHandFilter.ts',
+    ],
+    verifiedLive: {
+      date: '2026-08-25',
+      evidence: 'THR-1243. effectAura.ts shipped complete and tested with ZERO production importers — both halves written, never joined, which is the deadness this registry exists to catch (a symbol grep found resolveAuraModifiers only in its own module and its own test). The reason it was never wired is structural: an aura is the only resolution modifier sourced from an agent other than the one being resolved, so there was no per-agent walk to hang it on, and hanging it on the tick loop meant an O(agents²) proximity scan for a number almost nobody reads. It is resolved lazily instead, for one agent, at the moment a step resolves. collectAuraEffectsNear moves the distance test BEFORE the attachment walk, so the expensive half runs only for agents within AURA_MAX_RADIUS. Two bounds do different jobs: AURA_STACKING_CAP (3) bounds how many emitters may speak, EFFECT_MODIFIER_CAP clamps how loud the answer may be — without the first a crowded settlement hex decides a step by attendance. Non-vacuous by falsification: forcing the distance test true fails exactly one test (the out-of-range drop) and removing the `aura` prose pair fails exactly one other (the factor line), 2 failed / 51 passed, so the tests assert the wiring and the naming rather than the aggregator. Content pillar: DERIVED_FACTOR_SENTENCES gained an `aura` pair naming the EMITTING AGENT, not its item — deriveContributionLines silently drops any kind with no authored sentence, so without it the modifier would have moved the roll as an unnamed number, which is the exact failure the factor panel exists to prevent. Reach note: no shipped catalog entry authors an `aura` effect yet, so the live producer today is content this unlocks rather than content already waiting; the mechanism is proven end-to-end through computeResolutionModifiers against real graph fixtures (auraModifier, totalModifier, and a named contribution), not through a hand-built AuraEntry literal.',
+    },
+  },
+  {
     id: 'attachment-slot-caps-suppress',
     producerSystem: ATTACHMENTS,
     consumerSystem: 'Effects & Conditions',

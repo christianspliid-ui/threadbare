@@ -272,3 +272,26 @@ export const OVERLAY_DEFAULT_DURATION_TICKS = 24;
  * it gates.
  */
 export const RULE_OVERRIDE_VALUE_CAP = 3.0;
+
+// ─── Aura aggregation at resolution (THR-1243) ─────────────────────
+
+/**
+ * Max distinct aura *emitters* aggregated into one agent's resolution.
+ *
+ * An aura is the only modifier channel sourced from agents other than the one
+ * being resolved, so its stack size is bounded by how many neighbours happen to
+ * stand nearby rather than by anything the bearer chose. A crowded settlement hex
+ * can hold dozens of agents; without a cap, the same encounter reads differently
+ * in a capital than in a hamlet for reasons no player could inspect or influence.
+ *
+ * Emitters are ranked by the magnitude they contribute to the step's reach, so
+ * the cap keeps the presences that matter most and drops the noise beneath them.
+ * `EFFECT_MODIFIER_CAP` still clamps the aggregate afterwards — this bounds *how
+ * many things can speak*, that one bounds *how loud the result may be*.
+ *
+ * Note the radius companion is the pre-existing {@link AURA_MAX_RADIUS}, not a
+ * new constant: the aura reach was already named and already load-bearing in
+ * `collectAuraEffects`, and minting a second radius name that disagreed with it
+ * is the duplicate-spelling pathology this program exists to remove.
+ */
+export const AURA_STACKING_CAP = 3;
