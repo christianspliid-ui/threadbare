@@ -32,6 +32,40 @@
  * Register: rule zero (game prose, not novel prose). Prose rule 7: no agent
  * history asserted anywhere — the sequels are where history legitimately
  * appears, because their parents mint it.
+ *
+ * ── Prose Doctrine v2 (THR-1223 batch 5) ──
+ * All nine templates rewritten 2026-08-25 in narrator mode under the batch-1
+ * calibration rulings: rewrite from scratch in basic game-master language
+ * ("clever specificity" is the residue tell of the old mode), and a card's
+ * effect line never repeats a word from the card's name. Zero mechanical
+ * changes — same steps, effects, seeds, bands, hands.
+ *
+ * Architecture per template (the composed-opening shape the checker reads):
+ * `openings[class]` is a one-sentence P1 arrival with {name}/{location}; the
+ * first step's `narrativeTemplate` is the P2+P3 spine (situation & costs, then
+ * the stake). Cast members enter the spine by token where the template
+ * declares them.
+ *
+ * Stake shapes recorded (Seed Dice, die 1), per template:
+ *   bridge      — Choice (cheap risky crossing, or the long ford)
+ *   pass        — Threat (the snow, on a clock)
+ *   caravan     — Mystery + Threat (which of thirty; the riders waiting)
+ *   crossroads  — Opportunity + Choice (the gift; give the word or keep it)
+ *   fullMoon    — Opportunity (the gift is real, already paid for)
+ *   family      — Choice (a day spent on strangers, or their own road)
+ *   swindler    — Opportunity (the man is here, and known)
+ *   kin         — Opportunity (a standing welcome, there to be won)
+ *   table       — Threat + Choice (riders half a night out; stand or move)
+ *
+ * The 12-question narrator's checklist was answered per template during the
+ * rewrite; the per-template answers reduce to: P1 arrival with graph names
+ * (yes, all 12 class openings); P2 costs-already-paid (yes); P3 one stake
+ * shape from the table above (yes); composed ≤80 words (yes, 51–75); narrator
+ * report throughout, facts stated not encoded (yes); nothing referenced
+ * before introduction, one named person per beat (yes — cast tokens);
+ * player-restatable stakes (yes); cards imperative verb+noun with spell-style
+ * effect lines (yes — four genuine imperatives added to the checker lexicon:
+ * count, keep, thicken, warm).
  */
 
 import type {
@@ -302,15 +336,15 @@ const BRIDGE_HAND: readonly StepNudge[] = [
   {
     // Type: Boost — shared focus family, the common option.
     id: 'slice.bridge.sure_feet',
-    name: 'Sure Feet',
+    name: 'Steady the Feet',
     essenceCost: 1,
     forecastDelta: 0.06,
     imageTag: 'generic.focus',
-    effectLine: 'You steady their balance, so each plank gets a clean, centered step. A small help.',
+    effectLine: 'Their balance holds — each plank gets a clean, centered step.',
     fiction: 'One foot, then the next.',
     bandProse: {
-      success: 'Every step landed mid-plank, quiet as counting.',
-      near_miss: 'The feet stayed sure. A plank did not return the favor.',
+      success: 'Every step landed mid-plank.',
+      near_miss: 'Their footing never failed. A plank did.',
     },
   },
   {
@@ -321,12 +355,12 @@ const BRIDGE_HAND: readonly StepNudge[] = [
     essenceCost: 2,
     forecastDelta: 0.1,
     imageTag: 'generic.strength',
-    effectLine: 'You brace the weakest beam while weight is on it, so the bridge carries more than it should. A real help.',
+    effectLine: 'Brace the weakest beam while weight is on it — the bridge carries more than it should.',
     fiction: 'What holds, holds.',
     bandProse: {
-      success_at_cost: 'The beam held to the far post, then split with a crack like a whip.',
-      failure: 'The braced beam held. The plank two ahead of it was the liar.',
-      critical_failure: 'The beam held until the worst step of the worst stride, and then it was a trapdoor.',
+      success_at_cost: 'The beam lasted to the far post, then split.',
+      failure: 'The braced beam lasted. The plank two ahead of it did not.',
+      critical_failure: 'The beam lasted until their full weight was on it, and then it gave.',
     },
   },
   {
@@ -337,42 +371,42 @@ const BRIDGE_HAND: readonly StepNudge[] = [
     essenceCost: 2,
     forecastDelta: 0.08,
     imageTag: 'generic.light',
-    effectLine: 'You sharpen the light through the planking, so every gap and soft board shows dark before it is stepped on. A real help.',
+    effectLine: 'Every soft board and open seam shows dark before it is stepped on.',
     fiction: 'Rot cannot argue with daylight.',
     bandProse: {
-      critical_success: 'The bad boards showed grey against the sound ones, a path drawn in plain sight.',
-      failure: 'The light showed every gap. It could not show which sound-looking plank had let go below.',
+      critical_success: 'The bad boards showed grey against the sound ones, and the safe path was plain.',
+      failure: 'Every bad board showed. The plank that failed had looked sound from above.',
     },
   },
   {
     // Type: Mercy — this hand's ONE rider. Life's gentleness: the river may
     // refuse them, and still hand them back.
     id: 'slice.bridge.small_mercies',
-    name: 'Small Mercies',
+    name: 'Spare the Worst',
     sphere: 'life',
     essenceCost: 3,
     forecastDelta: 0.04,
     rider: 'no_crit_fail',
     imageTag: 'generic.ward',
-    effectLine: 'Whatever fails tonight, the river gives them back. The worst end is taken off the table.',
+    effectLine: 'Whatever fails tonight, the river gives them back. The deadliest end is off the table.',
     fiction: 'Not every fall is a sentence.',
     bandProse: {
-      failure: 'The bridge refused them halfway, and the water took them gently to the shallows.',
+      failure: 'The bridge refused them halfway, and the water carried them to the shallows.',
     },
   },
   {
     // Type: Boost — time, slowing the crossing to the bridge's own pace.
     id: 'slice.bridge.patient_steps',
-    name: 'Patient Steps',
+    name: 'Slow the Crossing',
     sphere: 'time',
     essenceCost: 1,
     forecastDelta: 0.07,
     imageTag: 'generic.focus',
-    effectLine: 'You stretch their patience, so the crossing takes the slow minute it needs instead of the fast one fear wants. A small, steady help.',
+    effectLine: 'They take the careful minute the bridge needs instead of the fast one fear wants.',
     fiction: 'Hurry is the heaviest load.',
     bandProse: {
-      near_miss: 'They took it slow, and slow got them across everything except the last board.',
-      failure: 'Patience carried them to the middle span, and the middle span was where the bridge ran out of patience.',
+      near_miss: 'They took it carefully, and care got them across everything except the last board.',
+      failure: 'They went carefully all the way to the middle span, and the middle span gave anyway.',
     },
   },
 ];
@@ -385,16 +419,18 @@ const BRIDGE_STEP: ActionStep = {
   onSuccess: [],
   onFailure: [],
   failBehavior: 'fail_action',
+  // The P2+P3 spine (Doctrine v2). The per-class P1 arrival lands above this
+  // at instantiation. The keeper is introduced here by cast token.
   narrativeTemplate:
-    'The nails have risen out of the grey planking. The handrail stops an arm short of the ' +
-    'far bank. Under the middle span, water moves through a gap where a timber used to be. ' +
-    'The traveler’s pack drags at the shoulders even standing still. The keeper waits, ' +
-    'hand open on the strongbox.',
-  successAfterimage: 'They crossed slow and even, and the bridge held its tongue.',
-  failureAfterimage: 'The bridge turned them back at the middle span, and the long ford ate half the day.',
+    'The only bridge sags where the river runs deepest, and its grey planking is rotten. A timber is ' +
+    'missing under the middle span. The keeper, {cast:bridge_keeper}, takes two coppers a crossing and ' +
+    'swears it holds.\n\n' +
+    'Cross on bad boards under a full pack, or lose half a day at the ford upstream.',
+  successAfterimage: 'They crossed slow and even, and the bridge held.',
+  failureAfterimage: 'The bridge turned them back at the middle span, and the long ford took half the day.',
   successAtCostAfterimage: 'They made the far bank as a plank went into the river behind them.',
   criticalSuccessAfterimage: 'They read the boards right and crossed as if the bridge were new.',
-  criticalFailureAfterimage: 'A beam gave under their full weight, and the fall cost them a hard year.',
+  criticalFailureAfterimage: 'A beam gave under their full weight, and the fall hurt them badly.',
   nudges: BRIDGE_HAND,
 };
 
@@ -436,13 +472,9 @@ export const SLICE_UNSAFE_BRIDGE: UnifiedActionTemplate = {
   actorAffinities: ['individual'],
   motivations: ['courage_prudence'],
   settings: ['wayside'],
+  // P1 arrival (Doctrine v2) — the P2/P3 spine lands below it (BRIDGE_STEP).
   openings: {
-    wayside:
-      'The bridge sags where the river runs deepest. The river is loud under it, and the air ' +
-      'off the water is cold. At a table by the near post sits the keeper, a woman with a ' +
-      'strongbox, and behind her two grown sons who do not look at the planking. “It ' +
-      'holds,” she says, before the traveler can ask. “Two coppers. Or the ford is ' +
-      'half a day upstream, if you like wet boots.”',
+    wayside: '{name} reaches the river crossing near {location}.',
   },
   locationSubtypes: expandSettings(['wayside']),
   // THR-1165 — casts the toll keeper, so the mark on her lands on her.
@@ -705,11 +737,11 @@ const PASS_CLIMB_HAND: readonly StepNudge[] = [
   {
     // Type: Boost — shared strength family, the common option.
     id: 'slice.pass.second_wind',
-    name: 'Second Wind',
+    name: 'Find the Reserve',
     essenceCost: 1,
     forecastDelta: 0.1,
     imageTag: 'generic.strength',
-    effectLine: 'When the legs go dead on the switchbacks, the body finds one more climb. A real help.',
+    effectLine: 'When the legs go dead on the switchbacks, the body has one more climb in it.',
     fiction: 'The body keeps a reserve the mind never meets.',
     bandProse: {
       success: 'The last switchback went by on legs that had no right to it.',
@@ -719,16 +751,16 @@ const PASS_CLIMB_HAND: readonly StepNudge[] = [
   {
     // Type: Boost — life, warmth held in the blood.
     id: 'slice.pass.warm_blood',
-    name: 'Warm Blood',
+    name: 'Warm the Blood',
     sphere: 'life',
     essenceCost: 2,
     forecastDelta: 0.08,
     imageTag: 'generic.warmth',
-    effectLine: 'You keep the warmth in their hands and feet, so the cold cannot slow the climb before the snow does. A real help.',
+    effectLine: 'The heat stays in their hands and feet, so the cold cannot slow the climb before the snow does.',
     fiction: 'Cold takes the fingers first, and the will second.',
     bandProse: {
-      success_at_cost: 'The warmth held to the saddle. It spent them to their last dry layer doing it.',
-      near_miss: 'Warm hands got them high and fast, and the snow was faster.',
+      success_at_cost: 'The heat held to the saddle. It spent them to their last dry layer doing it.',
+      near_miss: 'The heat got them high and fast, and the snow was faster.',
     },
   },
   {
@@ -739,7 +771,7 @@ const PASS_CLIMB_HAND: readonly StepNudge[] = [
     essenceCost: 2,
     forecastDelta: 0.09,
     imageTag: 'generic.strength',
-    effectLine: 'You blunt the north wind on the exposed stretches, so the climb spends its strength on climbing. A real help.',
+    effectLine: 'Blunt the northern gusts on the exposed stretches, so the climb spends its strength on climbing.',
     fiction: 'The wind is the mountain’s first argument.',
     bandProse: {
       critical_success: 'The wind stood off the whole climb, and the saddle came early.',
@@ -749,12 +781,12 @@ const PASS_CLIMB_HAND: readonly StepNudge[] = [
   {
     // Type: Boost — light, the day stretched thin.
     id: 'slice.pass.last_light',
-    name: 'Last Light',
+    name: 'Hold the Light',
     sphere: 'light',
     essenceCost: 2,
     forecastDelta: 0.08,
     imageTag: 'generic.light',
-    effectLine: 'You hold the grey light past its hour, so the trail stays readable to the top. A real help.',
+    effectLine: 'The grey dusk lasts past its hour, and the trail stays readable to the top.',
     fiction: 'Dusk keeps its own schedule. Usually.',
     bandProse: {
       near_miss: 'The light lasted. The trail under it was already filling in.',
@@ -764,12 +796,12 @@ const PASS_CLIMB_HAND: readonly StepNudge[] = [
   {
     // Type: Boost — time, a pace that does not break.
     id: 'slice.pass.even_pace',
-    name: 'Even Pace',
+    name: 'Settle the Stride',
     sphere: 'time',
     essenceCost: 1,
     forecastDelta: 0.07,
     imageTag: 'generic.time-slow',
-    effectLine: 'You settle their stride to a climber’s clock, so the slope is spent evenly instead of in bursts. A small, steady help.',
+    effectLine: 'Their pace locks to a climber’s clock, and the slope is spent evenly instead of in bursts.',
     fiction: 'Mountains are climbed at one speed.',
     bandProse: {
       success: 'The pace never broke, and the saddle arrived on schedule.',
@@ -786,7 +818,7 @@ const PASS_NIGHT_HAND: readonly StepNudge[] = [
     essenceCost: 1,
     forecastDelta: 0.05,
     imageTag: 'generic.focus',
-    effectLine: 'You slow the fear, so the night is spent on the work of staying warm instead of the work of worrying. A small help.',
+    effectLine: 'The fear slows, and the night is spent on staying warm instead of worrying.',
     fiction: 'Breathe once. Then look again.',
     bandProse: {
       failure: 'The nerve held all night. The wood did not.',
@@ -795,28 +827,28 @@ const PASS_NIGHT_HAND: readonly StepNudge[] = [
   {
     // Type: Boost — energy, the fire that will not quit.
     id: 'slice.pass.banked_heat',
-    name: 'Banked Heat',
+    name: 'Feed the Coals',
     sphere: 'energy',
     essenceCost: 2,
     forecastDelta: 0.08,
     imageTag: 'generic.energy',
-    effectLine: 'You keep the coals alive through the worst hour, so the fire is an ally and never a chore. A real help.',
+    effectLine: 'The fire holds a red heart through the worst hour of the night.',
     fiction: 'A banked fire is a promise kept till morning.',
     bandProse: {
-      success: 'The coals held a red heart all night, and morning found it still beating.',
-      failure: 'The coals were kept alive. The night was longer than the woodpile.',
+      success: 'The fire held a red heart all night, and it was still there at morning.',
+      failure: 'The fire stayed alive. The night was longer than the woodpile.',
     },
   },
   {
     // Type: Balm — life; the day's exhaustion lifted before the night tests it.
     id: 'slice.pass.deep_rest',
-    name: 'Deep Rest',
+    name: 'Banish Weariness',
     sphere: 'life',
     essenceCost: 2,
     forecastDelta: 0.06,
     imageTag: 'generic.vigor',
     grants: [{ kind: 'remove_condition', conditionTraitId: 'trait.condition.exhausted' }],
-    effectLine: 'The climb’s weariness lifts, so the night starts on a rested body, with the exhaustion lifted.',
+    effectLine: 'The climb’s tiredness lifts, and the night starts on a rested body.',
     fiction: 'Rest is armor.',
     bandProse: {
       near_miss: 'The rest was real. The cold that followed it was more real.',
@@ -825,31 +857,31 @@ const PASS_NIGHT_HAND: readonly StepNudge[] = [
   {
     // Type: Boost — matter, shelter made stubborn.
     id: 'slice.pass.iron_patience',
-    name: 'Iron Patience',
+    name: 'Stiffen the Shelter',
     sphere: 'matter',
     essenceCost: 2,
     forecastDelta: 0.07,
     imageTag: 'generic.matter',
-    effectLine: 'You stiffen whatever stands between them and the wind, so the shelter holds its shape till dawn. A real help.',
+    effectLine: 'Whatever stands between them and the wind holds its shape till dawn.',
     fiction: 'Stone does not complain about weather.',
     bandProse: {
-      success_at_cost: 'The shelter held its shape. Holding it cost the night’s sleep in repairs.',
-      critical_failure: 'The shelter held to the exact hour the storm found its second strength.',
+      success_at_cost: 'The windbreak held its shape. Holding it cost the night’s sleep in repairs.',
+      critical_failure: 'The windbreak held until the storm found its second strength, and then it did not.',
     },
   },
   {
     // Type: Boost — darkness, the night made a blanket instead of a threat.
     id: 'slice.pass.quiet_dark',
-    name: 'Quiet Dark',
+    name: 'Quiet the Dark',
     sphere: 'darkness',
     essenceCost: 1,
     forecastDelta: 0.06,
     imageTag: 'generic.dark',
-    effectLine: 'You still the dark around the camp, so nothing in it costs them sleep or nerve. A small help.',
+    effectLine: 'Nothing moves near the camp, and nothing in the night costs them sleep or nerve.',
     fiction: 'Some nights the dark keeps to itself.',
     bandProse: {
-      critical_success: 'The night passed like a held breath, and dawn came kind.',
-      failure: 'The dark stayed quiet. The cold did all the talking.',
+      critical_success: 'The night passed without one alarm, and dawn came mild.',
+      failure: 'The night stayed calm. The cold did all the damage.',
     },
   },
 ];
@@ -862,10 +894,12 @@ const PASS_CLIMB_STEP: ActionStep = {
   onSuccess: [],
   onFailure: [],
   failBehavior: 'continue_weakened',
+  // The P2+P3 spine (Doctrine v2). The per-class P1 arrival lands above this
+  // at instantiation.
   narrativeTemplate:
-    'It is a plain race. The hut under the saddle has a roof, a hearth, and stacked wood old ' +
-    'as the road; the slope below it has scrub, hollows, and wind. The first switchback ' +
-    'starts wet and gets steep, and the light is going.',
+    'Snow is coming down onto the pass, and the wind has turned north. A shelter hut with a roof, a hearth ' +
+    'and stacked wood sits just under the saddle, half a day up the switchbacks.\n\n' +
+    'The snow reaches the pass by dark. Beat it to the hut, or spend the night on the open slope.',
   successAfterimage: 'They made the saddle ahead of the snow, and the hut door shut behind them.',
   failureAfterimage: 'The snow caught them below the saddle, and the night would be spent in the open.',
   successAtCostAfterimage: 'They reached the hut spent to the bone, the first drifts at their heels.',
@@ -916,9 +950,8 @@ const PASS_NIGHT_STEP: ActionStep = {
     },
   },
   narrativeTemplate:
-    'The snow arrives as a wall of small dry flakes that do not stop. The wind takes the ' +
-    'temperature down with the light. From here to morning, the work is heat: making it, ' +
-    'keeping it, and not spending it on fear.',
+    'The snow arrives and does not stop, and the wind takes the temperature down with the light. From here ' +
+    'to morning the work is heat: making it, holding it, and not wasting it on fear.',
   successAfterimage: 'Morning came grey and quiet, and they walked down the far side stiff and whole.',
   failureAfterimage: 'The night took more than it gave back, and the morning legs knew it.',
   successAtCostAfterimage: 'They passed the night awake and paid for it in the next day’s miles.',
@@ -940,12 +973,9 @@ export const SLICE_SNOW_ON_THE_PASS: UnifiedActionTemplate = {
   actorAffinities: ['individual'],
   motivations: ['courage_prudence'],
   settings: ['wayside'],
+  // P1 arrival (Doctrine v2) — the P2/P3 spine lands below it (PASS_CLIMB_STEP).
   openings: {
-    wayside:
-      'The snow line on the peaks has come down a hand since morning, and the wind has gone ' +
-      'around to the north. The pass hut sits just under the saddle, a half day’s climb up ' +
-      'switchbacks the traveler can see from here. Behind them, the last village is a day ' +
-      'back the wrong direction. The first flakes are small and dry and do not melt on the sleeve.',
+    wayside: '{name} climbs toward the high pass above {location}.',
   },
   locationSubtypes: expandSettings(['wayside']),
   traitVariants: [
@@ -1211,7 +1241,7 @@ const CARAVAN_FIND_HAND: readonly StepNudge[] = [
     essenceCost: 1,
     forecastDelta: 0.07,
     imageTag: 'generic.focus',
-    effectLine: 'You settle the asking, so every question lands as small talk and never as suspicion. A small help.',
+    effectLine: 'Every asking lands as small talk, never as suspicion.',
     fiction: 'The best questions do not sound like questions.',
     bandProse: {
       success: 'By the third fire, the column’s stories had come loose.',
@@ -1221,12 +1251,12 @@ const CARAVAN_FIND_HAND: readonly StepNudge[] = [
   {
     // Type: Boost — mind, the details lined up and compared.
     id: 'slice.caravan.old_lessons',
-    name: 'Old Lessons',
+    name: 'Stir Memory',
     sphere: 'mind',
     essenceCost: 2,
     forecastDelta: 0.08,
     imageTag: 'generic.memory',
-    effectLine: 'You surface every road-story they have ever heard told wrong, so the false one in this column stands out. A real help.',
+    effectLine: 'Every road-story they have heard told wrong comes back, so the false one in this column stands out.',
     fiction: 'No river is the first river.',
     bandProse: {
       success_at_cost: 'The wrong story showed itself. So did the traveler’s interest in it.',
@@ -1236,13 +1266,13 @@ const CARAVAN_FIND_HAND: readonly StepNudge[] = [
   {
     // Type: Gambit — chaos, this hand's ONE rider: shake the column and watch.
     id: 'slice.caravan.a_loose_tongue',
-    name: 'A Loose Tongue',
+    name: 'Loosen a Tongue',
     sphere: 'chaos',
     essenceCost: 1,
     forecastDelta: 0.04,
     rider: 'all_or_nothing',
     imageTag: 'generic.luck',
-    effectLine: 'You loosen one voice at the night fire — the truth spills fast, or the hunt is tipped off. The middle drops away.',
+    effectLine: 'One voice at the night fire runs free — the truth spills fast, or the hunt is tipped off. Nothing in between.',
     fiction: 'A shaken cup shows what settles.',
     bandProse: {
       critical_success: 'The loose talk ran one direction all night, and it pooled around a single bedroll.',
@@ -1253,12 +1283,12 @@ const CARAVAN_FIND_HAND: readonly StepNudge[] = [
   {
     // Type: Boost — matter, what people carry telling on them.
     id: 'slice.caravan.marked_coin',
-    name: 'Marked Coin',
+    name: 'Weigh the Gear',
     sphere: 'matter',
     essenceCost: 2,
     forecastDelta: 0.08,
     imageTag: 'generic.matter',
-    effectLine: 'You draw the eye to what things are worth against what their owners claim to be, so the gear tells on the story. A real help.',
+    effectLine: 'What people carry tells on what they claim to be.',
     fiction: 'A pack always inventories its owner.',
     bandProse: {
       near_miss: 'One kit argued with its owner’s story. So, on a second look, did two others.',
@@ -1268,12 +1298,12 @@ const CARAVAN_FIND_HAND: readonly StepNudge[] = [
   {
     // Type: Boost — time, the pattern across four days of road.
     id: 'slice.caravan.patient_watch',
-    name: 'Patient Watch',
+    name: 'Hold the Pattern',
     sphere: 'time',
     essenceCost: 2,
     forecastDelta: 0.08,
     imageTag: 'generic.time-slow',
-    effectLine: 'You hold the whole four days in view at once, so the one walker whose habits bend around the riders shows plain. A real help.',
+    effectLine: 'All four days stay in view at once, and the one walker whose habits bend around the riders shows plain.',
     fiction: 'People repeat. Watch long enough.',
     bandProse: {
       success: 'Across four days, one walker never once let the ridge see their face.',
@@ -1286,11 +1316,11 @@ const CARAVAN_SLIP_HAND: readonly StepNudge[] = [
   {
     // Type: Boost — shared focus family, the common option.
     id: 'slice.caravan.hushed_steps',
-    name: 'Hushed Steps',
+    name: 'Still the Camp',
     essenceCost: 1,
     forecastDelta: 0.07,
     imageTag: 'generic.focus',
-    effectLine: 'You steady the leaving, so it looks like an errand and sounds like sleep. A small help.',
+    effectLine: 'The leaving looks like an errand and sounds like sleep.',
     fiction: 'The quietest departures are boring ones.',
     bandProse: {
       success: 'Two shapes left the camp at the hour when nobody counts shapes.',
@@ -1305,7 +1335,7 @@ const CARAVAN_SLIP_HAND: readonly StepNudge[] = [
     essenceCost: 2,
     forecastDelta: 0.1,
     imageTag: 'generic.dark',
-    effectLine: 'You deepen the dark between the fires and the treeline, so the going is a rumor even to the watch. A real help.',
+    effectLine: 'The night deepens between the fires and the treeline, and the going is a rumor even to the watch.',
     fiction: 'The dark keeps what it is given.',
     bandProse: {
       critical_success: 'The dark held them the whole distance, and the morning count came up one short with no story attached.',
@@ -1315,12 +1345,12 @@ const CARAVAN_SLIP_HAND: readonly StepNudge[] = [
   {
     // Type: Boost — mind, the story that survives the morning after.
     id: 'slice.caravan.a_plain_story',
-    name: 'A Plain Story',
+    name: 'Seed the Story',
     sphere: 'mind',
     essenceCost: 2,
     forecastDelta: 0.08,
     imageTag: 'generic.memory',
-    effectLine: 'You seed a dull, sensible reason for the empty bedroll, so the morning asks no questions worth carrying to the riders. A real help.',
+    effectLine: 'A dull, sensible reason for the empty bedroll takes root, and the morning asks no questions worth carrying.',
     fiction: 'A good lie is a boring one.',
     bandProse: {
       success_at_cost: 'The story held with the column. Holding it cost the master a debt he will remember.',
@@ -1330,7 +1360,7 @@ const CARAVAN_SLIP_HAND: readonly StepNudge[] = [
   {
     // Type: Insurance — order, this hand's ONE rider: the leaving is bought.
     id: 'slice.caravan.safe_passage',
-    name: 'Safe Passage',
+    name: 'Bind Outcome',
     sphere: 'order',
     essenceCost: 3,
     forecastDelta: 0.05,
@@ -1346,12 +1376,12 @@ const CARAVAN_SLIP_HAND: readonly StepNudge[] = [
   {
     // Type: Boost — spirit, two nerves held as one.
     id: 'slice.caravan.one_heartbeat',
-    name: 'One Heartbeat',
+    name: 'Tie the Nerves',
     sphere: 'spirit',
     essenceCost: 1,
     forecastDelta: 0.07,
     imageTag: 'generic.oath',
-    effectLine: 'You knit the traveler’s nerve to the hunted one’s, so neither can panic without the other steadying it. A small, steady help.',
+    effectLine: 'The traveler and the hunted one hold each other level — neither can panic alone.',
     fiction: 'Two afraid together are braver than one.',
     bandProse: {
       near_miss: 'Neither of them broke. The horse they had counted on did.',
@@ -1368,11 +1398,14 @@ const CARAVAN_FIND_STEP: ActionStep = {
   onSuccess: [],
   onFailure: [],
   failBehavior: 'continue_weakened',
+  // The P2+P3 spine (Doctrine v2). The per-class P1 arrival lands above this
+  // at instantiation. The caravan master is introduced here by cast token.
   narrativeTemplate:
-    'The master walks a half mile beside the traveler before he says it. “Last to join, and ' +
-    'a stranger to every face here. That makes one walker I can rule out.” He keeps his eyes ' +
-    'on the oxen the whole time. He wants a name before the town gates, and he wants the ' +
-    'column not to know it is being weighed.',
+    'Two riders have followed the caravan since noon, keeping pace and keeping their distance. The caravan ' +
+    'master, {cast:caravan_master}, says one of his thirty walkers is being hunted, and the traveler — last ' +
+    'to join, a stranger to every face — is the one walker he can rule out.\n\n' +
+    'He wants the hunted one found before the town gates, four days on, without the column knowing it is ' +
+    'being weighed.',
   successAfterimage: 'By the third night fire, the traveler knew which bedroll the riders were waiting on.',
   failureAfterimage: 'Four days of watching bought suspicions, and the gates arrived before certainty did.',
   successAtCostAfterimage: 'The name came clear, and so did a rumor that questions were being asked.',
@@ -1416,9 +1449,8 @@ const CARAVAN_SLIP_STEP: ActionStep = {
     },
   },
   narrativeTemplate:
-    'The last camp before the gates sits in a river bend, fires low, the ridge dark and not ' +
-    'empty. Whoever leaves the column has to leave tonight, quietly, and in a direction the ' +
-    'riders have not thought to watch yet.',
+    'This is the last camp before the gates. Whoever leaves the column has to leave tonight, quietly, and ' +
+    'in a direction the riders are not watching.',
   successAfterimage: 'The morning count came up one short, and the column walked through the gates unbothered.',
   failureAfterimage: 'The leaving failed, and the column reached the gates with the riders still choosing their hour.',
   successAtCostAfterimage: 'The hunted one got clear, and the noise of it will be paid for in the town.',
@@ -1465,14 +1497,9 @@ export const SLICE_RIDERS_BEHIND_CARAVAN: UnifiedActionTemplate = {
   actorAffinities: ['individual'],
   motivations: ['revelation_discretion', 'sacrifice_survival'],
   settings: ['wayside'],
+  // P1 arrival (Doctrine v2) — the P2/P3 spine lands below it (CARAVAN_FIND_STEP).
   openings: {
-    wayside:
-      'The caravan is strung out along a chalk road between hedges, oxen slow in the heat, ' +
-      'dust on everyone’s teeth. On the ridge behind, two riders have kept pace since ' +
-      'noon — out of hail, in no hurry. Four days short of the next walled town, the ' +
-      'caravan master drops back to walk beside the traveler. “Somebody in my column is ' +
-      'being hunted,” he says. “Those two are waiting, and when they stop waiting ' +
-      'they will not be polite about the other twenty-nine of us.”',
+    wayside: '{name} walks with a caravan on the road to {location}.',
   },
   locationSubtypes: expandSettings(['wayside']),
   // THR-1165 — casts the caravan master, so the bond the ending describes binds
@@ -1755,12 +1782,12 @@ const CROSSROADS_HAND: readonly StepNudge[] = [
     // Type: Boost — common; the old tales as a measuring stick. Leans toward
     // keeping one's word to oneself (tradition).
     id: 'slice.crossroads.old_stories',
-    name: 'Old Stories',
+    name: 'Weigh the Tales',
     essenceCost: 1,
     forecastDelta: 0.06,
     poleLean: { axis: 'tradition_novelty', toward: 'positive' },
     imageTag: 'generic.memory',
-    effectLine: 'You surface every fireside tale about crossroads strangers, so the offer is weighed against all of them. A small help, and it argues for walking on.',
+    effectLine: 'Every fireside story about crossroads strangers stands beside the offer. It argues for walking on.',
     fiction: 'The old stories agree on crossroads.',
     bandProse: {
       success: 'The tales lined up beside the stranger, and the fit was close enough to notice.',
@@ -1770,12 +1797,12 @@ const CROSSROADS_HAND: readonly StepNudge[] = [
   {
     // Type: Boost — mind, reading the man as a man.
     id: 'slice.crossroads.second_sight',
-    name: 'Second Sight',
+    name: 'Sharpen the Read',
     sphere: 'mind',
     essenceCost: 2,
     forecastDelta: 0.08,
     imageTag: 'generic.focus',
-    effectLine: 'You sharpen their read of him — the hands, the coat, the patience — so whatever he is, less of it stays hidden. A real help.',
+    effectLine: 'The hands, the coat, the patience — whatever he is, less of it stays hidden.',
     fiction: 'Every mask fits badly at the edges.',
     bandProse: {
       success: 'The read came back strange and shallow at once: fine boots that had walked no road, patience with no fidget in it.',
@@ -1786,13 +1813,13 @@ const CROSSROADS_HAND: readonly StepNudge[] = [
     // Type: Kindled Ambition — spirit; the wanting itself, examined. Leans
     // toward taking the bargain (novelty).
     id: 'slice.crossroads.a_taste_for_wonders',
-    name: 'A Taste for Wonders',
+    name: 'Fan the Wanting',
     sphere: 'spirit',
     essenceCost: 1,
     forecastDelta: 0.07,
     poleLean: { axis: 'tradition_novelty', toward: 'negative' },
     imageTag: 'generic.energy',
-    effectLine: 'You fan the wanting the stranger named, so the choice is made with open eyes about how much it is wanted. A small help, and it argues for the bargain.',
+    effectLine: 'The hunger the stranger named burns plain, so the choice is made with open eyes. It argues for the bargain.',
     fiction: 'Wanting is not a fault. Pretending not to want is.',
     bandProse: {
       near_miss: 'The wanting stood up honestly, and honesty made it harder, not easier.',
@@ -1802,12 +1829,12 @@ const CROSSROADS_HAND: readonly StepNudge[] = [
   {
     // Type: Boost — time; what the full moon means, counted forward.
     id: 'slice.crossroads.cold_reading',
-    name: 'Cold Reading',
+    name: 'Tally the Days',
     sphere: 'time',
     essenceCost: 2,
     forecastDelta: 0.08,
     imageTag: 'generic.memory',
-    effectLine: 'You count the promise forward — where the road leads, where the moon finds it — so the price is measured in days, and days are real. A real help.',
+    effectLine: 'The promise is counted forward to the full moon, so the price is measured in something real.',
     fiction: 'Every promise has a calendar.',
     bandProse: {
       critical_success: 'The whole bargain unfolded like a route on a map: the gift, the moon, the walk back, the standing still.',
@@ -1817,12 +1844,12 @@ const CROSSROADS_HAND: readonly StepNudge[] = [
   {
     // Type: Boost — light; the plain look that embarrasses glamours.
     id: 'slice.crossroads.truthful_air',
-    name: 'Truthful Air',
+    name: 'Clear the Air',
     sphere: 'light',
     essenceCost: 2,
     forecastDelta: 0.07,
     imageTag: 'generic.light',
-    effectLine: 'You clear the evening air around him, so what stands at the crossroads is seen in honest light, whatever it is. A real help.',
+    effectLine: 'What stands at the crossroads is seen in honest light, whatever it is.',
     fiction: 'Good light is the oldest test.',
     bandProse: {
       success_at_cost: 'The honest light showed a man-shaped patience, and showed the traveler how long it had been standing there.',
@@ -1839,11 +1866,13 @@ const CROSSROADS_MEASURE_STEP: ActionStep = {
   onSuccess: [],
   onFailure: [],
   failBehavior: 'continue_weakened',
+  // The P2+P3 spine (Doctrine v2). The per-class P1 arrival lands above this
+  // at instantiation. The stranger is introduced here by cast token.
   narrativeTemplate:
-    'The road east goes past him, open. He states his terms like a merchant at a stall: the ' +
-    'offer stands, now or at the full moon, spoken of or not. A crow leaves the dead tree ' +
-    'and does not come back. Give a word to a stranger who knows too much, or keep it and ' +
-    'keep walking.',
+    'A stranger, {cast:stranger}, waits under the dead tree — no horse, no pack, no mud on his boots. He ' +
+    'greets the traveler by name, offers a gift shaped to their own quiet wanting, and asks in payment only ' +
+    'a promise: collect it here at the next full moon.\n\n' +
+    'Take the measure of a man who knows too much, then give the word or keep walking.',
   successAfterimage: 'The traveler took the stranger’s measure and kept their own counsel about it.',
   failureAfterimage: 'The stranger was easy to look at and impossible to read, and gave back only manners.',
   successAtCostAfterimage: 'The reading told them truths they would have preferred to learn from further away.',
@@ -1915,14 +1944,10 @@ export const SLICE_BARGAIN_AT_CROSSROADS: UnifiedActionTemplate = {
   actorAffinities: ['individual'],
   motivations: ['tradition_novelty'],
   settings: ['wayside'],
+  // P1 arrival (Doctrine v2) — the P2/P3 spine lands below it
+  // (CROSSROADS_MEASURE_STEP).
   openings: {
-    wayside:
-      'The crossroads has a stone marker and a dead tree, and under the tree stands a tall ' +
-      'man in a clean coat. No horse, no pack, no mud on his boots. The evening wind moves ' +
-      'everything at the crossroads except him. He greets the traveler by name. He offers a ' +
-      'gift, to be collected here at the next full moon, and the price is only a promise to ' +
-      'come and take it. Then he describes the gift — and it lands close to the ' +
-      'traveler’s own quiet wanting, or he is guessing well.',
+    wayside: '{name} comes to the crossroads at {location} at dusk.',
   },
   locationSubtypes: expandSettings(['wayside']),
   // THR-1110 — casts the stranger so the promise has a second party to bind to,
@@ -2241,7 +2266,7 @@ const FULL_MOON_HAND: readonly StepNudge[] = [
     essenceCost: 1,
     forecastDelta: 0.06,
     imageTag: 'generic.focus',
-    effectLine: 'You keep their breathing even while the moonlight fills, so the meeting starts with a level head. A small help.',
+    effectLine: 'Their breathing stays even while the moonlight fills, and the meeting starts with a level head.',
     fiction: 'Meet what comes standing still.',
     bandProse: {
       success: 'The appointment was kept with a level head, and it showed.',
@@ -2256,7 +2281,7 @@ const FULL_MOON_HAND: readonly StepNudge[] = [
     essenceCost: 1,
     forecastDelta: 0.06,
     imageTag: 'generic.memory',
-    effectLine: 'You hold last month’s meeting sharp in their mind, so any word tonight that differs from the bargain stands out. A small help.',
+    effectLine: 'Last month’s meeting stays sharp in their mind — any word tonight that differs from the bargain stands out.',
     fiction: 'The first telling is the contract.',
     bandProse: {
       near_miss: 'Every word matched the bargain. The look that came with the last one did not.',
@@ -2266,12 +2291,12 @@ const FULL_MOON_HAND: readonly StepNudge[] = [
   {
     // Type: Boost — light, an honest meeting ground.
     id: 'slice.fullmoon.moonlit_ground',
-    name: 'Moonlit Ground',
+    name: 'Light the Ground',
     sphere: 'light',
     essenceCost: 2,
     forecastDelta: 0.06,
     imageTag: 'generic.light',
-    effectLine: 'You keep the moonlight flat and even across the road, so nothing about the meeting hides in a shadow. A real help.',
+    effectLine: 'The moon falls flat and even across the road, and nothing about the meeting hides in a shadow.',
     fiction: 'Let the whole road be seen.',
     bandProse: {
       critical_success: 'Under that even light the exchange was exactly what it claimed to be, and both sides saw it.',
@@ -2282,12 +2307,12 @@ const FULL_MOON_HAND: readonly StepNudge[] = [
   {
     // Type: Boost — order, the ritual of the exchange.
     id: 'slice.fullmoon.the_old_forms',
-    name: 'The Old Forms',
+    name: 'Keep the Forms',
     sphere: 'order',
     essenceCost: 2,
     forecastDelta: 0.05,
     imageTag: 'generic.oath',
-    effectLine: 'You steady the ritual of the exchange — greeting, parcel, parting — so the old forms carry it even if nerve does not. A small, steady help.',
+    effectLine: 'Greeting, parcel, parting — the ritual carries the exchange even if nerve does not.',
     fiction: 'Forms exist for nights like this.',
     bandProse: {
       success_at_cost: 'The forms carried the exchange to its end. The extra sentence came after the forms were done.',
@@ -2302,7 +2327,7 @@ const FULL_MOON_HAND: readonly StepNudge[] = [
     essenceCost: 1,
     forecastDelta: 0.04,
     imageTag: 'generic.ward',
-    effectLine: 'You quiet the wanting the stranger once read in them, so nothing tonight is priced off it. A small help.',
+    effectLine: 'The hunger the stranger once read in them goes quiet, and nothing tonight is priced off it.',
     fiction: 'Want nothing at a bargain.',
     bandProse: {
       near_miss: 'The wanting stayed quiet. The stranger set his price off a different hunger.',
@@ -2319,12 +2344,13 @@ const FULL_MOON_STEP: ActionStep = {
   onSuccess: [],
   onFailure: [],
   failBehavior: 'fail_action',
+  // The P2+P3 spine (Doctrine v2). The per-class P1 arrival lands above this
+  // at instantiation. No cast token — this template declares no bundle; the
+  // stranger arrives through the parent seed's inherited context.
   narrativeTemplate:
-    'The full moon finds the traveler on open road, as promised. The stranger is there ' +
-    'before the light finishes arriving, same coat, same clean boots, holding a wrapped ' +
-    'parcel the size of the gift he described. “You kept it,” he says, pleased, ' +
-    'as if promises were coin and this one had held its value. All that remains is to take ' +
-    'the gift from his hands.',
+    'The stranger from the crossroads is there before the light finishes arriving — same coat, same clean ' +
+    'boots — holding a wrapped parcel the size of the gift he described. He is pleased the promise held.\n\n' +
+    'All that remains is to take the gift from his hands, and to stand the exchange well.',
   successAfterimage: 'The gift changed hands under the full moon, and the stranger bowed like a merchant after a fair sale.',
   failureAfterimage: 'The parcel passed to the traveler’s hands cold and heavier than it looked.',
   successAtCostAfterimage: 'The gift was given, and with it one more sentence than the traveler wanted to hear.',
@@ -2346,11 +2372,9 @@ export const SLICE_FULL_MOON_COLLECTION: UnifiedActionTemplate = {
   actorAffinities: ['individual'],
   motivations: ['tradition_novelty'],
   settings: ['wayside'],
+  // P1 arrival (Doctrine v2) — the P2/P3 spine lands below it (FULL_MOON_STEP).
   openings: {
-    wayside:
-      'The moon comes up full over the road, and the road remembers. Wherever the traveler ' +
-      'meant to be tonight, the crossroads promise has walked with them the whole month, and ' +
-      'tonight it stops walking.',
+    wayside: '{name} is on the open road near {location} when the moon rises full.',
   },
   locationSubtypes: expandSettings(['wayside']),
   aftermathConfig: {
@@ -2570,13 +2594,13 @@ const FAMILY_MEETING_HAND: readonly StepNudge[] = [
   {
     // Type: Boost — life; the pity felt at full weight. Leans toward helping.
     id: 'slice.family.soft_heart',
-    name: 'Soft Heart',
+    name: 'Soften the Heart',
     sphere: 'life',
     essenceCost: 1,
     forecastDelta: 0.07,
     poleLean: { axis: 'mercy_ruthlessness', toward: 'positive' },
     imageTag: 'generic.warmth',
-    effectLine: 'You let the children’s worn shoes land at full weight, so the choice is made feeling everything there is to feel. A small help, and it argues for stopping.',
+    effectLine: 'The children’s worn shoes land at full weight, and the choice is made feeling all of it. It argues for stopping.',
     fiction: 'Pity is information.',
     bandProse: {
       success: 'The smallest shoe did most of the talking.',
@@ -2586,12 +2610,12 @@ const FAMILY_MEETING_HAND: readonly StepNudge[] = [
   {
     // Type: Boost — common; the road's arithmetic. Leans toward walking on.
     id: 'slice.family.hard_miles',
-    name: 'Hard Miles',
+    name: 'Count the Miles',
     essenceCost: 1,
     forecastDelta: 0.05,
     poleLean: { axis: 'mercy_ruthlessness', toward: 'negative' },
     imageTag: 'generic.vigor',
-    effectLine: 'You keep the traveler’s own road in view — the miles, the hour, the bed at the end — so the cost of stopping stays honest. A small help, and it argues for walking on.',
+    effectLine: 'The traveler’s own road stays in view — the hour, the distance, the bed at the end. It argues for walking on.',
     fiction: 'Every kindness is paid for in miles.',
     bandProse: {
       near_miss: 'Their own road stayed honest in view, and it almost won.',
@@ -2601,12 +2625,12 @@ const FAMILY_MEETING_HAND: readonly StepNudge[] = [
   {
     // Type: Boost — order; the words that say a hard thing cleanly.
     id: 'slice.family.plain_words',
-    name: 'Plain Words',
+    name: 'Ready the Words',
     sphere: 'order',
     essenceCost: 2,
     forecastDelta: 0.06,
     imageTag: 'generic.light',
-    effectLine: 'You line the words up before they are needed, so the truth about the paper can be said without cruelty and without softening. A real help.',
+    effectLine: 'The truth about the paper can be said without cruelty and without softening.',
     fiction: 'Bad news wants short sentences.',
     bandProse: {
       success_at_cost: 'The truth came out clean, and the man aged a year taking it.',
@@ -2617,12 +2641,12 @@ const FAMILY_MEETING_HAND: readonly StepNudge[] = [
   {
     // Type: Boost — mind; the story checked against itself.
     id: 'slice.family.their_story_holds',
-    name: 'Their Story Holds',
+    name: 'Test the Tale',
     sphere: 'mind',
     essenceCost: 1,
     forecastDelta: 0.06,
     imageTag: 'generic.focus',
-    effectLine: 'You test the family’s tale as it is told, so the traveler knows the swindle is real before spending anything on it. A small help.',
+    effectLine: 'The family’s story is checked as it is told, so the swindle is known real before anything is spent on it.',
     fiction: 'Truth holds up to a second look.',
     bandProse: {
       near_miss: 'The story held everywhere except the one place it mattered.',
@@ -2632,12 +2656,12 @@ const FAMILY_MEETING_HAND: readonly StepNudge[] = [
   {
     // Type: Boost — time; the fork seen from above.
     id: 'slice.family.long_memory',
-    name: 'Long Memory',
+    name: 'Show the Endings',
     sphere: 'time',
     essenceCost: 2,
     forecastDelta: 0.07,
     imageTag: 'generic.memory',
-    effectLine: 'You stretch the view down both roads — theirs into the fen, the other toward the river country — so the choice is made seeing where each one ends. A real help.',
+    effectLine: 'Both roads stretch out to where they finish — theirs into the fen, the other toward the river country.',
     fiction: 'Roads are honest about their endings.',
     bandProse: {
       critical_success: 'Both roads unrolled to their ends in one look, and one of them ended in reeds and salt.',
@@ -2654,7 +2678,7 @@ const FAMILY_GUIDE_HAND: readonly StepNudge[] = [
     essenceCost: 1,
     forecastDelta: 0.08,
     imageTag: 'generic.focus',
-    effectLine: 'You keep their eye on the ground’s grammar — the drainage, the grass, the tree line — so the good turn shows itself. A real help.',
+    effectLine: 'The drainage, the grass, the tree line all stay in view, and the good turn shows itself.',
     fiction: 'Land tells what it is. Quietly.',
     bandProse: {
       success: 'The land read true a mile at a time, all the long afternoon.',
@@ -2664,12 +2688,12 @@ const FAMILY_GUIDE_HAND: readonly StepNudge[] = [
   {
     // Type: Boost — light; the landmark shown plain.
     id: 'slice.family.kind_light',
-    name: 'Kind Light',
+    name: 'Hold the Light',
     sphere: 'light',
     essenceCost: 2,
     forecastDelta: 0.07,
     imageTag: 'generic.light',
-    effectLine: 'You hold the light long and low, so the unmarked turn reads from a distance and no one has to find it by luck. A real help.',
+    effectLine: 'The afternoon stays long and low, so the unmarked turn reads from a distance and nobody finds it by luck.',
     fiction: 'A turn once seen can be taught.',
     bandProse: {
       critical_success: 'The low light picked the turn out of the country like a thumb on a map.',
@@ -2679,12 +2703,12 @@ const FAMILY_GUIDE_HAND: readonly StepNudge[] = [
   {
     // Type: Boost — matter; the marker that stays behind.
     id: 'slice.family.sure_marker',
-    name: 'Sure Marker',
+    name: 'Raise the Cairn',
     sphere: 'matter',
     essenceCost: 2,
     forecastDelta: 0.07,
     imageTag: 'generic.matter',
-    effectLine: 'You steady their hands building a cairn at the turn, so the road stays found after everyone walks away from it. A real help.',
+    effectLine: 'Their hands stay sure building the marker at the turn, and the road stays found after everyone walks away.',
     fiction: 'Pile three stones and the road remembers.',
     bandProse: {
       success_at_cost: 'The cairn went up sound. The light went while it did.',
@@ -2694,12 +2718,12 @@ const FAMILY_GUIDE_HAND: readonly StepNudge[] = [
   {
     // Type: Boost — energy; the family's last strength found.
     id: 'slice.family.second_wind_shared',
-    name: 'Second Wind',
+    name: 'Find the Reserve',
     sphere: 'energy',
     essenceCost: 1,
     forecastDelta: 0.06,
     imageTag: 'generic.strength',
-    effectLine: 'When the smallest walkers are done, their legs find one more hour. A small help that helps the whole line.',
+    effectLine: 'When the smallest walkers are done, their legs have one more hour in them.',
     fiction: 'The body keeps a reserve the mind never meets.',
     bandProse: {
       near_miss: 'The children made the last mile. The cart barely did.',
@@ -2709,12 +2733,12 @@ const FAMILY_GUIDE_HAND: readonly StepNudge[] = [
   {
     // Type: Boost — time; the day paced to fit the detour.
     id: 'slice.family.gentle_hour',
-    name: 'Gentle Hour',
+    name: 'Widen the Hour',
     sphere: 'time',
     essenceCost: 1,
     forecastDelta: 0.05,
     imageTag: 'generic.blessing',
-    effectLine: 'You stretch the useful part of the afternoon, so the detour fits inside the day it was given. A small help.',
+    effectLine: 'The useful part of the afternoon stretches, and the detour fits inside the day.',
     fiction: 'Some hours are wider than others.',
     bandProse: {
       failure: 'The hour stretched as far as an hour goes. The turn was further.',
@@ -2730,12 +2754,12 @@ const FAMILY_MEETING_STEP: ActionStep = {
   onSuccess: [],
   onFailure: [],
   failBehavior: 'continue_weakened',
+  // The P2+P3 spine (Doctrine v2). The per-class P1 arrival lands above this
+  // at instantiation.
   narrativeTemplate:
-    'The man says nine days. The children’s shoes agree. Turning them around means ' +
-    'telling a tired man that his family’s one hope is a swindle. Setting them right ' +
-    'means more: the river country two days south can feed a holding, and the turn to it is ' +
-    'unmarked and easy to miss even when told. The children wave as the cart creaks past. ' +
-    'The next town is an easy walk by dark.',
+    'A family with a handcart is walking east: a man, a woman, three children. A swindler sold them a deed ' +
+    'to good land that way, and they hold the paper out proudly. East of here is only a salt fen.\n\n' +
+    'Tell them the truth and find them a living road, or wish them luck and walk on.',
   successAfterimage: 'The family’s story was heard start to finish, paper and all.',
   failureAfterimage: 'The story came out sideways and slow, and the sun was down before the end of it.',
   successAtCostAfterimage: 'They heard it all, and some of it will be hard to put down again.',
@@ -2808,13 +2832,10 @@ export const SLICE_SWINDLED_FAMILY: UnifiedActionTemplate = {
   actorAffinities: ['individual'],
   motivations: ['mercy_ruthlessness'],
   settings: ['wayside'],
+  // P1 arrival (Doctrine v2) — the P2/P3 spine lands below it
+  // (FAMILY_MEETING_STEP).
   openings: {
-    wayside:
-      'The family comes the other way an hour after noon: a handcart, a man and a woman ' +
-      'walking beside it, three children, and a dog too tired to bark at strangers. They are ' +
-      'cheerful. A man in a market sold them a paper to good land in the east, and they hold ' +
-      'it out to be admired. Their road east is the road the traveler has just come down. ' +
-      'There is no farmland back there — there is a salt fen and a burned survey post.',
+    wayside: '{name} meets a handcart coming the other way, an hour past {location}.',
   },
   locationSubtypes: expandSettings(['wayside']),
   traitVariants: [
@@ -3145,7 +3166,7 @@ const SWINDLER_MARK_HAND: readonly StepNudge[] = [
     essenceCost: 1,
     forecastDelta: 0.07,
     imageTag: 'generic.focus',
-    effectLine: 'You hold their look calm and unhurried, so the man is confirmed without feeling watched. A small help.',
+    effectLine: 'Their watching stays calm and unhurried, and the man is confirmed without feeling it.',
     fiction: 'The ears catch what the eyes miss.',
     bandProse: {
       success: 'It was him: same coat, same cadence, same paper held up like a lamp.',
@@ -3155,12 +3176,12 @@ const SWINDLER_MARK_HAND: readonly StepNudge[] = [
   {
     // Type: Boost — spirit; the crowd's mood read as one animal.
     id: 'slice.swindler.crowds_mood',
-    name: 'Crowd’s Mood',
+    name: 'Read the Crowd',
     sphere: 'spirit',
     essenceCost: 2,
     forecastDelta: 0.08,
     imageTag: 'generic.rumor',
-    effectLine: 'You read the market’s temper — who believes him, who wavers, who would turn — so they speak up on the turn of the crowd instead of against it. A real help.',
+    effectLine: 'The market’s temper shows plain — who believes him, who wavers, who would turn.',
     fiction: 'A crowd is one animal with many opinions.',
     bandProse: {
       success_at_cost: 'The crowd’s temper read true, and reading it meant standing close enough to be remembered.',
@@ -3170,13 +3191,13 @@ const SWINDLER_MARK_HAND: readonly StepNudge[] = [
   {
     // Type: Boost — order, this card leans toward the law's road.
     id: 'slice.swindler.cold_certainty',
-    name: 'Cold Certainty',
+    name: 'Ready the Case',
     sphere: 'order',
     essenceCost: 2,
     forecastDelta: 0.07,
     poleLean: { axis: 'mercy_ruthlessness', toward: 'positive' },
     imageTag: 'generic.focus',
-    effectLine: 'You order what is known into a case a warden can act on, so the town’s own justice can carry the weight. A real help, and it argues for the law.',
+    effectLine: 'What is known lines up into charges a warden can act on. It argues for the law.',
     fiction: 'Anger fades. Records convict.',
     bandProse: {
       critical_success: 'The case assembled itself: the paper, the patter, the family’s names, the fen.',
@@ -3186,13 +3207,13 @@ const SWINDLER_MARK_HAND: readonly StepNudge[] = [
   {
     // Type: Undertow — life inverted? No: chaos, and it leans toward settling it directly.
     id: 'slice.swindler.old_anger',
-    name: 'Old Anger',
+    name: 'Stoke the Anger',
     sphere: 'chaos',
     essenceCost: 1,
     forecastDelta: 0.06,
     poleLean: { axis: 'mercy_ruthlessness', toward: 'negative' },
     imageTag: 'generic.energy',
-    effectLine: 'You let the memory of the children’s shoes burn at full heat, so the choice is made knowing exactly how angry the traveler is. A small help, and it argues for settling it here.',
+    effectLine: 'The memory of the children’s shoes burns at full heat. It argues for settling it here.',
     fiction: 'Some debts want a personal collector.',
     bandProse: {
       near_miss: 'The anger burned clean and nearly chose the hour by itself.',
@@ -3202,12 +3223,12 @@ const SWINDLER_MARK_HAND: readonly StepNudge[] = [
   {
     // Type: Boost — time; the pitch heard through to its pattern.
     id: 'slice.swindler.patient_hour',
-    name: 'Patient Hour',
+    name: 'Follow the Patter',
     sphere: 'time',
     essenceCost: 1,
     forecastDelta: 0.06,
     imageTag: 'generic.memory',
-    effectLine: 'You hold the watching patient through one whole pitch, so the man’s pattern is learned before it is interrupted. A small help.',
+    effectLine: 'One whole pitch is heard through, and the man’s habits are learned before they are interrupted.',
     fiction: 'Habits outlast intentions.',
     bandProse: {
       near_miss: 'The pattern came clear just as the pitch ended and the crowd began to pay.',
@@ -3223,11 +3244,13 @@ const SWINDLER_MARK_STEP: ActionStep = {
   onSuccess: [],
   onFailure: [],
   failBehavior: 'continue_weakened',
+  // The P2+P3 spine (Doctrine v2). The per-class P1 arrival lands above this
+  // at instantiation. The swindler is introduced here by cast token.
   narrativeTemplate:
-    'A new family is listening at the corn scales, and the youngest of them is already ' +
-    'smiling at the pictures the voice is painting. The paper changes hands for admiring. ' +
-    'The town has wardens, a lockup, and a market bell; the man has a satchel, an exit ' +
-    'through the crowd, and no idea who is watching him work.',
+    'A familiar voice by the corn scales is selling land in the east — same coat, same paper held up like a ' +
+    'lamp. It is {cast:swindler}, the man who sold the fen-road family their worthless deed, and a new ' +
+    'family is already listening.\n\n' +
+    'The town has wardens and a lockup; the man has an exit through the crowd. Mark him before he moves on.',
   successAfterimage: 'The man was marked, his patter noted, his exits counted.',
   failureAfterimage: 'The man worked the crowd like a professional, and had already spotted the traveler doing the same.',
   successAtCostAfterimage: 'He was marked, and once, briefly, he looked straight back.',
@@ -3325,12 +3348,10 @@ export const SLICE_SWINDLER_FOUND: UnifiedActionTemplate = {
   actorAffinities: ['individual'],
   motivations: ['mercy_ruthlessness'],
   settings: ['urban'],
+  // P1 arrival (Doctrine v2) — the P2/P3 spine lands below it
+  // (SWINDLER_MARK_STEP).
   openings: {
-    urban:
-      'The market smell of the place is bread and wet wool, and over by the corn scales a ' +
-      'familiar voice is talking about land in the east. Same coat. Same paper, held up ' +
-      'like a lamp. The traveler has heard this exact speech before, on a road beside a ' +
-      'handcart, from the mouths of the people it ruined.',
+    urban: '{name} comes into the market square of {location}.',
   },
   locationSubtypes: expandSettings(['urban']),
   // THR-1165 — casts the paper-seller, so the mark naming his crime names him
@@ -3602,11 +3623,11 @@ const KIN_HAND: readonly StepNudge[] = [
   {
     // Type: Boost — shared warmth family, the common option.
     id: 'slice.kin.easy_grace',
-    name: 'Easy Grace',
+    name: 'Loosen the Knot',
     essenceCost: 1,
     forecastDelta: 0.04,
     imageTag: 'generic.warmth',
-    effectLine: 'You loosen the knot in their chest, so the thanks lands on someone ready to receive it. A small help.',
+    effectLine: 'The tightness in their chest eases, and the thanks lands on someone ready to receive it.',
     fiction: 'Let it be given.',
     bandProse: {
       success: 'The thanks was met level, and the room liked both halves of it.',
@@ -3616,12 +3637,12 @@ const KIN_HAND: readonly StepNudge[] = [
   {
     // Type: Boost — mind, keeping the reply in reach.
     id: 'slice.kin.steady_voice',
-    name: 'A Steady Voice',
+    name: 'Steady the Voice',
     sphere: 'mind',
     essenceCost: 1,
     forecastDelta: 0.04,
     imageTag: 'generic.focus',
-    effectLine: 'You keep their words in reach, so the reply comes out plain instead of mumbled. A small help.',
+    effectLine: 'Their words stay in reach, and the reply comes out plain instead of mumbled.',
     fiction: 'Say the true thing once.',
     bandProse: {
       near_miss: 'The words came out right. The pause before them ran a beat too long.',
@@ -3631,12 +3652,12 @@ const KIN_HAND: readonly StepNudge[] = [
   {
     // Type: Boost — light, softening the attention.
     id: 'slice.kin.warm_light',
-    name: 'Warm Light',
+    name: 'Soften the Lamplight',
     sphere: 'light',
     essenceCost: 1,
     forecastDelta: 0.04,
     imageTag: 'generic.light',
-    effectLine: 'You soften the lamplight on the table, so the staring feels less like being weighed. A small help.',
+    effectLine: 'The glow on the table turns gentle, and the staring feels less like being weighed.',
     fiction: 'Kind light makes kind faces.',
     bandProse: {
       critical_success: 'The whole table sat inside the same warm ring of light, and the story fit it.',
@@ -3646,12 +3667,12 @@ const KIN_HAND: readonly StepNudge[] = [
   {
     // Type: Boost — spirit, tilting the room's temper.
     id: 'slice.kin.rooms_good_humor',
-    name: 'The Room’s Good Humor',
+    name: 'Tilt the Room',
     sphere: 'spirit',
     essenceCost: 2,
     forecastDelta: 0.04,
     imageTag: 'generic.rumor',
-    effectLine: 'You tilt the room toward laughing with them, not at them, so every retelling lands friendly. A small help.',
+    effectLine: 'The company laughs with them, not at them, and every retelling lands friendly.',
     fiction: 'A room decides fast.',
     bandProse: {
       success_at_cost: 'The room stayed friendly through all three retellings. It cost the evening.',
@@ -3661,12 +3682,12 @@ const KIN_HAND: readonly StepNudge[] = [
   {
     // Type: Boost — time, one conversation instead of a performance.
     id: 'slice.kin.unhurried_hour',
-    name: 'Unhurried Hour',
+    name: 'Slow the Evening',
     sphere: 'time',
     essenceCost: 1,
     forecastDelta: 0.03,
     imageTag: 'generic.memory',
-    effectLine: 'You slow the evening’s pace, so the thanks can be one conversation instead of a performance. A small help.',
+    effectLine: 'The pace eases, and the thanks can be one conversation instead of a performance.',
     fiction: 'Nothing owed before morning.',
     bandProse: {
       near_miss: 'The evening kept an easy pace. The last toast still found them tired.',
@@ -3683,14 +3704,13 @@ const KIN_STEP: ActionStep = {
   onSuccess: [],
   onFailure: [],
   failBehavior: 'fail_action',
-  // THR-1130 — density re-pass. The letter and the boots were the sentence the
-  // director's note is about: a prop with its own subplot, described in detail,
-  // in the one paragraph that has to make the player understand what they are
-  // being asked to do.
+  // THR-1130 — density re-pass: one person thanking them in public, no props
+  // with subplots. The P2+P3 spine (Doctrine v2); the per-class P1 arrival
+  // lands above it at instantiation.
   narrativeTemplate:
-    'The bowl arrives unasked and the coin is refused twice. The room has gone interested. ' +
-    'She means to thank the traveler properly, out loud, in front of everyone — and it ' +
-    'has to be stood in graciously.',
+    'The keeper of the house sets down a bowl nobody ordered and refuses the coin for it twice. She is kin ' +
+    'to the family from the fen road, and she means to thank the traveler out loud, in front of everyone.\n\n' +
+    'The room has stopped to listen. The thanks has to be stood in graciously.',
   successAfterimage: 'The thanks was taken well, and the room warmed accordingly.',
   failureAfterimage: 'The thanks was shrugged at, and the whole room saw the shrug.',
   successAtCostAfterimage: 'The thanks was taken, along with three retellings and a toast.',
@@ -3721,14 +3741,10 @@ export const SLICE_GRATEFUL_KIN: UnifiedActionTemplate = {
   // player can act on, in sixty words. What the scene needs is one person
   // thanking them in public for something already done. The rest was backstory
   // competing with the beat.
+  // P1 arrival (Doctrine v2) — the P2/P3 spine lands below it (KIN_STEP).
   openings: {
-    rural:
-      'The innkeeper sets down a bowl nobody ordered and will not take the coin for it. ' +
-      '“You walked my people off the fen road,” she says. The room has stopped to listen.',
-    urban:
-      'The taproom is city-loud until the landlady crosses it with a bowl nobody ordered. ' +
-      '“The fen road,” she says, setting it down. “You are the one who walked them ' +
-      'south.” The nearest tables have already turned around.',
+    rural: '{name} takes a room at the inn in {location}.',
+    urban: '{name} finds a taproom in {location} at the end of the day.',
   },
   locationSubtypes: expandSettings(['rural', 'urban']),
   aftermathConfig: {
@@ -4088,12 +4104,11 @@ const TABLE_HAND: readonly StepNudge[] = [
   {
     // Type: Boost — shared `focus` family, the common option.
     id: 'slice.table.plain_words',
-    name: 'Plain Words',
+    name: 'Ready the Words',
     essenceCost: 1,
     forecastDelta: 0.06,
     imageTag: 'generic.focus',
-    effectLine:
-      'You keep the traveler’s first sentence short and free of blame, so both camps hear the same one. A small help.',
+    effectLine: 'The first sentence comes out short and free of blame, and both camps hear the same one.',
     fiction: 'Say the short version first.',
     bandProse: {
       success: 'The first sentence landed clean, and neither camp had to answer it.',
@@ -4105,14 +4120,14 @@ const TABLE_HAND: readonly StepNudge[] = [
     // argues for standing: families who have shared a road that long can hold
     // one narrow place together.
     id: 'slice.table.long_neighbours',
-    name: 'Long Neighbours',
+    name: 'Weigh the Years',
     sphere: 'time',
     essenceCost: 1,
     forecastDelta: 0.07,
     poleLean: { axis: 'courage_prudence', toward: 'positive' },
     imageTag: 'generic.memory',
     effectLine:
-      'You surface how long these two families have shared one road, so the quarrel looks its age. A small help, and it argues for standing.',
+      'How long these two families have shared one road comes to the surface, and the quarrel looks its age. It argues for standing.',
     fiction: 'Neighbours quarrel. Neighbours remain.',
     bandProse: {
       critical_success: 'They worked back through forty years of shared road and found no year worth this.',
@@ -4123,14 +4138,14 @@ const TABLE_HAND: readonly StepNudge[] = [
     // Type: Boost — sphere-keyed (order), the fork's other lever. It argues for
     // moving: a count of what can be carried is an argument against a road.
     id: 'slice.table.cold_count',
-    name: 'Cold Count',
+    name: 'Tally the Carts',
     sphere: 'order',
     essenceCost: 2,
     forecastDelta: 0.08,
     poleLean: { axis: 'courage_prudence', toward: 'negative' },
     imageTag: 'generic.ward',
     effectLine:
-      'You hold the room to a count of hands, carts and hours, so the plan is argued from a real number. A real help, and it argues for moving.',
+      'The room is held to a count of hands and hours, so the plan is argued from a real number. It argues for moving.',
     fiction: 'Count first. Argue after.',
     bandProse: {
       success_at_cost: 'The count came out honest, and honest was lower than either camp had claimed.',
@@ -4141,14 +4156,14 @@ const TABLE_HAND: readonly StepNudge[] = [
     // Type: Bargain — sphere-keyed (entropy). Free in essence, paid on the doom
     // clock (THR-885 cost channel one of two).
     id: 'slice.table.borrowed_hours',
-    name: 'Borrowed Hours',
+    name: 'Pay It Elsewhere',
     sphere: 'entropy',
     essenceCost: 0,
     forecastDelta: 0.12,
     imageTag: 'generic.decay',
     costs: { doomDelta: 0.05 },
     effectLine:
-      'No essence changes hands: the riders take the long bank of the fen and the world’s clock runs a shade faster for it. A strong help.',
+      'No essence changes hands — the riders take the long bank of the fen, and the world’s doom clock runs a shade faster.',
     fiction: 'Time is borrowed from someone.',
     bandProse: {
       success: 'The extra hours were spent well, and the table used every one of them.',
@@ -4160,14 +4175,14 @@ const TABLE_HAND: readonly StepNudge[] = [
     // and a `critical_failure` fragment are owed; paid in detection pressure
     // (cost channel two).
     id: 'slice.table.hands_on_the_table',
-    name: 'Hands on the Table',
+    name: 'Still the Room',
     sphere: 'force',
     essenceCost: 2,
     forecastDelta: 0.16,
     imageTag: 'generic.energy',
     costs: { detectionDelta: 0.15 },
     effectLine:
-      'The room goes still and stays still while the traveler speaks, and every hand rests flat where it can be seen. Rival gods can hardly miss the hand that did it.',
+      'Every hand rests flat where it can be seen while the traveler speaks. Rival gods can hardly miss it.',
     fiction: 'Everyone hears a room stop talking.',
     bandProse: {
       critical_success: 'The stillness held through the whole plan, and both camps heard all of it.',
@@ -4181,13 +4196,12 @@ const TABLE_HAND: readonly StepNudge[] = [
     // grant plants a cultural omen through the existing `emit_omen` door, so
     // later draws bend toward a fen road that is being watched.
     id: 'slice.table.word_down_the_road',
-    name: 'Word Down the Road',
+    name: 'Send the Word',
     sphere: 'spirit',
     essenceCost: 1,
     forecastDelta: 0.05,
     imageTag: 'generic.rumor',
-    effectLine:
-      'A faint help tonight, and the country downriver begins to talk about who is riding the fen. A small help.',
+    effectLine: 'The country downriver begins to talk about who is riding the fen.',
     fiction: 'Roads carry more than carts.',
     grants: [
       {
@@ -4232,11 +4246,13 @@ const TABLE_STEP: ActionStep = {
   failureMetadata: {
     effects: [{ kind: 'apply_condition', conditionTraitId: 'trait.condition.exhausted' }],
   },
+  // The P2+P3 spine (Doctrine v2). The per-class P1 arrival lands above this
+  // at instantiation. The keeper is introduced here by cast token.
   narrativeTemplate:
-    'Both camps are at the table and neither will look across it. At a walking pace the ' +
-    'riders are half a night out. The keeper has said her piece and run out of words. ' +
-    'What is left is getting two families onto one plan before the light goes, and the ' +
-    'traveler is the only person here that both sides will hear out.',
+    'Two families here have stopped speaking, and the town has picked sides behind them. At dusk a lookout ' +
+    'counted riders on the fen road, half a night out. The keeper, {cast:keeper}, has sat both camps down ' +
+    'at one table.\n\n' +
+    'The traveler is the only one both sides will hear. Get two families onto one plan before the light goes.',
   successAfterimage: 'Both camps agreed to one plan and stayed at the table while it was laid out.',
   failureAfterimage: 'The table broke up, and each camp went off to make its own arrangements.',
   successAtCostAfterimage:
@@ -4420,17 +4436,10 @@ export const SLICE_TABLE_THAT_HOLDS: UnifiedActionTemplate = {
    */
   requiredReputationWith: { atLeast: SLICE_TABLE_GATE_BAND },
   settings: ['rural', 'urban'],
+  // P1 arrival (Doctrine v2) — the P2/P3 spine lands below it (TABLE_STEP).
   openings: {
-    rural:
-      'Two families in this hamlet have stopped speaking, and everyone else has picked a ' +
-      'side behind one of them. At dusk a lookout counted riders on the fen road, coming ' +
-      'this way. The keeper who keeps a door open for the traveler has dragged a table ' +
-      'into the middle of her floor and sat both camps down at it.',
-    urban:
-      'Two households on this street have stopped speaking, and the ward has picked sides ' +
-      'behind them. Riders were counted on the fen road at dusk, coming this way. The ' +
-      'keeper who keeps a door open for the traveler has cleared the long table in her ' +
-      'taproom and sat both camps down at it.',
+    rural: '{name} returns to {location}, the town that keeps a door open for them.',
+    urban: '{name} comes back to {location}, where a door is kept open for them.',
   },
   locationSubtypes: expandSettings(['rural', 'urban']),
   supportBundle: TABLE_SUPPORT_BUNDLE,
