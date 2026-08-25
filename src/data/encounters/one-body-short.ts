@@ -12,6 +12,34 @@
  * Systems audit: `Docs/plans/encounters/one-body-short-systems.md`
  * Package critique: `Docs/plans/encounters/one-body-short-package.md`
  *
+ * ── Prose Doctrine v2 (THR-1223 batch 2) ──
+ * Rewritten 2026-08-25 in narrator mode under the batch-1 calibration rulings:
+ * rewrite from scratch in basic game-master language ("clever specificity" is
+ * the residue tell of the old mode), and a card's effect line never repeats a
+ * word from the card's name. Zero mechanical changes — same steps, effects,
+ * seeds, bands, hands.
+ * Stake shape (Seed Dice, die 1): Mystery.
+ *
+ * Narrator's checklist (12 questions), answered:
+ *  1. P1 arrival with {name} and {location}, one per setting class — yes.
+ *  2. P2 states the fight already over and its costs (the unburied dead, the
+ *     silent survivor) — yes.
+ *  3. P3 lands Mystery — a death on this ground with no body for it — yes.
+ *  4. Opening ≤80 words composed with any P1 (62–65) — yes.
+ *  5. Every sentence a narrator's report; no interior sensation, no camera —
+ *     yes.
+ *  6. Facts stated, never encoded — the missing death is said outright, not
+ *     implied by props — yes.
+ *  7. Every sentence serves challenge (the ground) / test (eye) / outcome
+ *     (the count) — yes.
+ *  8. Nothing referenced before introduction; {cast:survivor} enters in the
+ *     spine — yes.
+ *  9. One named person on stage: {cast:survivor} — yes.
+ * 10. Stake in one sentence: account for a death that left no body — yes.
+ * 11. Cards named imperative verb+noun; effect lines are game effects; no
+ *     name-word repetition — yes.
+ * 12. All four declared classes have a skeleton opening — yes.
+ *
  * The pole-agnostic contract (design doc § 8.3): this packet does not know,
  * and must never assume, which of the parent's two poles (`mercy_ruthlessness`)
  * was taken. No line names a pole, claims the agent was present for the fight,
@@ -84,13 +112,12 @@ const STEP_0_HAND: readonly StepNudge[] = [
     // `hostSystem` — and this card writes a real `intelligence` record.
     id: 'short.plain_sight',
     libraryCardId: 'card.whisper.signature.light',
-    name: 'Plain Sight',
+    name: 'Reveal the Fight',
     sphere: 'light',
     essenceCost: 2,
     forecastDelta: 0.10,
     imageTag: 'generic.light',
-    effectLine:
-      'You set what ground like this usually says beside what this ground is saying, so the difference stands out. A real help.',
+    effectLine: 'Show them where each side stood, and where the account stops adding up.',
     fiction: 'Nothing was hidden. It was only unlit.',
     grants: [
       {
@@ -102,23 +129,23 @@ const STEP_0_HAND: readonly StepNudge[] = [
       },
     ],
     bandProse: {
-      success: 'Laid against what such ground usually shows, the gap in this one was obvious.',
-      near_miss: 'The comparison held from place to place and then stopped. The last one stayed a blank.',
+      success: 'The shape of the fight came clear, and the gap in it stood out.',
+      near_miss: 'They saw where every body should be. The last place stayed empty and unexplained.',
     },
   },
   {
     // Type: Boost (common, ungated) — the hand's ungated common option.
     id: 'short.a_little_more',
     libraryCardId: 'card.boost.core',
-    name: 'A Little More',
+    name: 'Steady Gaze',
     essenceCost: 1,
     forecastDelta: 0.06,
     imageTag: 'generic.focus',
-    effectLine: 'You steady them enough to keep their eyes on what is in front of them. A small help.',
+    effectLine: 'Keep their attention on the work — they do not look away until it is done.',
     fiction: 'Most things fail by a margin.',
     bandProse: {
-      success_at_cost: 'They held their eyes on it long past wanting to. The count came out. The looking stayed.',
-      failure: 'Steady was not the missing part. They looked at it straight and read it wrong.',
+      success_at_cost: 'They kept looking until the count closed. The looking cost them.',
+      failure: 'They looked at it straight and long, and still read it wrong.',
     },
   },
   {
@@ -127,17 +154,16 @@ const STEP_0_HAND: readonly StepNudge[] = [
     // keep looking — same verb, different question.
     id: 'short.a_sudden_surge',
     libraryCardId: 'card.boost.signature.energy',
-    name: 'A Sudden Surge',
+    name: 'Lend Strength',
     sphere: 'energy',
     essenceCost: 2,
     forecastDelta: 0.09,
     imageTag: 'generic.vigor',
-    effectLine:
-      'The body finds enough left to turn over every last one instead of stopping at the easy ones. A real help.',
+    effectLine: 'Fill their body with fresh vigor — they turn over every one of the dead, not only the easy ones.',
     fiction: 'Bodies hold more than they admit.',
     bandProse: {
-      critical_success: 'They went through every body on the ground, and the ground gave up the whole account.',
-      failure: 'They had the strength to finish the search. It finished, and left them holding the same short count.',
+      critical_success: 'They went through every body on the ground, and the ground gave up its whole account.',
+      failure: 'They had the arms to finish the search. The numbers still would not agree.',
     },
   },
   {
@@ -147,13 +173,13 @@ const STEP_0_HAND: readonly StepNudge[] = [
     // legitimate here because they say different things.
     id: 'short.this_has_happened',
     libraryCardId: 'card.omen.signature.time',
-    name: 'This Has Happened',
+    name: 'Stir Memory',
     sphere: 'time',
     essenceCost: 1,
     forecastDelta: 0.05,
     imageTag: 'generic.time-slow',
     effectLine:
-      'You give them the feeling this has happened before, so their hands know where to look before their eyes do. A faint help, and the days after bend toward what it turns up.',
+      'Give them the feeling they have done this before — their hands know where to look first. Word of what they find here will travel.',
     fiction: 'Nothing happens only once.',
     grants: [
       {
@@ -166,8 +192,8 @@ const STEP_0_HAND: readonly StepNudge[] = [
       },
     ],
     bandProse: {
-      success: 'The count closed, and word of the place that held a death and no body will travel.',
-      near_miss: 'The place felt like one they had stood in before. The count still stopped one short.',
+      success: 'The count closed, and word of a death with no body will travel.',
+      near_miss: 'The place felt familiar. The answer stayed out of reach.',
     },
   },
   {
@@ -183,13 +209,12 @@ const STEP_0_HAND: readonly StepNudge[] = [
     // through this card or not at all. Recorded as a one-off, which the brief
     // permits as a choice; library membership is out of scope for this batch.
     id: 'short.left_for_later',
-    name: 'Left For Later',
+    name: 'Bury the Lesson',
     sphere: 'darkness',
     essenceCost: 2,
     forecastDelta: 0.04,
     imageTag: 'generic.dark',
-    effectLine:
-      'You set a mark on them nobody can see, so what they carry out of here finds them again further on. A slight help now; the mark is the part that lasts.',
+    effectLine: 'Set a mark on them nobody can see — what they carry out of here will find them again later.',
     fiction: 'What is buried keeps.',
     grants: [
       {
@@ -201,8 +226,8 @@ const STEP_0_HAND: readonly StepNudge[] = [
       },
     ],
     bandProse: {
-      success: 'What they read here went under the skin where nobody will see it, and it will keep.',
-      failure: 'The ground kept its answer. The mark stayed anyway, and it will find a road to surface on.',
+      success: 'What they learned here went out of sight with them, and it will keep.',
+      failure: 'The ground kept its answer. The mark took hold anyway, and it will surface later.',
     },
   },
   {
@@ -210,17 +235,17 @@ const STEP_0_HAND: readonly StepNudge[] = [
     // hand by the traitVariant's addNudgeIds.
     id: 'short.who_they_are',
     libraryCardId: 'card.trait_card.core',
-    name: 'Who They Are',
+    name: 'Name the Dead',
     requiredTrait: GRIEF_TRAIT_REF,
     essenceCost: 0,
     forecastDelta: 0.07,
     imageTag: 'generic.memory',
     effectLine:
-      'No essence. Being Warm, they take people one at a time instead of as a crowd, and one at a time is how the odd one shows.',
+      'No essence. Being Warm, they take the fallen one at a time, and one at a time is how the missing one shows.',
     fiction: 'Character is the one resource nobody spends.',
     bandProse: {
-      success_at_cost: 'They gave each of them a face before moving on, and got the count. Every one of those faces came back to them later.',
-      critical_failure: 'They gave each of them a face, and then could not put a single one down, and stopped being able to count at all.',
+      success_at_cost: 'They gave every one of the fallen a face, and got the count. The faces stayed with them.',
+      critical_failure: 'They gave the fallen faces, then could not put the faces down, and lost the count entirely.',
     },
   },
 ];
@@ -248,19 +273,20 @@ const step0ReadTheGround: ActionStep = {
   onSuccess: [],
   onFailure: [],
   failBehavior: 'fail_action',
-  // The setting-neutral spine. The declared opening lands above this at
-  // instantiation. The survivor is introduced here, before any later prose
-  // refers to them, with no pronoun anywhere.
+  // The setting-neutral P2+P3 spine (Doctrine v2). The per-class P1 arrival
+  // lands above this at instantiation. The survivor is introduced here — by
+  // cast token, never a gendered pronoun (pole-agnostic contract) — before
+  // any later prose refers to them.
   narrativeTemplate:
-    'The fighting stopped a while ago and nothing has moved since. The other survivor sits apart with open ' +
-    'hands, not looking at the ground. The dead lie where they fell, and the count comes out one short. One ' +
-    'place has everything a death leaves except the body: beaten ground, a dropped blade, nobody lying ' +
-    'between them.',
-  successAfterimage: 'They walked it twice and got the same answer both times: one death here, and no body to bury.',
-  failureAfterimage: 'They counted until the light went and never made the numbers agree.',
-  successAtCostAfterimage: 'They got the count. It took turning over faces they will keep seeing.',
-  criticalSuccessAfterimage: 'They read the whole ground down to the drag-marks, and the drag-marks led away.',
-  criticalFailureAfterimage: 'The count broke apart in their hands and took the rest of the ground with it.',
+    'A fight ended here not long ago. The dead lie where they fell, and nobody has buried them. ' +
+    '{cast:survivor} survived it, and sits apart saying nothing.\n\n' +
+    'The count of the dead comes out one short. One place has beaten ground and a dropped blade, but no ' +
+    'body. Somebody died here and is not here.',
+  successAfterimage: 'They counted twice and got the same answer both times: one death here, and no body for it.',
+  failureAfterimage: 'They counted until dark and never made the numbers agree.',
+  successAtCostAfterimage: 'They got the count. It took looking at every dead face to be sure.',
+  criticalSuccessAfterimage: 'They read the whole ground, down to drag-marks leading away from the empty place.',
+  criticalFailureAfterimage: 'They lost the count halfway through and could not start it again.',
   /**
    * `successMetadata` fires on `isStepSuccess`, which counts `near_miss` — a
    * near miss got through, so the mark and the possession draw are correct
@@ -375,23 +401,13 @@ export const ONE_BODY_SHORT_TEMPLATE: UnifiedActionTemplate = compileOpeningEnve
    * `locationSubtypes` derived via `expandSettings`, never hand-written.
    */
   settings: ['wayside', 'ruin', 'battlefield', 'stronghold'],
+  // P1 arrival, one per class (Doctrine v2) — the P2/P3 spine lands below it
+  // (narrativeTemplate).
   openings: {
-    wayside:
-      'The road runs past a stand of thorn and a firepit kicked apart. Trampled ground leads off the track ' +
-      'and into the open, where there is nothing to put your back against. It is cold enough to see breath. ' +
-      'The air carries iron and wet horse. Crows have found the place and are working in from the edges.',
-    ruin:
-      'Half a wall still stands and the rest is floor plan — door sills opening onto nothing, a stair that ' +
-      'ends in air. Ash and old mortar coat everything, and the fight has put fresh tracks through both. ' +
-      'Sound carries oddly here; a stone turning over three rooms away arrives late. It smells of wet char.',
-    battlefield:
-      'This ground was fought over before and never cleaned up. Old iron comes up through the turf where ' +
-      'the rain has worked at it, and the mounds are settled and grassed over. The new dead lie among them, ' +
-      'still in their own shapes. Flies have already arrived. The wind comes across flat and does not stop.',
-    stronghold:
-      'The gate stands open with nobody on it. Inside, the yard is packed dirt and a horse trough gone ' +
-      'still, and the walls throw the cold straight back down. Somewhere above, a door is banging in its ' +
-      'frame and nobody is going up to stop it. The place smells of smoke that has already gone out.',
+    wayside: '{name} stops at a roadside camp near {location}.',
+    ruin: 'Travelling through the hills, {name} stops at the ruins of {location}.',
+    battlefield: 'The road takes {name} across the old battlefield at {location}.',
+    stronghold: '{name} arrives at the fort of {location} at midday.',
   },
   locationSubtypes: expandSettings(['wayside', 'ruin', 'battlefield', 'stronghold']),
 
@@ -399,14 +415,11 @@ export const ONE_BODY_SHORT_TEMPLATE: UnifiedActionTemplate = compileOpeningEnve
 
   narrativeTemplates: {
     initiation:
-      'The fight is over, and the road on does not start until the dead are accounted for. Nobody leaves ' +
-      'ground like this without knowing who is on it.',
+      'The fight is over. The dead have to be counted before anyone leaves this ground.',
     success:
-      'The dead are counted. What the count turns out to say is worse than a wrong number, and it is ' +
-      'written down now.',
+      'The count is done. One person died here and left no body, and that is written down now.',
     failure:
-      'The count will not close. The ground keeps its arithmetic to itself, and the road on starts with the ' +
-      'question still open.',
+      'The count would not close. They walk on with the question still open.',
   },
 
   /**
@@ -431,7 +444,7 @@ export const ONE_BODY_SHORT_TEMPLATE: UnifiedActionTemplate = compileOpeningEnve
     branchOnStep: 0,
     variants: {},
     fallback: {
-      overview: 'The ground is counted and the count is written down. What is missing from it is missing from every account after this one.',
+      overview: 'The ground has been counted, and the answer is written down.',
       changes: [],
       reactionPrompt: 'What does the god do with a count nobody else has heard?',
       reactions: [
@@ -471,9 +484,8 @@ export const ONE_BODY_SHORT_TEMPLATE: UnifiedActionTemplate = compileOpeningEnve
       byOutcome: {
         critical_success: {
           overview:
-            'The account closes on one death and no body for it, and on a set of marks leading off the place ' +
-            'that nobody dragged. Whoever went down here got up and walked out. {cast:survivor} watched it ' +
-            'happen and has not mentioned it since.',
+            'The count closes: one death, no body, and drag-marks leading off the ground. Whoever went down ' +
+            'here got up and walked away. {cast:survivor} watched it happen and has said nothing.',
           changes: [
             /**
              * The chip reports the `hidden_mark` on `successMetadata`, and every
@@ -503,9 +515,8 @@ export const ONE_BODY_SHORT_TEMPLATE: UnifiedActionTemplate = compileOpeningEnve
         },
         success: {
           overview:
-            'The account closes. The place where the missing one went down is as plain as the places that ' +
-            'still have somebody lying in them, and it is empty. {cast:survivor} does not explain it, and is ' +
-            'not asked to.',
+            'The count closes. One place on this ground held a death and holds no body. {cast:survivor} ' +
+            'offers no explanation, and nobody asks for one.',
           changes: [
             // Same chip, same write, minus the causeClause — they got the answer
             // without the drag-marks, so this band cannot claim them.
@@ -526,8 +537,8 @@ export const ONE_BODY_SHORT_TEMPLATE: UnifiedActionTemplate = compileOpeningEnve
         },
         success_at_cost: {
           overview:
-            'The count is right. Getting it right meant looking at each of them long enough to be sure, one ' +
-            'after another, and that is not work anybody puts down at the end of it.',
+            'The count is right. To be sure of it, they had to look at every dead face, one after another. ' +
+            'That is not work anybody puts down afterwards.',
           changes: [
             {
               id: 'short.the_faces',
@@ -588,9 +599,8 @@ export const ONE_BODY_SHORT_TEMPLATE: UnifiedActionTemplate = compileOpeningEnve
         },
         failure: {
           overview:
-            'The count never agrees with itself. They walk off the ground holding a number that is wrong by ' +
-            'one and cannot say which one, and there is nobody left here to ask. {cast:survivor} does not ' +
-            'know either, and has stopped trying to guess.',
+            'The count never agrees with itself. They walk off the ground with a number wrong by one and no ' +
+            'way to say which one. {cast:survivor} does not know either.',
           changes: [
             {
               // `kind: 'trait'` because the chip anchors an *attachment* node
@@ -627,9 +637,9 @@ export const ONE_BODY_SHORT_TEMPLATE: UnifiedActionTemplate = compileOpeningEnve
         },
         critical_failure: {
           overview:
-            'The ground stops making sense under them. Every pass changes the number, and by the last one ' +
-            'they are counting the same body twice to make it come out. {cast:survivor} takes them by the ' +
-            'arm and walks them off it. The count is never made.',
+            'Every pass over the ground gives a different number. By the last one they are counting the same ' +
+            'body twice to make it come out. {cast:survivor} takes them by the arm and walks them off. The ' +
+            'count is never made.',
           changes: [
             {
               // `kind: 'trait'` because the chip anchors an *attachment* node

@@ -13,6 +13,36 @@
  * verdict PACKAGE FIX. The three-item fix list in its own § "Fix list" is
  * applied below.
  *
+ * ── Prose Doctrine v2 (THR-1223 batch 2) ──
+ * Rewritten 2026-08-25 in narrator mode under the batch-1 calibration rulings:
+ * rewrite from scratch in basic game-master language ("clever specificity" is
+ * the residue tell of the old mode), and a card's effect line never repeats a
+ * word from the card's name. Zero mechanical changes — same steps, effects,
+ * seeds, bands, hands.
+ * Stake shape (Seed Dice, die 1): Mystery + Threat, compounded on purpose.
+ *
+ * Narrator's checklist (12 questions), answered:
+ *  1. P1 arrival with {name} and {location}, one per setting class — yes.
+ *  2. P2 states the sign's arrival and the standing cost (a camp split in
+ *     two, a day of argument) — yes.
+ *  3. P3 lands Mystery (a sign nobody can read) + Threat (two sides close to
+ *     blows) — yes.
+ *  4. Opening ≤80 words composed with any P1 (66–69) — yes.
+ *  5. Every sentence a narrator's report; no interior sensation, no camera —
+ *     yes.
+ *  6. Facts stated, never encoded — "nobody can read it" is said outright —
+ *     yes.
+ *  7. Every sentence serves challenge (the sign) / test (veil, then eye) /
+ *     outcome (the reading and what the camp does with it) — yes.
+ *  8. Nothing referenced before introduction; {cast:witness} enters in the
+ *     spine — yes.
+ *  9. One named person on stage: {cast:witness} — yes.
+ * 10. Stake in one sentence: read the sign truly and land the reading in a
+ *     camp that has already voted — yes.
+ * 11. Cards named imperative verb+noun; effect lines are game effects; no
+ *     name-word repetition — yes.
+ * 12. All four declared classes have a skeleton opening — yes.
+ *
  * **Fix list applied, summary:**
  * 1. The mercy reaction `sign.take_the_fear_off_them` now declares
  *    `removeAll: true`. Reason: `condition_attachment` (`encounterAftermath.ts`)
@@ -112,45 +142,43 @@ const STEP_0_HAND: readonly StepNudge[] = [
   {
     id: 'sign.a_little_more',
     libraryCardId: 'card.boost.core',
-    name: 'A Little More',
+    name: 'Steady the Eye',
     essenceCost: 1,
     forecastDelta: 0.06,
     imageTag: 'generic.focus',
-    effectLine:
-      'You steady their attention, so the eye stays on the stone instead of on the argument behind them. A small help.',
+    effectLine: 'Keep their attention on the stone and off the argument behind them.',
     fiction: 'Most things fail by a margin.',
     bandProse: {
-      success: 'Held steady, they read the whole of it and not the loudest part of it.',
-      near_miss: 'They kept looking after everyone else stopped. The shape still slid out from under the reading.',
+      success: 'Held to the task, they read the whole sign and not just the loudest part of it.',
+      near_miss: 'They kept looking after everyone else stopped. The reading still slipped away.',
     },
   },
   {
     id: 'sign.plain_sight',
     libraryCardId: 'card.whisper.signature.light',
-    name: 'Plain Sight',
+    name: 'Cast Light',
     sphere: 'light',
     essenceCost: 2,
     forecastDelta: 0.08,
     reveals: 'next_step_demand',
     imageTag: 'generic.light',
-    effectLine:
-      'You put light under the remnant so its edges show, and you show them what the next test will ask for before they spend on this one. A real help.',
+    effectLine: 'Put a glow under the sign so its edges show, and show them what the next test will ask.',
     fiction: 'Nothing was hidden. It was only unlit.',
     bandProse: {
-      critical_success: 'Lit from underneath, the whole span of it read edge to edge.',
-      failure: 'The light landed on the stone and showed every crack in it. What sat above the stone stayed unlit.',
+      critical_success: 'Lit from below, the sign read clear from edge to edge.',
+      failure: 'The glow landed on the stone and showed every crack in it. The sign above it stayed dark.',
     },
   },
   {
     id: 'sign.this_has_happened',
     libraryCardId: 'card.omen.signature.time',
-    name: 'This Has Happened',
+    name: 'Stir Memory',
     sphere: 'time',
     essenceCost: 1,
     forecastDelta: 0.05,
     imageTag: 'generic.time-slow',
     effectLine:
-      'You give them the sense they have stood under this before, so the strangeness stops arguing with their eyes. A faint help, and the days after bend toward what stood over this ground.',
+      'Give them the sense they have stood under this before, so the strangeness stops fighting their eyes. Word of the sign will travel.',
     fiction: 'Nothing happens only once.',
     grants: [
       {
@@ -164,8 +192,8 @@ const STEP_0_HAND: readonly StepNudge[] = [
       },
     ],
     bandProse: {
-      success_at_cost: 'It steadied their eyes, and left them sure they had lost an hour they could not account for.',
-      near_miss: 'It read as familiar from top to bottom. It was not.',
+      success_at_cost: 'It steadied their eyes. It also took an hour they cannot account for.',
+      near_miss: 'It all felt familiar. It was not.',
     },
   },
   {
@@ -174,34 +202,32 @@ const STEP_0_HAND: readonly StepNudge[] = [
     // encounter, one per hand.
     id: 'sign.nothing_to_find',
     libraryCardId: 'card.veil.attunement.darkness',
-    name: 'Nothing To Find',
+    name: 'Hide the Hand',
     sphere: 'darkness',
     essenceCost: 3,
     forecastDelta: 0.06,
     costs: { detectionDelta: -0.2 },
     imageTag: 'generic.dark',
-    effectLine:
-      'You work the dark in close with a practiced hand, so the reading comes easier and no rival god finds a trace of your work on it. A small help, at a steep price in essence.',
+    effectLine: 'Work the dark in close — the reading comes easier, and no rival god finds a trace of the work.',
     fiction: 'A practiced hand leaves less than a careful one.',
     bandProse: {
-      success: 'The reading came easier than it should have, and left no mark for anyone else to find.',
-      critical_failure: 'No rival will ever trace the hand in this. There is little left to trace it to.',
+      success: 'The reading came easier than it should have, and left no trace for any rival to find.',
+      critical_failure: 'No rival will ever trace what was done here. There is little left to trace it to.',
     },
   },
   {
     id: 'sign.a_sudden_surge',
     libraryCardId: 'card.boost.signature.energy',
-    name: 'A Sudden Surge',
+    name: 'Kindle Blood',
     sphere: 'energy',
     essenceCost: 2,
     forecastDelta: 0.10,
     imageTag: 'generic.energy',
-    effectLine:
-      "You put a body's reserve behind them, so they keep looking past the point where a person stops. A real help.",
+    effectLine: "Put a body's reserve behind them — they keep looking long past where a person stops.",
     fiction: 'Bodies hold more than they admit.',
     bandProse: {
-      critical_success: 'They outlasted it. The shape gave up first and showed them its whole edge.',
-      failure: 'They looked long past their limit, and the shape stayed as blurred as when they started.',
+      critical_success: 'They outlasted it. The sign gave up first and showed its whole edge.',
+      failure: 'They looked long past their limit. The sign stayed as blurred as when they started.',
     },
   },
 ];
@@ -221,16 +247,16 @@ const STEP_1_HAND: readonly StepNudge[] = [
     // rider would answer that same question twice.
     id: 'sign.not_the_worst',
     libraryCardId: 'card.mercy.core',
-    name: 'Not The Worst',
+    name: 'Soften the Fall',
     essenceCost: 1,
     forecastDelta: 0.02,
     rider: 'no_crit_fail',
     imageTag: 'generic.mercy',
-    effectLine: 'You take the floor out from under the disaster: it can still go badly, and it cannot go all the way down.',
+    effectLine: 'Take the bottom out of the disaster — it can still go badly, but not all the way down.',
     fiction: 'Failing is survivable. Some failures are not.',
     bandProse: {
-      near_miss: 'They stopped one sentence short of the one the crowd was waiting for. That sentence was the dangerous one.',
-      failure: 'It went badly and went no further. The ground stayed a crowd.',
+      near_miss: 'They stopped one sentence short of the dangerous one.',
+      failure: 'It went badly, and it went no further.',
     },
   },
   {
@@ -239,17 +265,16 @@ const STEP_1_HAND: readonly StepNudge[] = [
     // surface breaks.
     id: 'sign.the_whole_shape',
     libraryCardId: 'card.whisper.attunement.light',
-    name: 'The Whole Shape',
+    name: 'Read the Crowd',
     sphere: 'light',
     essenceCost: 2,
     forecastDelta: 0.09,
     imageTag: 'generic.crowd',
-    effectLine:
-      "You show them the room's real temper before they open their mouth: which faces are settled, and which are still open. A real help.",
+    effectLine: 'Show them which faces are settled and which are still open, before a word is said.',
     fiction: 'Long looking shows what one glance cannot.',
     bandProse: {
-      critical_success: 'They spoke to the three faces still open, and the rest of the ground followed those three.',
-      failure: 'They read the room right and said it anyway. Being right about the room changed none of it.',
+      critical_success: 'They spoke to the three faces still open, and the rest of the camp followed those three.',
+      failure: 'They read the crowd right and said it anyway. Being right changed nothing.',
     },
   },
   {
@@ -258,50 +283,47 @@ const STEP_1_HAND: readonly StepNudge[] = [
     // world change the fiction only made once.
     id: 'sign.this_has_happened_again',
     libraryCardId: 'card.omen.signature.time',
-    name: 'This Has Happened',
+    name: 'Stir Memory',
     sphere: 'time',
     essenceCost: 1,
     forecastDelta: 0.05,
     imageTag: 'generic.time-slow',
-    effectLine:
-      'You give the ground the sense it has heard this said before, so a new answer lands on them as an old one. A faint help.',
+    effectLine: 'Give the camp the sense it has heard this before — a new answer lands as an old one.',
     fiction: 'Nothing happens only once.',
     bandProse: {
-      success: 'It landed as if it had been agreed a long time ago.',
-      near_miss: 'The ground half-remembered agreeing, and stopped there.',
+      success: 'It landed as if it had been agreed long ago.',
+      near_miss: 'The camp half-remembered agreeing, and stopped there.',
     },
   },
   {
     id: 'sign.no_one_saw',
     libraryCardId: 'card.veil.signature.darkness',
-    name: 'No One Saw',
+    name: 'Veil the Words',
     sphere: 'darkness',
     essenceCost: 2,
     forecastDelta: 0.05,
     costs: { detectionDelta: -0.12 },
     imageTag: 'generic.dark',
-    effectLine:
-      "You draw the dark in close while the words land, so the ground's own readers find no god in them. A small help, and your hand goes unseen.",
+    effectLine: "Draw the dark in close while they speak — nobody finds a god's hand in what is said.",
     fiction: 'The kindest help leaves no fingerprints.',
     bandProse: {
-      success_at_cost: 'No one found a divine hand in what was said. They found one in the person who said it.',
-      critical_failure: 'There was no fingerprint on it. The ground did not need one to name a culprit.',
+      success_at_cost: 'Nobody found a god in what was said. They found the person who said it.',
+      critical_failure: 'There was no godly mark on it. The camp did not need one to pick a culprit.',
     },
   },
   {
     id: 'sign.a_sudden_surge_again',
     libraryCardId: 'card.boost.signature.energy',
-    name: 'A Sudden Surge',
+    name: 'Kindle Blood',
     sphere: 'energy',
     essenceCost: 2,
     forecastDelta: 0.10,
     imageTag: 'generic.energy',
-    effectLine:
-      "You put a body's reserve behind the voice, so it carries over the shouting instead of folding under it. A real help.",
+    effectLine: "Put a body's reserve behind the voice — it carries over the shouting instead of folding under it.",
     fiction: 'Bodies hold more than they admit.',
     bandProse: {
-      success: 'The voice came out over the top of both sides and held there long enough.',
-      critical_failure: 'The voice carried. It carried far enough for the back of the crowd to hear the part that damned them.',
+      success: 'The voice carried over both sides and held long enough.',
+      critical_failure: 'The voice carried — far enough that the whole camp heard the part that damned them.',
     },
   },
   {
@@ -310,17 +332,17 @@ const STEP_1_HAND: readonly StepNudge[] = [
     // hand by the template's traitVariant via addNudgeIds.
     id: 'sign.a_reading_offered',
     libraryCardId: 'card.trait_card.core',
-    name: 'Who They Are',
+    name: 'Offer the Reading',
     requiredTrait: SIGN_TRAIT_REF,
     essenceCost: 0,
     forecastDelta: 0.08,
     imageTag: 'generic.oath',
     effectLine:
-      'No essence. Being Humble, they put it out as one reading, and a ground that expected a verdict hears an offer instead.',
+      'No essence. Being Humble, they give it as one answer among several, and a crowd that expected a verdict hears them out.',
     fiction: 'Character is the one resource nobody spends.',
     bandProse: {
-      critical_success: 'They gave it as their reading, and the ground took it out of their hands and argued it fairly.',
-      failure: 'They offered it as one answer among several. The ground was past the point of taking offers.',
+      critical_success: 'They gave it as one answer, and the camp took it up and argued it fairly.',
+      failure: 'They gave it as one answer among several. The camp was past taking answers.',
     },
   },
 ];
@@ -348,24 +370,22 @@ const step0ReadTheSign: ActionStep = {
   onSuccess: [],
   onFailure: [],
   failBehavior: 'continue_weakened',
-  // The setting-neutral spine. The declared opening lands above this at
-  // instantiation. Order: the remnant, the two hardened readings, the
-  // pilgrim, everyone who looked away. The pilgrim is introduced here,
-  // before any later prose refers to them.
+  // The setting-neutral P2+P3 spine (Doctrine v2). The per-class P1 arrival
+  // lands above this at instantiation. The pilgrim is introduced here — by
+  // cast token — before any later prose refers to them.
   narrativeTemplate:
-    'What crossed the sky over the ruin has not finished. A remnant of it hangs low over the broken stone, and it ' +
-    'does not move the way light moves. Two readings have hardened already: a blessing, or a warning, each with ' +
-    'people behind it. A pilgrim who has stood here since first light watches and says nothing. Everyone who ' +
-    'tried to look steadily looked away first.',
+    'Something crossed the sky here and left a sign hanging over the broken stone. Nobody can read it. Half ' +
+    'the camp calls it a blessing, half a warning, and the argument has run all day.\n\n' +
+    'A pilgrim, {cast:witness}, has watched the stone since first light and says nothing. Both sides demand ' +
+    'an answer, and they are close to blows.',
   criticalSuccessAfterimage:
-    'The shape over the stone resolved, edge to edge, and held still long enough to be read whole. It was not ' +
-    'aimed at this ground, and they came down knowing where it was aimed.',
+    'They read the whole sign. It is not meant for this ground, and they now know where it points.',
   successAfterimage:
-    'They read it steadily and came down with an answer they could stand behind, and with the plain fact that ' +
-    'the sign was not meant for this ground.',
-  successAtCostAfterimage: 'They got the reading, and paid an hour of blurred sight to the glare for it.',
-  failureAfterimage: 'The stone gave them glare and after-images, and no reading they trusted.',
-  criticalFailureAfterimage: 'They looked until their eyes ran, and came down certain of a shape that was not up there.',
+    'They read it steadily and came down with an answer they can stand behind. The sign is not meant for ' +
+    'this ground.',
+  successAtCostAfterimage: 'They got the reading. The glare cost them an hour of blurred sight.',
+  failureAfterimage: 'The glare beat them. They came down with no reading they trust.',
+  criticalFailureAfterimage: 'They came down certain of a shape that is not up there.',
   /**
    * `successMetadata` fires on `isStepSuccess`, which counts `near_miss` as a
    * success. The reward-pool draw and the clue both ride every success-side
@@ -458,13 +478,13 @@ const step1SayWhatIsThere: ActionStep = {
     },
   },
   narrativeTemplate:
-    'They come down off the stone with a reading. The ground turns to hear it, and nobody in it is waiting to be ' +
-    'persuaded. Both sides already know which answer they want back, and both are counting who says what.',
-  criticalSuccessAfterimage: 'They said it so squarely that both sides set their answers down and looked again.',
-  successAfterimage: 'They said it plainly, and enough of the ground heard it to matter.',
-  successAtCostAfterimage: 'The reading landed. So did a name for the one who gave it, and the name was not kind.',
-  failureAfterimage: 'They said it, and both sides heard confirmation of the answer they walked in with.',
-  criticalFailureAfterimage: 'They said it, and the ground decided the reading was the reason all of this had gone wrong.',
+    'They come down with a reading. The camp turns to hear it. Both sides want their own answer back, and ' +
+    'nobody is waiting to be persuaded.',
+  criticalSuccessAfterimage: 'They said it plainly, and both sides put their answers down and listened.',
+  successAfterimage: 'They said it plainly, and enough of the camp took it.',
+  successAtCostAfterimage: 'The reading landed. So did a hard name for the one who gave it.',
+  failureAfterimage: 'They said it, and each side heard only its own answer confirmed.',
+  criticalFailureAfterimage: 'They said it, and the camp decided the reader was the problem.',
   /**
    * `successMetadata` fires on `isStepSuccess`. `$target` binds to the
    * location for this template family by construction
@@ -549,24 +569,13 @@ export const THE_SIGN_OVER_THE_RUIN_TEMPLATE: UnifiedActionTemplate = compileOpe
    * doc § 8, § 12).
    */
   settings: ['stronghold', 'ruin', 'wayside', 'battlefield'],
+  // P1 arrival, one per class (Doctrine v2) — the P2/P3 spine lands below it
+  // (step 0 narrativeTemplate).
   openings: {
-    ruin:
-      'Half a tower still stands over the rest of it, split top to bottom, the stair inside open to the sky. Wet ' +
-      'ash hangs on the air, and frost still sits on the fallen blocks. Thirty-odd people are camped in the lee ' +
-      'of the wall. They have been arguing all morning about what they all watched happen here.',
-    battlefield:
-      'The field is churned black and picked over. A stone barn on the ridge is burnt out, one gable standing. ' +
-      'Crows have the run of it, and the air smells of wet iron. The carters and gleaners working the ground ' +
-      'have stopped. They are standing in two groups on either side of the barn, not speaking to each other.',
-    wayside:
-      'The camp sits against an old waystation, roofless, its stone doorframe still square. Cold rain has fallen ' +
-      'since noon, and the smoke will not lift. Fifteen travelers have their fires going under the wall, pitched ' +
-      'closer together than strangers usually pitch. Nobody has eaten. They have been at the same argument ' +
-      'since it came down over the waystation.',
-    stronghold:
-      "Outside the fort's gate the old suburb is a burnt shell, roofbeams down, stone doorways standing. " +
-      'Woodsmoke hangs over it, and the cold comes off the wall. The gate is shut. The garrison is up on the ' +
-      'parapet and forty people are on the road below, and they have been shouting each other down ever since.',
+    ruin: '{name} arrives at the ruins of {location} in the morning.',
+    battlefield: 'The road brings {name} to the old battlefield at {location}.',
+    wayside: '{name} stops for the night at the waystation of {location}.',
+    stronghold: '{name} arrives before the walls of {location}.',
   },
   locationSubtypes: expandSettings(['stronghold', 'ruin', 'wayside', 'battlefield']),
 
@@ -574,14 +583,11 @@ export const THE_SIGN_OVER_THE_RUIN_TEMPLATE: UnifiedActionTemplate = compileOpe
 
   narrativeTemplates: {
     initiation:
-      'The sign came down over this ground at first light and it has not gone. Everyone standing here watched ' +
-      'it arrive. Nobody has moved off this ground since, and nobody has done a day\'s work on it.',
+      'The sign came down at first light and everyone here watched it. Nobody has worked or moved on since.',
     success:
-      'The reading is out, and it is the true one. What the ground does with a true reading is a separate ' +
-      'question, and it has already started answering it.',
+      'The true reading is out. What the camp does with it has already started.',
     failure:
-      'The reading did not hold. Both sides leave with the answer they walked in with, and the ground keeps ' +
-      'the argument.',
+      'The reading did not hold. Both sides keep the answer they came with, and the argument stays.',
   },
 
   /**
@@ -601,8 +607,8 @@ export const THE_SIGN_OVER_THE_RUIN_TEMPLATE: UnifiedActionTemplate = compileOpe
     variants: {},
     fallback: {
       overview:
-        'The ground has its answer now, or it has its argument. Everyone who was standing here will tell it ' +
-        'later as if they had known all along.',
+        'The camp has its answer now, or it has its argument. Everyone here will retell it later as if they ' +
+        'had known all along.',
       changes: [],
       reactionPrompt: 'What do you carry out of this?',
       reactions: [
@@ -646,10 +652,9 @@ export const THE_SIGN_OVER_THE_RUIN_TEMPLATE: UnifiedActionTemplate = compileOpe
       byOutcome: {
         critical_success: {
           overview:
-            'The reading came out whole and the ground took it whole. Both sides went quiet in the same breath, ' +
-            'which does not happen often on ground like this. Two of the loudest walked up to the stone ' +
-            'afterwards and looked at it properly for the first time. People will be keeping eyes on this place ' +
-            'from now on.',
+            'The reading came out whole and the camp took it whole. Both sides went quiet at once. Two of the ' +
+            'loudest walked up to the stone afterwards and looked at it properly for the first time. People ' +
+            'will keep watch on this place from now on.',
           changes: [
             {
               // Backing write: step 1 successMetadata -> condition_attachment
@@ -678,9 +683,8 @@ export const THE_SIGN_OVER_THE_RUIN_TEMPLATE: UnifiedActionTemplate = compileOpe
         },
         success: {
           overview:
-            'The reading is out and it stuck to enough of them to matter. What is left over the stone will be ' +
-            'argued about for another week, and the argument will be a better one now. There is a road down ' +
-            'from here and people willing to walk it beside them.',
+            'The reading is out and enough people took it. The argument will go on another week, but it will ' +
+            'be a better argument now. There is a road down from here, and people willing to walk it with them.',
           changes: [
             {
               // Backing write: step 1 successMetadata -> agent_relocation,
@@ -711,16 +715,14 @@ export const THE_SIGN_OVER_THE_RUIN_TEMPLATE: UnifiedActionTemplate = compileOpe
           // scatter tomorrow — has no effect behind it, so the words stay in
           // the overview, which claims nothing.
           overview:
-            'They got it said. From the second sentence on, the question stopped being what was over the stone. ' +
-            'It became who this was, standing up there claiming to know. Both readings are still standing. So ' +
-            'is a third, about them.',
+            'They got it said. From the second sentence on, the question stopped being the sign and became ' +
+            'the stranger claiming to read it. Both old readings still stand. So does a third one now, about them.',
           changes: [],
         },
         failure: {
           overview:
-            'The reading did not hold together on the stone and it did not hold together in front of the crowd. ' +
-            'Both sides got to keep what they came with. The pilgrim did not move. The stone put a fear into ' +
-            'them that will need walking off.',
+            'The reading did not hold on the stone or in front of the crowd. Both sides keep what they came ' +
+            'with. {cast:witness} has not moved. The stone put a fear into them that will need walking off.',
           changes: [
             {
               // Backing write: step 1 failureMetadata -> condition_attachment
@@ -742,10 +744,9 @@ export const THE_SIGN_OVER_THE_RUIN_TEMPLATE: UnifiedActionTemplate = compileOpe
         },
         critical_failure: {
           overview:
-            'They came down certain, and the shape they were certain of was not the one over the stone. The ' +
-            'ground heard the difference before they had finished. By dusk both sides had agreed on one point, ' +
-            'and the point was them. The pilgrim — {cast:witness} — walks them off the ground, points them at a ' +
-            'road, and does not say which reading was right.',
+            'They were certain, and certain of the wrong shape. The camp heard the difference before they ' +
+            'finished. By dusk both sides had agreed on one thing: the reader was to blame. {cast:witness} ' +
+            'walks them off the ground, points them at a road, and does not say which reading was right.',
           changes: [
             {
               // Backing writes: both paths to this band now fire this
