@@ -759,9 +759,13 @@ describe('golden exemplar — authoring checklist (locked THR-883 format)', () =
       expect(wordCount(nudge.name), `name over budget: ${nudge.id}`).toBeLessThanOrEqual(
         NUDGE_NAME_MAX_WORDS,
       );
-      expect(wordCount(nudge.fiction), `fiction over budget: ${nudge.id}`).toBeLessThanOrEqual(
-        NUDGE_WORD_BUDGETS.fiction,
-      );
+      // `fiction` had a budget row here until THR-1224. Doctrine v2 retires the
+      // flavor quote by name, nothing renders the field, and a budget on prose
+      // no player reads can only ever produce work with no reader.
+      expect(
+        wordCount(nudge.effectLine),
+        `effectLine over budget: ${nudge.id}`,
+      ).toBeLessThanOrEqual(NUDGE_WORD_BUDGETS.effectLine);
       for (const fragment of Object.values(nudge.bandProse ?? {})) {
         expect(
           wordCount(fragment),
@@ -805,10 +809,12 @@ describe('golden exemplar — authoring checklist (locked THR-883 format)', () =
     expect(NUDGE_GOLDEN_EXEMPLAR.locationSubtypes).toEqual(
       expandSettings(NUDGE_GOLDEN_EXEMPLAR.settings ?? []),
     );
-    // Openings are scene prose and hold the scene budget.
+    // Openings hold the doctrine's opening budget — all paragraphs together
+    // (THR-1224; the row was `scene: 60` before v2 replaced the scene with the
+    // three-paragraph skeleton, and this was always its only consumer).
     for (const [cls, text] of Object.entries(NUDGE_GOLDEN_EXEMPLAR.openings ?? {})) {
-      expect(wordCount(text), `opening for ${cls} over scene budget`).toBeLessThanOrEqual(
-        NUDGE_WORD_BUDGETS.scene,
+      expect(wordCount(text), `opening for ${cls} over opening budget`).toBeLessThanOrEqual(
+        NUDGE_WORD_BUDGETS.opening,
       );
     }
   });

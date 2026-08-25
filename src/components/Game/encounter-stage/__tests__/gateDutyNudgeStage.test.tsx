@@ -215,8 +215,20 @@ describe('Gate Duty nudge stage (THR-1123)', () => {
     // the name comes from the bound actor. Asserting the resolved name *and* the
     // absence of the raw token is what separates "enrichment ran" from "the
     // string happens to contain a name".
-    expect(screen.getAllByText(/Courier Nessa/).length).toBeGreaterThan(0);
+    //
+    // The resolved-name half reads the phase **model**, not the screen, since
+    // THR-1224: doctrine v2 retired the flavor quote and the card face no longer
+    // draws `fiction`, so the rendered tree is no longer a place this string can
+    // appear. The test's subject was always enrichment rather than the card's
+    // layout, and the model is where enrichment lands.
+    expect(
+      model.nudgePhase!.cards.filter(card => /Courier Nessa/.test(card.fiction)).length,
+    ).toBeGreaterThan(0);
+    // The raw-token half stays on the screen, where it matters: an unresolved
+    // `{cast:...}` reaching a player is the defect, and every surface the shell
+    // still draws is in scope for it.
     expect(screen.queryAllByText(/\{cast:/)).toEqual([]);
+    expect(document.body.textContent).not.toContain('{cast:');
   });
 
   it('renders no generic stance label, though the notification still carries one', () => {

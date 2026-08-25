@@ -39,6 +39,16 @@
  *                            must stay inside the probability range, so a hand
  *                            cannot promise movement the resolver will clamp.
  *
+ * Alongside the five gating blocks there is one **warn channel** (THR-1224),
+ * printed as `[warn]` and never affecting the exit code: `auditTemplate()`'s
+ * demoted ranking detectors plus the Prose Doctrine v2 structural checks
+ * (`doctrineV2Checks.ts` — opening skeleton, card-name shape). Warn-level by
+ * ruling, because both are register judgments that are right most of the time,
+ * which is the bar for a warning and not the bar for a gate. Until THR-1224 the
+ * `warnings` array was computed and discarded, so a whole category of signal
+ * reached nobody — the doctrine's word-budget table is entirely warn-level, and
+ * adding it to a silent channel would have shipped six rules that cannot report.
+ *
  * **Ruling 3: no exemption mechanism.** A missing block is a hard fail and the
  * message names the block and the plan section. The only escape is
  * `RETROFIT_PENDING` — a per-template ratchet that only ever shrinks.
@@ -65,6 +75,7 @@ import {
 } from '../src/data/content-eval/compositionContract';
 import { RETROFIT_PENDING, isRetrofitPending } from '../src/data/content-eval/retrofitPending';
 import { auditTemplate } from '../src/data/content-eval/nudgeAuditDetectors';
+import { doctrineV2Warnings } from '../src/data/content-eval/doctrineV2Checks';
 import { validateNudgeGrantRefs, validateRewardDrawPools, validateFavorDebtors } from '../src/engine/nudgeGrantLiveness';
 import { invalidTallyKeyProblems } from '../src/data/content-eval/tallyKeys';
 import { NUDGE_GOLDEN_EXEMPLAR } from '../src/data/__fixtures__/nudge-exemplar/swollen-ford-exemplar';
@@ -194,13 +205,31 @@ interface TemplateResult {
   readonly liveness: readonly string[];
   readonly tokens: readonly string[];
   readonly forecast: readonly string[];
+  /**
+   * Advisory signals that never affect {@link failed} or the exit code
+   * (THR-1224).
+   *
+   * Two sources merged into one channel: the ranking detectors that
+   * `auditTemplate` demoted to warnings (abstraction, intensifiers), and the
+   * doctrine-v2 structural checks (opening skeleton, card-name shape).
+   *
+   * **They are printed, which is the change.** Before THR-1224 `auditTemplate`
+   * computed `warnings` and this script dropped them on the floor, so the one
+   * channel the gate had for "this is worth a human's eye but is not a defect"
+   * reached nobody. A warning nothing prints is indistinguishable from a check
+   * that was never written — and the doctrine's whole word-budget table is
+   * warn-level, so adding it to a silent channel would have shipped six rules
+   * that could not report.
+   */
+  readonly warnings: readonly string[];
   readonly failed: boolean;
   readonly pending: boolean;
 }
 
 function runOne(template: UnifiedActionTemplate): TemplateResult {
   const composition = checkCompositionContract(template);
-  const register = auditTemplate(template).failures;
+  const audit = auditTemplate(template);
+  const register = audit.failures;
   const liveness = [
     ...validateNudgeGrantRefs([template]).dead.map(
       d => `${d.site} ${d.effectKind} → unknown ${d.refKind} '${d.ref}'`,
@@ -235,7 +264,12 @@ function runOne(template: UnifiedActionTemplate): TemplateResult {
   ];
   const tokens = tokenProblems(template);
   const forecast = forecastProblems(template);
+  const warnings = [...audit.warnings, ...doctrineV2Warnings(template)];
 
+  // Deliberately does NOT read `warnings`. The doctrine's budgets and register
+  // rules are warn-level by ruling, and the shipped corpus is expected to warn
+  // heavily until the doctrine-v2 rewrite lands (THR-1223) — gating on them
+  // would turn a green corpus red for work that is ticketed elsewhere.
   const failed =
     composition.violations.length > 0
     || register.length > 0
@@ -250,6 +284,7 @@ function runOne(template: UnifiedActionTemplate): TemplateResult {
     liveness,
     tokens,
     forecast,
+    warnings,
     failed,
     pending: isRetrofitPending(template.id),
   };
@@ -329,6 +364,7 @@ if (wantsJson) {
         missing,
         failures: unlistedFailures.length,
         pendingFailures: results.filter(r => r.failed && r.pending).length,
+        warnings: results.reduce((sum, r) => sum + r.warnings.length, 0),
         staleRatchetEntries: staleEntries,
         results,
       },
@@ -344,13 +380,18 @@ if (wantsJson) {
   console.log('══════════════════════════════════════════════════════════════');
   console.log(
     `  checked ${results.length}   clean ${clean.length}   `
-      + `failing ${unlistedFailures.length}   on ratchet ${results.filter(r => r.failed && r.pending).length}`,
+      + `failing ${unlistedFailures.length}   on ratchet ${results.filter(r => r.failed && r.pending).length}   `
+      + `warnings ${results.reduce((sum, r) => sum + r.warnings.length, 0)}`,
   );
   console.log('');
 
   for (const result of results) {
     if (!result.failed) {
       console.log(`  ✓ ${result.id}  [systems: ${result.composition.systems.join(', ') || 'none'}]`);
+      // A clean template can still carry warnings — that is the whole point of
+      // a channel that does not gate. Printed under the ✓ rather than in a
+      // separate block so the lines sit with the template they describe.
+      for (const line of result.warnings) console.log(`      [warn] ${line}`);
       continue;
     }
     const badge = result.pending ? '· (retrofit pending)' : '✗';
@@ -365,6 +406,7 @@ if (wantsJson) {
     for (const line of result.liveness) console.log(`      [liveness] ${line}`);
     for (const line of result.tokens) console.log(`      [tokens] ${line}`);
     for (const line of result.forecast) console.log(`      [forecast] ${line}`);
+    for (const line of result.warnings) console.log(`      [warn] ${line}`);
   }
   console.log('');
 

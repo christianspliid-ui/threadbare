@@ -855,7 +855,7 @@ it) · the "moment, not label" bar (a plainly stated fact is not a defect) ·
 sensory concreteness as a virtue — concreteness now means **named things and stated
 events**, never textures.
 
-### Word budgets (warn-level, `NUDGE_WORD_BUDGETS` — code aligns via the doctrine tooling ticket)
+### Word budgets (warn-level, `NUDGE_WORD_BUDGETS` — aligned in code since THR-1224)
 
 | Field | Budget |
 |---|---|
@@ -1229,6 +1229,12 @@ disposition: n/a  (no willed opposition)
 agentRole:   bystander pulled in
 scale:       company
 ```
+
+**Roll them with `npm run draw:hooks -- <briefSlug> --reach <reach>`** (THR-1224).
+The same command that offers the hooks prints the five dice below it, seeded off the
+brief slug so a recorded roll is recomputable by anyone who doubts it. The tables live
+in `src/data/content-eval/seedDice.ts`; `--coverage` additionally reports which stake
+shapes the spent hooks have been pulling toward.
 
 Survey grounding: the axes match what the field's generators roll (OSR reaction +
 activity procedure, DMG villain/quandary tables, WWN tags, Ironsworn quest rank,

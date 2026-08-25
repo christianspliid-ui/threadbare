@@ -223,24 +223,78 @@ export const REACH_PURPOSE_MAX_WORDS = 4;
 // ─── Word budgets (warn-level) ───────────────────────────────────────
 
 /**
- * Card-discipline budgets from the 2026-07-25 prose pilot. Warn-level: going
- * over is a signal the field is carrying someone else's job, not an error.
+ * The doctrine's word-budget table, transcribed (THR-1224).
+ *
+ * This object **is** § *Word budgets* of Prose Doctrine v2 in
+ * `.claude/skills/encounter-pipeline/reference/nudge-authoring-spec.md` — six
+ * rows, same names, same numbers. Keeping it a transcription rather than a
+ * superset is the point: a budget the doctrine does not name is a rule nobody
+ * agreed to, and a doctrine row with no constant is a rule no machine reports.
+ *
+ * Warn-level, unchanged from the 2026-07-25 pilot: going over is a signal the
+ * field is carrying someone else's job, not an error. The audit surfaces these
+ * through `auditTemplate().warnings`; nothing here fails a build.
+ *
+ * Two rows changed shape when v2 landed, and the reasons are worth keeping:
+ *
+ * - `scene: 60` became **`opening: 80`**. The field was named for v1's "scene
+ *   prose" and had exactly one consumer, which measured `template.openings`.
+ *   v2 replaces the scene with the three-paragraph opening skeleton and prices
+ *   all three paragraphs together at 80, so the row now says what it measured.
+ * - `fiction: 30` is **gone**. The flavor quote is retired by name in v2 § *
+ *   Retired by name*, and {@link import('../../types/unifiedAction').StepNudge.fiction}
+ *   is deprecated and no longer rendered — a budget on a field nothing draws
+ *   is a rule that can only ever produce false work.
  */
 export const NUDGE_WORD_BUDGETS = {
-  /** Encounter scene / vignette prose. */
-  scene: 60,
+  /**
+   * The opening skeleton — arrival, situation & complication, problem — priced
+   * across **all three paragraphs together**, not per paragraph.
+   */
+  opening: 80,
   /** One for/against factor line. */
   factorLine: 12,
-  /** A nudge card's `fiction` body. */
-  fiction: 30,
   /** A step's base band prose. */
   bandBase: 60,
   /** A `bandProse` fragment appended for an active nudge. */
   bandFragment: 25,
+  /** A card's `effectLine` — one or two direct sentences of effect. */
+  effectLine: 25,
+  /** A card's `name` — imperative verb + noun, and little else. */
+  name: 4,
 } as const;
 
-/** `StepNudge.name` word cap — interactive-plain, same rule as any label. */
+/**
+ * `StepNudge.name` **hard** word cap — the clamp, not the target.
+ *
+ * Deliberately still 6 while {@link NUDGE_WORD_BUDGETS.name} is 4, and the two
+ * numbers are not drift. They answer different questions:
+ *
+ * - **6 is the clamp** — past it a card label stops fitting its face, so it is
+ *   a legibility failure and `checkNudgeHand` reports it as a violation.
+ * - **4 is the doctrine target** — past it the name is probably carrying a mood
+ *   instead of an instruction, which is a *register* judgment, so the audit
+ *   reports it as a warning and a human decides.
+ *
+ * Tightening the clamp to 4 is deliberately **not** done here: the shipped
+ * corpus is un-rewritten at the time of writing, and lowering an error-level cap
+ * under content nobody has migrated turns a green corpus red for work that is
+ * already ticketed elsewhere. The clamp follows the corpus, never leads it —
+ * see THR-1225 for the tightening pass.
+ */
 export const NUDGE_NAME_MAX_WORDS = 6;
+
+/**
+ * Paragraph count the v2 opening skeleton admits.
+ *
+ * The doctrine says "three short paragraphs, always". The check admits **2–4**
+ * because the skeleton's job is arrival · situation & complication · problem,
+ * and an opening that fuses two of those into one paragraph, or splits the
+ * middle, can still do all three jobs. One paragraph cannot — that is the v1
+ * shape the doctrine replaced — and five is a scene, not an opening.
+ */
+export const NUDGE_OPENING_PARAGRAPHS_MIN = 2;
+export const NUDGE_OPENING_PARAGRAPHS_MAX = 4;
 
 // ─── Abstraction / vagueness detectors ───────────────────────────────
 
