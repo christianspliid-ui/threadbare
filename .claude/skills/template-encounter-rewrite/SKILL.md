@@ -9,7 +9,7 @@ description: >
   quality", "social encounter rewrite", "tavern encounter rewrite", "template
   encounter", "encounter quality pass", "prose quality pass", "write encounter".
 model: opus
-last_validated_against: 2026-08-18
+last_validated_against: 2026-08-25
 ---
 
 > **Load before authoring:** `Docs/canon/rulebook-quick-reference.md` (always — the synthesis layer for rules of play). Load `Docs/canon/rulebook.md` (full rulebook) when the work touches a specific rule of play and you need depth, status flags, or source citations.
@@ -19,6 +19,15 @@ last_validated_against: 2026-08-18
 # Template Encounter Write/Rewrite — nudge-native prose + systemic wiring
 
 This skill is for writing or improving **linear template encounters** in `UnifiedActionTemplate` format — guild, social, tavern, combat, borderland, and other repeating encounter types. These are single-step or multi-step linear encounters (no structural branches). For fully branching encounters, use the `encounter-pipeline` skill.
+
+> **Writing a NEW direct-authored template? Use the package compiler (THR-1246).** A new
+> linear encounter authored as its own `src/data/encounters/<slug>.ts` file is produced by
+> filling an `EncounterContentPackage` and running `npm run compile:encounter` — see
+> [`../encounter-pipeline/reference/encounter-package-format.md`](../encounter-pipeline/reference/encounter-package-format.md).
+> The compiler emits the module (prose byte-identical), derives `locationSubtypes`, stamps
+> the binding `consequenceDraw`, registers it, and generates the structural test — never
+> hand-write those. *Rewrites of existing files and raw `EncounterEntry` content in
+> `encounter-content.ts` spreads are unaffected: edit those in place as this skill describes.*
 
 ## Templates ship nudge-native (THR-772/774)
 

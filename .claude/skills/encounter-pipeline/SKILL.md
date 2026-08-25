@@ -417,8 +417,13 @@ Stage 3 artifact only.
 ### Step 4b: Dispatch Pass 4 (Implementation)
 
 Dispatch sub-agent with `agents/implementation-prompt.md`, model `sonnet`.
-Agent creates: `src/data/encounters/<slug>.ts`, `src/data/encounters/__tests__/<slug>.test.ts`
-Agent modifies: `src/data/unified-action-templates.ts`
+Agent writes: `Docs/plans/encounters/<slug>.package.json` — the content package
+(THR-1246; schema card `reference/encounter-package-format.md`), prose verbatim
+from the final doc.
+Agent runs: `npm run compile:encounter -- <package.json>` — which emits
+`src/data/encounters/<slug>.ts` + the structural test, registers the template in
+both catalog arrays, derives `locationSubtypes`, and stamps the binding
+`consequenceDraw`. The agent hand-writes none of those.
 Agent generates: concept art (if design doc has art direction)
 Agent runs: `npm test`, `npm run check:typecheck`, `npx vite build`
 
@@ -545,19 +550,23 @@ The systems agent:
 
 ### Pass 4: Implementation
 
-**Model:** `sonnet` — code translation of already-authored prose
-**Creates:** `src/data/encounters/<slug>.ts`, tests, concept art
-**Modifies:** `src/data/unified-action-templates.ts`
+**Model:** `sonnet` — content transcription into the package; the compiler owns the code
+**Creates:** `Docs/plans/encounters/<slug>.package.json`, concept art
+**Runs:** `npm run compile:encounter` — which creates `src/data/encounters/<slug>.ts`
++ the structural test and registers the template (THR-1246)
 
 The implementation agent:
-1. Creates the encounter template file (prose copied verbatim from final doc)
-2. Registers it in the unified action template array
-3. Writes structural tests
-4. Generates concept art (if art direction present)
-5. Runs verification: tsc + tests + build
-6. Commits and pushes
+1. Fills the content package (prose copied verbatim from final doc) — required
+   reading is the final doc plus `reference/encounter-package-format.md`, nothing
+   else: no types file, no exemplar encounters, no registration file in context
+2. Runs `compile:encounter`, fixing any named validation errors
+3. Generates concept art (if art direction present)
+4. Runs verification: `check:typecheck` (the deep field validator — the emitted
+   literal is excess-property-checked against the real type) + tests + build
+5. Commits and pushes
 
-**Prose fidelity rule:** Sonnet copies prose verbatim. It does not rewrite Opus's work.
+**Prose fidelity rule:** Sonnet copies prose verbatim into the package; the compiler
+preserves it byte-identically (round-trip pinned by test). Nobody rewrites Opus's work.
 
 ---
 
@@ -623,11 +632,13 @@ Pass 3b (Package, Opus) ──────→ <slug>-package.md
     ├── PACKAGE PARK? → <slug>-parked.md, continue the batch (ruling 4)
     │
     ▼
-Pass 4 (Implementation, Sonnet) ──→ src/data/encounters/<slug>.ts
-                                     src/data/encounters/__tests__/<slug>.test.ts
-                                     public/concept-art/encounters/<slug>.jpg
-                                     src/data/unified-action-templates.ts (modified)
-    │
+Pass 4 (Implementation, Sonnet) ──→ Docs/plans/encounters/<slug>.package.json
+    │                                (the content package — THR-1246; prose verbatim)
+    ▼
+npm run compile:encounter ─────────→ src/data/encounters/<slug>.ts
+    │                                src/data/encounters/__tests__/<slug>.test.ts
+    │                                src/data/unified-action-templates.ts (registered)
+    │                                + concept art: public/concept-art/encounters/<slug>.jpg
     ▼
 Stage 3 (Machine gates) ──→ npm run check:encounter -- <id>          [green = PR may exist]
     │
