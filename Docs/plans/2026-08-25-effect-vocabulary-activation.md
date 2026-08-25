@@ -203,10 +203,12 @@ interface RuleOverrideConsumedTrace {
 ## Vision audit
 
 - [x] This plan does not contradict any Vision premise — it is the precondition for "systemically alive content" (generated spells/items whose effects are real), and fail-soft dread (transgression pricing, doom notice) depends on the doom/notice keys going live.
+- [x] If it did, the Vision edit would be part of this ticket's scope — none is needed; the forked Vision audit below found no contradiction.
 
 ## Rulebook impact
 
-- [x] This plan changes rules of play in two small ways, updated in the same PRs: stage 1 makes consumable charges actually deplete (rulebook items line gains `[IMPL]`), stage 2 makes persistent marks on hexes real (rulebook gains a `[IMPL]` line for lasting local effects). Each stage's executor updates `Docs/canon/rulebook.md` in its own PR.
+- [ ] This plan does not change a rule of play — **it does**, in two small ways (see next line).
+- [x] The rulebook edits are in scope: stage 1 makes consumable charges actually deplete (rulebook items line gains `[IMPL]`), stage 2 makes persistent marks on hexes real (a `[IMPL]` line for lasting local effects). Each stage's executor updates `Docs/canon/rulebook.md` in its own PR.
 
 > Brainstorm companion: `Docs/plans/2026-08-25-effect-vocabulary-activation-brainstorm.md` (written alongside).
 
@@ -244,7 +246,7 @@ interface RuleOverrideConsumedTrace {
 
 **Mutex with:** the other five stages of this program (shared files; `blockedBy` chain enforces order — THR-1239 → THR-1240 → THR-1241, and THR-1242/1243/1244 behind their blockers).
 
-**Files to touch (stage 1):**
+**Files to touch:** (stage 1 — later stages enumerate theirs from the Engine-pillar spec)
 - Edit: `src/engine/effectExecutors.ts` (fallthrough + `never` guard)
 - Edit: `src/engine/phases/phaseMovement.ts` (raise `entered_hex` on arrival)
 - Edit: `src/engine/battleResolution.ts` (raise combat events)
