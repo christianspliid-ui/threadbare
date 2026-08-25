@@ -15,12 +15,12 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 51 |
+| 🟢 LIVE | 52 |
 | 🟠 PARTIAL | 2 |
 | 🔴 LEAKED | 7 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 14 |
-| **Total** | **74** |
+| **Total** | **75** |
 
 ## Contracts by producing subsystem
 
@@ -58,6 +58,7 @@ remediation ticket or the build fails.
 | `attachment-character-sheet-display` | The character sheet shows what an agent carries. | function: `getAgentAttachments` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 | `attachment-domain-contributions` | Items raise Domain Capability tiers — a legendary blade makes its bearer mightier on the Prowess tab and in encounter eligibility. | node-prop: `stat_contribution`, `collectStatContributions`, `domainContributions` | Personality & Emergent Traits | 🟢 LIVE | — |
 | `attachment-edge-modifiers` | Items modify agent attributes ("+0.15 star" on the Starweave Cloak). | edge-prop: `collectModifiers`, `getModifiedValue` | Personality & Emergent Traits | 🔴 LEAKED | THR-997 |
+| `attachment-effect-event-raises` | Game events reach event-triggered effect primitives (reactive, until_event, stacking, transform, one-shot resource_manipulate) on the agents they happen to. | function: `raiseEffectEvent`, `processEffectEvent` | Effects & Conditions | 🟢 LIVE | — |
 | `attachment-effects-shape-resolution` | Items shape action resolution rolls — a blade makes its bearer likelier to succeed. | node-prop: `collectAttachmentEffects`, `collectTestShapers` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `attachment-effects-tick` | Effects tick, decay, stack and expire on their host agent. | function: `effectTick`, `effectShellRuntime` | Effects & Conditions | 🟢 LIVE | — |
 | `attachment-grants-trait-while-held` | Items grant traits while held, gating encounter eligibility (treasure-map, ruin_seeker). | node-prop: `grantsTraitWhileHeld` | Encounters & Dilemmas | 🟢 LIVE | — |
@@ -271,10 +272,10 @@ remediation ticket or the build fails.
 - **Intent:** Items raise Domain Capability tiers — a legendary blade makes its bearer mightier on the Prowess tab and in encounter eligibility.
 - **Producer → Consumer:** Attachments, Items & Possessions → Personality & Emergent Traits
 - **UL terms:** *Domain Capability*, *Attachment*
-- **Production hits:** 42 total — 4 write, 2 read, 36 unclassified
+- **Production hits:** 43 total — 4 write, 2 read, 37 unclassified
 - **Write sites:** `src/data/anomaly-reward-catalog.ts`, `src/data/artifact-templates.ts`, `src/data/reward-attachment-catalog.ts`, `src/data/starter-attachments.ts`
 - **Read sites:** `src/engine/domainCapability.ts`, `src/engine/effects/effectQueries.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/Codex/codexRegistry.ts`, `src/components/Game/AgentDetailPanel.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx`, `src/data/action-technical-effects.ts` +31 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/Codex/codexRegistry.ts`, `src/components/Game/AgentDetailPanel.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx`, `src/data/action-technical-effects.ts` +32 more
 - **Verdict:** Verified 2026-07-24: THR-718 finished the effects[] migration: a `stat_contribution` primitive (effects.ts) is summed by `collectStatContributions` (effectQueries.ts) and added inside `computeRawScore`'s possesses/bonded_to artifact walk (domainCapability.ts). 9 catalog entries across all bands carry real contributions (artifact-templates ×3 legendary, starter ×4, anomaly ×2) — both-side symbol hits: `stat_contribution` on write (catalogs) + read (effectQueries), `collectStatContributions` on read (domainCapability + effectQueries). Legacy `domainContributions` node-prop read preserved for traits/resources. Unit + hook + content-band tests green.
 
 ### `attachment-edge-modifiers` — 🔴 LEAKED
@@ -287,13 +288,26 @@ remediation ticket or the build fails.
 - **Read sites:** `src/engine/visibility.ts`
 - **Verdict:** Pinned by badgeOverride: The module has exactly one production importer (visibility.ts, `getModifiedValue`) and it only ever asks for `los_range`. Capability attributes are written but never queried — argument-level deadness a symbol check cannot see. THR-723 (2026-08-06) removed one writer: `attachmentTierAdvancement` no longer scales Reach-domain keys, only non-Reach ones like `los_range`. The seed writers remain — `gameInit.ts` (4 First-agent possessions) and `seedAttachments.ts` still stamp reach-keyed bags nothing reads — so the row stays LEAKED, now deferred to THR-997.
 
+### `attachment-effect-event-raises` — 🟢 LIVE
+
+- **Intent:** Game events reach event-triggered effect primitives (reactive, until_event, stacking, transform, one-shot resource_manipulate) on the agents they happen to.
+- **Producer → Consumer:** Attachments, Items & Possessions → Effects & Conditions
+- **Production hits:** 8 total — 4 write, 2 read, 2 unclassified
+- **Write sites:** `src/engine/battleResolution.ts`, `src/engine/orchestrator.ts`, `src/engine/phaseDoom.ts`, `src/engine/phaseMovement.ts`
+- **Read sites:** `src/engine/effects/effectEventDispatch.ts`, `src/engine/effects/effectEvents.ts`
+- **Other hits:** `src/engine/effects/index.ts`, `src/engine/effectTick.ts`
+- **Verdict:** Verified 2026-08-25: THR-1239. The consumer half was always live and the producer half was almost entirely missing: outside the single encounter_outcome raise in the orchestrator, no site in the engine ever constructed an EffectEvent, so the whole executor family (teleport, spawn, compel, cascade, ...) was unreachable in normal play while looking wired. Movement arrival now raises entered_hex and battle create/resolve raise combat_started/combat_ended, all four sites through the shared raiseEffectEvent; the orchestrator site was migrated onto it rather than kept as a second copy. Every raise emits effect.event_raised carrying its site and reactive count, so a live-but-unheard producer is distinguishable from an unwired one. Live evidence: seeded medium CLI run, `printf "tick 30
+traces 5000
+exit
+" | npm run cli -- --seed 42 --map medium` yields 10 entered_hex raises at movement_arrival. Unit coverage: src/engine/effects/__tests__/effectEventDispatch.test.ts (12 tests, asserting the executor trace rather than the return count, so a dispatcher that never reached executeEffect would fail).
+
 ### `attachment-effects-shape-resolution` — 🟢 LIVE
 
 - **Intent:** Items shape action resolution rolls — a blade makes its bearer likelier to succeed.
 - **Producer → Consumer:** Attachments, Items & Possessions → Encounters & Dilemmas
 - **UL terms:** *Attachment*, *Test Shaper*
-- **Production hits:** 16 total — 5 write, 1 read, 10 unclassified
-- **Write sites:** `src/engine/effectResolver.ts`, `src/engine/effects/effectEvents.ts`, `src/engine/effects/effectQueries.ts`, `src/engine/effects/effectWalker.ts`, `src/engine/effects/index.ts`
+- **Production hits:** 17 total — 6 write, 1 read, 10 unclassified
+- **Write sites:** `src/engine/effectResolver.ts`, `src/engine/effects/consumableCharges.ts`, `src/engine/effects/effectEvents.ts`, `src/engine/effects/effectQueries.ts`, `src/engine/effects/effectWalker.ts` +1 more
 - **Read sites:** `src/engine/unifiedActionResolution.ts`
 - **Other hits:** `src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts`, `src/data/ascendant-expression-constants.ts`, `src/data/unified-action-templates.ts`, `src/engine/ascendantExpression.ts`, `src/engine/ascendantPrimitives.ts` +5 more
 - **Verdict:** Verified 2026-07-23: effects[] → effectWalker → collectTestShapers is the live mechanical path (2026-03-31 generic effect system). Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified)
@@ -313,10 +327,10 @@ remediation ticket or the build fails.
 - **Intent:** Encounters grant rewards, which become possessions — by random draw from the pool, or as an authored consequence naming one template.
 - **Producer → Consumer:** Encounters & Dilemmas → Attachments, Items & Possessions
 - **Module:** `src/engine/rewardPool.ts`
-- **Production hits:** 9 total — 2 write, 2 read, 5 unclassified
+- **Production hits:** 10 total — 2 write, 2 read, 6 unclassified
 - **Write sites:** `src/engine/rewardPool.ts`, `src/types/attachments.ts`
 - **Read sites:** `src/engine/encounterAftermath.ts`, `src/engine/orchestrator.ts`
-- **Other hits:** `src/engine/attachmentTemplateDetail.ts`, `src/engine/debugWorldSpawnTools.ts`, `src/engine/nudgeGrantLiveness.ts`, `src/engine/phaseDoom.ts`, `src/types/unifiedAction.ts`
+- **Other hits:** `src/engine/attachmentTemplateDetail.ts`, `src/engine/debugWorldSpawnTools.ts`, `src/engine/effects/effectEventDispatch.ts`, `src/engine/nudgeGrantLiveness.ts`, `src/engine/phaseDoom.ts` +1 more
 - **Verdict:** Verified 2026-08-14: possesses edges grow 7→82 over 120 ticks (seed 42, medium). Authored arm (THR-1110): the crossroads accept path writes one agreement edge binding the actor to the materialized stranger, 132-tick term (seed 42, medium, CLI). Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified)
 
 ### `attachment-grants-trait-while-held` — 🟢 LIVE
@@ -335,10 +349,10 @@ remediation ticket or the build fails.
 - **Intent:** Items break, deplete, or curse their bearer on use — authored consequence for carrying power.
 - **Producer → Consumer:** Attachments, Items & Possessions → Encounters & Dilemmas
 - **Module:** `src/engine/effects/actionTriggerPayloads.ts`
-- **Production hits:** 17 total — 2 write, 4 read, 11 unclassified
+- **Production hits:** 18 total — 2 write, 4 read, 12 unclassified
 - **Write sites:** `src/data/anomaly-reward-catalog.ts`, `src/data/starter-attachments.ts`
 - **Read sites:** `src/engine/effects/actionTrigger.ts`, `src/engine/orchestrator.ts`, `src/engine/phaseMovement.ts`, `src/engine/unifiedActionResolution.ts`
-- **Other hits:** `src/components/Game/AttachmentDetailView.tsx`, `src/data/effect-constants.ts`, `src/data/reward-attachment-catalog.ts`, `src/engine/agentAttachments.ts`, `src/engine/attachmentTemplateDetail.ts` +6 more
+- **Other hits:** `src/components/Game/AttachmentDetailView.tsx`, `src/data/effect-constants.ts`, `src/data/reward-attachment-catalog.ts`, `src/engine/agentAttachments.ts`, `src/engine/attachmentTemplateDetail.ts` +7 more
 - **Verdict:** Verified 2026-07-25: Both sides carry live symbol hits. Producer: 9 authored `action_trigger` entries across starter-attachments.ts + anomaly-reward-catalog.ts (port-completeness test asserts the count and that every condition_grant names an existing node). Consumer: `checkAndFireActionTriggers` is called from unifiedActionResolution.ts (ladder-mapped outcome bands), orchestrator.ts, and phaseMovement.ts; the graph-affecting payloads are executed by `applyActionTriggerPayloads` at all three sites. Value-level check: the granted has_trait edge carries `ticksRemaining`, the field `decayConditions` actually counts down (asserted in actionTriggerOnUse.test.ts + the ported lifecycle integration test), not the inert `durationTicks` that `apply_condition` writes.
 
 ### `attachment-slot-caps-suppress` — 🟢 LIVE

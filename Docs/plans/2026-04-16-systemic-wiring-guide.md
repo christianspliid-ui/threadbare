@@ -1175,6 +1175,47 @@ With the markers, `artifact.enchant` / `artifact.empower` charge 4 essence at di
 
 ---
 
+### Capability 23: Event-Triggered Attachment Effects — Gear That Notices What Happens (THR-1239)
+
+**What it does:** three attachment primitives that key off *world events* rather than the tick clock now actually fire — `reactive` (run a nested effect when something happens to the bearer), `until_event` (expire or destroy the attachment when something happens), and `resource_manipulate` in `one_shot` mode (drain or restore essence once, on first use).
+
+**Why you want it:** you could already author all three, and until this ticket two of the four events they key on had **no producer anywhere in the engine**. `entered_hex` and the combat pair were mapped to their triggers from the day the primitive architecture landed, and nothing ever raised them — so a charm authored to ward its bearer *when they arrive somewhere new* was inert, silently, forever. This is the THR-844 failure class: content that reads as wired and does nothing. If you have avoided reactive gear because it never seemed to do anything, that was not your authoring.
+
+**The four events you can key on, and when each fires:**
+
+| Event | Fires when | Reactive trigger | `until_event` value |
+|---|---|---|---|
+| `entered_hex` | the bearer **arrives at their destination** — final arrival only, not each hex of the journey, and not a move between sublocations of one hex | `entered_hex` | — |
+| `combat_started` | a field battle is created, for the **commanders of both armies** and nobody else | `encounter_started` | `enter_combat` |
+| `combat_ended` | that battle resolves — raised *before* the aftermath, so a commander who dies there still gets it | — | `leave_combat` |
+| `encounter_outcome` | the bearer finishes an encounter step | — | `encounter_complete` |
+
+**How to author it:**
+
+```ts
+// A charm that scatters an omen wherever its bearer settles.
+{ type: 'reactive', trigger: 'entered_hex', cooldown: 6,
+  effect: { type: 'spawn', what: 'encounter', template: 'encounter.slice.ill_omen', onHex: 'self' } }
+
+// A war-charm that burns out when the fighting stops.
+{ type: 'until_event', event: 'leave_combat', reach: 'iron', value: 0.12, destroyOnEvent: true }
+
+// A draught that spends itself the first time its bearer is tested.
+{ type: 'resource_manipulate', resource: 'essence', target: 'self', amount: 0.25, mode: 'one_shot' }
+```
+
+**What an author must know — three things:**
+
+1. **`entered_hex` means arrival, not travel.** A five-hex journey raises it once, at the end. Author the fiction as *"when they get somewhere"*, never *"as they travel"* — per-step firing was considered and rejected (roughly 4× the event volume for no design gain).
+2. **Combat events reach commanders only.** An army is a headcount, not a roster of people, so the only agent in a battle is the commander on each side. Gear on a foot soldier does not exist to notice anything, because the foot soldier does not exist as a node.
+3. **A one-shot is spent even when it cannot land.** `target: 'other_agent'` resolves to the encounter counterpart; in a solo encounter there is nobody, and the shot is spent anyway rather than waiting for a later encounter that has one. Author it as *a thing that happens once*, not *a thing that waits for the right moment*.
+
+**Charges now deplete.** A `consumable_charge` attachment spends one charge each time its bearer completes an encounter step in the charge's own `onUse.reach`, and an item that empties its last charge with `destroyOnEmpty` is gone. Before this, nothing decremented the counter anywhere, the destroy-at-0 branch was unreachable, and **every "3 charges" item in the catalogs was unlimited**. If you authored a charge count as flavour, it is now load-bearing: write the number you actually mean.
+
+**Where to find the implementation:** `raiseEffectEvent` in `src/engine/effects/effectEventDispatch.ts` (the shared raise path, called from `phaseMovement`, `battleResolution`, `orchestrator` and `phaseDoom`), the dispatch itself in `src/engine/effects/effectEvents.ts`, and the charge spend in `src/engine/effects/consumableCharges.ts`. Every raise emits an `effect.event_raised` trace naming its site and how many reactives fired — filter the trace viewer on it to check whether *your* gear is being reached.
+
+---
+
 ## Part 3: The Wiring Checklist — Ask These Before You Write
 
 Before writing any encounter, answer these questions. If the answer to most of them is "not applicable," you may be writing a book page, not game content.

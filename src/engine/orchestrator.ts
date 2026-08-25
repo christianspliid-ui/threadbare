@@ -76,8 +76,7 @@ import { emitTrace, emitTiming, emitPhaseTiming, getTimingTraces, isProfilingEna
 import { runRegisteredPhases, type PhaseContext } from './phaseRegistry';
 import { PHASE_PLAN } from './phases';
 import { tickEffects } from './effectTick';
-import { processEffectEvent, applyEffectEventResult } from './effects/effectEvents';
-import { executeEffect } from './effectExecutors';
+import { raiseEffectEvent } from './effects/effectEventDispatch';
 import type {
   TraceEntry,
   TickPhaseProfileTrace,
@@ -460,43 +459,32 @@ export function phaseEncounterProgressionV2(state: GameState, runtime?: Simulati
       const encounterForEvent = getAnyEncounterById(progress.encounterId);
       const stepForEvent = encounterForEvent?.steps[resolvedStepIndex];
       if (stepForEvent) {
-        const eventResult = processEffectEvent(
-          state.graph,
+        // THR-1239: this block used to spell out the whole raise sequence inline
+        // — process, apply, instantiate transforms, execute reactives, emit — and
+        // it was the ONLY site in the engine that raised any EffectEvent at all.
+        // Adding producers for movement and combat meant either pasting it twice
+        // more or naming it once; `raiseEffectEvent` is that name, and this site
+        // now goes through it too rather than keeping a second copy in step.
+        //
+        // `states` is passed explicitly because this pass threads
+        // `runningEffectStates` across every active encounter and assigns it to
+        // GameState once at the end of the tick — writing state.effectStates from
+        // inside the loop would be overwritten by that assignment.
+        const raised = raiseEffectEvent(
+          state,
           progress.actorId,
           { type: 'encounter_outcome', reach: stepForEvent.reach, success: result.success },
-          runningEffectStates,
-          state.tick,
-          encRng,
+          {
+            site: 'encounter_outcome',
+            rng: encRng,
+            states: runningEffectStates,
+            // The encounter counterpart, so a one_shot `resource_manipulate` with
+            // `target: 'other_agent'` has someone to drain. Undefined on a solo
+            // encounter, where that effect skips fail-soft rather than retrying.
+            counterpartId: progress.targetAgentId,
+          },
         );
-        runningEffectStates = applyEffectEventResult(state.graph, eventResult);
-        // Execute transform requests: old attachment already destroyed by applyEffectEventResult;
-        // instantiate the new template and attach it to the agent.
-        for (const req of eventResult.transformRequests) {
-          instantiateReward(state.graph, req.intoTemplate, progress.actorId, state.tick);
-        }
-        // Execute reactive nested effects via the generic dispatcher
-        for (const fired of eventResult.reactivesFired) {
-          const execResult = executeEffect(fired.nestedEffect, {
-            casterId: fired.agentId,
-            tick: state.tick,
-            graph: state.graph,
-          });
-          // Apply graph mutations from the nested effect
-          for (const mut of execResult.mutations) {
-            try {
-              if (mut.type === 'add_node' && mut.data) state.graph.addNode(mut.data as import('../types/graph').GraphNode);
-              else if (mut.type === 'remove_node' && mut.nodeId) state.graph.removeNode(mut.nodeId);
-              else if (mut.type === 'add_edge' && mut.data) state.graph.addEdge(mut.data as import('../types/graph').GraphEdge);
-              else if (mut.type === 'remove_edge' && mut.edgeId) state.graph.removeEdge(mut.edgeId);
-            } catch { /* fail-soft: skip invalid mutations */ }
-          }
-          for (const trace of execResult.traces) {
-            emitTrace(trace as unknown as TraceEntry);
-          }
-        }
-        for (const trace of eventResult.traces) {
-          emitTrace(trace as unknown as TraceEntry);
-        }
+        runningEffectStates = raised.states;
       }
     }
 
