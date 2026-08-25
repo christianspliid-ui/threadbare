@@ -84,12 +84,14 @@ import { UNIFIED_ACTION_TEMPLATES, getUnifiedTemplateById } from '../src/data/un
 import { NUDGE_GOLDEN_EXEMPLAR } from '../src/data/__fixtures__/nudge-exemplar/swollen-ford-exemplar';
 import { hasOnlyDefaultSupportBundle } from '../src/data/default-support-bundles';
 import {
+  isAdditiveConditionEffectKind,
   isPersistentEffectKind,
+  reachableConditionWritesCannotFire,
   systemConnections,
   systemSurfacesForOutcome,
 } from '../src/data/content-eval/compositionContract';
 
-import { isActionStepBranch } from '../src/types/unifiedAction';
+import { isActionStepBranch, isStepFailure } from '../src/types/unifiedAction';
 import type {
   ActionStep,
   UnifiedAction,
@@ -801,19 +803,58 @@ function runOne(template: UnifiedActionTemplate): LiveProofResult {
   } else if (conditionScope !== 'reachable') {
     claim('condition_applied', 'not_declared', `condition ${scopeReason('conditions', conditionScope)}`);
   } else {
+    // Two authoring routes, so two places to look — the same pair `reward_node`
+    // above already reads, and for the same reason (THR-1132). A condition
+    // promised as an aftermath *change* lands in `changes`; one promised as an
+    // *effect* — step metadata or a reaction — lands in the world and on the
+    // effect's own trace, leaving `changes` untouched. Reading only the first
+    // reported an arrived condition as missing (THR-1221).
+    //
     // Read the live action rather than the pre-reaction summary: a condition
     // riding a reaction lands after `aftermathSummary` was written.
     const post = findAction(state, world.actionId);
     const conditions = (post?.aftermathSummary?.changes ?? summary?.changes ?? []).filter(
       change => change.kind === 'trait',
     );
-    claim(
-      'condition_applied',
-      conditions.length > 0 ? 'pass' : 'fail',
-      conditions.length > 0
-        ? `${conditions.length} condition/trait change(s) applied`
-        : 'declared a condition effect on this run\'s path but none applied',
-    );
+    const landedConditions = [...appliedEffectKinds(world.actionId)]
+      .filter(isAdditiveConditionEffectKind);
+    const arrived = conditions.length > 0 || landedConditions.length > 0;
+    const evidence = [
+      ...conditions.map(change => `${change.kind} change`),
+      ...landedConditions.map(kind => `${kind} effect`),
+    ];
+    // A removal owes nothing, and a `failureMetadata` mint cannot have fired on
+    // a history where no step failed. When every reachable condition write is
+    // one of those, there is no promise to assert. Skip-only, and consulted
+    // solely on the path that would otherwise fail (THR-1221).
+    const stepOutcomes = resolved?.stepOutcomes ?? [];
+    const anyStepFailed = stepOutcomes.some(isStepFailure);
+    if (
+      !arrived
+      && reachableConditionWritesCannotFire(
+        template,
+        resolved?.outcome,
+        reactionApplied,
+        anyStepFailed,
+      )
+    ) {
+      claim(
+        'condition_applied',
+        'not_declared',
+        'every condition write reachable on this path is a removal or a '
+          + 'failureMetadata mint that no step failure fired '
+          + `(step outcomes: ${stepOutcomes.join(', ') || 'none'})`,
+      );
+    } else {
+      claim(
+        'condition_applied',
+        arrived ? 'pass' : 'fail',
+        arrived
+          ? `${evidence.length} condition write(s) landed: ${evidence.join(', ')}`
+          : 'declared a condition effect on this run\'s path but none applied — '
+            + 'no trait change and no additive condition effect trace',
+      );
+    }
   }
 
   const verdict = computeVerdict(claims);

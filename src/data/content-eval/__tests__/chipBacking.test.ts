@@ -32,7 +32,12 @@ import type {
   UnifiedActionTemplate,
 } from '../../../types/unifiedAction';
 import { UNIFIED_ACTION_TEMPLATES } from '../../unified-action-templates';
-import { checkCompositionContract } from '../compositionContract';
+import {
+  CAST_TARGET_PERSISTENT_KINDS,
+  CHIP_BACKING_EFFECT_KINDS,
+  checkCompositionContract,
+} from '../compositionContract';
+import { CONSEQUENCE_FAMILY_EFFECT_KINDS } from '../consequenceDraw';
 
 /** The Law 56 violations a template reports, as `changeId@face` strings. */
 function law56Violations(template: UnifiedActionTemplate): readonly string[] {
@@ -191,5 +196,53 @@ describe('Law 56 — the shipped corpus', () => {
       t => !t.id.startsWith('encounter.') && t.aftermathConfig !== undefined,
     );
     expect(outsidePrefix.length).toBeGreaterThan(0);
+  });
+});
+
+describe('Law 56 — a membership move backs a chip (THR-1221)', () => {
+  it('goes green when the ending changes who the agent belongs to', () => {
+    const backed = unsafeBridgeShape({
+      reactions: [
+        {
+          id: 'fixture.walk_on',
+          label: 'Walk on',
+          intent: 'The road goes on from either bank.',
+          effects: [
+            {
+              kind: 'membership_change',
+              targetAgentId: '$actor',
+              factionId: 'mercenary_company',
+              op: 'join',
+            },
+          ],
+        },
+      ],
+    } as Partial<AftermathVariant>);
+    expect(law56Violations(backed)).toEqual([]);
+  });
+
+  it('is the only kind that satisfies the `membership` consequence family', () => {
+    // The reason the omission was load-bearing rather than cosmetic. The draw is
+    // binding and `check:encounter` audits it, so an encounter that drew
+    // `membership` had exactly one kind available to wire — and chipping the
+    // result was rejected as unbacked. Its only remedies were to fold a real,
+    // player-visible consequence into prose, or to disobey a draw the gate
+    // checks. If this list ever grows a second kind, that kind needs the same
+    // question asked of it.
+    expect(CONSEQUENCE_FAMILY_EFFECT_KINDS.membership).toEqual(['membership_change']);
+  });
+
+  it('the two persistence sets in this module agree about every kind', () => {
+    // The defect in one line: `CAST_TARGET_PERSISTENT_KINDS` called
+    // `membership_change` "a durable fact written onto a specific someone" while
+    // `CHIP_BACKING_EFFECT_KINDS` did not carry it at all. A module holding two
+    // sets that both mean "this persists" can only disagree by oversight, and the
+    // disagreement is invisible until an author trips over it. Pinned as a
+    // relation between the sets, not as a membership assertion about one kind, so
+    // a future addition to either side has to settle the same question.
+    const unbackable = [...CAST_TARGET_PERSISTENT_KINDS].filter(
+      kind => !CHIP_BACKING_EFFECT_KINDS.has(kind),
+    );
+    expect(unbackable).toEqual([]);
   });
 });

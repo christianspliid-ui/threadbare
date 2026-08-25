@@ -85,13 +85,23 @@ export const NODE_TYPE_ROWS: Readonly<Record<string, AnchorRow>> = {
   },
   location: {
     anchor: 'Location / sublocation',
-    declare: '`entityId` = the location node id; **no `visualKind` member exists**',
-    surface: 'The hex detail view and the location\'s own page, reached from the map',
-    status: 'named',
+    declare: '`entityId` = the location node id, `visualKind: \'location\'`',
+    surface: 'The location\'s own profile, opened from the chip; plus the hex detail view from the map',
+    status: 'linked',
     note:
-      'A real, resolvable, named object — legal to anchor to and legal to name in the ' +
-      'sentence. It simply cannot carry the click today: `visualKind` has no `location` ' +
-      'member, so `openEntity` has no route. Name the place; do not promise a link.',
+      'A real, resolvable object that **does** carry the click, since THR-1172. Declare ' +
+      '`visualKind: \'location\'` — the member exists on `EncounterAftermathConceptRef` ' +
+      '(`unifiedAction.ts`), `EncounterVeil.openEntity` routes it, and `onSelectEntity` ' +
+      'accepts it, so the chip both draws the place\'s tile and opens its sheet. Reach for ' +
+      'it through an anchor sentinel rather than a literal id: the instance is minted per ' +
+      'world, exactly as a faction\'s is. **Corrected 2026-08-24 (THR-1221):** this row ' +
+      'previously read "no `visualKind` member exists" and told authors to name the place ' +
+      'without promising a link. That predated THR-1172 and contradicted this same file\'s ' +
+      'own preamble, which has always listed `location` among the `visualKind` members. It ' +
+      'was not stale output — the sentence is hand-written here, so the generator reported ' +
+      'the catalog current while it said the opposite of the type. A package pass followed ' +
+      'it and omitted `visualKind` from a shipped chip, leaving two location anchors in one ' +
+      'batch rendering at different tiers.',
   },
   trait: {
     anchor: 'Trait',

@@ -219,8 +219,17 @@ describe('the draw actually respects the table', () => {
   it('draws a used hook markedly less than a comparable unused one', () => {
     const counts = drawCounts('iron');
     // Both are iron-affinity hooks; only the first carries a recorded use.
+    // `hook.standing_the_line` was this pair's original "unused" comparator,
+    // but it gained a recorded use (`encounter.border.standing_the_line`)
+    // during the border-perils batch and was never swapped out here — with
+    // both hooks in the pair actually used, the comparison degraded to a
+    // near-tie (THR-1221, batch row 6, `the-garrisons-price`'s own
+    // `hook.impossible_bargain` stamp tipped it into an exact tie at the
+    // fixed SAMPLE_SEEDS size). `hook.desperate_escort` is a genuinely
+    // unused iron-affinity hook (empty `usedBy`), restoring the intended
+    // controlled comparison.
     const used = counts.get('hook.unsafe_crossing') ?? 0;
-    const unused = counts.get('hook.standing_the_line') ?? 0;
+    const unused = counts.get('hook.desperate_escort') ?? 0;
 
     expect(unused).toBeGreaterThan(0);
     expect(used).toBeLessThan(unused);

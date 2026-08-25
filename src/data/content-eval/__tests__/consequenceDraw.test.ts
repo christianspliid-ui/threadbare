@@ -16,9 +16,11 @@
  *      gate only ever shown passing is not evidence it can fail — so every red
  *      case here is derived from a green one by changing exactly the thing under
  *      test, and the green case is re-asserted alongside it.
- *   4. **The corpus stays green.** The field is optional and no shipped template
- *      carries it, so introducing this block reds nothing — the property that
- *      lets the draw land while THR-1130's retrofit is mid-flight.
+ *   4. **The corpus stays green.** The field is optional, so a template that omits
+ *      it is untouched by this gate — the property that let the draw land while
+ *      THR-1130's retrofit was mid-flight. Content that *does* record a draw
+ *      (the Encounter Factory v3 line, starting with border-perils/THR-1221)
+ *      must clear the `draw` block clean.
  */
 
 import { describe, expect, it } from 'vitest';
@@ -435,11 +437,27 @@ describe('the gate — the one recorded swap', () => {
 // ─── 5. The corpus stays green ───────────────────────────────────────
 
 describe('the live corpus', () => {
-  it('carries no recorded draw yet, so the block reds nothing', () => {
-    // The property that lets this land while THR-1130's retrofit is in flight:
-    // the field is absent everywhere, so the gate is silent everywhere.
+  it('every template carrying a recorded draw passes the Draw block clean', () => {
+    // THR-1130's retrofit was in flight when this suite was written, and at
+    // that point nothing in the corpus authored `consequenceDraw` — the block
+    // was silent everywhere. The Encounter Factory v3 line (border-perils,
+    // THR-1221) is the first content to record it, so the property this test
+    // actually pins is narrower and permanent: a template that *does* record a
+    // draw must clear `checkCompositionContract`'s `draw` block with zero
+    // violations. `checkConsequenceDraw` (exercised directly above) is the
+    // same logic `checkCompositionContract` delegates to for this block.
     const carrying = UNIFIED_ACTION_TEMPLATES.filter(t => t.consequenceDraw !== undefined);
-    expect(carrying.map(t => t.id)).toEqual([]);
+    // The loop below passes trivially over an empty set, and an empty set is
+    // exactly what the *previous* version of this test asserted — so without this
+    // line the assertion would silently revert to proving nothing the moment the
+    // field were renamed or the v3 content removed, while still reading green.
+    // Pinned as a floor rather than an exact count so the batch can grow.
+    expect(carrying.length).toBeGreaterThan(0);
+    for (const template of carrying) {
+      const report = checkCompositionContract(template);
+      const drawViolationsForTemplate = report.violations.filter(v => v.block === 'draw');
+      expect(drawViolationsForTemplate, `template "${template.id}"`).toEqual([]);
+    }
   });
 
   it('draws a satisfiable hand for every live encounter', () => {

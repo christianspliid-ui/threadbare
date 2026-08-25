@@ -145,9 +145,17 @@ describe('anchor catalog — the findings it records', () => {
 
   it('keeps location a lawful anchor, so a critic cannot fold chips for being unclickable', () => {
     // The expensive misreading: treating "cannot be clicked" as "not anchored"
-    // would strip most legitimate consequences out of the corpus, since every
-    // location, culture, region and bond is `named` rather than `linked`.
-    expect(NODE_TYPE_ROWS.location.status).toBe('named');
+    // would strip most legitimate consequences out of the corpus, since culture
+    // and bond are `named` rather than `linked` and are anchored all the same.
+    //
+    // `location` moved to `linked` in THR-1221: `visualKind` genuinely carries a
+    // `'location'` member (`src/types/unifiedAction.ts` — the union is
+    // agent | faction | artifact | companion | attachment | location), and the
+    // veil routes it. The catalog had hard-coded the pre-THR-1172 claim that no
+    // such member existed, which is why this assertion could go stale without
+    // the freshness gate noticing: the sentence is hand-written in the sources
+    // file, so the artifact was simultaneously fresh and wrong.
+    expect(NODE_TYPE_ROWS.location.status).toBe('linked');
     expect(ACTOR_TYPE_ROWS.culture.status).toBe('named');
     expect(NODE_TYPE_ROWS.relationship.status).toBe('named');
   });

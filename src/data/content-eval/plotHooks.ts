@@ -381,7 +381,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['faith', 'discovery'],
     reaches: ['veil', 'star'],
     source: 'vault: Archetypes/Event — Miracle/Celestial Sign',
-    usedBy: [],
+    usedBy: ['encounter.border.the_sign_over_the_ruin'],
   },
   {
     id: 'hook.natural_disaster',
@@ -469,7 +469,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['conflict', 'power'],
     reaches: ['iron', 'gold'],
     source: 'vault: Archetypes/Event — The Stronghold Mobilization',
-    usedBy: [],
+    usedBy: ['encounter.border.toll_of_blades'],
   },
   {
     id: 'hook.relic_awakening',
@@ -615,7 +615,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['protection', 'conflict'],
     reaches: ['iron', 'heart'],
     source: 'vault: Archetypes/Ordeal — Defense of the Innocent',
-    usedBy: [],
+    usedBy: ['encounter.border.standing_the_line'],
   },
   {
     id: 'hook.impossible_choice',
@@ -687,7 +687,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['bargain', 'scarcity'],
     reaches: ['gold', 'shadow'],
     source: 'vault: Archetypes/Ordeal — The Impossible Bargain',
-    usedBy: [],
+    usedBy: ['encounter.border.the_garrisons_price'],
   },
   {
     id: 'hook.forbidden_knowledge_price',
