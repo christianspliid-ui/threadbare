@@ -128,6 +128,13 @@ const EXTERNAL_GENERATED_ARTIFACTS: readonly ExternalArtifact[] = [
   // THR-987" rather than building a bespoke one, so this ticket owns its recurrence
   // prevention; observed drift rate is ~2 plans/week, which re-rots it continuously.
   { path: "Docs/plans/INDEX.md", command: "npm run rebuild-plans-index" },
+  // ~1s. The compiled preamble every encounter draft agent is told to read FIRST. Its
+  // own `check:authoring-brief` lives in the advisory `check:process` chain, which is
+  // how its Section E sat six triggers behind the live SKILL with nothing ever failing
+  // (THR-1250) — including the trigger that says clarity beats compression, the exact
+  // rule the drifting prose kept breaking. Listing it here makes staleness blocking in
+  // the `Docs gates` job, which is the job a SKILL or canon edit actually runs.
+  { path: "Docs/authoring-brief.md", command: "npm run build-authoring-brief" },
 ];
 
 /**
