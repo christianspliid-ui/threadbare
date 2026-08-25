@@ -1,20 +1,18 @@
 # User Action Required
 
-**Last updated:** 2026-08-25 05:56 local (03:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-25 06:57 local (04:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
 ### 1. Approve the batch-2 brief — [THR-1222](https://linear.app/threadbare/issue/THR-1222/run-retrofit-batch-2-the-camp-seven-through-the-factory-line-shrine)
 
-**The camp seven** — shrine offering, sharpening blades, warding the camp, a small prayer, rest and reflection, tending wounds, scouting the perimeter. All seven ship today and all seven are thin: the census found **no typed consequences at all** in that set, only bare standing nudges.
+**The build has stopped.** The last work merged at 04:31 local; the queue is now empty — zero claimable items, nothing in flight, and the four in-progress tickets are all parked. Every hourly run finds an empty board until this gets its yes.
 
-**The shelf is now empty behind it — zero claimable items, nothing in flight.** The border-perils six landed at 03:45 and the tooltip repair behind them merged at 04:31; there is nothing left for the executor lane to pick up. Until this gets its yes, every hourly run finds an empty board.
+**The camp seven** — shrine offering, sharpening blades, warding the camp, a small prayer, rest and reflection, tending wounds, scouting the perimeter. All seven are thin: the census found **no typed consequences at all** in that set, only bare standing nudges.
 
-It is also the last item in front of [your integrated slice checkpoint](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with) — **the shrine offering is roster encounter #1 of that sitting**, and the checkpoint cannot invite you while it is below standard.
+It is the last item in front of [your integrated slice checkpoint](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with) — **the shrine offering is roster encounter #1 of that sitting**, and the checkpoint cannot invite you while it is below standard.
 
-**Brief:** [`retrofit-batch-2-brief.md`](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/retrofit-batch-2-brief.md), merged to `main`.
-
-**The one judgement in it:** the batch is **seven, not six** — the camp set is one family in one file, and splitting the seventh costs a full cycle for no variance gain. *"Batch 2, seven is fine"* runs it; *"keep it six"* splits it 6+1.
+**Brief:** [`retrofit-batch-2-brief.md`](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/retrofit-batch-2-brief.md), merged to `main`. **The one judgement in it:** seven, not six — the camp set is one family in one file, and splitting the seventh costs a full cycle for no variance gain. *"Batch 2, seven is fine"* runs it; *"keep it six"* splits it 6+1.
 
 ### 2. Read two of the new encounters — [THR-1221](https://linear.app/threadbare/issue/THR-1221/run-the-border-perils-batch-6-new-encounters-through-the-full-factory)
 
@@ -25,7 +23,7 @@ Two clicks, straight into the game:
 - **[The Unclaimed Relic](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.border.the_unclaimed_relic)** — a relic in the open, a cold that stopped everyone before, and one other claimant at the ring. Leave with it and it is a real object your agent keeps; the other claimant stays in the world, warmed or soured.
 - **[One Body Short](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.border.one_body_short)** — a survivor counts the dead and the count is wrong. The missing body is a mark nobody can see, which a later road can put in the open.
 
-**The question: do these two read like encounters worth meeting twice?** That verdict outlives any single batch approval, because the same line runs everything after it — including ask 1 above. Report: [`batch-report-2026-08-25.md`](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/batch-report-2026-08-25.md), which you should not need to open.
+**The question: do these two read like encounters worth meeting twice?** That verdict outlives any single batch approval, because the same line runs everything after it — including ask 1 above.
 
 ### 3. Image credits — should the spend be gated on you at all?
 
