@@ -44,15 +44,54 @@ describe('faction sigil registry — coverage', () => {
     expect(svg).toContain(`width="${FACTION_SIGIL_RENDER_SIZE}"`);
   });
 
-  it('gives different factions different heraldry', () => {
-    // TODO(THR-854): this bound is deliberately weak and must NOT be read as
-    // "all sigils are distinct". Heraldry derives from
-    // (dominantReach, secondaryReach, factionType), so factions agreeing on all
-    // three collide byte-for-byte — measured at 17 distinct shields for 20
-    // definitions. THR-854 owns the fix and tightens this to full distinctness;
-    // asserting that here today would simply fail.
-    const uris = [...ALL_FACTION_DEFINITIONS.keys()].map((id) => getFactionSigilUrl(id));
-    expect(new Set(uris).size).toBeGreaterThan(1);
+  it('gives every registered faction distinct heraldry', () => {
+    // THR-854. This is the ticket's Done-when, and it is a *predicate*, never a
+    // count: no two entries of ALL_FACTION_DEFINITIONS may render the same
+    // shield. Pinning "17 distinct of 20" — the pre-fix measurement — would rot
+    // the next time a definition is added.
+    //
+    // The clip-path id is seeded from the definition id, so it differs for every
+    // faction whether or not the *shield* does. Normalise it away, or this
+    // asserts nothing (the URIs were always distinct; the heraldry was not).
+    const byShield = new Map<string, string[]>();
+    for (const defId of ALL_FACTION_DEFINITIONS.keys()) {
+      const uri = getFactionSigilUrl(defId);
+      expect(uri).not.toBeNull();
+      const shield = svgOf(uri!).replace(/coa-clip-[A-Za-z0-9_-]+/g, 'coa-clip-NORMALISED');
+      byShield.set(shield, [...(byShield.get(shield) ?? []), defId]);
+    }
+
+    // Report the colliding ids, not just a number — a bare count tells whoever
+    // breaks this nothing about which two factions started claiming kinship.
+    const collisions = [...byShield.values()]
+      .filter((ids) => ids.length > 1)
+      .map((ids) => ids.join(' == '));
+    expect(collisions).toEqual([]);
+    expect(byShield.size).toBe(ALL_FACTION_DEFINITIONS.size);
+  });
+
+  it('separates two factions that agree on their top two reaches', () => {
+    // The specific pair that forced the bordure axis: the Thieves Guild and the
+    // Underking's Court are both shadow-then-gold criminal factions, so nothing
+    // above rank 3 tells them apart. Guards the tertiary axis directly — the
+    // sweep above would still pass if some unrelated change happened to
+    // differentiate them, and this would not.
+    const thieves = svgOf(getFactionSigilUrl('thieves_guild')!);
+    const underking = svgOf(getFactionSigilUrl('underking_court')!);
+    const strip = (s: string) => s.replace(/coa-clip-[A-Za-z0-9_-]+/g, 'X');
+    expect(strip(thieves)).not.toBe(strip(underking));
+  });
+
+  it('separates two factions differing only in how strongly they hold their second reach', () => {
+    // adventuring_guild and rangers_brotherhood are both (eye, iron, guild) with
+    // the same third reach; they differ only in that the Rangers' iron rivals
+    // their eye and the Guild's does not. This is why THR-854 turned
+    // SECONDARY_REACH_THRESHOLD into a weight rather than deleting it —
+    // dropping it outright would have traded three collisions for this one.
+    const adventuring = svgOf(getFactionSigilUrl('adventuring_guild')!);
+    const rangers = svgOf(getFactionSigilUrl('rangers_brotherhood')!);
+    const strip = (s: string) => s.replace(/coa-clip-[A-Za-z0-9_-]+/g, 'X');
+    expect(strip(adventuring)).not.toBe(strip(rangers));
   });
 });
 
