@@ -30,8 +30,8 @@
       "filename": "Traits.md",
       "title": "Traits",
       "contentAdjacent": true,
-      "termCount": 9,
-      "blurb": "Content-adjacent shard. Terms covering the trait layer: definitions and assignments, the ten category contracts, how an authored ref resolves to a definition, and the hooks content authors write against."
+      "termCount": 15,
+      "blurb": "Content-adjacent shard. Terms covering the trait layer: definitions and assignments, the ten category contracts, how an authored ref resolves to a definition, and the hooks content authors write against — plus the parallel **attachment** layer that shares its borne-by-a-bearer shape: the Attachment umbrella, the Effect substrate, and the Power family (spell, bestowal, innate power) seated here at THR-1238 because two of the three power variants collide by name with a trait category (`bestowed`, `innate`) and are best read beside the categories they are not."
     },
     {
       "id": "prose",
@@ -2849,6 +2849,217 @@
         }
       ],
       "sourcePath": "Docs/ubiquitous-language/Traits.md#selection-competence-separation",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "traits",
+      "slug": "attachment",
+      "name": "Attachment",
+      "aliases": [
+        "Attachment System"
+      ],
+      "status": "canonical",
+      "oneLiner": "the broad code umbrella for anything borne by a bearer that changes what it can do; eight `AttachmentCategory` members, not a player-facing word",
+      "body": "The broad **code umbrella** for anything that connects to a bearer and modifies what they can do, unlock, or experience. `AttachmentCategory` (`src/types/attachments.ts`) has eight members: `possession`, `condition`, `blessing`, `curse`, `bestowed_power`, `agreement`, `spell`, `companion`.\n\n**Disambiguation.** Attachment is a code word, not a player-facing family name — no surface says \"you gained an attachment.\" `[[Power]]` names a *subset* of the umbrella (spells, bestowals, innate powers), never a replacement for it; the possession, condition, agreement and `[[Companion]]` members stay outside that subset. Distinguish also from `[[Trait]]`, which sits on a parallel layer with the same node-plus-edge shape: a trait is **inert on its bearer** and carries no behavior of its own, while an attachment carries `[[Effect]]`s directly.",
+      "seeAlso": [
+        {
+          "raw": "Effect",
+          "termName": "Effect",
+          "resolvedSlug": "traits#effect"
+        },
+        {
+          "raw": "Power",
+          "termName": "Power",
+          "resolvedSlug": "traits#power"
+        },
+        {
+          "raw": "Companion",
+          "termName": "Companion",
+          "resolvedSlug": "agents#companion"
+        },
+        {
+          "raw": "Trait",
+          "termName": "Trait",
+          "resolvedSlug": "traits#trait"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Traits.md#attachment",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "traits",
+      "slug": "effect",
+      "name": "Effect",
+      "aliases": [
+        "AttachmentEffect"
+      ],
+      "status": "canonical",
+      "oneLiner": "the substrate word: the `AttachmentEffect` primitives powers and items are built from; never player-facing as a family name",
+      "body": "The **substrate** word: the primitives of the `AttachmentEffect` union (`src/types/effects.ts`), from which powers, items, blessings and curses are all built. The union is tiered — Gear, Spell, God-tier — and its members are atoms such as `PassiveEffect`, `OutcomeShiftEffect`, `TraitGrantEffect`, `TeleportEffect`.\n\n**Disambiguation — Effect is never player-facing as a family name.** It names the atoms only. The two-level ambiguity, where \"effects\" means both the primitives *and* the family of things assembled from them, is exactly what `[[Power]]` was minted to prevent: **\"Effects\" was considered as the family name and rejected** (ratified 2026-08-25). When you mean the things a bearer holds, say power, possession, or attachment; reserve *effect* for the primitive.",
+      "seeAlso": [
+        {
+          "raw": "Attachment",
+          "termName": "Attachment",
+          "resolvedSlug": "traits#attachment"
+        },
+        {
+          "raw": "Power",
+          "termName": "Power",
+          "resolvedSlug": "traits#power"
+        },
+        {
+          "raw": "Trait",
+          "termName": "Trait",
+          "resolvedSlug": "traits#trait"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Traits.md#effect",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "traits",
+      "slug": "power",
+      "name": "Power",
+      "aliases": [
+        "the Power family"
+      ],
+      "status": "canonical",
+      "oneLiner": "player-facing family name for a carried, capability-granting thing: spell, bestowal, innate power; a conceptual family, not an `AttachmentCategory`",
+      "body": "The **player-facing family name** for a carried, capability-granting thing an entity holds — an `[[Agent]]`, `[[The First]]`, a monster, a faction. A power expands what its bearer can do. Three variants: `[[Spell]]` (learned from a tradition), `[[Bestowal]]` (god-given), `[[Innate Power]]` (anatomy).\n\nA power is **not** a possession, a condition, or an agreement, though it shares the `[[Attachment]]` substrate with all three and is built from the same `[[Effect]]` primitives.\n\n**Power is a conceptual family, not a code identifier — there is no `'power'` `AttachmentCategory`.** Its variants sit as *sibling* category members (`'spell'`, `'bestowed_power'`), so nothing in the union corresponds to the family as a whole; code that means \"any power\" enumerates the variants rather than reaching for one name. Content and UI say *power*; the type layer keeps the variants.",
+      "seeAlso": [
+        {
+          "raw": "Spell",
+          "termName": "Spell",
+          "resolvedSlug": "traits#spell"
+        },
+        {
+          "raw": "Bestowal",
+          "termName": "Bestowal",
+          "resolvedSlug": "traits#bestowal"
+        },
+        {
+          "raw": "Innate Power",
+          "termName": "Innate Power",
+          "resolvedSlug": "traits#innate-power"
+        },
+        {
+          "raw": "Attachment",
+          "termName": "Attachment",
+          "resolvedSlug": "traits#attachment"
+        },
+        {
+          "raw": "Effect",
+          "termName": "Effect",
+          "resolvedSlug": "traits#effect"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Traits.md#power",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "traits",
+      "slug": "spell",
+      "name": "Spell",
+      "aliases": [
+        "the `'spell'` `AttachmentCategory`"
+      ],
+      "status": "canonical",
+      "oneLiner": "a Power learned from a magic tradition; carries an agency, an arena, and a price",
+      "body": "A `[[Power]]` a caster **learns from a magic tradition**. Casters are an earned identity, never a starting class — a mortal becomes one through the world, which is what keeps spells story-priced rather than character-sheet-priced.\n\nThree authored axes carry a spell's design: **agency** (fate-woven or deliberate), **arena** (encounter or map), and **price** (free → strain → gamble → transgression). Code anchor: the `'spell'` member of `AttachmentCategory`.",
+      "seeAlso": [
+        {
+          "raw": "Power",
+          "termName": "Power",
+          "resolvedSlug": "traits#power"
+        },
+        {
+          "raw": "Bestowal",
+          "termName": "Bestowal",
+          "resolvedSlug": "traits#bestowal"
+        },
+        {
+          "raw": "Innate Power",
+          "termName": "Innate Power",
+          "resolvedSlug": "traits#innate-power"
+        },
+        {
+          "raw": "Attachment",
+          "termName": "Attachment",
+          "resolvedSlug": "traits#attachment"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Traits.md#spell",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "traits",
+      "slug": "bestowal",
+      "name": "Bestowal",
+      "aliases": [
+        "bestowed power",
+        "the `'bestowed_power'` `AttachmentCategory`"
+      ],
+      "status": "canonical",
+      "oneLiner": "a god-given Power; player-facing name for the `bestowed_power` kind, whose code identifier stays; not the `bestowed` trait category",
+      "body": "A **god-given** `[[Power]]`. This is the player-facing rename of the existing `bestowed_power` attachment kind: **the code identifier stays**, and this entry is the mapping between them. Prose and UI say *bestowal*; the union member is still `'bestowed_power'`, so a rename ticket is not implied by this vocabulary landing.\n\n**Do not confuse a bestowal with the `bestowed` `[[Trait Category]]`.** They share the god-grants-it-and-can-revoke-it fiction but sit on different layers: a bestowed *trait* is a name the world recognizes, inert on its bearer; a bestowal is a power carrying `[[Effect]]`s of its own.",
+      "seeAlso": [
+        {
+          "raw": "Power",
+          "termName": "Power",
+          "resolvedSlug": "traits#power"
+        },
+        {
+          "raw": "Spell",
+          "termName": "Spell",
+          "resolvedSlug": "traits#spell"
+        },
+        {
+          "raw": "Innate Power",
+          "termName": "Innate Power",
+          "resolvedSlug": "traits#innate-power"
+        },
+        {
+          "raw": "Trait Category",
+          "termName": "Trait Category",
+          "resolvedSlug": "traits#trait-category"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Traits.md#bestowal",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "traits",
+      "slug": "innate-power",
+      "name": "Innate Power",
+      "aliases": [
+        "innate ability"
+      ],
+      "status": "canonical",
+      "oneLiner": "a Power that is anatomy, stamped at seeding; no code anchor yet, and not the `innate` trait category",
+      "body": "A `[[Power]]` that is **anatomy**: stamped at seeding on monsters and unusual beings, with no learning fiction behind it. Nothing was taught and nothing was granted — the bearer simply is the kind of thing that can do this.\n\n**No code anchor yet.** Unlike its two siblings there is no `AttachmentCategory` member for it as of this entry's landing (2026-08-25); the term is ratified vocabulary awaiting implementation, so content that means it should not reach for an existing category as a stand-in.\n\n**Do not confuse it with the `innate` `[[Trait Category]]`**, which is a worldgen-minted, permanent *trait* class. The collision is exact in wording and empty in substance: one is a name minted at worldgen, the other a capability stamped at seeding.",
+      "seeAlso": [
+        {
+          "raw": "Power",
+          "termName": "Power",
+          "resolvedSlug": "traits#power"
+        },
+        {
+          "raw": "Spell",
+          "termName": "Spell",
+          "resolvedSlug": "traits#spell"
+        },
+        {
+          "raw": "Bestowal",
+          "termName": "Bestowal",
+          "resolvedSlug": "traits#bestowal"
+        },
+        {
+          "raw": "Trait Category",
+          "termName": "Trait Category",
+          "resolvedSlug": "traits#trait-category"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Traits.md#innate-power",
       "contentAdjacent": true
     },
     {
