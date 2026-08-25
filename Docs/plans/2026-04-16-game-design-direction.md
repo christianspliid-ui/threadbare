@@ -238,6 +238,8 @@ The world must feel vibrant and alive *independently of the player*. This is not
 
 ### Existing Benchmarks (what's closest to working)
 
+*Superseded 2026-08-25 (THR-1252).* Both benchmarks below are described in their pre-nudge shape — "narrative choices" and "branching encounter through choices" are the rejected authored-futures model; Meet The First has been nudge-native since WS6 (THR-868), and the current quality bar is the Swollen Ford exemplar + Prose Doctrine v2 (`Docs/exemplars.md`). The *aspiration* the closing sentence names — prose, meaningful interaction, identity-and-relationship payoff — still stands; the choice mechanics named here do not.
+
 Two features in the current prototype are closest to delivering the real game experience:
 
 - **Character creation (Remembrance)** — the player gets prose, makes choices with ambiguity, and the payoff is the definition of their divine identity. It has story, interaction, and consequence.

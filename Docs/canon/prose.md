@@ -187,7 +187,7 @@ The THR-1101 rewrite campaign logged ~13 false-signal impediments in one week fr
 ## Open questions
 
 - **Prose exemplar** — *resolved (THR-609):* `Docs/exemplars.md` now carries inline baseline-register and peak-register prose exemplars showing the register contrast. A promoted *content-table* exemplar (e.g. a single high-quality `BIOME_PROSE` entry, an enrichment-aware vignette) is still welcome when one ships, but the standalone-prose row is no longer a placeholder.
-- **Vault Systems freshness** — `Obsidian → Systems/Tonal Bible.md` and `Systems/Narrative Engine.md` may lag code. The first agent who touches them should verify against this page and the UL Prose shard, then either update them or open a `drift-scan` issue.
+- **Vault Systems freshness** — *resolved (THR-1252, 2026-08-25):* `Tonal Bible.md` carries a supersede banner on its tone samples (+ v2 replacement samples) and amended tone bullets; `Narrative Engine.md` and `Encounter System.md` carry supersede banners pointing here and at the encounters canon; the Cheat Sheet's prose style guide is deleted in favor of this page. The vault pages are historical context; this page and the spec are the live authority.
 - **`success_at_cost` outcome wiring** — the outcome ladder includes `success_at_cost`; runtime support is partial (Phase 3). Author content with it in mind; verify before relying on it.
 - **Routine prose `ShapedTemplate` coverage** — target is 5 shapes (`svo | aftermath | inverted | compound | fragment`) per event type. Current pool coverage is uneven; new templates should fill the gap.
 
