@@ -30,6 +30,8 @@ import {
   checkCompositionContract,
   isPersistentEffectKind,
   systemConnections,
+  isAdditiveConditionEffectKind,
+  reachableConditionWritesCannotFire,
   systemSurfacesForOutcome,
 } from '../compositionContract';
 import { RETROFIT_PENDING, isRetrofitPending } from '../retrofitPending';
@@ -385,5 +387,148 @@ describe('systemSurfacesForOutcome', () => {
         if (surfaced) expect(union.has(system)).toBe(true);
       }
     }
+  });
+});
+
+
+// ─── THR-1221 — a write that could not fire is not a missing write ───
+
+describe('reachableConditionWritesCannotFire', () => {
+  /**
+   * The `toll_of_blades` shape: a `continue_weakened` step whose
+   * `failureMetadata` mints a condition, plus a fallback reaction carrying only
+   * a removal. Both are band-agnostic, so both are "reachable" on every band.
+   */
+  const tollShape = {
+    id: 'encounter.test.toll_shape',
+    steps: [
+      {
+        failBehavior: 'continue_weakened',
+        failureMetadata: {
+          effects: [
+            { kind: 'apply_condition', conditionTraitId: 'trait.condition.exhausted' },
+          ],
+        },
+      },
+    ],
+    aftermathConfig: {
+      branchOnStep: 0,
+      variants: {},
+      fallback: {
+        changes: [],
+        reactions: [
+          {
+            id: 'r.let_them_rest',
+            effects: [
+              { kind: 'remove_condition', conditionTraitId: 'trait.condition.exhausted' },
+            ],
+          },
+        ],
+        byOutcome: {},
+      },
+    },
+  } as unknown as UnifiedActionTemplate;
+
+  it('skips when no step failed: the mint never fired and the removal owes nothing', () => {
+    expect(
+      reachableConditionWritesCannotFire(tollShape, 'success_at_cost', 'r.let_them_rest', false),
+    ).toBe(true);
+  });
+
+  it('ASSERTS when a step did fail, because the mint was in a position to fire', () => {
+    // The falsifying arm. Without it the predicate could return true
+    // unconditionally and the test above would still pass.
+    expect(
+      reachableConditionWritesCannotFire(tollShape, 'success_at_cost', 'r.let_them_rest', true),
+    ).toBe(false);
+  });
+
+  it('ASSERTS when a reachable reaction adds a condition outright', () => {
+    const additiveReaction = {
+      id: 'encounter.test.additive',
+      steps: [],
+      aftermathConfig: {
+        branchOnStep: 0,
+        variants: {},
+        fallback: {
+          changes: [],
+          reactions: [
+            {
+              id: 'r.mark_them',
+              effects: [
+                { kind: 'apply_condition', conditionTraitId: 'trait.condition.wounded' },
+              ],
+            },
+          ],
+          byOutcome: {},
+        },
+      },
+    } as unknown as UnifiedActionTemplate;
+    expect(
+      reachableConditionWritesCannotFire(additiveReaction, 'success', 'r.mark_them', false),
+    ).toBe(false);
+  });
+
+  it('ignores a trait chip authored on a band this run did not roll', () => {
+    // The bug the first draft of this predicate had: a `trait` change on a
+    // failure band made it answer "assert" on a success run that could never
+    // reach that chip.
+    const bandedChip = {
+      id: 'encounter.test.banded_chip',
+      steps: [
+        {
+          failBehavior: 'continue_weakened',
+          failureMetadata: {
+            effects: [
+              { kind: 'apply_condition', conditionTraitId: 'trait.condition.exhausted' },
+            ],
+          },
+        },
+      ],
+      aftermathConfig: {
+        branchOnStep: 0,
+        variants: {},
+        fallback: {
+          changes: [],
+          reactions: [],
+          byOutcome: {
+            critical_failure: { changes: [{ kind: 'trait' }], reactions: [] },
+          },
+        },
+      },
+    } as unknown as UnifiedActionTemplate;
+    expect(reachableConditionWritesCannotFire(bandedChip, 'success_at_cost', undefined, false))
+      .toBe(true);
+    // …and the same chip on its own band is asserted.
+    expect(reachableConditionWritesCannotFire(bandedChip, 'critical_failure', undefined, false))
+      .toBe(false);
+  });
+
+  it('returns false when the template authors no condition write at all', () => {
+    const noConditions = {
+      id: 'encounter.test.no_conditions',
+      steps: [],
+      aftermathConfig: {
+        branchOnStep: 0,
+        variants: {},
+        fallback: { changes: [{ kind: 'item' }], reactions: [], byOutcome: {} },
+      },
+    } as unknown as UnifiedActionTemplate;
+    expect(reachableConditionWritesCannotFire(noConditions, 'success', undefined, false)).toBe(false);
+  });
+});
+
+describe('isAdditiveConditionEffectKind', () => {
+  it('counts the kinds an author decides will land', () => {
+    expect(isAdditiveConditionEffectKind('apply_condition')).toBe(true);
+    expect(isAdditiveConditionEffectKind('condition_attachment')).toBe(true);
+  });
+
+  it('excludes remove_condition, which traces success having removed nothing', () => {
+    expect(isAdditiveConditionEffectKind('remove_condition')).toBe(false);
+  });
+
+  it('excludes kinds that are not condition writes', () => {
+    expect(isAdditiveConditionEffectKind('quintessence_shift')).toBe(false);
   });
 });

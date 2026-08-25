@@ -969,6 +969,17 @@ interface LocatedAuthoring {
   readonly reactionId?: string;
   /** `undefined` = variant-level, so every band reaches it. */
   readonly band?: UnifiedActionOutcome;
+  /**
+   * The condition-effect kinds this entry contributes, when it contributes any.
+   *
+   * The `systems` list alone cannot tell an *additive* condition write from a
+   * *removal* — both contribute `'conditions'`. `undefined` on a
+   * `'conditions'` entry means the contribution is an authored aftermath
+   * `change`, which states outright that a trait moved.
+   */
+  readonly conditionKinds?: readonly string[];
+  /** Authored in a step's `failureMetadata`, so it fires only if that step failed. */
+  readonly fromFailureMetadata?: boolean;
 }
 
 /**
@@ -981,6 +992,23 @@ interface LocatedAuthoring {
  */
 export function isPersistentEffectKind(kind: string): boolean {
   return PERSISTENT_EFFECT_KINDS.has(kind);
+}
+
+/**
+ * Whether an effect kind *adds* a condition, as opposed to lifting one.
+ *
+ * Exported for the same reason as {@link isPersistentEffectKind}: a condition
+ * promised as an aftermath *effect* lands on the effect's own trace and leaves
+ * `aftermathSummary.changes` untouched, so a stage reading only the authored
+ * changes reports an arrived condition as missing (THR-1132's lesson, which was
+ * applied to rewards and never to conditions — THR-1221).
+ *
+ * `remove_condition` is deliberately excluded. It traces `success: true` having
+ * removed zero edges when the target carries nothing, so counting it as arrival
+ * evidence would let a no-op launder itself into a pass.
+ */
+export function isAdditiveConditionEffectKind(kind: string): boolean {
+  return CONDITION_EFFECT_KINDS.has(kind) && kind !== 'remove_condition';
 }
 
 /** Which connections one effect contributes. Mirrors {@link systemConnections}'s arms. */
@@ -1017,16 +1045,28 @@ function locatedAuthoring(template: UnifiedActionTemplate): readonly LocatedAuth
     systems: readonly SystemConnection[],
     reactionId?: string,
     band?: UnifiedActionOutcome,
+    tags?: { conditionKinds?: readonly string[]; fromFailureMetadata?: boolean },
   ): void => {
-    if (systems.length > 0) out.push({ systems, reactionId, band });
+    if (systems.length > 0) out.push({ systems, reactionId, band, ...tags });
   };
+
+  /** Tags one effect with its condition kind, so a removal is distinguishable. */
+  const effectTags = (
+    effect: EncounterAftermathReactionEffect,
+    fromFailureMetadata = false,
+  ): { conditionKinds?: readonly string[]; fromFailureMetadata?: boolean } =>
+    CONDITION_EFFECT_KINDS.has(effect.kind)
+      ? { conditionKinds: [effect.kind], fromFailureMetadata }
+      : { fromFailureMetadata };
 
   for (const variant of aftermathVariants(template)) {
     // Same `?? []` guard as `allAftermathChanges`, for the same reason: the red
     // baseline lets a mis-shaped variant compile with no `changes` (THR-1054).
     for (const change of variant.changes ?? []) push(systemsOfChange(change));
     for (const reaction of variant.reactions ?? []) {
-      for (const effect of reaction.effects) push(systemsOfEffect(effect), reaction.id);
+      for (const effect of reaction.effects) {
+          push(systemsOfEffect(effect), reaction.id, undefined, effectTags(effect));
+        }
     }
     for (const [band, override] of Object.entries(variant.byOutcome ?? {})) {
       const outcome = band as UnifiedActionOutcome;
@@ -1034,7 +1074,9 @@ function locatedAuthoring(template: UnifiedActionTemplate): readonly LocatedAuth
         push(systemsOfChange(change), undefined, outcome);
       }
       for (const reaction of override?.reactions ?? []) {
-        for (const effect of reaction.effects) push(systemsOfEffect(effect), reaction.id, outcome);
+        for (const effect of reaction.effects) {
+            push(systemsOfEffect(effect), reaction.id, outcome, effectTags(effect));
+          }
       }
     }
   }
@@ -1061,13 +1103,17 @@ function locatedAuthoring(template: UnifiedActionTemplate): readonly LocatedAuth
   // into a pass. It is also the only case where the implication actually holds.
   const failureOnlyBands = FAILURE_BANDS;
   for (const step of plainSteps(template)) {
-    for (const effect of step.successMetadata?.effects ?? []) push(systemsOfEffect(effect));
+    for (const effect of step.successMetadata?.effects ?? []) {
+      push(systemsOfEffect(effect), undefined, undefined, effectTags(effect));
+    }
     const failureResolvesAction = step.failBehavior === 'fail_action';
     for (const effect of step.failureMetadata?.effects ?? []) {
       if (failureResolvesAction) {
-        for (const band of failureOnlyBands) push(systemsOfEffect(effect), undefined, band);
+        for (const band of failureOnlyBands) {
+          push(systemsOfEffect(effect), undefined, band, effectTags(effect, true));
+        }
       } else {
-        push(systemsOfEffect(effect));
+        push(systemsOfEffect(effect), undefined, undefined, effectTags(effect, true));
       }
     }
     if (step.successMetadata?.rewardPool) push(['rewards']);
@@ -1081,6 +1127,63 @@ function locatedAuthoring(template: UnifiedActionTemplate): readonly LocatedAuth
   }
 
   return out;
+}
+
+/**
+ * Whether no condition write this run could reach was in a position to fire.
+ *
+ * {@link systemSurfacesForOutcome} narrows "authored anywhere" to "authored
+ * where this run's band and reaction reach it", which is the right question for
+ * every other claim. For conditions it is still too generous, in two ways that
+ * both report correct engine behaviour as a missing write:
+ *
+ * - **A removal is not a promise.** `remove_condition` lifts a condition *if the
+ *   target carries one*, and traces `success: true` having removed zero edges
+ *   when it does not. Nothing is owed, so nothing can be missing.
+ * - **`failureMetadata` fires on its own step's failure.** On a
+ *   `continue_weakened` step that write is correctly band-agnostic — a failed
+ *   step still lands on a success-side band — but a history in which *no* step
+ *   failed provably never fired it. Which step outcomes a run rolled is runtime
+ *   knowledge, so the caller passes `anyStepFailed` in.
+ *
+ * THR-1221 measured this on `encounter.border.toll_of_blades`: seed 42 rolls a
+ * pure `near_miss` history, which aggregates to `success_at_cost` without any
+ * step failing, so the `exhausted` mint on step 1 never fired and the reaction's
+ * `remove_condition` correctly found nothing to lift. Every condition write the
+ * run could reach was one of those two cases, and the claim read the pair as an
+ * undelivered promise.
+ *
+ * This is a **tightening**: it only ever moves a claim from asserted to skipped,
+ * and only when *every* reachable write is unassertable — one reachable
+ * `apply_condition` on a fired path returns `false` and keeps the claim strict.
+ *
+ * Returns `false` when no condition write is reachable at all; the caller's own
+ * scope check already reports that case, and answering `true` would let
+ * "nothing authored" borrow this skip's reason.
+ */
+export function reachableConditionWritesCannotFire(
+  template: UnifiedActionTemplate,
+  outcome: UnifiedActionOutcome | undefined,
+  appliedReactionId: string | undefined,
+  anyStepFailed: boolean,
+): boolean {
+  let sawReachable = false;
+  for (const entry of locatedAuthoring(template)) {
+    if (!entry.systems.includes('conditions')) continue;
+    const reachesBand = entry.band === undefined || outcome === undefined || entry.band === outcome;
+    if (!reachesBand) continue;
+    // A reaction-borne write is reachable only when this run picked that reaction.
+    if (entry.reactionId !== undefined && entry.reactionId !== appliedReactionId) continue;
+    sawReachable = true;
+
+    // `undefined` kinds = an authored `change`, which states a trait moved.
+    const additive = entry.conditionKinds === undefined
+      || entry.conditionKinds.some(isAdditiveConditionEffectKind);
+    if (!additive) continue;                            // removal — promises nothing
+    if (entry.fromFailureMetadata === true && !anyStepFailed) continue;  // never fired
+    return false;                                       // could have fired — assert it
+  }
+  return sawReachable;
 }
 
 /**
