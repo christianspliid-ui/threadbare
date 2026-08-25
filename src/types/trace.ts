@@ -438,7 +438,13 @@ export type TraceCategory =
   | 'chronicle.aggregated'
   | 'chronicle.aggregate_failed'
   | 'naming.constrained_reject'
-  | 'rival.scheme_phase_advanced';
+  | 'rival.scheme_phase_advanced'
+  // Effect vocabulary activation (THR-1239)
+  | 'effect.event_raised'
+  | 'effect.charge_spent'
+  // Overlay / rule-override persistence (THR-1240)
+  | 'effect.overlay_applied'
+  | 'effect.overlay_expired';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'edge_schema_refused',
@@ -796,6 +802,10 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'chronicle.aggregate_failed',
   'naming.constrained_reject',
   'rival.scheme_phase_advanced',
+  'effect.event_raised',
+  'effect.charge_spent',
+  'effect.overlay_applied',
+  'effect.overlay_expired',
 ];
 
 /** Base shape for all trace entries */
@@ -826,6 +836,71 @@ export interface EdgeSchemaRefusedTrace extends TraceBase {
   /** Resolved node types; `undefined` when the node did not exist. */
   sourceNodeType?: string;
   targetNodeType?: string;
+}
+
+// ─── Effect vocabulary activation (THR-1239) ────────────────────────
+//
+// Categories are dotted (`effect.*`), matching the `chronicle.*` / `naming.*` /
+// `rival.*` precedent. They are deliberately NOT folded into `effect_reaction`:
+// that category carries action-trigger firings, and an event *raise* is a
+// different question ("did the production site fire at all?") from a reaction
+// ("did an attachment respond?"). Answering the first from the second is exactly
+// the confusion the raise sites were added to end.
+
+/**
+ * Trace: a production site raised an `EffectEvent` for an agent.
+ *
+ * `reactivesFired` is the payload the raise actually produced — a raise that
+ * fires with `reactivesFired: 0` still proves the site is live, which is the
+ * distinction a dead executor family could not previously be diagnosed against.
+ */
+export interface EffectEventRaisedTrace extends TraceBase {
+  category: 'effect.event_raised';
+  /** The `EffectEvent['type']` raised — e.g. 'entered_hex', 'combat_started'. */
+  event: string;
+  agentId: string;
+  /** How many reactive effects the event triggered on this agent. */
+  reactivesFired: number;
+  /** The site that raised it, so the producer is one grep away. */
+  site: string;
+}
+
+/** Trace: a `consumable_charge` charge was spent on a matching-reach step. */
+export interface EffectChargeSpentTrace extends TraceBase {
+  category: 'effect.charge_spent';
+  attachmentId: string;
+  attachmentName: string;
+  /** Bearer of the attachment (the agent who completed the step). */
+  agentId: string;
+  /** Reach of the step that consumed the charge. */
+  reach: string;
+  chargesRemaining: number;
+  /** True when this spend emptied the attachment and `destroyOnEmpty` is set. */
+  destroyed: boolean;
+}
+
+/**
+ * Trace: a terrain overlay or rule override was persisted, or expired off.
+ *
+ * These are the two halves of one lifecycle and share a shape deliberately — the
+ * question a reader asks of the buffer is "what is currently in force on this hex
+ * / this agent, and when does it lift?", which is answered by pairing an
+ * `applied` against its `expired`. Splitting them into unrelated shapes would
+ * make that pairing a join rather than a filter.
+ *
+ * `key` is the collection key, not the source: `hexKey(col, row)` for a terrain
+ * overlay, the agent id for a rule override.
+ */
+export interface EffectOverlayTrace extends TraceBase {
+  category: 'effect.overlay_applied' | 'effect.overlay_expired';
+  kind: 'terrain' | 'rule';
+  /** `hexKey(col,row)` for terrain, agent id for rule. */
+  key: string;
+  /** `TerrainOverlayType` for terrain, `RuleOverrideKey` for rule. */
+  overlay: string;
+  sourceAttachmentId: string;
+  /** Ticks left at emit time; 0 on expiry, and on an overlay dropped fail-soft. */
+  ticksRemaining: number;
 }
 
 export interface TraceBase {
@@ -2471,6 +2546,10 @@ export type TraceEntry =
   | FactionAwarenessTrace
   | CacheUpdateTrace
   | EdgeSchemaRefusedTrace
+  // Effect vocabulary activation (THR-1239)
+  | EffectEventRaisedTrace
+  | EffectChargeSpentTrace
+  | EffectOverlayTrace
   | FilterPipelineTrace
   | ScoringTrace
   | MovementTrace

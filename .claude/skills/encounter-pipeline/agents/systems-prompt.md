@@ -18,7 +18,7 @@ Also read these source files to understand current runtime capabilities:
 - `src/engine/encounter.ts`
 - `src/engine/unifiedActionLifecycle.ts`
 - `src/engine/unifiedActionResolution.ts`
-- `src/data/unified-action-templates.ts` (imports + registration pattern)
+- `src/data/unified-action-templates.ts` (what already exists — registration itself is compiler-owned since THR-1246, so audit against it, never plan edits to it)
 - `src/data/encounters/flawed-steel.ts` (canonical branching example)
 - `Docs/encounter-building-checklist.md` (support bundle and primitive-gap rules)
 
@@ -55,7 +55,7 @@ You write TWO files:
 
 5. **New Hooks Needed** — New roles, sublocation types, state fields, content entries. Scope estimate for each.
 
-6. **Implementation File Map** — Every file to create/modify (content, engine, types, tests).
+6. **Implementation File Map** — Every file to create/modify **beyond the compiled set** (engine hooks, types, new primitives, art). The standard content files are fixed by `compile:encounter` (THR-1246): the package at `Docs/plans/encounters/<slug>.package.json` compiles into the encounter module, its structural test, and both registrations — do not list those as hand-edits.
 
 7. **Verdict** — One of:
    - **READY FOR IMPLEMENTATION** — can be implemented now

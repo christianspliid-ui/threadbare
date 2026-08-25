@@ -117,6 +117,20 @@ stay 🔴 LEAKED for the halves THR-723 deliberately did not take: the resolver 
 production caller**, a design call deferred to **THR-996**, and the reach-keyed *seed* writes
 in `gameInit.ts`/`seedAttachments.ts` remain, deferred to **THR-997**).
 
+One contract added since that audit, **`attachment-effect-event-raises`** (THR-1239,
+2026-08-25) — game events reaching the event-triggered effect primitives (`reactive`,
+`until_event`, `stacking`, `transform`, one-shot `resource_manipulate`). It is 🟢 LIVE and was
+never LEAKED, but it earns a line here for *how* it was broken: the consumer half
+(`processEffectEvent`) was fully live and correct, and the producer half was almost entirely
+absent — outside a single `encounter_outcome` raise inside the orchestrator, no site in the
+engine ever constructed an `EffectEvent`, so the whole executor family was unreachable in
+normal play while every part of it read as wired. **A one-sided contract with a healthy
+consumer is the hardest shape for this map to catch**, because every symbol an audit greps
+for exists. Producers are now `phaseMovement`, `battleResolution`, `orchestrator` and
+`phaseDoom`, all through one `raiseEffectEvent`, and each raise emits `effect.event_raised`
+carrying its site — including when nothing was listening, which is the signal that separates
+a live-but-unheard producer from an unwired one.
+
 **Personality & Emergent Traits** — first slice, 2 contracts, audited 2026-07-26 (THR-786),
 audit-on-touch triggered by the trait-predicate unification. `trait-predicate-resolution` is
 🟢 LIVE: all six trait-predicate read sites (encounter filter pipeline, effect-predicate

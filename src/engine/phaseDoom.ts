@@ -11,6 +11,7 @@ import type { HexMutation } from '../types/hexMutation';
 import { advanceDoomClock } from './doomClock';
 import { evaluateIdentityMilestones } from './doomIdentityMilestones';
 import { processEffectEvent, applyEffectEventResult } from './effects/effectEvents';
+import { applyExecutionResult } from './effects/effectEventDispatch';
 import { executeEffect } from './effectExecutors';
 import { instantiateReward } from './rewardPool';
 import { collectAttachmentEffects } from './effects/effectWalker';
@@ -264,14 +265,12 @@ function fireDoomThresholdEffects(
         tick: state.tick,
         graph: state.graph,
       });
-      for (const mut of execResult.mutations) {
-        try {
-          if (mut.type === 'add_node' && mut.data) state.graph.addNode(mut.data as import('../types/graph').GraphNode);
-          else if (mut.type === 'remove_node' && mut.nodeId) state.graph.removeNode(mut.nodeId);
-          else if (mut.type === 'add_edge' && mut.data) state.graph.addEdge(mut.data as import('../types/graph').GraphEdge);
-          else if (mut.type === 'remove_edge' && mut.edgeId) state.graph.removeEdge(mut.edgeId);
-        } catch { /* fail-soft */ }
-      }
+      // THR-1240: migrated off this phase's own copy of the mutation loop onto
+      // the shared applier, which also persists the terrain overlays and rule
+      // overrides the inline copy dropped. There is now one apply path, so a
+      // future ExecutionResult field cannot be honoured at one site and
+      // discarded at the other — which is exactly how these two fields died.
+      applyExecutionResult(state, execResult, state.tick);
       for (const trace of execResult.traces) {
         emitTrace(trace as unknown as TraceEntry);
       }
@@ -280,6 +279,20 @@ function fireDoomThresholdEffects(
     for (const trace of eventResult.traces) {
       emitTrace(trace as unknown as TraceEntry);
     }
+
+    // THR-1239: every raise site traces. A doom raise fans out over every agent,
+    // so this is the one place `effect.event_raised` is high-volume — it is still
+    // worth it, because "the doom threshold fired and nothing was listening" and
+    // "the doom threshold never fired" are otherwise indistinguishable.
+    emitTrace({
+      category: 'effect.event_raised',
+      tick: state.tick,
+      agentId: agent.id,
+      event: 'doom_threshold',
+      reactivesFired: eventResult.reactivesFired.length,
+      site: 'doom_threshold',
+      summary: `doom_threshold raised at doom_threshold for ${agent.id} (${eventResult.reactivesFired.length} reactive${eventResult.reactivesFired.length === 1 ? '' : 's'} fired)`,
+    } as TraceEntry);
   }
 
   return states;

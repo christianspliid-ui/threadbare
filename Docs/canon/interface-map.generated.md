@@ -15,12 +15,12 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 51 |
+| 🟢 LIVE | 53 |
 | 🟠 PARTIAL | 2 |
 | 🔴 LEAKED | 7 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 14 |
-| **Total** | **74** |
+| **Total** | **76** |
 
 ## Contracts by producing subsystem
 
@@ -58,6 +58,7 @@ remediation ticket or the build fails.
 | `attachment-character-sheet-display` | The character sheet shows what an agent carries. | function: `getAgentAttachments` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 | `attachment-domain-contributions` | Items raise Domain Capability tiers — a legendary blade makes its bearer mightier on the Prowess tab and in encounter eligibility. | node-prop: `stat_contribution`, `collectStatContributions`, `domainContributions` | Personality & Emergent Traits | 🟢 LIVE | — |
 | `attachment-edge-modifiers` | Items modify agent attributes ("+0.15 star" on the Starweave Cloak). | edge-prop: `collectModifiers`, `getModifiedValue` | Personality & Emergent Traits | 🔴 LEAKED | THR-997 |
+| `attachment-effect-event-raises` | Game events reach event-triggered effect primitives (reactive, until_event, stacking, transform, one-shot resource_manipulate) on the agents they happen to. | function: `raiseEffectEvent`, `processEffectEvent` | Effects & Conditions | 🟢 LIVE | — |
 | `attachment-effects-shape-resolution` | Items shape action resolution rolls — a blade makes its bearer likelier to succeed. | node-prop: `collectAttachmentEffects`, `collectTestShapers` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `attachment-effects-tick` | Effects tick, decay, stack and expire on their host agent. | function: `effectTick`, `effectShellRuntime` | Effects & Conditions | 🟢 LIVE | — |
 | `attachment-grants-trait-while-held` | Items grant traits while held, gating encounter eligibility (treasure-map, ruin_seeker). | node-prop: `grantsTraitWhileHeld` | Encounters & Dilemmas | 🟢 LIVE | — |
@@ -90,6 +91,12 @@ remediation ticket or the build fails.
 | `reunion-reads-the-edges-not-the-roster` | Who once rode with a company survives its ending — the record is the membership edges dissolution stamped, never the roster it emptied. | property: `leftAtTick` | Companies & Group Travel | 🟢 LIVE | — |
 | `reunite-rides-draw-together-convergence` | A god calling a dead company back does not invent a new kind of pull — the scattered feel exactly the tug Draw Together uses, so their own encounter choices bend homeward. | property: `convergePullHexCol`, `convergePullHexRow`, `convergePullUntilTick` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `sunder-window-amplifies-company-decay` | A sundered company comes apart faster and more visibly — quarrels bite harder, people leave sooner, and the drama pool starts telling the story before the numbers justify it. | function: `isGroupSundered` | Companies & Group Travel | 🟢 LIVE | — |
+
+### Effects & Conditions
+
+| Contract | Intent | Mechanism | Consumer | Status | Ticket |
+|---|---|---|---|---|---|
+| `effect-executor-overlay-persistence` | Terrain overlays and rule overrides an executor produces are persisted on GameState, expire on schedule, and are readable by the systems they govern. | function: `applyExecutionOverlays`, `expireOverlays`, `getPersistedRuleOverride` | Effects & Conditions | 🟢 LIVE | — |
 
 ### Encounters & Dilemmas
 
@@ -271,10 +278,10 @@ remediation ticket or the build fails.
 - **Intent:** Items raise Domain Capability tiers — a legendary blade makes its bearer mightier on the Prowess tab and in encounter eligibility.
 - **Producer → Consumer:** Attachments, Items & Possessions → Personality & Emergent Traits
 - **UL terms:** *Domain Capability*, *Attachment*
-- **Production hits:** 42 total — 4 write, 2 read, 36 unclassified
+- **Production hits:** 43 total — 4 write, 2 read, 37 unclassified
 - **Write sites:** `src/data/anomaly-reward-catalog.ts`, `src/data/artifact-templates.ts`, `src/data/reward-attachment-catalog.ts`, `src/data/starter-attachments.ts`
 - **Read sites:** `src/engine/domainCapability.ts`, `src/engine/effects/effectQueries.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/Codex/codexRegistry.ts`, `src/components/Game/AgentDetailPanel.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx`, `src/data/action-technical-effects.ts` +31 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/Codex/codexRegistry.ts`, `src/components/Game/AgentDetailPanel.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx`, `src/data/action-technical-effects.ts` +32 more
 - **Verdict:** Verified 2026-07-24: THR-718 finished the effects[] migration: a `stat_contribution` primitive (effects.ts) is summed by `collectStatContributions` (effectQueries.ts) and added inside `computeRawScore`'s possesses/bonded_to artifact walk (domainCapability.ts). 9 catalog entries across all bands carry real contributions (artifact-templates ×3 legendary, starter ×4, anomaly ×2) — both-side symbol hits: `stat_contribution` on write (catalogs) + read (effectQueries), `collectStatContributions` on read (domainCapability + effectQueries). Legacy `domainContributions` node-prop read preserved for traits/resources. Unit + hook + content-band tests green.
 
 ### `attachment-edge-modifiers` — 🔴 LEAKED
@@ -287,13 +294,26 @@ remediation ticket or the build fails.
 - **Read sites:** `src/engine/visibility.ts`
 - **Verdict:** Pinned by badgeOverride: The module has exactly one production importer (visibility.ts, `getModifiedValue`) and it only ever asks for `los_range`. Capability attributes are written but never queried — argument-level deadness a symbol check cannot see. THR-723 (2026-08-06) removed one writer: `attachmentTierAdvancement` no longer scales Reach-domain keys, only non-Reach ones like `los_range`. The seed writers remain — `gameInit.ts` (4 First-agent possessions) and `seedAttachments.ts` still stamp reach-keyed bags nothing reads — so the row stays LEAKED, now deferred to THR-997.
 
+### `attachment-effect-event-raises` — 🟢 LIVE
+
+- **Intent:** Game events reach event-triggered effect primitives (reactive, until_event, stacking, transform, one-shot resource_manipulate) on the agents they happen to.
+- **Producer → Consumer:** Attachments, Items & Possessions → Effects & Conditions
+- **Production hits:** 9 total — 4 write, 2 read, 3 unclassified
+- **Write sites:** `src/engine/battleResolution.ts`, `src/engine/orchestrator.ts`, `src/engine/phaseDoom.ts`, `src/engine/phaseMovement.ts`
+- **Read sites:** `src/engine/effects/effectEventDispatch.ts`, `src/engine/effects/effectEvents.ts`
+- **Other hits:** `src/engine/effects/effectOverlayStore.ts`, `src/engine/effects/index.ts`, `src/engine/effectTick.ts`
+- **Verdict:** Verified 2026-08-25: THR-1239. The consumer half was always live and the producer half was almost entirely missing: outside the single encounter_outcome raise in the orchestrator, no site in the engine ever constructed an EffectEvent, so the whole executor family (teleport, spawn, compel, cascade, ...) was unreachable in normal play while looking wired. Movement arrival now raises entered_hex and battle create/resolve raise combat_started/combat_ended, all four sites through the shared raiseEffectEvent; the orchestrator site was migrated onto it rather than kept as a second copy. Every raise emits effect.event_raised carrying its site and reactive count, so a live-but-unheard producer is distinguishable from an unwired one. Live evidence: seeded medium CLI run, `printf "tick 30
+traces 5000
+exit
+" | npm run cli -- --seed 42 --map medium` yields 10 entered_hex raises at movement_arrival. Unit coverage: src/engine/effects/__tests__/effectEventDispatch.test.ts (12 tests, asserting the executor trace rather than the return count, so a dispatcher that never reached executeEffect would fail).
+
 ### `attachment-effects-shape-resolution` — 🟢 LIVE
 
 - **Intent:** Items shape action resolution rolls — a blade makes its bearer likelier to succeed.
 - **Producer → Consumer:** Attachments, Items & Possessions → Encounters & Dilemmas
 - **UL terms:** *Attachment*, *Test Shaper*
-- **Production hits:** 16 total — 5 write, 1 read, 10 unclassified
-- **Write sites:** `src/engine/effectResolver.ts`, `src/engine/effects/effectEvents.ts`, `src/engine/effects/effectQueries.ts`, `src/engine/effects/effectWalker.ts`, `src/engine/effects/index.ts`
+- **Production hits:** 17 total — 6 write, 1 read, 10 unclassified
+- **Write sites:** `src/engine/effectResolver.ts`, `src/engine/effects/consumableCharges.ts`, `src/engine/effects/effectEvents.ts`, `src/engine/effects/effectQueries.ts`, `src/engine/effects/effectWalker.ts` +1 more
 - **Read sites:** `src/engine/unifiedActionResolution.ts`
 - **Other hits:** `src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts`, `src/data/ascendant-expression-constants.ts`, `src/data/unified-action-templates.ts`, `src/engine/ascendantExpression.ts`, `src/engine/ascendantPrimitives.ts` +5 more
 - **Verdict:** Verified 2026-07-23: effects[] → effectWalker → collectTestShapers is the live mechanical path (2026-03-31 generic effect system). Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified)
@@ -313,10 +333,10 @@ remediation ticket or the build fails.
 - **Intent:** Encounters grant rewards, which become possessions — by random draw from the pool, or as an authored consequence naming one template.
 - **Producer → Consumer:** Encounters & Dilemmas → Attachments, Items & Possessions
 - **Module:** `src/engine/rewardPool.ts`
-- **Production hits:** 9 total — 2 write, 2 read, 5 unclassified
+- **Production hits:** 10 total — 2 write, 2 read, 6 unclassified
 - **Write sites:** `src/engine/rewardPool.ts`, `src/types/attachments.ts`
 - **Read sites:** `src/engine/encounterAftermath.ts`, `src/engine/orchestrator.ts`
-- **Other hits:** `src/engine/attachmentTemplateDetail.ts`, `src/engine/debugWorldSpawnTools.ts`, `src/engine/nudgeGrantLiveness.ts`, `src/engine/phaseDoom.ts`, `src/types/unifiedAction.ts`
+- **Other hits:** `src/engine/attachmentTemplateDetail.ts`, `src/engine/debugWorldSpawnTools.ts`, `src/engine/effects/effectEventDispatch.ts`, `src/engine/nudgeGrantLiveness.ts`, `src/engine/phaseDoom.ts` +1 more
 - **Verdict:** Verified 2026-08-14: possesses edges grow 7→82 over 120 ticks (seed 42, medium). Authored arm (THR-1110): the crossroads accept path writes one agreement edge binding the actor to the materialized stranger, 132-tick term (seed 42, medium, CLI). Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified)
 
 ### `attachment-grants-trait-while-held` — 🟢 LIVE
@@ -335,10 +355,10 @@ remediation ticket or the build fails.
 - **Intent:** Items break, deplete, or curse their bearer on use — authored consequence for carrying power.
 - **Producer → Consumer:** Attachments, Items & Possessions → Encounters & Dilemmas
 - **Module:** `src/engine/effects/actionTriggerPayloads.ts`
-- **Production hits:** 17 total — 2 write, 4 read, 11 unclassified
+- **Production hits:** 18 total — 2 write, 4 read, 12 unclassified
 - **Write sites:** `src/data/anomaly-reward-catalog.ts`, `src/data/starter-attachments.ts`
 - **Read sites:** `src/engine/effects/actionTrigger.ts`, `src/engine/orchestrator.ts`, `src/engine/phaseMovement.ts`, `src/engine/unifiedActionResolution.ts`
-- **Other hits:** `src/components/Game/AttachmentDetailView.tsx`, `src/data/effect-constants.ts`, `src/data/reward-attachment-catalog.ts`, `src/engine/agentAttachments.ts`, `src/engine/attachmentTemplateDetail.ts` +6 more
+- **Other hits:** `src/components/Game/AttachmentDetailView.tsx`, `src/data/effect-constants.ts`, `src/data/reward-attachment-catalog.ts`, `src/engine/agentAttachments.ts`, `src/engine/attachmentTemplateDetail.ts` +7 more
 - **Verdict:** Verified 2026-07-25: Both sides carry live symbol hits. Producer: 9 authored `action_trigger` entries across starter-attachments.ts + anomaly-reward-catalog.ts (port-completeness test asserts the count and that every condition_grant names an existing node). Consumer: `checkAndFireActionTriggers` is called from unifiedActionResolution.ts (ladder-mapped outcome bands), orchestrator.ts, and phaseMovement.ts; the graph-affecting payloads are executed by `applyActionTriggerPayloads` at all three sites. Value-level check: the granted has_trait edge carries `ticksRemaining`, the field `decayConditions` actually counts down (asserted in actionTriggerOnUse.test.ts + the ported lifecycle integration test), not the inert `durationTicks` that `apply_condition` writes.
 
 ### `attachment-slot-caps-suppress` — 🟢 LIVE
@@ -563,10 +583,10 @@ remediation ticket or the build fails.
 - **Intent:** Losing a fight reads differently from merely failing — a contested loss says so in the chronicle and the receipt.
 - **Producer → Consumer:** Companies & Group Travel → Encounters & Dilemmas
 - **UL terms:** *Company*
-- **Production hits:** 10 total — 2 write, 2 read, 6 unclassified
+- **Production hits:** 11 total — 2 write, 2 read, 7 unclassified
 - **Write sites:** `src/engine/groups/bandOpposition.ts`, `src/engine/unifiedActionResolution.ts`
 - **Read sites:** `src/components/Game/ChapterView.tsx`, `src/engine/playerReceipts.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/data/content-eval/compositionContract.ts`, `src/data/encounters/apotheosis-ascension.ts`, `src/engine/aftermathWords.ts`, `src/engine/rewardPool.ts` +1 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/data/content-eval/compositionContract.ts`, `src/data/content-eval/encounterPackage.ts`, `src/data/encounters/apotheosis-ascension.ts`, `src/engine/aftermathWords.ts` +2 more
 - **Verdict:** Verified 2026-07-25: contested_won/contested_lost shipped with TB-044 and had display strings in ChapterView, a playerReceipts severity mapping, and an isActionSuccess branch — with ZERO producers until this PR (grep at implementation time: the only non-declaration hits were the consumer-side switch arms). phaseUnifiedActionProgress now stamps the band on both sides of a resolved group contest, so the vocabulary the UI was already built to speak finally gets spoken. Locked by bandOpposition.test.ts § "gives the contested outcome band its first production producer".
 
 ### `draw-together-carries-caster-sphere-to-the-name` — 🟢 LIVE
@@ -622,6 +642,16 @@ remediation ticket or the build fails.
 - **Read sites:** `src/engine/economicContext.ts`
 - **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DecisionBreakdown.tsx`, `src/components/Game/LocationProfileModal.tsx` +56 more
 - **Verdict:** Verified 2026-07-23: THR-725: end-to-end in the CLI (seed 42, medium) — applied `loc.blight`'s -10 prosperity write to Thornhaven at tick 20; tick 21 emitted `econ_shock_seeded` (bust, -10.0) planting `encounter.debt_collection` and `encounter.aid_refugees`; by tick 27 both had matured into live scenes on the seeded agents. The verb now produces story, not just a number.
+
+### `effect-executor-overlay-persistence` — 🟢 LIVE
+
+- **Intent:** Terrain overlays and rule overrides an executor produces are persisted on GameState, expire on schedule, and are readable by the systems they govern.
+- **Producer → Consumer:** Effects & Conditions → Effects & Conditions
+- **Production hits:** 5 total — 1 write, 3 read, 1 unclassified
+- **Write sites:** `src/engine/effects/effectEventDispatch.ts`
+- **Read sites:** `src/engine/effects/effectOverlayStore.ts`, `src/engine/effects/effectQueries.ts`, `src/engine/orchestrator.ts`
+- **Other hits:** `src/engine/effects/index.ts`
+- **Verdict:** Verified 2026-08-25: THR-1240. Both halves of this contract existed and were never joined: executeAlterTerrain and executeModifyRules have always returned populated terrainOverlays/ruleOverrides on ExecutionResult, and every consumer looped result.mutations — which both executors leave EMPTY — applied nothing, and dropped the other two fields. The primitives therefore returned success: true and changed nothing, which is the value-level deadness this registry exists to catch: symbol-matching greps both sides green. GameState.activeTerrainOverlays (hex-keyed) and activeRuleOverrides (agent-keyed) are the destination; the drain moved into applyExecutionResult so there is ONE apply path (phaseDoom's duplicated inline mutation loop was migrated onto it rather than left as a second copy that could keep dropping fields). Expiry runs world-level once per tick in the orchestrator effect-tick phase, since an overlay outlives the agent that cast it. Non-vacuous by falsification: disabling the single drain line fails exactly the two end-to-end tests and no others (2 failed / 19 passed), so the tests assert the wiring rather than the store. Unit coverage: src/engine/effects/__tests__/effectOverlayStore.test.ts (21 tests), driving the REAL executors rather than hand-built overlay literals — a fixture that builds its own ActiveTerrainOverlay would pass identically against the broken build, because the break was never in the store. Reach note: the catalog's own alter_terrain uses (artifact-templates.ts) sit behind artifact activation, which is still dormant; the live producer today is a reactive nested effect, which THR-1239 made reachable. Stage 4 migrates create_barrier onto alter_terrain and is what puts catalog content on this path.
 
 ### `essence-earned-unlocks-attunement-cards` — 🟢 LIVE
 
@@ -812,10 +842,10 @@ remediation ticket or the build fails.
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 217 total — 1 write, 1 read, 215 unclassified
+- **Production hits:** 218 total — 1 write, 1 read, 216 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts` +210 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts` +211 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `relocation-intent-steers-agent-movement` — 🔵 UNVERIFIED-OK

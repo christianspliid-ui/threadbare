@@ -6,8 +6,10 @@
  *   stacking        — increments stacks when a stackOn event fires
  *   until_event     — expires/destroys attachment when matching event fires
  *   transform       — replaces attachment with a new template on trigger
+ *   resource_manipulate (one_shot) — fires once on the bearer's first
+ *                     encounter_outcome after attach, then is spent (THR-1239)
  *
- * All four primitives check the agent's attachments via the shared walker,
+ * All five primitives check the agent's attachments via the shared walker,
  * evaluate conditions/cooldowns, and return a compact result that the
  * orchestrator applies to graph + effectStates.
  *
@@ -171,6 +173,9 @@ function getExpiryEvent(event: EffectEvent): ExpiryEvent | null {
  * @param effectStates - Current per-attachment runtime states
  * @param tick        - Current tick number
  * @param rng         - Seeded RNG (for transform probability rolls)
+ * @param counterpartId - The other agent in the event, when one exists (the
+ *   encounter's `targetAgentId`). Only `resource_manipulate` with
+ *   `target: 'other_agent'` reads it; absent means that effect skips fail-soft.
  * @returns EffectEventResult with state updates, destroyed ids, and traces
  */
 export function processEffectEvent(
@@ -180,6 +185,7 @@ export function processEffectEvent(
   effectStates: ReadonlyMap<string, EffectRuntimeState>,
   tick: number,
   rng: () => number = Math.random,
+  counterpartId?: string,
 ): EffectEventResult {
   // Fail-soft: agent must exist
   if (!graph.getNode(agentId)) {
@@ -195,7 +201,9 @@ export function processEffectEvent(
   const updatedStates = new Map(effectStates);
   const destroyedAttachments: string[] = [];
   const transformRequests: Array<{ attachmentId: string; intoTemplate: string }> = [];
-  const reactivesFired: Array<{ attachmentId: string; attachmentName: string; nestedEffectType: string }> = [];
+  // Shape must match EffectEventResult['reactivesFired'] — the local annotation
+  // had drifted to a `nestedEffectType: string` shape no writer or reader used.
+  const reactivesFired: EffectEventResult['reactivesFired'] = [];
   const traces: EffectTickTrace[] = [];
 
   // Pre-compute trigger sets once
@@ -264,6 +272,73 @@ export function processEffectEvent(
             reactiveTrigger: effect.trigger,
             nestedEffect: effect.effect.type,
             cooldownRemaining: 0,
+          },
+        });
+        break;
+      }
+
+      // ── Resource manipulate (one_shot) — fire once, then never again ──
+      //
+      // THR-1239. `per_tick` mode is handled in effectTick; `one_shot` was
+      // documented there as "handled by the event handler" and had no handler
+      // at all, so a one-shot drain/restore never fired anywhere. It fires on
+      // the bearer's first `encounter_outcome` after attach — the moment the
+      // item is actually used — and is spent for good afterwards.
+      case 'resource_manipulate': {
+        if (effect.mode !== 'one_shot') break;
+        if (event.type !== 'encounter_outcome') break;
+        if (runtimeState?.oneShotFired) break;
+
+        // Spend the shot regardless of whether it lands. A one-shot that cannot
+        // resolve its target is spent, not queued — otherwise it re-attempts on
+        // every subsequent encounter until a counterpart happens to exist.
+        const currentState = updatedStates.get(attachmentId) ?? {};
+        updatedStates.set(attachmentId, { ...currentState, oneShotFired: true });
+
+        const targetId = effect.target === 'other_agent' ? counterpartId : agentId;
+        const targetNode = targetId ? graph.getNode(targetId) : undefined;
+        if (!targetNode) {
+          traces.push({
+            type: 'effect_tick',
+            tick,
+            agentId,
+            attachmentId,
+            action: 'decay',
+            details: {
+              effectType: 'resource_manipulate',
+              mode: 'one_shot',
+              skipped: 'no_target',
+              wanted: effect.target,
+            },
+          });
+          break;
+        }
+
+        const current = (targetNode.properties[effect.resource] as number) ?? 0;
+        // Quintessence is capped; essence has no defined ceiling (mirrors tickResourceManipulate).
+        const max = effect.resource === 'quintessence'
+          ? (targetNode.properties.quintessenceMax as number | undefined) ?? 1.0
+          : Infinity;
+        const next = Math.max(0, Math.min(max, current + effect.amount));
+        if (next !== current) {
+          graph.updateNode(targetId!, {
+            properties: { ...targetNode.properties, [effect.resource]: next },
+          });
+        }
+
+        traces.push({
+          type: 'effect_tick',
+          tick,
+          agentId,
+          attachmentId,
+          action: 'decay',
+          details: {
+            effectType: 'resource_manipulate',
+            mode: 'one_shot',
+            resource: effect.resource,
+            targetId: targetId!,
+            previousValue: current,
+            currentValue: next,
           },
         });
         break;

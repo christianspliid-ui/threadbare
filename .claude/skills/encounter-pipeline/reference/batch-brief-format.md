@@ -37,6 +37,8 @@ player, the batch is not ready to run.
 | Decision shapes | <from the roster: single test / consequence chain / fork / opt-in / sequel> |
 | Tone | <e.g. at most two that resolve grim> |
 | Step counts | <e.g. two 1-step, three 2-step, one 3-step> |
+| Setting class | no class more than twice (packet die C; gap-weighted toward thin classes) |
+| System target | ≤1 middling-maturity system, 0 deferred (packet die D) |
 | P3 stake shapes | no shape more than twice (spec § The Seed Dice, die 1) |
 | Opposition | no opposition kind more than twice (die 2) |
 | Disposition | not everything hostile (die 3 floor) |
@@ -45,20 +47,35 @@ player, the batch is not ready to run.
 
 ## Rolled constraints (per slot)
 
-One block per encounter slot, rolled at brief time (spec § The Seed Dice), recorded
-here so the batch report can print `hook → shape → role` per encounter and coverage
-stays measurable:
+One block per encounter slot, rolled at brief time, recorded here so the batch report
+can print `hook → shape → role` per encounter and coverage stays measurable.
+
+**Roll the whole batch in one command** (THR-1245) and paste its output block here:
+
+```bash
+npm run draw:packet -- <briefSlug> --slots <N>
+```
+
+It rolls each slot's hooks and Seed Dice *and* the four capped axes nothing used to
+roll — reach, decision shape, setting class, system target — enforcing every cap and
+floor by construction, then prints exactly this block plus the spread table for the
+Variance-targets section above. Deterministic off the brief slug, so anyone can
+recompute it. Single slot: `npm run draw:hooks`.
 
 ```
 slot 1:
   plotHookRolled: <three ids>   plotHookTaken: <id>
+  reach: <die A>                setting: <die C>
+  shape: <die B>                system: <die D>
   p3Shape: <die 1>              opposition: <die 2, with motive>
   disposition: <die 3 or n/a>   agentRole: <die 4>
   scale: <die 5>
+  consequenceHand: <binding — printed when the slot has a template id>
 ```
 
 Rolls propose, design disposes — a slot may override a roll, stated with a reason.
-The variance caps above bind the batch either way.
+The variance caps above bind the batch either way. `draw:packet` prints each override
+it made itself, naming the face the unconstrained table rolled and the cap that bit.
 
 ## Systems quota targets
 

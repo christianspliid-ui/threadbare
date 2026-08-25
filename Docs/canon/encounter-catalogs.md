@@ -1,7 +1,7 @@
 ---
 domain: encounter-catalogs
-last_reviewed: 2026-07-31
-reviewer: claude-fable
+last_reviewed: 2026-08-25
+reviewer: claude-opus
 ul_shards: [Encounters, Prose]
 status: live
 ---
@@ -16,6 +16,10 @@ status: live
 
 **Owner:** THR-883 (the authoring format). **Extending any catalog is a design-session
 decision with Christian**, recorded here — never an authoring-session judgement.
+**Catalogs 1, 2 and 7 are rolled at brief time** by `npm run draw:packet` (THR-1245),
+which transcribes them into dice in `src/data/content-eval/packetDice.ts` and enforces
+their per-batch caps by construction; a face added here without a matching face there
+fails that module's catalog-health check rather than going quietly unrollable.
 **These catalogs are deliberately agile:** game systems are still moving, so entries
 carry maturity flags rather than pretending the ground is settled.
 
@@ -129,6 +133,15 @@ deferred** until the vertical slice validates the catalogs — wiring a generato
 vocabulary that is still moving buys drift, not visibility. Revisit after the first
 slice batch ships.
 
+**What the coverage matrix now feeds (THR-1245).** The packet's setting die is
+*gap-weighted* against those same settings × reach counts: a class the corpus barely
+covers rolls up to six times likelier than the densest one, tapering linearly with
+coverage. That is a pull, not a quota — the die still reaches covered classes, because
+the corpus needs second scenes in good settings as much as first scenes in empty ones.
+It also stops short of the deferred work above: nothing counts the finished encounter
+against the axis it rolled, so shape/pressure/form/objective/stakes remain unmeasured
+and the rolled axes remain *capped*, never binding.
+
 ## Open questions
 
 - **The Iron rule** — the hook corpus's "force resolves instead of prolonging" rule
@@ -138,6 +151,10 @@ slice batch ships.
   column on the tag line (retro-tagging the 1,200). Queued behind the slice.
 
 ## Last-reviewed
+
+2026-08-25 by Claude Opus (THR-1245 — catalogs 1, 2 and 7 are now rolled at brief time
+by `draw:packet`; the setting die is gap-weighted against the THR-884 coverage counts.
+No catalog entry, tier or rule changed).
 
 2026-07-31 by Claude Fable (created — THR-883 catalog architecture, Christian's chat
 approval; vertical-slice maturity tiers per his direction the same day).

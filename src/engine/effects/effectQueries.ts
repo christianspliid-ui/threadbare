@@ -38,6 +38,8 @@ import type {
   PredicateContext,
 } from '../../types/effects';
 import { collectAttachmentEffects } from './effectWalker';
+import type { GameState } from '../../types/gameState';
+import { foldRuleOverrideValues } from './effectOverlayStore';
 import { evaluateOptionalCondition } from './effectPredicates';
 
 // ═══════════════════════════════════════════════════════════════════
@@ -391,32 +393,51 @@ export function getRangeModifiers(
 // ═══════════════════════════════════════════════════════════════════
 
 /**
- * Compute the effective rule override value for a given rule key.
+ * Compute the effective numeric rule override value for a given rule key.
  *
- * Scans all active modify_rules effects, sums numeric overrides,
- * ANDs boolean overrides, takes first-wins for string/struct.
- * Returns a numeric summary (0 = no override active).
+ * Two sources, one fold (THR-1240):
+ *   1. `modify_rules` effects declared on the agent's active attachments, and
+ *   2. `ActiveRuleOverride` entries an executor persisted onto GameState.
  *
- * Primarily used in Phase 5 wiring for doom rate, encounter difficulty, etc.
+ * Before this stage only (1) existed, because nothing persisted (2) — the
+ * executor produced the override and every consumer dropped it. Passing
+ * `persisted` folds both through `foldRuleOverrideValues`, so an override has
+ * the same effective value whichever way it arrived. Omitting it reads
+ * attachments only, which is the historical behaviour and keeps every existing
+ * caller correct without an edit.
+ *
+ * Returns a **number**: the neutral value is 0 for additive keys and 1.0 for
+ * `*_multiplier` keys, so callers must not assume 0-means-absent for a
+ * multiplier. Non-numeric keys (`encounter_reach_override`, the reach-swap
+ * struct) are not readable here — use `getPersistedRuleOverride` for those.
  */
 export function getActiveRuleOverride(
   graph: WorldGraph,
   agentId: string,
   rule: string,
   effectStates?: ReadonlyMap<string, EffectRuntimeState>,
+  persisted?: Pick<GameState, 'activeRuleOverrides'>,
 ): number {
-  let total = 0;
+  const values: (number | boolean | string | object)[] = [];
 
   for (const entry of collectAttachmentEffects(graph, agentId, effectStates)) {
     if (!isActive(entry.runtimeState)) continue;
     if (entry.effect.type !== 'modify_rules') continue;
     if (entry.effect.rule !== rule) continue;
+    values.push(entry.effect.value);
+  }
 
-    const val = entry.effect.value;
-    if (typeof val === 'number') {
-      total += val;
+  if (persisted) {
+    for (const entry of persisted.activeRuleOverrides?.[agentId] ?? []) {
+      if (entry.rule === rule) values.push(entry.value);
     }
   }
 
-  return total;
+  const folded = foldRuleOverrideValues(rule, values);
+  if (typeof folded === 'number') return folded;
+  // A flag or struct key read through the numeric accessor: report the neutral
+  // numeric rather than NaN, so a mis-keyed caller degrades to "no override"
+  // instead of poisoning arithmetic downstream (NFP #4).
+  if (typeof folded === 'boolean') return folded ? 1 : 0;
+  return 0;
 }

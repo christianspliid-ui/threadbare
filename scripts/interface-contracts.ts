@@ -244,6 +244,44 @@ export const CONTRACTS: readonly Contract[] = [
     verifiedLive: { date: '2026-07-23', evidence: `Orchestrator phase 2a.4 runs effectTick. ${AUDIT_EVIDENCE}` },
   },
   {
+    id: 'attachment-effect-event-raises',
+    producerSystem: ATTACHMENTS,
+    consumerSystem: 'Effects & Conditions',
+    intent: 'Game events reach event-triggered effect primitives (reactive, until_event, stacking, transform, one-shot resource_manipulate) on the agents they happen to.',
+    mechanism: { kind: 'function', symbols: ['raiseEffectEvent', 'processEffectEvent'] },
+    writeSites: [
+      'src/engine/phaseMovement.ts',
+      'src/engine/battleResolution.ts',
+      'src/engine/orchestrator.ts',
+      'src/engine/phaseDoom.ts',
+    ],
+    readSites: ['src/engine/effects/effectEventDispatch.ts', 'src/engine/effects/effectEvents.ts'],
+    verifiedLive: {
+      date: '2026-08-25',
+      evidence: 'THR-1239. The consumer half was always live and the producer half was almost entirely missing: outside the single encounter_outcome raise in the orchestrator, no site in the engine ever constructed an EffectEvent, so the whole executor family (teleport, spawn, compel, cascade, ...) was unreachable in normal play while looking wired. Movement arrival now raises entered_hex and battle create/resolve raise combat_started/combat_ended, all four sites through the shared raiseEffectEvent; the orchestrator site was migrated onto it rather than kept as a second copy. Every raise emits effect.event_raised carrying its site and reactive count, so a live-but-unheard producer is distinguishable from an unwired one. Live evidence: seeded medium CLI run, `printf "tick 30\ntraces 5000\nexit\n" | npm run cli -- --seed 42 --map medium` yields 10 entered_hex raises at movement_arrival. Unit coverage: src/engine/effects/__tests__/effectEventDispatch.test.ts (12 tests, asserting the executor trace rather than the return count, so a dispatcher that never reached executeEffect would fail).',
+    },
+  },
+  {
+    id: 'effect-executor-overlay-persistence',
+    producerSystem: 'Effects & Conditions',
+    consumerSystem: 'Effects & Conditions',
+    intent: 'Terrain overlays and rule overrides an executor produces are persisted on GameState, expire on schedule, and are readable by the systems they govern.',
+    mechanism: { kind: 'function', symbols: ['applyExecutionOverlays', 'expireOverlays', 'getPersistedRuleOverride'] },
+    writeSites: [
+      'src/engine/effects/effectEventDispatch.ts',
+      'src/engine/phaseDoom.ts',
+    ],
+    readSites: [
+      'src/engine/effects/effectOverlayStore.ts',
+      'src/engine/effects/effectQueries.ts',
+      'src/engine/orchestrator.ts',
+    ],
+    verifiedLive: {
+      date: '2026-08-25',
+      evidence: 'THR-1240. Both halves of this contract existed and were never joined: executeAlterTerrain and executeModifyRules have always returned populated terrainOverlays/ruleOverrides on ExecutionResult, and every consumer looped result.mutations — which both executors leave EMPTY — applied nothing, and dropped the other two fields. The primitives therefore returned success: true and changed nothing, which is the value-level deadness this registry exists to catch: symbol-matching greps both sides green. GameState.activeTerrainOverlays (hex-keyed) and activeRuleOverrides (agent-keyed) are the destination; the drain moved into applyExecutionResult so there is ONE apply path (phaseDoom\'s duplicated inline mutation loop was migrated onto it rather than left as a second copy that could keep dropping fields). Expiry runs world-level once per tick in the orchestrator effect-tick phase, since an overlay outlives the agent that cast it. Non-vacuous by falsification: disabling the single drain line fails exactly the two end-to-end tests and no others (2 failed / 19 passed), so the tests assert the wiring rather than the store. Unit coverage: src/engine/effects/__tests__/effectOverlayStore.test.ts (21 tests), driving the REAL executors rather than hand-built overlay literals — a fixture that builds its own ActiveTerrainOverlay would pass identically against the broken build, because the break was never in the store. Reach note: the catalog\'s own alter_terrain uses (artifact-templates.ts) sit behind artifact activation, which is still dormant; the live producer today is a reactive nested effect, which THR-1239 made reachable. Stage 4 migrates create_barrier onto alter_terrain and is what puts catalog content on this path.',
+    },
+  },
+  {
     id: 'attachment-slot-caps-suppress',
     producerSystem: ATTACHMENTS,
     consumerSystem: 'Effects & Conditions',

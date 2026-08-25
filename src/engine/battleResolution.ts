@@ -29,6 +29,9 @@ import { emitTrace } from './traceBuffer';
 import { tickSiege, createSiegeNode } from './siegeResolution';
 import { applyAftermath } from './battleAftermath';
 import { selectSpotlight, hasThreadToBattle } from './battleSpotlights';
+// NOTE: this module carries its own local `mulberry32` / `hashString` (below) —
+// do not import the shared ones here, the names collide.
+import { raiseEffectEvent, type EffectEventSite } from './effects/effectEventDispatch';
 import { BATTLE_SPOTLIGHT_TEMPLATES } from '../data/battle-spotlight-content';
 
 // ─── PRNG ───────────────────────────────────────────────────────────────
@@ -49,6 +52,52 @@ function hashString(str: string): number {
     hash = ((hash << 5) - hash + str.charCodeAt(i)) | 0;
   }
   return hash;
+}
+
+// ─── Effect events (THR-1239) ───────────────────────────────────────────
+
+/**
+ * Raise a combat `EffectEvent` for everyone actually in the battle.
+ *
+ * **Audience is participants only.** An army is an `actor` node carrying a
+ * headcount, not a bag of agent nodes — its only agent-shaped participant is the
+ * commander on its `commanded_by` edge. So "the participants" resolves to the two
+ * commanders, and that is deliberate: widening to same-hex bystanders would make
+ * every passer-by's reactive fire on a battle they are not in, and bystander
+ * coupling is a design decision explicitly not taken here.
+ *
+ * Determinism (NFP #3): the seed follows the established
+ * `seed + tick * <prime> + hashString(id)` idiom, with a prime unused elsewhere
+ * so battle rolls cannot correlate with movement or encounter streams.
+ */
+function raiseBattleEvent(
+  state: GameState,
+  attackerArmyId: string,
+  defenderArmyId: string,
+  eventType: 'combat_started' | 'combat_ended',
+  site: EffectEventSite,
+  prime: number,
+): void {
+  const graph = state.graph;
+  const commanderIds: string[] = [];
+  for (const armyId of [attackerArmyId, defenderArmyId]) {
+    if (!armyId) continue;
+    // commanded_by goes army → commander, so read outgoing from the army.
+    const cmd = graph.getOutgoingEdges(armyId, 'commanded_by')[0]?.target;
+    if (cmd && !commanderIds.includes(cmd)) commanderIds.push(cmd);
+  }
+
+  for (const commanderId of commanderIds) {
+    raiseEffectEvent(
+      state,
+      commanderId,
+      { type: eventType },
+      {
+        site,
+        rng: mulberry32(state.seed + state.tick * prime + hashString(commanderId)),
+      },
+    );
+  }
 }
 
 // ─── Initial Momentum ───────────────────────────────────────────────────
@@ -203,6 +252,12 @@ export function createBattleNode(
       hexId,
       momentum: initialMomentum,
     });
+
+    // Effect event: combat_started (THR-1239). Raised only after the battle node
+    // and both participates_in edges committed, so a reactive that reads the
+    // battle sees a fully-wired one. `enter_combat` until_event expiries and the
+    // `encounter_started` reactive trigger both hang off this raise.
+    raiseBattleEvent(state, attackerArmyId, defenderArmyId, 'combat_started', 'battle_created', 103);
 
     return battleId;
   } catch (err) {
@@ -426,6 +481,15 @@ export function resolveBattle(
     attackerArmyId: bs.attackerArmyId,
     defenderArmyId: bs.defenderArmyId,
   });
+
+  // Effect event: combat_ended (THR-1239).
+  //
+  // BEFORE applyAftermath, deliberately. Aftermath decides commander fate and a
+  // 'killed' verdict removes the commander node outright — raise after it and the
+  // loser's `leave_combat` expiries and combat reactives would silently never
+  // fire, because the raise fail-softs on a missing agent. The battle ends first;
+  // the aftermath falls on them second.
+  raiseBattleEvent(state, bs.attackerArmyId, bs.defenderArmyId, 'combat_ended', 'battle_resolved', 107);
 
   // Apply aftermath consequences (destruction, commander fate, etc.)
   applyAftermath(state, bs, resolutionType);

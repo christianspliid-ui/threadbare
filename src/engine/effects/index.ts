@@ -53,6 +53,18 @@ export {
   type ActionGateEntry,
 } from './effectQueries';
 
+// Overlay / rule-override persistence (THR-1240)
+export {
+  applyExecutionOverlays,
+  expireOverlays,
+  getTerrainOverlaysAt,
+  hasTerrainOverlay,
+  getPersistedRuleOverride,
+  foldRuleOverrideValues,
+  neutralRuleOverrideValue,
+  type OverlayStoreDelta,
+} from './effectOverlayStore';
+
 // Resource delta — one-shot resource mutation (TB-104 Phase 1B)
 export {
   applyResourceDelta,

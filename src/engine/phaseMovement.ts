@@ -22,6 +22,7 @@ import type { ExplorationRecord } from './encounterScoring';
 import { checkAndFireActionTriggers, type ActionTriggerContext } from './effects/actionTrigger';
 import { applyActionTriggerPayloads } from './effects/actionTriggerPayloads';
 import { collectAttachmentEffects } from './effects/effectWalker';
+import { raiseEffectEvent } from './effects/effectEventDispatch';
 import { mulberry32 } from '../lib/prng';
 import { hashString } from './factionAmbitions';
 import type { EffectRuntimeState } from '../types/effects';
@@ -155,6 +156,29 @@ export function phaseMovement(state: GameState): Partial<GameState> {
             location: destNode?.name ?? '?',
             hex: [arrHexCol, arrHexRow],
           });
+
+          // ── Effect event: entered_hex (THR-1239) ──
+          //
+          // The `entered_hex` reactive trigger has existed in the mapping since
+          // the primitive architecture landed; nothing ever raised the event, so
+          // every reactive spell keyed on relocation was inert. This is that raise.
+          //
+          // FINAL ARRIVAL ONLY — not per hex step, and not on sublocation moves
+          // within the same hex. A reactive keyed on relocation means "I got
+          // somewhere", and per-step firing multiplies event volume roughly 4×
+          // (the mean queue length) for no design gain.
+          //
+          // NFP #3: reuses the same seeded stream the action-trigger block below
+          // derives, so an arrival's rolls are reproducible from (seed, tick, agent).
+          raiseEffectEvent(
+            state,
+            actorId,
+            { type: 'entered_hex', hex: { col: arrHexCol, row: arrHexRow } },
+            {
+              site: 'movement_arrival',
+              rng: mulberry32(state.seed + state.tick * 47 + hashString(actorId)),
+            },
+          );
 
           // B.2: Track exploration — record first visit tick for this location
           const arrivalLocId = result.newLocationId!;

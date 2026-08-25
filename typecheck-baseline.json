@@ -1,5 +1,5 @@
 {
-  "total": 3014,
+  "total": 3010,
   "command": "npx tsc -b --force --pretty false",
   "perFile": {
     "scripts/lint-encounter-content.ts": 2,
@@ -534,7 +534,8 @@
     "src/engine/economicChronicle.ts": 2,
     "src/engine/effectExecutors.ts": 3,
     "src/engine/effectResolver.ts": 1,
-    "src/engine/effects/effectEvents.ts": 6,
+    "src/engine/effects/effectEventDispatch.ts": 2,
+    "src/engine/effects/effectEvents.ts": 4,
     "src/engine/effects/effectPredicates.ts": 1,
     "src/engine/effectShellRuntime.ts": 10,
     "src/engine/effectTick.ts": 1,
@@ -583,7 +584,7 @@
     "src/engine/narrative.ts": 1,
     "src/engine/notableAgendas.ts": 1,
     "src/engine/npcSeeding.ts": 1,
-    "src/engine/orchestrator.ts": 35,
+    "src/engine/orchestrator.ts": 33,
     "src/engine/orchestrator/__tests__/phaseChoiceResolution.test.ts": 5,
     "src/engine/orchestrator/__tests__/phaseDetectionPressure.test.ts": 2,
     "src/engine/orchestrator/phaseAscendantHandFilter.ts": 1,
@@ -594,7 +595,6 @@
     "src/engine/phaseComposition.ts": 2,
     "src/engine/phaseControlEffects.ts": 1,
     "src/engine/phaseDivinePremonition.ts": 3,
-    "src/engine/phaseDoom.ts": 2,
     "src/engine/phaseEconomicChronicle.ts": 3,
     "src/engine/phaseEconomicTraits.ts": 2,
     "src/engine/phaseEffectShells.ts": 4,
