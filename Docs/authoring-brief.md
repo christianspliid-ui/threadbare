@@ -1,8 +1,8 @@
 # Authoring Brief
 
-> **Generated:** 2026-08-24 by scripts/build-authoring-brief.ts
+> **Generated:** 2026-08-25 by scripts/build-authoring-brief.ts
 > **Sources:**
->   - Docs/plans/2026-04-16-systemic-wiring-guide.md (sha1: 780aff21cc45189ed899e30f3284897fa9be503a)
+>   - Docs/plans/2026-04-16-systemic-wiring-guide.md (sha1: 725325e84db5eadbef7a5e4e6e6fd6f27f6faf3f)
 >   - Docs/plans/2026-04-16-game-design-direction.md (sha1: 1444ec0943c1644f65a451a6fc1c967b930ee01d)
 >   - encounter-pipeline SKILL.md sections D/E, hardcoded in the generator (sha1: 8967cc06663288bc6cbaffa81f16f6e1aea73cde)
 > **Do not hand-edit.** Regenerate via `npm run build-authoring-brief`.

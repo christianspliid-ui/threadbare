@@ -15,7 +15,7 @@ description: >
   prose", "movement content", "content table", "write prose", "foreshadowing
   clause", "motive receipt".
 model: opus
-last_validated_against: 2026-07-27
+last_validated_against: 2026-08-25
 ---
 
 > **Load before authoring:** `Docs/canon/rulebook-quick-reference.md` (always — the synthesis layer for rules of play). Load `Docs/canon/rulebook.md` (full rulebook) when the work touches a specific rule of play and you need depth, status flags, or source citations.
@@ -52,9 +52,9 @@ If the Canon page disagrees with this skill, the Canon page wins until this skil
 4. **Would the player sometimes prefer this outcome over success?** (For failure/complication content specifically.) The best complications make the player think "oh no — oh, that's actually interesting." If the failure content is just punishment, it's not cool failure.
 5. **Does this serve the three-beat loop?** Content surfaces during portfolio scan (Beat 1), curated moments (Beat 2), or aftermath (Beat 3). Which beat does this content serve? Is it pulling its weight in that beat?
 
-**When in doubt, write the scene first.** Before filling in template fields (ID, severity, effects, reach affinity), write the moment as a paragraph of prose. What is the protagonist doing? What goes wrong (or right)? What does the player read? What do they feel? Then extract the template fields from the scene. This is the reverse of the usual workflow — and it produces dramatically better content.
+**Settle the design first, then write the fields directly in narrator mode.** *(The scene-first workflow was retired 2026-08-25 — Doctrine v2 and the game-design-first ruling; writing a scene and extracting fields from it is how in-situ prose got in.)* Decide what is tested, what outcomes cost, and what the world remembers; then state the situation plainly into the template fields — a GM's account of events, never an inhabited scene.
 
-**Register (plainspoken Malazan, THR-609): write baseline unless the surface is a designated peak.** Plainness is the default and the large majority of what you author. **baseline** — plain, concrete, one idea per sentence, dry wit over ornament; no archaic diction, no stacked metaphor, no word that sends the reader to a dictionary. **character** — dialogue only; wit over ornament. **peak** — rationed lyricism, only on doom transitions, Twilight, encounter climax steps, major aftermath, World-Soul prose. **Interactive text (labels, action-card names, IPK keywords, tooltips) is always plain.** Declare a non-default register with the additive `register?: 'baseline' | 'character' | 'peak'` field (absent → baseline). Canon: [`Docs/canon/prose.md` § the register model](../../../Docs/canon/prose.md). Deterministic floor: `registerCompliance` in `window.__DEBUG.proseQualityReport()` — measures sentence length, rare-word density, figurative density, label plainness.
+**Register (plainspoken Malazan, THR-609): write baseline unless the surface is a designated peak.** Plainness is the default and the large majority of what you author. **baseline** — plain, concrete, one idea per sentence, dry wit over ornament; no archaic diction, no stacked metaphor, no word that sends the reader to a dictionary. **character** — dialogue only; wit over ornament. **peak** — rationed lyricism, only on the non-encounter surfaces: doom transitions, Twilight, World-Soul prose (encounter climaxes and aftermath beats lost peak status 2026-08-25, Doctrine v2). **Interactive text (labels, action-card names, IPK keywords, tooltips) is always plain.** Declare a non-default register with the additive `register?: 'baseline' | 'character' | 'peak'` field (absent → baseline). Canon: [`Docs/canon/prose.md` § the register model](../../../Docs/canon/prose.md). Deterministic floor: `registerCompliance` in `window.__DEBUG.proseQualityReport()` — measures sentence length, rare-word density, figurative density, label plainness.
 
 ## Content Tables Reference
 
@@ -78,7 +78,7 @@ All prose content lives in `src/data/`. Read **`content-files-reference.md`** (i
 
 ### Sphere Vocabulary
 
-Each of the **Nine Spheres** provides vocabulary flavoring via `SPHERE_VOCABULARY`:
+Each of the **twelve Spheres** provides vocabulary flavoring via `SPHERE_VOCABULARY`:
 - **Verbs, adjectives, nouns** per sphere
 - Used by `pickSphereWord()` to flavor event descriptions
 - Cultural prose palettes can override (30% substitution chance via `culturalProse.ts`)

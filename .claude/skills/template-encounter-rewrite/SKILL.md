@@ -14,7 +14,7 @@ last_validated_against: 2026-08-25
 
 > **Load before authoring:** `Docs/canon/rulebook-quick-reference.md` (always — the synthesis layer for rules of play). Load `Docs/canon/rulebook.md` (full rulebook) when the work touches a specific rule of play and you need depth, status flags, or source citations.
 >
-> **Load before drafting a single card:** [`../encounter-pipeline/reference/nudge-authoring-spec.md`](../encounter-pipeline/reference/nudge-authoring-spec.md) — the canonical authoring contract in the locked THR-883 format: the communication pivot (prose does the scene, cards do the rules — generic card faces, mechanism-stating effect lines), the scene-writer's 14-question checklist, setting envelopes (raw entries declare `settings` + `openings`), the 21-type card library, the register table, the prose rubric, and the verbatim detector spec. It is shared verbatim with `encounter-pipeline`; where this skill and that spec appear to disagree, **the spec wins**.
+> **Load before drafting a single card:** [`../encounter-pipeline/reference/nudge-authoring-spec.md`](../encounter-pipeline/reference/nudge-authoring-spec.md) — the canonical authoring contract in the locked THR-883 format: the communication pivot (prose does the scene, cards do the rules — generic card faces, mechanism-stating effect lines), **§ Prose doctrine v2 (narrator mode — the binding prose contract)**, the narrator's 12-question checklist, setting envelopes (raw entries declare `settings` + `openings`), the 21-type card library, the register table, the prose rubric, and the verbatim detector spec. It is shared verbatim with `encounter-pipeline`; where this skill and that spec appear to disagree, **the spec wins**.
 
 # Template Encounter Write/Rewrite — nudge-native prose + systemic wiring
 
@@ -202,15 +202,15 @@ All linear template encounters use this shape. You are responsible for authoring
 
 Every narrative field must meet the Threadbare aesthetic — at the **baseline register** unless the field is a designated peak surface.
 
-**Register (plainspoken Malazan, THR-609): plainness is the default.** Template-encounter narration is **baseline** — plain, concrete, one idea per sentence, dry wit over ornament; no archaic diction, no stacked metaphor. The only peak-register field in a linear template is a climactic beat, and even then it is one earned image, not sustained lyricism. `likelyBurden` and any label-class field are **interactive text — always plain** (no metaphor, ≤ a handful of words for labels). Declare a non-baseline field with the additive `register?: 'baseline' | 'character' | 'peak'` field (absent → baseline). Full model: [`Docs/canon/prose.md` § the register model](../../../Docs/canon/prose.md); deterministic floor: `registerCompliance` in `window.__DEBUG.proseQualityReport()`.
+**Register + narrator mode (Doctrine v2, 2026-08-25 — authoritative in the shared spec § Prose doctrine v2; register model canonical in [`Docs/canon/prose.md`](../../../Docs/canon/prose.md)).** Template-encounter narration is **baseline, narrator-mode**: plain, concrete, one idea per sentence; narrate like a GM stating what is happening — never inhabit the scene, never encode a fact as physical evidence the reader must decode. **Peak lyricism is retired for encounter surfaces** (2026-08-25). `likelyBurden` and any label-class field are **interactive text — always plain**. Deterministic floor: `registerCompliance` in `window.__DEBUG.proseQualityReport()`.
 
-**Open with sensory/scene detail.** Where is the agent? What do they see, smell, hear? Ground the moment physically before anything happens.
+**Open by stating the situation.** Where is the agent, what is happening, what is the problem — named things and stated events, plainly (Doctrine v2: concreteness means *named things and stated events*, never textures; the old sensory-detail opening is retired).
 
-**Establish emotional stakes in human terms.** Why does this matter to *this person* right now? Not "reputation is at risk" but "the apprentice is watching, and she'll decide today whether this craft is worth a life."
+**Establish stakes in human terms — by stating them.** Why does this matter to *this person* right now? "The apprentice is watching, and she'll decide today whether this craft is worth a life" — a stated fact, not an implication to decode.
 
 **Use concrete nouns, not abstractions.** "The ledger's spine is cracked and the ink has bled through three pages" — not "the records are in disarray."
 
-**Show change, not labels.** Success: don't say "The alliance is forged." Show what shifts — a behavioral change, a new tension, something the agent notices about themselves. Failure: must be "cool failure" — story-generative, not a dead end. "The lock held, and the sound carried further than expected" creates forward momentum.
+**State change plainly (Doctrine v2 reverses the old show-don't-tell rule).** Success: say what is different now — a named consequence, a new standing, who saw it. Failure: must be "cool failure" — story-generative, not a dead end. "The lock held, and the sound carried further than expected" creates forward momentum. A plainly stated fact is not a defect.
 
 **Minimum 2-3 sentences per `narrativeTemplate` field.** One-sentence narratives are labels, not scenes. `successAfterimage` and `failureAfterimage` can be shorter (1-2 sentences) — they're glimpses, not scenes.
 
@@ -251,10 +251,12 @@ Every narrative field should use the engine's dynamic capabilities. Ask yourself
 
 Each guild has a distinct voice AND a natural affinity for certain systemic capabilities. The voice shapes the prose; the capability affinity shapes what you wire.
 
+> **Doctrine v2 clamp (2026-08-25):** guild voice means *word choice and preoccupations* — what a guild notices, values, and names. It never licenses a change of **mode**: all narration stays narrator-mode, facts stated plainly. Where an example tone below leans literary (similes, vertigo, mood-for-mood's-sake), take the vocabulary and drop the mode — the spec's § Prose doctrine v2 wins over any example in this section. The Thieves Guild example is the shape to imitate: named things, stated events, concrete numbers.
+
 ### Arcane Circle
-**Voice:** Wonder mixed with obsession. Beauty at the edge of dangerous knowledge. Sentences that start with observation and end with vertigo.
+**Voice:** Precision under fascination. The Circle names what it measures and says plainly when a measurement is wrong.
 **Systemic affinity:** Encounter seeds (research leads to discovery leads to danger), hidden marks (forbidden knowledge), conditional blocks on `{?has_artifact}` (magical items change the meaning of arcane encounters).
-**Example tone:** "The ley line reading holds steady at first — clean, geometric, the kind of pattern that makes junior surveyors smile. Then it shifts. The geometry is still there, but it's folded wrong, like a page turned backwards in a book no one was meant to read."
+**Example tone:** "The ley line reading was clean for the first hour. It is not clean now — the pattern repeats where it should not, and the two senior surveyors disagree about what that means. The Circle wants a third reading before nightfall."
 
 ### Thieves Guild
 **Voice:** Sharp observation, moral ambiguity, gallows humor. Short declarative sentences. The world measured in risk and opportunity.
@@ -338,10 +340,10 @@ Before submitting rewritten prose, check every field against these questions. If
 - **0f.** Does the base band text read correctly with **no** nudges active — i.e. is every nudge-specific payoff in a fragment rather than the base?
 - **0g.** Is the **trait-hook step** answered explicitly (gate / variant / trait-only nudge / trait fragment — "none" is a valid written answer), and does every ref survive `validateTraitRefs()`?
 - **0h.** Are all `effectLine`s **words with no digits or `%`**, and is at most one card **per hand** carrying a rider (with its justification in a code comment)?
-- **0i.** Is every card face **library-generic** (2–4 word title, mechanism-stating effect line, one-line flavor quote — zero scene-bespoke prose), with its 21-type library type named in a comment?
+- **0i.** Is every card face **spell-style and library-generic** (imperative verb + noun title, 1–2 direct effect sentences, no flavor quote — retired 2026-08-25; zero scene-bespoke prose), with its 21-type library type named in a comment?
 - **0j.** Does the template declare a **setting envelope** (`settings` from the 8-class vocabulary) with one opening per declared class, and does the spine stay setting-neutral (`validateSettingEnvelope` returns clean)?
 - **0k.** Is every **zero-essence non-trait card** priced on another channel (`costs` / obligation), and does every grant survive `validateNudgeGrantRefs`?
-- **0l.** Has a **fresh-context critique subagent** read the full prose before delivery (spec step 8: independent 14-question pass, seam-echo check, read-aloud flow)? Self-review does not discharge this gate.
+- **0l.** Has a **fresh-context critique subagent** read the full prose before delivery (spec step 8: independent narrator-checklist pass, seam-echo check, read-aloud flow)? Self-review does not discharge this gate.
 - **0m.** Does the step author **zero static factor lines**? The variance rule: factors are derived from the broader game context (agent, hex, global modifiers, earlier steps); a line true on every run is priced into the difficulty and belongs in the prose.
 - **0n.** Was the **mechanical design block** (spec step 1) answered in writing before the prose — protagonist agent, reach-as-theme per step, motive routes with concrete opportunities, mechanics/objects designed in, rewards + tension, choice axis (or "none"), every promise's payoff — and does the prose conform to it?
 
@@ -361,11 +363,13 @@ Before submitting rewritten prose, check every field against these questions. If
 
 6. **Is {adj} used for atmosphere, not emotional payload?** Check every `{adj}` usage. "The {adj} glow of the forge" → fine (atmospheric). "The {adj} accord takes root" → bad (the adjective is asked to carry the emotion).
 
-7. **Would the prose make you stop and read it in a novel?** The read-aloud test. If a sentence sounds like a quest log entry ("Investigate the disturbance"), it fails. If it sounds like something from a book you'd actually enjoy ("The disturbance isn't sound exactly — it's the absence where sound should be, a pocket of silence that moves when you're not looking directly at it"), it passes.
+7. **Could a GM read it aloud and the player act on it? (Doctrine v2 — this question used to grade prose by novel standards, which is rule zero's literal inversion: game prose, not novel prose.)** The read-aloud test now checks *clarity and consequence*: after one read, does the player know what is happening, what is at stake, and what is being tested? A bare label ("Investigate the disturbance") still fails — not for being unliterary, but for stating no situation. "Something is taking sheep from the high pasture at night, and the shepherds have stopped going up" passes: plain, factual, actionable.
 
 ---
 
 ## Worked Before/After
+
+> **Doctrine v2 note (2026-08-25):** this worked example predates narrator mode — read it for *structure and wiring* (field mapping, enrichment, aftermath shape), not for prose register. Where its AFTER prose leans in-situ, the spec's § Prose doctrine v2 wins.
 
 ### BEFORE (EncounterTemplate format — "Pick Pocket" encounter, pre-migration)
 
@@ -526,7 +530,7 @@ For each encounter file you write or rewrite:
 1. **Read the file** — understand the template count, step structure, reaches, difficulty curves
 2. **Read the systemic wiring guide** — know what the capabilities can do
 3. **Identify the guild voice** — use the voice guide above
-4. **For each template, write the scene first** — before touching the TypeScript, write the moment as prose. What is the agent doing? What goes wrong (or right)? What does the player read? Then fit the prose into the template fields.
+4. **For each template, settle the game design first, then write the fields directly in narrator mode** (the scene-first workflow is retired — Doctrine v2 / the 2026-08-24 game-design-first ruling): what is tested, what the outcomes cost, what the world remembers — then state the situation plainly into the template fields. Writing a scene and extracting fields from it is how in-situ prose got in.
 4b. **Author the hand** — walk steps 3–5 of the [shared authoring spec](../encounter-pipeline/reference/nudge-authoring-spec.md): 4–8 cards cut from the 21-type library with generic faces, the band fragments, the trait hook. Copy the shape from `src/data/__fixtures__/nudge-exemplar/swollen-ford-exemplar.ts` rather than re-deriving it.
 5. **Wire the dynamics** — add enrichment placeholders, conditional blocks, and ensure success/failure produce structurally different persistence
 6. **Run the editorial checklist** — the nudge gates (0a–0l) and all prose questions must pass
@@ -574,7 +578,7 @@ Every populated-`variants` template must clear all four gates. Reject any candid
 | **G1 — Two paths, not two phrasings** | The two `authoredChoices` IDs must name *different intervention shapes* (`bolster_the_younger_hand` vs. `lock_the_record`), not `gentle` vs. `firm`. | Adjective re-skinning; Rule 1 of `Docs/canon/encounters.md`. |
 | **G2 — Effect-kind divergence** | Each `AftermathVariant.changes[]` must contain ≥1 change whose `kind` differs from any change in the *other* variant or from the `fallback`. Acceptable kinds: `reputation`, `intelligence`, `encounter_seed`, `hidden_mark`, `graph_op`. NOT: same `kind` with re-worded `title`/`detail`. | "Same outcome, different paint." |
 | **G3 — Fictional anchor at step 0** | The step-0 prose names ≥1 in-scene element the player can read as the cue for the fork (an object, a posture, a named NPC's stated position, a faction symbol). The `authoredChoices.targetLabel` or `intent` must reference that anchor. | Choice cards with no diegetic referent. |
-| **G4 — Threadbare voice on burden** | `likelyBurden` is one sentence, present tense, second-person ("If the …"). Names a *concrete* cost the player can later recognize in-fiction, not an abstract risk percentage. | Risk text that reads like a stat block. |
+| **G4 — Threadbare voice on burden** | `likelyBurden` is one plain conditional sentence, present tense ("If the …"), narrator-mode. Names a *concrete* cost the player can later recognize in-fiction, not an abstract risk percentage. | Risk text that reads like a stat block. |
 
 A template that cannot clear all four gates without inflating beyond the §2.2 budget is **the wrong shape for populated variants** — leave it on `fallback`-only or promote it to a branching encounter.
 
