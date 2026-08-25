@@ -1,37 +1,34 @@
 # Briefing
-**Generated:** 2026-08-25 14:53 local (12:53 UTC) · keep-work-flowing-cc
+**Generated:** 2026-08-25 15:55 local (13:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**The prose rewrite is running, and it only runs when you sit down with Fable.** Two of five batches are live — [*The Unclaimed Relic*](https://github.com/christianspliid-ui/threadbare/pull/1610) and [*One Body Short* + *The Sign Over the Ruin*](https://github.com/christianspliid-ui/threadbare/pull/1612), both merged and deployed in the last hour, both in the register you set this morning. Three batches remain on [THR-1223](https://linear.app/threadbare/issue/THR-1223/rewrite-the-shipped-nudge-corpus-to-prose-doctrine-v2-narrator-mode): *Standing the Line* + *The Garrison's Price*, then *Toll of Blades*, then the slice nine.
+**Say "batch 2, seven is fine" — and the last content gate before your own playtest opens.** [THR-1222, the camp seven](https://linear.app/threadbare/issue/THR-1222/run-retrofit-batch-2-the-camp-seven-through-the-factory-line-shrine): shrine offering, sharpening blades, warding the camp, a small prayer, rest and reflection, tending wounds, scouting the perimeter. The census found **no typed consequences at all** in that set — seven bare standing nudges. [The brief is written and merged](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/retrofit-batch-2-brief.md); it binds the narrator-mode doctrine you set this morning.
 
-No approval is needed — the register is settled and the remaining batches need no re-reads from you. **The only thing they need is another Fable session.** No agent will pick them up; the ticket says Fable, you ruled Fable, and an Opus pickup re-parks by design.
+**The one judgement is seven or six** — one family in one file, or split the seventh off. *"Batch 2, seven is fine"* runs it; *"keep it six"* splits it 6+1.
 
-**Ignore the message this system sent you at 13:58** asking whether Fable or Opus should write it. You had already answered; the brief was an hour behind the work. That was a fault on this side, not a question you owe anyone.
+Why now: the prose rewrite you started this morning **finished itself while you were away** — see below. `shrine_offering` is encounter #1 of [your integrated slice checkpoint](https://linear.app/threadbare/issue/THR-1220), and the camp set is the last piece of it still below standard. This yes is the only thing between the corpus and your sitting.
 
-## Also waiting (10)
+## Also waiting (9)
 
-- **[Batch 2, the camp seven](https://linear.app/threadbare/issue/THR-1222)** — one yes on the brief. It sits behind the rewrite either way, but it is the yes that refills the build shelf when the rewrite clears.
-- **Two throwaway sketches cleared to build** — [twenty generated spells](https://linear.app/threadbare/issue/THR-1232) and [thirty generated items](https://linear.app/threadbare/issue/THR-1236). Say *"work the powers map"* or *"work the item map"* in a chat session; an agent builds the sketch, then you react. *(— from tb-orchestrator; the two design questions it also listed, [THR-1230](https://linear.app/threadbare/issue/THR-1230) and [THR-1233](https://linear.app/threadbare/issue/THR-1233), were answered and closed after that report was written.)*
-- **[Card grammar](https://linear.app/threadbare/issue/THR-1002) and three more design sittings** — besides the rewrite, the only route to putting parallel work back on the board.
-- **[Image credits](https://linear.app/threadbare/issue/THR-876)** — do you want image spends gated on you at all, or decided by the lane and reported after?
-- **[What is a run about?](https://linear.app/threadbare/issue/THR-1198)** — does a run's spine come from what the god remembers, or from a named campaign the world offers?
-- **[One attended dev-server sitting](https://linear.app/threadbare/issue/THR-1133)** — nine surfaces, ~19 owed screenshots. Bundles into whichever sitting you approve batch 2 in.
-- **[A held breath before the outcome?](https://linear.app/threadbare/issue/THR-1168)** — pure feel. Unless you say otherwise an agent retires it and reports after.
-- **Chart the hub map** — advice unchanged: wait one cycle, until your slice checkpoint has run.
-- **Was the 20–22 August lane quiet deliberate?** — 35 hours, no pause marker covers it. Only you can say.
-- **A Tenacious-style trait** — parked option, no urgency, listed so it is not silently forgotten.
+- **[Twenty spells](https://linear.app/threadbare/issue/THR-1232) and [thirty items](https://linear.app/threadbare/issue/THR-1236)** — both sketches cleared to build; say *"work the powers map"* or *"work the item map"* and a session builds one for you to react to.
+- **[Design hours](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** — four sittings stacked, card grammar first; besides the batch above this is the only thing that puts parallel work back on the board.
+- **[Image credits](https://linear.app/threadbare/issue/THR-876/regenerate-the-5-quarantined-meet-the-first-scene-assets-doctrine)** — do you want image spends gated on you at all, or decided by the lane and reported after?
+- **[What is a run about?](https://linear.app/threadbare/issue/THR-1198/the-48-authored-mandate-strings-are-wired-but-unreachable-no-live-game)** — does a run's spine come from what your god remembers, or from a named campaign the world offers? No urgency.
+- **[One attended dev session](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server)** — nineteen owed screenshots no scheduled run can take; bundles into whichever sitting you approve batch 2 in.
+- **[A held breath on commit?](https://linear.app/threadbare/issue/THR-1168/two-authored-encounter-audio-moments-have-no-live-caller-wire-or)** — ~1.6s of tension before the outcome lands. Two lanes say no; unless you object an agent retires it and reports after.
+- **[Chart the hub map](https://linear.app/threadbare/issue/THR-1226)** — advice unchanged: wait one cycle, your slice checkpoint is its entry condition.
+- **Was the 20–22 August lane quiet deliberate?** — 35.3h with nothing recorded; only you can answer it.
+- **A Tenacious-style trait** — parked option, no ticket, nothing waiting. Listed so it is not silently forgotten.
 
 ## Queue
 
-**Starved — 1 claimable item**, and it is a docs-only glossary proposal ([THR-1238](https://linear.app/threadbare/issue/THR-1238/ul-proposal-power-family-power-spell-bestowal-innate-power-reconcile)). Real work is in flight on two fronts that an ordinary agent cannot take: your Fable prose sessions, and the two wayfinder maps.
+**Starved — 1 item ready.** [THR-1239, effect activation stage 1](https://linear.app/threadbare/issue/THR-1239/effect-activation-1-exhaustiveness-guard-entered-hex-combat-events) landed on the shelf at 13:08 out of your design sitting, fully specified with [its plan doc](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-08-25-effect-vocabulary-activation.md) merged. Five more stages queue behind it. The next agent can take it without asking anyone anything.
 
-- [THR-1223](https://linear.app/threadbare/issue/THR-1223) — In Dev, live Fable work, batches 1–2 shipped. Not claimable by any other lane.
-- [THR-1130](https://linear.app/threadbare/issue/THR-1130) — parked 6 days; the pilot-volume retrofit, held behind the rewrite.
-- [THR-1133](https://linear.app/threadbare/issue/THR-1133), [THR-1168](https://linear.app/threadbare/issue/THR-1168) — parked on your calls, both listed above.
-
-Nothing stale in Ready for Dev (>7 days): the single item was filed today.
+- **[THR-1223, the prose rewrite](https://linear.app/threadbare/issue/THR-1223/rewrite-the-shipped-nudge-corpus-to-prose-doctrine-v2-narrator-mode) — all five batches are written.** Batches 3 and 4 ([PR #1613](https://github.com/christianspliid-ui/threadbare/pull/1613), [PR #1615](https://github.com/christianspliid-ui/threadbare/pull/1615)) merged and deployed since the last message. Batch 5, the slice nine, sits in [PR #1618](https://github.com/christianspliid-ui/threadbare/pull/1618) needing a merge conflict resolved — a session's job, not yours. **The DM an hour ago said three batches still needed you. They did not; they are done.**
+- Three parks, unchanged: [THR-1130](https://linear.app/threadbare/issue/THR-1130) (superseded by the rewrite), [THR-1133](https://linear.app/threadbare/issue/THR-1133) and [THR-1168](https://linear.app/threadbare/issue/THR-1168), both on the list above.
 
 ## Health
 
-All green. Site serving the latest commit on `main`; automated checks, scheduled jobs and all nine lanes running normally; no PRs waiting to merge; worktree reaper ran 13 minutes ago. The one non-green signal — the 35-hour lane gap of 20–22 August — is a question for you, listed above, not a fault to fix.
+- **[PR #1618](https://github.com/christianspliid-ui/threadbare/pull/1618) is stuck twice over and needs one session** — it has a merge conflict against `main`, and GitHub has scheduled no checks on it for 26 minutes, which does not clear on its own. `git merge origin/main`, resolve, push: that both fixes the conflict and re-starts the checks. Nothing unsafe can merge meanwhile.
+- Everything else green: site serving the latest commit, both background jobs healthy, all nine scheduled lanes on time, worktree reaper ran 15:40.
