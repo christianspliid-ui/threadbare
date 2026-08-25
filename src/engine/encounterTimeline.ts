@@ -26,7 +26,13 @@ export type TimelineEvent =
   | { phase: 'ENCOUNTER_END'; tick: number; encounter: string; status: string; reward?: string }
   | { phase: 'REROUTE'; tick: number; oldTarget: string; newTarget: string; reason: string }
   | { phase: 'ACTION_START'; tick: number; template: string; target: string; reach: string; scale: string; steps: number; source: 'agent' | 'player' }
-  | { phase: 'ACTION_STEP'; tick: number; template: string; step: string; reach: string; diff: number; cap: number; prob: number; roll: number; result: 'PASS' | 'FAIL' }
+  // `dealt` (THR-1247): how many of this step's hand came from the god's
+  // Repertoire rather than the encounter's own authoring. Optional and absent on
+  // every step that authors its whole hand, which is every step shipped today —
+  // so the column reads as "this many were the god's" rather than as a zero the
+  // analyst has to interpret. It is the measurement the plan's convergence kill
+  // criterion is checked against across a seeded run.
+  | { phase: 'ACTION_STEP'; tick: number; template: string; step: string; reach: string; diff: number; cap: number; prob: number; roll: number; result: 'PASS' | 'FAIL'; dealt?: number }
   | { phase: 'ACTION_END'; tick: number; template: string; status: string; stepResults: string };
 
 // ─── Storage ────────────────────────────────────────────────────

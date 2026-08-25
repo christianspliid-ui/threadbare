@@ -43,7 +43,9 @@ function formatDetail(event: TimelineEvent): string {
     case 'ACTION_START':
       return `${event.template} | target=${event.target} | reach=${event.reach} | scale=${event.scale} | steps=${event.steps} | source=${event.source}`;
     case 'ACTION_STEP':
-      return `${event.template} | step=${event.step} | reach=${event.reach} | diff=${event.diff} | cap=${event.cap} | prob=${event.prob.toFixed(2)} | roll=${event.roll.toFixed(2)} | ${event.result}`;
+      // `dealt=` (THR-1247) appears only on a composed hand, so an analyst can
+      // tell "no cards came from the Repertoire" from "this step never asked".
+      return `${event.template} | step=${event.step} | reach=${event.reach} | diff=${event.diff} | cap=${event.cap} | prob=${event.prob.toFixed(2)} | roll=${event.roll.toFixed(2)}${event.dealt !== undefined ? ` | dealt=${event.dealt}` : ''} | ${event.result}`;
     case 'ACTION_END':
       return `${event.template} | status=${event.status} | steps=${event.stepResults}`;
   }

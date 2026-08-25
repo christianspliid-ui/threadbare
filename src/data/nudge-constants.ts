@@ -502,3 +502,93 @@ export const UNDERTOW_DRIFT_MAGNITUDE = 0.06;
  * by test; an unsorted table would report a crossing twice.
  */
 export const SPHERE_ATTUNEMENT_THRESHOLDS: readonly number[] = [20, 60];
+
+// ─── Dealing (THR-1247) ──────────────────────────────────────────────
+
+/**
+ * Cards dealt when a step declares `deal` without naming a count.
+ *
+ * Four, because that is `NUDGE_HAND_MIN` — a step that says only "fill this
+ * hand" gets a hand that is legal on its own, before any authored special is
+ * counted. An author who wants a fuller hand says so.
+ */
+export const DEAL_DEFAULT_COUNT = 4;
+
+/**
+ * Sphere-identity terms in the dealer's score.
+ *
+ * The god's own spheres outrank the common pool, and the primary outranks the
+ * secondary, so a hand dealt to a darkness/order god *reads* as that god's hand
+ * rather than as a neutral draw. The gap between the three is deliberately one
+ * step each: the tag and provenance terms below must be able to overturn a
+ * sphere preference, or context and progression would never be felt.
+ */
+export const DEAL_SPHERE_PRIMARY_WEIGHT = 3;
+export const DEAL_SPHERE_SECONDARY_WEIGHT = 2;
+export const DEAL_SPHERE_COMMON_WEIGHT = 1;
+
+/**
+ * Weight per `deal.tags` entry a member's `contextTags` matches.
+ *
+ * Sits between the secondary-sphere and primary-sphere weights on purpose: one
+ * tag match lifts an off-sphere card past an on-sphere one that has nothing to
+ * do with the step, which is the behavior that makes a dealt hand feel authored.
+ */
+export const DEAL_TAG_MATCH_WEIGHT = 2;
+
+/**
+ * Bonus for a member earned through play — attunement, a milestone, a hunger
+ * unique, or an echo carried from a previous run.
+ *
+ * Progression has to be *felt*, and the only place a player can feel it is the
+ * hand. Without this term a newly unlocked attunement card would rank exactly
+ * alongside the core sibling it was meant to deepen, and the unlock would
+ * announce itself once and then never be seen again.
+ */
+export const DEAL_PROVENANCE_BONUS = 1;
+
+/**
+ * The hand bounds the **dealer** works to, mirrored from the authoring
+ * guardrails in `content-eval/nudgeAuthoringConstants.ts`.
+ *
+ * ─── Why these are copies and not imports ───────────────────────────
+ * That file is authoring-time only and says so in its header: *"Nothing under
+ * `src/components/**`, `src/engine/**` (outside tests), or the tick loop may
+ * import this module"*, so authoring policy stays out of the client bundle. The
+ * dealer runs at hand-assembly time in the engine, so it may not read them —
+ * and the plan's instruction that the dealer "enforces them on the composed
+ * hand" has to be honoured on this side of that boundary.
+ *
+ * So they are restated here, at runtime, and **pinned equal to the authoring
+ * originals by test** (`dealHand.test.ts` § *bounds agree with the authoring
+ * guardrails*), which is the same anti-drift device `SPHERE_ATTUNEMENT_THRESHOLDS`
+ * and `unauthoredCardCount()` use: a copy nobody can silently change, rather
+ * than an import edge that would undo the split. A test may read both files;
+ * the bundle reads only this one.
+ *
+ * The distinction the boundary is protecting survives intact. The authoring
+ * numbers stay **warn-level guidance to a human writing an encounter** — a hand
+ * of nine is a lint warning, never a truncation. These are the **dealer's own
+ * budget** for how many cards it may add to a hand somebody else authored, which
+ * is a different question with the same answer.
+ */
+export const DEAL_HAND_MIN = 4;
+export const DEAL_HAND_MAX = 8;
+export const DEAL_HAND_MAX_TOTAL_DELTA = 0.7;
+export const DEAL_SPHERE_COVERAGE_MIN = 4;
+export const DEAL_COMMON_OPTIONS_MIN = 1;
+
+/**
+ * The failure textures a profiled member's band fragments must reach into,
+ * mirrored from `FAILURE_BAND_OUTCOMES` for the same boundary reason as the
+ * bounds above and pinned equal by the same test.
+ *
+ * `near_miss` counts as a failure texture even though `isStepSuccess()` treats
+ * it as advancing: the step got through, the god's hand did not land clean, and
+ * the prose owes that.
+ */
+export const DEAL_FAILURE_BAND_OUTCOMES: readonly StepOutcome[] = [
+  'near_miss',
+  'failure',
+  'critical_failure',
+];

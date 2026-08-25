@@ -27,6 +27,7 @@ import {
   COMPOSITION_SYSTEMS_QUOTA_MIN,
   SYSTEM_CONNECTIONS,
   type CompositionBlock,
+
   checkCompositionContract,
   isPersistentEffectKind,
   systemConnections,
@@ -35,6 +36,7 @@ import {
   systemSurfacesForOutcome,
 } from '../compositionContract';
 import { RETROFIT_PENDING, isRetrofitPending } from '../retrofitPending';
+import { checkComposedHand } from '../nudgeHandChecklist';
 
 /** Blocks a report actually flagged, deduped. */
 function blocksOf(template: UnifiedActionTemplate): readonly CompositionBlock[] {
@@ -530,5 +532,86 @@ describe('isAdditiveConditionEffectKind', () => {
 
   it('excludes kinds that are not condition writes', () => {
     expect(isAdditiveConditionEffectKind('quintessence_shift')).toBe(false);
+  });
+});
+
+// ─── The composed hand (THR-1247 rules, THR-1248 exercisers) ─────────
+
+/**
+ * `checkComposedHand` shipped with **no live exerciser at all**: it returns `[]`
+ * for a template with no `deal` declaration, which is every shipped template, so
+ * running the whole corpus through it proved exactly nothing. A gate that has
+ * never fired is not yet a gate — the same "live layer, impossible input" shape
+ * this repo has been bitten by before.
+ *
+ * Each case below is derived from the passing golden exemplar by changing only
+ * the declaration under test, for the reason stated at the top of this file: a
+ * validator whose red cases are also hand-authored proves only that two fictions
+ * agree.
+ */
+describe('composed hand — the deal declaration', () => {
+  /** The exemplar with step 0's hand cut to `specials` and a `deal` attached. */
+  function composed(deal: unknown, specials: number): UnifiedActionTemplate {
+    const steps = [...(NUDGE_GOLDEN_EXEMPLAR.steps ?? [])];
+    const step0 = steps[0] as unknown as Record<string, unknown>;
+    steps[0] = {
+      ...step0,
+      nudges: ((step0.nudges as unknown[]) ?? []).slice(0, specials),
+      deal,
+    } as never;
+    return { ...NUDGE_GOLDEN_EXEMPLAR, steps } as UnifiedActionTemplate;
+  }
+
+  /** Only the `hand`-block violations, so an unrelated block cannot fake a pass. */
+  function handViolations(template: UnifiedActionTemplate): string[] {
+    return checkCompositionContract(template)
+      .violations.filter((v) => v.block === 'hand')
+      .map((v) => v.message);
+  }
+
+  it('passes a well-formed composition: two specials and a declared fill', () => {
+    expect(handViolations(composed({ count: 4, tags: ['stone', 'peril'] }, 2))).toEqual([]);
+  });
+
+  it('passes a fully-dealt hand — specials are 0–2, and zero is a real choice', () => {
+    expect(handViolations(composed({ count: 5, tags: ['stone'] }, 0))).toEqual([]);
+  });
+
+  it('is silent on a template that declares no fill — the whole shipped corpus', () => {
+    // Guards the claim that this gate adds nothing to today's verdict. If it
+    // ever stops holding, every shipped encounter gains violations at once.
+    expect(checkComposedHand(NUDGE_GOLDEN_EXEMPLAR)).toEqual([]);
+  });
+
+  it('rejects a fill that is not a positive number', () => {
+    expect(handViolations(composed({ count: 0 }, 2)).join(' ')).toMatch(/deal\.count is 0/u);
+  });
+
+  it('rejects a composed hand over the ceiling', () => {
+    expect(handViolations(composed({ count: 7 }, 2)).join(' ')).toMatch(/over NUDGE_HAND_MAX/u);
+  });
+
+  it('rejects a composed hand under the floor', () => {
+    expect(handViolations(composed({ count: 1 }, 2)).join(' ')).toMatch(/under NUDGE_HAND_MIN/u);
+  });
+
+  it('rejects more authored specials than the composed model allows', () => {
+    // The rule the whole design rests on: a third special is a generic wearing
+    // a scene's clothes, and the library almost certainly already covers it.
+    expect(handViolations(composed({ count: 3 }, 4)).join(' ')).toMatch(
+      /authored specials, over DEAL_MAX_AUTHORED_SPECIALS/u,
+    );
+  });
+
+  it('rejects a repeated context tag, which silently doubles a card weight', () => {
+    expect(handViolations(composed({ count: 4, tags: ['stone', 'stone'] }, 2)).join(' ')).toMatch(
+      /deal\.tags repeats 'stone'/u,
+    );
+  });
+
+  it('rejects a hand described by subtraction — many excludes, nothing authored', () => {
+    expect(
+      handViolations(composed({ count: 5, exclude: ['boost', 'mercy', 'gambit'] }, 0)).join(' '),
+    ).toMatch(/describe it by subtraction|author the hand instead/u);
   });
 });

@@ -144,16 +144,24 @@ is retired. Say what the god does; let the pips say how hard.
 
 **Grounding moved from prose to binding** (checklist Q13). A generic card is grounded
 because it *acts on* a target the scene established — the light on the water, the rope,
-the opposition — and because dealing is self-grounding: under THR-887, cards carry typed
-text slots (`{condition}`, `{host}`, `{target}`) and **target selectors** resolved at
-deal time; a card whose selector binds to nothing is not dealt. Until the library data
-model lands, authored hand instances name their targets directly (the exemplar's Balm
-names the condition it lifts) — but write every face as if it were already a library
-card, because the retrofit will make it one.
+the opposition — rather than because its prose describes one.
 
-**Band fragments stay bespoke.** They render in the *outcome prose*, never on the card
-face — they are the scene's account of the god's hand, so they are written per encounter
-like the rest of the scene.
+> **The library data model has landed** (THR-887 structure, THR-1178 faces, THR-1247
+> mechanics, THR-1248 corpus), so "write every face as if it were already a library card"
+> is no longer advice about a coming retrofit: for a dealt card it *is* a library card,
+> and the profile it plays with was authored once, generically, in
+> `src/data/nudge-card-library.ts`. An authored special still names its targets directly
+> — that is what makes it a special.
+
+**Band fragments come from both places now.** They render in the *outcome prose*, never
+on the card face. Your **specials'** fragments are bespoke and written per encounter like
+the rest of the scene. A **dealt** card brings its own from `BAND_FRAGMENTS`, authored
+once per library member: generic, enrichment-grounded (`{actor}` / `{they}` and the
+pronoun set — never `{location}` or `{faction}`, which would read wrong in the other
+forty encounters the fragment is appended to), and describing the god's influence landing
+or misfiring rather than the scene's furniture. Both arrive through the same
+`collectNudgeBandProse` append, so the seam is real prose sitting next to your band base
+— check it reads as one voice (trigger 22).
 
 **Odds are pips, authored as raw numbers.** `forecastDelta` and the cost deltas stay
 numeric in data; the UI renders the approved pip vocabulary (five pips per color tier at
@@ -508,11 +516,19 @@ lines and outcome-keyed carryover lines are engine work (ticketed — see the ca
 ticket; panel rendering is THR-890). Until they land, a step with no authored lines
 falls back to the contract's unsigned `beat.forecast_factors`.
 
-### 3. The hand — cut from the 21-type library
+### 3. The hand — compose 4–8: author the specials, declare the fill
 
-**Hands are fully authored at encounter design time.** No runtime generic deck: runtime
-only *filters* the authored hand (trait, group, favor-availability, sphere access,
-target binding). Variation comes from world state, not shuffling.
+**A hand is composed, not typed out (THR-1247/1248).** You author the **specials** — the
+0–2 cards only this encounter could offer — and **declare a fill**; the god's Repertoire
+supplies the rest from cards the player already holds. Full authoring is still legal
+forever (a step with no `deal` behaves byte-identically to before), but it is no longer
+the default, and it is no longer the cheap option.
+
+> The rule this replaces read *"Hands are fully authored at encounter design time. No
+> runtime generic deck."* That was true until the dealer shipped. Runtime still never
+> *shuffles* — dealing is pure and takes no PRNG — so the sentence it was defending
+> survives in a stronger form: **variation comes from the god's repertoire and the step's
+> declared context, not from dice.**
 
 Pick each card as an instance of one of the **21 library types** (Boost, Heavy Hand,
 Insurance, Mercy, Gambit, Side-Bet, Long Game, Whisper, Trait card, Signature, Bargain,
@@ -520,9 +536,10 @@ Undertow, Stumble, Kindled Ambition, Omen, Cache, Balm, Veil, Favor, Fellowship,
 Compulsion — statuses and mechanics on the wiki page). Name the type in a code comment
 per card until THR-887 gives it a schema key.
 
-Author `NUDGE_HAND_MIN`–`NUDGE_HAND_MAX` (**4–8**) cards per nudge-bearing step; gated
-cards (trait, group, favor) hide when unmet, so the **dealt** hand lands at the 4–6 the
-card-row is designed around.
+The **composed** hand — authored specials plus dealt fill — lands inside
+`NUDGE_HAND_MIN`–`NUDGE_HAND_MAX` (**4–8**); gated cards (trait, group, favor) hide when
+unmet, so what reaches the card row is the 4–6 it is designed around. Every rule below
+binds the composed hand, not your half of it.
 
 > These are **authoring** guardrails at warn level, not the rejected "fixed action count
 > / capped action slots". The renderer draws whatever `NudgeHand.playable` contains,
@@ -579,6 +596,65 @@ Hand-building rules:
   late-run capability — what the retired Darkhollow Vault demonstrated), **or** keep an
   open-draw step at `fair` or below (what The Swollen Ford demonstrates). A `severe`
   step drawn by anyone is a decorative hand.
+
+### 3b. The dealt hand (THR-1247/1248)
+
+**What you still write, and what the Repertoire brings.**
+
+| | Authored by you | Dealt from the Repertoire |
+|---|---|---|
+| Cards | 0–2 **specials** | the declared fill |
+| Mechanics | per-card, scene-tuned | `PLAY_PROFILES`, authored once per member |
+| Band prose | your specials' `bandProse` | `BAND_FRAGMENTS`, authored once per member |
+| Faces | reuse a library type | `CARD_CONTENT` |
+
+**The specials rule.** A special is a card **only this encounter could offer** — it
+knows something about this scene that no generic card can know: a named person to lean
+on, a reach-scoped value shift, a piece of this location. Cap **2**
+(`DEAL_MAX_AUTHORED_SPECIALS`). If you find yourself authoring a third, one of them is a
+generic wearing a scene's clothes — check the library first; a member almost certainly
+already covers it, and dealing it means the player meets a card they know.
+
+Two things you can no longer get from a special, because the dealer covers them better:
+a plain odds boost, and a rider. Both exist as library members in every god's hand.
+
+**The declaration.** Additive and optional on any `ActionStep`; absent ⇒ no dealing, and
+the step behaves exactly as it did before the dealer existed:
+
+```ts
+deal: {
+  count: 4,                      // clamped to what the composed hand can hold
+  tags: ['might', 'peril'],      // what this step is about — the context-match term
+  exclude: ['fellowship'],       // types this scene refuses; prefer a special over a long list
+}
+```
+
+- `count` — how many to fill. Clamped so specials + fill stay inside 4–8 and under
+  `NUDGE_HAND_MAX_TOTAL_DELTA` (0.70). Asking for more than the hand can hold gets you
+  what fits, never an oversized hand and never an error.
+- `tags` — **closed vocabulary, 12 values.** The 8 reaches — `might`, `finesse`,
+  `insight`, `presence`, `craft`, `lore`, `wild`, `shadow` — plus `social`, `peril`,
+  `labor`, `journey`. Absent ⇒ scoring proceeds on sphere and provenance alone, which is
+  a legitimate choice for a step that is not *about* anything in particular. A tag
+  outside the set is ignored with one warning; **widening the set is a spec change**
+  (this section plus `DealContextTag`), not a call-site convenience.
+- `exclude` — by card *type*, for a scene where a type would be nonsense (no Fellowship
+  card in a solitary vigil). A long exclude list means the step wants an authored hand,
+  which is still legal — say so instead.
+
+**What the dealer guarantees, so you do not have to check it.** It never deals a type one
+of your specials already covers; it holds the composed hand inside the size window and
+the delta budget; it prefers ≥1 ungated common option and breadth of spheres; and it
+takes **no PRNG**, so the same god on the same step is dealt the same hand every time.
+`check:encounter`'s `checkComposedHand()` reports the composed result, and the whole-hand
+variety rules stand down on a `deal`-bearing step — two specials will not read as an
+undersized hand.
+
+**What it cannot do, so you must.** The dealer knows the god and the step's tags; it does
+not know your scene. Anything reach-scoped or person-scoped stays yours — the clearest
+case is the pole shift, where `axiological_mark_apply` needs a `reach` a generic card
+cannot know, so a library Undertow charges the mortal in quintessence and the *reach*-scoped
+value shift is a special if this scene wants one.
 
 ### 4. Band prose
 

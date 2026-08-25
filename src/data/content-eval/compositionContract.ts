@@ -45,7 +45,7 @@ import { isActionStepBranch } from '../../types/unifiedAction';
 import type { EncounterSupportSpec } from '../../types/encounter';
 import { ENCOUNTER_IMAGE_LIBRARY } from '../encounter-image-library';
 import { validateSettingEnvelope } from '../settingClasses';
-import { checkNudgeHand, nudgeBearingSteps } from './nudgeHandChecklist';
+import { checkComposedHand, checkNudgeHand, nudgeBearingSteps } from './nudgeHandChecklist';
 import { checkConsequenceDraw, familiesWiredByEffects } from './consequenceDraw';
 import {
   ANCHOR_SENTINEL_ACTOR,
@@ -1287,6 +1287,10 @@ export function checkCompositionContract(
   // nudge-bearing step, which is exactly the contract's answer too: a factory
   // encounter owes a hand. Deliberately *not* re-stated here.
   for (const violation of checkNudgeHand(template)) add('hand', violation);
+  // THR-1247 — the composed-hand rules for a step that declares a `deal`. Adds
+  // nothing for a template with no declaration, which is every shipped one; on a
+  // composed step it owns the whole-hand rules `checkNudgeHand` stands down from.
+  for (const violation of checkComposedHand(template)) add('hand', violation);
 
   // ─── Setting envelope (delegated) ──────────────────────────────────
   for (const problem of validateSettingEnvelope(template)) add('setting', problem);

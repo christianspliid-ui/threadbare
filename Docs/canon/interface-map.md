@@ -143,6 +143,25 @@ definition uses `trait.<category>.<kebab>` ids / Title Case names / `#tags` — 
 vocabularies that have never intersected. Remediation: **THR-800**. Trait *minting*, decay,
 and display rows are still unwritten (waves 2–3, THR-790/THR-791).
 
+**Dealt hands** — 1 contract, written 2026-08-25 (THR-1247).
+`repertoire-deals-into-encounter-hand` covers the Repertoire supplying most of an encounter's
+hand: the encounter authors 0–2 specials and declares a fill, and `dealHand` mints the rest
+from cards the god already holds. Badged **PARTIAL** with `deferralTicket: THR-1248` — the
+path is wired, tested end to end and proven against two reference play profiles, but no
+shipped template declares `ActionStep.deal`, so nothing travels it in a real run. LIVE would
+be the THR-614 error class again.
+
+The row is worth reading for **which read sites it names**, because that is where the design
+nearly went wrong. It names two: the stage adapter *and* `unifiedActionResolution.ts`. The
+plan specified only the adapter — and resolution never receives the hand the player saw. It
+re-derives its step from the template, where `nudges` holds the authored cards alone, and
+`collectNudgeModifiers`, `selectActiveRider`, `dispatchNudgeCommitments` and
+`collectNudgeBandProse` each resolve a committed id against that list and skip what they
+cannot find. A dealt card would have rendered, priced, charged, and then contributed nothing
+at all — a contract with a live producer and a consumer that silently drops its operand,
+which is the exact shape this map exists to make visible. It is sound to re-derive because
+dealing is pure and zero-PRNG; that determinism is load-bearing, not a nicety.
+
 **Nudge card dispatch** — 4 contracts, written 2026-07-30 (THR-885) and extended 2026-08-09
 (THR-886), audit-on-touch triggered by the card-system engine.
 `nudge-card-grants-dispatch-to-host-systems`, `nudge-card-cost-channels-detection-and-doom`,

@@ -1323,6 +1323,51 @@ export const CONTRACTS: readonly Contract[] = [
     },
     deferralTicket: 'THR-778',
   },
+  // ── Dealt hands — the Repertoire fills the hand (THR-1247) ─────────────────
+  {
+    id: 'repertoire-deals-into-encounter-hand',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      "A hand reads as *this god's* hand in any scene: the encounter authors only the cards it alone could offer, and the god's own Repertoire supplies the rest. Without this read, an encounter can only ever show the cards its author happened to write, and the repertoire progression the player earned stays invisible in play.",
+    ulTerms: ['Nudge', 'Encounter', 'UnifiedActionTemplate'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['dealHand', 'mintDealtNudge', 'composeDealtStep', 'composeDealtStepFromState'],
+      module: 'src/engine/encounters/dealHand.ts',
+    },
+    writeSites: [
+      'src/data/nudge-card-library.ts',
+      'src/data/nudge-constants.ts',
+      'src/types/unifiedAction.ts',
+    ],
+    // Both read sites are load-bearing and neither is redundant. The adapter
+    // composes what the player *sees*; resolution re-derives the same fill
+    // because it never receives that hand — it rebuilds its step from the
+    // template, and every mechanics reader then resolves committed ids against
+    // that list. Adapter-only composition would ship a card that renders,
+    // prices and charges and then contributes nothing, which is why the
+    // resolution site is named here as a contract rather than left implicit.
+    readSites: [
+      'src/engine/unifiedActionResolution.ts',
+      'src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts',
+      'src/debug-bridge.ts',
+    ],
+    // Still not LIVE, but for a strictly smaller reason than at THR-1247. The
+    // corpus landed (THR-1248): every library member carries a play profile and
+    // band fragments, so the dealer now has a full pool rather than two
+    // reference entries. What remains is that no *shipped template* declares
+    // `deal`, so nothing travels the path in a real playthrough. Badging LIVE on
+    // a complete corpus alone would claim behaviour no player can reach — the
+    // THR-614 error class this map exists to catch.
+    badgeOverride: {
+      badge: 'PARTIAL',
+      reason:
+        'Engine, adapter and debug read sites are wired and covered by tests, and the play-profile corpus is complete (`profiledCardCount() === NUDGE_CARD_LIBRARY.length`, pinned). No shipped encounter declares `ActionStep.deal` yet, so the deal never runs in a real playthrough; the first composed encounter is THR-1254.',
+      deferralTicket: 'THR-1254',
+    },
+    deferralTicket: 'THR-1254',
+  },
   // ── Nudge card dispatch → host systems (THR-885) ───────────────────────────
   // The god's hand is the activation surface several idle systems were missing.
   // Each row is a card→system write; all three are wired and tested but not yet

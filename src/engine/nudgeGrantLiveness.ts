@@ -25,6 +25,9 @@ import { isActionStepBranch } from '../types/unifiedAction';
 import { AMBITION_TEMPLATES } from '../data/ambition-templates';
 import { ARTIFACT_TEMPLATES } from '../data/artifact-templates';
 import { CONDITION_TRAIT_DEFINITIONS } from '../data/condition-trait-content';
+// THR-1248 — the library play profiles, the one grant site that lives outside
+// any template (see `validateLibraryGrantRefs`).
+import { PLAY_PROFILES } from '../data/nudge-card-library';
 // THR-1110 — every catalog `attachment_grant` can name. This list mirrors the
 // sources `seedAttachments` puts in the graph plus the two registry-backed paths
 // (`getAgreementTemplate`, `getCompanionTemplate`), so the gate asks exactly the
@@ -170,6 +173,53 @@ export function validateNudgeGrantRefs(
         dead.push({
           templateId: template.id,
           site,
+          effectKind: effect.kind,
+          refKind: kind,
+          ref,
+        });
+      }
+    }
+  }
+
+  return { checkedRefs, sitesWithGrants, dead };
+}
+
+/**
+ * The **fifth** authoring site an effect can live at: a library play profile.
+ *
+ * THR-1171 widened {@link validateNudgeGrantRefs} from `step.nudges[].grants` to
+ * every site inside a *template*, on the argument that a gate which sees one of
+ * several authoring surfaces reports green about the ones it cannot see.
+ * THR-1247 then created a surface outside every template: `PLAY_PROFILES` grants
+ * are authored once per library member and minted into a hand at deal time, so
+ * `allTemplateEffects` structurally cannot reach them.
+ *
+ * That gap is worth closing at exactly the moment the corpus fills it (THR-1248):
+ * a dealt card's grant is *more* dangerous than an authored one, not less,
+ * because one dead id in a profile misfires in every encounter that member is
+ * ever dealt into rather than in the single scene that named it.
+ *
+ * Deliberately the same `refsForEffect` walk and the same live index as the
+ * template sweep — a second liveness rule for library grants would be exactly
+ * the parallel path `nudgeDispatch` exists to prevent.
+ */
+export function validateLibraryGrantRefs(): NudgeGrantLivenessReport {
+  const live = buildLiveIndex();
+  const dead: DeadNudgeGrantRef[] = [];
+  let checkedRefs = 0;
+  let sitesWithGrants = 0;
+
+  for (const [memberId, profile] of Object.entries(PLAY_PROFILES)) {
+    for (const effect of profile.grants ?? []) {
+      const refs = refsForEffect(effect);
+      if (refs.length === 0) continue;
+      sitesWithGrants++;
+      for (const { kind, ref } of refs) {
+        checkedRefs++;
+        if (live[kind].has(ref)) continue;
+        dead.push({
+          templateId: memberId,
+          site: `PLAY_PROFILES.${memberId}.grants`,
           effectKind: effect.kind,
           refKind: kind,
           ref,

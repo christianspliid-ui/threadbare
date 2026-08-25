@@ -30,6 +30,13 @@
 import type { SphereName } from '../types/index';
 import { SPHERE_NAMES } from '../types/index';
 import type { HungerId } from '../types/hunger';
+import type {
+  DealContextTag,
+  EncounterAftermathReactionEffect,
+  NudgeCostChannels,
+  NudgeRider,
+  StepOutcome,
+} from '../types/unifiedAction';
 
 // ─── Card types (the 21 keywords) ────────────────────────────────────
 
@@ -793,4 +800,813 @@ export function cardDisplayTitle(member: NudgeCardMember): string {
  */
 export function unauthoredCardCount(): number {
   return NUDGE_CARD_LIBRARY.filter((m) => m.title === undefined || m.quote === undefined).length;
+}
+
+// ─── Play profiles — the mechanics a dealt card plays with (THR-1247) ──
+
+/**
+ * What a library member *does* when the Repertoire deals it into a hand.
+ *
+ * Until THR-1247 a member carried a face ({@link CARD_CONTENT}) and nothing
+ * else: every number a card played with — cost, odds, rider, alternate price,
+ * world grant — lived on a per-encounter authored `StepNudge`, which is why
+ * dealing was impossible and why authoring a hand was the most expensive part
+ * of writing an encounter. This table is the missing half.
+ *
+ * **A profile is generic by the same law as the face.** No scene-bespoke
+ * targets, no numbers tuned for one encounter's difficulty. A grant that needs
+ * something to point at (Cache's item, Balm's condition) uses the THR-885
+ * deal-time binding model — a typed selector resolved when the card is dealt,
+ * and **binding failure means the card is not dealt** rather than dealt broken.
+ *
+ * Profiles are authored per member, once, instead of per encounter, every time.
+ * That is the entire cost argument of the dealt-hand design.
+ */
+export interface NudgeCardPlayProfile {
+  /** Pre-discount essence price. Repertoire and signature discounts apply on top, as today. */
+  readonly essenceCost: number;
+  /** Named forecast contribution. `0` for a pure-rider or pure-grant card. */
+  readonly forecastDelta: number;
+  /** Band rider, for the insurance / mercy / gambit families. */
+  readonly rider?: NudgeRider;
+  /** Prices paid outside the essence pool — the Heavy Hand, the Veil, the Bargain. */
+  readonly costs?: NudgeCostChannels;
+  /** World changes, in the existing aftermath effect vocabulary (THR-885/1179). */
+  readonly grants?: readonly EncounterAftermathReactionEffect[];
+  /**
+   * When this member is *relevant*. The dealer scores a member up when a tag
+   * here matches one the step declared, which is how a Might-testing step tends
+   * to be dealt cards that bear on force without any of it being hardcoded.
+   *
+   * Absent ⇒ the member is universally relevant and scores on sphere and
+   * provenance alone — the right shape for the universal core.
+   */
+  readonly contextTags?: readonly DealContextTag[];
+  /**
+   * The card's guidance line — what the player reads under the title.
+   *
+   * **Per member, not per type (THR-1248).** `mintDealtNudge` falls back to a
+   * line built from the type's keyword, which is legible but identical across
+   * every member of a family: three Boost cards in one repertoire would all read
+   * *"Boost — leans the odds your way."* and the hand would stop being a
+   * decision. The engine ticket shipped that fallback explicitly deferring the
+   * per-member phrasing here, so the fallback now covers only the member added
+   * tomorrow before its line is written.
+   *
+   * Words, never a numeral — the nudge law (`NUDGE_WORD_BUDGETS.effectLine`
+   * prices it at 25). A line that names a number tells the player what the
+   * forecast word is for.
+   */
+  readonly effectLine?: string;
+}
+
+/**
+ * Play profiles, keyed by member id exactly as {@link CARD_CONTENT} is.
+ *
+ * **Two reference entries only, deliberately (THR-1247 scope).** The engine
+ * ticket ships the path; the corpus — a profile and fragments for every member
+ * — is THR-1248, which is blocked by this and authors into this table. The two
+ * chosen exercise both access paths the dealer must handle: `card.boost.core`
+ * is universal core (held by every god, never sphere-gated, the floor that
+ * keeps the deal pool from ever being empty), and `card.veil.signature.darkness`
+ * is a sphere signature (held only by a darkness-aligned god, discounted for
+ * them, and carrying an alternate cost channel rather than a large odds delta).
+ *
+ * A member with a profile but no {@link BAND_FRAGMENTS} row is **undealable**
+ * and named by `validateRepertoire()` — see that report's `unpayableProfiles`.
+ * That is the payoff-at-every-band law applied library-side: a card the god
+ * plays must be traceable in the prose of how it landed.
+ */
+export const PLAY_PROFILES: Readonly<Record<string, NudgeCardPlayProfile>> = {
+  // ── Universal core — the floor every god holds ──────────────────
+  // Plainest mechanics in the library, deliberately: these are the cards a god
+  // has on turn one, and the ones an off-sphere god falls back to. Nothing here
+  // carries a grant, because the core must be playable in any scene at all.
+
+  // Plainest possible: it costs a little and it moves the odds, which is the
+  // whole of what Boost promises.
+  'card.boost.core': {
+    essenceCost: 2,
+    forecastDelta: 0.1,
+    effectLine: 'Leans the odds their way. Nothing more, and usually that is enough.',
+  },
+  'card.insurance.core': {
+    essenceCost: 3,
+    forecastDelta: 0,
+    rider: 'floor_at_cost',
+    effectLine: 'They come through it paying a price, rather than not coming through it.',
+  },
+  'card.mercy.core': {
+    essenceCost: 2,
+    forecastDelta: 0,
+    rider: 'no_crit_fail',
+    effectLine: 'Takes the worst ending off the table. The ordinary ones stay.',
+  },
+  // Free by design — the type's whole promise is "exists because of who this
+  // mortal is". A cost here would make character something the god buys.
+  'card.trait_card.core': {
+    essenceCost: 0,
+    forecastDelta: 0.08,
+    effectLine: 'Costs nothing. What they already are does the work.',
+  },
+
+  // ── Sphere signatures — each plays as its sphere's mode of power ─
+
+  'card.gambit.signature.chaos': {
+    essenceCost: 2,
+    forecastDelta: 0,
+    rider: 'all_or_nothing',
+    contextTags: ['wild', 'peril'],
+    effectLine: 'Throws out the middle. It goes very well or it goes very badly.',
+  },
+  'card.stumble.signature.chaos': {
+    essenceCost: 2,
+    forecastDelta: 0.12,
+    contextTags: ['might', 'peril', 'wild'],
+    effectLine: 'Turns the ground against whoever stands in their way.',
+  },
+  'card.favor.signature.order': {
+    essenceCost: 2,
+    forecastDelta: 0.08,
+    grants: [
+      {
+        kind: 'favor_creation',
+        magnitudeRange: [0.2, 0.4],
+        context: 'a debt opened in passing',
+        debtorAgentId: '$actor',
+      },
+    ],
+    contextTags: ['social', 'presence'],
+    effectLine: 'Someone helps, and the helping is written down.',
+  },
+  // Cheaper than the core Insurance it duplicates: that discount *is* the
+  // signature. Same floor, bought at an order-god's price.
+  'card.insurance.signature.order': {
+    essenceCost: 2,
+    forecastDelta: 0,
+    rider: 'floor_at_cost',
+    contextTags: ['craft', 'lore'],
+    effectLine: 'The procedure holds. The worst it can end is expensively.',
+  },
+  'card.whisper.signature.light': {
+    essenceCost: 2,
+    forecastDelta: 0.06,
+    grants: [
+      {
+        kind: 'intelligence',
+        category: 'cultural_knowledge',
+        label: 'What was in plain sight',
+        detail: 'The part of this that was never hidden, only unremarked, and who benefits from it staying that way.',
+        reliability: 0.8,
+        targetAgentId: '$actor',
+      },
+    ],
+    contextTags: ['insight', 'lore'],
+    effectLine: 'Lights what was already there. They still have to act on it.',
+  },
+  // Pays in visibility rather than in odds — the Veil buys cover, and cover is
+  // not the same currency as luck.
+  'card.veil.signature.darkness': {
+    essenceCost: 1,
+    forecastDelta: 0.06,
+    costs: { detectionDelta: -2 },
+    contextTags: ['shadow', 'social', 'peril'],
+    effectLine: 'The help lands and leaves nothing behind pointing at you.',
+  },
+  // Big delta, and the erosion is the point: the method works and it takes
+  // something out of them. The *reach-scoped* pole shift stays encounter-authored —
+  // `axiological_mark_apply` needs a `reach`, which a generic card cannot know
+  // (THR-1248 finding); what generalizes is the cost to the self.
+  'card.undertow.signature.darkness': {
+    essenceCost: 2,
+    forecastDelta: 0.16,
+    grants: [{ kind: 'quintessence_shift', delta: -0.04, targetAgentId: '$actor' }],
+    contextTags: ['might', 'shadow', 'peril'],
+    effectLine: 'It works. They will be someone slightly different afterwards.',
+  },
+  'card.heavy_hand.signature.force': {
+    essenceCost: 2,
+    forecastDelta: 0.18,
+    costs: { detectionDelta: 3 },
+    contextTags: ['might', 'labor', 'peril'],
+    effectLine: 'Everything you have, openly. Anyone watching will know it was you.',
+  },
+  'card.cache.signature.matter': {
+    essenceCost: 3,
+    forecastDelta: 0,
+    grants: [
+      {
+        kind: 'spawn_artifact',
+        category: 'mundane',
+        tier: 'common',
+        tags: ['#cache', '#found'],
+        targetAgentId: '$actor',
+      },
+    ],
+    contextTags: ['craft', 'journey'],
+    effectLine: 'Something useful was left where they will find it.',
+  },
+  'card.boost.signature.energy': {
+    essenceCost: 2,
+    forecastDelta: 0.12,
+    contextTags: ['might', 'labor'],
+    effectLine: 'Their body finds one more pull than it had.',
+  },
+  'card.balm.signature.life': {
+    essenceCost: 3,
+    forecastDelta: 0,
+    grants: [
+      { kind: 'remove_condition', conditionTraitId: 'trait.condition.wounded', targetAgentId: '$actor' },
+    ],
+    effectLine: 'A hurt they were carrying stops being carried.',
+  },
+  'card.compulsion.signature.mind': {
+    essenceCost: 3,
+    forecastDelta: 0,
+    grants: [
+      {
+        kind: 'plant_compulsion',
+        targetAgentId: '$actor',
+        encounterBias: { explore: 0.4 },
+        durationTicks: 24,
+      },
+    ],
+    contextTags: ['insight', 'presence'],
+    effectLine: 'An urge arrives overnight. By morning it is theirs.',
+  },
+  'card.kindled_ambition.signature.spirit': {
+    essenceCost: 3,
+    forecastDelta: 0,
+    grants: [
+      {
+        // Must be an `AMBITION_TEMPLATES` member — the reactive and event-minted
+        // pools are assigned by *their own* triggers and cannot be granted here
+        // (`ambition_fulfill_destiny` is reactive; `validateLibraryGrantRefs`
+        // caught it). `great_work` is the closest read of the type's promise:
+        // the mortal wakes wanting something lasting.
+        kind: 'assign_ambition',
+        templateId: 'ambition_great_work',
+        priority: 'secondary',
+        targetAgentId: '$actor',
+        narrativeHook: 'They woke wanting something they had not let themselves want before.',
+      },
+    ],
+    contextTags: ['presence'],
+    effectLine: 'Gives them something to want. Not a bonus — a direction.',
+  },
+  'card.omen.signature.time': {
+    essenceCost: 2,
+    forecastDelta: 0,
+    grants: [
+      {
+        kind: 'emit_omen',
+        category: 'cultural',
+        intensity: 0.25,
+        narrativeHook: 'This has the shape of something that happened before, and people are starting to say so.',
+        scope: { kind: 'global' },
+        sphereAlignment: 'time',
+      },
+    ],
+    contextTags: ['lore', 'insight'],
+    effectLine: 'Bends what the world offers them next. Not this roll — the ones after.',
+  },
+  // The only card in the library that costs no essence. It is paid for on the
+  // doom clock instead, which is the whole decision the type exists to put up.
+  'card.bargain.signature.entropy': {
+    essenceCost: 0,
+    forecastDelta: 0.14,
+    costs: { doomDelta: 1 },
+    contextTags: ['peril', 'wild'],
+    effectLine: 'Free, and the world pays. The ending comes a little sooner.',
+  },
+
+  // ── Hunger uniques — each plays as its hunger's perception style ─
+
+  'card.whisper.hunger.witness': {
+    essenceCost: 2,
+    forecastDelta: 0.08,
+    grants: [
+      {
+        kind: 'intelligence',
+        category: 'political_secret',
+        label: 'The architecture of it',
+        detail: 'Who is actually holding this together, what it costs them, and where it gives if pressed.',
+        reliability: 0.75,
+        targetAgentId: '$actor',
+      },
+    ],
+    contextTags: ['insight', 'lore', 'social'],
+    effectLine: 'Shows them the structure under the situation, and where it gives.',
+  },
+  'card.kindled_ambition.hunger.kindle': {
+    essenceCost: 2,
+    forecastDelta: 0,
+    grants: [
+      {
+        kind: 'assign_ambition',
+        templateId: 'ambition_forge_legend',
+        priority: 'secondary',
+        targetAgentId: '$actor',
+        narrativeHook: 'The wanting was already there. It only needed the air.',
+      },
+    ],
+    contextTags: ['presence'],
+    effectLine: 'What they already half-wanted becomes something they mean to do.',
+  },
+  'card.long_game.hunger.sever': {
+    essenceCost: 3,
+    forecastDelta: 0,
+    grants: [
+      {
+        kind: 'hidden_mark',
+        category: 'concealed_action',
+        severity: 0.4,
+        label: 'Something they were tied to stopped holding, and nobody was told why',
+        targetAgentId: '$actor',
+        revealFamilies: ['investigation'],
+      },
+    ],
+    contextTags: ['shadow', 'social'],
+    effectLine: 'Cuts a tie now. What that costs arrives later.',
+  },
+  'card.favor.hunger.bind': {
+    essenceCost: 2,
+    forecastDelta: 0.08,
+    grants: [
+      {
+        kind: 'favor_creation',
+        magnitudeRange: [0.3, 0.5],
+        context: 'a debt taken on deliberately',
+        debtorAgentId: '$actor',
+      },
+    ],
+    contextTags: ['social', 'presence'],
+    effectLine: 'They get the help. Someone now holds it over them.',
+  },
+  'card.undertow.hunger.consume': {
+    essenceCost: 2,
+    forecastDelta: 0.16,
+    grants: [{ kind: 'quintessence_shift', delta: -0.04, targetAgentId: '$actor' }],
+    contextTags: ['might', 'peril'],
+    effectLine: 'They take what is in reach and it serves. It also stays with them.',
+  },
+  'card.cache.hunger.gather': {
+    essenceCost: 2,
+    forecastDelta: 0,
+    grants: [
+      {
+        kind: 'spawn_artifact',
+        category: 'mundane',
+        tier: 'common',
+        tags: ['#cache', '#put_by'],
+        targetAgentId: '$actor',
+      },
+    ],
+    contextTags: ['craft', 'journey', 'labor'],
+    effectLine: 'Someone put something by, long ago, and they find it.',
+  },
+  'card.insurance.hunger.preserve': {
+    essenceCost: 2,
+    forecastDelta: 0,
+    rider: 'floor_at_cost',
+    effectLine: 'Whatever else is lost here, they are not.',
+  },
+  'card.balm.hunger.reclaim': {
+    essenceCost: 2,
+    forecastDelta: 0,
+    grants: [
+      { kind: 'remove_condition', conditionTraitId: 'trait.condition.exhausted', targetAgentId: '$actor' },
+    ],
+    effectLine: 'What was worn down in them comes back.',
+  },
+  'card.stumble.hunger.reshape': {
+    essenceCost: 2,
+    forecastDelta: 0.12,
+    contextTags: ['craft', 'might', 'finesse'],
+    effectLine: 'Finds the place it was always going to give, and presses there.',
+  },
+  'card.omen.hunger.wander': {
+    essenceCost: 2,
+    forecastDelta: 0,
+    grants: [
+      {
+        kind: 'emit_omen',
+        category: 'cultural',
+        intensity: 0.2,
+        narrativeHook: 'The road out of here has started to look like the answer to something.',
+        scope: { kind: 'global' },
+      },
+    ],
+    contextTags: ['journey'],
+    effectLine: 'The way onward starts looking like the answer. It will keep looking that way.',
+  },
+  'card.compulsion.hunger.haunt': {
+    essenceCost: 2,
+    forecastDelta: 0,
+    grants: [
+      {
+        kind: 'plant_compulsion',
+        targetAgentId: '$actor',
+        encounterBias: { explore: 0.5 },
+        durationTicks: 24,
+      },
+    ],
+    contextTags: ['insight', 'wild'],
+    effectLine: 'A dream sent on purpose. They wake meaning to go and look.',
+  },
+  // The inverse of the Veil, and priced as one: it buys the same weight the
+  // Force signature buys and spends *more* visibility, because being seen is
+  // the point rather than the cost.
+  'card.heavy_hand.hunger.illuminate': {
+    essenceCost: 2,
+    forecastDelta: 0.18,
+    costs: { detectionDelta: 4 },
+    contextTags: ['might', 'presence', 'social'],
+    effectLine: 'Full weight, and lit. Everyone will know whose hand it was.',
+  },
+
+  // ── Variation members — siblings, never upgrades ────────────────
+
+  'card.boost.variation.patient': {
+    essenceCost: 1,
+    forecastDelta: 0.12,
+    effectLine: 'Pressure applied early, before it costs anything to apply.',
+  },
+  'card.insurance.variation.shared': {
+    essenceCost: 2,
+    forecastDelta: 0,
+    rider: 'floor_at_cost',
+    contextTags: ['social'],
+    effectLine: 'The cost lands across everyone here instead of on them alone.',
+  },
+  'card.mercy.variation.witnessed': {
+    essenceCost: 2,
+    forecastDelta: 0,
+    rider: 'no_crit_fail',
+    grants: [
+      {
+        kind: 'recent_event',
+        eventType: 'narrative',
+        message: '{actor} came through the worst of it, and was not alone in it.',
+      },
+    ],
+    contextTags: ['social', 'presence'],
+    effectLine: 'The worst is spared, and someone is there to have seen it.',
+  },
+
+  // ── Attunement members — depth, never power ─────────────────────
+  //
+  // Each must cost something its signature sibling does not, or attunement
+  // becomes an upgrade and the progression stops being a decision. Read each
+  // against the member it sits beside: the Gambit pays essence for its widening,
+  // the Veil buys deeper cover at the same odds, the Whisper trades price for
+  // reach.
+
+  'card.gambit.attunement.chaos': {
+    essenceCost: 3,
+    forecastDelta: 0.08,
+    rider: 'all_or_nothing',
+    contextTags: ['wild', 'peril'],
+    effectLine: 'Throws out the middle, and swings wider than practice should allow.',
+  },
+  'card.veil.attunement.darkness': {
+    essenceCost: 1,
+    forecastDelta: 0.06,
+    costs: { detectionDelta: -3 },
+    contextTags: ['shadow', 'finesse'],
+    effectLine: 'A practiced hand. Less is left behind than a careful one leaves.',
+  },
+  'card.whisper.attunement.light': {
+    essenceCost: 3,
+    forecastDelta: 0.1,
+    grants: [
+      {
+        kind: 'intelligence',
+        category: 'political_secret',
+        label: 'The whole shape',
+        detail: 'Not the one fact but the pattern it belongs to, and what the pattern predicts about the next move.',
+        reliability: 0.85,
+        targetAgentId: '$actor',
+      },
+    ],
+    contextTags: ['insight', 'lore'],
+    effectLine: 'Long looking, not one glance. They see the pattern, not the piece.',
+  },
+};
+
+/**
+ * Per-member band prose — what the god's influence *looked like* in each band.
+ *
+ * Authored once per member here rather than once per card per encounter, which
+ * is the same trade the profiles make. Two rules govern every entry:
+ *
+ * 1. **Every member carries at least one failure-band fragment**, and a member
+ *    whose profile moves the odds by `NUDGE_BIG_DELTA` or more carries both.
+ *    A hand that only narrates its wins teaches the player the god's touch is free.
+ * 2. **Fragments are generic and enrichment-grounded** — written to `{actor}` /
+ *    `{they}` and scene-neutral nouns, describing the *influence landing or
+ *    misfiring*, never the scene's furniture. The genericity test that governs
+ *    a card face applies here verbatim: a fragment that only reads correctly in
+ *    one encounter is a defect, because this one will be appended in forty.
+ *
+ * Appended through the existing `collectNudgeBandProse` path, so a dealt card's
+ * payoff prose reaches the player by exactly the route an authored card's does.
+ */
+export const BAND_FRAGMENTS: Readonly<Record<string, Partial<Record<StepOutcome, string>>>> = {
+  // ── Universal core ──────────────────────────────────────────────
+  'card.boost.core': {
+    critical_success: 'The margin was never in doubt; something had leaned on it.',
+    success: 'The odds had been quietly widened, and {they} walked through the gap.',
+    success_at_cost: 'The push landed, but it had to be paid for somewhere.',
+    near_miss: 'The pressure was there, and it was not quite enough.',
+    failure: 'Whatever leaned on the moment leaned the wrong way.',
+    critical_failure: 'The help arrived, and made the fall further.',
+  },
+  'card.insurance.core': {
+    critical_success: 'The floor under {them} was never tested. It was there regardless.',
+    success: 'There had been a floor under this the whole time.',
+    success_at_cost: 'It went badly, and stopped going badly at a price someone had already set.',
+    near_miss: 'The drop was caught partway down and charged for.',
+    failure: 'The floor held. What it held {them} above cost more than expected.',
+  },
+  'card.mercy.core': {
+    success: 'Nothing was going to go truly wrong here. That had been decided in advance.',
+    success_at_cost: 'The bad ending was closed off. A worse price took its place.',
+    near_miss: 'It came apart, and stopped short of coming apart entirely.',
+    failure: 'This is as far down as it was allowed to go.',
+  },
+  'card.trait_card.core': {
+    critical_success: 'What {they} already were turned out to be exactly enough.',
+    success: 'Nothing was added to {them}. What was already there was called on.',
+    success_at_cost: 'Character carried it, and character is not free to spend.',
+    near_miss: 'What {they} are was not quite what this asked for.',
+    failure: 'The trait held true, and this was not a moment that rewarded it.',
+  },
+
+  // ── Sphere signatures ───────────────────────────────────────────
+  'card.gambit.signature.chaos': {
+    critical_success: 'There was no middle left in this. It fell on the good side.',
+    success: 'The narrow outcomes had been thrown out. This was one of the wide ones.',
+    failure: 'The middle had been removed, and what remained was the far end.',
+    critical_failure: 'Everything was staked on the swing, and the swing went the other way.',
+  },
+  'card.stumble.signature.chaos': {
+    critical_success: 'What stood against {them} came apart before it could be met.',
+    success: 'The opposition lost its footing at the moment it needed footing.',
+    success_at_cost: 'Their footing went, and the ground was not choosy about whose.',
+    near_miss: 'The ground shifted under the wrong party.',
+    failure: 'Nothing gave where it was pushed, and something gave where it was not.',
+  },
+  'card.favor.signature.order': {
+    critical_success: 'Help arrived without being asked for, and the ledger noted it.',
+    success: 'Someone helped, and the helping was written down.',
+    success_at_cost: 'The debt was opened and the debt was larger than the help.',
+    near_miss: 'The favor was called and arrived after it was needed.',
+    failure: 'The obligation stands. The help it was supposed to buy did not.',
+  },
+  'card.insurance.signature.order': {
+    success: 'The procedure held, the way procedures are meant to.',
+    success_at_cost: 'By the book, and the book charged for it.',
+    near_miss: 'The rule caught this before the bottom of it.',
+    failure: 'Everything was done correctly and it was not enough.',
+  },
+  'card.whisper.signature.light': {
+    critical_success: 'It had never been hidden. Lit, it was obvious.',
+    success: 'What was already in plain sight stopped being unremarked.',
+    success_at_cost: 'Seeing it clearly did not make it cheaper to act on.',
+    near_miss: 'The important part stayed unlit.',
+    failure: 'The light fell on the wrong part of it.',
+  },
+  'card.veil.signature.darkness': {
+    critical_success: 'Nobody could afterwards say who had been there at all.',
+    success: 'The dark held where it was asked to hold.',
+    success_at_cost: 'The cover held; something else was left uncovered.',
+    near_miss: 'The shadow thinned at the worst possible moment.',
+    failure: 'The dark drew the eye it was meant to turn aside.',
+  },
+  'card.undertow.signature.darkness': {
+    critical_success: 'The method worked completely. {They} will not forget using it.',
+    success: 'The easier way was there, and it worked, and {they} took it.',
+    success_at_cost: 'It served. What it cost was not counted in anything {they} were carrying.',
+    near_miss: 'The ugly method nearly held.',
+    failure: 'The easier way was taken and did not work. The taking still counts.',
+    critical_failure: 'It failed, and {they} are still the one who reached for it.',
+  },
+  'card.heavy_hand.signature.force': {
+    critical_success: 'Full weight, openly, and nothing in the way of it stayed standing.',
+    success: 'The weight went in without subtlety and did what weight does.',
+    success_at_cost: 'It worked, and everyone with reason to watch was watching.',
+    near_miss: 'All that weight, and it landed just off.',
+    failure: 'The full force went in, missed, and was seen missing.',
+    critical_failure: 'Nothing was held back, nothing landed, and there were witnesses to both.',
+  },
+  'card.cache.signature.matter': {
+    critical_success: 'What had been put by was better than what was needed.',
+    success: 'Something useful was where {they} could find it.',
+    success_at_cost: 'The find was real. Getting to it cost.',
+    near_miss: 'It was there, and it was not enough of it.',
+    failure: 'What remained had not remained in usable condition.',
+  },
+  'card.boost.signature.energy': {
+    critical_success: '{Their} body had more in it than {they} had ever asked of it.',
+    success: 'The body found one more pull, and one more was the number required.',
+    success_at_cost: 'It was there when called on. It will be owed back.',
+    near_miss: 'The body gave what it had, a moment after it was needed.',
+    failure: 'There was nothing more in {them}, roused or not.',
+  },
+  'card.balm.signature.life': {
+    critical_success: 'The hurt was gone, and its absence was worth more than help would have been.',
+    success: 'A hurt {they} had been carrying stopped being carried.',
+    success_at_cost: 'The wound closed. Something else opened.',
+    near_miss: 'The mending came a little later than the moment did.',
+    failure: 'The hurt lifted, and the hurt was not what was in the way.',
+  },
+  'card.compulsion.signature.mind': {
+    success: 'The urge arrived from outside and was indistinguishable from {their} own.',
+    success_at_cost: 'The wanting steered {them} true, and it is still steering.',
+    near_miss: 'The urge pointed correctly and arrived slightly late.',
+    failure: 'The planted wanting pulled {them} the wrong way, and felt like {their} own idea while it did.',
+  },
+  'card.kindled_ambition.signature.spirit': {
+    success: 'Something {they} now mean to do sat behind this, and pushed.',
+    success_at_cost: 'The new wanting carried {them} through and will keep asking.',
+    near_miss: 'A direction is not the same as a capability.',
+    failure: 'The wanting was real and did nothing for the moment {they} were in.',
+  },
+  'card.omen.signature.time': {
+    success: 'The pattern was already turning toward this before it happened.',
+    success_at_cost: 'What comes next has been bent. Not always kindly.',
+    near_miss: 'The pattern was read correctly and moved too slowly.',
+    failure: 'What was set in motion does not help here. It was never going to.',
+  },
+  'card.bargain.signature.entropy': {
+    critical_success: 'Nothing was spent and everything worked. The bill is elsewhere.',
+    success: 'The help cost nothing here, which is not the same as costing nothing.',
+    success_at_cost: 'Paid for twice: once in the moment, once against the ending.',
+    near_miss: 'The price was charged. The thing it bought fell short.',
+    failure: 'The world was billed and {they} got nothing for it.',
+  },
+
+  // ── Hunger uniques ──────────────────────────────────────────────
+  'card.whisper.hunger.witness': {
+    critical_success: 'The structure of it was visible, and where it gave was visible too.',
+    success: '{They} could see what was holding this together, and where.',
+    success_at_cost: 'Understanding it did not reduce what it demanded.',
+    near_miss: 'The shape was read a moment after it mattered.',
+    failure: 'The architecture was clear and the clarity was no use.',
+  },
+  'card.kindled_ambition.hunger.kindle': {
+    success: 'The wanting had been there already. It had only needed air.',
+    success_at_cost: 'The ember caught, and it will burn past this.',
+    near_miss: 'The spark took and took too slowly.',
+    failure: 'What was fanned into wanting was not what this needed from {them}.',
+  },
+  'card.long_game.hunger.sever': {
+    success: 'A tie that had been pulling on {them} stopped pulling.',
+    success_at_cost: 'The tie is cut. Nobody has yet noticed it is cut.',
+    near_miss: 'The thread frayed and held.',
+    failure: 'The cutting was done and the wrong thing came loose.',
+  },
+  'card.favor.hunger.bind': {
+    success: 'Help came, and it came attached to something.',
+    success_at_cost: 'The debt is real, and it is now larger than the help was.',
+    near_miss: 'The obligation was taken on and paid out short.',
+    failure: '{They} owe for this. It did not work.',
+  },
+  'card.undertow.hunger.consume': {
+    critical_success: 'What was in reach was taken, and it was more than enough.',
+    success: 'Strength does not ask where it came from. Neither did {they}.',
+    success_at_cost: 'It served. It also stayed with {them}.',
+    near_miss: 'What was taken was nearly what was needed.',
+    failure: 'The taking happened. The serving did not.',
+    critical_failure: 'Nothing was gained and something was spent that does not come back.',
+  },
+  'card.cache.hunger.gather': {
+    success: 'Someone had put something by, long ago, and {they} found it.',
+    success_at_cost: 'The store was there and was not left as it was found.',
+    near_miss: 'What had been set aside was set aside for a different problem.',
+    failure: 'The place had been emptied long before {they} reached it.',
+  },
+  'card.insurance.hunger.preserve': {
+    success: 'Whatever else went, {they} did not.',
+    success_at_cost: 'Keeping is harder than making, and it was paid for at that rate.',
+    near_miss: 'Most of it came through.',
+    failure: 'What was saved was not the part that mattered.',
+  },
+  'card.balm.hunger.reclaim': {
+    success: 'What had been worn out of {them} came back.',
+    success_at_cost: 'The mending held and was not free.',
+    near_miss: 'The strength returned a beat behind the need for it.',
+    failure: 'The body was mended and the moment had already passed.',
+  },
+  'card.stumble.hunger.reshape': {
+    critical_success: 'It gave exactly where it was always going to give.',
+    success: 'The weak point was found, and pressed, and it went.',
+    success_at_cost: 'It gave. Not only where it was pushed.',
+    near_miss: 'The weak point was nearly the right one.',
+    failure: 'Everything held. The pressing only announced itself.',
+  },
+  'card.omen.hunger.wander': {
+    success: 'The way onward had already started to look like the answer.',
+    success_at_cost: 'The road pulls. It will keep pulling after this.',
+    near_miss: 'The road called and called a little late.',
+    failure: 'What was pointed toward was not where this needed {them} to go.',
+  },
+  'card.compulsion.hunger.haunt': {
+    success: 'The dream had been sent on purpose, and {they} acted on it as {their} own.',
+    success_at_cost: 'The visiting worked. It has not stopped.',
+    near_miss: 'The dream pointed true and woke {them} too late.',
+    failure: 'What was sent into {their} sleep steered {them} wrong.',
+  },
+  'card.heavy_hand.hunger.illuminate': {
+    critical_success: 'Full weight, in the open, and everyone saw whose it was.',
+    success: 'The deed was done heavily and done in the light.',
+    success_at_cost: 'It worked, and being seen was the price and the point.',
+    near_miss: 'Lit, weighted, and just short.',
+    failure: 'The whole of it was visible, including the part that failed.',
+    critical_failure: 'Everything was thrown, nothing landed, and it was done where all could watch.',
+  },
+
+  // ── Variation members ───────────────────────────────────────────
+  'card.boost.variation.patient': {
+    critical_success: 'The pressure had been on this since before it began.',
+    success: 'The push came early, when pushing was still cheap.',
+    success_at_cost: 'Early pressure, and a late bill.',
+    near_miss: 'It was leaned on in time and still came up short.',
+    failure: 'The early push moved nothing that needed moving.',
+  },
+  'card.insurance.variation.shared': {
+    success: 'The cost landed across everyone standing here.',
+    success_at_cost: 'Split between them, it was survivable. It was not small.',
+    near_miss: 'Shared out, the shortfall did not break anyone.',
+    failure: 'Everyone paid, and it bought nothing.',
+  },
+  'card.mercy.variation.witnessed': {
+    success: 'The worst was closed off, and {they} were not alone in the hour.',
+    success_at_cost: 'It went badly with someone there to see it go badly.',
+    near_miss: 'It stopped short of the worst, in company.',
+    failure: 'This was as far as it was permitted to fall, and it was witnessed.',
+  },
+
+  // ── Attunement members ──────────────────────────────────────────
+  'card.gambit.attunement.chaos': {
+    critical_success: 'Practice did not make it safer. It made the good end larger.',
+    success: 'The swing was wider than it should have been, and it swung right.',
+    failure: 'A practiced hand widened this, and widened the wrong side of it.',
+    critical_failure: 'The middle was gone and the far end was further than before.',
+  },
+  'card.veil.attunement.darkness': {
+    critical_success: 'There was nothing left to find. Not even the absence of anything.',
+    success: 'A practiced hand leaves less behind than a careful one.',
+    success_at_cost: 'The traces were cleared. Clearing them took time this did not have.',
+    near_miss: 'Almost nothing was left. Almost is a trace.',
+    failure: 'The cleaning was thorough enough to be recognised as cleaning.',
+  },
+  'card.whisper.attunement.light': {
+    critical_success: 'Not the fact but the whole pattern, and what it would do next.',
+    success: 'Long looking showed {them} what one glance could not.',
+    success_at_cost: 'The pattern was clear. Acting on it in time was not cheap.',
+    near_miss: 'The shape resolved a moment after {they} needed it.',
+    failure: 'The pattern was read whole, and it predicted this.',
+  },
+};
+
+/** Play profile for a member id, or `undefined` for a member with none. */
+export function nudgeCardPlayProfile(id: string): NudgeCardPlayProfile | undefined {
+  return PLAY_PROFILES[id];
+}
+
+/** Band fragments for a member id, or `undefined` for a member with none. */
+export function nudgeCardBandFragments(
+  id: string,
+): Partial<Record<StepOutcome, string>> | undefined {
+  return BAND_FRAGMENTS[id];
+}
+
+/**
+ * Count of library members carrying a play profile — the members the dealer
+ * could deal if nothing else stood in the way.
+ *
+ * Mirrors {@link unauthoredCardCount} as a live gauge rather than a pass/fail:
+ * while the corpus lands (THR-1248) this climbs toward `NUDGE_CARD_LIBRARY.length`,
+ * and the test that pins it moves with the corpus. Reading it is how a caller
+ * tells "the dealer had nothing to offer" from "the dealer chose nothing".
+ */
+export function profiledCardCount(): number {
+  return NUDGE_CARD_LIBRARY.filter((m) => PLAY_PROFILES[m.id] !== undefined).length;
+}
+
+/**
+ * Members that are dealable *at all*: a play profile, and at least one band
+ * fragment to pay it off with.
+ *
+ * The dealer's candidate universe, before any repertoire or context filtering.
+ * A profile with no fragments is excluded here rather than dealt with silent
+ * prose — see {@link BAND_FRAGMENTS} rule 1.
+ */
+export function dealableMembers(): readonly NudgeCardMember[] {
+  return NUDGE_CARD_LIBRARY.filter(
+    (m) =>
+      PLAY_PROFILES[m.id] !== undefined && Object.keys(BAND_FRAGMENTS[m.id] ?? {}).length > 0,
+  );
 }

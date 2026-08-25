@@ -172,6 +172,7 @@ import {
   sumModifiers,
   sumVariantDifficultyDelta,
 } from './encounters/nudges';
+import { composeDealtStepFromState, isDealtNudgeId } from './encounters/dealHand';
 import type { EncounterChoiceMemory } from '../types/encounter';
 import type { ClearanceGateRuntimeState, ClearanceGateState } from '../types/contentShells';
 import { getUnifiedTemplateById } from '../data/unified-action-templates';
@@ -289,7 +290,23 @@ export function resolveUncontestedStep(
   state: GameState,
   rng: () => number,
 ): StepResolutionResult {
-  const step = resolveStepDefinition(template, action.currentStep, action.choiceHistory);
+  // THR-1247 — re-derive the dealt fill before anything reads the hand.
+  //
+  // `resolveStepDefinition` returns the *authored* nudges only, and every reader
+  // below (`collectNudgeModifiers`, `selectActiveRider`, `dispatchNudgeCommitments`,
+  // `collectNudgeBandProse`) resolves a committed id against that list, skipping
+  // what it cannot find. Without this line a dealt card the player paid for would
+  // contribute no delta, no rider, no cost channel, no grant and no band prose —
+  // shown, charged, and inert.
+  //
+  // Sound because dealing is pure and zero-PRNG: the same repertoire and the
+  // same declaration yield the same cards here as they did on the render path.
+  // A step with no `deal` comes back by reference, so this is a no-op for every
+  // shipped template.
+  const step = composeDealtStepFromState(
+    resolveStepDefinition(template, action.currentStep, action.choiceHistory),
+    state,
+  ).step;
   const noPushResist = { pushAttempted: false, pushCost: 0, resistAttempted: false, resistSucceeded: false, resistCost: 0 };
 
   if (!step) {
@@ -1852,7 +1869,18 @@ export function executeStepResult(
   }
 
   // Apply capability growth from step resolution
-  const step = resolveStepDefinition(template, action.currentStep, action.choiceHistory);
+  //
+  // THR-1247 — composed for the same reason the resolution site above is, and
+  // for one more: this `step` is what `applyAgentDecidedBranches` reads
+  // `nudges` off to weigh the hand's pole lean. No shipped play profile carries
+  // a `poleLean` yet, so today this changes nothing — but the two derivations
+  // of the same step must not be allowed to disagree about what was in the
+  // hand, which is precisely the kind of drift that only surfaces once the
+  // corpus lands (THR-1248) and then reads as a branch bug.
+  const step = composeDealtStepFromState(
+    resolveStepDefinition(template, action.currentStep, action.choiceHistory),
+    state,
+  ).step;
   const stepMetadata = getStepOutcomeMetadata(step, outcome);
   const metadataReputationDelta = applyOutcomeReputationDelta(state, action.actorId, stepMetadata);
   // THR-783: authored step-outcome effects (conditions, marks, seeds …). No-ops for
@@ -2259,6 +2287,13 @@ export function executeStepResult(
       prob: resolutionStats.probability,
       roll: resolutionStats.roll,
       result: `${critPrefix}${timelineResult}${costSuffix}`,
+      // THR-1247 — how many cards the Repertoire supplied. `step` here is the
+      // composed step, so this counts what the player was actually dealt.
+      // Omitted entirely on a fully-authored hand (every shipped template), so
+      // the column stays absent rather than reading as a meaningful zero.
+      ...(step.deal
+        ? { dealt: (step.nudges ?? []).filter((n) => isDealtNudgeId(n.id)).length }
+        : {}),
     });
 
     // Balance telemetry: step_resolved — Phase 3: preserves rich outcome type

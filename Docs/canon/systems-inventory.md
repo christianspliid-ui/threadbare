@@ -277,7 +277,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `effects` (12) | `effects/actionTrigger.ts`, `effects/actionTriggerPayloads.ts`, `effects/actorClassification.ts`, `effects/consumableCharges.ts`, `effects/effectEventDispatch.ts`, `effects/effectEvents.ts`, `effects/effectOverlayStore.ts`, `effects/effectPredicates.ts`, `effects/effectQueries.ts`, `effects/effectWalker.ts`, `effects/index.ts`, `effects/resourceDelta.ts` | `Phase 3`, `Phase 5`, `TB-104`, `THR-1239`, `THR-1240`, `THR-719` |
 | `elder` (1) | `elderEssenceReward.ts` | `TB-043`, `THR-153` |
 | `encounter` (19) | `encounter-contract-adapter.ts`, `encounter.ts`, `encounter/branchingConstants.ts`, `encounter/branchingCurator.ts`, `encounterAftermath.ts`, `encounterAwareness.ts`, `encounterCache.ts`, `encounterChains.ts`, `encounterChoiceMemory.ts`, `encounterEventNode.ts`, `encounterFilterPipeline.ts`, `encounterLogExporter.ts`, `encounterRuntime.ts`, `encounterScoring.ts`, `encounterSeeding.ts`, `encounterSupportBundle.ts`, `encounterSurface.ts`, `encounterTimeline.ts`, `encounterVisibility.ts` | `Phase 4`, `TB-035`, `TB-077`, `THR-1123`, `THR-452`, `THR-465`, `THR-475`, `THR-697`, `THR-924` |
-| `encounters` (17) | `encounters/branchDecision.ts`, `encounters/choiceResolution.ts`, `encounters/detectionPressure.ts`, `encounters/driftAccumulator.ts`, `encounters/encounterTemplateGraph.ts`, `encounters/generateEncounterCandidates.ts`, `encounters/handFilter.ts`, `encounters/itemConsumption.ts`, `encounters/motiveClassifier.ts`, `encounters/nudgeDispatch.ts`, `encounters/nudges.ts`, `encounters/outcomeForecast.ts`, `encounters/placeGating.ts`, `encounters/poleLean.ts`, `encounters/reactionChooser.ts`, `encounters/relationshipResolver.ts`, `encounters/stepFactorLines.ts` | `THR-327`, `THR-528`, `THR-530`, `THR-631`, `THR-773`, `THR-885`, `THR-892`, `THR-894`, `THR-898`, `THR-963` |
+| `encounters` (18) | `encounters/branchDecision.ts`, `encounters/choiceResolution.ts`, `encounters/dealHand.ts`, `encounters/detectionPressure.ts`, `encounters/driftAccumulator.ts`, `encounters/encounterTemplateGraph.ts`, `encounters/generateEncounterCandidates.ts`, `encounters/handFilter.ts`, `encounters/itemConsumption.ts`, `encounters/motiveClassifier.ts`, `encounters/nudgeDispatch.ts`, `encounters/nudges.ts`, `encounters/outcomeForecast.ts`, `encounters/placeGating.ts`, `encounters/poleLean.ts`, `encounters/reactionChooser.ts`, `encounters/relationshipResolver.ts`, `encounters/stepFactorLines.ts` | `THR-1247`, `THR-327`, `THR-528`, `THR-530`, `THR-631`, `THR-773`, `THR-883`, `THR-885`, `THR-887`, `THR-892`, `THR-894`, `THR-898`, `THR-963` |
 | `engine` (1) | `engineEffectRegistry.ts` | `THR-604`, `THR-996` |
 | `essence` (5) | `essenceEarned.ts`, `essenceEconomyBridge.ts`, `essenceIncome.ts`, `essenceSourceSeeding.ts`, `essenceSources.ts` | `THR-1180`, `THR-611`, `THR-615`, `THR-618` |
 | `event` (1) | `eventAggregation.ts` | `THR-456` |
@@ -315,7 +315,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `notable` (1) | `notableAgendas.ts` | `THR-225`, `THR-630`, `THR-66` |
 | `notification` (3) | `notificationRouter.ts`, `notificationThreadingGate.ts`, `notificationVisibilityFilter.ts` | `THR-666`, `THR-667`, `THR-727` |
 | `npc` (2) | `npcGraduation.ts`, `npcSeeding.ts` | — |
-| `nudge` (2) | `nudgeCardRepertoire.ts`, `nudgeGrantLiveness.ts` | `THR-1110`, `THR-791`, `THR-844`, `THR-885`, `THR-887` |
+| `nudge` (2) | `nudgeCardRepertoire.ts`, `nudgeGrantLiveness.ts` | `THR-1248`, `THR-791`, `THR-844`, `THR-885`, `THR-887` |
 | `orchestrator` (5) | `orchestrator.ts`, `orchestrator/phaseAscendantHandFilter.ts`, `orchestrator/phaseChoiceResolution.ts`, `orchestrator/phaseDetectionPressure.ts`, `orchestrator/phaseDriftDecay.ts` | `THR-1183`, `THR-528` |
 | `outcome` (1) | `outcomeConsequences.ts` | `Phase 6` |
 | `pacing` (1) | `pacingGovernor.ts` | — |
@@ -393,4 +393,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 26 registered subsystems (1 dormant) · 101 tick phases · 172 engine domains · 503 modules._
+_Counts: 26 registered subsystems (1 dormant) · 101 tick phases · 172 engine domains · 504 modules._

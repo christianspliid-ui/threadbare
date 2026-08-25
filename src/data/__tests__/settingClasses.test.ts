@@ -363,10 +363,12 @@ describe('compileOpeningEnvelope (THR-932)', () => {
     const opening = resolveFragment(bridge!.contextFragments, 'opening', { setting: 'wayside' });
     expect(opening?.usedDefault).toBe(false);
 
-    // Compose the way `enrichProse` does, and assert BOTH approved paragraphs survive.
+    // Compose the way `enrichProse` does, and assert BOTH authored parts
+    // survive: the P1 arrival (openings) ahead of the P2/P3 spine (step
+    // prose). Literals track the Doctrine v2 rewrite (THR-1223 batch 5).
     const rendered = prose.replace('{frag:opening}', opening?.text ?? '');
-    expect(rendered).toContain('The bridge sags');
-    expect(rendered).toContain('The nails have risen');
-    expect(rendered.indexOf('The bridge sags')).toBeLessThan(rendered.indexOf('The nails have risen'));
+    expect(rendered).toContain('reaches the river crossing');
+    expect(rendered).toContain('The only bridge sags');
+    expect(rendered.indexOf('reaches the river crossing')).toBeLessThan(rendered.indexOf('The only bridge sags'));
   });
 });
