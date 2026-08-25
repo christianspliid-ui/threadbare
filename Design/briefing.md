@@ -1,11 +1,9 @@
 # Briefing
-**Generated:** 2026-08-25 09:56 local (07:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-08-25 10:55 local (08:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**Play two encounters and say whether they are worth meeting twice** — [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to), the batch-1 sample verdict.
-
-This has been the deepest gate on the board since **17 August** and previous briefs led with the item *behind* it. Correcting that: batch 2 cannot run without this verdict, and [your integrated slice checkpoint](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with) sits behind batch 2. Three tickets deep.
+**Play two encounters and say whether they are worth meeting twice** — [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to), the batch-1 sample verdict. Open since **17 August**, and still the deepest gate on the board: batch 2 needs it, and [your integrated slice checkpoint](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with) sits behind batch 2. Three tickets deep.
 
 **The Grateful Kin** — the one whose bond chip you called out as not communicating a state change.
 - [Play it](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin) · [good ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin&outcome=critical_success) · [bad ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin&outcome=critical_failure)
@@ -13,11 +11,11 @@ This has been the deepest gate on the board since **17 August** and previous bri
 **The Unsafe Bridge** — the one that prompted the "prose and chips are one package" ruling.
 - [Play it](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge) · [good ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge&outcome=critical_success) · [costly ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge&outcome=success_at_cost)
 
-**The question: are these two worth meeting a second time?** A yes releases batch 2; a no tells the line what the retrofit bar is still missing before nine more encounters are written against it. Your 23 August note on the BOND chip was recorded and fixed as a separate ticket — the overall verdict is still open.
+**The question: are these two worth meeting a second time?** A yes releases batch 2 — and *"batch 2, seven is fine"* settles that in the same breath. A no tells the line what the retrofit bar is still missing before nine more encounters are written against it.
 
 ## Also waiting (10)
 
-- **[THR-1222](https://linear.app/threadbare/issue/THR-1222/run-retrofit-batch-2-the-camp-seven-through-the-factory-line-shrine) — batch 2, seven or six.** Sequenced behind the verdict above; both answers can come in one sitting. *"Batch 2, seven is fine"* runs it.
+- **[THR-1222](https://linear.app/threadbare/issue/THR-1222/run-retrofit-batch-2-the-camp-seven-through-the-factory-line-shrine) — batch 2, seven or six.** Sequenced behind the verdict above; both answers fit one sitting.
 - **[THR-1221](https://linear.app/threadbare/issue/THR-1221/run-the-border-perils-batch-6-new-encounters-through-the-full-factory) — read two of the new border encounters.** [The Unclaimed Relic](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.border.the_unclaimed_relic) · [One Body Short](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.border.one_body_short).
 - **[THR-876](https://linear.app/threadbare/issue/THR-876/regenerate-the-5-quarantined-meet-the-first-scene-assets-doctrine) — should image spends be gated on you at all?** One answer settles every batch after it.
 - **[THR-1198](https://linear.app/threadbare/issue/THR-1198/the-48-authored-mandate-strings-are-wired-but-unreachable-no-live-game) — does a run's spine come from what the god remembers, or from a named campaign?** No urgency; nothing downstream waits.
@@ -30,12 +28,12 @@ This has been the deepest gate on the board since **17 August** and previous bri
 
 ## Queue
 
-**Starved — 1 ready.** In Dev 3, all three parked on you.
+**Starved — 0 ready.** In Dev 3, all three parked on you.
 
-- [THR-854](https://linear.app/threadbare/issue/THR-854/three-faction-pairs-render-byte-identical-heraldry-asserting-a-kinship) (identical faction banners) was promoted to Ready for Dev at 07:30Z by `tb-orchestrator` — *not* an ask. Nobody thinks identical banners are correct, so there is no creative fork; only which detail on the shield carries the difference, and the ticket lists three candidates. It costs no image credits (procedural). **Your veto still stands** — say the word and it goes back on the shelf.
-- [THR-1088](https://linear.app/threadbare/issue/THR-1088) is verified resolved but still open — needs one agent state write, not your attention. — *from daily-backlog-grooming*
-- The feature pipeline is not refilling on its own. One Low-priority deferral buys roughly one cycle; everything else waits on you or on a design sitting.
+- **The one job the builders were given an hour ago is already finished.** [THR-854](https://linear.app/threadbare/issue/THR-854/three-faction-pairs-render-byte-identical-heraldry-asserting-a-kinship) — the three faction pairs flying identical banners — was promoted on agent judgement at 07:30Z and merged at 08:33Z. Three pairs of shields now tell each other apart. **Your veto is spent rather than standing**, so if the distinction reads wrong to you it is now a fresh look-and-feel note, not a stop order.
+- That was exactly the one hour the orchestrator predicted it would buy. The shelf is empty again, and nothing else on the board can be started without you: every remaining item waits on a verdict, a design sitting, or an attended browser.
+- The feature pipeline is not refilling on its own.
 
 ## Health
 
-All green — deploy, CI, scheduled jobs, armed PRs, task heartbeats, home tree and the worktree reaper. The only non-green signal is the 20–22 August lane gap, which is in the ask list above; the three later gaps are overnight-shaped and declined per your 8 August ruling.
+All green — deploy, CI, scheduled jobs, armed PRs, task heartbeats, home tree and the worktree reaper (last swept 10:40 local). The only non-green signal is the 20–22 August lane gap, which is in the ask list above; the three later gaps are overnight-shaped and declined per your 8 August ruling.

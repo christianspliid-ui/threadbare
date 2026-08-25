@@ -1,12 +1,12 @@
 # User Action Required
 
-**Last updated:** 2026-08-25 09:56 local (07:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-25 10:55 local (08:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
 ### 1. The batch-1 sample verdict — [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to)
 
-**Two encounters, played, judged: are they worth meeting twice?** Open since **17 August**. Earlier briefs led with batch 2, which is the item *behind* this one — correcting that here. Batch 2 needs this verdict; [your integrated slice checkpoint](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with) needs batch 2.
+**Two encounters, played, judged: are they worth meeting twice?** Open since **17 August**. Batch 2 needs this verdict; [your integrated slice checkpoint](https://linear.app/threadbare/issue/THR-1220/integrated-slice-checkpoint-christian-plays-all-five-encounters-with) needs batch 2.
 
 - **The Grateful Kin** — [play](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin) · [good](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin&outcome=critical_success) · [bad](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin&outcome=critical_failure)
 - **The Unsafe Bridge** — [play](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge) · [good](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge&outcome=critical_success) · [costly](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge&outcome=success_at_cost)
@@ -87,7 +87,7 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
-- 2026-08-25: **identical faction banners went to the builders on agent judgement** — [THR-854](https://linear.app/threadbare/issue/THR-854) promoted 07:30Z. Not a creative fork (nobody thinks identical banners are correct) and no image credits. Your veto stands.
+- 2026-08-25: **three faction pairs stopped flying the same banner** — [THR-854](https://linear.app/threadbare/issue/THR-854) shipped at 08:33, promoted on agent judgement an hour earlier under a veto nobody exercised. It was the only job the builders could take; the shelf is empty again.
 - 2026-08-25: **the keyboard can now read the game's own vocabulary** — [THR-1095](https://linear.app/threadbare/issue/THR-1095) merged at 04:31 ([PR #1604](https://github.com/christianspliid-ui/threadbare/pull/1604)). Every tooltip in the game answered only to a mouse.
 - 2026-08-25: **the six new encounters shipped** — [THR-1221](https://linear.app/threadbare/issue/THR-1221) merged at 03:45 via [PR #1603](https://github.com/christianspliid-ui/threadbare/pull/1603) and deployed. Six of six gates green, none vacuous. Two of them are now ask 3 above.
 - 2026-08-25: **hovering a condition now explains it** — [THR-1094](https://linear.app/threadbare/issue/THR-1094) merged at 02:26 ([PR #1602](https://github.com/christianspliid-ui/threadbare/pull/1602)).
