@@ -45,20 +45,25 @@ player, the batch is not ready to run.
 
 ## Rolled constraints (per slot)
 
-One block per encounter slot, rolled at brief time (spec § The Seed Dice), recorded
-here so the batch report can print `hook → shape → role` per encounter and coverage
-stays measurable:
+One block per encounter slot, rolled at brief time. **Roll the whole batch with one
+command** — `npm run draw:packet -- <briefSlug>` (THR-1245) — which composes the hook
+offers, the five Seed Dice, and the four packet dice (reach, decision shape,
+gap-weighted setting class, maturity-gated system target), enforces the variance caps
+by construction, and prints this block ready to paste:
 
 ```
 slot 1:
   plotHookRolled: <three ids>   plotHookTaken: <id>
   p3Shape: <die 1>              opposition: <die 2, with motive>
   disposition: <die 3 or n/a>   agentRole: <die 4>
-  scale: <die 5>
+  scale: <die 5>                reach: <packet die>
+  decisionShape: <packet die>   settingClass: <packet die>
+  systemTarget: <packet die>    consequenceHand: <THR-1145, once the template id exists>
 ```
 
 Rolls propose, design disposes — a slot may override a roll, stated with a reason.
-The variance caps above bind the batch either way.
+The variance caps above bind the batch either way (the packet enforces them at roll
+time; an override that breaches one is reported, not hidden).
 
 ## Systems quota targets
 

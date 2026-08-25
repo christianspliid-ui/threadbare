@@ -1,6 +1,6 @@
 ---
 domain: encounter-catalogs
-last_reviewed: 2026-07-31
+last_reviewed: 2026-08-25
 reviewer: claude-fable
 ul_shards: [Encounters, Prose]
 status: live
@@ -129,6 +129,17 @@ deferred** until the vertical slice validates the catalogs — wiring a generato
 vocabulary that is still moving buys drift, not visibility. Revisit after the first
 slice batch ships.
 
+**Three of these axes are now rolled, not hand-picked (THR-1245, 2026-08-25).** The
+batch packet (`npm run draw:packet`, tables in `src/data/content-eval/packetDice.ts`)
+rolls **shape** (§1), **setting** (§2, gap-weighted against the live corpus so an
+uncovered class like `stronghold` rolls likelier), and **system** (§7, maturity-gated:
+mature freely, middling once per batch, deferred never) per brief slot, capped per the
+authoring spec's enforcement tiers. A die is not the deferred coverage matrix — it
+reads these tables at roll time, so a catalog edit flows through with no regeneration —
+but the tier gate means §7's tier column is now load-bearing for the roller too: a
+tier move remains a design-session decision, and `packetDice.ts` must move in the same
+commit.
+
 ## Open questions
 
 - **The Iron rule** — the hook corpus's "force resolves instead of prolonging" rule
@@ -139,5 +150,7 @@ slice batch ships.
 
 ## Last-reviewed
 
+2026-08-25 by Claude Fable (THR-1245 — shape/setting/system now rolled by the batch
+packet dice; §7's tier column recorded as load-bearing for `packetDice.ts`). Previous:
 2026-07-31 by Claude Fable (created — THR-883 catalog architecture, Christian's chat
 approval; vertical-slice maturity tiers per his direction the same day).

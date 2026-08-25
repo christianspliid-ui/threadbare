@@ -248,9 +248,14 @@ hook leaves no trace on the finished template by design, so nothing can stamp th
 an unstamped hook stays likelier than it deserves indefinitely. `npm run draw:hooks --
 --coverage` reports what has been spent.
 
-In batch mode, roll all six briefs before writing any of them, and check the spread: six
-hooks sharing a theme is worth re-rolling a brief for, and it is much cheaper to notice here
-than in the batch report.
+In batch mode, roll all six briefs before writing any of them — **with one command**
+(THR-1245): `npm run draw:packet -- <briefSlug>` rolls every slot's hooks, Seed Dice,
+and the four packet dice (reach, decision shape, gap-weighted setting class,
+maturity-gated system target), enforces the batch variance caps by construction, and
+prints the brief's `Rolled constraints` block ready to paste. The spread check is
+built in: hooks offered to more than one slot are flagged, and a cap a human override
+breaches is reported rather than hidden. Single-encounter (non-batch) runs keep using
+`draw:hooks` directly.
 
 ### Step 0b: Roll the Consequence Draw (THR-1145)
 
@@ -277,7 +282,10 @@ hand from the template id at Step 3, so a hand cannot be quietly rewritten downs
 
 In batch mode, roll all six before dispatching any of them — the spread of families across
 the batch is part of what the batch report shows Christian, and a hand that lands six
-`possession` draws is worth noticing before six encounters are written.
+`possession` draws is worth noticing before six encounters are written. When the batch's
+planned template ids are already fixed, `npm run draw:packet -- <briefSlug> --ids
+id1,id2,…` rolls the binding hands alongside everything else in one pass; slots whose id
+is not yet chosen get the exact `draw:consequences` command to run once it is.
 
 ### Step 1: Dispatch Pass 1 (Draft)
 

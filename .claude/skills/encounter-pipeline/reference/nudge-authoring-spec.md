@@ -1349,6 +1349,41 @@ The dice stop at the brief. Everything inside the constraints — the fiction, t
 cards, the specific people — the author owns. A fully rolled encounter would be
 mad-libs; an unrolled one is the same encounter forever.
 
+### The batch packet — `draw:packet` rolls everything at once (THR-1245)
+
+**For a batch, roll the whole brief with one command** (director ruling 2026-08-25 —
+the factory hands an author a set of values plus the guidance to use them, so nobody
+learns every table and rolls slot by slot):
+
+```
+npm run draw:packet -- <briefSlug> [--slots 6] [--reaches iron,,veil] [--ids id1,id2] [--json]
+```
+
+Per slot it composes the hook offers and the five Seed Dice above with **four packet
+dice** — the capped axes the enforcement-tier table names that previously had variance
+rows but no dice:
+
+| Die | Faces | Weighting | Batch bound |
+|---|---|---|---|
+| **reach** | the 8 reaches | flat (overridable per slot via `--reaches`) | cap ≤2 |
+| **decision shape** | the 7-shape structure catalog (§ the shape catalog) | flat | cap ≤2 |
+| **setting class** | the 8-class envelope vocabulary | **gap-weighted against the live corpus** — an uncovered class rolls likelier | cap ≤2 |
+| **system target** | the encounter catalogs' §7 systems | maturity-gated: mature freely, middling sparingly, deferred weight 0 | cap ≤2 per face; **middling ≤1 per batch** |
+
+**Caps and floors hold by construction**: a face earlier slots rolled to its cap is
+excluded from later slots' tables (the Seed Dice caps too — stake/opposition/role,
+the hostile cap, and the settlement-or-larger floor, forced on the last slot if still
+unmet), so the spread never needs eyeballing. The tail of the printout is the
+ready-to-paste `Rolled constraints` block for the batch brief. Tables live in
+`src/data/content-eval/packetDice.ts`.
+
+The **binding consequence hand** is included only for slots given a planned template
+id (`--ids`), because that draw is seeded by the template id and `check:encounter`
+recomputes it from the id — a hand rolled off anything else would be rejected at the
+gate. Slots without ids print the exact `draw:consequences` command to run once the
+id exists. Single-encounter work keeps using `draw:hooks` / `draw:consequences`
+directly; the packet is the batch path.
+
 ---
 
 ## The Consequence Draw (THR-1145)

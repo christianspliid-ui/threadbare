@@ -394,14 +394,43 @@ function flatWeights<K extends string>(keys: readonly K[]): Record<K, number> {
  * Never throws (NFP #4): a die that cannot roll returns a usable face rather
  * than taking down a brief-time script, and an empty table is a catalog bug the
  * health check names.
+ *
+ * `excluded` faces are removed from the table before the draw — the batch
+ * packet's cap enforcement (THR-1245). Removing a key and zero-weighting it are
+ * the same eligible pool to `drawFromTable`, so an empty exclusion set draws
+ * bit-identically to the unconstrained die — pinned by test, because that
+ * identity is what keeps the batch roller from being a second sampler. A fully
+ * excluded table falls back to the unconstrained one rather than crashing: caps
+ * are a variety device, and reporting the violation beats refusing to roll.
  */
 function rollOne<K extends string>(
   tableId: string,
   keys: readonly K[],
   briefSeed: string,
+  excluded?: ReadonlySet<K>,
 ): K {
-  const [drawn] = drawFromTable(tableId, flatWeights(keys), briefSeed, 1);
-  return drawn ?? keys[0];
+  const constrained =
+    excluded && excluded.size > 0 ? keys.filter(key => !excluded.has(key)) : keys;
+  const pool = constrained.length > 0 ? constrained : keys;
+  const [drawn] = drawFromTable(tableId, flatWeights(pool), briefSeed, 1);
+  return drawn ?? pool[0];
+}
+
+/**
+ * Per-die exclusion sets for a cap-constrained roll (THR-1245).
+ *
+ * The batch packet builds these from the spec's batch bounds — a face goes in
+ * when earlier slots have already spent its cap ({@link SEED_DICE_BATCH_BOUNDS}),
+ * and the scale set doubles as the settlement floor (exclude `personal` +
+ * `company` when only the last chance to satisfy the floor remains). A
+ * single-slot roll passes nothing and is unchanged.
+ */
+export interface SeedDiceExclusions {
+  readonly stake?: ReadonlySet<StakeShape>;
+  readonly opposition?: ReadonlySet<OppositionId>;
+  readonly disposition?: ReadonlySet<Disposition>;
+  readonly agentRole?: ReadonlySet<AgentRoleId>;
+  readonly scale?: ReadonlySet<ScaleId>;
 }
 
 /**
@@ -410,14 +439,22 @@ function rollOne<K extends string>(
  * The motive and activity sub-rolls are seeded off the *opposition* as well as
  * the brief, so two briefs that happen to roll the same opposition still get
  * independent motives rather than the motive being a function of the slug alone.
+ *
+ * `exclusions` is the batch packet's cap-enforcement input (THR-1245); omitted
+ * or empty, the roll is bit-identical to the pre-packet behavior, which is what
+ * lets `draw:hooks` and `draw:packet` agree on an unconstrained slot.
  */
-export function rollSeedDice(input: SeedDiceInput): SeedDiceRoll {
+export function rollSeedDice(
+  input: SeedDiceInput,
+  exclusions: SeedDiceExclusions = {},
+): SeedDiceRoll {
   const { briefSeed } = input;
 
   const stakeId = rollOne(
     STAKE_TABLE_ID,
     STAKE_FACES.map(face => face.id),
     briefSeed,
+    exclusions.stake,
   );
   const stake = STAKE_FACES.find(face => face.id === stakeId) ?? STAKE_FACES[0];
 
@@ -425,6 +462,7 @@ export function rollSeedDice(input: SeedDiceInput): SeedDiceRoll {
     OPPOSITION_TABLE_ID,
     OPPOSITION_FACES.map(face => face.id),
     briefSeed,
+    exclusions.opposition,
   );
   const opposition = OPPOSITION_FACES.find(face => face.id === oppositionId) ?? OPPOSITION_FACES[0];
 
@@ -435,17 +473,18 @@ export function rollSeedDice(input: SeedDiceInput): SeedDiceRoll {
     : undefined;
 
   const disposition = opposition.willed
-    ? rollOne(DISPOSITION_TABLE_ID, DISPOSITIONS, briefSeed)
+    ? rollOne(DISPOSITION_TABLE_ID, DISPOSITIONS, briefSeed, exclusions.disposition)
     : undefined;
 
   const agentRoleId = rollOne(
     AGENT_ROLE_TABLE_ID,
     AGENT_ROLE_FACES.map(face => face.id),
     briefSeed,
+    exclusions.agentRole,
   );
   const agentRole = AGENT_ROLE_FACES.find(face => face.id === agentRoleId) ?? AGENT_ROLE_FACES[0];
 
-  const scale = rollOne(SCALE_TABLE_ID, SCALE_FACES, briefSeed);
+  const scale = rollOne(SCALE_TABLE_ID, SCALE_FACES, briefSeed, exclusions.scale);
 
   const suggested = new Set<StakeShape>();
   for (const theme of input.themes ?? []) {
