@@ -7,7 +7,7 @@ last_validated_against: 2026-08-25
 
 > **Load before authoring:** `Docs/canon/rulebook-quick-reference.md` (always — the synthesis layer for rules of play). Load `Docs/canon/rulebook.md` (full rulebook) when the work touches a specific rule of play and you need depth, status flags, or source citations.
 >
-> **Load before drafting a single card:** [`reference/nudge-authoring-spec.md`](reference/nudge-authoring-spec.md) — the canonical authoring contract in the locked THR-883 format: the communication pivot (prose does the scene, cards do the rules), the scene-writer's 14-question checklist, setting envelopes, the 21-type card library, the prose rubric, and the verbatim detector spec. It is shared verbatim with `template-encounter-rewrite`; where this skill and that spec appear to disagree, **the spec wins**.
+> **Load before drafting a single card:** [`reference/nudge-authoring-spec.md`](reference/nudge-authoring-spec.md) — the canonical authoring contract in the locked THR-883 format: the communication pivot (prose does the scene, cards do the rules), **§ Prose doctrine v2 (narrator mode — the binding prose contract)**, the narrator's 12-question checklist, setting envelopes, the 21-type card library, the prose rubric, and the verbatim detector spec. It is shared verbatim with `template-encounter-rewrite`; where this skill and that spec appear to disagree, **the spec wins**.
 
 # Encounter Pipeline v3 — the Encounter Factory line
 
@@ -118,7 +118,7 @@ If `Docs/canon/encounters.md` is missing or inaccessible, fall back to the pre-r
 
 **The editorial agent must check against these principles.** If a draft has structurally correct encounters but emotionally inert prose — if failure is just "you failed" with a number change, if the hand has an obvious dominant card, if the player wouldn't care about the outcome — the editorial agent should REVISE, not PASS. **Additionally, any encounter where the player "chooses how the character responds" must be rejected and reframed as a nudge hand.**
 
-**Register enforcement (plainspoken Malazan, THR-609).** The editorial agent must also check register, per the spec's *Register assignment per authored field* table. **Baseline is the default:** step narration, `fiction` bodies, band base text, and aftermath overviews are plain, concrete, one idea per sentence, dry wit over ornament — no archaic diction, no stacked metaphor, no word that sends a reader to a dictionary. **Card names, `effectLine`s, factor lines and purpose lines are interactive text — always plain** (no metaphor, no ambiguity about what the click does). The **only** place sustained lyricism is earned is a declared **peak** surface: the final step's band prose, the fate-reveal line, and major aftermath beats — and even there, one figurative image per paragraph. A draft that reaches for lyricism in ordinary narration should REVISE. Declare non-default fields with the additive `register?: 'baseline' | 'character' | 'peak'` field (absent → baseline). Canon: [`Docs/canon/prose.md` § the register model](../../../Docs/canon/prose.md); deterministic floor: `registerCompliance` in `window.__DEBUG.proseQualityReport()`.
+**Register + narrator mode (Doctrine v2, 2026-08-25 — authoritative in the spec § Prose doctrine v2; register model canonical in [`Docs/canon/prose.md`](../../../Docs/canon/prose.md)).** The editorial agent judges register per the spec's table and prose *mode* per v2: narrator mode on every encounter surface — state facts plainly, never inhabit the scene. Baseline plain is the default everywhere; **card names, `effectLine`s, factor lines and purpose lines are interactive text — always plain**. **Peak lyricism is retired for encounter surfaces** (2026-08-25); the remaining peak surfaces (doom transitions, Twilight, World-Soul) are non-encounter prose and out of this pipeline's scope. A draft that reaches for lyricism, or for in-situ immersion, should REVISE. Deterministic floor: `registerCompliance` in `window.__DEBUG.proseQualityReport()`.
 
 ## Quality Exemplar
 
@@ -519,7 +519,7 @@ The editorial agent:
 13. **A nudge-specific payoff written into the base band text** — it must read correctly with any subset of the hand active
 14. **A player-facing option that instructs the mortal** rather than exerting the god's influence on the scene or the mortal's inner weather — the rejected authored-futures model. Range is not the test: a dream, an omen, a kindled desire are lawful; "tell them to run" is not
 15. **Any detector hit**: a vagueness-lexicon word, or more than one annotation clause across the encounter
-16. **Scene-bespoke prose on a card face** — a title, effect line, or flavor quote that only reads in this encounter (the communication pivot: prose does the scene, cards do the rules)
+16. **Scene-bespoke prose on a card face** — a title or effect line that only reads in this encounter (the communication pivot: prose does the scene, cards do the rules) — or any flavor quote at all (retired 2026-08-25; cards read like spells)
 17. **An effect line that states mood instead of mechanism** — it must say what the god does and why that moves the odds
 18. **No setting envelope, or a declared class with no opening** — or a spine/afterimage that names class scenery
 19. **Two rider cards in one hand**, or a rider with no justifying comment

@@ -42,15 +42,15 @@ You write TWO files:
 
 8. **Experience Differentiator Gate** — Answer all 14 YES/NO questions with evidence. Any NO = automatic REVISE.
 
-   **Scene & Prose**
-   1. Opening places player inside a moment already in motion?
-   2. Prose has own voice — cadence, rhythm, sentence variety?
-   3. Scene prose names elements that become player choices?
-   4. Reader feels something from prose alone?
+   **Scene & Prose (judge against the spec's § Prose doctrine v2 — it wins over anything in this prompt)**
+   1. Opening follows the narrator-mode skeleton (arrival · situation & complication · problem, ≤80 words, real names, facts stated plainly)?
+   2. Every sentence does challenge/test/outcome work — no interior sensation, camera work, or jobless atmosphere?
+   3. Scene prose names elements the hand later acts on?
+   4. A player could retell situation and stakes accurately after one read?
    4b. No seam echoes? Read every paragraph boundary (each opening→spine, spine→band prose) for a repeated image, repeated sentence shape, or near-identical phrasing — the automated detectors cannot see this class, so it is checked by reading, sentence against sentence.
 
    **Choices & Intervention (the nudge hand)**
-   5. Every card face is library-generic (2–4 word title, one-line flavor quote) with zero scene-bespoke prose?
+   5. Every card face is spell-style (imperative verb + noun title, 1–2 direct effect sentences, no flavor quote — retired 2026-08-25) with zero scene-bespoke prose?
    6. Every effect line states mechanism — what the god does and why that moves the odds — and every price is real (essence, or a named alternate channel)?
    7. Every card pays off in failure (≥1 failure-band fragment; both failure bands when big-delta)?
    8. Every card is grounded in the scene — its target established in prose before the hand is dealt?
@@ -99,13 +99,13 @@ Add a revision note to the header:
 
 These are non-negotiable — if ANY are present, verdict MUST be `REVISE BEFORE CONTINUING`:
 
-1. **No approach prose.** Approach card is title + tag word with no prose paragraph.
+1. **No situation prose.** A test resolves with no narrator-mode setup establishing what is happening and what is at stake.
 2. **Generic god-verbs.** "Help them" / "let it play out" / "tip the scales" / "intervene."
 3. **No thread integration.** Threads only in menus, not discoverable in scene prose.
 4. **Missing aftermath reaction choices.** Medium+ scale without player consequence choices.
-5. **Reporter prose.** Opening briefing rather than scene-in-motion.
+5. **In-situ prose (Doctrine v2 inversion — this trigger used to fire the other way).** Opening written as scene-in-motion immersion — interior sensation, camera work, facts encoded as physical evidence — instead of a narrator's plain statement of facts. A direct, briefing-shaped account that names the stakes is the *standard*, never a defect.
 6. **Missing or illustrative concept art direction.** If the Concept Art Direction is absent, verdict is REVISE. If the art direction describes the scene the prose depicts (illustrative) instead of evoking the encounter's emotional themes (evocative), verdict is REVISE. Art should show residue/absence/mood — not the action.
-7. **Missing per-step approach cards.** Any player-facing step lacks authored approach cards. The runtime shows choices at EVERY step — generic fallback destroys authored quality.
+7. **Missing per-step hands.** Any nudge-bearing step lacks its full authored hand per the spec's guardrails ("approach cards" are the pre-nudge model — a draft built around them is the wrong encounter, not a revision note).
 
 ## What You Must NOT Do
 

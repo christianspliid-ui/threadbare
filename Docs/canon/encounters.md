@@ -29,17 +29,19 @@ included. Choosing between authored futures for a mortal is the **rejected** mod
 replaced (see Rejected approaches).
 
 **The format was locked 2026-07-30 (THR-883, the communication pivot): prose does the
-scene, cards do the rules.** Scene prose (per-class openings + setting-neutral spine +
-outcome prose) is fully written under the 14-question scene-writer's checklist; a card
-face is **library-generic** — 2–4 word title, one plain mechanical `effectLine`, one
-flavor quote, cut from the 21-type card library — with zero scene-bespoke prose.
+scene, cards do the rules. Amended 2026-08-25 (Doctrine v2 — narrator mode).** Scene prose
+(per-class openings + setting-neutral spine + outcome prose) is written in **narrator mode**
+under the narrator's 12-question checklist (the scene-writer's 14-question checklist is
+retired); a card face is **spell-style and library-generic** — imperative verb + noun
+title, 1–2 direct effect sentences, no flavor quote (retired 2026-08-25), cut from the
+21-type card library — with zero scene-bespoke prose.
 Templates declare **setting envelopes** (THR-884: `settings` from the 8-class
 vocabulary + one opening per class); cards may charge **cost channels** and carry
 **grants** (THR-885: doom/detection deltas, world changes in the existing aftermath
 effect vocabulary, grant-liveness gated). Odds render as pips (display-side; raw numbers
 in data).
 
-- **Authoring contract (load first, both pipelines):** [`.claude/skills/encounter-pipeline/reference/nudge-authoring-spec.md`](../../.claude/skills/encounter-pipeline/reference/nudge-authoring-spec.md) — the communication pivot, the 14-question checklist, setting envelopes, the 21-type library hand rules, register table, prose rubric, verbatim detector spec.
+- **Authoring contract (load first, both pipelines):** [`.claude/skills/encounter-pipeline/reference/nudge-authoring-spec.md`](../../.claude/skills/encounter-pipeline/reference/nudge-authoring-spec.md) — the communication pivot, § Prose doctrine v2 (narrator mode) with the 12-question checklist, setting envelopes, the 21-type library hand rules, register table, prose rubric, verbatim detector spec.
 - **Golden exemplar:** `src/data/__fixtures__/nudge-exemplar/swollen-ford-exemplar.ts` — The Swollen Ford, authored end-to-end in the locked format, every rule visible once. In no shipped pool. (Supersedes the pre-pivot Darkhollow Vault, deleted 2026-07-30.)
 - **Card library + pip vocabulary:** `public/nudge-cards-reference.html` (wiki page — the surface the repertoire is iterated on) · Repertoire progression: [2026-07-30-nudge-card-repertoire.md](../plans/2026-07-30-nudge-card-repertoire.md).
 - **Encounter catalogs (design-block vocabularies):** [encounter-catalogs.md](encounter-catalogs.md) — shape, setting, pressure, form, objective, stakes, system (maturity-gated to the vertical slice); companion idea bank `Design/research/quest-hooks/` (1,200 tagged hooks).
@@ -137,7 +139,7 @@ mercy, fate landed ruthlessness" a real outcome rather than a slogan.
 - **Compiled brief:** [Docs/authoring-brief.md](../authoring-brief.md) — regenerated from sources via `npm run build-authoring-brief`; check staleness with `npm run check:authoring-brief`
 - **UL terms:** [Docs/ubiquitous-language/Encounters.md](../ubiquitous-language/Encounters.md)
 - **Obsidian system page:** `TheFantasyWorldSimulator/Systems/Encounter System.md` (verify freshness — may lag code)
-- **Exemplars (canonical quality bar):** `src/data/encounters/rival-shrine-betrayal.ts` (10/10), `src/data/encounters/flawed-steel.ts` (9/10) — per [Docs/exemplars.md](../exemplars.md)
+- **Exemplars (canonical quality bar):** `src/data/__fixtures__/nudge-exemplar/swollen-ford-exemplar.ts` (format + prose); `rival-shrine-betrayal.ts` / `flawed-steel.ts` are **wiring references only** — their prose and choice model predate the nudge pivot and Doctrine v2 — per [Docs/exemplars.md](../exemplars.md)
 - **Data directory:** `src/data/encounters/` (branching) + template files compiled from skill pipeline
 
 ## Four load-bearing rules (encounter design)
@@ -146,7 +148,7 @@ From `2026-05-04-encounter-experience-design-plan.md` §1 — the executor's con
 
 - **Rule 1 — Path over adjective.** Every player choice must change the path, not the adjective.
 - **Rule 2 — The moral axis is structural.** Every reach has an archetype-pair axis (per the Cosmological Pattern). Each encounter choice tilts the agent toward one pole.
-- **Rule 3 — Verbs are encounter-specific, soft-power flavored.** Each encounter writes its own god-verbs ("Stir her resolve"). Never full control.
+- **Rule 3 — Divine influence is soft-power, expressed through the scene's prose; card faces are library-generic.** *(Amended 2026-07-30/2026-08-25: the original rule — "each encounter writes its own god-verbs" — predates the communication pivot. What survives: never full control, and the scene prose grounds each card in this encounter's named elements. What changed: the card text itself is the shared 21-type library vocabulary, spell-style, never scene-bespoke.)*
 - **Rule 4 — Every primitive is clickable.** Every node type — cast tile, item, clue, place, faction, Ascendant — has a detail page.
 
 ## Active design plans
@@ -202,4 +204,4 @@ Source: `Docs/plans/2026-05-04-encounter-experience-design-plan.md` §2.2 and `B
 
 ## Last-reviewed
 
-2026-08-25 by Claude Fable (THR-1245/THR-1246 — factory tooling recorded: the batch packet roll and the package compiler; hand-written modules/registrations/draws retired for new content). Previous: 2026-08-24 by Claude Fable (game-design-first authoring order recorded as a rejected approach's inverse — director ruling; epic-fantasy variety note; hook roll made non-bypassable in prose). Previous edits: 2026-08-16 by Claude Fable (UI Law 56 — chip-must-be-state-backed recorded as a rejected approach; PATH reserved for engine-actionable openings). Previous edits: 2026-08-02 by Claude Code (THR-969 — outcome-keyed aftermath recorded as the new authoring axis on `AftermathVariant`). Previous edits: 2026-08-01 by Claude Code (THR-899 — the vagueness lexicon recorded as scoped by field class, the two-list era closed). Previous edits: 2026-07-30 (merged edits) by Claude Code + Claude Fable: THR-892 recorded the variance rule — static `factorLines` retired for new content, the derived-line set and its one read path (`computeResolutionModifiers`), the omen/doom/season N/A with its read path cited, and `carryoverFactorLines` as the surviving authored factor surface. THR-883 recorded the format lock — the communication pivot, setting envelopes, cost channels/grants, and the Swollen Ford golden exemplar replacing the Darkhollow Vault. Previous edits: 2026-07-30 by Claude Code (THR-868 / WS6: Meet The First recorded as nudge-native); 2026-07-27 by Claude Code (THR-774 / WS1: nudge model recorded as the current authoring spec). Review trigger: monthly, or when any listed plan moves to `superseded`.
+2026-08-25 (second pass, THR-1251 sweep) by Claude Fable — format-lock paragraph amended to Doctrine v2 (narrator mode, 12-question checklist, spell-style faces, flavor quote retired); Rule 3 amended (soft-power survives, per-scene god-verb card text superseded by the library-generic law); exemplar row repointed to the Swollen Ford; the WS5-complete claim re-verified true (`authoredChoices: [` authored in zero shipped files — earlier contrary finding was a grep false positive on type references). Previous: 2026-08-25 by Claude Fable (THR-1245/THR-1246 — factory tooling recorded: the batch packet roll and the package compiler; hand-written modules/registrations/draws retired for new content). Previous: 2026-08-24 by Claude Fable (game-design-first authoring order recorded as a rejected approach's inverse — director ruling; epic-fantasy variety note; hook roll made non-bypassable in prose). Previous edits: 2026-08-16 by Claude Fable (UI Law 56 — chip-must-be-state-backed recorded as a rejected approach; PATH reserved for engine-actionable openings). Previous edits: 2026-08-02 by Claude Code (THR-969 — outcome-keyed aftermath recorded as the new authoring axis on `AftermathVariant`). Previous edits: 2026-08-01 by Claude Code (THR-899 — the vagueness lexicon recorded as scoped by field class, the two-list era closed). Previous edits: 2026-07-30 (merged edits) by Claude Code + Claude Fable: THR-892 recorded the variance rule — static `factorLines` retired for new content, the derived-line set and its one read path (`computeResolutionModifiers`), the omen/doom/season N/A with its read path cited, and `carryoverFactorLines` as the surviving authored factor surface. THR-883 recorded the format lock — the communication pivot, setting envelopes, cost channels/grants, and the Swollen Ford golden exemplar replacing the Darkhollow Vault. Previous edits: 2026-07-30 by Claude Code (THR-868 / WS6: Meet The First recorded as nudge-native); 2026-07-27 by Claude Code (THR-774 / WS1: nudge model recorded as the current authoring spec). Review trigger: monthly, or when any listed plan moves to `superseded`.

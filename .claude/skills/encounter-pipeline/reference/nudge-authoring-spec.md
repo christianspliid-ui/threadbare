@@ -308,9 +308,9 @@ existing cache filter enforces it unchanged.
 - **One opening per declared class** (~1 paragraph, scene word budget). Checklist
   questions 1–4 live in the opening; the complication, stakes, and hand are
   setting-neutral. The spine below the opening may not name class scenery.
-- **Per-card `fictionBySetting`** for the rare card whose flavor quote names class
-  scenery — one line per declared class, generic quote as default. Post-pivot most cards
-  never need it.
+- **Per-card `fictionBySetting`** remains readable for legacy cards whose card prose
+  (`fiction`) named class scenery. New cards author no card prose at all (Doctrine v2 —
+  the flavor quote and `fiction` are retired), so post-v2 cards never declare it.
 - **Exact-subtype override** (`locationTypes`) remains for genuinely specific encounters
   (a temple rite).
 - **Raw entries** declare `settings` + `openings` and the converter derives
@@ -404,8 +404,8 @@ before the first sentence of prose**:
    and both pole-paths on paper, and their branch wiring rides the ticket. A choice
    scene wants pole-leaning cards in its hand (Undertow, Compulsion, Kindled Ambition,
    trait cards) so the god has levers on the direction, not only on the cleanliness.
-7. **Every promise pays off.** Anything the opening makes the player lean toward the
-   screen for — what bends the reeds — has its reveal designed *now*, in a later step,
+7. **Every promise pays off.** Any open question the opening states plainly — a named
+   unknown, a stated risk, a hook — has its reveal designed *now*, in a later step,
    a band, or the aftermath, before the promise is written down.
 8. **Personalization + supporting content — how many systems does this encounter
    touch? (Christian, 2026-07-31.)** List the connections and count them; **target
@@ -719,8 +719,9 @@ design block** and reports against:
 2. **design conformance** — the prose held to the design block: is the agent the
    protagonist; does each step actually test its declared reach; does every designed
    mechanic and object appear in the prose or gate an outcome (an unused hook is a
-   finding); does every promise the prose makes have its designed payoff; is any
-   outcome mechanic announced instead of foreshadowed; does any base-prose sentence
+   finding); does every promise the prose makes have its designed payoff; are stakes stated
+   plainly rather than encoded in scene furniture (Doctrine v2 reverses the old
+   "announced instead of foreshadowed" check); does any base-prose sentence
    assert agent history — a relationship, debt, prior visit, standing — with no
    backing state read (prose rule 7)? **Count the connected systems** (design-block
    question 8) and report the number — under three beyond the core test is a

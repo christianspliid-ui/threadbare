@@ -2,9 +2,9 @@
 
 > **Generated:** 2026-08-25 by scripts/build-authoring-brief.ts
 > **Sources:**
->   - Docs/plans/2026-04-16-systemic-wiring-guide.md (sha1: 88688f6a283c69ca02e13797c8b633118c118eee)
+>   - Docs/plans/2026-04-16-systemic-wiring-guide.md (sha1: 725325e84db5eadbef7a5e4e6e6fd6f27f6faf3f)
 >   - Docs/plans/2026-04-16-game-design-direction.md (sha1: 653979d71c059ecae5048396f9b8adaae531ccc8)
->   - .claude/skills/encounter-pipeline/SKILL.md (sha1: c972e40ed91635839679921e1df0be477d0430d3)
+>   - .claude/skills/encounter-pipeline/SKILL.md (sha1: a4f34684a71fe42f9cdcb850386a244fbd112d4d)
 >   - Sections A/D, hardcoded in the generator (sha1: 65befe901e88a7024492a94e7d79113ba112b52c)
 > **Do not hand-edit.** Regenerate via `npm run build-authoring-brief`.
 
@@ -242,7 +242,7 @@ The following trigger **REVISE BEFORE CONTINUING** (non-negotiable — address b
 13. **A nudge-specific payoff written into the base band text** — it must read correctly with any subset of the hand active
 14. **A player-facing option that instructs the mortal** rather than exerting the god's influence on the scene or the mortal's inner weather — the rejected authored-futures model. Range is not the test: a dream, an omen, a kindled desire are lawful; "tell them to run" is not
 15. **Any detector hit**: a vagueness-lexicon word, or more than one annotation clause across the encounter
-16. **Scene-bespoke prose on a card face** — a title, effect line, or flavor quote that only reads in this encounter (the communication pivot: prose does the scene, cards do the rules)
+16. **Scene-bespoke prose on a card face** — a title or effect line that only reads in this encounter (the communication pivot: prose does the scene, cards do the rules) — or any flavor quote at all (retired 2026-08-25; cards read like spells)
 17. **An effect line that states mood instead of mechanism** — it must say what the god does and why that moves the odds
 18. **No setting envelope, or a declared class with no opening** — or a spine/afterimage that names class scenery
 19. **Two rider cards in one hand**, or a rider with no justifying comment

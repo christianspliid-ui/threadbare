@@ -7,11 +7,11 @@ When a better exemplar ships, update this file instead of hardcoding references 
 
 | Kind | File | Rubric | Why exemplary |
 | --- | --- | --- | --- |
-| Encounter — prose + structure | `src/data/__fixtures__/nudge-exemplar/swollen-ford-exemplar.ts` | Nudge Model format (THR-883) + Prose Doctrine v2 | **The one to copy.** Authored end-to-end against the locked format with every rule visible once; present tense, one fact per sentence, no figuration in the spine. Registered in no pool — it exists to be copied. `nudgeModel.test.ts` § *golden exemplar* pins it against the spec. |
+| Encounter — prose + structure | `src/data/__fixtures__/nudge-exemplar/swollen-ford-exemplar.ts` | Nudge Model format (THR-883) + Prose Doctrine v2 | **The one to copy.** Authored end-to-end against the locked format with every rule visible once; present tense, one fact per sentence, no figuration in the spine. Registered in no pool — it exists to be copied. `nudgeModel.test.ts` § *golden exemplar* pins it against the spec. **One v2 caveat:** its card *quotes* predate the quote retirement (2026-08-25) — cards are spell-style now; do not copy the quotes. |
 | Encounter — systemic wiring only | `src/data/encounters/rival-shrine-betrayal.ts` | 10/10 systemic wiring · **prose: do not copy** | Full-stack systemic connectivity with strong cool-failure outcomes and meaningful aftermath reactions. Study the wiring, not the sentences. |
-| Encounter — systemic wiring only | `src/data/encounters/flawed-steel.ts` | 9/10 systemic wiring · **prose: do not copy** | High-quality branch seduction and fail-forward pacing while staying implementable and testable. Study the branch/aftermath structure, not the sentences. |
+| Encounter — systemic wiring only | `src/data/encounters/flawed-steel.ts` | 9/10 systemic wiring · **prose: do not copy** | High-quality branch seduction and fail-forward pacing while staying implementable and testable. Study the branch/aftermath structure, not the sentences — and note its premise is the named rejected authored-futures example ("forge the truth / temper the narrative"). |
 | Prose — baseline register | (inline, below) | THR-609 register model | The default voice: plain, concrete, active. Dry understatement over ornament. |
-| Prose — peak register | (inline, below) | THR-609 register model | Rationed lyricism for designated peak surfaces (doom transitions, Twilight, encounter climax, World-Soul). |
+| Prose — peak register | (inline, below) | THR-609 register model | Rationed lyricism for the non-encounter peak surfaces (doom transitions, Twilight, World-Soul — encounter surfaces lost peak status 2026-08-25, Doctrine v2). |
 | Attachment | `<TBD - promote when a clear exemplar ships>` | `<TBD - define attachment rubric>` | Placeholder row for future promotion. |
 
 ## Register verdicts on the encounter rows (THR-1250, 2026-08-25)
@@ -36,7 +36,7 @@ The register model is canonical in [`Docs/canon/prose.md`](canon/prose.md#the-re
 
 Why it works: short declarative sentences, concrete nouns (merchant, door, ledger, boy), no rare vocabulary, no stacked figuration. The tension is human and legible. Contrast the drift version the model rejects: *"The merchant's ambit had grown parlous, freighted with the weight of unspoken covenants."* — same beat, ornamental diction, sends the reader to a dictionary.
 
-**Peak register** — reserved for doom transitions, Twilight, encounter climaxes, World-Soul prose. One figurative image per paragraph; rhythm may stretch.
+**Peak register** — reserved for the non-encounter surfaces: doom transitions, Twilight, World-Soul prose (encounter climaxes lost peak status 2026-08-25, Doctrine v2). One figurative image per paragraph; rhythm may stretch.
 
 > The bells stopped. Whatever had been holding its breath beneath the city let it out. Somewhere far below the streets, in the dark the founders had bricked over and forgotten, a long exhalation moved through stone — and the stone, for the first time in an age, listened back.
 
