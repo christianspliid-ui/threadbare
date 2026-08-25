@@ -336,23 +336,16 @@ export function NudgeCard({
           />
         </div>
 
-        {/* ── Flavor quote — the card's only prose ─────────────── */}
-        {/* `marginTop: auto` seats the quote at the card's foot, so cards of
-            different body lengths still line their quotes up across the row. */}
-        <p
-          style={{
-            margin: 0,
-            marginTop: 'auto',
-            paddingTop: 2,
-            fontFamily: FONT_PROSE,
-            fontStyle: 'italic',
-            fontSize: 'var(--text-xs)',
-            lineHeight: 1.55,
-            color: TEXT_WARM,
-          }}
-        >
-          {card.fiction}
-        </p>
+        {/* ── The flavor quote is retired (THR-1224) ───────────────
+            Prose Doctrine v2 § *Retired by name* strikes "the flavor quote"
+            from the authoring rules, so the card face no longer draws
+            `card.fiction`. A card now says what it does and nothing else:
+            name, effect line, cost, odds.
+
+            The `marginTop: auto` that used to seat the quote at the card's
+            foot moves to the spacer below, so cards of different body lengths
+            still align their footers across a row. */}
+        <div style={{ marginTop: 'auto' }} />
 
         {/* A dimmed card always says why. This is the whole reason
             `essence_unavailable` dims instead of hiding. */}

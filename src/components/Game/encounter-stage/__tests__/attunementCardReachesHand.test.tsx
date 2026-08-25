@@ -138,7 +138,9 @@ describe('attunement reaches the encounter stage', () => {
     // this into a suite that tests nothing while still passing.
     expect(ATTUNED, 'no chaos attunement member in the library').toBeDefined();
     expect(MARK).toBeGreaterThan(0);
-    expect(cardDisplayTitle(ATTUNED)).toBe('The Wider Swing');
+    // Renamed to imperative verb + noun by THR-1224 (doctrine v2 card-name
+    // shape); the id is what stayed stable, which is the point of the rename.
+    expect(cardDisplayTitle(ATTUNED)).toBe('Widen The Swing');
   });
 
   it('withholds the card below the mark', () => {

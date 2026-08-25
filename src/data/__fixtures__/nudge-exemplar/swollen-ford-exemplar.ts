@@ -13,10 +13,22 @@
  * It supersedes the Darkhollow Vault (WS1, pre-pivot). What changed and why:
  *
  *   - **Prose does the scene; cards do the rules** (THR-883 pivot). A card
- *     carries a generic 2–4 word title, one plain mechanical `effectLine`
- *     stating what the god does and why that moves the odds, and one short
- *     generic flavor quote in `fiction`. Zero scene-bespoke card prose. The
- *     scene lives in the openings, the step spine, and the band prose.
+ *     carries a generic name and one plain mechanical `effectLine` stating what
+ *     the god does and why that moves the odds. Zero scene-bespoke card prose.
+ *     The scene lives in the openings, the step spine, and the band prose.
+ *
+ *     **The flavor quote is retired** (Prose Doctrine v2, 2026-08-25; THR-1224).
+ *     Every card below still carries a `fiction` string and **no card face draws
+ *     one** — `NudgePhaseShell` stopped rendering the field, and the doctrine
+ *     strikes "the flavor quote" by name. The strings survive here only because
+ *     emptying them corpus-wide collides with the doctrine-v2 rewrite (THR-1223)
+ *     and rides THR-1225. **Do not copy the `fiction` lines when using this as a
+ *     worked example** — copy the names, the effect lines, and the band prose.
+ *
+ *     The name shape also tightened: doctrine v2 wants **imperative verb + noun**
+ *     within four words ("Widen The Swing", never "The Wider Swing"), reported at
+ *     warn level by `doctrineV2Checks.ts`. This fixture's names predate that rule
+ *     and are rewritten with the rest of the corpus under THR-1223.
  *   - **Setting envelope** (THR-884). The template declares `settings` from the
  *     8-class vocabulary and one opening per declared class; the spine below the
  *     opening is setting-neutral. `locationSubtypes` is derived, never

@@ -141,22 +141,26 @@
     <div class="anatomy-art">small generic picture</div>
     <div class="anatomy-body">
       <div class="anatomy-row"><span class="kw">◈ Insurance</span><span>⚡ 3</span></div>
-      <div class="anatomy-title">Restful dreams</div>
+      <div class="anatomy-title">Buy The Floor</div>
       <div class="anatomy-effect">Cannot resolve worse than success at a cost</div>
-      <div class="anatomy-quote">"No dreams tonight but kind ones."</div>
     </div>
   </div>
   <div style="flex: 1; min-width: 260px;">
     <ul>
       <li><strong>Picture</strong> — one small painted image per library card, generic like the title. Manifest + fallback chain (type icon on a tinted band until painted); rides the encounter image library pattern.</li>
       <li><strong>Keyword + icon</strong> — the card's type, player-facing vocabulary learned once.</li>
-      <li><strong>Title</strong> — two to four generic words, reusable everywhere. Interactive-plain: a label's job is to be unmistakable, so no metaphor here. Authored for every member since THR-1178.</li>
+      <li><strong>Title</strong> — <strong>imperative verb + noun</strong>, up to four generic words, reusable everywhere. Interactive-plain: a label's job is to be unmistakable, so no metaphor here. Authored for every member since THR-1178; renamed to the imperative shape by THR-1224 (<span class="mono">Widen The Swing</span>, never <span class="mono">The Wider Swing</span> — a card names the god's move, so it opens with the move). Ids did not move.</li>
       <li><strong>Cost</strong> — essence pips, <em>Free</em>, or alternate-cost icons (detection, doom, obligation). A sphere-discounted card prints the <em>effective</em> price: the pips are what the commit path charges, never the authored number.</li>
-      <li><strong>Effect</strong> — one plain mechanical sentence; odds shown in the pip vocabulary below.</li>
-      <li><strong>Flavor quote</strong> — one short generic line in the serif voice. The card's only prose.</li>
+      <li><strong>Effect</strong> — one plain mechanical sentence; odds shown in the pip vocabulary below. Since THR-1224 this is the card's <em>last</em> element: name, effect, cost, odds, and nothing else.</li>
     </ul>
   </div>
 </div>
+
+<h3>The flavor quote is retired <span class="flag impl">IMPL</span></h3>
+
+<p><strong>Prose Doctrine v2 (director ruling 2026-08-25) strikes the flavor quote by name</strong>, and THR-1224 removed it from the card face — <span class="mono">NudgePhaseShell</span> no longer draws <span class="mono">StepNudge.fiction</span>, which was the only place it ever reached a player. The anatomy above is now the whole card. The doctrine's reasoning: <em>everything serves challenge → test → outcome</em>, and a quote does none of the three; "it builds atmosphere" stopped being a job.</p>
+
+<p>Two fields survive as deprecated data rather than rendered prose. <span class="mono">StepNudge.fiction</span> still carries its ~150 authored strings across the corpus, and every library member still carries a <span class="mono">quote</span> because <span class="mono">unauthoredCardCount()</span> reads it to prove a member has an authored face. Emptying the first edits the same encounter files as the doctrine-v2 corpus rewrite (THR-1223) and emptying the second is a schema change; both ride the deferral filed against THR-1224. <strong>Do not author new <span class="mono">fiction</span>, and do not add a reader for either field.</strong></p>
 
 <h2>The odds pip vocabulary <span class="flag impl">IMPL</span></h2>
 
@@ -296,9 +300,11 @@
 
 <p><span class="mono">title</span>/<span class="mono">quote</span> stay <em>optional</em> on the schema and <span class="mono">cardDisplayTitle</span>'s keyword fallback stays live. That is deliberate: the fallback now serves the member added tomorrow before its face is written, and collapsing it would make adding a card a two-file edit whose half-done state renders blank instead of legible.</p>
 
+<p>All 37 titles were rewritten to the imperative shape in THR-1224. <strong>No id changed</strong>, so every template that names a member through <span class="mono">libraryCardId</span> was untouched — which is what made a bulk rename safe. Template-level card names (<span class="mono">StepNudge.name</span>, authored per encounter) are a separate surface and are rewritten by the doctrine-v2 corpus pass, THR-1223.</p>
+
 <p><span class="mono">imageTag</span> is absent on every member — the image library has no card rows to bind to, so each face falls back to its type's generic art. That is the documented chain, not a gap; minting card art slots is owned by THR-832/THR-1170.</p>
 
-<p>Three rules govern the authored faces, and the test file enforces the mechanical half of each: <strong>genericity</strong> (a face must read wherever its type deals — scene grounding is the prose's job), <strong>sphere voice</strong> (a signature member reads as its sphere's mode of power; an <span class="mono">omen</span> card sounds like time, not like a recolored boost), and <strong>interactive-plain titles</strong> (2–4 words, unmistakable; the quote is the one element allowed a dry line).</p>
+<p>Three rules govern the authored faces, and the test file enforces the mechanical half of each: <strong>genericity</strong> (a face must read wherever its type deals — scene grounding is the prose's job), <strong>sphere voice</strong> (a signature member reads as its sphere's mode of power; an <span class="mono">omen</span> card sounds like time, not like a recolored boost), and <strong>imperative titles</strong> (verb + noun, up to four words, unmistakable — see the anatomy above). The third rule was "interactive-plain titles, 2–4 words, the quote allowed a dry line" until THR-1224: Prose Doctrine v2 fixed the <em>shape</em> of the label and retired the quote, so the rule gained a form and lost its exception.</p>
 
 <p style="margin-top: 28px; font-size: 0.88rem; color: var(--ink-faint);">Maintained under THR-883. Sphere attunement (the <span class="mono">sphere_attunement</span> unlock kind, the <span class="mono">essenceEarnedBySphere</span> counter and its three seeded members) shipped in THR-1180. Engine shipped in THR-887 (library data model, per-member sphere gating, unlock resolution, echo-card harvest); the card row and pip rendering shipped in THR-890 (<span class="mono">NudgePhaseShell</span> draws the anatomy above; <span class="mono">OddsPips</span>/<span class="mono">CostPips</span>/<span class="mono">CardKeywordChip</span> are shared primitives). Keywords are derived from this library — no card type is declared anywhere else. This page's tables are freshness-gated against <span class="mono">src/data/nudge-card-library.ts</span>.</p>
 
