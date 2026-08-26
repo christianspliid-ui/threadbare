@@ -31,6 +31,7 @@ import {
   createTradeRoute,
   createSublocation,
   claimControl,
+  releaseControl,
   recordIntelligence,
   modifyLocationProperty,
   createRelationEdge,
@@ -329,8 +330,24 @@ export function advanceStrategicProjects(
   // Update controls — tick neglect and degradation
   const updatedControls: StrategicControlState[] = [];
   for (const control of currentState.controls) {
+    // A collapsed stance is retired, never carried (THR-1286). Records used to
+    // accumulate here forever at `active: false, degradation: 1`, and a dead record
+    // is not inert: `computeControlPressure` reads its frozen `neglectTicks` and pins
+    // the re-claim score at maximum. This branch also drains dead records loaded from
+    // a world saved before the fix.
     if (!control.active) {
-      updatedControls.push(control);
+      retireControl(graph, control, tick, newHistory, events);
+      continue;
+    }
+
+    // A stance cannot outlive what it controls. Removing a node takes its edges with
+    // it, so a deleted target leaves a live record with no edge — the one shape that
+    // still broke "live `controls` edges equal active stances" after the retirement
+    // work above (seed 99 at tick 150: one stance on `loc_2`, a location deleted after
+    // the stance was established). Retiring it now rather than waiting out ~30 ticks of
+    // neglect keeps the invariant exact and costs one lookup per live stance.
+    if (!graph.getNode(control.targetNodeId)) {
+      retireControl(graph, control, tick, newHistory, events);
       continue;
     }
 
@@ -339,18 +356,8 @@ export function advanceStrategicProjects(
     if (newNeglect > STRATEGIC_CONTROL_NEGLECT_GRACE_TICKS) {
       const newDegradation = Math.min(1, control.degradation + STRATEGIC_CONTROL_DEGRADATION_RATE);
       if (newDegradation >= 1) {
-        // Control collapses
-        updatedControls.push({ ...control, active: false, neglectTicks: newNeglect, degradation: 1 });
-
-        const actorNode = graph.getNode(control.actorId);
-        events.push({
-          id: `strategic_control_lost_${control.controlId}_${tick}`,
-          tick,
-          type: 'agent_action',
-          message: `${actorNode?.name ?? control.actorId} loses control: ${getStrategicTemplate(control.templateId)?.displayName ?? control.templateId}`,
-          significance: 0.5,
-          actorId: control.actorId,
-        });
+        // Control collapses — retired rather than kept as a dead record
+        retireControl(graph, { ...control, neglectTicks: newNeglect, degradation: 1 }, tick, newHistory, events);
       } else {
         updatedControls.push({ ...control, neglectTicks: newNeglect, degradation: newDegradation });
       }
@@ -370,6 +377,66 @@ export function advanceStrategicProjects(
     events,
     poolInvalidatedLocationIds,
   };
+}
+
+// ─── Control Retirement ─────────────────────────────────────────────
+
+/**
+ * Retire a collapsed control stance (THR-1286): drop its `controls` edge, write the
+ * collapse into history, announce it, and trace it.
+ *
+ * The history entry is the load-bearing part — it is what the re-claim cooldown in
+ * `strategicActionCandidates` reads once the record itself is gone. `claim_control` is
+ * the one strategic verb that never wrote history, which is why the existing
+ * recent-duplicate variety guard was blind to control claims and the same target could
+ * be re-proposed every tick (0 control history entries across a 150-tick seed-42 run).
+ *
+ * Mutates `history` and `events` in place — both are the caller's accumulators for this
+ * tick, and the caller owns merging and pruning them.
+ */
+function retireControl(
+  graph: WorldGraph,
+  control: StrategicControlState,
+  tick: number,
+  history: StrategicHistoryEntry[],
+  events: import('../types/gameState').TickEvent[],
+): void {
+  const released = releaseControl(graph, control.actorId, control.targetNodeId);
+  const displayName = getStrategicTemplate(control.templateId)?.displayName ?? control.templateId;
+
+  history.push({
+    tick,
+    actorId: control.actorId,
+    templateId: control.templateId,
+    ambitionId: control.ambitionId,
+    verb: 'control',
+    behaviorFamily: control.behaviorFamily,
+    displayName,
+    targetNodeId: control.targetNodeId,
+    outcome: 'failed',
+    graphOps: ['release_control'],
+    catalystSeeded: false,
+  });
+
+  const actorNode = graph.getNode(control.actorId);
+  events.push({
+    id: `strategic_control_lost_${control.controlId}_${tick}`,
+    tick,
+    type: 'agent_action',
+    message: `${actorNode?.name ?? control.actorId} loses control: ${displayName}`,
+    significance: 0.5,
+    actorId: control.actorId,
+  });
+
+  emitTrace({
+    category: 'strategic_control_lifecycle',
+    tick,
+    actorId: control.actorId,
+    targetNodeId: control.targetNodeId,
+    event: 'collapsed',
+    edgeReleased: released.success && released.createdId !== undefined,
+    summary: `Control collapsed: ${displayName} (${control.actorId} → ${control.targetNodeId})`,
+  } as TraceEntry);
 }
 
 // ─── Instant Mutation Dispatch ──────────────────────────────────────

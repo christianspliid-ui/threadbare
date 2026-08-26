@@ -113,6 +113,7 @@ export type TraceCategory =
   | 'strategic_action_started'
   | 'strategic_project_progress'
   | 'strategic_world_change'
+  | 'strategic_control_lifecycle'
   // Omen agenda traces (THR-19)
   | 'omen_selection'
   | 'omen_beat'
@@ -500,6 +501,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'strategic_action_started',
   'strategic_project_progress',
   'strategic_world_change',
+  'strategic_control_lifecycle',
   'omen_selection',
   'omen_beat',
   // Mortal economy — resource stock tiers (THR-615)
@@ -1809,6 +1811,27 @@ export interface StrategicWorldChangeTrace extends TraceBase {
   affectedNodeIds: string[];
 }
 
+/**
+ * Trace: a control stance ended, or a re-claim was refused by the post-collapse
+ * cooldown (THR-1286).
+ *
+ * `collapsed` fires when neglect degrades a stance to 1 and the record + its
+ * `controls` edge are retired; `reclaim_refused` fires when candidate generation
+ * declines to re-propose a target the actor let collapse inside the cooldown;
+ * `already_held` fires when generation declines a target the actor still actively
+ * controls, whose claim could only fail `already_controls`.
+ */
+export interface StrategicControlLifecycleTrace extends TraceBase {
+  category: 'strategic_control_lifecycle';
+  actorId: string;
+  targetNodeId: string;
+  event: 'collapsed' | 'reclaim_refused' | 'already_held';
+  /** Ticks remaining on the cooldown; only present on `reclaim_refused`. */
+  cooldownRemaining?: number;
+  /** Whether the dead `controls` edge was found and removed; only on `collapsed`. */
+  edgeReleased?: boolean;
+}
+
 // ═══════════════════════════════════════════════════════════════════
 // Encounter Aftermath Traces (THR-111)
 // ═══════════════════════════════════════════════════════════════════
@@ -2673,6 +2696,7 @@ export type TraceEntry =
   | StrategicActionStartedTrace
   | StrategicProjectProgressTrace
   | StrategicWorldChangeTrace
+  | StrategicControlLifecycleTrace
   | ChoiceSetPlayerResolvedTrace
   | ChoiceSetPlayerDismissedTrace
   | OmenSelectionTrace
