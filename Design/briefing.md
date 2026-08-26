@@ -1,13 +1,13 @@
 # Briefing
-**Generated:** 2026-08-26 23:55 local (21:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-08-27 00:55 local (22:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**One word starts the only content work on the board.** Unchanged — nothing has arrived that needs you, and nothing you owe has moved. Seventh day of asking.
+**One word starts the only content work on the board.** Unchanged — nothing has arrived that needs you, and nothing you owe has moved. Eighth day by your clock.
 
 [Approve the batch-2 brief](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/retrofit-batch-2-brief.md) and [Run Retrofit Batch 2](https://linear.app/threadbare/issue/THR-1222/run-retrofit-batch-2-the-camp-seven-through-the-factory-line-shrine) moves into build.
 
-**Why it is still the lead, and honestly why it is not urgent.** The engine lane is looking after itself — [the undertaking substrate](https://linear.app/threadbare/issue/THR-1292/the-undertaking-substrate-proactive-agent-actions-plan-doc-16) is being built, and **slice 2 of 6 merged eight minutes ago** ([PR #1655](https://github.com/christianspliid-ui/threadbare/pull/1655), the shared step-resolution library) on top of [slice 1 at 21:32](https://github.com/christianspliid-ui/threadbare/pull/1654). Two of six in under three hours, with nothing owed by you. What survives all of that is the **asymmetry**: the *content* lane has nothing queued at all, and the camp seven is the only content work a single word from you starts.
+**Why it is still the lead, and honestly why it is still not urgent.** The engine lane keeps looking after itself: [the undertaking substrate](https://linear.app/threadbare/issue/THR-1292/the-undertaking-substrate-proactive-agent-actions-plan-doc-16) now has **slice 3 of 6 open and queued to merge** ([PR #1656](https://github.com/christianspliid-ui/threadbare/pull/1656), checkpoint dice in the strategic runtime), on top of slices 1 and 2 already merged and deployed. Three slices in four hours, none of it owed by you. What survives all of that is the **asymmetry**: the *content* lane has nothing queued at all, and the camp seven is the only content work a single word from you starts.
 
 **The camp seven** — shrine offering, sharpening blades, warding the camp, a small prayer, rest and reflection, tending wounds, scouting the perimeter. No typed consequences at all across the set; with the corpus rewrite shipped they are the last encounters in the game below standard. And `shrine_offering` is encounter #1 of [your integrated slice checkpoint](https://linear.app/threadbare/issue/THR-1220), which cannot invite you while the camp set sits below the bar.
 
@@ -32,15 +32,15 @@
 
 ## Queue
 
-**Shelf at zero, one ticket in build and moving fast.**
+**Shelf at zero, one ticket in build and still moving fast.**
 
-- **In build: [the undertaking substrate](https://linear.app/threadbare/issue/THR-1292/the-undertaking-substrate-proactive-agent-actions-plan-doc-16).** **Slice 2 of 6 merged at 23:47** — the shared step-resolution library, extracted and its systems inventory regenerated. Slice 1 landed at 21:32. That is two slices in the two hours since the last brief, so the "has not landed yet" note from last hour is now closed by the work itself.
+- **In build: [the undertaking substrate](https://linear.app/threadbare/issue/THR-1292/the-undertaking-substrate-proactive-agent-actions-plan-doc-16).** **Slice 3 of 6 opened at 00:48** — checkpoint dice in the strategic runtime, auto-merge armed, waiting only on its own CI. Slices 1 and 2 are merged and deployed. Three of six inside four hours.
 - **Nothing waiting to be picked up.** Ready for Dev is empty; the executor's next wake continues THR-1292 rather than looking for new work. Work-in-progress is capped at one on purpose, so an empty shelf while a multi-day ticket is being built is the system behaving. The shelf matters again when this ticket finishes — which is where the five remaining plan docs from your own carve-up come in. Nothing to decide there: the carve-up names them and their order, and doc 3 (*the binder*) is the other critical-path one.
 - **Content lane still at zero queued.** That asymmetry is the whole argument for the lead ask.
-- **Three parked items, unchanged:** [THR-1130](https://linear.app/threadbare/issue/THR-1130) (the batch-1 sample verdict, closes in the same sitting as the camp-seven word), [THR-1133](https://linear.app/threadbare/issue/THR-1133) and [THR-1168](https://linear.app/threadbare/issue/THR-1168) — all on the list above.
+- **Three parked items, unchanged:** [THR-1130](https://linear.app/threadbare/issue/THR-1130) (the batch-1 sample verdict, closes in the same sitting as the camp-seven word), [THR-1133](https://linear.app/threadbare/issue/THR-1133) and [THR-1168](https://linear.app/threadbare/issue/THR-1168) — all on the list above. All three correctly parked; none of them is stuck for a technical reason.
 
 ## Health
 
-- **One thing for an agent, not for you, and it still has not moved:** [PR #1653](https://github.com/christianspliid-ui/threadbare/pull/1653) (impediment log + plan-template edit) has auto-merge armed but carries **both** a merge conflict and a failing required check, so clearing one will not release it. A session needs to merge `main` in, resolve, and re-run the check. Nothing is lost and no decision is involved. In this state ~3.5 hours now.
-- **Everything else green.** Nine scheduled lanes within schedule, both background jobs healthy, the live site serving the latest commit (`f36cee61` — slice 2 is already deployed), the worktree reaper ran 23:40 clean, the home tree on `main` and current.
+- **One thing for an agent, not for you, and it still has not moved:** [PR #1653](https://github.com/christianspliid-ui/threadbare/pull/1653) (impediment log + plan-template edit) has auto-merge armed but carries **both** a merge conflict and a failing required check, so clearing one will not release it. A session needs to merge `main` in, resolve, and re-run the check. Nothing is lost and no decision is involved. In this state ~4.5 hours now — worth a session's attention on the next wake, but it is holding nothing else up.
+- **Everything else green.** Nine scheduled lanes within schedule, both background jobs healthy, the live site serving the latest commit (`f36cee61`), the worktree reaper ran 00:41 clean, the home tree on `main` and current with a clean tree.
 - The nightly-shaped quiet spells stay declined per your 8 August ruling. The 35.3h gap of 20–22 August remains the one exception and is on the list above.
