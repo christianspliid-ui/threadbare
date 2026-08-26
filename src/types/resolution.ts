@@ -97,8 +97,15 @@ export interface ResolutionResult {
   rollBreakdown?: ResolutionRollBreakdown;
   /** Tactical test-shaper that altered the post-roll outcome, if any */
   appliedShaper?: AppliedResolutionShaper;
-  /** Phase 2: which system produced this result */
-  sourceSystem?: 'unified_action' | 'encounter' | 'forecast' | 'contested';
+  /**
+   * Phase 2: which system produced this result.
+   *
+   * `'undertaking'` is the second caller of the shared step-resolution core
+   * (THR-1292 §2) — checkpoint dice in the strategic runtime. It is a distinct
+   * member rather than a reuse of `'unified_action'` so a resolution log can tell
+   * an encounter step from a checkpoint without inferring it from the actor.
+   */
+  sourceSystem?: 'unified_action' | 'encounter' | 'forecast' | 'contested' | 'undertaking';
 }
 
 export interface AppliedResolutionShaper {

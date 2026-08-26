@@ -260,6 +260,20 @@ export interface GameState {
   /** Per-archetype configuration bundle; loaded at game-init from doomDefinition.archetype. */
   doomIdentityMatrix: DoomIdentityMatrix | null;
 
+  /**
+   * Agents whose moments interrupt the player rather than merely landing as a
+   * badge (THR-1292 §2). The default-followed set is the ascendant's threaded
+   * retinue — The First and anyone else the god has reached down to.
+   *
+   * **Additive, not authoritative.** The threaded retinue is followed by
+   * construction; this array names anyone else. Threads are minted long after
+   * world init, so a field read as the sole authority would follow nobody for the
+   * whole run. Optional for the same reason a pre-THR-1292 save must behave like a
+   * fresh one. The follow *affordance* (arc panel, encounter UI) is plan doc 5;
+   * the field lives here so the engine can stamp `everInterrupted` without it.
+   */
+  followedAgentIds?: readonly string[];
+
   // Narrative
   tickEvents: TickEvent[];           // events from the current tick (cleared each tick)
   recentEvents: TickEvent[];         // rolling buffer of last ~100 events for UI

@@ -86,6 +86,35 @@ export interface StrategicActionTemplate {
 
   /** Data-driven mutation descriptor — replaces hardcoded switch in lifecycle */
   readonly mutationHint?: StrategicMutationHint;
+
+  // ─── Checkpoint authoring (THR-1292 §2, §5) ───────────────────────
+
+  /**
+   * Normalised 0–1 difficulty each checkpoint rolls against.
+   *
+   * Absent ⇒ `UNDERTAKING_DEFAULT_CHECKPOINT_DIFFICULTY`. Per-kind band tables are
+   * plan doc 2's content; this field is the seam they write into.
+   */
+  readonly checkpointDifficulty?: number;
+
+  /**
+   * Whether the actor must be *at* the undertaking's stage for a checkpoint to
+   * resolve (THR-1279 verdict 7). Absent ⇒ `true`.
+   *
+   * When it holds and the actor is elsewhere the checkpoint defers rather than
+   * halting; `UNDERTAKING_ABSENCE_DEFERRAL_LIMIT` consecutive absences convert to
+   * one halt. That is deliberately not movement AI — moving an actor *toward* its
+   * stage is board/binder behaviour and belongs to docs 3/5.
+   */
+  readonly requiresLocation?: boolean;
+
+  /**
+   * Whether checkpoints may resolve while the actor is mid-encounter. Absent ⇒ `true`.
+   *
+   * A `false` here *reads* the busy set and never writes it — the busy gate is
+   * untouched, and the contract test in slice 2 exists to keep it that way.
+   */
+  readonly canRunBeside?: boolean;
 }
 
 // ─── Mutation Hints ─────────────────────────────────────────────────
@@ -198,7 +227,70 @@ export interface StrategicProjectRuntime {
 
   /** For control stances: ticks since last upkeep action */
   neglectTicks?: number;
+
+  // ─── Checkpoint state (THR-1292 §2) ───────────────────────────────
+  //
+  // Every field below is optional so a world saved before checkpoints loads as a
+  // fresh, un-checkpointed undertaking rather than throwing (NFP #6/#4). The
+  // reader treats absent as the zero value in each case, and
+  // `nextCheckpointTick` absent means "schedule one from now".
+
+  /** Checkpoints resolved so far — the index carried on the trace */
+  checkpointIndex?: number;
+  /** Tick at or after which the next checkpoint fires */
+  nextCheckpointTick?: number;
+  /** Accumulated ratchet points; at `UNDERTAKING_HALT_RATCHET_N` the fork fires */
+  halts?: number;
+  /** Set once the fork chose to escalate. A second ratchet trip forces abandon. */
+  escalated?: boolean;
+  /**
+   * Whether any moment on this undertaking ever reached the player as an
+   * interrupt. This is the input to the §2.2 residue rule: a failure nobody
+   * watched leaves a chronicle line, a failure they watched leaves a scar.
+   */
+  everInterrupted?: boolean;
+  /** Gates repeat at-cost interrupts — only the *first* advance-at-cost interrupts */
+  atCostMomentFired?: boolean;
+  /** Consecutive absence deferrals; `UNDERTAKING_ABSENCE_DEFERRAL_LIMIT` of them convert to one halt */
+  deferrals?: number;
+  /**
+   * Doc 3's re-binding seam. Set when an escalation asks for the undertaking to be
+   * re-bound with complications; nothing consumes it yet, and that is deliberate —
+   * the flag is the contract, the binder is doc 3.
+   */
+  rebindRequested?: boolean;
+  /** Difficulty override accumulated by escalation, on top of the template's authored value */
+  checkpointDifficultyDelta?: number;
+  /** Why the undertaking failed, when it did */
+  failureReason?: 'abandoned_after_halts' | 'actor_lost' | 'timeout';
+  /** Telemetry from the most recent checkpoint — what the debug surfaces read */
+  lastCheckpoint?: {
+    readonly band: import('./unifiedAction').StepOutcome;
+    readonly effect: UndertakingCheckpointEffect;
+    readonly roll: number;
+    readonly probability: number;
+    readonly tick: number;
+  };
 }
+
+/** What a checkpoint band does to an undertaking (THR-1292 §2). */
+export type UndertakingCheckpointEffect = 'advance' | 'advance_at_cost' | 'halt';
+
+/**
+ * Moment classes emitted by checkpoint resolution and read by
+ * `resolveMomentPresentation`. Doc 5 owns the surfaces; the vocabulary lives here
+ * so the engine can stamp `everInterrupted` without waiting for them.
+ */
+export type UndertakingMomentClass =
+  | 'started'
+  | 'at_cost'
+  | 'completion'
+  | 'fork'
+  | 'abandoned'
+  | 'complication';
+
+/** How a moment reaches the player. `'none'` means chronicle-only. */
+export type UndertakingMomentPresentation = 'interrupt' | 'badge' | 'none';
 
 // ─── Control State ──────────────────────────────────────────────────
 // Ongoing control stance held by an actor over a graph target.

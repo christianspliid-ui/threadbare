@@ -2012,6 +2012,66 @@ export const CONTRACTS: readonly Contract[] = [
     // Badging LIVE would badge a path nothing travels (the THR-614 error class).
     deferralTicket: 'THR-1130',
   },
+
+  // ── Strategic Projects & Control → audit-on-touch (THR-1292 slices 2–3) ────
+  // This subsystem was ⚪ UNAUDITED. These two rows cover exactly the seams this
+  // plan creates; the board-telemetry row the plan also names belongs to slice 5,
+  // where its consumer starts existing.
+  {
+    id: 'shared-step-resolution-two-callers',
+    producerSystem: 'Strategic Projects & Control',
+    consumerSystem: ENCOUNTERS,
+    intent:
+      'One band ladder decides every outcome in the game. An encounter step and an undertaking checkpoint that disagreed about what a critical failure is would be two games wearing one vocabulary — the same roll reading as disaster in a scene and a shrug in a project.',
+    ulTerms: ['Outcome Band'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['resolveStepCore', 'mapResolverOutcomeToStep'],
+      module: 'src/engine/stepResolutionCore.ts',
+    },
+    writeSites: ['src/engine/stepResolutionCore.ts'],
+    readSites: [
+      'src/engine/unifiedActionResolution.ts',
+      'src/engine/undertakingCheckpoints.ts',
+    ],
+    // The row deliberately did not exist in slice 2. It was written with one
+    // caller, and a row asserting *two* would have been the fiction this map
+    // exists to prevent. Slice 3 landed the second caller, so it is true now.
+    verifiedLive: {
+      date: '2026-08-27',
+      evidence:
+        'stepResolutionCore.contract.test.ts pins the permitted direct-caller set and asserts the encounter entry point and a direct core call agree on band/roll/probability; the second caller is exercised in the live simulation by undertakingCheckpointLiveness.test.ts (630 rolled checkpoints across all six bands on a 150-tick seed-42 run).',
+    },
+  },
+  {
+    id: 'undertaking-checkpoint-events',
+    producerSystem: 'Strategic Projects & Control',
+    consumerSystem: NARRATIVE,
+    intent:
+      'What happens to an agent’s undertaking reaches the player — the setback, the doubling-down, the abandonment — instead of progress silently accruing until a thing appears in the world with no story attached to it.',
+    mechanism: {
+      kind: 'event',
+      symbols: ['undertaking_checkpoint', 'undertaking_fork', 'resolveMomentPresentation', 'followedAgentIds'],
+      module: 'src/engine/undertakingCheckpoints.ts',
+    },
+    writeSites: [
+      'src/engine/undertakingCheckpoints.ts',
+      'src/engine/strategicActionLifecycle.ts',
+    ],
+    readSites: [
+      // Until plan doc 5 builds the arc panel and moment cards, the read side is
+      // the TickEvent stream and the trace buffer — stated rather than implied,
+      // because a row claiming a surface that does not exist is the leak this
+      // registry is for. Doc 5 adds the second consumer.
+      'src/engine/traceBuffer.ts',
+    ],
+    // No `verifiedLive`: the producer is wired and measured, but the *player-facing*
+    // consumer is doc 5's. Badging LIVE would badge a path nothing travels.
+    // `presentation` currently resolves to 'badge' or 'none' in every CLI run,
+    // because a CLI world carries no `thread` edges and so follows nobody — the
+    // interrupt arm is covered by unit tests, not by the simulation.
+    deferralTicket: 'THR-1293',
+  },
 ];
 
 /** A malformed row — surfaced in the generated output rather than thrown (NFP #4). */

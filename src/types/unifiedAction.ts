@@ -2657,7 +2657,27 @@ export function afterimageForOutcome(step: ActionStep, outcome: StepOutcome): st
  * `near_miss` (Phase 6): dice success in the near-miss zone — step advances but with
  *   partial growth credit and no Q delta. Distinct from shaper-shifted `success_at_cost`.
  */
-export type StepOutcome = 'critical_success' | 'success' | 'success_at_cost' | 'near_miss' | 'failure' | 'critical_failure';
+/**
+ * The six outcome bands, as a runtime vocabulary.
+ *
+ * `StepOutcome` is derived *from* this array rather than declared alongside it,
+ * so the two cannot drift: a seventh band added here widens the type
+ * automatically, and a band added to the type alone is not expressible. That
+ * matters because band tables elsewhere (`CHECKPOINT_EFFECT_BY_BAND`,
+ * `STEP_OUTCOME_TO_BAND`) are asserted *total* by iterating this array — a test
+ * that re-typed the six names would agree with itself while a new band fell
+ * through to `undefined` at runtime.
+ */
+export const STEP_OUTCOMES = [
+  'critical_success',
+  'success',
+  'success_at_cost',
+  'near_miss',
+  'failure',
+  'critical_failure',
+] as const;
+
+export type StepOutcome = typeof STEP_OUTCOMES[number];
 
 export interface UnifiedAction {
   readonly actionId: string;

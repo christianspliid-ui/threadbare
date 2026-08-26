@@ -114,6 +114,38 @@ export function getAmbitionTemplateId(node: GraphNode | undefined | null): strin
   return typeof templateId === 'string' && templateId ? templateId : undefined;
 }
 
+/**
+ * The graph-node id of a template-vocabulary ambition, given its `templateId`.
+ *
+ * The inverse of `getAmbitionTemplateId`, and the reason it exists is a bug it
+ * would have prevented: a strategic project stores its drive as a bare
+ * `ambitionId` (`ambition_conquer_territory` — a *template* id), while the
+ * `pursues` edge points at the *node* (`ambition.ambition_conquer_territory`).
+ * Comparing the two directly silently answers "this agent is not pursuing that"
+ * for every agent in the world, which is exactly what the THR-1292 fork did until
+ * a 150-tick run showed zero escalations where the calibration expected some.
+ *
+ * Faction-vocabulary ambitions carry no prefix — their `ambitionId` *is* the node
+ * id — so a caller holding an id of unknown vocabulary must accept either form.
+ * `ambitionNodeIdCandidates` does that for them.
+ */
+export function templateAmbitionNodeId(templateId: string): string {
+  return `ambition.${templateId}`;
+}
+
+/**
+ * Both node ids an ambition id could denote, for a caller that does not know
+ * which vocabulary it is holding: the raw id (faction vocabulary, where the id is
+ * already the node id) and the prefixed id (template vocabulary).
+ *
+ * Returning both and testing membership is deliberate. The alternative — guessing
+ * the vocabulary from the id's shape — is the hand-rolled discriminator this
+ * module exists to abolish.
+ */
+export function ambitionNodeIdCandidates(ambitionId: string): readonly string[] {
+  return [ambitionId, templateAmbitionNodeId(ambitionId)];
+}
+
 /** Every template-vocabulary ambition node in the graph. */
 export function getTemplateAmbitionNodes(graph: WorldGraph): GraphNode[] {
   return graph.getNodesByType('ambition').filter(isTemplateAmbition);

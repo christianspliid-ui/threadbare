@@ -4,6 +4,11 @@ import { executeStrategicAction, advanceStrategicProjects } from '../strategicAc
 import type { GameState } from '../../types/gameState';
 import type { StrategicActionCandidate, StrategicRuntimeState } from '../../types/strategicAction';
 import { mulberry32 } from '../../lib/prng';
+import {
+  UNDERTAKING_PROGRESS_PER_ADVANCE,
+  UNDERTAKING_CHECKPOINT_INTERVAL_TICKS,
+  UNDERTAKING_TIMEOUT_TICKS,
+} from '../../data/strategic-action-constants';
 
 function buildMinimalState(graph: WorldGraph): GameState {
   return {
@@ -180,7 +185,13 @@ describe('strategicActionLifecycle', () => {
   });
 
   describe('advanceStrategicProjects', () => {
-    it('advances active project progress', () => {
+    // THR-1292 §2: progress is no longer a function of elapsed ticks. These tests
+    // assert the *checkpoint* contract — a due checkpoint advances by a full step
+    // or halts, and an un-due one leaves the record alone. The pre-checkpoint
+    // "+1 every tick" assertion is gone because the behaviour is gone; keeping it
+    // green would have meant keeping the old cadence alive somewhere.
+
+    it('leaves an un-due project untouched, and stamps its schedule once', () => {
       const graph = buildTestGraph();
       const state = buildMinimalState(graph);
       state.strategicState = {
@@ -193,8 +204,9 @@ describe('strategicActionLifecycle', () => {
           behaviorFamily: 'merchant-expansion',
           targetNodeId: 'loc_market',
           progress: 5,
-          progressRequired: 8,
-          startedTick: 2,
+          progressRequired: 18,
+          // Started at 9, so the first checkpoint is due at 15 — not at tick 10.
+          startedTick: 9,
           lastProgressTick: 9,
           status: 'active',
         }],
@@ -202,11 +214,57 @@ describe('strategicActionLifecycle', () => {
         history: [],
       };
 
-      const rng = mulberry32(42);
-      const result = advanceStrategicProjects(state, graph, 10, rng);
+      const result = advanceStrategicProjects(state, graph, 10, mulberry32(42));
+      const project = result.strategicState.projects[0];
 
-      expect(result.strategicState.projects[0].progress).toBe(6);
-      expect(result.strategicState.projects[0].status).toBe('active');
+      expect(project.progress).toBe(5);
+      expect(project.status).toBe('active');
+      // Stamped rather than recomputed every tick.
+      expect(project.nextCheckpointTick).toBe(15);
+    });
+
+    it('advances by a full step or halts when a checkpoint is due — never by a partial tick', () => {
+      const graph = buildTestGraph();
+      const state = buildMinimalState(graph);
+      state.strategicState = {
+        projects: [{
+          projectId: 'proj_1',
+          actorId: 'actor_1',
+          templateId: 'strategic_build_warehouse',
+          ambitionId: 'ambition_dominate_trade',
+          verb: 'create',
+          behaviorFamily: 'merchant-expansion',
+          targetNodeId: 'loc_market',
+          progress: 0,
+          progressRequired: 18,
+          startedTick: 2, // due at 8
+          lastProgressTick: 2,
+          status: 'active',
+        }],
+        controls: [],
+        history: [],
+      };
+
+      const result = advanceStrategicProjects(state, graph, 10, mulberry32(42));
+      const project = result.strategicState.projects[0];
+
+      // The band is the roll's business; the *contract* is that a resolved
+      // checkpoint moves progress by a whole step (possibly doubled on a crit) or
+      // by nothing at all while taking a ratchet point. Asserting the disjunction
+      // rather than one band keeps this test about the cadence instead of
+      // silently pinning whatever `mulberry32(42)` happens to produce.
+      const advanced = project.progress > 0;
+      if (advanced) {
+        expect([
+          UNDERTAKING_PROGRESS_PER_ADVANCE,
+          UNDERTAKING_PROGRESS_PER_ADVANCE * 2,
+        ]).toContain(project.progress);
+        expect(project.halts ?? 0).toBe(0);
+      } else {
+        expect(project.halts ?? 0).toBeGreaterThan(0);
+      }
+      expect(project.checkpointIndex).toBe(1);
+      expect(project.nextCheckpointTick).toBe(10 + UNDERTAKING_CHECKPOINT_INTERVAL_TICKS);
     });
 
     it('completes project when progress reaches required', () => {
@@ -253,7 +311,11 @@ describe('strategicActionLifecycle', () => {
           targetNodeId: 'loc_market',
           progress: 2,
           progressRequired: 8,
-          startedTick: 1, // Started tick 1, now tick 25 → >18 tick timeout
+          // The timeout is now UNDERTAKING_TIMEOUT_TICKS (60), not the old flat 18:
+          // halts legitimately extend an undertaking and the ratchet is the designed
+          // exit, so a timeout tuned to the old passive cadence would fire on healthy
+          // work. This one is the fail-safe backstop (THR-1292 §2).
+          startedTick: 1,
           lastProgressTick: 3,
           status: 'active',
         }],
@@ -262,9 +324,36 @@ describe('strategicActionLifecycle', () => {
       };
 
       const rng = mulberry32(42);
-      const result = advanceStrategicProjects(state, graph, 25, rng);
+      const result = advanceStrategicProjects(state, graph, 1 + UNDERTAKING_TIMEOUT_TICKS + 1, rng);
 
       expect(result.strategicState.projects[0].status).toBe('failed');
+      expect(result.strategicState.projects[0].failureReason).toBe('timeout');
+    });
+
+    it('does not time out at the old 18-tick mark — the backstop moved, deliberately', () => {
+      const graph = buildTestGraph();
+      const state = buildMinimalState(graph);
+      state.strategicState = {
+        projects: [{
+          projectId: 'proj_1',
+          actorId: 'actor_1',
+          templateId: 'strategic_build_warehouse',
+          ambitionId: 'ambition_dominate_trade',
+          verb: 'create',
+          behaviorFamily: 'merchant-expansion',
+          targetNodeId: 'loc_market',
+          progress: 2,
+          progressRequired: 18,
+          startedTick: 1,
+          lastProgressTick: 3,
+          status: 'active',
+        }],
+        controls: [],
+        history: [],
+      };
+
+      const result = advanceStrategicProjects(state, graph, 25, mulberry32(42));
+      expect(result.strategicState.projects[0].status).not.toBe('failed');
     });
 
     it('degrades neglected control after grace period', () => {

@@ -114,6 +114,9 @@ export type TraceCategory =
   | 'strategic_project_progress'
   | 'strategic_world_change'
   | 'strategic_control_lifecycle'
+  // Undertaking checkpoints (THR-1292)
+  | 'undertaking_checkpoint'
+  | 'undertaking_fork'
   // Omen agenda traces (THR-19)
   | 'omen_selection'
   | 'omen_beat'
@@ -502,6 +505,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'strategic_project_progress',
   'strategic_world_change',
   'strategic_control_lifecycle',
+  'undertaking_checkpoint',
+  'undertaking_fork',
   'omen_selection',
   'omen_beat',
   // Mortal economy — resource stock tiers (THR-615)
@@ -1800,6 +1805,60 @@ export interface StrategicProjectProgressTrace extends TraceBase {
   status: 'active' | 'completed' | 'stalled' | 'failed';
 }
 
+/**
+ * Trace: one undertaking checkpoint resolved (THR-1292 §2).
+ *
+ * Emitted once per checkpoint *attempt*, including the deferred ones — a
+ * checkpoint that never rolled because the actor was absent is exactly the thing
+ * a tuning pass needs to see, and a trace that only fires on the rolls would hide
+ * a stage nobody ever reaches (NFP #2).
+ */
+export interface UndertakingCheckpointTrace extends TraceBase {
+  category: 'undertaking_checkpoint';
+  actorId: string;
+  projectId: string;
+  templateId: string;
+  checkpointIndex: number;
+  reach: ReachDomain;
+  /** Absent on a deferral — nothing was rolled */
+  band?: StepOutcome;
+  effect?: 'advance' | 'advance_at_cost' | 'halt';
+  roll?: number;
+  probability?: number;
+  capability?: number;
+  difficulty?: number;
+  /** Inspire/sabotage riders and escalation stakes, folded into one additive term */
+  modifiers?: number;
+  halts: number;
+  atCost: boolean;
+  progress: number;
+  progressRequired: number;
+  /** Set instead of the roll fields when the checkpoint could not resolve */
+  deferred?: 'actor_absent' | 'actor_busy';
+  presentation: 'interrupt' | 'badge' | 'none';
+}
+
+/**
+ * Trace: the halt ratchet forced the abandon-or-escalate fork (THR-1292 §2).
+ *
+ * Carries every input to the weight, not just the verdict, because the fork is
+ * first-guess calibration the plan explicitly invites retuning — and a verdict
+ * without its terms cannot be retuned from a log (NFP #2).
+ */
+export interface UndertakingForkTrace extends TraceBase {
+  category: 'undertaking_fork';
+  actorId: string;
+  projectId: string;
+  escalationWeight: number;
+  threshold: number;
+  decision: 'abandon' | 'escalate';
+  halts: number;
+  ambitionActive: boolean;
+  courage01: number;
+  /** Abandon only — the §2.2 residue rule's input (`everInterrupted`) */
+  visibleFailure?: boolean;
+}
+
 /** Trace: strategic action produced a world graph change */
 export interface StrategicWorldChangeTrace extends TraceBase {
   category: 'strategic_world_change';
@@ -2730,6 +2789,8 @@ export type TraceEntry =
   | StrategicCandidateBoardTrace
   | StrategicActionStartedTrace
   | StrategicProjectProgressTrace
+  | UndertakingCheckpointTrace
+  | UndertakingForkTrace
   | StrategicWorldChangeTrace
   | StrategicControlLifecycleTrace
   | ChoiceSetPlayerResolvedTrace
