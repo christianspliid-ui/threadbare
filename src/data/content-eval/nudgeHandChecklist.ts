@@ -27,6 +27,7 @@ import type {
   StepOutcome,
   UnifiedActionTemplate,
 } from '../../types/unifiedAction';
+import { runnableStepSites } from '../../types/unifiedAction';
 import {
   ALL_BAND_OUTCOMES,
   FACTOR_LINES_MAX,
@@ -89,9 +90,32 @@ function isDealBearing(step: unknown): step is DealBearingStep {
   return (step as ActionStep)?.deal !== undefined;
 }
 
-/** Plain `ActionStep`s declaring a fill. */
+/** A runnable step carrying a hand or a fill, with the label naming where it sits. */
+interface BearingSite<T extends ActionStep> {
+  readonly step: T;
+  /** `step 2`, or `step 2 variant 'positive'` — a *position*, never a filtered index. */
+  readonly label: string;
+}
+
+/**
+ * Every runnable step declaring a fill — branch arms included (THR-1273).
+ *
+ * A branch node declares no `deal` of its own, so filtering `template.steps`
+ * directly dropped the arms where a fork's composed hand actually lives.
+ */
+export function dealBearingSites(
+  template: UnifiedActionTemplate,
+): BearingSite<DealBearingStep>[] {
+  const out: BearingSite<DealBearingStep>[] = [];
+  for (const { step, label } of runnableStepSites(template.steps)) {
+    if (isDealBearing(step)) out.push({ step, label });
+  }
+  return out;
+}
+
+/** Plain-step view of {@link dealBearingSites}, for callers that need no label. */
 export function dealBearingSteps(template: UnifiedActionTemplate): DealBearingStep[] {
-  return (template.steps ?? []).filter(isDealBearing);
+  return dealBearingSites(template).map(site => site.step);
 }
 
 /**
@@ -103,9 +127,11 @@ export function dealBearingSteps(template: UnifiedActionTemplate): DealBearingSt
 export function checkComposedHand(template: UnifiedActionTemplate): string[] {
   const violations: string[] = [];
 
-  for (const step of dealBearingSteps(template)) {
-    const index = (template.steps ?? []).indexOf(step);
-    const where = `${template.id} step ${index} (${step.reach})`;
+  // Sites, not `indexOf` (THR-1273): a branch arm is not an element of
+  // `template.steps`, so the old lookup returned -1 and every composed-hand
+  // violation on a fork would have read `step -1`.
+  for (const { step, label } of dealBearingSites(template)) {
+    const where = `${template.id} ${label} (${step.reach})`;
     const specials = step.nudges ?? [];
     const { count, tags, exclude } = step.deal;
 
@@ -152,8 +178,27 @@ export function checkComposedHand(template: UnifiedActionTemplate): string[] {
 }
 
 /** Plain `ActionStep`s only — branching variants are out of scope for linear templates. */
+/**
+ * Every runnable step carrying an authored hand — branch arms included (THR-1273).
+ *
+ * A branch node has no `nudges`, so filtering `template.steps` directly meant a
+ * fork's arms — each of which authors its own hand — were never handed to a
+ * single WS1 rule, and a fork whose only hands sat on its arms reported the
+ * `no-hand` violation as if it had none at all.
+ */
+export function nudgeBearingSites(
+  template: UnifiedActionTemplate,
+): BearingSite<NudgeBearingStep>[] {
+  const out: BearingSite<NudgeBearingStep>[] = [];
+  for (const { step, label } of runnableStepSites(template.steps)) {
+    if (isNudgeBearing(step)) out.push({ step, label });
+  }
+  return out;
+}
+
+/** Plain-step view of {@link nudgeBearingSites}, for callers that need no label. */
 export function nudgeBearingSteps(template: UnifiedActionTemplate): NudgeBearingStep[] {
-  return (template.steps ?? []).filter(isNudgeBearing);
+  return nudgeBearingSites(template).map(site => site.step);
 }
 
 function words(text: string): number {
@@ -171,7 +216,10 @@ function words(text: string): number {
  */
 export function checkNudgeHand(template: UnifiedActionTemplate): string[] {
   const violations: string[] = [];
-  const steps = nudgeBearingSteps(template);
+  // Sites, not bare steps: once branch arms are walked (THR-1273) a filtered
+  // index no longer names a position — two arms of one fork would both report as
+  // consecutive "step N"s that exist nowhere in the authored file.
+  const steps = nudgeBearingSites(template);
 
   if (steps.length === 0) {
     // THR-1247 — a step may compose its hand entirely from the Repertoire, with
@@ -181,8 +229,8 @@ export function checkNudgeHand(template: UnifiedActionTemplate): string[] {
     return [`${template.id}: no nudge-bearing step — nothing to check`];
   }
 
-  for (const [index, step] of steps.entries()) {
-    const where = `${template.id} step ${index} (${step.reach})`;
+  for (const { step, label } of steps) {
+    const where = `${template.id} ${label} (${step.reach})`;
     const hand = step.nudges;
     // THR-1247 — on a composed step the authored cards are *specials*, not the
     // hand. The whole-hand rules below (size, delta budget, sphere spread,

@@ -21,7 +21,7 @@ import type {
   EncounterAftermathReactionEffect,
   UnifiedActionTemplate,
 } from '../types/unifiedAction';
-import { isActionStepBranch } from '../types/unifiedAction';
+import { runnableStepSites } from '../types/unifiedAction';
 import { AMBITION_TEMPLATES } from '../data/ambition-templates';
 import { ARTIFACT_TEMPLATES } from '../data/artifact-templates';
 import { CONDITION_TRAIT_DEFINITIONS } from '../data/condition-trait-content';
@@ -357,20 +357,20 @@ function allTemplateEffects(
     }
   }
 
-  const steps = template.steps ?? [];
-  for (let stepIndex = 0; stepIndex < steps.length; stepIndex++) {
-    const step = steps[stepIndex];
-    if (isActionStepBranch(step)) continue;
+  // Branch arms included (THR-1273): an arm grants its own ids, and skipping
+  // branch nodes meant a card on the fork's chosen side could name a trait or
+  // pool that does not exist and no liveness check would ever see it.
+  for (const { step, label } of runnableStepSites(template.steps)) {
     // Step-outcome metadata carries the same effect vocabulary (THR-783).
     for (const effect of step.successMetadata?.effects ?? []) {
-      out.push({ effect, site: `step[${stepIndex}].successMetadata` });
+      out.push({ effect, site: `${label}.successMetadata` });
     }
     for (const effect of step.failureMetadata?.effects ?? []) {
-      out.push({ effect, site: `step[${stepIndex}].failureMetadata` });
+      out.push({ effect, site: `${label}.failureMetadata` });
     }
     for (const nudge of step.nudges ?? []) {
       for (const effect of nudge.grants ?? []) {
-        out.push({ effect, site: `step[${stepIndex}].card '${nudge.id}'` });
+        out.push({ effect, site: `${label}.card '${nudge.id}'` });
       }
     }
   }

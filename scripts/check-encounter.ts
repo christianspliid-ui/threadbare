@@ -39,6 +39,15 @@
  *                            must stay inside the probability range, so a hand
  *                            cannot promise movement the resolver will clamp.
  *
+ * **Every block above walks branch arms** (THR-1273). A forked encounter authors
+ * its prose, hand, difficulty and consequence inside `variants`/`fallback`, so a
+ * gate that filtered branch nodes out of `steps[]` was checking the plain half
+ * and asserting green over the rest — measured on the factory's first
+ * `personality_fork`, where three editorial defects sat in the unchecked half.
+ * The descent is `runnableStepSites` in `src/types/unifiedAction.ts`, shared by
+ * this runner, the Composition Contract, the hand checklist and grant liveness;
+ * never re-filter `template.steps` by hand.
+ *
  * Alongside the five gating blocks there is one **warn channel** (THR-1224),
  * printed as `[warn]` and never affecting the exit code: `auditTemplate()`'s
  * demoted ranking detectors plus the Prose Doctrine v2 structural checks
@@ -67,7 +76,7 @@
 
 import { UNIFIED_ACTION_TEMPLATES } from '../src/data/unified-action-templates';
 import type { UnifiedActionTemplate } from '../src/types/unifiedAction';
-import { isActionStepBranch } from '../src/types/unifiedAction';
+import { runnableStepSites } from '../src/types/unifiedAction';
 import {
   authoredProse,
   checkCompositionContract,
@@ -109,8 +118,10 @@ const PROBABILITY_MAX = 1;
 
 function forecastProblems(template: UnifiedActionTemplate): readonly string[] {
   const problems: string[] = [];
-  for (const [index, step] of (template.steps ?? []).entries()) {
-    if (isActionStepBranch(step)) continue;
+  // Branch arms included (THR-1273) — each arm carries its own difficulty and
+  // its own hand, so the arithmetic has to run per arm or a fork's forecast is
+  // checked on the plain half and asserted over the rest.
+  for (const { step, label } of runnableStepSites(template.steps)) {
     const hand = step.nudges ?? [];
     if (hand.length === 0) continue;
     // `difficulty` is the threshold the roll must beat, so the headroom a hand
@@ -120,14 +131,14 @@ function forecastProblems(template: UnifiedActionTemplate): readonly string[] {
     const total = hand.reduce((sum, n) => sum + n.forecastDelta, 0);
     if (base + total > PROBABILITY_MAX + 1e-9) {
       problems.push(
-        `step ${index}: difficulty ${base.toFixed(2)} + full hand ${total.toFixed(2)} = `
+        `${label}: difficulty ${base.toFixed(2)} + full hand ${total.toFixed(2)} = `
           + `${(base + total).toFixed(2)}, past ${PROBABILITY_MAX} — the last cards buy nothing`,
       );
     }
     const worst = hand.reduce((sum, n) => sum + Math.min(0, n.forecastDelta), 0);
     if (base + worst < PROBABILITY_MIN - 1e-9) {
       problems.push(
-        `step ${index}: difficulty ${base.toFixed(2)} + negative hand ${worst.toFixed(2)} = `
+        `${label}: difficulty ${base.toFixed(2)} + negative hand ${worst.toFixed(2)} = `
           + `${(base + worst).toFixed(2)}, under ${PROBABILITY_MIN}`,
       );
     }

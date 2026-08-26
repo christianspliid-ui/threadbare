@@ -41,7 +41,7 @@ import type {
   UnifiedActionOutcome,
   UnifiedActionTemplate,
 } from '../../types/unifiedAction';
-import { isActionStepBranch } from '../../types/unifiedAction';
+import { runnableStepSites } from '../../types/unifiedAction';
 import type { EncounterSupportSpec } from '../../types/encounter';
 import { ENCOUNTER_IMAGE_LIBRARY } from '../encounter-image-library';
 import { validateSettingEnvelope } from '../settingClasses';
@@ -311,12 +311,15 @@ const PLAN_SECTION: Readonly<Record<CompositionBlock, string>> = {
 
 // ─── Manifest readers ────────────────────────────────────────────────
 
-/** Plain steps only — a branch node carries no prose, hand, or afterimages. */
-function plainSteps(template: UnifiedActionTemplate): readonly ActionStep[] {
-  return (template.steps ?? []).filter(
-    (step): step is ActionStep => !isActionStepBranch(step),
-  );
-}
+// `plainSteps` — a `template.steps` filter that dropped branch nodes — lived
+// here until THR-1273 and was the single source of this module's fork blindness:
+// every block that read it checked the plain half of a forked encounter and
+// reported green over the arms, where a fork puts its prose, hand, difficulty
+// and consequence. It is deliberately gone rather than narrowed. The premise it
+// rested on ("a branch node carries no prose, hand, or afterimages") is true of
+// the *node* and false of the encounter, and a helper whose name invites that
+// substitution is a trap to re-enter. Ask `runnableStepSites` instead, which
+// hands back the arm and a label naming it.
 
 /** Every aftermath variant on the template — choice-keyed and fallback alike. */
 function aftermathVariants(template: UnifiedActionTemplate): readonly AftermathVariant[] {
@@ -346,7 +349,10 @@ function allAftermathEffects(
   }
   // Step-outcome metadata carries the same effect vocabulary (THR-783), and an
   // encounter may put its whole consequence there rather than in an aftermath.
-  for (const step of plainSteps(template)) {
+  // Branch arms included (THR-1273): a fork's variant is where a `personality_fork`
+  // puts the consequence of taking that side, so reading only the plain half
+  // reported the write as absent and pushed authors into an optional reaction.
+  for (const step of allRunnableSteps(template)) {
     out.push(...(step.successMetadata?.effects ?? []));
     out.push(...(step.failureMetadata?.effects ?? []));
   }
@@ -379,24 +385,19 @@ function allAftermathChanges(
 /**
  * Every step the template can actually run, branch arms included.
  *
- * {@link plainSteps} answers a different question — "which steps carry prose,
- * a hand and a difficulty" — and so drops branch nodes entirely. For "does this
- * template write any state", dropping them is a false negative with teeth: a
- * branching encounter puts its whole consequence inside `variants`/`fallback`,
- * and a naive `steps[]` walk reports every one of them as writing nothing.
- * That is the exact shape the THR-1141 corpus audit flagged as the gate's likely
- * first bug, so the walk lives here once rather than in each caller.
+ * A naive `steps[]` walk that skips branch nodes is a false negative with teeth:
+ * a branching encounter puts its whole consequence inside `variants`/`fallback`,
+ * and such a walk reports every one of them as writing nothing. That is the
+ * exact shape the THR-1141 corpus audit flagged as the gate's likely first bug —
+ * and THR-1273 then measured it across every block, not just this one.
+ *
+ * Prefer {@link runnableStepSites} directly when the caller emits a message: it
+ * carries the position and arm key, so a violation says which side of the fork
+ * it found rather than a step index that is ambiguous across arms. This wrapper
+ * is for the callers that only need the steps themselves.
  */
 function allRunnableSteps(template: UnifiedActionTemplate): readonly ActionStep[] {
-  const out: ActionStep[] = [];
-  for (const step of template.steps ?? []) {
-    if (isActionStepBranch(step)) {
-      out.push(...Object.values(step.variants), step.fallback);
-    } else {
-      out.push(step);
-    }
-  }
-  return out;
+  return runnableStepSites(template.steps).map(site => site.step);
 }
 
 /** Outcome bands authored anywhere on the template's aftermath. */
@@ -882,7 +883,8 @@ function hasReward(template: UnifiedActionTemplate): boolean {
  * `hasReward` says nothing about which family was wired.
  */
 function hasRewardPoolRecipe(template: UnifiedActionTemplate): boolean {
-  for (const step of plainSteps(template)) {
+  // Branch arms included (THR-1273) — a fork may author its draw on one side only.
+  for (const step of allRunnableSteps(template)) {
     if (step.successMetadata?.rewardPool || step.failureMetadata?.rewardPool) return true;
   }
   return false;
@@ -1102,7 +1104,10 @@ function locatedAuthoring(template: UnifiedActionTemplate): readonly LocatedAuth
   // success-side run, never the reverse — so it cannot launder a missing write
   // into a pass. It is also the only case where the implication actually holds.
   const failureOnlyBands = FAILURE_BANDS;
-  for (const step of plainSteps(template)) {
+  // Branch arms included (THR-1273). The band tagging below reads `failBehavior`
+  // off the arm that actually runs, which is the arm's own field — a fork may
+  // declare `fail_action` on one side and not the other.
+  for (const step of allRunnableSteps(template)) {
     for (const effect of step.successMetadata?.effects ?? []) {
       push(systemsOfEffect(effect), undefined, undefined, effectTags(effect));
     }
@@ -1269,17 +1274,24 @@ export function checkCompositionContract(
   };
 
   // ─── Steps ─────────────────────────────────────────────────────────
-  const steps = plainSteps(template);
-  if (steps.length < COMPOSITION_STEPS_MIN || steps.length > COMPOSITION_STEPS_MAX) {
+  // The count is over *positions* the player traverses, so a branch counts once
+  // however many arms it has — the player runs exactly one of them (THR-1273).
+  // `plainSteps` counted zero for a branch position, which understated every
+  // fork by one and let a 4-position fork read as 3.
+  const positions = (template.steps ?? []).length;
+  if (positions < COMPOSITION_STEPS_MIN || positions > COMPOSITION_STEPS_MAX) {
     add(
       'steps',
-      `${steps.length} plain step(s), outside ${COMPOSITION_STEPS_MIN}–${COMPOSITION_STEPS_MAX}`,
+      `${positions} step position(s), outside ${COMPOSITION_STEPS_MIN}–${COMPOSITION_STEPS_MAX}`,
     );
   }
-  for (const [index, step] of steps.entries()) {
-    if (!step.reach) add('steps', `step ${index} declares no reach`);
-    if (typeof step.difficulty !== 'number') add('steps', `step ${index} declares no difficulty`);
-    if (!step.narrativeTemplate?.trim()) add('steps', `step ${index} has no narrativeTemplate`);
+  // Quality is per *arm*: reach, difficulty and prose live on the concrete step,
+  // and a branch node carries none of them, so a walk that skipped branches left
+  // every arm of every fork unchecked.
+  for (const { step, label } of runnableStepSites(template.steps)) {
+    if (!step.reach) add('steps', `${label} declares no reach`);
+    if (typeof step.difficulty !== 'number') add('steps', `${label} declares no difficulty`);
+    if (!step.narrativeTemplate?.trim()) add('steps', `${label} has no narrativeTemplate`);
   }
 
   // ─── Hand (delegated) ──────────────────────────────────────────────
@@ -1483,8 +1495,10 @@ export function authoredProse(
     push(text, `opening[${cls}]`);
   }
 
-  for (const [index, step] of plainSteps(template).entries()) {
-    const at = `step ${index}`;
+  // Branch arms included (THR-1273). A fork's variants are where its most
+  // divergent prose lives — and the verbatim cross-variant sentence that run
+  // caught by hand is exactly what an echo detector reading both arms would see.
+  for (const { step, label: at } of runnableStepSites(template.steps)) {
     push(step.narrativeTemplate, `${at}.narrativeTemplate`);
     push(step.purposeLine, `${at}.purposeLine`);
     push(step.successAfterimage, `${at}.successAfterimage`);

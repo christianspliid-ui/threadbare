@@ -19,7 +19,8 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import type { UnifiedActionTemplate } from '../../../types/unifiedAction';
+import type { ActionStep, UnifiedActionTemplate } from '../../../types/unifiedAction';
+import { isActionStepBranch } from '../../../types/unifiedAction';
 import { NUDGE_GOLDEN_EXEMPLAR } from '../../__fixtures__/nudge-exemplar/swollen-ford-exemplar';
 import { UNIFIED_ACTION_TEMPLATES } from '../../unified-action-templates';
 import {
@@ -34,6 +35,7 @@ import {
   isAdditiveConditionEffectKind,
   reachableConditionWritesCannotFire,
   systemSurfacesForOutcome,
+  authoredProse,
 } from '../compositionContract';
 import { RETROFIT_PENDING, isRetrofitPending } from '../retrofitPending';
 import { checkComposedHand } from '../nudgeHandChecklist';
@@ -613,5 +615,127 @@ describe('composed hand — the deal declaration', () => {
     expect(
       handViolations(composed({ count: 5, exclude: ['boost', 'mercy', 'gambit'] }, 0)).join(' '),
     ).toMatch(/describe it by subtraction|author the hand instead/u);
+  });
+});
+
+/**
+ * THR-1273 — every block descends into `ActionStepBranch` arms.
+ *
+ * The blindness these cover was structural, not textual: `plainSteps` and
+ * `nudgeBearingSteps` filtered branch nodes out of `template.steps`, so a fork's
+ * arms — which carry their own prose, hand, reach, difficulty and outcome
+ * metadata — reached no gate at all. Measured on the factory's first
+ * `personality_fork`, three editorial defects lived exactly in the unchecked
+ * half and would have shipped green.
+ *
+ * Built the same way as the block cases above: take the *passing* exemplar and
+ * move its second step into a branch arm, so the only difference between the
+ * green and red cases is which side of the fork the defect sits on. A fixture
+ * authoring both halves would prove only that two fictions agree.
+ */
+describe('Composition Contract — branch arms are walked (THR-1273)', () => {
+  /** The exemplar with step 1 replaced by a two-arm fork, `mutate` applied to the `negative` arm. */
+  function forked(mutate: (step: ActionStep) => ActionStep): UnifiedActionTemplate {
+    const steps = NUDGE_GOLDEN_EXEMPLAR.steps ?? [];
+    const plain = steps[1];
+    if (!plain || isActionStepBranch(plain)) throw new Error('exemplar step 1 is not a plain step');
+    return {
+      ...NUDGE_GOLDEN_EXEMPLAR,
+      steps: [
+        steps[0],
+        {
+          branchOnStep: 0,
+          variants: { positive: plain, negative: mutate(plain) },
+          fallback: plain,
+        },
+      ],
+    };
+  }
+
+  it('a fork whose arms are all clean stays green', () => {
+    // The control. Without it every red case below could be passing because
+    // *forking at all* trips the contract, which would prove nothing about
+    // descent — and would silently make the whole block vacuous.
+    const report = checkCompositionContract(forked(step => step));
+    expect(report.violations.map(v => `[${v.block}] ${v.message}`)).toEqual([]);
+  });
+
+  it('a missing narrativeTemplate in one arm names the steps block', () => {
+    const violations = checkCompositionContract(
+      forked(step => ({ ...step, narrativeTemplate: '   ' })),
+    ).violations;
+    expect(violations.map(v => v.block)).toContain('steps');
+    // The label names the arm, not a filtered index: two arms of one fork would
+    // otherwise report as consecutive "step N"s that exist in no authored file.
+    expect(violations.map(v => v.message).join(' ')).toMatch(
+      /step 1 variant 'negative' has no narrativeTemplate/u,
+    );
+  });
+
+  it('a missing reach in one arm names the steps block', () => {
+    const violations = checkCompositionContract(
+      forked(step => ({ ...step, reach: undefined as unknown as ActionStep['reach'] })),
+    ).violations;
+    expect(violations.map(v => v.message).join(' ')).toMatch(
+      /step 1 variant 'negative' declares no reach/u,
+    );
+  });
+
+  it('a hand-rule violation in one arm names the hand block', () => {
+    // `REACH_PURPOSE_MAX_WORDS` is 4. This is the exact defect the descent
+    // exposed on shipped content (`encounter.slice.swindled_family`).
+    const violations = checkCompositionContract(
+      forked(step => ({ ...step, purposeLine: 'Make the crossing at last' })),
+    ).violations;
+    expect(violations.map(v => v.block)).toContain('hand');
+    expect(violations.map(v => v.message).join(' ')).toMatch(/variant 'negative'.*purposeLine/su);
+  });
+
+  it("a card's unresolvable imageTag in one arm names the images block", () => {
+    const violations = checkCompositionContract(
+      forked(step => ({
+        ...step,
+        nudges: (step.nudges ?? []).map((n, i) =>
+          i === 0 ? { ...n, imageTag: 'no.such.library.row' } : n,
+        ),
+      })),
+    ).violations;
+    expect(violations.map(v => v.block)).toContain('images');
+    expect(violations.map(v => v.message).join(' ')).toMatch(/no\.such\.library\.row/u);
+  });
+
+  it('a step position counts once however many arms it has', () => {
+    // The count is over positions the player traverses — they run exactly one
+    // arm. `plainSteps` counted a branch as *zero*, understating every fork by
+    // one, so a 4-position fork read as 3 and passed the ceiling.
+    const report = checkCompositionContract(forked(step => step));
+    expect(report.violations.filter(v => v.block === 'steps')).toEqual([]);
+    expect((forked(step => step).steps ?? []).length).toBe(2);
+  });
+
+  it('prose authored only in an arm reaches the register detectors', () => {
+    const marker = 'a sentence that exists only on the negative arm';
+    const prose = authoredProse(forked(step => ({ ...step, narrativeTemplate: marker })));
+    expect(prose.map(p => p.text)).toContain(marker);
+    expect(prose.find(p => p.text === marker)?.where).toMatch(/variant 'negative'/u);
+  });
+
+  it("an arm's step-outcome effects count toward the systems quota", () => {
+    // The blindness that pushed the granary's `membership_change` into an
+    // optional reaction: the arm's `successMetadata` writes were invisible, so
+    // the quota read them as absent and the design had to move.
+    const armOnly: UnifiedActionTemplate = {
+      ...forked(step => ({
+        ...step,
+        successMetadata: {
+          ...step.successMetadata,
+          effects: [{ kind: 'faction_reputation_gain', factionId: 'faction.test', amount: 0.1 }],
+        } as ActionStep['successMetadata'],
+      })),
+    };
+    expect(systemConnections(armOnly)).toContain('reputation');
+    // And the plain-half control: the unforked exemplar does not wire reputation,
+    // so the connection above can only have come from the arm.
+    expect(systemConnections(NUDGE_GOLDEN_EXEMPLAR)).not.toContain('reputation');
   });
 });

@@ -1936,6 +1936,80 @@ export function isActionStepBranch(step: ActionStepOrBranch): step is ActionStep
 }
 
 /**
+ * One concrete step a template can actually run, with the position and arm it
+ * runs at.
+ *
+ * A `steps[]` walk that skips branch nodes sees only half of a forked encounter:
+ * the arms carry their own prose, hand, reach, difficulty and outcome metadata,
+ * and none of it is reachable from the branch node itself. Every gate that
+ * filtered branches out was therefore checking the plain half and reporting
+ * green over the rest — the defect THR-1273 measured, where three editorial
+ * defects sat in the unchecked half of the factory's first `personality_fork`
+ * and would have shipped.
+ *
+ * The walk lives here, beside {@link isActionStepBranch}, because its callers
+ * span the contract, the hand checklist, grant liveness and the gate runner —
+ * modules that already import this one and cannot all import each other.
+ */
+export interface RunnableStepSite {
+  /** The concrete step. */
+  readonly step: ActionStep;
+  /** Index in `template.steps` of the *position* this step runs at. */
+  readonly index: number;
+  /**
+   * Branch arm this step is: a `variants` key, or `'fallback'`. Absent for a
+   * plain step, which is the discriminator — never test the step itself.
+   */
+  readonly variantKey?: string;
+  /** Message label: `step 2`, or `step 2 variant 'positive'`. */
+  readonly label: string;
+}
+
+/**
+ * Every concrete step the template can run, branch arms included, each tagged
+ * with where it sits.
+ *
+ * Ordered by position, and within a branch by `variants` insertion order then
+ * `fallback`, so a message's step numbering matches the authored file.
+ */
+export function runnableStepSites(
+  steps: readonly ActionStepOrBranch[] | undefined,
+): readonly RunnableStepSite[] {
+  const out: RunnableStepSite[] = [];
+  for (const [index, entry] of (steps ?? []).entries()) {
+    if (!isActionStepBranch(entry)) {
+      out.push({ step: entry, index, label: `step ${index}` });
+      continue;
+    }
+    const seen = new Set<ActionStep>();
+    for (const [key, variant] of Object.entries(entry.variants)) {
+      seen.add(variant);
+      out.push({
+        step: variant,
+        index,
+        variantKey: key,
+        label: `step ${index} variant '${key}'`,
+      });
+    }
+    // A `fallback` that *is* one of the variants is the same arm named twice —
+    // the common shape, since a fork usually falls back to one of its poles.
+    // Emitting it again would double every violation found on that arm and
+    // report a step count the authored file does not contain. Dedup is by
+    // identity and scoped to this branch: the same step object at a *different*
+    // position is a different position the player traverses, and stays.
+    if (!seen.has(entry.fallback)) {
+      out.push({
+        step: entry.fallback,
+        index,
+        variantKey: 'fallback',
+        label: `step ${index} variant 'fallback'`,
+      });
+    }
+  }
+  return out;
+}
+
+/**
  * Branch-aware aftermath — different summaries per choice path.
  * Resolved at aftermath assembly time by inspecting choice history.
  */
