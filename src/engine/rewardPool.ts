@@ -5,9 +5,15 @@
  * candidates, applies tier curve weighting, and produces a weighted pool.
  * After drawing, instantiateReward clones the template node and creates
  * the appropriate edge (possesses or has_trait) for the recipient agent.
+ *
+ * Companion entries are registry-backed rather than graph nodes (THR-1096).
+ * The recipient's `reward_tier_bonus` rule override slides the tier curve here,
+ * at the single seeded draw path (THR-1241).
  */
 
 import type { WorldGraph } from './graph';
+import { readBonusOverride, type RuleOverrideContext } from './effects/ruleOverrideConsumers';
+import { REWARD_TIER_BONUS_CAP } from '../data/effect-constants';
 import type {
   ResolvedRewardRecipe,
   RewardPoolRecipe,
@@ -252,13 +258,47 @@ export function getTierCurveForOutcome(outcomeType: OutcomeType): {
 export function resolveRewardRecipe(
   templateRecipe: RewardPoolRecipe,
   outcomeType: OutcomeType,
+  tierBonus = 0,
 ): ResolvedRewardRecipe {
   const { tierCurve, badOutcomeChance } = getTierCurveForOutcome(outcomeType);
   return {
     ...templateRecipe,
-    tierCurve,
+    tierCurve: shiftTierCurve(tierCurve, tierBonus),
     badOutcomeChance,
   };
+}
+
+/**
+ * Slide a tier curve's weight up (or down) the ladder by `bonus` bands (THR-1241).
+ *
+ * `reward_tier_bonus` is additive and the tiers are ordinal, so the honest
+ * reading is "the same luck, aimed one rung higher" — the shape of the curve is
+ * preserved and only where it sits moves. Weight pushed past the top band piles
+ * onto the top band rather than vanishing, which is what keeps the curve summing
+ * to what it summed to before (a curve that quietly lost mass would make a
+ * blessed draw *less* likely to produce anything at all).
+ *
+ * Clamped to `REWARD_TIER_BONUS_CAP` so a stacked bonus cannot collapse every
+ * draw into tier 4 and make the authored curves decorative.
+ */
+export function shiftTierCurve(
+  curve: Record<AttachmentTier, number>,
+  bonus: number,
+): Record<AttachmentTier, number> {
+  const shift = Math.round(
+    Math.max(-REWARD_TIER_BONUS_CAP, Math.min(REWARD_TIER_BONUS_CAP, bonus)),
+  );
+  if (shift === 0) return curve;
+
+  const tiers = Object.keys(curve).map(Number).sort((a, b) => a - b) as AttachmentTier[];
+  const shifted = {} as Record<AttachmentTier, number>;
+  for (const tier of tiers) shifted[tier] = 0;
+
+  for (let i = 0; i < tiers.length; i++) {
+    const destination = tiers[Math.min(tiers.length - 1, Math.max(0, i + shift))];
+    shifted[destination] += curve[tiers[i]];
+  }
+  return shifted;
 }
 
 // ─── The single seeded draw path (THR-1146) ────────────────────────────
@@ -316,6 +356,11 @@ export interface SeededRewardDrawParams {
   readonly templateId: string;
   /** Who receives the prize. Defaults to `actorId`. */
   readonly recipientId?: string;
+  /**
+   * THR-1241: rule-override context for the recipient's `reward_tier_bonus`.
+   * Optional — omitted, the tier curve is the authored one.
+   */
+  readonly overrideCtx?: RuleOverrideContext;
 }
 
 export interface SeededRewardDraw {
@@ -356,7 +401,19 @@ export function drawSeededReward(
   const recipientId = params.recipientId ?? actorId;
 
   const rng = mulberry32(seed + tick * 41 + hashString(actorId) + hashString(templateId));
-  const resolved = resolveRewardRecipe(recipe, normaliseRewardOutcome(params.outcomeType));
+
+  // THR-1241: `reward_tier_bonus` owns this site — the single seeded draw path
+  // every reward in the game runs through (THR-1146). It is read against the
+  // *recipient*, not the actor: the bonus is "what the world gives you", and a
+  // gift routed to someone else is their luck, not yours. Read before the rng
+  // draws so the number of draws never depends on whether a bonus is present
+  // (NFP #3 — same seed, same world).
+  const tierBonus = params.overrideCtx !== undefined
+    ? readBonusOverride(params.overrideCtx, recipientId, 'reward_tier_bonus', 'rewardPool.draw')
+    : 0;
+  const resolved = resolveRewardRecipe(
+    recipe, normaliseRewardOutcome(params.outcomeType), tierBonus,
+  );
 
   // Roll order is load-bearing: bad-outcome flip first, then the draw. Both
   // routes consume the same stream in the same order, so the same inputs give

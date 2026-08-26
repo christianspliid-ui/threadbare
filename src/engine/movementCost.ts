@@ -27,6 +27,7 @@ import { LOCATION_CONDITION_MOVEMENT_TAX } from '../data/condition-trait-content
 import type { TerrainType, LocationSubtype } from '../types';
 import type { EffectRuntimeState } from '../types/effects';
 import { getRangeModifiers } from './effects/effectQueries';
+import { readMultiplierOverride, type RuleOverrideContext } from './effects/ruleOverrideConsumers';
 
 /**
  * Compute the tick cost to traverse from source to destination.
@@ -40,6 +41,10 @@ import { getRangeModifiers } from './effects/effectQueries';
  * @param agentId — the actor traversing
  * @param sourceId — the starting location (used for departure terrain tax)
  * @param destId — the destination location
+ * @param effectStates — runtime state for the agent's attachments
+ * @param overrideCtx — THR-1241: rule-override context. Optional because most
+ *   pathfinding callers hold neither `GameState` nor a tick; omitted, the
+ *   `movement_cost_multiplier` key reads neutral and cost is unchanged.
  * @returns MovementEdgeCost breakdown
  */
 export function computeEdgeCost(
@@ -48,6 +53,7 @@ export function computeEdgeCost(
   sourceId: string,
   destId: string,
   effectStates?: ReadonlyMap<string, EffectRuntimeState>,
+  overrideCtx?: RuleOverrideContext,
 ): MovementEdgeCost {
   // 2-edge model: each hop = departure edge + arrival edge
   const baseCost = 2 * BASE_EDGE_TRAVERSAL_COST;
@@ -124,6 +130,16 @@ export function computeEdgeCost(
     ? getRangeModifiers(graph, agentId, effectStates).movementCostMultiplier
     : 1.0;
 
+  // --- Rule Override (THR-1241) ---
+  // `movement_cost_multiplier` is the `modify_rules` spelling of the same idea
+  // `range_modifier` expresses directly. Both are live and both compose here,
+  // multiplicatively, because a boot that hastens and a blessing that hastens are
+  // two effects and should feel like two. This is the owning site for the key:
+  // every other movement consumer reads the cost this function returns.
+  const ruleMultiplier = overrideCtx !== undefined
+    ? readMultiplierOverride(overrideCtx, agentId, 'movement_cost_multiplier', 'movementCost')
+    : 1.0;
+
   // --- Total Cost ---
   // Range and condition multipliers applied to the full pre-floor cost, then
   // floored at MIN_EDGE_COST. Never Infinity and never a hard refusal: a closed
@@ -131,7 +147,8 @@ export function computeEdgeCost(
   // only route home runs through it).
   const totalCost = Math.max(
     MIN_EDGE_COST,
-    (baseCost + terrainTax + locationTax + speedModifier) * conditionMultiplier * rangeMultiplier,
+    (baseCost + terrainTax + locationTax + speedModifier)
+      * conditionMultiplier * rangeMultiplier * ruleMultiplier,
   );
 
   return {

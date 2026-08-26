@@ -62,6 +62,7 @@ import {
 import { hexNeighbors } from '../lib/hexMath';
 import type { EffectRuntimeState } from '../types/effects';
 import { getRangeModifiers } from './effects/effectQueries';
+import { readBonusOverride, type RuleOverrideContext } from './effects/ruleOverrideConsumers';
 
 // ─── Hex resolution helpers ─────────────────────────────────────
 
@@ -138,6 +139,7 @@ export function filterByAwareness(
   mapCols?: number,
   mapRows?: number,
   effectStates?: ReadonlyMap<string, EffectRuntimeState>,
+  overrideCtx?: RuleOverrideContext,
 ): EncounterCacheEntry[] {
   // Fail-soft: agent must exist and have a location
   if (!agentLocationId) return [];
@@ -151,9 +153,20 @@ export function filterByAwareness(
   const edgeBonus = isEdgeHex(agentHex, mapCols, mapRows) ? EDGE_HEX_AWARENESS_BONUS : 0;
 
   // Range modifier bonus from range_modifier effects
-  const effectAwarenessBonus = effectStates !== undefined
+  const rangeAwarenessBonus = effectStates !== undefined
     ? getRangeModifiers(graph, agentId, effectStates).awarenessRangeBonus
     : 0;
+
+  // THR-1241: `awareness_range_bonus` is the `modify_rules` spelling of the same
+  // reach. It had shipped content (`reward-attachment-catalog.ts`) promising a
+  // wider horizon and nothing reading it — this is the owning site, because every
+  // cross-hex encounter visibility decision runs through the hop count below.
+  // Additive with the `range_modifier` half: two sources of farsight see further.
+  const ruleAwarenessBonus = overrideCtx !== undefined
+    ? readBonusOverride(overrideCtx, agentId, 'awareness_range_bonus', 'encounterAwareness')
+    : 0;
+
+  const effectAwarenessBonus = rangeAwarenessBonus + ruleAwarenessBonus;
 
   // Pre-compute a cache of locationId → hex coords to avoid repeated lookups
   const hexCache = new Map<string, { col: number; row: number } | null>();

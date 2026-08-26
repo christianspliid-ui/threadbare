@@ -10,6 +10,7 @@
  */
 
 import type { WorldGraph } from './graph';
+import { readMultiplierOverride, type RuleOverrideContext } from './effects/ruleOverrideConsumers';
 import type { GraphEdge } from '../types/graph';
 import type { FactionDefinition, FactionReputationTrace } from '../types/faction';
 import { computeRankFromReputation } from '../types/faction';
@@ -51,6 +52,7 @@ export function applyFactionReputationGain(
   amount: number,
   tick: number,
   cause: FactionReputationTrace['cause'],
+  overrideCtx?: RuleOverrideContext,
 ): {
   newReputation: number;
   rankChanged: boolean;
@@ -80,14 +82,30 @@ export function applyFactionReputationGain(
   const factionDefId = props.factionDefId;
   const definition = factionDefId ? FACTION_DEFINITIONS.get(factionDefId) : undefined;
 
+  // THR-1241: `faction_influence_multiplier` owns this site. Standing with a
+  // faction moves through exactly one door — this function — so scaling the delta
+  // here is the whole of "your word carries further among them". Applied to the
+  // *delta*, never to the stored reputation: multiplying the score itself would
+  // rewrite history every time a signet ring was put on.
+  //
+  // It scales losses as well as gains, deliberately. A charm that makes you twice
+  // as persuasive makes your betrayals land twice as hard; a one-directional
+  // version would be a strictly-good item, which is not a shape this game makes.
+  const influenceMultiplier = overrideCtx !== undefined
+    ? readMultiplierOverride(
+      overrideCtx, agentId, 'faction_influence_multiplier', 'factionReputation',
+    )
+    : 1.0;
+  const effectiveAmount = amount * influenceMultiplier;
+
   const oldReputation = props.reputation ?? 0;
-  const newReputation = Math.min(1.0, Math.max(0, oldReputation + amount));
+  const newReputation = Math.min(1.0, Math.max(0, oldReputation + effectiveAmount));
 
   // Update edge properties
   edge.properties = {
     ...edge.properties,
     reputation: newReputation,
-    ...(amount > 0 ? { lastFactionActivityTick: tick } : {}),
+    ...(effectiveAmount > 0 ? { lastFactionActivityTick: tick } : {}),
   };
 
   // Recalculate rank

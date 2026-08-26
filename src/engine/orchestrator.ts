@@ -2966,7 +2966,10 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
         s.graph.getOutgoingEdges(agent.id, 'has_trait').length === 0
       ) continue;
       processedEffectActors++;
-      const result = tickEffects(s.graph, agent.id, s.tick, updatedEffectStates);
+      const result = tickEffects(s.graph, agent.id, s.tick, updatedEffectStates, {
+        // THR-1241: gives `cooldown_multiplier` its owning-site read.
+        graph: s.graph, effectStates: updatedEffectStates, persisted: s, tick: s.tick,
+      });
       updatedEffectStates = result.updatedStates;
       // Collect hex mutations from hex_effect primitives — passed to phaseHexState below
       for (const mut of result.hexMutations) effectHexMutations.push(mut);
@@ -3452,7 +3455,10 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
 
   // Phase 6.625: Condition Decay (tick-based removal of transient condition traits)
   try {
-    timeInlinePhase('condition_decay', s, () => decayConditions(s.graph, s.tick));
+    timeInlinePhase('condition_decay', s, () => decayConditions(s.graph, s.tick, {
+      // THR-1241: gives `healing_multiplier` its owning-site read.
+      graph: s.graph, effectStates: s.effectStates, persisted: s, tick: s.tick,
+    }));
   } catch {
     // fail-soft: condition decay failure is non-fatal
   }

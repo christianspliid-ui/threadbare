@@ -23,6 +23,11 @@ import { validateAgentIntegrity } from './agentValidation';
 import { emitTrace } from './traceBuffer';
 import { getAvatarsOf, getAgentLocation, getAgentsAtLocation, getActorCultures } from './graphQueries';
 import { markAspectEchoOnDeath } from './aspects';
+import {
+  readFlagOverride,
+  readMultiplierOverride,
+  type RuleOverrideContext,
+} from './effects/ruleOverrideConsumers';
 import type { EncounterCacheManager } from './encounterCache';
 import { BORN_LATER_PREFER_CONTENT_LOCATIONS, BORN_LATER_MIN_TEMPLATES } from '../data/agent-behavior-constants';
 
@@ -84,6 +89,27 @@ export function resetLifecycleCounter(): void {
 
 // ─── Phase: Agent Lifecycle ──────────────────────────────────────
 
+/**
+ * The combined `spawn_rate_multiplier` in force over one location (THR-1241).
+ *
+ * The key is stored against its bearer, but its shipped meaning is territorial —
+ * a consecrated hex quiets or quickens what is born there. So the location's
+ * effective rate is the product over every bearer standing on it, which is the
+ * same fold two rings on one agent get. Neutral 1.0 when nobody carries one.
+ */
+function spawnRateMultiplierAt(
+  ctx: RuleOverrideContext,
+  agentsHere: readonly { id: string }[],
+): number {
+  let product = 1.0;
+  for (const agent of agentsHere) {
+    product *= readMultiplierOverride(
+      ctx, agent.id, 'spawn_rate_multiplier', 'agentLifecycle.birth',
+    );
+  }
+  return product;
+}
+
 export function phaseAgentLifecycle(
   state: GameState,
   nextEventId: () => string,
@@ -115,6 +141,14 @@ export function phaseAgentLifecycle(
   let deathOccurred = false;
   const deadActorIds = new Set<string>();
 
+  // THR-1241: one context, reused by both owning sites in this phase.
+  const overrideCtx: RuleOverrideContext = {
+    graph,
+    effectStates: state.effectStates,
+    persisted: state,
+    tick: state.tick,
+  };
+
   // ── Deaths ─────────────────────────────────────────────
   for (const actor of actors) {
     const rep = (actor.properties.reputationScore as number) ?? DEFAULT_REPUTATION;
@@ -124,6 +158,24 @@ export function phaseAgentLifecycle(
     // Low reputation death
     if (rep < LOW_REP_THRESHOLD && rng() < DEATH_CHANCE_LOW_REP) {
       shouldDie = true;
+    }
+
+    // THR-1241: `death_prevented` is the owning site's one question — a ward that
+    // promises "you will not die" must be asked exactly where death is decided,
+    // and nowhere else. Read only once the roll has already gone against the
+    // agent: the flag is a reprieve, not a modifier, so asking earlier would walk
+    // every agent's attachments every tick for a branch almost never taken (NFP #7).
+    if (shouldDie && readFlagOverride(overrideCtx, actor.id, 'death_prevented', 'agentLifecycle.death')) {
+      shouldDie = false;
+      events.push({
+        id: nextEventId(),
+        tick: state.tick,
+        type: 'agent_death_averted' as any,
+        message: `${actor.name} should have died — something older refused it.`,
+        significance: 0.6,
+        actorId: actor.id,
+        notification: { channel: 'toast' },
+      });
     }
 
     if (shouldDie) {
@@ -201,7 +253,17 @@ export function phaseAgentLifecycle(
       // Count agents at this location
       const agentsHere = getAgentsAtLocation(graph, locId);
 
-      if (agentsHere.length >= BIRTH_DENSITY_THRESHOLD && rng() < BIRTH_CHANCE) {
+      // THR-1241: `spawn_rate_multiplier` reads here because this is the only
+      // place the world decides a new mortal exists. The key is borne by an agent
+      // but scoped to a hex in shipped content (a planted grove quiets a place),
+      // so the effective rate folds every bearer standing at this location —
+      // multiplicatively, per the stage-2 fold. Read AFTER the density check and
+      // after `rng()`, so the draw count is identical to the pre-THR-1241 run and
+      // seed 42 still produces the same world when nothing is in force (NFP #3).
+      if (
+        agentsHere.length >= BIRTH_DENSITY_THRESHOLD
+        && rng() < BIRTH_CHANCE * spawnRateMultiplierAt(overrideCtx, agentsHere)
+      ) {
         const newId = nextLifecycleId('born');
 
         // Resolve culture from parents at this location (used for naming + edge)

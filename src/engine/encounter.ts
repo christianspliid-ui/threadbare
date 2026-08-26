@@ -412,6 +412,8 @@ export function resolveEncounter(
     step.reach,
     encounter.sphereAffinity,
     state.effectStates,
+    // THR-1241: `encounter_reach_override` reads here.
+    { graph: state.graph, effectStates: state.effectStates, persisted: state, tick: state.tick },
   );
 
   // ─── Divine effects: Tip the Scales ─────────────────────────────────────
@@ -610,6 +612,11 @@ export function resolveEncounter(
     step.difficulty * 100,
     success,
     tierPromotionEligible,
+    1.0,
+    // THR-1241: `tier_advancement_cost_multiplier` reads here too — the legacy
+    // encounter route grows capability by the same function, so a forge that
+    // halves advancement must halve it on both roads or it halves it on neither.
+    { graph: state.graph, effectStates: state.effectStates, persisted: state, tick: state.tick },
   );
 
   // Handle tier promotion if crossed

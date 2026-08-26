@@ -337,6 +337,7 @@
 
       <h3>The Eight Reaches <span class="flag impl">IMPL</span></h3>
       <ul>
+        <li><strong>Rule overrides that reach into capability</strong> (THR-1241): <code>tier_advancement_cost_multiplier</code> scales how fast capability accrues toward the next tier (as the reciprocal of a cost — cost <code>0.5</code> is growth <code>2x</code>), and <code>encounter_reach_override</code> can redirect which Reach a step tests. Neither disturbs Reach/Sphere orthogonality: a swap chooses a different axis to test, it does not merge two.</li>
         <li>Source of truth is the <code>ReachDomain</code> union in <code>src/types/traits.ts</code>: <code>iron | gold | shadow | veil | heart | eye | stone | star</code>. Iterated as <code>REACH_DOMAINS</code>.</li>
         <li>Flesh was the deprecated 9th Reach, removed in TB-075 (2026-03-28) and its content migrated (healing → Gold, athletics → Iron, body-craft → Stone, survival → Star). Do not reintroduce <code>reach: 'flesh'</code> in content data — it is stale. A lingering "all 9 domains" comment in <code>computeFullProfile</code> is a doc artifact; the union is eight.</li>
         <li>A god's permanent two-domain pair is the top-ranked entries in the ascendant's <code>domainAffinities</code>; the <code>requiresReach</code> action gate (THR-503) enforces set-membership so out-of-domain cards never surface. See the run-lifecycle (W1) and divine-actions (W4) pages.</li>

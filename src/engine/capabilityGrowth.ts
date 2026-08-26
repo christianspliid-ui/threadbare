@@ -32,6 +32,7 @@
  */
 
 import type { WorldGraph } from './graph';
+import { readMultiplierOverride, type RuleOverrideContext } from './effects/ruleOverrideConsumers';
 import type { ReachDomain, DomainContributions } from '../types/traits';
 import { computeCapability, computeTier } from './domainCapability';
 
@@ -118,7 +119,20 @@ export function computeGrowthAmount(
  * Phase 3: `growthMultiplier` scales the computed delta before applying.
  * Pass 1.5 for critical_success, 0.5 for success_at_cost (from outcomeConsequences).
  *
- * Fail-soft: if agent node is missing, returns a zero-growth result.
+ * ─── `tier_advancement_cost_multiplier` owning site (THR-1241) ─────
+ * Advancing a tier has no priced transaction in this game — you do not buy a
+ * tier, you accumulate toward it, and this function is the whole of that
+ * accumulation. So the *cost* of advancement is the growth you still owe, and a
+ * cost multiplier of 0.5 ("advancement costs half") is growth at 1/0.5 = 2x.
+ * The reciprocal is what makes the key mean what its name and its shipped
+ * content (`artifact-templates.ts`: a legendary forge, `value: 0.5`) promise.
+ *
+ * Fail-soft: if agent node is missing, returns a zero-growth result. The real
+ * bound on the reciprocal is the stage-2 fold, which clamps every multiplier to
+ * `[1/RULE_OVERRIDE_VALUE_CAP, RULE_OVERRIDE_VALUE_CAP]` — so an authored `0`
+ * never reaches the division and the most an absurd value can buy is
+ * cap-fold growth. The zero-guard below is a second belt for a caller that ever
+ * hands over an unfolded value; today it is unreachable (NFP #4).
  */
 export function applyEncounterGrowth(
   graph: WorldGraph,
@@ -128,6 +142,7 @@ export function applyEncounterGrowth(
   success: boolean,
   tierPromotionEligible: boolean,
   growthMultiplier: number = 1.0,
+  overrideCtx?: RuleOverrideContext,
 ): GrowthResult {
   const zeroResult: GrowthResult = {
     domain,
@@ -152,13 +167,23 @@ export function applyEncounterGrowth(
   }
   const previousTier = computeTier(previousCapability);
 
+  // THR-1241: advancement cost, inverted into growth (see the doc comment above).
+  // A non-positive multiplier is authoring noise, not "free advancement" — read
+  // it as no override rather than dividing into Infinity.
+  const advancementCostMultiplier = overrideCtx !== undefined
+    ? readMultiplierOverride(
+      overrideCtx, agentId, 'tier_advancement_cost_multiplier', 'capabilityGrowth',
+    )
+    : 1.0;
+  const advancementScale = advancementCostMultiplier > 0 ? 1 / advancementCostMultiplier : 1.0;
+
   // Compute growth — Phase 3: multiply by outcome consequence modifier (default 1.0)
   const growthAmount = computeGrowthAmount(
     stepDifficulty,
     success,
     tierPromotionEligible,
     previousCapability,
-  ) * growthMultiplier;
+  ) * growthMultiplier * advancementScale;
 
   if (growthAmount <= 0) {
     return {

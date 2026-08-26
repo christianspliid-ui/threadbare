@@ -444,7 +444,9 @@ export type TraceCategory =
   | 'effect.charge_spent'
   // Overlay / rule-override persistence (THR-1240)
   | 'effect.overlay_applied'
-  | 'effect.overlay_expired';
+  | 'effect.overlay_expired'
+  // Rule-override consumption at owning sites (THR-1241)
+  | 'effect.rule_override_consumed';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'edge_schema_refused',
@@ -806,6 +808,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'effect.charge_spent',
   'effect.overlay_applied',
   'effect.overlay_expired',
+  'effect.rule_override_consumed',
 ];
 
 /** Base shape for all trace entries */
@@ -901,6 +904,32 @@ export interface EffectOverlayTrace extends TraceBase {
   sourceAttachmentId: string;
   /** Ticks left at emit time; 0 on expiry, and on an overlay dropped fail-soft. */
   ticksRemaining: number;
+}
+
+/**
+ * Trace: an owning site read a rule override that was NOT at its neutral value.
+ *
+ * Emitted from `ruleOverrideConsumers.ts` — the one read path stage 3 wires into
+ * the eleven sites that own a `RuleOverrideKey`. Deliberately **only on a
+ * non-neutral read**: every site reads its key unconditionally (that is what
+ * makes the neutral safe to use without a null check), so tracing every read
+ * would emit on the order of agents x keys x ticks and drown the buffer in
+ * "nothing was in force". A reader asking "did this artifact do anything?" wants
+ * the reads that changed an outcome, and those are exactly the ones here.
+ *
+ * `site` is the owning-site tag (`'movementCost'`, `'agentLifecycle.death'`, ...)
+ * rather than a file path, so the trace survives a file move and answers "which
+ * rule did this bend?" without a second lookup.
+ */
+export interface RuleOverrideConsumedTrace extends TraceBase {
+  category: 'effect.rule_override_consumed';
+  /** The `RuleOverrideKey` that was read. */
+  key: string;
+  agentId: string;
+  /** Effective folded value at the moment of the read. */
+  value: number | boolean | string;
+  /** Owning-site tag, e.g. `'movementCost'`. */
+  site: string;
 }
 
 export interface TraceBase {
@@ -2550,6 +2579,7 @@ export type TraceEntry =
   | EffectEventRaisedTrace
   | EffectChargeSpentTrace
   | EffectOverlayTrace
+  | RuleOverrideConsumedTrace
   | FilterPipelineTrace
   | ScoringTrace
   | MovementTrace

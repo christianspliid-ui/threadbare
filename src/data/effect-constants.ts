@@ -295,3 +295,33 @@ export const RULE_OVERRIDE_VALUE_CAP = 3.0;
  * is the duplicate-spelling pathology this program exists to remove.
  */
 export const AURA_STACKING_CAP = 3;
+
+/**
+ * Floor on the per-tick decay step a `healing_multiplier` may produce (THR-1241).
+ *
+ * A curse spelled as `healing_multiplier: 0.2` slows recovery, which is coherent.
+ * At 0 it would stop recovery entirely and the condition would never lift —
+ * turning a transient wound into permanent state with no removal path. The floor
+ * keeps a curse painful without making it a dead end (NFP #4).
+ */
+export const HEALING_MULTIPLIER_MIN_DECAY_TICKS = 0.25;
+
+/**
+ * Multiplier at or above which `backlash_severity_multiplier` escalates a
+ * backlash by one band, and at or below which it softens by one (THR-1241).
+ *
+ * Severity is an enum (`minor | major | catastrophic`), not a number, so a
+ * multiplier has to be read as a band shift. One band per threshold crossing
+ * keeps the ladder legible: a player can tell that a cursed focus made the
+ * blowback worse without needing to see a number that does not exist.
+ */
+export const BACKLASH_SEVERITY_ESCALATE_AT = 1.5;
+export const BACKLASH_SEVERITY_SOFTEN_AT = 0.67;
+
+/**
+ * Clamp on the tier shift `reward_tier_bonus` may apply to a reward draw (THR-1241).
+ *
+ * The tier curve has five bands; an unbounded bonus would collapse every draw to
+ * the top band and make the reward pool's weighting decorative.
+ */
+export const REWARD_TIER_BONUS_CAP = 2;

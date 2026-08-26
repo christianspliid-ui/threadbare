@@ -1296,6 +1296,8 @@ function resolveUnifiedReward(
     tick,
     actorId: action.actorId,
     templateId: action.templateId,
+    // THR-1241: the recipient's `reward_tier_bonus` reads here.
+    overrideCtx: { graph: state.graph, effectStates: state.effectStates, persisted: state, tick },
   });
   const { isBadOutcome } = draw;
   const actorName = state.graph.getNode(action.actorId)?.name ?? '?';
@@ -1913,6 +1915,8 @@ export function executeStepResult(
       isSuccess,
       tierPromotionEligible,
       consequence.growthMultiplier, // Phase 3: outcome-differentiated growth (1.5 crit, 0.5 at-cost)
+      // THR-1241: `tier_advancement_cost_multiplier` reads here.
+      { graph: state.graph, effectStates: state.effectStates, persisted: state, tick },
     );
     growthApplied = growthResult.growthApplied;
     growthDomain = growthResult.domain;

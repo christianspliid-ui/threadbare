@@ -14,8 +14,8 @@ import { processEffectEvent, applyEffectEventResult } from './effects/effectEven
 import { applyExecutionResult } from './effects/effectEventDispatch';
 import { executeEffect } from './effectExecutors';
 import { instantiateReward } from './rewardPool';
-import { collectAttachmentEffects } from './effects/effectWalker';
 import { emitTrace } from './traceBuffer';
+import { readMultiplierOverride, type RuleOverrideContext } from './effects/ruleOverrideConsumers';
 import type { TraceEntry } from '../types/trace';
 import { getProsperityTier } from './phaseProsperity';
 import {
@@ -301,19 +301,24 @@ function fireDoomThresholdEffects(
 export function phaseDoom(state: GameState): Partial<GameState> {
   const oldStage = state.doomClock.currentStage;
 
+  // THR-1241: this was a hand-rolled scan over `modify_rules` that predated the
+  // shared reader. It saw only attachment-declared overrides — an executor-
+  // persisted `doom_rate_multiplier` (stage 2) was invisible to it — and it folded
+  // by its own rules, so a value clamped everywhere else was unclamped here.
+  // Migrated onto `readMultiplierOverride` so there is ONE read path for the key.
+  const doomOverrideCtx: RuleOverrideContext = {
+    graph: state.graph,
+    effectStates: state.effectStates,
+    persisted: state,
+    tick: state.tick,
+  };
   let doomRateMultiplier = 1.0;
   const agents = state.graph.getNodesByType('actor')
     .filter((n) => n.properties.actorType === 'individual' || n.properties.actorType === 'ascendant');
   for (const agent of agents) {
-    for (const entry of collectAttachmentEffects(state.graph, agent.id, state.effectStates)) {
-      if (entry.runtimeState?.suppressed) continue;
-      if (entry.effect.type !== 'modify_rules') continue;
-      if (entry.effect.rule !== 'doom_rate_multiplier') continue;
-      const val = entry.effect.value;
-      if (typeof val === 'number' && val > 0) {
-        doomRateMultiplier *= val;
-      }
-    }
+    doomRateMultiplier *= readMultiplierOverride(
+      doomOverrideCtx, agent.id, 'doom_rate_multiplier', 'phaseDoom',
+    );
   }
 
   const clockForAdvance = doomRateMultiplier !== 1.0
