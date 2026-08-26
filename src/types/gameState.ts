@@ -453,7 +453,9 @@ export interface GameState {
   // Cleared each tick. Each shock traces back to a discrete cause (encounter, route loss, etc.)
   prosperityShocks?: ProsperityShock[];
 
-  // Dynamic faction definitions — FactionDefinitions created at runtime by agent initiatives (THR-51)
+  // Dynamic faction definitions created at runtime. NOTE: the initiative pipeline was
+  // its only producer and was retired (THR-1292 §3); the folded found-order undertaking
+  // ships its hall, and the faction payoff waits on the `create_group` op — TODO(THR-1295).
   // Keyed by definition ID. Merged with static FACTION_DEFINITIONS when looking up a faction.
   dynamicFactionDefinitions?: Record<string, import('./faction').FactionDefinition>;
 

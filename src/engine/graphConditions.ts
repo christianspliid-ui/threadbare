@@ -53,7 +53,7 @@ export interface ConditionGraph {
  * all read it. Two neighbouring spellings are deliberately NOT accepted here because
  * nothing in the repo writes either one, so honouring them would encode a phantom:
  *
- * - `properties.status === 'dead'` — was read once (`phaseInitiativeProgress`), written
+ * - `properties.status === 'dead'` — was read once (by the retired initiative phase), written
  *   nowhere. That read was repointed at `isAgentGone` in THR-812; the spelling now has
  *   neither a reader nor a writer outside the permissive `isAgentGone` / `groupCohesion`
  *   accepts, which tolerate it rather than depend on it.

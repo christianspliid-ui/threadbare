@@ -121,12 +121,14 @@ export const SUBSYSTEMS: readonly Subsystem[] = [
     note: 'Resource web, stock tiers, prosperity pulse, settlement tiers, trade routes. M3: Dynamic Economy.',
   },
   {
-    name: 'Ambitions & Initiatives',
-    aliases: ['ambition', 'initiative', 'goal', 'mentorship', 'apprentice'],
-    activityKeywords: ['ambition', 'initiative', 'mentorship'],
-    domains: ['ambition', 'initiative', 'mentorship'],
-    phaseMatch: /\b(ambition|initiative|mentorship)\b/i,
-    note: 'Agent-level drives and multi-tick initiatives; mentorship couples train-apprentice to mentors edges.',
+    name: 'Ambitions & Undertakings',
+    // 'initiative' stays an alias: the pipeline is retired (THR-1292 §3) but saved worlds
+    // and historical traces still carry the word, and the matcher reads those.
+    aliases: ['ambition', 'undertaking', 'initiative', 'goal', 'mentorship', 'apprentice'],
+    activityKeywords: ['ambition', 'undertaking', 'mentorship'],
+    domains: ['ambition', 'undertaking', 'mentorship'],
+    phaseMatch: /\b(ambition|undertaking|initiative|mentorship)\b/i,
+    note: 'Agent-level drives and the multi-tick undertakings that serve them; mentorship rides the undertaking checkpoint pass (THR-1292 §3 retired the separate initiative pipeline).',
   },
   {
     name: 'Attachments, Items & Possessions',

@@ -39,6 +39,7 @@ import { hexDistance } from '../lib/hexMath';
 import { scoreRoutePairBalance, ROUTE_FORMATION_BALANCE_BIAS } from './tradeRoute';
 import { getSublocationNodes } from './sublocationShape';
 import type { ReachDomain } from '../types/traits';
+import { findEligibleApprentices, MENTORSHIP_TEMPLATE_ID } from './mentorshipUndertaking';
 
 // ─── Template Registry ──────────────────────────────────────────────
 // All strategic templates by ID. Scales as new packs are added.
@@ -140,6 +141,17 @@ export function generateStrategicCandidates(
         p => p.actorId === actorId && p.templateId === templateId && p.status === 'active',
       )) {
         rejections.push({ templateId, reason: 'project_already_active' });
+        continue;
+      }
+
+      // A mentorship with nobody to teach is not a decision (THR-1292 §3).
+      // Mirrors the THR-1286 control gate: refuse at proposal time rather than
+      // starting an undertaking the bootstrap must immediately fail. The retired
+      // pipeline checked eligibility here *and* again in the phase, from two
+      // copies that had already drifted — this is the single copy.
+      if (template.id === MENTORSHIP_TEMPLATE_ID
+        && findEligibleApprentices(graph, actorId).length === 0) {
+        rejections.push({ templateId, reason: 'no_eligible_apprentice' });
         continue;
       }
 

@@ -132,6 +132,29 @@ export const WARLORD_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     resourceHint: { reachFloor: { iron: 0.4 } },
     mutationHint: { type: 'no_mutation' },
   },
+
+  // ── Folded from the retired initiative pipeline (THR-1292 §3) ──────
+  // 7. Recruit Companions — sworn bonds with those who will follow you
+  {
+    id: 'strategic_recruit_companions',
+    displayName: 'Recruit Companions',
+    verb: 'create',
+    executionMode: 'multi_tick_project',
+    behaviorFamily: 'warlord-expansion',
+    reachProfile: { heart: 0.5, iron: 0.3, gold: 0.2 },
+    projectDuration: 6,
+    activityProse: [
+      'Buying rounds. Telling the story again, better. Finding out who has nothing to lose.',
+      'A companion is not hired. Hired ones leave when the pay stops.',
+    ],
+    completionProse: [
+      'They have sworn to you. Whether the oath holds is a different question, asked later.',
+    ],
+    catalystEncounterIds: ['encounter_companion_test'],
+    targetRule: { type: 'location_subtype', subtypes: ['town', 'city', 'capital', 'hamlet', 'camp'] },
+    resourceHint: { wealthCost: 3, reachFloor: { heart: 0.2 } },
+    mutationHint: { type: 'create_relation_edge', edgeType: 'relates_to', direction: 'actor_to_target', properties: { basis: 'sworn_ally', sentiment: 0.6 } },
+  },
 ];
 
 /** Look up a warlord strategic template by ID */

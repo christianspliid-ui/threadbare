@@ -29,7 +29,7 @@ export interface MentorshipOfferedTrace extends TraceBase {
   mentorId: string;
   apprenticeId: string;
   domain: ReachDomain;
-  initiativeId: string;
+  undertakingId: string;
   summary: string;
 }
 

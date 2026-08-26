@@ -17,6 +17,7 @@ import type {
 } from '../types/strategicAction';
 import type { PendingEncounterSeed } from '../types/unifiedAction';
 import {
+  LOCATION_BOOST_EXPIRY_SUFFIX,
   UNDERTAKING_TIMEOUT_TICKS,
   STRATEGIC_DEFAULT_PROJECT_WORK_TICKS,
   STRATEGIC_CATALYST_SEED_CHANCE,
@@ -44,6 +45,14 @@ import {
   buildResidueEvent,
   buildAbandonMintEvent,
 } from './undertakingCheckpoints';
+import {
+  MENTORSHIP_TEMPLATE_ID,
+  isMentorshipEnabled,
+  applyPendingMentorshipSevers,
+  bootstrapMentorship,
+  advanceMentorshipCheckpoint,
+  resolveMentorshipUndertaking,
+} from './mentorshipUndertaking';
 import { emitTrace } from './traceBuffer';
 import type { TraceEntry } from '../types/trace';
 
@@ -215,6 +224,12 @@ export function advanceStrategicProjects(
   events: import('../types/gameState').TickEvent[];
   /** Locations whose encounter pool a completing project changed (THR-1184). */
   poolInvalidatedLocationIds: string[];
+  /**
+   * Encounter seeds planted by an undertaking's own arc (THR-1292 §3). Today the
+   * mentorship fold is the only producer — its offer, three milestones and terminal
+   * seeds used to be planted by the retired phase 2.33.
+   */
+  pendingEncounterSeeds: PendingEncounterSeed[];
 } {
   const currentState = state.strategicState ?? { projects: [], controls: [], history: [] };
   const updatedProjects: StrategicProjectRuntime[] = [];
@@ -222,11 +237,33 @@ export function advanceStrategicProjects(
   const poolInvalidatedLocationIds: string[] = [];
   const newHistory: StrategicHistoryEntry[] = [];
   const events: import('../types/gameState').TickEvent[] = [];
+  const pendingEncounterSeeds: PendingEncounterSeed[] = [];
+
+  // Divine `Sever the Bond` sets a flag on an agent; translating it onto the edge is
+  // a once-per-tick sweep, not per-project work (rehomed from phase 2.33).
+  if (isMentorshipEnabled()) applyPendingMentorshipSevers(graph);
 
   for (const project of currentState.projects) {
     if (project.status !== 'active') {
       updatedProjects.push(project);
       continue;
+    }
+
+    // ─── Mentorship bootstrap (THR-1292 §3) ───────────────────────────
+    // Lazy rather than at start: the edge needs an apprentice who is present *now*,
+    // and the pairing gate already refused the proposal when nobody was.
+    const isMentorship = project.templateId === MENTORSHIP_TEMPLATE_ID;
+    if (isMentorship && isMentorshipEnabled() && !hasMentorshipEdge(graph, project)) {
+      const boot = bootstrapMentorship(graph, project, tick, rng);
+      if (!boot) {
+        // Nobody left to teach. End it cleanly — no status limbo, which is the
+        // deadlock the retired `markInitiativeFailed` created (THR-1292 §3).
+        updatedProjects.push({ ...project, status: 'failed', failureReason: 'actor_lost' });
+        newHistory.push(buildFailureHistory(project, tick, 'failed'));
+        continue;
+      }
+      events.push(...boot.events);
+      pendingEncounterSeeds.push(...boot.seeds);
     }
 
     // Timeout check — a fail-safe backstop only (THR-1292 §2). Halts now legitimately
@@ -270,6 +307,39 @@ export function advanceStrategicProjects(
     const checkpoint = resolveUndertakingCheckpoint(state, graph, project, tick);
     events.push(...checkpoint.events);
     const checked = checkpoint.project;
+
+    // ─── Mentorship arc, driven by the band this checkpoint produced ──
+    // The retired phase read a checkpoint array for a record stamped with the
+    // current tick — a same-tick ordering contract between two phases. The effect
+    // is read straight off the record here instead.
+    let mentorshipForcedFailure = false;
+    if (isMentorship && isMentorshipEnabled()) {
+      const resolvedThisTick = checked.lastCheckpoint?.tick === tick;
+      if (resolvedThisTick && checked.lastCheckpoint) {
+        const arc = advanceMentorshipCheckpoint(graph, checked, checked.lastCheckpoint.effect, tick);
+        events.push(...arc.events);
+        pendingEncounterSeeds.push(...arc.seeds);
+        if (arc.forceFailReason) {
+          // Separation, a divine sever or a lost participant ends the undertaking.
+          // The terminal arc runs on this *explicit* signal — never on absence.
+          const terminal = resolveMentorshipUndertaking(graph, checked, 'failed', tick);
+          events.push(...terminal.events);
+          pendingEncounterSeeds.push(...terminal.seeds);
+          updatedProjects.push({ ...checked, status: 'failed', failureReason: 'actor_lost' });
+          newHistory.push(buildFailureHistory(checked, tick, 'failed'));
+          mentorshipForcedFailure = true;
+        }
+      }
+      if (!mentorshipForcedFailure
+        && (checkpoint.verdict === 'ended' || checkpoint.verdict === 'completed')) {
+        const terminal = resolveMentorshipUndertaking(
+          graph, checked, checkpoint.verdict === 'completed' ? 'completed' : 'failed', tick,
+        );
+        events.push(...terminal.events);
+        pendingEncounterSeeds.push(...terminal.seeds);
+      }
+    }
+    if (mentorshipForcedFailure) continue;
 
     if (checkpoint.verdict === 'not_due' || checkpoint.verdict === 'deferred' || checkpoint.verdict === 'continues') {
       updatedProjects.push(checked);
@@ -412,6 +482,36 @@ export function advanceStrategicProjects(
     },
     events,
     poolInvalidatedLocationIds,
+    pendingEncounterSeeds,
+  };
+}
+
+// ─── Mentorship fold helpers (THR-1292 §3) ──────────────────────────
+
+/** Whether this mentorship undertaking has already minted its `mentors` edge. */
+function hasMentorshipEdge(graph: WorldGraph, project: StrategicProjectRuntime): boolean {
+  return graph.getOutgoingEdges(project.actorId, 'mentors')
+    .some(e => (e.properties.undertakingId as string | undefined) === project.projectId);
+}
+
+/** History row for an undertaking that ended without completing. */
+function buildFailureHistory(
+  project: StrategicProjectRuntime,
+  tick: number,
+  outcome: 'failed',
+): StrategicHistoryEntry {
+  return {
+    tick,
+    actorId: project.actorId,
+    templateId: project.templateId,
+    ambitionId: project.ambitionId,
+    verb: project.verb,
+    behaviorFamily: project.behaviorFamily,
+    displayName: getStrategicTemplate(project.templateId)?.displayName ?? project.templateId,
+    targetNodeId: project.targetNodeId,
+    outcome,
+    graphOps: [],
+    catalystSeeded: false,
   };
 }
 
@@ -553,6 +653,15 @@ function executeInstantMutation(
       case 'modify_location_property': {
         if (targetId) {
           ops.push(modifyLocationProperty(graph, targetId, hint.property, hint.delta, hint.clamp));
+          // A timed boost stamps its own expiry; `phaseStrategicProjects` sweeps it
+          // (THR-1292 §3 — rehomed from the retired `phaseInitiativeProgress`).
+          if (hint.expiresAfterTicks != null) {
+            const locNode = graph.getNode(targetId);
+            if (locNode) {
+              locNode.properties[`${hint.property}${LOCATION_BOOST_EXPIRY_SUFFIX}`] =
+                tick + hint.expiresAfterTicks;
+            }
+          }
         }
         break;
       }

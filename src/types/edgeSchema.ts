@@ -181,7 +181,7 @@ export const EDGE_SCHEMA: Record<EdgeType, EdgeSchema> = {
     direction: 'directed',
     cardinality: 'many-to-many',
     requiredProperties: ['domain', 'progress', 'phase', 'startedTick', 'lessonsCompleted', 'bondQuality'],
-    description: 'Mentor → apprentice training relationship (THR-75). One active mentor↔apprentice pairing at a time per agent, but graduated/estranged historical edges persist. Properties: domain (ReachDomain), progress (0-1), phase (offered|training|graduated|estranged), startedTick, lessonsCompleted, bondQuality (-1..1), initiativeId, severedByDivineWill.',
+    description: 'Mentor → apprentice training relationship (THR-75). One active mentor↔apprentice pairing at a time per agent, but graduated/estranged historical edges persist. Properties: domain (ReachDomain), progress (0-1), phase (offered|training|graduated|estranged), startedTick, lessonsCompleted, bondQuality (-1..1), undertakingId, severedByDivineWill.',
   },
 
   // ── Enchantment (RESERVED — not yet implemented) ───────────

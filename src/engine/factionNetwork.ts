@@ -140,7 +140,8 @@ export function getFactionDefinitionForNode(node: GraphNode): FactionDefinition 
 
 /**
  * Look up a FactionDefinition by ID, checking dynamic runtime definitions first
- * (created by agent initiatives), then falling back to static FACTION_DEFINITIONS.
+ * (no live producer since THR-1292 §3 retired initiatives — see TODO(THR-1295)),
+ * then falling back to static FACTION_DEFINITIONS.
  */
 export function getFactionDefinition(
   id: string,
