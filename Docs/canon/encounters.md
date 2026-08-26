@@ -4,6 +4,7 @@ last_reviewed: 2026-08-25
 reviewer: claude-code
 ul_shards: [Encounters, Prose, Traits]
 status: live
+validated_doctrine: prose@2
 ---
 
 # Canon — Encounters

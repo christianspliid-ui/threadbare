@@ -1,0 +1,65 @@
+{
+  "$readme": [
+    "THR-1253 — the guidance manifest. One entry per DOCTRINE: a body of direction whose",
+    "rules other surfaces restate, apply, or teach. Read Docs/plans/2026-08-25-thr-1253-guidance-governance.md.",
+    "",
+    "Why it exists: rulings land in the canonical chain, but agents obey the OPERATIVE chain —",
+    "the prompts, briefs, exemplars and vault samples they load first. The 2026-08-25 prose-guidance",
+    "audit found three director-level register rulings sitting in canon while every operative surface",
+    "kept teaching the retired mode. This file makes the dependency explicit so a ruling PR cannot end",
+    "without disposing of every known restatement site.",
+    "",
+    "FIELDS",
+    "  version           Doctrine version. Bumping it is a deliberate act in the PR that changes the doctrine.",
+    "  versionNote       Human note on what that version means and when it landed.",
+    "  authorities       The surfaces that DEFINE the doctrine. Editing one of these arms the sweep gate.",
+    "  dependents        Repo surfaces that restate or apply the doctrine. Editing one of these is free.",
+    "  manualDependents  Out-of-repo surfaces (vault pages). Never gated — the /guidance-audit skill owns them.",
+    "",
+    "THE GATE (npm run check:guidance-freshness) — a diff that touches an `authority` without",
+    "touching every `dependent` fails, naming the untouched ones, unless a commit body carries",
+    "`Guidance-sweep: <doctrineId> — <disposition>`. Advisory during burn-in; see GUIDANCE_GATE_MODE",
+    "in scripts/check-guidance-freshness.ts.",
+    "",
+    "THE STAMP — dependents that carry YAML frontmatter declare `validated_doctrine: <id>@<version>`,",
+    "meaning someone re-read that surface against that doctrine version. One convention, deliberately:",
+    "a frontmatter key, never a suffix or comment marker. A dependent with NO frontmatter block (an",
+    "agent prompt template, a plain Docs page) is reported by the check as unstamped-by-shape — an",
+    "informational row, never a failure, and this change does not introduce frontmatter into a file",
+    "that lacks it, because a prompt template's bytes are read verbatim by an agent and adding a header",
+    "is a content edit wearing a stamp's clothes. Those surfaces are covered by the GATE, which does",
+    "cover every dependent. The stamp check is advisory ALWAYS — forcing it mechanically would recreate",
+    "the date-bump theater `last_validated_against` already demonstrated.",
+    "",
+    "SCOPE — one doctrine (prose), the domain with demonstrated loss. Adding a doctrine is a deliberate",
+    "registration, not a default. This file is small on purpose.",
+    "",
+    "SUNSET — the gate, the stamps and the retro step enter the standing six-week sunset presumption",
+    "(CLAUDE.md § process-work throttle): renewed at retro by citing a catch, else deleted."
+  ],
+  "doctrines": {
+    "prose": {
+      "version": 2,
+      "versionNote": "Prose doctrine v2 — narrator mode (GM narration). Landed 2026-08-25 via THR-1250/1251/1252; retires the pre-register 'scene-writer' aesthetic.",
+      "authorities": [
+        "Docs/canon/prose.md",
+        ".claude/skills/encounter-pipeline/reference/nudge-authoring-spec.md"
+      ],
+      "dependents": [
+        ".claude/skills/encounter-pipeline/SKILL.md",
+        ".claude/skills/encounter-pipeline/agents/draft-prompt.md",
+        ".claude/skills/encounter-pipeline/agents/editorial-prompt.md",
+        ".claude/skills/template-encounter-rewrite/SKILL.md",
+        ".claude/skills/prose-content-systems/SKILL.md",
+        ".claude/skills/prose-vignettes-and-enrichment/SKILL.md",
+        ".claude/skills/prose-pipeline/SKILL.md",
+        "Docs/exemplars.md",
+        "Docs/canon/encounters.md"
+      ],
+      "manualDependents": [
+        "vault:Systems/Tonal Bible.md",
+        "vault:Systems/Content Creator Cheat Sheet.md"
+      ]
+    }
+  }
+}
