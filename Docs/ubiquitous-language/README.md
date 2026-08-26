@@ -103,6 +103,9 @@ Load this file at session start (referenced from CLAUDE.md). Load specific shard
 - **[Band Fragment](./Encounters.md#band-fragment)** — prose appended when a nudge was active for that band; **not** a Rider, **not** a Context Fragment
 - **[Repertoire](./Encounters.md#repertoire)** — the nudge cards a god holds for a run, gated by access (sphere identity) **and** unlock (earned); per-run and library-level, **not** a per-step hand
 - **[Sphere Attunement](./Encounters.md#sphere-attunement)** — lifetime essence earned per sphere (`essenceEarnedBySphere`); the fourth card-unlock channel, deepening families the sphere identity already opens
+- **[Play Profile](./Encounters.md#play-profile)** — the mechanical half of a library card (`PLAY_PROFILES`), joined to the face at mint time; data that *becomes* a Nudge, and is not one
+- **[Dealt Hand](./Encounters.md#dealt-hand)** — the part of a step's hand supplied by the god's Repertoire rather than authored as the encounter's specials; zero-PRNG, so "dealt" never means random
+- **[Deal Declaration](./Encounters.md#deal-declaration)** — the authored `ActionStep.deal` opt-in (`count`, `tags`, `exclude`); its tag vocabulary is a **closed** union, and absence means byte-identical behavior
 - **[Rebuild Road](./Encounters.md#rebuild-road)** — quintessence-rebuilding encounter; the only content a Broken mortal may draw
 - **[Surface](./Encounters.md#surface)** — a template bound to its context axes (`SurfaceKey`); the unit novelty and recency are tracked at, not a prose variant
 - **[Context Fragment](./Encounters.md#context-fragment)** — context-keyed authored prose spliced via `{frag:<slot>}`, `'*'` default required; **not** a Band Fragment, and its axes are not Surface-key axes
