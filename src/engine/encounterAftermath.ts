@@ -34,6 +34,7 @@ import { RELOCATION_INTENT_TTL_TICKS } from '../data/movement-content';
 import { assignAmbitionToActor } from './ambitionAssignment';
 import type { TraceEntry } from '../types/trace';
 import { buildPredicateContext, evaluateOptionalCondition } from './effects/effectPredicates';
+import { isImmuneToAnyTag } from './effects/effectQueries';
 import {
   THREAD_STRENGTHEN_DEFAULT,
   THREAD_WEAKEN_DEFAULT,
@@ -2082,6 +2083,30 @@ export function applyEncounterAftermathReaction(
           });
           break;
         }
+        // ── tag_immunity (THR-1242) ──
+        // `isImmuneToTag` has existed since the query layer landed and had zero
+        // callers, so nine shipped wards against fear, poison and curses blocked
+        // nothing. This is the gate: a condition whose tags the target is immune
+        // to never lands. Refused before the edge is written rather than removed
+        // after, so no other system observes a condition that should not exist.
+        const immuneTag = isImmuneToAnyTag(
+          state.graph, resolvedId,
+          (conditionNode.properties.tags as string[] | undefined) ?? [],
+          state.effectStates,
+        );
+        if (immuneTag !== null) {
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'apply_condition',
+            effectDetail: { targetId: resolvedId, conditionTraitId: effect.conditionTraitId, immuneTag },
+            success: false, failReason: 'tag_immunity',
+            effectiveTargetId: resolvedId, effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'location' | 'actor_fallback',
+            summary: `apply_condition[${i}] blocked: target immune to ${immuneTag}`,
+          });
+          break;
+        }
+
         const intensity = effect.intensity ?? CONDITION_DEFAULT_INTENSITY;
         const durationTicks = effect.durationTicks ?? CONDITION_DEFAULT_DURATION_TICKS;
         const edgeId = `has_trait_${resolvedId}_${effect.conditionTraitId}_${tick}_${i}`;
@@ -2329,6 +2354,26 @@ export function applyEncounterAftermathReaction(
           });
           break;
         }
+        // ── tag_immunity (THR-1242) ── same gate as `apply_condition` above; this
+        // is the second of the two runtime condition-infliction sites.
+        const caImmuneTag = isImmuneToAnyTag(
+          state.graph, resolvedId,
+          (state.graph.getNode(effect.templateId)?.properties.tags as string[] | undefined) ?? [],
+          state.effectStates,
+        );
+        if (caImmuneTag !== null) {
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'condition_attachment',
+            effectDetail: { targetId: resolvedId, templateId: effect.templateId, immuneTag: caImmuneTag },
+            success: false, failReason: 'tag_immunity',
+            effectiveTargetId: resolvedId, effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'location' | 'actor_fallback',
+            summary: `condition_attachment[${i}] blocked: target immune to ${caImmuneTag}`,
+          });
+          break;
+        }
+
         const caStackCount = Math.max(1, effect.stackCount ?? CONDITION_ATTACHMENT_DEFAULT_STACK_COUNT);
         const caDuration = (() => {
           if (effect.durationOverride !== undefined) {

@@ -151,7 +151,7 @@ export const STARTER_POSSESSIONS: GraphNode[] = [
       flavorText: 'Dyed with muddy hues, designed to shed rain as much as attention.',
       effects: [
         { type: 'range_modifier', movementCostMultiplier: 0.9 },
-        { type: 'tag_immunity', tags: ['cold', 'frostbite'] },
+        { type: 'tag_immunity', tags: ['#cold', '#frostbite'] },
       ],
     } as PossessionNodeProperties,
   },

@@ -446,7 +446,10 @@ export type TraceCategory =
   | 'effect.overlay_applied'
   | 'effect.overlay_expired'
   // Rule-override consumption at owning sites (THR-1241)
-  | 'effect.rule_override_consumed';
+  | 'effect.rule_override_consumed'
+  // Consolidation — the two primitives wired in stage 4 (THR-1242)
+  | 'effect.suppressed'
+  | 'effect.revealed';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'edge_schema_refused',
@@ -809,6 +812,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'effect.overlay_applied',
   'effect.overlay_expired',
   'effect.rule_override_consumed',
+  'effect.suppressed',
+  'effect.revealed',
 ];
 
 /** Base shape for all trace entries */
@@ -930,6 +935,48 @@ export interface RuleOverrideConsumedTrace extends TraceBase {
   value: number | boolean | string;
   /** Owning-site tag, e.g. `'movementCost'`. */
   site: string;
+}
+
+/**
+ * Trace: a `suppress` effect silenced an attachment (THR-1242).
+ *
+ * Emitted from `effectSuppression.applySuppressions`, the only writer of
+ * `EffectRuntimeState.suppressed`. Silence is the hardest state to debug from
+ * the outside — an effect that stops contributing looks identical to one that
+ * was never wired — so this names the source that did it and when it lifts.
+ *
+ * Emitted on the transition only, not every tick the suppression holds: the
+ * writer skips a target already suppressed to the same expiry, so a shroud worn
+ * for twenty ticks produces one row rather than twenty.
+ */
+export interface EffectSuppressedTrace extends TraceBase {
+  category: 'effect.suppressed';
+  agentId: string;
+  /** The attachment being silenced. */
+  attachmentId: string;
+  /** The attachment whose `suppress` effect did it. */
+  sourceAttachmentId: string;
+  /** The agent bearing that source — may differ from `agentId` under a radius scope. */
+  sourceAgentId: string;
+  /** Tick at which the silence lifts. */
+  untilTick: number;
+}
+
+/**
+ * Trace: a `reveal` effect lifted fog on arrival (THR-1242).
+ *
+ * Emitted from `phaseMovement` when a bearer's reveal radius stamps previously
+ * unvisited locations into their exploration record. Absent when the radius
+ * found nothing new, so a row here means the horizon actually moved — which is
+ * the question a reader asks about a scrying lens.
+ */
+export interface EffectRevealedTrace extends TraceBase {
+  category: 'effect.revealed';
+  agentId: string;
+  /** Hex radius the reveal reached. */
+  range: number;
+  /** How many locations became known that were not already. */
+  revealedCount: number;
 }
 
 export interface TraceBase {
@@ -2580,6 +2627,8 @@ export type TraceEntry =
   | EffectChargeSpentTrace
   | EffectOverlayTrace
   | RuleOverrideConsumedTrace
+  | EffectSuppressedTrace
+  | EffectRevealedTrace
   | FilterPipelineTrace
   | ScoringTrace
   | MovementTrace

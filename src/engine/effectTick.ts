@@ -55,6 +55,7 @@ import type { HexMutation } from '../types/hexMutation';
 import {
   STACKING_GLOBAL_CAP,
   COOLDOWN_MINIMUM_TICKS,
+  DURATION_DECAY_MIN_STEP,
 } from '../data/effect-constants';
 import { getAgentLocation } from './graphQueries';
 
@@ -77,14 +78,28 @@ export interface EffectTickResult {
 // Per-Effect Tick Handlers
 // ═══════════════════════════════════════════════════════════════════
 
+/**
+ * ─── `duration_decay_multiplier` owning site, buff/debuff half (THR-1242) ─────
+ * The consolidation target for `freeze_duration`'s `buff` and `debuff` targets.
+ * A buff *is* its countdown here — an attachment with a `duration` effect lasts
+ * exactly as long as this loop says — so scaling the step is the whole of "your
+ * blessings linger". Below 1 slows the count (the freeze), above 1 hastens it.
+ *
+ * The condition half of the same key lives in `conditionDecay`; between them
+ * they cover the three targets the retired type named. The step is floored at
+ * `DURATION_DECAY_MIN_STEP` for the reason `healing_multiplier` is: a step of 0
+ * turns a timed effect into a permanent one with no removal path (NFP #4).
+ */
 function tickDuration(
   effect: { type: 'duration'; ticks: number; destroyOnExpiry: boolean },
   state: EffectRuntimeState,
   attachmentId: string,
   agentId: string,
   tick: number,
+  durationDecayMultiplier = 1.0,
 ): { state: EffectRuntimeState; destroy: boolean; trace?: EffectTickTrace } {
-  const remaining = (state.ticksRemaining ?? effect.ticks) - 1;
+  const step = Math.max(DURATION_DECAY_MIN_STEP, durationDecayMultiplier);
+  const remaining = (state.ticksRemaining ?? effect.ticks) - step;
   const newState = { ...state, ticksRemaining: Math.max(0, remaining) };
 
   if (remaining <= 0 && effect.destroyOnExpiry) {
@@ -436,6 +451,10 @@ export function tickEffects(
   const cooldownMultiplier = overrideCtx !== undefined
     ? readMultiplierOverride(overrideCtx, agentId, 'cooldown_multiplier', 'effectTick.cooldown')
     : 1.0;
+  // THR-1242: same once-per-agent-per-tick reasoning as the cooldown read above.
+  const durationDecayMultiplier = overrideCtx !== undefined
+    ? readMultiplierOverride(overrideCtx, agentId, 'duration_decay_multiplier', 'effectTick.duration')
+    : 1.0;
   const destroyedAttachments: string[] = [];
   const hexMutations: HexMutation[] = [];
   const traces: EffectTickTrace[] = [];
@@ -461,7 +480,7 @@ export function tickEffects(
       for (const effect of effects) {
         switch (effect.type) {
           case 'duration': {
-            const r = tickDuration(effect, state, node.id, agentId, tick);
+            const r = tickDuration(effect, state, node.id, agentId, tick, durationDecayMultiplier);
             state = r.state;
             if (r.destroy) shouldDestroy = true;
             if (r.trace) traces.push(r.trace);

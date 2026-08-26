@@ -230,6 +230,7 @@ import {
   ensureDistanceMatrix,
 } from './simulationRuntime';
 import { expireOverlays } from './effects/effectOverlayStore';
+import { applySuppressions } from './effects/effectSuppression';
 import { recordBalanceEvent } from './balanceTelemetry';
 import { checkMidEncounterPromotion, isNotableEntry } from './attentionTier';
 import type { EncounterPromotionTrace, DigestEntry } from '../types/attention';
@@ -2956,6 +2957,21 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
     const agents = s.graph.getNodesByType('actor')
       .filter(n => n.properties.actorType === 'individual' || n.properties.actorType === 'ascendant');
     let updatedEffectStates = new Map(effectStates);
+
+    // THR-1242: resolve `suppress` before anything ticks, so an attachment
+    // silenced this tick does not also get to act this tick. This is the only
+    // writer of `EffectRuntimeState.suppressed`, a flag four readers have
+    // honoured since the primitive architecture landed and nothing ever set —
+    // so four shipped artifacts promised to silence magic and silenced nothing.
+    // Runs over the same `agents` list the tick loop uses rather than re-walking
+    // `getNodesByType('actor')`.
+    {
+      const suppression = applySuppressions(
+        s.graph, updatedEffectStates, s.tick, agents.map(a => a.id),
+      );
+      updatedEffectStates = suppression.states;
+    }
+
     const effectHexMutations: import('../types/hexMutation').HexMutation[] = [];
     let processedEffectActors = 0;
     for (const agent of agents) {

@@ -331,6 +331,32 @@ export const CONTRACTS: readonly Contract[] = [
     },
   },
   {
+    id: 'effect-vocabulary-consolidated-spellings',
+    producerSystem: 'Effects & Conditions',
+    consumerSystem: 'Effects & Conditions',
+    intent: 'Every effect capability content can author reaches a live mechanism — duplicate spellings are retired and their content migrated onto the mechanism that already executes.',
+    mechanism: {
+      kind: 'function',
+      symbols: ['applySuppressions', 'getRevealRanges', 'isImmuneToAnyTag', 'normalizeTag'],
+      module: 'src/engine/effects/effectSuppression.ts',
+    },
+    writeSites: [
+      'src/engine/effects/effectSuppression.ts',
+      'src/engine/orchestrator.ts',
+    ],
+    readSites: [
+      'src/engine/phaseMovement.ts',
+      'src/engine/encounterAwareness.ts',
+      'src/engine/movementCost.ts',
+      'src/engine/encounterAftermath.ts',
+      'src/engine/effects/effectQueries.ts',
+    ],
+    verifiedLive: {
+      date: '2026-08-26',
+      evidence: 'THR-1242. Nine spellings retired and their content migrated: graph_mutation/outcome_shift/auto_succeed had zero refs; reroll (3) -> test_shaper, swap_reach (1) -> the encounter_reach_override rule key, haste/slow/freeze_duration (13) -> cooldown/movement/duration multiplier keys, create_barrier (5) -> alter_terrain with the shrouded/warded overlays. Retiring a spelling is NOT the same claim as keeping the capability, so the tests come in two shapes: retirement sweeps run against the REAL catalogs (a fixture would verify fiction, since the claim is about what ships) and match only a `type: \'x\'` position, because a bare substring sweep for "slow" hits an adjective table in archetype-content and would report a false positive forever. Three primitives were wired rather than migrated, and each was a different shape of dead. `suppress` was the inverse of the usual case — a CONSUMER with no producer: EffectRuntimeState.suppressed has been read by effectResolver, effectQueries, consumableCharges and effectEvents since the primitive architecture landed and set by nothing, so four artifacts promised to silence magic and silenced nothing; applySuppressions is now its one writer, run once per tick before the effect tick so an attachment silenced this tick does not also act this tick. `reveal` had 17 content refs and no consumer of any kind; it now floors the awareness horizon (encounters target) and lifts fog on arrival (hexes target). `tag_immunity` had a complete query with ZERO callers AND a namespace mismatch that would have made it read as wired and block nothing — condition trait nodes carry #-prefixed tags while most immunity content wrote them bare, so `fear` would never have matched `#fear`; content is migrated to the # spelling and comparison normalizes both sides. Non-vacuous by falsification: reverting the walker to its private MAX_EFFECTS_PER_NODE=12 fails exactly the three content-guard tests, and removing the self-cancel guard from applySuppressions fails exactly the one that names it (4 failed / 79 passed), so the tests assert the wiring rather than the helpers. The create_barrier migration additionally required giving the stage-2 overlay store its first PRODUCTION reader (movementCost for warded, encounterAwareness for shrouded) — without it the migration would have moved five artifacts from a dead spelling onto a dead mechanism: persisted, traced, and still changing nothing a player could feel.',
+    },
+  },
+  {
     id: 'attachment-slot-caps-suppress',
     producerSystem: ATTACHMENTS,
     consumerSystem: 'Effects & Conditions',

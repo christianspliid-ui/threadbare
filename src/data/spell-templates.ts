@@ -49,7 +49,7 @@ export const SPELL_TEMPLATES: SpellTemplate[] = [
     censusTag: { scale: 'personal' },
     prerequisites: { minReach: { star: 0.30, iron: 0.15 } },
     effects: [
-      { type: 'swap_reach', from: 'iron', to: 'star', ticks: 8 },
+      { type: 'modify_rules', scope: { scope: 'self' }, rule: 'encounter_reach_override', value: { from: 'iron', to: 'star' }, ticks: 8 },
       { type: 'stacking', reach: 'star', valuePerStack: 0.03, maxStacks: 4, stackOn: 'combat_success' },
     ],
     cost: { type: 'multi', costs: [

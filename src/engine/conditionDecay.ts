@@ -72,10 +72,18 @@ export function decayConditions(
     // Healing accelerates the countdown; the carrier is the node the condition
     // sits on, which since THR-1143 may be a place as well as an agent — a place
     // simply never bears a healing override, so it reads neutral and decays at 1.
+    //
+    // THR-1242: `duration_decay_multiplier` — the consolidation target for the
+    // retired `freeze_duration` — is the second dial on this same step, and the
+    // two compose multiplicatively rather than one winning. Healing accelerates
+    // recovery; a freeze resists it; an agent carrying both gets the product,
+    // which is the only reading where a ward and a curse can argue. The floor is
+    // applied after both, so no combination can stall a condition forever.
     const decayStep = overrideCtx !== undefined
       ? Math.max(
         HEALING_MULTIPLIER_MIN_DECAY_TICKS,
-        readMultiplierOverride(overrideCtx, edge.source, 'healing_multiplier', 'conditionDecay'),
+        readMultiplierOverride(overrideCtx, edge.source, 'healing_multiplier', 'conditionDecay')
+        * readMultiplierOverride(overrideCtx, edge.source, 'duration_decay_multiplier', 'conditionDecay'),
       )
       : 1;
 

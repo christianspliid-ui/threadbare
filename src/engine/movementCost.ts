@@ -28,6 +28,9 @@ import type { TerrainType, LocationSubtype } from '../types';
 import type { EffectRuntimeState } from '../types/effects';
 import { getRangeModifiers } from './effects/effectQueries';
 import { readMultiplierOverride, type RuleOverrideContext } from './effects/ruleOverrideConsumers';
+import { hasTerrainOverlay } from './effects/effectOverlayStore';
+import { resolveLocationToHex } from './encounterAwareness';
+import { WARDED_OVERLAY_MOVEMENT_MULTIPLIER } from '../data/effect-constants';
 
 /**
  * Compute the tick cost to traverse from source to destination.
@@ -140,6 +143,26 @@ export function computeEdgeCost(
     ? readMultiplierOverride(overrideCtx, agentId, 'movement_cost_multiplier', 'movementCost')
     : 1.0;
 
+  // --- Terrain Overlay (THR-1242) ---
+  // The `warded` overlay is where the retired `create_barrier` primitive's
+  // `blocks: 'movement'` arm landed. Stage 2 gave overlays somewhere to live and
+  // stage 3 wired the rule keys; the overlay collection itself still had no
+  // production reader, so migrating five artifacts onto it without this would
+  // have moved them from a dead spelling to a dead mechanism — persisted,
+  // traced, and still changing nothing a player could feel.
+  //
+  // Read on the DESTINATION hex, not the source: a ward makes a place hard to
+  // enter. Reading departure instead would make it hard to *leave*, which is the
+  // same word describing the opposite experience.
+  const overlayMultiplier = (() => {
+    if (!overrideCtx?.persisted) return 1.0;
+    const destHex = resolveLocationToHex(graph, destId);
+    if (!destHex) return 1.0;
+    return hasTerrainOverlay(overrideCtx.persisted, destHex.col, destHex.row, 'warded')
+      ? WARDED_OVERLAY_MOVEMENT_MULTIPLIER
+      : 1.0;
+  })();
+
   // --- Total Cost ---
   // Range and condition multipliers applied to the full pre-floor cost, then
   // floored at MIN_EDGE_COST. Never Infinity and never a hard refusal: a closed
@@ -148,7 +171,7 @@ export function computeEdgeCost(
   const totalCost = Math.max(
     MIN_EDGE_COST,
     (baseCost + terrainTax + locationTax + speedModifier)
-      * conditionMultiplier * rangeMultiplier * ruleMultiplier,
+      * conditionMultiplier * rangeMultiplier * ruleMultiplier * overlayMultiplier,
   );
 
   return {

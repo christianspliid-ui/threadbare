@@ -329,10 +329,32 @@ export function computeSocialCooperationBias(
 // ═══════════════════════════════════════════════════════════════════
 
 /**
+ * The canonical tag namespace is `#`-prefixed (THR-1242).
+ *
+ * Condition trait definitions have always written `#`-prefixed tags
+ * (`['#condition', '#combat', '#negative']`), and so do reward tag filters. Most
+ * `tag_immunity` content wrote them bare (`['fear', 'intimidation']`) — so even
+ * once the immunity had a caller, `'fear'` would never have matched `'#fear'`
+ * and the primitive would have read as wired and blocked nothing. That is a
+ * worse failure than being dead, because the trace shows the check running.
+ *
+ * Content is migrated to the `#` spelling, and comparison normalizes anyway:
+ * the namespace is a convention, and a convention enforced only by every author
+ * remembering it is not enforced.
+ */
+export function normalizeTag(tag: string): string {
+  return tag.startsWith('#') ? tag.slice(1) : tag;
+}
+
+/**
  * Check whether the agent is currently immune to a condition tag.
  *
  * An agent is immune if any active tag_immunity effect covers the tag.
- * Used at condition-application time to block unwanted conditions.
+ * Called at condition-application time (`encounterAftermath`) to block unwanted
+ * conditions — see {@link isImmuneToAnyTag} for the list form the call sites use.
+ *
+ * Both sides are normalized through {@link normalizeTag}, so `'#fear'` and
+ * `'fear'` are the same tag whichever spelling the content happens to carry.
  */
 export function isImmuneToTag(
   graph: WorldGraph,
@@ -341,16 +363,40 @@ export function isImmuneToTag(
   effectStates?: ReadonlyMap<string, EffectRuntimeState>,
   ctx?: PredicateContext,
 ): boolean {
+  const wanted = normalizeTag(tag);
+
   for (const entry of collectAttachmentEffects(graph, agentId, effectStates)) {
     if (!isActive(entry.runtimeState)) continue;
     if (entry.effect.type !== 'tag_immunity') continue;
     if (!evaluateOptionalCondition(entry.effect.condition, ctx)) continue;
 
-    if (entry.effect.tags.includes(tag)) {
+    if (entry.effect.tags.some(t => normalizeTag(t) === wanted)) {
       return true;
     }
   }
   return false;
+}
+
+/**
+ * The first tag on this list the agent is immune to, or `null` if none.
+ *
+ * A condition carries a tag *list*, and immunity to any one of them blocks it —
+ * a ward against `#fear` should stop a terror however many other tags that
+ * condition also carries. Returning the matching tag rather than a boolean is
+ * what lets the infliction site name it in the trace, which is the difference
+ * between "the condition did not land" and an inspectable reason it did not.
+ */
+export function isImmuneToAnyTag(
+  graph: WorldGraph,
+  agentId: string,
+  tags: readonly string[],
+  effectStates?: ReadonlyMap<string, EffectRuntimeState>,
+  ctx?: PredicateContext,
+): string | null {
+  for (const tag of tags) {
+    if (isImmuneToTag(graph, agentId, tag, effectStates, ctx)) return tag;
+  }
+  return null;
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -386,6 +432,54 @@ export function getRangeModifiers(
   }
 
   return { movementCostMultiplier, awarenessRangeBonus };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Reveal Ranges (THR-1242)
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Hex range this agent can see past its ordinary limits, per reveal target.
+ *
+ * `reveal` shipped on 17 content refs with no consumer at all — a scrying lens
+ * that revealed nothing. This is the read half; the two live consumers are
+ * `phaseMovement` (the `hexes` range lifts fog on arrival) and
+ * `encounterAwareness` (the `encounters` range widens awareness hops).
+ *
+ * **`agent` and `attachments` are collected but have no consumer yet, and this
+ * comment is the place that says so.** Both name inspection surfaces — "see who
+ * that is", "see what they carry" — which live in the UI's agent-detail path,
+ * not in a tick phase. Returning them keeps the query honest about what content
+ * declares; it would be worse to silently drop them and leave a future reader
+ * believing the primitive only ever had two targets. 3 of the 17 refs use them.
+ *
+ * `'all'` is represented as `Infinity`, so a caller may `Math.min` it against
+ * whatever bound it enforces without special-casing the literal.
+ *
+ * Highest wins per target rather than summing: two lenses do not see twice as
+ * far as the better one, and additive stacking on a range that gates a hex scan
+ * is how a performance budget gets spent by content (NFP #7).
+ */
+export function getRevealRanges(
+  graph: WorldGraph,
+  agentId: string,
+  effectStates?: ReadonlyMap<string, EffectRuntimeState>,
+): { hexes: number; encounters: number; agent: number; attachments: number } {
+  const ranges = { hexes: 0, encounters: 0, agent: 0, attachments: 0 };
+
+  for (const entry of collectAttachmentEffects(graph, agentId, effectStates)) {
+    if (!isActive(entry.runtimeState)) continue;
+    if (entry.effect.type !== 'reveal') continue;
+
+    const range = entry.effect.range === 'all' ? Infinity : entry.effect.range;
+    if (!Number.isFinite(range) && range !== Infinity) continue;
+    if (typeof range !== 'number' || range < 0) continue;
+
+    const target = entry.effect.target;
+    if (range > ranges[target]) ranges[target] = range;
+  }
+
+  return ranges;
 }
 
 // ═══════════════════════════════════════════════════════════════════

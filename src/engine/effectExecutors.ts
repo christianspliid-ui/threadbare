@@ -746,19 +746,17 @@ export function executeEffect(
     case 'aura':
     case 'reactive':
     case 'transform':
-    case 'suppress':
+    // THR-1242: `reveal` and `suppress` are wired as of stage 4, and both belong
+    // here rather than in an executor arm. `reveal` is a query the movement and
+    // awareness sites read (`getRevealRanges`); `suppress` is resolved once per
+    // tick by `applySuppressions`, because every scope wider than `self` is a
+    // statement about other agents' runtime states and an `ExecutionResult` has
+    // no channel for that. Both are live; neither executes here.
     case 'reveal':
-    case 'auto_succeed':
-    case 'reroll':
-    case 'swap_reach':
-    case 'outcome_shift':
+    case 'suppress':
     case 'test_shaper':
     case 'prevent_loss':
     case 'content_grant':
-    case 'create_barrier':
-    case 'haste':
-    case 'slow':
-    case 'freeze_duration':
     // THR-1239: the query/tick-layer families were absent from this arm, so every
     // one of them fell to the old `default` and reported `success: false` with an
     // "Unknown effect type" warning — an honest-looking failure for effects that
@@ -774,7 +772,6 @@ export function executeEffect(
     case 'tag_immunity':
     case 'resource_manipulate':
     case 'hex_effect':
-    case 'graph_mutation':
     case 'slot_bonus':
     case 'stat_contribution':
       return {

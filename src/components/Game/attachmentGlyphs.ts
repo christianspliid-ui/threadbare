@@ -75,16 +75,8 @@ const EFFECT_TYPE_GLYPHS: Record<string, string> = {
   spawn: '\u2728',             // ✨ Sparkles (summon)
   dispel: '\u2718',            // ✘ Cross (negate)
   suppress: '\u23F8',          // ⏸ Pause (suppress)
-  auto_succeed: '\u2714',      // ✔ Check (auto-win)
-  reroll: '\u1F3B2',           // 🎲 Die (reroll)
-  swap_reach: '\u21C5',        // ⇅ Up-down arrows (swap)
-  outcome_shift: '\u2B06',     // ⬆ Up arrow (improve)
   alter_terrain: '\u26F0',     // ⛰ Mountain (terrain)
-  create_barrier: '\u2588',    // █ Block (barrier)
   transfer: '\u21C6',          // ⇆ Left-right arrows (move between)
-  haste: '\u23E9',             // ⏩ Fast forward
-  slow: '\u23EA',              // ⏪ Rewind
-  freeze_duration: '\u2744',   // ❄ Snowflake (freeze)
   compel: '\u1F9FF',           // 🧿 Eye (mind control)
   create_structure: '\u1F3D7', // 🏗 Crane (build)
   destroy_structure: '\u1F4A5', // 💥 Explosion (destroy)

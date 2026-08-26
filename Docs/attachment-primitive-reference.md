@@ -64,7 +64,7 @@ Each primitive is tagged with which game components can use it. Tags are suggest
 - `penalty` — `{ reach, value }` — the cost
 
 ### "It saves you when things go wrong"
-**test_shaper** `#item` `#power` `#trait` — after a roll resolves, nudge the outcome. Turn a near-miss into a success, reroll, or swap which reach was tested.
+**test_shaper** `#item` `#power` `#trait` — after a roll resolves, nudge the outcome. Turn a near-miss into a success, or rescue a failure by a margin. **The consolidation target for the retired `reroll` spelling** (THR-1242) — a second chance at a roll and an upgraded outcome are the same promise, and this is the one with an implementation.
 - `reach` — which domain this applies to
 - `condition` — (optional) situational gate
 - `trigger` — when it fires: `near_miss` (close failure), `failure`, `success` (upgrade to crit), `any`
@@ -135,7 +135,7 @@ Good for: trait restrictions (Pacifist blocks Iron duel actions), equipment prer
 Good for: healing spells (cleanse #disease/#poison), exorcism (dispel #curse), contract-breaking rituals (break #binding agreements), purification (remove all #corruption conditions).
 
 ### "It makes you immune to certain effects"
-**tag_immunity** `#item` `#power` `#condition` — while active, the agent cannot receive conditions or effects with specified tags. Incoming effects that match are simply blocked.
+**tag_immunity** `#item` `#power` `#condition` — while active, the agent cannot receive conditions whose tags match. Checked at both aftermath condition-infliction sites; a blocked condition never gets an edge, and the refusal traces with the tag that caused it. **Write tags `#`-prefixed** — that is the canonical namespace (UL: Tag Namespace). Comparison normalizes either spelling, but condition trait nodes are all `#`-prefixed and matching them is the point.
 - `immuneTo` — tag patterns that are blocked: `["#poison"]`, `["#fire", "#heat"]`, `["#curse"]`
 - `condition` — (optional) predicate for when immunity is active
 
@@ -160,31 +160,17 @@ Good for: consecration rituals (boost divineInfluence), blight spells (increase 
 
 Good for: healing spells (restore essence), psychic attacks (drain quintessence), poison (per-tick essence drain), meditation (per-tick quintessence restore), vampiric effects (drain target, restore self).
 
-### "It changes the world graph"
-**graph_mutation** `#power` `#divine` `#item` `#agreement` — creates, destroys, or modifies nodes and edges in the world graph. The most powerful primitive — handles everything from spawning allies to razing settlements.
-- `operation` — what to do: `create_node`, `destroy_node`, `create_edge`, `destroy_edge`, `modify_property`
-- `nodeType` — (for create/destroy node) what kind: `actor`, `location`, `sublocation`, `encounter`, `artifact`, `faction`
-- `edgeType` — (for create/destroy edge) what kind: `possesses`, `located_at`, `allied_with`, `controls`, `trades_with`, `has_trait`, etc.
-- `template` — (for create) template ID to instantiate
-- `target` — what it acts on: `self`, `target`, `hex`, `nearest:{nodeType}`
-- `condition` — (optional) predicate for when it fires
-- `probability` — (optional) chance per trigger (0-1)
-
-Good for:
-- **Kill agent**: destroy_node on self when essence=0 (death by curse/poison)
-- **Summon ally**: create_node actor from template at self hex
-- **Found settlement**: create_node sublocation at hex (founding charter)
-- **Raze structure**: destroy_node location/sublocation on target
-- **Create trade route**: create_edge trades_with between two locations
-- **Break alliance**: destroy_edge allied_with
-- **Spawn encounter**: create_node encounter at hex (cursed artifact attracts trouble)
-- **Corrupt location**: modify_property on location (prosperity, unrest, magicalSaturation)
-- **Claim territory**: create_edge controls between agent and location
-- **Recruit retainer**: create_node actor + create_edge bonded_to
+### "It changes the world graph" — RETIRED (THR-1242)
+**`graph_mutation` was retired from the union.** It had zero content refs, no
+executor, and an unrestricted `set_property` / `remove_node` primitive is not a
+vocabulary content should author against. The graph operations content *should*
+reach for are the named ones in `graphOpExecutor`, which validate their targets.
+A dead type that invites arbitrary CRUD is worse than no type, because a
+generator reading the union treats it as available.
 
 ### "It rewrites the rules"
 **modify_rules** `#divine` `#power` — temporarily changes how game systems work within a scope. The world itself behaves differently.
-- `rule` — which system to override: `encounter_reach_override`, `movement_cost_multiplier`, `death_prevented`, `healing_multiplier`, `spawn_rate_multiplier`, `awareness_range_bonus`, `tier_advancement_cost_multiplier`, `faction_influence_multiplier`, `cooldown_multiplier`, `backlash_severity_multiplier`, `doom_rate_multiplier`, `reward_tier_bonus`, `encounter_difficulty_modifier`
+- `rule` — which system to override: `encounter_reach_override`, `movement_cost_multiplier`, `death_prevented`, `healing_multiplier`, `spawn_rate_multiplier`, `awareness_range_bonus`, `tier_advancement_cost_multiplier`, `faction_influence_multiplier`, `cooldown_multiplier`, `backlash_severity_multiplier`, `doom_rate_multiplier`, `reward_tier_bonus`, `encounter_difficulty_modifier`, `duration_decay_multiplier`
 - `value` — the override value (multiplier or additive depending on rule)
 - `scope` — where it applies: `self`, `hex`, `radius:{N}`, `region`, `faction`, `global`
 - `duration` — (optional) how many ticks the override lasts

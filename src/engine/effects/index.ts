@@ -46,7 +46,10 @@ export {
   getSocialModifiers,
   computeSocialCooperationBias,
   isImmuneToTag,
+  isImmuneToAnyTag,
+  normalizeTag,
   getRangeModifiers,
+  getRevealRanges,
   getActiveRuleOverride,
   type BehaviorWeight,
   type SocialModifier,
@@ -73,6 +76,12 @@ export {
   readReachOverride,
   type RuleOverrideContext,
 } from './ruleOverrideConsumers';
+
+// Suppression — the writer for `EffectRuntimeState.suppressed` (THR-1242)
+export {
+  applySuppressions,
+  type SuppressionResult,
+} from './effectSuppression';
 
 // Resource delta — one-shot resource mutation (TB-104 Phase 1B)
 export {

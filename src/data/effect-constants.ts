@@ -9,8 +9,24 @@
 
 // ─── Content Guards ───────────────────────────────────────────────
 
-/** Max effects allowed per attachment template. Prevents combinatorial explosion. */
-export const MAX_EFFECTS_PER_ATTACHMENT = 6;
+/**
+ * Max effects read per attachment template. Prevents combinatorial explosion.
+ *
+ * **Enforced at the walker boundary since THR-1242**, where it replaced a second,
+ * private `MAX_EFFECTS_PER_NODE = 12` that `effectWalker` carried and nobody
+ * could tune. Two numbers for one idea is the duplicate-spelling pathology this
+ * stage exists to remove, and the one actually in force was the untunable one —
+ * so the CMS row for this constant was decorative.
+ *
+ * Raised 6 → 8 in the same pass. 6 was never true of the content: four shipped
+ * attachments carry 7 effects, so enforcing the declared number would have
+ * silently truncated authored content on four live items — a player-felt loss,
+ * which is exactly what this stage's "nothing player-felt lost" bar forbids. 8
+ * is the smallest value that holds the existing catalog with a little headroom.
+ * `attachmentEffectCap.test.ts` pins the catalog under it, so the next over-cap
+ * item is a red test at author time rather than a silent truncation at read time.
+ */
+export const MAX_EFFECTS_PER_ATTACHMENT = 8;
 
 /** Max activatable ability slots per attachment. */
 export const MAX_ACTIVATED_ABILITIES_PER_ATTACHMENT = 3;
@@ -307,6 +323,17 @@ export const AURA_STACKING_CAP = 3;
 export const HEALING_MULTIPLIER_MIN_DECAY_TICKS = 0.25;
 
 /**
+ * Floor on the per-tick step a `duration_decay_multiplier` may produce (THR-1242).
+ *
+ * The sibling of `HEALING_MULTIPLIER_MIN_DECAY_TICKS`, for the other clock. A
+ * freeze spelled as `duration_decay_multiplier: 0` would stop an attachment's
+ * countdown outright, turning a timed buff into a permanent one that nothing can
+ * lift — the same dead end, one layer over. The floor keeps a freeze strong
+ * without making it forever (NFP #4).
+ */
+export const DURATION_DECAY_MIN_STEP = 0.25;
+
+/**
  * Multiplier at or above which `backlash_severity_multiplier` escalates a
  * backlash by one band, and at or below which it softens by one (THR-1241).
  *
@@ -325,3 +352,32 @@ export const BACKLASH_SEVERITY_SOFTEN_AT = 0.67;
  * the top band and make the reward pool's weighting decorative.
  */
 export const REWARD_TIER_BONUS_CAP = 2;
+
+// ─── Terrain-overlay consumption (THR-1242) ────────────────────────
+
+/**
+ * Movement-cost multiplier applied while a `warded` overlay sits on the hex
+ * being entered.
+ *
+ * The `create_barrier` migration needed the overlay store to have a *consumer*,
+ * or it would have moved five shipped artifacts from one dead spelling onto
+ * another dead mechanism — persisted, traced, and still changing nothing a
+ * player could feel. This is that consumer's dial.
+ *
+ * A tax, never a wall: `computeEdgeCost` floors at `MIN_EDGE_COST`, so a warded
+ * hex is expensive to cross and never impassable. A hard refusal could strand an
+ * agent whose only route home runs through it (NFP #4).
+ */
+export const WARDED_OVERLAY_MOVEMENT_MULTIPLIER = 1.75;
+
+/**
+ * Awareness hops subtracted while a `shrouded` overlay sits on the observer's hex.
+ *
+ * The awareness half of the same migration — `create_barrier`'s `blocks:
+ * 'awareness'` arm. Subtractive rather than absolute so it composes with
+ * `awareness_range_bonus` (stage 3) instead of overriding it: a shroud and a
+ * farsight charm on the same agent should argue, not have one silently win.
+ * `encounterAwareness` floors the result at 0 — a shrouded agent still sees its
+ * own hex, which is what keeps the world from going black.
+ */
+export const SHROUDED_OVERLAY_AWARENESS_PENALTY = 2;

@@ -1,5 +1,5 @@
 {
-  "total": 3010,
+  "total": 3009,
   "command": "npx tsc -b --force --pretty false",
   "perFile": {
     "scripts/lint-encounter-content.ts": 2,
@@ -227,7 +227,7 @@
     "src/data/omenTemplates.ts": 24,
     "src/data/reputation-trait-content.ts": 1,
     "src/data/resource-content.ts": 1,
-    "src/data/reward-attachment-catalog.ts": 205,
+    "src/data/reward-attachment-catalog.ts": 204,
     "src/data/rival-content.ts": 32,
     "src/data/scry-content.ts": 2,
     "src/data/secret-encounter-content.ts": 1,

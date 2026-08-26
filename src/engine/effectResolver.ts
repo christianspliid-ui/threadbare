@@ -148,21 +148,13 @@ export function getEffectModifierValue(
     case 'spawn':
     case 'dispel':
     case 'suppress':
-    case 'auto_succeed':
-    case 'reroll':
-    case 'swap_reach':
-    case 'outcome_shift':
     case 'test_shaper':
     case 'prevent_loss':
     case 'content_grant':
     case 'resource_delta':
     case 'action_trigger':
     case 'alter_terrain':
-    case 'create_barrier':
     case 'transfer':
-    case 'haste':
-    case 'slow':
-    case 'freeze_duration':
     case 'compel':
     case 'create_structure':
     case 'destroy_structure':

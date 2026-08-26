@@ -59,7 +59,14 @@ import { collectAttachmentEffects } from './effectWalker';
 export interface RuleOverrideContext {
   readonly graph: WorldGraph;
   readonly effectStates?: ReadonlyMap<string, EffectRuntimeState>;
-  readonly persisted?: Pick<GameState, 'activeRuleOverrides'>;
+  /**
+   * THR-1242 widened this from `Pick<GameState, 'activeRuleOverrides'>` to carry
+   * the terrain half too. Both collections are written by the same stage-2 drain
+   * from the same `ExecutionResult`, and both are read at the same two sites
+   * (`movementCost`, `encounterAwareness`) — so threading a second context object
+   * through those signatures would have been two parameters describing one thing.
+   */
+  readonly persisted?: Pick<GameState, 'activeRuleOverrides' | 'activeTerrainOverlays'>;
   readonly tick: number;
 }
 

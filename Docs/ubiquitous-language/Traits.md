@@ -142,7 +142,11 @@ The broad **code umbrella** for anything that connects to a bearer and modifies 
 **Also see:** `[[Attachment]]`, `[[Power]]`, `[[Trait]]`
 **Status:** canonical
 
-The **substrate** word: the primitives of the `AttachmentEffect` union (`src/types/effects.ts`), from which powers, items, blessings and curses are all built. The union is tiered — Gear, Spell, God-tier — and its members are atoms such as `PassiveEffect`, `OutcomeShiftEffect`, `TraitGrantEffect`, `TeleportEffect`.
+The **substrate** word: the primitives of the `AttachmentEffect` union (`src/types/effects.ts`), from which powers, items, blessings and curses are all built. The union is tiered — Gear, Spell, God-tier — and its members are atoms such as `PassiveEffect`, `TestShaperEffect`, `TraitGrantEffect`, `TeleportEffect`.
+
+**One capability, one spelling (THR-1242).** A member of this union is a promise that content can author it and the engine will run it. Nine members were retired in the effect-vocabulary consolidation because they were *second spellings* of a live mechanism, and in every case the spelling without an executor was the one shipped content used — so an artifact could promise haste and nothing would hasten. Retired: `graph_mutation`, `outcome_shift`, `auto_succeed` (no content at all), `reroll` → `test_shaper`, `swap_reach` → the `encounter_reach_override` rule key, `haste`/`slow`/`freeze_duration` → rule-override multiplier keys, `create_barrier` → `alter_terrain` with the `shrouded`/`warded` overlays. When a new primitive is proposed, the first question is whether an existing member already means it.
+
+**`choice_set` is the one member content must not author.** It renders a nested decision for a human; an agent has no surface to make one on. It stays in the union for the existing GameView use and is excluded from the agent-facing vocabulary and from the powers and item generators' envelopes.
 
 **Disambiguation — Effect is never player-facing as a family name.** It names the atoms only. The two-level ambiguity, where "effects" means both the primitives *and* the family of things assembled from them, is exactly what `[[Power]]` was minted to prevent: **"Effects" was considered as the family name and rejected** (ratified 2026-08-25). When you mean the things a bearer holds, say power, possession, or attachment; reserve *effect* for the primitive.
 
@@ -197,3 +201,19 @@ A `[[Power]]` that is **anatomy**: stamped at seeding on monsters and unusual be
 **No code anchor yet.** Unlike its two siblings there is no `AttachmentCategory` member for it as of this entry's landing (2026-08-25); the term is ratified vocabulary awaiting implementation, so content that means it should not reach for an existing category as a stand-in.
 
 **Do not confuse it with the `innate` `[[Trait Category]]`**, which is a worldgen-minted, permanent *trait* class. The collision is exact in wording and empty in substance: one is a name minted at worldgen, the other a capability stamped at seeding.
+
+---
+
+### Tag Namespace
+
+**Aliases:** `#`-tag, content tag
+**Also see:** `[[Effect]]`, `[[Attachment]]`, `[[Trait]]`
+**Status:** canonical
+
+**Every content tag is written `#`-prefixed.** Condition trait definitions, attachment tag lists, reward tag filters, and `tag_immunity` tag lists all share one namespace, and `#` is its spelling: `['#condition', '#combat', '#negative']`, not `['condition', 'combat', 'negative']`.
+
+**Ratified 2026-08-26 (THR-1242) because the mismatch was live and silent.** Condition trait nodes had always carried `#`-prefixed tags; most `tag_immunity` content wrote them bare. `isImmuneToTag` compared the two with `Array.includes`, so `'fear'` could never match `'#fear'` — a ward against terror would have run its check, found nothing, and let the terror land. That is worse than a dead primitive, because the trace shows the comparison happening.
+
+**Comparison normalizes anyway.** `normalizeTag` (`src/engine/effects/effectQueries.ts`) strips one leading `#` from both sides before comparing, so a bare tag still matches. The convention is the rule; the normalization is the safety net, because a convention enforced only by every author remembering it is not enforced. Write the `#`.
+
+**One level only.** `normalizeTag('##fear')` is `'#fear'`, not `'fear'` — a doubled prefix is a content typo and should surface as a non-match rather than be silently repaired.
