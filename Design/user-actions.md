@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-26 08:57 local (06:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-26 09:58 local (07:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -8,25 +8,24 @@
 
 **The camp seven** — shrine offering, sharpening blades, warding the camp, a small prayer, rest and reflection, tending wounds, scouting the perimeter. All seven are thin: the census found **no typed consequences at all** in that set, only bare standing nudges. With the corpus rewrite shipped, they are the last encounters in the game below standard. And **`shrine_offering` is encounter #1 of [your integrated slice checkpoint](https://linear.app/threadbare/issue/THR-1220)**, which cannot invite you while the camp set is below standard.
 
-It binds [Prose Doctrine v2](https://github.com/christianspliid-ui/threadbare/blob/main/.claude/skills/encounter-pipeline/reference/nudge-authoring-spec.md) — the narrator mode you set — now swept through every authoring surface, and it will be authored under the dealt-hand model, which [is merged and playable](https://linear.app/threadbare/issue/THR-1254) rather than only specified.
+It binds [Prose Doctrine v2](https://github.com/christianspliid-ui/threadbare/blob/main/.claude/skills/encounter-pipeline/reference/nudge-authoring-spec.md) — the narrator mode you set — and will be authored under the dealt-hand model, which [is merged and playable](https://linear.app/threadbare/issue/THR-1254) rather than only specified.
 
-**The judgement has changed shape since yesterday.** It was seven-or-six. But at 07:49 on 26 August a session recorded you saying *"a full batch of 6 is premature; I can judge quality on 1"* — said about a pipeline-proof run, not about this retrofit, so no lane has applied it here and none should without you. Three ways to close it: *"batch 2, seven is fine"*, *"keep it six"*, or *"same rule — judge batch 2 on one first."* [The brief](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/retrofit-batch-2-brief.md) is merged and readable.
+**Your batch-of-one call has now been tested.** You approved the full-line proof at size one overnight; it ran the complete line in a single pass and produced [The Beast in the Granary](https://github.com/christianspliid-ui/threadbare/pull/1643). So the third option below is a demonstrated route, not a guess. Three ways to close it: *"batch 2, seven is fine"*, *"keep it six"*, or *"same rule — judge batch 2 on one first."* [The brief](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/retrofit-batch-2-brief.md) is merged and readable.
 
-**The same sitting closes the batch-1 sample.** The *"worth meeting twice"* verdict on [THR-1130](https://linear.app/threadbare/issue/THR-1130) is still open from 17 August, and worth replaying rather than recalling: the slice prose was rewritten to Doctrine v2 overnight, so these open something different from what you last saw — [The Grateful Kin](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin) and [The Unsafe Bridge](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge).
+**The same sitting closes the batch-1 sample.** The *"worth meeting twice"* verdict on [THR-1130](https://linear.app/threadbare/issue/THR-1130) is still open from 17 August, and worth replaying rather than recalling: the slice prose was rewritten to Doctrine v2, so these open something different from what you last saw — [The Grateful Kin](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin) and [The Unsafe Bridge](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge).
 
-### 2. Approve the full-line-proof brief — the game's first hunt
+### 2. The design maps have run out of questions an agent may answer
 
-[The brief](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/full-line-proof-brief.md) landed at 07:49 on 26 August, written in the attended session you were just in, and it carries **"Approval: pending — Christian, chat."**
+All three open maps are now **agent-exhausted**: every `research` question on every map is resolved, and what remains is `grilling` and `prototype` — both human by classification. **Nine questions across three maps, all yours.**
 
-**What it is:** one encounter, not six — your own direction that day. Something hungry has denned where people need to go, and the god watches a mortal decide what that is worth. **Nowhere in the game can a mortal face a beast today** — monsters and the hunt is the emptiest genre band in the portfolio, zero content of any kind. Siege, the largest gap, is deliberately held back for the first full production batch rather than spent on a lone scout.
+- **[Physical Conflict](https://linear.app/threadbare/issue/THR-1258/wayfinder-map-physical-conflict)** — charted by you at 08:51 this morning; the lane burned all four research questions inside that same session. **Seven open, all yours.** Two are the keystone, because settling them releases the other three by themselves: [how a duel ends — opposed band-pairs](https://linear.app/threadbare/issue/THR-1264/agent-mode-fight-loop-opposed-band-pairs) and [what a wound costs — the monster stat block](https://linear.app/threadbare/issue/THR-1263/npc-mode-fight-loop-the-stat-block-and-test-skeleton). The other five: [when a fight starts](https://linear.app/threadbare/issue/THR-1266), [what it costs to walk away](https://linear.app/threadbare/issue/THR-1267), [just enough monster](https://linear.app/threadbare/issue/THR-1268/monster-opponents-just-enough-monster), [THR-1270](https://linear.app/threadbare/issue/THR-1270), and [may a company fight together?](https://linear.app/threadbare/issue/THR-1271/companies-in-fights).
+- **[Powers & Spellcraft](https://linear.app/threadbare/issue/THR-1226)** and **[Item Generator](https://linear.app/threadbare/issue/THR-1227)** — one question each, and both are the sketches under ask 4.
 
-**Second thing it proves:** this is the first run to exercise the complete expanded factory line in one pass — rolled constraints, a mandatory dealt hand, and compile in a single go. A yes gets you both a hunt and a verdict on the line.
-
-One word runs it.
+Nothing here is broken and nothing is stalled: the wayfinder machinery has done its whole job and is waiting at the handover. Say *"work the fight map"* in a chat session and it takes them in keystone order.
 
 ### 3. More design hours — four sittings stacked
 
-The shelf is now empty — the last item on it merged at 08:45. What would refill it is design, and most of the design work is waiting on you. You charted the [Physical Conflict map](https://linear.app/threadbare/issue/THR-1258/wayfinder-map-physical-conflict) at 08:51, which is exactly this kind of hour; the four below are still outstanding. In the order you set:
+The shelf holds one machinery ticket and nothing else. What would refill it is design, and most of the design work is waiting on you. In the order you set:
 
 - **[Unify the card grammar](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** — your 6 August note: action cards are too wordy, you cannot tell what they do, playing one gives no feedback, while encounter cards already read the way you wanted. It has held the single design-staging slot since 19 August — **seven days** — so nothing else can be staged behind it until it moves.
 - **[Traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)** — in design, assigned to you, untouched twelve days. Either give it the hour or say *"put Traits wave 2 back in the pile."*
@@ -36,7 +35,7 @@ Available whenever you want it: your own [one-button snapshot](https://linear.ap
 
 ### 4. Two sketches ready to be built for you to react to
 
-The powers and items maps finished their research half; these are the throwaway prototypes that come next. (Physical Conflict, charted this morning, is at the start of that same path and needs nothing from you yet.) Every question they were waiting behind is now answered. Each needs a session to build the sketch first; then you look and react, and your reaction is the design decision.
+The powers and items maps finished their research half; these are the throwaway prototypes that come next. Each needs a session to build the sketch first; then you look and react, and your reaction is the design decision.
 
 - [**Twenty generated spells**](https://linear.app/threadbare/issue/THR-1232) — do composed spells read as one coherent thing, or as parts bolted together?
 - [**Thirty generated items**](https://linear.app/threadbare/issue/THR-1236) — are they *cool*? That is the whole bar.
@@ -90,7 +89,7 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
-- Nothing closed this period — no ask above was answered since the last refresh.
+- **Full-line-proof brief — approved by you in chat, 26 August, at batch size one.** The line ran end to end in a single pass and produced [The Beast in the Granary](https://github.com/christianspliid-ui/threadbare/pull/1643): the game's first hunt encounter, first deal-composed fork, first settlement-membership ending. Not yet on the live site — its PR has a merge conflict a session will clear.
 
 ---
 
