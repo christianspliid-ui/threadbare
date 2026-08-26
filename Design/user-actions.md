@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-26 01:55 local (23:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-26 02:55 local (00:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -8,7 +8,7 @@
 
 **The camp seven** — shrine offering, sharpening blades, warding the camp, a small prayer, rest and reflection, tending wounds, scouting the perimeter. All seven are thin: the census found **no typed consequences at all** in that set, only bare standing nudges. With the corpus rewrite shipped, they are the last encounters in the game below standard.
 
-It binds [Prose Doctrine v2](https://github.com/christianspliid-ui/threadbare/blob/main/.claude/skills/encounter-pipeline/reference/nudge-authoring-spec.md) — the narrator mode you set — now swept through every authoring surface ([THR-1251](https://linear.app/threadbare/issue/THR-1251), [THR-1252](https://linear.app/threadbare/issue/THR-1252), [THR-1250](https://linear.app/threadbare/issue/THR-1250) all shipped), so a batch run inherits the right standard automatically. And **`shrine_offering` is encounter #1 of [your integrated slice checkpoint](https://linear.app/threadbare/issue/THR-1220)**, which cannot invite you while the camp set is below standard.
+It binds [Prose Doctrine v2](https://github.com/christianspliid-ui/threadbare/blob/main/.claude/skills/encounter-pipeline/reference/nudge-authoring-spec.md) — the narrator mode you set — now swept through every authoring surface ([THR-1251](https://linear.app/threadbare/issue/THR-1251), [THR-1252](https://linear.app/threadbare/issue/THR-1252), [THR-1250](https://linear.app/threadbare/issue/THR-1250) all shipped), and as of 02:40 tonight the last of the old `fiction` layer is stripped from the corpus too ([THR-1225](https://linear.app/threadbare/issue/THR-1225)), so a batch run inherits the right standard automatically. And **`shrine_offering` is encounter #1 of [your integrated slice checkpoint](https://linear.app/threadbare/issue/THR-1220)**, which cannot invite you while the camp set is below standard.
 
 It will be authored under the **dealt-hand model** — which as of 01:45 tonight is no longer only a spec. [The Unfinished Rite](https://linear.app/threadbare/issue/THR-1254) is the first encounter in the corpus that deals most of its cards from your Repertoire, and it is merged and playable. Batch 2 writes nought to two special cards per encounter and deals the rest, against a model now demonstrated rather than described.
 
@@ -25,7 +25,7 @@ Say **"work the powers map"** or **"work the item map"** in a chat session.
 
 ### 3. More design hours — four sittings stacked
 
-Not pressing: the shelf is holding at six ready items and no lane is starved. The queue is still fed by programs you already approved, not by new design. In the order you set:
+Not pressing: the shelf is holding at five ready items and no lane is starved. The queue is still fed by programs you already approved, not by new design. In the order you set:
 
 - **[Unify the card grammar](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** — your 6 August note: action cards are too wordy, you cannot tell what they do, playing one gives no feedback, while encounter cards already read the way you wanted. Holding the single design slot since 19 August.
 - **[Traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)** — in design, assigned to you, untouched twelve days. Either give it the hour or say *"put Traits wave 2 back in the pile."*
