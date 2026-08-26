@@ -233,3 +233,45 @@ export const UNDERTAKING_DEFAULT_REQUIRES_LOCATION = false;
 
 /** Default for `canRunBeside` when a template authors none (preserves pre-flag behavior) */
 export const UNDERTAKING_DEFAULT_CAN_RUN_BESIDE = true;
+
+// ─── Expiring location boosts (THR-1292 §3, initiative retirement) ──
+//
+// The retired `phaseInitiativeProgress` owned the *only* expiry for the festival
+// boost. The folded festival undertaking still writes that boost, so the sweep
+// rehomes into `phaseStrategicProjects` — and it is driven by this list rather
+// than by a hardcoded property name, so a second expiring boost is a data edit.
+//
+// Each entry names a location property written with an `expiresAfterTicks`
+// mutation hint. The writer stamps `<property>ExpiresAtTick`; the sweep clears
+// both once the tick arrives.
+
+/** Location properties that carry a timed expiry, swept by `phaseStrategicProjects`. */
+export const EXPIRING_LOCATION_PROPERTIES: readonly string[] = ['festivalBoost'];
+
+/** Suffix of the companion property holding the expiry tick. */
+export const LOCATION_BOOST_EXPIRY_SUFFIX = 'ExpiresAtTick';
+
+/** How long the folded festival undertaking's boost lasts (was INITIATIVE festival duration 10). */
+export const FESTIVAL_BOOST_DURATION_TICKS = 10;
+
+/** Magnitude of the folded festival undertaking's boost (was the initiative outcome's 0.5). */
+export const FESTIVAL_BOOST_DELTA = 0.5;
+
+// ─── Divine riders on undertakings (THR-1292 §3) ────────────────────
+//
+// The retired `action.initiative.inspire` / `.sabotage` wrote a scorer bonus and a
+// force-fail coin flip. Retargeted onto undertakings they write a **one-shot**
+// modifier consumed by the next checkpoint, so a god's nudge tilts one roll rather
+// than deciding the outcome outright.
+
+/** Modifier added to the next checkpoint roll by `action.undertaking.inspire`. */
+export const UNDERTAKING_INSPIRE_MODIFIER = 0.15;
+
+/** Modifier subtracted from the next checkpoint roll by `action.undertaking.sabotage`. */
+export const UNDERTAKING_SABOTAGE_MODIFIER = 0.15;
+
+/** Actor property carrying a pending inspire rider. */
+export const UNDERTAKING_INSPIRE_FLAG = 'undertakingInspireBonus';
+
+/** Actor property carrying a pending sabotage rider. */
+export const UNDERTAKING_SABOTAGE_FLAG = 'undertakingSabotaged';

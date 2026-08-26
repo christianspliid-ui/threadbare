@@ -2,15 +2,15 @@
  * Mentorship Divine Actions (THR-75)
  *
  * Two player-facing divine actions surfaced through Generalized Action Targeting:
- *   - Inspire Mentorship — sets `mentorshipInspireBonus` on a high-capability agent,
- *     biasing them toward selecting the train-apprentice initiative on their next
- *     decision tick.
- *   - Sever the Bond — sets `pendingMentorshipSever` on the target agent; phaseMentorship
+ *   - Inspire Mentorship — sets `undertakingInspireBonus` on a mentor, easing the next
+ *     checkpoint of their mentorship undertaking. Its old effect fed only the initiative
+ *     scorer, which was retired with the pipeline (THR-1292 §3).
+ *   - Sever the Bond — sets `pendingMentorshipSever` on the target agent; the checkpoint pass
  *     reads this on its next tick, sets severedByDivineWill on the active mentors edge,
  *     and resolves as Falling Out.
  *
  * Both follow the existing divine-action GraphOp pattern (`update_node` with `$target`
- * symbolic) mirroring `action.initiative.inspire` and `action.initiative.sabotage`.
+ * symbolic) mirroring `action.undertaking.inspire` and `action.undertaking.sabotage`.
  *
  * @see Docs/plans/2026-05-15-thr-75-mentor-apprentice-relationship-chains.md §4.5, §6.4
  */
@@ -18,9 +18,9 @@
 import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 import {
   INSPIRE_MENTORSHIP_ESSENCE_COST,
-  INSPIRE_MENTORSHIP_SCORE_BONUS,
   SEVER_BOND_ESSENCE_COST,
 } from '../mentorship-constants';
+import { UNDERTAKING_INSPIRE_MODIFIER } from '../strategic-action-constants';
 
 export const INSPIRE_MENTORSHIP_TEMPLATE: UnifiedActionTemplate = {
   id: 'action.mentorship.inspire',
@@ -29,8 +29,8 @@ export const INSPIRE_MENTORSHIP_TEMPLATE: UnifiedActionTemplate = {
   rarityTier: 2,
   intrinsicTier: 'shaping',
   description:
-    'Breathe a duty into a high-capability mortal: pass on what you know. Their next ' +
-    'initiative scoring receives a one-time bonus toward Train Apprentice. Consumed on use.',
+    'Breathe a duty into a mortal teaching someone: pass on what you know. Their next ' +
+    'mentorship checkpoint rolls easier. One nudge, one roll — consumed on use.',
   reach: 'heart',
   crudType: 'update',
   scale: 'personal',
@@ -44,7 +44,7 @@ export const INSPIRE_MENTORSHIP_TEMPLATE: UnifiedActionTemplate = {
         {
           op: 'update_node',
           nodeId: '$target',
-          changes: { mentorshipInspireBonus: INSPIRE_MENTORSHIP_SCORE_BONUS },
+          changes: { undertakingInspireBonus: UNDERTAKING_INSPIRE_MODIFIER },
         },
       ],
       onFailure: [],
@@ -64,7 +64,7 @@ export const INSPIRE_MENTORSHIP_TEMPLATE: UnifiedActionTemplate = {
     initiation:
       'whispers a half-remembered duty into a mortal\'s mind — there is someone here whose hands are ready to learn',
     success:
-      'the thought takes root; the mortal will feel the pull toward taking on an apprentice',
+      'the thought takes root; the next lesson will land where it needs to',
     failure: 'the whisper does not catch; the thought passes like weather',
   },
 };

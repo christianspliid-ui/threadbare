@@ -46,7 +46,6 @@ export type BehaviorFamily =
 export type DecisionFamily =
   | 'encounter'
   | 'strategic_action'
-  | 'initiative'
   | 'idle'
   | 'forced_travel';
 
@@ -125,7 +124,22 @@ export type StrategicMutationHint =
   | { type: 'create_sublocation'; sublocationTypeId: string; nameTemplate: string }
   | { type: 'create_trade_route' }
   | { type: 'create_relation_edge'; edgeType: string; direction: 'actor_to_target' | 'target_to_actor'; properties?: Record<string, unknown> }
-  | { type: 'modify_location_property'; property: string; delta: number; clamp?: [number, number] }
+  | {
+      type: 'modify_location_property';
+      property: string;
+      delta: number;
+      clamp?: [number, number];
+      /**
+       * When set, the write also stamps `<property>ExpiresAtTick` and the boost is
+       * cleared that many ticks later by `phaseStrategicProjects` (THR-1292 §3).
+       *
+       * This exists because the retired initiative pipeline owned the *only* expiry
+       * for the festival boost. Making it a hint field rather than a special case
+       * keeps the retirement additive: the sweep is driven by
+       * `EXPIRING_LOCATION_PROPERTIES`, so a second timed boost is a data edit.
+       */
+      expiresAfterTicks?: number;
+    }
   | { type: 'no_mutation' };
 
 // ─── Target Rules ───────────────────────────────────────────────────

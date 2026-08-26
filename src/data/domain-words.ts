@@ -195,3 +195,32 @@ export function getDurationWord(ticks: number): string {
   }
   return DURATION_WORDS[DURATION_WORDS.length - 1];
 }
+
+/**
+ * 5-tier undertaking-progress scale — how far along a piece of work is (THR-1292 §3).
+ *
+ * Exists because the UI Law says magnitudes render as **words, never numerals**, and
+ * the surface this replaces printed a raw `47%`. The percentage is still computed and
+ * still drives the progress bar's width — what changes is that the player reads a
+ * state of the work rather than a number out of the engine.
+ *
+ * Phrased as stages of an effort, not as fractions wearing words: "Barely begun" says
+ * something a bar cannot, where "Twenty percent" only repeats it.
+ */
+export const UNDERTAKING_PROGRESS_WORDS = [
+  'Barely begun',   // tier 0: 0–20%
+  'Under way',      // tier 1: 20–40%
+  'Halfway',        // tier 2: 40–60%
+  'Well along',     // tier 3: 60–80%
+  'Nearly done',    // tier 4: 80–100%
+] as const;
+
+/**
+ * Convert undertaking completion (0–100) to a word.
+ * Tier = Math.min(4, Math.floor(clamped/100 * 5))
+ */
+export function getUndertakingProgressWord(percentComplete: number): string {
+  const clamped = Math.max(0, Math.min(100, percentComplete));
+  const tier = Math.min(4, Math.floor((clamped / 100) * 5));
+  return UNDERTAKING_PROGRESS_WORDS[tier];
+}

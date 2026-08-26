@@ -23,11 +23,11 @@ import { getSublocationArtUrl } from '../../data/sublocation-category-art';
 import { EntityVisual } from '../shared/EntityVisual';
 import type { TerrainType } from '../../types';
 import type { RivalDefinition } from '../../types/rival';
+import type { StrategicRuntimeState } from '../../types/strategicAction';
+import { summarizeActiveUndertakings, type ActiveUndertakingSummary } from '../../engine/agentDetail';
 import { useNarration } from '../../services/narration/useNarration';
 import { Play, Square, Loader2 } from 'lucide-react';
-import { INITIATIVE_TEMPLATE_MAP } from '../../data/initiative-templates';
 import { GuildQuestPanel } from './GuildQuestPanel';
-import type { InitiativeProgress } from '../../types/initiative';
 import type { ResourceInstance, StockTier } from '../../types/resource';
 import { getResourceClass, getResourceTierProse } from '../../data/resource-classes';
 import { getSustenanceProse } from '../../data/essence-sources';
@@ -64,10 +64,18 @@ interface LocationViewProps {
    * just says "something" instead of naming the god.
    */
   rivalDefinitions?: RivalDefinition[];
+  /**
+   * Strategic runtime, read only to name what an agent is currently undertaking
+   * (THR-1292 §3). Optional/additive: absent ⇒ the row says `idle`, exactly as it
+   * did when no initiative was running.
+   */
+  strategicState?: StrategicRuntimeState;
 }
 
 // ──── Sub-component: Sublocation Card ────
 interface SublocationCardProps {
+  /** Strategic runtime, for the per-agent undertaking chip (THR-1292 §3). */
+  strategicState?: StrategicRuntimeState;
   sublocation: GraphNode;
   agents: GraphNode[];
   hasAgents: boolean;
@@ -99,6 +107,7 @@ const SublocationCard = memo(function SublocationCard({
   onAgentClick,
   onEncounterClick,
   onEnter,
+  strategicState,
 }: SublocationCardProps) {
   // Concept art for this sublocation type
   const subProps = (sublocation.properties ?? {}) as Partial<SublocationProperties>;
@@ -272,6 +281,7 @@ const SublocationCard = memo(function SublocationCard({
                     getUnifiedActionTemplate={getUnifiedActionTemplate}
                     onAgentClick={onAgentClick}
                     onEncounterClick={onEncounterClick}
+                    undertakings={summarizeActiveUndertakings(strategicState, agent.id)}
                   />
                 );
               })}
@@ -320,6 +330,8 @@ const SublocationCard = memo(function SublocationCard({
 
 // ──── Sub-component: Agent Row ────
 interface AgentRowProps {
+  /** Undertakings this agent is running, projected by the read-model. */
+  undertakings?: readonly ActiveUndertakingSummary[];
   agent: GraphNode;
   actorType: string;
   encounters: EncounterProgress[];
@@ -329,6 +341,7 @@ interface AgentRowProps {
 }
 
 const AgentRow = memo(function AgentRow({
+  undertakings,
   agent,
   actorType,
   encounters,
@@ -410,12 +423,15 @@ const AgentRow = memo(function AgentRow({
               </span>
             );
           })() : (() => {
-            const ini = (agent.properties as Record<string, unknown>).activeInitiative as InitiativeProgress | undefined;
-            if (ini) {
-              const tmpl = INITIATIVE_TEMPLATE_MAP.get(ini.templateId);
+            // Read through the read-model rather than off the node (THR-1292 §3):
+            // the retired `activeInitiative` property was the last direct property
+            // read on this row, and it could disagree with the engine about whether
+            // the work was still running.
+            const work = undertakings?.[0];
+            if (work) {
               return (
                 <span style={{ color: 'var(--accent-purple, #a78bfa)', fontStyle: 'italic' }}>
-                  {tmpl?.name ?? 'Initiative'}
+                  {work.displayName}
                 </span>
               );
             }
@@ -487,6 +503,8 @@ const AvailableEncountersHint = memo(function AvailableEncountersHint({
 
 // ──── Sub-component: Sublocation Detail View ────
 interface SublocationDetailViewProps {
+  /** Strategic runtime, for the per-agent undertaking chip (THR-1292 §3). */
+  strategicState?: StrategicRuntimeState;
   sublocation: GraphNode;
   parentLocationName: string;
   agents: GraphNode[];
@@ -533,6 +551,7 @@ const SublocationDetailView = memo(function SublocationDetailView({
   seed,
   tick,
   runtime,
+  strategicState,
 }: SublocationDetailViewProps) {
   // Concept art for this sublocation type
   const detailSubProps = (sublocation.properties ?? {}) as Partial<SublocationProperties>;
@@ -726,6 +745,7 @@ const SublocationDetailView = memo(function SublocationDetailView({
                     getUnifiedActionTemplate={getUnifiedActionTemplate}
                     onAgentClick={onAgentClick}
                     onEncounterClick={onEncounterClick}
+                    undertakings={summarizeActiveUndertakings(strategicState, agent.id)}
                   />
                 );
               })}
@@ -1046,6 +1066,7 @@ export const LocationView = memo(function LocationView({
   runtime,
   onNavigateToRuin,
   rivalDefinitions,
+  strategicState,
 }: LocationViewProps) {
   const terrainLabel = hexTerrain.charAt(0).toUpperCase() + hexTerrain.slice(1).replace(/_/g, ' ');
   // RC-041: Safe property access with type guard
@@ -1165,6 +1186,7 @@ export const LocationView = memo(function LocationView({
     return (
       <SublocationDetailView
         sublocation={selectedSublocation}
+        strategicState={strategicState}
         parentLocationName={location.name}
         agents={subAgents}
         availableEncounters={subAvailableEncounters}
@@ -1405,6 +1427,7 @@ export const LocationView = memo(function LocationView({
                 <SublocationCard
                   key={sublocation.id}
                   sublocation={sublocation}
+                  strategicState={strategicState}
                   agents={subAgents}
                   hasAgents={hasAgents}
                   badgeColor={badgeColor}

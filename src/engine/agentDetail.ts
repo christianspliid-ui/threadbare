@@ -56,6 +56,7 @@ import {
   getCohesionState,
   type CohesionState,
 } from './groups/groupQueries';
+import { getStrategicTemplate } from './strategicActionCandidates';
 
 // ─── Seeded PRNG ─────────────────────────────────────────────────
 
@@ -160,6 +161,28 @@ export interface LeverageSummary {
   favorsOwedToMe: FavorSummary[];
 }
 
+/**
+ * One undertaking as the player may see it (THR-1292 §3).
+ *
+ * Deliberately carries no `nextCheckpointTick`, `deferrals` or difficulty delta:
+ * those are scheduling internals, and a surface that showed them would be telling
+ * the player things the fiction never told their god.
+ */
+export interface ActiveUndertakingSummary {
+  readonly projectId: string;
+  readonly templateId: string;
+  /** Authored display name, falling back to the id when a template is missing. */
+  readonly displayName: string;
+  /** Completion 0–100, clamped — progress can exceed the requirement on a crit. */
+  readonly percentComplete: number;
+  /** Accumulated halt-ratchet points; non-zero means the work is going badly. */
+  readonly halts: number;
+  /** Whether its owner has already doubled down once at the fork. */
+  readonly escalated: boolean;
+  /** Band of the most recent resolved checkpoint, when there has been one. */
+  readonly lastBand?: import('../types/unifiedAction').StepOutcome;
+}
+
 export interface AgentDetail {
   id: string;
   name: string;
@@ -195,8 +218,16 @@ export interface AgentDetail {
   traits?: TraitSummary[];
   /** Social leverage data: secrets and favors (THR-30). Undefined if none. */
   leverage?: LeverageSummary;
-  /** Active initiative in progress, if any (THR-51). */
-  activeInitiative?: import('../types/initiative').InitiativeProgress;
+  /**
+   * Undertakings this agent is currently running (THR-1292 §3).
+   *
+   * Replaces `activeInitiative`. Two shape changes matter to a reader: it is a
+   * **list**, because an agent may hold more than one undertaking, and it is a
+   * projection rather than the runtime record — the surfaces get what a player may
+   * inspect (what it is, how far along, whether it is in trouble) and none of the
+   * scheduling internals.
+   */
+  activeUndertakings?: readonly ActiveUndertakingSummary[];
   /** Mentor/apprentice relationships involving this agent, in both directions (THR-75). */
   mentorship?: MentorshipSummary[];
 }
@@ -421,6 +452,12 @@ export function getAgentDetail(
   graph: WorldGraph,
   agentId: string,
   ascendantId: string,
+  /**
+   * Undertakings live in the strategic runtime, not on the node, so the read-model
+   * needs them passed in. Optional and additive (NFP #6): a caller that omits it
+   * simply reports no undertakings, which is what every non-game caller wants.
+   */
+  strategicState?: import('../types/strategicAction').StrategicRuntimeState,
 ): AgentDetail | null {
   const agentNode = graph.getNode(agentId);
   if (!agentNode) return null;
@@ -645,7 +682,7 @@ export function getAgentDetail(
     quintessence: (props.quintessence as number | undefined),
     traits: traitSummaries.length > 0 ? traitSummaries : undefined,
     leverage,
-    activeInitiative: props.activeInitiative as import('../types/initiative').InitiativeProgress | undefined,
+    activeUndertakings: summarizeActiveUndertakings(strategicState, agentId),
     mentorship,
   };
 }
@@ -1357,4 +1394,42 @@ export function getAgentFullProfile(
   }
 
   return profile;
+}
+
+// ─── Undertaking projection (THR-1292 §3) ───────────────────────────
+
+/**
+ * Project this agent's active undertakings into the player-facing summary.
+ *
+ * Replaces the retired `activeInitiative` node-property read. Two things it does
+ * that the property read could not: it returns *all* of an agent's undertakings
+ * rather than assuming one, and it reads the runtime record, so the surface can
+ * never disagree with the engine about whether the work is still going.
+ *
+ * Fail-soft (NFP #4): no strategic state, or none for this agent, yields
+ * `undefined` — the same shape the old absent-property path produced, so a surface
+ * that renders nothing keeps rendering nothing.
+ */
+export function summarizeActiveUndertakings(
+  strategicState: import('../types/strategicAction').StrategicRuntimeState | undefined,
+  agentId: string,
+): readonly ActiveUndertakingSummary[] | undefined {
+  if (!strategicState) return undefined;
+  const summaries: ActiveUndertakingSummary[] = [];
+  for (const project of strategicState.projects) {
+    if (project.actorId !== agentId || project.status !== 'active') continue;
+    const template = getStrategicTemplate(project.templateId);
+    summaries.push({
+      projectId: project.projectId,
+      templateId: project.templateId,
+      displayName: template?.displayName ?? project.templateId,
+      percentComplete: Math.max(0, Math.min(100, Math.round(
+        (project.progress / Math.max(1, project.progressRequired)) * 100,
+      ))),
+      halts: project.halts ?? 0,
+      escalated: project.escalated === true,
+      lastBand: project.lastCheckpoint?.band,
+    });
+  }
+  return summaries.length > 0 ? summaries : undefined;
 }

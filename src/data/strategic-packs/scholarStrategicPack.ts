@@ -132,6 +132,34 @@ export const SCHOLAR_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     resourceHint: { reachFloor: { eye: 0.4 } },
     mutationHint: { type: 'no_mutation' },
   },
+
+  // ── Folded from the retired initiative pipeline (THR-1292 §3) ──────
+  // 7. Train Apprentice — the mentorship arc, now an undertaking
+  //    The `mentors` edge is the durable relationship; checkpoints drive the arc
+  //    and the terminal band picks one of five endings. See `mentorshipUndertaking.ts`.
+  //    No `reachProfile` floor is authored: the mentor-tier requirement is per-Reach
+  //    and dynamic, enforced by the pairing gate in `strategicActionCandidates`.
+  {
+    id: 'strategic_train_apprentice',
+    displayName: 'Train Apprentice',
+    verb: 'change',
+    executionMode: 'multi_tick_project',
+    behaviorFamily: 'scholar-seeker',
+    reachProfile: { heart: 0.4, eye: 0.3, star: 0.3 },
+    projectDuration: 8,
+    activityProse: [
+      'Setting the same exercise again. Watching for the moment it stops being an exercise.',
+      'Teaching is mostly waiting, and being there when the waiting ends.',
+    ],
+    completionProse: [
+      'The apprentice does it without being asked, and does it right. Something has transferred.',
+    ],
+    targetRule: { type: 'location_subtype', subtypes: ['town', 'city', 'capital', 'hamlet', 'camp'] },
+    // Mentorship advances through conversation and proximity, not at a fixed stage —
+    // the separation check in the fold is the real spatial constraint.
+    requiresLocation: false,
+    mutationHint: { type: 'no_mutation' },
+  },
 ];
 
 /** Look up a scholar strategic template by ID */

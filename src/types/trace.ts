@@ -180,11 +180,6 @@ export type TraceCategory =
   | 'favor_broken'
   | 'favor_tension'
   | 'secret_decayed'
-  // Agent initiatives traces (THR-51)
-  | 'initiative_started'
-  | 'initiative_checkpoint'
-  | 'initiative_completed'
-  | 'initiative_failed'
   // Portfolio-pinning traces (THR-148)
   | 'portfolio.pinned'
   | 'portfolio.unpinned'
@@ -576,11 +571,6 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'favor_broken',
   'favor_tension',
   'secret_decayed',
-  // Agent initiatives traces (THR-51)
-  'initiative_started',
-  'initiative_checkpoint',
-  'initiative_completed',
-  'initiative_failed',
   // Portfolio-pinning traces (THR-148)
   'portfolio.pinned',
   'portfolio.unpinned',
@@ -2846,11 +2836,7 @@ export type TraceEntry =
   // Seed system v2: family matching + context inheritance (THR-697, Slice D)
   | SeedFamilyMatchedTrace
   | SeedContextInheritedTrace
-  // Initiative traces (THR-51)
-  | InitiativeStartedTrace
-  | InitiativeCheckpointTrace
-  | InitiativeCompletedTrace
-  | InitiativeFailedTrace
+  // (Initiative traces retired with the pipeline — THR-1292 §3)
   // Portfolio-pinning traces (THR-148)
   | PortfolioPinnedTrace
   | PortfolioUnpinnedTrace
@@ -3506,48 +3492,6 @@ export interface OmenBeatTrace extends TraceBase {
   omenId: string;
   slot: 'primary' | 'secondary';
   prose: string;
-}
-
-// ─── Initiative Traces (THR-51) ──────────────────────────────────
-
-/** Trace: agent starts a new initiative */
-export interface InitiativeStartedTrace extends TraceBase {
-  category: 'initiative_started';
-  initiativeId: string;
-  templateId: string;
-  locationId: string;
-  targetCompletionTick: number;
-  finalScore: number;
-  summary: string;
-}
-
-/** Trace: initiative checkpoint evaluation */
-export interface InitiativeCheckpointTrace extends TraceBase {
-  category: 'initiative_checkpoint';
-  initiativeId: string;
-  templateId: string;
-  passed: boolean;
-  checkpointIndex: number;
-  summary: string;
-}
-
-/** Trace: initiative completed — outcomes applied */
-export interface InitiativeCompletedTrace extends TraceBase {
-  category: 'initiative_completed';
-  initiativeId: string;
-  templateId: string;
-  locationId: string;
-  summary: string;
-}
-
-/** Trace: initiative failed — condition triggered */
-export interface InitiativeFailedTrace extends TraceBase {
-  category: 'initiative_failed';
-  initiativeId: string;
-  templateId: string;
-  locationId: string;
-  reason: string;
-  summary: string;
 }
 
 /** Trace: agent added to player's protagonist portfolio (THR-148) */

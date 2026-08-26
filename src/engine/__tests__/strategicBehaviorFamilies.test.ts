@@ -128,10 +128,28 @@ function makeCandidateForTemplate(
 
 // ─── Pack Registration ────────────────────────────────────────────────
 
+// The six packs, named once so the identity test and the per-pack tests cannot drift
+// apart about what "the packs" means.
+const ALL_PACKS = [
+  MERCHANT_STRATEGIC_TEMPLATES,
+  BUILDER_STRATEGIC_TEMPLATES,
+  SCHOLAR_STRATEGIC_TEMPLATES,
+  ZEALOT_STRATEGIC_TEMPLATES,
+  COURT_STRATEGIC_TEMPLATES,
+  WARLORD_STRATEGIC_TEMPLATES,
+] as const;
+
 describe('behavior family pack registration', () => {
-  it('all 36 templates are registered (6 packs × 6 templates)', () => {
-    const all = getAllStrategicTemplates();
-    expect(all.length).toBe(36);
+  // Was `expect(all.length).toBe(36)` — a snapshot count that broke the moment the
+  // initiative fold added seven templates (THR-1292 §3), reporting a *correct* change
+  // as a failure. Restated as the identity it was reaching for: the registry is exactly
+  // the union of the packs, with nothing dropped and nothing minted from elsewhere.
+  it('the registry is exactly the union of the six packs', () => {
+    const packTemplates = ALL_PACKS.flat();
+    const registered = getAllStrategicTemplates();
+    expect(registered.length).toBe(packTemplates.length);
+    expect(new Set(registered.map(t => t.id)))
+      .toEqual(new Set(packTemplates.map(t => t.id)));
   });
 
   it('every template has a unique ID', () => {
@@ -154,8 +172,11 @@ describe('behavior family pack registration', () => {
     ['zealot-mission', ZEALOT_STRATEGIC_TEMPLATES],
     ['court-political', COURT_STRATEGIC_TEMPLATES],
     ['warlord-expansion', WARLORD_STRATEGIC_TEMPLATES],
-  ] as const)('pack %s has 6 templates', (family, templates) => {
-    expect(templates).toHaveLength(6);
+  // The count was the snapshot; the *homogeneity* is the contract. A template whose
+  // `behaviorFamily` disagrees with the pack it ships in is unreachable — candidate
+  // generation walks a pack via its ambition's family — and that is what this guards.
+  ] as const)('pack %s is non-empty and every template declares that family', (family, templates) => {
+    expect(templates.length).toBeGreaterThan(0);
     for (const t of templates) {
       expect(t.behaviorFamily).toBe(family);
     }

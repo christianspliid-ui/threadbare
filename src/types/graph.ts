@@ -187,7 +187,7 @@ export interface RelationshipNodeProperties {
 export interface MentorsEdgeProperties {
   /** Which of the 8 Reaches is being / was taught. ReachDomain from '../types/traits'. */
   domain: string;
-  /** Training completion 0.0–1.0; advanced by phaseMentorship from the backing initiative. */
+  /** Training completion 0.0–1.0; a projection of the backing undertaking's progress. */
   progress: number;
   /** Lifecycle state. */
   phase: 'offered' | 'training' | 'graduated' | 'estranged';
@@ -197,8 +197,8 @@ export interface MentorsEdgeProperties {
   lessonsCompleted: number;
   /** Narrative-derived health of the bond (−1.0–+1.0). Seeds the terminal arc. */
   bondQuality: number;
-  /** The backing `train-apprentice` initiative; undefined once graduated/estranged. */
-  initiativeId?: string;
+  /** The backing `strategic_train_apprentice` undertaking; undefined once graduated/estranged. */
+  undertakingId?: string;
   /** Set to true by the Sever the Bond divine action so the next tick runs Falling Out. */
   severedByDivineWill?: boolean;
 }

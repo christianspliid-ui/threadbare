@@ -96,7 +96,7 @@ const AUDIT_EVIDENCE =
 
 /** Subsystem name constants, so a typo is a compile error rather than a silent unmatched row. */
 const ATTACHMENTS = 'Attachments, Items & Possessions';
-const AMBITIONS = 'Ambitions & Initiatives';
+const AMBITIONS = 'Ambitions & Undertakings';
 const ENCOUNTERS = 'Encounters & Dilemmas';
 const COMPANIES = 'Companies & Group Travel';
 const FACTIONS = 'Factions & Succession';
@@ -2071,6 +2071,34 @@ export const CONTRACTS: readonly Contract[] = [
     // because a CLI world carries no `thread` edges and so follows nobody — the
     // interrupt arm is covered by unit tests, not by the simulation.
     deferralTicket: 'THR-1293',
+  },
+  {
+    id: 'mentorship-rides-undertaking-checkpoints',
+    producerSystem: 'Strategic Projects & Control',
+    consumerSystem: AMBITIONS,
+    intent:
+      'A mentorship is a relationship that a piece of work drives. Folding it onto the undertaking checkpoint means the bond moves when the teaching actually goes well or badly, instead of a second phase inferring how it went from the leftovers of a first one.',
+    // Keyed on the edge, not on the functions: the durable thing crossing the
+    // boundary is the `mentors` edge and its `undertakingId` back-reference. A
+    // function-keyed row would have named symbols that live in exactly one module,
+    // which is a call, not an interface.
+    mechanism: {
+      kind: 'edge-prop',
+      symbols: ['mentors', 'undertakingId'],
+      module: 'src/engine/mentorshipUndertaking.ts',
+    },
+    writeSites: [
+      'src/engine/strategicActionLifecycle.ts',
+      'src/engine/mentorshipUndertaking.ts',
+    ],
+    readSites: [
+      'src/engine/graphQueries.ts',
+    ],
+    // The retired producer was phase 2.33 reading phase 2.32's `activeInitiative`
+    // record; both are deleted (THR-1292 §3) and the `mentors` edge now carries
+    // `undertakingId` rather than `initiativeId`.
+    verifiedLive:
+      'mentorshipUndertaking.test.ts (30 tests) covers eligibility, bootstrap, band-driven bond drift, milestone seeds, separation, divine sever and both terminal verdicts; a 150-tick seed-42 CLI run produced live `mentors` edges and one completed `strategic_train_apprentice`.',
   },
 ];
 

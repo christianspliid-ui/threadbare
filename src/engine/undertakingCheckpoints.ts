@@ -80,6 +80,10 @@ import {
   UNDERTAKING_ABSENCE_DEFERRAL_LIMIT,
   UNDERTAKING_DEFAULT_REQUIRES_LOCATION,
   UNDERTAKING_DEFAULT_CAN_RUN_BESIDE,
+  UNDERTAKING_INSPIRE_MODIFIER,
+  UNDERTAKING_SABOTAGE_MODIFIER,
+  UNDERTAKING_INSPIRE_FLAG,
+  UNDERTAKING_SABOTAGE_FLAG,
 } from '../data/strategic-action-constants';
 
 // ─── Band → effect ──────────────────────────────────────────────────
@@ -432,11 +436,11 @@ export function resolveUndertakingCheckpoint(
   const authored = template?.checkpointDifficulty ?? UNDERTAKING_DEFAULT_CHECKPOINT_DIFFICULTY;
   const difficulty = clamp01(authored + (project.checkpointDifficultyDelta ?? 0));
 
-  // Zero in this slice, and honestly so: the Inspire/Sabotage retarget that feeds
-  // it lands with the initiative retirement (§3), and escalation stakes are folded
-  // into `difficulty` above rather than double-counted here. Carried as a real
-  // input so the seam exists when §3 lands.
-  const modifiers = 0;
+  // The Inspire/Sabotage rider (§3). Both divine actions stamp a one-shot flag on
+  // the actor; it is consumed here, so a god's nudge lands on exactly one checkpoint
+  // rather than tilting the whole undertaking. Escalation stakes are folded into
+  // `difficulty` above and deliberately not double-counted here.
+  const modifiers = consumeUndertakingRider(graph, project.actorId);
 
   const rng = checkpointRng(state.seed, tick, project.projectId);
   const core = resolveStepCore(
@@ -734,4 +738,37 @@ function emitCheckpointTrace(args: CheckpointTraceArgs): void {
 
 function clamp01(v: number): number {
   return v < 0 ? 0 : v > 1 ? 1 : v;
+}
+
+// ─── Divine riders (THR-1292 §3) ────────────────────────────────────
+
+/**
+ * Read and clear any pending Inspire/Sabotage rider on this actor.
+ *
+ * One-shot by construction: the flag is deleted as it is read, so a single divine
+ * nudge lands on exactly one checkpoint. Both flags present cancel toward their
+ * sum rather than one silently winning — a god who did both got what they asked for.
+ *
+ * Returns a signed modifier folded into `actionModifiers`, so it moves the roll the
+ * same way an encounter's modifiers do rather than through a bespoke path.
+ */
+export function consumeUndertakingRider(graph: WorldGraph, actorId: string): number {
+  const actor = graph.getNode(actorId);
+  if (!actor) return 0;
+  const props = actor.properties as Record<string, unknown>;
+
+  let modifier = 0;
+
+  const inspire = props[UNDERTAKING_INSPIRE_FLAG];
+  if (inspire != null) {
+    modifier += typeof inspire === 'number' ? inspire : UNDERTAKING_INSPIRE_MODIFIER;
+    props[UNDERTAKING_INSPIRE_FLAG] = undefined;
+  }
+
+  if (props[UNDERTAKING_SABOTAGE_FLAG] === true) {
+    modifier -= UNDERTAKING_SABOTAGE_MODIFIER;
+    props[UNDERTAKING_SABOTAGE_FLAG] = undefined;
+  }
+
+  return modifier;
 }

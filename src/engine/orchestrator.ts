@@ -146,8 +146,6 @@ import { processTraitDecay } from './traits';
 import { phaseReputationTraits, processReputationTally } from './phaseReputationTraits';
 import { processEncounterMastery, processEncounterConditions } from './phaseEncounterTraits';
 import { phaseAgentDecision } from './phaseAgentDecision';
-import { phaseInitiativeProgress } from './phaseInitiativeProgress';
-import { phaseMentorship } from './phaseMentorship';
 import { phaseStrategicProjects } from './phaseStrategicProjects';
 import { phaseDivinePremonition } from './phaseDivinePremonition';
 import { applyEssenceEarned } from './essenceEarned';
@@ -3188,24 +3186,14 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   agentsProcessed += decisionEvents;
   prevEventCount = s.tickEvents.length;
 
-  // Phase 2.32: Initiative Progress — advance active agent initiatives, expire temporary boosts
-  const initiativeRng = mulberry32(state.seed + state.tick * 53);
-  {
-    const r = runInlinePhase('initiative_progress', s, () => phaseInitiativeProgress(s, initiativeRng, runtime));
-    s = r.next;
-    phaseEventCounts['initiative_progress'] = r.eventDelta;
-  }
-  // touchStructure removed (THR-187): create_sublocation outcomes now call applyEncounterCacheUpdate
-  // internally; other outcome kinds (bonds, boosts, faction) don't require cache invalidation.
-  prevEventCount = s.tickEvents.length;
-
-  // Phase 2.33: Mentorship Lifecycle (THR-75) — couples train-apprentice initiatives to mentors edges
-  const mentorshipRng = mulberry32(state.seed + state.tick * 59);
-  {
-    const r = runInlinePhase('mentorship', s, () => phaseMentorship(s, mentorshipRng, runtime));
-    s = r.next;
-    phaseEventCounts['mentorship'] = r.eventDelta;
-  }
+  // Phases 2.32 (Initiative Progress) and 2.33 (Mentorship Lifecycle) were deleted with
+  // the initiative retirement (THR-1292 §3). Both folded into the undertaking checkpoint
+  // pass at 2a.55: `phaseStrategicProjects` now expires the festival boost 2.32 owned and
+  // drives the mentorship arc 2.33 owned. Removing 2.33 also removes the fragile
+  // 2.32→2.33 same-tick ordering contract the mentorship bond drift depended on.
+  //
+  // `prevEventCount` is re-stitched here rather than left dangling: the following phase
+  // measures its own event delta from this line.
   prevEventCount = s.tickEvents.length;
 
   // Phase 2.34: Companies (THR-74) — dissolution/leave, cohesion, shared movement,

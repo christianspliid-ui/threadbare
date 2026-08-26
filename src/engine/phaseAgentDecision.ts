@@ -79,9 +79,6 @@ import { scoreStrategicCandidates } from './strategicActionScoring';
 import { executeStrategicAction } from './strategicActionLifecycle';
 import type { StrategicCandidateBoardTrace, StrategicActionStartedTrace } from '../types/trace';
 import type { DecisionFamily } from '../types/strategicAction';
-import { ENABLE_INITIATIVES } from '../data/initiative-constants';
-import { generateInitiativeCandidates } from './initiativeCandidates';
-import { startInitiative } from './initiativeLifecycle';
 import { computeSurfaceKey } from './encounterSurface';
 import { resolveTemplateFragments } from './fragmentResolution';
 import { getLocationType } from './encounterCache';
@@ -363,8 +360,6 @@ export function phaseAgentDecision(
       }
       // Also skip if agent already has ANY active encounter (not just occupied ones)
       if (activeEncounter) continue;
-      // Skip if agent is already pursuing an active initiative
-      if ((actor.properties as Record<string, unknown>).activeInitiative != null) continue;
 
       // Gated re-evaluation for moving agents (replaces blanket skip).
       // Moving agents do NOT enter the full decision pipeline. They only check:
@@ -893,71 +888,11 @@ export function phaseAgentDecision(
         }
       }
 
-      // ── Initiative Candidate Integration ─────────────────────────────
-      // Generate initiative candidates and compare against the best encounter
-      // (or strategic) score. If an initiative wins, start it and skip encounter.
-      if (ENABLE_INITIATIVES && decisionFamily !== 'strategic_action') {
-        try {
-          const pursuesEdges = graph.getOutgoingEdges(agentId, 'pursues');
-          const ambitionIds: string[] = [];
-          for (const edge of pursuesEdges) {
-            const props = edge.properties as Record<string, unknown> | undefined;
-            if (props?.status === 'active') {
-              const node = graph.getNode(edge.target);
-              const tid = node?.properties?.templateId as string | undefined;
-              if (tid) ambitionIds.push(tid);
-            }
-          }
-
-          const initResult = generateInitiativeCandidates(
-            graph, agentId, locationId, state.tick, ambitionIds,
-          );
-
-          if (initResult.candidates.length > 0) {
-            const bestInitiative = initResult.candidates[0];
-            const bestEncounterScore = decision.topCandidates.length > 0
-              ? decision.topCandidates[0].finalScore
-              : 0;
-
-            if (bestInitiative.finalScore > bestEncounterScore) {
-              const progress = startInitiative(graph, bestInitiative, state.tick, rng);
-              decisionFamily = 'initiative';
-
-              newEvents.push({
-                id: `decision_initiative_${agentId}_${state.tick}`,
-                tick: state.tick,
-                type: 'agent_action',
-                message: `${actor.name} begins ${bestInitiative.template.name.toLowerCase()}`,
-                significance: 0.6,
-                actorId: agentId,
-              });
-
-              const freshForInit = graph.getNode(agentId);
-              if (freshForInit) freshForInit.properties.consecutiveIdleTicks = 0;
-
-              if (runtime) {
-                recordBalanceEvent(runtime, {
-                  tick: state.tick,
-                  kind: 'encounter_decision',
-                  agentId,
-                  sourceSystem: 'initiative',
-                  decisionType: 'initiative_start',
-                  templateId: bestInitiative.templateId,
-                  locationId,
-                  locationSubtype: originLocationSubtype,
-                  threaded: threadContext.threaded,
-                  courtPosition: threadContext.courtPosition,
-                });
-              }
-
-              void progress; // suppress unused warning — stored on node
-              continue; // Skip encounter execution path
-            }
-          }
-        } catch {
-          // Fail-soft: initiative generation/start failure → fall through to encounter path
-        }
-      }
+      // The initiative contest block lived here (THR-1292 §3). It was the *third*
+      // competitor in this loop — encounters, strategic actions and initiatives all
+      // bidding on one agent-tick — and its whole job was to start a parallel
+      // multi-tick project system. Undertakings are that system now, so the contest
+      // collapses to two: what the strategic path wins, it wins outright.
 
       if (decision.selected) {
         const sel = decision.selected;

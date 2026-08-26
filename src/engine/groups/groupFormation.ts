@@ -65,7 +65,8 @@ export function isAgentThreaded(
  *
  * Three signals, deliberately cheap (this runs over colocated pairs every tick):
  *  - existing relationship sentiment (includes `sworn_ally` bonds minted by the
- *    `initiative.recruit-party` initiative, which is why that initiative becomes a
+ *    `strategic_recruit_companions` undertaking (folded from the retired
+ *    `initiative.recruit-party`, THR-1292 §3), which is why that undertaking becomes a
  *    formation *signal* rather than a duplicate system)
  *  - shared ambition category
  *  - axiological complementarity — similar risk appetite travels well together
