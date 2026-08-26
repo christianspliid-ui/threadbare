@@ -1,7 +1,7 @@
 ---
 name: retrospective
 description: Review the impediment log (Docs/impediments.md) and conduct a structured retrospective. Reads this week's drift-scan Linear issues as the first input, then analyzes patterns, proposes concrete improvements to tools, skills, CLAUDE.md, and processes. Trigger with "/retrospective" or "run a retro" or "review impediments" or "continuous improvement review".
-last_validated_against: 2026-08-15
+last_validated_against: 2026-08-26
 ---
 
 # Retrospective
@@ -176,6 +176,39 @@ Caveats to carry, not to bury: 11 rows over 11 weeks is **below the "full month"
 
 **Verdict: keep intent-judge.** No criterion is met, and the two that could not be evaluated are now the only open question. Note the escalation rate sits below its own declared floor of 0.05 — that is a *tuning* signal for § Tuning Recommendations, not a retirement one.
 
+### Step 5d: Guidance Divergence Audit — run `/guidance-audit` when direction has moved (THR-1253)
+
+**Trigger, in one cheap comparison.** Read the `version` of each doctrine in
+`Docs/guidance-manifest.json` and compare it against the version recorded in the **previous**
+retro report's `## Guidance Audit` section. Run `/guidance-audit` for that doctrine if:
+
+- **any doctrine version has moved** since the last retro (direction changed — the audit is
+  how the change is proven to have reached the operative surfaces), **or**
+- **a month has passed** since that doctrine was last audited, version movement or not.
+
+Otherwise record `no version movement, last audited <date> — not run` and move on. Comparing
+two integers is the whole trigger; that cheapness is deliberate, so the step survives a busy
+retro instead of being skipped.
+
+**Why this step exists.** Rulings land in the canonical chain; agents obey the *operative*
+chain — the prompts, briefs, exemplars and vault samples they load first. Measured 2026-08-25:
+three director-level prose-register rulings sat in canon while every operative surface kept
+teaching the retired mode, and the pipeline drafted against inverted rules for weeks.
+`check:guidance-freshness` catches the mechanical case (authority edited, dependent untouched)
+at change time; it structurally cannot see a dependent that was *touched* and still teaches the
+old rule, two live surfaces contradicting each other with no diff between them, or a doc a
+newer doc has silently replaced. Those need reading, which is what the audit skill does.
+
+**Where its output goes — into this report, never onto the board.** Per the 2026-08-10
+throttle, this retro is the *single promotion point*: the audit logs impediment rows, and
+Step 3/Step 4 here decide which of them clear the materiality bar and become tickets, with the
+accumulated cost quoted. Do not let the audit file its own.
+
+Record in the report under `## Guidance Audit`: the doctrine versions as of this retro (so the
+next retro has its comparison baseline), whether the audit ran and why, and the ranked pollution
+list if it did. **Write the versions even when the audit did not run** — omitting them breaks
+the next retro's trigger, which is the one thing this step cannot afford.
+
 ### Step 6: Write the Retrospective Report
 
 Create a dated file: `Design/retros/retro-YYYY-MM-DD.md`
@@ -207,6 +240,12 @@ To: <today>
 
 ## Cross-Signal Patterns
 <synthesis from Step 2: correlations, gaps, repeats>
+
+## Guidance Audit
+Doctrine versions this retro: <id>@<version>, … (from Docs/guidance-manifest.json)
+Ran: <yes — version moved since <prev> / yes — monthly cadence / no — no movement, last audited <date>>
+<If it ran: the ranked pollution list, worst blast radius first, plus the manifest-gap section.>
+<Always write the version line, even when the audit did not run — the next retro's trigger reads it.>
 
 ## Improvements Made This Session
 <list of changes actually made, with file paths>

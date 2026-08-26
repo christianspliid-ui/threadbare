@@ -300,6 +300,27 @@ jobs:
           git fetch origin main
           npm run check:wiki-freshness:blocking
 
+      # THR-1253 — the change-time half of guidance governance. Editing a doctrine
+      # AUTHORITY (`Docs/canon/prose.md`, the nudge authoring spec) without touching the
+      # surfaces that restate it is how three register rulings sat in canon while the
+      # pipeline drafted against the retired mode for weeks.
+      #
+      # ADVISORY during burn-in — it logs and exits 0, deliberately (THR-899: a
+      # false-positive gate damages the thing it protects, and a brand-new dependent list
+      # is exactly where false positives live). The flip to
+      # `check:guidance-freshness:blocking` is THR-1256, reviewed on/after 2026-09-08.
+      # Until then a green `Docs gates` run is NOT evidence the sweep was clean — read
+      # this step's own output.
+      #
+      # Mirrored verbatim in the `check` job below, and that is load-bearing rather than
+      # duplication: a PR editing `Docs/canon/prose.md` *and* one source file classifies
+      # as code, skips this job entirely, and would otherwise never be swept — which is
+      # precisely the mixed-diff shape a doctrine change tends to have.
+      - name: Guidance freshness (advisory — flip THR-1256, review 2026-09-08)
+        run: |
+          git fetch origin main
+          npm run check:guidance-freshness
+
   check:
     name: Test · Typecheck · Build
     needs: detect
@@ -462,6 +483,14 @@ jobs:
         run: |
           git fetch origin main
           npm run check:wiki-freshness:blocking
+
+      # THR-1253 — see the twin step in `Docs gates` for the rationale. It runs here too
+      # because a doctrine change that also touches source classifies as code and skips
+      # that job; advisory in both places until THR-1256 flips it (review 2026-09-08).
+      - name: Guidance freshness (advisory — flip THR-1256, review 2026-09-08)
+        run: |
+          git fetch origin main
+          npm run check:guidance-freshness
 
       - name: Production build
         run: npx vite build

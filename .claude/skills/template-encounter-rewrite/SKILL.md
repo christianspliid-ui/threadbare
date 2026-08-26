@@ -10,6 +10,7 @@ description: >
   encounter", "encounter quality pass", "prose quality pass", "write encounter".
 model: opus
 last_validated_against: 2026-08-25
+validated_doctrine: prose@2
 ---
 
 > **Load before authoring:** `Docs/canon/rulebook-quick-reference.md` (always — the synthesis layer for rules of play). Load `Docs/canon/rulebook.md` (full rulebook) when the work touches a specific rule of play and you need depth, status flags, or source citations.
