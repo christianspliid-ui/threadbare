@@ -8,12 +8,9 @@
  *   both `branchOnStep: 0`, `variants` keyed exactly `'positive'`/`'negative'`
  * - Setting envelope: four declared classes, `locationSubtypes` matches
  *   `expandSettings`, and every expanded subtype is a place-tier location
- * - **All five hands** (step 0 plus both poles' steps 1 and 2) — the machine
- *   gate (`check:encounter`) only ever sees step 0's, because
- *   `nudgeBearingSteps`/`plainSteps` filter out `ActionStepBranch` arms. This
- *   file substitutes each pole's branch variants into a synthetic template so
- *   `checkNudgeHand` walks all three steps of that pole, covering all five
- *   hands across two synthetic runs.
+ * - **All five hands** (step 0 plus both poles' steps 1 and 2), asserted against
+ *   the template as authored — `checkNudgeHand` walks branch arms since THR-1273,
+ *   so the synthetic-substitution scaffolding this file used to need is gone
  * - Every `libraryCardId` (all five hands) names a real NUDGE_CARD_LIBRARY
  *   member; every `imageTag` resolves to a real ENCOUNTER_IMAGE_LIBRARY row
  * - >=3 step-0 cards carry `poleLean`, both directions
@@ -43,14 +40,13 @@ import type {
   EncounterAftermathReactionEffect,
   StepNudge,
   UnifiedActionOutcome,
-  UnifiedActionTemplate,
 } from '../../../types/unifiedAction';
 import { expandSettings, validateSettingEnvelope } from '../../settingClasses';
 import { WorldGraph } from '../../../engine/graph';
 import { getPlaceTierLocations, isPlaceTierLocation } from '../../../engine/sublocationShape';
 import { nudgeCardMember } from '../../nudge-card-library';
 import { ENCOUNTER_IMAGE_LIBRARY } from '../../encounter-image-library';
-import { checkNudgeHand } from '../../content-eval/nudgeHandChecklist';
+import { checkNudgeHand, nudgeBearingSteps } from '../../content-eval/nudgeHandChecklist';
 import { checkCompositionContract } from '../../content-eval/compositionContract';
 import {
   checkConsequenceDraw,
@@ -256,18 +252,36 @@ describe('Standing the Line — setting envelope (THR-884)', () => {
 });
 
 describe('Standing the Line — all five hands pass the WS1 checklist', () => {
-  // check:encounter only ever sees step 0's hand — nudgeBearingSteps/plainSteps
-  // filter ActionStepBranch out, so the four branch hands are invisible to the
-  // machine gate (§ 15 of the design doc's own self-audit). Substituting each
-  // pole's branch arms as plain steps on a synthetic template routes all three
-  // of that pole's steps through the real checklist function.
-  it.each(POLE_KEYS)('%s pole: step 0 + both branch steps, zero violations', (pole) => {
-    const synthetic: UnifiedActionTemplate = {
-      ...TEMPLATE,
-      steps: [step0, step1Branch.variants[pole], step2Branch.variants[pole]],
-    };
-    const violations = checkNudgeHand(synthetic);
+  // Asserted against the template *as authored* (THR-1273). Until the descent
+  // landed, `nudgeBearingSteps` filtered `ActionStepBranch` out, so the four
+  // branch hands were invisible to the machine gate and this file had to
+  // substitute each pole's arms onto a synthetic template to reach them. That
+  // scaffolding is gone: `checkNudgeHand` now walks all five hands itself, and
+  // asserting through the real template is what makes this test evidence about
+  // the gate rather than about the substitution.
+  it('the real template: all five hands, zero violations', () => {
+    const violations = checkNudgeHand(TEMPLATE);
     expect(violations, violations.join('\n')).toEqual([]);
+  });
+
+  it('the checklist actually reaches every branch arm, not just step 0', () => {
+    // The anti-vacuity guard for the test above: a zero-violation result would
+    // read identically if the walk still stopped at step 0. Pin the population.
+    //
+    // Seven, not the five of the header's "all five hands": each branch here
+    // authors its `fallback` as a *distinct object* rather than aliasing a pole,
+    // so both fallbacks are steps a player can actually run and both are gated.
+    // (`runnableStepSites` collapses a fallback that IS one of the variants —
+    // the other common shape — so this count tracks arms, not declarations.)
+    const reached = nudgeBearingSteps(TEMPLATE);
+    expect(reached).toHaveLength(7);
+    for (const pole of POLE_KEYS) {
+      expect(reached).toContain(step1Branch.variants[pole]);
+      expect(reached).toContain(step2Branch.variants[pole]);
+    }
+    expect(reached).toContain(step0);
+    expect(reached).toContain(step1Branch.fallback);
+    expect(reached).toContain(step2Branch.fallback);
   });
 
   it('all five hands are non-empty and within 4-8 cards', () => {

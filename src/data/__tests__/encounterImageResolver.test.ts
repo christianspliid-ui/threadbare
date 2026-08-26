@@ -384,16 +384,22 @@ describe('authored imageTags resolve against the manifest (THR-1052)', () => {
     ),
   );
 
-  it('reaches nudges nested in branch variants, which the gate does not', () => {
-    // Why this lives here rather than being left to `check:encounter`: that
-    // gate's walk is `nudgeBearingSteps`, which filters `template.steps` for
-    // plain `ActionStep`s — "branching variants are out of scope for linear
-    // templates" (nudgeHandChecklist.ts). A hand inside an `ActionStepBranch`'s
-    // `variants`/`fallback` is therefore invisible to it. Measured on THR-1052:
-    // of 42 dead tags, the gate reported 41 and silently missed
-    // `slice.family.sure_marker`, which sits in a branch `fallback` of
-    // `encounter.slice.swindled_family` — a template the gate *did* check and
-    // pass. Restoring that one tag reproduces it: the gate reports 0.
+  it('reaches nudges nested in branch variants', () => {
+    // History, kept because it is the second half of a two-part lesson.
+    //
+    // THR-1052 measured this blindness here first: of 42 dead tags, the gate
+    // reported 41 and silently missed `slice.family.sure_marker`, sitting in a
+    // branch `fallback` of `encounter.slice.swindled_family` — a template the
+    // gate *did* check and pass. The response then was to sweep around the gate
+    // from this test rather than to fix the walk, so the gate stayed blind and
+    // the same structural defect was re-found from scratch on the factory's
+    // first `personality_fork` (THR-1273), that time with three editorial
+    // defects riding in the unchecked half.
+    //
+    // `check:encounter` now walks branch arms itself (`runnableStepSites`), so
+    // this is no longer a *substitute* for the gate. It stays as a corpus-wide
+    // sweep — it covers surfaces outside `UNIFIED_ACTION_TEMPLATES` too, see the
+    // Meet-The-First extension below — and as the regression pin for the walk.
     const branchNested = UNIFIED_ACTION_TEMPLATES.flatMap((template) =>
       (template.steps ?? [])
         .filter(isActionStepBranch)

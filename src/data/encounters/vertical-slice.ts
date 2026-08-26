@@ -2728,7 +2728,10 @@ const FAMILY_GUIDE_STEP: ActionStep = {
   reach: 'eye',
   duration: { min: 2, max: 3 },
   difficulty: 0.4,
-  purposeLine: 'Find them a living road',
+  // 4 words, not 5 (THR-1273): `REACH_PURPOSE_MAX_WORDS` is 4, and this line sat
+  // one over it from the day it was written — invisibly, because it lives on a
+  // branch arm and no gate walked those until the descent landed.
+  purposeLine: 'Find the living road',
   onSuccess: [],
   onFailure: [],
   failBehavior: 'fail_action',
