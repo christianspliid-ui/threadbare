@@ -1,13 +1,13 @@
 # Briefing
-**Generated:** 2026-08-27 00:55 local (22:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-08-27 01:53 local (23:53 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**One word starts the only content work on the board.** Unchanged — nothing has arrived that needs you, and nothing you owe has moved. Eighth day by your clock.
+**One word starts the only content work on the board.** Unchanged — nothing new has arrived that needs you. Eighth day by your clock.
 
 [Approve the batch-2 brief](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/retrofit-batch-2-brief.md) and [Run Retrofit Batch 2](https://linear.app/threadbare/issue/THR-1222/run-retrofit-batch-2-the-camp-seven-through-the-factory-line-shrine) moves into build.
 
-**Why it is still the lead, and honestly why it is still not urgent.** The engine lane keeps looking after itself: [the undertaking substrate](https://linear.app/threadbare/issue/THR-1292/the-undertaking-substrate-proactive-agent-actions-plan-doc-16) now has **slice 3 of 6 open and queued to merge** ([PR #1656](https://github.com/christianspliid-ui/threadbare/pull/1656), checkpoint dice in the strategic runtime), on top of slices 1 and 2 already merged and deployed. Three slices in four hours, none of it owed by you. What survives all of that is the **asymmetry**: the *content* lane has nothing queued at all, and the camp seven is the only content work a single word from you starts.
+**What changed in the last hour, and why it sharpens the ask rather than softening it.** The engine lane merged **two more slices** of [the undertaking substrate](https://linear.app/threadbare/issue/THR-1292/the-undertaking-substrate-proactive-agent-actions-plan-doc-16) — slice 3 (checkpoint dice, [PR #1656](https://github.com/christianspliid-ui/threadbare/pull/1656)) and slice 4 (retiring the initiative pipeline, [PR #1657](https://github.com/christianspliid-ui/threadbare/pull/1657)). That is **four of six done in five hours**, none of it owed by you. The consequence: the work that has been covering the empty shelf is two-thirds spent. When slice 6 lands, the shelf is bare unless something else is queued — and **the camp seven is the only thing a single word from you would put there.**
 
 **The camp seven** — shrine offering, sharpening blades, warding the camp, a small prayer, rest and reflection, tending wounds, scouting the perimeter. No typed consequences at all across the set; with the corpus rewrite shipped they are the last encounters in the game below standard. And `shrine_offering` is encounter #1 of [your integrated slice checkpoint](https://linear.app/threadbare/issue/THR-1220), which cannot invite you while the camp set sits below the bar.
 
@@ -19,7 +19,7 @@
 
 ## Also waiting (10)
 
-- **[Design hours — card grammar first](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** — eight days in the design-staging slot; it blocks the automation staging anyone else's, so three tickets sit behind it. Sit it, or say *"park it"*. ([Traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools) and the five remaining carve-up plan docs sit in the same queue.)
+- **[Design hours — card grammar first](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** — eight days in the design-staging slot; it blocks the automation staging anyone else's, so three tickets sit behind it. Sit it, or say *"park it"*. ([Traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools) and the five remaining carve-up plan docs sit in the same queue — and doc 1 finishing makes those five the next thing between the shelf and empty.)
 - **[Physical Conflict — seven open questions, every one yours](https://linear.app/threadbare/issue/THR-1258/wayfinder-map-physical-conflict)** — keystones: [how a duel ends](https://linear.app/threadbare/issue/THR-1264/agent-mode-fight-loop-opposed-band-pairs) and [what a wound costs](https://linear.app/threadbare/issue/THR-1263/npc-mode-fight-loop-the-stat-block-and-test-skeleton); settle those two and the other five fall out.
 - **[Twenty spells](https://linear.app/threadbare/issue/THR-1232) and [thirty items](https://linear.app/threadbare/issue/THR-1236)** — both sketches cleared to build; say *"work the powers map"* or *"work the item map"* and a session builds one for you to react to.
 - **[Image credits](https://linear.app/threadbare/issue/THR-876/regenerate-the-5-quarantined-meet-the-first-scene-assets-doctrine)** — do you want image spends gated on you at all, or decided by the lane and reported after?
@@ -32,15 +32,16 @@
 
 ## Queue
 
-**Shelf at zero, one ticket in build and still moving fast.**
+**Shelf at zero; the one ticket in build is two-thirds finished.**
 
-- **In build: [the undertaking substrate](https://linear.app/threadbare/issue/THR-1292/the-undertaking-substrate-proactive-agent-actions-plan-doc-16).** **Slice 3 of 6 opened at 00:48** — checkpoint dice in the strategic runtime, auto-merge armed, waiting only on its own CI. Slices 1 and 2 are merged and deployed. Three of six inside four hours.
-- **Nothing waiting to be picked up.** Ready for Dev is empty; the executor's next wake continues THR-1292 rather than looking for new work. Work-in-progress is capped at one on purpose, so an empty shelf while a multi-day ticket is being built is the system behaving. The shelf matters again when this ticket finishes — which is where the five remaining plan docs from your own carve-up come in. Nothing to decide there: the carve-up names them and their order, and doc 3 (*the binder*) is the other critical-path one.
+- **In build: [the undertaking substrate](https://linear.app/threadbare/issue/THR-1292/the-undertaking-substrate-proactive-agent-actions-plan-doc-16).** **Slices 3 and 4 both merged in the last hour** — checkpoint dice, then the initiative pipeline retired. Four of six landed since 21:02, all deployed or deploying. Slices 5 and 6 remain.
+- **Nothing waiting to be picked up.** Ready for Dev is empty; the executor's next wake continues THR-1292 rather than looking for new work. Work-in-progress is capped at one on purpose, so an empty shelf while a multi-slice ticket is being built is the system behaving. **The difference from last hour is how much runway is left:** two slices, at roughly an hour each. After that the shelf needs either the five remaining carve-up plan docs (a design session — nothing for you to decide, your carve-up already names them and their order, doc 3 *the binder* being the other critical-path one) or the camp-seven word.
 - **Content lane still at zero queued.** That asymmetry is the whole argument for the lead ask.
 - **Three parked items, unchanged:** [THR-1130](https://linear.app/threadbare/issue/THR-1130) (the batch-1 sample verdict, closes in the same sitting as the camp-seven word), [THR-1133](https://linear.app/threadbare/issue/THR-1133) and [THR-1168](https://linear.app/threadbare/issue/THR-1168) — all on the list above. All three correctly parked; none of them is stuck for a technical reason.
 
 ## Health
 
-- **One thing for an agent, not for you, and it still has not moved:** [PR #1653](https://github.com/christianspliid-ui/threadbare/pull/1653) (impediment log + plan-template edit) has auto-merge armed but carries **both** a merge conflict and a failing required check, so clearing one will not release it. A session needs to merge `main` in, resolve, and re-run the check. Nothing is lost and no decision is involved. In this state ~4.5 hours now — worth a session's attention on the next wake, but it is holding nothing else up.
-- **Everything else green.** Nine scheduled lanes within schedule, both background jobs healthy, the live site serving the latest commit (`f36cee61`), the worktree reaper ran 00:41 clean, the home tree on `main` and current with a clean tree.
+- **One thing for an agent, not for you:** [PR #1653](https://github.com/christianspliid-ui/threadbare/pull/1653) (impediment log + plan-template edit) has auto-merge armed but has sat ~5.5 hours because its required `Docs gates` check was **cancelled** rather than completed, and GitHub has not been able to compute a merge state since. Correcting last hour's brief: there is no merge conflict on it — the conflict-file list is empty. A session re-running the check should release it. Nothing is lost, no decision is involved, and it is holding nothing else up.
+- **The site is one commit behind, briefly and on purpose.** Slice 4 merged minutes ago and its build is still in flight; the deploy probe reads *pending*, not failed. It will catch up on its own.
+- **Everything else green.** Nine scheduled lanes within schedule, both background jobs healthy, the worktree reaper ran 01:40 clean, the home tree on `main` and current.
 - The nightly-shaped quiet spells stay declined per your 8 August ruling. The 35.3h gap of 20–22 August remains the one exception and is on the list above.
