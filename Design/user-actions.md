@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-26 11:58 local (09:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-26 12:57 local (10:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -18,16 +18,17 @@ It binds [Prose Doctrine v2](https://github.com/christianspliid-ui/threadbare/bl
 
 ### 2. The design maps have run out of questions an agent may answer
 
-All three open maps are now **agent-exhausted**: every `research` question on every map is resolved, and what remains is `grilling` and `prototype` — both human by classification.
+**All four open maps are agent-exhausted:** every `research` question on every map is resolved, and what remains is `grilling` and `prototype` — both human by classification.
 
+- **[Proactive Agent Actions](https://linear.app/threadbare/issue/THR-1276/proactive-agent-actions-wayfinder-map)** — you charted this one at 11:11 this morning and had cleared half of it within the hour (both field surveys and the substrate question). Three left, all yours: [the action library grammar](https://linear.app/threadbare/issue/THR-1281/the-action-library-grammar-crud-verbs-across-reaches-and-tiers) — what agents may build, change and tear down at each tier, and what the verb grid looks like across the reaches; your substrate verdict just widened it to cover worldly belongings and per-verb checkpoints, which makes it the keystone. Then [the reactive loop](https://linear.app/threadbare/issue/THR-1282/the-reactive-loop-how-outcomes-mint-new-drives) — when a fortress is razed or a trade route undercut, who wants revenge, and what stops a vendetta cascade eating every spotlight agent. And [a mock of an agent's arc](https://linear.app/threadbare/issue/THR-1279/mock-following-an-agents-arc-the-project-moments-surface) — a session builds it, you react, and your reaction is the decision.
 - **[Physical Conflict](https://linear.app/threadbare/issue/THR-1258/wayfinder-map-physical-conflict)** — charted by you on 26 August; the lane burned all four research questions inside that same session. **Every open question is yours.** Two are the keystone, because settling them releases the rest by themselves: [how a duel ends — opposed band-pairs](https://linear.app/threadbare/issue/THR-1264/agent-mode-fight-loop-opposed-band-pairs) and [what a wound costs — the monster stat block](https://linear.app/threadbare/issue/THR-1263/npc-mode-fight-loop-the-stat-block-and-test-skeleton). The others: [when a fight starts on its own](https://linear.app/threadbare/issue/THR-1267/systemic-triggers-v1-walking-into-the-lair-grudges-boiling-over), [the faces of defeat](https://linear.app/threadbare/issue/THR-1266/defeat-wears-many-faces-the-outcome-spectrum), [just enough monster](https://linear.app/threadbare/issue/THR-1268/monster-opponents-just-enough-monster), [what winning leaves in your hands](https://linear.app/threadbare/issue/THR-1270/victory-yields-what-winning-leaves-in-your-hands), and [may a company fight together?](https://linear.app/threadbare/issue/THR-1271/companies-in-fights).
 - **[Powers & Spellcraft](https://linear.app/threadbare/issue/THR-1226)** and **[Item Generator](https://linear.app/threadbare/issue/THR-1227)** — one question each, and both are the sketches under ask 4.
 
-Nothing here is broken and nothing is stalled: the wayfinder machinery has done its whole job and is waiting at the handover. Say *"work the fight map"* in a chat session and it takes them in keystone order.
+Nothing here is broken and nothing is stalled: the wayfinder machinery has done its whole job and is waiting at the handover. Say *"work the fight map"* or *"work the agent-actions map"* in a chat session and it takes them in keystone order.
 
 ### 3. More design hours — four sittings stacked
 
-The shelf holds four tickets this morning, but all four are repairs the machine found in itself — no new *game* is queued behind them. What would put game work on the shelf is design, and most of the design work is waiting on you. In the order you set:
+The shelf holds three tickets this hour, and all of them are repairs the machine found in itself — no new *game* is queued behind them. What would put game work on the shelf is design, and most of the design work is waiting on you. In the order you set:
 
 - **[Unify the card grammar](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** — your 6 August note: action cards are too wordy, you cannot tell what they do, playing one gives no feedback, while encounter cards already read the way you wanted. It has held the single design-staging slot since 19 August — **seven days** — so nothing else can be staged behind it until it moves.
 - **[Traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)** — in design, assigned to you, untouched twelve days. Either give it the hour or say *"put Traits wave 2 back in the pile."*
