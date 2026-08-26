@@ -734,15 +734,18 @@ describe('computeWorldSoulValueDrift (World-Soul)', () => {
     expect(Object.keys(result).length).toBe(0);
   });
 
-  it('applies drift when force is dominant (mercy_ambition +ambition)', () => {
+  it('applies drift toward ambition when force is dominant', () => {
     const balanced = 1 / SPHERE_NAMES.length;
     const weights = Object.fromEntries(SPHERE_NAMES.map(s => [s, balanced])) as Record<string, number>;
     weights.force = balanced + 0.125; // +0.125 deviation, above threshold
     const fundament = makeFundament({ sphereWeights: weights });
     const result = computeWorldSoulValueDrift(fundament);
-    // Force maps to mercy_ambition with direction +1, but other spheres slightly below balanced
-    // may also contribute. Just verify force's pair got a positive drift.
-    expect(result[SPHERE_DRIFT_MAP.force.pair]).toBeGreaterThan(0);
+    // THR-1292: force maps to the canonical `loyalty_ambition` at direction -1.
+    // Dominant force = positive deviation × -1 = NEGATIVE drift = toward the
+    // ambition pole, which is what the row has always said it meant. Asserted on
+    // the literal pair, not `SPHERE_DRIFT_MAP.force.pair`, so that a future
+    // re-point of the row fails here loudly instead of following itself.
+    expect(result.loyalty_ambition).toBeLessThan(0);
   });
 
   it('skips drift when deviation is below threshold', () => {
@@ -764,31 +767,46 @@ describe('computeWorldSoulValueDrift (World-Soul)', () => {
     );
   });
 
-  it('applies negative drift when sphere is recessive (life -> mercy)', () => {
+  it('drifts toward ruthlessness when life is recessive', () => {
     const balanced = 1 / SPHERE_NAMES.length;
     const weights = Object.fromEntries(SPHERE_NAMES.map(s => [s, balanced])) as Record<string, number>;
     weights.life = 0.01; // very recessive, negative deviation
-    // life maps to mercy_ambition with direction -1
-    // When life is recessive, deviation is negative, direction -1
-    // drift = negative * -1 = positive (toward ambition), which means mercy is less
     const fundament = makeFundament({ sphereWeights: weights });
     const result = computeWorldSoulValueDrift(fundament);
-    // Life recessive means less mercy (direction -1 * negative deviation = positive drift)
-    expect(result.mercy_ambition).toBeDefined();
+    // THR-1292: life maps to `mercy_ruthlessness` at direction +1, so a world
+    // starved of life drifts NEGATIVE — away from mercy, toward ruthlessness.
+    // Before the repair this row wrote the non-member key `mercy_ambition`, and
+    // the assertion here was `toBeDefined()` on that key: it passed only because
+    // the junk key existed, and would have passed at any magnitude or sign.
+    expect(result.mercy_ruthlessness).toBeLessThan(0);
   });
 
-  it('handles multiple sphere drifts in same pair', () => {
+  it('accumulates drift from two spheres sharing one pair', () => {
     const weights = Object.fromEntries(SPHERE_NAMES.map(s => [s, 1/12])) as Record<string, number>;
-    weights.force = 0.25;   // dominant — mercy_ambition direction +1
-    weights.entropy = 0.25; // dominant — mercy_ambition direction +1
-    weights.life = 0.01;    // recessive — mercy_ambition direction -1 (negative deviation * -1 = positive)
+    weights.entropy = 0.25; // dominant — mercy_ruthlessness direction -1 → negative drift
+    weights.life = 0.01;    // recessive — mercy_ruthlessness direction +1 → negative drift
     const fundament = makeFundament({ sphereWeights: weights });
     const result = computeWorldSoulValueDrift(fundament);
-    // force, entropy, and life all map to mercy_ambition
-    // force and entropy are dominant → positive drift
-    // life is recessive with direction -1 → negative * -1 = positive drift
-    // All three push mercy_ambition positive (toward ambition)
-    expect(result.mercy_ambition ?? 0).toBeGreaterThan(0);
+    // Both rows push the same way: a world of decay and no life reads as ruthless.
+    expect(result.mercy_ruthlessness ?? 0).toBeLessThan(0);
+  });
+
+  it('only ever writes canonical VALUE_PAIRS keys', () => {
+    // The defect class this whole block exists to prevent: a drift row naming a
+    // pair that is not a member of `VALUE_PAIRS` writes a key no consumer reads
+    // (`profile[pair] ?? 0`), so the row is silently inert rather than wrong.
+    const weights = Object.fromEntries(SPHERE_NAMES.map(s => [s, 0.01])) as Record<string, number>;
+    for (const sphere of SPHERE_NAMES) {
+      const skewed = { ...weights, [sphere]: 0.89 };
+      const result = computeWorldSoulValueDrift(makeFundament({ sphereWeights: skewed }));
+      for (const key of Object.keys(result)) {
+        expect(VALUE_PAIRS).toContain(key);
+      }
+    }
+    // And the table itself, independent of any one run.
+    for (const { pair } of Object.values(SPHERE_DRIFT_MAP)) {
+      expect(VALUE_PAIRS).toContain(pair);
+    }
   });
 });
 
@@ -950,10 +968,10 @@ describe('scoring integration (B.3/D.1)', () => {
 // ═══════════════════════════════════════════════════════════════════
 
 describe('wanderlust travel cost modifier', () => {
-  it('wanderlust: progressive agent (tradition_progress=-0.8) has lower travel cost than traditional agent', () => {
-    // tradition_progress negative = progress pole = more curious/wandering
-    const progressiveProfile = makeProfile({ tradition_progress: -0.8 });
-    const traditionalProfile = makeProfile({ tradition_progress: 0.8 });
+  it('wanderlust: progressive agent (tradition_novelty=-0.8) has lower travel cost than traditional agent', () => {
+    // tradition_novelty negative = novelty pole = more curious/wandering
+    const progressiveProfile = makeProfile({ tradition_novelty: -0.8 });
+    const traditionalProfile = makeProfile({ tradition_novelty: 0.8 });
 
     const progressiveGraph = buildTestGraph({ agentId: 'agent_1', profile: progressiveProfile });
     const traditionalGraph = buildTestGraph({ agentId: 'agent_1', profile: traditionalProfile });
@@ -978,8 +996,8 @@ describe('wanderlust travel cost modifier', () => {
     expect(progressiveCost).toBeLessThan(traditionalCost);
   });
 
-  it('wanderlust: neutral agent (tradition_progress=0) uses standard TRAVEL_COST_WEIGHT', () => {
-    const neutralProfile = makeProfile({ tradition_progress: 0 });
+  it('wanderlust: neutral agent (tradition_novelty=0) uses standard TRAVEL_COST_WEIGHT', () => {
+    const neutralProfile = makeProfile({ tradition_novelty: 0 });
     const graph = buildTestGraph({ agentId: 'agent_1', profile: neutralProfile });
     const dm = makeDistanceMatrix([
       ['loc_a', 'loc_a', 0],
@@ -995,7 +1013,7 @@ describe('wanderlust travel cost modifier', () => {
     const result = scoreAndSelect([distantEntry], 'agent_1', 'loc_a', graph,1);
     const travelCost = result.topCandidates[0].travelCost;
 
-    // With tradition_progress=0, wanderlust=0, personalTravelCostWeight = TRAVEL_COST_WEIGHT * 1.0
+    // With tradition_novelty=0, wanderlust=0, personalTravelCostWeight = TRAVEL_COST_WEIGHT * 1.0
     // travelCost = 3 * TRAVEL_COST_WEIGHT
     // We import TRAVEL_COST_WEIGHT from constants — use a range check instead of exact constant
     // The cost should be 3 * 0.12 = 0.36 (no discount)
@@ -1005,7 +1023,7 @@ describe('wanderlust travel cost modifier', () => {
   it('wanderlust: discount does not exceed WANDERLUST_MAX_DISCOUNT (capped at 40%)', () => {
     // Extreme progressive value (-2.0) — clamped to -1.0 by implementation
     // wanderlust = clamp(0, -(-2.0), 1) = 1.0 (maximum wanderlust)
-    const extremeProfile = makeProfile({ tradition_progress: -2.0 });
+    const extremeProfile = makeProfile({ tradition_novelty: -2.0 });
     const graph = buildTestGraph({ agentId: 'agent_1', profile: extremeProfile });
     const dm = makeDistanceMatrix([
       ['loc_a', 'loc_a', 0],
@@ -1028,7 +1046,7 @@ describe('wanderlust travel cost modifier', () => {
     expect(travelCost).toBeCloseTo(maxDiscountedCost, 5);
 
     // Also verify a normal -1.0 profile gives same result (confirming clamp is working)
-    const exactProfile = makeProfile({ tradition_progress: -1.0 });
+    const exactProfile = makeProfile({ tradition_novelty: -1.0 });
     const exactGraph = buildTestGraph({ agentId: 'agent_1', profile: exactProfile });
     const exactResult = scoreAndSelect([distantEntry], 'agent_1', 'loc_a', exactGraph, 1);
     expect(exactResult.topCandidates[0].travelCost).toBeCloseTo(maxDiscountedCost, 5);
@@ -1036,7 +1054,7 @@ describe('wanderlust travel cost modifier', () => {
 
   it('wanderlust: travelCost is 0 when distance=0 regardless of wanderlust', () => {
     // Even the most progressive agent should have zero travel cost for local encounters
-    const progressiveProfile = makeProfile({ tradition_progress: -1.0 });
+    const progressiveProfile = makeProfile({ tradition_novelty: -1.0 });
     const graph = buildTestGraph({ agentId: 'agent_1', profile: progressiveProfile });
     const dm = makeDistanceMatrix([['loc_a', 'loc_a', 0]]);
 

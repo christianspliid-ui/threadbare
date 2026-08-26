@@ -376,7 +376,7 @@ export const COMET_AT_THE_TURNING_TEMPLATE: UnifiedActionTemplate = withEncounte
   essenceCost: 3,
 
   actorAffinities: ['individual'],
-  motivations: ['tradition_change', 'revelation_discretion'],
+  motivations: ['tradition_novelty', 'revelation_discretion'],
 
   locationSubtypes: ['settlement', 'town', 'city', 'capital'],
 

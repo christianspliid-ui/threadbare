@@ -7021,7 +7021,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     encounterType: 'lead',
     threatRating: 'easy',
     intrinsicTier: 'background',
-    motivations: ['courage_prudence', 'justice_mercy'],
+    motivations: ['courage_prudence', 'mercy_ruthlessness'],
     steps: [
       {
         id: 'patrol_perimeter.walk',
@@ -7066,7 +7066,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     encounterType: 'build',
     threatRating: 'trivial',
     intrinsicTier: 'background',
-    motivations: ['tradition_progress', 'courage_prudence'],
+    motivations: ['tradition_novelty', 'courage_prudence'],
     /**
      * THR-838 (WS5 Batch 1) — migrated to the nudge model.
      *
@@ -7305,7 +7305,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     encounterType: 'trade',
     threatRating: 'trivial',
     intrinsicTier: 'background',
-    motivations: ['loyalty_ambition', 'justice_mercy'],
+    motivations: ['loyalty_ambition', 'mercy_ruthlessness'],
     steps: [
       {
         id: 'barter_supplies.offer',
@@ -7354,7 +7354,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     encounterType: 'trade',
     threatRating: 'trivial',
     intrinsicTier: 'background',
-    motivations: ['tradition_progress', 'loyalty_ambition'],
+    motivations: ['tradition_novelty', 'loyalty_ambition'],
     steps: [
       {
         id: 'assess_holdings.count',
@@ -7406,7 +7406,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     encounterType: 'lead',
     threatRating: 'easy',
     intrinsicTier: 'background',
-    motivations: ['courage_prudence', 'justice_mercy'],
+    motivations: ['courage_prudence', 'mercy_ruthlessness'],
     steps: [
       {
         id: 'night_watch.vigil',
@@ -7451,7 +7451,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     encounterType: 'explore',
     threatRating: 'easy',
     intrinsicTier: 'background',
-    motivations: ['tradition_progress', 'justice_mercy'],
+    motivations: ['tradition_novelty', 'mercy_ruthlessness'],
     secretDiscovery: { onSuccess: true, sourceName: 'spy_debrief' },
     steps: [
       {
@@ -7509,7 +7509,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     encounterType: 'build',
     threatRating: 'easy',
     intrinsicTier: 'background',
-    motivations: ['tradition_progress', 'courage_prudence'],
+    motivations: ['tradition_novelty', 'courage_prudence'],
     /**
      * THR-838 (WS5 Batch 1) — migrated to the nudge model.
      *
@@ -7747,7 +7747,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     encounterType: 'explore',
     threatRating: 'easy',
     intrinsicTier: 'background',
-    motivations: ['tradition_progress', 'justice_mercy'],
+    motivations: ['tradition_novelty', 'mercy_ruthlessness'],
     steps: [
       {
         id: 'trace_ley_lines.sense',
@@ -7806,7 +7806,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     encounterType: 'create',
     threatRating: 'easy',
     intrinsicTier: 'background',
-    motivations: ['tradition_progress', 'loyalty_ambition'],
+    motivations: ['tradition_novelty', 'loyalty_ambition'],
     secretDiscovery: { onSuccess: true, sourceName: 'tavern_gossip' },
     steps: [
       {
@@ -7860,7 +7860,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     encounterType: 'assist',
     threatRating: 'trivial',
     intrinsicTier: 'background',
-    motivations: ['justice_mercy', 'loyalty_ambition'],
+    motivations: ['mercy_ruthlessness', 'loyalty_ambition'],
     steps: [
       {
         id: 'tend_the_weary.approach',
@@ -7912,7 +7912,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     encounterType: 'explore',
     threatRating: 'easy',
     intrinsicTier: 'background',
-    motivations: ['tradition_progress', 'justice_mercy'],
+    motivations: ['tradition_novelty', 'mercy_ruthlessness'],
     steps: [
       {
         id: 'study_surroundings.observe',
@@ -7969,7 +7969,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     encounterType: 'explore',
     threatRating: 'easy',
     intrinsicTier: 'background',
-    motivations: ['tradition_progress', 'loyalty_ambition'],
+    motivations: ['tradition_novelty', 'loyalty_ambition'],
     steps: [
       {
         id: 'decipher_old_markings.find',
@@ -8026,7 +8026,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     encounterType: 'build',
     threatRating: 'trivial',
     intrinsicTier: 'background',
-    motivations: ['tradition_progress', 'courage_prudence'],
+    motivations: ['tradition_novelty', 'courage_prudence'],
     steps: [
       {
         id: 'mend_equipment.assess',
@@ -8077,7 +8077,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     encounterType: 'build',
     threatRating: 'trivial',
     intrinsicTier: 'background',
-    motivations: ['tradition_progress', 'loyalty_ambition'],
+    motivations: ['tradition_novelty', 'loyalty_ambition'],
     steps: [
       {
         id: 'shore_up_shelter.survey',
@@ -8125,7 +8125,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     encounterType: 'create',
     threatRating: 'easy',
     intrinsicTier: 'background',
-    motivations: ['tradition_progress', 'loyalty_ambition'],
+    motivations: ['tradition_novelty', 'loyalty_ambition'],
     steps: [
       {
         id: 'commune_with_stars.gaze',
@@ -8178,7 +8178,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     encounterType: 'assist',
     threatRating: 'trivial',
     intrinsicTier: 'background',
-    motivations: ['justice_mercy', 'tradition_progress'],
+    motivations: ['mercy_ruthlessness', 'tradition_novelty'],
     /**
      * THR-838 (WS5 Batch 1) — migrated to the nudge model.
      *
@@ -8490,7 +8490,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     encounterType: 'explore',
     threatRating: 'trivial',
     intrinsicTier: 'background',
-    motivations: ['loyalty_ambition', 'justice_mercy'],
+    motivations: ['loyalty_ambition', 'mercy_ruthlessness'],
     steps: [
       {
         id: 'forage_provisions.search',
@@ -9952,7 +9952,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     encounterType: 'explore',
     threatRating: 'trivial',
     intrinsicTier: 'background',
-    motivations: ['revelation_discretion', 'tradition_progress'],
+    motivations: ['revelation_discretion', 'tradition_novelty'],
     steps: [
       {
         id: 'read_wards.sense',
@@ -10024,7 +10024,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     encounterType: 'create',
     threatRating: 'trivial',
     intrinsicTier: 'background',
-    motivations: ['tradition_progress', 'revelation_discretion'],
+    motivations: ['tradition_novelty', 'revelation_discretion'],
     steps: [
       {
         id: 'minor_cantrip.focus',
@@ -10091,7 +10091,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     encounterType: 'create',
     threatRating: 'trivial',
     intrinsicTier: 'background',
-    motivations: ['justice_mercy', 'tradition_progress'],
+    motivations: ['mercy_ruthlessness', 'tradition_novelty'],
     steps: [
       {
         id: 'hedge_remedy.gather',
@@ -10235,7 +10235,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     encounterType: 'create',
     threatRating: 'trivial',
     intrinsicTier: 'background',
-    motivations: ['tradition_progress', 'justice_mercy'],
+    motivations: ['tradition_novelty', 'mercy_ruthlessness'],
     /**
      * THR-838 (WS5 Batch 1) — migrated to the nudge model.
      *
@@ -10608,7 +10608,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     encounterType: 'explore',
     threatRating: 'trivial',
     intrinsicTier: 'background',
-    motivations: ['revelation_discretion', 'tradition_progress'],
+    motivations: ['revelation_discretion', 'tradition_novelty'],
     steps: [
       {
         id: 'read_stars.observe',
@@ -10677,7 +10677,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     encounterType: 'assist',
     threatRating: 'easy',
     intrinsicTier: 'background',
-    motivations: ['justice_mercy', 'tradition_progress'],
+    motivations: ['mercy_ruthlessness', 'tradition_novelty'],
     steps: [
       {
         id: 'tend_dead.find',
@@ -10748,7 +10748,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     encounterType: 'create',
     threatRating: 'easy',
     intrinsicTier: 'background',
-    motivations: ['tradition_progress', 'justice_mercy'],
+    motivations: ['tradition_novelty', 'mercy_ruthlessness'],
     steps: [
       {
         id: 'bless_road.prepare',
@@ -10827,7 +10827,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     encounterType: 'build',
     threatRating: 'easy',
     intrinsicTier: 'background',
-    motivations: ['tradition_progress', 'courage_prudence'],
+    motivations: ['tradition_novelty', 'courage_prudence'],
     steps: [
       {
         id: 'patch_walls.assess',
@@ -10890,7 +10890,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     encounterType: 'build',
     threatRating: 'easy',
     intrinsicTier: 'background',
-    motivations: ['justice_mercy', 'tradition_progress'],
+    motivations: ['mercy_ruthlessness', 'tradition_novelty'],
     steps: [
       {
         id: 'dig_well.divine_water',
@@ -10953,7 +10953,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     encounterType: 'build',
     threatRating: 'trivial',
     intrinsicTier: 'background',
-    motivations: ['tradition_progress', 'courage_prudence'],
+    motivations: ['tradition_novelty', 'courage_prudence'],
     steps: [
       {
         id: 'clear_rubble.sort',
@@ -11301,7 +11301,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     encounterType: 'explore',
     threatRating: 'easy',
     intrinsicTier: 'background',
-    motivations: ['courage_prudence', 'tradition_progress'],
+    motivations: ['courage_prudence', 'tradition_novelty'],
     steps: [
       {
         id: 'inspect_armoury.count',
@@ -11373,7 +11373,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     encounterType: 'build',
     threatRating: 'easy',
     intrinsicTier: 'background',
-    motivations: ['tradition_progress', 'courage_prudence'],
+    motivations: ['tradition_novelty', 'courage_prudence'],
     steps: [
       {
         id: 'shore_mine.inspect',
@@ -11436,7 +11436,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     encounterType: 'explore',
     threatRating: 'trivial',
     intrinsicTier: 'background',
-    motivations: ['revelation_discretion', 'tradition_progress'],
+    motivations: ['revelation_discretion', 'tradition_novelty'],
     steps: [
       {
         id: 'map_passages.enter',
@@ -11504,7 +11504,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     encounterType: 'explore',
     threatRating: 'easy',
     intrinsicTier: 'background',
-    motivations: ['revelation_discretion', 'tradition_progress'],
+    motivations: ['revelation_discretion', 'tradition_novelty'],
     steps: [
       {
         id: 'catalogue_tower.inventory',
@@ -11576,7 +11576,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     encounterType: 'acquire',
     threatRating: 'trivial',
     intrinsicTier: 'background',
-    motivations: ['tradition_progress', 'justice_mercy'],
+    motivations: ['tradition_novelty', 'mercy_ruthlessness'],
     steps: [
       {
         id: 'gather_wood.find',
@@ -11711,7 +11711,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     encounterType: 'build',
     threatRating: 'trivial',
     intrinsicTier: 'background',
-    motivations: ['tradition_progress', 'courage_prudence'],
+    motivations: ['tradition_novelty', 'courage_prudence'],
     steps: [
       {
         id: 'wildcraft_shelter.site',
@@ -11774,7 +11774,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     encounterType: 'trade',
     threatRating: 'easy',
     intrinsicTier: 'background',
-    motivations: ['justice_mercy', 'loyalty_ambition'],
+    motivations: ['mercy_ruthlessness', 'loyalty_ambition'],
     steps: [
       {
         id: 'negotiate_passage.approach',
@@ -11913,7 +11913,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     encounterType: 'assist',
     threatRating: 'trivial',
     intrinsicTier: 'background',
-    motivations: ['justice_mercy', 'tradition_progress'],
+    motivations: ['mercy_ruthlessness', 'tradition_novelty'],
     steps: [
       {
         id: 'mend_nets.inspect',

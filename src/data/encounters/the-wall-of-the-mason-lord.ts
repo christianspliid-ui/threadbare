@@ -386,7 +386,7 @@ export const WALL_OF_THE_MASON_LORD_TEMPLATE: UnifiedActionTemplate = withEncoun
   essenceCost: 3,
 
   actorAffinities: ['individual'],
-  motivations: ['mercy_ruthlessness', 'tradition_change'],
+  motivations: ['mercy_ruthlessness', 'tradition_novelty'],
 
   locationSubtypes: ['settlement', 'town', 'city', 'fortress'],
 

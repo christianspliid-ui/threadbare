@@ -13,6 +13,8 @@
  * 56 constants extracted from 15 engine modules.
  */
 
+import type { ValuePair } from '../types/agent';
+
 // ═══════════════════════════════════════════════════════════════════
 // SCORING — Value-per-tick encounter scoring (encounterScoring.ts)
 // ═══════════════════════════════════════════════════════════════════
@@ -446,15 +448,20 @@ export const EXPLORATION_BONUS_DECAY_TICKS = 50;
 export const TRAVEL_COST_WEIGHT = 0.12;
 
 /** Maximum travel cost discount from personality wanderlust.
- * An agent with maximum curiosity (tradition_progress at -1.0) gets this fraction off travel cost.
+ * An agent with maximum curiosity (tradition_novelty at -1.0) gets this fraction off travel cost.
  * @range 0.2–0.6 */
 export const WANDERLUST_MAX_DISCOUNT = 0.4;
 
 /** Axiological pair used to derive wanderlust tendency.
- * Negative values (progress pole) = more curious/explorative.
+ * Negative values (novelty pole) = more curious/explorative.
  * Positive values (tradition pole) = more conservative/stay-put.
- * Read from agent.axiologicalProfile.tradition_progress */
-export const WANDERLUST_PAIR: 'tradition_progress' = 'tradition_progress';
+ * Read from agent.axiologicalProfile.tradition_novelty
+ *
+ * THR-1292 slice 1: renamed from the non-canonical `tradition_progress`, which is
+ * not a member of `VALUE_PAIRS` — every read was `undefined ?? 0`, so wanderlust
+ * was inert. The sign convention here already matched canon (+tradition / -novelty),
+ * so only the name changes; no polarity flip. */
+export const WANDERLUST_PAIR: ValuePair = 'tradition_novelty';
 
 // ═══════════════════════════════════════════════════════════════════
 // PERSONALITY — Axiological amplification (encounterScoring.ts)

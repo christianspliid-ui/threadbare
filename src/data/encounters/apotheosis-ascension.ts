@@ -720,6 +720,10 @@ export const APOTHEOSIS_ASCENSION_TEMPLATE: UnifiedActionTemplate = compileOpeni
     // would *activate* a motivation this encounter has never actually scored on,
     // which is a live change to draw behaviour and outside this ticket. What is
     // left is the axis the encounter is about and the fork now decides on.
+    // THR-1292 slice 1 has since taken that activation on deliberately and swept
+    // the surviving legacy spellings to canon repo-wide. This entry stayed deleted
+    // rather than restored — the sweep repairs authored motivations, it does not
+    // re-author removed ones. Restoring it is a content call for plan doc 2.
     motivations: ['sacrifice_survival'],
 
     settings: [...APOTHEOSIS_SETTINGS],
