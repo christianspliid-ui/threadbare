@@ -16,6 +16,7 @@ import {
 import { applyActionTriggerPayloads } from '../effects/actionTriggerPayloads';
 import { WorldGraph } from '../graph';
 import type { ActionTriggerEffect, AttachmentEffect, EffectRuntimeState } from '../../types/effects';
+import type { GameState } from '../../types/gameState';
 import type { AttachedEffect } from '../effects/effectWalker';
 import type { GraphNode } from '../../types/graph';
 import { STARTER_POSSESSIONS } from '../../data/starter-attachments';
@@ -164,18 +165,29 @@ describe('narrative substitution', () => {
 });
 
 describe('payload application', () => {
-  function graphWithAgent(): { graph: WorldGraph; agentId: string } {
+  /**
+   * THR-1257 changed `applyActionTriggerPayloads` to take `GameState` rather than a
+   * bare `WorldGraph`, because the condition payloads now raise `damaged` / `healed`
+   * and `raiseEffectEvent` needs the state.
+   *
+   * These agents carry no `actorType`, so `isPersonCarrier` reads false and no proxy
+   * raise fires — which is why every assertion below is unchanged. They exercise the
+   * payload mechanics; the raise behaviour is asserted in
+   * `conditionProxyEvents.actionTrigger.test.ts`, on person-shaped carriers.
+   */
+  function graphWithAgent(): { graph: WorldGraph; agentId: string; state: GameState } {
     const graph = new WorldGraph();
     const agentId = 'agent-1';
     graph.addNode({ id: agentId, type: 'actor', name: 'Kael', properties: {} });
-    return { graph, agentId };
+    const state = { graph, tick: 3, seed: 42, effectStates: new Map() } as unknown as GameState;
+    return { graph, agentId, state };
   }
 
   it('condition_grant attaches the trait with the decay clock the tick loop reads', () => {
-    const { graph, agentId } = graphWithAgent();
+    const { graph, agentId, state } = graphWithAgent();
     graph.addNode({ id: 'cond.x', type: 'trait', name: 'Curse', properties: { tags: ['#curse'] } });
 
-    const res = applyActionTriggerPayloads(graph, agentId, [{
+    const res = applyActionTriggerPayloads(state, agentId, [{
       attachmentId: 'att-1',
       attachmentName: 'Item',
       payload: { kind: 'condition_grant', conditionTraitId: 'cond.x', durationTicks: 7 },
@@ -188,10 +200,10 @@ describe('payload application', () => {
   });
 
   it('condition_grant with null duration is indefinite (no decay clock)', () => {
-    const { graph, agentId } = graphWithAgent();
+    const { graph, agentId, state } = graphWithAgent();
     graph.addNode({ id: 'cond.perm', type: 'trait', name: 'Scholar', properties: {} });
 
-    applyActionTriggerPayloads(graph, agentId, [{
+    applyActionTriggerPayloads(state, agentId, [{
       attachmentId: 'att-1',
       attachmentName: 'Codex',
       payload: { kind: 'condition_grant', conditionTraitId: 'cond.perm', durationTicks: null },
@@ -202,8 +214,8 @@ describe('payload application', () => {
   });
 
   it('condition_grant fails soft when the condition node is missing', () => {
-    const { graph, agentId } = graphWithAgent();
-    const res = applyActionTriggerPayloads(graph, agentId, [{
+    const { graph, agentId, state } = graphWithAgent();
+    const res = applyActionTriggerPayloads(state, agentId, [{
       attachmentId: 'att-1',
       attachmentName: 'Item',
       payload: { kind: 'condition_grant', conditionTraitId: 'cond.nope' },
@@ -214,13 +226,13 @@ describe('payload application', () => {
   });
 
   it('condition_remove strips conditions matching a tag', () => {
-    const { graph, agentId } = graphWithAgent();
+    const { graph, agentId, state } = graphWithAgent();
     graph.addNode({ id: 'cond.wound', type: 'trait', name: 'Gash', properties: { tags: ['#wound'] } });
     graph.addNode({ id: 'cond.bless', type: 'trait', name: 'Blessed', properties: { tags: ['#blessing'] } });
     graph.addEdge({ id: 'e1', source: agentId, target: 'cond.wound', type: 'has_trait', properties: {} });
     graph.addEdge({ id: 'e2', source: agentId, target: 'cond.bless', type: 'has_trait', properties: {} });
 
-    const res = applyActionTriggerPayloads(graph, agentId, [{
+    const res = applyActionTriggerPayloads(state, agentId, [{
       attachmentId: 'att-1',
       attachmentName: 'Phial',
       payload: { kind: 'condition_remove', tags: ['#wound'] },
@@ -233,11 +245,11 @@ describe('payload application', () => {
   });
 
   it('self_remove destroys the possession and its edges', () => {
-    const { graph, agentId } = graphWithAgent();
+    const { graph, agentId, state } = graphWithAgent();
     graph.addNode({ id: 'att-1', type: 'artifact', name: 'Iron Blade', properties: {} });
     graph.addEdge({ id: 'p1', source: agentId, target: 'att-1', type: 'possesses', properties: {} });
 
-    const res = applyActionTriggerPayloads(graph, agentId, [{
+    const res = applyActionTriggerPayloads(state, agentId, [{
       attachmentId: 'att-1',
       attachmentName: 'Iron Blade',
       payload: { kind: 'self_remove' },
@@ -249,10 +261,10 @@ describe('payload application', () => {
   });
 
   it('one failing payload does not stop the others (fail-soft)', () => {
-    const { graph, agentId } = graphWithAgent();
+    const { graph, agentId, state } = graphWithAgent();
     graph.addNode({ id: 'cond.ok', type: 'trait', name: 'Fine', properties: {} });
 
-    const res = applyActionTriggerPayloads(graph, agentId, [
+    const res = applyActionTriggerPayloads(state, agentId, [
       { attachmentId: 'a', attachmentName: 'A', payload: { kind: 'condition_grant', conditionTraitId: 'cond.missing' } },
       { attachmentId: 'b', attachmentName: 'B', payload: { kind: 'condition_grant', conditionTraitId: 'cond.ok' } },
     ], 3);

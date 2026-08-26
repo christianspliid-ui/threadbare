@@ -45,17 +45,24 @@
  * `healed` is gated on the *removed* condition having been harmful, not merely
  * on something having been removed.
  *
- * **This vocabulary covers one of three condition catalogs — deliberately, and
- * completely, for the sites wired here (THR-1257).** Every condition an aftermath
- * effect can author is a `trait.condition.*` from `CONDITION_TRAIT_DEFINITIONS`,
- * and every one of those carries a polarity tag. The other two catalogs —
- * `anomaly-reward-catalog.ts` and `starter-attachments.ts` — tag topically
- * (`#cursed`, `#curse`, `#pain`, `#blessing`) with no polarity, so
- * `anomaly_vault_curse` reads here as *not harm*. That is inert rather than wrong
- * today, because those conditions are reachable only through
- * `actionTriggerPayloads`, which raises nothing at all. Wiring that site without
- * first reconciling the tag vocabularies would turn an honest absence into a
- * live-but-silently-wrong classification, which is why THR-1257 carries both.
+ * **The vocabulary now spans every condition catalog in the repo (THR-1257).** It
+ * used to cover only `CONDITION_TRAIT_DEFINITIONS` — the one catalog the three
+ * aftermath sites draw from — while `anomaly-reward-catalog.ts`,
+ * `starter-attachments.ts`, `reward-attachment-catalog.ts` and
+ * `economic-trait-content.ts` tagged topically (`#cursed`, `#curse`, `#pain`,
+ * `#wound`, `#blessing`) with no polarity at all, so `anomaly_vault_curse` read here
+ * as *not harm*. That was inert while `actionTriggerPayloads` raised nothing; wiring
+ * that site without reconciling the vocabularies would have turned an honest absence
+ * into a live-but-silently-wrong classification, which is why the two shipped
+ * together. 47 conditions were normalised onto `#negative` / `#positive`, and
+ * `conditionPolarityCoverage.test.ts` fails if a new one ships without a polarity —
+ * the predicate can only stay complete if the closure is enforced rather than
+ * remembered.
+ *
+ * Note the reachable set is wider than the *grant* payloads suggest: `condition_remove`
+ * matches on **tags** (`tags: ['#wound']`), so a single authored removal reaches every
+ * `#wound` condition in the repo, `reward-attachment-catalog.ts` included. Normalising
+ * only the catalogs the grants name would have left the healing half half-blind.
  *
  * ─── Constants ──────────────────────────────────────────────────────
  * | Name                          | Default | Purpose                          |
@@ -76,9 +83,23 @@
  */
 
 import type { GameState } from '../../types/gameState';
+import type { EffectRuntimeState } from '../../types/effects';
 import type { WorldGraph } from '../graph';
 import { mulberry32 } from '../../lib/prng';
 import { raiseEffectEvent } from './effectEventDispatch';
+
+/**
+ * Options for a caller threading its own runtime-state map instead of letting
+ * `raiseEffectEvent` own `state.effectStates` (THR-1257).
+ *
+ * Only the action-trigger path needs this today: its orchestrator call sits inside
+ * the `runningEffectStates` loop, whose end-of-tick assignment would otherwise
+ * overwrite anything this raise wrote. The three aftermath sites do not thread and
+ * pass nothing, which is why the parameter is optional rather than required.
+ */
+export interface ConditionProxyOptions {
+  states?: ReadonlyMap<string, EffectRuntimeState>;
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // Constants
@@ -160,20 +181,25 @@ function raiseConditionProxy(
   conditionTraitId: string,
   amount: number,
   kind: 'damaged' | 'healed',
-): void {
-  if (!isPersonCarrier(state.graph, carrierId)) return;
-  if (!isHarmfulCondition(state.graph, conditionTraitId)) return;
+  opts?: ConditionProxyOptions,
+): Map<string, EffectRuntimeState> | undefined {
+  if (!isPersonCarrier(state.graph, carrierId)) return undefined;
+  if (!isHarmfulCondition(state.graph, conditionTraitId)) return undefined;
 
   const prime = kind === 'damaged' ? CONDITION_DAMAGED_PRIME : CONDITION_HEALED_PRIME;
-  raiseEffectEvent(
+  const raised = raiseEffectEvent(
     state,
     carrierId,
     { type: kind, amount },
     {
       site: kind === 'damaged' ? 'condition_inflicted' : 'condition_lifted',
       rng: mulberry32((state.seed + state.tick * prime + hashCarrier(carrierId)) >>> 0),
+      ...(opts?.states ? { states: opts.states } : {}),
     },
   );
+  // Only meaningful to a threading caller — without `opts.states`, `raiseEffectEvent`
+  // has already assigned `state.effectStates` and the return is redundant.
+  return opts?.states ? raised.states : undefined;
 }
 
 /**
@@ -193,8 +219,9 @@ export function raiseConditionDamaged(
   carrierId: string,
   conditionTraitId: string,
   amount: number,
-): void {
-  raiseConditionProxy(state, carrierId, conditionTraitId, amount, 'damaged');
+  opts?: ConditionProxyOptions,
+): Map<string, EffectRuntimeState> | undefined {
+  return raiseConditionProxy(state, carrierId, conditionTraitId, amount, 'damaged', opts);
 }
 
 /**
@@ -212,8 +239,9 @@ export function raiseConditionHealed(
   carrierId: string,
   conditionTraitId: string,
   amount: number,
-): void {
-  raiseConditionProxy(state, carrierId, conditionTraitId, amount, 'healed');
+  opts?: ConditionProxyOptions,
+): Map<string, EffectRuntimeState> | undefined {
+  return raiseConditionProxy(state, carrierId, conditionTraitId, amount, 'healed', opts);
 }
 
 /**

@@ -124,7 +124,7 @@ export const ECONOMIC_TRAIT_DEFINITIONS: GraphNode[] = [
       maxLevel: 1,
       visibility: 'discoverable',
       domainContributions: { gold: -0.05 },
-      tags: ['#gold', '#economic', '#condition', '#debt'],
+      tags: ['#gold', '#economic', '#condition', '#debt', '#negative'],
       flavorText: 'Owes more than they own; every coin is already spoken for.',
     } as TraitDefinitionProperties,
   },

@@ -282,17 +282,20 @@ export function phaseMovement(state: GameState): Partial<GameState> {
               for (const trace of triggerResult.traces) {
                 emitTrace({ category: 'effect_reaction', tick: state.tick, event: 'action_trigger_fired', ...trace } as unknown as TraceEntry);
               }
+              // Applied before the payloads so a THR-1257 `damaged` / `healed` raise
+              // builds on this trigger's own cooldown writes. This site does not
+              // thread its own map, so the raise writes `state.effectStates` directly.
+              if (!state.effectStates) state.effectStates = new Map();
+              for (const [k, v] of triggerResult.updatedStates) {
+                state.effectStates.set(k, v);
+              }
               if (triggerResult.payloadIntents.length > 0) {
                 applyActionTriggerPayloads(
-                  state.graph,
+                  state,
                   actorId,
                   triggerResult.payloadIntents,
                   state.tick,
                 );
-              }
-              if (!state.effectStates) state.effectStates = new Map();
-              for (const [k, v] of triggerResult.updatedStates) {
-                state.effectStates.set(k, v);
               }
             }
           }

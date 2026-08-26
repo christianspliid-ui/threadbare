@@ -2575,7 +2575,7 @@ export const REWARD_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 1,
-      tags: ['#wound', '#physical', '#iron', '#combat'],
+      tags: ['#wound', '#physical', '#iron', '#combat', '#negative'],
       description: 'A broken bone limits striking power and grip strength.',
       maxLevel: 1,
       visibility: 'public',
@@ -2593,7 +2593,7 @@ export const REWARD_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 1,
-      tags: ['#wound', '#physical', '#heart', '#combat'],
+      tags: ['#wound', '#physical', '#heart', '#combat', '#negative'],
       description: 'Deep laceration impairs movement and endurance.',
       maxLevel: 1,
       visibility: 'public',
@@ -2612,7 +2612,7 @@ export const REWARD_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 1,
-      tags: ['#wound', '#physical', '#iron', '#combat'],
+      tags: ['#wound', '#physical', '#iron', '#combat', '#negative'],
       description: 'Breathing hurts. Fighting hurts more.',
       maxLevel: 1,
       visibility: 'public',
@@ -2631,7 +2631,7 @@ export const REWARD_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 1,
-      tags: ['#wound', '#physical', '#stone', '#combat'],
+      tags: ['#wound', '#physical', '#stone', '#combat', '#negative'],
       description: 'Swollen hands make delicate work impossible.',
       maxLevel: 1,
       visibility: 'public',
@@ -2651,7 +2651,7 @@ export const REWARD_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 2,
-      tags: ['#wound', '#physical', '#iron', '#heart', '#combat'],
+      tags: ['#wound', '#physical', '#iron', '#heart', '#combat', '#negative'],
       description: 'Internal damage that risks infection and limits exertion.',
       maxLevel: 1,
       visibility: 'public',
@@ -2671,7 +2671,7 @@ export const REWARD_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 2,
-      tags: ['#wound', '#physical', '#iron', '#combat'],
+      tags: ['#wound', '#physical', '#iron', '#combat', '#negative'],
       description: 'The arm that blocks can no longer bear weight.',
       maxLevel: 1,
       visibility: 'public',
@@ -2690,7 +2690,7 @@ export const REWARD_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 2,
-      tags: ['#wound', '#physical', '#eye', '#combat'],
+      tags: ['#wound', '#physical', '#eye', '#combat', '#negative'],
       description: 'Lost depth perception impairs awareness and aim.',
       maxLevel: 1,
       visibility: 'public',
@@ -2712,7 +2712,7 @@ export const REWARD_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 3,
-      tags: ['#wound', '#physical', '#iron', '#flesh', '#combat'],
+      tags: ['#wound', '#physical', '#iron', '#flesh', '#combat', '#negative'],
       description: 'Catastrophic injury to the back. Movement and combat severely impaired.',
       maxLevel: 1,
       visibility: 'public',
@@ -2736,7 +2736,7 @@ export const REWARD_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 1,
-      tags: ['#blessing', '#star', '#divine', '#healing'],
+      tags: ['#blessing', '#star', '#divine', '#healing', '#positive'],
       description: 'A faint warmth lingers, granting minor divine favor.',
       maxLevel: 1,
       visibility: 'public',
@@ -2755,7 +2755,7 @@ export const REWARD_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 1,
-      tags: ['#blessing', '#heart', '#stone', '#healing'],
+      tags: ['#blessing', '#heart', '#stone', '#healing', '#positive'],
       description: 'Hands carry a soothing warmth that eases pain.',
       maxLevel: 1,
       visibility: 'public',
@@ -2777,7 +2777,7 @@ export const REWARD_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 1,
-      tags: ['#blessing', '#gold', '#divine', '#trade'],
+      tags: ['#blessing', '#gold', '#divine', '#trade', '#positive'],
       description: 'Luck bends slightly in your direction.',
       maxLevel: 1,
       visibility: 'public',
@@ -2798,7 +2798,7 @@ export const REWARD_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 2,
-      tags: ['#blessing', '#star', '#divine', '#heart', '#healing'],
+      tags: ['#blessing', '#star', '#divine', '#heart', '#healing', '#positive'],
       description: 'A protective aura that dulls hostile intent nearby.',
       maxLevel: 1,
       visibility: 'public',
@@ -2818,7 +2818,7 @@ export const REWARD_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 2,
-      tags: ['#blessing', '#stone', '#wilderness'],
+      tags: ['#blessing', '#stone', '#wilderness', '#positive'],
       description: 'Vitality drawn from the land itself. Wounds close faster, muscles ache less.',
       maxLevel: 1,
       visibility: 'public',
@@ -2841,7 +2841,7 @@ export const REWARD_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 3,
-      tags: ['#blessing', '#star', '#divine', '#eye', '#ruins'],
+      tags: ['#blessing', '#star', '#divine', '#eye', '#ruins', '#positive'],
       description: 'Marked by divine purpose. Perception and faith burn bright.',
       maxLevel: 1,
       visibility: 'public',
@@ -2864,7 +2864,7 @@ export const REWARD_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 1,
-      tags: ['#curse', '#shadow', '#gold'],
+      tags: ['#curse', '#shadow', '#gold', '#negative'],
       description: 'Misfortune clings like smoke. Commerce and stealth suffer.',
       maxLevel: 1,
       visibility: 'discoverable',
@@ -2883,7 +2883,7 @@ export const REWARD_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 1,
-      tags: ['#curse', '#heart', '#veil'],
+      tags: ['#curse', '#heart', '#veil', '#negative'],
       description: 'Restless sleep erodes composure and empathy.',
       maxLevel: 1,
       visibility: 'discoverable',
@@ -2905,7 +2905,7 @@ export const REWARD_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 2,
-      tags: ['#curse', '#heart', '#shadow'],
+      tags: ['#curse', '#heart', '#shadow', '#negative'],
       description: 'Cannot speak truths about a particular subject. Social reach impaired.',
       maxLevel: 1,
       visibility: 'discoverable',
@@ -2926,7 +2926,7 @@ export const REWARD_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 2,
-      tags: ['#curse', '#gold', '#veil'],
+      tags: ['#curse', '#gold', '#veil', '#negative'],
       description: 'A supernatural debt that drains material fortune.',
       maxLevel: 1,
       visibility: 'discoverable',
@@ -2947,7 +2947,7 @@ export const REWARD_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 1,
-      tags: ['#checkpoint', '#curse', '#eye', '#shadow'],
+      tags: ['#checkpoint', '#curse', '#eye', '#shadow', '#negative'],
       description: 'The checkpoint remembers your face. Inspections linger, questions multiply, and every small irregularity now feels one witness away from becoming a problem.',
       maxLevel: 1,
       visibility: 'public',
@@ -2970,7 +2970,7 @@ export const REWARD_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 3,
-      tags: ['#curse', '#heart', '#shadow', '#veil'],
+      tags: ['#curse', '#heart', '#shadow', '#veil', '#negative'],
       description: 'Something essential has been taken. Joy, purpose, or identity — something is missing.',
       maxLevel: 1,
       visibility: 'discoverable',
@@ -2994,7 +2994,7 @@ export const REWARD_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 1,
-      tags: ['#disease', '#flesh', '#wilderness'],
+      tags: ['#disease', '#flesh', '#wilderness', '#negative'],
       description: 'A common illness from exposure and bad water.',
       maxLevel: 1,
       visibility: 'public',
@@ -3014,7 +3014,7 @@ export const REWARD_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 1,
-      tags: ['#disease', '#flesh', '#wilderness'],
+      tags: ['#disease', '#flesh', '#wilderness', '#negative'],
       description: 'Contaminated food or water. Debilitating cramps and weakness.',
       maxLevel: 1,
       visibility: 'public',
@@ -3035,7 +3035,7 @@ export const REWARD_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 2,
-      tags: ['#disease', '#flesh', '#stone'],
+      tags: ['#disease', '#flesh', '#stone', '#negative'],
       description: 'Skin hardens and cracks. Mobility and appearance degrade.',
       maxLevel: 1,
       visibility: 'discoverable',
@@ -3058,7 +3058,7 @@ export const REWARD_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 3,
-      tags: ['#disease', '#flesh', '#veil'],
+      tags: ['#disease', '#flesh', '#veil', '#negative'],
       description: 'A supernatural consumption that devours vitality and thins the boundary to death.',
       maxLevel: 1,
       visibility: 'discoverable',
@@ -3080,7 +3080,7 @@ export const REWARD_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 1,
-      tags: ['#supernatural', '#veil', '#eye'],
+      tags: ['#supernatural', '#veil', '#eye', '#positive'],
       description: 'Brief exposure to the otherworld leaves lingering perception.',
       maxLevel: 1,
       visibility: 'discoverable',
@@ -3102,7 +3102,7 @@ export const REWARD_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 2,
-      tags: ['#supernatural', '#shadow', '#eye'],
+      tags: ['#supernatural', '#shadow', '#eye', '#positive'],
       description: 'Survived something that should have killed. The shadow world notices.',
       maxLevel: 1,
       visibility: 'discoverable',
@@ -3127,7 +3127,7 @@ export const REWARD_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 3,
-      tags: ['#supernatural', '#star', '#shadow', '#veil'],
+      tags: ['#supernatural', '#star', '#shadow', '#veil', '#positive'],
       description: 'Touched by the space between worlds. Reality sits uneasy around you.',
       maxLevel: 1,
       visibility: 'divine_only',
@@ -3151,7 +3151,7 @@ export const REWARD_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 1,
-      tags: ['#blessing', '#star', '#divine', '#combat'],
+      tags: ['#blessing', '#star', '#divine', '#combat', '#positive'],
       description: 'A divine gift of speed — the body moves before the mind decides.',
       maxLevel: 1,
       visibility: 'public',
@@ -3173,7 +3173,7 @@ export const REWARD_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 2,
-      tags: ['#blessing', '#veil', '#temporal', '#preservation'],
+      tags: ['#blessing', '#veil', '#temporal', '#preservation', '#positive'],
       description: 'Time flows around you like water around a stone. Your blessings linger.',
       maxLevel: 1,
       visibility: 'public',
@@ -3195,7 +3195,7 @@ export const REWARD_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 1,
-      tags: ['#curse', '#shadow', '#iron', '#combat'],
+      tags: ['#curse', '#shadow', '#iron', '#combat', '#negative'],
       description: 'A sluggishness in the bones. Movement becomes a negotiation with gravity.',
       maxLevel: 1,
       visibility: 'discoverable',
@@ -3218,7 +3218,7 @@ export const REWARD_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 2,
-      tags: ['#curse', '#shadow', '#veil', '#temporal'],
+      tags: ['#curse', '#shadow', '#veil', '#temporal', '#negative'],
       description: 'Something has bitten a piece from your timeline. Moments vanish without memory.',
       maxLevel: 1,
       visibility: 'discoverable',
@@ -3242,7 +3242,7 @@ export const REWARD_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 3,
-      tags: ['#supernatural', '#iron', '#heart', '#combat'],
+      tags: ['#supernatural', '#iron', '#heart', '#combat', '#positive'],
       description: 'A berserker trance. The world slows, the body quickens, reason dims.',
       maxLevel: 1,
       visibility: 'public',
@@ -3273,7 +3273,7 @@ export const REWARD_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 1,
-      tags: ['#blessing', '#star', '#fate', '#luck'],
+      tags: ['#blessing', '#star', '#fate', '#luck', '#positive'],
       description: 'Fate bends gently toward the bearer. Misfortune slides past like rain off wax.',
       maxLevel: 1,
       visibility: 'public',
@@ -3296,7 +3296,7 @@ export const REWARD_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 2,
-      tags: ['#supernatural', '#shadow', '#veil', '#anti-magic'],
+      tags: ['#supernatural', '#shadow', '#veil', '#anti-magic', '#negative'],
       description: 'Something has scoured the magic from your blood. Spells slide off you. So do blessings.',
       maxLevel: 1,
       visibility: 'discoverable',
@@ -3320,7 +3320,7 @@ export const REWARD_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 3,
-      tags: ['#supernatural', '#stone', '#eye', '#territorial', '#ward'],
+      tags: ['#supernatural', '#stone', '#eye', '#territorial', '#ward', '#positive'],
       description: 'The earth itself remembers your claim. Trespassers feel the boundary in their bones.',
       maxLevel: 1,
       visibility: 'public',

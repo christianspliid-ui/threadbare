@@ -265,7 +265,7 @@ export const STARTER_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 1,
-      tags: ['#wound', '#physical', '#iron'],
+      tags: ['#wound', '#physical', '#iron', '#negative'],
       description: 'Cracked bones protest every swing.',
       maxLevel: 1,
       visibility: 'public',
@@ -286,7 +286,7 @@ export const STARTER_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 2,
-      tags: ['#disease', '#iron', '#contagious'],
+      tags: ['#disease', '#iron', '#contagious', '#negative'],
       description: 'The sickness spreads from contact, patient zero unknown.',
       importance: 0,
       maxLevel: 1,
@@ -310,7 +310,7 @@ export const STARTER_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 1,
-      tags: ['#blessing', '#star', '#divine'],
+      tags: ['#blessing', '#star', '#divine', '#positive'],
       description: "The warmth of a god's gaze lingers on the skin.",
       importance: 0,
       maxLevel: 1,
@@ -336,7 +336,7 @@ export const STARTER_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 1,
-      tags: ['#curse', '#heart', '#supernatural'],
+      tags: ['#curse', '#heart', '#supernatural', '#negative'],
       description: 'Something took a swallow of your nerve and did not give it back.',
       importance: 0,
       maxLevel: 1,
@@ -358,7 +358,7 @@ export const STARTER_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 2,
-      tags: ['#magical', '#star', '#knowledge'],
+      tags: ['#magical', '#star', '#knowledge', '#positive'],
       description: 'Forbidden knowledge burns behind the eyes, impossible to unlearn.',
       importance: 0,
       maxLevel: 1,
