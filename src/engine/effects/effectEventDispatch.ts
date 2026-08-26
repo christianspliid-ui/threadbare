@@ -50,6 +50,13 @@ export type EffectEventSite =
   | 'battle_created'
   | 'battle_resolved'
   | 'encounter_outcome'
+  // THR-1244 (stage 6). The two halves are separate tags rather than one
+  // `condition_change`, because the whole point of the proxy is that infliction
+  // and *early* lifting are different events — a trace that collapsed them would
+  // make the one property this stage has to preserve (natural expiry raises
+  // nothing) unreadable from the trace stream.
+  | 'condition_inflicted'
+  | 'condition_lifted'
   | 'doom_threshold';
 
 export interface RaiseEffectEventOptions {

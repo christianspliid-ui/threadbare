@@ -126,10 +126,24 @@ absent — outside a single `encounter_outcome` raise inside the orchestrator, n
 engine ever constructed an `EffectEvent`, so the whole executor family was unreachable in
 normal play while every part of it read as wired. **A one-sided contract with a healthy
 consumer is the hardest shape for this map to catch**, because every symbol an audit greps
-for exists. Producers are now `phaseMovement`, `battleResolution`, `orchestrator` and
-`phaseDoom`, all through one `raiseEffectEvent`, and each raise emits `effect.event_raised`
-carrying its site — including when nothing was listening, which is the signal that separates
-a live-but-unheard producer from an unwired one.
+for exists. Producers are now `phaseMovement`, `battleResolution`, `orchestrator`,
+`phaseDoom` and — since THR-1244, 2026-08-26 — `conditionProxyEvents` raising from the three
+aftermath condition writers, all through one `raiseEffectEvent`, and each raise emits
+`effect.event_raised` carrying its site — including when nothing was listening, which is the
+signal that separates a live-but-unheard producer from an unwired one.
+
+The condition producer is worth a line of its own, because it is a **third** shape of
+one-sidedness this map should learn to name. `damaged` / `healed` had no producer not through
+oversight but *by construction*: the game has no per-agent damage model, so there was no
+hit-point subtraction to raise from, and three trigger families sat behind a number that does
+not exist anywhere in the codebase. An audit grepping for producers and finding none would
+have been correct and useless — the answer was not "wire the missing call" but "decide what,
+in this game's own vocabulary, being hurt *is*". A wound is a condition with a countdown, so
+that is the proxy. **The generalisable warning: when a contract's producer half is missing,
+check whether the thing it would produce exists in the domain at all before filing it as
+unwired work.** A fourth writer of the same edge (`actionTriggerPayloads`) remains silent and
+is ticketed as **THR-1257**, together with the tag-vocabulary mismatch that would make wiring
+it *silently wrong* rather than merely incomplete if the two were done apart.
 
 Its mirror image landed a day later: **`rule-overrides-reach-owning-sites`** (THR-1241,
 2026-08-26) — the *read* half of what THR-1240 opened. Where the event contract had a healthy

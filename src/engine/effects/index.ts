@@ -96,3 +96,12 @@ export {
   type ActionTriggerContext,
   type ActionTriggerResult,
 } from './actionTrigger';
+
+// Condition proxy — the producers for `damaged` / `healed` (THR-1244, stage 6)
+export {
+  raiseConditionDamaged,
+  raiseConditionHealed,
+  isHarmfulCondition,
+  isPersonCarrier,
+  HARMFUL_CONDITION_TAG,
+} from './conditionProxyEvents';

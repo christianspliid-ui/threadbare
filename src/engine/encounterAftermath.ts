@@ -35,6 +35,7 @@ import { assignAmbitionToActor } from './ambitionAssignment';
 import type { TraceEntry } from '../types/trace';
 import { buildPredicateContext, evaluateOptionalCondition } from './effects/effectPredicates';
 import { isImmuneToAnyTag } from './effects/effectQueries';
+import { raiseConditionDamaged, raiseConditionHealed } from './effects/conditionProxyEvents';
 import {
   THREAD_STRENGTHEN_DEFAULT,
   THREAD_WEAKEN_DEFAULT,
@@ -2162,6 +2163,10 @@ export function applyEncounterAftermathReaction(
           effectiveTargetId: resolvedId, effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'location' | 'actor_fallback',
           summary: `apply_condition[${i}]: ${effect.conditionTraitId} → ${resolvedId}`,
         });
+        // THR-1244: raised after the edge is written, so a reactive inspecting the
+        // bearer sees the condition it is firing on. Self-gating on harm + person
+        // carrier — see `conditionProxyEvents`.
+        raiseConditionDamaged(state, resolvedId, effect.conditionTraitId, intensity);
         break;
       }
 
@@ -2188,6 +2193,10 @@ export function applyEncounterAftermathReaction(
           .filter(edge => edge.target === effect.conditionTraitId);
 
         let removedCount = 0;
+        // THR-1244: the magnitude the `healed` proxy reports. Summed from the edges
+        // *before* they are removed — after the loop they are gone and their
+        // intensity with them.
+        let removedIntensity = 0;
         if (matchingEdges.length > 0) {
           const edgesToRemove = effect.removeAll
             ? matchingEdges
@@ -2196,6 +2205,7 @@ export function applyEncounterAftermathReaction(
                   ? e : oldest
               )];
           for (const edge of edgesToRemove) {
+            removedIntensity += (edge.properties?.intensity as number | undefined) ?? CONDITION_DEFAULT_INTENSITY;
             state.graph.removeEdge(edge.id);
             removedCount++;
           }
@@ -2222,6 +2232,13 @@ export function applyEncounterAftermathReaction(
           effectiveTargetId: resolvedId, effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'location' | 'actor_fallback',
           summary: `remove_condition[${i}]: removed ${removedCount} edge(s) of ${effect.conditionTraitId} from ${resolvedId}`,
         });
+        // THR-1244: a removal that found nothing is not a heal. `remove_condition`
+        // traces `success: true` whether or not an edge existed (deliberately — see
+        // `compositionContract`'s "a removal is not a promise" note), so the raise
+        // gates on `removedCount`, never on the trace's success flag.
+        if (removedCount > 0) {
+          raiseConditionHealed(state, resolvedId, effect.conditionTraitId, removedIntensity);
+        }
         break;
       }
 
@@ -2455,6 +2472,17 @@ export function applyEncounterAftermathReaction(
           effectiveTargetId: resolvedId, effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'location' | 'actor_fallback',
           summary: `condition_attachment[${i}]: ${effect.templateId} → ${resolvedId} ×${caStackCount}${caIsWound && caTargetsActor ? ' [woundApplied]' : ''}`,
         });
+        // THR-1244: this is the *same* `has_trait` write as `apply_condition` under a
+        // second effect kind, and it is the one the shipped wound content actually
+        // authors — every `trait.condition.wounded` in the tavern package comes
+        // through here. Wiring only `apply_condition` would have left the busiest
+        // infliction path silent while the stage read as done. One raise per
+        // infliction, not per stack: `amount` carries the stack count instead, so a
+        // three-stack wound is one heavier event rather than three identical ones
+        // (and cannot trip a reactive's cooldown against itself).
+        raiseConditionDamaged(
+          state, resolvedId, effect.templateId, CONDITION_DEFAULT_INTENSITY * caStackCount,
+        );
         break;
       }
 

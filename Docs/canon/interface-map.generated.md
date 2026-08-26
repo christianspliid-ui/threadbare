@@ -302,11 +302,11 @@ remediation ticket or the build fails.
 
 - **Intent:** Game events reach event-triggered effect primitives (reactive, until_event, stacking, transform, one-shot resource_manipulate) on the agents they happen to.
 - **Producer → Consumer:** Attachments, Items & Possessions → Effects & Conditions
-- **Production hits:** 9 total — 4 write, 2 read, 3 unclassified
-- **Write sites:** `src/engine/battleResolution.ts`, `src/engine/orchestrator.ts`, `src/engine/phaseDoom.ts`, `src/engine/phaseMovement.ts`
+- **Production hits:** 10 total — 5 write, 2 read, 3 unclassified
+- **Write sites:** `src/engine/battleResolution.ts`, `src/engine/effects/conditionProxyEvents.ts`, `src/engine/orchestrator.ts`, `src/engine/phaseDoom.ts`, `src/engine/phaseMovement.ts`
 - **Read sites:** `src/engine/effects/effectEventDispatch.ts`, `src/engine/effects/effectEvents.ts`
 - **Other hits:** `src/engine/effects/effectOverlayStore.ts`, `src/engine/effects/index.ts`, `src/engine/effectTick.ts`
-- **Verdict:** Verified 2026-08-25: THR-1239. The consumer half was always live and the producer half was almost entirely missing: outside the single encounter_outcome raise in the orchestrator, no site in the engine ever constructed an EffectEvent, so the whole executor family (teleport, spawn, compel, cascade, ...) was unreachable in normal play while looking wired. Movement arrival now raises entered_hex and battle create/resolve raise combat_started/combat_ended, all four sites through the shared raiseEffectEvent; the orchestrator site was migrated onto it rather than kept as a second copy. Every raise emits effect.event_raised carrying its site and reactive count, so a live-but-unheard producer is distinguishable from an unwired one. Live evidence: seeded medium CLI run, `printf "tick 30
+- **Verdict:** Verified 2026-08-26: THR-1244 (stage 6) added the condition producer, closing the last three trigger families that had no source event: the damaged/healed reactive triggers, the on_damaged/on_heal stack triggers, and the take_damage expiry event. They were unreachable BY CONSTRUCTION rather than by omission — the game has no per-agent damage model, so there was no hit-point subtraction to raise from, and the branch sat inert behind an absent number. The proxy reads the shape the game does have: a wound IS a condition with a countdown, so inflicting a harmful condition raises damaged and lifting one EARLY raises healed, from all three aftermath condition writers (apply_condition, condition_attachment, remove_condition) through conditionProxyEvents. condition_attachment is included deliberately and is not redundant: every shipped trait.condition.wounded in the tavern package authors that kind, so wiring only apply_condition would have left the busiest infliction path silent while the stage read as done. Natural expiry raises NOTHING, enforced by where the raise lives rather than by a check — conditionDecay.ts is the one tick-driven expiry path (THR-761) and does not call the module — because a proxy keyed on "a condition went away" would fire every ward in the world on every decay sweep. Harm is the #negative tag, so polarity gates both directions (gaining blessed is not damage, losing it is not a heal); carriers are persons only, since a place under a plague scare and an army carrying a headcount have no body to hurt. Non-vacuous by falsification: each of the four guards was individually disabled and each failed exactly its own test and no others — harm gate 2 failed, person gate 1, the condition_attachment raise 1, the removedCount gate 1 — and adding a raise INTO conditionDecay fails exactly the natural-expiry silence test, which is the assertion the "early" half rests on. Unit coverage: src/engine/effects/__tests__/conditionProxyEvents.test.ts (16 tests, asserting the downstream trigger actually moved — a stack incremented, an attachment destroyed — rather than only that a trace appeared). KNOWN GAP, ticketed as THR-1257: actionTriggerPayloads.ts condition_grant/condition_remove is a fourth live writer of the same has_trait edge (observed at t24 of a seed-42 medium CLI run) and still raises nothing; its conditions live in catalogs tagged topically (#cursed, #curse) with no polarity, so the site and the tag vocabulary must be reconciled together or the raise would be live and silently misclassifying. Prior evidence — THR-1239. The consumer half was always live and the producer half was almost entirely missing: outside the single encounter_outcome raise in the orchestrator, no site in the engine ever constructed an EffectEvent, so the whole executor family (teleport, spawn, compel, cascade, ...) was unreachable in normal play while looking wired. Movement arrival now raises entered_hex and battle create/resolve raise combat_started/combat_ended, all four sites through the shared raiseEffectEvent; the orchestrator site was migrated onto it rather than kept as a second copy. Every raise emits effect.event_raised carrying its site and reactive count, so a live-but-unheard producer is distinguishable from an unwired one. Live evidence: seeded medium CLI run, `printf "tick 30
 traces 5000
 exit
 " | npm run cli -- --seed 42 --map medium` yields 10 entered_hex raises at movement_arrival. Unit coverage: src/engine/effects/__tests__/effectEventDispatch.test.ts (12 tests, asserting the executor trace rather than the return count, so a dispatcher that never reached executeEffect would fail).
@@ -695,10 +695,10 @@ exit
 - **Intent:** Faction ambitions drive faction action and render on the faction sheet.
 - **Producer → Consumer:** Ambitions & Initiatives → Factions & Succession
 - **Module:** `src/engine/factionAmbitions.ts`
-- **Production hits:** 7 total — 1 write, 3 read, 3 unclassified
+- **Production hits:** 8 total — 1 write, 3 read, 4 unclassified
 - **Write sites:** `src/engine/phases/factionAmbitions.ts`
 - **Read sites:** `src/engine/factionGovernanceVerbs.ts`, `src/engine/phaseControlEffects.ts`, `src/engine/phases/index.ts`
-- **Other hits:** `src/components/Game/ArmySheet.tsx`, `src/data/faction-action-constants.ts`, `src/engine/phaseMovement.ts`
+- **Other hits:** `src/components/Game/ArmySheet.tsx`, `src/data/faction-action-constants.ts`, `src/engine/effects/conditionProxyEvents.ts`, `src/engine/phaseMovement.ts`
 - **Verdict:** Verified 2026-07-23: FactionSheet.activeAmbition renders; faction phases consume. Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified)
 
 ### `group-grudge-reaches-the-mortal-sheet` — 🟢 LIVE
@@ -731,10 +731,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Encounter*, *Condition*, *Location*
 - **Module:** `src/data/condition-trait-content.ts`
-- **Production hits:** 11 total — 1 write, 3 read, 7 unclassified
+- **Production hits:** 12 total — 1 write, 3 read, 8 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`
 - **Read sites:** `src/components/Game/LocationProfileModal.tsx`, `src/engine/movementCost.ts`, `src/engine/targetContextBuilders.ts`
-- **Other hits:** `src/components/Game/encounter-stage/NarrativeSegments.tsx`, `src/components/Game/EncounterVeil.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/HexSidebar.tsx`, `src/components/Game/useDebugOpenModal.ts` +2 more
+- **Other hits:** `src/components/Game/encounter-stage/NarrativeSegments.tsx`, `src/components/Game/EncounterVeil.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/HexSidebar.tsx`, `src/components/Game/useDebugOpenModal.ts` +3 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `mandate-milestone-prose-narrates-transitions` — 🟠 PARTIAL
