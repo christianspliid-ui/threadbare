@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-26 05:55 local (03:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-26 06:56 local (04:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -12,15 +12,17 @@ It binds [Prose Doctrine v2](https://github.com/christianspliid-ui/threadbare/bl
 
 It will be authored under the **dealt-hand model**, which is no longer only a spec: [The Unfinished Rite](https://linear.app/threadbare/issue/THR-1254) is the first encounter in the corpus that deals most of its cards from your Repertoire, and it is merged and playable. Batch 2 writes nought to two special cards per encounter and deals the rest, against a model now demonstrated rather than described.
 
-**Second reason to say it today:** the dev shelf is down to two items with nothing in flight, and this is the largest piece of work an approval would put back on it.
+**Second reason to say it today:** the dev shelf is down to **one** item with nothing in flight, and this is the largest piece of work an approval would put back on it.
+
+**The same sitting closes the batch-1 sample.** The *"worth meeting twice"* verdict on [THR-1130](https://linear.app/threadbare/issue/THR-1130) is still open from 17 August, and worth replaying rather than recalling: the slice prose was rewritten to Doctrine v2 overnight (`2b528113`), so these open something different from what you last saw — [The Grateful Kin](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin) and [The Unsafe Bridge](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge). A yes releases batch 2; a no says what the retrofit bar is still missing.
 
 **The one judgement:** seven, not six — one family, one file; splitting the seventh costs a full cycle for no variance gain. *"Batch 2, seven is fine"* runs it; *"keep it six"* splits it 6+1. [The brief](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/retrofit-batch-2-brief.md) is merged and readable.
 
 ### 2. More design hours — four sittings stacked
 
-Thinning four hours running: the shelf went five → four → three → **two** ready items, with nothing actively being worked. No lane is starved yet, but the queue is draining faster than design is feeding it, and what remains was fed by programs you already approved rather than by new design. In the order you set:
+Thinning five hours running: the shelf went five → four → three → two → **one** ready item, with nothing actively being worked. The lane is now starved, and what remains was fed by programs you already approved rather than by new design. In the order you set:
 
-- **[Unify the card grammar](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** — your 6 August note: action cards are too wordy, you cannot tell what they do, playing one gives no feedback, while encounter cards already read the way you wanted. Holding the single design slot since 19 August.
+- **[Unify the card grammar](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** — your 6 August note: action cards are too wordy, you cannot tell what they do, playing one gives no feedback, while encounter cards already read the way you wanted. It has held the single design-staging slot since 19 August — **seven days** — so nothing else can be staged behind it until it moves.
 - **[Traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)** — in design, assigned to you, untouched twelve days. Either give it the hour or say *"put Traits wave 2 back in the pile."*
 - **The wave-1 sessions** — [shared machinery](https://linear.app/threadbare/issue/THR-1212) first, [the hunger vocabulary](https://linear.app/threadbare/issue/THR-1213) second, [nations and named areas simulated rather than drawn](https://linear.app/threadbare/issue/THR-1155) third.
 
