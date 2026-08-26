@@ -148,7 +148,22 @@ export type RuleOverrideKey =
   | 'backlash_severity_multiplier'
   | 'doom_rate_multiplier'
   | 'reward_tier_bonus'
-  | 'encounter_difficulty_modifier';
+  | 'encounter_difficulty_modifier'
+  /**
+   * How fast timed things count down on this agent (THR-1242).
+   *
+   * The consolidation target for the retired `freeze_duration` spelling, which
+   * named three targets — `condition`, `buff`, `debuff` — that are two clocks:
+   * condition trait edges (`conditionDecay`) and attachment `duration` effects
+   * (`effectTick`). One key reads at both, so "your blessings linger" and "the
+   * wound will not close" are the same rule seen from two sides.
+   *
+   * Below 1 slows every countdown (the freeze); above 1 hastens it. Composes
+   * multiplicatively with `healing_multiplier` at the condition clock — healing
+   * accelerates recovery, a freeze resists it, and an agent under both gets the
+   * product rather than whichever site happened to read last.
+   */
+  | 'duration_decay_multiplier';
 
 // ═══════════════════════════════════════════════════════════════════
 // Named Terrain Overlays
@@ -164,7 +179,20 @@ export type TerrainOverlayType =
   | 'hallowed'
   | 'cursed_ground'
   | 'wild_magic'
-  | 'contested';
+  | 'contested'
+  /**
+   * A hex made hard to cross (THR-1242).
+   *
+   * The consolidation target for the retired `create_barrier` spelling's
+   * `blocks: 'movement'` arm. `shrouded` was already the overlay for "you cannot
+   * see past this"; nothing named "you cannot easily walk through this", so the
+   * migration had a home for half of `create_barrier` and none for the other.
+   *
+   * A ward taxes movement rather than forbidding it — a hard refusal can strand
+   * an agent whose only route home runs through the warded hex, which is the
+   * failure `MIN_EDGE_COST` and the movement-cost floor exist to prevent (NFP #4).
+   */
+  | 'warded';
 
 // ═══════════════════════════════════════════════════════════════════
 // Faction Actions
@@ -367,31 +395,11 @@ export interface SuppressEffect {
   readonly ticks: number;
 }
 
-/** Type 19a: Auto-succeed on an encounter */
-export interface AutoSucceedEffect {
-  readonly type: 'auto_succeed';
-  readonly encounterType?: string;
-}
-
-/** Type 19b: Reroll an encounter */
-export interface RerollEffect {
-  readonly type: 'reroll';
-  readonly uses: number;
-}
-
-/** Type 19c: Resolve encounter using a different reach */
-export interface SwapReachEffect {
-  readonly type: 'swap_reach';
-  readonly from: ReachDomain;
-  readonly to: ReachDomain;
-  readonly ticks?: number;
-}
-
-/** Type 19d: Shift outcome quality steps */
-export interface OutcomeShiftEffect {
-  readonly type: 'outcome_shift';
-  readonly steps: number;
-}
+// Types 19a–19d retired in THR-1242 — see the retirement note at the foot of
+// this section. `auto_succeed` and `outcome_shift` had zero content refs and no
+// consumer; `reroll` and `swap_reach` had content and no consumer, and their
+// content now names the live mechanism instead (`test_shaper` / the
+// `encounter_reach_override` rule key).
 
 /** Type 19e: Shape how a single resolution result can be rescued or upgraded */
 export interface TestShaperEffect {
@@ -536,14 +544,12 @@ export interface AlterTerrainEffect {
   readonly scope?: EffectScope;
 }
 
-/** Type 20b: Create movement/awareness barriers */
-export interface CreateBarrierEffect {
-  readonly type: 'create_barrier';
-  readonly between: 'self_hex';
-  readonly and: 'adjacent';
-  readonly blocks: 'movement' | 'awareness' | 'both';
-  readonly ticks: number;
-}
+// Type 20b (`create_barrier`) retired in THR-1242. It named the same idea
+// `alter_terrain` already executes — "this hex is now harder to pass / to see
+// past" — but through a second spelling with no executor, so five shipped
+// artifacts promised a barrier that never existed. Its content now emits
+// `alter_terrain` with the `warded` / `shrouded` overlays, which persist through
+// the stage-2 store and are read at `movementCost` and `encounterAwareness`.
 
 /** Type 21: Move effects between targets */
 export interface TransferEffect {
@@ -555,29 +561,22 @@ export interface TransferEffect {
   readonly tierMax?: AttachmentTier;
 }
 
-/** Type 22a: Extra actions for a duration */
-export interface HasteEffect {
-  readonly type: 'haste';
-  readonly target: 'self' | 'other_agent';
-  readonly extraActions: number;
-  readonly ticks: number;
-}
-
-/** Type 22b: Skip or halve actions */
-export interface SlowEffect {
-  readonly type: 'slow';
-  readonly target: 'other_agent';
-  readonly skipActions: boolean;
-  readonly ticks: number;
-}
-
-/** Type 22c: Pause countdown on conditions */
-export interface FreezeDurationEffect {
-  readonly type: 'freeze_duration';
-  readonly target: 'condition' | 'buff' | 'debuff';
-  readonly tags?: string[];
-  readonly ticks: number;
-}
+// Types 22a–22c (`haste` / `slow` / `freeze_duration`) retired in THR-1242.
+//
+// All three described a rule bending for a while on one agent, which is exactly
+// what `modify_rules` says — so they were a second spelling of a live mechanism,
+// and the spelling without an executor was the one 13 shipped artifacts used.
+// Their content now names rule keys: `cooldown_multiplier` and
+// `movement_cost_multiplier` for haste/slow, `duration_decay_multiplier` for the
+// freeze.
+//
+// `haste.extraActions` and `slow.skipActions` did not survive the move, and
+// nothing was lost with them: there is no action-economy budget in this engine to
+// add an action to. What "acts more often" can honestly mean here is that powers
+// come back sooner and ground is covered faster, and both of those are keys with
+// consumers as of stage 3. `freeze_duration.tags` likewise did not survive — the
+// key is agent-scoped, so a freeze now slows every countdown on its bearer rather
+// than a tagged subset. Neither narrowing was ever enforced; both types were inert.
 
 /** Type 23: Override another agent's decisions */
 export interface CompelEffect {
@@ -738,18 +737,12 @@ export interface HexEffectEffect {
   readonly radius?: number;
 }
 
-/** Type 38: Direct world graph CRUD — add/remove edges or set node properties */
-export interface GraphMutationEffect {
-  readonly type: 'graph_mutation';
-  readonly operation: 'add_edge' | 'remove_edge' | 'set_property' | 'remove_node';
-  /** Which node to operate on — 'self', 'target', or explicit node id */
-  readonly nodeId: 'self' | 'target' | string;
-  readonly edgeType?: string;
-  readonly targetNodeId?: string;
-  readonly propertyKey?: string;
-  readonly propertyValue?: unknown;
-  readonly condition?: EffectPredicate;
-}
+// Type 38 (`graph_mutation`) retired in THR-1242 — zero content refs, no
+// executor, and an unrestricted `set_property` / `remove_node` primitive is not
+// a vocabulary this engine wants content authoring against: the graph ops that
+// content *should* reach for are the named ones in `graphOpExecutor`, which
+// validate their targets. A dead type that invites arbitrary CRUD is worse than
+// no type, because a generator reading the union would treat it as available.
 
 // ═══════════════════════════════════════════════════════════════════
 // SLOT SYSTEM Effect (type 39)
@@ -813,21 +806,13 @@ export type AttachmentEffect =
   | SpawnEffect
   | DispelEffect
   | SuppressEffect
-  | AutoSucceedEffect
-  | RerollEffect
-  | SwapReachEffect
-  | OutcomeShiftEffect
   | TestShaperEffect
   | PreventLossEffect
   | ContentGrantEffect
   | ResourceDeltaEffect
   | ActionTriggerEffect
   | AlterTerrainEffect
-  | CreateBarrierEffect
   | TransferEffect
-  | HasteEffect
-  | SlowEffect
-  | FreezeDurationEffect
   | CompelEffect
   // Tier 3: God-tier (25–29)
   | CreateStructureEffect
@@ -844,10 +829,13 @@ export type AttachmentEffect =
   | TagImmunityEffect
   | ResourceManipulateEffect
   | HexEffectEffect
-  | GraphMutationEffect
   // Slot system (39)
   | SlotBonusEffect
-  // Interactive (40)
+  // Interactive (40) — PLAYER-SURFACE ONLY (THR-1242). `choice_set` renders a
+  // nested decision for a human to make; an agent has no surface to make one on,
+  // so it is excluded from the agent-facing live vocabulary and from the powers
+  // and item generators' envelopes. It stays in the union for the existing
+  // GameView nested-choice use, and is the one member a generator must not emit.
   | ChoiceSetEffect
   // Capability (41)
   | StatContributionEffect;

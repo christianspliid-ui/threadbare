@@ -281,7 +281,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
         { type: 'reactive', trigger: 'attacked', effect: {
           type: 'range_modifier', movementCostMultiplier: 0.8
         }, duration: 6, cooldown: 12 },
-        { type: 'tag_immunity', tags: ['fear', 'intimidation'] },
+        { type: 'tag_immunity', tags: ['#fear', '#intimidation'] },
         // THR-745: an ancient assassin's blade, legendary martial capability, shadowed.
         // Legendary band but held below the ceiling: its passive roll total already overruns
         // EFFECT_PER_ITEM_CAP (see the note above this entry).
@@ -369,7 +369,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       effects: [
         { type: 'passive', reach: 'stone', value: 0.04 },
         { type: 'tradeoff', bonus: { reach: 'stone', value: 0.02 }, penalty: { reach: 'eye', value: 0.01 } },
-        { type: 'tag_immunity', tags: ['bruise'] },
+        { type: 'tag_immunity', tags: ['#bruise'] },
         // THR-745: heavy stonework in weapon form: enduring, unsubtle. Minor band, mirroring
         // the authored Stone/Eye tradeoff.
         { type: 'stat_contribution', contributions: { stone: 0.3, eye: -0.1 } },
@@ -527,7 +527,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       flavorText: 'Quilted linen stuffed with horsehair. Better than bare skin.',
       effects: [
         { type: 'passive', reach: 'iron', value: 0.03 },
-        { type: 'tag_immunity', tags: ['bruise'] },
+        { type: 'tag_immunity', tags: ['#bruise'] },
         // THR-745: the cheapest real armour. Minor band, floor: it lets its wearer take a hit,
         // nothing more.
         { type: 'stat_contribution', contributions: { iron: 0.2 } },
@@ -615,7 +615,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       effects: [
         { type: 'passive', reach: 'shadow', value: 0.07 },
         { type: 'range_modifier', awarenessRangeBonus: 1 },
-        { type: 'tag_immunity', tags: ['tracked', 'marked'] },
+        { type: 'tag_immunity', tags: ['#tracked', '#marked'] },
         // THR-745: a cloak woven to defeat tracking is stealth capability in cloth. Notable
         // band, mid.
         { type: 'stat_contribution', contributions: { shadow: 0.5 } },
@@ -672,7 +672,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
         { type: 'reactive', trigger: 'damaged', effect: {
           type: 'duration', ticks: 6, reach: 'veil', value: 0.04, destroyOnExpiry: true
         }, cooldown: 12 },
-        { type: 'tag_immunity', tags: ['curse', 'corruption', 'blight'] },
+        { type: 'tag_immunity', tags: ['#curse', '#corruption', '#blight'] },
         // THR-745: a garment of sky: legendary celestial capability with a Veil undertow.
         // Legendary band.
         { type: 'stat_contribution', contributions: { star: 1.2, veil: 0.6 } },
@@ -987,7 +987,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       effects: [
         { type: 'passive', reach: 'eye', value: 0.04 },
         { type: 'passive', reach: 'veil', value: 0.03 },
-        { type: 'freeze_duration', target: 'buff', tags: ['#blessing', '#divine'], ticks: 6 },
+        { type: 'modify_rules', scope: { scope: 'self' }, rule: 'duration_decay_multiplier', value: 0.4, ticks: 6 },
         { type: 'range_modifier', awarenessRangeBonus: 1 },
         // THR-745: an instrument that reads time: measured sight, lesser Veil. Held at the
         // minor/notable boundary because its power is utility, not competence.
@@ -1056,7 +1056,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       flavorText: 'Carved from a knucklebone and hung on gut string. Old magic, close to the body.',
       effects: [
         { type: 'passive', reach: 'iron', value: 0.04 },
-        { type: 'tag_immunity', tags: ['poison'] },
+        { type: 'tag_immunity', tags: ['#poison'] },
         // THR-745: a ward against poison keeps its bearer standing. Minor band.
         { type: 'stat_contribution', contributions: { iron: 0.25 } },
       ],
@@ -1181,7 +1181,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       effects: [
         { type: 'passive', reach: 'veil', value: 0.05 },
         { type: 'cooldown', activeTicks: 6, cooldownTicks: 18, reach: 'veil', value: 0.02 },
-        { type: 'freeze_duration', target: 'debuff', ticks: 6 },
+        { type: 'modify_rules', scope: { scope: 'self' }, rule: 'duration_decay_multiplier', value: 0.4, ticks: 6 },
         // THR-745: a pearl that holds time still. Notable band, low: most of its power is the
         // freeze utility.
         { type: 'stat_contribution', contributions: { veil: 0.4 } },
@@ -1254,8 +1254,9 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
         { type: 'passive', reach: 'veil', value: 0.08 },
         { type: 'passive', reach: 'shadow', value: 0.04 },
         { type: 'passive', reach: 'heart', value: -0.03 },
-        { type: 'slow', target: 'other_agent', skipActions: true, ticks: 3 },
-        { type: 'freeze_duration', target: 'condition', ticks: 6 },
+        { type: 'modify_rules', scope: { scope: 'target' }, rule: 'cooldown_multiplier', value: 1.5, ticks: 3 },
+        { type: 'modify_rules', scope: { scope: 'target' }, rule: 'movement_cost_multiplier', value: 1.5, ticks: 3 },
+        { type: 'modify_rules', scope: { scope: 'self' }, rule: 'duration_decay_multiplier', value: 0.4, ticks: 6 },
         // THR-745: unravelling time: strong Veil, shadowed, at a cost in warmth. Notable band,
         // high.
         { type: 'stat_contribution', contributions: { veil: 0.7, shadow: 0.3, heart: -0.25 } },
@@ -1488,7 +1489,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
         { type: 'passive', reach: 'veil', value: 0.06 },
         { type: 'passive', reach: 'eye', value: 0.03 },
         { type: 'range_modifier', movementCostMultiplier: 0.85, awarenessRangeBonus: 2 },
-        { type: 'tag_immunity', tags: ['fear', 'illusion'] },
+        { type: 'tag_immunity', tags: ['#fear', '#illusion'] },
         { type: 'behavior_weight', reach: 'veil', multiplier: 1.3 },
       ],
     } as PossessionNodeProperties,
@@ -1667,7 +1668,8 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       flavorText: 'Thick as tar and smells worse. The old soldiers swear by it. The young ones vomit first, then swear by it.',
       effects: [
         { type: 'consumable_charge', charges: 2, onUse: { reach: 'iron', value: 0.02 }, destroyOnEmpty: true },
-        { type: 'haste', target: 'self', extraActions: 1, ticks: 4 },
+        { type: 'modify_rules', scope: { scope: 'self' }, rule: 'cooldown_multiplier', value: 0.7, ticks: 4 },
+        { type: 'modify_rules', scope: { scope: 'self' }, rule: 'movement_cost_multiplier', value: 0.75, ticks: 4 },
         { type: 'decay', reach: 'heart', startValue: -0.03, changePerTick: 0.005, limitValue: 0.0, destroyAtLimit: true },
       ],
     } as PossessionNodeProperties,
@@ -1724,7 +1726,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       effects: [
         { type: 'passive', reach: 'veil', value: 0.04 },
         { type: 'consumable_charge', charges: 3, onUse: { reach: 'veil', value: 0.01 }, destroyOnEmpty: true },
-        { type: 'freeze_duration', target: 'buff', ticks: 8 },
+        { type: 'modify_rules', scope: { scope: 'self' }, rule: 'duration_decay_multiplier', value: 0.4, ticks: 8 },
       ],
     } as PossessionNodeProperties,
   },
@@ -1968,13 +1970,12 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'relics_talismans',
       tier: 2,
       tags: ['#star', '#talisman', '#luck', '#fate'],
-      mechanicalSummary: '+0.04 Star, 3 encounter rerolls, upgrades near-miss outcomes by 1 step',
+      mechanicalSummary: '+0.04 Star, upgrades near-miss outcomes by 1 step',
       censusTag: { scale: 'local' },
       lossCondition: 'stealable',
       flavorText: 'A copper coin so old the face has worn away. The last thing a dead gambler held. It feels warm when odds turn.',
       effects: [
         { type: 'passive', reach: 'star', value: 0.04 },
-        { type: 'reroll', uses: 3 },
         { type: 'test_shaper', reach: 'star', trigger: 'near_miss', maxMargin: 6, steps: 1 },
       ],
     } as PossessionNodeProperties,
@@ -1989,7 +1990,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'relics_talismans',
       tier: 3,
       tags: ['#veil', '#shadow', '#relic', '#anti-magic', '#ancient'],
-      mechanicalSummary: '+0.08 Veil roll · Veil capability +0.75 / Shadow +0.35 / Star −0.3 while borne, +0.04 Shadow, -0.04 Star, suppresses all effects in 1-hex radius for 6 ticks, creates awareness barrier on adjacent hexes for 8 ticks',
+      mechanicalSummary: '+0.08 Veil roll · Veil capability +0.75 / Shadow +0.35 / Star −0.3 while borne, +0.04 Shadow, -0.04 Star, suppresses all effects in 1-hex radius for 6 ticks, shrouds its hex for 8 ticks',
       censusTag: { scale: 'regional' },
       lossCondition: 'cursed',
       flavorText: 'A band of grey iron that sits above the brow like a wound. Nothing magical survives within arm\'s reach. Including prayers.',
@@ -1998,7 +1999,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
         { type: 'passive', reach: 'shadow', value: 0.04 },
         { type: 'passive', reach: 'star', value: -0.04 },
         { type: 'suppress', target: 'all_effects', scope: { scope: 'radius', hexes: 1 }, ticks: 6 },
-        { type: 'create_barrier', between: 'self_hex', and: 'adjacent', blocks: 'awareness', ticks: 8 },
+        { type: 'alter_terrain', target: 'self_hex', terrainEffect: 'shrouded', ticks: 8 },
         // THR-1169: ITEM, not a primitive proof — a named T3 cursed relic composing five
         // effects into one anti-magic identity. Its suppress/barrier arms are utility, not
         // roll shapers, so it sits mid-high in the notable band. Star penalty mirrors the
@@ -2024,7 +2025,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       effects: [
         { type: 'passive', reach: 'stone', value: 0.05 },
         { type: 'conditional', condition: 'at_home_territory', reach: 'stone', value: 0.03 },
-        { type: 'create_barrier', between: 'self_hex', and: 'adjacent', blocks: 'movement', ticks: 10 },
+        { type: 'alter_terrain', target: 'self_hex', terrainEffect: 'warded', ticks: 10 },
       ],
     } as PossessionNodeProperties,
   },
@@ -2038,7 +2039,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'tools_instruments',
       tier: 3,
       tags: ['#eye', '#star', '#tool', '#divination', '#fate'],
-      mechanicalSummary: '+0.06 Eye roll · Eye capability +0.7 / Star +0.3 / Shadow −0.25 while borne, +0.04 Star, -0.03 Shadow, 4 encounter rerolls, reveals encounters within 2 hexes',
+      mechanicalSummary: '+0.06 Eye roll · Eye capability +0.7 / Star +0.3 / Shadow −0.25 while borne, +0.04 Star, -0.03 Shadow, upgrades near-miss outcomes by 1 step, reveals encounters within 2 hexes',
       censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'A lens of polished quartz set in brass so old it has turned green. Through it, the future is not one line but many, and some of them are kind.',
@@ -2046,7 +2047,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
         { type: 'passive', reach: 'eye', value: 0.06 },
         { type: 'passive', reach: 'star', value: 0.04 },
         { type: 'passive', reach: 'shadow', value: -0.03 },
-        { type: 'reroll', uses: 4 },
+        { type: 'test_shaper', reach: 'eye', trigger: 'near_miss', maxMargin: 6, steps: 1 },
         { type: 'reveal', target: 'encounters', range: 2 },
         // THR-1169: ITEM, not a primitive proof — a named T3 divination lens composing five
         // effects. Low end of the notable band: four rerolls is a strong roll shaper
@@ -2073,7 +2074,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       effects: [
         { type: 'passive', reach: 'stone', value: 0.02 },
         { type: 'consumable_charge', charges: 3, onUse: { reach: 'stone', value: 0.03 }, destroyOnEmpty: true },
-        { type: 'create_barrier', between: 'self_hex', and: 'adjacent', blocks: 'movement', ticks: 6 },
+        { type: 'alter_terrain', target: 'self_hex', terrainEffect: 'warded', ticks: 6 },
       ],
     } as PossessionNodeProperties,
   },
@@ -2095,7 +2096,8 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
         { type: 'passive', reach: 'veil', value: 0.04 },
         { type: 'passive', reach: 'stone', value: 0.03 },
         { type: 'suppress', target: 'aura', scope: { scope: 'hex', target: 'self' }, ticks: 8 },
-        { type: 'create_barrier', between: 'self_hex', and: 'adjacent', blocks: 'both', ticks: 8 },
+        { type: 'alter_terrain', target: 'self_hex', terrainEffect: 'shrouded', ticks: 8 },
+        { type: 'alter_terrain', target: 'self_hex', terrainEffect: 'warded', ticks: 8 },
       ],
     } as PossessionNodeProperties,
   },
@@ -2181,7 +2183,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       effects: [
         { type: 'passive', reach: 'iron', value: 0.07 },
         { type: 'passive', reach: 'stone', value: 0.06 },
-        { type: 'tag_immunity', tags: ['poison', 'disease', 'blight'] },
+        { type: 'tag_immunity', tags: ['#poison', '#disease', '#blight'] },
         { type: 'passive', reach: 'heart', value: -0.04 },
         { type: 'modify_rules', scope: { scope: 'self' }, rule: 'death_prevented', value: true, ticks: 'permanent' },
         // THR-1169: ITEM despite the `provisions` subcategory — `lossCondition: 'cursed'`,
@@ -2523,7 +2525,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       tags: ['#quintessence', '#travel', '#mystical'],
       mechanicalSummary: '+3 quintessence on movement arrival (6-tick cooldown)',
       censusTag: { reach: 'star', scale: 'personal' },
-      lossCondition: 'durable',
+      lossCondition: 'breakable',
       flavorText: 'The stone hums faintly when you arrive somewhere new, as though approving of the journey.',
       effects: [
         {
@@ -3159,7 +3161,8 @@ export const REWARD_CONDITIONS: GraphNode[] = [
       flavorText: 'Your feet leave the ground a heartbeat before they should. Gods move in small mercies.',
       effects: [
         { type: 'passive', reach: 'star', value: 0.03 },
-        { type: 'haste', target: 'self', extraActions: 1, ticks: 6 },
+        { type: 'modify_rules', scope: { scope: 'self' }, rule: 'cooldown_multiplier', value: 0.7, ticks: 6 },
+        { type: 'modify_rules', scope: { scope: 'self' }, rule: 'movement_cost_multiplier', value: 0.75, ticks: 6 },
       ],
     } as TraitDefinitionProperties,
   },
@@ -3180,7 +3183,7 @@ export const REWARD_CONDITIONS: GraphNode[] = [
       flavorText: 'The candle burns but does not shorten. The wound bleeds but does not deepen. Something holds.',
       effects: [
         { type: 'passive', reach: 'veil', value: 0.05 },
-        { type: 'freeze_duration', target: 'buff', ticks: 10 },
+        { type: 'modify_rules', scope: { scope: 'self' }, rule: 'duration_decay_multiplier', value: 0.4, ticks: 10 },
         { type: 'conditional', condition: 'in_mystical', reach: 'star', value: 0.02 },
       ],
     } as TraitDefinitionProperties,
@@ -3202,7 +3205,8 @@ export const REWARD_CONDITIONS: GraphNode[] = [
       flavorText: 'The air thickens. Each step forward requires a step of will first.',
       effects: [
         { type: 'passive', reach: 'iron', value: -0.03 },
-        { type: 'slow', target: 'other_agent', skipActions: false, ticks: 6 },
+        { type: 'modify_rules', scope: { scope: 'target' }, rule: 'cooldown_multiplier', value: 1.25, ticks: 6 },
+        { type: 'modify_rules', scope: { scope: 'target' }, rule: 'movement_cost_multiplier', value: 1.25, ticks: 6 },
         { type: 'range_modifier', movementCostMultiplier: 1.3 },
       ],
     } as TraitDefinitionProperties,
@@ -3224,8 +3228,9 @@ export const REWARD_CONDITIONS: GraphNode[] = [
       flavorText: 'You blink and the sun has moved. Your companions look at you strangely, as if you were not there a moment ago.',
       effects: [
         { type: 'passive', reach: 'shadow', value: -0.05 },
-        { type: 'slow', target: 'other_agent', skipActions: true, ticks: 4 },
-        { type: 'freeze_duration', target: 'debuff', ticks: 8 },
+        { type: 'modify_rules', scope: { scope: 'target' }, rule: 'cooldown_multiplier', value: 1.5, ticks: 4 },
+        { type: 'modify_rules', scope: { scope: 'target' }, rule: 'movement_cost_multiplier', value: 1.5, ticks: 4 },
+        { type: 'modify_rules', scope: { scope: 'self' }, rule: 'duration_decay_multiplier', value: 0.4, ticks: 8 },
         { type: 'axiological_drift', axis: 'hope_despair', ratePerTick: 0.002, limitValue: 0.2 },
       ],
     } as TraitDefinitionProperties,
@@ -3249,9 +3254,11 @@ export const REWARD_CONDITIONS: GraphNode[] = [
         { type: 'passive', reach: 'iron', value: 0.10 },
         { type: 'passive', reach: 'heart', value: -0.06 },
         { type: 'passive', reach: 'eye', value: -0.04 },
-        { type: 'haste', target: 'self', extraActions: 1, ticks: 8 },
-        { type: 'slow', target: 'other_agent', skipActions: false, ticks: 3 },
-        { type: 'tag_immunity', tags: ['fear', 'intimidation'] },
+        { type: 'modify_rules', scope: { scope: 'self' }, rule: 'cooldown_multiplier', value: 0.7, ticks: 8 },
+        { type: 'modify_rules', scope: { scope: 'self' }, rule: 'movement_cost_multiplier', value: 0.75, ticks: 8 },
+        { type: 'modify_rules', scope: { scope: 'target' }, rule: 'cooldown_multiplier', value: 1.25, ticks: 3 },
+        { type: 'modify_rules', scope: { scope: 'target' }, rule: 'movement_cost_multiplier', value: 1.25, ticks: 3 },
+        { type: 'tag_immunity', tags: ['#fear', '#intimidation'] },
       ],
     } as TraitDefinitionProperties,
   },
@@ -3272,11 +3279,11 @@ export const REWARD_CONDITIONS: GraphNode[] = [
       visibility: 'public',
       importance: 0,
       domainContributions: {},
-      mechanicalSummary: '+0.03 Star, 2 encounter rerolls',
+      mechanicalSummary: '+0.03 Star, upgrades near-miss outcomes by 1 step',
       flavorText: 'You find coins in the road. Arrows miss by a finger-width. It will not last, but while it does, the world is gentle.',
       effects: [
         { type: 'passive', reach: 'star', value: 0.03 },
-        { type: 'reroll', uses: 2 },
+        { type: 'test_shaper', reach: 'star', trigger: 'near_miss', maxMargin: 4, steps: 1 },
       ],
     } as TraitDefinitionProperties,
   },
@@ -3324,7 +3331,8 @@ export const REWARD_CONDITIONS: GraphNode[] = [
       effects: [
         { type: 'passive', reach: 'stone', value: 0.06 },
         { type: 'passive', reach: 'eye', value: 0.04 },
-        { type: 'create_barrier', between: 'self_hex', and: 'adjacent', blocks: 'both', ticks: 12 },
+        { type: 'alter_terrain', target: 'self_hex', terrainEffect: 'shrouded', ticks: 12 },
+        { type: 'alter_terrain', target: 'self_hex', terrainEffect: 'warded', ticks: 12 },
         { type: 'aura', radius: 1, target: 'allies', reach: 'stone', value: 0.02 },
         { type: 'axiological_drift', axis: 'mercy_ruthlessness', ratePerTick: 0.003, limitValue: 0.25 },
       ],
@@ -3391,7 +3399,7 @@ export const REWARD_BESTOWED_POWERS: GraphNode[] = [
       mechanicalSummary: '+0.05 Iron, immune to poison/disease conditions',
       effects: [
         { type: 'passive', reach: 'iron', value: 0.05 },
-        { type: 'tag_immunity', tags: ['poison', 'disease'] },
+        { type: 'tag_immunity', tags: ['#poison', '#disease'] },
       ],
     } as TraitDefinitionProperties,
   },

@@ -61,8 +61,10 @@ import {
 
 import { hexNeighbors } from '../lib/hexMath';
 import type { EffectRuntimeState } from '../types/effects';
-import { getRangeModifiers } from './effects/effectQueries';
+import { getRangeModifiers, getRevealRanges } from './effects/effectQueries';
 import { readBonusOverride, type RuleOverrideContext } from './effects/ruleOverrideConsumers';
+import { hasTerrainOverlay } from './effects/effectOverlayStore';
+import { SHROUDED_OVERLAY_AWARENESS_PENALTY } from '../data/effect-constants';
 
 // ─── Hex resolution helpers ─────────────────────────────────────
 
@@ -166,7 +168,27 @@ export function filterByAwareness(
     ? readBonusOverride(overrideCtx, agentId, 'awareness_range_bonus', 'encounterAwareness')
     : 0;
 
-  const effectAwarenessBonus = rangeAwarenessBonus + ruleAwarenessBonus;
+  // THR-1242: the `reveal` primitive's `encounters` range. 17 content refs used
+  // `reveal` and nothing read any of them — a scrying lens that revealed nothing.
+  // A reveal is a *floor* on the horizon rather than a bonus added to it: content
+  // says "reveals encounters within 2 hexes", which is a promise about the
+  // absolute range, not about the range you would otherwise have had. Summing it
+  // would make the same lens worth more to an already-farsighted bearer, which is
+  // the opposite of what the words say.
+  const revealEncounterRange = effectStates !== undefined
+    ? getRevealRanges(graph, agentId, effectStates).encounters
+    : 0;
+
+  // THR-1242: the `shrouded` overlay — where the retired `create_barrier`
+  // primitive's `blocks: 'awareness'` arm landed. Subtractive so it argues with
+  // farsight rather than overriding it, and floored below so a shrouded agent
+  // still sees its own hex.
+  const shroudPenalty = (overrideCtx?.persisted !== undefined
+    && hasTerrainOverlay(overrideCtx.persisted, agentHex.col, agentHex.row, 'shrouded'))
+    ? SHROUDED_OVERLAY_AWARENESS_PENALTY
+    : 0;
+
+  const effectAwarenessBonus = rangeAwarenessBonus + ruleAwarenessBonus - shroudPenalty;
 
   // Pre-compute a cache of locationId → hex coords to avoid repeated lookups
   const hexCache = new Map<string, { col: number; row: number } | null>();
@@ -216,7 +238,17 @@ export function filterByAwareness(
     const secondaryRange = entry.reachSecondary
       ? awarenessRangeOf(entry.reachSecondary)
       : 0;
-    const maxRange = Math.max(primaryRange, secondaryRange) + edgeBonus + effectAwarenessBonus;
+    // Floored at 0 so a shroud narrows the horizon without inverting it — a
+    // negative range would hide the agent's own hex, and same-hex visibility is
+    // the invariant the whole three-tier position model rests on. `reveal` is a
+    // floor rather than a term (THR-1242), so a lens that promises "encounters
+    // within 2 hexes" delivers exactly that even to a shrouded or dull-witted
+    // bearer, which is what its content says.
+    const earnedRange = Math.max(
+      0,
+      Math.max(primaryRange, secondaryRange) + edgeBonus + effectAwarenessBonus,
+    );
+    const maxRange = Math.max(earnedRange, revealEncounterRange);
 
     if (dist <= maxRange) {
       result.push(entry);

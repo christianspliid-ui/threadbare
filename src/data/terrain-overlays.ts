@@ -9,6 +9,7 @@
 
 import type { ReachDomain } from '../types/traits';
 import type { TerrainOverlayType } from '../types/effects';
+import { WARDED_OVERLAY_MOVEMENT_MULTIPLIER } from './effect-constants';
 
 export interface TerrainOverlayDefinition {
   readonly type: TerrainOverlayType;
@@ -73,6 +74,20 @@ export const TERRAIN_OVERLAY_DEFINITIONS: Record<TerrainOverlayType, TerrainOver
     description: 'An unnatural mist blankets the area.',
     reachModifiers: { shadow: 0.05, eye: -0.05 },
     tintColor: '#606080',
+  },
+  // THR-1242: the movement half of the retired `create_barrier` primitive.
+  // `shrouded` above was already "you cannot see past this"; nothing named "you
+  // cannot easily walk through this", so five shipped artifacts describing a
+  // barrier had no overlay to become. The `movementCostMultiplier` here is
+  // descriptive — `movementCost` reads the constant, not this table, because the
+  // hex being *entered* is the one that matters and this table is per-agent-on-hex.
+  warded: {
+    type: 'warded',
+    name: 'Warded',
+    description: 'Something set against passage stands here; the ground resists crossing.',
+    reachModifiers: { veil: 0.05, iron: -0.05 },
+    behaviorModifiers: { movementCostMultiplier: WARDED_OVERLAY_MOVEMENT_MULTIPLIER },
+    tintColor: '#7a6a9a',
   },
   hallowed: {
     type: 'hallowed',

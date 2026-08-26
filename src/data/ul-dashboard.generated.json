@@ -30,7 +30,7 @@
       "filename": "Traits.md",
       "title": "Traits",
       "contentAdjacent": true,
-      "termCount": 15,
+      "termCount": 16,
       "blurb": "Content-adjacent shard. Terms covering the trait layer: definitions and assignments, the ten category contracts, how an authored ref resolves to a definition, and the hooks content authors write against — plus the parallel **attachment** layer that shares its borne-by-a-bearer shape: the Attachment umbrella, the Effect substrate, and the Power family (spell, bestowal, innate power) seated here at THR-1238 because two of the three power variants collide by name with a trait category (`bestowed`, `innate`) and are best read beside the categories they are not."
     },
     {
@@ -2895,7 +2895,7 @@
       ],
       "status": "canonical",
       "oneLiner": "the substrate word: the `AttachmentEffect` primitives powers and items are built from; never player-facing as a family name",
-      "body": "The **substrate** word: the primitives of the `AttachmentEffect` union (`src/types/effects.ts`), from which powers, items, blessings and curses are all built. The union is tiered — Gear, Spell, God-tier — and its members are atoms such as `PassiveEffect`, `OutcomeShiftEffect`, `TraitGrantEffect`, `TeleportEffect`.\n\n**Disambiguation — Effect is never player-facing as a family name.** It names the atoms only. The two-level ambiguity, where \"effects\" means both the primitives *and* the family of things assembled from them, is exactly what `[[Power]]` was minted to prevent: **\"Effects\" was considered as the family name and rejected** (ratified 2026-08-25). When you mean the things a bearer holds, say power, possession, or attachment; reserve *effect* for the primitive.",
+      "body": "The **substrate** word: the primitives of the `AttachmentEffect` union (`src/types/effects.ts`), from which powers, items, blessings and curses are all built. The union is tiered — Gear, Spell, God-tier — and its members are atoms such as `PassiveEffect`, `TestShaperEffect`, `TraitGrantEffect`, `TeleportEffect`.\n\n**One capability, one spelling (THR-1242).** A member of this union is a promise that content can author it and the engine will run it. Nine members were retired in the effect-vocabulary consolidation because they were *second spellings* of a live mechanism, and in every case the spelling without an executor was the one shipped content used — so an artifact could promise haste and nothing would hasten. Retired: `graph_mutation`, `outcome_shift`, `auto_succeed` (no content at all), `reroll` → `test_shaper`, `swap_reach` → the `encounter_reach_override` rule key, `haste`/`slow`/`freeze_duration` → rule-override multiplier keys, `create_barrier` → `alter_terrain` with the `shrouded`/`warded` overlays. When a new primitive is proposed, the first question is whether an existing member already means it.\n\n**`choice_set` is the one member content must not author.** It renders a nested decision for a human; an agent has no surface to make one on. It stays in the union for the existing GameView use and is excluded from the agent-facing vocabulary and from the powers and item generators' envelopes.\n\n**Disambiguation — Effect is never player-facing as a family name.** It names the atoms only. The two-level ambiguity, where \"effects\" means both the primitives *and* the family of things assembled from them, is exactly what `[[Power]]` was minted to prevent: **\"Effects\" was considered as the family name and rejected** (ratified 2026-08-25). When you mean the things a bearer holds, say power, possession, or attachment; reserve *effect* for the primitive.",
       "seeAlso": [
         {
           "raw": "Attachment",
@@ -3060,6 +3060,37 @@
         }
       ],
       "sourcePath": "Docs/ubiquitous-language/Traits.md#innate-power",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "traits",
+      "slug": "tag-namespace",
+      "name": "Tag Namespace",
+      "aliases": [
+        "`#`-tag",
+        "content tag"
+      ],
+      "status": "canonical",
+      "oneLiner": "**Every content tag is written `#`-prefixed.** Condition trait definitions, attachment tag lists, reward tag filters, and `tag_immunity` tag lists all share one namespace, and `#` is its spelling: `['#condition', '#combat', '#negative']`, not `['condition', 'combat', 'negative']`.",
+      "body": "**Every content tag is written `#`-prefixed.** Condition trait definitions, attachment tag lists, reward tag filters, and `tag_immunity` tag lists all share one namespace, and `#` is its spelling: `['#condition', '#combat', '#negative']`, not `['condition', 'combat', 'negative']`.\n\n**Ratified 2026-08-26 (THR-1242) because the mismatch was live and silent.** Condition trait nodes had always carried `#`-prefixed tags; most `tag_immunity` content wrote them bare. `isImmuneToTag` compared the two with `Array.includes`, so `'fear'` could never match `'#fear'` — a ward against terror would have run its check, found nothing, and let the terror land. That is worse than a dead primitive, because the trace shows the comparison happening.\n\n**Comparison normalizes anyway.** `normalizeTag` (`src/engine/effects/effectQueries.ts`) strips one leading `#` from both sides before comparing, so a bare tag still matches. The convention is the rule; the normalization is the safety net, because a convention enforced only by every author remembering it is not enforced. Write the `#`.\n\n**One level only.** `normalizeTag('##fear')` is `'#fear'`, not `'fear'` — a doubled prefix is a content typo and should surface as a non-match rather than be silently repaired.",
+      "seeAlso": [
+        {
+          "raw": "Effect",
+          "termName": "Effect",
+          "resolvedSlug": "traits#effect"
+        },
+        {
+          "raw": "Attachment",
+          "termName": "Attachment",
+          "resolvedSlug": "traits#attachment"
+        },
+        {
+          "raw": "Trait",
+          "termName": "Trait",
+          "resolvedSlug": "traits#trait"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Traits.md#tag-namespace",
       "contentAdjacent": true
     },
     {

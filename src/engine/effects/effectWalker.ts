@@ -9,6 +9,10 @@
 
 import type { WorldGraph } from '../graph';
 import type { AttachmentEffect, EffectRuntimeState } from '../../types/effects';
+import {
+  MAX_EFFECTS_PER_ATTACHMENT,
+  ACTION_TRIGGER_MAX_PER_ATTACHMENT,
+} from '../../data/effect-constants';
 
 // ═══════════════════════════════════════════════════════════════════
 // Constants
@@ -17,8 +21,46 @@ import type { AttachmentEffect, EffectRuntimeState } from '../../types/effects';
 /** Edge types that can carry attachments with effects. */
 export const ATTACHMENT_EDGE_TYPES = ['possesses', 'bonded_to', 'has_trait'] as const;
 
-/** Maximum effects read per attachment (content guard). */
-const MAX_EFFECTS_PER_NODE = 12;
+/**
+ * Maximum effects read per attachment (content guard).
+ *
+ * THR-1242: this was a private `MAX_EFFECTS_PER_NODE = 12` while
+ * `MAX_EFFECTS_PER_ATTACHMENT = 6` sat in `effect-constants` with a CMS row and
+ * no enforcement anywhere. Two numbers for one idea, and the one in force was
+ * the one nobody could tune — the same duplicate-spelling pathology this stage
+ * removes from the effect vocabulary, one layer down. The declared constant is
+ * now the one the walker obeys.
+ */
+const MAX_EFFECTS_PER_NODE = MAX_EFFECTS_PER_ATTACHMENT;
+
+/**
+ * Max `action_trigger` effects honoured per attachment (THR-1242).
+ *
+ * Also promoted from advisory. `action_trigger` is the one primitive that fires
+ * *actions* rather than modifying a number, so an attachment declaring six of
+ * them is six action dispatches per qualifying event — the combinatorial case
+ * the content guards exist for. Excess entries are dropped at the boundary
+ * rather than at the dispatcher, so every downstream consumer sees the same
+ * bounded list.
+ */
+const MAX_ACTION_TRIGGERS_PER_NODE = ACTION_TRIGGER_MAX_PER_ATTACHMENT;
+
+/**
+ * Apply both content guards to one attachment's authored effect list.
+ *
+ * Order matters: the `action_trigger` cap is applied *within* the surviving
+ * slice, not before it, so the two guards compose the way a reader expects —
+ * "at most N effects, of which at most M are triggers".
+ */
+function applyContentGuards(effects: readonly AttachmentEffect[]): AttachmentEffect[] {
+  const bounded = effects.slice(0, MAX_EFFECTS_PER_NODE);
+  let triggersSeen = 0;
+  return bounded.filter(effect => {
+    if (effect.type !== 'action_trigger') return true;
+    triggersSeen += 1;
+    return triggersSeen <= MAX_ACTION_TRIGGERS_PER_NODE;
+  });
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // Types
@@ -78,7 +120,7 @@ export function collectAttachmentEffects(
       const attachmentName = node.name ?? node.id;
       const attachmentTier = (node.properties.tier as number) ?? 1;
       const runtimeState = effectStates?.get(node.id);
-      const effectsToRead = effects.slice(0, MAX_EFFECTS_PER_NODE);
+      const effectsToRead = applyContentGuards(effects);
 
       for (const effect of effectsToRead) {
         entries.push({
@@ -104,7 +146,7 @@ export function collectAttachmentEffects(
     const attachmentName = (edge.properties.agreementName as string) ?? 'Agreement';
     const attachmentTier = (edge.properties.tier as number) ?? 1;
     const runtimeState = effectStates?.get(edge.id);
-    const effectsToRead = effects.slice(0, MAX_EFFECTS_PER_NODE);
+    const effectsToRead = applyContentGuards(effects);
 
     for (const effect of effectsToRead) {
       entries.push({

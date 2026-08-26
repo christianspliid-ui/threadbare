@@ -1242,6 +1242,40 @@ With the markers, `artifact.enchant` / `artifact.empower` charge 4 essence at di
 
 **Where to find the implementation:** `collectAuraEffectsNear` / `selectAuraEmitters` / `resolveAuraModifiers` in `src/engine/effectAura.ts`, called from `collectAuraContributions` in `src/engine/resolutionModifiers.ts`. It is resolved **lazily, at the moment a step resolves** — never as a per-tick proximity sweep — so an aura costs nothing until somebody near it actually rolls.
 
+### Capability 25: One Capability, One Spelling — the Consolidated Effect Vocabulary (THR-1242)
+
+**What it does:** nine effect spellings left the `AttachmentEffect` union, and three primitives that had been declared-but-inert became live. If you have authored attachment effects before, some words you used no longer exist — and some you avoided now work.
+
+**Why you want it:** every member of that union is a promise that the engine will run what you author. Nine of them were not keeping it. Worse, in each case the *dead* spelling was the one shipped content used while a live mechanism sat beside it under a different name — so an artifact could promise haste and nothing hastened, and the author had no way to tell. If an item you wrote never seemed to do anything, that was the vocabulary lying to you, not your authoring.
+
+**What to write instead:**
+
+| No longer exists | Write this | Why |
+|---|---|---|
+| `reroll` | `test_shaper` | A second chance at a roll and an upgraded outcome are the same promise; this one has an implementation. |
+| `swap_reach` | `modify_rules` with `rule: 'encounter_reach_override'`, `value: { from, to }` | Same swap, read by `resolutionModifiers`. |
+| `haste` | `modify_rules` with `cooldown_multiplier` and/or `movement_cost_multiplier` below 1 | There is no action-economy budget to add an action to. What "acts more often" honestly means here is powers returning sooner and ground covered faster. |
+| `slow` | the same two keys above 1, `scope: { scope: 'target' }` | Mirror of haste. |
+| `freeze_duration` | `modify_rules` with `duration_decay_multiplier` below 1 | Read at **both** clocks — condition countdowns and attachment durations — so it covers the old `condition` / `buff` / `debuff` targets at once. It is agent-scoped, so it no longer narrows by tag. |
+| `create_barrier` | `alter_terrain` with `terrainEffect: 'shrouded'` (blocks sight) or `'warded'` (taxes movement) | Both overlays persist on `GameState` and are now read by `encounterAwareness` and `movementCost`. |
+| `graph_mutation`, `outcome_shift`, `auto_succeed` | nothing — they had no content and no executor | `graph_mutation` in particular is deliberately gone: use the named, target-validating ops in `graphOpExecutor` rather than arbitrary graph CRUD. |
+
+**Three primitives you may now rely on:**
+
+1. **`reveal`** — 17 content refs and no consumer of any kind, so a scrying lens revealed nothing. `target: 'encounters'` now sets a **floor** on the bearer's awareness horizon (a lens promising "within 2 hexes" delivers 2 even to a dull-witted or shrouded bearer, because that is what the words say); `target: 'hexes'` lifts fog on arrival, stamping every location in radius into the bearer's exploration record. `target: 'agent'` and `'attachments'` are collected but still have **no consumer** — they name UI inspection surfaces, and this guide will say so until they do.
+2. **`suppress`** — the inverse of the usual dead primitive: a *consumer with no producer*. Four readers have honoured `runtimeState.suppressed` since the primitive architecture landed and nothing ever set it. It is now resolved once per tick, before anything else ticks. `scope: 'self'` silences the bearer's other attachments; `'hex'` and `'radius'` reach neighbours (bounded at `AURA_MAX_RADIUS`); a suppressor never silences itself. Scopes with no spatial meaning (`region`, `faction`, `global`) fall back to the bearer alone rather than to everyone — failing narrow is the safe direction.
+3. **`tag_immunity`** — a complete query with zero callers, checked now at both aftermath condition-infliction sites. A blocked condition never gets an edge, and the refusal traces with the tag that caused it.
+
+**The one authoring rule that will bite you: write tags `#`-prefixed.** Condition trait nodes have always carried `#condition`, `#fear`, `#negative`; most `tag_immunity` content wrote them bare. Had the immunity simply been wired, `'fear'` would never have matched `'#fear'` and every ward would have run its check and blocked nothing — which is worse than dead, because the trace shows the comparison happening. Comparison normalizes either spelling as a safety net, but the `#` is the convention. See the UL entry **Tag Namespace**.
+
+**Two content guards are now enforced rather than advisory.** `MAX_EFFECTS_PER_ATTACHMENT` (raised 6 → 8, because four shipped items carry 7 and enforcing the declared 6 would have silently truncated them) and `ACTION_TRIGGER_MAX_PER_ATTACHMENT` (2) are applied at the effect-walker boundary. Exceeding either **drops the excess silently at read time**, so a ninth effect is not a compile error — it is an item that quietly does less than its `mechanicalSummary` claims. `src/data/__tests__/attachmentEffectCap.test.ts` pins the catalog under both, so the next over-cap item is a red test at author time.
+
+**`choice_set` is the one primitive content must not author.** It renders a nested decision for a human; an agent has no surface to make one on. It stays in the union for the existing GameView use and is excluded from the generators' envelopes.
+
+**Where to find the implementation:** `src/engine/effects/effectSuppression.ts` (the suppression pass), `getRevealRanges` / `isImmuneToAnyTag` / `normalizeTag` in `src/engine/effects/effectQueries.ts`, and the overlay reads in `src/engine/movementCost.ts` and `src/engine/encounterAwareness.ts`.
+
+---
+
 ---
 
 ---

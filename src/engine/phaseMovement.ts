@@ -22,7 +22,10 @@ import type { ExplorationRecord } from './encounterScoring';
 import { checkAndFireActionTriggers, type ActionTriggerContext } from './effects/actionTrigger';
 import { applyActionTriggerPayloads } from './effects/actionTriggerPayloads';
 import { collectAttachmentEffects } from './effects/effectWalker';
+import { getRevealRanges } from './effects/effectQueries';
 import { raiseEffectEvent } from './effects/effectEventDispatch';
+import { getPlaceTierLocations } from './sublocationShape';
+import { hexDistance } from '../lib/hexMath';
 import { mulberry32 } from '../lib/prng';
 import { hashString } from './factionAmbitions';
 import type { EffectRuntimeState } from '../types/effects';
@@ -185,16 +188,60 @@ export function phaseMovement(state: GameState): Partial<GameState> {
           // Re-read node to get latest properties (movementState was just updated above)
           const currentActorNode = state.graph.getNode(actorId);
           const existingExploration = (currentActorNode?.properties?.explorationRecord as ExplorationRecord | undefined) ?? { visitedLocations: {} };
-          if (existingExploration.visitedLocations[arrivalLocId] === undefined) {
+
+          // ── Effect: reveal (THR-1242) ──
+          //
+          // `reveal` shipped on 17 content refs with no consumer of any kind, so
+          // a lantern that "reveals hexes within 2" lit nothing. This is the fog
+          // half of its wiring (the `encounters` half is in `encounterAwareness`):
+          // on arrival, every location within the reveal radius is stamped into
+          // the bearer's exploration record as if they had walked it.
+          //
+          // Stamped at the ARRIVAL tick, not the tick each place was first seen,
+          // because that is what the record means — "known to this agent since".
+          // Recorded only for places not already visited, so a reveal can never
+          // rewrite an earlier, truer first-visit tick.
+          //
+          // At arrival only, matching `entered_hex` above: a reveal is a property
+          // of where you now stand, and re-running the radius scan per movement
+          // step would multiply an O(locations) walk by the queue length for a
+          // horizon that has barely moved (NFP #7).
+          const revealHexRange = getRevealRanges(state.graph, actorId, state.effectStates).hexes;
+          const revealed: Record<string, number> = {};
+          if (revealHexRange > 0) {
+            const originHex = { col: arrHexCol, row: arrHexRow };
+            for (const loc of getPlaceTierLocations(state.graph)) {
+              if (existingExploration.visitedLocations[loc.id] !== undefined) continue;
+              const col = loc.properties?.hexCol as number | undefined;
+              const row = loc.properties?.hexRow as number | undefined;
+              if (typeof col !== 'number' || typeof row !== 'number') continue;
+              if (hexDistance(originHex, { col, row }) > revealHexRange) continue;
+              revealed[loc.id] = state.tick;
+            }
+          }
+
+          const firstVisit = existingExploration.visitedLocations[arrivalLocId] === undefined;
+          if (firstVisit || Object.keys(revealed).length > 0) {
             const updatedExploration: ExplorationRecord = {
               visitedLocations: {
                 ...existingExploration.visitedLocations,
-                [arrivalLocId]: state.tick,
+                ...revealed,
+                ...(firstVisit ? { [arrivalLocId]: state.tick } : {}),
               },
             };
             state.graph.updateNode(actorId, {
               properties: { ...currentActorNode!.properties, explorationRecord: updatedExploration },
             });
+            if (Object.keys(revealed).length > 0) {
+              emitTrace({
+                category: 'effect.revealed',
+                tick: state.tick,
+                agentId: actorId,
+                range: revealHexRange,
+                revealedCount: Object.keys(revealed).length,
+                summary: `${actor.name} reveals ${Object.keys(revealed).length} location(s) within ${revealHexRange} hexes`,
+              });
+            }
           }
 
           // ── Action trigger: movement_complete (TB-104 Phase 1B) ──
