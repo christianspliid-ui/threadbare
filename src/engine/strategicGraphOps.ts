@@ -207,6 +207,41 @@ export function claimControl(
 }
 
 /**
+ * Retire the `controls` edge a collapsed strategic stance left behind (THR-1286).
+ *
+ * Only edges this pack minted are removed — the `controlType: 'strategic'` stamp
+ * written by `claimControl` above. Worldgen mints its own `controls` edges carrying an
+ * `influence` property and no `controlType` (144 of the 161 in a seed-42 medium world at
+ * tick 150); those describe standing political control and are none of this pack's
+ * business.
+ *
+ * Without this the stale edge outlived the stance it recorded and made every later
+ * re-claim of that target fail `already_controls` — the decision was spent, nothing
+ * happened, and the same candidate returned next tick.
+ *
+ * Fail-soft (NFP #4): a missing edge is `success: true` with `createdId` absent, since
+ * the desired end state — no strategic control edge here — already holds.
+ */
+export function releaseControl(
+  graph: WorldGraph,
+  actorId: string,
+  targetNodeId: string,
+): GraphOpResult {
+  try {
+    const dead = graph.getOutgoingEdges(actorId, 'controls')
+      .filter(e => e.target === targetNodeId && e.properties?.controlType === 'strategic');
+
+    for (const edge of dead) {
+      graph.removeEdge(edge.id);
+    }
+
+    return { success: true, op: 'release_control', createdId: dead[0]?.id };
+  } catch (e) {
+    return { success: false, op: 'release_control', error: String(e) };
+  }
+}
+
+/**
  * Add or update a member_of edge (actor → faction).
  */
 export function joinOrUpdateMembership(

@@ -68,6 +68,24 @@ export const STRATEGIC_CONTROL_NEGLECT_GRACE_TICKS = 10;
 /** Degradation rate per tick after grace period expires (0-1 scale) */
 export const STRATEGIC_CONTROL_DEGRADATION_RATE = 0.05;
 
+/**
+ * Ticks an actor must wait before re-claiming a target whose control stance they
+ * themselves let degrade to collapse (THR-1286).
+ *
+ * Without this, a collapsed stance was re-proposed every tick forever: the dead record
+ * pinned `controlPressure` at its maximum, `claim_control` wrote no history so the
+ * variety guard never saw it, and the stale `controls` edge made every re-claim fail
+ * `already_controls` — a decision spent on a guaranteed no-op. Measured on seed 42 at
+ * 150 ticks: 811 of 2053 spotlight decisions (39.5%) were `strategic_control`, and they
+ * produced 17 successful claims.
+ *
+ * Sized against the neglect cycle it gates: grace (10) plus 1/`DEGRADATION_RATE` (20)
+ * ticks is one full claim-to-collapse arc, so the cooldown makes losing a stance cost
+ * roughly as long as holding it earned. Must stay below `STRATEGIC_HISTORY_WINDOW_TICKS`
+ * — the collapse record the cooldown reads lives in that window and is pruned with it.
+ */
+export const STRATEGIC_CONTROL_RECLAIM_COOLDOWN_TICKS = 30;
+
 // ─── Normalization ──────────────────────────────────────────────────
 
 /** Score floor — strategic candidates below this are rejected */
