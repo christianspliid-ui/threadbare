@@ -63,6 +63,7 @@ import {
   NOTABLE_AGENDA_SPHERE_PRESSURE_PER_PHASE,
   NOTABLE_AGENDA_CRACK_PRESSURE_MULTIPLIER,
 } from '../data/notable-agenda-config';
+import { AMBITION_KIND_FACTION, AMBITION_KIND_KEY } from './ambitionShape';
 
 // ─── World-flag helpers ────────────────────────────────────────────────────
 // Single source of truth for agenda flag names (mirrors rival `schemeFlags`).
@@ -508,6 +509,7 @@ function raiseCampaignArmy(
     type: 'ambition',
     name: `${factionNode?.name ?? factionId} — campaign`,
     properties: {
+      [AMBITION_KIND_KEY]: AMBITION_KIND_FACTION,
       ambitionType: 'territorial_expansion',
       priority: 0.7,
       targetNodeId: targetId,

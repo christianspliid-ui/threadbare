@@ -170,7 +170,25 @@ function clusterModules(repoRoot: string): DomainRow[] {
     let row = byDomain.get(domain);
     if (!row) { row = { domain, files: [], tags: [] }; byDomain.set(domain, row); }
     row.files.push(rel.replace(/\\/g, '/'));
-    const header = fs.readFileSync(abs, 'utf-8').slice(0, HEADER_SCAN_CHARS);
+    // Cut the header at a LINE boundary, never mid-token (THR-1285). A bare
+    // `.slice(0, HEADER_SCAN_CHARS)` can bisect a tag, and the truncated half still
+    // matches TAG_RE: `THR-711` straddling char 1500 in `factionAmbitions.ts` came
+    // out as `THR-7`, minting a canon reference to an unrelated ticket in the one
+    // table agents are told to grep before drafting. It surfaced only because a
+    // one-line import pushed that comment across the boundary — the failure is
+    // silent, deterministic, and produces a plausible-looking id, so nothing
+    // downstream would have caught it. Losing a tag that sits past the last complete
+    // line is the right trade against inventing one.
+    // Extend to the END of the straddling line rather than cutting back to the
+    // previous one: cutting back would *lose* tags that the old boundary happened to
+    // include whole (measured: `THR-711` in the faction domain, `M20` in culture),
+    // trading an invented id for a missing one. Extending forward bisects nothing and
+    // loses nothing — the window is a heuristic, and at most one extra line is read.
+    const raw = fs.readFileSync(abs, 'utf-8');
+    const lineEnd = raw.indexOf('\n', HEADER_SCAN_CHARS);
+    const header = raw.length > HEADER_SCAN_CHARS && lineEnd !== -1
+      ? raw.slice(0, lineEnd)
+      : raw;
     for (const t of header.match(TAG_RE) ?? []) row.tags.push(t.replace(/\s+/g, ' '));
   }
   return [...byDomain.values()]

@@ -17,6 +17,7 @@ import { FACTION_DEFINITIONS } from '../data/faction-definitions';
 import { isEligibleForArmySpawn, selectCommander, spawnArmy } from './armySpawning';
 import { deriveFactionProsperity } from './factionNetwork';
 import { emitTrace } from './traceBuffer';
+import { AMBITION_KIND_FACTION, AMBITION_KIND_KEY } from './ambitionShape';
 
 // ─── Constants ───────────────────────────────────────────────────────────
 
@@ -258,6 +259,7 @@ export function phaseFactionAmbitions(state: GameState): void {
       type: 'ambition',
       name: `${faction.name} — ${ambitionType.replace(/_/g, ' ')}`,
       properties: {
+        [AMBITION_KIND_KEY]: AMBITION_KIND_FACTION,
         ambitionType,
         priority: ambitionType === 'revenge' ? 0.8 : 0.5,
         targetNodeId: null, // Will be set when army/action targets are chosen

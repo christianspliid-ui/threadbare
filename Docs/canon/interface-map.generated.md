@@ -695,10 +695,10 @@ exit
 - **Intent:** Faction ambitions drive faction action and render on the faction sheet.
 - **Producer → Consumer:** Ambitions & Initiatives → Factions & Succession
 - **Module:** `src/engine/factionAmbitions.ts`
-- **Production hits:** 8 total — 1 write, 3 read, 4 unclassified
+- **Production hits:** 9 total — 1 write, 3 read, 5 unclassified
 - **Write sites:** `src/engine/phases/factionAmbitions.ts`
 - **Read sites:** `src/engine/factionGovernanceVerbs.ts`, `src/engine/phaseControlEffects.ts`, `src/engine/phases/index.ts`
-- **Other hits:** `src/components/Game/ArmySheet.tsx`, `src/data/faction-action-constants.ts`, `src/engine/effects/conditionProxyEvents.ts`, `src/engine/phaseMovement.ts`
+- **Other hits:** `src/components/Game/ArmySheet.tsx`, `src/data/faction-action-constants.ts`, `src/engine/ambitionShape.ts`, `src/engine/effects/conditionProxyEvents.ts`, `src/engine/phaseMovement.ts`
 - **Verdict:** Verified 2026-07-23: FactionSheet.activeAmbition renders; faction phases consume. Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified)
 
 ### `group-grudge-reaches-the-mortal-sheet` — 🟢 LIVE

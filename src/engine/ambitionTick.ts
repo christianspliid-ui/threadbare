@@ -31,6 +31,13 @@ import { collectGrantedTraits, GRANTED_TRAIT_EFFECTIVE_LEVEL } from './effects/e
 import { collectBearerTraitRefs } from './traitRefIndex';
 import { observeResidence, type ResidenceObservation } from './agentResidence';
 import type { AgentResidenceTrace } from '../types/trace';
+import {
+  AMBITION_KIND_KEY,
+  AMBITION_KIND_TEMPLATE,
+  getAmbitionKind,
+  getAmbitionTemplateId,
+  traceUnevaluableAmbition,
+} from './ambitionShape';
 
 // ─── Tunable Constants ───────────────────────────────────────────
 
@@ -345,14 +352,40 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
     // ── Evaluate each active ambition ──
     for (const edge of activeEdges) {
       const ambitionNode = graph.getNode(edge.target);
+      // No tripwire on this branch: `addEdge` refuses a dangling target and
+      // `removeNode` cascades its incident edges, so a `pursues` edge pointing at a
+      // node that is not in the graph is unreachable through the graph API. A trace
+      // here could never fire, and an instrument that cannot fire is not evidence.
       if (!ambitionNode) continue; // fail-soft
 
-      const templateId = ambitionNode.properties.templateId as string;
-      if (!templateId) continue; // fail-soft
+      // THR-1285: ask the shape module, not `properties.templateId` directly. A
+      // faction-vocabulary ambition has no template and never should — reaching one
+      // from an *individual* actor means the wrong vocabulary crossed over, which is
+      // a different fault from a corrupt template ambition. The skip stays fail-soft
+      // either way (NFP #4); the trace is what makes the class visible (NFP #2).
+      const kind = getAmbitionKind(ambitionNode);
+      if (kind !== AMBITION_KIND_TEMPLATE) {
+        traceUnevaluableAmbition(
+          tick, actor.id, actorLabel, ambitionNode.id,
+          kind === 'unknown' ? 'unclassifiable_ambition' : 'faction_kind_ambition',
+        );
+        continue; // fail-soft
+      }
+
+      const templateId = getAmbitionTemplateId(ambitionNode);
+      if (!templateId) {
+        traceUnevaluableAmbition(tick, actor.id, actorLabel, ambitionNode.id, 'missing_template_id');
+        continue; // fail-soft
+      }
 
       // Resolve across all pools so minted-ambition milestones are evaluated too.
       const template = findAmbitionTemplateById(templateId);
-      if (!template) continue; // fail-soft
+      if (!template) {
+        traceUnevaluableAmbition(
+          tick, actor.id, actorLabel, ambitionNode.id, 'template_not_found', templateId,
+        );
+        continue; // fail-soft
+      }
 
       // Build ActiveAmbition from edge properties
       const active: ActiveAmbition = {
@@ -474,6 +507,7 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
               type: 'ambition',
               name: tmpl?.displayName ?? minted.templateId,
               properties: {
+                [AMBITION_KIND_KEY]: AMBITION_KIND_TEMPLATE,
                 templateId: minted.templateId,
                 displayName: tmpl?.displayName ?? minted.templateId,
                 category: tmpl?.category ?? 'survival',
@@ -528,6 +562,7 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
                 type: 'ambition',
                 name: tmpl?.displayName ?? assignment.templateId,
                 properties: {
+                  [AMBITION_KIND_KEY]: AMBITION_KIND_TEMPLATE,
                   templateId: assignment.templateId,
                   displayName: tmpl?.displayName ?? assignment.templateId,
                   category: tmpl?.category ?? 'survival',

@@ -2410,6 +2410,41 @@ export interface CompulsionDecayedTrace extends TraceBase {
 }
 
 /**
+ * Trace: an agent's ambition advanced, resolved, was assigned — or could not be
+ * evaluated at all (THR-1285).
+ *
+ * `ambition_progress` has been in `TRACE_CATEGORIES` since TB-062 with **no declared
+ * payload**, so it was absent from the `TraceEntry` union and all three of
+ * `ambitionTick`'s emit sites were type errors against `TraceEntryInput`, sitting in
+ * the THR-489 baseline. Declaring the payload here is the same fix THR-1175 applied to
+ * `secret_discovered` / `favor_created` a few interfaces up, and for the same reason:
+ * it removes those three rather than adding a fourth for this ticket's tripwire, and
+ * the next author to emit one gets checked instead of baselined.
+ *
+ * Fields are optional beyond `category` because the sites carry different subsets — a
+ * milestone emits `result` + `milestones`, an assignment emits `templateId`, and the
+ * unevaluable-ambition tripwire emits `ambitionNodeId` + `reason` with no template to
+ * name. Narrowing further would mean widening the emit sites to satisfy the type,
+ * which is how a payload interface ends up asserted past with `as` instead of used.
+ */
+export interface AmbitionProgressTrace extends TraceBase {
+  category: 'ambition_progress';
+  actorId?: string;
+  /** The ambition template, when the row is about one. Absent on the tripwire. */
+  templateId?: string;
+  /** Graph node id of the ambition — the tripwire's subject. */
+  ambitionNodeId?: string;
+  /** What happened: milestone reached, ambition resolved, ambition assigned. */
+  result?: string;
+  /** Completed milestone ids at the time of the row. */
+  milestones?: string[];
+  /** Discriminates the tripwire row (`'skipped'`) from the progress rows. */
+  event?: string;
+  /** Why the ambition could not be evaluated — see `AmbitionSkipReason`. */
+  reason?: string;
+}
+
+/**
  * Trace: a social-leverage edge was written, or was not (THR-1175).
  *
  * `secret_discovered` and `favor_created` have been in `TRACE_CATEGORIES` since
@@ -2735,6 +2770,7 @@ export type TraceEntry =
   | NudgeAttunementUnlockTrace
   | CompulsionPlantedTrace
   | CompulsionDecayedTrace
+  | AmbitionProgressTrace
   // Scene-targeting aftermath sentinels + bond_change (THR-695, Slice B)
   | AftermathSentinelBoundTrace
   | BondChangeAppliedTrace

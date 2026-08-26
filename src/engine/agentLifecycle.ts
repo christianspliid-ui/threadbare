@@ -30,6 +30,7 @@ import {
 } from './effects/ruleOverrideConsumers';
 import type { EncounterCacheManager } from './encounterCache';
 import { BORN_LATER_PREFER_CONTENT_LOCATIONS, BORN_LATER_MIN_TEMPLATES } from '../data/agent-behavior-constants';
+import { AMBITION_KIND_KEY, AMBITION_KIND_TEMPLATE } from './ambitionShape';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
 
@@ -374,6 +375,7 @@ export function phaseAgentLifecycle(
                 type: 'ambition',
                 name: template.displayName,
                 properties: {
+                  [AMBITION_KIND_KEY]: AMBITION_KIND_TEMPLATE,
                   templateId: template.id,
                   displayName: template.displayName,
                   category: template.category,

@@ -72,6 +72,7 @@ import {
   hashString,
   type AmbitionCandidate,
 } from './factionAmbitions';
+import { AMBITION_KIND_FACTION, AMBITION_KIND_KEY } from './ambitionShape';
 
 // ─── Shared helpers ──────────────────────────────────────────────────────────
 
@@ -643,6 +644,7 @@ export function applyKindleACalling(
     type: 'ambition',
     name: `${factionNode.name} — ${chosenType.replace(/_/g, ' ')} (kindled)`,
     properties: {
+      [AMBITION_KIND_KEY]: AMBITION_KIND_FACTION,
       ambitionType: chosenType,
       priority: chosenType === 'revenge' ? 0.85 : 0.7,
       targetNodeId: null,

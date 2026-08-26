@@ -9,6 +9,7 @@ import type { AmbitionAgentSnapshot } from './ambitionSelection';
 import type { WorldGraph } from './graph';
 import { selectAmbitions } from './ambitionSelection';
 import { AMBITION_TEMPLATES } from '../data/ambition-templates';
+import { AMBITION_KIND_KEY, AMBITION_KIND_TEMPLATE } from './ambitionShape';
 
 export interface AmbitionAssignment {
   templateId: string;
@@ -94,6 +95,7 @@ export function assignAmbitionToActor(
       type: 'ambition',
       name: template.displayName ?? templateId,
       properties: {
+        [AMBITION_KIND_KEY]: AMBITION_KIND_TEMPLATE,
         templateId,
         displayName: template.displayName ?? templateId,
         category: template.category ?? 'survival',

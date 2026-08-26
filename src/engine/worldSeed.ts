@@ -62,6 +62,7 @@ import type { SphereName as SphereNameType } from '../types/index';
 import { AMBITION_TEMPLATES } from '../data/ambition-templates';
 import type { AmbitionAgentSnapshot } from './ambitionSelection';
 import { collectGrantedTraits } from './effects/effectQueries';
+import { AMBITION_KIND_FACTION, AMBITION_KIND_KEY, AMBITION_KIND_TEMPLATE } from './ambitionShape';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
 
@@ -1553,6 +1554,7 @@ export function seedWorld(
           type: 'ambition',
           name: tmpl?.displayName ?? assignment.templateId,
           properties: {
+            [AMBITION_KIND_KEY]: AMBITION_KIND_TEMPLATE,
             templateId: assignment.templateId,
             displayName: tmpl?.displayName ?? assignment.templateId,
             category: tmpl?.category ?? 'survival',
@@ -1673,6 +1675,7 @@ export function seedWorld(
       type: 'ambition',
       name: `${companyName} — resource acquisition`,
       properties: {
+        [AMBITION_KIND_KEY]: AMBITION_KIND_FACTION,
         ambitionType: 'resource_acquisition',
         priority: 0.5,
         targetNodeId: null,
