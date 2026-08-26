@@ -1187,6 +1187,8 @@ With the markers, `artifact.enchant` / `artifact.empower` charge 4 essence at di
 | `combat_started` | a field battle is created, for the **commanders of both armies** and nobody else | `encounter_started` | `enter_combat` |
 | `combat_ended` | that battle resolves — raised *before* the aftermath, so a commander who dies there still gets it | — | `leave_combat` |
 | `encounter_outcome` | the bearer finishes an encounter step | — | `encounter_complete` |
+| `damaged` | a **harmful** condition is inflicted on the bearer — a wound, a curse, exhaustion, terror (THR-1244) | `damaged` | `take_damage` |
+| `healed` | a harmful condition is lifted from the bearer **early**, before its countdown runs out (THR-1244) | `healed` | — |
 
 **How to author it:**
 
@@ -1206,11 +1208,12 @@ With the markers, `artifact.enchant` / `artifact.empower` charge 4 essence at di
 
 1. **`entered_hex` means arrival, not travel.** A five-hex journey raises it once, at the end. Author the fiction as *"when they get somewhere"*, never *"as they travel"* — per-step firing was considered and rejected (roughly 4× the event volume for no design gain).
 2. **Combat events reach commanders only.** An army is a headcount, not a roster of people, so the only agent in a battle is the commander on each side. Gear on a foot soldier does not exist to notice anything, because the foot soldier does not exist as a node.
-3. **A one-shot is spent even when it cannot land.** `target: 'other_agent'` resolves to the encounter counterpart; in a solo encounter there is nobody, and the shot is spent anyway rather than waiting for a later encounter that has one. Author it as *a thing that happens once*, not *a thing that waits for the right moment*.
+3. **`damaged` is a condition, not a hit point — and `healed` means *rescued*, not *recovered*.** This game has no health bar; being hurt is carrying a harmful condition, and getting better is that condition's countdown reaching zero. So `damaged` fires the moment a wound, curse or terror lands, and `healed` fires **only when something lifts one early**. A condition that simply times out raises nothing at all — deliberately, because a ward that fired every time any bruise anywhere wore off would be firing constantly and meaning nothing. Author the fiction accordingly: *"answers when its bearer is hurt"* and *"answers when someone pulls its bearer back"*, never *"answers when its bearer gets better"*. Polarity is read off the condition's `#negative` tag, so gaining `blessed` is not damage and losing it is not a heal; and only **people** raise these — a besieged town or an army is not a body. The event's `amount` is the condition's intensity, not a damage figure.
+4. **A one-shot is spent even when it cannot land.** `target: 'other_agent'` resolves to the encounter counterpart; in a solo encounter there is nobody, and the shot is spent anyway rather than waiting for a later encounter that has one. Author it as *a thing that happens once*, not *a thing that waits for the right moment*.
 
 **Charges now deplete.** A `consumable_charge` attachment spends one charge each time its bearer completes an encounter step in the charge's own `onUse.reach`, and an item that empties its last charge with `destroyOnEmpty` is gone. Before this, nothing decremented the counter anywhere, the destroy-at-0 branch was unreachable, and **every "3 charges" item in the catalogs was unlimited**. If you authored a charge count as flavour, it is now load-bearing: write the number you actually mean.
 
-**Where to find the implementation:** `raiseEffectEvent` in `src/engine/effects/effectEventDispatch.ts` (the shared raise path, called from `phaseMovement`, `battleResolution`, `orchestrator` and `phaseDoom`), the dispatch itself in `src/engine/effects/effectEvents.ts`, and the charge spend in `src/engine/effects/consumableCharges.ts`. Every raise emits an `effect.event_raised` trace naming its site and how many reactives fired — filter the trace viewer on it to check whether *your* gear is being reached.
+**Where to find the implementation:** `raiseEffectEvent` in `src/engine/effects/effectEventDispatch.ts` (the shared raise path, called from `phaseMovement`, `battleResolution`, `orchestrator`, `phaseDoom` and `effects/conditionProxyEvents.ts`), the dispatch itself in `src/engine/effects/effectEvents.ts`, and the charge spend in `src/engine/effects/consumableCharges.ts`. Every raise emits an `effect.event_raised` trace naming its site and how many reactives fired — filter the trace viewer on it to check whether *your* gear is being reached.
 
 ### Capability 24: Auras — Gear That Helps the People Standing Nearby (THR-1243)
 
