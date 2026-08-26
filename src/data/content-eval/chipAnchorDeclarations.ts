@@ -55,6 +55,28 @@ export const ANCHOR_SENTINEL_TARGET = '$target';
 export const ANCHOR_SENTINEL_CAST_PREFIX = '$cast:';
 /** A faction, by its **definition** id: `$faction:holy_order_dawn`. */
 export const ANCHOR_SENTINEL_FACTION_PREFIX = '$faction:';
+/**
+ * The artifact this encounter minted — THR-1275.
+ *
+ * A `possession` chip is a sentence about a *thing*, and until this sentinel
+ * existed it could only anchor a *person*. `spawn_artifact` keys its node
+ * `artifact_spawned_<encounterId>_<reactionId>_<i>_<tick>`, so the id carries the
+ * tick and the effect index and no author can write it; the only literal the gate
+ * accepts is an attachment template, which an artifact is not. So the whole
+ * `possession` family was structurally forced to anchor the holder — the brief
+ * discipline's "don't make every chip about a person" enforced in exactly the
+ * wrong direction, and the package critic's P1 finding on The Beast in the
+ * Granary.
+ *
+ * Ratified architecture points here rather than at blessing holder-anchoring:
+ * THR-1156 holds that a chip anchors a **real graph object**, and the possession
+ * is the object the sentence is about.
+ *
+ * The mint already stamps `sourceEncounterId` on the node, which is what makes
+ * this resolvable at all — the sentinel is a lookup of that stamp, not new
+ * bookkeeping. See {@link findSpawnedArtifactNodeId} for the pick order.
+ */
+export const ANCHOR_SENTINEL_ARTIFACT = '$artifact';
 
 /** Whether a declared `entityId` is a sentinel rather than a literal id. */
 export function isAnchorSentinel(entityId: string): boolean {
@@ -63,7 +85,10 @@ export function isAnchorSentinel(entityId: string): boolean {
 
 /** What a declared `entityId` turned out to be, once classified. */
 export type AnchorDeclarationVerdict =
-  | { readonly ok: true; readonly form: 'actor' | 'target' | 'cast' | 'faction' | 'attachment_template' }
+  | {
+      readonly ok: true;
+      readonly form: 'actor' | 'target' | 'cast' | 'faction' | 'artifact' | 'attachment_template';
+    }
   | { readonly ok: false; readonly reason: string };
 
 export interface ClassifyAnchorOptions {
@@ -73,6 +98,24 @@ export interface ClassifyAnchorOptions {
    * typo'd node id, and it is checkable here rather than at render.
    */
   readonly supportKeys: ReadonlySet<string>;
+  /**
+   * Whether this template authors a `spawn_artifact` effect anywhere — THR-1275.
+   *
+   * `$artifact` is the one sentinel whose referent the *template* has to create;
+   * `$actor` and `$target` name people the encounter already has, and `$faction:`
+   * names committed content. So an author writing `$artifact` on a template that
+   * mints nothing has written the sentinel equivalent of a typo'd cast key, and
+   * this is where that is catchable — at render it would fail soft to plain text
+   * and look like a styling choice.
+   *
+   * **Optional, and absent means "the caller cannot say" rather than "no".** A
+   * caller holding only the declaration (the unit tests, an ad-hoc probe) is
+   * asking "could this form ever resolve", which is the same question
+   * `classifyAnchorDeclaration` answers for `$faction:` in a world that spawned no
+   * chapter. The shipping gate is never vacuous on that account, because
+   * `chipAnchorViolations` always computes and passes it.
+   */
+  readonly mintsArtifact?: boolean;
 }
 
 /**
@@ -89,6 +132,19 @@ export function classifyAnchorDeclaration(
 ): AnchorDeclarationVerdict {
   if (entityId === ANCHOR_SENTINEL_ACTOR) return { ok: true, form: 'actor' };
   if (entityId === ANCHOR_SENTINEL_TARGET) return { ok: true, form: 'target' };
+
+  if (entityId === ANCHOR_SENTINEL_ARTIFACT) {
+    if (options.mintsArtifact === false) {
+      return {
+        ok: false,
+        reason:
+          `'${entityId}' names the artifact this encounter mints, but the template `
+          + 'authors no `spawn_artifact` effect anywhere — so there is nothing for it '
+          + 'to point at',
+      };
+    }
+    return { ok: true, form: 'artifact' };
+  }
 
   if (entityId.startsWith(ANCHOR_SENTINEL_CAST_PREFIX)) {
     const key = entityId.slice(ANCHOR_SENTINEL_CAST_PREFIX.length);
@@ -117,6 +173,7 @@ export function classifyAnchorDeclaration(
       reason:
         `'${entityId}' is not a sentinel this build resolves — the forms are `
         + `'${ANCHOR_SENTINEL_ACTOR}', '${ANCHOR_SENTINEL_TARGET}', `
+        + `'${ANCHOR_SENTINEL_ARTIFACT}', `
         + `'${ANCHOR_SENTINEL_CAST_PREFIX}<key>', `
         + `'${ANCHOR_SENTINEL_FACTION_PREFIX}<defId>'`,
     };
@@ -149,6 +206,18 @@ export interface ResolveAnchorContext {
   readonly targetId?: string | undefined;
   /** Resolved support bindings, keyed as the template declared them. */
   readonly castNodeIdByKey: ReadonlyMap<string, string>;
+  /**
+   * The template id of the encounter being resolved — what `$artifact` searches by
+   * (THR-1275).
+   *
+   * `spawn_artifact` stamps `sourceEncounterId` on the node it mints, and
+   * `encounterAftermath` sets that value from `action.templateId`. So this is the
+   * same string on both sides of the mint, which is what lets the sentinel find the
+   * artifact without the veil having to be handed mint-time state it never sees.
+   * Optional: a caller with no template id resolves `$artifact` to `undefined` and
+   * the chip renders as text (NFP #4).
+   */
+  readonly encounterTemplateId?: string | undefined;
 }
 
 /**
@@ -166,6 +235,10 @@ export function resolveAnchorDeclaration(
 
   if (entityId === ANCHOR_SENTINEL_ACTOR) return context.actorId;
   if (entityId === ANCHOR_SENTINEL_TARGET) return context.targetId;
+
+  if (entityId === ANCHOR_SENTINEL_ARTIFACT) {
+    return findSpawnedArtifactNodeId(context);
+  }
 
   if (entityId.startsWith(ANCHOR_SENTINEL_CAST_PREFIX)) {
     return context.castNodeIdByKey.get(entityId.slice(ANCHOR_SENTINEL_CAST_PREFIX.length));
@@ -187,6 +260,67 @@ export function resolveAnchorDeclaration(
  * choice is the same on every run from the same seed (NFP #3) — `getNodesByType`
  * ordering is an insertion detail, not a promise.
  */
+/**
+ * The artifact node this encounter minted, in *this* world — THR-1275.
+ *
+ * Search key is the `sourceEncounterId` stamp `spawn_artifact` writes, which equals
+ * the resolving action's `templateId`. Pick order, and why each step is where it is:
+ *
+ * 1. **An artifact the actor now holds.** A `possession` chip is about a possession,
+ *    so an artifact hanging off the actor's `possesses` / `bonded_to` edge is the one
+ *    the sentence means. This also disambiguates the case the tick stamp cannot: two
+ *    agents resolving the same template on the same tick mint two nodes carrying the
+ *    same `sourceEncounterId`, and only the edge says which is whose.
+ * 2. **The most recent mint.** The veil renders straight after the write, so the
+ *    newest node is this playthrough's rather than a previous run of the same
+ *    encounter elsewhere in the world.
+ * 3. **Lowest node id**, so a genuine tie resolves identically on every run from the
+ *    same seed (NFP #3).
+ *
+ * Returns `undefined` when nothing matches — no template id, no mint yet, an
+ * encounter that spawned nothing — and the chip renders as plain text rather than a
+ * link to nowhere (NFP #4, Law 21). Both artifact node types are searched: `tier`
+ * decides between `artifact` and `artifact_legendary` at mint, and an author writing
+ * `$artifact` is naming the thing, not its tier.
+ */
+function findSpawnedArtifactNodeId(context: ResolveAnchorContext): string | undefined {
+  const { graph, actorId, encounterTemplateId } = context;
+  if (!encounterTemplateId) return undefined;
+
+  const matches = [
+    ...graph.getNodesByType('artifact'),
+    ...graph.getNodesByType('artifact_legendary'),
+  ].filter(node => node.properties?.sourceEncounterId === encounterTemplateId);
+
+  if (matches.length === 0) return undefined;
+
+  const held = new Set<string>(
+    actorId
+      ? [
+          ...graph.getOutgoingEdges(actorId, 'possesses'),
+          ...graph.getOutgoingEdges(actorId, 'bonded_to'),
+        ].map(edge => edge.target)
+      : [],
+  );
+
+  const preferred = matches.filter(node => held.has(node.id));
+  const pool = preferred.length > 0 ? preferred : matches;
+
+  // Sort by id first so the reduce below breaks a same-tick tie by id rather than by
+  // graph insertion order, which is not a promise.
+  return [...pool]
+    .sort((a, b) => a.id.localeCompare(b.id))
+    .reduce((best, node) => {
+      const bestTick = typeof best.properties?.spawnedAtTick === 'number'
+        ? best.properties.spawnedAtTick
+        : -Infinity;
+      const nodeTick = typeof node.properties?.spawnedAtTick === 'number'
+        ? node.properties.spawnedAtTick
+        : -Infinity;
+      return nodeTick > bestTick ? node : best;
+    }).id;
+}
+
 function findFactionNodeId(graph: WorldGraph, factionDefId: string): string | undefined {
   if (!factionDefId) return undefined;
   const matches: string[] = [];

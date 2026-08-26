@@ -755,6 +755,11 @@ function buildAftermath(
         castNodeIdByKey: new Map(
           (activeAction.supportBindings ?? []).map(b => [b.key, b.nodeId]),
         ),
+        // THR-1275 — what `$artifact` searches by. `spawn_artifact` stamps
+        // `sourceEncounterId` from `action.templateId`, so passing the same value
+        // here is what lets a `possession` chip anchor the possession instead of
+        // the holder. Without it the sentinel fails soft to text.
+        encounterTemplateId: activeAction.templateId,
       }),
   });
 

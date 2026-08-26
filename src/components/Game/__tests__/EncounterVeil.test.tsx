@@ -1088,6 +1088,88 @@ describe('aftermath mode', () => {
     expect(handedId).not.toMatch(/^\$/);
   });
 
+  // ── THR-1275 — the noun must reach the *possession*, not the holder ────
+  //
+  // The surface half of the `$artifact` sentinel. `spawn_artifact` keys its node
+  // `artifact_spawned_<encounterId>_<reactionId>_<i>_<tick>`, so no author could
+  // write it and the only literal the gate accepts is an attachment template —
+  // which an artifact is not. Every `possession` chip in the corpus was therefore
+  // forced to anchor the *holder*: the brief discipline's "don't make every chip
+  // about a person" enforced structurally, in the wrong direction. The package
+  // critic's P1 finding on The Beast in the Granary.
+  //
+  // Same reason THR-1130 needed a surface arm rather than a unit test alone: the
+  // wrong anchor resolves perfectly well, so what makes this evidence is *which
+  // id* reaches the host.
+
+  const possessionAnchorModel: EncounterStageModel = {
+    ...grantChipModel,
+    aftermath: {
+      ...grantChipModel.aftermath!,
+      consequences: [
+        {
+          ...grantChipModel.aftermath!.consequences![0],
+          nounLabel: 'THE GRANARY KEY',
+          nounTooltipId: undefined,
+          // What `resolveAnchorDeclaration` produced from '$artifact' — the
+          // adapter resolves the sentinel before the model reaches the veil.
+          nounEntityId: 'artifact_spawned_the_beast_1',
+          nounEntityKind: 'artifact',
+        },
+      ],
+    },
+  };
+
+  it('opens the minted artifact for a possession noun, never the holder or the sentinel', () => {
+    const onSelectEntity = vi.fn();
+    const onSelectAgent = vi.fn();
+    render(
+      <EncounterVeil
+        {...defaultProps}
+        model={possessionAnchorModel}
+        onSelectEntity={onSelectEntity}
+        onSelectAgent={onSelectAgent}
+      />,
+    );
+
+    const noun = within(screen.getByTestId('consequence-chip-wound'))
+      .getByRole('button', { name: 'THE GRANARY KEY' });
+    fireEvent.click(noun);
+
+    expect(onSelectEntity).toHaveBeenCalledWith('artifact_spawned_the_beast_1', 'artifact');
+    // The assertion that fails on the pre-fix shape: with no `$artifact` sentinel
+    // the only anchor an author could reach for was the holder, which routes to
+    // the agent drawer instead of the artifact's own sheet.
+    expect(onSelectAgent).not.toHaveBeenCalled();
+    const [[handedId]] = onSelectEntity.mock.calls;
+    expect(handedId).not.toMatch(/^\$/);
+  });
+
+  it('leaves a possession noun as text when the sentinel resolved to nothing', () => {
+    // The fail-open half (NFP #4, Law 21). An encounter that minted no artifact
+    // resolves `$artifact` to `undefined`, and the chip must then render as the
+    // plain text it was before it declared anything — not a control into nowhere.
+    const unmintedNoun: EncounterStageModel = {
+      ...possessionAnchorModel,
+      aftermath: {
+        ...possessionAnchorModel.aftermath!,
+        consequences: [
+          {
+            ...possessionAnchorModel.aftermath!.consequences![0],
+            nounEntityId: undefined,
+            nounEntityKind: undefined,
+          },
+        ],
+      },
+    };
+    render(<EncounterVeil {...defaultProps} model={unmintedNoun} onSelectEntity={vi.fn()} />);
+
+    const chip = within(screen.getByTestId('consequence-chip-wound'));
+    expect(chip.queryByRole('button', { name: 'THE GRANARY KEY' })).not.toBeInTheDocument();
+    expect(screen.getByTestId('consequence-chip-noun-wound-seg-0'))
+      .toHaveTextContent('THE GRANARY KEY');
+  });
+
   it('leaves the noun plain when the registry cannot explain it', () => {
     // The falsification half. An id the registry cannot answer must render as
     // plain text — never as an underline into nothing (Law 21), and never as
