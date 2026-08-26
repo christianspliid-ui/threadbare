@@ -131,6 +131,27 @@ for exists. Producers are now `phaseMovement`, `battleResolution`, `orchestrator
 carrying its site — including when nothing was listening, which is the signal that separates
 a live-but-unheard producer from an unwired one.
 
+Its mirror image landed a day later: **`rule-overrides-reach-owning-sites`** (THR-1241,
+2026-08-26) — the *read* half of what THR-1240 opened. Where the event contract had a healthy
+consumer and no producer, this one had a healthy producer and **eleven of thirteen keys with no
+consumer at all**. The store kept every `ActiveRuleOverride` correctly, `getActiveRuleOverride`
+folded them correctly, and nothing asked: an artifact could promise `death_prevented` and the
+mortal wearing it still died, because the only function that decides a death never read the key.
+Five keys had shipped catalog content making a promise the engine could not keep. Every symbol an
+audit greps for existed on both sides — the same blindness, entered from the other end, which is
+why the two rows sit together here rather than one being filed as a repeat of the other.
+
+The fix is one shared reader (`ruleOverrideConsumers.ts`) called from the single site that owns
+each rule, because the alternative — eleven inline reads — is eleven chances to disagree about the
+neutral, the fold, or the trace, and an inline `?? 1.0` at a `*_bonus` site is a permanent bug no
+test catches, since the number it produces is plausible. `doom_rate_multiplier`, the one key that
+*did* have a consumer, was migrated onto the same reader: its hand-rolled scan saw only
+attachment-declared overrides, folded unclamped, and ignored duration and cooldown state, so the
+single wired key was also the single disagreeing one. One partial reach is stated rather than
+hidden — `backlash_severity_multiplier` reads inside `evaluateBacklash`, whose caller
+`activateSpell` still has no production caller, so that key is live in code and goes live in play
+when spell activation does.
+
 **Personality & Emergent Traits** — first slice, 2 contracts, audited 2026-07-26 (THR-786),
 audit-on-touch triggered by the trait-predicate unification. `trait-predicate-resolution` is
 🟢 LIVE: all six trait-predicate read sites (encounter filter pipeline, effect-predicate

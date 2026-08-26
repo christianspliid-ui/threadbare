@@ -573,6 +573,10 @@
     <h3>Quick Reference Glossary</h3>
     <div class="concepts-grid">
       <dl class="concept">
+        <dt>Rule override</dt>
+        <dd>A <code>modify_rules</code> effect that bends one named rule for its bearer. Thirteen keys; since THR-1241 each has exactly one owning site that reads it, and a read that changes an outcome emits an <code>effect.rule_override_consumed</code> trace. The two that touch encounters directly are <code>encounter_difficulty_modifier</code> and <code>encounter_reach_override</code>.</dd>
+      </dl>
+      <dl class="concept">
         <dt>Reach</dt>
         <dd>One of eight activity domains (Iron, Gold, Shadow, Veil, Heart, Eye, Stone, Star). What you <em>do</em>.</dd>
       </dl>

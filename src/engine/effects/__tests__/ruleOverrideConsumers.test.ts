@@ -209,9 +209,14 @@ describe('tier_advancement_cost_multiplier — capabilityGrowth is the owning si
 
 describe('faction_influence_multiplier — factionReputation is the owning site', () => {
   function withMembership(graph: WorldGraph) {
+    // A faction is an `actor` node carrying `actorType: 'faction'` — there is no
+    // 'faction' NodeType. Getting this wrong still passed the behavioural
+    // assertions (the lookup resolves through the `member_of` edge target), which
+    // is precisely why the fixture has to match the real shape rather than a
+    // plausible one.
     graph.addNode({
-      id: 'faction_def_guild', type: 'faction', name: 'The Guild',
-      properties: { factionDefId: 'guild' },
+      id: 'faction_def_guild', type: 'actor', name: 'The Guild',
+      properties: { actorType: 'faction', factionDefId: 'guild' },
     });
     graph.addEdge({
       id: 'e.member', type: 'member_of', source: 'a1', target: 'faction_def_guild',

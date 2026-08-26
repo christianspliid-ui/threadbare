@@ -521,6 +521,10 @@
     <h3>Post-Tick Bookkeeping</h3>
     <div class="post-tick-grid">
       <div class="post-tick-item">
+        <strong>Rule-Override Reads (THR-1241)</strong>
+        <span>Two in-tick phases now pass rule-override context to the sites that own a key: the effect-tick phase hands it to <code>tickEffects</code> (so <code>cooldown_multiplier</code> can shorten a dormant stretch) and the condition-decay phase hands it to <code>decayConditions</code> (so <code>healing_multiplier</code> can lift a wound sooner). No phase was added and no ordering changed — the existing phases simply carry what their sites need to read.</span>
+      </div>
+      <div class="post-tick-item">
         <strong>Visibility Recalc</strong>
         <span>Recompute fog-of-war from ascendant's line-of-sight and scry targets. Auto-reveal land layer for newly-visible hexes.</span>
       </div>

@@ -15,12 +15,12 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 55 |
+| 🟢 LIVE | 56 |
 | 🟠 PARTIAL | 2 |
 | 🔴 LEAKED | 7 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 14 |
-| **Total** | **78** |
+| **Total** | **79** |
 
 ## Contracts by producing subsystem
 
@@ -98,6 +98,7 @@ remediation ticket or the build fails.
 |---|---|---|---|---|---|
 | `aura-reaches-resolution-modifiers` | A nearby agent's aura tilts the step someone else is resolving — the one modifier the acting agent does not carry, named on the panel like every other. | function: `collectAuraEffectsNear`, `selectAuraEmitters`, `resolveAuraModifiers`, `collectAuraContributions` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `effect-executor-overlay-persistence` | Terrain overlays and rule overrides an executor produces are persisted on GameState, expire on schedule, and are readable by the systems they govern. | function: `applyExecutionOverlays`, `expireOverlays`, `getPersistedRuleOverride` | Effects & Conditions | 🟢 LIVE | — |
+| `rule-overrides-reach-owning-sites` | Every RuleOverrideKey is read by the one system that owns the rule it bends, through a single shared reader. | function: `readMultiplierOverride`, `readBonusOverride`, `readFlagOverride`, `readReachOverride` | Effects & Conditions | 🟢 LIVE | — |
 
 ### Encounters & Dilemmas
 
@@ -314,20 +315,20 @@ exit
 - **Intent:** Items shape action resolution rolls — a blade makes its bearer likelier to succeed.
 - **Producer → Consumer:** Attachments, Items & Possessions → Encounters & Dilemmas
 - **UL terms:** *Attachment*, *Test Shaper*
-- **Production hits:** 17 total — 6 write, 1 read, 10 unclassified
-- **Write sites:** `src/engine/effectResolver.ts`, `src/engine/effects/consumableCharges.ts`, `src/engine/effects/effectEvents.ts`, `src/engine/effects/effectQueries.ts`, `src/engine/effects/effectWalker.ts` +1 more
+- **Production hits:** 17 total — 7 write, 1 read, 9 unclassified
+- **Write sites:** `src/engine/effectResolver.ts`, `src/engine/effects/consumableCharges.ts`, `src/engine/effects/effectEvents.ts`, `src/engine/effects/effectQueries.ts`, `src/engine/effects/effectWalker.ts` +2 more
 - **Read sites:** `src/engine/unifiedActionResolution.ts`
-- **Other hits:** `src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts`, `src/data/ascendant-expression-constants.ts`, `src/data/unified-action-templates.ts`, `src/engine/ascendantExpression.ts`, `src/engine/ascendantPrimitives.ts` +5 more
+- **Other hits:** `src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts`, `src/data/ascendant-expression-constants.ts`, `src/data/unified-action-templates.ts`, `src/engine/ascendantExpression.ts`, `src/engine/ascendantPrimitives.ts` +4 more
 - **Verdict:** Verified 2026-07-23: effects[] → effectWalker → collectTestShapers is the live mechanical path (2026-03-31 generic effect system). Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified)
 
 ### `attachment-effects-tick` — 🟢 LIVE
 
 - **Intent:** Effects tick, decay, stack and expire on their host agent.
 - **Producer → Consumer:** Attachments, Items & Possessions → Effects & Conditions
-- **Production hits:** 11 total — 3 write, 1 read, 7 unclassified
+- **Production hits:** 12 total — 3 write, 1 read, 8 unclassified
 - **Write sites:** `src/engine/effects/effectEvents.ts`, `src/engine/effects/index.ts`, `src/engine/effectShellRuntime.ts`
 - **Read sites:** `src/engine/unifiedActionResolution.ts`
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/data/ascendant-expression-constants.ts`, `src/data/effect-shell-proof-templates.ts`, `src/data/unified-action-templates.ts`, `src/engine/ascendantExpression.ts` +2 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/data/ascendant-expression-constants.ts`, `src/data/effect-shell-proof-templates.ts`, `src/data/unified-action-templates.ts`, `src/engine/ascendantExpression.ts` +3 more
 - **Verdict:** Verified 2026-07-23: Orchestrator phase 2a.4 runs effectTick. Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified)
 
 ### `attachment-encounter-rewards` — 🟢 LIVE
@@ -659,10 +660,10 @@ exit
 
 - **Intent:** Terrain overlays and rule overrides an executor produces are persisted on GameState, expire on schedule, and are readable by the systems they govern.
 - **Producer → Consumer:** Effects & Conditions → Effects & Conditions
-- **Production hits:** 5 total — 1 write, 3 read, 1 unclassified
+- **Production hits:** 6 total — 1 write, 3 read, 2 unclassified
 - **Write sites:** `src/engine/effects/effectEventDispatch.ts`
 - **Read sites:** `src/engine/effects/effectOverlayStore.ts`, `src/engine/effects/effectQueries.ts`, `src/engine/orchestrator.ts`
-- **Other hits:** `src/engine/effects/index.ts`
+- **Other hits:** `src/engine/effects/index.ts`, `src/engine/effects/ruleOverrideConsumers.ts`
 - **Verdict:** Verified 2026-08-25: THR-1240. Both halves of this contract existed and were never joined: executeAlterTerrain and executeModifyRules have always returned populated terrainOverlays/ruleOverrides on ExecutionResult, and every consumer looped result.mutations — which both executors leave EMPTY — applied nothing, and dropped the other two fields. The primitives therefore returned success: true and changed nothing, which is the value-level deadness this registry exists to catch: symbol-matching greps both sides green. GameState.activeTerrainOverlays (hex-keyed) and activeRuleOverrides (agent-keyed) are the destination; the drain moved into applyExecutionResult so there is ONE apply path (phaseDoom's duplicated inline mutation loop was migrated onto it rather than left as a second copy that could keep dropping fields). Expiry runs world-level once per tick in the orchestrator effect-tick phase, since an overlay outlives the agent that cast it. Non-vacuous by falsification: disabling the single drain line fails exactly the two end-to-end tests and no others (2 failed / 19 passed), so the tests assert the wiring rather than the store. Unit coverage: src/engine/effects/__tests__/effectOverlayStore.test.ts (21 tests), driving the REAL executors rather than hand-built overlay literals — a fixture that builds its own ActiveTerrainOverlay would pass identically against the broken build, because the break was never in the store. Reach note: the catalog's own alter_terrain uses (artifact-templates.ts) sit behind artifact activation, which is still dormant; the live producer today is a reactive nested effect, which THR-1239 made reachable. Stage 4 migrates create_barrier onto alter_terrain and is what puts catalog content on this path.
 
 ### `essence-earned-unlocks-attunement-cards` — 🟢 LIVE
@@ -854,10 +855,10 @@ exit
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 224 total — 1 write, 1 read, 222 unclassified
+- **Production hits:** 225 total — 1 write, 1 read, 223 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts` +217 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts` +218 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `relocation-intent-steers-agent-movement` — 🔵 UNVERIFIED-OK
@@ -929,6 +930,17 @@ exit
 - **Read sites:** `src/engine/nudgeGrantLiveness.ts`
 - **Other hits:** `src/engine/rewardPool.ts`, `src/types/unifiedAction.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
+### `rule-overrides-reach-owning-sites` — 🟢 LIVE
+
+- **Intent:** Every RuleOverrideKey is read by the one system that owns the rule it bends, through a single shared reader.
+- **Producer → Consumer:** Effects & Conditions → Effects & Conditions
+- **Module:** `src/engine/effects/ruleOverrideConsumers.ts`
+- **Production hits:** 13 total — 1 write, 11 read, 1 unclassified
+- **Write sites:** `src/engine/effects/ruleOverrideConsumers.ts`
+- **Read sites:** `src/engine/agentLifecycle.ts`, `src/engine/capabilityGrowth.ts`, `src/engine/conditionDecay.ts`, `src/engine/effectTick.ts`, `src/engine/encounterAwareness.ts` +6 more
+- **Other hits:** `src/engine/effects/index.ts`
+- **Verdict:** Verified 2026-08-26: THR-1241. This is the read half of the contract THR-1240 opened, and the exact deadness class this registry exists to catch: the store kept overrides correctly and eleven of thirteen keys had NO consumer at all, so `getActiveRuleOverride` greps green on both sides while `death_prevented` did nothing. Five keys had shipped content promising a player something that never happened (death_prevented, awareness_range_bonus, healing_multiplier, spawn_rate_multiplier, tier_advancement_cost_multiplier). Each key now has exactly one owning site, listed above; doom_rate_multiplier — the only key that HAD a consumer — was migrated off its hand-rolled inline scan in phaseDoom onto the same reader, because that scan saw only attachment-declared overrides, folded unclamped, and ignored duration/cooldown/suppression. A non-neutral read emits effect.rule_override_consumed carrying its site, so a wired-but-never-triggered key is distinguishable from an unwired one. Unit coverage: src/engine/effects/__tests__/ruleOverrideConsumers.test.ts (19 tests) drives the OWNING SITES, never the reader — asserting readMultiplierOverride returns 0.5 would pass against a build where no site calls it, which is stage 2 wearing the stage 3 name. Each key is asserted in both arms (with override, bare control) against an observable outcome: a traversal cost, a wound countdown, a reputation delta, a tier curve. Known partial reach, stated rather than papered over: backlash_severity_multiplier is wired into evaluateBacklash, whose caller activateSpell has no production caller yet — the key is live in code and goes live in play when spell activation does. Two derived readings are judgement calls argued at their sites: tier_advancement_cost_multiplier inverts into growth (no priced transaction exists for a tier, so the cost IS the growth owed), and backlash_severity_multiplier shifts an enum one band rather than scaling a number that does not exist.
 
 ### `secrets-consequences` — 🟢 LIVE
 

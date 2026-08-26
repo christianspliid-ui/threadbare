@@ -3195,7 +3195,7 @@ the god remembers or from a named campaign the world offers. Until that lands,
 authoring more prose against the template ids adds no player-visible text —
 check THR-1198's state before starting.
 
-### Capability 23: Terrain Overlays and Rule Overrides — Effects That Outlive the Scene (THR-1240)
+### Capability 23: Terrain Overlays and Rule Overrides — Effects That Outlive the Scene (THR-1240, THR-1241)
 
 Two primitives that an author could always *write* and that never *did* anything:
 
@@ -3232,9 +3232,38 @@ The clamp matters most downward. Nothing bounds how many attachments an agent
 may carry, and an unclamped stacked reduction does not slow the system it gates,
 it stops it.
 
-**What is not yet true.** The eleven rule keys still have no consumer at their
-owning sites — that is stage 3 (THR-1241). A `movement_cost_multiplier` you
-author today is stored, folded and expired correctly, and movement does not yet
-read it. Check THR-1241's state before authoring content that depends on a
-particular key actually biting; `death_prevented`, `movement_cost_multiplier`
-and `awareness_range_bonus` are the three named to land first.
+**Every key now bites (THR-1241, stage 3).** Each `RuleOverrideKey` is read by
+the one system that owns the rule it bends, so a key you author changes an
+outcome rather than sitting in a store:
+
+| Key | What it actually changes |
+|---|---|
+| `movement_cost_multiplier` | the tick cost of a hop, multiplied into the total |
+| `awareness_range_bonus` | how many hexes out an agent notices encounters |
+| `death_prevented` | a mortal reprieved when the death roll goes against them |
+| `spawn_rate_multiplier` | the birth chance at a location, folded across bearers standing on it |
+| `healing_multiplier` | how many ticks a condition counts down per tick |
+| `tier_advancement_cost_multiplier` | capability growth, as the **reciprocal** — cost `0.5` is growth `2x` |
+| `faction_influence_multiplier` | the reputation *delta*, gains and losses alike |
+| `cooldown_multiplier` | the dormant stretch between uses of an ability |
+| `backlash_severity_multiplier` | shifts backlash one band along `minor → major → catastrophic` |
+| `doom_rate_multiplier` | the doom clock's advance rate |
+| `reward_tier_bonus` | slides the reward tier curve up a rung (capped at 2) |
+| `encounter_reach_override` | substitutes which Reach a step tests |
+| `encounter_difficulty_modifier` | shifts the agent's effective step difficulty |
+
+**Two things to know before you author against these.**
+
+*The reciprocal is deliberate.* `tier_advancement_cost_multiplier` is the one key
+whose name and effect run in opposite directions, and that is correct: nothing in
+this game *buys* a tier, so the cost of advancing is the growth you still owe.
+Write `0.5` to make advancement cheaper and you will see growth double.
+
+*`backlash_severity_multiplier` is live in code, not yet in play.* It reads
+inside `evaluateBacklash`, whose caller `activateSpell` still has no production
+caller — spell activation remains dormant. Author it if you like; it will bite
+the moment that lands, and not before. Every other key in the table bites today.
+
+**Severity is a band, not a number.** A `1.2` backlash multiplier does nothing —
+the ladder has three rungs and no space between them. Cross `1.5` to escalate a
+band or fall to `0.67` to soften one.

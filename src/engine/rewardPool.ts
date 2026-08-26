@@ -5,6 +5,10 @@
  * candidates, applies tier curve weighting, and produces a weighted pool.
  * After drawing, instantiateReward clones the template node and creates
  * the appropriate edge (possesses or has_trait) for the recipient agent.
+ *
+ * Companion entries are registry-backed rather than graph nodes (THR-1096).
+ * The recipient's `reward_tier_bonus` rule override slides the tier curve here,
+ * at the single seeded draw path (THR-1241).
  */
 
 import type { WorldGraph } from './graph';
