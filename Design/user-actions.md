@@ -1,12 +1,12 @@
 # User Action Required
 
-**Last updated:** 2026-08-26 10:58 local (08:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-26 11:58 local (09:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
 ### 1. Approve the batch-2 brief — [THR-1222](https://linear.app/threadbare/issue/THR-1222/run-retrofit-batch-2-the-camp-seven-through-the-factory-line-shrine)
 
-**The exemplar is now live, so this decision has evidence behind it.** Your batch-of-one approval overnight produced [The Beast in the Granary](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.hunt.the_beast_in_the_granary) — merged 10:17 and on the live site: the game's first hunt encounter, first deal-composed fork, first settlement-membership ending. Play it and that is the bar the camp seven would be authored against. *Known gap:* the membership ending can enrol you in the wrong chapter of the right faction ([THR-1275](https://linear.app/threadbare/issue/THR-1275), queued) — the chip and prose are correct, the enrolment one layer down is not.
+**The exemplar is now live, so this decision has evidence behind it.** Your batch-of-one approval overnight produced [The Beast in the Granary](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.hunt.the_beast_in_the_granary) — merged 10:17 and on the live site: the game's first hunt encounter, first deal-composed fork, first settlement-membership ending. Play it and that is the bar the camp seven would be authored against. *Known gap, already being fixed:* the membership ending can enrol you in the wrong chapter of the right faction ([THR-1275](https://linear.app/threadbare/issue/THR-1275)) — the chip and prose are correct, the enrolment one layer down is not. The fix is written and in review as [PR #1645](https://github.com/christianspliid-ui/threadbare/pull/1645), waiting on a merge conflict a session has to resolve by hand.
 
 **The camp seven** — shrine offering, sharpening blades, warding the camp, a small prayer, rest and reflection, tending wounds, scouting the perimeter. All seven are thin: the census found **no typed consequences at all** in that set, only bare standing nudges. With the corpus rewrite shipped, they are the last encounters in the game below standard. And **`shrine_offering` is encounter #1 of [your integrated slice checkpoint](https://linear.app/threadbare/issue/THR-1220)**, which cannot invite you while the camp set is below standard.
 
@@ -27,7 +27,7 @@ Nothing here is broken and nothing is stalled: the wayfinder machinery has done 
 
 ### 3. More design hours — four sittings stacked
 
-The shelf holds one ticket and nothing else. What would refill it is design, and most of the design work is waiting on you. In the order you set:
+The shelf holds four tickets this morning, but all four are repairs the machine found in itself — no new *game* is queued behind them. What would put game work on the shelf is design, and most of the design work is waiting on you. In the order you set:
 
 - **[Unify the card grammar](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** — your 6 August note: action cards are too wordy, you cannot tell what they do, playing one gives no feedback, while encounter cards already read the way you wanted. It has held the single design-staging slot since 19 August — **seven days** — so nothing else can be staged behind it until it moves.
 - **[Traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)** — in design, assigned to you, untouched twelve days. Either give it the hour or say *"put Traits wave 2 back in the pile."*
@@ -63,7 +63,7 @@ Deliberately left with you: a question about what the game means, not about how 
 
 ### 7. One attended dev-server session — [THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server)
 
-One `npm run dev` and a browser at 1920×1080: nine surfaces and the screenshots they owe. Every one is a shipped UI change carrying test-level proof but no picture, because a scheduled run is refused a dev server and so structurally cannot capture one.
+One `npm run dev` and a browser at 1920×1080: the shipped surfaces and the screenshots they owe. Every one is a shipped UI change carrying test-level proof but no picture, because a scheduled run is refused a dev server and so structurally cannot capture one.
 
 It keeps growing as more UI work ships behind the same wall. This replaces four separate tickets (THR-1109, THR-1125, THR-1126, THR-1127), consolidated 2026-08-16 — a merge, not a prune. If you only get through part of it, say which, and the remainder is re-expanded rather than closed whole. Bundling it into whichever sitting you approve a brief in costs almost nothing extra.
 
