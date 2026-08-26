@@ -2413,7 +2413,11 @@ export function executeStepResult(
         // Apply the graph-affecting payloads (condition grant/remove, breakage).
         const intents = allResults.flatMap(r => r.payloadIntents);
         if (intents.length > 0) {
-          const applied = applyActionTriggerPayloads(state.graph, action.actorId, intents, state.tick);
+          // `state`, not `state.graph`, since THR-1257: the condition payloads now
+          // raise `damaged` / `healed`. This site already merged `runningStates` into
+          // `state.effectStates` just above and does not thread its own map onward,
+          // so the raise writes `state.effectStates` directly and no map is threaded.
+          const applied = applyActionTriggerPayloads(state, action.actorId, intents, state.tick);
           if (applied.touchedStructure && runtime) touchStructure(runtime);
 
           // Surface the authored prose as player-visible aftermath — the whole point

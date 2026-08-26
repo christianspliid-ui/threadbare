@@ -487,7 +487,7 @@ export const ANOMALY_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 1,
-      tags: ['#crystal', '#pain', '#anomaly'],
+      tags: ['#crystal', '#pain', '#anomaly', '#negative'],
       description: 'The resonance was overwhelming — lingering disorientation.',
       maxLevel: 1,
       visibility: 'public',
@@ -506,7 +506,7 @@ export const ANOMALY_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 1,
-      tags: ['#nature', '#blessing', '#anomaly'],
+      tags: ['#nature', '#blessing', '#anomaly', '#positive'],
       description: 'The sap\'s perfume induces blissful calm — impairs combat readiness.',
       maxLevel: 1,
       visibility: 'public',
@@ -526,7 +526,7 @@ export const ANOMALY_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 2,
-      tags: ['#ancient', '#cursed', '#anomaly'],
+      tags: ['#ancient', '#cursed', '#anomaly', '#negative'],
       description: 'The ancient wards exact a toll — fate turns against the intruder.',
       maxLevel: 1,
       visibility: 'discoverable',
@@ -545,7 +545,7 @@ export const ANOMALY_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 1,
-      tags: ['#underwater', '#wound', '#anomaly'],
+      tags: ['#underwater', '#wound', '#anomaly', '#negative'],
       description: 'Swallowed too much salt water — temporarily weakened.',
       maxLevel: 1,
       visibility: 'public',
@@ -564,7 +564,7 @@ export const ANOMALY_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 2,
-      tags: ['#fungus', '#vision', '#anomaly'],
+      tags: ['#fungus', '#vision', '#anomaly', '#positive'],
       description: 'Inhaled spores — vivid visions but social withdrawal.',
       maxLevel: 1,
       visibility: 'discoverable',
@@ -584,7 +584,7 @@ export const ANOMALY_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 1,
-      tags: ['#ancient', '#time', '#anomaly'],
+      tags: ['#ancient', '#time', '#anomaly', '#positive'],
       description: 'The old bones murmur fragments of lost knowledge.',
       maxLevel: 1,
       visibility: 'discoverable',
