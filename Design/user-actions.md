@@ -1,12 +1,12 @@
 # User Action Required
 
-**Last updated:** 2026-08-26 22:53 local (20:53 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-26 23:55 local (21:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
 ### 1. Approve the batch-2 brief — [THR-1222](https://linear.app/threadbare/issue/THR-1222/run-retrofit-batch-2-the-camp-seven-through-the-factory-line-shrine)
 
-**Not urgent, just old — sixth day.** The engine lane is looking after itself: [the undertaking substrate](https://linear.app/threadbare/issue/THR-1292) was claimed at 21:02 and its first slice is already merged and live. What survives that: the **content** lane has nothing queued at all, and this is the only content work a single word from you starts.
+**Not urgent, just old — seventh day.** The engine lane is looking after itself: [the undertaking substrate](https://linear.app/threadbare/issue/THR-1292) has slices 1 and 2 of 6 merged and deployed. What survives that: the **content** lane has nothing queued at all, and this is the only content work a single word from you starts.
 
 **The camp seven** — shrine offering, sharpening blades, warding the camp, a small prayer, rest and reflection, tending wounds, scouting the perimeter. The census found **no typed consequences at all** in that set; with the corpus rewrite shipped they are the last encounters in the game below standard. `shrine_offering` is encounter #1 of [your integrated slice checkpoint](https://linear.app/threadbare/issue/THR-1220), which cannot invite you while the camp set sits below the bar.
 
@@ -19,7 +19,7 @@
 The engine shelf is busy; the content shelf is empty and no new design is queued behind either. Most of the design work is waiting on you. In the order you set:
 
 - **[Unify the card grammar](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** — your 6 August note: action cards are too wordy, you cannot tell what they do, playing one gives no feedback, while encounter cards already read the way you wanted. Held since 19 August — **eight days**. It does not block *your* design sessions; it blocks the automation staging anyone else's, so three tickets sit behind it. Either sit it, or say *"park it"* and [the shared anchor machinery](https://linear.app/threadbare/issue/THR-1212) goes through next.
-- **Five more plan docs from your own carve-up** — doc 1 is in build. Nothing to decide: your carve-up names the remaining five and their order. Doc 3, *the binder*, is the other critical-path one; docs 4 and 5 can run in parallel now that doc 1 exists. Say the word and sessions write them.
+- **Five more plan docs from your own carve-up** — doc 1 is in build with two of its six slices merged. Nothing to decide: your carve-up names the remaining five and their order. Doc 3, *the binder*, is the other critical-path one; docs 4 and 5 can run in parallel now that doc 1 exists. Say the word and sessions write them.
 - **[Traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)** — in design, assigned to you, untouched since 15 August. Either give it the hour or say *"put Traits wave 2 back in the pile."*
 - **The wave-1 sessions** — [shared machinery](https://linear.app/threadbare/issue/THR-1212), then [the hunger vocabulary](https://linear.app/threadbare/issue/THR-1213), then [nations and named areas simulated rather than drawn](https://linear.app/threadbare/issue/THR-1155). Available whenever you want it: your own [one-button snapshot](https://linear.app/threadbare/issue/THR-1134).
 
@@ -68,7 +68,7 @@ There is a finished, unused piece of sound design: on committing a nudge, roughl
 
 ### 9. Chart the hub map
 
-Two design maps closed 2026-08-24 ([typed game-state](https://linear.app/threadbare/issue/THR-1157), [vertical slice](https://linear.app/threadbare/issue/THR-902)) and Proactive Agent Actions closed today. The hub is still unchartered, and the slice map's charter names it as the successor: **the player reaching factions, war, economy and divine actions from inside the encounter interface.**
+Two design maps closed 2026-08-24 ([typed game-state](https://linear.app/threadbare/issue/THR-1157), [vertical slice](https://linear.app/threadbare/issue/THR-902)) and Proactive Agent Actions closed 2026-08-26. The hub is still unchartered, and the slice map's charter names it as the successor: **the player reaching factions, war, economy and divine actions from inside the encounter interface.**
 
 **Advice: wait one cycle.** Your [integrated slice checkpoint](https://linear.app/threadbare/issue/THR-1220) is this map's entry condition, so chartering from a validated base is the better order. **Only you can charter a map** — say *"chart the hub map"* in a chat session whenever you want it.
 
@@ -84,7 +84,7 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
-- **The substrate is being built** — [THR-1292](https://linear.app/threadbare/issue/THR-1292) claimed 21:02, one hour after you filed it, and slice 1 of 6 is already merged and deployed ([PR #1654](https://github.com/christianspliid-ui/threadbare/pull/1654), the value-pair vocabulary sweep). Days of work, nothing owed by you.
+- **The substrate is being built, fast** — [THR-1292](https://linear.app/threadbare/issue/THR-1292) was claimed at 21:02 and **two of its six slices are already merged and deployed**: the value-pair vocabulary sweep ([PR #1654](https://github.com/christianspliid-ui/threadbare/pull/1654), 21:32) and the shared step-resolution library ([PR #1655](https://github.com/christianspliid-ui/threadbare/pull/1655), 23:47). Days of work, nothing owed by you.
 - **The empty build shelf is over** — that ticket went Ready for Dev at 20:23 with a merged plan doc, full handoff and every gate green.
 - **You closed the [Proactive Agent Actions map](https://linear.app/threadbare/issue/THR-1276) at 19:17** — all ten questions in one day. It is off ask 3 entirely.
 - **The carve-up question is closed too** — you answered it by filing it: six docs, doc 1 at 19:51.
