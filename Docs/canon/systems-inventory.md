@@ -361,6 +361,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `spell` (1) | `spellActivation.ts` | — |
 | `sphere` (2) | `sphereAffinity.ts`, `sphereScaling.ts` | — |
 | `stealth` (1) | `stealth.ts` | — |
+| `step` (1) | `stepResolutionCore.ts` | `THR-1292` |
 | `strands` (1) | `strands.ts` | — |
 | `strategic` (6) | `strategicActionCandidates.ts`, `strategicActionLifecycle.ts`, `strategicActionScoring.ts`, `strategicGraphOps.ts`, `strategicPresentation.ts`, `strategicTelemetry.ts` | — |
 | `sublocation` (2) | `sublocation.ts`, `sublocationShape.ts` | `THR-1177`, `THR-1183`, `THR-1193` |
@@ -393,4 +394,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 26 registered subsystems (1 dormant) · 101 tick phases · 172 engine domains · 508 modules._
+_Counts: 26 registered subsystems (1 dormant) · 101 tick phases · 173 engine domains · 509 modules._
