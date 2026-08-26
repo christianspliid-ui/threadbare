@@ -1,6 +1,6 @@
 # Batch brief — full-line-proof (1 encounter)
 
-**Drafted:** Claude Fable 5 (attended session), 2026-08-26 · **Approved:** pending — Christian, chat
+**Drafted:** Claude Fable 5 (attended session), 2026-08-26 · **Approved:** Christian, chat, 2026-08-26 ("lets run")
 
 **Ruling-1 deviation, stated:** this batch is **1**, not 6 — director's direction,
 2026-08-26 ("a full batch of 6 is premature; I can judge quality on 1"). This is the

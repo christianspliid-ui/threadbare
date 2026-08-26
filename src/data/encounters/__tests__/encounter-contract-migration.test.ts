@@ -53,6 +53,12 @@ const OUTSIDE_CONTRACT_MIGRATION: readonly string[] = [
   // composed hand puts this further outside the migration rather than nearer
   // it: most of what the player is offered does not exist until the dealer runs.
   'encounter.delve.the_unfinished_rite',
+  // THR-1246, a THR-894 personality_fork: one plain step + one `ActionStepBranch`
+  // with `decidedBy` — the player never picks. The branch pole is read off the
+  // mortal's own standing axis plus the poleLean of the cards the god committed
+  // on the crossing step, not off an authored `authoredChoices` list. Nudge-native
+  // like the two above and excluded for the same reason: no choices to encode.
+  'encounter.hunt.the_beast_in_the_granary',
 ];
 
 describe('branching encounters migrate to encoded EncounterContract metadata', () => {
