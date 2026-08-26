@@ -269,7 +269,7 @@ The **declared-default invariant** is the load-bearing rule: every `variants` ma
 ### Nudge
 
 **Aliases:** StepNudge, nudge card
-**Also see:** `[[Rider]]`, `[[Band Fragment]]`, `[[Encounter]]`, `[[Rebuild Road]]`
+**Also see:** `[[Rider]]`, `[[Band Fragment]]`, `[[Encounter]]`, `[[Rebuild Road]]`, `[[Dealt Hand]]`, `[[Play Profile]]`
 **Status:** canonical
 
 An authored, per-encounter, sphere-flavoured micro-intervention the god plays during an **attended** (`story_beat`) encounter step. Each nudge names a concrete cause somewhere in the god's sphere range — a tremor leaving a hand, a lamp catching a second time, an urge arriving in sleep, a sense that this has happened before — is essence-priced, and shifts the fate forecast through a named modifier (`nudge:<id>`). It may also carry a `[[Rider]]`.
@@ -297,7 +297,7 @@ Riders take **zero draws** from any PRNG stream — they are pure band-mapping a
 ### Band Fragment
 
 **Aliases:** bandProse entry
-**Also see:** `[[Nudge]]`, `[[Rider]]`, `[[Context Fragment]]`
+**Also see:** `[[Nudge]]`, `[[Rider]]`, `[[Context Fragment]]`, `[[Play Profile]]`
 **Status:** canonical
 
 A line of **prose** appended to a step's outcome text when a given `[[Nudge]]` was active for that band. Authored as `StepNudge.bandProse`, keyed on the six-value `StepOutcome` — *not* the five-band `EncounterOutcomeBand` and *not* `OutcomeBand` from `outcomeConsequences.ts`, either of which would type-check while being the wrong domain.
@@ -313,7 +313,7 @@ Every nudge must carry at least one fragment in a failure band (`near_miss`, `fa
 ### Repertoire
 
 **Aliases:** card repertoire, RepertoireEntry, buildRepertoire
-**Also see:** `[[Nudge]]`, `[[Sphere Attunement]]`, `[[Sphere]]`, `[[Rider]]`
+**Also see:** `[[Nudge]]`, `[[Sphere Attunement]]`, `[[Sphere]]`, `[[Rider]]`, `[[Dealt Hand]]`, `[[Play Profile]]`
 **Status:** canonical
 
 The set of `[[Nudge]]` cards a given god **holds for a run** — assembled from the whole card library by two independent gates, plus any echo cards carried in from previous runs. Built by `buildRepertoire` (`src/engine/nudgeCardRepertoire.ts`); each held card is a `RepertoireEntry` carrying its access band and a `source` naming *why* it is held (`core | signature | hunger | milestone | god_trait | sphere_attunement | echo`).
@@ -345,6 +345,54 @@ The **lifetime essence a god has drawn through one sphere**, counted monotonical
 **Accrual is net movement across one phase merge, not gross grants.** The counter banks at the phase-merge seam (`applyEssenceEarned`), which diffs the pool a phase returned against the pool it was handed and keeps the positive movement — so a grant site added tomorrow is counted without being told to. The stated cost of that choice: a phase that both grants and spends banks only the difference. One shipped phase does both (`phaseControlEffects`, an effect's upkeep against its income), and there the net is the honest number — an effect costing more than it yields has earned the god nothing. Across phases nothing nets.
 
 **An absent counter reads as all-zero, never as a throw.** A legacy save leaves attunement members locked rather than falling open — the same safe direction the unlock switch's exhaustiveness guard takes.
+
+---
+
+### Play Profile
+
+**Aliases:** `NudgeCardPlayProfile`, `PLAY_PROFILES`, card profile
+**Also see:** `[[Nudge]]`, `[[Dealt Hand]]`, `[[Deal Declaration]]`, `[[Repertoire]]`, `[[Band Fragment]]`, `[[Rider]]`
+**Status:** canonical
+
+The **mechanical half of a library card** — what a `[[Repertoire]]` member *does* when it is dealt, as opposed to what it looks like. Authored per member in `PLAY_PROFILES` (`src/data/nudge-card-library.ts`) and keyed by member id exactly as the face table `CARD_CONTENT` is; the two are joined at mint time to produce an ordinary `[[Nudge]]`. A profile carries the essence price, the named forecast delta, and optionally a `[[Rider]]`, non-essence cost channels, world grants in the aftermath-effect vocabulary, the member's guidance line, and the context tags that say when it is relevant.
+
+**A profile is generic by the same law as the face.** No scene-bespoke targets and no numbers tuned to one encounter's difficulty — a grant that needs something to point at (Cache's item, Balm's condition) uses the deal-time binding model, and a **binding failure means the card is not dealt** rather than dealt broken. This is the whole cost argument of the dealt hand: mechanics are authored *per member, once* instead of *per encounter, every time*.
+
+**A profile is not a `[[Nudge]]`.** It is data that becomes one — `mintDealtNudge` is the only thing that turns a profile into a playable card, and everything downstream of that mint sees an ordinary `StepNudge`. The distinction matters because the same numbers reach a hand by two routes: authored directly onto a step, or carried by a profile and minted.
+
+**A profile without prose is undealable.** A member holding a profile but no `[[Band Fragment]]` row is dropped from the deal pool and named in `validateRepertoire()`'s `unpayableProfiles` — the payoff-at-every-band law applied library-side, so a card the god plays is always traceable in the prose of how it landed. `profiledCardCount()` mirrors `unauthoredCardCount()` as the corpus-completeness predicate.
+
+---
+
+### Dealt Hand
+
+**Aliases:** dealt cards, the fill, `dealHand`, `composeDealtStep`
+**Also see:** `[[Nudge]]`, `[[Play Profile]]`, `[[Deal Declaration]]`, `[[Repertoire]]`, `[[Sphere Attunement]]`
+**Status:** canonical
+
+The portion of an attended step's nudge hand supplied by the god's `[[Repertoire]]`, as opposed to the **specials** the encounter authored itself. A composed hand is `[...authored, ...dealt]`: the encounter writes the 0–2 cards only *it* could offer and declares a fill, and the dealer supplies the rest from cards the player already holds — so a hand reads as *this god's* hand in any scene rather than as whatever its author happened to like. Produced by `dealHand` / `composeDealtStep` (`src/engine/encounters/dealHand.ts`) at hand-assembly time.
+
+**A dealt card is an ordinary `[[Nudge]]` downstream of assembly.** Minted ids are namespaced `dealt.<memberId>` so they can never collide with an authored id, and `libraryCardId` is set so the echo harvest tallies a dealt play exactly as an authored one. Hand partition, commit, dispatch, riders, forecast — every one is unchanged and unaware that dealing exists. **If anything downstream of assembly branches on a `dealt.` id, the design has been violated**; only assembly changes, and that is the entire cost argument.
+
+**Dealt never means random.** Selection is score-and-select with **zero PRNG** — ranked on sphere identity, the step's declared context tags, and provenance (an attunement or echo member outranks its core sibling, because progression must be felt), with a deterministic tie-break by member id. The same god meeting the same step is dealt the same cards, every time and after any reload; a dealt hand replays from a save exactly as an authored one does. Shuffle-feel would be a *new decision* requiring a seeded stream.
+
+**Not the rejected fixed-action-count model.** Dealing fills *within* the existing open hand window (`NUDGE_HAND_MIN..MAX`, 4–8) under the existing hand rules and total-delta cap — it does not fix how many cards a step offers. Nor does it retire authored hands: a fully-authored hand stays legal forever, and a step that declares no fill behaves byte-identically to before dealing existed.
+
+---
+
+### Deal Declaration
+
+**Aliases:** `StepDealDeclaration`, `ActionStep.deal`, the fill declaration
+**Also see:** `[[Dealt Hand]]`, `[[Play Profile]]`, `[[Nudge]]`, `[[EncounterTemplate]]`
+**Status:** canonical
+
+The authored field by which an encounter step **opts into dealing** — `ActionStep.deal` (`src/types/unifiedAction.ts`), carrying `count` (how many cards to ask for), optional `tags` (what the step is *about*, for the dealer's context-match term), and optional `exclude` (card types this scene refuses). It is a request, not a guarantee: the dealer clamps `count` so the *composed* hand stays inside the hand window and under the total-delta cap, so a step asking for more than the hand can hold gets what fits rather than an oversized hand or an error.
+
+**Absence is the whole compatibility story.** A step with no declaration comes back identical by reference — no dealing, no allocation, today's behavior byte-identical (NFP #6). Every template shipped before dealing existed is untouched by construction.
+
+**The tag vocabulary is closed, and the closure is the term — the roster is not.** `DealContextTag` is a closed union precisely so authors cannot each invent a private synonym for the same idea, which would make the dealer score against a vocabulary nobody agreed on: a scoring bug that reads as a content bug. Widening it is a spec change, never a convenience at the call site. **The current membership lives in `src/types/unifiedAction.ts` and is documented by the factory spec — read it there, never from a copy.** This entry deliberately does not enumerate the members: the union's first cut was revised before it shipped, and a glossary that copied the roster would have been wrong on the day it landed. The durable half is *closed, not free-form*; the roster is not.
+
+**Declaring a fill is not authoring a hand.** An author who finds themselves writing a long `exclude` list is telling you the step wants an authored hand — which remains legal. Prefer authoring a special over excluding widely.
 
 ---
 

@@ -22,7 +22,7 @@
       "filename": "Encounters.md",
       "title": "Encounters",
       "contentAdjacent": true,
-      "termCount": 32,
+      "termCount": 35,
       "blurb": "Content-adjacent shard. Terms covering the encounter pipeline: templates, resolution, aftermath, awareness, and causation."
     },
     {
@@ -2278,6 +2278,16 @@
           "raw": "Rebuild Road",
           "termName": "Rebuild Road",
           "resolvedSlug": "encounters#rebuild-road"
+        },
+        {
+          "raw": "Dealt Hand",
+          "termName": "Dealt Hand",
+          "resolvedSlug": "encounters#dealt-hand"
+        },
+        {
+          "raw": "Play Profile",
+          "termName": "Play Profile",
+          "resolvedSlug": "encounters#play-profile"
         }
       ],
       "sourcePath": "Docs/ubiquitous-language/Encounters.md#nudge",
@@ -2334,6 +2344,11 @@
           "raw": "Context Fragment",
           "termName": "Context Fragment",
           "resolvedSlug": "encounters#context-fragment"
+        },
+        {
+          "raw": "Play Profile",
+          "termName": "Play Profile",
+          "resolvedSlug": "encounters#play-profile"
         }
       ],
       "sourcePath": "Docs/ubiquitous-language/Encounters.md#band-fragment",
@@ -2371,6 +2386,16 @@
           "raw": "Rider",
           "termName": "Rider",
           "resolvedSlug": "encounters#rider"
+        },
+        {
+          "raw": "Dealt Hand",
+          "termName": "Dealt Hand",
+          "resolvedSlug": "encounters#dealt-hand"
+        },
+        {
+          "raw": "Play Profile",
+          "termName": "Play Profile",
+          "resolvedSlug": "encounters#play-profile"
         }
       ],
       "sourcePath": "Docs/ubiquitous-language/Encounters.md#repertoire",
@@ -2416,6 +2441,133 @@
         }
       ],
       "sourcePath": "Docs/ubiquitous-language/Encounters.md#sphere-attunement",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "encounters",
+      "slug": "play-profile",
+      "name": "Play Profile",
+      "aliases": [
+        "`NudgeCardPlayProfile`",
+        "`PLAY_PROFILES`",
+        "card profile"
+      ],
+      "status": "canonical",
+      "oneLiner": "the mechanical half of a library card (`PLAY_PROFILES`), joined to the face at mint time; data that *becomes* a Nudge, and is not one",
+      "body": "The **mechanical half of a library card** — what a `[[Repertoire]]` member *does* when it is dealt, as opposed to what it looks like. Authored per member in `PLAY_PROFILES` (`src/data/nudge-card-library.ts`) and keyed by member id exactly as the face table `CARD_CONTENT` is; the two are joined at mint time to produce an ordinary `[[Nudge]]`. A profile carries the essence price, the named forecast delta, and optionally a `[[Rider]]`, non-essence cost channels, world grants in the aftermath-effect vocabulary, the member's guidance line, and the context tags that say when it is relevant.\n\n**A profile is generic by the same law as the face.** No scene-bespoke targets and no numbers tuned to one encounter's difficulty — a grant that needs something to point at (Cache's item, Balm's condition) uses the deal-time binding model, and a **binding failure means the card is not dealt** rather than dealt broken. This is the whole cost argument of the dealt hand: mechanics are authored *per member, once* instead of *per encounter, every time*.\n\n**A profile is not a `[[Nudge]]`.** It is data that becomes one — `mintDealtNudge` is the only thing that turns a profile into a playable card, and everything downstream of that mint sees an ordinary `StepNudge`. The distinction matters because the same numbers reach a hand by two routes: authored directly onto a step, or carried by a profile and minted.\n\n**A profile without prose is undealable.** A member holding a profile but no `[[Band Fragment]]` row is dropped from the deal pool and named in `validateRepertoire()`'s `unpayableProfiles` — the payoff-at-every-band law applied library-side, so a card the god plays is always traceable in the prose of how it landed. `profiledCardCount()` mirrors `unauthoredCardCount()` as the corpus-completeness predicate.",
+      "seeAlso": [
+        {
+          "raw": "Nudge",
+          "termName": "Nudge",
+          "resolvedSlug": "encounters#nudge"
+        },
+        {
+          "raw": "Dealt Hand",
+          "termName": "Dealt Hand",
+          "resolvedSlug": "encounters#dealt-hand"
+        },
+        {
+          "raw": "Deal Declaration",
+          "termName": "Deal Declaration",
+          "resolvedSlug": "encounters#deal-declaration"
+        },
+        {
+          "raw": "Repertoire",
+          "termName": "Repertoire",
+          "resolvedSlug": "encounters#repertoire"
+        },
+        {
+          "raw": "Band Fragment",
+          "termName": "Band Fragment",
+          "resolvedSlug": "encounters#band-fragment"
+        },
+        {
+          "raw": "Rider",
+          "termName": "Rider",
+          "resolvedSlug": "encounters#rider"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Encounters.md#play-profile",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "encounters",
+      "slug": "dealt-hand",
+      "name": "Dealt Hand",
+      "aliases": [
+        "dealt cards",
+        "the fill",
+        "`dealHand`",
+        "`composeDealtStep`"
+      ],
+      "status": "canonical",
+      "oneLiner": "the part of a step's hand supplied by the god's Repertoire rather than authored as the encounter's specials; zero-PRNG, so \"dealt\" never means random",
+      "body": "The portion of an attended step's nudge hand supplied by the god's `[[Repertoire]]`, as opposed to the **specials** the encounter authored itself. A composed hand is `[...authored, ...dealt]`: the encounter writes the 0–2 cards only *it* could offer and declares a fill, and the dealer supplies the rest from cards the player already holds — so a hand reads as *this god's* hand in any scene rather than as whatever its author happened to like. Produced by `dealHand` / `composeDealtStep` (`src/engine/encounters/dealHand.ts`) at hand-assembly time.\n\n**A dealt card is an ordinary `[[Nudge]]` downstream of assembly.** Minted ids are namespaced `dealt.<memberId>` so they can never collide with an authored id, and `libraryCardId` is set so the echo harvest tallies a dealt play exactly as an authored one. Hand partition, commit, dispatch, riders, forecast — every one is unchanged and unaware that dealing exists. **If anything downstream of assembly branches on a `dealt.` id, the design has been violated**; only assembly changes, and that is the entire cost argument.\n\n**Dealt never means random.** Selection is score-and-select with **zero PRNG** — ranked on sphere identity, the step's declared context tags, and provenance (an attunement or echo member outranks its core sibling, because progression must be felt), with a deterministic tie-break by member id. The same god meeting the same step is dealt the same cards, every time and after any reload; a dealt hand replays from a save exactly as an authored one does. Shuffle-feel would be a *new decision* requiring a seeded stream.\n\n**Not the rejected fixed-action-count model.** Dealing fills *within* the existing open hand window (`NUDGE_HAND_MIN..MAX`, 4–8) under the existing hand rules and total-delta cap — it does not fix how many cards a step offers. Nor does it retire authored hands: a fully-authored hand stays legal forever, and a step that declares no fill behaves byte-identically to before dealing existed.",
+      "seeAlso": [
+        {
+          "raw": "Nudge",
+          "termName": "Nudge",
+          "resolvedSlug": "encounters#nudge"
+        },
+        {
+          "raw": "Play Profile",
+          "termName": "Play Profile",
+          "resolvedSlug": "encounters#play-profile"
+        },
+        {
+          "raw": "Deal Declaration",
+          "termName": "Deal Declaration",
+          "resolvedSlug": "encounters#deal-declaration"
+        },
+        {
+          "raw": "Repertoire",
+          "termName": "Repertoire",
+          "resolvedSlug": "encounters#repertoire"
+        },
+        {
+          "raw": "Sphere Attunement",
+          "termName": "Sphere Attunement",
+          "resolvedSlug": "encounters#sphere-attunement"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Encounters.md#dealt-hand",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "encounters",
+      "slug": "deal-declaration",
+      "name": "Deal Declaration",
+      "aliases": [
+        "`StepDealDeclaration`",
+        "`ActionStep.deal`",
+        "the fill declaration"
+      ],
+      "status": "canonical",
+      "oneLiner": "the authored `ActionStep.deal` opt-in (`count`, `tags`, `exclude`); its tag vocabulary is a **closed** union, and absence means byte-identical behavior",
+      "body": "The authored field by which an encounter step **opts into dealing** — `ActionStep.deal` (`src/types/unifiedAction.ts`), carrying `count` (how many cards to ask for), optional `tags` (what the step is *about*, for the dealer's context-match term), and optional `exclude` (card types this scene refuses). It is a request, not a guarantee: the dealer clamps `count` so the *composed* hand stays inside the hand window and under the total-delta cap, so a step asking for more than the hand can hold gets what fits rather than an oversized hand or an error.\n\n**Absence is the whole compatibility story.** A step with no declaration comes back identical by reference — no dealing, no allocation, today's behavior byte-identical (NFP #6). Every template shipped before dealing existed is untouched by construction.\n\n**The tag vocabulary is closed, and the closure is the term — the roster is not.** `DealContextTag` is a closed union precisely so authors cannot each invent a private synonym for the same idea, which would make the dealer score against a vocabulary nobody agreed on: a scoring bug that reads as a content bug. Widening it is a spec change, never a convenience at the call site. **The current membership lives in `src/types/unifiedAction.ts` and is documented by the factory spec — read it there, never from a copy.** This entry deliberately does not enumerate the members: the union's first cut was revised before it shipped, and a glossary that copied the roster would have been wrong on the day it landed. The durable half is *closed, not free-form*; the roster is not.\n\n**Declaring a fill is not authoring a hand.** An author who finds themselves writing a long `exclude` list is telling you the step wants an authored hand — which remains legal. Prefer authoring a special over excluding widely.",
+      "seeAlso": [
+        {
+          "raw": "Dealt Hand",
+          "termName": "Dealt Hand",
+          "resolvedSlug": "encounters#dealt-hand"
+        },
+        {
+          "raw": "Play Profile",
+          "termName": "Play Profile",
+          "resolvedSlug": "encounters#play-profile"
+        },
+        {
+          "raw": "Nudge",
+          "termName": "Nudge",
+          "resolvedSlug": "encounters#nudge"
+        },
+        {
+          "raw": "EncounterTemplate",
+          "termName": "EncounterTemplate",
+          "resolvedSlug": "encounters#encountertemplate"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Encounters.md#deal-declaration",
       "contentAdjacent": true
     },
     {
