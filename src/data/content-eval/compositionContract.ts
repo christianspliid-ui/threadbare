@@ -1499,10 +1499,6 @@ export function authoredProse(
     for (const nudge of step.nudges ?? []) {
       push(nudge.name, `${at}.card[${nudge.id}].name`);
       push(nudge.effectLine, `${at}.card[${nudge.id}].effectLine`);
-      push(nudge.fiction, `${at}.card[${nudge.id}].fiction`);
-      for (const [cls, text] of Object.entries(nudge.fictionBySetting ?? {})) {
-        push(text, `${at}.card[${nudge.id}].fictionBySetting[${cls}]`);
-      }
       for (const [band, text] of Object.entries(nudge.bandProse ?? {})) {
         push(text, `${at}.card[${nudge.id}].bandProse[${band}]`);
       }

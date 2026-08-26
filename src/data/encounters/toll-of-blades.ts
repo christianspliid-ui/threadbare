@@ -134,7 +134,6 @@ const STEP_1_HAND: readonly StepNudge[] = [
     forecastDelta: 0.06,
     imageTag: 'generic.focus',
     effectLine: 'The attempt comes out at its best instead of its average.',
-    fiction: 'Most things fail by a margin.',
     bandProse: {
       success: "They met the serjeant's eye through the whole reading of the row.",
       near_miss: 'They did not blink through it. The row got written anyway.',
@@ -149,7 +148,6 @@ const STEP_1_HAND: readonly StepNudge[] = [
     forecastDelta: 0.10,
     imageTag: 'generic.energy',
     effectLine: 'Pour fresh strength into a body that is being asked for more than it has.',
-    fiction: 'Bodies hold more than they admit.',
     bandProse: {
       success_at_cost: 'The surge went into the shoulder the spear-shaft had found, and it kept them upright.',
       failure: 'The body answered. The column had more bodies.',
@@ -168,7 +166,6 @@ const STEP_1_HAND: readonly StepNudge[] = [
     opposes: 'serjeant',
     imageTag: 'generic.matter',
     effectLine: 'The earth gives under the one standing against them — they slip, fall badly, and carry it a while.',
-    fiction: 'Every structure has one loose piece.',
     grants: [
       {
         kind: 'apply_condition',
@@ -194,7 +191,6 @@ const STEP_1_HAND: readonly StepNudge[] = [
     imageTag: 'generic.strength',
     effectLine:
       'Put force behind them where the pressure lands, and hold it there. Rival gods can hardly miss a hand this heavy.',
-    fiction: 'Subtlety is a choice. This is not it.',
     bandProse: {
       critical_success:
         'The two spears came up and could not come forward. Nobody behind them wanted to try next.',
@@ -212,7 +208,6 @@ const STEP_1_HAND: readonly StepNudge[] = [
     rider: 'all_or_nothing',
     imageTag: 'generic.luck',
     effectLine: 'What is left lands clean or lands hard, with nothing in between.',
-    fiction: 'Chaos has no use for the adequate.',
     bandProse: {
       critical_success: 'One motion settled it, and the stylus never touched the wax.',
       critical_failure: 'With nowhere soft to land, they were in the mud before the serjeant finished the row.',
@@ -231,7 +226,6 @@ const STEP_1_HAND: readonly StepNudge[] = [
     imageTag: 'generic.blessing',
     effectLine:
       'Only in a group: they pack in on both sides, so the column must move a body of people instead of one traveler.',
-    fiction: 'One is moved. Several are negotiated with.',
     bandProse: {
       success: 'The group came up on both sides, and the road narrowed for the column instead.',
       near_miss: 'The group held together. The serjeant took the lightest pack among them and moved on.',
@@ -262,7 +256,6 @@ const STEP_2_HAND: readonly StepNudge[] = [
     rider: 'floor_at_cost',
     imageTag: 'generic.ward',
     effectLine: 'Set a floor under them — the afternoon can take gear and skin, but it cannot put them down.',
-    fiction: 'Rules exist so the worst case has a name.',
     bandProse: {
       success_at_cost: 'That had been paid for in advance. The column took its fee out of the pack.',
       critical_failure: 'A bought floor is worth little to a body already under the herd.',
@@ -276,7 +269,6 @@ const STEP_2_HAND: readonly StepNudge[] = [
     forecastDelta: 0.06,
     imageTag: 'generic.focus',
     effectLine: 'The attempt comes out at its best instead of its average.',
-    fiction: 'Most things fail by a margin.',
     bandProse: {
       success: 'The third hour was the one that decided it, and they were steady in it.',
       near_miss: 'They were still up when the last wagons came, and sitting by the time those had passed.',
@@ -291,7 +283,6 @@ const STEP_2_HAND: readonly StepNudge[] = [
     requiredUnlock: 'divine.rekindle_thread',
     imageTag: 'generic.vigor',
     effectLine: 'Push from the first hour and keep pushing, so the worst arrives a little at a time instead of all at once.',
-    fiction: 'Early pressure costs less than late force.',
     bandProse: {
       success: 'The push started at the first hour, and the legs never got the chance to argue.',
       failure: 'The push was steady from the first hour. The afternoon was steadier.',
@@ -308,7 +299,6 @@ const STEP_2_HAND: readonly StepNudge[] = [
     imageTag: 'generic.strength',
     effectLine:
       'Put force behind them where the pressure lands, and hold it there. Rival gods can hardly miss a hand this heavy.',
-    fiction: 'Subtlety is a choice. This is not it.',
     bandProse: {
       critical_success: 'They stood through it like a driven post, and the column had to go around the post.',
       failure: 'Force held them upright until the last of it ran out, and then they folded.',
@@ -326,7 +316,6 @@ const STEP_2_HAND: readonly StepNudge[] = [
     forecastDelta: 0.10,
     imageTag: 'generic.warmth',
     effectLine: 'Take the tiredness out of their legs before the hours start counting.',
-    fiction: 'Most suffering ends. This one ends sooner.',
     grants: [{ kind: 'remove_condition', conditionTraitId: 'trait.condition.exhausted' }],
     bandProse: {
       success_at_cost: 'The tiredness went out of the legs early. What the afternoon put back in stayed.',
@@ -343,7 +332,6 @@ const STEP_2_HAND: readonly StepNudge[] = [
     requiresGroup: true,
     imageTag: 'generic.blessing',
     effectLine: 'Only in a group: they take the standing in turns, so the afternoon lands on more than one set of legs.',
-    fiction: 'One watch, taken in turns.',
     grants: [
       { kind: 'apply_condition', conditionTraitId: 'trait.condition.inspired', targetAgentId: '$actor', durationTicks: 24 },
     ],

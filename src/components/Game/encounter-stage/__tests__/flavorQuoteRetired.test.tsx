@@ -1,22 +1,31 @@
 // @vitest-environment jsdom
 /**
- * The flavor quote is retired from the card face. THR-1224.
+ * The flavor quote is retired. THR-1224 took it off the face; THR-1225 took the
+ * field itself.
  *
  * Prose Doctrine v2 § *Retired by name* strikes "the flavor quote", and
- * `NudgePhaseShell` was the only surface that ever drew `StepNudge.fiction` —
- * so this is the whole of the retirement's observable behaviour.
+ * `NudgePhaseShell` was the only surface that ever drew `StepNudge.fiction`.
  *
- * **Asserted in both directions, in one render.** A test that only proves the
- * fiction is absent cannot tell "the quote was removed" from "the card did not
- * render at all", and the second reading would pass just as green while the
- * hand was broken. So every arm below pairs the absence with the presence of
- * the card's surviving anatomy — name, effect line, odds — on the same card.
+ * **What this test is now for has changed, and the change is the point.** Under
+ * THR-1224 the field still held real text and the face drew none of it, so the
+ * retirement was *behavioural* and needed a render to prove. Its second arm
+ * pinned where the retirement happened, and said in as many words that if a
+ * later change stripped `fiction` from the adapter, that arm was what would
+ * notice. THR-1225 is that change — the arm did its job and is gone with the
+ * field.
  *
- * `fiction` is deliberately still *populated* on the fixture, and still carried
- * through the phase model. That is the point of the test: the field holds real
- * text and the face draws none of it. Emptying the corpus's ~150 strings edits
- * the same files as the doctrine-v2 rewrite (THR-1223), so it rides a deferral;
- * until then this is what stops the quote from creeping back onto a card.
+ * The retirement is now **structural**: `StepNudge.fiction`,
+ * `EncounterStageNudgeCardModel.fiction` and `NudgeCardMember.quote` do not
+ * exist, so a quote cannot creep back onto a card without a type error first.
+ * What survives here is the half a type cannot check — that the hand still
+ * renders its surviving anatomy, and that removing the field left no blank
+ * element holding its old space.
+ *
+ * **Asserted in both directions.** Every absence assertion is paired with the
+ * presence of the card's surviving anatomy on the same render: a test that only
+ * proves something is absent cannot tell "the quote was removed" from "the card
+ * did not render at all", and the second reading passes just as green while the
+ * hand is broken.
  */
 
 import { describe, expect, it } from 'vitest';
@@ -34,20 +43,12 @@ import { NudgePhaseShell } from '../shells/NudgePhaseShell';
 
 // ─── Fixtures ─────────────────────────────────────────────────────
 
-/**
- * Two cards, both carrying fiction — one distinctive enough that a substring
- * search cannot collide with any other string the shell draws.
- */
-const FICTION_ONE = 'The tremor in her fingers stops between one breath and the next.';
-const FICTION_TWO = 'Zarquon marmalade cartwheels through the vestibule.';
-
 const NUDGES: StepNudge[] = [
   {
     id: 'steady_hand',
     name: 'Steady The Hand',
     essenceCost: 1,
     forecastDelta: 0.08,
-    fiction: FICTION_ONE,
     effectLine: 'Steadier than she was.',
   },
   {
@@ -55,7 +56,6 @@ const NUDGES: StepNudge[] = [
     name: 'Throw Full Weight',
     essenceCost: 1,
     forecastDelta: 0.05,
-    fiction: FICTION_TWO,
     effectLine: 'The bar gives where her shoulder meets it.',
   },
 ];
@@ -148,32 +148,31 @@ function renderShell() {
 
 // ─── Tests ────────────────────────────────────────────────────────
 
-describe('NudgePhaseShell — the flavor quote is retired (THR-1224)', () => {
-  it('renders the hand, and draws no card fiction anywhere in it', () => {
+describe('NudgePhaseShell — the flavor quote is retired (THR-1224, THR-1225)', () => {
+  it('renders the hand with its surviving anatomy', () => {
     const phase = renderShell();
 
-    // Presence first: without this the absence assertions below are vacuous —
-    // an empty document trivially contains no fiction.
+    // Presence first: without this the structural assertions below are vacuous —
+    // an empty hand trivially carries no retired field.
     expect(phase.cards.length, 'fixture produced no cards').toBeGreaterThan(0);
     for (const card of phase.cards) {
       expect(screen.getByText(card.name), `card ${card.id} did not render`).toBeTruthy();
       expect(screen.getByText(card.effectLine), `effect line for ${card.id}`).toBeTruthy();
     }
-
-    // Absence, over the whole rendered tree rather than one node — a quote
-    // moved to a different element would still be a rendered quote.
-    for (const fiction of [FICTION_ONE, FICTION_TWO]) {
-      expect(screen.queryByText(fiction), `fiction rendered: "${fiction}"`).toBeNull();
-      expect(document.body.textContent).not.toContain(fiction);
-    }
   });
 
-  it('still carries fiction on the phase model — the face is what changed', () => {
-    // Pins WHERE the retirement happened. If a later change strips `fiction`
-    // from the adapter instead, the test above would keep passing for a reason
-    // it does not state, and this arm is what notices.
+  it('exposes no fiction- or quote-shaped key on any card model', () => {
+    // The field is gone from the type, so a reintroduction is a compile error
+    // first. This is the runtime backstop for the one route that would not be:
+    // an adapter spreading an untyped object onto the card model.
     const phase = buildPhase();
-    expect(phase.cards.map((card) => card.fiction)).toEqual([FICTION_ONE, FICTION_TWO]);
+    expect(phase.cards.length, 'fixture produced no cards').toBeGreaterThan(0);
+    for (const card of phase.cards) {
+      const keys = Object.keys(card);
+      expect(keys, `card ${card.id} carries a retired field`).not.toContain('fiction');
+      expect(keys, `card ${card.id} carries a retired field`).not.toContain('fictionBySetting');
+      expect(keys, `card ${card.id} carries a retired field`).not.toContain('quote');
+    }
   });
 
   it('draws no empty italic paragraph where the quote used to sit', () => {

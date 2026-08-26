@@ -205,7 +205,6 @@ const STEP_0_HAND: readonly StepNudge[] = [
     forecastDelta: 0.06,
     imageTag: 'generic.focus',
     effectLine: 'Keep their words and hands level. It argues for neither answer.',
-    fiction: 'Most things fail by a margin.',
     bandProse: {
       success: 'Level was enough. The pilgrim listened instead of talking.',
       near_miss: 'The words held level the whole way. There was not enough time.',
@@ -223,7 +222,6 @@ const STEP_0_HAND: readonly StepNudge[] = [
     imageTag: 'generic.memory',
     effectLine:
       'Put a want under their thinking — a want to bring everyone out of this alive. It leans them toward mercy.',
-    fiction: 'By morning it feels like their own idea.',
     bandProse: {
       success_at_cost: 'The want held to the end, and it cost them the answer they had ready.',
       failure: 'The want was there, and so was the fear, and the fear was louder.',
@@ -240,7 +238,6 @@ const STEP_0_HAND: readonly StepNudge[] = [
     poleLean: { axis: 'mercy_ruthlessness', toward: 'positive' },
     imageTag: 'generic.blessing',
     effectLine: 'Give them something to want beyond getting through this. It leans them toward mercy.',
-    fiction: 'A life turns on what it reaches for.',
     bandProse: {
       critical_success: 'They wanted this to end well, and wanting it made them convincing.',
       near_miss: 'The wanting was real. The leg was worse.',
@@ -259,7 +256,6 @@ const STEP_0_HAND: readonly StepNudge[] = [
     imageTag: 'generic.dark',
     effectLine:
       'Surface the quick, ugly answer so it arrives first. It leans them toward the ruthless answer, and moves them that way for good.',
-    fiction: 'It works. That is the problem.',
     bandProse: {
       success: 'The quick answer arrived first and got itself said before the patient one could.',
       critical_failure: 'The quick answer was the only one left in them, and it came out at the wrong person.',
@@ -276,7 +272,6 @@ const STEP_0_HAND: readonly StepNudge[] = [
     imageTag: 'generic.strength',
     effectLine:
       'Make the world feel heavier and closer, more decidable by hand. It leans them toward the ruthless answer.',
-    fiction: 'Some gods are felt before they are heard.',
     bandProse: {
       success_at_cost: 'Everything felt solvable by hand, and their hand moved before their mouth did.',
       failure: 'The world went heavy and stayed heavy. Heavy did not make it simple.',
@@ -293,7 +288,6 @@ const STEP_0_HAND: readonly StepNudge[] = [
     imageTag: 'generic.oath',
     effectLine:
       'Only in a group: tighten what they already share, so nobody has to be persuaded twice. It argues for neither answer.',
-    fiction: 'A company decides faster than a person does.',
     bandProse: {
       critical_success: 'The group moved as one, and the pilgrim believed the group before the person.',
       near_miss: 'The group spoke with one voice. The pilgrim had already decided not to hear it.',
@@ -309,7 +303,6 @@ const STEP_0_HAND: readonly StepNudge[] = [
     rider: 'no_crit_fail',
     imageTag: 'generic.mercy',
     effectLine: 'Put a floor under the worst — it can still go badly, but not all the way down.',
-    fiction: 'Failing is survivable. Some failures are not.',
     bandProse: {
       near_miss: 'It went badly and stopped there.',
       failure: 'It came apart, and the floor kept the pieces small.',
@@ -334,7 +327,6 @@ const STEP_1_POSITIVE_HAND: readonly StepNudge[] = [
     rider: 'no_crit_fail',
     imageTag: 'generic.mercy',
     effectLine: 'Put a floor under the worst — it can still go badly, but not all the way down.',
-    fiction: 'Failing is survivable. Some failures are not.',
     bandProse: {
       near_miss: 'No price was agreed, and no blade came out. The second half of that was bought.',
       failure: 'It went wrong and went no further.',
@@ -350,7 +342,6 @@ const STEP_1_POSITIVE_HAND: readonly StepNudge[] = [
     forecastDelta: 0.11,
     imageTag: 'generic.blessing',
     effectLine: 'Wake in the riders a hunger for what they cannot get here — staying stops being worth it.',
-    fiction: 'A life turns on what it reaches for.',
     bandProse: {
       critical_success: 'They were already thinking about somewhere else, and somewhere else won.',
       near_miss: 'A road further on had their attention. Not enough of it.',
@@ -368,7 +359,6 @@ const STEP_1_POSITIVE_HAND: readonly StepNudge[] = [
     imageTag: 'generic.dark',
     effectLine:
       'Put an unspoken threat behind what is proposed. It moves the one proposing it toward the ruthless end for good.',
-    fiction: 'It works. That is the problem.',
     bandProse: {
       success: 'The terms were taken. What stood behind the terms was what got taken seriously.',
       failure: 'The threat got heard without being said, and being threatened made the price an insult.',
@@ -384,7 +374,6 @@ const STEP_1_POSITIVE_HAND: readonly StepNudge[] = [
     forecastDelta: 0.09,
     imageTag: 'generic.light',
     effectLine: 'Put a clean edge on what is offered, so it looks like a fair trade.',
-    fiction: 'Half of worth is what the light does to it.',
     bandProse: {
       success_at_cost: 'It all looked better than it was, and they took a little extra for the trouble of looking.',
       near_miss: 'It looked good right up until somebody picked it up.',
@@ -399,7 +388,6 @@ const STEP_1_POSITIVE_HAND: readonly StepNudge[] = [
     forecastDelta: 0.07,
     imageTag: 'generic.matter',
     effectLine: 'Make each thing be what it looks like — seams tight, metal true, weight right.',
-    fiction: 'A good object argues for itself.',
     bandProse: {
       success: 'Everything offered was exactly what it looked like, and nobody needed a second look.',
       failure: 'Everything offered was sound. The offer was never the argument.',
@@ -423,7 +411,6 @@ const STEP_1_NEGATIVE_HAND: readonly StepNudge[] = [
     forecastDelta: 0.07,
     imageTag: 'generic.focus',
     effectLine: 'Shave a moment off the timing — the first move goes when it should, not a breath late.',
-    fiction: 'Most things fail by a margin.',
     bandProse: {
       success: 'It went a half-beat early, and the half-beat mattered.',
       near_miss: 'The timing was right. Everything after it took too long.',
@@ -439,7 +426,6 @@ const STEP_1_NEGATIVE_HAND: readonly StepNudge[] = [
     forecastDelta: 0.11,
     imageTag: 'generic.energy',
     effectLine: 'The body spends everything it was saving in the next few seconds.',
-    fiction: 'Bodies hold more than they admit.',
     bandProse: {
       critical_success: 'The body gave everything at once, and it was enough.',
       failure: 'Everything went into it, and it went into the wrong man.',
@@ -455,7 +441,6 @@ const STEP_1_NEGATIVE_HAND: readonly StepNudge[] = [
     forecastDelta: 0.10,
     imageTag: 'generic.memory',
     effectLine: 'Give the riders something else to mind — a strap to check, a moment to lose.',
-    fiction: 'By morning it feels like their own idea.',
     bandProse: {
       success_at_cost: 'Two of them were looking at the wrong thing. The third was not.',
       near_miss: 'All four looked away at the same moment, and noticed that they had.',
@@ -471,7 +456,6 @@ const STEP_1_NEGATIVE_HAND: readonly StepNudge[] = [
     forecastDelta: 0.12,
     imageTag: 'generic.oath',
     effectLine: 'Only in a group: they all move on the same beat without being told.',
-    fiction: 'A company decides faster than a person does.',
     bandProse: {
       critical_success: 'They went in together on one beat, and four scattered riders could not answer it.',
       failure: 'Everyone moved together, into the same wrong place, at the same time.',
@@ -489,7 +473,6 @@ const STEP_1_NEGATIVE_HAND: readonly StepNudge[] = [
     imageTag: 'generic.dark',
     effectLine:
       'Take out the half-beat where a person checks whether this is necessary. It moves them toward the ruthless end for good.',
-    fiction: 'It works. That is the problem.',
     bandProse: {
       success: 'They never asked whether this was necessary, and not asking made it fast.',
       failure: 'There was no hesitation, and no advantage in having none.',
@@ -513,7 +496,6 @@ const STEP_2_POSITIVE_HAND: readonly StepNudge[] = [
     forecastDelta: 0.06,
     imageTag: 'generic.focus',
     effectLine: 'Keep the shaking out of the part where nothing can be taken back.',
-    fiction: 'Most things fail by a margin.',
     bandProse: {
       success: 'Nothing shook, and a calm handover is most of a handover.',
       near_miss: 'Nothing shook. The counting went wrong anyway.',
@@ -529,7 +511,6 @@ const STEP_2_POSITIVE_HAND: readonly StepNudge[] = [
     forecastDelta: 0.10,
     imageTag: 'generic.memory',
     effectLine: 'Leave a wish to be done with this under the thinking of everyone holding a weapon.',
-    fiction: 'By morning it feels like their own idea.',
     bandProse: {
       critical_success: 'Every one of them wanted to be somewhere else, and men who want to leave leave fast.',
       failure: 'One of them was in no hurry at all, and the others waited to see what he would do.',
@@ -545,7 +526,6 @@ const STEP_2_POSITIVE_HAND: readonly StepNudge[] = [
     forecastDelta: 0.09,
     imageTag: 'generic.blessing',
     effectLine: 'Give one of them a reason to be the sort of person who keeps a bargain.',
-    fiction: 'A life turns on what it reaches for.',
     bandProse: {
       success_at_cost: 'One of them held the others to the bargain, and made sure everyone saw who had.',
       near_miss: 'Somebody wanted to be better than this, and was outvoted.',
@@ -560,7 +540,6 @@ const STEP_2_POSITIVE_HAND: readonly StepNudge[] = [
     forecastDelta: 0.08,
     imageTag: 'generic.time-slow',
     effectLine: 'Make the moment feel worn and ordinary — this has happened before, and it went the plain way.',
-    fiction: 'Nothing happens only once.',
     bandProse: {
       success: 'It felt like a job they had done before, and they did it the same way.',
       critical_failure: 'It felt familiar, and what it reminded them of was a time somebody had cheated them.',
@@ -576,7 +555,6 @@ const STEP_2_POSITIVE_HAND: readonly StepNudge[] = [
     forecastDelta: 0.10,
     imageTag: 'generic.oath',
     effectLine: 'Only in a group: keep their order steady, so nobody moves before they are meant to.',
-    fiction: 'A company decides faster than a person does.',
     bandProse: {
       critical_success: 'Nobody on either side moved early, and nobody had to be told not to.',
       failure: 'Somebody at the back moved, and it was read as the start of a fight.',
@@ -600,7 +578,6 @@ const STEP_2_NEGATIVE_HAND: readonly StepNudge[] = [
     rider: 'no_crit_fail',
     imageTag: 'generic.mercy',
     effectLine: 'Put a floor under the worst — it can still go badly, but not all the way down.',
-    fiction: 'Failing is survivable. Some failures are not.',
     bandProse: {
       near_miss: 'It ended badly, and it ended there.',
       failure: 'It went wrong, and the floor held how far wrong it could go.',
@@ -617,7 +594,6 @@ const STEP_2_NEGATIVE_HAND: readonly StepNudge[] = [
     valueDrift: { axis: 'mercy_ruthlessness', toward: 'negative' },
     imageTag: 'generic.dark',
     effectLine: 'Take away the instinct to stop once someone is down. It moves them toward the ruthless end for good.',
-    fiction: 'It works. That is the problem.',
     bandProse: {
       success: 'The instinct to stop never arrived, and it was over while the others were still deciding.',
       critical_failure: 'Stopping never occurred to them, and neither did looking behind them.',
@@ -633,7 +609,6 @@ const STEP_2_NEGATIVE_HAND: readonly StepNudge[] = [
     forecastDelta: 0.10,
     imageTag: 'generic.energy',
     effectLine: 'When the arms go dead, there is one more blow in them.',
-    fiction: 'Bodies hold more than they admit.',
     bandProse: {
       critical_success: 'There was one more in them, and one more was all it took.',
       near_miss: 'There was one more in them. The road wanted three.',
@@ -648,7 +623,6 @@ const STEP_2_NEGATIVE_HAND: readonly StepNudge[] = [
     forecastDelta: 0.12,
     imageTag: 'generic.strength',
     effectLine: 'Footing holds where it should slip, and a blow lands with more behind it than the arm had.',
-    fiction: 'Some gods are felt before they are heard.',
     bandProse: {
       success_at_cost: 'The ground held under one of them and not the other, and both of them noticed.',
       failure: 'Every step was solid. Solid footing in the wrong place is still the wrong place.',
@@ -664,7 +638,6 @@ const STEP_2_NEGATIVE_HAND: readonly StepNudge[] = [
     forecastDelta: 0.08,
     imageTag: 'generic.blessing',
     effectLine: 'Wake in the ones still standing a want to be alive somewhere else tomorrow.',
-    fiction: 'A life turns on what it reaches for.',
     bandProse: {
       success: 'One of them decided being alive elsewhere was the better trade, and the rest followed him out.',
       near_miss: 'Two of them wanted to be elsewhere and went. Two of them stayed.',

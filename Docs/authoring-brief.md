@@ -1,8 +1,8 @@
 # Authoring Brief
 
-> **Generated:** 2026-08-25 by scripts/build-authoring-brief.ts
+> **Generated:** 2026-08-26 by scripts/build-authoring-brief.ts
 > **Sources:**
->   - Docs/plans/2026-04-16-systemic-wiring-guide.md (sha1: 8f62d96a5041bcfef459f96c8789693c2e93db15)
+>   - Docs/plans/2026-04-16-systemic-wiring-guide.md (sha1: 80647d464d0382761ccedb4322a4e8ef7263fdfd)
 >   - Docs/plans/2026-04-16-game-design-direction.md (sha1: c3caccfd560df150ed597cb4fe9a9ac0faebcba6)
 >   - .claude/skills/encounter-pipeline/SKILL.md (sha1: 536b365a7471a26b4ba6cfd25548bdf86d40bbf7)
 >   - Sections A/D, hardcoded in the generator (sha1: 65befe901e88a7024492a94e7d79113ba112b52c)

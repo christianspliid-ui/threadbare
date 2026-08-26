@@ -45,7 +45,6 @@ const SPECIAL: StepNudge = {
   name: 'Buy The Warden',
   essenceCost: 2,
   forecastDelta: 0.08,
-  fiction: '',
   effectLine: 'He looks the other way.',
   bandProse: { failure: 'He took it and looked anyway.' },
 };
@@ -298,7 +297,11 @@ describe('THR-1247 · a dealt card on the encounter stage', () => {
     const dealt = phase.cards.filter((c) => isDealtNudgeId(c.id));
     expect(dealt.length).toBeGreaterThan(0);
     for (const card of dealt) {
-      expect(card.fiction).toBe('');
+      // THR-1225 removed the field, so the assertion moved from "it is empty"
+      // to "it is not there". Paired with the surviving anatomy, so a card model
+      // that built nothing cannot pass this vacuously.
+      expect(card.name, `dealt card ${card.id} has no name`).toBeTruthy();
+      expect(Object.keys(card), `dealt card ${card.id}`).not.toContain('fiction');
     }
   });
 });

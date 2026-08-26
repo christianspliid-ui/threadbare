@@ -103,7 +103,6 @@ const STEP_0_HAND: readonly StepNudge[] = [
     valueDrift: { axis: 'revelation_discretion', toward: 'negative' },
     imageTag: 'generic.dark',
     effectLine: 'Leave no mark behind. No rival power can follow the hand back to its source.',
-    fiction: 'A practiced hand leaves less than a careful one.',
     bandProse: {
       success: 'Nobody upstairs could say who helped them down.',
       near_miss: 'The hand behind it went unseen. It also went unfinished.',
@@ -118,7 +117,6 @@ const STEP_0_HAND: readonly StepNudge[] = [
     forecastDelta: 0.09,
     imageTag: 'generic.luck',
     effectLine: 'The ground turns against whoever would stop them, and gives way under them.',
-    fiction: 'Every structure has one loose piece.',
     bandProse: {
       critical_success: 'The dark below shifted first, and they went down through the gap it left.',
       failure: 'The ground gave in the wrong place, and it gave under them.',
@@ -133,7 +131,6 @@ const STEP_0_HAND: readonly StepNudge[] = [
     forecastDelta: 0.06,
     imageTag: 'generic.matter',
     effectLine: 'Reveal a scroll case left by an earlier party. Oiled leather, theirs to keep.',
-    fiction: 'Matter keeps its promises longer than people do.',
     grants: [
       {
         kind: 'attachment_grant',
@@ -156,7 +153,6 @@ const STEP_0_HAND: readonly StepNudge[] = [
     reveals: 'next_step_demand',
     imageTag: 'generic.focus',
     effectLine: 'Show them the layout of the place before they move through it.',
-    fiction: 'Long looking shows what one glance cannot.',
     bandProse: {
       critical_success: 'They knew the room before they entered it, and never put a foot wrong.',
       failure: 'They had the whole layout and were heard anyway.',
@@ -171,7 +167,6 @@ const STEP_0_HAND: readonly StepNudge[] = [
     rider: 'no_crit_fail',
     imageTag: 'generic.mercy',
     effectLine: 'However badly this goes, it cannot end in disaster.',
-    fiction: 'Failing is survivable. Some failures are not.',
     bandProse: {
       near_miss: 'They got through on the last of it, and no further harm followed.',
       failure: 'It went badly and stopped there, and no worse thing came of it.',
@@ -185,7 +180,6 @@ const STEP_0_HAND: readonly StepNudge[] = [
     forecastDelta: 0.05,
     imageTag: 'generic.vigor',
     effectLine: 'Close their wounds where they stand. The hurt stops slowing them.',
-    fiction: 'Some wounds are only debts the body is carrying.',
     grants: [{ kind: 'remove_condition', conditionTraitId: 'trait.condition.wounded' }],
     bandProse: {
       success: 'They moved without a limp and were not heard.',
@@ -200,7 +194,6 @@ const STEP_0_HAND: readonly StepNudge[] = [
     forecastDelta: 0.08,
     imageTag: 'generic.memory',
     effectLine: 'An urge arrives in their sleep and stays. For a while they will go looking.',
-    fiction: 'Everyone is haunted. Few are visited on purpose.',
     grants: [
       {
         kind: 'plant_compulsion',
@@ -234,7 +227,6 @@ const STEP_1_HAND: readonly StepNudge[] = [
     forecastDelta: 0.06,
     imageTag: 'generic.ward',
     effectLine: 'Offer the keeper a plain account of what turns up down there. The debt this creates is theirs to spend.',
-    fiction: 'Order is only debt everyone agreed to honor.',
     // The library's Favor is dealt in its *create* direction, not its *call*
     // direction — it mints a debt rather than spending an existing one, so it
     // correctly authors no `requiresFavor` gate (that field lives on
@@ -262,7 +254,6 @@ const STEP_1_HAND: readonly StepNudge[] = [
     costs: { detectionDelta: 0.12 },
     imageTag: 'generic.energy',
     effectLine: 'Push straight through the water and the dark without care for who notices. It costs nothing but attention.',
-    fiction: 'Subtlety is a choice. This is not it.',
     bandProse: {
       critical_success: 'They went at it without care for noise, and the shelf gave up everything at once.',
       failure: 'The push got them nowhere, and every rival power watching this ground saw it happen.',
@@ -277,7 +268,6 @@ const STEP_1_HAND: readonly StepNudge[] = [
     forecastDelta: 0.05,
     imageTag: 'generic.warmth',
     effectLine: 'Give them a reason to finish the shelf even after the light fails. Desire carries where nerve runs out.',
-    fiction: 'A life turns on what it reaches for.',
     // `ambition_uncover_secrets` confirmed live (ambition-templates.ts:490) —
     // the only ambition template whose premise (uncovering hidden truth)
     // matches this card's fiction without inventing one.
@@ -304,7 +294,6 @@ const STEP_1_HAND: readonly StepNudge[] = [
     forecastDelta: 0.07,
     imageTag: 'generic.time-slow',
     effectLine: 'A need to keep reading takes root and does not let go until the shelf is empty.',
-    fiction: 'By morning it feels like their own idea.',
     // The batch's one deliberate reuse of a member slot 1 also deals
     // (card.compulsion.signature.mind) — a documented deviation from the
     // batch brief's own over-exposure table, for the reason given in the
@@ -333,7 +322,6 @@ const STEP_1_HAND: readonly StepNudge[] = [
     reveals: 'next_step_demand',
     imageTag: 'generic.crowd',
     effectLine: 'Notice how the room itself was built to test the person now standing in it. That shapes what waits below.',
-    fiction: 'Every situation has an architecture. Most go unlooked at.',
     bandProse: {
       critical_success: 'They saw how the shelves were arranged to slow down a careless reader, and were not careless.',
       near_miss: 'They saw the room\'s shape and still ran out of light one shelf short of the last.',
@@ -354,7 +342,6 @@ const STEP_2_HAND: readonly StepNudge[] = [
     valueDrift: { axis: 'honesty_cunning', toward: 'negative' },
     imageTag: 'generic.strength',
     effectLine: 'Fill them with the pull toward what is quick and good enough. It works, and it stays with them.',
-    fiction: 'It works. That is the problem.',
     // forecastDelta 0.16 >= NUDGE_BIG_DELTA (0.15), so both failure bands
     // carry a fragment.
     bandProse: {
@@ -373,7 +360,6 @@ const STEP_2_HAND: readonly StepNudge[] = [
     rider: 'all_or_nothing',
     imageTag: 'generic.blade',
     effectLine: 'The middle outcomes fall away. It lands clean or it lands hard.',
-    fiction: 'Chaos has no use for the adequate.',
     bandProse: {
       critical_success: 'There was no middle left to land in, and it landed high.',
       critical_failure: 'They had no soft landing left, and they used the hard one.',
@@ -388,7 +374,6 @@ const STEP_2_HAND: readonly StepNudge[] = [
     forecastDelta: 0.04,
     imageTag: 'generic.rumor',
     effectLine: 'Steady their hand. The season after this leans toward more of the same.',
-    fiction: 'Nothing happens only once.',
     grants: [
       {
         kind: 'emit_omen',
@@ -414,7 +399,6 @@ const STEP_2_HAND: readonly StepNudge[] = [
     costs: { doomDelta: 0.05 },
     imageTag: 'generic.decay',
     effectLine: "No essence spent. The world's own ending comes nearer to cover the cost.",
-    fiction: 'Nothing is free. Some prices are only slower.',
     bandProse: {
       success: "They got through. The debt for it was booked against the world's ending.",
       failure: 'The cost was booked against the world, and the vault gave up no more for it.',
@@ -431,7 +415,6 @@ const STEP_2_HAND: readonly StepNudge[] = [
     forecastDelta: 0.05,
     imageTag: 'generic.blessing',
     effectLine: 'A steady hand now, and a piece of the truth kept win or lose.',
-    fiction: 'A wager on the side still pays out.',
     grants: [
       {
         kind: 'intelligence',
@@ -457,7 +440,6 @@ const STEP_2_HAND: readonly StepNudge[] = [
     valueDrift: { axis: 'revelation_discretion', toward: 'positive' },
     imageTag: 'generic.light',
     effectLine: 'Push hard and in the open. The help is unmistakable, and every rival power sees whose hand it was.',
-    fiction: 'Let them see who did this.',
     bandProse: {
       critical_success: 'The help was plain to see and it worked. Rival powers are looking at this ground now.',
       failure: 'It was done in the open and it failed in the open.',
@@ -472,7 +454,6 @@ const STEP_2_HAND: readonly StepNudge[] = [
     forecastDelta: 0.06,
     imageTag: 'generic.oath',
     effectLine: 'What they already are carries them through. Nothing is spent to make it so.',
-    fiction: 'Character is the one resource nobody spends.',
     bandProse: {
       success: 'They answered without shading it, and the answer was enough.',
       failure: 'They told it the truth. The truth was not what it was waiting for.',

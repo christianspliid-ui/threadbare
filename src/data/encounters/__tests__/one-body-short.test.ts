@@ -528,7 +528,7 @@ describe('One Body Short — no gendered pronoun', () => {
     );
 
     for (const nudge of hand) {
-      strings.push(nudge.name, nudge.effectLine, nudge.fiction);
+      strings.push(nudge.name, nudge.effectLine);
       strings.push(...Object.values(nudge.bandProse ?? {}));
     }
 

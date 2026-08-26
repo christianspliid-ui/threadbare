@@ -316,9 +316,10 @@ existing cache filter enforces it unchanged.
 - **One opening per declared class** (~1 paragraph, scene word budget). Checklist
   questions 1–4 live in the opening; the complication, stakes, and hand are
   setting-neutral. The spine below the opening may not name class scenery.
-- **Per-card `fictionBySetting`** remains readable for legacy cards whose card prose
-  (`fiction`) named class scenery. New cards author no card prose at all (Doctrine v2 —
-  the flavor quote and `fiction` are retired), so post-v2 cards never declare it.
+- **Per-card `fictionBySetting` is gone** (THR-1225), with `fiction` itself. It existed so
+  a legacy card whose prose named class scenery could vary by class; Doctrine v2 retired
+  the flavor quote, so cards author no card prose at all and there is nothing left to vary.
+  Setting variation now lives entirely in the template's `openings`.
 - **Exact-subtype override** (`locationTypes`) remains for genuinely specific encounters
   (a temple rite).
 - **Raw entries** declare `settings` + `openings` and the converter derives

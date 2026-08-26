@@ -66,7 +66,6 @@ function card(overrides: Partial<StepNudge> & Pick<StepNudge, 'id'>): StepNudge 
     name: 'a card',
     essenceCost: 1,
     forecastDelta: 0,
-    fiction: 'The god moves.',
     effectLine: 'Helps.',
     ...overrides,
   };

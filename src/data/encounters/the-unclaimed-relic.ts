@@ -109,7 +109,6 @@ const STEP_0_HAND: readonly StepNudge[] = [
     forecastDelta: 0.06,
     imageTag: 'generic.focus',
     effectLine: 'Strengthen their hands — they hold on long after their strength should fail.',
-    fiction: 'Most things fail by a margin.',
     bandProse: {
       success: 'Their grip held to the end.',
       failure: 'The steadying held until the last moment — then their hands gave out anyway.',
@@ -127,7 +126,6 @@ const STEP_0_HAND: readonly StepNudge[] = [
     forecastDelta: 0.08,
     imageTag: 'generic.matter',
     effectLine: 'Reveal abandoned gear nearby — iron tongs they can use and keep.',
-    fiction: 'Matter keeps its promises longer than people do.',
     grants: [
       {
         kind: 'attachment_grant',
@@ -156,7 +154,6 @@ const STEP_0_HAND: readonly StepNudge[] = [
     rider: 'floor_at_cost',
     imageTag: 'generic.ward',
     effectLine: 'Guarantee success — they will carry the relic out, but pay for it in skin and gear.',
-    fiction: 'Rules exist so the worst case has a name.',
     bandProse: {
       success_at_cost: 'The bargain held: they have the relic, and the price came out of their hands.',
       critical_failure: 'Even a bound outcome needs working hands, and both of theirs had failed.',
@@ -175,7 +172,6 @@ const STEP_0_HAND: readonly StepNudge[] = [
     valueDrift: { axis: 'asceticism_extravagance', toward: 'negative' },
     imageTag: 'generic.dark',
     effectLine: 'Fill them with hunger for the prize — they will not let go, even when they should.',
-    fiction: 'It works. That is the problem.',
     bandProse: {
       critical_success: 'They held on past every reason to stop, and it came free in their hands.',
       failure: 'The hunger made them hold on too long, and the cold won anyway.',
@@ -193,7 +189,6 @@ const STEP_0_HAND: readonly StepNudge[] = [
     forecastDelta: 0.05,
     imageTag: 'generic.warmth',
     effectLine: 'Grant them calm — they reach in unafraid and stay that way.',
-    fiction: 'Most suffering ends. This one ends sooner.',
     grants: [{ kind: 'remove_condition', conditionTraitId: 'trait.condition.terrified' }],
     bandProse: {
       success: 'They worked calmly and without hurry, and it was enough.',
@@ -214,7 +209,6 @@ const STEP_0_HAND: readonly StepNudge[] = [
     forecastDelta: 0.1,
     imageTag: 'generic.energy',
     effectLine: 'Send a surge of heat through their body — the cold cannot stall them.',
-    fiction: 'Bodies hold more than they admit.',
     bandProse: {
       critical_success: 'The heat arrived, and they worked as if the cold had never touched them.',
       success_at_cost: 'The surge carried them through and left them shaking on the far side of it.',

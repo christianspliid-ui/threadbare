@@ -36,7 +36,6 @@ const WHISPER: StepNudge = {
   essenceCost: 1,
   forecastDelta: 0,
   reveals: 'next_step_demand',
-  fiction: 'The air thins, and the next thing is briefly audible.',
   effectLine: 'You hear what is coming.',
 };
 

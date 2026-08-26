@@ -28,7 +28,6 @@ const WHISPER: StepNudge = {
   essenceCost: 1,
   forecastDelta: 0,
   reveals: 'next_step_demand',
-  fiction: 'The air thins, and the next thing is briefly audible.',
   effectLine: 'You hear what is coming.',
 };
 
@@ -37,7 +36,6 @@ const PLAIN: StepNudge = {
   name: 'Steady the hand',
   essenceCost: 1,
   forecastDelta: 0.08,
-  fiction: 'The tremor stops.',
   effectLine: 'Steadier than she was.',
 };
 

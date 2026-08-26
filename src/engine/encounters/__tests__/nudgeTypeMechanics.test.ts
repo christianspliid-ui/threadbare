@@ -130,7 +130,6 @@ function makeCard(opts: {
     name: 'Test Card',
     essenceCost: 2,
     forecastDelta: opts.forecastDelta,
-    fiction: 'A test card.',
     effectLine: 'It does the thing the keyword promises.',
     ...(opts.costs ? { costs: opts.costs } : {}),
     ...(opts.grants ? { grants: opts.grants } : {}),

@@ -566,15 +566,11 @@ export interface EncounterStageNudgeCardModel {
   /** Single glyph drawn on the keyword chip. Present whenever `keyword` is. */
   keywordIcon?: string;
   name: string;
-  /**
-   * Card body — a concrete, witnessed effect.
-   *
-   * @deprecated No card face draws this since THR-1224 — Prose Doctrine v2
-   * retires the flavor quote. Still built and enriched so the field's removal
-   * happens once, together with the corpus strip that empties
-   * `StepNudge.fiction` (THR-1225, deferred behind THR-1223). Do not add a reader.
+  /*
+   * The `fiction` carrier is **gone** (THR-1225), together with
+   * `StepNudge.fiction` it was built from. No card face has drawn it since
+   * THR-1224. Do not add it back.
    */
-  fiction: string;
   /** Player guidance, words only — never a number. */
   effectLine: string;
   /**

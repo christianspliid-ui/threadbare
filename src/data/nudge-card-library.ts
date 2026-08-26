@@ -363,8 +363,6 @@ export interface NudgeCardMember {
   readonly unlock?: NudgeCardUnlock;
   /** Two or three generic words. Absent until authored under THR-883. */
   readonly title?: string;
-  /** The card's only prose — one short serif line. Absent until authored. */
-  readonly quote?: string;
   /** Image-library tag; absent ⇒ falls back to the type's generic art. */
   readonly imageTag?: string;
 }
@@ -534,8 +532,6 @@ const VARIATION_MEMBERS: readonly NudgeCardMember[] = [
 interface NudgeCardContent {
   /** Two to four generic words. Interactive-plain: no metaphor, no ambiguity. */
   readonly title: string;
-  /** The card's only prose — one short line. A dry aphorism is the ceiling. */
-  readonly quote: string;
   /** Image-library tag; omitted ⇒ the type's generic art. */
   readonly imageTag?: string;
 }
@@ -563,11 +559,11 @@ interface NudgeCardContent {
  *    — every template referencing a member by `libraryCardId` was untouched,
  *    which is exactly why the rename was safe to do in bulk.
  *
- * The `quote` is now **dead data on every surface**: v2 retires the flavor quote
- * by name, `StepNudge.fiction` is deprecated, and no card face draws either. The
- * field stays required here because `unauthoredCardCount()` reads it to prove a
- * member has an authored face, so removing it is a schema change and rides THR-1225
- * rather than being smuggled into a rename pass.
+ * The `quote` is **gone** (THR-1225), together with `StepNudge.fiction`: v2
+ * retires the flavor quote by name and no card face drew either. A member's
+ * authored face is now its `title` alone, which is what `unauthoredCardCount()`
+ * measures — the count stays pinned at zero by test, so the gauge still fails CI
+ * on an unauthored member rather than dealing it as its own keyword.
  *
  * `imageTag` is deliberately absent throughout: the image library has no card
  * rows to bind to, and minting art slots is owned elsewhere (THR-832/THR-1170).
@@ -578,145 +574,111 @@ const CARD_CONTENT: Readonly<Record<string, NudgeCardContent>> = {
   // Universal core — the floor every god holds. Plainest voices in the library.
   'card.boost.core': {
     title: 'Press The Odds',
-    quote: 'Most things fail by a margin.',
   },
   'card.insurance.core': {
     title: 'Buy The Floor',
-    quote: 'Every plan should survive being wrong.',
   },
   'card.mercy.core': {
     title: 'Spare The Worst',
-    quote: 'Failing is survivable. Some failures are not.',
   },
   'card.trait_card.core': {
     title: 'Draw On Character',
-    quote: 'Character is the one resource nobody spends.',
   },
 
   // Sphere signatures — each reads as its sphere's mode of power.
   'card.gambit.signature.chaos': {
     title: 'Risk Everything',
-    quote: 'Chaos has no use for the adequate.',
   },
   'card.stumble.signature.chaos': {
     title: 'Loosen Their Footing',
-    quote: 'Every structure has one loose piece.',
   },
   'card.favor.signature.order': {
     title: 'Open The Ledger',
-    quote: 'Order is only debt everyone agreed to honor.',
   },
   'card.insurance.signature.order': {
     title: 'Follow The Book',
-    quote: 'Rules exist so the worst case has a name.',
   },
   'card.whisper.signature.light': {
     title: 'Show The Obvious',
-    quote: 'Nothing was hidden. It was only unlit.',
   },
   'card.veil.signature.darkness': {
     title: 'Hide The Deed',
-    quote: 'The kindest help leaves no fingerprints.',
   },
   'card.undertow.signature.darkness': {
     title: 'Offer The Easier Way',
-    quote: 'It works. That is the problem.',
   },
   'card.heavy_hand.signature.force': {
     title: 'Throw Full Weight',
-    quote: 'Subtlety is a choice. This is not it.',
   },
   'card.cache.signature.matter': {
     title: 'Find What Remains',
-    quote: 'Matter keeps its promises longer than people do.',
   },
   'card.boost.signature.energy': {
     title: 'Rouse The Body',
-    quote: 'Bodies hold more than they admit.',
   },
   'card.balm.signature.life': {
     title: 'Ease The Suffering',
-    quote: 'Most suffering ends. This one ends sooner.',
   },
   'card.compulsion.signature.mind': {
     title: 'Plant An Urge',
-    quote: 'By morning it feels like their own idea.',
   },
   'card.kindled_ambition.signature.spirit': {
     title: 'Kindle A Wanting',
-    quote: 'A life turns on what it reaches for.',
   },
   'card.omen.signature.time': {
     title: 'Read The Pattern',
-    quote: 'Nothing happens only once.',
   },
   'card.bargain.signature.entropy': {
     title: 'Pay It Elsewhere',
-    quote: 'Nothing is free. Some prices are only slower.',
   },
 
   // Hunger uniques — each reads as its hunger's perception style.
   'card.whisper.hunger.witness': {
     title: 'Read The Architecture',
-    quote: 'Every situation has an architecture. Most go unlooked at.',
   },
   'card.kindled_ambition.hunger.kindle': {
     title: 'Fan The Ember',
-    quote: 'Some sparks only need the air.',
   },
   'card.long_game.hunger.sever': {
     title: 'Cut The Thread',
-    quote: 'Not every tie was chosen. None are permanent.',
   },
   'card.favor.hunger.bind': {
     title: 'Bind A Debt',
-    quote: 'Every civilization runs on who owes whom.',
   },
   'card.undertow.hunger.consume': {
     title: 'Take What Is There',
-    quote: 'Strength does not care where it came from.',
   },
   'card.cache.hunger.gather': {
     title: 'Set Aside For Them',
-    quote: 'Someone always put something by.',
   },
   'card.insurance.hunger.preserve': {
     title: 'Save What Remains',
-    quote: 'Keeping is harder than making. Do it anyway.',
   },
   'card.balm.hunger.reclaim': {
     title: 'Mend What Broke',
-    quote: 'Some wounds are only debts the body is carrying.',
   },
   'card.stumble.hunger.reshape': {
     title: 'Press The Weak Point',
-    quote: 'Everything holds until the moment it does not.',
   },
   'card.omen.hunger.wander': {
     title: 'Call Them Onward',
-    quote: 'Every road is asking to be followed.',
   },
   'card.compulsion.hunger.haunt': {
     title: 'Send A Dream',
-    quote: 'Everyone is haunted. Few are visited on purpose.',
   },
   'card.heavy_hand.hunger.illuminate': {
     title: 'Light The Deed',
-    quote: 'Let them see who did this.',
   },
 
   // Variation members — siblings of a card the god already plays.
   'card.boost.variation.patient': {
     title: 'Push Early',
-    quote: 'Early pressure costs less than late force.',
   },
   'card.insurance.variation.shared': {
     title: 'Split The Cost',
-    quote: 'A cost split is a cost survived.',
   },
   'card.mercy.variation.witnessed': {
     title: 'Send A Witness',
-    quote: 'The worst hour is the one nobody sees.',
   },
 
   // Attunement members — each reads as *practice* in its sphere, not as a
@@ -724,15 +686,12 @@ const CARD_CONTENT: Readonly<Record<string, NudgeCardContent>> = {
   // constraint the faces have to carry: attunement is depth, never power.
   'card.gambit.attunement.chaos': {
     title: 'Widen The Swing',
-    quote: 'Practice does not make chaos safer. It makes it larger.',
   },
   'card.veil.attunement.darkness': {
     title: 'Clear The Traces',
-    quote: 'A practiced hand leaves less than a careful one.',
   },
   'card.whisper.attunement.light': {
     title: 'Read The Whole Shape',
-    quote: 'Long looking shows what one glance cannot.',
   },
 };
 
@@ -799,7 +758,7 @@ export function cardDisplayTitle(member: NudgeCardMember): string {
  * named CI failure instead of a card that silently deals as its own keyword.
  */
 export function unauthoredCardCount(): number {
-  return NUDGE_CARD_LIBRARY.filter((m) => m.title === undefined || m.quote === undefined).length;
+  return NUDGE_CARD_LIBRARY.filter((m) => m.title === undefined).length;
 }
 
 // ─── Play profiles — the mechanics a dealt card plays with (THR-1247) ──

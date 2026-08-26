@@ -1502,38 +1502,19 @@ export interface StepNudge {
   readonly poleLean?: StepNudgePoleLean;
   /** WS4 image-library tag; absent ⇒ category generic. */
   readonly imageTag?: string;
-  /**
-   * Card body — a concrete, witnessed effect.
+  /*
+   * `fiction` and `fictionBySetting` are **gone** (THR-1225), completing the
+   * retirement Prose Doctrine v2 opened (director ruling 2026-08-25; THR-1224).
    *
-   * @deprecated Retired by Prose Doctrine v2 (director ruling 2026-08-25;
-   * THR-1224). The doctrine's § *Retired by name* strikes "the flavor quote",
-   * and **nothing renders this field any more** — `NudgePhaseShell`'s card face
-   * drew it and no longer does, which is the only place it ever reached a
-   * player. A card says what it does: name, effect line, cost, odds.
+   * The doctrine's § *Retired by name* strikes "the flavor quote". THR-1224
+   * removed its last reader — `NudgePhaseShell`'s card face — and its word
+   * budget; this pass removed the 767 authored strings and the fields
+   * themselves. A card says what it does and nothing else: name, effect line,
+   * cost, odds.
    *
-   * Still **required** rather than optional, and still carrying its authored
-   * text across the corpus, because emptying ~150 strings edits the same
-   * encounter data files as the doctrine-v2 rewrite (THR-1223) and would
-   * conflict with it line for line. The strip — and making this field optional,
-   * then removing it — rides THR-1225 once that rewrite lands.
-   *
-   * Do not author new `fiction`. Do not add a budget or a detector for it; its
-   * `NUDGE_WORD_BUDGETS` row is already gone.
+   * Do not reintroduce either field. A card that wants scene grounding is
+   * asking the *prose* to do its job — see the step spine and `bandProse`.
    */
-  readonly fiction: string;
-  /**
-   * Per-setting-class rewrites of {@link fiction} (THR-884). A card whose fiction
-   * names class-specific scenery ("the threshing floor") carries one line per class
-   * its template's envelope declares, so a wide envelope stays honest without
-   * narrowing to one subtype.
-   *
-   * Resolved through `resolveSettingVariant` — the same lookup chain as `{frag:*}`,
-   * with `fiction` as the default. Absent → the card reads exactly as today (NFP #6).
-   *
-   * @deprecated Follows {@link fiction} into retirement (THR-1224) — a
-   * per-setting rewrite of a field nothing draws cannot reach a player either.
-   */
-  readonly fictionBySetting?: Readonly<Record<string, string>>;
   /** Player guidance, words only (never a number). */
   readonly effectLine: string;
   /** Appended to the step's prose when this nudge was active for that outcome. */

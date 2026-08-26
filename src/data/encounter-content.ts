@@ -7120,7 +7120,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 1,
             forecastDelta: 0.06,
             imageTag: 'generic.focus',
-            fiction: 'The blade comes round to the fire at the angle where damage shows as a dark line instead of a bright one.',
             effectLine: 'A small, reliable push toward seeing what is there.',
             bandProse: {
               success: 'Held to the fire at that angle, every nick stood out dark, and {actor} counted them.',
@@ -7134,7 +7133,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.11,
             imageTag: 'generic.matter',
-            fiction: 'The steel stops flattering itself. Every place the grain went wrong sits up on the surface.',
             effectLine: 'Strong help. The metal gives an honest account of itself.',
             bandProse: {
               success_at_cost: 'The steel told the truth, and the truth was that a hand-span of it was finished.',
@@ -7148,7 +7146,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.10,
             imageTag: 'generic.memory',
-            fiction: 'How this blade felt the last time it was right comes back exactly, and gives {them} a mark to measure against.',
             effectLine: 'Good help. There is a before to compare this to.',
             bandProse: {
               failure: 'They recalled the old edge perfectly and still could not say what this one had lost.',
@@ -7161,7 +7158,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.09,
             imageTag: 'generic.light',
-            fiction: 'Grey working light arrives over the camp hours before the sun has any business being up.',
             effectLine: 'Good help. Firelight stops doing the deciding.',
             bandProse: {
               critical_success: 'In flat grey light the whole blade read at a glance, guard to tip, with no guessing in it.',
@@ -7175,7 +7171,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.12,
             imageTag: 'generic.time-slow',
-            fiction: 'The camp stops needing {them}. The hour before the watch changes stretches out with room in it.',
             effectLine: 'Strong help. There is time to be thorough.',
             bandProse: {
               failure: 'The hour ran long and {actor} spent all of it on the first hand-span of the blade.',
@@ -7190,7 +7185,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 0,
             forecastDelta: 0.08,
             imageTag: 'generic.oath',
-            fiction: 'They stop arguing with the thumbnail. The blade is worse than {they} had been telling people, and {they} let that be true.',
             effectLine: 'A steady help, and it costs no essence.',
             bandProse: {
               near_miss: 'They admitted the blade was half gone, and still put off admitting which half.',
@@ -7230,7 +7224,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 1,
             forecastDelta: 0.06,
             imageTag: 'generic.focus',
-            fiction: 'The stroke settles into a count {they} stop{s} having to keep. The arm does it without {them}.',
             effectLine: 'A small, reliable push toward keeping at it.',
             bandProse: {
               success: 'The count kept itself, and the edge came up under it stroke by stroke.',
@@ -7244,7 +7237,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.11,
             imageTag: 'generic.strength',
-            fiction: 'The weight through {their} wrist stops rising at the tip and dropping at the heel. It goes down the same all the way along.',
             effectLine: 'Strong help. The whole length gets the same treatment.',
             bandProse: {
               success_at_cost: 'The pressure stayed even and wore a fresh hollow into the middle of the stone.',
@@ -7258,7 +7250,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.10,
             imageTag: 'generic.decay',
-            fiction: 'The orange bloom along the spine lifts off ahead of the stone, leaving grey metal for the edge work.',
             effectLine: 'Good help. The stone gets clean steel to bite.',
             bandProse: {
               failure: 'The rust came away clean off a blade that was already too far gone under it.',
@@ -7271,7 +7262,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.13,
             imageTag: 'generic.oath',
-            fiction: 'The blade sits at one angle to the stone and will not be talked out of it, stroke after stroke.',
             effectLine: 'Strong help. One bevel instead of four.',
             bandProse: {
               critical_success: 'The angle never moved once, and the bevel came off the stone as one clean line from guard to point.',
@@ -7285,7 +7275,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.09,
             imageTag: 'generic.warmth',
-            fiction: 'The whetstone comes up to blood heat under {their} palm and stops dragging at the steel.',
             effectLine: 'Good help. The stone gives instead of fighting.',
             bandProse: {
               near_miss: 'The warm stone cut fast and clean, and ran out of grit before the tip was done.',
@@ -7575,7 +7564,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 1,
             forecastDelta: 0.06,
             imageTag: 'generic.focus',
-            fiction: 'The tremor goes out of {their} fingers. The line stops wandering where the ground dips.',
             effectLine: 'A small, reliable push toward closing it at all.',
             bandProse: {
               success: 'The hand held steady the whole way round, and the line held with it.',
@@ -7589,7 +7577,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.10,
             imageTag: 'generic.matter',
-            fiction: 'A palmful of travelling salt goes down along the line, coarse and white against wet earth.',
             effectLine: 'Good help. The circle has a body now, not just an intention.',
             bandProse: {
               success_at_cost: 'The salt held the line. It was three days of cooking salt, and they ate flat food after.',
@@ -7603,7 +7590,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.09,
             imageTag: 'generic.dark',
-            fiction: 'The dark past the last tent stops pressing inward and sits where it is, patient.',
             effectLine: 'Good help. There is less leaning on the line while it is drawn.',
             bandProse: {
               failure: 'The dark sat back and waited, and the line failed on its own without any help from it.',
@@ -7616,7 +7602,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.12,
             imageTag: 'generic.ward',
-            fiction: 'The walk straightens itself. Where {actor} would have cut a corner, {their} feet go the long way without being told.',
             effectLine: 'Strong help. The shape comes out round.',
             bandProse: {
               critical_success: 'The circle came out true enough to see from the cart roof, and every tent stood inside it.',
@@ -7630,7 +7615,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.11,
             imageTag: 'generic.warmth',
-            fiction: 'The traced ground gives off the warmth of a stone that sat in sun all day.',
             effectLine: 'Strong help. The line stays awake behind {them}.',
             bandProse: {
               near_miss: 'The warmth ran the whole circle and went cold at the gate before {actor} got back to it.',
@@ -7647,7 +7631,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 0,
             forecastDelta: 0.08,
             imageTag: 'generic.oath',
-            fiction: 'They reach the start, look at the gap by the picket line, and set off round a second time.',
             effectLine: 'A steady help, and it costs no essence.',
             bandProse: {
               near_miss: 'The second walk closed the gap by the picket and opened a smaller one by the fire.',
@@ -7686,7 +7669,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 1,
             forecastDelta: 0.06,
             imageTag: 'generic.luck',
-            fiction: 'The wind drops for as long as the kneeling takes, and picks up again after.',
             effectLine: 'A small push. The work gets a quiet minute to happen in.',
             bandProse: {
               success: 'The wind held off, the anchor went down, and the gust that came after found the ward already set.',
@@ -7700,7 +7682,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.12,
             imageTag: 'generic.oath',
-            fiction: '{actor} says a name over the line — a dead brother, a home hex, a debt owed. The circle takes it and holds.',
             effectLine: 'Strong help. A named ward is harder to shift.',
             bandProse: {
               success_at_cost: 'The name held the ward down all night and sat in {their} mouth for three days after.',
@@ -7714,7 +7695,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.10,
             imageTag: 'generic.light',
-            fiction: 'One star over the north edge stops wheeling with the rest and stands where it was put.',
             effectLine: 'Good help. The ward has a mark above it to hang from.',
             bandProse: {
               failure: 'The star stood over the camp all night and the ward under it came apart regardless.',
@@ -7727,7 +7707,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.11,
             imageTag: 'generic.time-slow',
-            fiction: 'The ward is set to fade on a longer clock than the night — first light comes and the line is still there.',
             effectLine: 'Strong help. The work outlives the watch that made it.',
             bandProse: {
               critical_success: 'The ward stood through dawn, through the striking of the tents, and was still faintly warm underfoot at noon.',
@@ -7741,7 +7720,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.09,
             imageTag: 'generic.dark',
-            fiction: 'The line stops being exactly where it is. Whatever wants to find its edge has to guess.',
             effectLine: 'Good help against anything hunting for the seam.',
             bandProse: {
               near_miss: 'The edge blurred and held, and by morning nobody in camp could say where it had run.',
@@ -8259,7 +8237,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 1,
             forecastDelta: 0.06,
             imageTag: 'generic.focus',
-            fiction: 'The breath lengthens on its own until it is slower than the cart-wheels going past.',
             effectLine: 'A small, reliable push toward settling.',
             bandProse: {
               success: 'The breath went long and the road went small, and {actor} found the first line waiting.',
@@ -8273,7 +8250,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.11,
             imageTag: 'generic.blessing',
-            fiction: 'Whatever sits on the other side of the prayer turns its head, and the empty road feels occupied.',
             effectLine: 'Strong help. The prayer lands on an ear.',
             bandProse: {
               success_at_cost: 'The ear opened, and what leaned in came closer than {they} had wanted it.',
@@ -8287,7 +8263,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.09,
             imageTag: 'generic.light',
-            fiction: 'The sun that had already gone behind the ridge comes back a hand\'s width and lays gold along the ditch.',
             effectLine: 'Good help. The hour stops being a rush.',
             bandProse: {
               critical_success: 'In that late gold the road held still, and {actor} said all of it without hurrying a word.',
@@ -8301,7 +8276,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.10,
             imageTag: 'generic.time-slow',
-            fiction: 'The gap between two cart-wheels turning opens up wide enough to kneel inside.',
             effectLine: 'Good help. There is room to finish.',
             bandProse: {
               failure: 'The pause ran long and {actor} spent all of it deciding how to begin.',
@@ -8315,7 +8289,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.08,
             imageTag: 'generic.dark',
-            fiction: 'The dark comes in early and near, until the road is two arm-lengths of dirt and no view at all.',
             effectLine: 'A steady help. Less to be caught by.',
             bandProse: {
               near_miss: 'The dark closed in kindly and hid the road, and hid the hour along with it.',
@@ -8329,7 +8302,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 0,
             forecastDelta: 0.08,
             imageTag: 'generic.oath',
-            fiction: 'It does not occur to {them} that the road might be empty. {They} kneel{s} the way a caller knocks at a door with a light behind it.',
             effectLine: 'A steady help, and it costs no essence.',
             bandProse: {
               critical_failure: 'They knelt certain of an answer, and built one out of the wind rather than get up without.',
@@ -8368,7 +8340,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 1,
             forecastDelta: 0.06,
             imageTag: 'generic.focus',
-            fiction: 'The urge to fill the gap with more words passes, and passes again, and stops coming back.',
             effectLine: 'A small, reliable push toward staying put.',
             bandProse: {
               success: 'They held the gap open and did not talk into it, and it filled from the other side.',
@@ -8382,7 +8353,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.10,
             imageTag: 'generic.warmth',
-            fiction: 'The list of what has to be done by dark stops reciting itself behind {their} eyes.',
             effectLine: 'Good help. Little is pulling at {them}.',
             bandProse: {
               failure: 'The errand stayed down, and {actor} waited on an empty road with an empty head.',
@@ -8395,7 +8365,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.09,
             imageTag: 'generic.vigor',
-            fiction: 'The heartbeat in {their} ears drops away until it is no louder than the ditch-water.',
             effectLine: 'Good help. There is less noise inside than out.',
             bandProse: {
               near_miss: 'The pulse went quiet and {they} heard the whole road, and the road said none of it back.',
@@ -8408,7 +8377,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.11,
             imageTag: 'generic.ward',
-            fiction: 'The wait takes the shape of a rite with a beginning and an end, and {they} know{s} where in it {they} stand{s}.',
             effectLine: 'Strong help. The waiting has edges.',
             bandProse: {
               failure: 'The hour kept itself to the last beat, and the last beat came and went unanswered.',
@@ -8422,7 +8390,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.12,
             imageTag: 'generic.light',
-            fiction: 'The gap between the kneeling and the listened-to closes by a step.',
             effectLine: 'Strong help. Less between {them} and an answer.',
             bandProse: {
               success_at_cost: 'The veil thinned, and what came through arrived with more of itself than {they} had asked for.',
@@ -8437,7 +8404,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 0,
             forecastDelta: 0.08,
             imageTag: 'generic.oath',
-            fiction: 'The wait does not curdle. {They} keep{s} the gap open past where a harder head would fold it up.',
             effectLine: 'A steady help, and it costs no essence.',
             bandProse: {
               critical_success: 'They waited past the sensible hour, and the hour past sensible was the one that answered.',
@@ -8691,7 +8657,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 1,
             forecastDelta: 0.06,
             imageTag: 'generic.focus',
-            fiction: 'Their breathing lengthens without them deciding it. The count between one breath and the next doubles.',
             effectLine: 'A small, reliable push toward sleeping at all.',
             bandProse: {
               success: 'They breathed slow, and slow breathing turned into sleep somewhere they did not notice.',
@@ -8705,7 +8670,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.10,
             imageTag: 'generic.warmth',
-            fiction: 'The stiffness goes out of one calf, then the other, the way heat leaves a stone.',
             effectLine: 'Good help. The body stops arguing with the ground.',
             bandProse: {
               success_at_cost: 'The ache left {their} legs and settled in {their} lower back instead.',
@@ -8719,7 +8683,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.12,
             imageTag: 'generic.time-slow',
-            fiction: 'Dawn holds off. The fire burns down to coals twice over before the sky greys.',
             effectLine: 'Strong help. There is more night to sleep in.',
             bandProse: {
               critical_success: 'The night ran long and they used all of it, and stood up in the morning without a sound in {their} knees.',
@@ -8733,7 +8696,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.11,
             imageTag: 'generic.ward',
-            fiction: 'The faces {actor} left on the road stop arriving at the edge of sleep. The fire is just a fire.',
             effectLine: 'Strong help against what follows them to bed.',
             bandProse: {
               near_miss: 'The road went quiet. One face waited until {they} had almost gone under, then arrived.',
@@ -8747,7 +8709,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.09,
             imageTag: 'generic.dark',
-            fiction: 'The dark past the firelight closes up and stops showing shapes in it.',
             effectLine: 'Good help. There is less out there to watch.',
             bandProse: {
               failure: 'The dark stayed shut. They watched it anyway, all night, to be sure.',
@@ -8763,7 +8724,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 0,
             forecastDelta: 0.08,
             imageTag: 'generic.oath',
-            fiction: 'They stop counting what could go wrong before light. The list was going to keep either way.',
             effectLine: 'A steady help, and it costs no essence.',
             bandProse: {
               near_miss: 'They put the list down and slept badly and woke up glad of the light anyway.',
@@ -8802,7 +8762,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 1,
             forecastDelta: 0.06,
             imageTag: 'generic.luck',
-            fiction: 'A smell off the fire — wet wool — puts {them} back on a specific afternoon {they} had lost.',
             effectLine: 'A small push. One day comes back whole.',
             bandProse: {
               success: 'The wet-wool afternoon came back, and the rest of that week came back behind it.',
@@ -8816,7 +8775,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.13,
             imageTag: 'generic.memory',
-            fiction: 'The stops stay in the order {they} walked them. Nothing slides forward to sit beside a day it did not happen near.',
             effectLine: 'Strong help. The month keeps its sequence.',
             bandProse: {
               success_at_cost: 'The order held all the way back, and {they} could not stop at the part {they} wanted to skip.',
@@ -8830,7 +8788,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.10,
             imageTag: 'generic.light',
-            fiction: 'A coal turns over on its own and the fire comes up, and {they} can see {their} own hands again.',
             effectLine: 'Good help. Enough light to keep thinking by.',
             bandProse: {
               critical_success: 'The fire came up and stayed up, and by the time it died {they} had the whole shape of it.',
@@ -8844,7 +8801,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.11,
             imageTag: 'generic.decay',
-            fiction: 'The parts {they} keep{s} turning over stop turning. What is heavy goes to the bottom and stays there.',
             effectLine: 'Strong help. The small grievances sink out of the way.',
             bandProse: {
               near_miss: 'The small grievances sank. The big one sat on top where it always had.',
@@ -8858,7 +8814,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.09,
             imageTag: 'generic.blessing',
-            fiction: '{actor} says the names of whoever did not finish the month out loud, once each, to the fire.',
             effectLine: 'Good help, and the count comes out honest.',
             bandProse: {
               failure: 'They said every name {they} had. Two more came to {them} at dawn.',
@@ -8989,7 +8944,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 1,
             forecastDelta: 0.06,
             imageTag: 'generic.focus',
-            fiction: 'The shake goes out of {their} fingers. The cut down the sleeve seam runs straight.',
             effectLine: 'A small, reliable push toward reading him right.',
             bandProse: {
               success: 'Steady hands got the coat off him without opening anything further.',
@@ -9003,7 +8957,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.11,
             imageTag: 'generic.light',
-            fiction: 'The lamp flares and holds, and the dark blood and the bright blood stop looking the same colour.',
             effectLine: 'Strong help. The wound shows what it is.',
             bandProse: {
               critical_success: 'Under the raised lamp {actor} saw the second wound as well as the loud one.',
@@ -9017,7 +8970,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 3,
             forecastDelta: 0.14,
             imageTag: 'generic.warmth',
-            fiction: 'The flow out of the arm drops to a seep. The cloth under it stops darkening while {they} look{s} at it.',
             effectLine: 'A large help. There is time to look properly.',
             bandProse: {
               success_at_cost: 'The bleeding held off long enough to work. It came back the moment {they} moved him.',
@@ -9031,7 +8983,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.10,
             imageTag: 'generic.ward',
-            fiction: 'The three at the door stop talking at once. His wife sits down without being asked to.',
             effectLine: 'Good help. Nobody is shouting over him.',
             bandProse: {
               near_miss: 'The room went quiet, and in the quiet {they} could hear how he was breathing.',
@@ -9045,7 +8996,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.09,
             imageTag: 'generic.time-slow',
-            fiction: 'The blood coming off the table hangs a moment before it falls. There is longer between one of his breaths and the next.',
             effectLine: 'Good help. There is more of the hour to look in.',
             bandProse: {
               failure: 'They had all the time {they} wanted with the arm. The arm was never the problem.',
@@ -9059,7 +9009,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 0,
             forecastDelta: 0.08,
             imageTag: 'generic.oath',
-            fiction: 'A hand on his good shoulder, and he stops fighting the table long enough to be looked at.',
             effectLine: 'A steady help, and it costs no essence.',
             bandProse: {
               near_miss: 'He lay still for {them}, and {they} still had to guess at the shoulder.',
@@ -9099,7 +9048,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 1,
             forecastDelta: 0.07,
             imageTag: 'generic.strength',
-            fiction: 'The pull comes from {their} back and not {their} arms, and the bone goes where it is sent on the first try.',
             effectLine: 'A small push, and it only has to happen once.',
             bandProse: {
               success: 'One pull, and the ends met, and he stopped screaming a breath later.',
@@ -9113,7 +9061,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 3,
             forecastDelta: 0.15,
             imageTag: 'generic.blessing',
-            fiction: 'He goes somewhere behind his own eyes for a while. His arm stays on the table without him in it.',
             effectLine: 'A large help. He stops fighting the hands holding him.',
             bandProse: {
               failure: 'He felt none of it and the arm still would not seat.',
@@ -9127,7 +9074,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.11,
             imageTag: 'generic.matter',
-            fiction: 'The water in the pot goes clear as it comes to the boil, and stays clear when the linen comes out of it.',
             effectLine: 'Strong help against what comes after the setting.',
             bandProse: {
               success_at_cost: 'The linen was clean and the wound stayed clean. The fever came from the ribs instead.',
@@ -9141,7 +9087,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.09,
             imageTag: 'generic.light',
-            fiction: 'The boy holding the lamp stops swaying with it. The shadow of {their} own hand quits crossing the wound.',
             effectLine: 'Good help. The work stays lit while it is done.',
             bandProse: {
               failure: 'The lamp never wavered, and every bit of what went wrong was plainly visible.',
@@ -9154,7 +9099,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.12,
             imageTag: 'generic.vigor',
-            fiction: 'The lips of the cut sit together instead of gaping, and stay together while the linen goes round.',
             effectLine: 'Strong help. The wound closes as it is bound.',
             bandProse: {
               critical_success: 'The cut closed under the linen and was pink at the edges by the second day.',
@@ -9240,7 +9184,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 1,
             forecastDelta: 0.07,
             imageTag: 'generic.light',
-            fiction: 'The sun sits on the western wall a while longer than it should, and the ditch keeps its shadow.',
             effectLine: 'A small, reliable push. More of the ground stays visible.',
             bandProse: {
               success: 'They had light on the ditch the whole way round, and used all of it.',
@@ -9254,7 +9197,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.11,
             imageTag: 'generic.matter',
-            fiction: 'The thorn on the east slope lies over, all one way, as if a cart had gone through it.',
             effectLine: 'Strong help on the slope that fights hardest.',
             bandProse: {
               success_at_cost: 'The thorn lay down for {them}. It came back up across the path out.',
@@ -9268,7 +9210,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.13,
             imageTag: 'generic.memory',
-            fiction: 'The scuffs in the ditch sort themselves: sheep, sheep, sheep, and one boot with a worn outside heel.',
             effectLine: 'Strong help. The ground says who has been on it.',
             bandProse: {
               critical_success: 'They read every print in the ditch and knew the man by his heel before {they} ever saw him.',
@@ -9282,7 +9223,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.10,
             imageTag: 'generic.rumor',
-            fiction: 'Noise from the far side of the wall arrives as if it were made at {their} shoulder — a bucket, a latch, a cough.',
             effectLine: 'Good help. The far side of the wall stops being quiet.',
             bandProse: {
               near_miss: 'The latch on the far gate came through late. It came through with the gate already behind {them}.',
@@ -9296,7 +9236,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.09,
             imageTag: 'generic.dark',
-            fiction: 'The dry ditch stops smoking under {their} boots. What {they} kick{s} up drops straight back down.',
             effectLine: 'Good help. Nothing announces where they are walking.',
             bandProse: {
               failure: 'No dust went up behind {them} at all. The dogs had them by the second corner regardless.',
@@ -9310,7 +9249,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 0,
             forecastDelta: 0.08,
             imageTag: 'generic.oath',
-            fiction: 'They do not trust the first pass. They go round again, the other direction, and the wall looks different from it.',
             effectLine: 'A steady help, and it costs no essence.',
             bandProse: {
               near_miss: 'The second pass caught the gap. The second pass also cost {them} the light.',
@@ -9349,7 +9287,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 1,
             forecastDelta: 0.07,
             imageTag: 'generic.strength',
-            fiction: 'The stake that will not seat goes in on the next swing, and the one after that goes in easier.',
             effectLine: 'A small push. The arms last past the point they would.',
             bandProse: {
               success: 'The stakes went in, all of them, and {their} arms gave out afterward instead of during.',
@@ -9363,7 +9300,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.12,
             imageTag: 'generic.oath',
-            fiction: 'Three doors open on the lane without anyone knocking twice. The smith brings his own billhook.',
             effectLine: 'Strong help. There are hands enough for the work.',
             bandProse: {
               success_at_cost: 'Enough of them came out. Two will not be fit for the fields tomorrow.',
@@ -9377,7 +9313,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.13,
             imageTag: 'generic.ward',
-            fiction: 'Each stake finds the one line of clay under the ditch gravel and stands where it is put.',
             effectLine: 'Strong help. What goes in stays in.',
             bandProse: {
               critical_success: 'Every stake found clay, and the ditch bristled by midnight like it had been planted years back.',
@@ -9391,7 +9326,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.10,
             imageTag: 'generic.strength',
-            fiction: 'Nobody on the ditch stiffens up in the cold. The billhooks keep swinging at the pace they started.',
             effectLine: 'Good help. The work does not slow down toward dawn.',
             bandProse: {
               failure: 'They swung at the same pace all night and the same pace was never going to be enough.',
@@ -9404,7 +9338,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.11,
             imageTag: 'generic.time-slow',
-            fiction: 'The night takes longer to use up. The work goes on past when it should have been too dark to see the line.',
             effectLine: 'Strong help. There is more dark to work in.',
             bandProse: {
               near_miss: 'The night ran long enough for the stakes. Not for the thorn.',
@@ -10371,7 +10304,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 1,
             forecastDelta: 0.06,
             imageTag: 'generic.focus',
-            fiction: 'The pack empties onto the stone and {they} look{s} at each item for what it would cost to walk on without it.',
             effectLine: 'A small, reliable push toward an honest count.',
             bandProse: {
               success: 'Laid out honestly, one item was plainly worth more to give up than the rest.',
@@ -10385,7 +10317,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.11,
             imageTag: 'generic.blessing',
-            fiction: 'Each item on the stone carries how much it would be missed, and the missing is what the shrine reads.',
             effectLine: 'Strong help. The gift is judged by loss.',
             bandProse: {
               success_at_cost: 'They felt exactly what the ring was worth to keep, and gave it anyway.',
@@ -10399,7 +10330,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.10,
             imageTag: 'generic.memory',
-            fiction: 'What {they} came here to ask for comes back word for word, and sets the price of the answer.',
             effectLine: 'Good help. The gift is sized to the ask.',
             bandProse: {
               failure: 'They recalled the asking perfectly and still could not price it.',
@@ -10413,7 +10343,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.09,
             imageTag: 'generic.matter',
-            fiction: 'The comb\'s cracked spine and the ring\'s worn shank sit up plain on the stone, past arguing with.',
             effectLine: 'Good help. The goods stop flattering themselves.',
             bandProse: {
               critical_success: 'Grain and wear read at a glance, and the one sound, loved item stood out among them.',
@@ -10427,7 +10356,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.08,
             imageTag: 'generic.decay',
-            fiction: 'How long each item has left — the meat, the shank, the man who owned the ring — comes clear.',
             effectLine: 'A steady help. None of it keeps.',
             bandProse: {
               failure: 'They saw how little of it would last, and gave the shrine the item that was rotting anyway.',
@@ -10441,7 +10369,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 0,
             forecastDelta: 0.08,
             imageTag: 'generic.oath',
-            fiction: 'The cheap option is on the stone with the rest and stays there. It was never going to be picked up.',
             effectLine: 'A steady help, and it costs no essence.',
             bandProse: {
               near_miss: 'They gave the good one and spent the walk out counting what it had cost.',
@@ -10480,7 +10407,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 1,
             forecastDelta: 0.06,
             imageTag: 'generic.focus',
-            fiction: 'The shake goes out of {their} wrists between one breath and the next.',
             effectLine: 'A small, reliable push toward a clean placing.',
             bandProse: {
               success: 'The hands were steady and the gift went into the hollow without a sound.',
@@ -10494,7 +10420,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.11,
             imageTag: 'generic.memory',
-            fiction: 'The order of it comes back: right knee down, both palms, the hollow, and no words until after.',
             effectLine: 'Strong help. The rite has a shape to follow.',
             bandProse: {
               failure: 'They kept the form exactly and it stayed a set of motions.',
@@ -10508,7 +10433,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.10,
             imageTag: 'generic.matter',
-            fiction: 'The worn dish in the stone shows itself under the moss, exactly where a hundred hands put it.',
             effectLine: 'Good help. There is a right place for it.',
             bandProse: {
               near_miss: 'The hollow lay under moss outside the search, and the gift went down beside it.',
@@ -10521,7 +10445,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.08,
             imageTag: 'generic.warmth',
-            fiction: 'The ring takes {their} heat and holds it, so what goes down on the stone is warm off a body.',
             effectLine: 'Good help. The gift arrives carrying its owner.',
             bandProse: {
               success_at_cost: 'It went down warm, and {they} felt the loss of it the second the warmth left {their} hand.',
@@ -10535,7 +10458,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.09,
             imageTag: 'generic.luck',
-            fiction: '{They} stop{s} aiming. The gift goes down where the hand was already going.',
             effectLine: 'A steady help. Aim stops being the trouble.',
             bandProse: {
               critical_success: '{They} did not aim, and it went dead centre of the hollow, where no amount of practice puts it.',
@@ -10550,7 +10472,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 0,
             forecastDelta: 0.08,
             imageTag: 'generic.oath',
-            fiction: 'There is no part of {them} standing off to one side and watching {them} do it.',
             effectLine: 'A steady help, and it costs no essence.',
             bandProse: {
               failure: 'They meant every inch of it, and the stones took no notice at all.',
@@ -10590,7 +10511,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 1,
             forecastDelta: 0.06,
             imageTag: 'generic.focus',
-            fiction: 'The cold in {their} knees stops being the loudest fact about the evening.',
             effectLine: 'A small, reliable push toward staying.',
             bandProse: {
               success: 'They outlasted the cold, and it came in the hour after most would have gone.',
@@ -10604,7 +10524,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.12,
             imageTag: 'generic.light',
-            fiction: 'The wind comes apart from what stands behind the wind, and only one of the two is worth hearing.',
             effectLine: 'Strong help. The wind stops counting as an answer.',
             bandProse: {
               failure: 'They heard past the wind and found the space behind it empty.',
@@ -10618,7 +10537,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.10,
             imageTag: 'generic.time-slow',
-            fiction: 'The dusk stops falling and stands where it is, and the hour {they} needed is simply there.',
             effectLine: 'Good help. The hour does not run out.',
             bandProse: {
               near_miss: 'The light held and held, and {actor} spent all of it waiting for a better hush to listen into.',
@@ -10631,7 +10549,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.09,
             imageTag: 'generic.dark',
-            fiction: 'Full dark closes over the stones and takes the view away, and there is only listening left to do.',
             effectLine: 'Good help. There is less to look at.',
             bandProse: {
               critical_success: 'In full dark the stones stopped being stones, and what {actor} heard came with no wind in it.',
@@ -10645,7 +10562,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 2,
             forecastDelta: 0.11,
             imageTag: 'generic.ward',
-            fiction: 'What {they} hoped to be told stops sitting in front of what is actually said.',
             effectLine: 'Strong help. The asking stays honest.',
             bandProse: {
               success_at_cost: 'They stopped wanting a particular answer, and got one, and it was not that one.',
@@ -10660,7 +10576,6 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
             essenceCost: 0,
             forecastDelta: 0.08,
             imageTag: 'generic.oath',
-            fiction: 'The hour where a sensible person stands up and goes comes and goes, and finds {them} still down on the stone.',
             effectLine: 'A steady help, and it costs no essence.',
             bandProse: {
               near_miss: 'They waited an hour past sense, and got a cold knee and the wind for it.',

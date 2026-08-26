@@ -55,7 +55,6 @@ function makeTest(overrides: Partial<FormativeTest> = {}): FormativeTest {
         essenceCost: 1,
         forecastDelta: 0.1,
         poleLean: 'a',
-        fiction: 'He hears his mother telling him what he owes the beaten.',
         effectLine: 'An old voice pulls him toward sparing.',
       },
       {
@@ -64,7 +63,6 @@ function makeTest(overrides: Partial<FormativeTest> = {}): FormativeTest {
         essenceCost: 1,
         forecastDelta: 0.1,
         poleLean: 'b',
-        fiction: 'The cold of the morning gets into him and stays.',
         effectLine: 'A hard morning pulls him toward finishing it.',
       },
       {
@@ -72,7 +70,6 @@ function makeTest(overrides: Partial<FormativeTest> = {}): FormativeTest {
         name: 'Steady his hands',
         essenceCost: 0,
         forecastDelta: 0.05,
-        fiction: 'His hands stop shaking. He notices they have.',
         effectLine: 'Steadier hands, either way.',
       },
     ],
@@ -415,7 +412,7 @@ describe('authored meeting content invariants', () => {
       MEETING_BOND_TEST.setup,
       MEETING_BOND_TEST.purposeLine,
       ...MEETING_BOND_TEST.factorLines.map((f) => f.text),
-      ...MEETING_BOND_TEST.nudges.flatMap((n) => [n.name, n.fiction, n.effectLine]),
+      ...MEETING_BOND_TEST.nudges.flatMap((n) => [n.name, n.effectLine]),
       ...Object.values(MEETING_BOND_TEST.receptions).map((r) => r.prose),
       ...Object.values(MEETING_BOND_TEST.godVoiceByHunger),
       MEETING_BOND_TEST.godVoiceFallback,

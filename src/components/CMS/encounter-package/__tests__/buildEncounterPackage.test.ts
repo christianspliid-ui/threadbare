@@ -67,7 +67,6 @@ describe('buildEncounterPackage — steps and the hand', () => {
       // The model must be complete enough for the shared card row to draw it.
       expect(card.model.id).toBeTruthy();
       expect(card.model.name).toBeTruthy();
-      expect(card.model.fiction).toBeTruthy();
       expect(card.model.effectLine).toBeTruthy();
       expect(card.model.state).toBe('playable');
     }

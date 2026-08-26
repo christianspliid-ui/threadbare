@@ -40,7 +40,6 @@ const NUDGES: StepNudge[] = [
     name: 'Steady {their} hand',
     essenceCost: 1,
     forecastDelta: 0.08,
-    fiction: 'The pack empties onto the stone and {they} look at each item in turn.',
     effectLine: '{They} will not flinch this time.',
   },
   {
@@ -48,7 +47,6 @@ const NUDGES: StepNudge[] = [
     name: 'Name {their} debt',
     essenceCost: 1,
     forecastDelta: 0.05,
-    fiction: '{actor} turns out what {they} carry onto a flat stone.',
     effectLine: '{Actor} pays in full.',
   },
 ];
@@ -130,7 +128,7 @@ function proseStrings(phase: NonNullable<ReturnType<typeof buildNudgePhaseModel>
   return [
     phase.testPanel.purposeLine ?? '',
     ...phase.testPanel.factors.map((f) => f.text),
-    ...phase.cards.flatMap((c) => [c.name, c.fiction, c.effectLine]),
+    ...phase.cards.flatMap((c) => [c.name, c.effectLine]),
     ...phase.withheld.map((w) => w.name),
     phase.motive?.introLine ?? '',
     phase.motive?.sentence ?? '',
@@ -144,7 +142,7 @@ describe('THR-923 fixture integrity', () => {
     const authored = [
       STEP.purposeLine ?? '',
       ...(STEP.factorLines ?? []).map((l) => l.text),
-      ...NUDGES.flatMap((n) => [n.name, n.fiction, n.effectLine]),
+      ...NUDGES.flatMap((n) => [n.name, n.effectLine]),
     ];
     // Not "some" — every one of these fields is a site the adapter assigns from,
     // and a fixture that lost its tokens on one of them would silently stop
@@ -211,15 +209,12 @@ describe('buildNudgePhaseModel — authored prose is enriched (THR-923)', () => 
     // this fixture deliberately omits it. That is the enricher's contract, not a
     // defect introduced here; the assertion pins substitution, not grammar.
     expect(byId.get('pronoun_card')!.name).toBe('Steady her hand');
-    expect(byId.get('pronoun_card')!.fiction).toBe(
-      'The pack empties onto the stone and she look at each item in turn.',
-    );
     expect(byId.get('pronoun_card')!.effectLine).toBe('She will not flinch this time.');
 
     // `{actor}` is an alias of `{name}` (THR-933); `{Actor}` is its sentence-initial form.
-    expect(byId.get('actor_card')!.fiction).toBe(
-      'Sera Vance turns out what she carry onto a flat stone.',
-    );
+    // Carried by `effectLine` since THR-1225 retired `fiction`, which held the
+    // other half of this pair.
+    expect(byId.get('actor_card')!.name).toBe('Name her debt');
     expect(byId.get('actor_card')!.effectLine).toBe('Sera Vance pays in full.');
 
     // The test panel is the same surface: purpose line and authored factor lines.

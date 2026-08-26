@@ -135,9 +135,7 @@ describe('library liveness', () => {
   it('every library member is authored — no keyword-only cards ship', () => {
     expect(NUDGE_CARD_LIBRARY.length).toBeGreaterThan(20);
     // Named per member so a regression says *which* card lost its face.
-    const unauthored = NUDGE_CARD_LIBRARY.filter(
-      (m) => m.title === undefined || m.quote === undefined,
-    ).map((m) => m.id);
+    const unauthored = NUDGE_CARD_LIBRARY.filter((m) => m.title === undefined).map((m) => m.id);
     expect(unauthored).toEqual([]);
     expect(unauthoredCardCount()).toBe(0);
     // The render path, not just the data: every card now prints its authored
@@ -159,19 +157,15 @@ describe('library liveness', () => {
       // not a name; a five-word title is a sentence pretending to be a label.
       expect(words.length, `${member.id} title "${member.title}"`).toBeGreaterThanOrEqual(2);
       expect(words.length, `${member.id} title "${member.title}"`).toBeLessThanOrEqual(4);
-      // The quote is one short line — never a paragraph, never multi-line.
-      expect(member.quote!.trim().length, `${member.id} quote`).toBeGreaterThan(0);
-      expect(member.quote!, `${member.id} quote is one line`).not.toMatch(/\n/);
-      expect(member.quote!.length, `${member.id} quote length`).toBeLessThanOrEqual(80);
     }
   });
 
-  it('authored faces are distinct — no two cards share a title or a quote', () => {
+  it('authored faces are distinct — no two cards share a title', () => {
+    // The `quote` half of this assertion retired with the field (THR-1225);
+    // the title is now the whole of a member's authored face.
     const titles = NUDGE_CARD_LIBRARY.map((m) => m.title!);
-    const quotes = NUDGE_CARD_LIBRARY.map((m) => m.quote!);
     expect(titles.length).toBeGreaterThan(20);
     expect(new Set(titles).size, 'duplicate card title').toBe(titles.length);
-    expect(new Set(quotes).size, 'duplicate card quote').toBe(quotes.length);
   });
 
   it('the keyword fallback still carries a member with no authored title', () => {
@@ -470,9 +464,9 @@ describe('unlock resolution', () => {
 describe('repertoire gates the dealt hand', () => {
   const step = {
     nudges: [
-      { id: 'n1', libraryCardId: 'card.boost.core', name: 'Held', essenceCost: 0, forecastDelta: 5, fiction: '', effectLine: '' },
-      { id: 'n2', libraryCardId: 'card.heavy_hand.signature.force', name: 'Not held', essenceCost: 0, forecastDelta: 5, fiction: '', effectLine: '' },
-      { id: 'n3', name: 'One-off', essenceCost: 0, forecastDelta: 5, fiction: '', effectLine: '' },
+      { id: 'n1', libraryCardId: 'card.boost.core', name: 'Held', essenceCost: 0, forecastDelta: 5, effectLine: '' },
+      { id: 'n2', libraryCardId: 'card.heavy_hand.signature.force', name: 'Not held', essenceCost: 0, forecastDelta: 5, effectLine: '' },
+      { id: 'n3', name: 'One-off', essenceCost: 0, forecastDelta: 5, effectLine: '' },
     ],
   } as Parameters<typeof buildNudgeHand>[0];
   const template = { id: 't1' } as Parameters<typeof buildNudgeHand>[1];

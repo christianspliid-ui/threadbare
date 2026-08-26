@@ -341,7 +341,6 @@ const BRIDGE_HAND: readonly StepNudge[] = [
     forecastDelta: 0.06,
     imageTag: 'generic.focus',
     effectLine: 'Their balance holds — each plank gets a clean, centered step.',
-    fiction: 'One foot, then the next.',
     bandProse: {
       success: 'Every step landed mid-plank.',
       near_miss: 'Their footing never failed. A plank did.',
@@ -356,7 +355,6 @@ const BRIDGE_HAND: readonly StepNudge[] = [
     forecastDelta: 0.1,
     imageTag: 'generic.strength',
     effectLine: 'Brace the weakest beam while weight is on it — the bridge carries more than it should.',
-    fiction: 'What holds, holds.',
     bandProse: {
       success_at_cost: 'The beam lasted to the far post, then split.',
       failure: 'The braced beam lasted. The plank two ahead of it did not.',
@@ -372,7 +370,6 @@ const BRIDGE_HAND: readonly StepNudge[] = [
     forecastDelta: 0.08,
     imageTag: 'generic.light',
     effectLine: 'Every soft board and open seam shows dark before it is stepped on.',
-    fiction: 'Rot cannot argue with daylight.',
     bandProse: {
       critical_success: 'The bad boards showed grey against the sound ones, and the safe path was plain.',
       failure: 'Every bad board showed. The plank that failed had looked sound from above.',
@@ -389,7 +386,6 @@ const BRIDGE_HAND: readonly StepNudge[] = [
     rider: 'no_crit_fail',
     imageTag: 'generic.ward',
     effectLine: 'Whatever fails tonight, the river gives them back. The deadliest end is off the table.',
-    fiction: 'Not every fall is a sentence.',
     bandProse: {
       failure: 'The bridge refused them halfway, and the water carried them to the shallows.',
     },
@@ -403,7 +399,6 @@ const BRIDGE_HAND: readonly StepNudge[] = [
     forecastDelta: 0.07,
     imageTag: 'generic.focus',
     effectLine: 'They take the careful minute the bridge needs instead of the fast one fear wants.',
-    fiction: 'Hurry is the heaviest load.',
     bandProse: {
       near_miss: 'They took it carefully, and care got them across everything except the last board.',
       failure: 'They went carefully all the way to the middle span, and the middle span gave anyway.',
@@ -742,7 +737,6 @@ const PASS_CLIMB_HAND: readonly StepNudge[] = [
     forecastDelta: 0.1,
     imageTag: 'generic.strength',
     effectLine: 'When the legs go dead on the switchbacks, the body has one more climb in it.',
-    fiction: 'The body keeps a reserve the mind never meets.',
     bandProse: {
       success: 'The last switchback went by on legs that had no right to it.',
       failure: 'There was one more climb in them. The mountain asked for two.',
@@ -757,7 +751,6 @@ const PASS_CLIMB_HAND: readonly StepNudge[] = [
     forecastDelta: 0.08,
     imageTag: 'generic.warmth',
     effectLine: 'The heat stays in their hands and feet, so the cold cannot slow the climb before the snow does.',
-    fiction: 'Cold takes the fingers first, and the will second.',
     bandProse: {
       success_at_cost: 'The heat held to the saddle. It spent them to their last dry layer doing it.',
       near_miss: 'The heat got them high and fast, and the snow was faster.',
@@ -772,7 +765,6 @@ const PASS_CLIMB_HAND: readonly StepNudge[] = [
     forecastDelta: 0.09,
     imageTag: 'generic.strength',
     effectLine: 'Blunt the northern gusts on the exposed stretches, so the climb spends its strength on climbing.',
-    fiction: 'The wind is the mountain’s first argument.',
     bandProse: {
       critical_success: 'The wind stood off the whole climb, and the saddle came early.',
       failure: 'The wind was held. The light was not, and the last stretch went dark.',
@@ -787,7 +779,6 @@ const PASS_CLIMB_HAND: readonly StepNudge[] = [
     forecastDelta: 0.08,
     imageTag: 'generic.light',
     effectLine: 'The grey dusk lasts past its hour, and the trail stays readable to the top.',
-    fiction: 'Dusk keeps its own schedule. Usually.',
     bandProse: {
       near_miss: 'The light lasted. The trail under it was already filling in.',
       critical_failure: 'The light held long enough to show exactly how far below the saddle the snow caught them.',
@@ -802,7 +793,6 @@ const PASS_CLIMB_HAND: readonly StepNudge[] = [
     forecastDelta: 0.07,
     imageTag: 'generic.time-slow',
     effectLine: 'Their pace locks to a climber’s clock, and the slope is spent evenly instead of in bursts.',
-    fiction: 'Mountains are climbed at one speed.',
     bandProse: {
       success: 'The pace never broke, and the saddle arrived on schedule.',
       failure: 'The pace was right for a longer day than this one turned out to be.',
@@ -819,7 +809,6 @@ const PASS_NIGHT_HAND: readonly StepNudge[] = [
     forecastDelta: 0.05,
     imageTag: 'generic.focus',
     effectLine: 'The fear slows, and the night is spent on staying warm instead of worrying.',
-    fiction: 'Breathe once. Then look again.',
     bandProse: {
       failure: 'The nerve held all night. The wood did not.',
     },
@@ -833,7 +822,6 @@ const PASS_NIGHT_HAND: readonly StepNudge[] = [
     forecastDelta: 0.08,
     imageTag: 'generic.energy',
     effectLine: 'The fire holds a red heart through the worst hour of the night.',
-    fiction: 'A banked fire is a promise kept till morning.',
     bandProse: {
       success: 'The fire held a red heart all night, and it was still there at morning.',
       failure: 'The fire stayed alive. The night was longer than the woodpile.',
@@ -849,7 +837,6 @@ const PASS_NIGHT_HAND: readonly StepNudge[] = [
     imageTag: 'generic.vigor',
     grants: [{ kind: 'remove_condition', conditionTraitId: 'trait.condition.exhausted' }],
     effectLine: 'The climb’s tiredness lifts, and the night starts on a rested body.',
-    fiction: 'Rest is armor.',
     bandProse: {
       near_miss: 'The rest was real. The cold that followed it was more real.',
     },
@@ -863,7 +850,6 @@ const PASS_NIGHT_HAND: readonly StepNudge[] = [
     forecastDelta: 0.07,
     imageTag: 'generic.matter',
     effectLine: 'Whatever stands between them and the wind holds its shape till dawn.',
-    fiction: 'Stone does not complain about weather.',
     bandProse: {
       success_at_cost: 'The windbreak held its shape. Holding it cost the night’s sleep in repairs.',
       critical_failure: 'The windbreak held until the storm found its second strength, and then it did not.',
@@ -878,7 +864,6 @@ const PASS_NIGHT_HAND: readonly StepNudge[] = [
     forecastDelta: 0.06,
     imageTag: 'generic.dark',
     effectLine: 'Nothing moves near the camp, and nothing in the night costs them sleep or nerve.',
-    fiction: 'Some nights the dark keeps to itself.',
     bandProse: {
       critical_success: 'The night passed without one alarm, and dawn came mild.',
       failure: 'The night stayed calm. The cold did all the damage.',
@@ -1242,7 +1227,6 @@ const CARAVAN_FIND_HAND: readonly StepNudge[] = [
     forecastDelta: 0.07,
     imageTag: 'generic.focus',
     effectLine: 'Every asking lands as small talk, never as suspicion.',
-    fiction: 'The best questions do not sound like questions.',
     bandProse: {
       success: 'By the third fire, the column’s stories had come loose.',
       near_miss: 'The questions stayed gentle. One answer came back too smooth to trust.',
@@ -1257,7 +1241,6 @@ const CARAVAN_FIND_HAND: readonly StepNudge[] = [
     forecastDelta: 0.08,
     imageTag: 'generic.memory',
     effectLine: 'Every road-story they have heard told wrong comes back, so the false one in this column stands out.',
-    fiction: 'No river is the first river.',
     bandProse: {
       success_at_cost: 'The wrong story showed itself. So did the traveler’s interest in it.',
       failure: 'Every story in the column had a crack in it, and none of the cracks lined up.',
@@ -1273,7 +1256,6 @@ const CARAVAN_FIND_HAND: readonly StepNudge[] = [
     rider: 'all_or_nothing',
     imageTag: 'generic.luck',
     effectLine: 'One voice at the night fire runs free — the truth spills fast, or the hunt is tipped off. Nothing in between.',
-    fiction: 'A shaken cup shows what settles.',
     bandProse: {
       critical_success: 'The loose talk ran one direction all night, and it pooled around a single bedroll.',
       failure: 'The talk ran loose and useless, and by morning the column knew a question was loose in it.',
@@ -1289,7 +1271,6 @@ const CARAVAN_FIND_HAND: readonly StepNudge[] = [
     forecastDelta: 0.08,
     imageTag: 'generic.matter',
     effectLine: 'What people carry tells on what they claim to be.',
-    fiction: 'A pack always inventories its owner.',
     bandProse: {
       near_miss: 'One kit argued with its owner’s story. So, on a second look, did two others.',
       failure: 'Half the column owned one item too good for them. The trick pointed at all of it at once.',
@@ -1304,7 +1285,6 @@ const CARAVAN_FIND_HAND: readonly StepNudge[] = [
     forecastDelta: 0.08,
     imageTag: 'generic.time-slow',
     effectLine: 'All four days stay in view at once, and the one walker whose habits bend around the riders shows plain.',
-    fiction: 'People repeat. Watch long enough.',
     bandProse: {
       success: 'Across four days, one walker never once let the ridge see their face.',
       critical_failure: 'The pattern came clear a half day too late to matter.',
@@ -1321,7 +1301,6 @@ const CARAVAN_SLIP_HAND: readonly StepNudge[] = [
     forecastDelta: 0.07,
     imageTag: 'generic.focus',
     effectLine: 'The leaving looks like an errand and sounds like sleep.',
-    fiction: 'The quietest departures are boring ones.',
     bandProse: {
       success: 'Two shapes left the camp at the hour when nobody counts shapes.',
       near_miss: 'The leaving was quiet. The dog that watched it leave was not.',
@@ -1336,7 +1315,6 @@ const CARAVAN_SLIP_HAND: readonly StepNudge[] = [
     forecastDelta: 0.1,
     imageTag: 'generic.dark',
     effectLine: 'The night deepens between the fires and the treeline, and the going is a rumor even to the watch.',
-    fiction: 'The dark keeps what it is given.',
     bandProse: {
       critical_success: 'The dark held them the whole distance, and the morning count came up one short with no story attached.',
       failure: 'The dark covered the leaving. It covered the ditch as well.',
@@ -1351,7 +1329,6 @@ const CARAVAN_SLIP_HAND: readonly StepNudge[] = [
     forecastDelta: 0.08,
     imageTag: 'generic.memory',
     effectLine: 'A dull, sensible reason for the empty bedroll takes root, and the morning asks no questions worth carrying.',
-    fiction: 'A good lie is a boring one.',
     bandProse: {
       success_at_cost: 'The story held with the column. Holding it cost the master a debt he will remember.',
       failure: 'The story was plain. The empty bedroll was plainer.',
@@ -1367,7 +1344,6 @@ const CARAVAN_SLIP_HAND: readonly StepNudge[] = [
     rider: 'floor_at_cost',
     imageTag: 'generic.ward',
     effectLine: 'However the night goes, the hunted one is out of the column by morning. The price, if it comes due, is paid in noise and hours.',
-    fiction: 'Arrive first. Count the cost after.',
     bandProse: {
       success_at_cost: 'They got clear because two routes out had been readied. Taking the second one woke half the camp.',
       critical_failure: 'The route out held. What it opened onto had riders already on it.',
@@ -1382,7 +1358,6 @@ const CARAVAN_SLIP_HAND: readonly StepNudge[] = [
     forecastDelta: 0.07,
     imageTag: 'generic.oath',
     effectLine: 'The traveler and the hunted one hold each other level — neither can panic alone.',
-    fiction: 'Two afraid together are braver than one.',
     bandProse: {
       near_miss: 'Neither of them broke. The horse they had counted on did.',
       failure: 'The nerve held in both of them right up to the open ground.',
@@ -1788,7 +1763,6 @@ const CROSSROADS_HAND: readonly StepNudge[] = [
     poleLean: { axis: 'tradition_novelty', toward: 'positive' },
     imageTag: 'generic.memory',
     effectLine: 'Every fireside story about crossroads strangers stands beside the offer. It argues for walking on.',
-    fiction: 'The old stories agree on crossroads.',
     bandProse: {
       success: 'The tales lined up beside the stranger, and the fit was close enough to notice.',
       near_miss: 'The tales said walk on. The named gift said the tales had never been this specific.',
@@ -1803,7 +1777,6 @@ const CROSSROADS_HAND: readonly StepNudge[] = [
     forecastDelta: 0.08,
     imageTag: 'generic.focus',
     effectLine: 'The hands, the coat, the patience — whatever he is, less of it stays hidden.',
-    fiction: 'Every mask fits badly at the edges.',
     bandProse: {
       success: 'The read came back strange and shallow at once: fine boots that had walked no road, patience with no fidget in it.',
       failure: 'The read slid off him like water off wax.',
@@ -1820,7 +1793,6 @@ const CROSSROADS_HAND: readonly StepNudge[] = [
     poleLean: { axis: 'tradition_novelty', toward: 'negative' },
     imageTag: 'generic.energy',
     effectLine: 'The hunger the stranger named burns plain, so the choice is made with open eyes. It argues for the bargain.',
-    fiction: 'Wanting is not a fault. Pretending not to want is.',
     bandProse: {
       near_miss: 'The wanting stood up honestly, and honesty made it harder, not easier.',
       failure: 'The wanting grew loud enough to drown the part of the read that mattered.',
@@ -1835,7 +1807,6 @@ const CROSSROADS_HAND: readonly StepNudge[] = [
     forecastDelta: 0.08,
     imageTag: 'generic.memory',
     effectLine: 'The promise is counted forward to the full moon, so the price is measured in something real.',
-    fiction: 'Every promise has a calendar.',
     bandProse: {
       critical_success: 'The whole bargain unfolded like a route on a map: the gift, the moon, the walk back, the standing still.',
       failure: 'The days counted forward cleanly, and stopped counting at the full moon like a road stopping at a cliff.',
@@ -1850,7 +1821,6 @@ const CROSSROADS_HAND: readonly StepNudge[] = [
     forecastDelta: 0.07,
     imageTag: 'generic.light',
     effectLine: 'What stands at the crossroads is seen in honest light, whatever it is.',
-    fiction: 'Good light is the oldest test.',
     bandProse: {
       success_at_cost: 'The honest light showed a man-shaped patience, and showed the traveler how long it had been standing there.',
       critical_failure: 'The air cleared, and for one look there was slightly too much crossroads and slightly too little man.',
@@ -2267,7 +2237,6 @@ const FULL_MOON_HAND: readonly StepNudge[] = [
     forecastDelta: 0.06,
     imageTag: 'generic.focus',
     effectLine: 'Their breathing stays even while the moonlight fills, and the meeting starts with a level head.',
-    fiction: 'Meet what comes standing still.',
     bandProse: {
       success: 'The appointment was kept with a level head, and it showed.',
       failure: 'The nerve held through the greeting. The parcel’s weight undid it.',
@@ -2282,7 +2251,6 @@ const FULL_MOON_HAND: readonly StepNudge[] = [
     forecastDelta: 0.06,
     imageTag: 'generic.memory',
     effectLine: 'Last month’s meeting stays sharp in their mind — any word tonight that differs from the bargain stands out.',
-    fiction: 'The first telling is the contract.',
     bandProse: {
       near_miss: 'Every word matched the bargain. The look that came with the last one did not.',
       critical_failure: 'The words matched the bargain exactly, and that exactness was its own warning.',
@@ -2297,7 +2265,6 @@ const FULL_MOON_HAND: readonly StepNudge[] = [
     forecastDelta: 0.06,
     imageTag: 'generic.light',
     effectLine: 'The moon falls flat and even across the road, and nothing about the meeting hides in a shadow.',
-    fiction: 'Let the whole road be seen.',
     bandProse: {
       critical_success: 'Under that even light the exchange was exactly what it claimed to be, and both sides saw it.',
       success: 'The whole exchange happened in plain light, and plain light kept it honest.',
@@ -2313,7 +2280,6 @@ const FULL_MOON_HAND: readonly StepNudge[] = [
     forecastDelta: 0.05,
     imageTag: 'generic.oath',
     effectLine: 'Greeting, parcel, parting — the ritual carries the exchange even if nerve does not.',
-    fiction: 'Forms exist for nights like this.',
     bandProse: {
       success_at_cost: 'The forms carried the exchange to its end. The extra sentence came after the forms were done.',
       failure: 'The greeting and the parcel went by the forms. The parting did not.',
@@ -2328,7 +2294,6 @@ const FULL_MOON_HAND: readonly StepNudge[] = [
     forecastDelta: 0.04,
     imageTag: 'generic.ward',
     effectLine: 'The hunger the stranger once read in them goes quiet, and nothing tonight is priced off it.',
-    fiction: 'Want nothing at a bargain.',
     bandProse: {
       near_miss: 'The wanting stayed quiet. The stranger set his price off a different hunger.',
       critical_failure: 'The wanting stayed quiet all night, and he noticed that too.',
@@ -2601,7 +2566,6 @@ const FAMILY_MEETING_HAND: readonly StepNudge[] = [
     poleLean: { axis: 'mercy_ruthlessness', toward: 'positive' },
     imageTag: 'generic.warmth',
     effectLine: 'The children’s worn shoes land at full weight, and the choice is made feeling all of it. It argues for stopping.',
-    fiction: 'Pity is information.',
     bandProse: {
       success: 'The smallest shoe did most of the talking.',
       failure: 'The pity landed whole. So did the count of miles left in the day.',
@@ -2616,7 +2580,6 @@ const FAMILY_MEETING_HAND: readonly StepNudge[] = [
     poleLean: { axis: 'mercy_ruthlessness', toward: 'negative' },
     imageTag: 'generic.vigor',
     effectLine: 'The traveler’s own road stays in view — the hour, the distance, the bed at the end. It argues for walking on.',
-    fiction: 'Every kindness is paid for in miles.',
     bandProse: {
       near_miss: 'Their own road stayed honest in view, and it almost won.',
       failure: 'The miles argued so well that the argument was all they heard.',
@@ -2631,7 +2594,6 @@ const FAMILY_MEETING_HAND: readonly StepNudge[] = [
     forecastDelta: 0.06,
     imageTag: 'generic.light',
     effectLine: 'The truth about the paper can be said without cruelty and without softening.',
-    fiction: 'Bad news wants short sentences.',
     bandProse: {
       success_at_cost: 'The truth came out clean, and the man aged a year taking it.',
       success: 'The words came plain and kind at once, which is the hardest register there is.',
@@ -2647,7 +2609,6 @@ const FAMILY_MEETING_HAND: readonly StepNudge[] = [
     forecastDelta: 0.06,
     imageTag: 'generic.focus',
     effectLine: 'The family’s story is checked as it is told, so the swindle is known real before anything is spent on it.',
-    fiction: 'Truth holds up to a second look.',
     bandProse: {
       near_miss: 'The story held everywhere except the one place it mattered.',
       failure: 'The tale checked out in every detail, which made it worse to hear.',
@@ -2662,7 +2623,6 @@ const FAMILY_MEETING_HAND: readonly StepNudge[] = [
     forecastDelta: 0.07,
     imageTag: 'generic.memory',
     effectLine: 'Both roads stretch out to where they finish — theirs into the fen, the other toward the river country.',
-    fiction: 'Roads are honest about their endings.',
     bandProse: {
       critical_success: 'Both roads unrolled to their ends in one look, and one of them ended in reeds and salt.',
       critical_failure: 'The long view blurred at the worst reach of it, and the fen kept its distance quiet.',
@@ -2679,7 +2639,6 @@ const FAMILY_GUIDE_HAND: readonly StepNudge[] = [
     forecastDelta: 0.08,
     imageTag: 'generic.focus',
     effectLine: 'The drainage, the grass, the tree line all stay in view, and the good turn shows itself.',
-    fiction: 'Land tells what it is. Quietly.',
     bandProse: {
       success: 'The land read true a mile at a time, all the long afternoon.',
       failure: 'The land read true, and the light ran out with the reading half done.',
@@ -2694,7 +2653,6 @@ const FAMILY_GUIDE_HAND: readonly StepNudge[] = [
     forecastDelta: 0.07,
     imageTag: 'generic.light',
     effectLine: 'The afternoon stays long and low, so the unmarked turn reads from a distance and nobody finds it by luck.',
-    fiction: 'A turn once seen can be taught.',
     bandProse: {
       critical_success: 'The low light picked the turn out of the country like a thumb on a map.',
       near_miss: 'The light held to the turn and not a stride past it.',
@@ -2709,7 +2667,6 @@ const FAMILY_GUIDE_HAND: readonly StepNudge[] = [
     forecastDelta: 0.07,
     imageTag: 'generic.matter',
     effectLine: 'Their hands stay sure building the marker at the turn, and the road stays found after everyone walks away.',
-    fiction: 'Pile three stones and the road remembers.',
     bandProse: {
       success_at_cost: 'The cairn went up sound. The light went while it did.',
       failure: 'The cairn was built with love and set a stride too early.',
@@ -2724,7 +2681,6 @@ const FAMILY_GUIDE_HAND: readonly StepNudge[] = [
     forecastDelta: 0.06,
     imageTag: 'generic.strength',
     effectLine: 'When the smallest walkers are done, their legs have one more hour in them.',
-    fiction: 'The body keeps a reserve the mind never meets.',
     bandProse: {
       near_miss: 'The children made the last mile. The cart barely did.',
       critical_failure: 'The second wind came, and the ninth day took it back with interest.',
@@ -2739,7 +2695,6 @@ const FAMILY_GUIDE_HAND: readonly StepNudge[] = [
     forecastDelta: 0.05,
     imageTag: 'generic.blessing',
     effectLine: 'The useful part of the afternoon stretches, and the detour fits inside the day.',
-    fiction: 'Some hours are wider than others.',
     bandProse: {
       failure: 'The hour stretched as far as an hour goes. The turn was further.',
     },
@@ -3167,7 +3122,6 @@ const SWINDLER_MARK_HAND: readonly StepNudge[] = [
     forecastDelta: 0.07,
     imageTag: 'generic.focus',
     effectLine: 'Their watching stays calm and unhurried, and the man is confirmed without feeling it.',
-    fiction: 'The ears catch what the eyes miss.',
     bandProse: {
       success: 'It was him: same coat, same cadence, same paper held up like a lamp.',
       near_miss: 'It was him past all doubt. Doubt was not the one watching back.',
@@ -3182,7 +3136,6 @@ const SWINDLER_MARK_HAND: readonly StepNudge[] = [
     forecastDelta: 0.08,
     imageTag: 'generic.rumor',
     effectLine: 'The market’s temper shows plain — who believes him, who wavers, who would turn.',
-    fiction: 'A crowd is one animal with many opinions.',
     bandProse: {
       success_at_cost: 'The crowd’s temper read true, and reading it meant standing close enough to be remembered.',
       failure: 'The market’s mood ran shallow and pleased, the worst weather for a hard truth.',
@@ -3198,7 +3151,6 @@ const SWINDLER_MARK_HAND: readonly StepNudge[] = [
     poleLean: { axis: 'mercy_ruthlessness', toward: 'positive' },
     imageTag: 'generic.focus',
     effectLine: 'What is known lines up into charges a warden can act on. It argues for the law.',
-    fiction: 'Anger fades. Records convict.',
     bandProse: {
       critical_success: 'The case assembled itself: the paper, the patter, the family’s names, the fen.',
       failure: 'The case was sound and the wardens were elsewhere, the town-sized version of bad weather.',
@@ -3214,7 +3166,6 @@ const SWINDLER_MARK_HAND: readonly StepNudge[] = [
     poleLean: { axis: 'mercy_ruthlessness', toward: 'negative' },
     imageTag: 'generic.energy',
     effectLine: 'The memory of the children’s shoes burns at full heat. It argues for settling it here.',
-    fiction: 'Some debts want a personal collector.',
     bandProse: {
       near_miss: 'The anger burned clean and nearly chose the hour by itself.',
       critical_failure: 'The anger arrived ahead of the plan and introduced itself to the whole market.',
@@ -3229,7 +3180,6 @@ const SWINDLER_MARK_HAND: readonly StepNudge[] = [
     forecastDelta: 0.06,
     imageTag: 'generic.memory',
     effectLine: 'One whole pitch is heard through, and the man’s habits are learned before they are interrupted.',
-    fiction: 'Habits outlast intentions.',
     bandProse: {
       near_miss: 'The pattern came clear just as the pitch ended and the crowd began to pay.',
     },
@@ -3628,7 +3578,6 @@ const KIN_HAND: readonly StepNudge[] = [
     forecastDelta: 0.04,
     imageTag: 'generic.warmth',
     effectLine: 'The tightness in their chest eases, and the thanks lands on someone ready to receive it.',
-    fiction: 'Let it be given.',
     bandProse: {
       success: 'The thanks was met level, and the room liked both halves of it.',
       failure: 'The ease held until the third retelling, and then the smile ran out.',
@@ -3643,7 +3592,6 @@ const KIN_HAND: readonly StepNudge[] = [
     forecastDelta: 0.04,
     imageTag: 'generic.focus',
     effectLine: 'Their words stay in reach, and the reply comes out plain instead of mumbled.',
-    fiction: 'Say the true thing once.',
     bandProse: {
       near_miss: 'The words came out right. The pause before them ran a beat too long.',
       failure: 'The voice held through the thanks, and then a toast asked more of it than it had.',
@@ -3658,7 +3606,6 @@ const KIN_HAND: readonly StepNudge[] = [
     forecastDelta: 0.04,
     imageTag: 'generic.light',
     effectLine: 'The glow on the table turns gentle, and the staring feels less like being weighed.',
-    fiction: 'Kind light makes kind faces.',
     bandProse: {
       critical_success: 'The whole table sat inside the same warm ring of light, and the story fit it.',
       failure: 'The light was kind. The attention still had edges.',
@@ -3673,7 +3620,6 @@ const KIN_HAND: readonly StepNudge[] = [
     forecastDelta: 0.04,
     imageTag: 'generic.rumor',
     effectLine: 'The company laughs with them, not at them, and every retelling lands friendly.',
-    fiction: 'A room decides fast.',
     bandProse: {
       success_at_cost: 'The room stayed friendly through all three retellings. It cost the evening.',
       critical_failure: 'The room’s warmth tipped into theater, and the traveler was the stage.',
@@ -3688,7 +3634,6 @@ const KIN_HAND: readonly StepNudge[] = [
     forecastDelta: 0.03,
     imageTag: 'generic.memory',
     effectLine: 'The pace eases, and the thanks can be one conversation instead of a performance.',
-    fiction: 'Nothing owed before morning.',
     bandProse: {
       near_miss: 'The evening kept an easy pace. The last toast still found them tired.',
       failure: 'The slow hour helped until she stood up to speak, and then it did not.',
@@ -4109,7 +4054,6 @@ const TABLE_HAND: readonly StepNudge[] = [
     forecastDelta: 0.06,
     imageTag: 'generic.focus',
     effectLine: 'The first sentence comes out short and free of blame, and both camps hear the same one.',
-    fiction: 'Say the short version first.',
     bandProse: {
       success: 'The first sentence landed clean, and neither camp had to answer it.',
       near_miss: 'The words stayed plain to the end. The night ran out before the agreement did.',
@@ -4128,7 +4072,6 @@ const TABLE_HAND: readonly StepNudge[] = [
     imageTag: 'generic.memory',
     effectLine:
       'How long these two families have shared one road comes to the surface, and the quarrel looks its age. It argues for standing.',
-    fiction: 'Neighbours quarrel. Neighbours remain.',
     bandProse: {
       critical_success: 'They worked back through forty years of shared road and found no year worth this.',
       failure: 'The long memory came up, and both camps found different grievances in it.',
@@ -4146,7 +4089,6 @@ const TABLE_HAND: readonly StepNudge[] = [
     imageTag: 'generic.ward',
     effectLine:
       'The room is held to a count of hands and hours, so the plan is argued from a real number. It argues for moving.',
-    fiction: 'Count first. Argue after.',
     bandProse: {
       success_at_cost: 'The count came out honest, and honest was lower than either camp had claimed.',
       failure: 'The count was made twice and disputed both times, and the hours went into the disputing.',
@@ -4164,7 +4106,6 @@ const TABLE_HAND: readonly StepNudge[] = [
     costs: { doomDelta: 0.05 },
     effectLine:
       'No essence changes hands — the riders take the long bank of the fen, and the world’s doom clock runs a shade faster.',
-    fiction: 'Time is borrowed from someone.',
     bandProse: {
       success: 'The extra hours were spent well, and the table used every one of them.',
       failure: 'The hours arrived. The argument grew to fill them exactly.',
@@ -4183,7 +4124,6 @@ const TABLE_HAND: readonly StepNudge[] = [
     costs: { detectionDelta: 0.15 },
     effectLine:
       'Every hand rests flat where it can be seen while the traveler speaks. Rival gods can hardly miss it.',
-    fiction: 'Everyone hears a room stop talking.',
     bandProse: {
       critical_success: 'The stillness held through the whole plan, and both camps heard all of it.',
       failure: 'The room went still on cue, and the stillness turned out to be two camps waiting.',
@@ -4202,7 +4142,6 @@ const TABLE_HAND: readonly StepNudge[] = [
     forecastDelta: 0.05,
     imageTag: 'generic.rumor',
     effectLine: 'The country downriver begins to talk about who is riding the fen.',
-    fiction: 'Roads carry more than carts.',
     grants: [
       {
         kind: 'emit_omen',

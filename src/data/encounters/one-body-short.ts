@@ -118,7 +118,6 @@ const STEP_0_HAND: readonly StepNudge[] = [
     forecastDelta: 0.10,
     imageTag: 'generic.light',
     effectLine: 'Show them where each side stood, and where the account stops adding up.',
-    fiction: 'Nothing was hidden. It was only unlit.',
     grants: [
       {
         kind: 'intelligence',
@@ -142,7 +141,6 @@ const STEP_0_HAND: readonly StepNudge[] = [
     forecastDelta: 0.06,
     imageTag: 'generic.focus',
     effectLine: 'Keep their attention on the work — they do not look away until it is done.',
-    fiction: 'Most things fail by a margin.',
     bandProse: {
       success_at_cost: 'They kept looking until the count closed. The looking cost them.',
       failure: 'They looked at it straight and long, and still read it wrong.',
@@ -160,7 +158,6 @@ const STEP_0_HAND: readonly StepNudge[] = [
     forecastDelta: 0.09,
     imageTag: 'generic.vigor',
     effectLine: 'Fill their body with fresh vigor — they turn over every one of the dead, not only the easy ones.',
-    fiction: 'Bodies hold more than they admit.',
     bandProse: {
       critical_success: 'They went through every body on the ground, and the ground gave up its whole account.',
       failure: 'They had the arms to finish the search. The numbers still would not agree.',
@@ -180,7 +177,6 @@ const STEP_0_HAND: readonly StepNudge[] = [
     imageTag: 'generic.time-slow',
     effectLine:
       'Give them the feeling they have done this before — their hands know where to look first. Word of what they find here will travel.',
-    fiction: 'Nothing happens only once.',
     grants: [
       {
         kind: 'emit_omen',
@@ -215,7 +211,6 @@ const STEP_0_HAND: readonly StepNudge[] = [
     forecastDelta: 0.04,
     imageTag: 'generic.dark',
     effectLine: 'Set a mark on them nobody can see — what they carry out of here will find them again later.',
-    fiction: 'What is buried keeps.',
     grants: [
       {
         kind: 'hidden_mark',
@@ -242,7 +237,6 @@ const STEP_0_HAND: readonly StepNudge[] = [
     imageTag: 'generic.memory',
     effectLine:
       'No essence. Being Warm, they take the fallen one at a time, and one at a time is how the missing one shows.',
-    fiction: 'Character is the one resource nobody spends.',
     bandProse: {
       success_at_cost: 'They gave every one of the fallen a face, and got the count. The faces stayed with them.',
       critical_failure: 'They gave the fallen faces, then could not put the faces down, and lost the count entirely.',
