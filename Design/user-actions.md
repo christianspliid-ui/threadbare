@@ -1,12 +1,12 @@
 # User Action Required
 
-**Last updated:** 2026-08-26 15:53 local (13:53 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-26 16:54 local (14:54 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
 ### 1. Approve the batch-2 brief — [THR-1222](https://linear.app/threadbare/issue/THR-1222/run-retrofit-batch-2-the-camp-seven-through-the-factory-line-shrine)
 
-**The shelf and the workbench are both empty, which makes this the one word that refills them.** The last build item shipped at 15:47 ([THR-1285](https://linear.app/threadbare/issue/THR-1285), agents whose drives pointed at nothing) and nothing replaced it: ready-to-build is zero, in-build is zero. The orchestrator scanned all 40 waiting items and promoted none — they need a design decision before anyone writes code. Batch 2 is the only item on the board that a single word from you puts straight into build.
+**The builder has now idled a full hour, which makes this the one word that restarts it.** At 16:00 the hourly build session woke, looked for work, and found an empty list — the first hour that has actually happened rather than been forecast. The last build item shipped at 15:47 ([THR-1285](https://linear.app/threadbare/issue/THR-1285), agents whose drives pointed at nothing) and nothing has replaced it: ready-to-build is zero, in-build is zero, and nothing merged this hour because there was nothing to merge. The orchestrator rescanned every waiting item and promoted none — they need a design decision before anyone writes code. Batch 2 is the only item on the board that a single word from you puts straight into build.
 
 **The exemplar is live and has no caveats left.** Your batch-of-one approval overnight produced [The Beast in the Granary](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.hunt.the_beast_in_the_granary) — the game's first hunt encounter, first deal-composed fork, first settlement-membership ending. The enrolment bug that could put you in the wrong chapter of the right faction shipped and is deployed, so it plays as intended end to end. Play it and that is the bar the camp seven would be authored against.
 
@@ -22,8 +22,8 @@ It binds [Prose Doctrine v2](https://github.com/christianspliid-ui/threadbare/bl
 
 The shelf is empty and no new *game* work is queued. What would put game work on it is design, and most of the design work is waiting on you. In the order you set:
 
-- **[Unify the card grammar](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** — your 6 August note: action cards are too wordy, you cannot tell what they do, playing one gives no feedback, while encounter cards already read the way you wanted. It has held the single design-staging slot since 19 August — **seven days and eleven hours** — and it is now the second-order cause of the empty shelf: the staging machinery tried to refill the queue again this hour and could not, because the slot is full. Either sit it, or say *"park it"* and [the shared anchor machinery](https://linear.app/threadbare/issue/THR-1212) goes through next.
-- **[Traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)** — in design, assigned to you, untouched twelve days. Either give it the hour or say *"put Traits wave 2 back in the pile."*
+- **[Unify the card grammar](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** — your 6 August note: action cards are too wordy, you cannot tell what they do, playing one gives no feedback, while encounter cards already read the way you wanted. It has held the single design-staging slot since 19 August — **eight days** — and it is now the second-order cause of the idle build hour: the staging machinery tried to refill the queue again this hour and could not, because the slot is full. Either sit it, or say *"park it"* and [the shared anchor machinery](https://linear.app/threadbare/issue/THR-1212) goes through next.
+- **[Traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)** — in design, assigned to you, untouched since 15 August. Either give it the hour or say *"put Traits wave 2 back in the pile."*
 - **The wave-1 sessions** — [shared machinery](https://linear.app/threadbare/issue/THR-1212) first, [the hunger vocabulary](https://linear.app/threadbare/issue/THR-1213) second, [nations and named areas simulated rather than drawn](https://linear.app/threadbare/issue/THR-1155) third.
 
 Available whenever you want it: your own [one-button snapshot](https://linear.app/threadbare/issue/THR-1134).
