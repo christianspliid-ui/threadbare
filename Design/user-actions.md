@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-26 07:57 local (05:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-26 08:57 local (06:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -26,7 +26,7 @@ One word runs it.
 
 ### 3. More design hours — four sittings stacked
 
-The shelf has been starved for hours, and what remains is one Low deferral. What would refill it is design, and the design work is waiting on you. In the order you set:
+The shelf is now empty — the last item on it merged at 08:45. What would refill it is design, and most of the design work is waiting on you. You charted the [Physical Conflict map](https://linear.app/threadbare/issue/THR-1258/wayfinder-map-physical-conflict) at 08:51, which is exactly this kind of hour; the four below are still outstanding. In the order you set:
 
 - **[Unify the card grammar](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** — your 6 August note: action cards are too wordy, you cannot tell what they do, playing one gives no feedback, while encounter cards already read the way you wanted. It has held the single design-staging slot since 19 August — **seven days** — so nothing else can be staged behind it until it moves.
 - **[Traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)** — in design, assigned to you, untouched twelve days. Either give it the hour or say *"put Traits wave 2 back in the pile."*
@@ -36,7 +36,7 @@ Available whenever you want it: your own [one-button snapshot](https://linear.ap
 
 ### 4. Two sketches ready to be built for you to react to
 
-Both wayfinder maps you chartered finished their research half; these are the throwaway prototypes that come next. Every question they were waiting behind is now answered. Each needs a session to build the sketch first; then you look and react, and your reaction is the design decision.
+The powers and items maps finished their research half; these are the throwaway prototypes that come next. (Physical Conflict, charted this morning, is at the start of that same path and needs nothing from you yet.) Every question they were waiting behind is now answered. Each needs a session to build the sketch first; then you look and react, and your reaction is the design decision.
 
 - [**Twenty generated spells**](https://linear.app/threadbare/issue/THR-1232) — do composed spells read as one coherent thing, or as parts bolted together?
 - [**Thirty generated items**](https://linear.app/threadbare/issue/THR-1236) — are they *cool*? That is the whole bar.
