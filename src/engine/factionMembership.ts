@@ -20,7 +20,10 @@
  */
 
 import type { WorldGraph } from './graph';
+import type { GraphNode } from '../types/graph';
 import type { MemberOfEdgeProperties } from '../types/disposition';
+import { resolveToParentLocation } from './sublocationShape';
+import { hexDistance } from '../lib/hexMath';
 import { computeRankFromReputation } from '../types/faction';
 import {
   FACTION_DEFINITIONS,
@@ -79,10 +82,24 @@ function isFactionNode(graph: WorldGraph, factionId: string): boolean {
  * Order: exact node id first (so an explicit node id always wins and nothing
  * existing changes meaning), then a `factionDefId` scan.
  *
- * **Chapters share a `factionDefId`**, so the scan can match several nodes. It
- * prefers a chapter the agent already belongs to — a promotion or expulsion means
- * the branch they are actually in — and otherwise takes the lowest id, so the pick
- * is deterministic across runs (NFP #3) rather than graph-insertion-ordered.
+ * **Chapters share a `factionDefId`**, so the scan can match several nodes, and the
+ * order the preferences are tried in is the whole substance of this function:
+ *
+ * 1. **A chapter the agent already belongs to.** A promotion or expulsion is about
+ *    the branch they are actually in, so an existing `member_of` beats every other
+ *    signal — including locality, since a travelling member expelled while abroad is
+ *    expelled from their own chapter, not the local one.
+ * 2. **The chapter local to where the agent is standing** (THR-1275). Below the
+ *    membership preference and above the sort, because a `join` has no membership to
+ *    read by definition — which is exactly the case the old code fell straight
+ *    through to the sort on. "The settlement takes them in" then enrolled the agent
+ *    in whichever chapter happened to sort first, potentially on the far side of the
+ *    map. See {@link localChapterNodeId} for what "local" means.
+ * 3. **The lowest id**, so the pick is deterministic across runs (NFP #3) rather than
+ *    graph-insertion-ordered.
+ *
+ * Widening only: a single-chapter world (the overwhelmingly common case) returns at
+ * the `length === 1` short-circuit and never reaches any of this.
  */
 export function resolveFactionNodeId(
   graph: WorldGraph,
@@ -104,8 +121,95 @@ export function resolveFactionNodeId(
       .map(e => e.target)
       .find(t => candidates.includes(t));
     if (existing) return existing;
+
+    const local = localChapterNodeId(graph, candidates, agentId);
+    if (local) return local;
   }
   return [...candidates].sort()[0];
+}
+
+/**
+ * Read a place-tier node's hex, when it has one.
+ *
+ * Returns `undefined` rather than a `{0, 0}` default: a location with no hex is
+ * unplaced, and defaulting it to the map origin would make it look *near* every
+ * agent in the north-west corner instead of unrankable (the bug that a `?? 0` here
+ * would introduce silently).
+ */
+function hexOf(node: GraphNode | undefined): { col: number; row: number } | undefined {
+  const col = node?.properties?.hexCol;
+  const row = node?.properties?.hexRow;
+  if (typeof col !== 'number' || typeof row !== 'number') return undefined;
+  return { col, row };
+}
+
+/** The place-tier location the agent is standing on, resolving up from a sublocation. */
+function agentPlaceLocation(graph: WorldGraph, agentId: string): GraphNode | undefined {
+  const edges = graph.getOutgoingEdges(agentId, 'located_at');
+  if (edges.length === 0) return undefined;
+  // An agent holds exactly one `located_at` (the three-tier position model), so the
+  // first edge is the position rather than one of several.
+  return resolveToParentLocation(graph, graph.getNode(edges[0].target));
+}
+
+/** Every place a faction chapter physically sits — its guild halls plus its home base. */
+function chapterSeatIds(graph: WorldGraph, factionNodeId: string): readonly string[] {
+  const seats = graph.getOutgoingEdges(factionNodeId, 'located_at').map(e => e.target);
+  const home = graph.getNode(factionNodeId)?.properties?.homeLocationId;
+  if (typeof home === 'string' && home.length > 0 && !seats.includes(home)) seats.push(home);
+  return seats;
+}
+
+/**
+ * The chapter nearest to where `agentId` is standing, or `null` when locality cannot
+ * rank them.
+ *
+ * "Local" is answered in two steps, because the two are not the same question. A
+ * chapter with a **guild hall on the agent's own location** is unambiguously the one
+ * that "takes them in" — that is the door they walked through — so it wins outright
+ * and no arithmetic is involved. Only when no chapter is present does hex distance
+ * decide, measured from the agent's hex to the nearest seat of each chapter.
+ *
+ * Returns `null` rather than guessing whenever the ranking would be arbitrary: the
+ * agent is unplaced, their location has no hex, or no candidate has a placeable seat.
+ * The caller then falls through to the deterministic sort, which is the honest answer
+ * — a bad locality guess is worse than an admitted arbitrary pick, because it reads
+ * as intentional (NFP #4 fail-soft, NFP #2 inspectability).
+ *
+ * Ties are broken by node id sort, so two equidistant chapters resolve identically on
+ * every run from the same seed (NFP #3).
+ */
+function localChapterNodeId(
+  graph: WorldGraph,
+  candidates: readonly string[],
+  agentId: string,
+): string | null {
+  const here = agentPlaceLocation(graph, agentId);
+  if (!here) return null;
+
+  const present = candidates
+    .filter(id => chapterSeatIds(graph, id).includes(here.id))
+    .sort();
+  if (present.length > 0) return present[0];
+
+  const from = hexOf(here);
+  if (!from) return null;
+
+  let best: { id: string; distance: number } | null = null;
+  for (const id of [...candidates].sort()) {
+    let nearest: number | null = null;
+    for (const seatId of chapterSeatIds(graph, id)) {
+      const to = hexOf(graph.getNode(seatId));
+      if (!to) continue;
+      const d = hexDistance(from, to);
+      if (nearest === null || d < nearest) nearest = d;
+    }
+    if (nearest === null) continue;
+    // Strictly `<` over an id-sorted walk, so the first of two equidistant chapters
+    // wins and the tie-break is the sort rather than iteration order.
+    if (best === null || nearest < best.distance) best = { id, distance: nearest };
+  }
+  return best?.id ?? null;
 }
 
 /** The agent's `member_of` edge into this specific faction, if any. */

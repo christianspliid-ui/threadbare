@@ -114,16 +114,28 @@ export const NODE_TYPE_ROWS: Readonly<Record<string, AnchorRow>> = {
   },
   artifact: {
     anchor: 'Artifact (common)',
-    declare: '`entityId` = the artifact node id, `visualKind: \'artifact\'`',
+    declare: '`entityId: \'$artifact\'`, `visualKind: \'artifact\'`',
     surface: 'The artifact sheet, and the bearer\'s possessions',
     status: 'linked',
+    note:
+      'Reach for it through the `$artifact` sentinel, never a literal id (THR-1275). '
+      + '`spawn_artifact` keys its node `artifact_spawned_<encounterId>_<reactionId>_<i>_<tick>`, '
+      + 'so the id carries the tick and the effect index and no author can write it — this row '
+      + 'previously said "`entityId` = the artifact node id", which was an instruction nobody '
+      + 'could follow, so every `possession` chip in the corpus anchored the *holder* instead. '
+      + 'The sentinel resolves to the artifact this encounter minted, preferring the one the '
+      + 'actor now holds. `check:encounter` refuses `$artifact` on a template that authors no '
+      + '`spawn_artifact` effect.',
   },
   artifact_legendary: {
     anchor: 'Artifact (legendary)',
-    declare: '`entityId` = the artifact node id, `visualKind: \'artifact\'`',
+    declare: '`entityId: \'$artifact\'`, `visualKind: \'artifact\'`',
     surface: 'The artifact sheet, and the bearer\'s possessions',
     status: 'linked',
-    note: 'Same declaration as a common artifact; legendary ones carry their own trait graph.',
+    note:
+      'Same declaration as a common artifact — `$artifact` finds a legendary mint too, since '
+      + 'the tier is chosen by the effect and is not the author\'s to name. Legendary ones '
+      + 'carry their own trait graph.',
   },
   resource: {
     anchor: 'Resource',
