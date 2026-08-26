@@ -567,7 +567,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['craft', 'discovery'],
     reaches: ['shadow', 'eye'],
     source: 'vault: Archetypes/Ordeal — Impossible Heist',
-    usedBy: [],
+    usedBy: ['encounter.hunt.the_beast_in_the_granary'],
   },
   {
     id: 'hook.long_road',
