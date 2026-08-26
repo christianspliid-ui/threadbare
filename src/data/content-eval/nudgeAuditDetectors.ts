@@ -304,8 +304,6 @@ export function collectClassedTemplateProse(
       for (const line of step.factorLines ?? []) push(line.text, 'interactive');
       for (const nudge of step.nudges ?? []) {
         push(nudge.name, 'interactive');
-        // `fiction` is the card's flavour body — scene-setting, not a result.
-        push(nudge.fiction, 'scene');
         push(nudge.effectLine, 'interactive');
         for (const fragment of Object.values(nudge.bandProse ?? {})) push(fragment, 'outcome');
       }

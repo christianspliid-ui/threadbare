@@ -166,7 +166,6 @@ const STEP_1_HAND: readonly StepNudge[] = [
     forecastDelta: 0.06,
     imageTag: 'generic.focus',
     effectLine: 'Hold them calm while the figure is read out, so they do not take the first number to end the silence.',
-    fiction: 'Most things fail by a margin.',
     bandProse: {
       success: 'They let the silence sit after the figure, and the figure came down.',
       failure: 'They held calm to the end, and the book still did not move.',
@@ -185,7 +184,6 @@ const STEP_1_HAND: readonly StepNudge[] = [
     // mint one. "Set" (mint now), never "recall an old".
     effectLine:
       'Set a debt in front of the one holding the book, so they deal like a person who owes. A turn is owed back afterwards.',
-    fiction: 'Order is only debt everyone agreed to honor.',
     grants: [
       {
         kind: 'favor_creation',
@@ -209,7 +207,6 @@ const STEP_1_HAND: readonly StepNudge[] = [
     costs: { doomDelta: 0.05 },
     imageTag: 'generic.decay',
     effectLine: 'No essence changes hands — the world\'s doom clock runs a shade faster instead.',
-    fiction: 'Nothing is free. Some prices are only slower.',
     bandProse: {
       success: 'Nobody at the table could say why it came out light. The clock ran on.',
       critical_failure: 'The clock took the price, and the traveler was still standing where they started.',
@@ -225,7 +222,6 @@ const STEP_1_HAND: readonly StepNudge[] = [
     rider: 'all_or_nothing',
     imageTag: 'generic.luck',
     effectLine: 'They walk away with the best line in the book or with none of it — nothing in between survives.',
-    fiction: 'Chaos has no use for the adequate.',
     bandProse: {
       critical_success: 'No middling figure was ever put on the table. What was left was the one at the bottom.',
       failure: 'No middling figure survived to be agreed to.',
@@ -243,7 +239,6 @@ const STEP_1_HAND: readonly StepNudge[] = [
     imageTag: 'generic.strength',
     effectLine:
       "Lean on the whole table at once — the company's own arithmetic comes out in the traveler's favour. Rival gods can hardly miss it.",
-    fiction: 'Subtlety is a choice. This is not it.',
     bandProse: {
       critical_success: 'The figures stopped agreeing with the company and started agreeing with the traveler.',
       failure: 'The push went on. The company added it up again and got the same figure.',
@@ -263,7 +258,6 @@ const STEP_1_HAND: readonly StepNudge[] = [
     forecastDelta: 0.07,
     imageTag: 'generic.matter',
     effectLine: 'Win or lose, the traveler leaves knowing what this company is short of. The knowledge keeps.',
-    fiction: 'Every table tells more than it means to.',
     grants: [
       {
         kind: 'intelligence',
@@ -299,7 +293,6 @@ const STEP_2_HAND: readonly StepNudge[] = [
     forecastDelta: 0.08,
     imageTag: 'generic.focus',
     effectLine: 'Keep their attention on the tally as it is made, so nothing extra goes in behind them.',
-    fiction: 'Most things fail by a margin.',
     bandProse: {
       success: 'They watched every mark go down, and the tally ended where it should have.',
       near_miss: 'They caught the extra line going in. Catching it did not stop it.',
@@ -316,7 +309,6 @@ const STEP_2_HAND: readonly StepNudge[] = [
     imageTag: 'generic.strength',
     effectLine:
       "Put strength into the labour itself — a day's tally goes in a third of the day. Rival gods can hardly miss it.",
-    fiction: 'Subtlety is a choice. This is not it.',
     bandProse: {
       critical_success: 'The labour went down so fast that the picket came round the wall to watch.',
       failure: 'The strength went in and the tally kept taking it, mark after mark.',
@@ -333,7 +325,6 @@ const STEP_2_HAND: readonly StepNudge[] = [
     costs: { doomDelta: 0.06 },
     imageTag: 'generic.decay',
     effectLine: 'No essence changes hands — the world\'s doom clock runs a shade faster instead.',
-    fiction: 'Nothing is free. Some prices are only slower.',
     bandProse: {
       success_at_cost: 'The overage went out to the world. The world will be a while paying it off.',
       failure: 'The debt went out to the world, and the ledger in front of them stayed open.',
@@ -355,7 +346,6 @@ const STEP_2_HAND: readonly StepNudge[] = [
     imageTag: 'generic.oath',
     effectLine:
       'Only when the traveler is owed: bring what is owed to mind, and the one who owes it turns up to stand the work.',
-    fiction: 'A debt is only useful on the day it is named.',
     bandProse: {
       success: 'Two pairs of hands finished a tally written for one, and the ledger closed on time.',
       critical_failure: 'The debt was answered, and the book has a line for every pair of hands that comes through the gate.',
@@ -370,7 +360,6 @@ const STEP_2_HAND: readonly StepNudge[] = [
     forecastDelta: 0.08,
     imageTag: 'generic.energy',
     effectLine: 'When the work outlasts them, the body finds the last hour of it.',
-    fiction: 'Bodies hold more than they admit.',
     bandProse: {
       success: 'The last hour came out of a reserve they had not budgeted for.',
       failure: 'There was one more hour in them. The tally asked for three.',

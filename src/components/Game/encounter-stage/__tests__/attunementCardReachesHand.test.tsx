@@ -48,7 +48,6 @@ const NUDGE: StepNudge = {
   libraryCardId: ATTUNED.id,
   essenceCost: 1,
   forecastDelta: 0.1,
-  fiction: 'The loose stone under his heel turns further than it should.',
   effectLine: 'Further either way.',
 };
 

@@ -40,7 +40,6 @@ const NUDGES: StepNudge[] = [
     name: 'Steady the hand',
     essenceCost: 1,
     forecastDelta: 0.08,
-    fiction: 'The tremor in her fingers stops between one breath and the next.',
     effectLine: 'Steadier than she was.',
   },
 ];

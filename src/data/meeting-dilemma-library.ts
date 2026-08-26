@@ -148,7 +148,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'A militiaman sets his waterskin down on the wall, close enough to {agent.name} that reaching it costs nothing.',
           effectLine: 'Makes the kinder act the easier one.',
         },
         {
@@ -158,7 +157,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.blade',
-          fiction: 'The two bodies are carried past on boards, and {agent.name} watches them go by.',
           effectLine: 'Puts the cost of the morning in front of them.',
         },
         {
@@ -169,7 +167,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'An older woman in the yard says, loudly enough to carry, that the boy has a mother somewhere.',
           effectLine: 'Gives the merciful reading a witness.',
         },
         {
@@ -180,7 +177,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'The bleeding picks up. Whatever happens next has to happen soon, and everyone can see it.',
           effectLine: 'Turns the choice urgent instead of deliberate.',
         },
         {
@@ -191,7 +187,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.blade',
-          fiction: 'Someone recognises the raider\'s colours and says which village they burned last season.',
           effectLine: 'Makes the harder answer feel owed.',
         },
         {
@@ -202,7 +197,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.crowd',
-          fiction: 'The noise drops out of the yard. {agent.name} gets a long moment with nothing in it but the decision.',
           effectLine: 'Steadies them — the moment will not break badly.',
         },
         {
@@ -212,7 +206,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           essenceCost: 3,
           forecastDelta: 0.18,
           imageTag: 'generic.blade',
-          fiction: 'The weight of the sword registers all at once, the way it does after the fighting stops.',
           effectLine: 'Sharpens the moment without arguing either way.',
         },
       ],
@@ -285,7 +278,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'The old soldier gives his children\'s names to the council, unprompted, as if the list were evidence of something.',
           effectLine: 'Makes him a father before he is a thief.',
         },
         {
@@ -295,7 +287,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'The steward reads out what is left in the stores, and how many months it has to cover.',
           effectLine: 'Puts the settlement\'s own hunger in the room.',
         },
         {
@@ -306,7 +297,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'His shaking gets worse while he stands there, and everyone can see it is not fear.',
           effectLine: 'Makes delay itself a kind of sentence.',
         },
         {
@@ -317,7 +307,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'A councillor points out that mercy here will be quoted back at them by the next man caught.',
           effectLine: 'Gives the hard answer a reason beyond anger.',
         },
         {
@@ -328,7 +317,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'He says it directly to {agent.name}, and does not look away afterwards.',
           effectLine: 'Turns the judgement into a mirror.',
         },
         {
@@ -339,7 +327,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.crowd',
-          fiction: 'The vote is held over until evening. {agent.name} gets the afternoon to decide what to say.',
           effectLine: 'Steadies them — nothing will be decided in temper.',
         },
         {
@@ -349,7 +336,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           essenceCost: 3,
           forecastDelta: 0.18,
           imageTag: 'generic.blade',
-          fiction: 'The recovered sacks are set on the table, half-empty, lighter than the charge against him suggested.',
           effectLine: 'Sharpens the facts without arguing either way.',
         },
       ],
@@ -422,7 +408,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'The frame the mother is braced in is still square, and the smoke there is thinner than the rest.',
           effectLine: 'Makes the easy rescue the obvious one.',
         },
         {
@@ -432,7 +417,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.blade',
-          fiction: 'He is conscious under the beam, and he says {agent.name}\'s name.',
           effectLine: 'Puts the hardest rescue in front of them.',
         },
         {
@@ -443,7 +427,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.blade',
-          fiction: 'A fence rail lies loose in the yard, long enough to lever the beam if someone is willing to try.',
           effectLine: 'Makes the impossible rescue look possible.',
         },
         {
@@ -454,7 +437,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'The smoke banks down to knee height. Anyone small enough is breathing, and anyone standing is not.',
           effectLine: 'Turns the clock against everything but speed.',
         },
         {
@@ -464,7 +446,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           essenceCost: 2,
           forecastDelta: 0.14,
           imageTag: 'generic.crowd',
-          fiction: 'The arithmetic arrives all at once and will not go away: what {agent.name} can carry, and how many times.',
           effectLine: 'Sharpens the moment without arguing either way.',
         },
         {
@@ -475,7 +456,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.mercy',
-          fiction: 'The timbers groan and then hold, and {agent.name} gets one more pass through the door than the fire meant to allow.',
           effectLine: 'Steadies them — the worst version will not happen.',
         },
         {
@@ -486,7 +466,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           poleLean: 'b',
           imageTag: 'generic.blade',
-          fiction: 'Whatever {agent.name} has been holding back since the walls settles, and the fear goes somewhere useful.',
           effectLine: 'Makes the harder attempt feel survivable.',
         },
       ],
@@ -551,7 +530,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'Someone cuts the shirt off him to get at the wounds, and the council sees what the army already did.',
           effectLine: 'Makes his account hard to disbelieve.',
         },
         {
@@ -561,7 +539,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'A rider is spotted on the southern road, too far off to name, moving the way a scout moves.',
           effectLine: 'Puts a clock on the settlement\'s generosity.',
         },
         {
@@ -572,7 +549,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'He describes the village and the order in the same flat voice, and never once asks to be believed.',
           effectLine: 'Gives the merciful reading its evidence.',
         },
         {
@@ -583,7 +559,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'He gets to his feet when told to leave, and does not stay on them.',
           effectLine: 'Makes turning him out a sentence, not a refusal.',
         },
         {
@@ -594,7 +569,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.blade',
-          fiction: 'An older woman describes what happened to the last settlement that sheltered a runner, and nobody argues with her.',
           effectLine: 'Gives the hard answer a name and a precedent.',
         },
         {
@@ -605,7 +579,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.crowd',
-          fiction: 'The argument runs past dark, and by the time it ends nobody is deciding anything in a hurry.',
           effectLine: 'Steadies them — this will not be settled in temper.',
         },
         {
@@ -615,7 +588,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           essenceCost: 3,
           forecastDelta: 0.18,
           imageTag: 'generic.crowd',
-          fiction: 'The hall door stands open through the whole argument, and the man is close enough to hear all of it.',
           effectLine: 'Sharpens the moment without arguing either way.',
         },
       ],
@@ -681,7 +653,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.blade',
-          fiction: 'It is held out flat across both palms, the way the tradition requires, and it stays there.',
           effectLine: 'Makes taking it the path of least resistance.',
         },
         {
@@ -691,7 +662,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'The crowd has not finished gathering. For a moment there are only the elders, and a refusal would be heard by six people.',
           effectLine: 'Makes stepping back cost less than it will later.',
         },
         {
@@ -702,7 +672,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'What is left of the family stands at the front, and they have been waiting a long time for this.',
           effectLine: 'Puts the debt in front of them.',
         },
         {
@@ -713,7 +682,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'The thought arrives fully formed: the killing happens either way, and the only thing being decided is whose hands.',
           effectLine: 'Gives the refusal an argument instead of a flinch.',
         },
         {
@@ -724,7 +692,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'The condemned man finds {agent.name} in the yard and holds the look, without asking for anything.',
           effectLine: 'Makes him a person at the worst possible moment.',
         },
         {
@@ -735,7 +702,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.crowd',
-          fiction: 'The noise goes out of the crowd and stays out, and {agent.name} gets the moment whole instead of hurried.',
           effectLine: 'Steadies them — this will not go badly wrong.',
         },
         {
@@ -745,7 +711,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           essenceCost: 3,
           forecastDelta: 0.18,
           imageTag: 'generic.blade',
-          fiction: 'Someone recites why the task falls where it does — so that whoever carries it knows the cost of the law.',
           effectLine: 'Sharpens the moment without arguing either way.',
         },
       ],
@@ -811,7 +776,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'The caravan crew start setting trestles in the square before anyone has agreed to anything.',
           effectLine: 'Makes the feast the thing already happening.',
         },
         {
@@ -821,7 +785,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: '{agent.name} has the winter figures and they have not changed since this morning.',
           effectLine: 'Puts the arithmetic back in the room.',
         },
         {
@@ -832,7 +795,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'A jar is opened and passed down the line, and the noise the children make carries across the square.',
           effectLine: 'Gives the indulgent reading its argument.',
         },
         {
@@ -843,7 +805,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'Someone works out aloud how many days of eating the evening represents, and gets it roughly right.',
           effectLine: 'Makes restraint the reasonable-sounding answer.',
         },
         {
@@ -854,7 +815,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'It registers how long everyone has been careful, and what being careful has cost them.',
           effectLine: 'Makes one unmeasured night feel owed.',
         },
         {
@@ -865,7 +825,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.mercy',
-          fiction: 'The caravan is staying two nights, so whatever is decided is decided without a crowd waiting on it.',
           effectLine: 'Steadies them — this will not be settled badly.',
         },
         {
@@ -875,7 +834,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           essenceCost: 3,
           forecastDelta: 0.18,
           imageTag: 'generic.crowd',
-          fiction: 'The silk is unpacked and laid across a trestle where the light catches it, for no reason but that it can be.',
           effectLine: 'Sharpens the moment without arguing either way.',
         },
       ],
@@ -941,7 +899,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'It comes away from {agent.name}\'s neck easily, the way it always has.',
           effectLine: 'Makes handing it over the simpler motion.',
         },
         {
@@ -951,7 +908,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'Someone in the room says who wore it before, and gets as far as the third name.',
           effectLine: 'Puts the weight of the thing in the room.',
         },
         {
@@ -962,7 +918,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'The sound from the next room shifts while the healer is still naming her terms.',
           effectLine: 'Turns a negotiation into a clock.',
         },
         {
@@ -973,7 +928,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'The healer names her price and then waits, which is not what someone does when the price is final.',
           effectLine: 'Makes refusing look like bargaining, not gambling.',
         },
         {
@@ -984,7 +938,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.mercy',
-          fiction: 'What the pendant is said to carry gets mentioned, and nobody in the room is quite willing to call it nothing.',
           effectLine: 'Gives keeping it a reason beyond sentiment.',
         },
         {
@@ -995,7 +948,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.mercy',
-          fiction: 'The healer sets her bag down rather than picking it up, and the decision stops being one that has to happen now.',
           effectLine: 'Steadies them — nothing is lost in a hurry.',
         },
         {
@@ -1005,7 +957,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           essenceCost: 3,
           forecastDelta: 0.18,
           imageTag: 'generic.crowd',
-          fiction: 'The pendant sits heavier in the hand than its size accounts for, the way worked silver does.',
           effectLine: 'Sharpens the moment without arguing either way.',
         },
       ],
@@ -1071,7 +1022,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'The grain inspector keeps an office two streets over and is there most mornings.',
           effectLine: 'Makes reporting it a short walk.',
         },
         {
@@ -1081,7 +1031,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'The merchant leaves the real ledgers where {agent.name} can read them, which is either trust or a test.',
           effectLine: 'Makes staying look like the larger education.',
         },
         {
@@ -1092,7 +1041,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'The chaff is visible once you know to look, and {agent.name} now knows to look.',
           effectLine: 'Makes the fraud a fact rather than a claim.',
         },
         {
@@ -1103,7 +1051,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'It becomes clear that no other house will take an apprentice who left this one badly.',
           effectLine: 'Prices the honest answer honestly.',
         },
         {
@@ -1114,7 +1061,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'The phrase sits badly and keeps sitting badly, hours after the conversation ends.',
           effectLine: 'Refuses to let the small lie stay small.',
         },
         {
@@ -1125,7 +1071,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.crowd',
-          fiction: 'Nothing has to be decided before the next shipment, which is weeks out.',
           effectLine: 'Steadies them — this will not be decided in anger.',
         },
         {
@@ -1135,7 +1080,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           essenceCost: 3,
           forecastDelta: 0.18,
           imageTag: 'generic.crowd',
-          fiction: 'He measures without looking, forty years of it, and the skill is real whatever else is true.',
           effectLine: 'Sharpens the moment without arguing either way.',
         },
       ],
@@ -1201,7 +1145,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'The meal is already on the table, so feeding her costs no decision at all.',
           effectLine: 'Makes the plain kindness the easy one.',
         },
         {
@@ -1211,7 +1154,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'She stands in the doorway waiting to be told the price, because that is how she has done everything for forty years.',
           effectLine: 'Makes naming a price the respectful move.',
         },
         {
@@ -1222,7 +1164,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'She cannot hold the cup steady, and she notices {agent.name} noticing.',
           effectLine: 'Makes the transaction feel obscene.',
         },
         {
@@ -1233,7 +1174,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'The debt she was ruined by was called in by one man; the rest of her holdings are intact and everyone can count.',
           effectLine: 'Makes memory the practical currency.',
         },
         {
@@ -1244,7 +1184,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'Something of who she was comes back into her face for a moment, and then goes again.',
           effectLine: 'Makes charity the crueller option.',
         },
         {
@@ -1255,7 +1194,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.mercy',
-          fiction: 'She is sat down before anything is discussed, and the discussion can now take as long as it takes.',
           effectLine: 'Steadies them — nothing here will go badly.',
         },
         {
@@ -1265,7 +1203,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           essenceCost: 3,
           forecastDelta: 0.18,
           imageTag: 'generic.crowd',
-          fiction: 'The cloth is very good and has not been cleaned since the collapse, and both facts are visible at once.',
           effectLine: 'Sharpens the moment without arguing either way.',
         },
       ],
@@ -1331,7 +1268,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'The artisan is packing to leave, and the figure goes into the cloth last.',
           effectLine: 'Makes hesitation the same as refusing.',
         },
         {
@@ -1341,7 +1277,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'The field is visible from where they are standing, and it is bare.',
           effectLine: 'Puts what the coins are for in sight.',
         },
         {
@@ -1352,7 +1287,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'The artisan holds it out and lets {agent.name} take the weight of it before any price is settled.',
           effectLine: 'Makes giving it back the harder motion.',
         },
         {
@@ -1363,7 +1297,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'It is not hard to picture the months between sowing and anything to eat, because they happened last year.',
           effectLine: 'Makes the cost specific instead of abstract.',
         },
         {
@@ -1374,7 +1307,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'The artisan mentions how long the carving took, without asking for anything on the strength of it.',
           effectLine: 'Gives wanting it a reason beyond wanting.',
         },
         {
@@ -1385,7 +1317,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.mercy',
-          fiction: 'There is a night between the offer and the road, so nothing is decided standing in the square.',
           effectLine: 'Steadies them — no choice made on impulse.',
         },
         {
@@ -1395,7 +1326,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           essenceCost: 3,
           forecastDelta: 0.18,
           imageTag: 'generic.crowd',
-          fiction: 'The saved coins are in a purse that {agent.name} has counted often enough to know by weight.',
           effectLine: 'Sharpens the moment without arguing either way.',
         },
       ],
@@ -1464,7 +1394,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'The blind woman comes out to feel along the wall of her lean-to, counting what is left by hand.',
           effectLine: 'Puts the person the theft happened to in the scene.',
         },
         {
@@ -1474,7 +1403,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'He shifts the sacks to his other arm and waits, as though the silence were already an arrangement.',
           effectLine: 'Makes holding it look like the practical answer.',
         },
         {
@@ -1485,7 +1413,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'The stores are one woman\'s winter, and the amount is small enough to hold in the head all at once.',
           effectLine: 'Makes the theft specific rather than general.',
         },
         {
@@ -1496,7 +1423,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'Two of the men he drinks with cross the yard behind him, and neither of them looks over.',
           effectLine: 'Shows what speaking would actually cost.',
         },
         {
@@ -1507,7 +1433,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'It is late enough in the year that what is taken now cannot be grown back.',
           effectLine: 'Removes the reading where nobody is hurt.',
         },
         {
@@ -1518,7 +1443,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.crowd',
-          fiction: 'The yard stays empty a while longer than either of them expected, and the moment stops being urgent.',
           effectLine: 'Steadies them — nothing is decided at speed.',
         },
         {
@@ -1528,7 +1452,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           essenceCost: 3,
           forecastDelta: 0.18,
           imageTag: 'generic.blade',
-          fiction: 'The grain is heavy enough that he has to set one sack down, and it sits between them.',
           effectLine: 'Sharpens the moment without arguing either way.',
         },
       ],
@@ -1595,7 +1518,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'There is an evening left before the contract is read, and the two of them are alone for part of it.',
           effectLine: 'Leaves room for saying it straight.',
         },
         {
@@ -1605,7 +1527,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'The letter would need a merchant\'s hand, and {agent.name} has copied enough ledgers to manage one.',
           effectLine: 'Makes the forgery a thing that could actually be done.',
         },
         {
@@ -1616,7 +1537,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.blade',
-          fiction: 'A woman who married into that family passes through the market, and the way she holds her arm is not new.',
           effectLine: 'Makes the danger present instead of reported.',
         },
         {
@@ -1627,7 +1547,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'The thing {agent.name} knows can be said in one sentence, without a story around it.',
           effectLine: 'Makes the plain warning harder to wave off.',
         },
         {
@@ -1638,7 +1557,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'The two of them made each other a promise years ago about never lying, and both remember the day.',
           effectLine: 'Puts the cost of the forgery in front of them.',
         },
         {
@@ -1649,7 +1567,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.crowd',
-          fiction: 'The reading is put back a day for a reason that has nothing to do with either of them.',
           effectLine: 'Steadies them — nothing has to be settled tonight.',
         },
         {
@@ -1659,7 +1576,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           essenceCost: 3,
           forecastDelta: 0.18,
           imageTag: 'generic.blade',
-          fiction: 'The blank sheet is on the table where {agent.name} works, and the lamp is still lit.',
           effectLine: 'Sharpens the moment without arguing either way.',
         },
       ],
@@ -1725,7 +1641,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'Nobody is expecting {agent.name} anywhere until evening, and the border track runs both ways.',
           effectLine: 'Makes the walk across possible without a story.',
         },
         {
@@ -1735,7 +1650,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.blade',
-          fiction: 'The wax lifted cleanly and will set again, and nobody will be able to tell it was read.',
           effectLine: 'Makes silence the option with no trace on it.',
         },
         {
@@ -1746,7 +1660,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'The neighbouring village draws from three wells, and by high summer two of them are already slow.',
           effectLine: 'Puts a date on what the deal does.',
         },
         {
@@ -1757,7 +1670,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: '{agent.name} gave a word to carry messages sealed, and the people who took it are not villains.',
           effectLine: 'Makes keeping the trust the honourable-looking answer.',
         },
         {
@@ -1768,7 +1680,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'It is not an abstract village. It is forty-odd households and {agent.name} has eaten in two of them.',
           effectLine: 'Turns the far side of the border into people.',
         },
         {
@@ -1779,7 +1690,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.crowd',
-          fiction: 'The negotiation is not signed for another week, so whatever {agent.name} does need not be done at a run.',
           effectLine: 'Steadies them — there is time to mean it.',
         },
         {
@@ -1789,7 +1699,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           essenceCost: 3,
           forecastDelta: 0.18,
           imageTag: 'generic.blade',
-          fiction: 'It is one folded sheet and it weighs nothing, and {agent.name} keeps checking that it is still there.',
           effectLine: 'Sharpens the moment without arguing either way.',
         },
       ],
@@ -1855,7 +1764,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.mercy',
-          fiction: 'Her grip does not loosen while she waits for an answer, and it is not a strong grip.',
           effectLine: 'Makes the promise the easy thing to give.',
         },
         {
@@ -1865,7 +1773,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'The dead defender\'s grandchildren live four doors down and are named for nobody in particular.',
           effectLine: 'Puts the cost of the silence in the room.',
         },
         {
@@ -1876,7 +1783,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'The tale is told at every midwinter, and it is one of the few things the whole settlement does together.',
           effectLine: 'Shows what the truth would break.',
         },
         {
@@ -1887,7 +1793,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.blade',
-          fiction: 'Two people who were on the wall that night are still alive, and neither has ever been asked directly.',
           effectLine: 'Makes the truth something that could be established.',
         },
         {
@@ -1898,7 +1803,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.mercy',
-          fiction: 'Her breathing changes, and everyone in the house knows what that means, and nobody says so.',
           effectLine: 'Makes anything but comfort feel like cruelty.',
         },
         {
@@ -1909,7 +1813,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.crowd',
-          fiction: 'Whatever {agent.name} does with this does not have to be done while she is alive to hear it.',
           effectLine: 'Steadies them — the answer keeps.',
         },
         {
@@ -1919,7 +1822,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           essenceCost: 3,
           forecastDelta: 0.18,
           imageTag: 'generic.blade',
-          fiction: 'Her name is already cut into the stone by the gate, where anyone entering has to pass it.',
           effectLine: 'Sharpens the moment without arguing either way.',
         },
       ],
@@ -1988,7 +1890,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'The last one gets up and the seat is free, and the mystic does not call anyone else forward.',
           effectLine: 'Makes sitting the motion already underway.',
         },
         {
@@ -1998,7 +1899,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'The crowd shifts and the stall is suddenly one of many, easy to be walking past rather than standing at.',
           effectLine: 'Makes leaving something other than refusing.',
         },
         {
@@ -2009,7 +1909,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.mercy',
-          fiction: 'The woman who sat first has not moved from the well, and whatever she saw is still working on her.',
           effectLine: 'Shows the price before it is paid.',
         },
         {
@@ -2020,7 +1919,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.blade',
-          fiction: 'There is one person whose regard {agent.name} has been guessing at for a year, and the guessing has not improved.',
           effectLine: 'Gives the looking a reason beyond curiosity.',
         },
         {
@@ -2031,7 +1929,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'The mystic says, without pressing, that the mirror is only rude in the way that facts are.',
           effectLine: 'Frames looking as the honest act rather than the brave one.',
         },
         {
@@ -2042,7 +1939,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.crowd',
-          fiction: 'The stall is not struck tonight, and whatever {agent.name} does now can be done differently on any of six mornings.',
           effectLine: 'Steadies them — nothing here is final.',
         },
         {
@@ -2052,7 +1948,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           essenceCost: 3,
           forecastDelta: 0.18,
           imageTag: 'generic.blade',
-          fiction: 'It is an ordinary polished disc, unremarkable to look at, and it has already been broken once today.',
           effectLine: 'Sharpens the moment without arguing either way.',
         },
       ],
@@ -2118,7 +2013,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'The eldest of them takes the place at the front that she has taken every year of {agent.name}\'s life.',
           effectLine: 'Puts the weight of the room on the old form.',
         },
         {
@@ -2128,7 +2022,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.blade',
-          fiction: 'The scholar lays her pages out and the derivation runs line by line, and it is not the work of a liar.',
           effectLine: 'Makes the new words something other than a claim.',
         },
         {
@@ -2139,7 +2032,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'Two of the names to be sung tonight were buried this year, and their households are in the front row.',
           effectLine: 'Makes the rite about the mourners in the room.',
         },
         {
@@ -2150,7 +2042,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.blade',
-          fiction: 'Read as they are sung, three of the lines mean nothing at all, and everyone singing them knows it.',
           effectLine: 'Makes the error impossible to keep not noticing.',
         },
         {
@@ -2161,7 +2052,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'The whole settlement gets to its feet at the same moment, without being told to, the way it does every year.',
           effectLine: 'Shows what the rite is actually doing.',
         },
         {
@@ -2172,7 +2062,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.crowd',
-          fiction: 'The rite is annual, and whatever is done tonight can be done differently next year without anything being lost.',
           effectLine: 'Steadies them — tonight is not the last word.',
         },
         {
@@ -2182,7 +2071,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           essenceCost: 3,
           forecastDelta: 0.18,
           imageTag: 'generic.mercy',
-          fiction: 'The fire is lit and the smoke finds the gap in the roof the way it always does, and the room quiets for it.',
           effectLine: 'Sharpens the moment without arguing either way.',
         },
       ],
@@ -2248,7 +2136,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'The herb-keeper comes without being sent for, as she has every time anyone in this house has been ill.',
           effectLine: 'Puts thirty years of care in the room.',
         },
         {
@@ -2258,7 +2145,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'Two farmhands treated by the foreigner last week are on their feet in the yard, thin and upright.',
           effectLine: 'Makes the new method a thing with results attached.',
         },
         {
@@ -2269,7 +2155,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.blade',
-          fiction: 'She is hotter at dusk than she was at noon, and the poultice has been changed twice since.',
           effectLine: 'Turns the choice urgent instead of considered.',
         },
         {
@@ -2280,7 +2165,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'The herb-keeper changes the mixture a third time and explains what she is changing and why, without being asked.',
           effectLine: 'Shows the old way as knowledge rather than habit.',
         },
         {
@@ -2291,7 +2175,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.blade',
-          fiction: 'Whatever the foreigner does to a patient carries across the field, and it does not sound like healing.',
           effectLine: 'Puts the price of the new method in the ear.',
         },
         {
@@ -2302,7 +2185,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.crowd',
-          fiction: 'Both of them will still be in {agent.location} at dawn, and the fever will have shown what it is doing by then.',
           effectLine: 'Steadies them — the decision can be made on more.',
         },
         {
@@ -2312,7 +2194,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           essenceCost: 3,
           forecastDelta: 0.18,
           imageTag: 'generic.crowd',
-          fiction: 'There is a cart with straw in it standing by the door, for no reason anyone arranged.',
           effectLine: 'Sharpens the moment without arguing either way.',
         },
       ],
@@ -2378,7 +2259,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: '{agent.name} turns two fragments over in the grass and they seat against each other exactly, the way they did for four hundred years.',
           effectLine: 'Makes the refit look like something that could work.',
         },
         {
@@ -2388,7 +2268,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.blade',
-          fiction: 'The stone from the new cut rings when it is struck, and does not powder at the edge the way the old does.',
           effectLine: 'Makes the better material impossible to unsee.',
         },
         {
@@ -2399,7 +2278,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'The bedding faces still carry the tool marks of whoever fitted them, and the marks are not like any tool in {agent.location} now.',
           effectLine: 'Puts the first builders\' hands on the work.',
         },
         {
@@ -2410,7 +2288,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.blade',
-          fiction: 'Reckoned honestly, the new stone outlasts the old by longer than the settlement has existed.',
           effectLine: 'Makes the argument about the future rather than the past.',
         },
         {
@@ -2421,7 +2298,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'The people who use the shrine daily are mostly old, and they have said what they want in plain words.',
           effectLine: 'Gives the old form the people who live with it.',
         },
         {
@@ -2432,7 +2308,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.crowd',
-          fiction: 'There are weeks of working weather left, enough that neither method has to be rushed or botched.',
           effectLine: 'Steadies them — the work can be done properly.',
         },
         {
@@ -2442,7 +2317,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           essenceCost: 3,
           forecastDelta: 0.18,
           imageTag: 'generic.mercy',
-          fiction: 'The cairn is spread across half the slope, and until someone starts lifting it is only a field with rocks in it.',
           effectLine: 'Sharpens the moment without arguing either way.',
         },
       ],
@@ -2508,7 +2382,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'The teacher reaches the part about the flood and the voice does what it has always done there, and the room does what it always does back.',
           effectLine: 'Shows what only the voice carries.',
         },
         {
@@ -2518,7 +2391,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.blade',
-          fiction: 'The teacher leaves the stylus and a soft tablet on the table between them and does not say anything about it.',
           effectLine: 'Makes taking it up a thing that could just happen.',
         },
         {
@@ -2529,7 +2401,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.blade',
-          fiction: 'Tonight the teacher summarises a stretch that used to run a hundred lines, and does not notice having done it.',
           effectLine: 'Puts a clock on the oral form.',
         },
         {
@@ -2540,7 +2411,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: '{agent.name} finds that three of the shorter stories are already there, whole, from hearing them enough times.',
           effectLine: 'Makes memorising a thing already half done.',
         },
         {
@@ -2551,7 +2421,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'The teacher sits down between stories now, which is new this winter.',
           effectLine: 'Makes the loss a matter of months, not principle.',
         },
         {
@@ -2562,7 +2431,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.crowd',
-          fiction: 'There is a long dark season ahead with nothing in it but the two of them and the fire.',
           effectLine: 'Steadies them — the work has room to be done well.',
         },
         {
@@ -2572,7 +2440,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           essenceCost: 3,
           forecastDelta: 0.18,
           imageTag: 'generic.blade',
-          fiction: 'Fired clay outlasts anyone in the room, and unfired clay can be smoothed flat and used again.',
           effectLine: 'Sharpens the moment without arguing either way.',
         },
       ],
@@ -2638,7 +2505,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'The covenant stone at the square\'s edge carries names that half the households here still answer to.',
           effectLine: 'Puts the covenant\'s people in front of the argument.',
         },
         {
@@ -2648,7 +2514,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.blade',
-          fiction: 'She reads a passage twice, slowly, and it holds up the second time as well as the first.',
           effectLine: 'Makes the argument something to answer rather than shout down.',
         },
         {
@@ -2659,7 +2524,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'The covenant was made in a famine year, by people who needed a reason not to turn on each other.',
           effectLine: 'Gives the old agreement a reason that survives being explained.',
         },
         {
@@ -2670,7 +2534,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.blade',
-          fiction: 'Two of the prohibitions turn out to have been added later, in a different hand, for reasons the book names.',
           effectLine: 'Turns custom into a series of decisions somebody made.',
         },
         {
@@ -2681,7 +2544,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.mercy',
-          fiction: 'She is thinner and harder than the woman anyone here remembers, and she came back anyway.',
           effectLine: 'Makes the cost of asking visible.',
         },
         {
@@ -2692,7 +2554,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.crowd',
-          fiction: 'It gets late enough that people drift off to eat, and whatever is said next is said to fewer of them.',
           effectLine: 'Steadies them — nothing here has to be decided at volume.',
         },
         {
@@ -2702,7 +2563,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           essenceCost: 3,
           forecastDelta: 0.18,
           imageTag: 'generic.blade',
-          fiction: 'It is a foreign binding, water-marked and much repaired, and she holds it the way people hold tools.',
           effectLine: 'Sharpens the moment without arguing either way.',
         },
       ],
@@ -2775,7 +2635,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'The old smith works them himself tonight, badly, the way he did before {agent.name} came.',
           effectLine: 'Puts the forge\'s next month in front of the decision.',
         },
         {
@@ -2785,7 +2644,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.blade',
-          fiction: 'The wagon is loaded and pointed at a city {agent.name} has only heard described.',
           effectLine: 'Makes the offer a place rather than an idea.',
         },
         {
@@ -2796,7 +2654,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'He had no room and no reason and he made room anyway, and neither of them has mentioned it since.',
           effectLine: 'Gives the debt a date and a face.',
         },
         {
@@ -2807,7 +2664,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.blade',
-          fiction: 'He watched {agent.name} work for the length of one weld and named the fault in the metal before the hammer fell.',
           effectLine: 'Makes the talent something outside {agent.name} can see.',
         },
         {
@@ -2818,7 +2674,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'Two years in, {agent.name} is still not trusted with the edge work, and the old smith teaches at the only speed he has.',
           effectLine: 'Puts a number on what staying costs.',
         },
         {
@@ -2829,7 +2684,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.mercy',
-          fiction: 'Everyone in the settlement brings their broken things here, and there is no second forge within two days\' walk.',
           effectLine: 'Steadies the moment — whatever is chosen, it will be chosen knowing who else it lands on.',
         },
         {
@@ -2839,7 +2693,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           essenceCost: 3,
           forecastDelta: 0.18,
           imageTag: 'generic.blade',
-          fiction: 'It came over the mountains on a cart two generations ago and it will outlast both of them.',
           effectLine: 'Sharpens the moment without arguing either way.',
         },
       ],
@@ -2906,7 +2759,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'There were three of them, and {agent.name}\'s family ate through all three on someone else\'s grain.',
           effectLine: 'Puts the debt in the room as a fact rather than a threat.',
         },
         {
@@ -2916,7 +2768,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.blade',
-          fiction: '{agent.name} has been given the testimony written out, and it is one sentence longer than the truth.',
           effectLine: 'Makes the lie a specific line rather than a general favour.',
         },
         {
@@ -2927,7 +2778,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'The leader says it evenly, and the second half of the sentence is the half that matters.',
           effectLine: 'Names the cost of refusing before {agent.name} has to discover it.',
         },
         {
@@ -2938,7 +2788,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'Whoever holds the river crossing sets the toll, and the toll has fed one faction or the other for sixty years.',
           effectLine: 'Shows what the testimony is actually for.',
         },
         {
@@ -2949,7 +2798,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.mercy',
-          fiction: 'He has three, and when he falls they fall with him, which is how it works here and has always worked here.',
           effectLine: 'Puts the people on the other end of the sentence.',
         },
         {
@@ -2960,7 +2808,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.crowd',
-          fiction: 'Nothing has to be said today. Everyone in the room knows it, including the leader, who says it anyway.',
           effectLine: 'Steadies the moment — whatever is said will be said deliberately.',
         },
         {
@@ -2970,7 +2817,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           essenceCost: 3,
           forecastDelta: 0.18,
           imageTag: 'generic.crowd',
-          fiction: 'There is an inflection this settlement puts on the name of a household that took help and gave none, and {agent.name} has heard it used on others.',
           effectLine: 'Sharpens the moment without arguing either way.',
         },
       ],
@@ -3044,7 +2890,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'They are worse than last time, and the friend keeps them under the table until the asking is done.',
           effectLine: 'Puts the state of him in front of the request.',
         },
         {
@@ -3054,7 +2899,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.blade',
-          fiction: 'This is the fourth sum, and the three before it bought about eleven days each.',
           effectLine: 'Makes the pattern countable.',
         },
         {
@@ -3065,7 +2909,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'There is nobody else alive who remembers the same things from the same side of them.',
           effectLine: 'Gives the bond a weight that the debt cannot price.',
         },
         {
@@ -3076,7 +2919,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.blade',
-          fiction: 'The friend does not say it out loud. The friend has never had to say it out loud, and that is new information about both of them.',
           effectLine: 'Names what the asking is actually asking for.',
         },
         {
@@ -3087,7 +2929,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.mercy',
-          fiction: 'The friend is thinner than last winter and warmer to the touch than he should be, and neither of them mentions it.',
           effectLine: 'Puts a limit on how long the current arrangement can run.',
         },
         {
@@ -3098,7 +2939,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.crowd',
-          fiction: 'The men with the ledger come on market day, which is four days off, and everyone in this room knows the date.',
           effectLine: 'Steadies the moment — this can be answered slowly.',
         },
         {
@@ -3108,7 +2948,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           essenceCost: 3,
           forecastDelta: 0.18,
           imageTag: 'generic.blade',
-          fiction: 'It is {agent.name}\'s and it is not large, and both of them have been looking at it and not at each other.',
           effectLine: 'Sharpens the moment without arguing either way.',
         },
       ],
@@ -3175,7 +3014,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.blade',
-          fiction: 'He was too weak to lift his head and not too weak for that, and he did not let go until {agent.name} answered.',
           effectLine: 'Makes the promise a thing that happened rather than a thing remembered.',
         },
         {
@@ -3185,7 +3023,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'They were in the next room the whole night, doing the work, because that is what they do.',
           effectLine: 'Puts the person the words would land on in the room.',
         },
         {
@@ -3196,7 +3033,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'The settlement has watched the sibling train for this since both of them were small, and has arranged itself around the expectation.',
           effectLine: 'Shows how much would have to be unmade.',
         },
         {
@@ -3207,7 +3043,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.blade',
-          fiction: 'It comes due in four years, it is larger than the granary, and the sibling has never once mentioned it.',
           effectLine: 'Gives "you see what they don\'t see" a specific thing to be about.',
         },
         {
@@ -3218,7 +3053,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'Four of the nine already think the sibling is too careful, and they have been waiting for someone else to say it first.',
           effectLine: 'Shows that the claim would not be laughed out of the room.',
         },
         {
@@ -3229,7 +3063,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.mercy',
-          fiction: 'The succession will not be settled before the burial, and the burial is three days out. Nothing said today is said on time.',
           effectLine: 'Steadies the moment — there is no hour that forces the answer.',
         },
         {
@@ -3239,7 +3072,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           essenceCost: 3,
           forecastDelta: 0.18,
           imageTag: 'generic.crowd',
-          fiction: 'It is at the head of a long table and it is not comfortable, and the last man to sit in it aged a decade in six years.',
           effectLine: 'Sharpens the moment without arguing either way.',
         },
       ],
@@ -3305,7 +3137,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'He has been holding them since dawn, politely, without once asking when.',
           effectLine: 'Puts the other settlement in the yard rather than over the hill.',
         },
         {
@@ -3315,7 +3146,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.blade',
-          fiction: 'Nine households, no wall, and a road the raiders have used twice.',
           effectLine: 'Names who the horse is being kept from.',
         },
         {
@@ -3326,7 +3156,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'For the autumn defense. Spoken in front of witnesses, and the autumn defense ended eight days ago.',
           effectLine: 'Makes the terms something both settlements can recite.',
         },
         {
@@ -3337,7 +3166,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.mercy',
-          fiction: 'The handlers have not seen anything like it, and say so, and are uneasy about saying it.',
           effectLine: 'Makes the horse a relationship instead of an asset.',
         },
         {
@@ -3348,7 +3176,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'This settlement has needed the neighbours twice in ten years and will need them again.',
           effectLine: 'Puts the alliance on a longer clock than the raid.',
         },
         {
@@ -3359,7 +3186,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.mercy',
-          fiction: 'There are days in hand, and the handler can be fed and housed for all of them without anyone losing face.',
           effectLine: 'Steadies the moment — nothing has to be settled at the gate.',
         },
         {
@@ -3369,7 +3195,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           essenceCost: 3,
           forecastDelta: 0.18,
           imageTag: 'generic.blade',
-          fiction: 'Seventeen hands, scarred along the near shoulder, and entirely unbothered by any of this.',
           effectLine: 'Sharpens the moment without arguing either way.',
         },
       ],
@@ -3435,7 +3260,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.blade',
-          fiction: 'Twice as deep as last spring, in every plot {agent.name} has opened, which is eleven of them.',
           effectLine: 'Turns the hunch into something countable.',
         },
         {
@@ -3445,7 +3269,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.mercy',
-          fiction: 'Nobody asks what goes in it, and barley can be in the ground before anyone thinks to.',
           effectLine: 'Offers a way to be right without being loud.',
         },
         {
@@ -3456,7 +3279,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'She settles the disputes, blesses the marriages, and speaks for the settlement at council. There is no second person doing any of it.',
           effectLine: 'Shows what else would wobble if she did.',
         },
         {
@@ -3467,7 +3289,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.blade',
-          fiction: 'Three years running, each later than the last, and the pattern holds whichever way {agent.name} reads it.',
           effectLine: 'Gives the claim a second line of evidence.',
         },
         {
@@ -3478,7 +3299,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'The households with no second plot, which is most of them, and they are all in the room.',
           effectLine: 'Puts the cost of being quietly right in front of {agent.name}.',
         },
         {
@@ -3489,7 +3309,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.crowd',
-          fiction: 'There are two days in which any of this could be said to her alone, in a doorway, with nobody counting.',
           effectLine: 'Steadies the moment — the room is not the only place to speak.',
         },
         {
@@ -3499,7 +3318,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           essenceCost: 3,
           forecastDelta: 0.18,
           imageTag: 'generic.blade',
-          fiction: 'It is sour enough to taste, and {agent.name} has been carrying some of it around for a week.',
           effectLine: 'Sharpens the moment without arguing either way.',
         },
       ],
@@ -3566,7 +3384,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.blade',
-          fiction: 'It happens again at the betrothal supper, when she laughs, and it is the same flinch in the same place.',
           effectLine: 'Makes it a pattern rather than a glimpse.',
         },
         {
@@ -3576,7 +3393,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'Both fathers have stood up and said the words in front of everyone, which is not a thing that gets taken back quietly.',
           effectLine: 'Shows how much is already standing on the match.',
         },
         {
@@ -3587,7 +3403,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'They have been moved four times in thirty years, and two men died over the last move.',
           effectLine: 'Names what the peace is actually made of.',
         },
         {
@@ -3598,7 +3413,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'There is a place and an hour where this could be said to her and to nobody else.',
           effectLine: 'Makes telling her possible without making it public.',
         },
         {
@@ -3609,7 +3423,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'Forty years, if both of them are lucky, and luck is the word people use for it.',
           effectLine: 'Sets the cost of being wrong against the cost of being right.',
         },
         {
@@ -3620,7 +3433,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.crowd',
-          fiction: 'It is after the harvest, which is weeks away, and nothing said now is said too late.',
           effectLine: 'Steadies the moment — there is room to be careful.',
         },
         {
@@ -3630,7 +3442,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           essenceCost: 3,
           forecastDelta: 0.18,
           imageTag: 'generic.blade',
-          fiction: 'She looks at him a half-beat longer than she needs to, sometimes, and {agent.name} cannot tell what that is.',
           effectLine: 'Sharpens the moment without arguing either way.',
         },
       ],
@@ -3697,7 +3508,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.blade',
-          fiction: 'Three villages that were on the river before her people were, and are not on anyone\'s map now.',
           effectLine: 'Gives the objection something specific to be about.',
         },
         {
@@ -3707,7 +3517,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'It is already raised. Everyone else\'s is already raised. It would cost nothing at all to drink.',
           effectLine: 'Makes the easy path physically available.',
         },
         {
@@ -3718,7 +3527,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'Grain in the bad years and medicine in all of them, from a settlement that has other places to send both.',
           effectLine: 'Prices the objection before it is made.',
         },
         {
@@ -3729,7 +3537,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'Plainly, without any relish, the way people tell things they were present for.',
           effectLine: 'Makes the true version a testimony rather than a rumour.',
         },
         {
@@ -3740,7 +3547,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'Two of the older traders have gone still, and one of them is looking at the table, and neither will say a word.',
           effectLine: 'Shows that {agent.name} is not the only one who knows.',
         },
         {
@@ -3751,7 +3557,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.crowd',
-          fiction: 'Nothing is bound tonight. Whatever is said at the feast is said before anything is decided.',
           effectLine: 'Steadies the moment — the hall is not the last room.',
         },
         {
@@ -3761,7 +3566,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           essenceCost: 3,
           forecastDelta: 0.18,
           imageTag: 'generic.blade',
-          fiction: 'Smoothly, and with small pauses in the right places, like something told often enough to have been sanded.',
           effectLine: 'Sharpens the moment without arguing either way.',
         },
       ],
@@ -3828,7 +3632,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.blade',
-          fiction: 'She has worn them through two summers, and the settlement has learned not to remark on it.',
           effectLine: 'Puts what everyone half-knows into the room.',
         },
         {
@@ -3838,7 +3641,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'It collapsed three times and he rebuilt it three times, and the trade road has run over it for eleven years.',
           effectLine: 'Offers a true thing that can be said safely.',
         },
         {
@@ -3848,7 +3650,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           essenceCost: 2,
           forecastDelta: 0.14,
           imageTag: 'generic.mercy',
-          fiction: 'She looks at {agent.name} once, at the start, and {agent.name} genuinely cannot tell which answer she wants.',
           effectLine: 'Removes the comfort of thinking her wish is known.',
         },
         {
@@ -3859,7 +3660,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'Four of them are sitting in the second row, and all four have been telling the settlement about the bridge.',
           effectLine: 'Shows who else is holding the same thing quietly.',
         },
         {
@@ -3870,7 +3670,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'Whatever is said today is what the children will repeat in thirty years, and they are here, and they are listening.',
           effectLine: 'Puts the length of the record against the length of the day.',
         },
         {
@@ -3881,7 +3680,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.mercy',
-          fiction: 'She will still be here next week, and so will {agent.name}, and this is not the only hour in which anything can be said.',
           effectLine: 'Steadies the moment — the eulogy is not the last word available.',
         },
         {
@@ -3891,7 +3689,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           essenceCost: 3,
           forecastDelta: 0.18,
           imageTag: 'generic.crowd',
-          fiction: 'Everyone has stopped shifting on the benches, and the wait has gone on a beat longer than it should have.',
           effectLine: 'Sharpens the moment without arguing either way.',
         },
       ],
@@ -3959,7 +3756,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'Four nights downstream, fed by people who were suspicious of {agent.name} for three of them and fed {agent.name} anyway.',
           effectLine: 'Makes the river-folk people {agent.name} can name.',
         },
         {
@@ -3969,7 +3765,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.blade',
-          fiction: 'Their goods can reach the settlement through two traders who ask nobody\'s permission.',
           effectLine: 'Offers a route that needs no argument won.',
         },
         {
@@ -3980,7 +3775,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.mercy',
-          fiction: 'Observe before judging. Think before speaking. The method {agent.name} would use to take the mentor apart is the mentor\'s own.',
           effectLine: 'Makes the debt concrete rather than sentimental.',
         },
         {
@@ -3991,7 +3785,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'Six years of river trade that went to a settlement further up, and a ford nobody guards jointly.',
           effectLine: 'Puts a number under the disagreement.',
         },
         {
@@ -4002,7 +3795,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.blade',
-          fiction: 'It predates {agent.name} by thirty years and has a reason behind it that the mentor has never once described.',
           effectLine: 'Shows how little one conversation is likely to move.',
         },
         {
@@ -4013,7 +3805,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.mercy',
-          fiction: 'They are alone, the fire is banked, and nobody is waiting for either of them anywhere.',
           effectLine: 'Steadies the moment — there is time to say it properly or not at all.',
         },
         {
@@ -4023,7 +3814,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           essenceCost: 3,
           forecastDelta: 0.18,
           imageTag: 'generic.crowd',
-          fiction: 'The mentor will be asked, as always, and will answer, as always, and nobody has yet asked {agent.name} anything.',
           effectLine: 'Sharpens the moment without arguing either way.',
         },
       ],
@@ -4101,7 +3891,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.mercy',
-          fiction: 'They are plainly ruined and no account of the soil is going to make them otherwise.',
           effectLine: 'Puts the failure past arguing about.',
         },
         {
@@ -4111,7 +3900,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.blade',
-          fiction: 'Two days on foot, and nobody there has heard the boast or seen the field.',
           effectLine: 'Makes starting again a real option rather than a gesture.',
         },
         {
@@ -4122,7 +3910,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.blade',
-          fiction: 'Read again in the evening, it says clearly that the method wants light soil, and {agent.name} skipped the line.',
           effectLine: 'Locates the mistake exactly, in {agent.name}.',
         },
         {
@@ -4133,7 +3920,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'Between them they have about two hundred years of this ground, and none of them has been asked in a while.',
           effectLine: 'Makes asking for help a thing that would obviously work.',
         },
         {
@@ -4144,7 +3930,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'This settlement remembers who was wrong about what for a generation, and tells it at weddings.',
           effectLine: 'Puts a price on staying and being known for this.',
         },
         {
@@ -4155,7 +3940,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.mercy',
-          fiction: 'The ground will be turned again in spring whatever is said this afternoon.',
           effectLine: 'Steadies the moment — nothing is finished by one harvest.',
         },
         {
@@ -4165,7 +3949,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           essenceCost: 3,
           forecastDelta: 0.18,
           imageTag: 'generic.blade',
-          fiction: 'Borrowed, most of them, and they will have to be handed back to somebody either way.',
           effectLine: 'Sharpens the moment without arguing either way.',
         },
       ],
@@ -4232,7 +4015,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.mercy',
-          fiction: 'A close-looking match, an honourable exit, and bones that still work in the morning.',
           effectLine: 'Makes the arrangement a real and decent option.',
         },
         {
@@ -4242,7 +4024,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.blade',
-          fiction: 'He says it easily, the way people say things they have arranged before.',
           effectLine: 'Makes the offer feel like a script {agent.name} is being handed.',
         },
         {
@@ -4253,7 +4034,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.mercy',
-          fiction: 'He is faster in the shoulder and heavier in the hip and there is no season of training that closes that this month.',
           effectLine: 'Makes the mismatch a measurement rather than a mood.',
         },
         {
@@ -4264,7 +4044,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.blade',
-          fiction: 'He drops the lead hand coming out of the turn. Once a bout, maybe twice, and never for long.',
           effectLine: 'Gives the refusal something to be for.',
         },
         {
@@ -4275,7 +4054,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'Whatever happens in the ring will be described in a dozen places by people who were not close enough to see it properly.',
           effectLine: 'Raises what the record is worth against what the ribs are worth.',
         },
         {
@@ -4286,7 +4064,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.crowd',
-          fiction: 'There is a whole round of waiting before the ring is clear, and nothing has to be answered in it.',
           effectLine: 'Steadies the moment — the answer can be given cold.',
         },
         {
@@ -4296,7 +4073,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           essenceCost: 3,
           forecastDelta: 0.18,
           imageTag: 'generic.blade',
-          fiction: 'Packed earth, rope at the edge, and a physician sitting at the corner post who has been busy all day.',
           effectLine: 'Sharpens the moment without arguing either way.',
         },
       ],
@@ -4364,7 +4140,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.mercy',
-          fiction: 'Over one evening, freely, by someone who said they meant to write it down properly.',
           effectLine: 'Names what was actually taken.',
         },
         {
@@ -4374,7 +4149,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'They drink from it without thinking about it, which is the whole point and is not undone by anything.',
           effectLine: 'Puts the result beside the question of credit.',
         },
         {
@@ -4385,7 +4159,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.blade',
-          fiction: 'Within months, through this region, and they will recognise their own sand-and-charcoal at a glance.',
           effectLine: 'Makes the reckoning a date rather than a risk.',
         },
         {
@@ -4396,7 +4169,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'The one who solved it. Every request that has come to {agent.name} since has come because of that sentence.',
           effectLine: 'Prices what an admission would cost.',
         },
         {
@@ -4407,7 +4179,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.mercy',
-          fiction: 'The filter was one evening of a long conversation, and the rest of it went past faster than {agent.name} could hold.',
           effectLine: 'Makes honesty a door rather than only a cost.',
         },
         {
@@ -4418,7 +4189,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.mercy',
-          fiction: 'Whatever is said to the council, the layers do their work and nobody has to go back to the old cistern.',
           effectLine: 'Steadies the moment — the thing that matters is not at stake.',
         },
         {
@@ -4428,7 +4198,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           essenceCost: 3,
           forecastDelta: 0.18,
           imageTag: 'generic.blade',
-          fiction: 'Sand over charcoal over gravel, in a barrel {agent.name} built badly the first time and well the second.',
           effectLine: 'Sharpens the moment without arguing either way.',
         },
       ],
@@ -4496,7 +4265,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.mercy',
-          fiction: '{agent.name} woke, and was hungry, and the water still had to be carried, exactly as before.',
           effectLine: 'Keeps the ordinary within reach.',
         },
         {
@@ -4506,7 +4274,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'People who argued with {agent.name} last month look at the ground instead, and it works every time.',
           effectLine: 'Makes the new standing something {agent.name} can feel being used.',
         },
         {
@@ -4517,7 +4284,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'He was already losing the room before this, and he has not stopped talking since.',
           effectLine: 'Shows whose interpretation is doing the work.',
         },
         {
@@ -4528,7 +4294,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'The grain dispute, the eastern boundary, the succession of the mill — all of it stuck for a year, all of it movable now.',
           effectLine: 'Names the good that the mantle could actually do.',
         },
         {
@@ -4539,7 +4304,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.mercy',
-          fiction: 'Whatever it was, it has been quiet since, and {agent.name} has no way to ask it anything.',
           effectLine: 'Leaves the claim standing on one night only.',
         },
         {
@@ -4550,7 +4314,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.mercy',
-          fiction: 'Settlements forget marvels within a season if nobody keeps them fed, and everyone here knows that.',
           effectLine: 'Steadies the moment — nothing must be settled tonight.',
         },
         {
@@ -4560,7 +4323,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           essenceCost: 3,
           forecastDelta: 0.18,
           imageTag: 'generic.blade',
-          fiction: 'People have started leaving small things there, and nobody has decided that they should.',
           effectLine: 'Sharpens the moment without arguing either way.',
         },
       ],
@@ -4628,7 +4390,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.mercy',
-          fiction: 'It is there for less than a second, and it means the teacher already knows what the work is.',
           effectLine: 'Makes the verdict something other than a verdict.',
         },
         {
@@ -4638,7 +4399,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.blade',
-          fiction: 'The asymmetry took three attempts and is the best thing {agent.name} has made.',
           effectLine: 'Puts the case for the work within reach of saying.',
         },
         {
@@ -4649,7 +4409,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'The teacher has set this test on every student who ever finished, and has been arguing with most of them.',
           effectLine: 'Puts {agent.name} in a line of people who have already answered.',
         },
         {
@@ -4660,7 +4419,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.blade',
-          fiction: 'One join in the middle of it is {agent.name}\'s own, worked out alone, and the teacher has looked at it twice.',
           effectLine: 'Gives the argument something the teacher cannot claim.',
         },
         {
@@ -4671,7 +4429,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.mercy',
-          fiction: 'It will be used by people who never meet either of them and will not ask who made it.',
           effectLine: 'Sets the work against the verdict on it.',
         },
         {
@@ -4682,7 +4439,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.mercy',
-          fiction: 'Not impatiently. The old hands are folded and there is nowhere either of them has to be.',
           effectLine: 'Steadies the moment — the answer may be taken slowly.',
         },
         {
@@ -4692,7 +4448,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           essenceCost: 3,
           forecastDelta: 0.18,
           imageTag: 'generic.blade',
-          fiction: 'Forty years of use worn into the handles, hanging on the wall behind them, where they have always hung.',
           effectLine: 'Sharpens the moment without arguing either way.',
         },
       ],
@@ -4758,7 +4513,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'They can be heard, faintly, and the foreman has stopped pretending he cannot hear them.',
           effectLine: 'Puts the people under the ground into the yard.',
         },
         {
@@ -4768,7 +4522,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.blade',
-          fiction: 'It is collapsed at the mouth and not below it, and forty people up here have hands.',
           effectLine: 'Makes the other route a real plan instead of a hesitation.',
         },
         {
@@ -4779,7 +4532,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.blade',
-          fiction: 'The two at the bend, both of them wet-rotted, and {agent.name} noticed it last month and said nothing.',
           effectLine: 'Turns the crawl into something {agent.name} could actually do.',
         },
         {
@@ -4790,7 +4542,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'The foreman is repeating himself and the families are shouting and the digging teams have not been sorted.',
           effectLine: 'Shows what is lost if {agent.name} goes under.',
         },
         {
@@ -4801,7 +4552,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'A back under it and two arms for as long as twelve people take to crawl past, which is longer than it sounds.',
           effectLine: 'Makes the cost of going in specific.',
         },
         {
@@ -4812,7 +4562,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.crowd',
-          fiction: 'There is time to sort the teams and time to crawl, but not time to do the first badly and then the second.',
           effectLine: 'Steadies the moment — this can be done in an order.',
         },
         {
@@ -4822,7 +4571,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           essenceCost: 3,
           forecastDelta: 0.18,
           imageTag: 'generic.blade',
-          fiction: 'A shoulder-width gap in a fallen face, breathing dust out in slow pulses.',
           effectLine: 'Sharpens the moment without arguing either way.',
         },
       ],
@@ -4888,7 +4636,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'It is a smaller bowl, deliberately, so that nobody has to see how much less is in it.',
           effectLine: 'Puts the policy on the table where {agent.name} eats.',
         },
         {
@@ -4898,7 +4645,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.blade',
-          fiction: 'Twelve hours a day on them, and a person who is unsteady on a ladder is a person who stops working entirely.',
           effectLine: 'Names what the full portion is for.',
         },
         {
@@ -4909,7 +4655,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'They shake, and they close around it, and she says nothing about where it came from.',
           effectLine: 'Makes the sharing a specific person receiving it.',
         },
         {
@@ -4920,7 +4665,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'Seven weeks, if the weather holds, and every hand in the field is one of them.',
           effectLine: 'Puts an end date on the arithmetic.',
         },
         {
@@ -4931,7 +4675,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'She is on half-rations too, which is why he has stopped looking closely at anyone\'s bowl.',
           effectLine: 'Shows that the rule is already being bent by the person enforcing it.',
         },
         {
@@ -4942,7 +4685,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.mercy',
-          fiction: 'Whatever happens tonight can be done differently tomorrow, and will have to be, sixty more times.',
           effectLine: 'Steadies the moment — nothing here is settled once.',
         },
         {
@@ -4952,7 +4694,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           essenceCost: 3,
           forecastDelta: 0.18,
           imageTag: 'generic.blade',
-          fiction: 'Two bins and part of a third, and the council has counted them out loud in front of everyone.',
           effectLine: 'Sharpens the moment without arguing either way.',
         },
       ],
@@ -5020,7 +4761,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'Not words. Just enough to make it impossible for anyone on the dock to pretend the hold is empty.',
           effectLine: 'Puts the living survivors into the decision.',
         },
         {
@@ -5030,7 +4770,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.blade',
-          fiction: 'It runs out hard for another two hours, and after that the ship stays where it is put.',
           effectLine: 'Makes the harbor-master\'s plan a thing with an hour on it.',
         },
         {
@@ -5041,7 +4780,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'Three weeks of it, years ago, and {agent.name} came out the other side. Whether that means anything here is not known.',
           effectLine: 'Makes going out survivable — possibly.',
         },
         {
@@ -5052,7 +4790,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'The whole harbor quarter, standing well back, and none of them have had the fever.',
           effectLine: 'Names what the caution is protecting.',
         },
         {
@@ -5063,7 +4800,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.blade',
-          fiction: 'Five, the harbor-master says, and he counted from the rail without going below, so it may be fewer or more.',
           effectLine: 'Turns "the survivors" into a number that can be weighed.',
         },
         {
@@ -5074,7 +4810,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.crowd',
-          fiction: 'It drifted in on the last of the tide and has fetched up against the mooring chain. There are hours in hand, not minutes.',
           effectLine: 'Steadies the moment — this need not be answered at a run.',
         },
         {
@@ -5084,7 +4819,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           essenceCost: 3,
           forecastDelta: 0.18,
           imageTag: 'generic.blade',
-          fiction: 'The harbor-master got as far as the hatch and no further, and has not been able to describe it since.',
           effectLine: 'Sharpens the moment without arguing either way.',
         },
       ],
@@ -5153,7 +4887,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.blade',
-          fiction: 'Old, and it has not rained in three weeks. One torch does it and there is no taking it back.',
           effectLine: 'Makes burning simple and final.',
         },
         {
@@ -5163,7 +4896,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'Two abreast at the mouth, no more, whatever number they bring to it.',
           effectLine: 'Makes holding it a thing that could actually be done.',
         },
         {
@@ -5174,7 +4906,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.mercy',
-          fiction: 'A winter with no trade, no medicine and no reinforcement, and {agent.name}\'s cousins in the middle of it.',
           effectLine: 'Puts the cost of burning on people with names.',
         },
         {
@@ -5185,7 +4916,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'Timber, cable and a full crew from the thaw onward, and nothing crosses the gorge until it is done.',
           effectLine: 'Prices the burning in months rather than in a night.',
         },
         {
@@ -5196,7 +4926,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'Every household in {agent.location}, and no second line between them and the crossing.',
           effectLine: 'Names what burning buys outright.',
         },
         {
@@ -5207,7 +4936,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.crowd',
-          fiction: 'Enough to muster, enough to send word north, or enough to do one of those properly instead of both badly.',
           effectLine: 'Steadies the moment — the choice can be made in order.',
         },
         {
@@ -5217,7 +4945,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           essenceCost: 3,
           forecastDelta: 0.18,
           imageTag: 'generic.blade',
-          fiction: 'Forty feet across at the narrows and further down than anyone has measured.',
           effectLine: 'Sharpens the moment without arguing either way.',
         },
       ],
@@ -5283,7 +5010,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'More than {agent.name} was taught and more than any book in the settlement contains.',
           effectLine: 'Makes the limit of {agent.name}\'s skill a plain fact.',
         },
         {
@@ -5293,7 +5019,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'Two of them have asked before and been told to wait until there was time.',
           effectLine: 'Makes the knowledge something that need not stay one life wide.',
         },
         {
@@ -5304,7 +5029,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.blade',
-          fiction: 'It disappears in three places above the treeline, and the wolves have been down at the sheepfolds all month.',
           effectLine: 'Prices the journey honestly.',
         },
         {
@@ -5315,7 +5039,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'One is conscious and asking for water and the other has not spoken since they carried him in.',
           effectLine: 'Puts the two in the room where the arithmetic is being done.',
         },
         {
@@ -5326,7 +5049,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.blade',
-          fiction: 'A whole second tradition, and no reason yet to come down and share any of it.',
           effectLine: 'Makes the journey worth more than the two lives at the end of it.',
         },
         {
@@ -5337,7 +5059,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.mercy',
-          fiction: 'Both of them, probably, if they are packed and watched — which buys one night to decide anything in.',
           effectLine: 'Steadies the moment — the choice is not made at a run.',
         },
         {
@@ -5347,7 +5068,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           essenceCost: 3,
           forecastDelta: 0.18,
           imageTag: 'generic.crowd',
-          fiction: 'Everything the settlement has, in one satchel, and it goes wherever {agent.name} goes.',
           effectLine: 'Sharpens the moment without arguing either way.',
         },
       ],
@@ -5615,7 +5335,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.blade',
-          fiction: 'She lifts the blade a moment before the shield, and {agent.name}\'s eyes go to it.',
           effectLine: 'Puts the cut in front of them first.',
         },
         {
@@ -5625,7 +5344,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.mercy',
-          fiction: 'The weather turns and an old break in {agent.name}\'s forearm starts to ache, the way it does before rain.',
           effectLine: 'Reminds them what taking a hit costs.',
         },
         {
@@ -5636,7 +5354,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.blade',
-          fiction: 'Two of the militia spar badly in the yard behind her, and both of them are still swinging long after the fight should have ended.',
           effectLine: 'Makes the case for finishing things quickly.',
         },
         {
@@ -5647,7 +5364,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.mercy',
-          fiction: 'Someone reads out the spring dead while they are standing there. The list is longer than {agent.name} remembers.',
           effectLine: 'Argues that lasting is the rarer skill.',
         },
         {
@@ -5658,7 +5374,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.blade',
-          fiction: 'She moves without thinking and for a moment she is fast again, and {agent.name} sees exactly what the blade buys.',
           effectLine: 'Shows them the skill at full strength.',
         },
         {
@@ -5669,7 +5384,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.crowd',
-          fiction: 'She lowers both arms and waits, and does not fill the silence. {agent.name} gets as long as they need.',
           effectLine: 'Steadies them — the choice will not be rushed.',
         },
       ],
@@ -5737,7 +5451,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.blade',
-          fiction: 'The arrows stop for as long as it takes to draw breath. Everyone pinned behind the rocks feels it.',
           effectLine: 'Opens a window that argues for running.',
         },
         {
@@ -5747,7 +5460,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.mercy',
-          fiction: 'The wounded leader makes a noise that everyone hears and nobody wants to hear again.',
           effectLine: 'Puts the cost of leaving someone behind in the air.',
         },
         {
@@ -5758,7 +5470,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.blade',
-          fiction: 'The twenty strides ahead turn out to be flat and dry, with nothing to turn an ankle on.',
           effectLine: 'Makes the charge look survivable.',
         },
         {
@@ -5769,7 +5480,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'Two of the patrol still have their shields on their arms, already angling them upward without being told.',
           effectLine: 'Shows them a withdrawal that could actually hold.',
         },
         {
@@ -5780,7 +5490,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.blade',
-          fiction: '{agent.name} gets a clear look at the ridge, and there are fewer up there than the noise suggested.',
           effectLine: 'Cuts the enemy down to a number they can take.',
         },
         {
@@ -5791,7 +5500,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.crowd',
-          fiction: 'The moment stretches. {agent.name} gets one more breath than the situation was going to give them.',
           effectLine: 'Steadies them — whatever they call will not come out panicked.',
         },
       ],
@@ -5859,7 +5567,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'The ring is loud and getting louder, and none of the noise is asking for patience.',
           effectLine: 'Pushes them to open the fight themselves.',
         },
         {
@@ -5869,7 +5576,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.blade',
-          fiction: 'The challenger spends a while telling the ring what he is about to do. He is not warming up while he does it.',
           effectLine: 'Shows them a man who can be made to wait.',
         },
         {
@@ -5880,7 +5586,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'Someone repeats what the southern traders say about him: always forward, always fast, and contemptuous of anyone who steps back.',
           effectLine: 'Hands them the shape of the man to fight.',
         },
         {
@@ -5891,7 +5596,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.blade',
-          fiction: 'The challenger sets his feet wrong for a moment at the start, expecting to be waited on.',
           effectLine: 'Offers one strike that will land.',
         },
         {
@@ -5902,7 +5606,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'It is hotter than it should be, and the challenger is the one wearing the heavier harness.',
           effectLine: 'Makes a long fight the cheaper one to want.',
         },
         {
@@ -5913,7 +5616,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.mercy',
-          fiction: 'The shake goes out of {agent.name}\'s hands somewhere between the edge of the ring and the middle of it.',
           effectLine: 'Steadies them — this will not come apart at the start.',
         },
       ],
@@ -6051,7 +5753,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'The patriarch gestures at the table, expecting the gesture to be refused.',
           effectLine: 'Puts a seat under the direct answer.',
         },
         {
@@ -6061,7 +5762,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'A man who buys half this family\'s grain is standing near enough to hear anything said loudly.',
           effectLine: 'Shows how little it would take to spread.',
         },
         {
@@ -6072,7 +5772,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: '{agent.name} has the tally exactly, to the measure, and knows it will survive being read aloud.',
           effectLine: 'Makes the open demand the strong one.',
         },
         {
@@ -6083,7 +5782,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'Through the doorway, the daughter is working a loom that is plainly worth something.',
           effectLine: 'Offers terms the family could actually meet.',
         },
         {
@@ -6094,7 +5792,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.blade',
-          fiction: 'Somebody in the yard remembers a debt this family let rot twelve years ago, and says so.',
           effectLine: 'Gives the quiet route something true to carry.',
         },
         {
@@ -6105,7 +5802,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.crowd',
-          fiction: 'The afternoon is long and neither of them has anywhere to be. {agent.name} can take this at any speed they like.',
           effectLine: 'Steadies them — nothing here has to be said badly.',
         },
       ],
@@ -6208,7 +5904,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'The assayer\'s stone is in {agent.name}\'s satchel, where it has been since the spring fair.',
           effectLine: 'Makes a public test cost nothing to start.',
         },
         {
@@ -6218,7 +5913,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.blade',
-          fiction: 'The merchant has taken a room at the edge of the settlement, away from the family\'s house.',
           effectLine: 'Offers a conversation nobody would witness.',
         },
         {
@@ -6229,7 +5923,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'Two carters mention bad coin on the southern road, loudly, in the middle of the market.',
           effectLine: 'Gives a public test an innocent reason to happen.',
         },
         {
@@ -6240,7 +5933,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.mercy',
-          fiction: 'The wealthy family\'s eldest is walking the merchant through the storehouses, proud of the arrangement.',
           effectLine: 'Puts the cost of a public shaming in view.',
         },
         {
@@ -6251,7 +5943,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.blade',
-          fiction: 'There is a chest in the merchant\'s room he keeps a foot against while he talks.',
           effectLine: 'Suggests he can make good quietly if pressed.',
         },
         {
@@ -6262,7 +5953,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.crowd',
-          fiction: 'The afternoon light comes in at the angle that makes the colour shift obvious to anyone holding a coin.',
           effectLine: 'Steadies them — they are not imagining it.',
         },
       ],
@@ -6330,7 +6020,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'She produces a dried sprig from her coat, and it is exactly what she says it is.',
           effectLine: 'Turns the claim into something in the hand.',
         },
         {
@@ -6340,7 +6029,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.blade',
-          fiction: 'Asked exactly where, she describes the country in general terms and moves on.',
           effectLine: 'Leaves the one fact that matters unchecked.',
         },
         {
@@ -6351,7 +6039,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'A herder drinking at the next table has run sheep in those foothills and would go again for a share.',
           effectLine: 'Puts a floor under the risky part.',
         },
         {
@@ -6362,7 +6049,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.blade',
-          fiction: 'Two carters have been robbed on the foothill track this season, and both of them lived to say so.',
           effectLine: 'Names what the country actually costs.',
         },
         {
@@ -6373,7 +6059,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'The physicians upriver have been paying stupid money for these herbs since the fever year.',
           effectLine: 'Shows the return is real if the herbs arrive.',
         },
         {
@@ -6384,7 +6069,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.crowd',
-          fiction: 'She says she will be here until morning and does not press. {agent.name} gets the night.',
           effectLine: 'Steadies them — this will not be decided while rattled.',
         },
       ],
@@ -6487,7 +6171,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'One of the altered deeds turns out to belong to a family {agent.name} has eaten with.',
           effectLine: 'Gives the theft a face.',
         },
         {
@@ -6497,7 +6180,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.blade',
-          fiction: '{agent.name} copies a dead elder\'s signature on the third attempt and feels how good it is.',
           effectLine: 'Makes the craft itself the reason.',
         },
         {
@@ -6508,7 +6190,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'The scribe shows how the ink on an altered line dries a different colour over ten years. It cannot be faked backward.',
           effectLine: 'Hands them a skill that only catches.',
         },
         {
@@ -6519,7 +6200,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.blade',
-          fiction: 'The scribe mentions, without emphasis, what the work has been worth to him over thirty years.',
           effectLine: 'Puts a living behind the other use.',
         },
         {
@@ -6530,7 +6210,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'The council has started reading old boundary deeds again, slowly, for unrelated reasons.',
           effectLine: 'Makes detection the useful trade.',
         },
         {
@@ -6541,7 +6220,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.crowd',
-          fiction: 'The apprenticeship runs to spring. Nothing has to be settled this week.',
           effectLine: 'Steadies them — no answer gets forced tonight.',
         },
       ],
@@ -6608,7 +6286,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'The other watcher meets {agent.name}\'s eyes across the market and does not look away, which is itself a message.',
           effectLine: 'Opens the possibility of speaking plainly.',
         },
         {
@@ -6618,7 +6295,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.mercy',
-          fiction: 'The household {agent.name} lodges with has started keeping a seat, without discussing it.',
           effectLine: 'Makes the cover worth protecting.',
         },
         {
@@ -6629,7 +6305,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.blade',
-          fiction: 'The militia lists are left out in the council hall for one afternoon a week, and {agent.name} now knows which afternoon.',
           effectLine: 'Rewards holding the position quietly.',
         },
         {
@@ -6640,7 +6315,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'It becomes clear both settlements are preparing against an attack neither one intends to make.',
           effectLine: 'Gives an open conversation something to buy.',
         },
         {
@@ -6651,7 +6325,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.blade',
-          fiction: '{agent.name} answers to the false name a half-beat late, and one person at the table notices.',
           effectLine: 'Puts a clock on the deception.',
         },
         {
@@ -6662,7 +6335,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.crowd',
-          fiction: 'Whatever happens next, {agent.name} is not going to be the one who panics into it.',
           effectLine: 'Steadies them — this will not fall apart from nerves.',
         },
       ],
@@ -6765,7 +6437,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.blade',
-          fiction: 'The shutter is already open a hand\'s width for the draught.',
           effectLine: 'Removes a step from going out fast.',
         },
         {
@@ -6775,7 +6446,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'The man in the doorway is very young and is waiting to be told what this is.',
           effectLine: 'Offers someone who can still be talked to.',
         },
         {
@@ -6786,7 +6456,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.blade',
-          fiction: 'There is a hay cart under the window that will not be there in an hour.',
           effectLine: 'Takes most of the drop out of the drop.',
         },
         {
@@ -6797,7 +6466,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'The corridor outside genuinely does fork toward the privy, and genuinely is badly marked.',
           effectLine: 'Gives the lie something true to stand on.',
         },
         {
@@ -6808,7 +6476,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'A burst of laughter comes up the stairwell. Whatever happens in this room is about to have an audience either way.',
           effectLine: 'Makes a scene the expensive option.',
         },
         {
@@ -6819,7 +6486,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.mercy',
-          fiction: 'Whatever {agent.name} does in the next three seconds, it will not be done shaking.',
           effectLine: 'Steadies them — this will not come out as panic.',
         },
       ],
@@ -6957,7 +6623,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: '{agent.name} performs the dawn rite while still arguing internally, and the hands know it without supervision.',
           effectLine: 'Shows the practice standing without the argument.',
         },
         {
@@ -6967,7 +6632,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.blade',
-          fiction: 'It surfaces again in the middle of a task that has nothing to do with it, for the ninth day running.',
           effectLine: 'Refuses to let the old answer settle.',
         },
         {
@@ -6978,7 +6642,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'The oldest woman in {agent.location} says a traveller asked the same thing when she was young, and the rites outlived him.',
           effectLine: 'Puts the question in a long line of questions.',
         },
         {
@@ -6989,7 +6652,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.blade',
-          fiction: '{agent.name} prays for an answer for three nights and gets the ordinary silence.',
           effectLine: 'Leaves the old framing with nothing behind it.',
         },
         {
@@ -7000,7 +6662,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: '{agent.name} notices that the whole settlement is calmer in the week after a vigil, regardless of what the vigil was for.',
           effectLine: 'Offers a new reason the practice works.',
         },
         {
@@ -7011,7 +6672,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.crowd',
-          fiction: 'The turning of the season arrives with its own work to do, and {agent.name} has a part in it either way.',
           effectLine: 'Steadies them — the ground will not drop out.',
         },
       ],
@@ -7079,7 +6739,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'The augur wrote "or the opposite — watch the wind" beside this exact pattern, in a smaller hand.',
           effectLine: 'Puts the ambiguity in the augur\'s own words.',
         },
         {
@@ -7089,7 +6748,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'The council falls silent when {agent.name} enters, in the way people do when they have decided someone has an answer.',
           effectLine: 'Rewards speaking with certainty.',
         },
         {
@@ -7100,7 +6758,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.blade',
-          fiction: 'The storage cisterns are half full after a dry spring, whatever the birds meant.',
           effectLine: 'Makes the useful lie also the safe one.',
         },
         {
@@ -7111,7 +6768,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'The council clerk has begun writing down what people predict and what actually happens.',
           effectLine: 'Gives a false certainty a bill to pay later.',
         },
         {
@@ -7122,7 +6778,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'Two households have already reached opposite conclusions about the birds and are arguing usefully about water.',
           effectLine: 'Shows an honest answer can still move them.',
         },
         {
@@ -7133,7 +6788,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.crowd',
-          fiction: 'Nobody hurries {agent.name}. Whatever gets said will get said in {agent.name}\'s own time.',
           effectLine: 'Steadies them — this will not be blurted.',
         },
       ],
@@ -7201,7 +6855,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'The grove\'s stones were reset last season and there is an empty place at the centre of them.',
           effectLine: 'Offers the figure somewhere it would obviously belong.',
         },
         {
@@ -7211,7 +6864,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.blade',
-          fiction: 'The resonance rises when {agent.name} is calm and drops when {agent.name} lies, twice, testably.',
           effectLine: 'Suggests something that could be learned.',
         },
         {
@@ -7222,7 +6874,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'The men who dug it up have stopped coming to that end of the settlement.',
           effectLine: 'Argues for putting it where such things go.',
         },
         {
@@ -7233,7 +6884,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: '{agent.name} works out that the hum can be measured against held breath, and writes the first of it down.',
           effectLine: 'Turns a wonder into something with a method.',
         },
         {
@@ -7244,7 +6894,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'Deer have started crossing the grove again since the stones were reset, for the first time in years.',
           effectLine: 'Shows the old place already working.',
         },
         {
@@ -7255,7 +6904,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.crowd',
-          fiction: 'The council has moved on to the well. The figure is {agent.name}\'s problem for as long as {agent.name} wants it to be.',
           effectLine: 'Steadies them — nothing is being forced.',
         },
       ],
@@ -7365,7 +7013,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'There is a room at the back of {agent.name}\'s house that has stood empty since spring.',
           effectLine: 'Makes the personal answer available immediately.',
         },
         {
@@ -7375,7 +7022,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'Somebody reads out what the settlement has put by, and it is enough for the settlement and not obviously more.',
           effectLine: 'Argues for spreading the weight.',
         },
         {
@@ -7386,7 +7032,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'One of the refugee children has been standing at the edge of the yard for an hour, not asking for anything.',
           effectLine: 'Puts a face where the policy would go.',
         },
         {
@@ -7397,7 +7042,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'Two of them are joiners and one has run a mill, and all three would rather work than be housed.',
           effectLine: 'Makes a fair structure the useful answer.',
         },
         {
@@ -7408,7 +7052,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'Two households have already said, not quietly, that nobody asked them about this.',
           effectLine: 'Shows what an unshared burden will cost later.',
         },
         {
@@ -7419,7 +7062,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.crowd',
-          fiction: 'The council stops talking over each other and waits, and {agent.name} gets to say it properly.',
           effectLine: 'Steadies them — whatever is proposed lands clearly.',
         },
       ],
@@ -7487,7 +7129,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'Three of the oldest households say, before anyone else can, that they will not attend a festival they do not recognise.',
           effectLine: 'Puts weight behind leaving it alone.',
         },
         {
@@ -7497,7 +7138,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'Four of the people who leave early every year have already worked out a contest of their own, and are embarrassed to mention it.',
           effectLine: 'Shows there is something new ready to run.',
         },
         {
@@ -7508,7 +7148,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: '{agent.name} remembers the week when the whole settlement was in one place doing one thing, and remembers it exactly.',
           effectLine: 'Argues that the shape itself is the point.',
         },
         {
@@ -7519,7 +7158,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.mercy',
-          fiction: 'The families who arrived last year offer to feed the second night, and mean it.',
           effectLine: 'Gives the change something generous to be.',
         },
         {
@@ -7530,7 +7168,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'The cost in grain and labour is read out beside the attendance figures, and the two numbers do not survive being next to each other.',
           effectLine: 'Makes standing still the expensive choice.',
         },
         {
@@ -7541,7 +7178,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.crowd',
-          fiction: 'Whatever {agent.name} argues for, the room is going to hear the whole of it before it decides.',
           effectLine: 'Steadies them — the case gets made properly.',
         },
       ],
@@ -7609,7 +7245,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'The one who talked has been drafting an apology for a week and has not delivered any version of it.',
           effectLine: 'Offers the old circle a way back in.',
         },
         {
@@ -7619,7 +7254,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'One of the five has started eating with a different household entirely, and looks lighter for it.',
           effectLine: 'Shows the shape can change without ending.',
         },
         {
@@ -7630,7 +7264,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'There is nobody else alive who remembers any of them as children. Only these four.',
           effectLine: 'Names exactly what would be lost.',
         },
         {
@@ -7641,7 +7274,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'The mill loft is neutral ground, and all four would come if {agent.name} asked rather than summoned.',
           effectLine: 'Makes the hard conversation possible to hold.',
         },
         {
@@ -7652,7 +7284,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: '{agent.name} counts up the people in {agent.location} worth knowing and finds the list is longer than five.',
           effectLine: 'Opens the possibility of something wider.',
         },
         {
@@ -7663,7 +7294,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.mercy',
-          fiction: 'Whatever this becomes, it is not going to become the kind of thing people throw furniture over.',
           effectLine: 'Steadies them — this will not end in wreckage.',
         },
       ],
@@ -7808,7 +7438,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'Houses, wind, curing days — the whole pattern goes onto a single piece of bark and is obvious once drawn.',
           effectLine: 'Makes the case showable in one moment.',
         },
         {
@@ -7818,7 +7447,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.mercy',
-          fiction: 'Two households on the high side of the settlement would take a sick child for a week without being told why.',
           effectLine: 'Puts a quiet test within reach.',
         },
         {
@@ -7829,7 +7457,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'A fourth child takes ill on the second day of a curing run, exactly where the pattern says.',
           effectLine: 'Makes waiting cost something visible.',
         },
         {
@@ -7840,7 +7467,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'The tannery owner has three children of his own and has already asked the healer twice what is going around.',
           effectLine: 'Suggests he would cooperate if asked quietly.',
         },
         {
@@ -7851,7 +7477,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'The season\'s wind is reliable enough that a week upwind would actually mean something.',
           effectLine: 'Makes the small experiment likely to answer.',
         },
         {
@@ -7862,7 +7487,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.crowd',
-          fiction: '{agent.name} has slept and eaten and is not about to present any of this badly.',
           effectLine: 'Steadies them — the argument comes out straight.',
         },
       ],
@@ -7930,7 +7554,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'The observing place on the hill is unchanged, and the nights this month are clear.',
           effectLine: 'Makes continuing the work simply available.',
         },
         {
@@ -7940,7 +7563,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.blade',
-          fiction: 'Two weeks in, the notation gives up a seasonal calendar more accurate than anything {agent.location} plants by.',
           effectLine: 'Shows what the notes are worth if used.',
         },
         {
@@ -7951,7 +7573,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'The astronomer wrote his own key into the margins of the third chest, for someone exactly like {agent.name}.',
           effectLine: 'Turns a month of guessing into a month of reading.',
         },
         {
@@ -7962,7 +7583,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'The last entries are all one object, followed night after night, and they stop mid-sequence.',
           effectLine: 'Leaves the work asking to be finished.',
         },
         {
@@ -7973,7 +7593,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'The council will extend the month for anything they can plant by, and for nothing else.',
           effectLine: 'Rewards extracting a usable result.',
         },
         {
@@ -7984,7 +7603,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.crowd',
-          fiction: 'Somebody leaves a season\'s worth of lamp oil outside the door without comment.',
           effectLine: 'Steadies them — the month will not be lost to dark.',
         },
       ],
@@ -8052,7 +7670,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'The whole settlement will be standing in one place, and there is a moment in the rite where anyone may speak.',
           effectLine: 'Puts an opening in front of them.',
         },
         {
@@ -8062,7 +7679,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'The settlement\'s records take sealed accounts without asking what is in them.',
           effectLine: 'Offers the truth a place to wait.',
         },
         {
@@ -8073,7 +7689,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'She has been telling people her son followed orders bravely, because that is what she was told.',
           effectLine: 'Makes the silence something being done to her.',
         },
         {
@@ -8084,7 +7699,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'Two other watchers saw the same thing and have said nothing, and would not deny it if someone else went first.',
           effectLine: 'Means {agent.name} would not be alone in it.',
         },
         {
@@ -8095,7 +7709,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.blade',
-          fiction: 'The last person to contradict this commander in public was posted to the furthest watchtower and stayed there.',
           effectLine: 'Prices what speaking would cost.',
         },
         {
@@ -8106,7 +7719,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.crowd',
-          fiction: 'Whatever {agent.name} does at the memorial, it will not come out shaking.',
           effectLine: 'Steadies them — this will not be fumbled.',
         },
       ],
@@ -8279,7 +7891,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'Every settlement within a week\'s walk has a single-chamber kiln, and every one of them works.',
           effectLine: 'Offers a result nobody has to gamble on.',
         },
         {
@@ -8289,7 +7900,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.blade',
-          fiction: 'The break runs exactly where the left wall took the heat first, and says so plainly to anyone who looks.',
           effectLine: 'Turns the failure into an instruction.',
         },
         {
@@ -8300,7 +7910,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.blade',
-          fiction: '{agent.name} works out that a slight curve in the wall would spread the stress the mortar cannot hold.',
           effectLine: 'Makes the ambitious design fixable.',
         },
         {
@@ -8311,7 +7920,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'Somebody totals what {agent.location} has paid for imported stoneware in five years, and the number silences the room.',
           effectLine: 'Makes the harder kiln worth a third try.',
         },
         {
@@ -8322,7 +7930,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'What is left in the clay pit is one firing\'s worth, and the next dig is not until after the rains.',
           effectLine: 'Prices a third failure honestly.',
         },
         {
@@ -8333,7 +7940,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.crowd',
-          fiction: 'The four who built the first two turn up on the third morning without being asked.',
           effectLine: 'Steadies them — whatever is attempted gets built properly.',
         },
       ],
@@ -8409,7 +8015,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'There is enough willow along the bank and enough loose stone in the old quarry to fill baskets for a week.',
           effectLine: 'Makes the certain answer buildable today.',
         },
         {
@@ -8419,7 +8024,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'The depression west of the settlement is deeper than it looks and has held standing water before.',
           effectLine: 'Suggests somewhere the flood could simply go.',
         },
         {
@@ -8430,7 +8034,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.mercy',
-          fiction: 'The lower fields are carrying the whole of next winter, and everyone standing on the bank knows it.',
           effectLine: 'Makes losing the grain worth avoiding.',
         },
         {
@@ -8441,7 +8044,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'Ninety people are standing in the yard with shovels, which is more labour than the channel was costed against.',
           effectLine: 'Brings the ambitious dig inside three days.',
         },
         {
@@ -8452,7 +8054,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.blade',
-          fiction: 'Word comes down that the headwaters are still under rain, and the crest may come early.',
           effectLine: 'Makes the sure thing look surer.',
         },
         {
@@ -8463,7 +8064,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.crowd',
-          fiction: 'Nobody is arguing about who is in charge of this. Whatever {agent.name} calls for gets built.',
           effectLine: 'Steadies them — the plan will not fail from confusion.',
         },
       ],
@@ -8532,7 +8132,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'The people who would build it are working forty strides away and would talk to {agent.name} for the asking.',
           effectLine: 'Makes asking first the easy first move.',
         },
         {
@@ -8542,7 +8141,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.blade',
-          fiction: '{agent.name} cuts a test joint from scrap and it locks without a nail, cleanly, first try.',
           effectLine: 'Proves the new method actually works.',
         },
         {
@@ -8553,7 +8151,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'Between them the labourers own four saws, no chisels worth the name, and a great deal of rope.',
           effectLine: 'Sets the design against the real tools.',
         },
         {
@@ -8564,7 +8161,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: '{agent.name} works out that if each timber is numbered and each joint drawn twice, the drawing does the teaching.',
           effectLine: 'Lets an unfamiliar method be followed anyway.',
         },
         {
@@ -8575,7 +8171,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'The visiting builder is plainly hoping to be shown something he has not seen before.',
           effectLine: 'Rewards the design that teaches something.',
         },
         {
@@ -8586,7 +8181,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.crowd',
-          fiction: 'Nothing else is asked of {agent.name} for seven days. The whole week is the work.',
           effectLine: 'Steadies them — the design gets finished properly.',
         },
       ],
@@ -8689,7 +8283,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'The astronomer recorded this conjunction three times, and severe weather followed all three.',
           effectLine: 'Gives the warning something to stand on.',
         },
         {
@@ -8699,7 +8292,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'A sealed prediction, dated and witnessed by the clerk, would be worth a great deal more afterward than a shouted one now.',
           effectLine: 'Makes waiting the stronger play.',
         },
         {
@@ -8710,7 +8302,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'The planting is set for the day before the conjunction, and once it is in the ground a storm takes it.',
           effectLine: 'Puts a cost on saying nothing.',
         },
         {
@@ -8721,7 +8312,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'The council has no reason to weigh {agent.name}\'s months of watching against an almanac their fathers used.',
           effectLine: 'Argues that being right later is worth more.',
         },
         {
@@ -8732,7 +8322,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'There is a version where half the seed goes in now and half after the conjunction, and it costs almost nothing.',
           effectLine: 'Gives the council something cheap to say yes to.',
         },
         {
@@ -8743,7 +8332,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.crowd',
-          fiction: 'The sky stays clear every night until the conjunction, so {agent.name} can check the working as many times as needed.',
           effectLine: 'Steadies them — the prediction is not going to be wrong by arithmetic.',
         },
       ],
@@ -8812,7 +8400,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'There is a raised platform in the middle of the square and nobody is standing on it.',
           effectLine: 'Offers somewhere plain speech would carry.',
         },
         {
@@ -8822,7 +8409,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'Up close, the priest\'s hands are shaking as badly as anyone\'s in the square.',
           effectLine: 'Opens a way to work with him rather than over him.',
         },
         {
@@ -8833,7 +8419,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: '{agent.name} can name the moment the light returns, and be right, in front of everyone.',
           effectLine: 'Offers a prediction the crowd can check.',
         },
         {
@@ -8844,7 +8429,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'The astronomer\'s cycles can be spoken as an interpretation without a word of it being false.',
           effectLine: 'Lets the truth arrive in the settlement\'s own language.',
         },
         {
@@ -8855,7 +8439,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.blade',
-          fiction: 'Two households have started pulling grain out of the store to burn as an offering, and others are watching to see if it spreads.',
           effectLine: 'Makes stopping this quickly the priority.',
         },
         {
@@ -8866,7 +8449,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.crowd',
-          fiction: 'The square goes quiet in the odd way it does under a darkened sun, and anything said now will be heard.',
           effectLine: 'Steadies them — whatever is said gets heard properly.',
         },
       ],
@@ -8969,7 +8551,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: 'Four of the fishing crew have been out past the last charted island and come back, twice.',
           effectLine: 'Makes the voyage a known quantity to somebody.',
         },
         {
@@ -8979,7 +8560,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.08,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'A boat went onto an unmarked reef off the third island last month, in daylight, with an experienced crew.',
           effectLine: 'Names work that is waiting to be done here.',
         },
         {
@@ -8990,7 +8570,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.crowd',
-          fiction: '{agent.name} works out that the known stars will drop steadily as the ship runs south, and that the drop itself can be measured and used.',
           effectLine: 'Turns unknown water into something navigable.',
         },
         {
@@ -9001,7 +8580,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'b',
           imageTag: 'generic.crowd',
-          fiction: 'A season of watching the water between the near islands would produce a chart every boat here could use.',
           effectLine: 'Shows the modest work paying out reliably.',
         },
         {
@@ -9012,7 +8590,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.14,
           poleLean: 'a',
           imageTag: 'generic.mercy',
-          fiction: 'Land birds have been coming in on the southern wind all spring, and they are not from any island on the chart.',
           effectLine: 'Suggests the rumour has something behind it.',
         },
         {
@@ -9023,7 +8600,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
           forecastDelta: 0.18,
           rider: 'floor_at_cost',
           imageTag: 'generic.crowd',
-          fiction: 'Whichever way this goes, {agent.name} is not going to decide it out of fear of the water.',
           effectLine: 'Steadies them — the choice will be made clearly.',
         },
       ],

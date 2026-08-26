@@ -168,7 +168,6 @@ export function buildMeetingNudgePhaseModel(
       return {
         id: nudge.id,
         name: fill(nudge.name, agentName, locationName),
-        fiction: fill(nudge.fiction, agentName, locationName),
         effectLine: fill(nudge.effectLine, agentName, locationName),
         essenceCost: nudge.essenceCost,
         costLabel: costLabelFor(nudge.essenceCost),

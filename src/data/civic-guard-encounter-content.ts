@@ -279,9 +279,6 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
             name: 'Steady the courier',
             essenceCost: GATE_DUTY_STEADY_COST,
             forecastDelta: GATE_DUTY_STEADY_DELTA,
-            fiction:
-              'Settle behind {cast:suspect_courier}\'s eyes and still the hand reaching for the reins. ' +
-              'Her composure holds long enough for the line to move.',
             effectLine:
               'Panic does not vanish when you soothe it. It flows somewhere else, and that somewhere may be you.',
           },
@@ -290,9 +287,6 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
             name: 'Force the captain',
             essenceCost: GATE_DUTY_FORCE_COST,
             forecastDelta: GATE_DUTY_FORCE_DELTA,
-            fiction:
-              '{cast:gate_captain}\'s mind is a locked room. To move her you must press, ' +
-              'and force her hand before the crowd\'s silence curdles into judgment.',
             effectLine:
               'Clean is not the same as kind. The line may leave calling the watch decisive, then call it a fist.',
           },
@@ -301,9 +295,6 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
             name: 'Keep your hand folded',
             essenceCost: GATE_DUTY_WITHHOLD_COST,
             forecastDelta: GATE_DUTY_WITHHOLD_DELTA,
-            fiction:
-              'Hold your essence and let the gate show its own nature. ' +
-              'Let {cast:gate_captain} hesitate, {cast:suspect_courier} fray, {cast:checkpoint_witness} watch.',
             effectLine:
               'You keep your strength. If you do not shape this moment, the witness will, and the story leaves as hers.',
           },
@@ -334,9 +325,6 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
             name: 'Measure the seizure',
             essenceCost: GATE_DUTY_STEADY_COST,
             forecastDelta: GATE_DUTY_STEADY_DELTA,
-            fiction:
-              'Cool the hands of the watch into precision. No roughness, no triumph — ' +
-              'the taking of {cast:suspect_courier} reads as the hundredth sad duty of an orderly world.',
             effectLine:
               'If your touch slips, the restraint reads as eerie rather than humane, and the line trusts it less.',
           },
@@ -345,9 +333,6 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
             name: 'Break the courier open',
             essenceCost: GATE_DUTY_FORCE_COST,
             forecastDelta: GATE_DUTY_FORCE_DELTA,
-            fiction:
-              'Sharpen {cast:suspect_courier}\'s fear instead of containing it. Let her betray the cart ' +
-              'with half an inch of panic, until the line stops imagining and starts believing.',
             effectLine:
               'A confession need not be spoken. You turn one mortal\'s worst second into the hinge of the evening.',
           },
@@ -356,9 +341,6 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
             name: 'Give the witness the scene',
             essenceCost: GATE_DUTY_WITHHOLD_COST,
             forecastDelta: GATE_DUTY_WITHHOLD_DELTA,
-            fiction:
-              'Yield a heartbeat of control, and {cast:checkpoint_witness} and the queue name the danger ' +
-              'before the guards do. Public attention pins the moment in place.',
             effectLine:
               'Once the crowd starts authoring the event, even the captain becomes a reader of it.',
           },
@@ -407,9 +389,6 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
             name: 'Cool the gate',
             essenceCost: GATE_DUTY_STEADY_COST,
             forecastDelta: GATE_DUTY_STEADY_DELTA,
-            fiction:
-              'Bleed heat from the moment until {cast:gate_captain}\'s next words feel like containment ' +
-              'rather than punishment, and the barrier remembers its purpose instead of its appetite.',
             effectLine:
               'The hardest mercy is not preventing harm but preventing harm from becoming the gate\'s identity.',
           },
@@ -418,9 +397,6 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
             name: 'Consecrate authority',
             essenceCost: GATE_DUTY_FORCE_COST,
             forecastDelta: GATE_DUTY_FORCE_DELTA,
-            fiction:
-              'Draw the gatehouse taut around one idea: the watch is right because it acts. ' +
-              'Pour certainty through {cast:gate_captain} until hesitation burns away.',
             effectLine:
               'You preserve power at the cost of legitimacy. The certainty tastes more of dread than of trust.',
           },
@@ -429,9 +405,6 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
             name: 'Leave it to the living',
             essenceCost: GATE_DUTY_WITHHOLD_COST,
             forecastDelta: GATE_DUTY_WITHHOLD_DELTA,
-            fiction:
-              'Withdraw at the last and most tempting hour. Let {cast:gate_captain} speak in her own voice, ' +
-              'and {cast:checkpoint_witness} shape the tale against no resistance but human doubt.',
             effectLine:
               'There is honesty in that, perhaps wisdom. There is also surrender: the story may not bear your shape at all.',
           },

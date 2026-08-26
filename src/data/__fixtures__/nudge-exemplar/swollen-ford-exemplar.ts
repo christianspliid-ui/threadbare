@@ -217,7 +217,6 @@ const STEP_0_HAND: readonly StepNudge[] = [
     imageTag: 'generic.focus',
     effectLine:
       'You settle their nerve, so the eye rests on the water instead of the crossing to come. A small help.',
-    fiction: 'Breathe once. Then look again.',
     bandProse: {
       success: 'Read calm, the river showed its seams.',
       near_miss: 'The calm held to the end. The daylight did not.',
@@ -234,7 +233,6 @@ const STEP_0_HAND: readonly StepNudge[] = [
     imageTag: 'generic.light',
     effectLine:
       'You thin the overcast, and low sun crosses the water: shallows show pale, the channel shows dark. A real help.',
-    fiction: 'Rivers tell the truth in good light.',
     bandProse: {
       critical_success:
         'Under the sudden sun the whole ford showed itself, pale stake to pale stake.',
@@ -252,7 +250,6 @@ const STEP_0_HAND: readonly StepNudge[] = [
     imageTag: 'generic.memory',
     effectLine:
       'You surface every crossing they have made before this one, so the river reads familiar. A real help.',
-    fiction: 'No river is the first river.',
     bandProse: {
       success_at_cost:
         'Old crossings guided them, and one old crossing put its fear back in their chest.',
@@ -276,11 +273,6 @@ const STEP_0_HAND: readonly StepNudge[] = [
     imageTag: 'generic.dark',
     effectLine:
       'A faint help now, and the days after bend toward what the flood uncovered here.',
-    fiction: 'Every flood is a message; few stop to read one.',
-    fictionBySetting: {
-      rural: 'The mill wheel turns up what the river keeps.',
-      wayside: 'On wild banks, the river’s gifts go unclaimed.',
-    },
     grants: [
       {
         kind: 'emit_omen',
@@ -310,7 +302,6 @@ const STEP_0_HAND: readonly StepNudge[] = [
     costs: { doomDelta: 0.05 },
     effectLine:
       'No essence changes hands: the world’s doom clock runs a shade faster instead. A strong help.',
-    fiction: 'All debts get paid. The open question is by whom.',
     bandProse: {
       success: 'The line came clear at no cost they could see. The clock ran on.',
       failure: 'The debt was taken on, and the river kept no side of the bargain.',
@@ -331,7 +322,6 @@ const STEP_0_HAND: readonly StepNudge[] = [
     imageTag: 'generic.luck',
     effectLine:
       'The middling readings wash out: they find the true line clean, or commit to a false one. The middle drops away.',
-    fiction: 'Half a crossing is worse than none.',
     bandProse: {
       critical_success: 'The river resolved into one clean line, plain as a drawn map.',
       failure: 'No middle reading survived. The one left in their hands was wrong.',
@@ -357,7 +347,6 @@ const STEP_1_HAND: readonly StepNudge[] = [
     imageTag: 'generic.strength',
     effectLine:
       'When their arms go dead on the rope, the body finds one more pull. A real help.',
-    fiction: 'The body keeps a reserve the mind never meets.',
     bandProse: {
       success: 'The last pull came from a reserve they had never needed before.',
       failure: 'There was one more pull in them. The river asked for three.',
@@ -378,7 +367,6 @@ const STEP_1_HAND: readonly StepNudge[] = [
     imageTag: 'generic.ward',
     effectLine:
       'However the river runs, they reach the far bank. The price, if it comes due, is paid in gear and skin.',
-    fiction: 'Arrive first. Count the cost after.',
     bandProse: {
       success_at_cost: 'Arrival had been bought in advance. The river took its fee off their back.',
       critical_failure: 'The rope parted, and no bought arrival could reach them in the water.',
@@ -397,7 +385,6 @@ const STEP_1_HAND: readonly StepNudge[] = [
     costs: { detectionDelta: 0.15 },
     effectLine:
       'The current slackens against them the whole width of the river. Rival gods can hardly miss the hand that did it.',
-    fiction: 'Subtlety is a tool. So is a hammer.',
     bandProse: {
       critical_success: 'They walked the drowned ford through a river holding its breath.',
       failure: 'The current went slack, and still the bed rolled a stone under their leading foot.',
@@ -423,7 +410,6 @@ const STEP_1_HAND: readonly StepNudge[] = [
     // on an ungated card. The face now assumes only what any Balm target has.
     effectLine:
       'Their weariness lifts before the first step in. They cross on a rested body.',
-    fiction: 'Rest is armor.',
     bandProse: {
       success: 'A rested body took the drop at midstream like a stair.',
       near_miss: 'Fresh legs reached midstream ahead of the surge. The surge still came.',
@@ -444,7 +430,6 @@ const STEP_1_HAND: readonly StepNudge[] = [
     // scene-local fact; being True is the state read.
     effectLine:
       'No essence. They set out to cross, and being True, they do not turn back.',
-    fiction: 'A kept word weighs more than the current.',
     bandProse: {
       success: 'The promise pulled from the far bank, and they went to it.',
       // "The promise held. The riverbed did not." was the third "The X held.
@@ -466,7 +451,6 @@ const STEP_1_HAND: readonly StepNudge[] = [
     imageTag: 'generic.blessing',
     effectLine:
       'Only in company: the group crosses as one body, each pair of hands steadying the next through the water.',
-    fiction: 'One rope, many hands.',
     bandProse: {
       success: 'They went over as a chain, and the chain held to the last link.',
       near_miss: 'The chain held to the far bank. The last pack on the last back did not.',

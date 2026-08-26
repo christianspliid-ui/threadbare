@@ -47,8 +47,6 @@ import type {
 } from '../../../../types/unifiedAction';
 import { isActionStepBranch } from '../../../../types/unifiedAction';
 import { computeCapability } from '../../../../engine/domainCapability';
-import { locationTypeFromProperties } from '../../../../engine/encounterCache';
-import { settingClassForSubtype } from '../../../../data/settingClasses';
 import {
   composeDealtStep,
   isDealtNudgeId,
@@ -175,28 +173,13 @@ export interface BuildNudgePhaseModelArgs {
 }
 
 /**
- * THR-884 — the `SettingClass` an in-flight encounter is playing out in.
- *
- * Walks the actor's `located_at` edge one tier at a time: an agent standing in a
- * sublocation resolves up to its parent location, because the setting envelope is a
- * property of the *place* (a temple), not of the room inside it. Returns undefined
- * off the authorable set, which is the `'*'` fallback rather than an error (NFP #4).
+/*
+ * THR-884's `settingClassForAction` is **gone** (THR-1225). It resolved the
+ * `SettingClass` an in-flight encounter played out in, for the sole purpose of
+ * feeding `NudgeContext.settingClass` → the `fictionBySetting` fold. Both the
+ * fold and the field it varied are retired, so the producer had no consumer
+ * left. Template openings still vary by setting class through their own path.
  */
-function settingClassForAction(
-  graph: WorldGraph,
-  action: UnifiedAction,
-): string | undefined {
-  const actorId = action.actorId;
-  if (!actorId) return undefined;
-  const locatedAt = graph.getOutgoingEdges(actorId, 'located_at')[0];
-  if (!locatedAt) return undefined;
-  let node = graph.getNode(locatedAt.target);
-  const parentId = node?.properties?.parentLocationId as string | undefined;
-  if (parentId) node = graph.getNode(parentId) ?? node;
-  return settingClassForSubtype(
-    locationTypeFromProperties(node?.properties as Record<string, unknown> | undefined),
-  );
-}
 
 /** Cost in words — a free (trait) option says so rather than showing a zero. */
 function costLabelFor(cost: number): string | undefined {
@@ -244,12 +227,11 @@ function costChannelsFor(nudge: StepNudge): EncounterStageCostChannelModel[] | u
  * anything else here would quote one number and bill another (THR-885's whole
  * reason for exporting that helper).
  *
- * **Every authored string leaves here enriched (THR-923).** `name`, `fiction` and
+ * **Every authored string leaves here enriched (THR-923).** `name` and
  * `effectLine` are authored prose and carry the same placeholder vocabulary the
  * rest of the encounter does; assigning them straight off the template shipped
- * literal `{they}` / `{actor}` onto the stage. `fiction` is already the
- * setting-resolved string by this point — `buildNudgeHand` folds `fictionBySetting`
- * into it — so enriching here covers the variant as well as the default.
+ * literal `{they}` / `{actor}` onto the stage. (`fiction` was a third such
+ * string until THR-1225 retired the field.)
  */
 /**
  * How the god came to hold a dealt card, in words.
@@ -335,7 +317,6 @@ export function buildNudgeCardModel(
     keyword: keyword?.keyword,
     keywordIcon: keyword?.icon,
     name: enrich(nudge.name),
-    fiction: enrich(nudge.fiction),
     effectLine: enrich(nudge.effectLine),
     essenceCost: cost,
     discounted: cost < Math.max(0, nudge.essenceCost),
@@ -626,12 +607,6 @@ export function buildNudgePhaseModel(
     unlockedTemplateIds: new Set(gameState?.unlockedActionIds ?? []),
     heldTraits,
     repertoireCardIds,
-    // THR-884 — the setting class the scene plays out in, so a card that authored
-    // `fictionBySetting` shows the line written for *this* kind of place. Resolved
-    // through the cache's own precedence helper, so it is the same class the
-    // template was filtered in under. A card without variants is untouched, which
-    // is why threading this changes no rendered output for today's corpus.
-    settingClass: settingClassForAction(graph, activeAction),
   });
 
   const variants = resolveTraitVariants(template, heldTraits);

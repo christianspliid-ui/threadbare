@@ -77,7 +77,6 @@ function nudge(over: Partial<StepNudge> & { id: string }): StepNudge {
     name: 'A Nudge',
     essenceCost: 1,
     forecastDelta: 0.1,
-    fiction: 'Something visibly shifts.',
     effectLine: 'Makes the odds kinder.',
     ...over,
   };
@@ -562,11 +561,7 @@ function exemplarProse(): Array<[string, string]> {
 
     for (const nudge of s.nudges ?? []) {
       out.push([`name.${nudge.id}`, nudge.name]);
-      out.push([`fiction.${nudge.id}`, nudge.fiction]);
       out.push([`effect.${nudge.id}`, nudge.effectLine]);
-      for (const [cls, variant] of Object.entries(nudge.fictionBySetting ?? {})) {
-        out.push([`fiction.${nudge.id}.${cls}`, variant]);
-      }
       for (const grant of nudge.grants ?? []) {
         if (grant.kind === 'emit_omen') out.push([`narrative.${nudge.id}.omen_hook`, grant.narrativeHook]);
       }

@@ -13,7 +13,8 @@
  * stance labels. This suite pins the conversion:
  *
  * 1. Each step deals **its own** three cards, by id.
- * 2. The card names and fiction reach the rendered surface.
+ * 2. The card names reach the rendered surface. (The card *fiction* did too,
+ *    until THR-1224 took it off the face and THR-1225 removed the field.)
  * 3. No generic stance label is rendered, even when a stale notification still
  *    carries one.
  *
@@ -207,23 +208,23 @@ describe('Gate Duty nudge stage (THR-1123)', () => {
     expect(screen.getByText('Keep your hand folded')).toBeInTheDocument();
   });
 
-  it('resolves the cast placeholders in card fiction rather than printing the token', () => {
+  it('resolves the cast placeholders rather than printing the token', () => {
     const model = buildStageModel(0);
     render(<NudgePhaseShell phase={model.nudgePhase!} onCommit={() => {}} />);
 
-    // The authored fiction reads `{cast:suspect_courier}` — systemic content, so
+    // The authored prose reads `{cast:suspect_courier}` — systemic content, so
     // the name comes from the bound actor. Asserting the resolved name *and* the
     // absence of the raw token is what separates "enrichment ran" from "the
     // string happens to contain a name".
     //
-    // The resolved-name half reads the phase **model**, not the screen, since
-    // THR-1224: doctrine v2 retired the flavor quote and the card face no longer
-    // draws `fiction`, so the rendered tree is no longer a place this string can
-    // appear. The test's subject was always enrichment rather than the card's
-    // layout, and the model is where enrichment lands.
-    expect(
-      model.nudgePhase!.cards.filter(card => /Courier Nessa/.test(card.fiction)).length,
-    ).toBeGreaterThan(0);
+    // The resolved-name half reads the **scene prose**, not the card face.
+    // THR-1224 stopped the face drawing `fiction` and THR-1225 removed the
+    // field; Gate Duty authored its `{cast:suspect_courier}` tokens in the step
+    // prose and in that now-retired card body, so the card is no longer a place
+    // this string can appear at all. The test's subject was always enrichment
+    // rather than the card's layout, and the scene prose is where it lands.
+    expect(model.scene.pressureProse, 'scene prose is empty').toBeTruthy();
+    expect(model.scene.pressureProse).toMatch(/Courier Nessa/);
     // The raw-token half stays on the screen, where it matters: an unresolved
     // `{cast:...}` reaching a player is the defect, and every surface the shell
     // still draws is in scope for it.

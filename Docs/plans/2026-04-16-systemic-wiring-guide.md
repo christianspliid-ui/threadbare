@@ -849,7 +849,6 @@ Reference the slot from any prose field with `{frag:opening}`. That's the whole 
   forecastDelta: 0.10,               // named modifier, source `nudge:steady_her_hand`
   rider: 'no_crit_fail',             // optional band rider
   imageTag: 'hand_on_shoulder',      // optional WS4 library tag
-  fiction: 'The tremor goes out of her wrist and does not come back.',
   effectLine: 'Makes the worst outcome impossible.',   // words only, never a number
   bandProse: { failure: 'She still misses — but she misses cleanly.' },
 }
@@ -952,7 +951,6 @@ A hook on a dead ref is a gate that never opens. It is invisible to every test t
 | `settings` | raw entry | The envelope. The converter expands it through `SETTING_CLASS_MAP` into `locationSubtypes`; the cache filter is untouched. |
 | `locationTypes` | raw entry | Now the **override** for genuinely specific encounters (a temple rite). Unioned with the envelope when both are present. |
 | `openings` | raw entry | One paragraph per declared class. Compiled into a `{frag:opening}` fragment set on the `setting` axis, with the first step's authored narrative as the `'*'` default. |
-| `fictionBySetting` | `StepNudge` | Per-class rewrite of a card's `fiction`, for a card that names class-specific scenery. Bound at hand assembly, so every downstream reader keeps reading `nudge.fiction`. |
 
 **Write flexibly, then make it honest.** Flexibility is the default (Christian's explicit direction): reach for the widest envelope you can defend, and pay for it with openings rather than by narrowing to one subtype. Checklist questions 1–4 (where are we, how does it feel, who is here, what must we know) live in the opening; the complication, stakes, and hand are setting-neutral.
 
@@ -2414,7 +2412,6 @@ dispatcher for nearly all of them.
   name: 'Send restful dreams',
   essenceCost: 2,
   forecastDelta: 0.15,
-  fiction: 'You quiet their mind while they sleep, so the rest actually counts.',
   effectLine: 'Helps them wake steady.',
 
   // Cost channels — paid in something other than essence.
@@ -2500,8 +2497,8 @@ player is already resolving (Christian's ruling, 2026-08-09).
 Every id a card grants — ambition, artifact, condition — is checked against the shipped
 catalogs by `validateNudgeGrantRefs` (`src/engine/nudgeGrantLiveness.ts`), pinned by
 `src/engine/__tests__/nudgeCardSystem.test.ts`. This is not optional politeness: a dead
-reference no-ops silently deep inside the applier while the card's fiction still prints, so
-the player is told a thing happened that did not. THR-844 is the standing evidence — 66 of
+reference no-ops silently deep inside the applier while the card's effect line still prints,
+so the player is told a thing happened that did not. THR-844 is the standing evidence — 66 of
 138 hidden-mark entries pointed at a reveal family that never existed. **Ship the content
 with the card.**
 
@@ -2566,7 +2563,6 @@ Add `libraryCardId` to a `StepNudge`:
   name: 'Steady his hand',
   essenceCost: 2,
   forecastDelta: 15,
-  fiction: '…',
   effectLine: '…',
 }
 ```

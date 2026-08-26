@@ -276,11 +276,32 @@ export const NUDGE_WORD_BUDGETS = {
  *   instead of an instruction, which is a *register* judgment, so the audit
  *   reports it as a warning and a human decides.
  *
- * Tightening the clamp to 4 is deliberately **not** done here: the shipped
- * corpus is un-rewritten at the time of writing, and lowering an error-level cap
- * under content nobody has migrated turns a green corpus red for work that is
- * already ticketed elsewhere. The clamp follows the corpus, never leads it —
- * see THR-1225 for the tightening pass.
+ * **The tightening to 4 was attempted under THR-1225 and reverted, measured.**
+ * That ticket's premise was "once THR-1223's card-name rewrite lands, the clamp
+ * follows the corpus". THR-1223 did land — but it **excluded the camp seven by
+ * design** ("they ride THR-1222's retrofit"), so the corpus it left behind is
+ * only partly migrated. At 4, `check:encounter --all` fails four cards across
+ * three templates that pass at 6:
+ *
+ * - `encounter.sharpen_blades` → `sharpen.turn_it_to_the_light` (5 words)
+ * - `encounter.ward_the_camp` → `ward_camp.a_gap_in_the_wind`,
+ *   `ward_camp.set_a_star_over_it` (5 words each)
+ * - `encounter.company.quiet_offer` → `company.betrayal.the_work_calls` (5 words)
+ *
+ * The first two are on `RETROFIT_PENDING` and owned by **THR-1222**, which is
+ * parked in `Todo` behind a director approval that has not fired. The third is
+ * on no retrofit list and no ticket names it.
+ *
+ * So the original reason still holds verbatim: lowering an error-level cap under
+ * content nobody has migrated turns a green corpus red for work that is already
+ * ticketed elsewhere. **The clamp follows the corpus, never leads it.** Tighten
+ * this to 4 when THR-1222 ships *and* `company.quiet_offer`'s card is renamed —
+ * not before, and not because the budget says 4. Tracked as **THR-1255**, which
+ * carries the measured evidence and both unblock conditions.
+ *
+ * Corollary for `doctrineV2Checks`'s name-budget arm: it still earns its place.
+ * With the two numbers apart, it is the only thing that reports a 5-word name,
+ * and the clamp does not subsume it.
  */
 export const NUDGE_NAME_MAX_WORDS = 6;
 

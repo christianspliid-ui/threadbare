@@ -196,7 +196,6 @@ export function mintDealtNudge(
     ...(profile.grants ? { grants: profile.grants } : {}),
     ...(member.imageTag ? { imageTag: member.imageTag } : {}),
     // Retired by Prose Doctrine v2 — see the doc comment above.
-    fiction: '',
     effectLine: effectLineFor(member, profile),
     ...(bands ? { bandProse: { ...bands } } : {}),
   };

@@ -172,7 +172,6 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           opposes: 'rival',
           imageTag: 'generic.dark',
           effectLine: 'Set the other reader second-guessing — their answer comes out hedged, and the room hears it.',
-          fiction: 'Every structure has one loose piece.',
           bandProse: {
             success: 'The other reader hedged, and the room listened to them instead.',
             near_miss: 'The other reader lost the room. It bought time, not an answer.',
@@ -189,7 +188,6 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           imageTag: 'generic.dark',
           effectLine: 'Fill them with the conviction that the old rule about death was only ever a custom — they will '
             + 'judge as a maker.',
-          fiction: 'It works. That is the problem.',
           grants: [
             {
               kind: 'axiological_mark_apply',

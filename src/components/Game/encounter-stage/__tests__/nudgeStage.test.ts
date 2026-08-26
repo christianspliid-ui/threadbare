@@ -44,7 +44,6 @@ const NUDGES: StepNudge[] = [
     name: 'Steady the hand',
     essenceCost: 1,
     forecastDelta: 0.08,
-    fiction: 'The tremor in her fingers stops between one breath and the next.',
     effectLine: 'Steadier than she was.',
   },
   {
@@ -54,7 +53,6 @@ const NUDGES: StepNudge[] = [
     essenceCost: 2,
     forecastDelta: 0.12,
     rider: 'no_crit_fail',
-    fiction: 'The bar gives where her shoulder meets it.',
     effectLine: 'Nothing catastrophic can follow.',
   },
   {
@@ -62,7 +60,6 @@ const NUDGES: StepNudge[] = [
     name: 'A greater blessing',
     essenceCost: 99,
     forecastDelta: 0.2,
-    fiction: 'Light pools in the doorway and does not move.',
     effectLine: 'Far beyond your means.',
   },
   {
@@ -71,7 +68,6 @@ const NUDGES: StepNudge[] = [
     sphere: 'entropy' as SphereName,
     essenceCost: 1,
     forecastDelta: 0.15,
-    fiction: 'The iron reddens, flakes, and falls away.',
     effectLine: 'A sphere you do not hold.',
   },
   {
@@ -80,7 +76,6 @@ const NUDGES: StepNudge[] = [
     requiredTrait: 'trait.wayfarer',
     essenceCost: 0,
     forecastDelta: 0.1,
-    fiction: 'She has walked this stone before, in worse weather.',
     effectLine: 'Only for one who has walked it.',
   },
   // THR-890 fixtures: a library-backed card (prints a keyword chip) that is also
@@ -92,7 +87,6 @@ const NUDGES: StepNudge[] = [
     essenceCost: 1,
     forecastDelta: 0.06,
     costs: { detectionDelta: 0.1, doomDelta: 0 },
-    fiction: 'Something in the dark leans with her.',
     effectLine: 'Better odds, and someone notices.',
   },
 ];

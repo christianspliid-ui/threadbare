@@ -235,7 +235,7 @@ describe('THR-868 — stage adapter mirrors the engine resolution inputs', () =>
     const rendered = [
       phase.testPanel.purposeLine ?? '',
       ...phase.testPanel.factors.map((f) => f.text),
-      ...phase.cards.flatMap((c) => [c.name, c.fiction, c.effectLine]),
+      ...phase.cards.flatMap((c) => [c.name, c.effectLine]),
     ];
     for (const line of rendered) {
       expect(line, 'no raw placeholder reaches the shell').not.toMatch(/\{agent\./);
@@ -246,7 +246,7 @@ describe('THR-868 — stage adapter mirrors the engine resolution inputs', () =>
     const authoredPlaceholders = [
       test.purposeLine,
       ...test.factorLines.map((f) => f.text),
-      ...test.nudges.flatMap((n) => [n.name, n.fiction, n.effectLine]),
+      ...test.nudges.flatMap((n) => [n.name, n.effectLine]),
     ].some((s) => /\{agent\./.test(s));
     expect(authoredPlaceholders, 'fixture actually exercises substitution').toBe(true);
     expect(rendered.some((l) => l.includes('Maren Aldwych'))).toBe(true);

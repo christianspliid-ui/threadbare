@@ -36,7 +36,6 @@ const BOND_NUDGES: BondTest['nudges'] = [
     name: 'Still the room',
     essenceCost: 0,
     forecastDelta: 0.06,
-    fiction: 'The noise outside the door drops away. Nobody comments on it.',
     effectLine: 'A quiet room is easier to be spoken to in.',
     bandProse: {
       critical_success: 'In the quiet they hear you clearly, and do not mistake it for their own thought.',
@@ -49,7 +48,6 @@ const BOND_NUDGES: BondTest['nudges'] = [
     sphere: 'mind',
     essenceCost: 3,
     forecastDelta: 0.14,
-    fiction: 'You use the name their mother used, the one nobody else has said in years.',
     effectLine: 'Being known by name is hard to argue with.',
     bandProse: {
       critical_success: 'They answer the name before they think to be frightened of who used it.',
@@ -63,7 +61,6 @@ const BOND_NUDGES: BondTest['nudges'] = [
     sphere: 'time',
     essenceCost: 4,
     forecastDelta: 0.16,
-    fiction: 'You let them remember the night they should not have survived, and who was watching.',
     effectLine: 'They already owe you. This is the reminder.',
     bandProse: {
       critical_success: 'They understand they have been carried before, and that they never asked why.',
@@ -77,7 +74,6 @@ const BOND_NUDGES: BondTest['nudges'] = [
     sphere: 'life',
     essenceCost: 2,
     forecastDelta: 0.10,
-    fiction: 'The cold goes out of their fingers. Their shoulders come down.',
     effectLine: 'A body that is not braced listens better.',
     bandProse: {
       success: 'They notice their hands are warm and decide not to question it yet.',
@@ -90,7 +86,6 @@ const BOND_NUDGES: BondTest['nudges'] = [
     sphere: 'light',
     essenceCost: 2,
     forecastDelta: 0.11,
-    fiction: 'The lamp they had given up on catches, and holds.',
     effectLine: 'Something small goes right, in front of them.',
     bandProse: {
       critical_success: 'A lamp lighting itself is a small miracle, and they take it as one.',
@@ -103,7 +98,6 @@ const BOND_NUDGES: BondTest['nudges'] = [
     sphere: 'darkness',
     essenceCost: 2,
     forecastDelta: 0.11,
-    fiction: 'Your attention falls across the threshold, and they can see the shape of it.',
     effectLine: 'Some people need to be certain something is there.',
     bandProse: {
       success: 'They look at the shape in the doorway and stay where they are.',
@@ -116,7 +110,6 @@ const BOND_NUDGES: BondTest['nudges'] = [
     sphere: 'spirit',
     essenceCost: 3,
     forecastDelta: 0.15,
-    fiction: 'A thing they asked for years ago, and stopped asking for, arrives now.',
     effectLine: 'A late answer still counts as an answer.',
     bandProse: {
       critical_success: 'They had stopped believing anyone was counting. Someone was.',
@@ -129,7 +122,6 @@ const BOND_NUDGES: BondTest['nudges'] = [
     name: 'Say nothing',
     essenceCost: 0,
     forecastDelta: 0.04,
-    fiction: 'You do not explain yourself. You wait for them to speak first.',
     effectLine: 'Some people decide better without being pushed.',
     bandProse: {
       success: 'They speak first, which means the choice was theirs.',

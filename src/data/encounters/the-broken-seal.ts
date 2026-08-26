@@ -95,7 +95,6 @@ const STEP_0_HAND: readonly StepNudge[] = [
     imageTag: 'generic.ward',
     effectLine:
       'They come through it, however badly it goes. What that costs is taken out of their kit and their hide.',
-    fiction: 'Every plan should survive being wrong.',
     bandProse: {
       success_at_cost: 'They reached the bottom. The descent collected what it was owed on the way.',
       critical_failure: 'The floor was bought and paid for. The stone under it was not.',
@@ -111,7 +110,6 @@ const STEP_0_HAND: readonly StepNudge[] = [
     reveals: 'next_step_demand',
     imageTag: 'generic.light',
     effectLine: 'They see what the next test will demand of them before they start it.',
-    fiction: 'Nothing was hidden. It was only unlit.',
     bandProse: {
       critical_success: 'They saw the size of the climb ahead and picked the descent that would let them make it.',
       failure: 'They knew exactly what was coming and still could not find a line down to meet it.',
@@ -127,7 +125,6 @@ const STEP_0_HAND: readonly StepNudge[] = [
     costs: { doomDelta: 0.05 },
     imageTag: 'generic.decay',
     effectLine: "The help lands now. The world's clock runs faster for it.",
-    fiction: 'Nothing is free. Some prices are only slower.',
     bandProse: {
       success: "The descent came easy. The price for it landed on the world's clock instead.",
       failure: 'The debt was taken on. The dark did not ease for it.',
@@ -142,7 +139,6 @@ const STEP_0_HAND: readonly StepNudge[] = [
     forecastDelta: 0.08,
     imageTag: 'generic.memory',
     effectLine: 'Their own mind starts pushing them forward, and it will not let go.',
-    fiction: 'By morning it feels like their own idea.',
     bandProse: {
       success: 'The pushing came from inside them, and it carried them past the place they would have stopped.',
       critical_failure: 'Their own mind would not let them stop, and they were still going when the stone gave.',
@@ -156,7 +152,6 @@ const STEP_0_HAND: readonly StepNudge[] = [
     forecastDelta: 0.05,
     imageTag: 'generic.rumor',
     effectLine: 'Steer what comes after toward the same ground they found here.',
-    fiction: 'Every road is asking to be followed.',
     grants: [
       {
         kind: 'emit_omen',
@@ -181,7 +176,6 @@ const STEP_0_HAND: readonly StepNudge[] = [
     forecastDelta: 0.05,
     imageTag: 'generic.warmth',
     effectLine: 'Take their fear off them, and keep it off for as long as this lasts.',
-    fiction: 'Most suffering ends. This one ends sooner.',
     grants: [{ kind: 'remove_condition', conditionTraitId: 'trait.condition.terrified' }],
     bandProse: {
       success: 'They went down unafraid, and unafraid was enough.',
@@ -197,7 +191,6 @@ const STEP_0_HAND: readonly StepNudge[] = [
     forecastDelta: 0.08,
     imageTag: 'generic.oath',
     effectLine: 'Being who they are, they keep going after others would stop.',
-    fiction: 'Character is the one resource nobody spends.',
     bandProse: {
       success: 'They went on after the light gave out, because they had never believed it ended there.',
       failure: 'Belief carried them past the last of the light, and the dark did not care.',
@@ -216,7 +209,6 @@ const STEP_1_HAND: readonly StepNudge[] = [
     forecastDelta: 0.06,
     imageTag: 'generic.focus',
     effectLine: 'Hold them together past the point they should give out.',
-    fiction: 'Most things fail by a margin.',
     bandProse: {
       success: 'The last of it came from a reserve they had not counted on having.',
       failure: 'There was one more lift in them. The stair asked for more than that.',
@@ -232,7 +224,6 @@ const STEP_1_HAND: readonly StepNudge[] = [
     rider: 'all_or_nothing',
     imageTag: 'generic.luck',
     effectLine: 'The middling results fall away. It ends clean or it ends badly.',
-    fiction: 'Practice does not make chaos safer. It makes it larger.',
     bandProse: {
       critical_success: 'No half-measure survived. What was left was one clean carry, top to bottom.',
       critical_failure: 'The middle had been taken out of it, and only the bad end was left.',
@@ -248,7 +239,6 @@ const STEP_1_HAND: readonly StepNudge[] = [
     costs: { detectionDelta: -0.1 },
     imageTag: 'generic.dark',
     effectLine: 'The help lands unseen. No rival god notices the hand behind it.',
-    fiction: 'The kindest help leaves no fingerprints.',
     bandProse: {
       success: 'Nobody up there could say who had helped, only that it went easier than it should have.',
       near_miss: 'The hand behind it was never seen. It was also never enough.',
@@ -262,7 +252,6 @@ const STEP_1_HAND: readonly StepNudge[] = [
     forecastDelta: 0.07,
     imageTag: 'generic.matter',
     effectLine: 'Reveal what an earlier party left behind: a bone ward, free to take and keep.',
-    fiction: 'Someone always put something by.',
     grants: [
       {
         kind: 'attachment_grant',
@@ -285,7 +274,6 @@ const STEP_1_HAND: readonly StepNudge[] = [
     costs: { detectionDelta: 0.15 },
     imageTag: 'generic.strength',
     effectLine: 'Push hard and openly. Rival gods will see whose hand did it.',
-    fiction: 'Subtlety is a choice. This is not it.',
     bandProse: {
       critical_success: 'The load went light in their hands and stayed light to the top.',
       failure: 'The weight came off it and the stone underneath still would not hold them.',
@@ -302,7 +290,6 @@ const STEP_1_HAND: readonly StepNudge[] = [
     forecastDelta: 0.06,
     imageTag: 'generic.blessing',
     effectLine: 'Set an old desire alight again. They will not put down what they came for.',
-    fiction: 'A life turns on what it reaches for.',
     grants: [
       {
         // Wiring fix (Pass 4): the design doc named `ambition_chase_the_wonder`,

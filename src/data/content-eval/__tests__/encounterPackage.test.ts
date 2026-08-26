@@ -40,7 +40,6 @@ const HAND: readonly StepNudge[] = [
     essenceCost: 1,
     forecastDelta: 0.06,
     effectLine: 'Strengthen their hands so the current cannot pry them loose.',
-    fiction: 'Most things fail by a margin.',
     bandProse: { failure: 'The steadying held until the last step, then the river won.' },
   },
   {
@@ -50,7 +49,6 @@ const HAND: readonly StepNudge[] = [
     essenceCost: 2,
     forecastDelta: 0.08,
     effectLine: 'Show them the stones that hold — the crossing shortens.',
-    fiction: 'Stone keeps its promises.',
     bandProse: { failure: 'The stones held. Their balance did not.' },
   },
   {
@@ -61,7 +59,6 @@ const HAND: readonly StepNudge[] = [
     forecastDelta: 0.04,
     rider: 'floor_at_cost',
     effectLine: 'Guarantee the far bank — they arrive, and pay for it.',
-    fiction: 'Rules exist so the worst case has a name.',
     bandProse: { critical_failure: 'Even a bound outcome needs a river that cooperates.' },
   },
   {
@@ -71,7 +68,6 @@ const HAND: readonly StepNudge[] = [
     essenceCost: 2,
     forecastDelta: 0.05,
     effectLine: 'Grant them calm — they step in unafraid and stay that way.',
-    fiction: 'Most suffering ends.',
     bandProse: { failure: 'They stayed calm the whole way down.' },
   },
   {
@@ -81,7 +77,6 @@ const HAND: readonly StepNudge[] = [
     essenceCost: 2,
     forecastDelta: 0.1,
     effectLine: 'Send heat through them — the cold water cannot stall them.',
-    fiction: 'Bodies hold more than they admit.',
     bandProse: { failure: 'The heat came and went, and the river was still there.' },
   },
 ];

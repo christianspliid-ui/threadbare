@@ -147,7 +147,6 @@ const STEP_0_HAND: readonly StepNudge[] = [
     forecastDelta: 0.06,
     imageTag: 'generic.focus',
     effectLine: 'Keep their attention on the stone and off the argument behind them.',
-    fiction: 'Most things fail by a margin.',
     bandProse: {
       success: 'Held to the task, they read the whole sign and not just the loudest part of it.',
       near_miss: 'They kept looking after everyone else stopped. The reading still slipped away.',
@@ -163,7 +162,6 @@ const STEP_0_HAND: readonly StepNudge[] = [
     reveals: 'next_step_demand',
     imageTag: 'generic.light',
     effectLine: 'Put a glow under the sign so its edges show, and show them what the next test will ask.',
-    fiction: 'Nothing was hidden. It was only unlit.',
     bandProse: {
       critical_success: 'Lit from below, the sign read clear from edge to edge.',
       failure: 'The glow landed on the stone and showed every crack in it. The sign above it stayed dark.',
@@ -179,7 +177,6 @@ const STEP_0_HAND: readonly StepNudge[] = [
     imageTag: 'generic.time-slow',
     effectLine:
       'Give them the sense they have stood under this before, so the strangeness stops fighting their eyes. Word of the sign will travel.',
-    fiction: 'Nothing happens only once.',
     grants: [
       {
         kind: 'emit_omen',
@@ -209,7 +206,6 @@ const STEP_0_HAND: readonly StepNudge[] = [
     costs: { detectionDelta: -0.2 },
     imageTag: 'generic.dark',
     effectLine: 'Work the dark in close — the reading comes easier, and no rival god finds a trace of the work.',
-    fiction: 'A practiced hand leaves less than a careful one.',
     bandProse: {
       success: 'The reading came easier than it should have, and left no trace for any rival to find.',
       critical_failure: 'No rival will ever trace what was done here. There is little left to trace it to.',
@@ -224,7 +220,6 @@ const STEP_0_HAND: readonly StepNudge[] = [
     forecastDelta: 0.10,
     imageTag: 'generic.energy',
     effectLine: "Put a body's reserve behind them — they keep looking long past where a person stops.",
-    fiction: 'Bodies hold more than they admit.',
     bandProse: {
       critical_success: 'They outlasted it. The sign gave up first and showed its whole edge.',
       failure: 'They looked long past their limit. The sign stayed as blurred as when they started.',
@@ -253,7 +248,6 @@ const STEP_1_HAND: readonly StepNudge[] = [
     rider: 'no_crit_fail',
     imageTag: 'generic.mercy',
     effectLine: 'Take the bottom out of the disaster — it can still go badly, but not all the way down.',
-    fiction: 'Failing is survivable. Some failures are not.',
     bandProse: {
       near_miss: 'They stopped one sentence short of the dangerous one.',
       failure: 'It went badly, and it went no further.',
@@ -271,7 +265,6 @@ const STEP_1_HAND: readonly StepNudge[] = [
     forecastDelta: 0.09,
     imageTag: 'generic.crowd',
     effectLine: 'Show them which faces are settled and which are still open, before a word is said.',
-    fiction: 'Long looking shows what one glance cannot.',
     bandProse: {
       critical_success: 'They spoke to the three faces still open, and the rest of the camp followed those three.',
       failure: 'They read the crowd right and said it anyway. Being right changed nothing.',
@@ -289,7 +282,6 @@ const STEP_1_HAND: readonly StepNudge[] = [
     forecastDelta: 0.05,
     imageTag: 'generic.time-slow',
     effectLine: 'Give the camp the sense it has heard this before — a new answer lands as an old one.',
-    fiction: 'Nothing happens only once.',
     bandProse: {
       success: 'It landed as if it had been agreed long ago.',
       near_miss: 'The camp half-remembered agreeing, and stopped there.',
@@ -305,7 +297,6 @@ const STEP_1_HAND: readonly StepNudge[] = [
     costs: { detectionDelta: -0.12 },
     imageTag: 'generic.dark',
     effectLine: "Draw the dark in close while they speak — nobody finds a god's hand in what is said.",
-    fiction: 'The kindest help leaves no fingerprints.',
     bandProse: {
       success_at_cost: 'Nobody found a god in what was said. They found the person who said it.',
       critical_failure: 'There was no godly mark on it. The camp did not need one to pick a culprit.',
@@ -320,7 +311,6 @@ const STEP_1_HAND: readonly StepNudge[] = [
     forecastDelta: 0.10,
     imageTag: 'generic.energy',
     effectLine: "Put a body's reserve behind the voice — it carries over the shouting instead of folding under it.",
-    fiction: 'Bodies hold more than they admit.',
     bandProse: {
       success: 'The voice carried over both sides and held long enough.',
       critical_failure: 'The voice carried — far enough that the whole camp heard the part that damned them.',
@@ -339,7 +329,6 @@ const STEP_1_HAND: readonly StepNudge[] = [
     imageTag: 'generic.oath',
     effectLine:
       'No essence. Being Humble, they give it as one answer among several, and a crowd that expected a verdict hears them out.',
-    fiction: 'Character is the one resource nobody spends.',
     bandProse: {
       critical_success: 'They gave it as one answer, and the camp took it up and argued it fairly.',
       failure: 'They gave it as one answer among several. The camp was past taking answers.',

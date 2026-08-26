@@ -173,10 +173,15 @@ describe('mintDealtNudge', () => {
 
   it('surfaces no flavor quote (Prose Doctrine v2)', () => {
     // The doctrine retired the quote by name. Minting is the newest surface in
-    // the system and must not be where it comes back.
+    // the system and must not be where it comes back. Since THR-1225 removed
+    // the field, the check is that the minted card carries no such key at all —
+    // paired with a live assertion on the anatomy it *does* mint, so a mint that
+    // produced nothing could not pass this vacuously.
     const member = nudgeCardMember('card.boost.core')!;
     const nudge = mintDealtNudge(member, PLAY_PROFILES[member.id]!);
-    expect(nudge.fiction).toBe('');
+    expect(nudge.effectLine, 'mint produced no effect line').toBeTruthy();
+    expect(Object.keys(nudge)).not.toContain('fiction');
+    expect(Object.keys(nudge)).not.toContain('fictionBySetting');
     expect(nudge.effectLine).not.toMatch(/\d/u); // words only, never a numeral
   });
 
@@ -279,7 +284,6 @@ describe('dealHand', () => {
       name: 'Press Harder',
       essenceCost: 2,
       forecastDelta: 0.1,
-      fiction: '',
       effectLine: 'Leans the odds.',
       bandProse: { failure: 'It was not enough.' },
     };
@@ -312,7 +316,6 @@ describe('dealHand', () => {
       name: `Card ${i}`,
       essenceCost: 1,
       forecastDelta: 0,
-      fiction: '',
       effectLine: 'Does a thing.',
     }));
     const result = dealHand({ nudges: specials, deal: { count: 4 } }, fullRepertoire(), DARKNESS);
@@ -328,7 +331,6 @@ describe('dealHand', () => {
       name: 'Bend It All',
       essenceCost: 5,
       forecastDelta: DEAL_HAND_MAX_TOTAL_DELTA,
-      fiction: '',
       effectLine: 'Bends the odds hard.',
     };
     const result = dealHand({ nudges: [heavy], deal: { count: 4 } }, fullRepertoire(), DARKNESS);
@@ -376,7 +378,6 @@ describe('composeDealtStep', () => {
       name: 'The Scene’s Own',
       essenceCost: 1,
       forecastDelta: 0.05,
-      fiction: '',
       effectLine: 'Only here.',
     };
     const { step } = composeDealtStep(

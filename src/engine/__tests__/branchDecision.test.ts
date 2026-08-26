@@ -129,7 +129,6 @@ function leaningCard(id: string, toward: 'positive' | 'negative', weight?: numbe
     name: 'Lean',
     essenceCost: 0,
     forecastDelta: 0,
-    fiction: 'A hand on the scale.',
     effectLine: 'Argues a direction.',
     poleLean: { axis: AXIS, toward, ...(weight === undefined ? {} : { weight }) },
   } as StepNudge;
@@ -416,7 +415,6 @@ function routeCard(id: string, route: string, weight?: number): StepNudge {
     name: 'Nudge a course',
     essenceCost: 0,
     forecastDelta: 0,
-    fiction: 'A purse, or a threat, or a kindness.',
     effectLine: 'Argues for one way in.',
     poleLean: { route, ...(weight === undefined ? {} : { weight }) },
   } as unknown as StepNudge;
