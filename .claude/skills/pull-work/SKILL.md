@@ -1,7 +1,7 @@
 ---
 name: pull-work
 description: Canonical Claude Code pickup workflow for claiming Linear work safely from Ready for Dev.
-last_validated_against: 2026-08-14
+last_validated_against: 2026-08-26
 ---
 
 # Pull Work
@@ -404,8 +404,24 @@ So spend one `get_issue` on the partner and branch on its state — never on the
 | Partner state | Verdict | Action |
 |---|---|---|
 | `Done` (merged PR confirmed) | Reason inapplicable | Claim past it; record the reversal per THR-688 Rule B above |
-| `In Dev` / `Ready for Dev` | Genuinely live and moving | Honour the mutex — route the candidate to `Todo` per the paragraph below, then continue to the next candidate |
+| `In Dev` **with an assignee** / `Ready for Dev` | Genuinely live and moving | Honour the mutex — route the candidate to `Todo` per the paragraph below, then continue to the next candidate |
+| `In Dev` with `assignee: null` (with or without `Parked`) | **Deadlock, not a queue** — this is a *park* | Resolve per the park paragraph below — do not bounce on this alone |
 | `Todo` / `Backlog` | **Deadlock, not a queue** | Resolve per the paragraph below — do not bounce on this alone |
+
+**The park row is the same lesson this table already learned once (THR-1283, impediment #752).** A partner in `In Dev` with no assignee is **not being built** — it is a deliberate park awaiting a human, which is the `Todo`/`Backlog` deadlock row in substance while wearing the `In Dev` state. Nothing promotes it and nothing will, because the only thing that clears it is Christian, and no lane can write `Done`. Read it as live and the pair deadlocks exactly as the `Todo` row does. Measured 2026-08-25: `Ready for Dev` held exactly one issue (THR-1224), `blockedBy` THR-1223 which was parked pending a director ruling; this table routed the candidate to `Todo` and the run would have ended with nothing shipped, saved only because the executor reversed the mutex by hand against the file system.
+
+On a parked partner, prefer a **scoped reversal or a split** over an all-or-nothing bounce, and note that **a reversal may be partial**: a mutex can bind some of the candidate's scope items and not others. When only part of the candidate collides with the parked partner's surfaces, split the candidate — ship the uncontended part now, file the contended part as its own ticket **with its own coordination block** naming the park as its blocker. Record the reversal and the seam in a comment per THR-688 Rule B. Bouncing the whole candidate because one of its five surfaces touches a park spends the run's only slot to protect a collision that was never going to happen.
+
+**A `Parked`-labelled issue found in `Ready for Dev` is restored, not claimed and not bounced (THR-1283).** It is there by accident: until this ticket the stale-claim sweep's release path never re-read the label, so a park that took the sweep's own documented opt-out was released to the queue anyway — four times in four days. Restore the park shape rather than treating queue membership as intent:
+
+```
+save_issue(id, state: "In Dev", assignee: null, priority: <its current value>)
+get_issue(id)   # verify BOTH keys landed
+```
+
+The bundled field matters — a sole-field `assignee: null` can silently no-op on an issue that has carried its assignee a while (impediment #380). Then comment why, and continue to the next candidate. Do **not** claim it: the park exists because the ticket's next action needs Christian, and claiming it burns the run's slot on work whose gate you cannot satisfy.
+
+**Before any `assignee` write on someone else's ticket, re-run the PR liveness check (THR-1283, impediment #755).** A parked-*looking* ticket has two explanations — a decayed park, or someone shipping right now — and both must be tested before writing. Run `gh pr list --state open --json number,headRefName,body` and look for a branch matching `*<issue-id>*` **or** the id anywhere in a PR body. **Treat `attachments: []` from `get_issue` as *no evidence*, never as evidence of no PR** — Linear's PR attachment can lag the PR by minutes. A lane that quoted an empty `attachments` array as proof against a live PR stripped another session's assignee twice while it was shipping, then published a false finding to `main` (PR #1609): ~15 min plus a retracted finding.
 
 **Honouring a mutex is a bounce, and a bounce removes the candidate from the queue (impediment #551 ×2).** The row above used to read "serialize, bounce, continue" without saying where the *candidate* goes, and the natural release back to `Ready for Dev` re-offers it as the top pickup candidate every hour: THR-1096 was claimed, mutex-verified against THR-1082's held PR, and released on 2026-08-12 — then re-claimed and re-verified to the identical verdict on 08-13, ~4 min per run with no path to progress, consuming the run's product-work slot each time. Instead: confirm the candidate carries a `blockedBy` relation on the mutex partner (`get_issue` with `includeRelations: true`; add it with `save_issue(id, blockedBy: [partnerId])` if missing), then `save_issue(id, state: "Todo")`, verify-after-write, and comment naming the partner and what clears it. `Todo` is routed, not stranded: `tb-orchestrator` T1 reads exactly that relation and promotes the ticket back to `Ready for Dev` when the partner clears — the THR-846 rule that every park must name the lane that reads the destination.
 
