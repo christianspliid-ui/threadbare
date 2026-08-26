@@ -21,6 +21,20 @@ Use `N/A — <one-line reason>` instead of deleting Engine / Content / UI sectio
 
 <Explain the problem, the cost of not solving it, and the dependency chain.>
 
+## Substrate inventory
+
+*Required for Engine-pillar plans (THR-658; the design-audit pillar auditor and intent-judge both
+score its absence). Name every existing subsystem this plan touches — by its
+`Docs/canon/systems-inventory.md` name — and state whether the plan **extends / activates /
+replaces** it. A 🟠 DORMANT subsystem still counts as existing: activate it, never rebuild it.
+For features that consume a population (members, items, nodes of a kind), include a runtime count
+of the entities consumed, not only the grep hits (impediment #599). Delete this section only for
+plans with no Engine pillar.*
+
+| Existing subsystem (inventory name) | Status | This plan |
+|---|---|---|
+| `<subsystem>` | `<🟢 ACTIVE / 🟠 DORMANT>` | `<extends / activates / replaces — one-line disposition>` |
+
 ## Engine pillar
 
 *Systems design for the tick loop. If N/A, state `Engine: N/A — <one-line reason>` and remove the subsections below.*
