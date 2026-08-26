@@ -1,12 +1,12 @@
 # User Action Required
 
-**Last updated:** 2026-08-26 18:56 local (16:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-26 19:58 local (17:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
 ### 1. Approve the batch-2 brief — [THR-1222](https://linear.app/threadbare/issue/THR-1222/run-retrofit-batch-2-the-camp-seven-through-the-factory-line-shrine)
 
-**The build lane has now idled three wakes running** — 16:00, 17:00 and 18:00, an empty list every time, and nothing has merged since 15:47. Ready-to-build is zero, in-build is zero, and the staging machinery promoted nothing at 18:26 because every waiting item needs a design decision first. This is the only item on the board that a single word from you puts straight into build. Sixth day.
+**The build lane has now idled four wakes running** — 16:00, 17:00, 18:00 and 19:00, an empty list every time. Ready-to-build is zero, in-build is zero, and the staging machinery promoted nothing at 19:26 because every waiting item needs a design decision first. This is the only item on the board that a single word from you puts straight into build. Sixth day.
 
 **The camp seven** — shrine offering, sharpening blades, warding the camp, a small prayer, rest and reflection, tending wounds, scouting the perimeter. The census found **no typed consequences at all** in that set, only bare standing nudges; with the corpus rewrite shipped they are the last encounters in the game below standard. `shrine_offering` is encounter #1 of [your integrated slice checkpoint](https://linear.app/threadbare/issue/THR-1220), which cannot invite you while the camp set sits below the bar.
 
@@ -14,25 +14,25 @@
 
 **Three ways to close it:** *"batch 2, seven is fine"*, *"keep it six"*, or *"same rule — judge batch 2 on one first."* [The brief](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/retrofit-batch-2-brief.md) is merged and readable. **The same sitting closes the batch-1 sample** — the *"worth meeting twice"* verdict on [THR-1130](https://linear.app/threadbare/issue/THR-1130), open since 17 August and worth replaying rather than recalling since that prose was rewritten to Doctrine v2: [The Grateful Kin](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin) and [The Unsafe Bridge](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge).
 
-### 2. More design hours — four sittings stacked
+### 2. More design hours — the staging slot is fuller than it was
 
 The shelf is empty and no new *game* work is queued. What would put game work on it is design, and most of the design work is waiting on you. In the order you set:
 
-- **[Unify the card grammar](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** — your 6 August note: action cards are too wordy, you cannot tell what they do, playing one gives no feedback, while encounter cards already read the way you wanted. It has held the single design-staging slot since 19 August — **eight days** — and is the second-order cause of the idle build wakes: the staging machinery tried again this hour and could not, because the slot is full. Either sit it, or say *"park it"* and [the shared anchor machinery](https://linear.app/threadbare/issue/THR-1212) goes through next.
+- **[Unify the card grammar](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** — your 6 August note: action cards are too wordy, you cannot tell what they do, playing one gives no feedback, while encounter cards already read the way you wanted. It has held the design-staging slot since 19 August — **eight days** — and is the second-order cause of the idle build wakes. Either sit it, or say *"park it"* and [the shared anchor machinery](https://linear.app/threadbare/issue/THR-1212) goes through next.
+- **[The undertaking substrate](https://linear.app/threadbare/issue/THR-1292)** — plan doc 1/6 of the map you closed tonight, filed by you at 19:51 and now in design alongside the two below. Listed for visibility, not as an ask: it is yours and it is moving.
 - **[Traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)** — in design, assigned to you, untouched since 15 August. Either give it the hour or say *"put Traits wave 2 back in the pile."*
 - **The wave-1 sessions** — [shared machinery](https://linear.app/threadbare/issue/THR-1212) first, [the hunger vocabulary](https://linear.app/threadbare/issue/THR-1213) second, [nations and named areas simulated rather than drawn](https://linear.app/threadbare/issue/THR-1155) third.
 
 Available whenever you want it: your own [one-button snapshot](https://linear.app/threadbare/issue/THR-1134).
 
-### 3. The design maps have run out of questions an agent may answer
+### 3. One design map still has questions — and they are all yours
 
-**All four open maps are agent-exhausted:** every `research` question on every map is resolved, and what remains is `grilling` and `prototype` — both human by classification. Ten questions left across them.
+**Proactive Agent Actions closed tonight** (see Resolved), so the frontier is down to one map plus the two sketches.
 
 - **[Physical Conflict](https://linear.app/threadbare/issue/THR-1258/wayfinder-map-physical-conflict)** — seven left, **every one yours**. Two are the keystone, because settling them releases the rest by themselves: [how a duel ends — opposed band-pairs](https://linear.app/threadbare/issue/THR-1264/agent-mode-fight-loop-opposed-band-pairs) and [what a wound costs — the monster stat block](https://linear.app/threadbare/issue/THR-1263/npc-mode-fight-loop-the-stat-block-and-test-skeleton). The others: [when a fight starts on its own](https://linear.app/threadbare/issue/THR-1267/systemic-triggers-v1-walking-into-the-lair-grudges-boiling-over), [the faces of defeat](https://linear.app/threadbare/issue/THR-1266/defeat-wears-many-faces-the-outcome-spectrum), [just enough monster](https://linear.app/threadbare/issue/THR-1268/monster-opponents-just-enough-monster), [what winning leaves in your hands](https://linear.app/threadbare/issue/THR-1270/victory-yields-what-winning-leaves-in-your-hands), and [may a company fight together?](https://linear.app/threadbare/issue/THR-1271/companies-in-fights).
-- **[Proactive Agent Actions](https://linear.app/threadbare/issue/THR-1276/proactive-agent-actions-wayfinder-map)** — **new membership as of this hour.** You closed [the reactive loop](https://linear.app/threadbare/issue/THR-1282) at 18:07 and [the agent-arc mock](https://linear.app/threadbare/issue/THR-1279) at 17:45; the frontier is now the two you filed in their place: [where an undertaking plays and what it touches](https://linear.app/threadbare/issue/THR-1290/the-binding-algorithm-where-an-undertaking-plays-and-what-it-touches) — its recon finished at 17:51, so it is clear to work now — and [how a generic "build a trade network" becomes "The Saltway Ring"](https://linear.app/threadbare/issue/THR-1291/naming-the-works-how-a-generic-verb-makes-the-saltway-ring). Everything else on that map is done.
 - **[Powers & Spellcraft](https://linear.app/threadbare/issue/THR-1226)** and **[Item Generator](https://linear.app/threadbare/issue/THR-1227)** — one question each, and both are the sketches under ask 4.
 
-Nothing here is broken or stalled: the wayfinder machinery has done its whole job and is waiting at the handover. Say *"work the fight map"* or *"work the agent-actions map"* in a chat session and it takes them in keystone order.
+Nothing here is broken or stalled: the wayfinder machinery has done its whole job and is waiting at the handover. Say *"work the fight map"* in a chat session and it takes the seven in keystone order.
 
 ### 4. Two sketches ready to be built for you to react to
 
@@ -90,12 +90,13 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
-- **Two of your open map questions closed by you this hour** — [the reactive loop](https://linear.app/threadbare/issue/THR-1282) (18:07) and [the agent-arc mock](https://linear.app/threadbare/issue/THR-1279) (17:45), plus two research tickets; the Proactive Agent Actions frontier is now the two you filed in their place, in ask 3.
+- **You closed the [Proactive Agent Actions map](https://linear.app/threadbare/issue/THR-1276) at 19:17** — all ten questions in one day, the binding algorithm and the naming recipe in the last hour. It is off ask 3 entirely.
+- **The carve-up question is closed too** — two lanes asked how the ten answers should split into plan docs; you answered by filing it: six docs, [the undertaking substrate](https://linear.app/threadbare/issue/THR-1292) as 1/6 at 19:51.
+- **The three-agent review of that map merged at 19:47** — [steel-man plus two red teams](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/audits/2026-08-26-proactive-agent-actions-review.md); the core survived, every factual claim re-verified, and your rulings on what it found now bind the six plan docs.
 - **Agents who looked ambitious and did nothing are fixed** — [THR-1285](https://linear.app/threadbare/issue/THR-1285) shipped 15:47 and is deployed; it was the last item on the shelf.
 - **The Beast in the Granary now plays clean end to end** — the wrong-chapter enrolment bug ([THR-1275](https://linear.app/threadbare/issue/THR-1275)) shipped 14:15, so the exemplar behind ask 1 has no discounts left.
 - **Balance telemetry stopped lying** — [THR-1284](https://linear.app/threadbare/issue/THR-1284) reported "Encounters: 0 attempted" while hundreds resolved; shipped 14:33.
 - **The sweep that was destroying your parked verdicts is fixed** — [THR-1283](https://linear.app/threadbare/issue/THR-1283) merged 13:27, including the park holding your batch-1 sample verdict.
-- **Full-line-proof brief, approved by you in chat at batch size one, landed and playable** — [The Beast in the Granary](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.hunt.the_beast_in_the_granary): the game's first hunt encounter, first deal-composed fork, first settlement-membership ending.
 
 ---
 
