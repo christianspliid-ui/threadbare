@@ -1,31 +1,33 @@
 # User Action Required
 
-**Last updated:** 2026-08-26 09:58 local (07:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-26 10:58 local (08:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
 ### 1. Approve the batch-2 brief — [THR-1222](https://linear.app/threadbare/issue/THR-1222/run-retrofit-batch-2-the-camp-seven-through-the-factory-line-shrine)
 
+**The exemplar is now live, so this decision has evidence behind it.** Your batch-of-one approval overnight produced [The Beast in the Granary](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.hunt.the_beast_in_the_granary) — merged 10:17 and on the live site: the game's first hunt encounter, first deal-composed fork, first settlement-membership ending. Play it and that is the bar the camp seven would be authored against. *Known gap:* the membership ending can enrol you in the wrong chapter of the right faction ([THR-1275](https://linear.app/threadbare/issue/THR-1275), queued) — the chip and prose are correct, the enrolment one layer down is not.
+
 **The camp seven** — shrine offering, sharpening blades, warding the camp, a small prayer, rest and reflection, tending wounds, scouting the perimeter. All seven are thin: the census found **no typed consequences at all** in that set, only bare standing nudges. With the corpus rewrite shipped, they are the last encounters in the game below standard. And **`shrine_offering` is encounter #1 of [your integrated slice checkpoint](https://linear.app/threadbare/issue/THR-1220)**, which cannot invite you while the camp set is below standard.
 
 It binds [Prose Doctrine v2](https://github.com/christianspliid-ui/threadbare/blob/main/.claude/skills/encounter-pipeline/reference/nudge-authoring-spec.md) — the narrator mode you set — and will be authored under the dealt-hand model, which [is merged and playable](https://linear.app/threadbare/issue/THR-1254) rather than only specified.
 
-**Your batch-of-one call has now been tested.** You approved the full-line proof at size one overnight; it ran the complete line in a single pass and produced [The Beast in the Granary](https://github.com/christianspliid-ui/threadbare/pull/1643). So the third option below is a demonstrated route, not a guess. Three ways to close it: *"batch 2, seven is fine"*, *"keep it six"*, or *"same rule — judge batch 2 on one first."* [The brief](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/retrofit-batch-2-brief.md) is merged and readable.
+**Three ways to close it:** *"batch 2, seven is fine"*, *"keep it six"*, or *"same rule — judge batch 2 on one first."* The third is now a demonstrated route rather than a guess. [The brief](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/retrofit-batch-2-brief.md) is merged and readable.
 
 **The same sitting closes the batch-1 sample.** The *"worth meeting twice"* verdict on [THR-1130](https://linear.app/threadbare/issue/THR-1130) is still open from 17 August, and worth replaying rather than recalling: the slice prose was rewritten to Doctrine v2, so these open something different from what you last saw — [The Grateful Kin](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin) and [The Unsafe Bridge](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge).
 
 ### 2. The design maps have run out of questions an agent may answer
 
-All three open maps are now **agent-exhausted**: every `research` question on every map is resolved, and what remains is `grilling` and `prototype` — both human by classification. **Nine questions across three maps, all yours.**
+All three open maps are now **agent-exhausted**: every `research` question on every map is resolved, and what remains is `grilling` and `prototype` — both human by classification.
 
-- **[Physical Conflict](https://linear.app/threadbare/issue/THR-1258/wayfinder-map-physical-conflict)** — charted by you at 08:51 this morning; the lane burned all four research questions inside that same session. **Seven open, all yours.** Two are the keystone, because settling them releases the other three by themselves: [how a duel ends — opposed band-pairs](https://linear.app/threadbare/issue/THR-1264/agent-mode-fight-loop-opposed-band-pairs) and [what a wound costs — the monster stat block](https://linear.app/threadbare/issue/THR-1263/npc-mode-fight-loop-the-stat-block-and-test-skeleton). The other five: [when a fight starts](https://linear.app/threadbare/issue/THR-1266), [what it costs to walk away](https://linear.app/threadbare/issue/THR-1267), [just enough monster](https://linear.app/threadbare/issue/THR-1268/monster-opponents-just-enough-monster), [THR-1270](https://linear.app/threadbare/issue/THR-1270), and [may a company fight together?](https://linear.app/threadbare/issue/THR-1271/companies-in-fights).
+- **[Physical Conflict](https://linear.app/threadbare/issue/THR-1258/wayfinder-map-physical-conflict)** — charted by you on 26 August; the lane burned all four research questions inside that same session. **Every open question is yours.** Two are the keystone, because settling them releases the rest by themselves: [how a duel ends — opposed band-pairs](https://linear.app/threadbare/issue/THR-1264/agent-mode-fight-loop-opposed-band-pairs) and [what a wound costs — the monster stat block](https://linear.app/threadbare/issue/THR-1263/npc-mode-fight-loop-the-stat-block-and-test-skeleton). The others: [when a fight starts on its own](https://linear.app/threadbare/issue/THR-1267/systemic-triggers-v1-walking-into-the-lair-grudges-boiling-over), [the faces of defeat](https://linear.app/threadbare/issue/THR-1266/defeat-wears-many-faces-the-outcome-spectrum), [just enough monster](https://linear.app/threadbare/issue/THR-1268/monster-opponents-just-enough-monster), [what winning leaves in your hands](https://linear.app/threadbare/issue/THR-1270/victory-yields-what-winning-leaves-in-your-hands), and [may a company fight together?](https://linear.app/threadbare/issue/THR-1271/companies-in-fights).
 - **[Powers & Spellcraft](https://linear.app/threadbare/issue/THR-1226)** and **[Item Generator](https://linear.app/threadbare/issue/THR-1227)** — one question each, and both are the sketches under ask 4.
 
 Nothing here is broken and nothing is stalled: the wayfinder machinery has done its whole job and is waiting at the handover. Say *"work the fight map"* in a chat session and it takes them in keystone order.
 
 ### 3. More design hours — four sittings stacked
 
-The shelf holds one machinery ticket and nothing else. What would refill it is design, and most of the design work is waiting on you. In the order you set:
+The shelf holds one ticket and nothing else. What would refill it is design, and most of the design work is waiting on you. In the order you set:
 
 - **[Unify the card grammar](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** — your 6 August note: action cards are too wordy, you cannot tell what they do, playing one gives no feedback, while encounter cards already read the way you wanted. It has held the single design-staging slot since 19 August — **seven days** — so nothing else can be staged behind it until it moves.
 - **[Traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)** — in design, assigned to you, untouched twelve days. Either give it the hour or say *"put Traits wave 2 back in the pile."*
@@ -61,7 +63,7 @@ Deliberately left with you: a question about what the game means, not about how 
 
 ### 7. One attended dev-server session — [THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server)
 
-One `npm run dev` and a browser at 1920×1080: nine surfaces, at least 19 screenshots. Every one is a shipped UI change carrying test-level proof but no picture, because a scheduled run is refused a dev server and so structurally cannot capture one.
+One `npm run dev` and a browser at 1920×1080: nine surfaces and the screenshots they owe. Every one is a shipped UI change carrying test-level proof but no picture, because a scheduled run is refused a dev server and so structurally cannot capture one.
 
 It keeps growing as more UI work ships behind the same wall. This replaces four separate tickets (THR-1109, THR-1125, THR-1126, THR-1127), consolidated 2026-08-16 — a merge, not a prune. If you only get through part of it, say which, and the remainder is re-expanded rather than closed whole. Bundling it into whichever sitting you approve a brief in costs almost nothing extra.
 
@@ -89,7 +91,7 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
-- **Full-line-proof brief — approved by you in chat, 26 August, at batch size one.** The line ran end to end in a single pass and produced [The Beast in the Granary](https://github.com/christianspliid-ui/threadbare/pull/1643): the game's first hunt encounter, first deal-composed fork, first settlement-membership ending. Not yet on the live site — its PR has a merge conflict a session will clear.
+- **Full-line-proof brief — approved by you in chat, 26 August, at batch size one; now landed and playable.** [The Beast in the Granary](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.hunt.the_beast_in_the_granary) merged at 10:17 and is on the live site — the game's first hunt encounter, first deal-composed fork, first settlement-membership ending. The proof run also found three machinery defects, which became the work: one shipped (the encounter gate was skipping the branch half of every fork), one queued ([THR-1275](https://linear.app/threadbare/issue/THR-1275)), one wants a design session.
 
 ---
 
