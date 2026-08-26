@@ -913,15 +913,24 @@ export function phaseEncounterProgressionV2(state: GameState, runtime?: Simulati
           for (const trace of triggerResult.traces) {
             emitTrace({ category: 'effect_reaction', tick: state.tick, event: 'action_trigger_fired', ...trace } as unknown as TraceEntry);
           }
+          runningEffectStates = triggerResult.updatedStates;
           if (triggerResult.payloadIntents.length > 0) {
-            applyActionTriggerPayloads(
-              state.graph,
+            // THR-1257: `states` is threaded explicitly, and the merged map is read
+            // back, because this call sits inside the `runningEffectStates` loop whose
+            // end-of-tick assignment to `state.effectStates` would otherwise discard
+            // anything a `damaged` / `healed` raise wrote from in here. Ordering
+            // matters too — `triggerResult.updatedStates` is applied *first* so the
+            // raise builds on the trigger's own cooldown writes rather than replacing
+            // them.
+            const applied = applyActionTriggerPayloads(
+              state,
               progress.actorId,
               triggerResult.payloadIntents,
               state.tick,
+              { states: runningEffectStates },
             );
+            if (applied.effectStates) runningEffectStates = applied.effectStates;
           }
-          runningEffectStates = triggerResult.updatedStates;
         }
       }
     }

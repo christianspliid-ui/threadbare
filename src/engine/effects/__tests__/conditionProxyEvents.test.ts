@@ -38,6 +38,11 @@ import { clearTraces, enableTracing, disableTracing, getTraces } from '../../tra
 import { createSimulationRuntime, type SimulationRuntime } from '../../simulationRuntime';
 import { isHarmfulCondition, isPersonCarrier, HARMFUL_CONDITION_TAG } from '../conditionProxyEvents';
 import { CONDITION_TRAIT_DEFINITIONS } from '../../../data/condition-trait-content';
+import { STARTER_CONDITIONS } from '../../../data/starter-attachments';
+import { ANOMALY_CONDITIONS } from '../../../data/anomaly-reward-catalog';
+import { REWARD_CONDITIONS } from '../../../data/reward-attachment-catalog';
+import { ECONOMIC_TRAIT_DEFINITIONS } from '../../../data/economic-trait-content';
+import type { GraphNode } from '../../../types/graph';
 import type { GameState } from '../../../types/gameState';
 import type { AttachmentEffect } from '../../../types/effects';
 import type {
@@ -126,26 +131,48 @@ describe('THR-1244 — condition → damaged/healed proxy', () => {
   afterEach(() => { clearTraces(); disableTracing(); });
 
   describe('the harm predicate reads a tag that actually ships', () => {
-    it('every condition in CONDITION_TRAIT_DEFINITIONS declares a polarity', () => {
+    it('every condition in EVERY catalog declares exactly one polarity', () => {
       // The plan doc called this "the wound/disease/curse subfamily". No such
       // field exists — `#negative` / `#positive` is the vocabulary the content
       // has. If a future condition ships with neither, the proxy silently stops
       // covering it, so this is the test that would notice.
       //
-      // **Scope, stated so this does not read as universal.** It covers exactly
-      // one of the repo's three condition catalogs — the one every site wired in
-      // THR-1244 draws from. The other two (`anomaly-reward-catalog.ts`,
-      // `starter-attachments.ts`) tag topically instead (`#cursed`, `#curse`,
-      // `#pain`, `#blessing`) and carry no polarity at all, so `anomaly_vault_curse`
-      // would classify as *not harm*. That is harmless today because those
-      // conditions are reachable only through the action-trigger path, which
-      // raises nothing — and it is exactly why THR-1257 has to fix the site and
-      // the vocabulary together rather than one at a time.
-      for (const def of CONDITION_TRAIT_DEFINITIONS) {
-        const tags = (def.properties as { tags?: string[] }).tags ?? [];
-        const polarity = tags.filter((t) => t === '#negative' || t === '#positive');
-        expect(polarity, `${def.id} declares no polarity tag`).toHaveLength(1);
+      // **Scope was widened from one catalog to all of them by THR-1257.** It used
+      // to cover only `CONDITION_TRAIT_DEFINITIONS` — the catalog the three THR-1244
+      // aftermath sites draw from — while the other four tagged topically (`#cursed`,
+      // `#curse`, `#pain`, `#wound`, `#blessing`) with no polarity, so
+      // `anomaly_vault_curse` classified as *not harm*. That was inert only while
+      // `actionTriggerPayloads` raised nothing; wiring that fourth site made those
+      // catalogs live, and 47 conditions were normalised in the same change.
+      //
+      // Enumerating the catalogs by import rather than by scanning `src/data` is
+      // deliberate: a scan would silently pass on a *new* file it did not know to
+      // look in, which is the failure mode this guard exists to prevent. A new
+      // catalog must be added here, and that is the point.
+      const catalogs: Array<[string, GraphNode[]]> = [
+        ['condition-trait-content', CONDITION_TRAIT_DEFINITIONS],
+        ['starter-attachments', STARTER_CONDITIONS],
+        ['anomaly-reward-catalog', ANOMALY_CONDITIONS],
+        ['reward-attachment-catalog', REWARD_CONDITIONS],
+        ['economic-trait-content', ECONOMIC_TRAIT_DEFINITIONS],
+      ];
+      let checked = 0;
+      for (const [catalog, defs] of catalogs) {
+        const conditions = defs.filter(
+          (d) => (d.properties as { subcategory?: string }).subcategory === 'condition',
+        );
+        // Guard the guard: an empty catalog would pass vacuously and report nothing.
+        expect(conditions.length, `${catalog} contributed no conditions`).toBeGreaterThan(0);
+        for (const def of conditions) {
+          const tags = (def.properties as { tags?: string[] }).tags ?? [];
+          const polarity = tags.filter((t) => t === '#negative' || t === '#positive');
+          expect(polarity, `${catalog}/${def.id} declares no single polarity tag`).toHaveLength(1);
+          checked++;
+        }
       }
+      // Pins the population so a catalog that stops exporting its conditions fails
+      // here rather than shrinking the sweep to nothing and still reading green.
+      expect(checked).toBe(60);
     });
 
     it('classifies wounds and curses as harm, boons as not', () => {

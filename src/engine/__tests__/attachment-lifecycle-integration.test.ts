@@ -17,6 +17,7 @@ import { applyActionTriggerPayloads } from '../effects/actionTriggerPayloads';
 import { decayConditions } from '../conditionDecay';
 import { collectModifiers, getModifiedValue } from '../modifiers';
 import type { ActionTriggerEffect, EffectRuntimeState } from '../../types/effects';
+import type { GameState } from '../../types/gameState';
 import type { AttachedEffect } from '../effects/effectWalker';
 
 describe('Attachment Lifecycle Integration', () => {
@@ -128,8 +129,14 @@ describe('Attachment Lifecycle Integration', () => {
       // Prose is substituted, not left as a raw template
       expect(fired.narratives).toEqual(['Hero is cursed by Cursed Sword.']);
 
-      // 8. Apply the payload — this is what never happened before THR-719
-      const applied = applyActionTriggerPayloads(graph, agentId, fired.payloadIntents, 0);
+      // 8. Apply the payload — this is what never happened before THR-719.
+      // Takes `GameState` since THR-1257 (the condition payloads raise damaged/healed).
+      const applied = applyActionTriggerPayloads(
+        { graph, tick: 0, seed: 42, effectStates: new Map() } as unknown as GameState,
+        agentId,
+        fired.payloadIntents,
+        0,
+      );
       expect(applied.conditionsGranted).toBe(1);
       expect(applied.touchedStructure).toBe(true);
 
