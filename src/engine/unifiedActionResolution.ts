@@ -50,7 +50,6 @@ import {
 } from './unifiedActionLifecycle';
 import {
   isStepSuccess,
-  isStepFailure,
   isActionStepBranch,
   resolveAftermathVariant,
 } from '../types/unifiedAction';
@@ -64,8 +63,6 @@ import {
   applyContestConsequences,
   contestedOutcomeFor,
 } from './groups/bandOpposition';
-import { resolveAction as resolveActionLegacy } from './resolution';
-import { resolveAction as resolveActionShared, isSuccessOutcome } from './resolutionService';
 import { outcomePinFor, recordOutcomePinVerdict } from './debugOutcomePin';
 import type { OutcomeType } from '../types/resolution';
 import type { ResolutionInput } from '../types/resolution';
@@ -116,7 +113,10 @@ import {
   REVEAL_WAKE_MARK_DURATION,
 } from '../data/self-action-constants';
 import type { SelfActionTrace, ResolutionInputTrace } from '../types/trace';
-import { applyScaleDifficultyAdjust, resolveCritFailureSeverity, MIN_PROBABILITY_BY_SCALE } from './resolutionScaleAdjust';
+import { resolveCritFailureSeverity } from './resolutionScaleAdjust';
+// THR-1292 slice 2 — the shared step-resolution library. `resolveUncontestedStep`
+// derives its inputs and applies its returns; the ladder itself lives there.
+import { resolveStepCore } from './stepResolutionCore';
 import type { AscendantProperties } from '../types/influence';
 import { accumulateImportance, getImportanceDelta, getRarityTier } from './rarity';
 import type { TraceEntry } from '../types/trace';
@@ -141,9 +141,6 @@ import {
   canSpendQuintessence,
   getPushModifier,
   spendQuintessence,
-  canResistOutcome,
-  applyResistOutcome,
-  RESIST_DOWNGRADE_CHANCE,
 } from './quintessenceActions';
 import { isProvingSliceTemplate } from './outcomeConsequences';
 import { LOCATION_ACTION_POST_EFFECT_TEMPLATE_IDS } from '../data/unified-action-templates';
@@ -168,7 +165,6 @@ import { applyFlipTableTriggerWithConfig, matchesStepOutcomeTrigger } from './ef
 import { getEffectiveUnifiedActionChoiceMemory } from './encounterChoiceMemory';
 // THR-773 (Nudge Model WS0): named forecast modifiers + pure band riders.
 import {
-  applyRider,
   collectHeldTraitIds,
   collectNudgeModifiers,
   priorStepOutcome,
@@ -198,23 +194,9 @@ import { tierScaledDifficulty } from './targetTierScaling';
 import { resolveToParentLocation } from './sublocationShape';
 import {
   PLAYER_CAST_VARIANCE_ENABLED,
-  PLAYER_CAST_OUTCOME_FLOOR,
   PLAYER_CAST_PUSH_ENABLED,
   ascendantCastRawBonus,
 } from '../data/player-cast-constants';
-
-// ─── THR-571: Outcome-ladder constants ──────────────────────────
-/**
- * What a probability-floor upgrade turns a sub-floor failure into.
- *
- * Was `'success'` (THR-451): an incapable actor scraping through on a guaranteed
- * floor was rendered as a clean win, which flattened the curve and erased the
- * signal that clean success is supposed to carry (genuine capability). An
- * incapable actor guaranteed progress by the floor *is* the definition of
- * success-at-cost — they got through, but not cleanly. Clean `success` now again
- * means the roll landed on capability, not on the floor. (NFP #1 Tunability.)
- */
-const FLOOR_UPGRADE_OUTCOME: OutcomeType = 'success_at_cost';
 
 // ─── Phase 1: Progress ──────────────────────────────────────────
 
@@ -270,24 +252,15 @@ export interface StepResolutionResult {
 }
 
 /**
- * Phase 3: Map the shared resolver's OutcomeType to a StepOutcome.
- * Preserves the full outcome ladder instead of collapsing to binary.
+ * Phase 3: map the shared resolver's `OutcomeType` to a `StepOutcome`.
  *
- * `success_at_cost` is generated when a roll succeeds but lands in the
- * near-miss zone (margin <= NEAR_MISS_MARGIN). This represents scraping
- * through with complications — the step proceeds but carries a cost.
+ * THR-1292 slice 2 — the implementation moved to `stepResolutionCore.ts` so that
+ * the band ladder has exactly one definition across both callers. Re-exported
+ * from here because `encounter.ts` and `meetingEncounter.ts` already import it at
+ * this path; re-exporting keeps that additive (NFP #6) while leaving one
+ * implementation, which is what the slice's contract test pins.
  */
-export function mapResolverOutcomeToStep(resolverOutcome: OutcomeType, nearMiss: boolean): StepOutcome {
-  switch (resolverOutcome) {
-    case 'critical_success': return 'critical_success';
-    case 'success':
-      // Near-miss success → near_miss band (Phase 6: distinct from shaper-shifted success_at_cost)
-      return nearMiss ? 'near_miss' : 'success';
-    case 'success_at_cost': return 'success_at_cost';
-    case 'failure': return 'failure';
-    case 'critical_failure': return 'critical_failure';
-  }
-}
+export { mapResolverOutcomeToStep } from './stepResolutionCore';
 
 export function resolveUncontestedStep(
   action: UnifiedAction,
@@ -493,202 +466,102 @@ export function resolveUncontestedStep(
   const totalActionModifiers = pushModifier + (groupStep?.totalBonus ?? 0)
     + nudgeModifierTotal;
 
-  // THR-451: Apply scale-based difficulty adjustments at the caller boundary.
-  // The resolver stays scale-agnostic; all scale tuning happens here.
-  const rawDifficulty = effectiveDifficulty;
-  const { adjustedDifficulty, scaleOffsetApplied, scaleFloorApplied } = applyScaleDifficultyAdjust(
-    effectiveDifficulty,
-    capability,
-    sphereFactor,
-    totalActionModifiers,
-    template.scale,
-  );
-  effectiveDifficulty = adjustedDifficulty;
-
-  const resolutionInput: ResolutionInput = {
+  // ── THR-1292 slice 2: the band ladder is no longer implemented here ──
+  //
+  // Everything above derives the core's inputs from the action, the template and
+  // the graph. Everything below applies what the core hands back. The core owns
+  // scale adjustment → d100 → floors → band mapping → resist → rider → debug pin,
+  // and it owns them for the undertaking caller too, so there is exactly one
+  // implementation of the six-band ladder in the engine.
+  //
+  // It mutates nothing: quintessence comes back as `spendIntents` for this
+  // function to queue, and telemetry comes back as `tracePayload` for this
+  // function to emit. Push stays here because it is pre-roll and draws no rng —
+  // see the asymmetry note in `stepResolutionCore.ts`'s header.
+  const core = resolveStepCore({
     actorId: action.actorId,
-    domain: step.reach,
+    reach: step.reach,
     capability,
     difficulty: effectiveDifficulty,
-    sphereFactor,
+    scale: template.scale,
     actionModifiers: totalActionModifiers,
     testShapers,
-  };
+    sphereFactor,
+    variancePolicy: action.source === 'player' ? 'player' : 'agent',
+    quintessencePolicy: 'spend-intent',
+    resistEligible: isResistEligible(action.templateId),
+    resistActor: state.graph.getNode(action.actorId) ?? undefined,
+    resistSourceLabel: action.templateId,
+    pushIntent: pushEvent,
+    // Rider *selection* reads the nudge registry, so it stays caller-side; the
+    // core owns only where in the order the rider is applied.
+    bandRider: selectActiveRider(step, action.activeNudges, action.templateId),
+    bandOverride: pinnedBand,
+    tick: state.tick,
+    sourceLabel: 'unified_action',
+  }, rng);
 
-  const rawResult = resolveActionShared(resolutionInput, rng, undefined, 'unified_action');
+  const trace = core.tracePayload;
 
-  // THR-451 Phase B: Probability floor for incapable actors.
-  // Difficulty-adjustment floor handles capable actors (cap ≥ scaleMinP).
-  // For incapable actors (cap < scaleMinP), the resolver's internal Math.max(0, diff)
-  // clamp zeroes negative adjusted difficulties, so that path has no effect.
-  // Post-process: if P < scaleMinP and the roll is a failure under P but a success under
-  // scaleMinP, upgrade 'failure'/'critical_failure' → 'success'.
-  // Only failure outcomes are upgraded — 'critical_success', 'success', 'success_at_cost'
-  // (e.g. shaper-upgraded near-miss failures) are preserved unchanged.
-  // THR-571: the raw resolver outcome, captured before any floor upgrade or scale
-  // severity mapping — the observable "before" of the erasure this plan fixes.
-  const rawOutcome = rawResult.outcome;
-  const critClassification: 'critical_success' | 'critical_failure' | 'none' =
-    rawOutcome === 'critical_success' ? 'critical_success'
-      : rawOutcome === 'critical_failure' ? 'critical_failure'
-        : 'none';
-
-  const scaleMinP = MIN_PROBABILITY_BY_SCALE[template.scale ?? 'regional'];
-  const probabilityFloorActive = rawResult.probability < scaleMinP;
-  // THR-571: A sub-floor failing roll that the floor guarantees through becomes
-  // success_at_cost, not a clean 'success' — the actor scraped through on the floor,
-  // they did not earn a clean win. Doubles that classified critical_success against
-  // raw P are preserved (rare brilliance from the incapable is desirable drama);
-  // doubles that classified critical_failure upgrade to success_at_cost like any
-  // other floored failure (the floor still guarantees progress).
-  const floorUpgradeApplied = probabilityFloorActive &&
-    rawResult.roll <= Math.floor(scaleMinP * 100) &&
-    (rawOutcome === 'failure' || rawOutcome === 'critical_failure');
-  const flooredResult = probabilityFloorActive
-    ? {
-      ...rawResult,
-      probability: scaleMinP,
-      outcome: (floorUpgradeApplied ? FLOOR_UPGRADE_OUTCOME : rawResult.outcome) as OutcomeType,
-    }
-    : rawResult;
-
-  // THR-571 E2: The critical_failure classification is no longer gated by scale.
-  // It survives to prose/aftermath/KPI/chronicle at every scale; only the
-  // downstream complication *severity* scales (resolveCritFailureSeverity →
-  // ComplicationContext.critFailureSeverity). The floor upgrade above still
-  // guarantees progress for sub-floor incapable actors.
-  // THR-728: the player safety floor. A paid cast never outright fails — a
-  // failing roll is upgraded to success-at-cost, so `step.onSuccess` still runs
-  // (`isStepSuccess('success_at_cost')` is true) and the essence always bought
-  // something. `critical_success` and `near_miss` pass through untouched: the
-  // full upside of the ladder is live, only the bottom is closed off.
-  //
-  // Deliberately a SECOND, separate floor stacked after the THR-571 scale floor
-  // above — the two markers (`[floor↑]`, `[player-floor↑]`) stay distinguishable
-  // in traces, so "the incapable scraped through" and "the god cannot fail" are
-  // never confused for one another.
-  const playerFloorApplied = PLAYER_CAST_VARIANCE_ENABLED &&
-    action.source === 'player' &&
-    (flooredResult.outcome === 'failure' || flooredResult.outcome === 'critical_failure');
-  const result = playerFloorApplied
-    ? { ...flooredResult, outcome: PLAYER_CAST_OUTCOME_FLOOR }
-    : flooredResult;
-
-  // THR-451 Phase A: Emit full resolution input telemetry.
+  // THR-451 Phase A: full resolution input telemetry. Emitted here rather than in
+  // the library, per the returns-only contract shared with `resolutionService`.
   emitTrace({
     category: 'resolution.input',
     tick: state.tick,
     actorId: action.actorId,
     templateId: action.templateId,
     scale: template.scale ?? 'regional',
-    capability,
-    difficulty: effectiveDifficulty,
-    rawDifficulty,
-    scaleOffsetApplied,
-    sphereFactor,
-    actionModifiers: totalActionModifiers,
-    influenceNudge: 0,
-    probability: flooredResult.probability,
-    scaleFloorApplied,
-    probabilityFloorApplied: probabilityFloorActive,
-    roll: rawResult.roll,
-    outcome: result.outcome,
-    rawOutcome,
-    critClassification,
-    floorUpgradeApplied,
-    playerFloorApplied,
+    capability: trace.capability,
+    difficulty: trace.difficulty,
+    rawDifficulty: trace.rawDifficulty,
+    scaleOffsetApplied: trace.scaleOffsetApplied,
+    sphereFactor: trace.sphereFactor,
+    actionModifiers: trace.actionModifiers,
+    influenceNudge: trace.influenceNudge,
+    probability: trace.probability,
+    scaleFloorApplied: trace.scaleFloorApplied,
+    probabilityFloorApplied: trace.probabilityFloorApplied,
+    roll: trace.roll,
+    outcome: trace.outcome,
+    rawOutcome: trace.rawOutcome,
+    critClassification: trace.critClassification,
+    floorUpgradeApplied: trace.floorUpgradeApplied,
+    playerFloorApplied: trace.playerFloorApplied,
     // THR-74: present only when a company answered this step.
     groupId: groupNode?.id,
     actingMemberId: groupStep?.actingMemberId,
     groupAssistCount: groupStep?.assistCount,
     groupBonus: groupStep?.totalBonus,
-    summary: `resolution.input: ${action.templateId} scale=${template.scale ?? 'regional'} cap=${capability.toFixed(2)} diff=${effectiveDifficulty.toFixed(2)} P=${flooredResult.probability.toFixed(2)} roll=${rawResult.roll} raw=${rawOutcome}${floorUpgradeApplied ? ' [floor↑]' : ''}${playerFloorApplied ? ' [player-floor↑]' : ''} → ${result.outcome}${groupStep ? ` [company ${groupStep.actingMemberName} +${groupStep.totalBonus.toFixed(2)} assists=${groupStep.assistCount}]` : ''}`,
+    summary: `resolution.input: ${action.templateId} scale=${template.scale ?? 'regional'} cap=${trace.capability.toFixed(2)} diff=${trace.difficulty.toFixed(2)} P=${trace.probability.toFixed(2)} roll=${trace.roll} raw=${trace.rawOutcome}${trace.floorUpgradeApplied ? ' [floor↑]' : ''}${trace.playerFloorApplied ? ' [player-floor↑]' : ''} → ${trace.outcome}${groupStep ? ` [company ${groupStep.actingMemberName} +${groupStep.totalBonus.toFixed(2)} assists=${groupStep.assistCount}]` : ''}`,
   } as ResolutionInputTrace);
 
-  // Phase 3: If push was attempted, queue the spend event
-  if (pushEvent && state.pendingQuintessenceEvents) {
-    state.pendingQuintessenceEvents.push(pushEvent);
-  }
-
-  // Phase 3: Preserve the full outcome ladder
-  const nearMiss = result.rollBreakdown?.nearMiss ?? false;
-  let outcome = mapResolverOutcomeToStep(result.outcome, nearMiss);
-
-  // Phase 3: Resist — social/influence actions attempt to downgrade negative outcomes.
-  // After a failure or critical_failure, the actor can spend Q for a chance to soften it.
-  let resistEvent: import('../types/quintessence').QuintessenceEvent | null = null;
-  // THR-728: resist is mortal-only, for the same reason as push — and with the
-  // player floor above it is unreachable for a player cast anyway (the outcome is
-  // never a failure by the time control arrives here). The explicit guard states
-  // the rule rather than leaving it as an emergent consequence.
-  const resistAllowed = PLAYER_CAST_PUSH_ENABLED || action.source !== 'player';
-  if (resistAllowed && isStepFailure(outcome) && isResistEligible(action.templateId)) {
-    const actorNode = state.graph.getNode(action.actorId);
-    if (actorNode && canResistOutcome(actorNode)) {
-      resistEvent = applyResistOutcome(actorNode, `action_resist_${action.templateId}`, state.tick);
-      if (resistEvent) {
-        // Deterministic resist check using seeded PRNG
-        const resistRoll = rng();
-        if (resistRoll < RESIST_DOWNGRADE_CHANCE) {
-          // Downgrade: critical_failure → failure, failure → success_at_cost
-          if (outcome === 'critical_failure') {
-            outcome = 'failure';
-          } else if (outcome === 'failure') {
-            outcome = 'success_at_cost';
-          }
-        }
-        if (state.pendingQuintessenceEvents) {
-          state.pendingQuintessenceEvents.push(resistEvent);
-        }
-      }
+  // Phase 3: the library returned spend intents; this caller queues them. Order is
+  // push then resist, the order they were incurred — preserved from when both were
+  // queued inline.
+  if (state.pendingQuintessenceEvents) {
+    for (const intent of core.spendIntents) {
+      state.pendingQuintessenceEvents.push(intent);
     }
   }
 
-  // THR-773: nudge band riders. Applied LAST, after push/resist/floors, so the
-  // rider is the final word on the band the player paid to change — and applied
-  // to the *outcome*, never to the roll: `applyRider` is a pure lookup over the
-  // six-value StepOutcome domain and takes zero draws from any rng stream. Same
-  // seed + same nudges ⇒ same d100 ⇒ same downstream stream consumers.
-  //
-  // Strongest single rider wins (NUDGE_RIDER_PRIORITY); riders never stack.
-  //
-  // `postResistOutcome` is captured before the remap so `resistSucceeded` below
-  // still measures what the *resist* did. Without it, a rider that changed the
-  // band would be reported as a successful resist on an action that never
-  // resisted at all.
-  const postResistOutcome = outcome;
-  const activeRider = selectActiveRider(step, action.activeNudges, action.templateId);
-  if (activeRider) {
-    outcome = applyRider(outcome, activeRider);
-  }
-
-  // THR-1030 — the review pin, applied LAST of all, after push/resist/floors and
-  // the riders. Everything above ran for real and was traced for real: the roll,
-  // the probability, the floors and the rider are all what actually happened, and
-  // the trace below still reports them. Only the band the reviewer asked to see is
-  // substituted, so `ops`, the step effects, the prose band and the aftermath band
-  // below all fire off the pinned outcome exactly as a genuinely-rolled one would.
-  // Zero rng draws (pure assignment), so a pinned run and an unpinned run consume
-  // the same stream and stay deterministic under the same seed (NFP #3).
-  if (pinnedBand) {
-    outcome = pinnedBand;
-  }
-
-  const ops = isStepSuccess(outcome) ? step.onSuccess : step.onFailure;
+  const ops = isStepSuccess(core.outcome) ? step.onSuccess : step.onFailure;
 
   return {
-    outcome,
-    rawOutcome: result.outcome,
+    outcome: core.outcome,
+    // Historically named `rawOutcome`, but it is the POST-floor resolver verdict;
+    // the genuinely pre-floor one is `trace.rawOutcome`, emitted above. The two
+    // disagree exactly on floored rows, and both have downstream readers.
+    rawOutcome: core.resolverOutcome,
     opsToExecute: ops,
     capability,
-    probability: result.probability,
-    roll: result.roll,
+    probability: core.probability,
+    roll: core.roll,
     pushAttempted: pushEvent !== null,
     pushCost: pushEvent ? Math.abs(pushEvent.delta) : 0,
-    resistAttempted: resistEvent !== null,
-    resistSucceeded: resistEvent !== null && postResistOutcome !== mapResolverOutcomeToStep(result.outcome, nearMiss),
-    resistCost: resistEvent ? Math.abs(resistEvent.delta) : 0,
-    preResistOutcome: resistEvent ? mapResolverOutcomeToStep(result.outcome, nearMiss) : undefined,
+    resistAttempted: core.resistAttempted,
+    resistSucceeded: core.resistSucceeded,
+    resistCost: core.resistCost,
+    preResistOutcome: core.preResistOutcome,
   };
 }
 
