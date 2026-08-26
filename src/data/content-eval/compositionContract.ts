@@ -668,6 +668,14 @@ export function chipVisibilityParityViolations(
 export function chipAnchorViolations(template: UnifiedActionTemplate): readonly string[] {
   const out: string[] = [];
   const supportKeys = new Set((template.supportBundle ?? []).map(spec => spec.key));
+  // THR-1275 — `$artifact` is the one sentinel whose referent the template must
+  // create, so the gate needs to know whether it does. Read through
+  // `allAftermathEffects`, which since THR-1273 descends branch arms: a fork that
+  // mints its artifact only inside one variant is still a template that mints one,
+  // and a walk that missed it would reject a lawful chip.
+  const mintsArtifact = allAftermathEffects(template).some(
+    effect => effect.kind === 'spawn_artifact',
+  );
   // Faces overlap — a band that authors no `changes` inherits the variant's, so
   // the same chip is reachable on several endings. Reporting it once keeps the
   // fix list the shape an author acts on.
@@ -683,7 +691,7 @@ export function chipAnchorViolations(template: UnifiedActionTemplate): readonly 
       );
       for (const ref of declared) {
         if (ref.entityId) {
-          const verdict = classifyAnchorDeclaration(ref.entityId, { supportKeys });
+          const verdict = classifyAnchorDeclaration(ref.entityId, { supportKeys, mintsArtifact });
           if (!verdict.ok) {
             reported.add(change.id);
             out.push(
