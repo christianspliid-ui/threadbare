@@ -21,6 +21,19 @@ export const PARKED_LABEL_COLOR = "#95A2B3";
 /** Hard cap on issues inspected per run to avoid runaway Linear API usage. */
 export const MAX_ISSUES_PER_RUN = 50;
 
+/**
+ * Comments fetched when checking a tracked issue for activity (THR-1283).
+ *
+ * Read with `first:`, never `last:` — see the load-bearing note at the
+ * `getIssueDetail` query in index.ts. Raised from the original 10 because
+ * THR-1130 carried 12 comments at the moment it was mis-released, and a page
+ * that a busy ticket outgrows is a silent correctness cliff, not a cost saving.
+ */
+export const ACTIVITY_COMMENT_PAGE_SIZE = 50;
+
+/** History entries fetched for the state-transition activity signal (THR-1283). */
+export const ACTIVITY_HISTORY_PAGE_SIZE = 50;
+
 /** Scope sweep to Threadbare team only. */
 export const LINEAR_TEAM_KEY = "THR";
 

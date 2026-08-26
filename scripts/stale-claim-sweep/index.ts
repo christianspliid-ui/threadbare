@@ -21,6 +21,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
+import { fileURLToPath } from "node:url";
 
 // Explicit `.ts` extensions are mandatory: this script runs under Node's ESM
 // resolver via `--experimental-strip-types`, which does not do extension
@@ -39,12 +40,25 @@ import {
   DEFAULT_TRACKED_LIST_PATH,
   QUEUE_STATE_NAME,
   MAX_QUEUE_ASSIGNEE_REPAIRS_PER_RUN,
+  ACTIVITY_COMMENT_PAGE_SIZE,
+  ACTIVITY_HISTORY_PAGE_SIZE,
   buildWarningComment,
 } from "./constants.ts";
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
+
+/**
+ * The GraphQL transport, injectable so the release path can be exercised by a
+ * test (THR-1283).
+ *
+ * `LINEAR_API_KEY` is an Actions secret with no local equivalent, so before this
+ * the only way to run the release path was to let a scheduled run do it against
+ * the live board — which is precisely how the park destruction went four rounds
+ * before anyone could falsify a guard against it.
+ */
+export type GqlFn = <T>(query: string, variables?: Record<string, unknown>) => Promise<T>;
 
 type TrackedEntry = {
   issueId: string;
@@ -56,7 +70,13 @@ type SweepTrace =
   | { kind: "scan-start"; dryRun: boolean; now: string }
   | { kind: "candidate-found"; issueId: string; identifier: string; updatedAt: string; ageHours: number }
   | { kind: "warning-posted"; issueId: string; identifier: string; firstSeenAt: string }
-  | { kind: "skip-parked"; issueId: string; identifier: string }
+  // `phase` disambiguates the two places the Parked label is now honoured
+  // (THR-1283). Before, only the detection pass checked it, so a `skip-parked`
+  // line could only ever mean "never warned" — and the release path, which is
+  // the one that destroys parks, emitted nothing at all.
+  | { kind: "skip-parked"; issueId: string; identifier: string; phase: "detect" | "release" }
+  // No assignee means no claim, and this sweep releases *claims* (THR-1283).
+  | { kind: "skip-no-claim"; issueId: string; identifier: string }
   | { kind: "skip-already-tracked"; issueId: string; identifier: string }
   | { kind: "grace-not-reached"; issueId: string; identifier: string; ageHours: number }
   | { kind: "grace-dropped"; issueId: string; identifier: string; reason: "activity" | "state-change" | "manual-release" }
@@ -84,8 +104,8 @@ type IssueStub = {
   labels: { nodes: Array<{ name: string }> };
 };
 
-async function listStaleInDevIssues(staleBefore: string): Promise<IssueStub[]> {
-  const data = await linearGql<{
+async function listStaleInDevIssues(gql: GqlFn, staleBefore: string): Promise<IssueStub[]> {
+  const data = await gql<{
     issues: { nodes: IssueStub[] };
   }>(
     `query($teamKey: String!, $before: DateTimeOrDuration!, $first: Int!) {
@@ -119,8 +139,8 @@ async function listStaleInDevIssues(staleBefore: string): Promise<IssueStub[]> {
  * rather than a snapshot count — the writer re-accumulates these one per hour,
  * so a count would rot before the next run reads it.
  */
-async function listAssignedQueueIssues(): Promise<IssueStub[]> {
-  const data = await linearGql<{
+async function listAssignedQueueIssues(gql: GqlFn): Promise<IssueStub[]> {
+  const data = await gql<{
     issues: { nodes: IssueStub[] };
   }>(
     `query($teamKey: String!, $state: String!, $first: Int!) {
@@ -147,39 +167,65 @@ async function listAssignedQueueIssues(): Promise<IssueStub[]> {
   return data.issues.nodes;
 }
 
-type IssueDetail = {
+export type IssueDetail = {
   id: string;
   identifier: string;
   state: { name: string };
   assignee: { id: string; displayName: string } | null;
+  labels: { nodes: Array<{ name: string }> };
   comments: { nodes: Array<{ createdAt: string }> };
   history: { nodes: Array<{ createdAt: string; toState: { name: string } | null }> };
 };
 
-async function getIssueDetail(issueId: string): Promise<IssueDetail | null> {
-  const data = await linearGql<{ issue: IssueDetail | null }>(
-    `query($id: String!) {
+/**
+ * Re-read a tracked issue at grace expiry.
+ *
+ * **`first:`, not `last:` — this is load-bearing and it has already been wrong
+ * once (THR-1283).** Linear orders these connections **descending by createdAt
+ * (newest first)**, so Relay's `last: N` returns the N *oldest* nodes, not the
+ * newest. The original query said `comments(last: 10)`, which on any issue
+ * carrying more than ten comments returned a window that could not contain
+ * recent activity by construction — the activity check was reading the wrong
+ * end of the list and could only ever return false.
+ *
+ * Measured on THR-1130, released 2026-08-22T12:51:57Z despite `daily-backlog-
+ * grooming` having commented and applied `Parked` at 07:14:14Z that morning:
+ * the issue held 12 comments at that moment, the grooming comment was the
+ * newest, and `last: 10` dropped exactly the two newest. Signal (a) therefore
+ * saw nothing newer than the sweep's own warning and the release fired.
+ *
+ * `labels` is selected here for the release-path park guard below — the
+ * detection pass had it and the release path did not, which is defect 1.
+ */
+async function getIssueDetail(gql: GqlFn, issueId: string): Promise<IssueDetail | null> {
+  const data = await gql<{ issue: IssueDetail | null }>(
+    `query($id: String!, $commentPage: Int!, $historyPage: Int!) {
       issue(id: $id) {
         id
         identifier
         state { name }
         assignee { id displayName }
-        comments(last: 10, orderBy: createdAt) {
+        labels { nodes { name } }
+        comments(first: $commentPage, orderBy: createdAt) {
           nodes { createdAt }
         }
-        history(last: 20) {
+        history(first: $historyPage) {
           nodes { createdAt toState { name } }
         }
       }
     }`,
-    { id: issueId },
+    {
+      id: issueId,
+      commentPage: ACTIVITY_COMMENT_PAGE_SIZE,
+      historyPage: ACTIVITY_HISTORY_PAGE_SIZE,
+    },
   );
 
   return data.issue;
 }
 
-async function resolveReadyForDevStateId(): Promise<string> {
-  const data = await linearGql<{
+async function resolveReadyForDevStateId(gql: GqlFn): Promise<string> {
+  const data = await gql<{
     team: { states: { nodes: Array<{ id: string; name: string }> } } | null;
   }>(
     `query($teamId: String!) {
@@ -195,8 +241,8 @@ async function resolveReadyForDevStateId(): Promise<string> {
   return state.id;
 }
 
-async function ensureParkedLabelId(): Promise<string> {
-  const existing = await linearGql<{
+async function ensureParkedLabelId(gql: GqlFn): Promise<string> {
+  const existing = await gql<{
     issueLabels: { nodes: Array<{ id: string; name: string }> };
   }>(
     `query($name: String!) {
@@ -210,7 +256,7 @@ async function ensureParkedLabelId(): Promise<string> {
   const found = existing.issueLabels.nodes[0];
   if (found) return found.id;
 
-  const created = await linearGql<{
+  const created = await gql<{
     issueLabelCreate: { issueLabel: { id: string } | null };
   }>(
     `mutation($teamId: String!, $name: String!, $color: String!, $description: String!) {
@@ -231,8 +277,8 @@ async function ensureParkedLabelId(): Promise<string> {
   return id;
 }
 
-async function postWarningComment(issueId: string, lastActivity: string, releaseAt: string): Promise<void> {
-  await linearGql(
+async function postWarningComment(gql: GqlFn, issueId: string, lastActivity: string, releaseAt: string): Promise<void> {
+  await gql(
     `mutation($issueId: String!, $body: String!) {
       commentCreate(input: { issueId: $issueId, body: $body }) {
         success
@@ -242,8 +288,8 @@ async function postWarningComment(issueId: string, lastActivity: string, release
   );
 }
 
-async function releaseClaim(issueId: string, readyForDevStateId: string): Promise<void> {
-  await linearGql(
+async function releaseClaim(gql: GqlFn, issueId: string, readyForDevStateId: string): Promise<void> {
+  await gql(
     `mutation($id: String!, $stateId: String!) {
       issueUpdate(id: $id, input: { stateId: $stateId, assigneeId: null }) {
         success
@@ -262,8 +308,8 @@ async function releaseClaim(issueId: string, readyForDevStateId: string): Promis
  * omits the key, which reads as "null" and is not. Only a follow-up
  * `issueUpdate` actually clears it.
  */
-async function clearQueueAssignee(issueId: string): Promise<void> {
-  await linearGql(
+async function clearQueueAssignee(gql: GqlFn, issueId: string): Promise<void> {
+  await gql(
     `mutation($id: String!) {
       issueUpdate(id: $id, input: { assigneeId: null }) {
         success
@@ -324,12 +370,25 @@ function writeTrackedList(filePath: string, entries: TrackedEntry[]): void {
 // Main sweep
 // ---------------------------------------------------------------------------
 
-async function sweep(opts: { dryRun: boolean; trackedListPath: string }): Promise<void> {
-  const now = Date.now();
+export type SweepOptions = {
+  dryRun: boolean;
+  trackedListPath: string;
+  /** Injected transport for tests; production passes nothing and gets `linearGql`. */
+  gql?: GqlFn;
+  /** Injected clock for tests, unix ms. Production passes nothing and gets `Date.now()`. */
+  nowMs?: number;
+};
+
+export async function sweep(opts: SweepOptions): Promise<void> {
+  const gql: GqlFn = opts.gql ?? linearGql;
+  const now = opts.nowMs ?? Date.now();
   const nowIso = new Date(now).toISOString();
   trace({ kind: "scan-start", dryRun: opts.dryRun, now: nowIso });
 
-  if (!LINEAR_API_KEY) {
+  // Only the real transport needs the secret. An injected transport is its own
+  // credential, and aborting the process on a missing key would make the release
+  // path untestable — the state this defect lived in for four rounds.
+  if (!opts.gql && !LINEAR_API_KEY) {
     trace({ kind: "error", message: "LINEAR_API_KEY secret is missing — aborting" });
     process.exit(1);
   }
@@ -338,12 +397,12 @@ async function sweep(opts: { dryRun: boolean; trackedListPath: string }): Promis
 
   // Eagerly resolve the Parked label and Ready for Dev state ID so failures
   // surface at the top of the run, not mid-loop.
-  await ensureParkedLabelId();
-  const readyForDevStateId = await resolveReadyForDevStateId();
+  await ensureParkedLabelId(gql);
+  const readyForDevStateId = await resolveReadyForDevStateId(gql);
 
   // ---- Detection pass ----
   const staleBefore = new Date(now - STALE_THRESHOLD_HOURS * HOUR_MS).toISOString();
-  const staleIssues = await listStaleInDevIssues(staleBefore);
+  const staleIssues = await listStaleInDevIssues(gql, staleBefore);
 
   let warnedCount = 0;
   for (const issue of staleIssues) {
@@ -352,7 +411,7 @@ async function sweep(opts: { dryRun: boolean; trackedListPath: string }): Promis
     trace({ kind: "candidate-found", issueId: issue.id, identifier: issue.identifier, updatedAt: issue.updatedAt, ageHours: Math.round(ageHours) });
 
     if (issue.labels.nodes.some((l) => l.name === PARKED_LABEL_NAME)) {
-      trace({ kind: "skip-parked", issueId: issue.id, identifier: issue.identifier });
+      trace({ kind: "skip-parked", issueId: issue.id, identifier: issue.identifier, phase: "detect" });
       continue;
     }
 
@@ -365,7 +424,7 @@ async function sweep(opts: { dryRun: boolean; trackedListPath: string }): Promis
     if (opts.dryRun) {
       trace({ kind: "dry-run-would", action: "comment", issueId: issue.id, identifier: issue.identifier });
     } else {
-      await postWarningComment(issue.id, issue.updatedAt, releaseAt);
+      await postWarningComment(gql, issue.id, issue.updatedAt, releaseAt);
       trace({ kind: "warning-posted", issueId: issue.id, identifier: issue.identifier, firstSeenAt: nowIso });
     }
 
@@ -386,7 +445,7 @@ async function sweep(opts: { dryRun: boolean; trackedListPath: string }): Promis
       continue;
     }
 
-    const fresh = await getIssueDetail(entry.issueId);
+    const fresh = await getIssueDetail(gql, entry.issueId);
     if (!fresh) {
       // Issue deleted or moved — drop from tracking silently.
       continue;
@@ -394,6 +453,32 @@ async function sweep(opts: { dryRun: boolean; trackedListPath: string }): Promis
 
     if (fresh.state.name !== "In Dev") {
       trace({ kind: "grace-dropped", issueId: entry.issueId, identifier: entry.identifier, reason: "manual-release" });
+      continue;
+    }
+
+    // ---- Park guards (THR-1283) ----
+    //
+    // Both of these were absent, and their absence is what let the sweep destroy
+    // four parks in four days. The detection pass honoured `Parked`; the release
+    // path — the pass that actually writes — did not re-read it, so applying the
+    // label *in response to the sweep's own warning*, exactly as that warning
+    // instructs, did not save the issue.
+    //
+    // Ordered Parked-first deliberately: a park satisfies both guards, and
+    // `skip-parked` is the more specific diagnosis of the two.
+    if (fresh.labels.nodes.some((l) => l.name === PARKED_LABEL_NAME)) {
+      trace({ kind: "skip-parked", issueId: entry.issueId, identifier: entry.identifier, phase: "release" });
+      continue;
+    }
+
+    // A null assignee means there is no claim to release, and a claim is the only
+    // thing this sweep exists to release. The old code had this fact in hand at
+    // the moment it acted — it wrote it into the trace as `previousAssignee: null`
+    // — and did not use it. An unassigned `In Dev` issue is a deliberate park by
+    // construction, and it is the sweep's prime target precisely because a park
+    // never moves and so never looks like activity.
+    if (fresh.assignee === null) {
+      trace({ kind: "skip-no-claim", issueId: entry.issueId, identifier: entry.identifier });
       continue;
     }
 
@@ -407,7 +492,7 @@ async function sweep(opts: { dryRun: boolean; trackedListPath: string }): Promis
     if (opts.dryRun) {
       trace({ kind: "dry-run-would", action: "release", issueId: entry.issueId, identifier: entry.identifier });
     } else {
-      await releaseClaim(entry.issueId, readyForDevStateId);
+      await releaseClaim(gql, entry.issueId, readyForDevStateId);
       trace({ kind: "released", issueId: entry.issueId, identifier: entry.identifier, previousAssignee });
       releasedCount++;
     }
@@ -436,7 +521,7 @@ async function sweep(opts: { dryRun: boolean; trackedListPath: string }): Promis
   // takes the stale-claim release with it (NFP #4).
   let queueAssigneesCleared = 0;
   try {
-    const assignedQueueIssues = await listAssignedQueueIssues();
+    const assignedQueueIssues = await listAssignedQueueIssues(gql);
 
     if (assignedQueueIssues.length === 0) {
       trace({ kind: "queue-assignee-clean", state: QUEUE_STATE_NAME });
@@ -451,7 +536,7 @@ async function sweep(opts: { dryRun: boolean; trackedListPath: string }): Promis
         continue;
       }
 
-      await clearQueueAssignee(issue.id);
+      await clearQueueAssignee(gql, issue.id);
       trace({ kind: "queue-assignee-cleared", issueId: issue.id, identifier: issue.identifier, previousAssignee });
       queueAssigneesCleared++;
     }
@@ -474,7 +559,11 @@ const dryRunEnv = process.env.DRY_RUN?.toLowerCase();
 const dryRun = dryRunEnv === "false" ? false : true;
 const trackedListPath = process.env.STALE_CLAIM_TRACKED_LIST_PATH ?? DEFAULT_TRACKED_LIST_PATH;
 
-sweep({ dryRun, trackedListPath }).catch((err: unknown) => {
-  trace({ kind: "error", message: err instanceof Error ? err.message : String(err) });
-  process.exit(1);
-});
+// Entry guard so the module can be imported by a test without running a sweep
+// (THR-1283). Matches the house pattern in scripts/check-armed-prs.ts.
+if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1] ?? "")) {
+  sweep({ dryRun, trackedListPath }).catch((err: unknown) => {
+    trace({ kind: "error", message: err instanceof Error ? err.message : String(err) });
+    process.exit(1);
+  });
+}
