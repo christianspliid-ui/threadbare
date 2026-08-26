@@ -68,6 +68,13 @@ import { derivePlantedCompulsionEncounterBias } from './plantedCompulsion';
 import { IDENTITY_ENCOUNTER_BIAS_CAP } from '../types/doomIdentity';
 import { ENABLE_STRATEGIC_ACTIONS } from '../data/strategic-action-constants';
 import { generateStrategicCandidates } from './strategicActionCandidates';
+import {
+  AMBITION_KIND_FACTION,
+  AMBITION_KIND_TEMPLATE,
+  getAmbitionKind,
+  getAmbitionTemplateId,
+  traceUnevaluableAmbition,
+} from './ambitionShape';
 import { scoreStrategicCandidates } from './strategicActionScoring';
 import { executeStrategicAction } from './strategicActionLifecycle';
 import type { StrategicCandidateBoardTrace, StrategicActionStartedTrace } from '../types/trace';
@@ -681,8 +688,24 @@ export function phaseAgentDecision(
             const props = edge.properties as Record<string, unknown> | undefined;
             if (props?.status === 'active') {
               const ambitionNode = graph.getNode(edge.target);
-              const templateId = ambitionNode?.properties?.templateId as string | undefined;
-              if (templateId) activeAmbitionTemplateIds.push(templateId);
+              // THR-1285: same shape question as ambitionTick, same tripwire. Asking
+              // the module rather than `properties.templateId` keeps "wrong vocabulary"
+              // distinguishable from "corrupt template ambition" — silently dropping
+              // both was what let the class stay invisible.
+              const templateId = getAmbitionTemplateId(ambitionNode);
+              if (templateId) {
+                activeAmbitionTemplateIds.push(templateId);
+              } else if (ambitionNode) {
+                const kind = getAmbitionKind(ambitionNode);
+                traceUnevaluableAmbition(
+                  state.tick, agentId, actor.name || agentId, ambitionNode.id,
+                  kind === AMBITION_KIND_FACTION ? 'faction_kind_ambition'
+                    : kind === AMBITION_KIND_TEMPLATE ? 'missing_template_id'
+                      : 'unclassifiable_ambition',
+                );
+              }
+              // A missing target node is not traced — see the note in ambitionTick:
+              // the graph API cannot produce a dangling `pursues` edge.
             }
           }
 

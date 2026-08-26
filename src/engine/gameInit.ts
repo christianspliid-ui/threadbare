@@ -48,6 +48,7 @@ import { computeSphereAggregate, normalizeAggregate } from './phaseSphereAggrega
 import { getDoomIdentityMatrix } from '../data/doom-identity-matrices';
 import { getOriginPortraitUrl } from '../data/avatar-portrait-assets';
 import { MEETING_SETTLED_LOCATION_SUBTYPES } from './meetingEncounter';
+import { AMBITION_KIND_KEY, AMBITION_KIND_TEMPLATE } from './ambitionShape';
 
 /** PRNG offset for pre-worldgen culture identity generation. Unique prime — no collision with worldgen passes. */
 const CULTURE_SEED_OFFSET = 87671;
@@ -648,6 +649,7 @@ export function devSeedTheFirst(state: GameState): string {
         type: 'ambition',
         name: tmpl?.displayName ?? assignment.templateId,
         properties: {
+          [AMBITION_KIND_KEY]: AMBITION_KIND_TEMPLATE,
           templateId: assignment.templateId,
           displayName: tmpl?.displayName ?? assignment.templateId,
           category: tmpl?.category ?? 'survival',

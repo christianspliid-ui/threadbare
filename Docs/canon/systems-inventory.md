@@ -223,7 +223,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `aftermath` (1) | `aftermathWords.ts` | `THR-1004` |
 | `agenda` (1) | `agendaGenerator.ts` | — |
 | `agent` (7) | `agentActivity.ts`, `agentAttachments.ts`, `agentDetail.ts`, `agentLifecycle.ts`, `agentResidence.ts`, `agentSelection.ts`, `agentValidation.ts` | `THR-719`, `THR-822` |
-| `ambition` (5) | `ambitionAssignment.ts`, `ambitionBoost.ts`, `ambitionLifecycle.ts`, `ambitionSelection.ts`, `ambitionTick.ts` | `THR-885` |
+| `ambition` (6) | `ambitionAssignment.ts`, `ambitionBoost.ts`, `ambitionLifecycle.ts`, `ambitionSelection.ts`, `ambitionShape.ts`, `ambitionTick.ts` | `THR-1277`, `THR-1285`, `THR-885` |
 | `anoint` (1) | `anointSuccessor.ts` | `THR-432`, `THR-74` |
 | `archetype` (1) | `archetypeEpithet.ts` | `Phase 12`, `TB-075` |
 | `army` (5) | `armyAttrition.ts`, `armyMovement.ts`, `armyNotifications.ts`, `armySpawning.ts`, `armySupply.ts` | `Phase 1`, `Phase 2`, `Phase 7`, `TB-073`, `THR-626` |
@@ -274,7 +274,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `echo` (1) | `echo.ts` | — |
 | `economic` (2) | `economicChronicle.ts`, `economicContext.ts` | `THR-725` |
 | `effect` (6) | `effectAura.ts`, `effectExecutors.ts`, `effectResolver.ts`, `effectScope.ts`, `effectShellRuntime.ts`, `effectTick.ts` | `Phase 2`, `THR-53` |
-| `effects` (15) | `effects/actionTrigger.ts`, `effects/actionTriggerPayloads.ts`, `effects/actorClassification.ts`, `effects/conditionProxyEvents.ts`, `effects/consumableCharges.ts`, `effects/effectEventDispatch.ts`, `effects/effectEvents.ts`, `effects/effectOverlayStore.ts`, `effects/effectPredicates.ts`, `effects/effectQueries.ts`, `effects/effectSuppression.ts`, `effects/effectWalker.ts`, `effects/index.ts`, `effects/resourceDelta.ts`, `effects/ruleOverrideConsumers.ts` | `Phase 3`, `Phase 5`, `TB-104`, `THR-1239`, `THR-1240`, `THR-1241`, `THR-1242`, `THR-1244`, `THR-1257`, `THR-719` |
+| `effects` (15) | `effects/actionTrigger.ts`, `effects/actionTriggerPayloads.ts`, `effects/actorClassification.ts`, `effects/conditionProxyEvents.ts`, `effects/consumableCharges.ts`, `effects/effectEventDispatch.ts`, `effects/effectEvents.ts`, `effects/effectOverlayStore.ts`, `effects/effectPredicates.ts`, `effects/effectQueries.ts`, `effects/effectSuppression.ts`, `effects/effectWalker.ts`, `effects/index.ts`, `effects/resourceDelta.ts`, `effects/ruleOverrideConsumers.ts` | `Phase 3`, `Phase 5`, `TB-104`, `THR-1239`, `THR-1240`, `THR-1241`, `THR-1242`, `THR-1244`, `THR-1257`, `THR-719`, `THR-761` |
 | `elder` (1) | `elderEssenceReward.ts` | `TB-043`, `THR-153` |
 | `encounter` (19) | `encounter-contract-adapter.ts`, `encounter.ts`, `encounter/branchingConstants.ts`, `encounter/branchingCurator.ts`, `encounterAftermath.ts`, `encounterAwareness.ts`, `encounterCache.ts`, `encounterChains.ts`, `encounterChoiceMemory.ts`, `encounterEventNode.ts`, `encounterFilterPipeline.ts`, `encounterLogExporter.ts`, `encounterRuntime.ts`, `encounterScoring.ts`, `encounterSeeding.ts`, `encounterSupportBundle.ts`, `encounterSurface.ts`, `encounterTimeline.ts`, `encounterVisibility.ts` | `Phase 4`, `TB-035`, `TB-077`, `THR-1123`, `THR-452`, `THR-465`, `THR-475`, `THR-697`, `THR-924` |
 | `encounters` (18) | `encounters/branchDecision.ts`, `encounters/choiceResolution.ts`, `encounters/dealHand.ts`, `encounters/detectionPressure.ts`, `encounters/driftAccumulator.ts`, `encounters/encounterTemplateGraph.ts`, `encounters/generateEncounterCandidates.ts`, `encounters/handFilter.ts`, `encounters/itemConsumption.ts`, `encounters/motiveClassifier.ts`, `encounters/nudgeDispatch.ts`, `encounters/nudges.ts`, `encounters/outcomeForecast.ts`, `encounters/placeGating.ts`, `encounters/poleLean.ts`, `encounters/reactionChooser.ts`, `encounters/relationshipResolver.ts`, `encounters/stepFactorLines.ts` | `THR-1247`, `THR-327`, `THR-528`, `THR-530`, `THR-631`, `THR-773`, `THR-883`, `THR-885`, `THR-887`, `THR-892`, `THR-894`, `THR-898`, `THR-963` |
@@ -343,7 +343,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `resource` (2) | `resourceEconomy.ts`, `resourceSeeding.ts` | `THR-615` |
 | `retinue` (1) | `retinue.ts` | — |
 | `return` (1) | `returnEngine.ts` | `Phase 3`, `TB-035` |
-| `revelation` (3) | `revelationEmitter.ts`, `revelationHooks.ts`, `revelationResolver.ts` | `TB-043`, `THR-853` |
+| `revelation` (3) | `revelationEmitter.ts`, `revelationHooks.ts`, `revelationResolver.ts` | `TB-043`, `THR-398`, `THR-853` |
 | `reward` (2) | `rewardHistory.ts`, `rewardPool.ts` | `THR-1096`, `THR-1241` |
 | `rival` (3) | `rival.ts`, `rivalInfluenceMarkers.ts`, `rivalSourceContestation.ts` | `THR-611`, `THR-621`, `THR-66` |
 | `river` (1) | `riverGeneration.ts` | — |
@@ -393,4 +393,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 26 registered subsystems (1 dormant) · 101 tick phases · 172 engine domains · 507 modules._
+_Counts: 26 registered subsystems (1 dormant) · 101 tick phases · 172 engine domains · 508 modules._
