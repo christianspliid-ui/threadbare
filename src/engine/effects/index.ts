@@ -65,6 +65,15 @@ export {
   type OverlayStoreDelta,
 } from './effectOverlayStore';
 
+// Rule-override consumers — the one read path the owning sites share (THR-1241)
+export {
+  readMultiplierOverride,
+  readBonusOverride,
+  readFlagOverride,
+  readReachOverride,
+  type RuleOverrideContext,
+} from './ruleOverrideConsumers';
+
 // Resource delta — one-shot resource mutation (TB-104 Phase 1B)
 export {
   applyResourceDelta,

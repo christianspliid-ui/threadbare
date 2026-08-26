@@ -49,6 +49,7 @@ import { SPHERE_OPPOSITIONS } from './cosmology';
 import { getDivineAttention } from './divineAttention';
 import { resolveEffectModifiers, buildPredicateContext, hasEffectsFormat } from './effectResolver';
 import { getActiveRuleOverride } from './effects/effectQueries';
+import { readReachOverride, type RuleOverrideContext } from './effects/ruleOverrideConsumers';
 import {
   collectAuraEffectsNear,
   resolveAuraModifiers,
@@ -576,7 +577,22 @@ export function computeResolutionModifiers(
   stepReach: ReachDomain,
   encounterSphereAffinity: SphereName | undefined,
   effectStates?: ReadonlyMap<string, EffectRuntimeState>,
+  overrideCtx?: RuleOverrideContext,
 ): ModifierBreakdown {
+  // THR-1241: `encounter_reach_override` owns this site. A step names the reach
+  // it tests; a swap says "when this step would test X, test Y instead" — an
+  // amulet that lets you talk your way past what you would have had to fight.
+  //
+  // Applied here rather than at the step, because this is where the reach stops
+  // being a label and starts selecting which capability answers. Every modifier
+  // below then resolves against the substituted reach, which is the point: a
+  // swap that changed the test but not what your gear counted toward would read
+  // as a bug in every direction.
+  const swap = overrideCtx !== undefined
+    ? readReachOverride(overrideCtx, agentId, 'resolutionModifiers')
+    : null;
+  if (swap && swap.from === stepReach) stepReach = swap.to;
+
   const sphereAlignmentBonus = computeSphereAlignmentBonus(graph, agentId, encounterSphereAffinity);
   const terrainContributions = collectTerrainContributions(graph, agentId, locationId);
   const terrainModifier = sumContributions(terrainContributions);

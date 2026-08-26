@@ -1263,6 +1263,11 @@ export function applyEncounterAftermathReaction(
         const clampedAmount = Math.max(-FACTION_REPUTATION_GAIN_AMOUNT_CLAMP, Math.min(FACTION_REPUTATION_GAIN_AMOUNT_CLAMP, rawAmount));
         const result = applyFactionReputationGain(
           state.graph, actorAgentId, effect.factionId, clampedAmount, tick, 'encounter_aftermath',
+          // THR-1241: the live path for `faction_influence_multiplier`. Encounter
+          // aftermath is where nearly all faction standing actually moves, so a
+          // key wired only at the function signature and nowhere real would be
+          // inert by a subtler route than before.
+          { graph: state.graph, effectStates: state.effectStates, persisted: state, tick },
         );
         if (result.newRank === 'none') {
           // THR-1150 — this used to `break` silently "per plan doc fail-soft table",
@@ -4681,6 +4686,8 @@ export function applyEncounterAftermathReaction(
           actorId: action.actorId,
           templateId: action.templateId,
           recipientId,
+          // THR-1241: the recipient's `reward_tier_bonus` reads here.
+          overrideCtx: { graph: state.graph, effectStates: state.effectStates, persisted: state, tick },
         });
 
         // An empty pool is the THR-844 rot class reaching runtime: the fiction

@@ -44,6 +44,7 @@
  */
 
 import type { WorldGraph } from './graph';
+import { readMultiplierOverride, type RuleOverrideContext } from './effects/ruleOverrideConsumers';
 import type { GraphNode } from '../types/graph';
 import type {
   AttachmentEffect,
@@ -121,18 +122,33 @@ function tickDuration(
   };
 }
 
+/**
+ * ─── `cooldown_multiplier` owning site (THR-1241) ─────────────────
+ * A cooldown is the dormant stretch between uses, and this is the only clock
+ * that counts it. Scaling `dormantLength` is therefore the whole of "your powers
+ * come back faster" — below 1 shortens the wait, above 1 lengthens it.
+ *
+ * The **active** stretch is left alone on purpose. Shortening dormancy is a
+ * boon; shortening the window an ability is usable in would be a penalty wearing
+ * the same word, and one key cannot honestly mean both.
+ *
+ * Two floors stand between an absurd multiplier and a free ability: the stage-2
+ * fold clamps the multiplier itself to `[1/RULE_OVERRIDE_VALUE_CAP, CAP]`, and
+ * `COOLDOWN_MINIMUM_TICKS` backstops whatever survives that (NFP #4).
+ */
 function tickCooldown(
   effect: { type: 'cooldown'; activeTicks: number; cooldownTicks: number },
   state: EffectRuntimeState,
   attachmentId: string,
   agentId: string,
   tick: number,
+  cooldownMultiplier = 1.0,
 ): { state: EffectRuntimeState; trace?: EffectTickTrace } {
   const elapsed = (state.cooldownTicksElapsed ?? 0) + 1;
   const isActive = state.cooldownActive ?? true; // start active by default
 
   const activeLength = Math.max(effect.activeTicks, 1);
-  const dormantLength = Math.max(effect.cooldownTicks, COOLDOWN_MINIMUM_TICKS);
+  const dormantLength = Math.max(effect.cooldownTicks * cooldownMultiplier, COOLDOWN_MINIMUM_TICKS);
 
   if (isActive && elapsed >= activeLength) {
     // Transition: active → dormant
@@ -402,6 +418,8 @@ function tickResourceManipulate(
  * @param agentId - Agent to process
  * @param tick - Current tick number
  * @param effectStates - Current per-attachment runtime states
+ * @param overrideCtx - THR-1241: rule-override context; without it
+ *   `cooldown_multiplier` reads neutral and cooldowns run at their authored length
  * @returns Updated states, destroyed attachments, and traces
  */
 export function tickEffects(
@@ -409,8 +427,15 @@ export function tickEffects(
   agentId: string,
   tick: number,
   effectStates: Map<string, EffectRuntimeState>,
+  overrideCtx?: RuleOverrideContext,
 ): EffectTickResult {
   const updatedStates = new Map(effectStates);
+
+  // THR-1241: read once per agent per tick, not once per cooldown effect — the
+  // value cannot change mid-walk, and the read walks the agent's attachments.
+  const cooldownMultiplier = overrideCtx !== undefined
+    ? readMultiplierOverride(overrideCtx, agentId, 'cooldown_multiplier', 'effectTick.cooldown')
+    : 1.0;
   const destroyedAttachments: string[] = [];
   const hexMutations: HexMutation[] = [];
   const traces: EffectTickTrace[] = [];
@@ -443,7 +468,7 @@ export function tickEffects(
             break;
           }
           case 'cooldown': {
-            const r = tickCooldown(effect, state, node.id, agentId, tick);
+            const r = tickCooldown(effect, state, node.id, agentId, tick, cooldownMultiplier);
             state = r.state;
             if (r.trace) traces.push(r.trace);
             break;

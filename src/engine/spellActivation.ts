@@ -40,8 +40,11 @@ import {
   SPELL_COST_REACH_DRAIN_CAP,
   DOOM_COST_CAP_PER_CAST,
   BACKLASH_PROBABILITY_FLOOR,
+  BACKLASH_SEVERITY_ESCALATE_AT,
+  BACKLASH_SEVERITY_SOFTEN_AT,
   COOLDOWN_MINIMUM_TICKS,
 } from '../data/effect-constants';
+import { readMultiplierOverride, type RuleOverrideContext } from './effects/ruleOverrideConsumers';
 
 // ═══════════════════════════════════════════════════════════════════
 // Activation Result
@@ -300,7 +303,8 @@ export function evaluateBacklash(
   backlash: BacklashEffect | undefined,
   outcome: 'success' | 'failure' | 'critical_failure',
   roll: number,
-): { fires: boolean; effect?: AttachmentEffect; narrative?: string } {
+  severityMultiplier = 1.0,
+): { fires: boolean; effect?: AttachmentEffect; narrative?: string; severity?: BacklashEffect['severity'] } {
   if (!backlash) return { fires: false };
 
   // Check trigger condition
@@ -320,7 +324,34 @@ export function evaluateBacklash(
     fires: true,
     effect: backlash.effect,
     narrative: backlash.narrativeTemplate,
+    severity: shiftBacklashSeverity(backlash.severity, severityMultiplier),
   };
+}
+
+/**
+ * Shift a backlash one band along the severity ladder (THR-1241).
+ *
+ * `backlash_severity_multiplier` is a number and `severity` is an enum, so the
+ * key can only be honoured as a band shift. One band per threshold crossing,
+ * never more: the ladder has three rungs, so an unbounded shift would make every
+ * cursed focus catastrophic and flatten the distinction the enum exists to draw.
+ *
+ * Probability is deliberately untouched. "How bad it is when it happens" and
+ * "how often it happens" are different questions, and the key names the first.
+ */
+export function shiftBacklashSeverity(
+  severity: BacklashEffect['severity'],
+  multiplier: number,
+): BacklashEffect['severity'] {
+  const ladder: BacklashEffect['severity'][] = ['minor', 'major', 'catastrophic'];
+  const index = ladder.indexOf(severity);
+  if (index < 0) return severity; // unknown band: leave it alone (NFP #4)
+
+  let shift = 0;
+  if (multiplier >= BACKLASH_SEVERITY_ESCALATE_AT) shift = 1;
+  else if (multiplier <= BACKLASH_SEVERITY_SOFTEN_AT) shift = -1;
+
+  return ladder[Math.min(ladder.length - 1, Math.max(0, index + shift))];
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -346,6 +377,7 @@ export function activateSpell(
   tick: number,
   roll: number,
   effectStates?: Map<string, EffectRuntimeState>,
+  overrideCtx?: RuleOverrideContext,
 ): ActivationResult {
   const baseTrace: EffectActivationTrace = {
     type: 'effect_activation',
@@ -411,7 +443,16 @@ export function activateSpell(
   const outcomeType = isCriticalFailure ? 'critical_failure' : isFailure ? 'failure' : 'success';
 
   if (isFailure && spell.backlash) {
-    const backlashResult = evaluateBacklash(spell.backlash, outcomeType, roll * 7 % 1); // Derive secondary roll
+    // THR-1241: `backlash_severity_multiplier` owns this site — the one place the
+    // game decides how badly a spell turns on its caster.
+    const severityMultiplier = overrideCtx !== undefined
+      ? readMultiplierOverride(
+        overrideCtx, agentId, 'backlash_severity_multiplier', 'spellActivation.backlash',
+      )
+      : 1.0;
+    const backlashResult = evaluateBacklash(
+      spell.backlash, outcomeType, roll * 7 % 1, severityMultiplier,
+    ); // Derive secondary roll
     if (backlashResult.fires) {
       return {
         outcome: 'backlash',
