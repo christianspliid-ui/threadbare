@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-26 03:55 local (01:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-26 04:55 local (02:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -25,7 +25,7 @@ Say **"work the powers map"** or **"work the item map"** in a chat session.
 
 ### 3. More design hours — four sittings stacked
 
-Not pressing yet, but thinning: the shelf slipped from five ready items to four this hour and nothing is actively being worked. No lane is starved; the queue is simply draining faster than design is feeding it. The queue is still fed by programs you already approved, not by new design. In the order you set:
+Not pressing yet, but thinning two hours running: the shelf went five → four → **three** ready items, and nothing is actively being worked. No lane is starved; the queue is simply draining faster than design is feeding it. The queue is still fed by programs you already approved, not by new design. In the order you set:
 
 - **[Unify the card grammar](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** — your 6 August note: action cards are too wordy, you cannot tell what they do, playing one gives no feedback, while encounter cards already read the way you wanted. Holding the single design slot since 19 August.
 - **[Traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)** — in design, assigned to you, untouched twelve days. Either give it the hour or say *"put Traits wave 2 back in the pile."*
