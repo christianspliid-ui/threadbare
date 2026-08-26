@@ -44,11 +44,18 @@ export const STRATEGIC_CONTROL_PRESSURE_WEIGHT = 0.20;
 
 // ─── Project and Control Cadence ────────────────────────────────────
 
-/** Baseline project advancement cadence before modifiers */
-export const STRATEGIC_PROJECT_PROGRESS_PER_TICK = 1;
-
-/** Fail-soft timeout for stalled multi-tick projects */
-export const STRATEGIC_DEFAULT_PROJECT_TIMEOUT_TICKS = 18;
+/**
+ * Default work an undertaking requires when its template authors no
+ * `projectDuration` — i.e. the default `progressRequired`.
+ *
+ * Named for what it is since THR-1292: it was called
+ * `STRATEGIC_DEFAULT_PROJECT_TIMEOUT_TICKS` while doing double duty as both the
+ * work total and the abandonment timeout, and slice 3 split those. The timeout is
+ * now `UNDERTAKING_TIMEOUT_TICKS`; this is work. The value is unchanged, and the
+ * checkpoint cadence is pinned to it —
+ * `UNDERTAKING_PROGRESS_PER_ADVANCE` × 3 checkpoints = 18.
+ */
+export const STRATEGIC_DEFAULT_PROJECT_WORK_TICKS = 18;
 
 /** Window kept for player/debug strategic history summaries */
 export const STRATEGIC_HISTORY_WINDOW_TICKS = 120;
@@ -128,3 +135,101 @@ export const SACRED_ROUTE_DESTINATION_ENCOUNTER_IDS: readonly string[] = [
 export const ENCOUNTER_POOL_INVALIDATING_EDGE_TYPES: ReadonlySet<string> = new Set([
   'sacred_route',
 ]);
+
+// ─── Undertaking Checkpoints (THR-1292 §2) ──────────────────────────
+//
+// Checkpoint dice replace passive per-tick progress: an undertaking advances
+// because a roll said so, not because a tick elapsed. Every number below is the
+// plan's first-guess calibration — retune against the §2 Done-when (non-zero
+// halts on both seeds) and record the values used.
+
+/** Ticks between checkpoint dice on an active undertaking */
+export const UNDERTAKING_CHECKPOINT_INTERVAL_TICKS = 6;
+
+/**
+ * Progress granted per advancing checkpoint.
+ *
+ * Chosen for parity with the pre-checkpoint world: the default project runs 18
+ * ticks at 1 progress/tick, so an always-succeeding agent still finishes in three
+ * checkpoints. What changes is variance, not expected duration.
+ */
+export const UNDERTAKING_PROGRESS_PER_ADVANCE = 6;
+
+/** Difficulty used when a template authors no `checkpointDifficulty` (doc 2 owns per-kind values) */
+export const UNDERTAKING_DEFAULT_CHECKPOINT_DIFFICULTY = 0.45;
+
+/** Critical success advances this many times the ordinary step (capped at completion) */
+export const UNDERTAKING_CRIT_ADVANCE_MULTIPLIER = 2;
+
+/** Accumulated halts that force the abandon-or-escalate fork */
+export const UNDERTAKING_HALT_RATCHET_N = 3;
+
+/** Ratchet points a critical failure adds (an ordinary halt adds 1) */
+export const UNDERTAKING_CRIT_FAIL_RATCHET_WEIGHT = 2;
+
+/** Fork weight baseline — the disposition to press on before anything is known about the agent */
+export const UNDERTAKING_ESCALATE_BASE = 0.35;
+
+/** Fork weight added while the driving `pursues` ambition edge is still live */
+export const UNDERTAKING_ESCALATE_AMBITION_TERM = 0.25;
+
+/** How hard the courage axis pushes the fork (applied to `courage01 − 0.5`) */
+export const UNDERTAKING_ESCALATE_COURAGE_WEIGHT = 0.4;
+
+/** Push toward abandon per halt accumulated beyond the ratchet threshold */
+export const UNDERTAKING_ESCALATE_HALT_PRESSURE = 0.1;
+
+/** Escalate at or above this weight; abandon below it */
+export const UNDERTAKING_ESCALATE_THRESHOLD = 0.5;
+
+/** Stakes raised on escalation — added to the undertaking's checkpoint difficulty */
+export const UNDERTAKING_ESCALATE_DIFFICULTY_DELTA = 0.1;
+
+/**
+ * Fail-safe backstop replacing the flat 18-tick timeout.
+ *
+ * Halts now legitimately extend an undertaking's duration and the ratchet is the
+ * *designed* exit, so a timeout tuned to the old passive cadence would fire on
+ * healthy work. This one only catches undertakings the ratchet somehow never
+ * reaches (an actor frozen absent, a deferral loop) — NFP #4, not game feel.
+ */
+export const UNDERTAKING_TIMEOUT_TICKS = 60;
+
+/**
+ * PRNG stream multiplier for checkpoint dice (NFP #3).
+ *
+ * Deliberately not 59 or 53: `seed + tick*59` already feeds three phases as
+ * nominally-independent generators and 53 feeds two, so those streams are
+ * correlated. That defect is pre-existing and not widened here.
+ */
+export const UNDERTAKING_CHECKPOINT_STREAM_MULTIPLIER = 97;
+
+/** Consecutive absence deferrals that convert to one halt — neglect with teeth, no new movement AI */
+export const UNDERTAKING_ABSENCE_DEFERRAL_LIMIT = 3;
+
+/**
+ * Default for `requiresLocation` when a template authors none.
+ *
+ * **The plan (§5) names `true` here; this is `false`, and the reversal is
+ * measured.** The plan's stated reason for the conversion default is to *preserve
+ * today's parallel behaviour* — and today an undertaking advances wherever its
+ * owner happens to be standing, because nothing moves an agent toward its stage.
+ * Moving them is explicitly docs 3/5 territory (binder and board), so with `true`
+ * the gate has nothing to wait for.
+ *
+ * Measured on a 150-tick medium run before the flip: of 736 checkpoints on seed 42
+ * only **50 rolled** — 686 deferred `actor_absent`; on seed 99, 15 of 668. A probe
+ * at tick 80 found **0 of 45** active undertakings with their owner at the stage.
+ * That is not the variance §2 designs for ("today's expected duration, now with
+ * variance"); it is a system whose dice are 93–97% inert, whose undertakings die
+ * of absence rather than of failure, and whose band table would ship untested in
+ * the world.
+ *
+ * The gate itself is fully implemented and tested — only its *default* is off.
+ * Doc 2 turns it on per-kind once doc 3's binder can bring an actor to a stage —
+ * TODO(THR-1294), which carries the census above as its acceptance evidence.
+ */
+export const UNDERTAKING_DEFAULT_REQUIRES_LOCATION = false;
+
+/** Default for `canRunBeside` when a template authors none (preserves pre-flag behavior) */
+export const UNDERTAKING_DEFAULT_CAN_RUN_BESIDE = true;

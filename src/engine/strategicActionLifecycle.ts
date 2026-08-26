@@ -17,8 +17,8 @@ import type {
 } from '../types/strategicAction';
 import type { PendingEncounterSeed } from '../types/unifiedAction';
 import {
-  STRATEGIC_PROJECT_PROGRESS_PER_TICK,
-  STRATEGIC_DEFAULT_PROJECT_TIMEOUT_TICKS,
+  UNDERTAKING_TIMEOUT_TICKS,
+  STRATEGIC_DEFAULT_PROJECT_WORK_TICKS,
   STRATEGIC_CATALYST_SEED_CHANCE,
   STRATEGIC_CATALYST_SEED_DELAY_TICKS,
   STRATEGIC_CATALYST_SEED_PRIORITY,
@@ -39,6 +39,11 @@ import {
 } from './strategicGraphOps';
 import { resolveDurableActorLocation } from './tradeRouteOps';
 import { getStrategicTemplate } from './strategicActionCandidates';
+import {
+  resolveUndertakingCheckpoint,
+  buildResidueEvent,
+  buildAbandonMintEvent,
+} from './undertakingCheckpoints';
 import { emitTrace } from './traceBuffer';
 import type { TraceEntry } from '../types/trace';
 
@@ -106,7 +111,7 @@ export function executeStrategicAction(
 
     case 'multi_tick_project': {
       const template = getStrategicTemplate(candidate.templateId);
-      const duration = template?.projectDuration ?? STRATEGIC_DEFAULT_PROJECT_TIMEOUT_TICKS;
+      const duration = template?.projectDuration ?? STRATEGIC_DEFAULT_PROJECT_WORK_TICKS;
 
       const project: StrategicProjectRuntime = {
         projectId: `proj_${candidate.templateId}_${candidate.actorId}_${tick}`,
@@ -224,9 +229,12 @@ export function advanceStrategicProjects(
       continue;
     }
 
-    // Timeout check
-    if (tick - project.startedTick > STRATEGIC_DEFAULT_PROJECT_TIMEOUT_TICKS) {
-      updatedProjects.push({ ...project, status: 'failed' });
+    // Timeout check — a fail-safe backstop only (THR-1292 §2). Halts now legitimately
+    // extend an undertaking and the ratchet is the designed exit, so this catches
+    // only the shapes the ratchet never reaches (a permanently absent actor, a
+    // deferral loop). Tuned to `UNDERTAKING_TIMEOUT_TICKS`, not the old passive cadence.
+    if (tick - project.startedTick > UNDERTAKING_TIMEOUT_TICKS) {
+      updatedProjects.push({ ...project, status: 'failed', failureReason: 'timeout' });
       newHistory.push({
         tick,
         actorId: project.actorId,
@@ -255,10 +263,51 @@ export function advanceStrategicProjects(
       continue;
     }
 
-    // Advance progress
-    const newProgress = project.progress + STRATEGIC_PROJECT_PROGRESS_PER_TICK;
+    // ─── Checkpoint (THR-1292 §2) ─────────────────────────────────────
+    // Progress is no longer a function of elapsed ticks. The checkpoint decides
+    // whether this undertaking advances at all, and the record it returns carries
+    // the halts, the deferrals and the fork state.
+    const checkpoint = resolveUndertakingCheckpoint(state, graph, project, tick);
+    events.push(...checkpoint.events);
+    const checked = checkpoint.project;
 
-    if (newProgress >= project.progressRequired) {
+    if (checkpoint.verdict === 'not_due' || checkpoint.verdict === 'deferred' || checkpoint.verdict === 'continues') {
+      updatedProjects.push(checked);
+      continue;
+    }
+
+    if (checkpoint.verdict === 'ended') {
+      // Abandoned at the ratchet, or the actor is gone. The residue class follows
+      // visibility (§2.2): what the player watched leaves something behind, what
+      // they never saw leaves a chronicle line.
+      const displayName = getStrategicTemplate(checked.templateId)?.displayName ?? checked.templateId;
+      updatedProjects.push(checked);
+      events.push(buildResidueEvent(graph, checked, tick, displayName));
+      if (checked.failureReason === 'abandoned_after_halts') {
+        // The THR-726 lane's candidate mint. Doc 4 authors the minting rule; this
+        // doc guarantees only that the event fires with owner + undertaking identity.
+        events.push(buildAbandonMintEvent(graph, checked, tick, displayName));
+      }
+      newHistory.push({
+        tick,
+        actorId: checked.actorId,
+        templateId: checked.templateId,
+        ambitionId: checked.ambitionId,
+        verb: checked.verb,
+        behaviorFamily: checked.behaviorFamily,
+        displayName,
+        targetNodeId: checked.targetNodeId,
+        outcome: 'failed',
+        graphOps: [],
+        catalystSeeded: false,
+      });
+      continue;
+    }
+
+    // verdict === 'completed'
+    const newProgress = checked.progress;
+
+    {
       // Project complete — execute the world mutation
       const candidate: StrategicActionCandidate = {
         candidateId: project.projectId,
@@ -288,7 +337,7 @@ export function advanceStrategicProjects(
 
       const catalystSeeded = maybeSeedCatalyst(state, candidate, tick, rng);
 
-      updatedProjects.push({ ...project, progress: newProgress, status: 'completed', lastProgressTick: tick });
+      updatedProjects.push({ ...checked, progress: newProgress, status: 'completed', lastProgressTick: tick });
       newHistory.push(createHistoryEntry(candidate, tick, ops, catalystSeeded));
 
       const actorNode = graph.getNode(project.actorId);
@@ -310,19 +359,6 @@ export function advanceStrategicProjects(
         progressRequired: project.progressRequired,
         status: 'completed',
         summary: `Project ${project.templateId} completed`,
-      } as TraceEntry);
-    } else {
-      updatedProjects.push({ ...project, progress: newProgress, lastProgressTick: tick });
-
-      emitTrace({
-        category: 'strategic_project_progress',
-        tick,
-        actorId: project.actorId,
-        projectId: project.projectId,
-        progress: newProgress,
-        progressRequired: project.progressRequired,
-        status: 'active',
-        summary: `Project ${project.templateId} progress: ${newProgress}/${project.progressRequired}`,
       } as TraceEntry);
     }
   }
