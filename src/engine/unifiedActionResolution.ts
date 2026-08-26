@@ -126,6 +126,11 @@ import { createUnifiedActionEventNode } from './encounterEventNode';
 import type { BalanceEvent } from '../types/balanceEval';
 import { DEFAULT_REPUTATION } from '../types/disposition';
 import { recordBalanceEvent } from './balanceTelemetry';
+// THR-1284: the encounter-category predicate and the rarity→threat mapping the
+// rest of the encounter stack already shares. Imported rather than re-derived so
+// the balance instrument cannot drift from what the game calls an encounter.
+import { isEncounterAction } from './chapterArchive';
+import { RARITY_TO_THREAT } from './encounterCache';
 import { computeOutcomeConsequence } from './outcomeConsequences';
 import type { ComplicationContext } from '../types/complication';
 import { applyComplicationEffects } from './complicationEffects';
@@ -2342,6 +2347,38 @@ export function executeStepResult(
         result: actionResult,
         finalStatus: actionFinalStatus,
       });
+
+      // Balance telemetry: encounter_resolved (THR-1284)
+      //
+      // `action_resolved` counts every unified action — divine interventions and
+      // strategic verbs included — so it cannot serve as the encounter counter.
+      // The encounter half was only ever emitted from the legacy progress path in
+      // `orchestrator.ts`, which no live decision reaches: `start_local` builds a
+      // *unified* action from the encounter template, so `balance summary` read
+      // "Encounters: 0 attempted" on a run that had recorded 398 `start_local`
+      // decisions. That legacy emit is left exactly as it is — this is the missing
+      // unified half, not a replacement (NFP #6).
+      //
+      // `isEncounterAction` is the same predicate the chapter archive uses to
+      // decide what is worth archiving as a chapter, so the instrument and the
+      // ledger agree on what an encounter *is* rather than drifting apart behind
+      // two hand-rolled id tests.
+      if (isEncounterAction(action.templateId)) {
+        recordBalanceEvent(runtime, {
+          tick,
+          kind: 'encounter_resolved',
+          agentId: action.actorId,
+          sourceSystem: 'unified_action',
+          encounterId: action.templateId,
+          finalStatus: actionFinalStatus,
+          // Derived from `rarityTier` the way the encounter cache, the event node
+          // and the stage model all derive it. `UnifiedActionTemplate` carries no
+          // `threatRating` field at all — which is why the legacy emit's read of
+          // one banded every legacy encounter as 'unknown' and left
+          // `completionByBand` a single dead row.
+          threatBand: RARITY_TO_THREAT[template.rarityTier] ?? 'unknown',
+        });
+      }
     }
   }
 
