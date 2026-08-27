@@ -297,6 +297,13 @@ export function rewardRecipeHasCandidates(recipe: RewardPoolRecipe): boolean {
       if (filterAgreementTemplates(recipe.tagFilters).length > 0) return true;
       continue;
     }
+    // THR-1297: `holding` is undrawable by design — see `rewardCategoryNodeQuery`.
+    // This arm mirrors the runtime's, deliberately: this gate exists to ask the
+    // question the runtime asks, and a one-sided arm recreates exactly the
+    // gate-drifts-from-runtime failure the header above warns about. A recipe
+    // weighting `holding` therefore reports "no candidates" here rather than
+    // reaching the runtime and silently drawing nothing.
+    if (category === 'holding') continue;
 
     const query = rewardCategoryNodeQuery(category as AttachmentCategory);
     if (!query) continue;

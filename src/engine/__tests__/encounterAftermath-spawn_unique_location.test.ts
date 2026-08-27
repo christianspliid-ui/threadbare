@@ -2,7 +2,10 @@
  * THR-552: Stone / The Great Work reach-signature aftermath effect
  * (`spawn_unique_location`).
  *
- * Covers: minting a unique `location` node with a `controls` edge, uniqueTag
+ * Covers: minting a unique `location` node with an `owns` edge (THR-1297 migrated
+ * this writer off `controls` — the agent MADE the place, so it is theirs, not merely
+ * under their jurisdiction; the assertion below follows the contract rather than
+ * staying green on its dead side), uniqueTag
  * dedup (second cast is a no-op), hex placement precedence (explicit > nearAgent
  * > actor), legendary-artifact reuse (`spawn_artifact` path), version-counter
  * touch, and fail-soft no-ops (no resolvable hex, duplicate tag).
@@ -81,7 +84,7 @@ describe('spawn_unique_location', () => {
   beforeEach(() => { clearTraces(); enableTracing(); runtime = createSimulationRuntime(); });
   afterEach(() => { clearTraces(); disableTracing(); });
 
-  it('mints a unique location at the actor hex with a controls edge and unique flags', () => {
+  it('mints a unique location at the actor hex with an owns edge and unique flags', () => {
     const state = buildState();
     const reaction = makeReaction([{ kind: 'spawn_unique_location', subtype: 'master_forge', uniqueTag: 'the_first_forge' }]);
     const result = apply(state, reaction, runtime);
@@ -96,10 +99,16 @@ describe('spawn_unique_location', () => {
     expect(loc.properties.hexCol).toBe(4);
     expect(loc.properties.hexRow).toBe(7);
 
-    // Ownership modelled as a graph edge, not a property.
-    const controls = result.state.graph.getOutgoingEdges('actor-hero', 'controls')
+    // Ownership modelled as a graph edge, not a property — and since THR-1297 that
+    // edge is `owns`, minted through the holdings writer along with the bearer-side
+    // face. Asserting the absence of the old `controls` edge too: leaving both would
+    // let a future revert pass this test.
+    const owns = result.state.graph.getOutgoingEdges('actor-hero', 'owns')
       .find(e => e.target === loc.id);
-    expect(controls).toBeDefined();
+    expect(owns).toBeDefined();
+    expect(owns!.properties.via).toBe('creation');
+    expect(result.state.graph.getOutgoingEdges('actor-hero', 'controls')
+      .find(e => e.target === loc.id)).toBeUndefined();
 
     // Structural version bumped (new location shifts spatial structure).
     expect(result.mutationSummary.touchedWorld).toBe(true);

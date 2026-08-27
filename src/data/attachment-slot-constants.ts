@@ -101,6 +101,10 @@ export const CONDITION_ATTACHMENT_DEFAULT_STACK_COUNT = 1;
 // ─── Slot Tag Display Names ───────────────────────────────────────
 
 export const SLOT_TAG_DISPLAY_NAMES: Record<string, string> = {
+  // THR-1297. Deliberately has NO `SLOT_CAPS` row above — an absent cap reads as
+  // uncapped in `getSlotCap`, so holdings need no exemption logic anywhere. This row
+  // also feeds the codex sidebar, which spreads this map into `SUBCATEGORY_DISPLAY`.
+  holding: 'Holdings',
   weapon: 'Weapons',
   vestment: 'Vestment',
   ring: 'Rings',

@@ -327,6 +327,18 @@ export const ATTACHMENT_ROWS: Readonly<Record<string, AnchorRow>> = {
     status: 'named',
     note: 'Declared as a companion, not an attachment — see the `companion` node row.',
   },
+  holding: {
+    anchor: 'Attachment · holding',
+    declare: '`entityId` = the **owned place\'s** node id (a location or resource), '
+      + '`visualKind: \'location\'`',
+    surface: 'The Holdings section of the bearer\'s Attachments tab',
+    status: 'named',
+    note: 'Anchor the PLACE, never the bearer-side face node (THR-1297): the face is '
+      + 'bookkeeping that mirrors the `owns` edge, and a chip pointing at it would open a '
+      + 'sheet for a record rather than for the mill the player just took. A holding chip '
+      + 'is always backed by a real `owns` write (Law 56) — holdings are earned through '
+      + 'undertakings and never drawn from a reward pool.',
+  },
 };
 
 /**
@@ -369,6 +381,12 @@ export const EDGE_TYPE_ROWS: Readonly<Record<string, AnchorRow>> = {
   bonded_to: RELATIONAL('The bearer\'s possessions, and the legendary artifact\'s own page'),
   accompanies: RELATIONAL('The Companions row on the bearer\'s surface'),
   controls: RELATIONAL('The controlling faction\'s holdings'),
+  owns: RELATIONAL(
+    'The Holdings section of the owner\'s Attachments tab, and the owned place\'s own page',
+    'Anchor the PLACE, not the edge — "Greywater Mill" is what the player recognises. '
+    + '`owns` is title, `controls` is jurisdiction; a chip about taking a place from '
+    + 'someone is this edge (THR-1297).',
+  ),
   // Social
   relates_to: RELATIONAL(
     'The cast tile, and both actors\' sheets',

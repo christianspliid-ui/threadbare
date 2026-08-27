@@ -37,6 +37,12 @@ const SUBCATEGORY_GLYPHS: Record<string, string> = {
   retainer: '\u265F',         // Chess pawn
   companion: '\u265F',         // ♟ Chess pawn
 
+  // Holdings (THR-1297) — a place the bearer owns. Without a row here it fell to
+  // the generic ◈ fallback, which reads as "unclassified item" in a section whose
+  // whole point is that a town is not a trinket (Law 1: every concept carries its
+  // presentation).
+  holding: '⌂',          // ⌂ House
+
   // Spells
   spell: '\u2728',            // ✨ Sparkles
 };

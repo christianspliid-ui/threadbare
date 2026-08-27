@@ -455,3 +455,25 @@ export function getControllers(graph: WorldGraph, targetId: string): GraphNode[]
     .map(e => graph.getNode(e.source))
     .filter((n): n is GraphNode => n != null);
 }
+
+// ─── Ownership (THR-1297) ────────────────────────────────────────
+//
+// `owns` is NOT `controls`, and the two questions are genuinely different: control is
+// jurisdiction (a faction's territory), ownership is title (this place is *yours*). The
+// pair above and the pair below are siblings on purpose — a caller that means title and
+// reaches for `getControllers` gets every faction whose banner flies over the hex, which
+// is why the two names sit next to each other rather than one wrapping the other.
+
+/** Get locations/resources an actor holds as holdings. */
+export function getOwnedBy(graph: WorldGraph, actorId: string): GraphNode[] {
+  return graph.getOutgoingEdges(actorId, 'owns')
+    .map(e => graph.getNode(e.target))
+    .filter((n): n is GraphNode => n != null);
+}
+
+/** Get actors that own a given location/resource. */
+export function getOwners(graph: WorldGraph, targetId: string): GraphNode[] {
+  return graph.getIncomingEdges(targetId, 'owns')
+    .map(e => graph.getNode(e.source))
+    .filter((n): n is GraphNode => n != null);
+}

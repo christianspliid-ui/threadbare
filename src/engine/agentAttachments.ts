@@ -113,6 +113,17 @@ export interface AgentAttachments {
   conditions: AttachmentFullEntry[];
   powers: AttachmentFullEntry[];
   agreements: AttachmentFullEntry[];
+  /**
+   * Places and resources this agent holds (THR-1297) — the bearer-side faces of
+   * their `owns` edges.
+   *
+   * Its own bucket rather than a slice of `possessions`, because a holding rides
+   * the same `possesses` edge a sword does and would otherwise have been filed as
+   * loot: same list, same cap arithmetic, same "found item" reading on the sheet.
+   * A town is not a trinket, and the bucket is where that distinction is made once
+   * instead of at every consumer.
+   */
+  holdings: AttachmentFullEntry[];
 }
 
 /**
@@ -127,6 +138,7 @@ export function getAgentAttachments(
   const conditions: AttachmentFullEntry[] = [];
   const powers: AttachmentFullEntry[] = [];
   const agreements: AttachmentFullEntry[] = [];
+  const holdings: AttachmentFullEntry[] = [];
 
   // ─── Possessions: possesses + bonded_to edges → artifact/artifact_legendary nodes
   const possessEdges = [
@@ -145,10 +157,15 @@ export function getAgentAttachments(
     const isActive = edge.properties.active !== false;
     const isPinned = slotTag === 'quest' || props.lossCondition === 'permanent';
 
-    possessions.push({
+    const entry: AttachmentFullEntry = {
       id: node.id,
       name: node.name,
-      subcategory: props.subcategory ?? 'relics_talismans',
+      // A holding has no possession subcategory and must not borrow one — the
+      // `relics_talismans` fallback below would paint it a trinket's art plate and
+      // file it under Rings in the codex. `'holding'` is its own honest value.
+      subcategory: (node.properties.attachmentCategory === 'holding'
+        ? 'holding'
+        : props.subcategory ?? 'relics_talismans'),
       tier: (props.tier ?? 1) as AttachmentTier,
       mechanicalSummary: props.mechanicalSummary ?? '',
       tags: props.tags ?? [],
@@ -161,7 +178,17 @@ export function getAgentAttachments(
       active: isActive,
       inactiveReason: edge.properties.inactiveReason as string | undefined,
       isPinned,
-    });
+    };
+
+    // THR-1297: holdings ride `possesses` like everything else here, so the split
+    // happens at the bucket. Reads the face's own category tag rather than the slot
+    // tag — the slot tag is a display grouping and content may reuse it; the
+    // category is what the holdings writer stamped.
+    if (node.properties.attachmentCategory === 'holding') {
+      holdings.push(entry);
+    } else {
+      possessions.push(entry);
+    }
   }
 
   // ─── Conditions: has_trait edges where trait category is condition/blessing/curse
@@ -268,6 +295,7 @@ export function getAgentAttachments(
   }
 
   return {
+    holdings: sortAttachments(holdings),
     possessions: sortAttachments(possessions),
     conditions: sortAttachments(conditions),
     powers: sortAttachments(powers),

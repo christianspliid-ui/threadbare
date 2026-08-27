@@ -138,6 +138,13 @@ function extractChips(gameState: GameState): {
       : category === 'clue' || category === 'lore' ? 'clue'
       : category === 'agreement' || category === 'vow' || category === 'pact' ? 'vow'
       : null;
+    // THR-1297: `holding` reaches this ternary and is dropped ON PURPOSE — a holding
+    // is a possession of the world, not a hook pulling on the player, and this bar
+    // shows what is tugging at them. The exclusion is named rather than left to the
+    // `null` fallthrough so the decision is visible and testable: a later author
+    // wondering why holdings never appear here finds an answer instead of a silence.
+    // Holdings render on the character sheet (`AttachmentsTab`); a holdings row on the
+    // ascendant bar, if ever wanted, is doc 5's surface work (THR-1299).
     if (!bucket) continue;
 
     const label = resolveChipLabel(node, bucket);

@@ -7,6 +7,7 @@ import type { WorldGraph } from './graph';
 import type { GraphOp, GraphOpContext, GraphOpResult, GraphOpBatchResult } from '../types/graphOp';
 import { resolveRef } from '../types/graphOp';
 import { validateEdgeEndpoints } from '../types/edgeSchema';
+import { grantHolding } from './holdings';
 import { emitTrace } from './traceBuffer';
 import { hydrateToTier } from './npcGraduation';
 import type { SphereName } from '../types';
@@ -543,6 +544,26 @@ function executeAddEdge(
     }
   }
 
+  // ── Ownership routes through the single writer (THR-1297) ─────────────────
+  //
+  // Two authored templates (`conquer`, `establish_network`) mint ownership through
+  // this generic path. A raw `addEdge` here would write an `owns` edge with an empty
+  // property bag — violating its own `requiredProperties` — and, worse, no
+  // bearer-side face, so the character sheet would never show a place the agent had
+  // just taken. Routing to `grantHolding` keeps the "one module writes all three
+  // objects" doctrine true even for content-authored ownership, which is the half
+  // that made `controls` drift into five property shapes across eight writers.
+  //
+  // `via: 'conquest'` — the two templates that reach here both take a place by force.
+  if (op.edgeType === 'owns') {
+    const result = grantHolding(graph, source, target, { tick: ctx.tick ?? 0 }, 'conquest');
+    if (!result.success) {
+      return { op, success: false, error: result.error ?? 'grant_holding_failed' };
+    }
+    if (result.edgeId) createdIds[result.edgeId] = result.edgeId;
+    return { op, success: true, createdId: result.edgeId };
+  }
+
   const id = `edge_${op.edgeType}_${++opCounter}`;
 
   graph.addEdge({
@@ -849,9 +870,13 @@ function executeConsecrateSource(
   graph.updateNode(host.id, { properties: { ...host.properties, essenceSource: source } });
 
   // Ensure the ascendant controls the host so `computeSourceIncome` sees it.
+  // THR-1297: an `owns` edge counts too — a node already held as a holding must not be
+  // double-claimed onto `controls` as well, or the same claim exists twice under two
+  // names and every "who has this" question gets two answers.
   const alreadyControls = graph
     .getOutgoingEdges(ctx.actorId, 'controls')
-    .some((e) => e.target === targetId);
+    .some((e) => e.target === targetId)
+    || graph.getOutgoingEdges(ctx.actorId, 'owns').some((e) => e.target === targetId);
   let createdId: string | undefined;
   if (!alreadyControls) {
     createdId = `edge_controls_${++opCounter}`;
@@ -964,9 +989,13 @@ function executeClaimSource(
   if (!host || !src) return { op, success: false, error: `claim_source: no essence source on ${targetId}` };
   if (!src.discoveredBy) return { op, success: false, error: 'claim_source: source not yet discovered — Find it first' };
 
+  // THR-1297: `owns` counts as already-claimed here too — see the guard in
+  // `executeConsecrateSource` for why a node held under one name must not be
+  // re-claimed under the other.
   const alreadyControls = graph
     .getOutgoingEdges(ctx.actorId, 'controls')
-    .some((e) => e.target === targetId);
+    .some((e) => e.target === targetId)
+    || graph.getOutgoingEdges(ctx.actorId, 'owns').some((e) => e.target === targetId);
   if (alreadyControls) return { op, success: true }; // idempotent
 
   const createdId = `edge_controls_${++opCounter}`;

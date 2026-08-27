@@ -21,8 +21,17 @@ interface AttachmentsTabProps {
   onAttachmentClick?: (entry: AttachmentFullEntry) => void;
 }
 
-/** Ordered slot groups for display. Quest items first, then possessions, conditions, agreements. */
+/**
+ * Ordered slot groups for display. Holdings first, then quest items, possessions,
+ * conditions, agreements.
+ *
+ * `holding` leads (THR-1297) because it is the largest thing on the sheet — what this
+ * person *holds in the world* frames the trinkets, not the other way round. It has no
+ * `SLOT_CAPS` row on purpose, so `getSlotCap` returns undefined and the section renders
+ * with no `(n/m)` count: holdings are uncapped by construction.
+ */
 const SLOT_GROUP_ORDER = [
+  'holding',
   'quest',
   'weapon', 'vestment', 'ring', 'necklace', 'tome', 'spell',
   'consumable', 'utility', 'mount', 'ally', 'companion', 'wealth', 'brand',
@@ -99,9 +108,13 @@ export function AttachmentsTab({ card, onAttachmentClick }: AttachmentsTabProps)
   const conditions = card.afflictions ?? [];
   const powers = (card.giftsAndBurdens ?? []).filter(g => g.subcategory === 'bestowed_power');
   const agreements = (card.giftsAndBurdens ?? []).filter(g => g.subcategory !== 'bestowed_power');
+  // THR-1297: holdings arrive as their own bucket so they are never counted as loot;
+  // they merge into the flat list here and `SLOT_GROUP_ORDER` gives them their own
+  // (uncapped) section — see the `holding` entry below.
+  const holdings = card.holdings ?? [];
 
   // Merge all attachments into a flat list
-  const allItems: AttachmentFullEntry[] = [...possessions, ...conditions, ...powers, ...agreements];
+  const allItems: AttachmentFullEntry[] = [...holdings, ...possessions, ...conditions, ...powers, ...agreements];
   const hasAny = allItems.length > 0;
 
   // Separate active and inactive items

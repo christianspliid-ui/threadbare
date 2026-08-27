@@ -43,8 +43,15 @@ export interface SlotInventoryEntry {
   overflowTick?: number;
   /** Whether this is a quest/pinned item (exempt from overflow). */
   isPinned: boolean;
-  /** 'possession' | 'condition' | 'agreement' */
-  kind: 'possession' | 'condition' | 'agreement';
+  /**
+   * Which family this inventory row belongs to.
+   *
+   * `'holding'` (THR-1297) rides a `possesses` edge exactly as a possession does, so
+   * without its own member every holding would have counted as a possession here —
+   * and holdings are uncapped by design (no `SLOT_CAPS` row), so the overflow
+   * resolver must be able to tell them apart before it decides what to deactivate.
+   */
+  kind: 'possession' | 'condition' | 'agreement' | 'holding';
 }
 
 /** Deactivation instruction returned by overflow resolution. */
@@ -102,6 +109,11 @@ export function collectAgentAttachmentInventory(
     );
 
     const isPinned = tag === 'quest' || props.lossCondition === 'permanent';
+    // THR-1297: a holding rides `possesses` like a possession and must not be filed
+    // as one. It is pinned by construction (`lossCondition: 'permanent'` above), so
+    // this only changes what the row is CALLED — which is what a caller reading
+    // `kind` to decide overflow policy needs it to be.
+    const isHolding = props.attachmentCategory === 'holding';
 
     inventory.push({
       edgeId: edge.id,
@@ -114,7 +126,7 @@ export function collectAgentAttachmentInventory(
       inactiveReason: edge.properties.inactiveReason as string | undefined,
       overflowTick: edge.properties.overflowTick as number | undefined,
       isPinned,
-      kind: 'possession',
+      kind: isHolding ? 'holding' : 'possession',
     });
   }
 

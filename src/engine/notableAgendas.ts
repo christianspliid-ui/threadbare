@@ -440,7 +440,10 @@ function detectAgendaCounter(
     }
     return { countered: false };
   }
-  for (const type of ['controls', 'holds_place_of_power'] as const) {
+  // THR-1297: 'owns' joins the tuple — a player who OWNS the contested place counters
+  // just as surely as one who controls it. Omitting it would have made the new edge a
+  // downgrade: taking title to a location would have lost you a counter you had before.
+  for (const type of ['controls', 'holds_place_of_power', 'owns'] as const) {
     const inc = state.graph.getIncomingEdges(targetId, type);
     const hit = inc.find((e) => e.source === ascendantId);
     if (hit) return { countered: true, byActorId: ascendantId };

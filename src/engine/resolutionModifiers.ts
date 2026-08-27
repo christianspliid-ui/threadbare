@@ -402,6 +402,26 @@ export function collectTerrainContributions(
     }
   }
 
+  // ── Standing on your own holding is home ground (THR-1297) ──────────────────
+  //
+  // The scoring half of the rule `effectPredicates` applies to the territory
+  // predicates. Ownership OVERRIDES the faction verdict computed above, including a
+  // hostile one: an owner is not an enemy on their own land, which is exactly what the
+  // faction pass concluded before this existed (an owner whose hex flies another
+  // banner scored HOSTILE_TERRITORY_PENALTY at home).
+  //
+  // Reuses `FACTION_CONTROL_BONUS` rather than minting a second number — the felt
+  // effect is the same "this ground is mine" bonus, and one constant is one thing to
+  // tune (NFP #1). It contributes under `kind: 'faction'` with the OWNER as the source,
+  // so the receipt reads "Kael Thornweaver +0.05" rather than attributing a personal
+  // holding to a faction the agent may not even belong to.
+  const ownsThisPlace = graph.getOutgoingEdges(agentId, 'owns')
+    .some(e => e.target === locationId);
+  if (ownsThisPlace) {
+    factionModifier = FACTION_CONTROL_BONUS;
+    factionId = agentId;
+  }
+
   const parts: NamedModifierContribution[] = [];
   if (baseModifier !== 0 && terrainType) {
     parts.push({

@@ -113,6 +113,15 @@ export const EDGE_SCHEMA: Record<EdgeType, EdgeSchema> = {
     requiredProperties: [],
     description: 'Faction/actor controls a resource or location (jurisdiction).',
   },
+  owns: {
+    type: 'owns',
+    sourceNodeType: 'actor',
+    targetNodeType: ['location', 'resource'],
+    direction: 'directed',
+    cardinality: 'many-to-many',
+    requiredProperties: ['acquiredTick', 'via'],
+    description: 'Actor owns a location or resource as a holding — the thing is theirs, not merely under their jurisdiction (THR-1297). Deliberately NOT a reuse of `controls`: ~13 faction-territory consumers (army supply, sieges, threat, route events, economic power, prose, retinue) read every incoming `controls` edge as political control of territory, and five of them take `[0]?.source`, so widening `controls` would have made those reads nondeterministic (NFP #3) and let a power vacuum delete an agent\'s holdings. `holds_place_of_power` is the repo\'s own precedent for a narrow ownership edge coexisting with `controls`. Written ONLY by src/engine/holdings.ts. Properties: acquiredTick, via (grant|transfer|conquest|creation|migration).',
+  },
 
   // ── Social ─────────────────────────────────────────────────
   relates_to: {

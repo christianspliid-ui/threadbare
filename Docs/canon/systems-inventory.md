@@ -295,6 +295,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `hex` (7) | `hexActionBridge.ts`, `hexActorIndex.ts`, `hexGrid.ts`, `hexMovementPath.ts`, `hexRegion.ts`, `hexVignette.ts`, `hexZoom.ts` | `TB-046`, `THR-188` |
 | `hidden` (2) | `hiddenMarkProse.ts`, `hiddenMarks.ts` | `THR-132` |
 | `historical` (1) | `historicalCulture.ts` | — |
+| `holdings` (1) | `holdings.ts` | `THR-1297` |
 | `idle` (1) | `idleBehavior.ts` | — |
 | `influence` (1) | `influence.ts` | — |
 | `insider` (1) | `insiderBeatDetection.ts` | — |
@@ -395,4 +396,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 26 registered subsystems (1 dormant) · 99 tick phases · 176 engine domains · 520 modules._
+_Counts: 26 registered subsystems (1 dormant) · 99 tick phases · 177 engine domains · 521 modules._

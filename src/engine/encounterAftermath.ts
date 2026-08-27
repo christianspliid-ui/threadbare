@@ -1,4 +1,5 @@
 import type { GameState, TickEvent } from '../types/gameState';
+import { grantHolding } from './holdings';
 import { getFactionMembershipEdges } from './graphQueries';
 import { MAX_RECENT_EVENTS } from '../types/gameState';
 import { DEFAULT_REPUTATION } from '../types/disposition';
@@ -3756,13 +3757,18 @@ export function applyEncounterAftermathReaction(
             },
           });
           if (actorAgentId) {
-            state.graph.addEdge({
-              id: `controls_${actorAgentId}_${gwLocationId}`,
-              source: actorAgentId,
-              target: gwLocationId,
-              type: 'controls',
-              properties: { spawnedAtTick: tick, sourceEncounterId: encounterId },
-            });
+            // THR-1297: this was agent ownership riding `controls` with no flag to
+            // distinguish it from faction territory — the agent MADE this place, so it
+            // is theirs, not merely under their jurisdiction. Migrated to the holdings
+            // writer, which mints the `owns` edge and the bearer-side face together.
+            // `via: 'creation'` because a great work is owned by having been built.
+            grantHolding(
+              state.graph,
+              actorAgentId,
+              gwLocationId,
+              { tick, verb: 'create' },
+              'creation',
+            );
           }
 
           // Optional "extra-powerful artifact" — reuse the spawn_artifact tier path

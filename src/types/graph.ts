@@ -75,6 +75,7 @@ export type EdgeType =
   | 'bonded_to'        // actor bonded to legendary artifact
   | 'accompanies'      // bearer (actor) → companion (THR-1096, AccompaniesEdgeProperties)
   | 'controls'         // faction/actor controls resource
+  | 'owns'             // actor → the location/resource they hold as a holding (THR-1297; OwnsEdgeProperties)
   // Social
   | 'relates_to'       // inter-actor relationship (sentiment, strength, basis)
   | 'hostile_to'       // inter-actor hostility relation (e.g. excommunicated/rival targets)

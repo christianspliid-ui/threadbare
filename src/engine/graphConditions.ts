@@ -241,7 +241,15 @@ export function evaluateGraphCondition(
     }
 
     case 'agent_controls_location': {
-      const edges = graph.getOutgoingEdges(agentId, 'controls');
+      // THR-1297: reads `owns` as well as `controls`, which finally makes the
+      // condition's name honest. An *agent* holding a place holds it on an `owns`
+      // edge now; `controls` at agent scope is the divine economy's seat and the
+      // strategic stance. Content asking "does this agent hold a market?" means
+      // either, and before this it silently missed every holding.
+      const edges = [
+        ...graph.getOutgoingEdges(agentId, 'controls'),
+        ...graph.getOutgoingEdges(agentId, 'owns'),
+      ];
       return edges.some((edge) => {
         const locNode = graph.getNode(edge.target);
         return locNode?.properties.locationType === condition.locationType;

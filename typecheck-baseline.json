@@ -1,5 +1,5 @@
 {
-  "total": 2974,
+  "total": 2973,
   "command": "npx tsc -b --force --pretty false",
   "perFile": {
     "scripts/lint-encounter-content.ts": 2,
@@ -186,7 +186,7 @@
     "src/data/encounters/__tests__/wandering-healer-shrine-access.test.ts": 8,
     "src/data/encounters/flawed-steel.ts": 2,
     "src/data/encounters/pilgrims-offering.ts": 1,
-    "src/data/encounters/rival-shrine-betrayal.ts": 2,
+    "src/data/encounters/rival-shrine-betrayal.ts": 1,
     "src/data/encounters/road-ambush.ts": 1,
     "src/data/encounters/shadow-court-audience.ts": 1,
     "src/data/encounters/soul-ferryman.ts": 1,
@@ -267,6 +267,7 @@
     "src/engine/__tests__/balanceSummary.test.ts": 1,
     "src/engine/__tests__/battleAftermath.test.ts": 6,
     "src/engine/__tests__/battleResolution.test.ts": 1,
+    "src/engine/__tests__/birthPathDefects.test.ts": 1,
     "src/engine/__tests__/capabilityGrowth.test.ts": 2,
     "src/engine/__tests__/clearanceGate.test.ts": 9,
     "src/engine/__tests__/coastline-integration.test.ts": 6,
@@ -435,7 +436,7 @@
     "src/engine/__tests__/reputationWalk.test.ts": 4,
     "src/engine/__tests__/resourceSeeding.test.ts": 2,
     "src/engine/__tests__/retinue.test.ts": 6,
-    "src/engine/__tests__/returnEngine.test.ts": 19,
+    "src/engine/__tests__/returnEngine.test.ts": 18,
     "src/engine/__tests__/revelationActionCards.test.ts": 10,
     "src/engine/__tests__/revelationEmitter.test.ts": 4,
     "src/engine/__tests__/revelationGate.test.ts": 3,

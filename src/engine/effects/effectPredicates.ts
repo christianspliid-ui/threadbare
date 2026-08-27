@@ -203,6 +203,30 @@ export function buildPredicateContext(
     }
   }
 
+  // ── Standing on your own holding is home ground (THR-1297) ──────────────────
+  //
+  // The gap this closes, found by the ownership inventory: territory status was read
+  // ONLY through faction control, so an agent standing in a place they personally own
+  // — but whose hex flies another faction's banner — evaluated `in_enemy_territory` on
+  // their own land, and `at_home_territory` was unreachable for anyone factionless.
+  // In game terms: your people fight a little better defending what is theirs.
+  //
+  // Runs after the faction pass and OVERRIDES it: title beats jurisdiction here, and
+  // the enemy flag is cleared, because a place cannot be enemy ground to the person
+  // who owns it. It is also gated on nothing but the `owns` edge — no faction
+  // required — which is the half that makes it reachable at all for unaffiliated
+  // agents.
+  const ownedIds = new Set(graph.getOutgoingEdges(agentId, 'owns').map(e => e.target));
+  if (ownedIds.size > 0) {
+    for (const le of graph.getOutgoingEdges(agentId, 'located_at')) {
+      if (!ownedIds.has(le.target)) continue;
+      atHomeTerritory = true;
+      inEnemyTerritory = false;
+      inWilderness = false;
+      break;
+    }
+  }
+
   // Health status
   const doom = (agentNode?.properties.doom as number) ?? 0;
   const maxDoom = (agentNode?.properties.maxDoom as number) ?? 100;
