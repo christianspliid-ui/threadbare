@@ -54,14 +54,25 @@ import { REACH_DOMAINS } from '../src/types/traits';
 import {
   ACTOR_TYPE_ROWS,
   ATTACHMENT_ROWS,
+  CODEX_SURFACE_TICKET,
+  CONSUMER_UNION_SPECS,
   EDGE_TYPE_ROWS,
   NODE_TYPE_ROWS,
+  WORLD_REF_KIND_DESCRIPTIONS,
+  WORLD_REF_TYPES_REL,
+  assertEveryKindDescribed,
   assertEveryMemberAnnotated,
+  assertKindUnionCoverage,
+  assertMirroredUnionsAgree,
+  parseDiscriminatedUnionKinds,
+  parsePropertyUnionMembers,
   parseUnionMembers,
   parseVisualKinds,
   stripLineComments,
   type AnchorRow,
   type AnchorStatus,
+  type ConsumerUnionSpec,
+  type KindUnionCoverage,
 } from './anchor-catalog-sources.ts';
 
 // ─── Tunable constants (NFP #1) ───────────────────────────────────────────────
@@ -74,6 +85,9 @@ const AFTERMATH_TYPES_REL = 'src/types/unifiedAction.ts';
 
 /** The Linear issue tracking the promotion of nations + named areas to real objects. */
 const BORDERS_GAP_TICKET = 'THR-1155';
+
+/** The ticket that made `WorldRefKind` this catalog's membership spine. */
+const SPINE_TICKET = 'THR-1212';
 
 /** The ticket whose gate consumes this catalog's declaration forms. */
 const GATE_TICKET = 'THR-1153';
@@ -131,6 +145,126 @@ function countByStatus(rows: readonly AnchorRow[]): Record<AnchorStatus, number>
   return counts;
 }
 
+/**
+ * Read one consumer union's members, using the parse shape its spec declares.
+ *
+ * `readSource` is passed in rather than closed over so this stays testable without
+ * touching the filesystem.
+ */
+function readConsumerUnion(
+  spec: ConsumerUnionSpec,
+  readSource: (rel: string) => string,
+): string[] {
+  const source = readSource(spec.sourceRel);
+  switch (spec.read.via) {
+    case 'named-union':
+      return parseUnionMembers(stripLineComments(source), spec.read.typeName, spec.sourceRel);
+    case 'property':
+      return parsePropertyUnionMembers(source, spec.read.propertyName, spec.sourceRel);
+    case 'discriminated-union':
+      return parseDiscriminatedUnionKinds(source, spec.read.typeName, spec.sourceRel);
+  }
+}
+
+/**
+ * Render the membership spine and the coverage matrix.
+ *
+ * Two tables, because they answer two different questions. The spine says what the
+ * vocabulary *is*; the matrix says which spokes speak each word, and — the part that
+ * carries the design argument — which do not, and why.
+ */
+function renderKindVocabulary(
+  worldRefKinds: readonly string[],
+  coverages: readonly KindUnionCoverage[],
+): string[] {
+  const lines: string[] = [];
+
+  const totalMapped = coverages.reduce((sum, c) => sum + c.mapped.length, 0);
+  const totalExtra = coverages.reduce((sum, c) => sum + c.extra.length, 0);
+
+  lines.push('## The kind vocabulary — `WorldRefKind` and its projections');
+  lines.push('');
+  lines.push(
+    `**\`WorldRefKind\` (\`${WORLD_REF_TYPES_REL}\`) is this catalog's membership spine** ` +
+      `(${SPINE_TICKET}). Every other entity-kind union in the tree is checked as a *projection* ` +
+      `of it: a member the spine cannot express, or a spine kind a union drops without saying ` +
+      `why, fails this generator by name. The dispositions live in ` +
+      '`scripts/anchor-catalog-sources.ts` and are checked in both directions, so a row ' +
+      'claiming an absence that has since been filled fails too.',
+  );
+  lines.push('');
+  lines.push('| Kind | What an author is naming |');
+  lines.push('|---|---|');
+  for (const kind of worldRefKinds) {
+    lines.push(`| \`${kind}\` | ${WORLD_REF_KIND_DESCRIPTIONS[kind]} |`);
+  }
+  lines.push('');
+
+  lines.push('### Coverage — which vocabulary speaks which kind');
+  lines.push('');
+  lines.push(
+    '`✓` the union carries the kind · `·` it deliberately does not (reason below the table).',
+  );
+  lines.push('');
+  lines.push(`| Kind | ${coverages.map((c) => c.spec.label.replace(/\./g, '.<br>')).join(' | ')} |`);
+  lines.push(`|---|${coverages.map(() => '---').join('|')}|`);
+  for (const kind of worldRefKinds) {
+    const cells = coverages.map((c) => (c.members.includes(kind) ? '✓' : '·'));
+    lines.push(`| \`${kind}\` | ${cells.join(' | ')} |`);
+  }
+  lines.push('');
+
+  lines.push(
+    `**Totals.** ${totalMapped} union members across ${coverages.length} vocabularies are ` +
+      `\`WorldRefKind\`s; ${totalExtra} ${totalExtra === 1 ? 'is' : 'are'} not, and ` +
+      `${totalExtra === 1 ? 'carries' : 'carry'} a curated reason. That ratio is the design's ` +
+      `own falsification test — the hub is fiction if the spokes routinely name things it ` +
+      `cannot express. Absences are **not** counted against it: a projection admitting fewer ` +
+      `kinds is what a projection is, and \`EntityNoticeAnchorKind\` having two members is a ` +
+      `fact about the Threads panel, not a disagreement about vocabulary.`,
+  );
+  lines.push('');
+
+  for (const coverage of coverages) {
+    lines.push(`#### \`${coverage.spec.label}\``);
+    lines.push('');
+    lines.push(`${coverage.spec.what} — \`${coverage.spec.sourceRel}\``);
+    lines.push('');
+    lines.push(`Members: ${coverage.members.map((m) => `\`${m}\``).join(', ')}`);
+    lines.push('');
+
+    if (coverage.extra.length > 0) {
+      lines.push('*Not referenceable kinds:*');
+      lines.push('');
+      for (const member of coverage.extra) {
+        lines.push(`- **\`${member}\`** — ${coverage.spec.extraMembers[member]}`);
+      }
+      lines.push('');
+    }
+
+    if (coverage.absent.length > 0) {
+      lines.push('*Deliberately absent:*');
+      lines.push('');
+      for (const kind of coverage.absent) {
+        lines.push(`- **\`${kind}\`** — ${coverage.spec.absentKinds[kind]}`);
+      }
+      lines.push('');
+    }
+  }
+
+  lines.push(
+    `**The four chip/segment unions are one union spelled four times** — ` +
+      `\`EncounterAftermathConceptRef.visualKind\`, the segment's \`entityKind\`, ` +
+      `\`ChangeItem.nounEntityKind\` and the adapter's mirror — and the generator fails if ` +
+      `they diverge. Three of them already said so in a doc comment and nothing checked it; ` +
+      `a copy that claims to be pinned and is not is worse than an unclaimed one, because a ` +
+      `reader stops looking. **Change all four together.**`,
+  );
+  lines.push('');
+
+  return lines;
+}
+
 /** Every classified row, in table order. Shared by the renderer and the summary line. */
 function allRows(input: {
   nodeTypes: readonly string[];
@@ -152,8 +286,18 @@ function render(input: {
   edgeTypes: string[];
   attachmentCategories: string[];
   visualKinds: string[];
+  worldRefKinds: string[];
+  coverages: readonly KindUnionCoverage[];
 }): string {
-  const { nodeTypes, actorTypes, edgeTypes, attachmentCategories, visualKinds } = input;
+  const {
+    nodeTypes,
+    actorTypes,
+    edgeTypes,
+    attachmentCategories,
+    visualKinds,
+    worldRefKinds,
+    coverages,
+  } = input;
 
   const rows = allRows({ nodeTypes, actorTypes, edgeTypes, attachmentCategories });
   const anchorable = rows.filter((r) => r.status === 'linked' || r.status === 'named').length;
@@ -208,6 +352,8 @@ function render(input: {
       'because its anchor cannot click; fold it when the referent is not a real object at all.',
   );
   lines.push('');
+
+  lines.push(...renderKindVocabulary(worldRefKinds, coverages));
 
   lines.push('## Nodes');
   lines.push('');
@@ -353,10 +499,25 @@ function main(): void {
   );
   const visualKinds = parseVisualKinds(aftermathSource, AFTERMATH_TYPES_REL);
 
+  // The membership spine (THR-1212). `src/types/worldRef.ts` is deliberately
+  // import-free precisely so it can be read as text here without resolving a module
+  // graph — see its header.
+  const worldRefKinds = parseUnionMembers(
+    stripLineComments(readSource(WORLD_REF_TYPES_REL)),
+    'WorldRefKind',
+    WORLD_REF_TYPES_REL,
+  );
+
   assertEveryMemberAnnotated(nodeTypes, NODE_TYPE_ROWS, 'NodeType');
   assertEveryMemberAnnotated(actorTypes, ACTOR_TYPE_ROWS, 'ActorType');
   assertEveryMemberAnnotated(edgeTypes, EDGE_TYPE_ROWS, 'EdgeType');
   assertEveryMemberAnnotated(attachmentCategories, ATTACHMENT_ROWS, 'AttachmentCategory');
+  assertEveryKindDescribed(worldRefKinds);
+
+  const coverages = CONSUMER_UNION_SPECS.map((spec) =>
+    assertKindUnionCoverage(spec, readConsumerUnion(spec, readSource), worldRefKinds),
+  );
+  assertMirroredUnionsAgree(coverages);
 
   const rendered = render({
     nodeTypes,
@@ -364,6 +525,8 @@ function main(): void {
     edgeTypes,
     attachmentCategories,
     visualKinds,
+    worldRefKinds,
+    coverages,
   });
 
   const outPath = path.join(REPO_ROOT, OUTPUT_REL);
@@ -391,11 +554,19 @@ function main(): void {
   // `nation` is deliberately absent from the counts: it is not a union member, which
   // is precisely the finding. Reporting it as a tallied row would imply the type
   // system knows about it.
+  const mapped = coverages.reduce((sum, c) => sum + c.mapped.length, 0);
+  const extra = coverages.reduce((sum, c) => sum + c.extra.length, 0);
+
   console.log(
     `anchor-catalog: wrote ${OUTPUT_REL} — ` +
       `${counts.linked} linked, ${counts.named} named, ${counts.reserved} reserved, ` +
       `${counts['not-an-anchor']} not-an-anchor. Nation recorded as a gap ` +
       `(no union member exists), tracked by ${BORDERS_GAP_TICKET}.`,
+  );
+  console.log(
+    `anchor-catalog: spine — ${worldRefKinds.length} \`WorldRefKind\`s across ` +
+      `${coverages.length} consumer vocabularies; ${mapped} members map to the spine, ` +
+      `${extra} do not (curated). Codex reserved, tracked by ${CODEX_SURFACE_TICKET}.`,
   );
 }
 

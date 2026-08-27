@@ -24,7 +24,26 @@ First slice of wave-1 design A. **Additive and migrated into nothing** — every
 
 **Sentinel grammar is delegated, not copied.** `resolveWorldRef` calls `resolveAnchorDeclaration` — one rule read three times (the Law 56 gate, the chip renderer, and now any `WorldRef` consumer), which was THR-1164's explicit design. A second sentinel table is exactly the fork that design prevents.
 
-**Still owed by later slices of THR-1212:** the catalog's `WorldRefKind` membership spine + kind-union coverage lint (item 2), the `check:chip-anchors` ratchet baseline (item 3), the consumption ledger (item 4), the no-op gate contract test on a seeded world (item 5), and the `followOnTags` retirement (item 6). No interface-map row is claimed this slice — there is no cross-system consumer to badge yet, and badging a path no code travels is the leak that registry exists to prevent.
+**Still owed by later slices of THR-1212:** the catalog's `WorldRefKind` membership spine + kind-union coverage lint (item 2 — **shipped, see below**), the `check:chip-anchors` ratchet baseline (item 3), the consumption ledger (item 4), the no-op gate contract test on a seeded world (item 5), and the `followOnTags` retirement (item 6). No interface-map row is claimed this slice — there is no cross-system consumer to badge yet, and badging a path no code travels is the leak that registry exists to prevent.
+
+---
+
+## Shared anchor machinery — the membership spine and the coverage lint (THR-1212 slice 2)
+
+Build-time only. No orchestrator phase, modal, GameState field or player control is added, so the checklist's runtime columns are N/A by construction — what a build-time module owes instead is **freshness registration**, and that is what this row records.
+
+| Module | Orchestrator phase | UI component | GameState field | Trace emitted | Debug visibility |
+|--------|-------------------|-------------|-----------------|---------------|-----------------|
+| `scripts/generate-anchor-catalog.ts` (extended) | N/A — build time (`prebuild`) | N/A | none | none | the generated `.md` **is** the surface |
+| `scripts/anchor-catalog-sources.ts` (extended) | N/A — curated dispositions + guards | N/A | none | none | failure messages name the member and the file |
+
+**Freshness registration — the wiring that actually matters here.** The generator now parses six further files, and an unregistered source is invisible to `check:generated-freshness`: the catalog could publish a coverage matrix computed from a union that had since changed, and the gate would report OK. All six are registered in `STATIC_ARTIFACT_SOURCES` (`scripts/generated-artifact-sources.ts`) in the same PR that starts reading them — `src/types/worldRef.ts`, `src/types/worldRefAdapters.ts`, `src/types/notification.ts`, `src/data/entity-visual-fallbacks.ts`, `src/components/Game/encounter-stage/types.ts`, and `scripts/anchor-catalog-sources.ts` itself (the dispositions change the output with no other file moving). The output path was already in `STATIC_GENERATED_PATHS`; its comment there now points at that row as the single place sources are declared.
+
+**The guards were falsified, not merely written.** Adding a `codex` arm to `NavigationTarget` in the live tree fails the generator by name and exits 1 — the contract promised to THR-1315 in its coordination block, checked as a controlled arm rather than asserted in a comment. Unit tests cover the other three drift directions plus both parser refusals.
+
+**One guard is narrower than it first appears, recorded so nobody re-derives it.** `assertMirroredUnionsAgree` does *not* catch one of the four chip/segment unions falling behind the others — the coverage lint already does, because all four specs share one `absentKinds` record, so the odd one out trips a stale-or-undocumented absence first (verified by arm: `army` added to the adapter mirror alone fails inside `assertKindUnionCoverage`). What the mirror guard uniquely owns is the case where all four move *together* and `CHIP_UNION_MEMBERS` — the only written record of the canonical spelling — is left stale. Its doc comment and its test say exactly that, because a guard advertising reach it does not have is the same failure as the three unchecked "pinned" doc comments this slice replaced.
+
+**No interface-map row this slice either**, for the same reason as slice 1: a build-time generator is not a cross-system runtime contract.
 
 ---
 

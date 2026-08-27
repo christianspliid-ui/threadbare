@@ -73,6 +73,9 @@ const STATIC_GENERATED_PATHS: readonly string[] = [
   // generate-anchor-catalog (THR-1154). Registered in the same PR that adds the
   // generator, deliberately: an anchor catalog that goes stale is worse than none,
   // because authors would anchor chips against a vocabulary the code no longer has.
+  // THR-1212 slice 2 widened its inputs to `src/types/worldRef.ts` plus the six other
+  // kind vocabularies — see this artifact's row in STATIC_ARTIFACT_SOURCES, which is
+  // the single place those sources are declared.
   ".claude/skills/encounter-pipeline/reference/anchor-catalog.generated.md",
 ];
 
