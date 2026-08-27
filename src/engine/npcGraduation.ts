@@ -77,7 +77,12 @@ const IMPORTANCE_DELTAS: Record<ImportanceSource, number> = {
 
 // ─── Role → wealth lookup (NFP #1) ───────────────────────────────────────────
 
-const ROLE_WEALTH: Record<string, number> = {
+/**
+ * Exported for the binder's mint path (THR-1296 §5): a minted inhabitant is born at
+ * `notable` fidelity, and the plan's contract is that it reuses the graduation
+ * generators rather than inventing a parallel wealth table.
+ */
+export const ROLE_WEALTH: Record<string, number> = {
   merchant:       60,
   trader:         55,
   noble:          70,
@@ -108,7 +113,8 @@ const ROLE_WEALTH: Record<string, number> = {
   exorcist:       20,
   oracle:         15,
 };
-const DEFAULT_WEALTH = 20;
+/** Wealth for a role the table does not name. Exported alongside `ROLE_WEALTH`. */
+export const DEFAULT_WEALTH = 20;
 
 // ─── Tier ordering (for comparison) ──────────────────────────────────────────
 
@@ -153,8 +159,12 @@ export function bumpImportance(
 /**
  * Generate domainCapabilities weighted by role reach affinity.
  * Primary reach gets the highest scores, secondary gets moderate, others get low.
+ *
+ * Exported for the binder's mint path (THR-1296 §5). This is the scale
+ * `computeCapability`'s sigmoid expects — a mint generated on any other scale fails
+ * every reach floor silently, which is exactly what today's support mints do.
  */
-function generateRoleCapabilities(
+export function generateRoleCapabilities(
   rng: () => number,
   affinity: { primary: ReachDomain; secondary: ReachDomain } | undefined,
   tier: 'notable' | 'spotlight',

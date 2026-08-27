@@ -40,6 +40,7 @@
 import type { WorldGraph } from '../graph';
 import type { GraphNode } from '../../types/graph';
 import type { ValuePair, AxiologicalProfile } from '../../types/agent';
+import type { UndertakingIdentityRequirement } from '../../types/strategicAction';
 import type { BindingDecisionRow } from '../../types/trace';
 import { isAgentGone } from '../groups/groupQueries';
 import { getAgentBonds, getFactionMembershipEdges } from '../graphQueries';
@@ -70,13 +71,14 @@ import {
  * `identityRequirement` is the schema seam doc 2 (THR-1297) authors values into; this
  * plan defines its shape and ships the engine that honors it, deliberately with no
  * authored rows of its own.
+ *
+ * The shape itself lives in `src/types/strategicAction.ts` as
+ * `UndertakingIdentityRequirement` — the mint request (slice 3) has to carry the same
+ * thing through the queue, and a types module must not reach into the engine for a
+ * three-field interface. One definition, aliased here under the name the board reads
+ * it by, so the two can never drift apart.
  */
-export interface BindingIdentityRequirement {
-  readonly axis: ValuePair;
-  readonly pole: 'virtue' | 'vice';
-  /** Distance from neutral (0.5 canonical) the candidate must clear, 0–0.5. */
-  readonly minStrength: number;
-}
+export type BindingIdentityRequirement = UndertakingIdentityRequirement;
 
 export interface BindingRequest {
   readonly projectId: string;

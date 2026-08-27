@@ -19,8 +19,8 @@ remediation ticket or the build fails.
 | 🟠 PARTIAL | 2 |
 | 🔴 LEAKED | 8 |
 | ⚫ UNWIRED | 0 |
-| 🔵 UNVERIFIED-OK | 14 |
-| **Total** | **84** |
+| 🔵 UNVERIFIED-OK | 15 |
+| **Total** | **85** |
 
 ## Contracts by producing subsystem
 
@@ -40,6 +40,7 @@ remediation ticket or the build fails.
 | `ambition-motive-receipts` | Ambitions explain motives — receipts carry ambition provenance into foreshadowing. | trace: `ambitionBoost` | Omens & Atmospheric Pressure | 🟢 LIVE | — |
 | `ambition-player-visibility` | The player can see what a mortal is striving for. | function: `getAmbitionsStrand` | Intelligence, Knowledge & Familiarity | 🟢 LIVE | — |
 | `ambition-progress-milestones` | Ambitions progress and complete, firing milestone events the player sees. | function: `phaseAmbitionProgress` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
+| `binder-mint-valve` | When an undertaking needs a person the world does not have, that person is born the way every other mortal is born — through the lifecycle’s one-per-tick gate — instead of appearing on the spot. An unmetered spawn path is how a large map reached ~1010 agents by tick 72 (THR-814/THR-162), and the budget is what stops the binder becoming a second one. | state-field: `mintQueue`, `drainMintQueue`, `BINDER_MINT_BUDGET_PER_TICK`, `binder_mint` | Agent Lifecycle | 🔵 UNVERIFIED-OK | THR-1296 |
 | `faction-ambitions-drive-action` | Faction ambitions drive faction action and render on the faction sheet. | function: `factionAmbitions` | Factions & Succession | 🟢 LIVE | — |
 | `minted-ambition-provenance` | Motive receipts name the origin of a minted want — "she seeks vengeance for the blighted fields." | edge-prop: `mintedByEventId` | Omens & Atmospheric Pressure | 🟢 LIVE | — |
 
@@ -201,9 +202,10 @@ remediation ticket or the build fails.
 - **Intent:** Agents acquire ambitions at worldgen, birth, and re-evaluation.
 - **Producer → Consumer:** Agent Lifecycle → Ambitions & Undertakings
 - **UL terms:** *Ambition*
-- **Production hits:** 5 total — 1 write, 4 read, 0 unclassified
+- **Production hits:** 6 total — 1 write, 4 read, 1 unclassified
 - **Write sites:** `src/engine/ambitionAssignment.ts`
 - **Read sites:** `src/engine/agentLifecycle.ts`, `src/engine/ambitionTick.ts`, `src/engine/gameInit.ts`, `src/engine/worldSeed.ts`
+- **Other hits:** `src/engine/binding/mintInhabitant.ts`
 - **Verdict:** Verified 2026-07-23: pursues edges grow 32→225 over 120 ticks, 182 active. Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified)
 
 ### `ambition-biases-encounter-choice` — 🟢 LIVE
@@ -432,10 +434,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Factions & Succession
 - **UL terms:** *Encounter*, *Faction*
 - **Module:** `src/engine/encounterAftermath.ts`
-- **Production hits:** 9 total — 1 write, 1 read, 7 unclassified
+- **Production hits:** 10 total — 1 write, 1 read, 8 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`
 - **Read sites:** `src/engine/factionReputation.ts`
-- **Other hits:** `src/data/encounters/the-beast-in-the-granary.ts`, `src/data/encounters/toll-of-blades.ts`, `src/engine/chosenFactionPowers.ts`, `src/engine/factionMembership.ts`, `src/engine/factionOutcome.ts` +2 more
+- **Other hits:** `src/data/encounters/the-beast-in-the-granary.ts`, `src/data/encounters/toll-of-blades.ts`, `src/engine/binding/mintInhabitant.ts`, `src/engine/chosenFactionPowers.ts`, `src/engine/factionMembership.ts` +3 more
 - **Verdict:** Verified 2026-08-17: THR-1150. `applyFactionReputationGain` matched memberships with `e.target === factionId`, a faction NODE id, while every authored `faction_reputation_gain` passes a DEFINITION id ('mercenary_company', 'temple_of_spheres', 'underking_court', 'rangers_brotherhood', 'lorekeepers_covenant'). `factionSeeding` keys the node `faction_def_<definitionId><chapterSuffix>`, so the authored id matched no node and no edge target: every faction-standing consequence in the shipped game was a no-op. Both halves are now proven against a real `initializeGameState(seed 42, medium)` world rather than a fixture — `src/engine/__tests__/factionReputationSeededWorld.test.ts` asserts the seeded node id contains the definition id AND that the definition id resolves to no node, then fires the effect with the authored value and reads the reputation move off the seeded edge. Falsified at 1-of-3 red with the fix reverted; the two arms that stay green are the deliberate controls (the premise assertion, and the already-tracing faction_not_found path). Resolution is widening-only by `resolveFactionNodeId`'s exact-node-id-first order, so the three pre-existing node-id callers (`processFactionEncounterReputation`, `factionOutcome`, `chosenFactionPowers`) resolve to themselves — pinned by the 'explicit faction node id still works' arm in `aftermathFactionDefinitionId.test.ts`, 4-of-6 red without the fix. The second half is the trace: the `newRank === 'none'` sentinel used to `break` SILENTLY, which is why a corpus-wide dead effect survived to be found by an unrelated ticket. It now emits `encounter_aftermath_effect` with `failReason: 'not_a_member' | 'faction_not_found'`, and `faction_reputation_gain` was added to `EncounterAftermathEffectTrace.effectKind` so all four traces in the arm emit unlaundered — the cast ratchet (THR-1065) fell 110 → 107. Corpus pinned by `src/testing/__tests__/factionEffectIds.lint.test.ts`, which deep-walks UNIFIED_ACTION_TEMPLATES for all eight faction-carrying effect kinds and fails on any id naming no FACTION_DEFINITIONS entry — with a population guard, since a `<=` over an empty walk is the vacuous pass this lint exists to avoid.
 
 ### `authored-nudge-hand-reaches-resolution` — 🔵 UNVERIFIED-OK
@@ -497,6 +499,17 @@ exit
 - **Read sites:** `src/engine/unifiedActionResolution.ts`
 - **Other hits:** `src/engine/encounterSeeding.ts`
 - **Verdict:** Verified 2026-07-25: Organic 150-tick CLI run, seed 42 medium (no forcing, no debug spawns): the Temple of the Spheres fielded a defender band, "The Temple of the Spheres' Sparrows", which was met by Company of the Inn at t81 and by Flintlock's Band at t84. Trace at t81: [group_contested] "Company of the Inn came off best against The Temple of the Spheres' Sparrows. Bagaabraa did not walk away." Both companies carry hostile_to edges with cause group_engagement; the band fell 0.70 → 0.19 cohesion and disbanded through the shipped phaseGroups cascade. Unit-locked by src/engine/groups/__tests__/bandOpposition.test.ts (22 tests) incl. the fail-soft degradation rows.
+
+### `binder-mint-valve` — 🔵 UNVERIFIED-OK
+
+- **Intent:** When an undertaking needs a person the world does not have, that person is born the way every other mortal is born — through the lifecycle’s one-per-tick gate — instead of appearing on the spot. An unmetered spawn path is how a large map reached ~1010 agents by tick 72 (THR-814/THR-162), and the budget is what stops the binder becoming a second one.
+- **Producer → Consumer:** Ambitions & Undertakings → Agent Lifecycle
+- **Module:** `src/engine/binding/mintInhabitant.ts`
+- **Production hits:** 5 total — 1 write, 1 read, 3 unclassified
+- **Write sites:** `src/engine/binding/mintInhabitant.ts`
+- **Read sites:** `src/engine/agentLifecycle.ts`
+- **Other hits:** `src/data/binder-constants.ts`, `src/types/strategicAction.ts`, `src/types/trace.ts`
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `branch-decision-writes-archetype-drift` — 🔴 LEAKED
 
@@ -785,10 +798,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Encounter*, *Faction*, *Prerequisite*
 - **Module:** `src/engine/factionMembership.ts`
-- **Production hits:** 15 total — 1 write, 1 read, 13 unclassified
+- **Production hits:** 16 total — 1 write, 1 read, 14 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`
 - **Read sites:** `src/engine/effects/effectPredicates.ts`
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/data/agent-behavior-constants.ts`, `src/data/encounters/the-beast-in-the-granary.ts`, `src/data/encounters/toll-of-blades.ts`, `src/engine/effectResolver.ts` +8 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/data/agent-behavior-constants.ts`, `src/data/encounters/the-beast-in-the-granary.ts`, `src/data/encounters/toll-of-blades.ts`, `src/engine/binding/mintInhabitant.ts` +9 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `mentorship-rides-undertaking-checkpoints` — 🟢 LIVE
@@ -842,10 +855,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Ambitions & Undertakings
 - **UL terms:** *Nudge*, *Ambition*
 - **Module:** `src/engine/encounters/nudgeDispatch.ts`
-- **Production hits:** 9 total — 1 write, 2 read, 6 unclassified
+- **Production hits:** 10 total — 1 write, 2 read, 7 unclassified
 - **Write sites:** `src/engine/phases/phaseAutonomousAftermath.ts`
 - **Read sites:** `src/engine/ambitionAssignment.ts`, `src/engine/encounterAftermath.ts`
-- **Other hits:** `src/data/encounters/the-broken-seal.ts`, `src/engine/encounters/dealHand.ts`, `src/engine/encounters/nudgeDispatch.ts`, `src/engine/encounters/poleLean.ts`, `src/engine/unifiedActionResolution.ts` +1 more
+- **Other hits:** `src/data/encounters/the-broken-seal.ts`, `src/engine/binding/mintInhabitant.ts`, `src/engine/encounters/dealHand.ts`, `src/engine/encounters/nudgeDispatch.ts`, `src/engine/encounters/poleLean.ts` +2 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `nudge-hand-runtime-filters-and-sphere-discount` — 🔵 UNVERIFIED-OK

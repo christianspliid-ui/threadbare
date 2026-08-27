@@ -220,7 +220,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `activity` (1) | `activitySummary.ts` | — |
 | `aftermath` (1) | `aftermathWords.ts` | `THR-1004` |
 | `agenda` (1) | `agendaGenerator.ts` | — |
-| `agent` (7) | `agentActivity.ts`, `agentAttachments.ts`, `agentDetail.ts`, `agentLifecycle.ts`, `agentResidence.ts`, `agentSelection.ts`, `agentValidation.ts` | `THR-719`, `THR-822` |
+| `agent` (8) | `agentActivity.ts`, `agentAttachments.ts`, `agentDetail.ts`, `agentGeneration.ts`, `agentLifecycle.ts`, `agentResidence.ts`, `agentSelection.ts`, `agentValidation.ts` | `THR-1289`, `THR-1296`, `THR-719`, `THR-822` |
 | `ambition` (6) | `ambitionAssignment.ts`, `ambitionBoost.ts`, `ambitionLifecycle.ts`, `ambitionSelection.ts`, `ambitionShape.ts`, `ambitionTick.ts` | `THR-1277`, `THR-1285`, `THR-885` |
 | `anoint` (1) | `anointSuccessor.ts` | `THR-432`, `THR-74` |
 | `archetype` (1) | `archetypeEpithet.ts` | `Phase 12`, `TB-075` |
@@ -233,7 +233,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `backstory` (2) | `backstoryGenerator.ts`, `backstoryResolvers.ts` | — |
 | `balance` (4) | `balanceEvaluator.ts`, `balanceSummary.ts`, `balanceTargets.ts`, `balanceTelemetry.ts` | `Phase 1` |
 | `battle` (3) | `battleAftermath.ts`, `battleResolution.ts`, `battleSpotlights.ts` | `Phase 3`, `Phase 4`, `Phase 5`, `TB-073` |
-| `binding` (3) | `binding/binder.ts`, `binding/bindingRegistry.ts`, `binding/roleCensus.ts` | `THR-1289`, `THR-1290`, `THR-1296` |
+| `binding` (4) | `binding/binder.ts`, `binding/bindingRegistry.ts`, `binding/mintInhabitant.ts`, `binding/roleCensus.ts` | `THR-1289`, `THR-1290`, `THR-1296` |
 | `broken` (1) | `brokenState.ts` | `THR-773` |
 | `callback` (1) | `callbackEligibility.ts` | — |
 | `capability` (1) | `capabilityGrowth.ts` | — |
@@ -394,4 +394,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 26 registered subsystems (1 dormant) · 99 tick phases · 175 engine domains · 511 modules._
+_Counts: 26 registered subsystems (1 dormant) · 99 tick phases · 175 engine domains · 513 modules._

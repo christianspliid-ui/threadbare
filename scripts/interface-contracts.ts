@@ -2138,6 +2138,33 @@ export const CONTRACTS: readonly Contract[] = [
     verifiedLive:
       'mentorshipUndertaking.test.ts (30 tests) covers eligibility, bootstrap, band-driven bond drift, milestone seeds, separation, divine sever and both terminal verdicts; a 150-tick seed-42 CLI run produced live `mentors` edges and one completed `strategic_train_apprentice`.',
   },
+  {
+    id: 'binder-mint-valve',
+    producerSystem: 'Ambitions & Undertakings',
+    consumerSystem: 'Agent Lifecycle',
+    intent:
+      'When an undertaking needs a person the world does not have, that person is born the way every other mortal is born — through the lifecycle’s one-per-tick gate — instead of appearing on the spot. An unmetered spawn path is how a large map reached ~1010 agents by tick 72 (THR-814/THR-162), and the budget is what stops the binder becoming a second one.',
+    // Keyed on the queue, not on `mintInhabitant`: the durable thing crossing the
+    // boundary is `strategicState.mintQueue` and the budget that drains it. The
+    // birth function is one module's business; the valve is the interface.
+    mechanism: {
+      kind: 'state-field',
+      symbols: ['mintQueue', 'drainMintQueue', 'BINDER_MINT_BUDGET_PER_TICK', 'binder_mint'],
+      module: 'src/engine/binding/mintInhabitant.ts',
+    },
+    writeSites: [
+      'src/engine/binding/mintInhabitant.ts',
+    ],
+    readSites: [
+      'src/engine/agentLifecycle.ts',
+    ],
+    // No `verifiedLive`: the valve is wired and tested end to end, but nothing
+    // *enqueues* yet — the bind pass that produces requests is slice 4 (THR-1296
+    // §3). Badging LIVE would badge a path no simulation travels. The consumer half
+    // is real today: `phaseAgentLifecycle` drains the queue inside its births block
+    // on every tick, and `mintInhabitant.test.ts` drives that path.
+    deferralTicket: 'THR-1296',
+  },
 ];
 
 /** A malformed row — surfaced in the generated output rather than thrown (NFP #4). */
