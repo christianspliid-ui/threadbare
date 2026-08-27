@@ -2280,6 +2280,41 @@ export const CONTRACTS: readonly Contract[] = [
     // the ledger is empty until a template declares cast.
     deferralTicket: 'THR-1297',
   },
+  {
+    id: 'encounter-scored-binder-optin',
+    producerSystem: 'Encounters & Dilemmas',
+    consumerSystem: 'Ambitions & Undertakings',
+    intent:
+      'An encounter template can opt its cast onto the same scored board undertakings use, one template at a time. Two things follow for a migrated template: casting stops being "the first body at this place whose job title matches" and starts weighing story ties, identity fit, distance and role scarcity; and its authored `must-persist` declarations finally reach the binding ledger, so housekeeping defers on that person and a reaper’s kill is traced as a severance instead of vanishing. The recon (THR-1289) measured `persistence` as written 60+ times across the corpus and read by zero consumers — this is the seam that starts retiring that, without a big-bang migration the un-migrated corpus would have to survive.',
+    mechanism: {
+      kind: 'function',
+      symbols: [
+        'useScoredBinder',
+        'EncounterBinderContext',
+        'prepareEncounterSupportBundle',
+        'resolveBinding',
+      ],
+      module: 'src/engine/encounterSupportBundle.ts',
+    },
+    writeSites: [
+      'src/engine/encounterSupportBundle.ts',
+      'src/engine/phaseAgentDecision.ts',
+      'src/data/encounters/one-body-short.ts',
+    ],
+    readSites: [
+      'src/engine/binding/binder.ts',
+      'src/engine/binding/bindingRegistry.ts',
+      'src/engine/binding/applyBinding.ts',
+    ],
+    // Slice 6 ships the route and migrates one shipped template, so unlike the two
+    // rows above this one is reachable without doc 2. It stays UNVERIFIED-OK rather
+    // than LIVE on measured evidence, not on caution: 120 ticks at seed 42/medium
+    // produced 91 encounter actions across 52 templates and zero firings of the
+    // exemplar, so no live run has yet travelled it. THR-1305 carries the live proof
+    // (and the debug-tool call sites, which supply no context and so review a
+    // migrated template through the legacy path).
+    deferralTicket: 'THR-1305',
+  },
 ];
 
 /** A malformed row — surfaced in the generated output rather than thrown (NFP #4). */
