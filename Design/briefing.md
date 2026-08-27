@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-08-27 09:55 local (07:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-08-27 10:54 local (08:54 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -9,15 +9,15 @@
 
 The brief needs one specific answer: it proposes **seven** rather than the six your batch-size ruling set, because the camp set is one family in one file. Three ways to close it — *"batch 2, seven is fine"*, *"keep it six"*, or *"same rule — judge batch 2 on one first."*
 
-**Why it is still the lead, an hour after the pipeline proved it works.** The 08:57 brief retired the "empty board" argument because a design session had just filled the shelf. That was true for fifty-five minutes. The builder took [the binder](https://linear.app/threadbare/issue/THR-1296/the-binder-proactive-agent-actions-plan-doc-36) at 09:01, shipped slices 1–2 by 09:30 ([PR #1661](https://github.com/christianspliid-ui/threadbare/pull/1661)), and **Ready for Dev is back to zero.** Nothing is stalled — the binder has slices left and the builder is on them — but there is nothing queued behind it.
+**Why it stays the lead while the build is moving.** The binder is being built well — [slice 3 merged and deployed](https://github.com/christianspliid-ui/threadbare/pull/1662) since the last brief, on top of slices 1–2 an hour before. Nothing is stalled. But **Ready for Dev is still zero**, and every other queued item needs either a design hour from you or a decision from you. The camp seven is the one thing on the board that is buildable content with **no plan doc in front of it** — it waits only on your yes.
 
-The camp seven is the one thing on the whole board that fixes that **without costing you a design hour**: buildable content, no plan doc in front of it, waiting only on your yes. And `shrine_offering` among them is encounter #1 of [your integrated slice checkpoint](https://linear.app/threadbare/issue/THR-1220), which cannot invite you to the sitting you asked for on 24 August until they are rewritten.
+And `shrine_offering` among them is encounter #1 of [your integrated slice checkpoint](https://linear.app/threadbare/issue/THR-1220), which cannot invite you to the sitting you asked for on 24 August until they are rewritten.
 
 **Recommendation:** open the two *good ending* links first (~5 min) — [Grateful Kin](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin&outcome=critical_success), [Unsafe Bridge](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge&outcome=critical_success). The bond chip now names who owes whom and clicks through to the debtor; that is the change most likely to settle the question on its own. The bar the brief is written against is live with no caveats: [The Beast in the Granary](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.hunt.the_beast_in_the_granary).
 
 ## Also waiting (10)
 
-- **[Design hours](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** — still the binding constraint, and **corrected downward this hour**: of the four remaining carve-up docs, only **two can start today** — [the reactive loop](https://linear.app/threadbare/issue/THR-1298) and [the calling & surfaces](https://linear.app/threadbare/issue/THR-1299). [THR-1297](https://linear.app/threadbare/issue/THR-1297) waits on the binder and [THR-1300](https://linear.app/threadbare/issue/THR-1300) waits on that. Card grammar has now held ten days, [traits wave 2](https://linear.app/threadbare/issue/THR-790) thirteen.
+- **[Design hours](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** — still the binding constraint. Of the four remaining carve-up docs, **two can start today**: [the reactive loop](https://linear.app/threadbare/issue/THR-1298) and [the calling & surfaces](https://linear.app/threadbare/issue/THR-1299). [THR-1297](https://linear.app/threadbare/issue/THR-1297) waits on the binder, [THR-1300](https://linear.app/threadbare/issue/THR-1300) behind that. Card grammar has held ten days, [traits wave 2](https://linear.app/threadbare/issue/THR-790) thirteen.
 - **[Physical Conflict map](https://linear.app/threadbare/issue/THR-1258/wayfinder-map-physical-conflict)** — nine questions open to you; two are the keystone and release three of the rest.
 - **[Twenty spells](https://linear.app/threadbare/issue/THR-1232)** and **[thirty items](https://linear.app/threadbare/issue/THR-1236)** — the last open question on each map; sketches built for you to react to.
 - **[Image credits](https://linear.app/threadbare/issue/THR-876/regenerate-the-5-quarantined-meet-the-first-scene-assets-doctrine)** — should the spend be gated on you at all?
@@ -30,13 +30,16 @@ The camp seven is the one thing on the whole board that fixes that **without cos
 
 ## Queue
 
-**Zero ready, one live claim.** The shelf refilled at 08:46 and drained again at 09:01 — one item in, one item out, same hour.
+**Zero ready, one live claim — third hour running.** Nothing has entered Ready for Dev since the binder was taken at 09:01.
 
-- **[THR-1296 — the binder](https://linear.app/threadbare/issue/THR-1296/the-binder-proactive-agent-actions-plan-doc-36)** is In Dev, claimed 09:01, slices 1–2 merged 09:30 ([PR #1661](https://github.com/christianspliid-ui/threadbare/pull/1661)). Tier-1 critical path and the gate on doc 2. The WIP=1 slot is occupied, so a zero shelf is starving nothing *right now* — the pickup lane wakes at 10:01 and will resume this.
+- **[THR-1296 — the binder](https://linear.app/threadbare/issue/THR-1296/the-binder-proactive-agent-actions-plan-doc-36)** is In Dev and moving well: slices 1–2 merged 09:30 ([PR #1661](https://github.com/christianspliid-ui/threadbare/pull/1661)), slice 3 merged and deployed since ([PR #1662](https://github.com/christianspliid-ui/threadbare/pull/1662)). Tier-1 critical path and the gate on [doc 2](https://linear.app/threadbare/issue/THR-1297). The WIP=1 slot is occupied, so a zero shelf starves nothing *this hour*.
 - **Nothing is queued behind it.** When the binder lands, the shelf is empty unless batch 2 is approved or one of the two startable design sessions has run.
+- Four new deferrals were filed off the binder plan this morning ([THR-1287](https://linear.app/threadbare/issue/THR-1287), [THR-1301](https://linear.app/threadbare/issue/THR-1301), [THR-1302](https://linear.app/threadbare/issue/THR-1302), [THR-1303](https://linear.app/threadbare/issue/THR-1303)) — all agent-scoped follow-ups in Todo, none need you.
 - Three deliberate parks, all awaiting you and none stale for lane reasons: [THR-1130](https://linear.app/threadbare/issue/THR-1130) (batch-1 sample verdict, open since 17 August), [THR-1133](https://linear.app/threadbare/issue/THR-1133) (pixel pass), [THR-1168](https://linear.app/threadbare/issue/THR-1168) (held breath).
 - No open PRs. [THR-1222](https://linear.app/threadbare/issue/THR-1222) sits in Todo behind a state gate that is your chat approval, not a ticket.
 
 ## Health
 
-**All green.** Deploy is serving the latest commit on `main` (`2384f225`), CI healthy, both scheduled background jobs healthy, all 9 scheduled tasks within schedule, no PR waiting on anything, reaper ran 09:40. Home tree is on `main` and level with `origin/main`; its only modification is a local settings file, which is inert.
+**All green.** Deploy is serving the latest commit on `main` (`07ab98b9`), CI healthy, both scheduled background jobs healthy, all 9 scheduled tasks within schedule, no PR waiting on anything, reaper ran 10:40. Home tree is on `main` and level with `origin/main`; its only modification is a local settings file, which is inert.
+
+The one non-green signal is the lane-quiet question already on your list above — a historical 35-hour gap on 20–22 August with no pause marker covering it. Two smaller overnight gaps this week are normal quiet and declined per your 8 August ruling.
