@@ -1,18 +1,20 @@
 # User Action Required
 
-**Last updated:** 2026-08-27 04:55 local (02:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-27 05:56 local (03:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
-### 1. Approve the batch-2 brief — [THR-1222](https://linear.app/threadbare/issue/THR-1222/run-retrofit-batch-2-the-camp-seven-through-the-factory-line-shrine)
+### 1. One sitting: sample batch 1, approve batch 2 — [THR-1130](https://linear.app/threadbare/issue/THR-1130) + [THR-1222](https://linear.app/threadbare/issue/THR-1222/run-retrofit-batch-2-the-camp-seven-through-the-factory-line-shrine)
 
-**The only thing that puts work on an empty board.** [The undertaking substrate](https://linear.app/threadbare/issue/THR-1292) closed at 03:42 local and [PR #1653](https://github.com/christianspliid-ui/threadbare/pull/1653), the last open one, merged at 04:06. Ready for Dev holds **zero**, no PR is open, and the pickup lane ran at 04:01 with nothing to claim.
+**The only thing that puts work on an empty board.** Ready for Dev holds **zero**, no PR is open, and the pickup lane has now woken twice with nothing to claim (04:01 and 05:01 local). [The undertaking substrate](https://linear.app/threadbare/issue/THR-1292) closed at 03:42 and the last open PR merged at 04:06.
 
-**The camp seven** — shrine offering, sharpening blades, warding the camp, a small prayer, rest and reflection, tending wounds, scouting the perimeter. No typed consequences at all in that set; they are the last encounters below standard. `shrine_offering` is encounter #1 of [your integrated slice checkpoint](https://linear.app/threadbare/issue/THR-1220), which cannot invite you until they are rewritten.
+**First, play two — the batch-1 2-of-6 sample, open since 17 August.** [The Grateful Kin](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin) and [The Unsafe Bridge](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge). The question is your own: *are they worth meeting twice?* Both were re-prosed since you last saw them, so a replay is honest. A no is as useful as a yes — it says what the retrofit bar still misses.
+
+**Then approve the brief.** **The camp seven** — shrine offering, sharpening blades, warding the camp, a small prayer, rest and reflection, tending wounds, scouting the perimeter. No typed consequences at all in that set; they are the last encounters below standard. `shrine_offering` is encounter #1 of [your integrated slice checkpoint](https://linear.app/threadbare/issue/THR-1220), which cannot invite you until they are rewritten.
 
 **The bar is live with no caveats:** [The Beast in the Granary](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.hunt.the_beast_in_the_granary). One thing needs your answer: [the brief](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/retrofit-batch-2-brief.md) proposes **seven** rather than your six, because the camp set is one family in one file and splitting the seventh costs a whole factory cycle.
 
-**Three ways to close it:** *"batch 2, seven is fine"*, *"keep it six"*, or *"same rule — judge batch 2 on one first."* **The same sitting closes the batch-1 sample** — the *"worth meeting twice"* verdict on [THR-1130](https://linear.app/threadbare/issue/THR-1130), open since 17 August, worth replaying since that prose was rewritten: [The Grateful Kin](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin), [The Unsafe Bridge](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge).
+**Three ways to close it:** *"batch 2, seven is fine"*, *"keep it six"*, or *"same rule — judge batch 2 on one first."*
 
 ### 2. More design hours — now the binding constraint
 
@@ -25,15 +27,15 @@ Engine work is finished and the content shelf is empty. Roughly twenty items sit
 
 ### 3. One design map still has questions — and they are all yours
 
-**[Physical Conflict](https://linear.app/threadbare/issue/THR-1258/wayfinder-map-physical-conflict)** — seven left, every one yours. Two are the keystone, because settling them releases the rest: [how a duel ends](https://linear.app/threadbare/issue/THR-1264/agent-mode-fight-loop-opposed-band-pairs) and [what a wound costs](https://linear.app/threadbare/issue/THR-1263/npc-mode-fight-loop-the-stat-block-and-test-skeleton).
+**[Physical Conflict](https://linear.app/threadbare/issue/THR-1258/wayfinder-map-physical-conflict)** — **ten** left, every one yours. (Earlier briefs said seven; that undercount is corrected here against the ticket list.) Two are the keystone, because settling them releases the rest: [how a duel ends](https://linear.app/threadbare/issue/THR-1264/agent-mode-fight-loop-opposed-band-pairs) and [what a wound costs](https://linear.app/threadbare/issue/THR-1263/npc-mode-fight-loop-the-stat-block-and-test-skeleton).
 
-The others: [when a fight starts on its own](https://linear.app/threadbare/issue/THR-1267/systemic-triggers-v1-walking-into-the-lair-grudges-boiling-over), [the faces of defeat](https://linear.app/threadbare/issue/THR-1266/defeat-wears-many-faces-the-outcome-spectrum), [just enough monster](https://linear.app/threadbare/issue/THR-1268/monster-opponents-just-enough-monster), [what winning leaves in your hands](https://linear.app/threadbare/issue/THR-1270/victory-yields-what-winning-leaves-in-your-hands), [may a company fight together?](https://linear.app/threadbare/issue/THR-1271/companies-in-fights).
+The other eight: [when a fight starts on its own](https://linear.app/threadbare/issue/THR-1267/systemic-triggers-v1-walking-into-the-lair-grudges-boiling-over), [the faces of defeat](https://linear.app/threadbare/issue/THR-1266/defeat-wears-many-faces-the-outcome-spectrum), [just enough monster](https://linear.app/threadbare/issue/THR-1268/monster-opponents-just-enough-monster), [what winning leaves in your hands](https://linear.app/threadbare/issue/THR-1270/victory-yields-what-winning-leaves-in-your-hands), [may a company fight together?](https://linear.app/threadbare/issue/THR-1271/companies-in-fights), [how a fight attaches to an encounter](https://linear.app/threadbare/issue/THR-1269/embedding-the-fight-block-encounter-integration-contract), [where the cool moments live](https://linear.app/threadbare/issue/THR-1265/mid-fight-event-table-where-the-cool-moments-live), and [the fight on screen](https://linear.app/threadbare/issue/THR-1272/the-fight-on-screen-attended-surface-and-background-exhaust).
 
-Nothing is stalled — the wayfinder machinery is waiting at the handover. Say *"work the fight map"* in a chat session and it takes the seven in keystone order.
+Nothing is stalled — the wayfinder machinery is waiting at the handover. Say *"work the fight map"* in a chat session and it takes them in keystone order.
 
 ### 4. Two sketches ready to be built for you to react to
 
-The [powers](https://linear.app/threadbare/issue/THR-1226) and [items](https://linear.app/threadbare/issue/THR-1227) maps finished their research half; these are the throwaway prototypes that come next. A session builds the sketch, you look, and your reaction is the design decision.
+The [powers](https://linear.app/threadbare/issue/THR-1226) and [items](https://linear.app/threadbare/issue/THR-1227) maps have finished everything else — these two sketches are the single open question left on each. A session builds the sketch, you look, and your reaction is the design decision.
 
 - [**Twenty generated spells**](https://linear.app/threadbare/issue/THR-1232) — do composed spells read as one coherent thing, or as parts bolted together?
 - [**Thirty generated items**](https://linear.app/threadbare/issue/THR-1236) — are they *cool*? That is the whole bar.
