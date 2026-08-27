@@ -37,7 +37,7 @@ import type {
 } from './attention';
 import type { CourtPosition } from './influence';
 import type { BeatKind, BeatTrigger } from './ascendantBeat';
-import type { BehaviorFamily, StrategicVerb, StrategicExecutionMode } from './strategicAction';
+import type { BehaviorFamily, DecisionFamily, StrategicVerb, StrategicExecutionMode } from './strategicAction';
 import type { ComplicationSeverity } from './complication';
 import type { SyllableTemplate } from './culture';
 import type { ReliabilityBand } from '../engine/intelligence';
@@ -117,6 +117,9 @@ export type TraceCategory =
   // Undertaking checkpoints (THR-1292)
   | 'undertaking_checkpoint'
   | 'undertaking_fork'
+  // The one prioritization board (THR-1292 §4)
+  | 'decision_board_comparison'
+  | 'decision_board_error'
   // Omen agenda traces (THR-19)
   | 'omen_selection'
   | 'omen_beat'
@@ -502,6 +505,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'strategic_control_lifecycle',
   'undertaking_checkpoint',
   'undertaking_fork',
+  'decision_board_comparison',
+  'decision_board_error',
   'omen_selection',
   'omen_beat',
   // Mortal economy — resource stock tiers (THR-615)
@@ -1849,6 +1854,57 @@ export interface UndertakingForkTrace extends TraceBase {
   visibleFailure?: boolean;
 }
 
+/**
+ * Trace: what the one prioritization board would have chosen (THR-1292 §4).
+ *
+ * The cross-family comparison this records has **never been traced** — nothing
+ * anywhere captured what the losing family's best score was, which is precisely
+ * why the board must run in shadow before it decides anything. One of these per
+ * agent decision while the mode is `'shadow'` or `'live'`.
+ *
+ * `agreement` compares the *family* the two paths picked, not the specific
+ * candidate: the board is a redesign, so a divergence in which encounter is best
+ * is uninteresting next to a divergence in whether an encounter should happen at
+ * all. It is telemetry, never a gate — the cutover criteria are distributional
+ * (see `BOARD_UNDERTAKING_SHARE_RANGE` and its siblings).
+ */
+export interface DecisionBoardComparisonTrace extends TraceBase {
+  category: 'decision_board_comparison';
+  agentId: string;
+  mode: 'shadow' | 'live';
+  /** What the legacy contests actually decided this tick. */
+  legacyWinner: { family: DecisionFamily; id: string | null; score: number };
+  /** The board’s top `BOARD_TRACE_TOP_N`, descending. */
+  boardTop: ReadonlyArray<{
+    family: DecisionFamily;
+    id: string;
+    score: number;
+    evt: number;
+    desireMultiplier: number;
+    temperamentWeight: number;
+    advanceProbability?: number;
+  }>;
+  /** Whether legacy and the board agree on the winning *family*. */
+  agreement: boolean;
+  encounterCandidates: number;
+  undertakingCandidates: number;
+}
+
+/**
+ * Trace: the board scorer threw and contributed nothing to this decision.
+ *
+ * Explicitly **not** the empty `catch` the legacy strategic path degrades
+ * through. A shadow period that swallowed board throws would report perfect
+ * agreement while measuring nothing, and the cutover gate would then be evaluated
+ * against a board that never ran (NFP #2, NFP #4).
+ */
+export interface DecisionBoardErrorTrace extends TraceBase {
+  category: 'decision_board_error';
+  agentId: string;
+  mode: 'shadow' | 'live';
+  message: string;
+}
+
 /** Trace: strategic action produced a world graph change */
 export interface StrategicWorldChangeTrace extends TraceBase {
   category: 'strategic_world_change';
@@ -2781,6 +2837,8 @@ export type TraceEntry =
   | StrategicProjectProgressTrace
   | UndertakingCheckpointTrace
   | UndertakingForkTrace
+  | DecisionBoardComparisonTrace
+  | DecisionBoardErrorTrace
   | StrategicWorldChangeTrace
   | StrategicControlLifecycleTrace
   | ChoiceSetPlayerResolvedTrace

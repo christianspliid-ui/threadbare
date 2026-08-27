@@ -9,6 +9,7 @@
  * - Additive schema — add optional fields, never remove.
  * - Do not reuse traceBuffer internals; this is a parallel system.
  */
+import type { DecisionFamily } from './strategicAction';
 
 // ─── Threat Bands ─────────────────────────────────────────────────
 
@@ -205,6 +206,23 @@ export interface BalanceEvent {
   /** The outcome after resist downgrade (if applicable) */
   postResistOutcome?: string;
 
+  // ── THR-1292 §4: shadow board context (encounter_decision only) ──
+  //
+  // The second of the board's two shadow channels. The `decision_board_comparison`
+  // trace carries the full ranking for a human reading a log; these three fields
+  // ride the balance event that already fires on every decision path, so the
+  // cutover gate — which is about *distribution*, not individual decisions — can be
+  // computed by the same rollup that computes today's decision mix. Absent on every
+  // event while `UNIFIED_DECISION_BOARD_MODE` is `'off'`, and absent on a decision
+  // whose board scoring threw.
+
+  /** Family the board would have chosen. `'idle'` when the board was empty. */
+  shadowWinnerFamily?: DecisionFamily;
+  /** Template id the board would have chosen; `null` for an empty board. */
+  shadowWinnerId?: string | null;
+  /** Whether the board's winning family matches the family legacy actually chose. */
+  shadowAgreement?: boolean;
+
   // ── Phase 4: Planner forecast context ──
   /** Forecasted expected utility at decision time */
   forecastedUtility?: number;
@@ -342,6 +360,37 @@ export interface BalanceRunSummary {
 
   /** Encounter-decision funnel summary: starts, movement, idles, and starvation hotspots. */
   encounterDecisions?: BalanceEncounterDecisionSummary;
+
+  /**
+   * Shadow-board rollup (THR-1292 §4). `undefined` when no decision in the run
+   * carried a board verdict — the board off, or every scoring attempt threw.
+   */
+  shadowBoard?: BalanceShadowBoardSummary;
+}
+
+/**
+ * What the board *would* have decided, aggregated over a run.
+ *
+ * The three share fields are the cutover gate's inputs (`BOARD_UNDERTAKING_SHARE_RANGE`,
+ * `BOARD_ENCOUNTER_SHARE_FLOOR`, `BOARD_IDLE_SHARE_CEILING`). `agreementRate` is
+ * reported for the reader's orientation and is deliberately **not** a criterion:
+ * the board is a redesign of how agents choose, so divergence from legacy is the
+ * intended outcome, and gating on agreement would gate on the board changing
+ * nothing.
+ */
+export interface BalanceShadowBoardSummary {
+  /** Decisions on which the board produced a verdict — the denominator for every rate below. */
+  decisions: number;
+  agreements: number;
+  agreementRate: number;
+  /** Board-winner family counts, e.g. `{ encounter: 812, strategic_action: 190, idle: 44 }`. */
+  winnerFamilyCounts: Record<string, number>;
+  /** `strategic_action` share of `decisions`. */
+  undertakingShare: number;
+  /** `encounter` share of `decisions`. */
+  encounterShare: number;
+  /** `idle` share of `decisions`. */
+  idleShare: number;
 }
 
 // ─── Agent Journey Summary ────────────────────────────────────────

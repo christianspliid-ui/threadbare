@@ -5,6 +5,7 @@
 // scored alongside encounter candidates in phaseAgentDecision.
 
 import type { ReachDomain } from './traits';
+import type { ValuePair } from './agent';
 
 // ─── Strategic Verbs ────────────────────────────────────────────────
 // Five world-shaping verbs from the design — the execution language under ambitions.
@@ -114,6 +115,32 @@ export interface StrategicActionTemplate {
    * untouched, and the contract test in slice 2 exists to keep it that way.
    */
   readonly canRunBeside?: boolean;
+
+  // ─── Board authoring (THR-1292 §4) ────────────────────────────────
+
+  /**
+   * What completing this undertaking is worth, in the board's common currency.
+   *
+   * Absent ⇒ derived from the shared verb-impact table (`STRATEGIC_VERB_IMPACT`)
+   * scaled by `UNDERTAKING_PAYOFF_SCALE`. **Unauthored on every template in v1**
+   * and deliberately so: per-kind payoff rows are plan doc 2's content, and a
+   * first-guess number hand-written onto 43 templates would be fiction wearing a
+   * data field. The verb table is at least a value the legacy scorer already
+   * ranks on, so the fallback is a real signal rather than a placeholder.
+   */
+  readonly payoffValue?: number;
+
+  /**
+   * Value pairs this undertaking appeals to — the desire term's input, in exactly
+   * the vocabulary encounter `motivations` use, so one function weights both.
+   *
+   * Absent ⇒ the desire multiplier rests on the ambition boost alone, which is
+   * live from day one. Doc 2 authors these per kind. Every entry must be a member
+   * of `VALUE_PAIRS`; slice 1's schema test is what makes that binding rather than
+   * aspirational (a non-member reads `undefined ?? 0` and contributes nothing,
+   * silently, forever).
+   */
+  readonly motivations?: readonly ValuePair[];
 }
 
 // ─── Mutation Hints ─────────────────────────────────────────────────

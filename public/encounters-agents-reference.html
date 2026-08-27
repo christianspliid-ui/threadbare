@@ -1267,6 +1267,22 @@ const CHAPTERS = [
         tags: ['ranking inputs']
       },
       {
+        name: 'Shadow Board (THR-1292 §4)',
+        desc: 'The eight-stage pipeline above ranks <em>encounters</em>. A separate contest then compares its winner against the best strategic candidate — two scorers on incompatible scales, and until now the comparison itself was never recorded. <code>decisionBoard.ts</code> ranks both families on one currency and, in <code>shadow</code> mode, writes down what it would have chosen while the legacy contests still decide:',
+        table: {
+          headers: ['Term', 'What it measures'],
+          rows: [
+            ['<strong>Expected value per tick</strong>', 'The shared currency. An encounter contributes the <code>valuePerTick</code> the scorer above already computed; an undertaking contributes payoff × P(advance)² ÷ (checkpoints × interval) — P enters twice because halts both cost the payoff and stretch the calendar.'],
+            ['<strong>P(advance)</strong>', 'Enumerated over all 100 rolls of the same six-band ladder the checkpoints roll on. Deliberately not <code>successProbability</code>: a <code>near_miss</code> is a succeeding roll that the checkpoint map <em>halts</em>, so that reading over-counts by about five points.'],
+            ['<strong>Desire multiplier</strong>', 'The encounter scorer’s own personality pipeline, applied to the undertaking — same function, so the two families are weighted by character identically rather than by two implementations that agree today.'],
+            ['<strong>Temperament weight</strong>', 'Encounters sit at a flat 1.0 baseline; an undertaking gains up to +0.3 when the driving ambition prefers its verb and up to +0.2 for reach affinity. These two weights are the whole of how the families are tuned against each other.'],
+            ['<strong>Cutover gate</strong>', 'Measured, never asserted: undertaking share in [10%, 35%], encounter share ≥ 15%, idle share ≤ 40%, on seeds 42 <em>and</em> 99 over 150 ticks. Agreement with legacy is reported but deliberately not a criterion — the board is a redesign, so divergence is the point.'],
+            ['<strong>Current verdict</strong>', 'Gate <strong>fails</strong>: 11.9% undertaking share on seed 42 (pass), 4.1% on seed 99 (below floor). Mode stays <code>shadow</code>. Read it with <code>balance summary</code>.']
+          ]
+        },
+        tags: ['live phase 2b', 'shadow only']
+      },
+      {
         name: 'Decision Outcomes',
         desc: 'Action type is classified after selection from distance and presence requirements, then idle fallback logic takes over if nothing clears the bar:',
         table: {

@@ -275,3 +275,101 @@ export const UNDERTAKING_INSPIRE_FLAG = 'undertakingInspireBonus';
 
 /** Actor property carrying a pending sabotage rider. */
 export const UNDERTAKING_SABOTAGE_FLAG = 'undertakingSabotaged';
+
+// ─── The one prioritization board (THR-1292 §4) ─────────────────────
+//
+// Today an agent's decision is three sequential winner-take contests between
+// scorers that are incommensurate by construction: the encounter score is
+// unbounded above while the strategic score is clamped to [0.08, 0.851] by
+// `STRATEGIC_ENCOUNTER_SCORE_BRIDGE`. One clamp and one constant are the entire
+// commensurability story, and the comparison itself has never been traced.
+//
+// The board replaces that with a single ranking in one currency — **expected
+// value per tick (EVT)** — which the encounter scorer already computes as
+// `euRanking / totalCost`. Undertakings join *that* currency rather than
+// inventing a third.
+//
+// It ships in `'shadow'`: the board scores every decision alongside the legacy
+// contests and legacy still decides. Nothing below changes behaviour until the
+// mode flips, and the flip is gated on measurement (see the cutover table).
+
+/** How the board participates: scored not at all, scored-but-ignored, or deciding. */
+export type UnifiedDecisionBoardMode = 'off' | 'shadow' | 'live';
+
+/**
+ * Board participation mode.
+ *
+ * Ships `'shadow'` by the plan's binding obligation: the board is a redesign of
+ * how agents choose, and a redesign that swaps in unmeasured is how a decision
+ * mix silently collapses. In shadow the legacy contests still decide and the
+ * board's ranking is recorded on two channels (the `decision_board_comparison`
+ * trace and the balance-telemetry shadow fields) so the cutover gate below can be
+ * evaluated from a log rather than asserted.
+ */
+export const UNIFIED_DECISION_BOARD_MODE: UnifiedDecisionBoardMode = 'shadow';
+
+/**
+ * Live-mode idle threshold: a board whose best entry scores below this is empty.
+ *
+ * Deliberately equal to `STRATEGIC_SCORE_FLOOR` — in live mode the board is the
+ * only floor there is, so the two cannot be allowed to drift apart and disagree
+ * about what "nothing worth doing" means. Unused while the mode is `'shadow'`.
+ */
+export const BOARD_SCORE_FLOOR = 0.08;
+
+/**
+ * Verb → payoff value, the v1 bridge until doc 2's per-kind rows land.
+ *
+ * This is the **same table** the legacy `worldImpact` score component reads
+ * (`strategicActionCandidates.computeWorldImpact`), deliberately shared rather
+ * than copied: a second copy would drift, and the board and the scorer it is
+ * being measured against would then disagree about the same verb for a reason
+ * nobody could see in either file.
+ */
+export const STRATEGIC_VERB_IMPACT: Readonly<Record<string, number>> = {
+  create: 0.8,
+  destroy: 0.7,
+  change: 0.5,
+  control: 0.6,
+  gather_info: 0.3,
+};
+
+/** Payoff for a verb with no row above — the legacy table's `default`. */
+export const STRATEGIC_VERB_IMPACT_DEFAULT = 0.3;
+
+/** Verb-impact → `payoffValue` bridge scale. Doc 2's kind rows refine per kind. */
+export const UNDERTAKING_PAYOFF_SCALE = 1.0;
+
+/** Board mix: weight of "the agent's active ambition names this kind/verb". */
+export const UNDERTAKING_TEMPERAMENT_AMBITION_WEIGHT = 0.3;
+
+/** Board mix: weight of the agent's reach affinity for the undertaking's reach. */
+export const UNDERTAKING_TEMPERAMENT_REACH_WEIGHT = 0.2;
+
+// ─── Cutover gate (measured, never asserted) ────────────────────────
+//
+// The THR-1277 method: headless CLI, seeds 42 **and** 99, ≥150 ticks, decision mix
+// read from cumulative balance telemetry. The mode flips to `'live'` only when the
+// shadow board's own rankings satisfy every row below on *both* seeds.
+//
+// Agreement with legacy is deliberately **not** a criterion. The board is a
+// redesign; divergence is the point. What gates is distributional health — that
+// the world the board would produce still has mortals doing a mix of things.
+
+/** Undertaking share of spotlight decisions must land inside this range. */
+export const BOARD_UNDERTAKING_SHARE_RANGE: readonly [number, number] = [0.10, 0.35];
+
+/** Encounter share of spotlight decisions must stay at or above this floor. */
+export const BOARD_ENCOUNTER_SHARE_FLOOR = 0.15;
+
+/** Idle share of spotlight decisions must stay at or below this ceiling. */
+export const BOARD_IDLE_SHARE_CEILING = 0.40;
+
+/** Control-deletion gate (§6): undertaking share must have *grown* past this floor. */
+export const DECISION_MIX_FLOOR_UNDERTAKING_SHARE = 0.12;
+
+/** Control-deletion gate (§6): the deletion must not convert control churn into idleness. */
+export const DECISION_MIX_IDLE_CEILING = 0.40;
+
+/** How many board entries the comparison trace carries. */
+export const BOARD_TRACE_TOP_N = 5;

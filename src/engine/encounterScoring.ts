@@ -1475,3 +1475,16 @@ function buildTrace(
       : `Agent ${agentId} idles (no candidates above threshold)`,
   };
 }
+
+// ─── Shared with the unified decision board (THR-1292 §4) ───────
+//
+// Both were private helpers of `scoreAndSelect`. The board weights an
+// undertaking's pull by personality through the *same* two functions rather than
+// through a second implementation that agrees today and drifts tomorrow — which
+// is the whole reason the plan calls for one board rather than two scorers.
+// Exported under their public names; the internal call sites are untouched.
+
+export {
+  getAmbitionBoostForEntry as getAmbitionBoost,
+  resolveProfile as resolveAxiologicalProfile,
+};
