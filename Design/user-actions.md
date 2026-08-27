@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-28 00:56 local (22:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-28 01:55 local (23:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -11,9 +11,7 @@
 - The Grateful Kin — [play](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin) · [good ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin&outcome=critical_success) · [bad ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin&outcome=critical_failure)
 - The Unsafe Bridge — [play](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge) · [good ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge&outcome=critical_success) · [costly ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge&outcome=success_at_cost)
 
-**Then approve the brief.** **The camp seven** — shrine offering, sharpening blades, warding the camp, a small prayer, rest and reflection, tending wounds, scouting the perimeter. No typed consequences at all in that set; they are the last encounters below standard. `shrine_offering` is encounter #1 of [your integrated slice checkpoint](https://linear.app/threadbare/issue/THR-1220), which cannot invite you until they are rewritten. The bar is live with no caveats: [The Beast in the Granary](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.hunt.the_beast_in_the_granary).
-
-One thing needs your answer: [the brief](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/retrofit-batch-2-brief.md) proposes **seven** rather than your six, because the camp set is one family in one file and splitting the seventh costs a whole factory cycle. **Three ways to close it:** *"batch 2, seven is fine"*, *"keep it six"*, or *"same rule — judge batch 2 on one first."* No deadline rides on it — the build shelf holds six jobs.
+**Then approve the brief.** **The camp seven** — shrine offering, sharpening blades, warding the camp, a small prayer, rest and reflection, tending wounds, scouting the perimeter. No typed consequences at all in that set; they are the last encounters below standard. `shrine_offering` is encounter #1 of [your integrated slice checkpoint](https://linear.app/threadbare/issue/THR-1220), which cannot invite you until they are rewritten. The bar is live with no caveats: [The Beast in the Granary](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.hunt.the_beast_in_the_granary). One thing needs your answer: [the brief](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/retrofit-batch-2-brief.md) proposes **seven** rather than your six, because the camp set is one family in one file and splitting the seventh costs a whole factory cycle. **Three ways to close it:** *"batch 2, seven is fine"*, *"keep it six"*, or *"same rule — judge batch 2 on one first."* No deadline rides on it — the build shelf holds six jobs.
 
 ### 2. One word players see, in two places — [THR-1314](https://linear.app/threadbare/issue/THR-1314/ul-proposal-work-holding-kind-row-christening-failure-name-register)
 
@@ -25,17 +23,11 @@ Three ways to go: **let both stand** (different grammar, never side by side — 
 
 ### 3. More design hours — still the binding constraint
 
-Roughly twenty items sit in Todo and **every one needs a plan doc before an executor can touch it**. Last night is the proof of what the hours buy: two wave-1 designs — [the shared anchor machinery](https://linear.app/threadbare/issue/THR-1212) and [hunger vocabulary unification](https://linear.app/threadbare/issue/THR-1213) — went from Todo to queued, and the first is two slices into being built.
+Roughly twenty items sit in Todo and **every one needs a plan doc before an executor can touch it**. Your [shared-anchor design](https://linear.app/threadbare/issue/THR-1212) is three slices into being built and [hunger vocabulary](https://linear.app/threadbare/issue/THR-1213) is queued behind it — that is what the hours buy.
 
-**Startable now, unassigned, in the order I would spend the hour:**
+**The block now has two names on it** *(orchestrator lane, 01:31 on 28 August)*: the design column holds **[unify the card grammar](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** (your 6 August note, untouched 9 days; three tickets behind it) and **[traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)** (assigned to you, untouched 13 days). That lane holds one design slot and will not walk either backwards out of the column on its own. **Sit one, or say *"park it"*** — three more plan-doc sessions for the same program are unblocked and waiting behind them.
 
-1. **[Your one-button snapshot](https://linear.app/threadbare/issue/THR-1134)** — High, your own request from 16 August, untouched 12 days. When you see a world that looks wrong you currently have no way to hand that world to an agent.
-2. **[A beast that can be a real character in a scene](https://linear.app/threadbare/issue/THR-1274)** — only people can be bound into an encounter's cast today, so a hunted animal can be described but never opposed. Four planned hunt encounters are capped by it.
-3. **[The reactive loop](https://linear.app/threadbare/issue/THR-1298)** and **[the calling & the surfaces](https://linear.app/threadbare/issue/THR-1299)** — docs 4 and 5 of your carve-up; [THR-1300](https://linear.app/threadbare/issue/THR-1300) sits behind them.
-
-The last wave-1 design — [nations and named areas](https://linear.app/threadbare/issue/THR-1155) — is deliberately sequenced behind the two now queued.
-
-Also still yours, in the order you set: **[unify the card grammar](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** (your 6 August note; three tickets behind it — sit it or say *"park it"*) and **[traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)** (in design, assigned to you, untouched since 15 August — give it the hour or say *"put it back in the pile"*).
+**Next in line, unassigned:** [your one-button snapshot](https://linear.app/threadbare/issue/THR-1134) (High, your own 16 August request, untouched 12 days — you still have no way to hand a wrong-looking world to an agent); [a beast that can be a real character in a scene](https://linear.app/threadbare/issue/THR-1274) (only people can be cast today, capping four hunt encounters); then docs [4](https://linear.app/threadbare/issue/THR-1298) and [5](https://linear.app/threadbare/issue/THR-1299) of your carve-up, with [THR-1300](https://linear.app/threadbare/issue/THR-1300) behind them. [Nations and named areas](https://linear.app/threadbare/issue/THR-1155) is deliberately sequenced last.
 
 ### 4. One design map still has questions — and they are all yours
 
@@ -92,7 +84,7 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
-- **Your shared-anchor design is being built, two slices deep** — [THR-1212](https://linear.app/threadbare/issue/THR-1212) walked Todo → designed → queued → claimed last night, and slices 1 and 2 merged at 23:37 and 00:37 ([PR #1678](https://github.com/christianspliid-ui/threadbare/pull/1678), [PR #1679](https://github.com/christianspliid-ui/threadbare/pull/1679)). A thing in the world now has one way to be named, and the catalog is checked in both directions.
+- **Your shared-anchor design is being built, three slices deep** — [THR-1212](https://linear.app/threadbare/issue/THR-1212) walked Todo → designed → queued → claimed last night, and slices 1, 2 and 3 merged at 23:37, 00:37 and 01:31 ([PR #1678](https://github.com/christianspliid-ui/threadbare/pull/1678), [PR #1679](https://github.com/christianspliid-ui/threadbare/pull/1679), [PR #1680](https://github.com/christianspliid-ui/threadbare/pull/1680)), all deployed. A thing in the world now has one way to be named, the catalog is checked in both directions, and the chips the anchor gate cannot see sit under a ceiling that cannot quietly rise.
 - **The 20–22 August lane-quiet question is closed without needing your answer** — the gap has aged out of the probe's measuring window, and the only quiet periods it now reports are overnight-shaped, already declined under your 8 August ruling. Removed from your list rather than carried indefinitely.
 - **The build shelf is stocked — six jobs, from one yesterday morning** — your hunger-vocabulary design ([THR-1213](https://linear.app/threadbare/issue/THR-1213)) handed off behind the shared anchor machinery, and the action-library work filed five checked follow-ups on itself as it finished.
 - **The action library finished whole** — [THR-1297](https://linear.app/threadbare/issue/THR-1297), doc 2 of your carve-up, six slices in nine hours. A finished work now earns its own name; ownership is its own edge; a destroy verb needs a reason. Docs 1, 2 and 3 — the whole first tier — are built.
