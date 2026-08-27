@@ -137,8 +137,12 @@ export function buildRelationshipState(
   const coercive = tracking?.coerciveCount ?? 0;
   const supportiveVsCoercive = supportive - coercive;
 
-  // Cooperation strategy from thread context
-  const cooperationStrategy = 'tit_for_tat' as CooperationStrategy; // Default
+  // Cooperation strategy from thread context.
+  //
+  // THR-1304 #3: `'tit-for-tat'` is the union member; the underscore spelling is not, and
+  // the `as CooperationStrategy` cast is what stopped the compiler saying so. Without the
+  // cast this line does not build — which is the point of dropping it.
+  const cooperationStrategy: CooperationStrategy = 'tit-for-tat'; // Default
 
   // Trust derived from intervention pattern
   // High intervention + supportive = high trust
