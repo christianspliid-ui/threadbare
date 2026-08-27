@@ -47,6 +47,32 @@ Build-time only. No orchestrator phase, modal, GameState field or player control
 
 ---
 
+## Shared anchor machinery — the no-referent ratchet (THR-1212 slice 3)
+
+CI-time only, like slice 2, so the runtime columns are N/A by construction. What this slice owes instead is that the gate is **reachable from CI** and that its rule is **not a second copy** of the one clause 2 reads.
+
+| Module | Orchestrator phase | UI component | GameState field | Trace emitted | Debug visibility |
+|--------|-------------------|-------------|-----------------|---------------|-----------------|
+| `compositionContract.chipsWithoutReferent` (new export) | N/A — authoring/CI time | N/A | none | none | counted by the gate below |
+| `scripts/chip-referent-ratchet.ts` (new) | N/A — pure arithmetic + baseline I/O | N/A | none | none | failure names the template and the delta |
+| `scripts/check-chip-anchors.ts` (extended, `--baseline`) | N/A — CI step | N/A | none | none | stdout verdict; `chip-referent-baseline.json` is the committed record |
+
+**The rule lives beside the rule it complements.** `chipsWithoutReferent` is exported from `compositionContract.ts` and walks `aftermathFaces` — the same walk `chipAnchorViolations` uses — rather than being reimplemented in the script. A second walk would drift, and the two numbers would silently stop describing the same corpus, which is the failure this ticket is about in miniature.
+
+**Why the arithmetic is a separate module.** `check-chip-anchors.ts` runs `main` at top level, so a test importing it would run the whole gate as a side effect. The house `import.meta.url === argv[1]` entry guard is **not available here**: the npm script bundles the runner with `esbuild --bundle`, and a bundle relocates the entry so that comparison stops being a reliable "am I the entry" test. A guard that failed open would make the gate exit 0 without running — the precise false green the ticket exists to close — so the pure half moved to `scripts/chip-referent-ratchet.ts`, where importing it does nothing.
+
+**CI wiring — two steps, and the first one was missing.** Item 3 asked for the ratchet "beside the existing check"; the existing check turned out **not to be in CI at all**. `check:encounter --all` enforces clause 2 only over the `encounter.` prefix, so the whole-catalog runner (`hod.*`, `ac.*`, the faction families — 698 templates, 0 violations) had no CI step despite being the runner THR-1164 built for exactly that gap. Both are now steps in `Test · Typecheck · Build`: `Chip anchors (Law 56 clause 2, whole catalog)` and `Chip referent ratchet`.
+
+**`chip-referent-baseline.json` is deliberately NOT freshness-registered.** `check:generated-freshness` regenerates an artifact and byte-compares it against `HEAD`. For a ratchet floor that would force the baseline to equal the current count on every commit, deleting the only thing it does. It is a committed *decision*, not a derived artifact — the `typecheck-baseline.json` precedent exactly.
+
+**It is a tree-diffing gate.** Its verdict covers the tree at the instant it runs, so per the standing rule (THR-896 / THR-976) it runs as the last action before `git push`, alongside `check:generated-freshness` and `check:wiki-freshness:blocking` — never at a numbered position. Its script header says so.
+
+**Known limit, stated rather than discovered later.** The gate compares totals, so a change anchoring three chips in one template while authoring three unanchored ones in another passes. Per-template growth is printed but advisory, mirroring `check:typecheck`, whose pattern the plan cited by name. If that swap ever actually happens it is the defect evidence that charters tightening this to a per-template ratchet — it is not assumed in advance.
+
+**Still owed by later slices of THR-1212:** the consumption ledger (item 4), the no-op gate contract test on a seeded world (item 5), and the `followOnTags` retirement (item 6).
+
+---
+
 ## The binder — born-real mint path + the lifecycle valve (THR-1296 slice 3)
 
 Third slice of the binder. Like slices 1–2 it is **additive and consumed by nothing yet** — nothing enqueues a mint until slice 4's bind pass — so this table records a *reachable* path, not a travelled one. The distinction is the whole point of the checklist here: the consumer half is genuinely wired (the lifecycle drains every tick, tests drive it), and the producer half is honestly absent.

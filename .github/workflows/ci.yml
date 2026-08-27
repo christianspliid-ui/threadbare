@@ -445,6 +445,29 @@ jobs:
       - name: Encounter composition gate
         run: npm run check:encounter -- --all
 
+      # Law 56 clause 2 over the WHOLE action catalog (THR-1164), which the step
+      # above cannot reach: `check:encounter --all` is scoped to the `encounter.`
+      # prefix by design, and 19 of the clause's original 48 violations sat under
+      # `hod.*`. The rule is the same function in both runners; only the
+      # population differs. Green over 698 templates when wired (THR-1212).
+      - name: Chip anchors (Law 56 clause 2, whole catalog)
+        run: npm run check:chip-anchors
+
+      # The ratchet over the population clause 2 is deliberately silent about:
+      # chips declaring neither a `stateNoun` nor `concepts`. That silence is
+      # correct as a rule and misleading as a report — "green" there means
+      # unmeasured, not clean. This holds the count at its committed ceiling
+      # (443) and fails only on an INCREASE, so the corpus drains at
+      # factory-retrofit cadence (THR-1130 / THR-1222) instead of by a big-bang
+      # sweep that would be red on arrival.
+      #
+      # Deliberately NOT registered with `check:generated-freshness`: that gate
+      # regenerates an artifact and byte-compares, which for a ratchet floor would
+      # force the baseline to equal the current count on every commit and delete
+      # the only thing it does.
+      - name: Chip referent ratchet
+        run: npm run check:chip-anchors -- --baseline
+
       # `npx tsc --noEmit` used to live here and was a no-op: root tsconfig.json
       # sets `files: []`, so it exited 0 unconditionally no matter how broken the
       # code was — this required check asserted a type gate in its name while

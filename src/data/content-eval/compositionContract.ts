@@ -755,6 +755,44 @@ export function chipAnchorViolations(template: UnifiedActionTemplate): readonly 
 }
 
 /**
+ * THR-1212 — the chips {@link chipAnchorViolations} is deliberately silent about,
+ * counted so the silence can be held to a ceiling.
+ *
+ * Clause 2 scopes itself to chips that **declare** a referent, for the reason
+ * given above it: a chip naming nothing makes no claim the clause could be about.
+ * That scoping is correct and stays. But it leaves a population the gate reports
+ * green over — the older authoring shape, carrying neither a `stateNoun` nor a
+ * `concepts` list — and "green" there means *unmeasured*, not *clean*. This
+ * function is the measurement, and `check:chip-anchors --baseline` is the ratchet
+ * that keeps it from growing while the factory retrofit cadence
+ * (THR-1130 / THR-1222) drains it.
+ *
+ * **The predicate, stated exactly.** A chip id counts when at least one reachable
+ * face authors it with no `stateNoun` and an empty (or absent) `concepts` list.
+ * "At least one" rather than "every" because a band override substitutes `changes`
+ * wholesale — the same id can be authored one way on `success` and another on the
+ * base face, and a player reaching the referent-less face is shown a referent-less
+ * chip regardless of how the other one reads. Counting per id rather than per face
+ * matches what an author fixes: one chip, once.
+ *
+ * Read through {@link aftermathFaces}, the same walk clause 2 uses, on purpose —
+ * a second walk would drift from the first and the two numbers would stop being
+ * about the same corpus.
+ */
+export function chipsWithoutReferent(template: UnifiedActionTemplate): readonly string[] {
+  const out = new Set<string>();
+  for (const face of aftermathFaces(template)) {
+    for (const change of face.changes) {
+      if (out.has(change.id)) continue;
+      if (change.stateNoun) continue;
+      if ((change.concepts ?? []).length > 0) continue;
+      out.add(change.id);
+    }
+  }
+  return [...out];
+}
+
+/**
  * Effect kinds that write a **persistent consequence** to the person they name.
  *
  * Deliberately not "every effect that takes a `$cast:` field". An `intelligence`
