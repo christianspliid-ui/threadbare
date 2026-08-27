@@ -177,6 +177,97 @@ export interface StrategicActionTemplate {
    * silently, forever).
    */
   readonly motivations?: readonly ValuePair[];
+
+  // ─── Counter-play authoring (THR-1297 §2) ─────────────────────────
+
+  /**
+   * Motives that license this destroy verb against an owned target (THR-1281 §4).
+   *
+   * Absent ⇒ ungated, which is what every shipped template was before this field
+   * existed. Present ⇒ candidate generation refuses the candidate unless the actor
+   * holds at least one of the named motives toward whoever owns the target, with
+   * refusal reason `no_motive` and a trace saying so — no motiveless demolition,
+   * every destroy narratable, which is what doc 4's grievance minting consumes.
+   *
+   * The registry's schema gate (`src/data/undertaking-kinds.ts`) requires this on
+   * every template a kind row names as a destroy, so a kind cannot ship its
+   * counter-play as a verb anyone may fire for no reason.
+   */
+  readonly motiveGate?: readonly MotiveKind[];
+}
+
+// ─── Motives (THR-1281 §4) ──────────────────────────────────────────
+// The vocabulary a destroy verb may name as its licence. Each member maps to a
+// mechanism that already exists — this type introduces no new relation, it names
+// the four the world already writes.
+
+export type MotiveKind =
+  /** A standing `hostile_to` edge from the actor toward the owner. */
+  | 'rivalry'
+  /** A `hostile_to` edge minted by a specific past injury (a group engagement). */
+  | 'grudge'
+  /** Actor and owner both actively `pursues` the same ambition node. */
+  | 'contested_ambition'
+  /** The actor's faction and the owner's faction are declared rivals. */
+  | 'faction_war';
+
+// ─── Undertaking Kinds (THR-1281 §1/§2) ─────────────────────────────
+
+/**
+ * What a work *is* — the kind-first grammar's discriminator.
+ *
+ * The ten named members are the grammar verdict's set; the `string & {}` arm keeps
+ * the registry genuinely open (a pack may register an eleventh kind without editing
+ * this union) while preserving completion on the ten that are designed.
+ */
+export type UndertakingKindId =
+  | 'intelligence_cache'
+  | 'leverage_mark'
+  | 'masterwork_item'
+  | 'chart_find'
+  | 'network'
+  | 'sublocation'
+  | 'place_location'
+  | 'trade_route'
+  | 'warband'
+  | 'faction'
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  | (string & {});
+
+/**
+ * Which name table the work namer draws this kind's proper names from.
+ *
+ * A bare string in slice 2 because the lexicons themselves are the namer's content
+ * (THR-1297 §5, slice 4) — narrowing this to a union before those tables exist
+ * would be a taxonomy invented by a type rather than by the naming design.
+ */
+export type WorkLexiconId = string;
+
+/**
+ * One row of the kind registry — the CRUD closure for a kind of work.
+ *
+ * The registry is data the engine reads for naming, holdings and (doc 6) the factory
+ * gates. Candidate generation continues to run off the packs; a row does not make a
+ * verb offerable, it declares what the verb *builds* and how it can be undone.
+ */
+export interface UndertakingKindRow {
+  readonly kindId: UndertakingKindId;
+  readonly tier: 1 | 2 | 3;
+  /** UL term for the kind, as players and the chronicle say it. */
+  readonly displayName: string;
+  /** Documentation of the node/edge shape produced — existing types only. */
+  readonly objectShape: string;
+  /** Whether completed works of this kind join the holdings system (§3). */
+  readonly ownable: boolean;
+  readonly createTemplateIds: readonly string[];
+  readonly updateTemplateIds: readonly string[];
+  /**
+   * The counter-play. **Must be non-empty**, and every id must resolve to a template
+   * that carries a `motiveGate` — the no-destroy-no-kind gate, enforced as a schema
+   * test rather than an audit.
+   */
+  readonly destroyTemplateIds: readonly string[];
+  readonly lexicon: WorkLexiconId;
 }
 
 // ─── Mutation Hints ─────────────────────────────────────────────────

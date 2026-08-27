@@ -1891,6 +1891,21 @@ export interface StrategicCandidateBoardTrace extends TraceBase {
   topCandidateIds: string[];
   chosenCandidateId: string | null;
   featureEnabled: boolean;
+  /**
+   * Why candidates were refused (THR-1297 §2), capped at
+   * `STRATEGIC_BOARD_TRACE_REFUSAL_CAP`; `candidatesRejected` stays the exact count.
+   *
+   * Before this, refusals reached the outside world as a bare number, so every
+   * generation gate — `no_valid_targets`, `no_eligible_apprentice`, and now
+   * `no_motive`, whose fail-soft row reads "never a silent skip" — was invisible from
+   * a trace dump. Optional because the field is additive over every existing emitter.
+   *
+   * Mutable rather than `ReadonlyArray` to match `topCandidateIds`/`ambitionIds`
+   * above: every emitter casts an object literal to this type, and a readonly array
+   * here makes the target un-assignable back to that literal, which turns a widely
+   * used `as` into a "types do not sufficiently overlap" error at each call site.
+   */
+  refusals?: { templateId: string; reason: string }[];
 }
 
 /** Trace: strategic action started (instant or project) */

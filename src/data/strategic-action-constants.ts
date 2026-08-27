@@ -373,3 +373,30 @@ export const DECISION_MIX_IDLE_CEILING = 0.40;
 
 /** How many board entries the comparison trace carries. */
 export const BOARD_TRACE_TOP_N = 5;
+
+// ─── Motive Gate (THR-1297 §2) ──────────────────────────────────────
+
+/**
+ * The destroy motive vocabulary — the complete set a template may name.
+ *
+ * Exported as data (not only as a type) because the registry's schema gate checks
+ * membership at test time, and a type cannot be iterated. Adding a fifth motive is
+ * a two-line edit here plus a reader in `undertakingMotive.ts`; the gate then holds
+ * the new member to the same standard as the four without further edits.
+ */
+export const MOTIVE_GATE_KINDS = [
+  'rivalry',
+  'grudge',
+  'contested_ambition',
+  'faction_war',
+] as const;
+
+/**
+ * How many rejection reasons the candidate-board trace carries.
+ *
+ * The board trace has always reported `candidatesRejected` as a bare count, which
+ * makes every refusal reason — including the motive gate's, whose fail-soft row says
+ * "never a silent skip" — invisible from outside. The list is capped for the same
+ * reason `BindingDecisionTrace.rows` is: the count stays exact, the detail is bounded.
+ */
+export const STRATEGIC_BOARD_TRACE_REFUSAL_CAP = 8;

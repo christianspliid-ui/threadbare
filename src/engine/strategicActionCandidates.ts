@@ -43,6 +43,7 @@ import { getSublocationNodes } from './sublocationShape';
 import type { ReachDomain } from '../types/traits';
 import { findEligibleApprentices, MENTORSHIP_TEMPLATE_ID } from './mentorshipUndertaking';
 import { evaluateRemoteAnchorGate, ANCHOR_CAST_KEY } from './binding/remoteAnchor';
+import { evaluateMotiveGate } from './undertakingMotive';
 
 // ─── Template Registry ──────────────────────────────────────────────
 // All strategic templates by ID. Scales as new packs are added.
@@ -198,6 +199,30 @@ export function generateStrategicCandidates(
             cooldownRemaining: controlGate.cooldownRemaining,
             summary: `Control claim declined (${controlGate.event}): ${templateId} → ${target.id}`,
           } as TraceEntry);
+          continue;
+        }
+
+        // A destroy verb needs a reason (THR-1297 §2). Refused at proposal time, for
+        // the same reason as the two gates below it: an undertaking nobody can justify
+        // is not a decision, and a razing with no quarrel behind it teaches the player
+        // that the world's violence is weather. The gate is opt-in — a template with
+        // no `motiveGate` passes untouched, which is every template but the raid.
+        //
+        // The refusal reaches a trace through the board trace's `refusals` field
+        // rather than a trace of its own — the same route `no_eligible_apprentice`
+        // takes, and one the plan's "no new trace categories" rule already assumes.
+        // A second synthetic board trace per refused target would double-report the
+        // same fact and describe a board (`candidatesGenerated: 0`) that never existed.
+        //
+        // Two reasons, not one: "nobody holds this" and "the actor has no quarrel with
+        // whoever does" are different worlds and want different fixes. Both share the
+        // `no_motive` prefix so a sweep can match either.
+        const motiveGate = evaluateMotiveGate(graph, actorId, target.id, template);
+        if (!motiveGate.allowed) {
+          const reason = motiveGate.ownerCount === 0
+            ? `no_motive_unowned:${target.id}`
+            : `no_motive:${target.id}`;
+          rejections.push({ templateId, reason });
           continue;
         }
 

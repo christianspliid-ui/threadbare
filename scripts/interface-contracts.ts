@@ -2325,6 +2325,38 @@ export const CONTRACTS: readonly Contract[] = [
         "THR-1305. Slice 6 left this row UNVERIFIED-OK on measurement rather than caution — 120 ticks at seed 42/medium produced 91 encounter actions across 52 templates and zero firings of the exemplar, so no live run had travelled the route. It is now travelled, and the thing that made the proof cheap is the fix itself: the review levers were wired to the same board. `?spawn=`, `?forceencounters` and the CLI `spawn encounter` supplied no `EncounterBinderContext`, so a migrated template was cast by the legacy first-role-match resolver and wrote no ledger row — content review of a migrated encounter reviewed a different casting than players get. Live proof, CLI seed 42/medium: `tick 30` then `spawn encounter @hero encounter.border.one_body_short` leaves `state.strategicState.bindings` holding `{projectId:'enc_encounter.border.one_body_short_asc.archetype.chaos_0', castKey:'survivor', persistence:'must-persist', boundRole:'mercenary', boundAtTick:30, status:'live'}`. Control arm in the same harness: the un-migrated `cg.quest.gate_duty` writes zero `enc_*` rows, so the opt-in gate still holds live and the row is not evidence that every template now ledgers. The assembly rule (a context is built only when BOTH a runtime and `strategicState` exist, else the legacy path) moved into `binding/encounterBinderContext.ts` so the four call sites share one copy; `getBindings` tolerates an absent strategic state by returning `[]`, so an assembler skipping that check would write rows to an unowned array and report a successful bind. Non-vacuous by `src/engine/binding/__tests__/debugToolsBinderWiring.test.ts` (7 tests, both entry points, both fallback arms) — falsified in two controlled arms: with the binder not threaded, 2-of-7 red; with the caller's agent *query* stamped as `actorId` instead of the resolved node id, 1-of-7 red because `binder.ts`'s self-exclusion (`node.id === request.actorId`) stops matching and the agent is cast as their own fellow survivor. The 8 golden opt-in tests are unchanged and green, so the un-migrated corpus is untouched.",
     },
   },
+  {
+    id: 'destroy-candidates-gated-on-motive',
+    producerSystem: FACTIONS,
+    consumerSystem: AMBITIONS,
+    intent:
+      'A mortal may only destroy what they have a reason to destroy — candidate generation reads the world\'s standing quarrels before offering a destroy verb.',
+    ulTerms: ['Undertaking', 'Faction'],
+    // The carrier is `motiveGate` on the template plus `evaluateMotiveGate`, which is
+    // the single reader. `resolveTargetOwners` is named deliberately: it is the seam
+    // THR-1297 slice 3's `owns` edge extends, and a caller that walks ownership edges
+    // itself instead of asking through here is exactly the drift this row exists to
+    // catch — two answers to "who holds this" is how the `controls` inventory got the
+    // way it is.
+    mechanism: {
+      kind: 'function',
+      symbols: ['motiveGate', 'evaluateMotiveGate', 'resolveTargetOwners', 'MOTIVE_GATE_KINDS'],
+      module: 'src/engine/undertakingMotive.ts',
+    },
+    writeSites: [
+      'src/data/strategic-packs/warlordStrategicPack.ts',
+    ],
+    readSites: [
+      'src/engine/undertakingMotive.ts',
+      'src/engine/strategicActionCandidates.ts',
+      'src/data/undertaking-kinds.ts',
+    ],
+    verifiedLive: {
+      date: '2026-08-27',
+      evidence:
+        'THR-1297 slice 2. The corpus held exactly one `verb: \'destroy\'` template in 43 — `strategic_raid_supply_lines` — and it was offerable against any town/city/camp/fort in range with no quarrel behind it, while its own completion prose said "the enemy will feel the lack" about people who were not the actor\'s enemy. It now declares `motiveGate: [\'rivalry\',\'grudge\',\'faction_war\']` and generation refuses it unless the actor holds one of those toward a holder of the target. Every motive reads a relation the world already wrote, so nothing new is recorded: `hostile_to` (bare ⇒ rivalry, injury-stamped ⇒ grudge, read across all three provenance keys the three writers each chose independently — `cause`/`reason`/`basis`), a shared `active` `pursues` ambition node, and `relates_to.isRival` via the existing `areFactionsHostile`. Two refusal reasons kept distinct because they want different fixes: `no_motive` (held, no quarrel) and `no_motive_unowned` (nobody holds it). Both reach a trace through the candidate-board trace\'s new capped `refusals` field — before this the board reported a bare rejection *count*, so every generation gate including `no_eligible_apprentice` was invisible from a run dump. Non-vacuous by `src/engine/__tests__/undertakingMotiveGate.test.ts` (21 tests): each refusal is paired with the same fixture offering the same candidate once the motive exists, so a gate that simply always refused would fail; falsified 8-of-21 red with `evaluateMotiveGate` stubbed to allow. Live measurement, seed 42/medium at tick 60: all 21 raidable settlements carry a controlling faction (so the `unowned` arm is not the common case), against 30 `hostile_to` edges and 12 declared faction rivalries across 49 factions — the verb stays reachable and grows more so as grudges accumulate. Full suite 18569 green; 30-tick seed-42 smoke reached tick 30, 377 agents, 49 events.',
+    },
+  },
 ];
 
 /** A malformed row — surfaced in the generated output rather than thrown (NFP #4). */
