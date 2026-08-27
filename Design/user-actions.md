@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-27 15:55 local (13:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-27 16:55 local (14:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -12,7 +12,7 @@
 
 **The bar is live with no caveats:** [The Beast in the Granary](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.hunt.the_beast_in_the_granary). One thing needs your answer: [the brief](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/retrofit-batch-2-brief.md) proposes **seven** rather than your six, because the camp set is one family in one file and splitting the seventh costs a whole factory cycle.
 
-**Three ways to close it:** *"batch 2, seven is fine"*, *"keep it six"*, or *"same rule — judge batch 2 on one first."* One of the two engine jobs that were covering the build lane shipped at 15:50, so the shelf is thinner than it was this morning and this is closer to the front than it has been.
+**Three ways to close it:** *"batch 2, seven is fine"*, *"keep it six"*, or *"same rule — judge batch 2 on one first."* The build shelf is now down to a single job — four tickets were filed and shipped today, the newest inside the last hour — so this is closer to the front than it has been.
 
 ### 2. More design hours — still the binding constraint
 
@@ -88,6 +88,7 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
+- **A complication no longer reads a missing reputation as ruin** — [THR-1306](https://linear.app/threadbare/issue/THR-1306), a Low deferral filed by the previous ticket's own work and shipped inside the hour ([PR #1669](https://github.com/christianspliid-ui/threadbare/pull/1669)), already deployed. Fourth same-day file-to-ship today.
 - **Spawn-review now casts encounters the way live play does** — [THR-1305](https://linear.app/threadbare/issue/THR-1305), filed 14:28 and merged 15:50 ([PR #1668](https://github.com/christianspliid-ui/threadbare/pull/1668)), already deployed. What you review on a `?spawn=` link is now what ships.
 - **Two of your six plan docs were designed today, and one is already built** — [the binder](https://linear.app/threadbare/issue/THR-1296) (doc 3) shipped six slices by 13:44; [the action library](https://linear.app/threadbare/issue/THR-1297) (doc 2) was designed this afternoon and is on the shelf. Docs 1, 2 and 3 — the whole Tier-1 critical path — are now designed, and two of them built.
 - **The binder's own defects were found, filed and fixed inside three hours** — [THR-1304](https://linear.app/threadbare/issue/THR-1304), six defects in how newborn mortals are created, filed 13:19 and closed 14:40 ([PR #1667](https://github.com/christianspliid-ui/threadbare/pull/1667)), already deployed.
