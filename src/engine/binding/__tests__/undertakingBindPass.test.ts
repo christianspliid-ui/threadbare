@@ -420,4 +420,88 @@ describe('runBindPass', () => {
     expect(result.loss).toBeNull();
     expect(result.project).toBe(args.project);
   });
+
+  // ─── The `$anchor` slot (THR-1296 §6, slice 5) ────────────────────
+  //
+  // The anchor is the one binding no template authors: the remote-anchor gate names it
+  // at proposal and the pass binds it must-persist, so severing an agent's army becomes
+  // a named complication for everything it was footing. It therefore has to run on a
+  // template with NO cast — which is every shipped template in v1 — without breaking
+  // the neutrality that same emptiness is supposed to guarantee. Both halves are pinned.
+
+  it('binds `$anchor` must-persist on a template with no cast at all', () => {
+    const graph = world();
+    addPerson(graph, 'army-1', { actorType: 'group', armyState: { size: 'warband' } });
+
+    const args = input({
+      graph,
+      template: template(),                              // no cast — the v1 template
+      project: project({ anchorNodeId: 'army-1' }),
+    });
+    const result = runBindPass(args);
+
+    expect(result.bound).toBe(1);
+    const anchor = args.strategicState.bindings!.find(b => b.castKey === '$anchor');
+    expect(anchor).toBeDefined();
+    expect(anchor!.nodeId).toBe('army-1');
+    expect(anchor!.persistence).toBe('must-persist');
+    expect(anchor!.status).toBe('live');
+  });
+
+  it('leaves the no-cast case neutral when there is NO anchor — the paired negative arm', () => {
+    // Without this the test above would hold for a pass that had simply stopped
+    // early-returning, which is the regression it exists to prevent.
+    const graph = world();
+    addPerson(graph, 'army-1', { actorType: 'group', armyState: { size: 'warband' } });
+
+    const args = input({ graph, template: template(), project: project() });
+    const result = runBindPass(args);
+
+    expect(result.bound).toBe(0);
+    expect(args.strategicState.bindings).toHaveLength(0);
+  });
+
+  it('does not bind an anchor whose node is gone — the gate ran at proposal, the world moved', () => {
+    const graph = world();
+    const args = input({
+      graph,
+      template: template(),
+      project: project({ anchorNodeId: 'army-destroyed' }),
+    });
+
+    expect(runBindPass(args).bound).toBe(0);
+    expect(args.strategicState.bindings).toHaveLength(0);
+  });
+
+  it('binds the anchor exactly once across repeated passes', () => {
+    const graph = world();
+    addPerson(graph, 'army-1', { actorType: 'group', armyState: { size: 'warband' } });
+    const args = input({
+      graph, template: template(), project: project({ anchorNodeId: 'army-1' }),
+    });
+
+    runBindPass(args);
+    const second = runBindPass(args);
+
+    // A one-pass test passes against a version that re-registers every checkpoint.
+    expect(second.bound).toBe(0);
+    expect(args.strategicState.bindings!.filter(b => b.castKey === '$anchor')).toHaveLength(1);
+  });
+
+  it('binds the anchor alongside an authored cast rather than instead of it', () => {
+    const graph = world();
+    addPerson(graph, 'actor-steward', { npcRole: 'steward' });
+    addPerson(graph, 'army-1', { actorType: 'group', armyState: { size: 'warband' } });
+
+    const args = input({
+      graph,
+      template: template([ACTOR_SPEC]),
+      project: project({ anchorNodeId: 'army-1' }),
+    });
+    runBindPass(args);
+
+    const keys = args.strategicState.bindings!.map(b => b.castKey).sort();
+    expect(keys).toContain('$anchor');
+    expect(keys).toContain('$steward');
+  });
 });

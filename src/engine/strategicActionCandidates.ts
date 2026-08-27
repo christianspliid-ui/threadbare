@@ -42,6 +42,7 @@ import { scoreRoutePairBalance, ROUTE_FORMATION_BALANCE_BIAS } from './tradeRout
 import { getSublocationNodes } from './sublocationShape';
 import type { ReachDomain } from '../types/traits';
 import { findEligibleApprentices, MENTORSHIP_TEMPLATE_ID } from './mentorshipUndertaking';
+import { evaluateRemoteAnchorGate, ANCHOR_CAST_KEY } from './binding/remoteAnchor';
 
 // ─── Template Registry ──────────────────────────────────────────────
 // All strategic templates by ID. Scales as new packs are added.
@@ -205,6 +206,34 @@ export function generateStrategicCandidates(
           ? hexDistance(actorHex, targetHex)
           : 0;
 
+        // A remote undertaking must reach through something the agent commands
+        // (THR-1296 §6). Refused at proposal time, exactly like `no_eligible_apprentice`
+        // above and for the same reason: an undertaking nobody can foot is not a
+        // decision, and starting one only to stall it at the first checkpoint teaches
+        // the player that their armies are decorative.
+        const anchorGate = evaluateRemoteAnchorGate(
+          graph, actorId, targetHex, travelDist, template.remote === true,
+        );
+        if (!anchorGate.allowed) {
+          rejections.push({ templateId, reason: `no_remote_anchor:${target.id}` });
+          emitTrace({
+            category: 'binding_decision',
+            tick,
+            agentId: actorId,
+            projectId: `candidate_${templateId}_${target.id}`,
+            castKey: ANCHOR_CAST_KEY,
+            stepIndex: 0,
+            mode: 'refused',
+            refusedReason: 'no_remote_anchor',
+            rows: [],
+            rowsConsidered: 0,
+            summary:
+              `${templateId} → ${target.id} refused: ${travelDist} hexes from ${actorId}, ` +
+              'no commanded entity within anchor range of the site',
+          });
+          continue;
+        }
+
         const generationReason = determineGenerationReason(
           template, profile, strategicState, actorId, target.id,
         );
@@ -220,6 +249,7 @@ export function generateStrategicCandidates(
           displayName: template.displayName,
           targetNodeId: target.id,
           targetHex: targetHex ?? undefined,
+          anchorNodeId: anchorGate.anchorNodeId,
           scoreComponents: {
             ambitionAlignment: computeAmbitionAlignment(template, profile),
             blockerRelief: 0, // Computed in scoring phase with full context

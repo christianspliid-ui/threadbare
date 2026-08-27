@@ -1,5 +1,5 @@
 {
-  "total": 2975,
+  "total": 2974,
   "command": "npx tsc -b --force --pretty false",
   "perFile": {
     "scripts/lint-encounter-content.ts": 2,
@@ -550,7 +550,6 @@
     "src/engine/encounters/itemConsumption.ts": 1,
     "src/engine/encounterScoring.ts": 4,
     "src/engine/encounterSeeding.ts": 2,
-    "src/engine/encounterSupportBundle.ts": 1,
     "src/engine/encounterSurface.ts": 3,
     "src/engine/encounterVisibility.ts": 11,
     "src/engine/factionAmbitions.ts": 3,

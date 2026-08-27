@@ -1025,7 +1025,13 @@ export interface BindingDecisionTrace extends TraceBase {
   mode: 'reuse' | 'modify' | 'mint' | 'deferred_awaiting_mint' | 'refused';
   winnerNodeId?: string;
   /** Why nothing bound, when `mode` is `'refused'`. */
-  refusedReason?: 'no_candidates' | 'all_vetoed' | 'mint_queue_full' | 'binder_error';
+  refusedReason?:
+    | 'no_candidates'
+    | 'all_vetoed'
+    | 'mint_queue_full'
+    | 'binder_error'
+    /** The remote-anchor gate (THR-1296 §6) — refused at proposal, before any project exists. */
+    | 'no_remote_anchor';
   rows: ReadonlyArray<BindingDecisionRow>;
   /** Rows considered before the trace cap — `rows.length` may be smaller. */
   rowsConsidered: number;

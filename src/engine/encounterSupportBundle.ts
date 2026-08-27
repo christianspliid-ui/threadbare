@@ -163,38 +163,67 @@ function findExistingActorSupport(
   return roleMatch?.id ?? null;
 }
 
-function materializeActorSupport(
+/** What a walk-on is made of — the parameters {@link materializeWalkOnActor} needs. */
+export interface WalkOnSpec {
+  /** The node id to write. The caller owns the naming scheme, and thus idempotency. */
+  readonly nodeId: string;
+  readonly name?: string;
+  readonly npcRole?: string;
+  /** Stamped as `encounterSupportRole`; also the faction membership role. */
+  readonly supportRole?: string;
+  readonly factionDefId?: string;
+  /** Provenance — which system made this person, for the debug surfaces. */
+  readonly generatedBy: string;
+  /** Extra provenance properties, merged last. */
+  readonly extraProperties?: Record<string, unknown>;
+}
+
+/**
+ * Write one walk-on: a body at a place, with a culture and maybe a faction.
+ *
+ * This is the **legacy find-or-mint path's writer**, extracted (THR-1296 slice 5) so
+ * the undertaking creation effects can spawn a `scene-only` face through the same
+ * code rather than a second copy of this node shape. It deliberately stays thin —
+ * no capabilities, no axiological profile, no ambitions. A walk-on is cardboard by
+ * design; {@link import('./binding/mintInhabitant').mintInhabitant} is the born-real
+ * path, and the split is what keeps the 1/tick birth budget spent on people the world
+ * will keep.
+ *
+ * Idempotent on `nodeId` — a second call returns the existing node untouched.
+ */
+export function materializeWalkOnActor(
   state: GameState,
-  templateId: string,
   anchorLocationId: string,
   placementId: string,
-  spec: EncounterSupportActorSpec,
+  spec: WalkOnSpec,
 ): string {
-  const supportId = makeSupportNodeId(templateId, anchorLocationId, spec.key);
-  const existing = state.graph.getNode(supportId);
+  const existing = state.graph.getNode(spec.nodeId);
   if (existing) return existing.id;
 
   state.graph.addNode({
-    id: supportId,
+    id: spec.nodeId,
     type: 'actor',
-    name: spec.spawnName,
+    // `GraphNode.name` is required. The encounter path always supplies one, so this
+    // fallback never fires there and the extraction stays behaviour-identical; a
+    // creation effect with no authored name falls back to its role rather than to
+    // `undefined`, which would have written a nameless person into the world.
+    name: spec.name ?? spec.npcRole ?? spec.nodeId,
     properties: {
       actorType: 'individual',
       spotlightTier: 'ambient',
-      npcRole: spec.spawnNpcRole,
+      npcRole: spec.npcRole,
       encounterSupportRole: spec.supportRole,
-      encounterSupportKey: spec.key,
-      encounterTemplateId: templateId,
-      generatedBy: 'encounter_support_bundle',
+      generatedBy: spec.generatedBy,
       importance: 0,
       sphereAffinity: null,
       reputationScore: DEFAULT_REPUTATION,
+      ...(spec.extraProperties ?? {}),
     },
   });
 
   state.graph.addEdge({
-    id: `${supportId}_located_at_${placementId}`,
-    source: supportId,
+    id: `${spec.nodeId}_located_at_${placementId}`,
+    source: spec.nodeId,
     target: placementId,
     type: 'located_at',
     properties: {},
@@ -203,8 +232,8 @@ function materializeActorSupport(
   const cultureId = getLocationCultureId(state, anchorLocationId);
   if (cultureId) {
     state.graph.addEdge({
-      id: `edge_culture_${supportId}_${cultureId}`,
-      source: supportId,
+      id: `edge_culture_${spec.nodeId}_${cultureId}`,
+      source: spec.nodeId,
       target: cultureId,
       type: 'belongs_to',
       properties: { culturalStrength: 1.0 },
@@ -214,8 +243,8 @@ function materializeActorSupport(
   const factionId = findFactionNodeId(state, spec.factionDefId);
   if (factionId) {
     state.graph.addEdge({
-      id: `${supportId}_member_of_${factionId}`,
-      source: supportId,
+      id: `${spec.nodeId}_member_of_${factionId}`,
+      source: spec.nodeId,
       target: factionId,
       type: 'member_of',
       properties: {
@@ -226,7 +255,28 @@ function materializeActorSupport(
     });
   }
 
-  return supportId;
+  return spec.nodeId;
+}
+
+function materializeActorSupport(
+  state: GameState,
+  templateId: string,
+  anchorLocationId: string,
+  placementId: string,
+  spec: EncounterSupportActorSpec,
+): string {
+  return materializeWalkOnActor(state, anchorLocationId, placementId, {
+    nodeId: makeSupportNodeId(templateId, anchorLocationId, spec.key),
+    name: spec.spawnName,
+    npcRole: spec.spawnNpcRole,
+    supportRole: spec.supportRole,
+    factionDefId: spec.factionDefId,
+    generatedBy: 'encounter_support_bundle',
+    extraProperties: {
+      encounterSupportKey: spec.key,
+      encounterTemplateId: templateId,
+    },
+  });
 }
 
 function resolveActorSupport(

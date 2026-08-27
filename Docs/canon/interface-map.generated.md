@@ -19,8 +19,8 @@ remediation ticket or the build fails.
 | 🟠 PARTIAL | 2 |
 | 🔴 LEAKED | 8 |
 | ⚫ UNWIRED | 0 |
-| 🔵 UNVERIFIED-OK | 17 |
-| **Total** | **87** |
+| 🔵 UNVERIFIED-OK | 19 |
+| **Total** | **89** |
 
 ## Contracts by producing subsystem
 
@@ -44,6 +44,7 @@ remediation ticket or the build fails.
 | `binder-mint-valve` | When an undertaking needs a person the world does not have, that person is born the way every other mortal is born — through the lifecycle’s one-per-tick gate — instead of appearing on the spot. An unmetered spawn path is how a large map reached ~1010 agents by tick 72 (THR-814/THR-162), and the budget is what stops the binder becoming a second one. | state-field: `mintQueue`, `drainMintQueue`, `BINDER_MINT_BUDGET_PER_TICK`, `binder_mint` | Agent Lifecycle | 🔵 UNVERIFIED-OK | THR-1296 |
 | `faction-ambitions-drive-action` | Faction ambitions drive faction action and render on the faction sheet. | function: `factionAmbitions` | Factions & Succession | 🟢 LIVE | — |
 | `minted-ambition-provenance` | Motive receipts name the origin of a minted want — "she seeks vengeance for the blighted fields." | edge-prop: `mintedByEventId` | Omens & Atmospheric Pressure | 🟢 LIVE | — |
+| `undertaking-creation-effects` | A long work now puts things into the world as it runs rather than only at completion: an advancing checkpoint builds what the step earned, an at-cost one builds the cost besides, and a critical failure builds the disaster. A person the work must keep is born through the mint valve; a face that exists for one scene is written by the encounter support bundle’s own walk-on writer, which this contract shares rather than copies. Routing every spawn through the valve would spend the one-per-tick birth budget on faces; copying the node shape instead is how the two writers drift. | function: `materializeWalkOnActor`, `applyCreationEffects`, `selectCreationBand` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | THR-1297 |
 
 ### Ascendant Beats & Progression
 
@@ -190,6 +191,7 @@ remediation ticket or the build fails.
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
 | `binding-registry-reaper-hook` | A siege that razes an undertaking’s bound stage, or a battle that kills its bound commander, breaks the binding loudly instead of silently — the recon (THR-1289) measured battle destruction as the one confirmed live must-persist violation, since the destruction pool never reads persistence in either flavour and the commander kill bypasses the lifecycle and emits nothing at all. Detection sits on the sole node-removal funnel all ~25 deleting call sites pass through, so the same seam covers every other reaper and any reaper not yet written; housekeeping (sublocation dissolution) instead defers on a bound stage, because a chore waits and a story does not. | function: `onNodeRemoved`, `installBindingRemovalHook`, `makeDissolutionHold`, `binding_severed` | Ambitions & Undertakings | 🔵 UNVERIFIED-OK | THR-1297 |
+| `undertaking-remote-anchor` | A work done *through* others — a garrison established, supply lines raided — must reach the site through something its owner actually commands, and is not offered at all when nothing is there. Refusing at proposal is the `no_eligible_apprentice` doctrine: an undertaking nobody can foot is not a decision, and starting one only to stall it teaches the player their armies are decorative. The winning anchor joins the cast as `$anchor` must-persist, so severing an army is a named complication for everything it was footing. | function: `findRemoteAnchors`, `evaluateRemoteAnchorGate`, `commanded_by`, `no_remote_anchor` | Ambitions & Undertakings | 🔵 UNVERIFIED-OK | THR-1297 |
 
 ## Evidence
 
@@ -512,10 +514,10 @@ exit
 - **Intent:** Every casting decision an undertaking makes reaches the narrative surface: the trace answers "why is this moment generic?" after the fact (it fires on a slot that bound nobody as loudly as on one that bound somebody), and a lost must-persist cast member is carried into the checkpoint moment by name — "loses Old Maerin" rather than the anonymous "hits serious trouble" the complication class produced before.
 - **Producer → Consumer:** Ambitions & Undertakings → Attention, Chronicle & Narrative
 - **Module:** `src/engine/binding/binder.ts`
-- **Production hits:** 4 total — 2 write, 1 read, 1 unclassified
+- **Production hits:** 5 total — 2 write, 1 read, 2 unclassified
 - **Write sites:** `src/engine/binding/binder.ts`, `src/engine/binding/undertakingBindPass.ts`
 - **Read sites:** `src/types/trace.ts`
-- **Other hits:** `src/engine/strategicActionLifecycle.ts`
+- **Other hits:** `src/engine/strategicActionCandidates.ts`, `src/engine/strategicActionLifecycle.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `binder-mint-valve` — 🔵 UNVERIFIED-OK
@@ -523,10 +525,10 @@ exit
 - **Intent:** When an undertaking needs a person the world does not have, that person is born the way every other mortal is born — through the lifecycle’s one-per-tick gate — instead of appearing on the spot. An unmetered spawn path is how a large map reached ~1010 agents by tick 72 (THR-814/THR-162), and the budget is what stops the binder becoming a second one.
 - **Producer → Consumer:** Ambitions & Undertakings → Agent Lifecycle
 - **Module:** `src/engine/binding/mintInhabitant.ts`
-- **Production hits:** 5 total — 1 write, 1 read, 3 unclassified
+- **Production hits:** 6 total — 1 write, 1 read, 4 unclassified
 - **Write sites:** `src/engine/binding/mintInhabitant.ts`
 - **Read sites:** `src/engine/agentLifecycle.ts`
-- **Other hits:** `src/data/binder-constants.ts`, `src/types/strategicAction.ts`, `src/types/trace.ts`
+- **Other hits:** `src/data/binder-constants.ts`, `src/engine/binding/creationEffects.ts`, `src/types/strategicAction.ts`, `src/types/trace.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `binding-registry-reaper-hook` — 🔵 UNVERIFIED-OK
@@ -613,10 +615,10 @@ exit
 - **Intent:** A company has no position of its own — asking where it is means asking where its leader is, so there is never a second spatial truth to drift.
 - **Producer → Consumer:** Companies & Group Travel → Movement & Colocation
 - **UL terms:** *Company*
-- **Production hits:** 6 total — 1 write, 1 read, 4 unclassified
+- **Production hits:** 7 total — 1 write, 1 read, 5 unclassified
 - **Write sites:** `src/engine/groups/groupQueries.ts`
 - **Read sites:** `src/debug-bridge.ts`
-- **Other hits:** `src/components/Game/debug/CompaniesTabContent.tsx`, `src/components/Game/GameView.tsx`, `src/engine/groups/bandOpposition.ts`, `src/engine/groups/groupFormation.ts`
+- **Other hits:** `src/components/Game/debug/CompaniesTabContent.tsx`, `src/components/Game/GameView.tsx`, `src/engine/binding/remoteAnchor.ts`, `src/engine/groups/bandOpposition.ts`, `src/engine/groups/groupFormation.ts`
 - **Verdict:** Verified 2026-07-24: Company nodes carry no located_at edge; locked by src/engine/groups/__tests__/groupLifecycle.test.ts § "never attaches a located_at edge to the company node".
 
 ### `compulsion-card-plants-agent-decision-bias` — 🔴 LEAKED
@@ -940,10 +942,10 @@ exit
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 237 total — 1 write, 1 read, 235 unclassified
+- **Production hits:** 238 total — 1 write, 1 read, 236 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts` +230 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts` +231 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `relocation-intent-steers-agent-movement` — 🔵 UNVERIFIED-OK
@@ -1140,6 +1142,27 @@ exit
 - **Read sites:** —
 - **Other hits:** `src/engine/gameInit.ts`, `src/types/gameState.ts`, `src/types/strategicAction.ts`, `src/types/trace.ts`
 - **Verdict:** Tier 2: write sites present, declared read sites empty — the consumer is starving. — or the declared symbol does not appear at the declared site: grep 'undertaking_checkpoint' src/engine/traceBuffer.ts before treating this as a leak.
+
+### `undertaking-creation-effects` — 🔵 UNVERIFIED-OK
+
+- **Intent:** A long work now puts things into the world as it runs rather than only at completion: an advancing checkpoint builds what the step earned, an at-cost one builds the cost besides, and a critical failure builds the disaster. A person the work must keep is born through the mint valve; a face that exists for one scene is written by the encounter support bundle’s own walk-on writer, which this contract shares rather than copies. Routing every spawn through the valve would spend the one-per-tick birth budget on faces; copying the node shape instead is how the two writers drift.
+- **Producer → Consumer:** Ambitions & Undertakings → Encounters & Dilemmas
+- **Module:** `src/engine/encounterSupportBundle.ts`
+- **Production hits:** 3 total — 2 write, 1 read, 0 unclassified
+- **Write sites:** `src/engine/binding/creationEffects.ts`, `src/engine/strategicActionLifecycle.ts`
+- **Read sites:** `src/engine/encounterSupportBundle.ts`
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
+### `undertaking-remote-anchor` — 🔵 UNVERIFIED-OK
+
+- **Intent:** A work done *through* others — a garrison established, supply lines raided — must reach the site through something its owner actually commands, and is not offered at all when nothing is there. Refusing at proposal is the `no_eligible_apprentice` doctrine: an undertaking nobody can foot is not a decision, and starting one only to stall it teaches the player their armies are decorative. The winning anchor joins the cast as `$anchor` must-persist, so severing an army is a named complication for everything it was footing.
+- **Producer → Consumer:** War, Armies & Battles → Ambitions & Undertakings
+- **Module:** `src/engine/binding/remoteAnchor.ts`
+- **Production hits:** 20 total — 1 write, 2 read, 17 unclassified
+- **Write sites:** `src/engine/armySpawning.ts`
+- **Read sites:** `src/engine/binding/remoteAnchor.ts`, `src/engine/strategicActionCandidates.ts`
+- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/GameView.tsx`, `src/data/battle-spotlight-content.ts`, `src/debug-bridge.ts`, `src/engine/armyAttrition.ts` +12 more
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `undertow-card-drifts-mortal-values` — 🔴 LEAKED
 

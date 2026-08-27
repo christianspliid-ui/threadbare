@@ -233,7 +233,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `backstory` (2) | `backstoryGenerator.ts`, `backstoryResolvers.ts` | — |
 | `balance` (4) | `balanceEvaluator.ts`, `balanceSummary.ts`, `balanceTargets.ts`, `balanceTelemetry.ts` | `Phase 1` |
 | `battle` (3) | `battleAftermath.ts`, `battleResolution.ts`, `battleSpotlights.ts` | `Phase 3`, `Phase 4`, `Phase 5`, `TB-073` |
-| `binding` (5) | `binding/binder.ts`, `binding/bindingRegistry.ts`, `binding/mintInhabitant.ts`, `binding/roleCensus.ts`, `binding/undertakingBindPass.ts` | `THR-1289`, `THR-1290`, `THR-1296` |
+| `binding` (7) | `binding/binder.ts`, `binding/bindingRegistry.ts`, `binding/creationEffects.ts`, `binding/mintInhabitant.ts`, `binding/remoteAnchor.ts`, `binding/roleCensus.ts`, `binding/undertakingBindPass.ts` | `THR-1289`, `THR-1290`, `THR-1292`, `THR-1296` |
 | `broken` (1) | `brokenState.ts` | `THR-773` |
 | `callback` (1) | `callbackEligibility.ts` | — |
 | `capability` (1) | `capabilityGrowth.ts` | — |
@@ -394,4 +394,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 26 registered subsystems (1 dormant) · 99 tick phases · 175 engine domains · 514 modules._
+_Counts: 26 registered subsystems (1 dormant) · 99 tick phases · 175 engine domains · 516 modules._
