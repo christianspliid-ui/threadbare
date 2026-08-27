@@ -83,6 +83,7 @@ import type { BalanceEvent } from '../types/balanceEval';
 import { scoreUnifiedBoard } from './decisionBoard';
 import { UNIFIED_DECISION_BOARD_MODE } from '../data/strategic-action-constants';
 import { computeSurfaceKey } from './encounterSurface';
+import { warnLiveBoardModeUnimplemented } from './decisionBoardModeGuard';
 import { resolveTemplateFragments } from './fragmentResolution';
 import { getLocationType } from './encounterCache';
 import { settingClassForSubtype } from '../data/settingClasses';
@@ -770,6 +771,14 @@ export function phaseAgentDecision(
       > = {};
 
       if (UNIFIED_DECISION_BOARD_MODE !== 'off') {
+        // `'live'` is declared in the mode union but the cutover branch is NOT
+        // implemented (THR-1292 slice 6: the §4 gate failed on seed 99, so the
+        // flip did not land). Without this warning, setting the constant to
+        // `'live'` scores the board and then lets the legacy contests decide
+        // anyway — a cutover that reads as done from the constant, from the
+        // trace's own `mode` field, and from every test, while changing nothing.
+        // That is the exact shape of the phantom-ship this ticket has hit twice.
+        warnLiveBoardModeUnimplemented();
         try {
           const board = scoreUnifiedBoard({
             graph,
