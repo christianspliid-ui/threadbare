@@ -19,6 +19,7 @@ import type { ReachDomain } from '../types/traits';
 import { VALUE_PAIRS } from '../types/agent';
 import type { AxiologicalProfile } from '../types/agent';
 import { NARRATIVE_ARCHETYPES } from '../data/archetype-content';
+import { DEFAULT_REPUTATION } from '../types/disposition';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────────────────
 
@@ -288,9 +289,16 @@ export function hydrateToTier(
       updates.wealth = ROLE_WEALTH[roleStr] ?? DEFAULT_WEALTH;
     }
 
-    // Set reputationScore to 0 if missing
+    // Seed reputationScore if missing (THR-1304 #4).
+    //
+    // `DEFAULT_REPUTATION`, not 0. Every other writer in the engine seeds this field to
+    // `DEFAULT_REPUTATION`, and every reader defaults a missing value to the same — so
+    // stamping 0 here made graduation *worse* than leaving the field absent. Concretely:
+    // 0 is below `LOW_REP_THRESHOLD` (0.1), which is the deaths loop's own predicate, so
+    // promoting a walk-on to notable handed it a `DEATH_CHANCE_LOW_REP` roll every tick
+    // from that moment on. Nothing in the graduation path intends to mark an NPC for death.
     if (node.properties.reputationScore === undefined) {
-      updates.reputationScore = 0;
+      updates.reputationScore = DEFAULT_REPUTATION;
     }
 
     // Generate role-aware domainCapabilities at notable tier
@@ -311,8 +319,13 @@ export function hydrateToTier(
       updates.domainCapabilities = generateRoleCapabilities(rng, affinity, 'spotlight');
     }
 
+    // THR-1304 #3: `'tit-for-tat'` is the canonical spelling — it is the `CooperationStrategy`
+    // union member, the key in `COOPERATION_STRATEGIES`, `VALID_COOPERATION_STRATEGIES`, the
+    // game-theory weight tables and the backstory pools, and the label the UI looks up. The
+    // underscore spelling matched none of them, so a graduated NPC's strategy fell through
+    // every one of those lookups and read as unknown.
     if (!node.properties.cooperationStrategy) {
-      updates.cooperationStrategy = 'tit_for_tat';
+      updates.cooperationStrategy = 'tit-for-tat';
     }
   }
 

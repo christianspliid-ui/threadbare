@@ -70,7 +70,7 @@ function makeRelState(overrides: Partial<ReturnRelationshipState> = {}): ReturnR
     totalEssenceSpent: 15,
     interventionRatio: 0.6,
     supportiveVsCoercive: 3,
-    cooperationStrategy: 'tit_for_tat',
+    cooperationStrategy: 'tit-for-tat',
     trust: 0.5,
     ...overrides,
   };

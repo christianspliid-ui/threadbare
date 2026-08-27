@@ -3684,7 +3684,15 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
     // cache version when it bears someone (THR-1296 §5) — a new actor invalidates the
     // encounter cache, the distance matrix, and the UI's structural memo. Optional:
     // the legacy no-runtime test path still works, it simply has no cache to touch.
-    const r = runInlinePhase('agent_lifecycle', s, () => phaseAgentLifecycle(s, nextEventId, undefined, runtime));
+    // THR-1304 #6: the third argument is the births block's content-rich siting cache, and
+    // it was passed `undefined` from the only production call site — so
+    // `BORN_LATER_PREFER_CONTENT_LOCATIONS` (shipped `true`) gated a branch nothing could
+    // enter, and born-later mortals were sited across every location in the graph rather
+    // than the ones carrying encounters for them. Read off `runtime`, not the module-level
+    // legacy pointer, so the cache stays session-owned (CLAUDE.md § engine caches).
+    const r = runInlinePhase('agent_lifecycle', s, () => phaseAgentLifecycle(
+      s, nextEventId, runtime?.encounterCache ?? undefined, runtime,
+    ));
     s = r.next;
     phaseEventCounts['agent_lifecycle'] = r.eventDelta;
   }

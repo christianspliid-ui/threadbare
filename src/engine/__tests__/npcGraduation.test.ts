@@ -7,6 +7,7 @@ import { bumpImportance, hydrateToTier, phaseNpcGraduation } from '../npcGraduat
 import { NPC_CONSTANTS, NPC_ROLE_REACH_MAP } from '../../types/npc';
 import { VALUE_PAIRS } from '../../types/agent';
 import { REACH_DOMAINS } from '../../types/traits';
+import { DEFAULT_REPUTATION } from '../../types/disposition';
 import type { GameState } from '../../types/gameState';
 
 // ─── PRNG ────────────────────────────────────────────────────────────────────
@@ -151,7 +152,9 @@ describe('hydrateToTier', () => {
     expect(typeof node.properties.narrativeArchetype).toBe('string');
     expect(node.properties.axiologicalProfile).toBeDefined();
     expect(node.properties.wealth).toBeDefined();
-    expect(node.properties.reputationScore).toBe(0);
+    // THR-1304 #4: was `toBe(0)` — pinning the defect. Graduation seeds the field to
+    // DEFAULT_REPUTATION, matching every other writer and every reader's fallback.
+    expect(node.properties.reputationScore).toBe(DEFAULT_REPUTATION);
 
     // Axiological profile should have all VALUE_PAIRS as keys
     const profile = node.properties.axiologicalProfile as Record<string, number>;
@@ -174,8 +177,12 @@ describe('hydrateToTier', () => {
     expect(typeof node.properties.narrativeArchetype).toBe('string');
     expect(node.properties.axiologicalProfile).toBeDefined();
     expect(node.properties.wealth).toBeDefined();
-    expect(node.properties.reputationScore).toBe(0);
-    expect(node.properties.cooperationStrategy).toBe('tit_for_tat');
+    // THR-1304 #4: was `toBe(0)` — pinning the defect. Graduation seeds the field to
+    // DEFAULT_REPUTATION, matching every other writer and every reader's fallback.
+    expect(node.properties.reputationScore).toBe(DEFAULT_REPUTATION);
+    // THR-1304 #3: was `'tit_for_tat'` — pinning the defect. The canonical spelling is the
+    // hyphenated union member every reader looks up.
+    expect(node.properties.cooperationStrategy).toBe('tit-for-tat');
 
     const caps = node.properties.domainCapabilities as Record<string, number>;
     expect(caps).toBeDefined();

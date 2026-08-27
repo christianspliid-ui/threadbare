@@ -54,9 +54,30 @@ export interface AgentValidationResult {
  * Validate that an agent node has all required data for the tick loop.
  * Returns a structured result with per-check booleans and error/warning lists.
  */
+/**
+ * Options for {@link validateAgentIntegrity}.
+ */
+export interface AgentValidationOptions {
+  /**
+   * Run the full battery (checks 2–8) even when the agent is not `spotlight` tier
+   * (THR-1304 #2).
+   *
+   * The tier skip below exists because ambient/notable NPCs are *seeded sparse* — asking
+   * `npcSeeding`'s walk-ons for an `axiologicalProfile` would report an error on every one
+   * of them. But a caller that has just written a full property bag knows better, and the
+   * ambient births block is exactly that caller: it writes `spotlightTier: 'ambient'` on a
+   * newborn carrying profile, capabilities, archetype, strategy, reputation and a
+   * `located_at` edge, so its `validateAgentIntegrity` call returned after check 1 and could
+   * never report the thing it was placed there to catch. Opt-in rather than a change to the
+   * skip, so the sparse-NPC population it protects is untouched.
+   */
+  readonly fullValidation?: boolean;
+}
+
 export function validateAgentIntegrity(
   graph: WorldGraph,
   agentId: string,
+  options: AgentValidationOptions = {},
 ): AgentValidationResult {
   const result: AgentValidationResult = {
     agentId,
@@ -109,8 +130,10 @@ export function validateAgentIntegrity(
   const isIndividual = actorType === 'individual';
   // Skip full validation for ambient/notable NPCs — they have sparse property bags.
   // Legacy nodes without spotlightTier default to 'spotlight' for backward compatibility.
+  // THR-1304 #2: `fullValidation` overrides the skip for callers that just wrote a complete
+  // bag on a non-spotlight agent (the ambient births block).
   const spotlightTier = (node.properties.spotlightTier as string) ?? 'spotlight';
-  if (isIndividual && spotlightTier !== 'spotlight') return result;
+  if (isIndividual && spotlightTier !== 'spotlight' && !options.fullValidation) return result;
 
   // ── Check 2: Axiological Profile ──────────────────────────────
   const profile = props.axiologicalProfile as Record<string, number> | undefined;

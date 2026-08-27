@@ -30,6 +30,7 @@ import {
 import type { EncounterCacheManager } from './encounterCache';
 import type { SimulationRuntime } from './simulationRuntime';
 import { drainMintQueue } from './binding/mintInhabitant';
+import { generateRoleCapabilities } from './npcGraduation';
 import { BORN_LATER_PREFER_CONTENT_LOCATIONS, BORN_LATER_MIN_TEMPLATES } from '../data/agent-behavior-constants';
 import { AMBITION_KIND_KEY, AMBITION_KIND_TEMPLATE } from './ambitionShape';
 
@@ -58,6 +59,19 @@ export const BIRTH_CHANCE = 0.01;
 
 /** Minimum agents at a location for birth to be possible */
 export const BIRTH_DENSITY_THRESHOLD = 3;
+
+/**
+ * Cultural strength a newborn inherits from the parent culture drawn at its birthplace
+ * (THR-1304 #1).
+ *
+ * Below 1.0 deliberately: a child is born *into* a culture but has not yet lived it, so it
+ * reads as a real but partial member. 0.6 lands in `culturalTraits`' `strong` band (>= 0.5),
+ * so inherited traits apply scaled by 0.6 rather than being suppressed — which is what the
+ * mis-spelled key caused, since a missing `culturalStrength` reads 0 and falls under the
+ * `fading` cutoff. Worldgen and the binder's mint path both write 1.0, because those mortals
+ * arrive already grown.
+ */
+export const BORN_CULTURAL_STRENGTH = 0.6;
 
 /** Chance per tick per agent of migration
  * @deprecated Replaced by phaseMovement with axiological scoring (DES-009 Task 7)
@@ -275,10 +289,19 @@ export function phaseAgentLifecycle(
   // ── Births ─────────────────────────────────────────────
   // Only if no death occurred this tick (population balance)
   if (!deathOccurred && !drainMintValve(state, graph, events, nextEventId, runtime)) {
-    // D.2: Prefer content-rich locations for born-later agents
+    // D.2: Prefer content-rich locations for born-later agents.
+    //
+    // THR-1304 #6: resolve the cache from `runtime` when the caller did not hand one over.
+    // The explicit parameter is the injection point (tests pass a stub); `runtime` is the
+    // ambient source the phase already receives. Deriving it here rather than relying on
+    // every call site to forward it is what stops this branch going dead again — the
+    // orchestrator passed `undefined` for the parameter's entire life, so
+    // `BORN_LATER_PREFER_CONTENT_LOCATIONS` gated something unreachable.
+    const siteCache = encounterCache ?? runtime?.encounterCache ?? undefined;
+
     let locationIds: string[];
-    if (BORN_LATER_PREFER_CONTENT_LOCATIONS && encounterCache && state.tick > 0) {
-      const contentLocations = encounterCache.getLocationsWithMinEntries(BORN_LATER_MIN_TEMPLATES);
+    if (BORN_LATER_PREFER_CONTENT_LOCATIONS && siteCache && state.tick > 0) {
+      const contentLocations = siteCache.getLocationsWithMinEntries(BORN_LATER_MIN_TEMPLATES);
       locationIds = contentLocations.length > 0
         ? contentLocations
         : graph.getNodesByType('location').map(n => n.id);
@@ -342,11 +365,27 @@ export function phaseAgentLifecycle(
         }
 
         const archetype = NARRATIVE_ARCHETYPES[Math.floor(rng() * NARRATIVE_ARCHETYPES.length)];
-        const domainCaps: Record<string, number> = {};
-        const reaches = ['iron', 'gold', 'shadow', 'veil', 'heart', 'eye', 'stone', 'star'];
-        for (const r of reaches) {
-          domainCaps[r] = 0.1 + rng() * 0.4;
-        }
+
+        // THR-1304 #5: capabilities are on the *raw* scale `computeCapability`'s sigmoid
+        // walks (midpoint 10, k 0.4) — worldgen mortals carry 10–40, notable NPCs 1–15.
+        // This block used to write `0.1 + rng() * 0.4`, a 0–1 fraction, into that field:
+        // sigmoid(0.3) ≈ 0.02, so every mortal the world birthed read as ~2% capable in all
+        // eight reaches and forecast `doomed` on essentially any step.
+        //
+        // That floor was close to self-sustaining. Nothing rewrites `domainCapabilities`
+        // after birth; the only way up is `applyEncounterGrowth`, which accrues an
+        // `encounter_experience_<domain>` trait whose edge level `computeRawScore` adds on
+        // top of this base — and it accrues fastest on success. A mortal that starts two
+        // orders of magnitude below its peers rarely succeeds, so it rarely grows.
+        //
+        // `generateRoleCapabilities` is the generator on the correct scale (the binder's
+        // mint path calls the same one), and the archetype already drawn above supplies the
+        // affinity, so a born mortal leans the way its archetype does. Draw-count neutral:
+        // eight `rng()` calls before, eight after (one per REACH_DOMAINS entry) — NFP #3.
+        const archetypeAffinity = archetype.reachAffinities.length >= 2
+          ? { primary: archetype.reachAffinities[0], secondary: archetype.reachAffinities[1] }
+          : undefined;
+        const domainCaps = generateRoleCapabilities(rng, archetypeAffinity, 'notable');
 
         const axiologicalProfile = generateAxiologicalProfile(rng, state.cosmology);
         const cooperationStrategy = assignCooperationStrategy(archetype.id, axiologicalProfile, rng);
@@ -376,14 +415,23 @@ export function phaseAgentLifecycle(
           properties: {},
         });
 
-        // Assign inherited culture edge
+        // Assign inherited culture edge.
+        //
+        // THR-1304 #1: the key is `culturalStrength`, not `strength`. This block was the
+        // only `belongs_to` writer in the engine spelling it the short way, and no reader
+        // reads that spelling — `culturalProse`, `culturalTension`, `culturalTraits` and
+        // `insiderBeatDetection` all default a missing `culturalStrength` to 0, so a
+        // newborn's inherited culture read as *no* culture (below `culturalTraits`'
+        // `silent` threshold, so no cultural traits at all), while `getActorCultures`
+        // defaulted the other way to 1.0 and reported full inheritance. Half the readers
+        // saw nothing and half saw everything; neither saw the 0.6 that was written.
         if (inheritedCulture) {
           graph.addEdge({
             id: `edge_culture_${newId}`,
             source: newId,
             target: inheritedCulture.culture.id,
             type: 'belongs_to',
-            properties: { strength: 0.6 },
+            properties: { culturalStrength: BORN_CULTURAL_STRENGTH },
           });
         }
 
@@ -438,8 +486,14 @@ export function phaseAgentLifecycle(
           });
         }
 
-        // Validate newborn agent integrity
-        const validation = validateAgentIntegrity(graph, newId);
+        // Validate newborn agent integrity.
+        //
+        // THR-1304 #2: `fullValidation` is required here. Newborns are written
+        // `spotlightTier: 'ambient'`, and the validator skips checks 2–8 for any
+        // non-spotlight individual — so this call returned "valid" after the node-exists
+        // check alone, whatever the property bag actually held. The births block writes a
+        // complete bag, so it is entitled to the full battery.
+        const validation = validateAgentIntegrity(graph, newId, { fullValidation: true });
         if (!validation.valid) {
           emitTrace({
             category: 'agent_validation',
