@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-27 16:55 local (14:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-27 17:55 local (15:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -12,7 +12,7 @@
 
 **The bar is live with no caveats:** [The Beast in the Granary](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.hunt.the_beast_in_the_granary). One thing needs your answer: [the brief](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/retrofit-batch-2-brief.md) proposes **seven** rather than your six, because the camp set is one family in one file and splitting the seventh costs a whole factory cycle.
 
-**Three ways to close it:** *"batch 2, seven is fine"*, *"keep it six"*, or *"same rule — judge batch 2 on one first."* The build shelf is now down to a single job — four tickets were filed and shipped today, the newest inside the last hour — so this is closer to the front than it has been.
+**Three ways to close it:** *"batch 2, seven is fine"*, *"keep it six"*, or *"same rule — judge batch 2 on one first."* **The build shelf is now empty** — the last job on it was claimed at 17:02 and is being built. This approval is the only thing on your list that puts a new job on the shelf without costing a design session first.
 
 ### 2. More design hours — still the binding constraint
 
