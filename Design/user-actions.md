@@ -1,35 +1,34 @@
 # User Action Required
 
-**Last updated:** 2026-08-27 07:55 local (05:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-27 08:57 local (06:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
 ### 1. One sitting: sample batch 1, approve batch 2 — [THR-1130](https://linear.app/threadbare/issue/THR-1130) + [THR-1222](https://linear.app/threadbare/issue/THR-1222/run-retrofit-batch-2-the-camp-seven-through-the-factory-line-shrine)
 
-**The only thing that puts work on an empty board.** Ready for Dev holds **zero**, no PR is open, and the pickup lane has now woken four times with nothing to claim (04:01, 05:01, 06:01 and 07:01 local). [The undertaking substrate](https://linear.app/threadbare/issue/THR-1292) closed at 03:42 and the last open PR merged at 04:06.
-
 **First, play two — the batch-1 2-of-6 sample, open since 17 August.** [The Grateful Kin](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin) and [The Unsafe Bridge](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge). The question is your own: *are they worth meeting twice?* Both were re-prosed since you last saw them, so a replay is honest. A no is as useful as a yes — it says what the retrofit bar still misses.
 
-**Then approve the brief.** **The camp seven** — shrine offering, sharpening blades, warding the camp, a small prayer, rest and reflection, tending wounds, scouting the perimeter. No typed consequences at all in that set; they are the last encounters below standard. `shrine_offering` is encounter #1 of [your integrated slice checkpoint](https://linear.app/threadbare/issue/THR-1220), which cannot invite you until they are rewritten.
+**Then approve the brief.** **The camp seven** — shrine offering, sharpening blades, warding the camp, a small prayer, rest and reflection, tending wounds, scouting the perimeter. No typed consequences at all in that set; they are the last encounters below standard. `shrine_offering` is encounter #1 of [your integrated slice checkpoint](https://linear.app/threadbare/issue/THR-1220), which cannot invite you until they are rewritten. This is buildable content that needs **no design session** — only your yes.
 
 **The bar is live with no caveats:** [The Beast in the Granary](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.hunt.the_beast_in_the_granary). One thing needs your answer: [the brief](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/retrofit-batch-2-brief.md) proposes **seven** rather than your six, because the camp set is one family in one file and splitting the seventh costs a whole factory cycle.
 
 **Three ways to close it:** *"batch 2, seven is fine"*, *"keep it six"*, or *"same rule — judge batch 2 on one first."*
 
-### 2. More design hours — now the binding constraint
+### 2. More design hours — still the binding constraint
 
-Engine work is finished and the content shelf is empty. Roughly twenty items sit in Todo and **every one needs a plan doc before an executor can touch it** — so design hours are no longer a queue worry, they are the thing the delivery machine is waiting on. In the order you set:
+Roughly twenty items sit in Todo and **every one needs a plan doc before an executor can touch it**. One landed this morning without you: a session wrote [the binder](https://linear.app/threadbare/issue/THR-1296) (carve-up doc 3, Tier-1 critical path) between 08:23 and 08:46 and handed it to Ready for Dev. Four carve-up docs remain — [THR-1297](https://linear.app/threadbare/issue/THR-1297), [THR-1298](https://linear.app/threadbare/issue/THR-1298), [THR-1299](https://linear.app/threadbare/issue/THR-1299), [THR-1300](https://linear.app/threadbare/issue/THR-1300). Nothing to decide; say the word and sessions write them.
 
-- **[Unify the card grammar](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** — your 6 August note: action cards are too wordy, playing one gives no feedback, while encounter cards already read right. Held **nine days**; it blocks the automation staging anyone else's, so three tickets sit behind it. Sit it, or say *"park it"* and [the shared anchor machinery](https://linear.app/threadbare/issue/THR-1212) goes next.
-- **The five carve-up plan docs now exist as tickets** — [THR-1296](https://linear.app/threadbare/issue/THR-1296) (the binder, critical path), [THR-1297](https://linear.app/threadbare/issue/THR-1297), [THR-1298](https://linear.app/threadbare/issue/THR-1298), [THR-1299](https://linear.app/threadbare/issue/THR-1299), [THR-1300](https://linear.app/threadbare/issue/THR-1300), sequencing recorded as Linear relations. Nothing to decide; say the word and sessions write them.
+In the order you set:
+
+- **[Unify the card grammar](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** — your 6 August note: action cards are too wordy, playing one gives no feedback, while encounter cards already read right. Held **ten days**; three tickets sit behind it. Sit it, or say *"park it"* and [the shared anchor machinery](https://linear.app/threadbare/issue/THR-1212) goes next.
 - **[Traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)** — in design, assigned to you, untouched since 15 August. Give it the hour or say *"put it back in the pile."*
 - **The wave-1 sessions** — [shared machinery](https://linear.app/threadbare/issue/THR-1212), then [the hunger vocabulary](https://linear.app/threadbare/issue/THR-1213), then [nations simulated rather than drawn](https://linear.app/threadbare/issue/THR-1155). Plus your [one-button snapshot](https://linear.app/threadbare/issue/THR-1134).
 
 ### 3. One design map still has questions — and they are all yours
 
-**[Physical Conflict](https://linear.app/threadbare/issue/THR-1258/wayfinder-map-physical-conflict)** — **nine** open to you. (Earlier briefs said seven, then ten; the 2026-08-27 06:26 orchestrator run walked the dependency chain and found three of the ten wait on other questions, so nine are actually open.) Two of the nine are the keystone, because settling them releases three of the rest: [how a duel ends](https://linear.app/threadbare/issue/THR-1264/agent-mode-fight-loop-opposed-band-pairs) and [what a wound costs](https://linear.app/threadbare/issue/THR-1263/npc-mode-fight-loop-the-stat-block-and-test-skeleton).
+**[Physical Conflict](https://linear.app/threadbare/issue/THR-1258/wayfinder-map-physical-conflict)** — **nine** open to you. Two are the keystone, because settling them releases three of the rest: [how a duel ends](https://linear.app/threadbare/issue/THR-1264/agent-mode-fight-loop-opposed-band-pairs) and [what a wound costs](https://linear.app/threadbare/issue/THR-1263/npc-mode-fight-loop-the-stat-block-and-test-skeleton). Both are things to look at and react to, not conversations.
 
-The other seven, open now and independent: [when a fight starts on its own](https://linear.app/threadbare/issue/THR-1267/systemic-triggers-v1-walking-into-the-lair-grudges-boiling-over), [the faces of defeat](https://linear.app/threadbare/issue/THR-1266/defeat-wears-many-faces-the-outcome-spectrum), [just enough monster](https://linear.app/threadbare/issue/THR-1268/monster-opponents-just-enough-monster), [what winning leaves in your hands](https://linear.app/threadbare/issue/THR-1270/victory-yields-what-winning-leaves-in-your-hands), [may a company fight together?](https://linear.app/threadbare/issue/THR-1271/companies-in-fights), plus [how a fight attaches to an encounter](https://linear.app/threadbare/issue/THR-1269/embedding-the-fight-block-encounter-integration-contract), [where the cool moments live](https://linear.app/threadbare/issue/THR-1265/mid-fight-event-table-where-the-cool-moments-live) and [the fight on screen](https://linear.app/threadbare/issue/THR-1272/the-fight-on-screen-attended-surface-and-background-exhaust) — these last three are the ones the keystone pair releases.
+Five more are open now and independent: [when a fight starts on its own](https://linear.app/threadbare/issue/THR-1267/systemic-triggers-v1-walking-into-the-lair-grudges-boiling-over), [the faces of defeat](https://linear.app/threadbare/issue/THR-1266/defeat-wears-many-faces-the-outcome-spectrum), [just enough monster](https://linear.app/threadbare/issue/THR-1268/monster-opponents-just-enough-monster), [what winning leaves in your hands](https://linear.app/threadbare/issue/THR-1270/victory-yields-what-winning-leaves-in-your-hands), [may a company fight together?](https://linear.app/threadbare/issue/THR-1271/companies-in-fights). The keystone pair releases [how a fight attaches to an encounter](https://linear.app/threadbare/issue/THR-1269/embedding-the-fight-block-encounter-integration-contract), [where the cool moments live](https://linear.app/threadbare/issue/THR-1265/mid-fight-event-table-where-the-cool-moments-live) and [the fight on screen](https://linear.app/threadbare/issue/THR-1272/the-fight-on-screen-attended-surface-and-background-exhaust).
 
 Nothing is stalled — the wayfinder machinery is waiting at the handover. Say *"work the fight map"* in a chat session and it takes them in keystone order.
 
@@ -86,16 +85,16 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
-- **The undertaking substrate is done** — slice 6 of 6 merged overnight ([PR #1659](https://github.com/christianspliid-ui/threadbare/pull/1659)) and [THR-1292](https://linear.app/threadbare/issue/THR-1292) closed. Six slices in one day; the engine pillar of your carve-up's doc 1 is complete.
+- **The binder plan doc is written** — a session took [THR-1296](https://linear.app/threadbare/issue/THR-1296) from Todo to Ready for Dev this morning ([PR #1660](https://github.com/christianspliid-ui/threadbare/pull/1660)); carve-up doc 3 of 6, Tier-1 critical path, and the gate on doc 2.
+- **The undertaking substrate is done** — slice 6 of 6 merged overnight ([PR #1659](https://github.com/christianspliid-ui/threadbare/pull/1659)) and [THR-1292](https://linear.app/threadbare/issue/THR-1292) closed. Six slices in one day.
 - **Slice 5 merged** — the shadow prioritization board ([PR #1658](https://github.com/christianspliid-ui/threadbare/pull/1658)).
-- **The five missing plan-doc tickets now exist** — your carve-up named six docs but only doc 1 had ever become an issue; the other five lived only as prose in a closed map. Filed overnight as THR-1296–THR-1300 with sequencing as Linear relations, and three dangling mutex references closed as a side effect.
+- **The five missing plan-doc tickets now exist** — your carve-up named six docs but only doc 1 had ever become an issue. Filed overnight as THR-1296–THR-1300 with sequencing as Linear relations.
 - **Slice 4 merged** — the initiative pipeline retired ([PR #1657](https://github.com/christianspliid-ui/threadbare/pull/1657)).
 - **You closed the [Proactive Agent Actions map](https://linear.app/threadbare/issue/THR-1276)** — all ten questions in one day, and answered the carve-up question by filing it.
 - **The three-agent review of that map merged** — [steel-man plus two red teams](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/audits/2026-08-26-proactive-agent-actions-review.md); the core survived and your rulings bind the six plan docs.
 - **Agents who looked ambitious and did nothing are fixed** — [THR-1285](https://linear.app/threadbare/issue/THR-1285) shipped and deployed.
 - **The Beast in the Granary plays clean end to end** — the wrong-chapter enrolment bug ([THR-1275](https://linear.app/threadbare/issue/THR-1275)) shipped, so the exemplar behind ask 1 has no discounts left.
 - **Balance telemetry stopped lying** — [THR-1284](https://linear.app/threadbare/issue/THR-1284) reported "Encounters: 0 attempted" while hundreds resolved.
-- **The sweep that was destroying your parked verdicts is fixed** — [THR-1283](https://linear.app/threadbare/issue/THR-1283), including the park holding your batch-1 sample verdict.
 
 ---
 
