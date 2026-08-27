@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-27 08:57 local (06:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-27 09:55 local (07:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -16,7 +16,14 @@
 
 ### 2. More design hours — still the binding constraint
 
-Roughly twenty items sit in Todo and **every one needs a plan doc before an executor can touch it**. One landed this morning without you: a session wrote [the binder](https://linear.app/threadbare/issue/THR-1296) (carve-up doc 3, Tier-1 critical path) between 08:23 and 08:46 and handed it to Ready for Dev. Four carve-up docs remain — [THR-1297](https://linear.app/threadbare/issue/THR-1297), [THR-1298](https://linear.app/threadbare/issue/THR-1298), [THR-1299](https://linear.app/threadbare/issue/THR-1299), [THR-1300](https://linear.app/threadbare/issue/THR-1300). Nothing to decide; say the word and sessions write them.
+Roughly twenty items sit in Todo and **every one needs a plan doc before an executor can touch it**. One landed this morning without you: a session wrote [the binder](https://linear.app/threadbare/issue/THR-1296) (carve-up doc 3, Tier-1 critical path) between 08:23 and 08:46; the builder claimed it at 09:01 and is building it now.
+
+Four carve-up docs remain, but **only two can start today** — earlier briefs said four, which was too generous:
+
+- **Startable now:** [the reactive loop](https://linear.app/threadbare/issue/THR-1298) (how a mortal who is wronged comes to want something about it) and [the calling & the surfaces](https://linear.app/threadbare/issue/THR-1299) (what a mortal's projects look like on screen). Both waited only on the undertaking substrate, which finished last night; they run in parallel and collide with nothing.
+- **Chained behind the work in flight:** [THR-1297](https://linear.app/threadbare/issue/THR-1297) (the action library) waits on the binder, and [THR-1300](https://linear.app/threadbare/issue/THR-1300) waits on that.
+
+Nothing to decide on the two open ones; say the word and sessions write them.
 
 In the order you set:
 
@@ -85,7 +92,7 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
-- **The binder plan doc is written** — a session took [THR-1296](https://linear.app/threadbare/issue/THR-1296) from Todo to Ready for Dev this morning ([PR #1660](https://github.com/christianspliid-ui/threadbare/pull/1660)); carve-up doc 3 of 6, Tier-1 critical path, and the gate on doc 2.
+- **The binder is being built** — [THR-1296](https://linear.app/threadbare/issue/THR-1296) went Todo → Ready for Dev in twenty-three minutes this morning ([plan doc, PR #1660](https://github.com/christianspliid-ui/threadbare/pull/1660)), was claimed at 09:01, and slices 1–2 merged by 09:30 ([PR #1661](https://github.com/christianspliid-ui/threadbare/pull/1661)). Design → merge → promote → claim → ship, end to end, with no lane intervention.
 - **The undertaking substrate is done** — slice 6 of 6 merged overnight ([PR #1659](https://github.com/christianspliid-ui/threadbare/pull/1659)) and [THR-1292](https://linear.app/threadbare/issue/THR-1292) closed. Six slices in one day.
 - **Slice 5 merged** — the shadow prioritization board ([PR #1658](https://github.com/christianspliid-ui/threadbare/pull/1658)).
 - **The five missing plan-doc tickets now exist** — your carve-up named six docs but only doc 1 had ever become an issue. Filed overnight as THR-1296–THR-1300 with sequencing as Linear relations.
