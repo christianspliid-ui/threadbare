@@ -1,11 +1,11 @@
 # Briefing
-**Generated:** 2026-08-27 05:56 local (03:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-08-27 06:55 local (04:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**One sitting closes both halves of the content lane** — the batch-1 sample verdict on [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to) and approval of the batch-2 brief on [THR-1222](https://linear.app/threadbare/issue/THR-1222/run-retrofit-batch-2-the-camp-seven-through-the-factory-line-shrine). Fourth hour with this ask, and it is now measured rather than forecast: **the builder has woken twice and found nothing both times** — 04:01 and 05:01 local. It wakes again at 06:01.
+**One sitting closes both halves of the content lane** — the batch-1 sample verdict on [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to) and approval of the batch-2 brief on [THR-1222](https://linear.app/threadbare/issue/THR-1222/run-retrofit-batch-2-the-camp-seven-through-the-factory-line-shrine). Fifth hour with this ask, and the cost is now three measurements rather than a forecast: **the builder has woken three times and found nothing each time** — 04:01, 05:01 and 06:01 local. It wakes again at 07:01.
 
-The board is genuinely empty behind you: **zero Ready for Dev, zero open PRs, nothing In Dev but three parks that are all waiting on your answers.** [The undertaking substrate](https://linear.app/threadbare/issue/THR-1292) closed at 03:42 and the last open PR merged at 04:06. Every other item on the board needs a design session written before anyone can start it — which is why this one approval is the only valve that refills the queue today.
+The board behind you is empty in every column that matters: **zero Ready for Dev, zero open PRs, nothing In Dev but three parks that are all waiting on your answers.** Everything else on the board needs a design session written before anyone can start it — which is why this one approval is still the only valve that refills the queue today.
 
 **Play two, then say one sentence.** [The Grateful Kin](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin) and [The Unsafe Bridge](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge) are your batch-1 2-of-6 sample — *are they worth meeting twice?* Then [the batch-2 brief](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/retrofit-batch-2-brief.md): the camp seven, the last encounters below standard. `shrine_offering` among them is encounter #1 of [your integrated slice checkpoint](https://linear.app/threadbare/issue/THR-1220), which cannot invite you until they are rewritten.
 
@@ -16,7 +16,7 @@ The bar it is written against is live with no caveats: [The Beast in the Granary
 ## Also waiting (10)
 
 - **[Design hours](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** — the binding constraint now that engine work is finished: ~20 Todo items, every one needing a plan doc first. Card grammar has held nine days, [traits wave 2](https://linear.app/threadbare/issue/THR-790) twelve; the five carve-up docs ([THR-1296](https://linear.app/threadbare/issue/THR-1296)–[THR-1300](https://linear.app/threadbare/issue/THR-1300)) are filed, scoped, and need only a session.
-- **[Physical Conflict map](https://linear.app/threadbare/issue/THR-1258/wayfinder-map-physical-conflict)** — **ten** questions open, not the seven last hour's brief said; two are the keystone. Corrected against the ticket list this run.
+- **[Physical Conflict map](https://linear.app/threadbare/issue/THR-1258/wayfinder-map-physical-conflict)** — **nine** questions open to you, not the ten last hour's brief said: the orchestrator's 06:26 run checked the dependency chain and found three of the ten are waiting on other questions. Two of the nine are the keystone.
 - **[Twenty spells](https://linear.app/threadbare/issue/THR-1232)** and **[thirty items](https://linear.app/threadbare/issue/THR-1236)** — the last open question on each map; sketches built for you to react to.
 - **[Image credits](https://linear.app/threadbare/issue/THR-876/regenerate-the-5-quarantined-meet-the-first-scene-assets-doctrine)** — should the spend be gated on you at all?
 - **[What is a run about?](https://linear.app/threadbare/issue/THR-1198/the-48-authored-mandate-strings-are-wired-but-unreachable-no-live-game)** — remembrance, or named campaigns.
@@ -30,10 +30,11 @@ The bar it is written against is live with no caveats: [The Beast in the Granary
 
 **Starved — 0 Ready for Dev, 0 open PRs, 0 work in flight.** Unchanged since 04:06.
 
-- The pickup lane ran at 04:01 and 05:01 and claimed nothing both times. Next attempt 06:01.
+- The pickup lane ran at 04:01, 05:01 and 06:01 and claimed nothing all three times. Next attempt 07:01.
 - Three deliberate parks, all awaiting you: [THR-1130](https://linear.app/threadbare/issue/THR-1130) (batch-1 sample verdict, open since 17 August), [THR-1133](https://linear.app/threadbare/issue/THR-1133) (pixel pass), [THR-1168](https://linear.app/threadbare/issue/THR-1168) (held breath). None is stale for lane reasons.
-- The orchestrator's 04:30 run promoted 0 and filed 0, declining each Todo candidate on recorded evidence — three are blocked two hops back behind [THR-1297](https://linear.app/threadbare/issue/THR-1297), the rest are design questions, not build work. It also noted that `In Design` is holding two items nobody has picked up in over a week, which caps its own ability to stage more design work. That is a process observation, logged for the weekly retro, not a ticket.
+- The orchestrator's 06:26 run promoted 0 and filed 0 — the third consecutive run at zero. It declined on recorded evidence rather than re-deriving eighteen unchanged declines, and noted the newest Todo item has not moved in two hours. Process observation, logged for the weekly retro, not a ticket.
+- One finding from that run is deliberately **not** an ask: the god's *"let this mortal go quiet"* action and the new undertaking system disagree about what watching a person means. It cannot reach you today — the surface that would surface it does not exist yet — and it is written up on the ticket that will build it, so whoever does that work meets it at the right moment.
 
 ## Health
 
-**All green.** Deploy is serving latest `main` (docs-only commits above the last built one, so no rebuild was needed), CI healthy, both scheduled background jobs healthy, all 9 scheduled tasks within schedule, no PR waiting on anything, reaper ran 05:40. Home tree is clean and level with `origin/main`.
+**All green.** Deploy is serving latest `main` (docs-only commits above the last built one, so no rebuild was needed), CI healthy, both scheduled background jobs healthy, all 9 scheduled tasks within schedule, no PR waiting on anything, reaper ran 06:40. Home tree is clean and level with `origin/main`.
