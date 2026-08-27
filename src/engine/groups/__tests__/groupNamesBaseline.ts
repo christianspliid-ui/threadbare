@@ -7,22 +7,10 @@
  *
  * The generated name is written to the company node's `name` field, which means
  * every existing prose resolver renders it with no extra wiring.
- *
- * **Primitives live in `../naming/workNames` (THR-1297 §5).** `hashSeed`, `pickFrom`
- * and `possessive` used to be defined here and were the de-facto engine-wide rules
- * for how an id becomes a seed and how English forms a possessive. The work namer
- * needed the same three, so rather than mint a second copy — "never a second namer" —
- * they moved to the shared module and this file became its first caller.
- *
- * **The grammar below is unchanged and must stay that way.** The patterns, the pool
- * order and the draw sequence are load-bearing: they decide every company name in
- * every existing world, so folding companies onto the *work* grammar would have been
- * a silent player-facing rename. `__tests__/groupNameStability.test.ts` pins them.
  */
 
-import { mulberry32 } from '../../lib/prng';
-import { hashSeed, pickFrom as pick, possessive } from '../naming/workNames';
-import type { GroupFormationCause } from './groupQueries';
+import { mulberry32 } from '../../../lib/prng';
+import type { GroupFormationCause } from '../groupQueries';
 import {
   GROUP_NAME_ADJECTIVES,
   GROUP_NAME_NOUNS,
@@ -32,7 +20,7 @@ import {
   GROUP_NAME_SPHERE_ADJECTIVES,
   GROUP_NAME_FALLBACK,
   GROUP_REFORMED_NAME_PATTERNS,
-} from '../../data/group-name-content';
+} from '../../../data/group-name-content';
 
 /** Everything the generator may key off. All fields optional but `groupId`. */
 export interface GroupNameContext {
@@ -58,6 +46,24 @@ export interface GroupNameContext {
    * the player recognises the company that came back.
    */
   predecessorName?: string;
+}
+
+/**
+ * Turn a string id into a stable 32-bit seed.
+ * Plain FNV-1a — deterministic across runs and platforms.
+ */
+function hashSeed(input: string): number {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < input.length; i++) {
+    h ^= input.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  return h >>> 0;
+}
+
+function pick<T>(rng: () => number, pool: readonly T[]): T | undefined {
+  if (pool.length === 0) return undefined;
+  return pool[Math.floor(rng() * pool.length) % pool.length];
 }
 
 /**
@@ -127,6 +133,11 @@ export function generateGroupName(ctx: GroupNameContext): string {
 
   if (ctx.leaderName) return GROUP_NAME_FALLBACK.replace('{leader}', possessive(ctx.leaderName));
   return 'The Company';
+}
+
+/** English possessive that doesn't produce "Thomas's" for names already ending in s. */
+function possessive(name: string): string {
+  return name.endsWith('s') ? `${name}'` : `${name}'s`;
 }
 
 /**

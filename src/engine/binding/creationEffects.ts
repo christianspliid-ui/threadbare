@@ -60,6 +60,7 @@ import { createSublocation } from '../strategicGraphOps';
 import { materializeWalkOnActor } from '../encounterSupportBundle';
 import { resolveToParentLocation } from '../sublocationShape';
 import { enqueueMint, mintNodeId } from './mintInhabitant';
+import { generateWorkName } from '../naming/workNames';
 
 export interface CreationEffectsInput {
   readonly state: GameState;
@@ -172,7 +173,18 @@ export function applyCreationEffects(input: CreationEffectsInput): CreationEffec
   for (const spawn of list) {
     try {
       if (spawn.kind === 'spawn_sublocation') {
-        const name = spawn.nameTemplate ?? spawn.sublocationTypeId;
+        // THR-1297 §5: the fallback used to be the raw `sublocationTypeId` — a
+        // template id on a player-facing surface ("guild_chapter" as a place name),
+        // which UI Law 14 and this plan's fail-soft row both forbid. It now routes
+        // through the work namer, so an unnamed binder creation gets a real name
+        // instead of a database key. An authored `nameTemplate` still wins.
+        const name = spawn.nameTemplate ?? generateWorkName({
+          workId: `${project.projectId}:${spawn.sublocationTypeId}:${site.parentPlaceId}`,
+          kindId: 'sublocation',
+          anchorName: graph.getNode(site.parentPlaceId)?.name,
+          actorName: graph.getNode(project.actorId)?.name,
+          tick,
+        });
         const result = createSublocation(
           graph, site.parentPlaceId, project.actorId, name, spawn.sublocationTypeId, tick,
         );

@@ -200,12 +200,26 @@ describe('applyCreationEffects', () => {
     expect(made.properties.parentLocationId).toBe(SITE);
   });
 
-  it('falls back to the type id when no name is authored', () => {
+  it('names an unnamed creation through the work namer, never the raw type id', () => {
+    // Restated in THR-1297 slice 4. This pin used to assert `name === 'shrine'` —
+    // the raw `sublocationTypeId` reaching a player-facing surface as a place name,
+    // which UI Law 14 and the plan's own fail-soft row both forbid ("never a
+    // template id on a player surface"). An authored `nameTemplate` still wins; this
+    // is only the *absence* case, and its new identity is "gets a real name".
     const { graph, result } = fire(
       { onAdvance: [{ kind: 'spawn_sublocation', sublocationTypeId: 'shrine' }] },
       'success', 'advance',
     );
-    expect(graph.getNode(result.created[0])!.name).toBe('shrine');
+    const name = graph.getNode(result.created[0])!.name;
+    expect(name).not.toBe('shrine');
+    expect(name.trim().length).toBeGreaterThan(0);
+    expect(name).not.toMatch(/\{[a-zA-Z]+\}/);
+    // Deterministic: the same creation names the same thing every run.
+    const again = fire(
+      { onAdvance: [{ kind: 'spawn_sublocation', sublocationTypeId: 'shrine' }] },
+      'success', 'advance',
+    );
+    expect(again.graph.getNode(again.result.created[0])!.name).toBe(name);
   });
 
   // ─── spawn_npc: the persistence split ─────────────────────────────

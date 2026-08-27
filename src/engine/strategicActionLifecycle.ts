@@ -44,6 +44,7 @@ import {
   resolveUndertakingCheckpoint,
   buildResidueEvent,
   buildAbandonMintEvent,
+  classifyFailureResidue,
   type CheckpointBindingInput,
 } from './undertakingCheckpoints';
 import { runBindPass } from './binding/undertakingBindPass';
@@ -60,6 +61,228 @@ import {
 } from './mentorshipUndertaking';
 import { emitTrace } from './traceBuffer';
 import type { TraceEntry } from '../types/trace';
+import { possessive, generateWorkName, generateFailureScarName } from './naming/workNames';
+import { getUndertakingKindForTemplate } from '../data/undertaking-kinds';
+import { REACH_DOMAINS, type ReachDomain } from '../types/traits';
+import { refreshHoldingFaceNames } from './holdings';
+
+// ─── Naming (THR-1297 §5) ───────────────────────────────────────────
+
+/**
+ * The shape both legacy hand-rolled name strings had. Kept as one constant so the
+ * two arms that used to spell it out separately cannot drift apart again.
+ */
+const LEGACY_NAME_TEMPLATE = "{actor}'s {thing} at {location}";
+
+/** What an unresolvable actor or location renders as. Never blank, never an id. */
+const NAME_TEMPLATE_UNKNOWN = 'Unknown';
+
+/**
+ * Render a `mutationHint.nameTemplate`.
+ *
+ * **The possessive is resolved, not string-substituted.** Every authored template
+ * spells the possessive inline (`"{actor}'s Workshop at {location}"`), and the old
+ * renderer replaced `{actor}` with the raw name — so an actor named Silas got
+ * "Silas's Workshop" where English wants "Silas' Workshop". Matching `{actor}'s` as
+ * a *unit* and routing it through the one `possessive()` fixes every such template
+ * at once, including ones not yet written, and needs no edit to the content files.
+ *
+ * Order matters: the possessive form is consumed before the bare `{actor}` pass, or
+ * the bare pass would eat the token and leave a stray `'s`.
+ */
+export function renderNameTemplate(
+  template: string,
+  actorName: string | undefined,
+  locationName: string | undefined,
+  thing?: string,
+): string {
+  const actor = actorName ?? NAME_TEMPLATE_UNKNOWN;
+  const location = locationName ?? NAME_TEMPLATE_UNKNOWN;
+  return template
+    .replace(/\{actor\}'s/g, possessive(actor))
+    .replace(/\{actor\}/g, actor)
+    .replace(/\{location\}/g, location)
+    .replace(/\{thing\}/g, thing ?? '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/**
+ * The founder's leading reach, read off the *template's* reach profile rather than
+ * off the actor's capability sheet.
+ *
+ * Deliberate: a work is named for the manner of the thing that was done, and the
+ * template is what knows that. It is also ~8 full capability walks cheaper than
+ * `computeFullProfile` at a seam that fires on every completion. Ties break on
+ * `REACH_DOMAINS` order so the choice is deterministic (NFP #3).
+ */
+function leadingReachOfTemplate(templateId: string): ReachDomain | undefined {
+  const profile = getStrategicTemplate(templateId)?.reachProfile;
+  if (!profile) return undefined;
+  let best: ReachDomain | undefined;
+  let bestValue = -Infinity;
+  for (const domain of REACH_DOMAINS) {
+    const value = profile[domain];
+    if (typeof value === 'number' && value > bestValue) {
+      bestValue = value;
+      best = domain;
+    }
+  }
+  return best;
+}
+
+/**
+ * The created thing's own noun, humanised from its subtype — `research_circle`
+ * becomes "Research Circle".
+ *
+ * Christening replaces the working name, so without this a specific place takes a
+ * generic family noun and the player loses what it *is*: measured on seed 42,
+ * "Rill's Research Circle at Ardenmor Keep" became "The Ardenmor Keep House".
+ * Returns undefined when there is no subtype to read, in which case the family noun
+ * is the right answer anyway.
+ */
+function nounForCreatedNode(created: { properties?: Record<string, unknown> }): string | undefined {
+  // `sublocationTypeId` first: it is what `createSublocation` actually stamps, and
+  // reading only the settlement-shaped `locationSubtype` silently returned undefined
+  // for every strategic sublocation — the exact nodes this seam christens.
+  const subtype = created.properties?.sublocationTypeId
+    ?? created.properties?.locationSubtype
+    ?? created.properties?.locationType;
+  if (typeof subtype !== 'string' || subtype.trim().length === 0) return undefined;
+  return subtype
+    .split(/[_\-\s]+/)
+    .filter(Boolean)
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+}
+
+/** The founder's culture foundation, for the "people" half of a work's name. */
+function foundationOfActor(graph: WorldGraph, actorId: string): string | undefined {
+  const belongsTo = graph.getOutgoingEdges(actorId, 'belongs_to')[0];
+  const culture = belongsTo ? graph.getNode(belongsTo.target) : undefined;
+  const bias = culture?.properties?.foundationBias;
+  return typeof bias === 'string' && bias.length > 0 ? bias : undefined;
+}
+
+/**
+ * The name of the ground this undertaking was done on — the anchor a work is named
+ * after. Prefers a *bound* location (the binder knows what the undertaking actually
+ * touched), then the target, then the origin.
+ */
+function resolveAnchorName(
+  state: GameState,
+  graph: WorldGraph,
+  project: StrategicProjectRuntime,
+): string | undefined {
+  const bound = (state.strategicState?.bindings ?? [])
+    .find(b => b.projectId === project.projectId && b.kind === 'location');
+  const candidateIds = [bound?.nodeId, project.targetNodeId, project.originLocationId];
+  for (const id of candidateIds) {
+    if (!id) continue;
+    const name = graph.getNode(id)?.name;
+    if (typeof name === 'string' && name.trim().length > 0) return name;
+  }
+  return undefined;
+}
+
+/**
+ * Christen a completed work, returning the name given — or undefined when this
+ * undertaking produced nothing nameable.
+ *
+ * **Only nodes the undertaking *created* are renamed.** §5 says "renames the
+ * created/target node", but renaming the *target* would rename a pre-existing
+ * settlement because someone built a warehouse in it — a catastrophic, irreversible
+ * edit to shared world state on a path that fires every completion. For every T1
+ * kind the work IS the created node, so restricting to `createdId` loses nothing
+ * real and cannot corrupt a town. A kind whose work is genuinely a pre-existing node
+ * needs its own deliberate rule, not this one by default.
+ *
+ * Fail-soft (NFP #4): every failure to resolve leaves the created node's minted name
+ * untouched and returns undefined. A christening that cannot happen is not an error.
+ */
+function christenCompletedWork(
+  state: GameState,
+  graph: WorldGraph,
+  project: StrategicProjectRuntime,
+  ops: readonly GraphOpResult[],
+  tick: number,
+): { nodeId: string; name: string } | undefined {
+  const createdId = ops.find(o => o.success && o.createdId)?.createdId;
+  if (!createdId) return undefined;
+  const created = graph.getNode(createdId);
+  if (!created) return undefined;
+
+  const name = generateWorkName({
+    workId: createdId,
+    kindId: getUndertakingKindForTemplate(project.templateId),
+    reach: leadingReachOfTemplate(project.templateId),
+    foundation: foundationOfActor(graph, project.actorId),
+    anchorName: resolveAnchorName(state, graph, project),
+    actorName: graph.getNode(project.actorId)?.name,
+    nounOverride: nounForCreatedNode(created),
+    tick,
+  });
+
+  try {
+    graph.updateNode(createdId, { name });
+  } catch {
+    // `updateNode` throws on a missing node. The op said it created one, so this is
+    // a race we do not expect — but a naming failure must never take down the tick.
+    return undefined;
+  }
+
+  // If the mutation already granted this work as a holding, its bearer-side face was
+  // minted from the pre-christening name a few lines ago. Refresh it here rather than
+  // waiting for the next reconcile, so the character sheet and the world never
+  // disagree about what a thing is called even for one tick.
+  refreshHoldingFaceNames(graph, createdId);
+
+  return { nodeId: createdId, name };
+}
+
+/**
+ * Write a failure-name register entry onto the site of a *visible* failure.
+ *
+ * A register, not a name: the work earned nothing, but the ground remembers that
+ * someone tried here and it went badly ("Corran's Folly"). Clean failures write
+ * nothing — the caller gates on the residue class, per review ruling 2.2.
+ *
+ * Additive by construction: `failureScars` is a property array on an existing
+ * location node, so nothing is minted and no reader that does not know about scars
+ * is affected.
+ */
+export function recordFailureScar(
+  graph: WorldGraph,
+  project: StrategicProjectRuntime,
+  tick: number,
+): string | undefined {
+  const siteId = project.targetNodeId ?? project.originLocationId;
+  if (!siteId) return undefined;
+  const site = graph.getNode(siteId);
+  if (!site) return undefined;
+
+  const scarId = `scar_${project.projectId}_${tick}`;
+  const name = generateFailureScarName(scarId, graph.getNode(project.actorId)?.name);
+  const existing = Array.isArray(site.properties?.failureScars)
+    ? site.properties.failureScars as unknown[]
+    : [];
+
+  try {
+    graph.updateNode(siteId, {
+      properties: {
+        failureScars: [...existing, {
+          name,
+          tick,
+          actorId: project.actorId,
+          templateId: project.templateId,
+        }],
+      },
+    });
+  } catch {
+    return undefined;
+  }
+  return name;
+}
 
 // ─── Execute a Chosen Strategic Action ──────────────────────────────
 
@@ -432,6 +655,12 @@ export function advanceStrategicProjects(
       const displayName = getStrategicTemplate(checked.templateId)?.displayName ?? checked.templateId;
       updatedProjects.push(checked);
       events.push(buildResidueEvent(graph, checked, tick, displayName));
+      // The failure-name register (THR-1297 §5). Gated on the *visible* residue
+      // class, which doc 1 already classifies: what the player watched leaves
+      // something on the ground, what nobody saw leaves only a chronicle line.
+      if (classifyFailureResidue(checked) === 'undertaking_failed_visible') {
+        recordFailureScar(graph, checked, tick);
+      }
       if (checked.failureReason === 'abandoned_after_halts') {
         // The THR-726 lane's candidate mint. Doc 4 authors the minting rule; this
         // doc guarantees only that the event fires with owner + undertaking identity.
@@ -486,20 +715,40 @@ export function advanceStrategicProjects(
 
       const catalystSeeded = maybeSeedCatalyst(state, candidate, tick, rng);
 
+      // Christening (THR-1291 §2): the work earns its proper name here, between the
+      // mutation and the history write, because this is the one point where every
+      // input is in scope — what was created, what was bound, who did it. Read the
+      // bindings BEFORE releasing them: the ledger is what knows the ground this
+      // undertaking actually stood on, and release is what forgets it.
+      const christened = christenCompletedWork(state, graph, project, ops, tick);
+
       releaseUndertakingBindings(state, checked.projectId, tick);
       updatedProjects.push({ ...checked, progress: newProgress, status: 'completed', lastProgressTick: tick });
       newHistory.push(createHistoryEntry(candidate, tick, ops, catalystSeeded));
 
       const actorNode = graph.getNode(project.actorId);
+      // The completion moment carries the christened name instead of the template's
+      // display name — "Kael completes The Saltway Ring", not "…completes Establish
+      // Trade Network". The name is the payoff; the template id never reaches a player.
       events.push({
         id: `strategic_complete_${project.projectId}_${tick}`,
         tick,
         type: 'agent_action',
-        message: `${actorNode?.name ?? project.actorId} completes: ${candidate.displayName}`,
+        message: `${actorNode?.name ?? project.actorId} completes: ${christened?.name ?? candidate.displayName}`,
         significance: 0.6,
         actorId: project.actorId,
       });
 
+      // The christened name rides the completion trace that already fires here,
+      // rather than an emission of its own (THR-1297 § Tracing: "additive payload
+      // extensions on an existing interface", "no new trace categories").
+      //
+      // This is not only style. `decisionBoardLiveness` drains the trace ring buffer
+      // per tick precisely because a multi-tick run overflows it (impediment #822),
+      // so every extra emission per tick can evict another category's entries from
+      // the sample. A separate christening trace did exactly that: it reddened that
+      // test's frozen-desire pin intermittently, on a diff that authored no
+      // `motivations` at all — a real defect wearing a flake's clothes.
       emitTrace({
         category: 'strategic_project_progress',
         tick,
@@ -508,7 +757,11 @@ export function advanceStrategicProjects(
         progress: newProgress,
         progressRequired: project.progressRequired,
         status: 'completed',
-        summary: `Project ${project.templateId} completed`,
+        christenedName: christened?.name,
+        christenedNodeId: christened?.nodeId,
+        summary: christened
+          ? `Project ${project.templateId} completed — christened "${christened.name}"`
+          : `Project ${project.templateId} completed`,
       } as TraceEntry);
     }
   }
@@ -687,9 +940,7 @@ function executeInstantMutation(
         if (targetId) {
           const actorNode = graph.getNode(candidate.actorId);
           const locNode = graph.getNode(targetId);
-          const name = hint.nameTemplate
-            .replace('{actor}', actorNode?.name ?? 'Unknown')
-            .replace('{location}', locNode?.name ?? 'Unknown');
+          const name = renderNameTemplate(hint.nameTemplate, actorNode?.name, locNode?.name);
           ops.push(createSublocation(graph, targetId, candidate.actorId, name, hint.sublocationTypeId, tick));
         }
         break;
@@ -770,19 +1021,27 @@ function executeInstantMutation(
         }
         break;
       }
+      // These two legacy arms predate `mutationHint` and duplicated the hint path's
+      // name string by hand — including its trailing-s bug (THR-1297 §5 "fixes in
+      // passing"). They now render through the same one renderer, so the possessive
+      // rule cannot be right in one place and wrong in the other.
       case 'strategic_build_warehouse': {
         if (targetId) {
-          const actorNode = graph.getNode(candidate.actorId);
-          const locNode = graph.getNode(targetId);
-          ops.push(createSublocation(graph, targetId, candidate.actorId, `${actorNode?.name ?? 'Unknown'}'s Warehouse at ${locNode?.name ?? 'Unknown'}`, 'warehouse', tick));
+          ops.push(createSublocation(
+            graph, targetId, candidate.actorId,
+            renderNameTemplate(LEGACY_NAME_TEMPLATE, graph.getNode(candidate.actorId)?.name, graph.getNode(targetId)?.name, 'Warehouse'),
+            'warehouse', tick,
+          ));
         }
         break;
       }
       case 'strategic_found_guild_chapter': {
         if (targetId) {
-          const actorNode = graph.getNode(candidate.actorId);
-          const locNode = graph.getNode(targetId);
-          ops.push(createSublocation(graph, targetId, candidate.actorId, `${actorNode?.name ?? 'Unknown'}'s Guild Chapter at ${locNode?.name ?? 'Unknown'}`, 'guild_chapter', tick));
+          ops.push(createSublocation(
+            graph, targetId, candidate.actorId,
+            renderNameTemplate(LEGACY_NAME_TEMPLATE, graph.getNode(candidate.actorId)?.name, graph.getNode(targetId)?.name, 'Guild Chapter'),
+            'guild_chapter', tick,
+          ));
         }
         break;
       }

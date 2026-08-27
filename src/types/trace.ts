@@ -1929,6 +1929,21 @@ export interface StrategicProjectProgressTrace extends TraceBase {
   progress: number;
   progressRequired: number;
   status: 'active' | 'completed' | 'stalled' | 'failed';
+  /**
+   * The proper name a completed undertaking earned at christening (THR-1297 §5).
+   *
+   * Rides this trace rather than taking one of its own: the plan's tracing section
+   * asks for additive payload on an existing interface, and `decisionBoardLiveness`
+   * drains a per-tick ring buffer that a separate emission demonstrably overflowed
+   * (impediment #822's class). Absent on every `status` but `completed`, and absent
+   * there too whenever the undertaking produced no nameable node — most do not.
+   *
+   * Present, it is the only record of why a node's name changed mid-run, which is
+   * what lets an inspector tell a christening from an ordinary rename (NFP #2).
+   */
+  christenedName?: string;
+  /** The node the name above was written onto. */
+  christenedNodeId?: string;
 }
 
 /**

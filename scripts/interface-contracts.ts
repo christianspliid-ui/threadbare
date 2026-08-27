@@ -2394,6 +2394,39 @@ export const CONTRACTS: readonly Contract[] = [
         'THR-1297 slice 3. `owns` ships as a NEW edge beside `controls` rather than a reuse, on the inventory\'s measured ground: exactly one of ~30 production `controls` read sites discriminates by any property (`releaseControl`\'s `controlType === \'strategic\'` filter), `influence` is write-only, and reuse would have broken seven faction-territory consumers outright plus five `[0]?.source` sites that would have become nondeterministic (NFP #3) — including `battleAftermath`\'s power vacuum, which would have deleted an agent\'s holdings on a razing. Both un-flagged agent writers migrated: `encounterAftermath`\'s `spawn_unique_location` (`via: \'creation\'`) and the two authored `add_edge` templates `action.iron.conquer` / `action.shadow.establish-network`, the latter routed through `grantHolding` from inside `executeAddEdge` so content-authored ownership obeys the single writer too — a raw `addEdge` there would have produced an `owns` edge violating its own `requiredProperties` and carrying no bearer-side face at all. Seize is one atomic call built on a new `WorldGraph.retargetEdgeSource`, because `updateEdge` rewrites the edge record without touching the `outgoing`/`incoming` adjacency maps and would have silently orphaned the edge (~30 existing `updateEdge` callers all pass `properties` only, so nothing depended on that). Non-vacuous by `src/engine/__tests__/holdings.test.ts` (18 tests) and `holdingsIntegration.test.ts` (9): the atomicity test wraps every graph mutator and asserts the place is never ownerless and never faceless at ANY observed instant, not just at the endpoints — falsified 2-of-18 red by replacing the atomic body with a release-then-grant, which is exactly the implementation the plan\'s kill criterion forbids and which the first draft of this module actually had. Home-ground scoring on your own holding ships as the handoff specified (Christian\'s veto invited, not exercised), paired with its negative: a non-owner in the same place gets no bonus, and an owner\'s title now overrides a hostile faction verdict on the same hex — the gap where an owner read as an enemy on their own land. Full suite 18601 green; 30-tick seed-42 smoke reached tick 30.',
     },
   },
+  {
+    id: 'one-namer-shared-primitives',
+    producerSystem: AMBITIONS,
+    consumerSystem: NARRATIVE,
+    intent:
+      'There is one rule for how an id becomes a seed and one rule for English possessives. `naming/workNames.ts` owns both; every other namer imports them rather than minting its own.',
+    ulTerms: ['Undertaking'],
+    // The contract is a NEGATIVE first: no module may define a second `hashSeed`,
+    // `pick` or `possessive`. The positive half — that a completed undertaking is
+    // christened through `generateWorkName` and that the name then outlives its
+    // owner — is what the shared primitives exist to serve.
+    mechanism: {
+      kind: 'module-export',
+      symbols: ['possessive', 'hashSeed', 'pickFrom', 'generateWorkName'],
+      module: 'src/engine/naming/workNames.ts',
+    },
+    writeSites: [
+      'src/engine/naming/workNames.ts',
+      'src/engine/strategicActionLifecycle.ts',
+      'src/engine/binding/creationEffects.ts',
+      'src/engine/holdings.ts',
+    ],
+    readSites: [
+      'src/engine/groups/groupNames.ts',
+      'src/engine/strategicActionLifecycle.ts',
+      'src/engine/binding/creationEffects.ts',
+    ],
+    verifiedLive: {
+      date: '2026-08-27',
+      evidence:
+        'THR-1297 slice 4. `groupNames.ts` becomes the first caller: its local `hashSeed` / `pick` / `possessive` are deleted and imported from the shared module. The group *grammar* is deliberately NOT folded in — folding companies onto the work patterns would have re-rolled every company name in every existing world, a player-facing rename with no ticket behind it, so this row guards shared primitives and two grammars rather than one namer with two callers. Pinned by `groups/__tests__/groupNameStability.test.ts`, a DIFFERENTIAL against a byte-copy of origin/main\'s implementation (a captured-literal golden would agree with itself the moment anyone regenerated it) across 17 contexts chosen to hit every pattern fork; falsified twice — stubbing `possessive` to always add `\'s` went 2-of-20 red, and offsetting `pickFrom` by one went 12-of-20 red. The possessive rule reaches the strategic packs for the first time: `renderNameTemplate` matches `{actor}\'s` as a unit so all seven shipped possessive templates render "Silas\' Workshop" instead of "Silas\'s Workshop", and the two legacy hand-rolled name strings in `executeInstantMutation` now share it (falsified 9-of-22 red by restoring raw substitution). Christening is live: 93 firings in a 150-tick seed-42 run, producing "The Deepset Granary of Thornhaven", "Miriel\'s Surveyed Research Circle", "Elior\'s Auspice Shrine". Two defects the live run caught and unit tests could not: a concatenating `{root}{noun}` pattern produced "The StandingHouse" (removed; a legibility guard over a 200-name sample now falsifies at 55 offenders), and christening initially replaced a specific noun with a generic family one ("Rill\'s Research Circle at Ardenmor Keep" became "The Ardenmor Keep House") because `createSublocation` stamps `sublocationTypeId`, not `locationSubtype`. Names outlive owners: `transferHolding` never renames, `razeHolding` retires the name into the site\'s `nameEchoes`, and `refreshHoldingFaceNames` closes the stale-face gap slice 3\'s checkpoint predicted. The christened name rides the existing completion trace rather than an emission of its own — a separate trace measurably evicted `decision_board_comparison` entries from the per-tick ring buffer and reddened `decisionBoardLiveness`\'s frozen-desire pin on a diff that authored no `motivations`. Full suite 18683 green ×2; ratchet 2973 unchanged; 30-tick seed-42 smoke reached tick 30, 377 agents.',
+    },
+  },
 ];
 
 /** A malformed row — surfaced in the generated output rather than thrown (NFP #4). */
