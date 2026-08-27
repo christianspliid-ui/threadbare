@@ -10,6 +10,7 @@
 
 import { describe, it, expect, vi } from 'vitest';
 import { WorldGraph } from '../graph';
+import { enableTracing, disableTracing, getTraces, clearTraces } from '../traceBuffer';
 
 // Two fixture templates that author the §5 flags. No shipped template does — the
 // flags are opt-in, and doc 2 assigns real per-kind values — so the gate tests
@@ -412,6 +413,42 @@ describe('cadence', () => {
 
     expect(result.verdict).toBe('ended');
     expect(result.project.failureReason).toBe('actor_lost');
+  });
+
+  /**
+   * The trace has to *name* that ending, and until THR-1297 slice 6 it could not.
+   * The site passed `deferred: undefined` and no band, so the row carried neither
+   * field and its summary rendered the literal string `undefined → undefined` —
+   * the one checkpoint outcome the readout could not report. The two-seed census
+   * found 9 of them on seed 99 and could only bucket them as `unrecorded`.
+   *
+   * `ended` is a separate field from `deferred` on purpose: a deferral retries on
+   * the next interval, this is terminal, and one field for both would make them
+   * indistinguishable in the readout that exists to tell outcomes apart.
+   */
+  it('names the ending in the trace rather than emitting an unlabelled row', () => {
+    const graph = buildGraph();
+    const state = buildState(graph);
+    clearTraces();
+    enableTracing();
+    try {
+      resolveUndertakingCheckpoint(state, graph, buildProject({ actorId: 'nobody' }), 10);
+
+      const rows = getTraces().filter(t => t.category === 'undertaking_checkpoint');
+      expect(rows, 'no checkpoint trace emitted — the assertions below would be vacuous')
+        .toHaveLength(1);
+
+      const row = rows[0] as unknown as Record<string, unknown>;
+      expect(row.ended).toBe('actor_lost');
+      expect(row.deferred).toBeUndefined();
+      expect(row.band).toBeUndefined();
+      // The regression in its own right: the summary must not render `undefined`.
+      expect(row.summary).toContain('actor_lost');
+      expect(row.summary).not.toContain('undefined');
+    } finally {
+      disableTracing();
+      clearTraces();
+    }
   });
 });
 

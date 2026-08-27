@@ -424,7 +424,7 @@ export function resolveUndertakingCheckpoint(
     };
     emitCheckpointTrace({
       project: ended, tick, reach, checkpointIndex,
-      deferred: undefined, presentation: 'none', halts,
+      ended: 'actor_lost', presentation: 'none', halts,
     });
     return { verdict: 'ended', project: ended, events };
   }
@@ -791,6 +791,8 @@ interface CheckpointTraceArgs {
   modifiers?: number;
   atCost?: boolean;
   deferred?: 'actor_absent' | 'actor_busy' | 'awaiting_mint';
+  /** Terminal, not deferred: the actor is gone and no retry follows. */
+  ended?: 'actor_lost';
 }
 
 function emitCheckpointTrace(args: CheckpointTraceArgs): void {
@@ -815,10 +817,13 @@ function emitCheckpointTrace(args: CheckpointTraceArgs): void {
     progress: project.progress,
     progressRequired: project.progressRequired,
     deferred: args.deferred,
+    ended: args.ended,
     presentation,
     summary: args.deferred
       ? `Checkpoint ${checkpointIndex} on ${project.templateId} deferred (${args.deferred})`
-      : `Checkpoint ${checkpointIndex} on ${project.templateId}: ${args.band} → ${args.effect} (${project.progress}/${project.progressRequired})`,
+      : args.ended
+        ? `Checkpoint ${checkpointIndex} on ${project.templateId} ended (${args.ended})`
+        : `Checkpoint ${checkpointIndex} on ${project.templateId}: ${args.band} → ${args.effect} (${project.progress}/${project.progressRequired})`,
   } as TraceEntry);
 }
 
