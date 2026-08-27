@@ -15,12 +15,12 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 63 |
+| 🟢 LIVE | 64 |
 | 🟠 PARTIAL | 2 |
 | 🔴 LEAKED | 8 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 19 |
-| **Total** | **92** |
+| **Total** | **93** |
 
 ## Contracts by producing subsystem
 
@@ -45,6 +45,7 @@ remediation ticket or the build fails.
 | `faction-ambitions-drive-action` | Faction ambitions drive faction action and render on the faction sheet. | function: `factionAmbitions` | Factions & Succession | 🟢 LIVE | — |
 | `holdings-single-writer-owns-edge` | What a mortal owns is written in exactly one place. The `owns` edge is the authority; the bearer-side attachment is its face, and both are minted, moved and retired by `holdings.ts` alone. | edge-prop: `owns` | Attachments, Items & Possessions | 🟢 LIVE | — |
 | `minted-ambition-provenance` | Motive receipts name the origin of a minted want — "she seeks vengeance for the blighted fields." | edge-prop: `mintedByEventId` | Omens & Atmospheric Pressure | 🟢 LIVE | — |
+| `one-namer-shared-primitives` | There is one rule for how an id becomes a seed and one rule for English possessives. `naming/workNames.ts` owns both; every other namer imports them rather than minting its own. | module-export: `possessive`, `hashSeed`, `pickFrom`, `generateWorkName` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 | `undertaking-creation-effects` | A long work now puts things into the world as it runs rather than only at completion: an advancing checkpoint builds what the step earned, an at-cost one builds the cost besides, and a critical failure builds the disaster. A person the work must keep is born through the mint valve; a face that exists for one scene is written by the encounter support bundle’s own walk-on writer, which this contract shares rather than copies. Routing every spawn through the valve would spend the one-per-tick birth budget on faces; copying the node shape instead is how the two writers drift. | function: `materializeWalkOnActor`, `applyCreationEffects`, `selectCreationBand` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | THR-1297 |
 
 ### Ascendant Beats & Progression
@@ -821,10 +822,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Attachments, Items & Possessions
 - **UL terms:** *Attachment*, *Undertaking*
 - **Module:** `src/engine/holdings.ts`
-- **Production hits:** 103 total — 3 write, 7 read, 93 unclassified
+- **Production hits:** 105 total — 3 write, 7 read, 95 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`, `src/engine/graphOpExecutor.ts`, `src/engine/holdings.ts`
 - **Read sites:** `src/engine/effects/effectPredicates.ts`, `src/engine/graphConditions.ts`, `src/engine/graphQueries.ts`, `src/engine/notableAgendas.ts`, `src/engine/orchestrator.ts` +2 more
-- **Other hits:** `src/components/Game/attachmentGlyphs.ts`, `src/components/Game/encounter-stage/adapters/buildAftermathConsequences.ts`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts`, `src/components/Game/encounter-stage/nudgeCommit.ts`, `src/components/Game/encounterHandoff.ts` +88 more
+- **Other hits:** `src/components/Game/attachmentGlyphs.ts`, `src/components/Game/encounter-stage/adapters/buildAftermathConsequences.ts`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts`, `src/components/Game/encounter-stage/nudgeCommit.ts`, `src/components/Game/encounterHandoff.ts` +90 more
 - **Verdict:** Verified 2026-08-27: THR-1297 slice 3. `owns` ships as a NEW edge beside `controls` rather than a reuse, on the inventory's measured ground: exactly one of ~30 production `controls` read sites discriminates by any property (`releaseControl`'s `controlType === 'strategic'` filter), `influence` is write-only, and reuse would have broken seven faction-territory consumers outright plus five `[0]?.source` sites that would have become nondeterministic (NFP #3) — including `battleAftermath`'s power vacuum, which would have deleted an agent's holdings on a razing. Both un-flagged agent writers migrated: `encounterAftermath`'s `spawn_unique_location` (`via: 'creation'`) and the two authored `add_edge` templates `action.iron.conquer` / `action.shadow.establish-network`, the latter routed through `grantHolding` from inside `executeAddEdge` so content-authored ownership obeys the single writer too — a raw `addEdge` there would have produced an `owns` edge violating its own `requiredProperties` and carrying no bearer-side face at all. Seize is one atomic call built on a new `WorldGraph.retargetEdgeSource`, because `updateEdge` rewrites the edge record without touching the `outgoing`/`incoming` adjacency maps and would have silently orphaned the edge (~30 existing `updateEdge` callers all pass `properties` only, so nothing depended on that). Non-vacuous by `src/engine/__tests__/holdings.test.ts` (18 tests) and `holdingsIntegration.test.ts` (9): the atomicity test wraps every graph mutator and asserts the place is never ownerless and never faceless at ANY observed instant, not just at the endpoints — falsified 2-of-18 red by replacing the atomic body with a release-then-grant, which is exactly the implementation the plan's kill criterion forbids and which the first draft of this module actually had. Home-ground scoring on your own holding ships as the handoff specified (Christian's veto invited, not exercised), paired with its negative: a non-owner in the same place gets no bonus, and an owner's title now overrides a hostile faction verdict on the same hex — the gap where an owner read as an enemy on their own land. Full suite 18601 green; 30-tick seed-42 smoke reached tick 30.
 
 ### `location-condition-taxes-movement-and-gates-templates` — 🔵 UNVERIFIED-OK
@@ -942,6 +943,18 @@ exit
 - **Other hits:** `src/components/Game/encounter-stage/nudgeCommit.ts`, `src/components/Game/encounter-stage/types.ts`, `src/debug-bridge.ts`, `src/engine/encounters/dealHand.ts`, `src/engine/encounters/nudgeDispatch.ts` +3 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
+### `one-namer-shared-primitives` — 🟢 LIVE
+
+- **Intent:** There is one rule for how an id becomes a seed and one rule for English possessives. `naming/workNames.ts` owns both; every other namer imports them rather than minting its own.
+- **Producer → Consumer:** Ambitions & Undertakings → Attention, Chronicle & Narrative
+- **UL terms:** *Undertaking*
+- **Module:** `src/engine/naming/workNames.ts`
+- **Production hits:** 22 total — 3 write, 1 read, 18 unclassified
+- **Write sites:** `src/engine/binding/creationEffects.ts`, `src/engine/naming/workNames.ts`, `src/engine/strategicActionLifecycle.ts`
+- **Read sites:** `src/engine/groups/groupNames.ts`
+- **Other hits:** `src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts`, `src/data/backstory-content.ts`, `src/data/complication-templates.ts`, `src/data/content-eval/nudgeAuditDetectors.ts`, `src/data/foreshadowing-content.ts` +13 more
+- **Verdict:** Verified 2026-08-27: THR-1297 slice 4. `groupNames.ts` becomes the first caller: its local `hashSeed` / `pick` / `possessive` are deleted and imported from the shared module. The group *grammar* is deliberately NOT folded in — folding companies onto the work patterns would have re-rolled every company name in every existing world, a player-facing rename with no ticket behind it, so this row guards shared primitives and two grammars rather than one namer with two callers. Pinned by `groups/__tests__/groupNameStability.test.ts`, a DIFFERENTIAL against a byte-copy of origin/main's implementation (a captured-literal golden would agree with itself the moment anyone regenerated it) across 17 contexts chosen to hit every pattern fork; falsified twice — stubbing `possessive` to always add `'s` went 2-of-20 red, and offsetting `pickFrom` by one went 12-of-20 red. The possessive rule reaches the strategic packs for the first time: `renderNameTemplate` matches `{actor}'s` as a unit so all seven shipped possessive templates render "Silas' Workshop" instead of "Silas's Workshop", and the two legacy hand-rolled name strings in `executeInstantMutation` now share it (falsified 9-of-22 red by restoring raw substitution). Christening is live: 93 firings in a 150-tick seed-42 run, producing "The Deepset Granary of Thornhaven", "Miriel's Surveyed Research Circle", "Elior's Auspice Shrine". Two defects the live run caught and unit tests could not: a concatenating `{root}{noun}` pattern produced "The StandingHouse" (removed; a legibility guard over a 200-name sample now falsifies at 55 offenders), and christening initially replaced a specific noun with a generic family one ("Rill's Research Circle at Ardenmor Keep" became "The Ardenmor Keep House") because `createSublocation` stamps `sublocationTypeId`, not `locationSubtype`. Names outlive owners: `transferHolding` never renames, `razeHolding` retires the name into the site's `nameEchoes`, and `refreshHoldingFaceNames` closes the stale-face gap slice 3's checkpoint predicted. The christened name rides the existing completion trace rather than an emission of its own — a separate trace measurably evicted `decision_board_comparison` entries from the per-tick ring buffer and reddened `decisionBoardLiveness`'s frozen-desire pin on a diff that authored no `motivations`. Full suite 18683 green ×2; ratchet 2973 unchanged; 30-tick seed-42 smoke reached tick 30, 377 agents.
+
 ### `player-action-aftermath-read` — 🔵 UNVERIFIED-OK
 
 - **Intent:** The aftermath a player action already produces finally reaches the player — the receipt phase reads the summary that was built and discarded for player casts.
@@ -980,10 +993,10 @@ exit
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 241 total — 1 write, 1 read, 239 unclassified
+- **Production hits:** 242 total — 1 write, 1 read, 240 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts` +234 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts` +235 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `relocation-intent-steers-agent-movement` — 🔵 UNVERIFIED-OK

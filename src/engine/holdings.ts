@@ -400,6 +400,13 @@ export function razeHolding(
       return { success: true, op: 'raze_holding' };
     }
 
+    // A name outlives the work that carried it (THR-1291 §3). Retiring it into the
+    // site's `nameEchoes` is what lets the resolver later answer "The Second
+    // Saltway" — a razed work leaves a name behind for whatever is built on its
+    // ground. Recorded before the faces are retired, because after them nothing in
+    // the graph remembers what this was called.
+    retireNameEcho(graph, nodeId, ctx.tick);
+
     for (const edge of owners) {
       const ownerId = edge.source;
       graph.removeEdge(edge.id);
@@ -412,6 +419,60 @@ export function razeHolding(
   } catch (e) {
     return { success: false, op: 'raze_holding', error: String(e) };
   }
+}
+
+/**
+ * Retire a razed work's name into its site's `nameEchoes` (THR-1291 §3).
+ *
+ * Additive: an array property on a node that already exists, so no reader that does
+ * not know about echoes is affected. Internal and fail-soft — a name that cannot be
+ * retired is a lost flourish, never a failed raze.
+ */
+function retireNameEcho(graph: WorldGraph, nodeId: string, tick: number): void {
+  try {
+    const node = graph.getNode(nodeId);
+    const name = node?.name;
+    if (typeof name !== 'string' || name.trim().length === 0) return;
+    const existing = Array.isArray(node?.properties?.nameEchoes)
+      ? node.properties.nameEchoes as unknown[]
+      : [];
+    graph.updateNode(nodeId, {
+      properties: { nameEchoes: [...existing, { name, retiredTick: tick }] },
+    });
+  } catch {
+    // Fail-soft (NFP #4).
+  }
+}
+
+/**
+ * Re-read every holding face pointing at `nodeId` and update its player-facing name
+ * from the world object.
+ *
+ * **Why this exists (slice 3's own note, made good here).** A face is minted at
+ * grant time from the object's name *then* — but an undertaking grants its holding
+ * during the mutation and christens the work immediately after, so the face reliably
+ * captured the pre-christening name and the character sheet showed "Warehouse" for a
+ * thing the world calls "The Saltway Hold". The edge stays authoritative; this is
+ * bookkeeping catching up, which is exactly what a face is for.
+ */
+export function refreshHoldingFaceNames(graph: WorldGraph, nodeId: string): string[] {
+  const updated: string[] = [];
+  try {
+    const objectNode = graph.getNode(nodeId);
+    const name = faceName(objectNode, nodeId);
+    for (const edge of findOwnersOf(graph, nodeId)) {
+      const held = findFace(graph, edge.source, nodeId);
+      if (!held?.node || held.node.name === name) continue;
+      graph.updateNode(held.node.id, {
+        name,
+        properties: { mechanicalSummary: `Holds ${name}.` },
+      });
+      updated.push(held.node.id);
+    }
+  } catch {
+    // Fail-soft (NFP #4): a stale face name is cosmetic drift, never a tick failure.
+  }
+  return updated;
 }
 
 // ─── Reads + reconcile ────────────────────────────────────────────
@@ -430,24 +491,31 @@ export function ownsNode(graph: WorldGraph, actorId: string, nodeId: string): bo
 }
 
 /**
- * Repair mirror drift: mint a face for every `owns` edge that has none, and retire
- * every face whose edge is gone.
+ * Repair mirror drift: mint a face for every `owns` edge that has none, retire every
+ * face whose edge is gone, and re-read the name of every face that has one.
  *
- * The edge is the authority in both directions. Returns what it changed so a caller
- * can trace it; safe to run repeatedly (it is a fixpoint after one pass).
+ * The edge is the authority in all three directions. Returns what it changed so a
+ * caller can trace it; safe to run repeatedly (it is a fixpoint after one pass).
  */
 export function reconcileHoldingFaces(
   graph: WorldGraph,
   actorId: string,
   ctx: HoldingContext,
-): { facesMinted: string[]; facesRetired: string[] } {
+): { facesMinted: string[]; facesRetired: string[]; facesRenamed: string[] } {
   const facesMinted: string[] = [];
   const facesRetired: string[] = [];
+  const facesRenamed: string[] = [];
 
   try {
     const owned = graph.getOutgoingEdges(actorId, 'owns');
     for (const edge of owned) {
-      if (findFace(graph, actorId, edge.target)) continue;
+      if (findFace(graph, actorId, edge.target)) {
+        // A face that exists but carries a stale name is drift too — the same class
+        // as a missing one, and the shape christening produces (THR-1297 §5). The
+        // edge is authority in this direction as in every other.
+        facesRenamed.push(...refreshHoldingFaceNames(graph, edge.target));
+        continue;
+      }
       facesMinted.push(mintFace(graph, actorId, edge.target, graph.getNode(edge.target), ctx));
     }
 
@@ -466,5 +534,5 @@ export function reconcileHoldingFaces(
     // found it and reports what it managed. Never throws into a tick phase.
   }
 
-  return { facesMinted, facesRetired };
+  return { facesMinted, facesRetired, facesRenamed };
 }

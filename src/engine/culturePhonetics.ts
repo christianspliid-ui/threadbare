@@ -333,7 +333,15 @@ function applyOrthography(raw: string, signature: CulturePhoneticSignature): str
  * Generate a name from a culture's phonetic signature.
  *
  * @param signature - The culture's phonetic signature
- * @param mode - 'personal' | 'settlement' | 'homeland'
+ * @param mode - 'personal' | 'settlement' | 'homeland' | 'work'
+ *
+ * `'work'` (THR-1297 §5) is the seam this union was built for: a work — a ring, a
+ * road, a hold — is a *thing in the world*, so it takes the settlement syllable
+ * range and suffix palette, and it is exempt from the personal-name constraint
+ * checks (THR-456) that keep people's names pronounceable at conversational length.
+ * Every branch below already discriminates on `=== 'personal'`, so the new member
+ * falls to the settlement arm by construction rather than by a new branch.
+ *
  * @param rng - Seeded PRNG (from the caller — not the signature's own RNG)
  * @param usedNames - Set of already-used names (mutated on success)
  * @param cultureId - For tracing
@@ -342,7 +350,7 @@ function applyOrthography(raw: string, signature: CulturePhoneticSignature): str
  */
 export function generatePhoneticName(
   signature: CulturePhoneticSignature,
-  mode: 'personal' | 'settlement' | 'homeland',
+  mode: 'personal' | 'settlement' | 'homeland' | 'work',
   rng: () => number,
   usedNames: Set<string>,
   cultureId: string,
