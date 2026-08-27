@@ -103,6 +103,7 @@ import { buildHexActorIndex, getActorsOnHex } from './hexActorIndex';
 import type { DivineInfluenceEntry } from '../types/dream';
 import { getCurrentStrength } from './decayCurve';
 import { checkDissolutions } from './sublocation';
+import { installBindingRemovalHook, makeDissolutionHold } from './binding/bindingRegistry';
 import { phaseMovement, resetMovementEventCounter } from './phaseMovement';
 import { phaseGroups, resetGroupEventCounter } from './groups/phaseGroups';
 import { checkAndFireActionTriggers, type ActionTriggerContext } from './effects/actionTrigger';
@@ -2796,6 +2797,20 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // Capture tick for ID generation before any phase runs
   currentTickForIds = s.tick;
 
+  // ── The binder's severance hook (THR-1296 §4) ──
+  // `WorldGraph.removeNode` is the sole funnel all ~25 deleting call sites pass
+  // through, so one hook covers every reaper — including the two that bypass the
+  // lifecycle entirely (battle commander kill, battle sublocation destruction) and
+  // any reaper not yet written. Re-registered each tick rather than once per session
+  // because the closure must read *this* tick's state: `s` is a `let`, and a closure
+  // over it reads the current binding, so the hook never observes a frozen world.
+  //
+  // Cost is one assignment per tick plus one Map lookup per node removal, and
+  // removals are rare events rather than per-tick work.
+  if (runtime) {
+    installBindingRemovalHook(s.graph, runtime.bindingIndex, () => s.strategicState, () => s.tick);
+  }
+
   // Reset per-tick event counters for deterministic ID generation (NFP #3).
   // Must happen before any phase runs so all IDs use fresh sequences for this tick.
   resetEventCounters();
@@ -3285,8 +3300,18 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   prevEventCount = s.tickEvents.length;
 
   // Phase 2.4: Sublocation Dissolution
+  // Housekeeping *defers* on a bound stage; narrative reapers proceed loudly and
+  // break the binding (THR-1296 §4). A dissolving sublocation is a chore, so it waits
+  // — the node is made busy, never immortal, and dissolution resumes on release.
+  const boundStageHold = runtime
+    ? makeDissolutionHold(
+      runtime.bindingIndex,
+      () => s.strategicState?.bindings ?? [],
+      () => s.tick,
+    )
+    : undefined;
   const dissolutions = timeInlinePhase('sublocation_dissolution', s, () =>
-    checkDissolutions(s.graph, s.tick, s.encounterProgress));
+    checkDissolutions(s.graph, s.tick, s.encounterProgress, boundStageHold));
   for (const dissolution of dissolutions) {
     s = {
       ...s,

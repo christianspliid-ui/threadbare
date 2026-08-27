@@ -76,7 +76,9 @@ export function phaseStrategicProjects(
       : {};
   }
 
-  const result = advanceStrategicProjects(state, state.graph, state.tick, rng);
+  // `runtime` carries the binder's reverse index and role census (THR-1296 §3).
+  // Passing it is what turns the bind pass on; without it undertakings resolve uncast.
+  const result = advanceStrategicProjects(state, state.graph, state.tick, rng, runtime);
 
   // THR-1184: a completing project can mint an edge that changes what its destination
   // location can host (`sacred_route` → pilgrimage encounters). The encounter cache only

@@ -2043,3 +2043,18 @@ the THR-489 baseline that evaluate to `undefined`. `branchDecision.ts` derives
 | Determinism | `hashSeed` (FNV-1a, local to `buildNudgePhaseModel`) — **not** the shared djb2 `hashEntityId`, whose multiplier 33 ≡ 0 (mod 3) collapses a 3-long variant pool to a single index. Zero PRNG draws; the seed is `${actionId}:${currentStep}`. |
 | Tooltip | `ui.nudge_glyphs` in `ui-content.ts`, chained from the legend. Subject to the 200-char cap `tooltipValidation.test.ts` enforces. |
 | Portrait | `buildUnifiedEncounterStageModel.buildHeader` now calls `getAgentPortraitUrlFromProperties` (bespoke → archetype) rather than archetype-only `getPortraitUrl`; the shell consumes `EntityVisual`'s **resolver** path (`entity`) instead of a hand-built descriptor, inheriting the shared knowledge gate. Remaining gap is content, not wiring — THR-981. |
+
+## THR-1296 slice 4 — the undertaking bind pass
+
+| Surface | Wiring |
+|---|---|
+| New engine module | `src/engine/binding/undertakingBindPass.ts` — called from `advanceStrategicProjects` immediately before `resolveUndertakingCheckpoint`, the seam the plan names. One caller, one slot per checkpoint; it is called from nowhere else. |
+| Runtime threading | `advanceStrategicProjects(state, graph, tick, rng, runtime?)` — `runtime` is **optional**, and its absence is what keeps every existing caller and test unchanged (the pass is skipped and undertakings resolve uncast, exactly as today). `phaseStrategicProjects` already received `runtime` and now forwards it; that forwarding is the only thing that turns the pass on. |
+| Session cache | `SimulationRuntime.bindingIndex` (`createBindingIndex()`), re-created in `resetRuntimeCaches`. The *ledger* is durable game state on `strategicState.bindings`; only the reverse index is session-owned, per the engine-caches-per-session rule. |
+| Removal hook | `installBindingRemovalHook` registered front-of-tick in `runTick`, guarded on `runtime`. Re-registered per tick on purpose: the accessors close over `s`, a `let`, so the hook reads the live state rather than a frozen snapshot from the tick it was installed. |
+| Dissolution hold | `makeDissolutionHold` passed to `checkDissolutions` at **both** call sites — `orchestrator.ts` phase 2.4 and `phaseSublocations.ts`. Two sites, one policy: a bound stage must not be dissolved by whichever of them happens to run. |
+| Checkpoint input | `CheckpointBindingInput` passed *in* rather than looked up, so `undertakingCheckpoints` imports no binder type and stays graph-read-only. Optional — absent on every other caller. |
+| Terminal release | `releaseUndertakingBindings` called on **every** exit from `active` (completed, ended, timeout, actor-lost, mentorship-forced). Released, never broken: a completing undertaking that marked its cast broken would fire a "loses X" moment on the way out of the world, and a stage held by an undertaking that ended twenty ticks ago would never dissolve. |
+| Traces | `binding_decision` (registered in slice 2) is now emitted from a path the simulation travels; `deferred: 'awaiting_mint'` added to the checkpoint trace union at **both** surfaces (`src/types/trace.ts` and the local `CheckpointTraceArgs`). No new category — nothing here emits one. |
+| Interface map | `binder-decision-traced`, `binding-registry-reaper-hook` in `scripts/interface-contracts.ts`, both UNVERIFIED-OK against THR-1297. Not LIVE: the ledger is empty until a template declares `cast`. |
+| Deliberately NOT wired | Mentorship's apprentice still pairs through `bootstrapMentorship`, which stays authoritative for its own cast (plan § Notes for the executor). |

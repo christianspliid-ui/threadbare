@@ -2165,6 +2165,61 @@ export const CONTRACTS: readonly Contract[] = [
     // on every tick, and `mintInhabitant.test.ts` drives that path.
     deferralTicket: 'THR-1296',
   },
+  {
+    id: 'binder-decision-traced',
+    producerSystem: 'Ambitions & Undertakings',
+    consumerSystem: 'Attention, Chronicle & Narrative',
+    intent:
+      'Every casting decision an undertaking makes reaches the narrative surface: the trace answers "why is this moment generic?" after the fact (it fires on a slot that bound nobody as loudly as on one that bound somebody), and a lost must-persist cast member is carried into the checkpoint moment by name — "loses Old Maerin" rather than the anonymous "hits serious trouble" the complication class produced before.',
+    mechanism: {
+      kind: 'trace',
+      symbols: ['binding_decision', 'resolveBinding', 'runBindPass'],
+      module: 'src/engine/binding/binder.ts',
+    },
+    writeSites: [
+      'src/engine/binding/binder.ts',
+      'src/engine/binding/undertakingBindPass.ts',
+    ],
+    readSites: [
+      'src/types/trace.ts',
+      'src/engine/undertakingCheckpoints.ts',
+    ],
+    // The bind pass (slice 4) is the first caller, so the category is emitted from a
+    // path the simulation actually travels. It stays UNVERIFIED-OK rather than LIVE
+    // until a template declares cast: the pass early-returns on an empty bundle, and
+    // no shipped template carries one — doc 2 (THR-1297) authors the first.
+    deferralTicket: 'THR-1297',
+  },
+  {
+    id: 'binding-registry-reaper-hook',
+    producerSystem: 'War, Armies & Battles',
+    consumerSystem: 'Ambitions & Undertakings',
+    intent:
+      'A siege that razes an undertaking’s bound stage, or a battle that kills its bound commander, breaks the binding loudly instead of silently — the recon (THR-1289) measured battle destruction as the one confirmed live must-persist violation, since the destruction pool never reads persistence in either flavour and the commander kill bypasses the lifecycle and emits nothing at all. Detection sits on the sole node-removal funnel all ~25 deleting call sites pass through, so the same seam covers every other reaper and any reaper not yet written; housekeeping (sublocation dissolution) instead defers on a bound stage, because a chore waits and a story does not.',
+    mechanism: {
+      kind: 'function',
+      symbols: [
+        'onNodeRemoved',
+        'installBindingRemovalHook',
+        'makeDissolutionHold',
+        'binding_severed',
+      ],
+      module: 'src/engine/binding/bindingRegistry.ts',
+    },
+    writeSites: [
+      'src/engine/graph.ts',
+      'src/engine/orchestrator.ts',
+      'src/engine/phaseSublocations.ts',
+    ],
+    readSites: [
+      'src/engine/binding/bindingRegistry.ts',
+      'src/engine/binding/undertakingBindPass.ts',
+    ],
+    // Registered per tick by the orchestrator (slice 4) and consulted by both
+    // dissolution call sites. Same reason as the row above for not badging LIVE:
+    // the ledger is empty until a template declares cast.
+    deferralTicket: 'THR-1297',
+  },
 ];
 
 /** A malformed row — surfaced in the generated output rather than thrown (NFP #4). */

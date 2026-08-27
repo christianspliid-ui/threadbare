@@ -116,6 +116,16 @@ export interface StrategicActionTemplate {
    */
   readonly canRunBeside?: boolean;
 
+  /**
+   * Who and where this undertaking needs (THR-1296 §3) — the binder's input.
+   *
+   * Absent or empty ⇒ the bind pass does nothing for this template, which is every
+   * shipped template in v1. Authoring the rows is doc 2's
+   * ([THR-1297](https://linear.app/threadbare/issue/THR-1297)) work; this field is
+   * the seam it authors into.
+   */
+  readonly cast?: readonly UndertakingCastSpec[];
+
   // ─── Board authoring (THR-1292 §4) ────────────────────────────────
 
   /**
@@ -296,8 +306,13 @@ export interface StrategicProjectRuntime {
   deferrals?: number;
   /**
    * Doc 3's re-binding seam. Set when an escalation asks for the undertaking to be
-   * re-bound with complications; nothing consumes it yet, and that is deliberate —
-   * the flag is the contract, the binder is doc 3.
+   * re-bound with complications.
+   *
+   * **Consumed** (THR-1296 §3, slice 4) by the bind pass in
+   * `src/engine/binding/undertakingBindPass.ts`: it releases the undertaking's live
+   * cast bindings so the next pass re-scores every slot from scratch, then clears
+   * the flag. An escalation is a fresh attempt at the same undertaking, so it gets
+   * a fresh cast — that is what "re-bound with complications" means mechanically.
    */
   rebindRequested?: boolean;
   /** Difficulty override accumulated by escalation, on top of the template's authored value */
@@ -421,12 +436,33 @@ export interface UndertakingBindingRecord {
   readonly nodeId: string;
   readonly kind: 'actor' | 'location';
   readonly persistence: import('./encounter').EncounterSupportPersistence;
+  /**
+   * The role this slot was filled by, snapshotted at bind time (THR-1296 §3).
+   *
+   * Stored rather than read back off the node, because by the time anyone asks how
+   * rare the lost role was, the node is *gone* — that is what "lost" means. Reading
+   * it live made every node-removal loss score as maximally scarce and therefore
+   * singular, so every honest death halted its undertaking instead of downgrading
+   * it to at-cost. The ledger is what remembers there was a steward here.
+   */
+  readonly boundRole?: string;
   readonly boundAtTick: number;
   readonly stepIndex: number;
   status: 'live' | 'broken' | 'released';
   brokenCause?: UndertakingBindingBrokenCause;
   /** Tick at which status left `'live'` — inspection only. */
   endedAtTick?: number;
+  /**
+   * Whether this breakage has already been turned into a named complication
+   * (THR-1296 §3, slice 4).
+   *
+   * A broken binding is terminal, so without this the same loss would re-fire its
+   * complication at every checkpoint until the slot re-bound — one death, an
+   * unbounded stream of "hits serious trouble" moments. Set by the bind pass at the
+   * moment it reports the loss; the record stays `broken` (terminal, unread by any
+   * scorer) and the slot re-binds on the following pass.
+   */
+  lossReported?: boolean;
 }
 
 // ─── The mint queue (THR-1296 doc 3 §5) ─────────────────────────────
@@ -458,6 +494,53 @@ export interface UndertakingIdentityRequirement {
   readonly pole: 'virtue' | 'vice';
   /** Distance from neutral (0.5 canonical) the candidate must clear, 0–0.5. */
   readonly minStrength: number;
+}
+
+/**
+ * One cast or stage slot an undertaking template declares (THR-1296 §3).
+ *
+ * This is the **schema seam**, shipped unauthored on purpose. Doc 2
+ * ([THR-1297](https://linear.app/threadbare/issue/THR-1297)) authors the per-kind
+ * rows; slice 4 ships the engine that honors them plus emptiness-pinning tests, so
+ * doc 2's first authored row fails one deliberately rather than landing on a seam
+ * nobody proved.
+ *
+ * Shaped after `EncounterSupportActorSpec` rather than beside it — same job, same
+ * vocabulary (`key`, `persistence`, spawn fields) — because the encounter support
+ * bundle is exactly what this promotes (THR-1290 §1). It is a separate interface
+ * only because an undertaking slot carries two things a scene slot does not: an
+ * `identityRequirement` for the scored board, and a `steps` window, since an
+ * undertaking runs across many checkpoints while a scene runs once.
+ */
+export interface UndertakingCastSpec {
+  /** Slot name, unique within the template. The binding ledger's `castKey`. */
+  readonly key: string;
+  readonly kind: 'actor' | 'location';
+  readonly persistence: import('./encounter').EncounterSupportPersistence;
+  /** Roles that satisfy this slot on reuse. Empty/absent ⇒ any role fits. */
+  readonly acceptedRoles?: readonly string[];
+  /** The role a mint would be born into. Required — a mint must know what it makes. */
+  readonly mintRole: string;
+  readonly identityRequirement?: UndertakingIdentityRequirement;
+  /** Authored name for a mint; absent ⇒ culture-phonetic (the mint path's default). */
+  readonly spawnName?: string;
+  readonly factionDefId?: string;
+  /**
+   * Checkpoint indices this slot is wanted at. Absent ⇒ every step.
+   *
+   * This is the per-step half of "per-step anchoring": a slot is bound at the step
+   * that needs it, not once for the whole undertaking (the THR-1289 finding — today
+   * binding runs once per action at one anchor).
+   */
+  readonly steps?: readonly number[];
+  /**
+   * Stage override — the `key` of a `kind: 'location'` spec in the same bundle whose
+   * bound node becomes this slot's stage. Absent ⇒ the undertaking's `targetNodeId`.
+   *
+   * The same idea as `EncounterSupportActorSpec.preferredLocationKey`, under the
+   * name the plan uses for it. A location spec naming itself is ignored.
+   */
+  readonly anchor?: string;
 }
 
 /**

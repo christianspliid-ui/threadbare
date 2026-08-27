@@ -44,7 +44,11 @@ import {
   resolveUndertakingCheckpoint,
   buildResidueEvent,
   buildAbandonMintEvent,
+  type CheckpointBindingInput,
 } from './undertakingCheckpoints';
+import { runBindPass } from './binding/undertakingBindPass';
+import { releaseBindingsForProject } from './binding/bindingRegistry';
+import { ensureRoleCensus, type SimulationRuntime } from './simulationRuntime';
 import {
   MENTORSHIP_TEMPLATE_ID,
   isMentorshipEnabled,
@@ -208,6 +212,23 @@ export function executeStrategicAction(
   }
 }
 
+/**
+ * Let go of every node an undertaking held (THR-1296 §4).
+ *
+ * Released, never broken: nothing went wrong, the undertaking is simply over. The
+ * distinction is load-bearing — `broken` triggers a re-bind and a complication, and
+ * a completing undertaking that marked its cast broken would fire a "loses X" moment
+ * on the way out of the world.
+ *
+ * Called on every exit from `active`, which is what stops a bound stage from being
+ * held against housekeeping forever by an undertaking that ended twenty ticks ago.
+ */
+function releaseUndertakingBindings(state: GameState, projectId: string, tick: number): void {
+  const bindings = state.strategicState?.bindings;
+  if (!bindings || bindings.length === 0) return;
+  releaseBindingsForProject(bindings, projectId, tick);
+}
+
 // ─── Advance Active Projects ────────────────────────────────────────
 
 /**
@@ -219,6 +240,13 @@ export function advanceStrategicProjects(
   graph: WorldGraph,
   tick: number,
   rng: () => number,
+  /**
+   * Session-owned caches the bind pass needs (THR-1296 §3): the reverse binding
+   * index and the role census. Optional — absent, the bind pass is skipped entirely
+   * and undertakings resolve uncast exactly as they do today, which is what keeps
+   * every existing caller and test unchanged.
+   */
+  runtime?: SimulationRuntime,
 ): {
   strategicState: StrategicRuntimeState;
   events: import('../types/gameState').TickEvent[];
@@ -258,6 +286,7 @@ export function advanceStrategicProjects(
       if (!boot) {
         // Nobody left to teach. End it cleanly — no status limbo, which is the
         // deadlock the retired `markInitiativeFailed` created (THR-1292 §3).
+        releaseUndertakingBindings(state, project.projectId, tick);
         updatedProjects.push({ ...project, status: 'failed', failureReason: 'actor_lost' });
         newHistory.push(buildFailureHistory(project, tick, 'failed'));
         continue;
@@ -271,6 +300,7 @@ export function advanceStrategicProjects(
     // only the shapes the ratchet never reaches (a permanently absent actor, a
     // deferral loop). Tuned to `UNDERTAKING_TIMEOUT_TICKS`, not the old passive cadence.
     if (tick - project.startedTick > UNDERTAKING_TIMEOUT_TICKS) {
+      releaseUndertakingBindings(state, project.projectId, tick);
       updatedProjects.push({ ...project, status: 'failed', failureReason: 'timeout' });
       newHistory.push({
         tick,
@@ -300,11 +330,37 @@ export function advanceStrategicProjects(
       continue;
     }
 
+    // ─── The bind pass (THR-1296 §3) ──────────────────────────────────
+    // Runs immediately before the checkpoint, in the same slot and shape as the
+    // mentorship bootstrap above: decide in the binder, apply here. It returns the
+    // project with `rebindRequested` consumed plus what the checkpoint needs to know
+    // about the cast — a must-persist loss to name, or a mint still in the queue.
+    //
+    // Costs nothing on a template with no `cast` (every shipped template in v1): the
+    // pass returns before it touches the registry, the census or the graph.
+    let bindingInput: CheckpointBindingInput | undefined;
+    let boundProject = project;
+    if (runtime && state.strategicState) {
+      const pass = runBindPass({
+        graph,
+        strategicState: state.strategicState,
+        index: runtime.bindingIndex,
+        census: ensureRoleCensus(runtime, graph),
+        project,
+        template: getStrategicTemplate(project.templateId),
+        tick,
+      });
+      boundProject = pass.project;
+      if (pass.loss || pass.awaitingMint) {
+        bindingInput = { loss: pass.loss, awaitingMint: pass.awaitingMint };
+      }
+    }
+
     // ─── Checkpoint (THR-1292 §2) ─────────────────────────────────────
     // Progress is no longer a function of elapsed ticks. The checkpoint decides
     // whether this undertaking advances at all, and the record it returns carries
     // the halts, the deferrals and the fork state.
-    const checkpoint = resolveUndertakingCheckpoint(state, graph, project, tick);
+    const checkpoint = resolveUndertakingCheckpoint(state, graph, boundProject, tick, bindingInput);
     events.push(...checkpoint.events);
     const checked = checkpoint.project;
 
@@ -325,6 +381,7 @@ export function advanceStrategicProjects(
           const terminal = resolveMentorshipUndertaking(graph, checked, 'failed', tick);
           events.push(...terminal.events);
           pendingEncounterSeeds.push(...terminal.seeds);
+          releaseUndertakingBindings(state, checked.projectId, tick);
           updatedProjects.push({ ...checked, status: 'failed', failureReason: 'actor_lost' });
           newHistory.push(buildFailureHistory(checked, tick, 'failed'));
           mentorshipForcedFailure = true;
@@ -347,6 +404,7 @@ export function advanceStrategicProjects(
     }
 
     if (checkpoint.verdict === 'ended') {
+      releaseUndertakingBindings(state, checked.projectId, tick);
       // Abandoned at the ratchet, or the actor is gone. The residue class follows
       // visibility (§2.2): what the player watched leaves something behind, what
       // they never saw leaves a chronicle line.
@@ -407,6 +465,7 @@ export function advanceStrategicProjects(
 
       const catalystSeeded = maybeSeedCatalyst(state, candidate, tick, rng);
 
+      releaseUndertakingBindings(state, checked.projectId, tick);
       updatedProjects.push({ ...checked, progress: newProgress, status: 'completed', lastProgressTick: tick });
       newHistory.push(createHistoryEntry(candidate, tick, ops, catalystSeeded));
 

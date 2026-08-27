@@ -60,6 +60,7 @@ import { resolveStepCore } from './stepResolutionCore';
 import { mulberry32, hashString } from './factionAmbitions';
 import { getAgentLocation } from './graphQueries';
 import { resolveToParentLocation } from './sublocationShape';
+import { resolveLocationToHex } from './encounterAwareness';
 import { getStrategicTemplate } from './strategicActionCandidates';
 import { ambitionNodeIdCandidates } from './ambitionShape';
 import { emitTrace } from './traceBuffer';
@@ -234,25 +235,47 @@ export function defaultFollowedAgentIds(graph: WorldGraph, ascendantId: string):
  * sublocation is at its parent location — then matches against whichever stage
  * the record carries. An undertaking with neither `targetNodeId` nor `targetHex`
  * has no stage to be absent from, so it is always present.
+ *
+ * **Resolution is recursive (THR-1296 §3).** `resolveToParentLocation` climbs exactly
+ * one tier, which is correct for the canonical two-deep model and wrong for anything
+ * nested deeper: an actor two sublocations down from their stage resolved to a node
+ * that matched neither the stage nor its parent, and read as *absent* at every
+ * checkpoint — a silent permanent deferral rather than a visible failure. Both sides
+ * now compare through `resolveLocationToHex`, the recursive resolver the binder uses
+ * everywhere, so the two modules agree on where a thing is. Behaviour change is
+ * one-directional and small: deep-nested stages stop reading as absent, and nothing
+ * that resolved before stops resolving.
  */
 function isActorAtStage(graph: WorldGraph, project: StrategicProjectRuntime): boolean {
   if (!project.targetNodeId && !project.targetHex) return true;
 
   const raw = getAgentLocation(graph, project.actorId);
   const here = resolveToParentLocation(graph, raw) ?? raw;
-  if (!here) return false;
+  if (!here && !raw) return false;
 
   if (project.targetNodeId) {
-    if (here.id === project.targetNodeId) return true;
+    if (raw?.id === project.targetNodeId) return true;
+    if (here?.id === project.targetNodeId) return true;
     // A stage that is itself a sublocation resolves to the same parent the actor did.
     const stage = graph.getNode(project.targetNodeId);
     const stageParent = resolveToParentLocation(graph, stage) ?? stage;
-    if (stageParent && stageParent.id === here.id) return true;
+    if (here && stageParent && stageParent.id === here.id) return true;
+    // Nested deeper than one tier on either side: compare the hexes both resolve to.
+    // Same-hex is the codebase's own granularity for "here" (encounter awareness is
+    // hex-granular by decision), so this is the established answer, not a looser one.
+    if (raw && stage) {
+      const actorHex = resolveLocationToHex(graph, raw.id);
+      const stageHex = resolveLocationToHex(graph, stage.id);
+      if (actorHex && stageHex
+        && actorHex.col === stageHex.col && actorHex.row === stageHex.row) return true;
+    }
   }
 
   if (project.targetHex) {
-    const col = here.properties?.hexCol;
-    const row = here.properties?.hexRow;
+    const hex = raw ? resolveLocationToHex(graph, raw.id) : null;
+    if (hex && hex.col === project.targetHex.col && hex.row === project.targetHex.row) return true;
+    const col = here?.properties?.hexCol;
+    const row = here?.properties?.hexRow;
     if (col === project.targetHex.col && row === project.targetHex.row) return true;
   }
 
@@ -344,6 +367,25 @@ export interface CheckpointResult {
 }
 
 /**
+ * What the bind pass observed before this checkpoint ran (THR-1296 §3).
+ *
+ * Passed *in* rather than looked up, which is what keeps this module graph-read-only
+ * and free of any binder import: the bind pass writes the ledger, this module only
+ * learns the verdict. Absent on every call that has no binder — every caller today.
+ */
+export interface CheckpointBindingInput {
+  /** A must-persist cast member lost since the last checkpoint. */
+  readonly loss?: {
+    readonly castKey: string;
+    readonly lostName: string;
+    /** Singular role ⇒ halt rather than downgrade. Losing the only archmage is not a setback. */
+    readonly singular: boolean;
+  } | null;
+  /** A slot is waiting on a queued mint — defer rather than resolve a scene short its cast. */
+  readonly awaitingMint?: boolean;
+}
+
+/**
  * Resolve one undertaking's checkpoint for this tick.
  *
  * Pure with respect to the graph — it reads, never writes. The caller applies
@@ -355,6 +397,7 @@ export function resolveUndertakingCheckpoint(
   graph: WorldGraph,
   project: StrategicProjectRuntime,
   tick: number,
+  binding?: CheckpointBindingInput,
 ): CheckpointResult {
   const scheduled = project.nextCheckpointTick ?? project.startedTick + UNDERTAKING_CHECKPOINT_INTERVAL_TICKS;
   if (tick < scheduled) {
@@ -431,6 +474,24 @@ export function resolveUndertakingCheckpoint(
     return { verdict: 'deferred', project: deferredProject, events };
   }
 
+  // ─── Awaiting a mint (THR-1296 §3/§5) ─────────────────────────────
+  // A slot's person is queued but not yet born. Defer rather than resolve a scene
+  // short its cast — and deliberately *without* touching the absence counter or the
+  // halt ratchet: the actor is present and willing, the world simply has not caught
+  // up. Charging a halt for the engine's own queue latency would make the mint budget
+  // read as the actor's failure.
+  if (binding?.awaitingMint) {
+    const deferredProject: StrategicProjectRuntime = {
+      ...project,
+      nextCheckpointTick: tick + UNDERTAKING_CHECKPOINT_INTERVAL_TICKS,
+    };
+    emitCheckpointTrace({
+      project: deferredProject, tick, reach, checkpointIndex,
+      deferred: 'awaiting_mint', presentation: 'none', halts,
+    });
+    return { verdict: 'deferred', project: deferredProject, events };
+  }
+
   // ─── The roll ─────────────────────────────────────────────────────
   const capability = computeCapability(graph, project.actorId, reach);
   const authored = template?.checkpointDifficulty ?? UNDERTAKING_DEFAULT_CHECKPOINT_DIFFICULTY;
@@ -467,12 +528,25 @@ export function resolveUndertakingCheckpoint(
   let nextHalts = halts;
   let atCost = false;
 
+  // A must-persist cast member is gone. The loss lands on this checkpoint as a named
+  // complication rather than as a silent gap — the roll already happened and stands,
+  // so what changes is the *consequence*, not the dice (THR-1296 §3).
+  const bindingLoss = binding?.loss ?? null;
+
   if (effect === 'advance' || effect === 'advance_at_cost') {
-    const step = band === 'critical_success'
-      ? UNDERTAKING_PROGRESS_PER_ADVANCE * UNDERTAKING_CRIT_ADVANCE_MULTIPLIER
-      : UNDERTAKING_PROGRESS_PER_ADVANCE;
-    progress = Math.min(project.progress + step, project.progressRequired);
-    atCost = effect === 'advance_at_cost';
+    if (bindingLoss?.singular) {
+      // The role was the world's only one. That is not a setback to press through —
+      // the undertaking stops until the slot re-binds on the following pass.
+      nextHalts = halts + ratchetWeightFor(band);
+    } else {
+      const step = band === 'critical_success'
+        ? UNDERTAKING_PROGRESS_PER_ADVANCE * UNDERTAKING_CRIT_ADVANCE_MULTIPLIER
+        : UNDERTAKING_PROGRESS_PER_ADVANCE;
+      progress = Math.min(project.progress + step, project.progressRequired);
+      // A plain advance is downgraded to advance-at-cost by the loss; an advance that
+      // was already at-cost stays at-cost rather than compounding.
+      atCost = effect === 'advance_at_cost' || bindingLoss !== null;
+    }
   } else {
     nextHalts = halts + ratchetWeightFor(band);
   }
@@ -480,7 +554,10 @@ export function resolveUndertakingCheckpoint(
   const completing = progress >= project.progressRequired;
   const momentClass: UndertakingMomentClass | null =
     completing ? 'completion'
-      : band === 'critical_failure' ? 'complication'
+      // The widening (THR-1296 §3): `complication` used to be produced by critical
+      // failure alone. A broken must-persist binding now reaches it too — additive,
+      // and the only way the loss gets said out loud.
+      : (band === 'critical_failure' || bindingLoss !== null) ? 'complication'
         : atCost ? 'at_cost'
           : null;
 
@@ -510,7 +587,9 @@ export function resolveUndertakingCheckpoint(
   });
 
   if (momentClass && momentClass !== 'completion') {
-    events.push(buildMomentEvent(graph, project, momentClass, tick, template?.displayName));
+    events.push(buildMomentEvent(
+      graph, project, momentClass, tick, template?.displayName, bindingLoss?.lostName,
+    ));
   }
 
   return { verdict: completing ? 'completed' : 'continues', project: advanced, events };
@@ -669,15 +748,22 @@ function buildMomentEvent(
   momentClass: UndertakingMomentClass,
   tick: number,
   displayName?: string,
+  /** The must-persist cast member this undertaking just lost (THR-1296 §3). */
+  lostName?: string,
 ): TickEvent {
   const actorName = graph.getNode(project.actorId)?.name ?? project.actorId;
   const label = displayName ?? project.templateId;
   const message =
-    momentClass === 'at_cost' ? `${actorName} presses on with ${label}, but it costs them`
-      : momentClass === 'complication' ? `${actorName} hits serious trouble with ${label}`
-        : momentClass === 'fork' ? `${actorName} doubles down on ${label}`
-          : momentClass === 'abandoned' ? `${actorName} abandons ${label}`
-            : `${actorName} begins ${label}`;
+    // A named loss beats the generic line. "Hits serious trouble" without saying who
+    // is gone is precisely the anonymous beat the binder exists to replace, and the
+    // ledger is what remembers the name after the node itself is gone.
+    lostName && momentClass === 'complication'
+      ? `${actorName} loses ${lostName} — ${label} is thrown into disarray`
+      : momentClass === 'at_cost' ? `${actorName} presses on with ${label}, but it costs them`
+        : momentClass === 'complication' ? `${actorName} hits serious trouble with ${label}`
+          : momentClass === 'fork' ? `${actorName} doubles down on ${label}`
+            : momentClass === 'abandoned' ? `${actorName} abandons ${label}`
+              : `${actorName} begins ${label}`;
 
   return {
     id: `undertaking_${momentClass}_${project.projectId}_${tick}`,
@@ -704,7 +790,7 @@ interface CheckpointTraceArgs {
   difficulty?: number;
   modifiers?: number;
   atCost?: boolean;
-  deferred?: 'actor_absent' | 'actor_busy';
+  deferred?: 'actor_absent' | 'actor_busy' | 'awaiting_mint';
 }
 
 function emitCheckpointTrace(args: CheckpointTraceArgs): void {

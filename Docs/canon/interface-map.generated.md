@@ -19,8 +19,8 @@ remediation ticket or the build fails.
 | 🟠 PARTIAL | 2 |
 | 🔴 LEAKED | 8 |
 | ⚫ UNWIRED | 0 |
-| 🔵 UNVERIFIED-OK | 15 |
-| **Total** | **85** |
+| 🔵 UNVERIFIED-OK | 17 |
+| **Total** | **87** |
 
 ## Contracts by producing subsystem
 
@@ -40,6 +40,7 @@ remediation ticket or the build fails.
 | `ambition-motive-receipts` | Ambitions explain motives — receipts carry ambition provenance into foreshadowing. | trace: `ambitionBoost` | Omens & Atmospheric Pressure | 🟢 LIVE | — |
 | `ambition-player-visibility` | The player can see what a mortal is striving for. | function: `getAmbitionsStrand` | Intelligence, Knowledge & Familiarity | 🟢 LIVE | — |
 | `ambition-progress-milestones` | Ambitions progress and complete, firing milestone events the player sees. | function: `phaseAmbitionProgress` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
+| `binder-decision-traced` | Every casting decision an undertaking makes reaches the narrative surface: the trace answers "why is this moment generic?" after the fact (it fires on a slot that bound nobody as loudly as on one that bound somebody), and a lost must-persist cast member is carried into the checkpoint moment by name — "loses Old Maerin" rather than the anonymous "hits serious trouble" the complication class produced before. | trace: `binding_decision`, `resolveBinding`, `runBindPass` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | THR-1297 |
 | `binder-mint-valve` | When an undertaking needs a person the world does not have, that person is born the way every other mortal is born — through the lifecycle’s one-per-tick gate — instead of appearing on the spot. An unmetered spawn path is how a large map reached ~1010 agents by tick 72 (THR-814/THR-162), and the budget is what stops the binder becoming a second one. | state-field: `mintQueue`, `drainMintQueue`, `BINDER_MINT_BUDGET_PER_TICK`, `binder_mint` | Agent Lifecycle | 🔵 UNVERIFIED-OK | THR-1296 |
 | `faction-ambitions-drive-action` | Faction ambitions drive faction action and render on the faction sheet. | function: `factionAmbitions` | Factions & Succession | 🟢 LIVE | — |
 | `minted-ambition-provenance` | Motive receipts name the origin of a minted want — "she seeks vengeance for the blighted fields." | edge-prop: `mintedByEventId` | Omens & Atmospheric Pressure | 🟢 LIVE | — |
@@ -183,6 +184,12 @@ remediation ticket or the build fails.
 | `mentorship-rides-undertaking-checkpoints` | A mentorship is a relationship that a piece of work drives. Folding it onto the undertaking checkpoint means the bond moves when the teaching actually goes well or badly, instead of a second phase inferring how it went from the leftovers of a first one. | edge-prop: `mentors`, `undertakingId` | Ambitions & Undertakings | 🟢 LIVE | — |
 | `shared-step-resolution-two-callers` | One band ladder decides every outcome in the game. An encounter step and an undertaking checkpoint that disagreed about what a critical failure is would be two games wearing one vocabulary — the same roll reading as disaster in a scene and a shrug in a project. | function: `resolveStepCore`, `mapResolverOutcomeToStep` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `undertaking-checkpoint-events` | What happens to an agent’s undertaking reaches the player — the setback, the doubling-down, the abandonment — instead of progress silently accruing until a thing appears in the world with no story attached to it. | event: `undertaking_checkpoint`, `undertaking_fork`, `resolveMomentPresentation`, `followedAgentIds` | Attention, Chronicle & Narrative | 🔴 LEAKED | THR-1293 |
+
+### War, Armies & Battles
+
+| Contract | Intent | Mechanism | Consumer | Status | Ticket |
+|---|---|---|---|---|---|
+| `binding-registry-reaper-hook` | A siege that razes an undertaking’s bound stage, or a battle that kills its bound commander, breaks the binding loudly instead of silently — the recon (THR-1289) measured battle destruction as the one confirmed live must-persist violation, since the destruction pool never reads persistence in either flavour and the commander kill bypasses the lifecycle and emits nothing at all. Detection sits on the sole node-removal funnel all ~25 deleting call sites pass through, so the same seam covers every other reaper and any reaper not yet written; housekeeping (sublocation dissolution) instead defers on a bound stage, because a chore waits and a story does not. | function: `onNodeRemoved`, `installBindingRemovalHook`, `makeDissolutionHold`, `binding_severed` | Ambitions & Undertakings | 🔵 UNVERIFIED-OK | THR-1297 |
 
 ## Evidence
 
@@ -500,6 +507,17 @@ exit
 - **Other hits:** `src/engine/encounterSeeding.ts`
 - **Verdict:** Verified 2026-07-25: Organic 150-tick CLI run, seed 42 medium (no forcing, no debug spawns): the Temple of the Spheres fielded a defender band, "The Temple of the Spheres' Sparrows", which was met by Company of the Inn at t81 and by Flintlock's Band at t84. Trace at t81: [group_contested] "Company of the Inn came off best against The Temple of the Spheres' Sparrows. Bagaabraa did not walk away." Both companies carry hostile_to edges with cause group_engagement; the band fell 0.70 → 0.19 cohesion and disbanded through the shipped phaseGroups cascade. Unit-locked by src/engine/groups/__tests__/bandOpposition.test.ts (22 tests) incl. the fail-soft degradation rows.
 
+### `binder-decision-traced` — 🔵 UNVERIFIED-OK
+
+- **Intent:** Every casting decision an undertaking makes reaches the narrative surface: the trace answers "why is this moment generic?" after the fact (it fires on a slot that bound nobody as loudly as on one that bound somebody), and a lost must-persist cast member is carried into the checkpoint moment by name — "loses Old Maerin" rather than the anonymous "hits serious trouble" the complication class produced before.
+- **Producer → Consumer:** Ambitions & Undertakings → Attention, Chronicle & Narrative
+- **Module:** `src/engine/binding/binder.ts`
+- **Production hits:** 4 total — 2 write, 1 read, 1 unclassified
+- **Write sites:** `src/engine/binding/binder.ts`, `src/engine/binding/undertakingBindPass.ts`
+- **Read sites:** `src/types/trace.ts`
+- **Other hits:** `src/engine/strategicActionLifecycle.ts`
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
 ### `binder-mint-valve` — 🔵 UNVERIFIED-OK
 
 - **Intent:** When an undertaking needs a person the world does not have, that person is born the way every other mortal is born — through the lifecycle’s one-per-tick gate — instead of appearing on the spot. An unmetered spawn path is how a large map reached ~1010 agents by tick 72 (THR-814/THR-162), and the budget is what stops the binder becoming a second one.
@@ -509,6 +527,17 @@ exit
 - **Write sites:** `src/engine/binding/mintInhabitant.ts`
 - **Read sites:** `src/engine/agentLifecycle.ts`
 - **Other hits:** `src/data/binder-constants.ts`, `src/types/strategicAction.ts`, `src/types/trace.ts`
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
+### `binding-registry-reaper-hook` — 🔵 UNVERIFIED-OK
+
+- **Intent:** A siege that razes an undertaking’s bound stage, or a battle that kills its bound commander, breaks the binding loudly instead of silently — the recon (THR-1289) measured battle destruction as the one confirmed live must-persist violation, since the destruction pool never reads persistence in either flavour and the commander kill bypasses the lifecycle and emits nothing at all. Detection sits on the sole node-removal funnel all ~25 deleting call sites pass through, so the same seam covers every other reaper and any reaper not yet written; housekeeping (sublocation dissolution) instead defers on a bound stage, because a chore waits and a story does not.
+- **Producer → Consumer:** War, Armies & Battles → Ambitions & Undertakings
+- **Module:** `src/engine/binding/bindingRegistry.ts`
+- **Production hits:** 6 total — 3 write, 1 read, 2 unclassified
+- **Write sites:** `src/engine/graph.ts`, `src/engine/orchestrator.ts`, `src/engine/phaseSublocations.ts`
+- **Read sites:** `src/engine/binding/bindingRegistry.ts`
+- **Other hits:** `src/engine/encounterSeeding.ts`, `src/types/trace.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `branch-decision-writes-archetype-drift` — 🔴 LEAKED
