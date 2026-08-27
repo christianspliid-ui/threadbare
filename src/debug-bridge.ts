@@ -844,7 +844,7 @@ if (import.meta.env.DEV) {
         if (reach === 'iron') {
           const armyId = `debug_warhost_${state.tick}`;
           if (!graph.getNode(armyId)) {
-            graph.addNode({ id: armyId, type: 'actor', name: 'Debug Warhost', properties: { actorType: 'group', warhost: true } });
+            graph.addNode({ id: armyId, type: 'actor', name: 'Debug Warhost', properties: { actorType: 'group', groupKind: 'army', warhost: true } });
             graph.addEdge({ id: `located_at_${armyId}`, source: armyId, target: baseLoc.id, type: 'located_at', properties: {} });
           }
           materialized = { kind: 'warhost', id: armyId, hexCol: baseCol, hexRow: baseRow };

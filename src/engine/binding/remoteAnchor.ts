@@ -42,6 +42,7 @@
  * both of which register into this same helper.
  */
 import type { WorldGraph } from '../graph';
+import { isArmyGroupNode } from '../groupShape';
 import type { GraphNode } from '../../types/graph';
 import { hexDistance } from '../../lib/hexMath';
 import { resolveLocationToHex } from '../encounterAwareness';
@@ -159,7 +160,9 @@ export function findRemoteAnchors(
       // anchor as degenerate forever while compiling cleanly under the THR-489 baseline.
       // Same shape as impediment #834's `getNodesByType('agent')`, reached from a second
       // direction: the plausible spelling is the wrong one.
-      kind: node.properties?.armyState !== undefined ? 'army' : 'degenerate',
+      // THR-1297: asked through the shape module now, so the explicit `groupKind` tag wins
+      // and the `armyState` presence test survives only as the back-compat fallback.
+      kind: isArmyGroupNode(node) ? 'army' : 'degenerate',
       hex,
       distanceToSite,
     });

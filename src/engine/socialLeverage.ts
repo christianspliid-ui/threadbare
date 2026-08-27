@@ -38,6 +38,7 @@
  */
 
 import type { WorldGraph } from './graph';
+import { getFactionMembershipEdges } from './graphQueries';
 import { getDerivedMembershipRank } from './factionReputation';
 import type { LeverageHistoryEntry } from '../types/encounter';
 import { getTrust } from './trustMechanics';
@@ -102,7 +103,7 @@ export const LEVERAGE_INITIAL_CAP = 0.30;
  * than divided, so a stray out-of-scale fixture cannot hand back more than the ceiling.
  */
 export function getHighestFactionRank(graph: WorldGraph, agentId: string): number {
-  const memberEdges = graph.getOutgoingEdges(agentId, 'member_of');
+  const memberEdges = getFactionMembershipEdges(graph, agentId);
   if (memberEdges.length === 0) return 0;
 
   let highest = 0;

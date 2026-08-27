@@ -32,6 +32,7 @@
 
 import type { WorldGraph } from '../graph';
 import type { GraphNode, GraphEdge } from '../../types/graph';
+import { isCompanyGroupNode } from '../groupShape';
 import { GROUP_COHESION_START_BASE, GROUP_COHESION_BOUND_THRESHOLD, GROUP_FRAY_THRESHOLD, GROUP_DISSOLUTION_THRESHOLD } from '../../data/group-constants';
 
 /** How a company decides where to go. */
@@ -158,11 +159,10 @@ export function isBandNode(node: GraphNode | undefined): boolean {
  * `actorType: 'group'` but carries `armyState` instead of `groupType`.
  */
 export function isCompanyNode(node: GraphNode | undefined): boolean {
-  if (!node || node.type !== 'actor') return false;
-  const props = node.properties as Record<string, unknown>;
-  if (props.actorType !== 'group') return false;
-  if (props.armyState != null) return false; // army, not a company
-  return typeof props.groupType === 'string';
+  // THR-1297: the rule moved to engine/groupShape.ts so  and this file
+  // stop hand-mirroring it. Kept as a named re-export because ~40 call sites import it
+  // from here, and moving the *rule* is the fix — moving every import is churn.
+  return isCompanyGroupNode(node);
 }
 
 /** All company nodes in the graph, active and disbanded. */
@@ -207,6 +207,8 @@ export function getGroupMembers(graph: WorldGraph, groupId: string): GraphNode[]
  * this picks the one whose target is a company node.
  */
 export function getGroupOf(graph: WorldGraph, agentId: string): GraphNode | undefined {
+  // THR-1297: group-scoped on purpose (see `isCompanyNode` below) — the faction wrapper
+  // would filter out exactly the company targets this resolves.
   for (const edge of graph.getOutgoingEdges(agentId, 'member_of')) {
     if (edge.properties?.leftAtTick != null) continue;
     const target = graph.getNode(edge.target);

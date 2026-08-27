@@ -13,6 +13,7 @@
  */
 
 import type { GameState } from '../types/gameState';
+import { getFactionMembershipEdges } from './graphQueries';
 import type { BattleState } from '../types/battle';
 import type { ArmyState } from '../types/army';
 import { hasReliefLine } from './armySupply';
@@ -154,7 +155,7 @@ function resolveSiegeFocusCourtPosition(
     if (rank <= bestRank) continue;
 
     // Only count agents in one of the siege factions
-    const actorFaction = state.graph.getOutgoingEdges(edge.target, 'member_of')[0]?.target;
+    const actorFaction = getFactionMembershipEdges(state.graph, edge.target)[0]?.target;
     if (!actorFaction || !siegeFactionIds.has(actorFaction)) continue;
 
     bestPosition = pos;
@@ -629,7 +630,7 @@ function selectRegionalEncounterType(
   const actorNode = graph.getNode(actorId);
   if (!actorNode) return null;
 
-  const actorFaction = graph.getOutgoingEdges(actorId, 'member_of')[0]?.target;
+  const actorFaction = getFactionMembershipEdges(graph, actorId)[0]?.target;
   const properties = actorNode.properties as Record<string, unknown>;
 
   // Capability gates read live agents' domainCapabilities: lowercase reach

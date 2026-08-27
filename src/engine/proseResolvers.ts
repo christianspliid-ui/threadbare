@@ -8,6 +8,7 @@
  * Design doc: Docs/plans/2026-03-09-prose-generator-framework-design.md
  */
 import type { ProseLayer } from '../types/prose';
+import { getFactionMembershipEdges } from './graphQueries';
 import type { WorldGraph } from './graph';
 import {
   BIOME_PROSE,
@@ -425,7 +426,7 @@ export function agentFactionResolver(nodeId: string, graph: WorldGraph, seed: nu
   if (!node) return [];
 
   // Find outgoing member_of edges
-  const edges = graph.getOutgoingEdges(nodeId, 'member_of');
+  const edges = getFactionMembershipEdges(graph, nodeId);
   if (edges.length === 0) return [];
 
   // Get first faction edge

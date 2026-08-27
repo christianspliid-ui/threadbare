@@ -42,8 +42,7 @@ import {
   getActorCultures,
   getAgentAmbitions,
   getMentorships,
-  type MentorshipSummary,
-} from './graphQueries';
+  type MentorshipSummary, getFactionMembershipEdges } from './graphQueries';
 import type { SphereName } from '../types';
 import type { MemberOfEdgeProperties } from '../types/disposition';
 import { FACTION_DEFINITIONS } from '../data/faction-definitions';
@@ -490,7 +489,7 @@ export function getAgentDetail(
   const factionResult = getAgentFaction(graph, agentId);
   if (factionResult) {
     factionName = factionResult.faction.name;
-    const memberEdge = graph.getOutgoingEdges(agentId, 'member_of')
+    const memberEdge = getFactionMembershipEdges(graph, agentId)
       .find(edge => edge.target === factionResult.faction.id);
     const memberProps = memberEdge?.properties as Partial<MemberOfEdgeProperties> | undefined;
     factionDefId = memberProps?.factionDefId;
@@ -1083,7 +1082,7 @@ export function getAgentInfoCard(
         // (THR-1149) — set it from the membership itself, not from the
         // definition, and set it whether or not a definition resolves.
         card.factionNodeId = factionResult.faction.id;
-        const memberEdges = graph.getOutgoingEdges(agentId, 'member_of')
+        const memberEdges = getFactionMembershipEdges(graph, agentId)
           .filter(e => e.target === factionResult.faction.id);
         if (memberEdges.length > 0) {
           const memberProps = memberEdges[0].properties as Partial<MemberOfEdgeProperties>;

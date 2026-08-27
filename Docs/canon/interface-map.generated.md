@@ -85,7 +85,7 @@ remediation ticket or the build fails.
 | `company-assist-shapes-resolution` | Companions make each other better at what they attempt — the best-suited member acts and the others assist, capped so a crowd is not an auto-win. | function: `resolveGroupStep` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `company-drives-member-movement` | A company travels as one — members share a destination instead of wandering off separately. | node-prop: `movementState` | Movement & Colocation | 🟢 LIVE | — |
 | `company-gates-exclusive-content-reachability` | Some expeditions can only be attempted by a company — a grouped agent may draw a party-exclusive template, but only when their company can field enough living members for it. | function: `livingGroupMemberCount` | Encounters & Dilemmas | 🟢 LIVE | — |
-| `company-membership-excludes-faction-reads` | A companion of a company is not a member of a faction by that name — faction rank, allegiance display and heraldry must keep reading the faction. | edge-prop: `getFactionMembershipEdges` | Factions & Succession | 🟢 LIVE | — |
+| `company-membership-excludes-faction-reads` | A member of a group — a company, and since THR-1297 a network — is not a member of a faction by that name; faction rank, allegiance display and heraldry must keep reading the faction. | edge-prop: `getFactionMembershipEdges`, `isGroupMembershipTarget` | Factions & Succession | 🟢 LIVE | — |
 | `company-position-derives-from-leader` | A company has no position of its own — asking where it is means asking where its leader is, so there is never a second spatial truth to drift. | function: `getGroupPosition` | Movement & Colocation | 🟢 LIVE | — |
 | `confrontation-content-gated-on-a-live-opponent` | An encounter about fighting a particular band is only offered while that band is standing there — a confrontation never surfaces against nobody. | function: `requiresOpposingBand`, `hasOpposingBand` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `contested-outcome-band-reaches-the-player` | Losing a fight reads differently from merely failing — a contested loss says so in the chronicle and the receipt. | function: `contestedOutcomeFor`, `contested_won` | Encounters & Dilemmas | 🟢 LIVE | — |
@@ -602,14 +602,14 @@ exit
 
 ### `company-membership-excludes-faction-reads` — 🟢 LIVE
 
-- **Intent:** A companion of a company is not a member of a faction by that name — faction rank, allegiance display and heraldry must keep reading the faction.
+- **Intent:** A member of a group — a company, and since THR-1297 a network — is not a member of a faction by that name; faction rank, allegiance display and heraldry must keep reading the faction.
 - **Producer → Consumer:** Companies & Group Travel → Factions & Succession
 - **UL terms:** *Company*, *Faction*
-- **Production hits:** 15 total — 1 write, 4 read, 10 unclassified
-- **Write sites:** `src/engine/graphQueries.ts`
-- **Read sites:** `src/engine/anointSuccessor.ts`, `src/engine/contextBuilder.ts`, `src/engine/detailPageResolvers.ts`, `src/engine/notableAgendas.ts`
-- **Other hits:** `src/components/AgentInfoCard/AgentInfoCard.tsx`, `src/components/Game/debug/RelationshipGraph.tsx`, `src/components/Game/GameView.tsx`, `src/engine/armyNotifications.ts`, `src/engine/binding/binder.ts` +5 more
-- **Verdict:** Verified 2026-07-24: member_of consumer sweep (THR-74): 14 sites reading an agent's outgoing member_of as "their faction" now route through getFactionMembershipEdges; the remainder gate on factionDefId/reachPreferences/guildType and fail soft on a company target. Locked by src/engine/groups/__tests__/groupQueries.test.ts § "faction lookups are not confused by company membership".
+- **Production hits:** 51 total — 2 write, 9 read, 40 unclassified
+- **Write sites:** `src/engine/graphQueries.ts`, `src/engine/groupShape.ts`
+- **Read sites:** `src/engine/anointSuccessor.ts`, `src/engine/contextBuilder.ts`, `src/engine/detailPageResolvers.ts`, `src/engine/factionReputation.ts`, `src/engine/notableAgendas.ts` +4 more
+- **Other hits:** `src/components/AgentInfoCard/AgentInfoCard.tsx`, `src/components/Game/debug/RelationshipGraph.tsx`, `src/components/Game/GameView.tsx`, `src/engine/agentDetail.ts`, `src/engine/armyNotifications.ts` +35 more
+- **Verdict:** Verified 2026-08-27: THR-1297 slice 1 completed the sweep THR-74 started: 48 further agent-sourced `member_of` reads that treated any target as "their faction" now route through getFactionMembershipEdges, taking the routed total to 62 of the 69 raw call sites. The 7 that remain raw are deliberate and annotated in place — army-sourced reads (an army really is member_of its faction), the three group-scoped resolvers that exist to find the company, and reputation.ts's target-addressed a→b finder, whose membership leg must keep resolving standing with one's own company. The rule itself moved to engine/groupShape.ts (getGroupKind → groupKind tag first, pre-THR-1297 property-presence as back-compat fallback), retiring the hand-mirrored copy in graphQueries.ts. This is what makes the network kind safe: isFactionMembershipEdge rested on "companies are the only non-faction member_of target", which a network (THR-1288, member_of contact edges) makes false. One live defect fixed in passing — strategicActionCandidates.ts's `faction` target rule returned a company as a faction target. Non-vacuous by src/engine/__tests__/factionMembershipGolden.test.ts (11 tests): a differential over real seeded worlds (42, 99) re-deriving the pre-THR-1297 rule inline and asserting the wrapper agrees agent-by-agent, with a company constructed into each world because a tick-0 world has none — falsified 5-of-11 red with isGroupMembershipTarget stubbed to false (the per-seed differentials stayed green before the constructed company was added, which is the vacuity the pin closes). Full suite 18532 green; 30-tick seed-42 CLI smoke reached tick 30 with 377 agents.
 
 ### `company-position-derives-from-leader` — 🟢 LIVE
 
@@ -954,10 +954,10 @@ exit
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 239 total — 1 write, 1 read, 237 unclassified
+- **Production hits:** 240 total — 1 write, 1 read, 238 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts` +232 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts` +233 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `relocation-intent-steers-agent-movement` — 🔵 UNVERIFIED-OK

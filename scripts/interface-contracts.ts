@@ -980,23 +980,32 @@ export const CONTRACTS: readonly Contract[] = [
     producerSystem: COMPANIES,
     consumerSystem: FACTIONS,
     intent:
-      'A companion of a company is not a member of a faction by that name — faction rank, allegiance display and heraldry must keep reading the faction.',
+      'A member of a group — a company, and since THR-1297 a network — is not a member of a faction by that name; faction rank, allegiance display and heraldry must keep reading the faction.',
     ulTerms: ['Company', 'Faction'],
-    mechanism: { kind: 'edge-prop', symbols: ['getFactionMembershipEdges'] },
+    mechanism: { kind: 'edge-prop', symbols: ['getFactionMembershipEdges', 'isGroupMembershipTarget'] },
     // The guard itself is the producer: groupFormation mints the colliding
     // `member_of` edge, but what every faction reader consumes is this filter.
-    writeSites: ['src/engine/graphQueries.ts'],
+    // THR-1297 moved the *rule* behind it into `engine/groupShape.ts` so the
+    // discriminator has one home instead of two hand-mirrored copies.
+    writeSites: ['src/engine/graphQueries.ts', 'src/engine/groupShape.ts'],
     readSites: [
       'src/engine/graphQueries.ts',
       'src/engine/anointSuccessor.ts',
       'src/engine/contextBuilder.ts',
       'src/engine/notableAgendas.ts',
       'src/engine/detailPageResolvers.ts',
+      // THR-1297 slice 1 brought the remaining agent-sourced raw readers in; the
+      // full list is the sweep recorded in the evidence below.
+      'src/engine/factionReputation.ts',
+      'src/engine/strategicActionCandidates.ts',
+      'src/engine/retinue.ts',
+      'src/engine/siegeResolution.ts',
+      'src/engine/unifiedActionResolution.ts',
     ],
     verifiedLive: {
-      date: '2026-07-24',
+      date: '2026-08-27',
       evidence:
-        'member_of consumer sweep (THR-74): 14 sites reading an agent\'s outgoing member_of as "their faction" now route through getFactionMembershipEdges; the remainder gate on factionDefId/reachPreferences/guildType and fail soft on a company target. Locked by src/engine/groups/__tests__/groupQueries.test.ts § "faction lookups are not confused by company membership".',
+        'THR-1297 slice 1 completed the sweep THR-74 started: 48 further agent-sourced `member_of` reads that treated any target as "their faction" now route through getFactionMembershipEdges, taking the routed total to 62 of the 69 raw call sites. The 7 that remain raw are deliberate and annotated in place — army-sourced reads (an army really is member_of its faction), the three group-scoped resolvers that exist to find the company, and reputation.ts\'s target-addressed a→b finder, whose membership leg must keep resolving standing with one\'s own company. The rule itself moved to engine/groupShape.ts (getGroupKind → groupKind tag first, pre-THR-1297 property-presence as back-compat fallback), retiring the hand-mirrored copy in graphQueries.ts. This is what makes the network kind safe: isFactionMembershipEdge rested on "companies are the only non-faction member_of target", which a network (THR-1288, member_of contact edges) makes false. One live defect fixed in passing — strategicActionCandidates.ts\'s `faction` target rule returned a company as a faction target. Non-vacuous by src/engine/__tests__/factionMembershipGolden.test.ts (11 tests): a differential over real seeded worlds (42, 99) re-deriving the pre-THR-1297 rule inline and asserting the wrapper agrees agent-by-agent, with a company constructed into each world because a tick-0 world has none — falsified 5-of-11 red with isGroupMembershipTarget stubbed to false (the per-seed differentials stayed green before the constructed company was added, which is the vacuity the pin closes). Full suite 18532 green; 30-tick seed-42 CLI smoke reached tick 30 with 377 agents.',
     },
   },
   {

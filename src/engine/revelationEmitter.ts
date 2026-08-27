@@ -10,6 +10,7 @@
  */
 
 import type { GameState, TickEvent } from '../types/gameState';
+import { getFactionMembershipEdges } from './graphQueries';
 import type { RevelationTrace, InteractionDepthTrace } from '../types/trace';
 import type { ReachDomain } from '../types/traits';
 import {
@@ -639,7 +640,7 @@ export function emitColocationRevelations(state: GameState): void {
 
     // Get avatar's faction memberships
     const avatarFactionIds = new Set(
-      state.graph.getOutgoingEdges(avatarId, 'member_of').map(e => e.target),
+      getFactionMembershipEdges(state.graph, avatarId).map(e => e.target),
     );
 
     for (const actor of allActors) {
@@ -682,7 +683,7 @@ export function emitColocationRevelations(state: GameState): void {
 
         // ── Faction Bond Auto-Reveal ───────────────────────────────────────
         if (avatarFactionIds.size > 0) {
-          const actorFactionEdges = state.graph.getOutgoingEdges(actor.id, 'member_of');
+          const actorFactionEdges = getFactionMembershipEdges(state.graph, actor.id);
 
           for (const factionEdge of actorFactionEdges) {
             if (!avatarFactionIds.has(factionEdge.target)) continue;

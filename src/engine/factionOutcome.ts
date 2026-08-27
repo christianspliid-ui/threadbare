@@ -11,6 +11,7 @@
  */
 
 import type { WorldGraph } from './graph';
+import { getFactionMembershipEdges } from './graphQueries';
 import type { EncounterProgress } from '../types/encounter';
 import type { FactionPromotionTrace } from '../types/faction';
 import { computeRankFromReputation } from '../types/faction';
@@ -54,7 +55,7 @@ export function processFactionJoinOutcome(
   const agentId = progress.actorId;
 
   // Check if already a member (fail-soft: don't create duplicate)
-  const existingEdges = graph.getOutgoingEdges(agentId, 'member_of')
+  const existingEdges = getFactionMembershipEdges(graph, agentId)
     .filter(e => {
       const props = e.properties as Partial<MemberOfEdgeProperties>;
       return props.factionDefId === definition.id;
@@ -148,7 +149,7 @@ export function processFactionPromotionOutcome(
   const agentId = progress.actorId;
 
   // Find member_of edge
-  const memberEdges = graph.getOutgoingEdges(agentId, 'member_of')
+  const memberEdges = getFactionMembershipEdges(graph, agentId)
     .filter(e => {
       const props = e.properties as Partial<MemberOfEdgeProperties>;
       return props.factionDefId === definition.id;

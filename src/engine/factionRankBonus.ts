@@ -14,6 +14,7 @@
  */
 
 import type { WorldGraph } from './graph';
+import { getFactionMembershipEdges } from './graphQueries';
 import type { FactionRankBonusType, FactionRankBonus } from '../types/faction';
 import { computeRankFromReputation } from '../types/faction';
 import type { MemberOfEdgeProperties } from '../types/disposition';
@@ -34,7 +35,7 @@ export function getAgentFactionBonuses(
 ): { factionDefId: string; factionNodeId: string; bonus: FactionRankBonus }[] {
   const results: { factionDefId: string; factionNodeId: string; bonus: FactionRankBonus }[] = [];
 
-  const memberEdges = graph.getOutgoingEdges(agentId, 'member_of');
+  const memberEdges = getFactionMembershipEdges(graph, agentId);
   for (const edge of memberEdges) {
     const props = edge.properties as Partial<MemberOfEdgeProperties>;
     const factionDefId = props.factionDefId;

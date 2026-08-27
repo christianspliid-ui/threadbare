@@ -10,6 +10,7 @@
  */
 
 import type { WorldGraph } from './graph';
+import { getFactionMembershipEdges } from './graphQueries';
 import { readMultiplierOverride, type RuleOverrideContext } from './effects/ruleOverrideConsumers';
 import type { GraphEdge } from '../types/graph';
 import type { FactionDefinition, FactionReputationTrace } from '../types/faction';
@@ -70,7 +71,7 @@ export function applyFactionReputationGain(
   }
 
   // Find the member_of edge
-  const memberEdges = graph.getOutgoingEdges(agentId, 'member_of')
+  const memberEdges = getFactionMembershipEdges(graph, agentId)
     .filter(e => e.target === factionNodeId);
 
   if (memberEdges.length === 0) {
@@ -189,7 +190,7 @@ export function meetsFactionRankRequirement(
 
   // The agent's membership in *this* faction. `member_of` points at a faction node
   // id, so the definition is matched through the edge's own factionDefId property.
-  for (const edge of graph.getOutgoingEdges(agentId, 'member_of')) {
+  for (const edge of getFactionMembershipEdges(graph, agentId)) {
     const props = edge.properties as Partial<MemberOfEdgeProperties>;
     if (props.factionDefId !== factionDefId) continue;
     return (props.reputation ?? 0) >= requiredTier.minReputation;
@@ -364,7 +365,7 @@ export function processFactionEncounterReputation(
   if (!stepSuccess) return; // No reputation for failed steps
 
   // Find the agent's membership in this faction
-  const memberEdges = graph.getOutgoingEdges(agentId, 'member_of');
+  const memberEdges = getFactionMembershipEdges(graph, agentId);
   const factionEdge = memberEdges.find(e => {
     const props = e.properties as Partial<MemberOfEdgeProperties>;
     return props.factionDefId === meta.factionDefId;

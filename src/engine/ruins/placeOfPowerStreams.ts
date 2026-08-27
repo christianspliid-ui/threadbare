@@ -20,6 +20,7 @@
  */
 
 import type { GameState } from '../../types/gameState';
+import { getFactionMembershipEdges } from '../graphQueries';
 import type { GraphNode } from '../../types/graph';
 import type { SphereName } from '../../types/index';
 import type { EssencePool } from '../../types/influence';
@@ -104,7 +105,7 @@ export function phasePlaceOfPowerStreams(state: GameState): Partial<GameState> {
       } else if (actorSubtype === 'faction') {
         const factionId = holderNode.id;
         const members = candidates.filter(a =>
-          graph.getOutgoingEdges(a.id, 'member_of').some(e => e.target === factionId),
+          getFactionMembershipEdges(graph, a.id).some(e => e.target === factionId),
         );
         present = members.some(m => agentOnHex(graph, m.id, popHex.col, popHex.row));
       } else {

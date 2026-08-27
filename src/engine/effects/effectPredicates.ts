@@ -9,6 +9,7 @@
  */
 
 import type { WorldGraph } from '../graph';
+import { getFactionMembershipEdges } from '../graphQueries';
 import type { ReachDomain } from '../../types/traits';
 import type { EffectPredicate, PredicateContext } from '../../types/effects';
 import type { HiddenMark, IntelligenceRecord } from '../../types/unifiedAction';
@@ -278,7 +279,7 @@ export function buildPredicateContext(
   // rather than `NaN`-poisoning the comparison. The node property is kept as a
   // fallback so a future writer of it still resolves, but the edge wins.
   let factionRank = 0;
-  for (const edge of graph.getOutgoingEdges(agentId, 'member_of')) {
+  for (const edge of getFactionMembershipEdges(graph, agentId)) {
     const raw = edge.properties?.rank;
     if (typeof raw !== 'number' || !Number.isFinite(raw)) continue;
     if (raw > factionRank) factionRank = raw;

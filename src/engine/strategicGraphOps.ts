@@ -8,6 +8,7 @@
 // NFP #2 (Inspectability): Returns descriptions of operations performed.
 
 import type { WorldGraph } from './graph';
+import { getFactionMembershipEdges } from './graphQueries';
 import { buildRouteManifest } from './tradeRoute';
 import { validateEdgeEndpoints } from '../types/edgeSchema';
 import { emitTrace } from './traceBuffer';
@@ -251,7 +252,7 @@ export function joinOrUpdateMembership(
   tick: number,
 ): GraphOpResult {
   try {
-    const existing = graph.getOutgoingEdges(actorId, 'member_of')
+    const existing = getFactionMembershipEdges(graph, actorId)
       .find(e => e.target === factionId);
     if (existing) {
       return { success: false, op: 'join_faction', error: 'already_member' };

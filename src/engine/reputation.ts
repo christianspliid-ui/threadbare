@@ -128,7 +128,16 @@ function findReputationEdge(graph: WorldGraph, aId: string, bId: string) {
   return graph.getOutgoingEdges(aId, 'reputation_with').find(e => e.target === bId);
 }
 
-/** Find the a→b `member_of` edge, if a belongs to b. */
+/**
+ * Find the a→b `member_of` edge, if a belongs to b.
+ *
+ * THR-1297: deliberately NOT routed through `getFactionMembershipEdges`. This is the
+ * membership *leg* of `getReputationWith`, and it is generic by design — b may be a
+ * faction OR a company, and a mortal's standing with their own company is a real
+ * quantity the reputation walk reads. Filtering the group family out here would silently
+ * drop that leg. Safe as a raw read because it is target-addressed: it asks about one
+ * known b, never "what faction is a in?".
+ */
 function findMembership(graph: WorldGraph, aId: string, bId: string) {
   return graph.getOutgoingEdges(aId, 'member_of').find(e => e.target === bId);
 }

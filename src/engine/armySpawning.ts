@@ -220,6 +220,8 @@ export function spawnArmy(
       name: armyName,
       properties: {
         actorType: 'group',
+        // THR-1297: explicit kind tag — see engine/groupShape.ts.
+        groupKind: 'army',
         armyState: {
           size,
           headcount: ARMY_SIZE_HEADCOUNT[size],
@@ -380,6 +382,8 @@ export function raiseWarhostForce(
       name: armyName,
       properties: {
         actorType: 'group',
+        // THR-1297: a warhost is an army — same kind, different scale.
+        groupKind: 'army',
         warhost: true,
         armyState: {
           size,

@@ -113,6 +113,8 @@ export function convergencePullSphere(
  */
 function reunitingGroupIdsFor(graph: WorldGraph, agentId: string, tick: number): Set<string> {
   const ids = new Set<string>();
+  // THR-1297: group-scoped on purpose — this asks which *company* the agent is in, so
+  // the faction wrapper would filter out the only targets it cares about.
   for (const edge of graph.getOutgoingEdges(agentId, 'member_of')) {
     const target = graph.getNode(edge.target);
     if (!isCompanyNode(target)) continue;
@@ -402,6 +404,10 @@ export function createGroup(
       name,
       properties: {
         actorType: 'group',
+        // THR-1297: the explicit kind tag. `groupType` stays (it is the company's own
+        // party/squad/faction_band flavour); this says *which family member* the node is,
+        // so a reader never has to infer it from which property bag happens to be present.
+        groupKind: 'company',
         groupType: input.groupType,
         cohesion,
         groupStatus: 'active',

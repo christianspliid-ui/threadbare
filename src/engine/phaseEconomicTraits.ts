@@ -9,6 +9,7 @@
  */
 
 import type { GameState } from '../types/gameState';
+import { getFactionMembershipEdges } from './graphQueries';
 import type { WorldGraph } from './graph';
 import { readWealth, WEALTH_TIER_WEALTHY, WEALTH_TIER_COMFORTABLE, WEALTH_TIER_GETTING_BY } from './wealth';
 import { readTradeRouteProps } from './tradeRoute';
@@ -81,7 +82,7 @@ function countControlledRoutes(graph: WorldGraph, actorId: string): number {
  * Returns the member_of edge if found, else undefined.
  */
 function getGuildMemberEdge(graph: WorldGraph, actorId: string) {
-  const memberEdges = graph.getOutgoingEdges(actorId, 'member_of');
+  const memberEdges = getFactionMembershipEdges(graph, actorId);
   for (const edge of memberEdges) {
     const factionNode = graph.getNode(edge.target);
     if (factionNode && typeof factionNode.properties.guildType === 'string') {

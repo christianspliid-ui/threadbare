@@ -140,7 +140,7 @@ export const EDGE_SCHEMA: Record<EdgeType, EdgeSchema> = {
     direction: 'directed',
     cardinality: 'many-to-many',
     requiredProperties: ['role', 'rank', 'joinedTick'],
-    description: 'Individual/group is member of faction/group. Source = member, target = faction.',
+    description: 'Individual/group is member of a faction OR of a group-family node (company, network). Source = member, target = faction-or-group. Read the target kind through engine/groupShape.ts (THR-1297) — code that treats every outgoing member_of target as the faction must filter with getFactionMembershipEdges first.',
   },
   belongs_to: {
     type: 'belongs_to',
@@ -419,7 +419,7 @@ export const EDGE_SCHEMA: Record<EdgeType, EdgeSchema> = {
     direction: 'directed',
     cardinality: 'many-to-one',
     requiredProperties: [],
-    description: 'Army is commanded by this agent. Commander is physically committed to the army.',
+    description: 'Commanded entity (army, company, network) → its commander. Direction is entity→commander; co-location is NOT implied — companies derive position from the leader, armies and networks may stand elsewhere (the remote-anchor rule reaches through them).',
   },
   participates_in: {
     type: 'participates_in',

@@ -28,6 +28,7 @@
  */
 
 import type { WorldGraph } from './graph';
+import { getFactionMembershipEdges } from './graphQueries';
 import type { ReachDomain } from '../types/traits';
 
 // ─── Constants (re-exported from central tuning file) ───────────
@@ -128,7 +129,7 @@ export function handleTierPromotion(
   }
 
   // 2. Bump faction rank for aligned factions
-  const memberEdges = graph.getOutgoingEdges(agentId, 'member_of');
+  const memberEdges = getFactionMembershipEdges(graph, agentId);
   for (const edge of memberEdges) {
     const factionNode = graph.getNode(edge.target);
     if (!factionNode) continue;

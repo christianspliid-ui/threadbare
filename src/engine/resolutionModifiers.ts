@@ -42,6 +42,7 @@
  */
 
 import type { WorldGraph } from './graph';
+import { getFactionMembershipEdges } from './graphQueries';
 import type { ReachDomain } from '../types/traits';
 import type { SphereName } from '../types/index';
 import type { EffectModifierResult, EffectRuntimeState } from '../types/effects';
@@ -372,7 +373,7 @@ export function collectTerrainContributions(
   const controlEdges = graph.getIncomingEdges(locationId, 'controls');
   if (controlEdges.length > 0) {
     // Get agent's faction membership
-    const agentMemberEdges = graph.getOutgoingEdges(agentId, 'member_of');
+    const agentMemberEdges = getFactionMembershipEdges(graph, agentId);
     const agentFactionIds = new Set(agentMemberEdges.map(e => e.target));
 
     for (const controlEdge of controlEdges) {
