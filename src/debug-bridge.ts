@@ -1856,6 +1856,46 @@ if (import.meta.env.DEV) {
     },
 
     /**
+     * THR-1212 — every `WorldRef` that resolved to nothing, newest last.
+     *
+     * A reference that fails to resolve is *supposed* to fall soft: the surface draws
+     * plain text and no affordance rather than a dead link (NFP #4, Law 21). That is
+     * correct behaviour and therefore invisible — which is exactly how THR-1165's two
+     * hollow `$cast:` sentinels survived, type-checking cleanly while naming a caravan
+     * that was never in the world. This is where that silence becomes readable.
+     *
+     * Each entry is `{ refKind, id, surface, tick }`. `surface` is `'unknown'` and
+     * `tick` is `-1` when the caller resolved without supplying them — a thin record
+     * rather than no record, since knowing a drop happened beats losing it.
+     *
+     * A ring buffer capped at `WORLDREF_DROP_LOG_MAX` (200): drops are cheap and can
+     * fire per rendered chip, so this is a debugging window, not an audit trail. When
+     * the cap is reached the **oldest** entries are evicted, so a long session shows
+     * the most recent 200 rather than the first 200.
+     *
+     * **Async** (`await` it) — the bridge has no static imports, so the resolver module
+     * is pulled in on call. An unawaited call reads as a Promise, not an array, and
+     * `.filter` on it throws.
+     */
+    getWorldRefDrops: async () => {
+      const { getWorldRefDrops } = await import('./engine/worldRefResolver');
+      return getWorldRefDrops();
+    },
+
+    /**
+     * THR-1212 — empty the `WorldRef` drop log, to start a clean observation window.
+     *
+     * Use before a `tick(n)` batch or an encounter you want to measure in isolation;
+     * without it the buffer still holds whatever the session did on the way here.
+     *
+     * **Async** (`await` it) — see {@link getWorldRefDrops}.
+     */
+    clearWorldRefDrops: async () => {
+      const { clearWorldRefDrops } = await import('./engine/worldRefResolver');
+      clearWorldRefDrops();
+    },
+
+    /**
      * THR-773 — every mortal currently in the **broken state**, with how long
      * they have been there. The pacing falsifier's measurement hook: the plan's
      * kill criterion is ">5% of living mortals simultaneously broken, or median

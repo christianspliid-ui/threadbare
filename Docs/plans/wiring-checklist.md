@@ -6,6 +6,28 @@
 
 ---
 
+## Shared anchor machinery — the `WorldRef` type, adapters, and the live resolver (THR-1212 slice 1)
+
+First slice of wave-1 design A. **Additive and migrated into nothing** — every existing shape (`NavigationTarget`, `EntityVisualRef`, `EncounterAftermathConceptRef`, the narrative-segment quadruple) stays the format its consumers already speak, and this slice only makes the normal form and the translations exist. Strangler, per the standing preference. So this table records a *reachable* path, not a travelled one, and says so rather than badging a road nobody drives.
+
+| Module | Orchestrator phase | UI component | GameState field | Trace emitted | Debug visibility |
+|--------|-------------------|-------------|-----------------|---------------|-----------------|
+| `types/worldRef.ts` | N/A — type module, import-free by design | N/A | none | none | — |
+| `types/worldRefAdapters.ts` | N/A — pure functions | N/A (no consumer migrated this slice) | none | none | — |
+| `engine/worldRefResolver.ts` | N/A — called at render/use, not from a tick phase | N/A this slice | none | **none, deliberately** — see below | `__DEBUG.getWorldRefDrops()` / `clearWorldRefDrops()` |
+
+**No trace is emitted, and that is the design rather than an omission.** The resolver fires from render-time consumers in the UI layer; an engine trace per rendered chip would drown the buffer it shares with the tick loop (memory: trace volume is budgeted at ~1/tick). NFP #2 inspectability is served through the debug bridge instead — a ring buffer capped at `WORLDREF_DROP_LOG_MAX` (200), evicting oldest first.
+
+**`worldRef.ts` is deliberately import-free.** It is a membership source that `scripts/generate-anchor-catalog.ts` will parse in slice 2, and a generator that must resolve an import graph to read a union breaks when an unrelated module moves. Adapters live in a separate module for that reason — an executor decision the plan doc left open, recorded here.
+
+**The drop log is the slice's honesty mechanism.** A reference that fails to resolve *should* fall soft to plain text (NFP #4, Law 21) — correct, and therefore invisible. That invisibility is how THR-1165's two hollow `$cast:` sentinels type-checked cleanly while naming a caravan never in the world. Nothing consumes the resolver yet, so the log stays empty in play until a seam migrates; it is wired and driven by tests now so the consumer half is not the thing discovered missing later.
+
+**Sentinel grammar is delegated, not copied.** `resolveWorldRef` calls `resolveAnchorDeclaration` — one rule read three times (the Law 56 gate, the chip renderer, and now any `WorldRef` consumer), which was THR-1164's explicit design. A second sentinel table is exactly the fork that design prevents.
+
+**Still owed by later slices of THR-1212:** the catalog's `WorldRefKind` membership spine + kind-union coverage lint (item 2), the `check:chip-anchors` ratchet baseline (item 3), the consumption ledger (item 4), the no-op gate contract test on a seeded world (item 5), and the `followOnTags` retirement (item 6). No interface-map row is claimed this slice — there is no cross-system consumer to badge yet, and badging a path no code travels is the leak that registry exists to prevent.
+
+---
+
 ## The binder — born-real mint path + the lifecycle valve (THR-1296 slice 3)
 
 Third slice of the binder. Like slices 1–2 it is **additive and consumed by nothing yet** — nothing enqueues a mint until slice 4's bind pass — so this table records a *reachable* path, not a travelled one. The distinction is the whole point of the checklist here: the consumer half is genuinely wired (the lifecycle drains every tick, tests drive it), and the producer half is honestly absent.

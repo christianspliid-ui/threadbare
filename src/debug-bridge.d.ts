@@ -1171,6 +1171,38 @@ export interface DebugBridge {
     }
   >;
 
+  /** THR-1212 — every `WorldRef` that resolved to nothing, newest last.
+   *
+   *  A reference that fails to resolve is *supposed* to fall soft: the surface draws
+   *  plain text and no affordance rather than a dead link (NFP #4, Law 21). Correct,
+   *  and therefore invisible — which is how THR-1165's two hollow `$cast:` sentinels
+   *  survived, type-checking cleanly while naming a caravan never in the world. This
+   *  is where that silence becomes readable.
+   *
+   *  `surface` is `'unknown'` and `tick` is `-1` when the caller resolved without
+   *  supplying them — a thin record rather than none.
+   *
+   *  A ring buffer capped at `WORLDREF_DROP_LOG_MAX` (200), evicting **oldest** first,
+   *  so a long session shows the most recent 200 drops rather than the first 200.
+   *
+   *  **Async** (`await` it) — the bridge has no static imports, so the resolver module
+   *  is pulled in on call. An unawaited call reads as a Promise, not an array, and
+   *  `.filter` on it throws. */
+  getWorldRefDrops: () => Promise<readonly {
+    readonly refKind: string;
+    readonly id: string;
+    readonly surface: string;
+    readonly tick: number;
+  }[]>;
+
+  /** THR-1212 — empty the `WorldRef` drop log, to start a clean observation window.
+   *
+   *  Use before a `tick(n)` batch or an encounter you want to measure in isolation;
+   *  without it the buffer still holds whatever the session did on the way here.
+   *
+   *  **Async** (`await` it) — see {@link DebugBridge.getWorldRefDrops}. */
+  clearWorldRefDrops: () => Promise<void>;
+
   /** THR-775 — Toggle the nudge stage's **designer view**.
    *
    *  Off (the default) the encounter stage is the player surface: words only, and the
