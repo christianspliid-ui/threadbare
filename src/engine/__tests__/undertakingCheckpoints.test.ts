@@ -465,3 +465,132 @@ describe('failure residue follows visibility (review ruling 2.2)', () => {
     expect(classifyFailureResidue(buildProject())).toBe('undertaking_failed_clean');
   });
 });
+
+// ─── The binder's inputs (THR-1296 §3, slice 4) ─────────────────────
+
+describe('checkpoint binding input', () => {
+  const due = { nextCheckpointTick: 10, checkpointIndex: 0 };
+
+  it('defers on a queued mint WITHOUT charging a halt or an absence', () => {
+    // The actor is present and willing; the world simply has not produced their
+    // cast member yet. Charging the ratchet here would read the engine's own
+    // queue latency as the actor's failure.
+    const graph = buildGraph();
+    const project = buildProject({ ...due, halts: 1, deferrals: 2 });
+    const result = resolveUndertakingCheckpoint(
+      buildState(graph), graph, project, 10, { awaitingMint: true },
+    );
+
+    expect(result.verdict).toBe('deferred');
+    expect(result.project.halts).toBe(1);        // unchanged
+    expect(result.project.deferrals).toBe(2);    // unchanged — not an absence
+    expect(result.project.nextCheckpointTick).toBe(10 + UNDERTAKING_CHECKPOINT_INTERVAL_TICKS);
+  });
+
+  it('is neutral when no binding input is supplied — every caller today', () => {
+    // The falsifier for the two tests below: if the loss path were reachable
+    // without a loss, they would prove nothing.
+    const graph = buildGraph();
+    const bare = resolveUndertakingCheckpoint(buildState(graph), graph, buildProject(due), 10);
+    const explicit = resolveUndertakingCheckpoint(
+      buildState(graph), graph, buildProject(due), 10, { loss: null, awaitingMint: false },
+    );
+    expect(explicit.verdict).toBe(bare.verdict);
+    expect(explicit.project.progress).toBe(bare.project.progress);
+    expect(explicit.project.halts ?? 0).toBe(bare.project.halts ?? 0);
+  });
+
+  it('downgrades an advancing checkpoint to at-cost when a must-persist binding broke', () => {
+    const graph = buildGraph();
+
+    // Find a tick whose roll advances, so the downgrade is observable rather than
+    // masked by a halt the dice produced anyway.
+    let advancingTick = -1;
+    for (let t = 10; t < 400; t += UNDERTAKING_CHECKPOINT_INTERVAL_TICKS) {
+      const p = buildProject({ ...due, nextCheckpointTick: t });
+      const r = resolveUndertakingCheckpoint(buildState(graph, { tick: t }), graph, p, t);
+      if (r.project.progress > 0) { advancingTick = t; break; }
+    }
+    expect(advancingTick, 'no advancing checkpoint found in range').toBeGreaterThan(0);
+
+    const p = buildProject({ ...due, nextCheckpointTick: advancingTick });
+    const withLoss = resolveUndertakingCheckpoint(
+      buildState(graph, { tick: advancingTick }), graph, p, advancingTick,
+      { loss: { castKey: '$steward', lostName: 'Old Maerin', singular: false } },
+    );
+
+    // Still advances — the roll stands — but it now costs, and it is a complication.
+    expect(withLoss.project.progress).toBeGreaterThan(0);
+    expect(withLoss.project.atCostMomentFired).toBe(true);
+    expect(withLoss.events.some(e => e.message.includes('Old Maerin'))).toBe(true);
+  });
+
+  it('halts instead of advancing when the lost role was singular', () => {
+    const graph = buildGraph();
+    let advancingTick = -1;
+    for (let t = 10; t < 400; t += UNDERTAKING_CHECKPOINT_INTERVAL_TICKS) {
+      const p = buildProject({ ...due, nextCheckpointTick: t });
+      const r = resolveUndertakingCheckpoint(buildState(graph, { tick: t }), graph, p, t);
+      if (r.project.progress > 0) { advancingTick = t; break; }
+    }
+    expect(advancingTick).toBeGreaterThan(0);
+
+    const p = buildProject({ ...due, nextCheckpointTick: advancingTick });
+    const halted = resolveUndertakingCheckpoint(
+      buildState(graph, { tick: advancingTick }), graph, p, advancingTick,
+      { loss: { castKey: '$mage', lostName: 'The Archmage', singular: true } },
+    );
+
+    expect(halted.project.progress).toBe(0);
+    expect(halted.project.halts ?? 0).toBeGreaterThan(0);
+    expect(halted.events.some(e => e.message.includes('The Archmage'))).toBe(true);
+  });
+});
+
+// ─── isActorAtStage resolves recursively (THR-1296 §3) ──────────────
+
+describe('stage presence resolves through nested sublocations', () => {
+  it('reads an actor two tiers below their stage as PRESENT, not absent', () => {
+    // Before the fix `resolveToParentLocation` climbed exactly one tier, so an actor
+    // in a sublocation-of-a-sublocation matched neither the stage nor its parent and
+    // deferred at every checkpoint forever — a silent permanent stall.
+    const graph = buildGraph();
+    graph.addNode({
+      id: 'sub_wing', name: 'East Wing', type: 'location',
+      properties: { parentLocationId: 'loc_market' },
+    });
+    graph.addNode({
+      id: 'sub_cellar', name: 'Cellar', type: 'location',
+      properties: { parentLocationId: 'sub_wing' },
+    });
+    graph.removeEdge('e_loc1');
+    graph.addEdge({
+      id: 'e_deep', source: 'actor_1', target: 'sub_cellar',
+      type: 'located_at', properties: {},
+    });
+
+    const project = buildProject({
+      templateId: STAGE_BOUND_ID,       // requiresLocation: true
+      targetNodeId: 'loc_market',
+      nextCheckpointTick: 10,
+    });
+    const result = resolveUndertakingCheckpoint(buildState(graph), graph, project, 10);
+
+    expect(result.verdict).not.toBe('deferred');
+    expect(result.project.deferrals ?? 0).toBe(0);
+  });
+
+  it('still reads a genuinely elsewhere actor as absent', () => {
+    // The one-directional half: the fix must not make everyone present everywhere.
+    const graph = buildGraph();
+    const project = buildProject({
+      templateId: STAGE_BOUND_ID,
+      targetNodeId: 'loc_town',          // actor_1 is at loc_market, a different hex
+      nextCheckpointTick: 10,
+    });
+    const result = resolveUndertakingCheckpoint(buildState(graph), graph, project, 10);
+
+    expect(result.verdict).toBe('deferred');
+    expect(result.project.deferrals).toBe(1);
+  });
+});

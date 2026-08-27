@@ -1938,7 +1938,7 @@ export interface UndertakingCheckpointTrace extends TraceBase {
   progress: number;
   progressRequired: number;
   /** Set instead of the roll fields when the checkpoint could not resolve */
-  deferred?: 'actor_absent' | 'actor_busy';
+  deferred?: 'actor_absent' | 'actor_busy' | 'awaiting_mint';
   presentation: 'interrupt' | 'badge' | 'none';
 }
 

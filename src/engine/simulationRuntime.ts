@@ -30,6 +30,7 @@ import { buildTraitRefIndex } from './traitRefIndex';
 import type { TraitRefIndex } from './traitRefIndex';
 import { buildRoleCensus } from './binding/roleCensus';
 import type { RoleCensus } from './binding/roleCensus';
+import { createBindingIndex, type BindingIndex } from './binding/bindingRegistry';
 import type { DistanceMatrix } from './distanceMatrix';
 import type { WorldGraph } from './graph';
 import type { HexTile } from '../types';
@@ -210,6 +211,18 @@ export interface SimulationRuntime {
   /** structuralCacheVersion at which roleCensus was last built. */
   roleCensusBuiltAt: number;
 
+  // ── The binder's reverse binding index (THR-1296 §4) ──
+  /**
+   * nodeId → ledger positions, so the `removeNode` hook is one Map lookup rather
+   * than a scan of every binding in the world.
+   *
+   * Session-owned for the same reason the census is: a module-scope singleton would
+   * carry one playthrough's bindings into the next. The *ledger* itself is durable
+   * state on `strategicState.bindings`; this is only the index over it, rebuilt
+   * lazily from the ledger whenever the two disagree on length.
+   */
+  bindingIndex: BindingIndex;
+
   // ── Doom-phase curation generosity (THR-603) ──
   /**
    * Doom-phase generosity multiplier applied to the branching curator's bias,
@@ -254,6 +267,7 @@ export function createSimulationRuntime(): SimulationRuntime {
     traitRefIndexBuiltAt: -1,
     roleCensus: null,
     roleCensusBuiltAt: -1,
+    bindingIndex: createBindingIndex(),
     curationPhaseMultiplier: 1.0,
   };
 }
@@ -471,6 +485,8 @@ export function resetRuntimeCaches(runtime: SimulationRuntime): void {
   runtime.traitRefIndexBuiltAt = -1;
   runtime.roleCensus = null;
   runtime.roleCensusBuiltAt = -1;
+  // The ledger survives a cache reset (it is game state); the index over it does not.
+  runtime.bindingIndex = createBindingIndex();
   clearTimelines();
   clearRewardHistory();
 }

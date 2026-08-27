@@ -33,6 +33,7 @@ import type { SublocationProperties } from '../types/sublocation';
 import type { ContentCensusTag } from '../types/contentCensus';
 import { REACH_DOMAINS, type ReachDomain } from '../types/traits';
 import { evaluateConditionalPredicate, checkDissolutions } from './sublocation';
+import { makeDissolutionHold } from './binding/bindingRegistry';
 import { mulberry32 } from '../lib/prng';
 import type { EncounterCacheManager } from './encounterCache';
 import type { SimulationRuntime } from './simulationRuntime';
@@ -245,7 +246,17 @@ export function phaseSublocations(
   // ── Pass 1: Dissolution ─────────────────────────────────────────────────
   // checkDissolutions now evaluates conditional predicates and removes nodes
   // whose predicate evaluates to false.
-  const dissolutions = checkDissolutions(graph, tick, encounterProgress);
+  // Same housekeeping deferral as the orchestrator's own dissolution pass
+  // (THR-1296 §4) — two call sites, one policy, so a bound stage is not dissolved
+  // by whichever of them happens to run.
+  const boundStageHold = runtime
+    ? makeDissolutionHold(
+      runtime.bindingIndex,
+      () => state.strategicState?.bindings ?? [],
+      () => tick,
+    )
+    : undefined;
+  const dissolutions = checkDissolutions(graph, tick, encounterProgress, boundStageHold);
 
   // Update encounter cache for dissolved sublocations
   if (dissolutions.length > 0) {
