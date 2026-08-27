@@ -41,6 +41,7 @@ import { initializeGameState, MAP_SIZE_PRESETS } from '../src/engine/gameInit';
 import type { MapSizePreset } from '../src/engine/gameInit';
 import { runTick, resetEventCounter } from '../src/engine/orchestrator';
 import { prepareEncounterSupportBundle } from '../src/engine/encounterSupportBundle';
+import { buildEncounterBinderContext } from '../src/engine/binding/encounterBinderContext';
 import { createBalancedCosmology } from '../src/engine/cosmology';
 import { generateArchetypes } from '../src/engine/ascendant';
 import {
@@ -1636,7 +1637,14 @@ function handleSpawnEncounter(agentQuery: string, templateId: string): void {
   // Prepare the support bundle so spawned encounters bind cast exactly like
   // the decision-phase and browser debug paths (THR-698 — the CLI previously
   // skipped this, so spawned actions always had empty supportBindings).
-  const supportBindings = prepareEncounterSupportBundle(state, template, match.id);
+  //
+  // THR-1305 finished the job: "exactly like" was still false for a template opting
+  // in to the scored binder, because this call supplied no binder context and so took
+  // the legacy first-match resolver and wrote no ledger row.
+  const supportBindings = prepareEncounterSupportBundle(
+    state, template, match.id, undefined,
+    buildEncounterBinderContext(runtime, state, match.id),
+  );
 
   // Create the action
   const action = createUnifiedAction({

@@ -10,6 +10,7 @@ import { getAnyEncounterById } from '../data/encounter-content';
 import { getUnifiedTemplateById } from '../data/unified-action-templates';
 import { getAgentLocationId, getAvatarsOf } from './graphQueries';
 import { prepareEncounterSupportBundle, prepareEncounterSupportBundleForContext } from './encounterSupportBundle';
+import type { EncounterBinderContext } from './encounterSupportBundle';
 import { initializeClearanceGates } from './clearanceGate';
 import { createUnifiedAction } from './unifiedActionLifecycle';
 import { mulberry32 } from '../lib/prng';
@@ -25,6 +26,17 @@ import { ARCHETYPE_NAMES } from '../types/agent';
 export interface DebugSpawnEncounterOptions {
   courtPosition?: CourtPosition;
   open?: boolean;
+  /**
+   * The scored-binder context (THR-1305). Supply it and a template opting in with
+   * `useScoredBinder` is cast by the same board live play uses, and its `must-persist`
+   * specs reach the ledger; omit it and every template takes the legacy path.
+   *
+   * The struct is passed rather than the `SimulationRuntime` it comes from, for the
+   * reason {@link EncounterBinderContext} gives for being narrow — this module's tests
+   * construct `GameState` by hand and have no runtime to offer. Callers that do have
+   * one assemble it with `buildEncounterBinderContext`.
+   */
+  binder?: EncounterBinderContext;
 }
 
 export interface DebugSpawnEncounterContextOptions {
@@ -33,6 +45,8 @@ export interface DebugSpawnEncounterContextOptions {
   col?: number;
   row?: number;
   moveAgent?: boolean;
+  /** See {@link DebugSpawnEncounterOptions.binder}. */
+  binder?: EncounterBinderContext;
 }
 
 export interface DebugSpawnEncounterResult {
@@ -423,7 +437,13 @@ export function prepareDebugEncounterSpawn(
 
   const unifiedTemplate = getUnifiedTemplateById(template.id);
   if (unifiedTemplate) {
-    const supportBindings = prepareEncounterSupportBundle(state, unifiedTemplate, locationId);
+    // The caller supplies the context but cannot supply `actorId` — it holds a query
+    // ('@hero', a partial name), not a node id. The resolved agent is stamped here so
+    // the board's story-tie term measures ties to the agent actually walking in.
+    const supportBindings = prepareEncounterSupportBundle(
+      state, unifiedTemplate, locationId, undefined,
+      options.binder ? { ...options.binder, actorId: agent.id } : undefined,
+    );
     const gateInit = initializeClearanceGates(
       state.clearanceGateStates,
       unifiedTemplate,
@@ -528,7 +548,9 @@ export function prepareDebugEncounterContext(
     };
   }
 
-  const prepared = prepareEncounterSupportBundleForContext(state, unifiedTemplate, anchor.locationId, anchor.locationId);
+  const prepared = prepareEncounterSupportBundleForContext(
+    state, unifiedTemplate, anchor.locationId, anchor.locationId, options.binder,
+  );
   let movedAgent = false;
   let agentId: string | undefined;
   let agentName: string | undefined;
