@@ -43,7 +43,6 @@
  */
 import type { WorldGraph } from '../graph';
 import type { GraphNode } from '../../types/graph';
-import type { AxiologicalProfile } from '../../types/agent';
 import type {
   StrategicProjectRuntime,
   StrategicActionTemplate,
@@ -54,7 +53,8 @@ import type {
 } from '../../types/strategicAction';
 import { isAgentGone } from '../groups/groupQueries';
 import { emitTrace } from '../traceBuffer';
-import { resolveBinding, type BindingRequest, type BindingModification } from './binder';
+import { resolveBinding, type BindingRequest } from './binder';
+import { applyModifications } from './applyBinding';
 import {
   type BindingIndex,
   registerBinding,
@@ -190,49 +190,10 @@ function validateProjectBindings(
 }
 
 // ─── Applying a decision ────────────────────────────────────────────
-
-/**
- * Apply a modify's fills. Additive-only, re-checked at write time.
- *
- * The binder only *offers* a fill for something blank, so the guards here are
- * belt-and-braces — but the board is scored against the world as it was at the top of
- * the pass, and an earlier slot in the same pass can have written the very field this
- * one means to fill. Re-reading at write time is what keeps "modify never overwrites"
- * true under composition rather than only in isolation.
- */
-function applyModifications(
-  graph: WorldGraph,
-  nodeId: string,
-  modifications: readonly BindingModification[],
-): void {
-  const node = graph.getNode(nodeId);
-  if (!node) return;
-
-  const properties: Record<string, unknown> = {};
-  let touched = false;
-
-  for (const mod of modifications) {
-    if (mod.kind === 'set_npc_role') {
-      if (node.properties?.npcRole) continue; // already stated — never overwrite
-      properties.npcRole = mod.role;
-      touched = true;
-    } else {
-      const existing = node.properties?.axiologicalProfile as AxiologicalProfile | undefined;
-      if (existing?.[mod.axis] !== undefined) continue; // stated — never overwrite
-      properties.axiologicalProfile = {
-        ...(existing ?? {}),
-        ...(properties.axiologicalProfile as AxiologicalProfile | undefined),
-        [mod.axis]: mod.signedValue,
-      };
-      touched = true;
-    }
-  }
-
-  // `updateNode` merges `properties` shallowly and replaces the node object, so the
-  // handle read above is stale afterwards — take the id, never the node (the
-  // documented `updateNode` trap).
-  if (touched) graph.updateNode(nodeId, { properties: { ...node.properties, ...properties } });
-}
+//
+// `applyModifications` lives in `./applyBinding` since slice 6 — the encounter
+// opt-in route applies the same intents, and the never-overwrite rule must have
+// exactly one writer.
 
 // ─── The pass ───────────────────────────────────────────────────────
 

@@ -19,8 +19,8 @@ remediation ticket or the build fails.
 | 🟠 PARTIAL | 2 |
 | 🔴 LEAKED | 8 |
 | ⚫ UNWIRED | 0 |
-| 🔵 UNVERIFIED-OK | 19 |
-| **Total** | **89** |
+| 🔵 UNVERIFIED-OK | 20 |
+| **Total** | **90** |
 
 ## Contracts by producing subsystem
 
@@ -119,6 +119,7 @@ remediation ticket or the build fails.
 | `branch-decision-writes-archetype-drift` | A fork the mortal took becomes part of who they are: taking the cunning branch drifts them cunning, so a mortal the player keeps leaning one way visibly becomes that person instead of resetting each encounter. | function: `applyAgentDecidedBranches`, `decideBranchPole`, `decideBranchRoute`, `driftAxisIdForValuePair` | Personality & Emergent Traits | 🔴 LEAKED | THR-883 |
 | `compulsion-card-plants-agent-decision-bias` | A god can steer one mortal without seizing them: the card plants an urge, and that mortal's own next decision leans toward it — you steered them, they still chose. | function: `derivePlantedCompulsionEncounterBias`, `phasePlantedCompulsionDecay` | Encounters & Dilemmas | 🔴 LEAKED | THR-883 |
 | `decision-board-shadow-telemetry` | Before one ranking replaces the three winner-take contests an agent’s decision passes through today, what that ranking *would* have chosen is on the record — so the swap is judged against a measured decision mix rather than against confidence. | event: `decision_board_comparison`, `decision_board_error`, `shadowWinnerFamily`, `shadowWinnerId`, `shadowAgreement` | Strategic Projects & Control | 🟢 LIVE | — |
+| `encounter-scored-binder-optin` | An encounter template can opt its cast onto the same scored board undertakings use, one template at a time. Two things follow for a migrated template: casting stops being "the first body at this place whose job title matches" and starts weighing story ties, identity fit, distance and role scarcity; and its authored `must-persist` declarations finally reach the binding ledger, so housekeeping defers on that person and a reaper’s kill is traced as a severance instead of vanishing. The recon (THR-1289) measured `persistence` as written 60+ times across the corpus and read by zero consumers — this is the seam that starts retiring that, without a big-bang migration the un-migrated corpus would have to survive. | function: `useScoredBinder`, `EncounterBinderContext`, `prepareEncounterSupportBundle`, `resolveBinding` | Ambitions & Undertakings | 🔵 UNVERIFIED-OK | THR-1305 |
 | `location-condition-taxes-movement-and-gates-templates` | A place can be in a state — a pass shut for the season, a town under a plague scare — and that state is something other systems act on, not scenery. | function: `isLocationCarrier`, `LOCATION_CONDITION_MOVEMENT_TAX`, `buildLocationTargetContext`, `LocationProfileModal` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `meeting-trait-seeds-land-as-narrative-descriptors` | The choices you made while meeting your First stay visible in who they are — the descriptors the meeting authored read back on their character sheet and in their backstory, instead of every First being described in the same default words. | node-prop: `narrativeDescriptors` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 | `membership-change-writes-rank-and-faction-rank-gate-reads-it` | An ending can make someone a member of a faction, or move them up inside it — and a later scene can require the rank it gave them. | function: `joinFaction`, `leaveFaction`, `adjustMemberRank`, `resolveFactionNodeId`, `buildPredicateContext`, `FACTION_RANK_MAX` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
@@ -514,10 +515,10 @@ exit
 - **Intent:** Every casting decision an undertaking makes reaches the narrative surface: the trace answers "why is this moment generic?" after the fact (it fires on a slot that bound nobody as loudly as on one that bound somebody), and a lost must-persist cast member is carried into the checkpoint moment by name — "loses Old Maerin" rather than the anonymous "hits serious trouble" the complication class produced before.
 - **Producer → Consumer:** Ambitions & Undertakings → Attention, Chronicle & Narrative
 - **Module:** `src/engine/binding/binder.ts`
-- **Production hits:** 5 total — 2 write, 1 read, 2 unclassified
+- **Production hits:** 7 total — 2 write, 1 read, 4 unclassified
 - **Write sites:** `src/engine/binding/binder.ts`, `src/engine/binding/undertakingBindPass.ts`
 - **Read sites:** `src/types/trace.ts`
-- **Other hits:** `src/engine/strategicActionCandidates.ts`, `src/engine/strategicActionLifecycle.ts`
+- **Other hits:** `src/engine/binding/applyBinding.ts`, `src/engine/encounterSupportBundle.ts`, `src/engine/strategicActionCandidates.ts`, `src/engine/strategicActionLifecycle.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `binder-mint-valve` — 🔵 UNVERIFIED-OK
@@ -741,6 +742,17 @@ exit
 - **Read sites:** `src/engine/effects/effectQueries.ts`, `src/engine/encounterAftermath.ts`, `src/engine/encounterAwareness.ts`, `src/engine/phaseMovement.ts`
 - **Other hits:** `src/engine/effectExecutors.ts`, `src/engine/effects/index.ts`, `src/types/trace.ts`
 - **Verdict:** Verified 2026-08-26: THR-1242. Nine spellings retired and their content migrated: graph_mutation/outcome_shift/auto_succeed had zero refs; reroll (3) -> test_shaper, swap_reach (1) -> the encounter_reach_override rule key, haste/slow/freeze_duration (13) -> cooldown/movement/duration multiplier keys, create_barrier (5) -> alter_terrain with the shrouded/warded overlays. Retiring a spelling is NOT the same claim as keeping the capability, so the tests come in two shapes: retirement sweeps run against the REAL catalogs (a fixture would verify fiction, since the claim is about what ships) and match only a `type: 'x'` position, because a bare substring sweep for "slow" hits an adjective table in archetype-content and would report a false positive forever. Three primitives were wired rather than migrated, and each was a different shape of dead. `suppress` was the inverse of the usual case — a CONSUMER with no producer: EffectRuntimeState.suppressed has been read by effectResolver, effectQueries, consumableCharges and effectEvents since the primitive architecture landed and set by nothing, so four artifacts promised to silence magic and silenced nothing; applySuppressions is now its one writer, run once per tick before the effect tick so an attachment silenced this tick does not also act this tick. `reveal` had 17 content refs and no consumer of any kind; it now floors the awareness horizon (encounters target) and lifts fog on arrival (hexes target). `tag_immunity` had a complete query with ZERO callers AND a namespace mismatch that would have made it read as wired and block nothing — condition trait nodes carry #-prefixed tags while most immunity content wrote them bare, so `fear` would never have matched `#fear`; content is migrated to the # spelling and comparison normalizes both sides. Non-vacuous by falsification: reverting the walker to its private MAX_EFFECTS_PER_NODE=12 fails exactly the three content-guard tests, and removing the self-cancel guard from applySuppressions fails exactly the one that names it (4 failed / 79 passed), so the tests assert the wiring rather than the helpers. The create_barrier migration additionally required giving the stage-2 overlay store its first PRODUCTION reader (movementCost for warded, encounterAwareness for shrouded) — without it the migration would have moved five artifacts from a dead spelling onto a dead mechanism: persisted, traced, and still changing nothing a player could feel.
+
+### `encounter-scored-binder-optin` — 🔵 UNVERIFIED-OK
+
+- **Intent:** An encounter template can opt its cast onto the same scored board undertakings use, one template at a time. Two things follow for a migrated template: casting stops being "the first body at this place whose job title matches" and starts weighing story ties, identity fit, distance and role scarcity; and its authored `must-persist` declarations finally reach the binding ledger, so housekeeping defers on that person and a reaper’s kill is traced as a severance instead of vanishing. The recon (THR-1289) measured `persistence` as written 60+ times across the corpus and read by zero consumers — this is the seam that starts retiring that, without a big-bang migration the un-migrated corpus would have to survive.
+- **Producer → Consumer:** Encounters & Dilemmas → Ambitions & Undertakings
+- **Module:** `src/engine/encounterSupportBundle.ts`
+- **Production hits:** 9 total — 3 write, 2 read, 4 unclassified
+- **Write sites:** `src/data/encounters/one-body-short.ts`, `src/engine/encounterSupportBundle.ts`, `src/engine/phaseAgentDecision.ts`
+- **Read sites:** `src/engine/binding/applyBinding.ts`, `src/engine/binding/binder.ts`
+- **Other hits:** `src/data/default-support-bundles.ts`, `src/engine/binding/undertakingBindPass.ts`, `src/engine/debugEncounterTools.ts`, `src/types/unifiedAction.ts`
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `essence-earned-unlocks-attunement-cards` — 🟢 LIVE
 
@@ -1148,9 +1160,10 @@ exit
 - **Intent:** A long work now puts things into the world as it runs rather than only at completion: an advancing checkpoint builds what the step earned, an at-cost one builds the cost besides, and a critical failure builds the disaster. A person the work must keep is born through the mint valve; a face that exists for one scene is written by the encounter support bundle’s own walk-on writer, which this contract shares rather than copies. Routing every spawn through the valve would spend the one-per-tick birth budget on faces; copying the node shape instead is how the two writers drift.
 - **Producer → Consumer:** Ambitions & Undertakings → Encounters & Dilemmas
 - **Module:** `src/engine/encounterSupportBundle.ts`
-- **Production hits:** 3 total — 2 write, 1 read, 0 unclassified
+- **Production hits:** 4 total — 2 write, 1 read, 1 unclassified
 - **Write sites:** `src/engine/binding/creationEffects.ts`, `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/engine/encounterSupportBundle.ts`
+- **Other hits:** `src/engine/binding/applyBinding.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `undertaking-remote-anchor` — 🔵 UNVERIFIED-OK

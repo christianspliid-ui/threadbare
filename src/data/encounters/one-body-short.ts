@@ -434,6 +434,26 @@ export const ONE_BODY_SHORT_TEMPLATE: UnifiedActionTemplate = compileOpeningEnve
 
   supportBundle: SUPPORT_BUNDLE,
 
+  /**
+   * The exemplar migration for the scored binder (THR-1296 §7, slice 6).
+   *
+   * Chosen because this bundle is the one place in the corpus where `must-persist`
+   * was already doing narrative work and getting no enforcement: `survivor` is the
+   * key `encounter.border.standing_the_line` binds the crossing person under, so the
+   * sequel's callback depends on that person still existing and still being *the same
+   * person*. Under the legacy path they were a walk-on any reaper could take
+   * silently, and the next binder would find whoever happened to be standing there.
+   *
+   * On the board the same slot gets scored — a survivor the agent already has a bond
+   * or a shared faction with outranks a stranger with the right job title — and the
+   * resolved node is written to the binding ledger, so housekeeping defers on them
+   * and an honest death is traced as a severance rather than a gap.
+   *
+   * One template, deliberately. The corpus-wide sweep belongs to the
+   * placeholder-encounter audit; flipping this back to `false` is a total rollback.
+   */
+  useScoredBinder: true,
+
   aftermathConfig: {
     branchOnStep: 0,
     variants: {},

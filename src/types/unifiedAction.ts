@@ -2476,6 +2476,28 @@ export interface UnifiedActionTemplate {
 
   /** Encounter-network support that should be resolved at action start. */
   readonly supportBundle?: EncounterSupportBundle;
+  /**
+   * Route this template's **actor** support specs through the scored binder
+   * (THR-1296 §7) instead of the legacy find-or-mint path.
+   *
+   * Opt-in, per-template, and deliberately not a global flip. Two things change
+   * when it is true:
+   *
+   * 1. **Casting gets a board.** The legacy resolver takes the first actor at the
+   *    placement whose `npcRole` is in `reuseNpcRoles`; the binder scores every
+   *    local candidate on story ties, identity fit, distance and role scarcity,
+   *    and may `modify` a blank field to make someone fit rather than minting a
+   *    stranger.
+   * 2. **`must-persist` starts meaning something.** The resolved node is written
+   *    to the binding ledger, so housekeeping reapers defer on it and a narrative
+   *    reaper's kill is traced as a severance instead of vanishing silently.
+   *
+   * Until a template sets this, its authored `persistence` declarations remain
+   * unenforced — which is the status quo the flag exists to retire one template at
+   * a time. Flipping it back is a complete rollback: the legacy path is untouched
+   * and is covered by a golden test.
+   */
+  readonly useScoredBinder?: boolean;
   /** Optional scrutiny/proof shell configs migrated from encounter packets. */
   readonly clearanceGates?: readonly ClearanceGateConfig[];
   /** Branch-aware aftermath config. If present, overrides default aftermath assembly. */

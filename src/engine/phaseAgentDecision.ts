@@ -52,7 +52,8 @@ import { resolveLocationToHex } from './encounterAwareness';
 import { hexDistance } from '../lib/hexMath';
 import { MAX_AWARENESS_HOPS, EDGE_HEX_AWARENESS_BONUS } from '../data/agent-behavior-constants';
 import type { SimulationRuntime } from './simulationRuntime';
-import { touchWorld, applyEncounterCacheUpdate } from './simulationRuntime';
+import { touchWorld, applyEncounterCacheUpdate, ensureRoleCensus } from './simulationRuntime';
+import { getBindings } from './binding/bindingRegistry';
 import { resolveRelocationIntentForAgent } from './relocationIntent';
 import { observeResidence } from './agentResidence';
 import { recordBalanceEvent } from './balanceTelemetry';
@@ -1096,6 +1097,21 @@ export function phaseAgentDecision(
                 unifiedTemplate,
                 sel.entry.targetAgentId ?? sel.entry.locationId,
                 sel.entry.locationId,
+                // The scored-binder route (THR-1296 §7). Only assembled when both the
+                // runtime and the strategic state exist, because the census lives on
+                // one and the binding ledger on the other; without both, the template
+                // falls back to the legacy path rather than binding un-ledgered.
+                runtime && state.strategicState
+                  ? {
+                    census: ensureRoleCensus(runtime, graph),
+                    index: runtime.bindingIndex,
+                    // `getBindings` owns the lazy-init of the ledger array; the field
+                    // is optional on `StrategicRuntimeState` and a second initializer
+                    // here would be a second place for that rule to live.
+                    bindings: getBindings(state.strategicState),
+                    actorId: agentId,
+                  }
+                  : undefined,
               );
               const gateInit = initializeClearanceGates(
                 nextClearanceGateStates,
