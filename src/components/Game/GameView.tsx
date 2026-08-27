@@ -178,6 +178,7 @@ import { CRUD_TO_ENCOUNTER_TYPE } from '../../engine/encounterCache';
 import { preparePlayerCast, commitPlayerCast } from '../../engine/playerCastDispatch';
 import { DIVINE_INFLUENCE_CONSTANTS } from '../../data/intervention-feedback-content';
 import { applyBalancedTestAvatar, prepareDebugEncounterContext, prepareDebugEncounterSpawn } from '../../engine/debugEncounterTools';
+import { buildEncounterBinderContext } from '../../engine/binding/encounterBinderContext';
 import {
   moveDebugAgent,
   spawnDebugAttachment,
@@ -2115,7 +2116,16 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // stable dispatchers.
   const debugSpawnEncounter = useCallback(
     (agentId: string, templateId: string, options?: Parameters<typeof prepareDebugEncounterSpawn>[3]) => {
-        const prepared = prepareDebugEncounterSpawn(_gameStateRef.current, agentId, templateId, options);
+        // THR-1305: hand the spawn the same scored board live play uses, so a
+        // migrated template is reviewed as it will actually be cast. The assembler
+        // returns undefined when this session cannot ledger, which is the legacy
+        // fallback rather than an error.
+        const prepared = prepareDebugEncounterSpawn(_gameStateRef.current, agentId, templateId, {
+          ...(options ?? {}),
+          // No actorId here on purpose: `agentId` is a *query* ('@hero', a partial
+          // name). The tool resolves it and stamps the real node id on the context.
+          binder: buildEncounterBinderContext(runtime, _gameStateRef.current),
+        });
         if (!prepared.success || !prepared.template || !prepared.notification || !prepared.agent) {
           return {
             success: false,
@@ -2258,7 +2268,12 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       spawnEncounter: (agentId: string, templateId: string, options) =>
         debugSpawnEncounter(agentId, templateId, options),
       spawnEncounterContext: (templateId, options) => {
-        const result = prepareDebugEncounterContext(_gameStateRef.current, templateId, options);
+        // THR-1305: same scored board as live play. No actorId — this site stages an
+        // encounter at a place before any agent is chosen.
+        const result = prepareDebugEncounterContext(_gameStateRef.current, templateId, {
+          ...(options ?? {}),
+          binder: buildEncounterBinderContext(runtime, _gameStateRef.current),
+        });
         if (result.success) {
           touchStructure(runtime);
           setGameState(prev => ({ ...prev, graph: prev.graph, clearanceGateStates: prev.clearanceGateStates }));

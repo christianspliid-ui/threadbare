@@ -2299,6 +2299,10 @@ export const CONTRACTS: readonly Contract[] = [
     writeSites: [
       'src/engine/encounterSupportBundle.ts',
       'src/engine/phaseAgentDecision.ts',
+      'src/engine/binding/encounterBinderContext.ts',
+      'src/engine/debugEncounterTools.ts',
+      'src/components/Game/GameView.tsx',
+      'scripts/cli.ts',
       'src/data/encounters/one-body-short.ts',
     ],
     readSites: [
@@ -2306,14 +2310,11 @@ export const CONTRACTS: readonly Contract[] = [
       'src/engine/binding/bindingRegistry.ts',
       'src/engine/binding/applyBinding.ts',
     ],
-    // Slice 6 ships the route and migrates one shipped template, so unlike the two
-    // rows above this one is reachable without doc 2. It stays UNVERIFIED-OK rather
-    // than LIVE on measured evidence, not on caution: 120 ticks at seed 42/medium
-    // produced 91 encounter actions across 52 templates and zero firings of the
-    // exemplar, so no live run has yet travelled it. THR-1305 carries the live proof
-    // (and the debug-tool call sites, which supply no context and so review a
-    // migrated template through the legacy path).
-    deferralTicket: 'THR-1305',
+    verifiedLive: {
+      date: '2026-08-27',
+      evidence:
+        "THR-1305. Slice 6 left this row UNVERIFIED-OK on measurement rather than caution — 120 ticks at seed 42/medium produced 91 encounter actions across 52 templates and zero firings of the exemplar, so no live run had travelled the route. It is now travelled, and the thing that made the proof cheap is the fix itself: the review levers were wired to the same board. `?spawn=`, `?forceencounters` and the CLI `spawn encounter` supplied no `EncounterBinderContext`, so a migrated template was cast by the legacy first-role-match resolver and wrote no ledger row — content review of a migrated encounter reviewed a different casting than players get. Live proof, CLI seed 42/medium: `tick 30` then `spawn encounter @hero encounter.border.one_body_short` leaves `state.strategicState.bindings` holding `{projectId:'enc_encounter.border.one_body_short_asc.archetype.chaos_0', castKey:'survivor', persistence:'must-persist', boundRole:'mercenary', boundAtTick:30, status:'live'}`. Control arm in the same harness: the un-migrated `cg.quest.gate_duty` writes zero `enc_*` rows, so the opt-in gate still holds live and the row is not evidence that every template now ledgers. The assembly rule (a context is built only when BOTH a runtime and `strategicState` exist, else the legacy path) moved into `binding/encounterBinderContext.ts` so the four call sites share one copy; `getBindings` tolerates an absent strategic state by returning `[]`, so an assembler skipping that check would write rows to an unowned array and report a successful bind. Non-vacuous by `src/engine/binding/__tests__/debugToolsBinderWiring.test.ts` (7 tests, both entry points, both fallback arms) — falsified in two controlled arms: with the binder not threaded, 2-of-7 red; with the caller's agent *query* stamped as `actorId` instead of the resolved node id, 1-of-7 red because `binder.ts`'s self-exclusion (`node.id === request.actorId`) stops matching and the agent is cast as their own fellow survivor. The 8 golden opt-in tests are unchanged and green, so the un-migrated corpus is untouched.",
+    },
   },
 ];
 
