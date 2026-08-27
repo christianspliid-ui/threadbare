@@ -1976,6 +1976,20 @@ export interface UndertakingCheckpointTrace extends TraceBase {
   progressRequired: number;
   /** Set instead of the roll fields when the checkpoint could not resolve */
   deferred?: 'actor_absent' | 'actor_busy' | 'awaiting_mint';
+  /**
+   * Set instead of the roll fields when the checkpoint *ended* the undertaking
+   * outright rather than deferring it — the actor node is gone, so there is
+   * nothing to defer to and no retry coming.
+   *
+   * Deliberately not a fourth `deferred` member (THR-1297 slice 6): a deferral is
+   * re-attempted on the next interval and this is terminal, so folding them into
+   * one field would make the two indistinguishable in exactly the readout that
+   * exists to tell outcomes apart. Before this field the row carried neither
+   * `band` nor `deferred` and its summary rendered `undefined → undefined`; the
+   * two-seed census counted 9 such rows on seed 99 and could only bucket them as
+   * `unrecorded`.
+   */
+  ended?: 'actor_lost';
   presentation: 'interrupt' | 'badge' | 'none';
 }
 
