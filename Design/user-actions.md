@@ -1,12 +1,12 @@
 # User Action Required
 
-**Last updated:** 2026-08-27 02:55 local (00:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-27 03:55 local (01:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
 ### 1. Approve the batch-2 brief — [THR-1222](https://linear.app/threadbare/issue/THR-1222/run-retrofit-batch-2-the-camp-seven-through-the-factory-line-shrine)
 
-**Eighth day, and now the only thing that puts work on an empty shelf.** [The undertaking substrate](https://linear.app/threadbare/issue/THR-1292) has **five of six slices merged**; behind that last slice, Ready for Dev holds zero.
+**Now the only thing that puts work on an empty board.** [The undertaking substrate](https://linear.app/threadbare/issue/THR-1292) finished overnight — slice 6 of 6 merged and the ticket closed. Ready for Dev holds **zero** and nothing is In Dev but parks; there is no queued work anywhere.
 
 **The camp seven** — shrine offering, sharpening blades, warding the camp, a small prayer, rest and reflection, tending wounds, scouting the perimeter. No typed consequences at all in that set; they are the last encounters below standard. `shrine_offering` is encounter #1 of [your integrated slice checkpoint](https://linear.app/threadbare/issue/THR-1220), which cannot invite you until they are rewritten.
 
@@ -14,9 +14,9 @@
 
 **Three ways to close it:** *"batch 2, seven is fine"*, *"keep it six"*, or *"same rule — judge batch 2 on one first."* **The same sitting closes the batch-1 sample** — the *"worth meeting twice"* verdict on [THR-1130](https://linear.app/threadbare/issue/THR-1130), open since 17 August, worth replaying since that prose was rewritten: [The Grateful Kin](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin), [The Unsafe Bridge](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge).
 
-### 2. More design hours — the shelf behind slice 6 is empty
+### 2. More design hours — now the binding constraint
 
-Engine work has one slice left; the content shelf is empty and no new design is queued behind either. In the order you set:
+Engine work is finished and the content shelf is empty. Roughly twenty items sit in Todo and **every one needs a plan doc before an executor can touch it** — so design hours are no longer a queue worry, they are the thing the delivery machine is waiting on. In the order you set:
 
 - **[Unify the card grammar](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** — your 6 August note: action cards are too wordy, playing one gives no feedback, while encounter cards already read right. Held **eight days**; it blocks the automation staging anyone else's, so three tickets sit behind it. Sit it, or say *"park it"* and [the shared anchor machinery](https://linear.app/threadbare/issue/THR-1212) goes next.
 - **The five carve-up plan docs now exist as tickets** — [THR-1296](https://linear.app/threadbare/issue/THR-1296) (the binder, critical path), [THR-1297](https://linear.app/threadbare/issue/THR-1297), [THR-1298](https://linear.app/threadbare/issue/THR-1298), [THR-1299](https://linear.app/threadbare/issue/THR-1299), [THR-1300](https://linear.app/threadbare/issue/THR-1300), sequencing recorded as Linear relations. Nothing to decide; say the word and sessions write them.
@@ -84,7 +84,8 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
-- **Slice 5 of the substrate merged overnight** — the shadow prioritization board ([PR #1658](https://github.com/christianspliid-ui/threadbare/pull/1658)). [THR-1292](https://linear.app/threadbare/issue/THR-1292) is now **five of six**; one slice left in the whole board.
+- **The undertaking substrate is done** — slice 6 of 6 merged overnight ([PR #1659](https://github.com/christianspliid-ui/threadbare/pull/1659)) and [THR-1292](https://linear.app/threadbare/issue/THR-1292) closed. Six slices in one day; the engine pillar of your carve-up's doc 1 is complete.
+- **Slice 5 merged** — the shadow prioritization board ([PR #1658](https://github.com/christianspliid-ui/threadbare/pull/1658)).
 - **The five missing plan-doc tickets now exist** — your carve-up named six docs but only doc 1 had ever become an issue; the other five lived only as prose in a closed map. Filed overnight as THR-1296–THR-1300 with sequencing as Linear relations, and three dangling mutex references closed as a side effect.
 - **Slice 4 merged** — the initiative pipeline retired ([PR #1657](https://github.com/christianspliid-ui/threadbare/pull/1657)).
 - **You closed the [Proactive Agent Actions map](https://linear.app/threadbare/issue/THR-1276)** — all ten questions in one day, and answered the carve-up question by filing it.
