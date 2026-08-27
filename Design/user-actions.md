@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-27 20:55 local (18:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-27 21:56 local (19:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -13,18 +13,19 @@
 
 **Then approve the brief.** **The camp seven** — shrine offering, sharpening blades, warding the camp, a small prayer, rest and reflection, tending wounds, scouting the perimeter. No typed consequences at all in that set; they are the last encounters below standard. `shrine_offering` is encounter #1 of [your integrated slice checkpoint](https://linear.app/threadbare/issue/THR-1220), which cannot invite you until they are rewritten. The bar is live with no caveats: [The Beast in the Granary](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.hunt.the_beast_in_the_granary).
 
-One thing needs your answer: [the brief](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/retrofit-batch-2-brief.md) proposes **seven** rather than your six, because the camp set is one family in one file and splitting the seventh costs a whole factory cycle. **Three ways to close it:** *"batch 2, seven is fine"*, *"keep it six"*, or *"same rule — judge batch 2 on one first."* **The build shelf is empty** and this is the only thing on your list that refills it without a design session first.
+One thing needs your answer: [the brief](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/retrofit-batch-2-brief.md) proposes **seven** rather than your six, because the camp set is one family in one file and splitting the seventh costs a whole factory cycle. **Three ways to close it:** *"batch 2, seven is fine"*, *"keep it six"*, or *"same rule — judge batch 2 on one first."* The shelf-empty deadline this ask carried on 27 August is **withdrawn** — your own design session refilled the shelf at 21:28. It stays first because it still unlocks the most.
 
 ### 2. More design hours — still the binding constraint
 
-Roughly twenty items sit in Todo and **every one needs a plan doc before an executor can touch it**. Today shows what happens when one lands: [the action library](https://linear.app/threadbare/issue/THR-1297) was designed 14:03–14:27 and is already half built.
+Roughly twenty items sit in Todo and **every one needs a plan doc before an executor can touch it**. Tonight is the proof of what one hour buys: [the shared anchor machinery](https://linear.app/threadbare/issue/THR-1212) went from Todo to a queued, checked handoff in about thirty minutes, and it was the first job on the build shelf in eleven hours.
 
-**Four design tickets are unblocked, unassigned and startable.** In the order I would spend the hour:
+**Startable now, unassigned, in the order I would spend the hour:**
 
 1. **[Your one-button snapshot](https://linear.app/threadbare/issue/THR-1134)** — High, your own request from 16 August, untouched 11 days. When you see a world that looks wrong you currently have no way to hand that world to an agent.
-2. **[The shared anchor machinery](https://linear.app/threadbare/issue/THR-1212)** — High, first of the three wave-1 docs you ruled on. [THR-1213](https://linear.app/threadbare/issue/THR-1213) then [THR-1155](https://linear.app/threadbare/issue/THR-1155) are chained behind it, so this hour unjams three tickets rather than one.
-3. **[A beast that can be a real character in a scene](https://linear.app/threadbare/issue/THR-1274)** — only people can be bound into an encounter's cast today, so a hunted animal can be described but never opposed. Four planned hunt encounters are capped by it.
-4. **[The reactive loop](https://linear.app/threadbare/issue/THR-1298)** and **[the calling & the surfaces](https://linear.app/threadbare/issue/THR-1299)** — docs 4 and 5 of your carve-up; [THR-1300](https://linear.app/threadbare/issue/THR-1300) sits behind them.
+2. **[A beast that can be a real character in a scene](https://linear.app/threadbare/issue/THR-1274)** — only people can be bound into an encounter's cast today, so a hunted animal can be described but never opposed. Four planned hunt encounters are capped by it.
+3. **[The reactive loop](https://linear.app/threadbare/issue/THR-1298)** and **[the calling & the surfaces](https://linear.app/threadbare/issue/THR-1299)** — docs 4 and 5 of your carve-up; [THR-1300](https://linear.app/threadbare/issue/THR-1300) sits behind them.
+
+The other two wave-1 designs — [hunger vocabulary](https://linear.app/threadbare/issue/THR-1213), then [nations and named areas](https://linear.app/threadbare/issue/THR-1155) — are deliberately sequenced behind THR-1212's build and are **not** available to run beside it.
 
 Also still yours, in the order you set: **[unify the card grammar](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** (your 6 August note; three tickets behind it — sit it or say *"park it"*) and **[traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)** (in design, assigned to you, untouched since 15 August — give it the hour or say *"put it back in the pile"*).
 
@@ -89,8 +90,9 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
-- **The home-ground rule shipped, by your non-answer** — *your people fight a little better defending what is theirs.* You were given the veto twice; the ask said silence was an equally fine answer, and [slice 3](https://github.com/christianspliid-ui/threadbare/pull/1672) merged 19:56 carrying it. It is now working code: removing it later is a change, not a non-decision. Say so if you want it out and it becomes a ticket.
-- **The action library is half built** — [THR-1297](https://linear.app/threadbare/issue/THR-1297) doc 2 of your carve-up: [slice 1](https://github.com/christianspliid-ui/threadbare/pull/1670) 17:35, [slice 2](https://github.com/christianspliid-ui/threadbare/pull/1671) 18:36, [slice 3](https://github.com/christianspliid-ui/threadbare/pull/1672) 19:56. Three slices remain — roughly this evening's work, and nothing waits behind it.
+- **Your design session refilled the build shelf** — [the shared anchor machinery](https://linear.app/threadbare/issue/THR-1212) walked Todo → designed → queued between 20:57 and 21:28, [plan doc](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-08-27-shared-anchor-machinery.md) merged 39 seconds before the handoff. First job waiting on the shelf in eleven hours; it also retires the "shelf is empty by this evening" deadline the last two briefs carried.
+- **The action library is two-thirds built** — [THR-1297](https://linear.app/threadbare/issue/THR-1297) doc 2 of your carve-up: slices [1](https://github.com/christianspliid-ui/threadbare/pull/1670) 17:35, [2](https://github.com/christianspliid-ui/threadbare/pull/1671) 18:36, [3](https://github.com/christianspliid-ui/threadbare/pull/1672) 19:56, [4](https://github.com/christianspliid-ui/threadbare/pull/1673) 21:11 — a finished work now earns its own name. Two slices remain.
+- **The home-ground rule shipped, by your non-answer** — *your people fight a little better defending what is theirs.* You were given the veto twice; the ask said silence was an equally fine answer. It is now working code: removing it later is a change, not a non-decision. Say so if you want it out and it becomes a ticket.
 - **A complication no longer reads a missing reputation as ruin** — [THR-1306](https://linear.app/threadbare/issue/THR-1306), a Low deferral filed by the previous ticket's own work and shipped inside the hour ([PR #1669](https://github.com/christianspliid-ui/threadbare/pull/1669)), already deployed.
 - **Spawn-review now casts encounters the way live play does** — [THR-1305](https://linear.app/threadbare/issue/THR-1305), filed 14:28 and merged 15:50 ([PR #1668](https://github.com/christianspliid-ui/threadbare/pull/1668)). What you review on a `?spawn=` link is now what ships.
 - **Two of your six plan docs were designed today, and one is fully built** — [the binder](https://linear.app/threadbare/issue/THR-1296) (doc 3) shipped six slices by 13:44. Docs 1, 2 and 3 — the whole Tier-1 critical path — are now designed.
@@ -98,7 +100,6 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 - **The undertaking substrate is done** — slice 6 of 6 merged overnight ([PR #1659](https://github.com/christianspliid-ui/threadbare/pull/1659)) and [THR-1292](https://linear.app/threadbare/issue/THR-1292) closed. Six slices in one day.
 - **The five missing plan-doc tickets now exist** — your carve-up named six docs but only doc 1 had ever become an issue. Filed overnight as THR-1296–THR-1300 with sequencing as Linear relations.
 - **You closed the [Proactive Agent Actions map](https://linear.app/threadbare/issue/THR-1276)** — all ten questions in one day, and answered the carve-up question by filing it.
-- **The three-agent review of that map merged** — [steel-man plus two red teams](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/audits/2026-08-26-proactive-agent-actions-review.md); the core survived and your rulings bind the six plan docs.
 
 ---
 
