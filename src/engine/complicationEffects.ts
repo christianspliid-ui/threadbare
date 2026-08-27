@@ -18,6 +18,7 @@
 import type { ComplicationEffect, ComplicationContext } from '../types/complication';
 import type { GameState, TickEvent } from '../types/gameState';
 import { IDENTITY_TRUST_DECAY_MODIFIER } from '../types/doomIdentity';
+import { DEFAULT_REPUTATION } from '../types/disposition';
 import { getFactionMembershipEdges } from './graphQueries';
 
 // ─── Effect application ───────────────────────────────────────────────────────
@@ -133,8 +134,18 @@ function applyEffect(
     }
 
     case 'reputation_delta': {
+      // THR-1306: a missing `reputationScore` reads as DEFAULT_REPUTATION (neutral), not 0.
+      // This is a read-modify-*write*, so the default is persisted: defaulting to 0 wrote
+      // `clamp(0 + delta)` back onto any agent that had never been assigned the field —
+      // `npcSeeding` walk-ons are the remaining such population — landing them at or below
+      // LOW_REP_THRESHOLD (0.1) and handing them a DEATH_CHANCE_LOW_REP roll every tick
+      // thereafter, from a starting point every other reader calls neutral.
+      //
+      // Every other delta-writer in the engine already reads it this way: orchestrator.ts
+      // (both actor and target legs), phaseReputationDecay.ts, and encounterAftermath.ts.
+      // This case was the sole outlier.
       const current = typeof actorNode.properties.reputationScore === 'number'
-        ? actorNode.properties.reputationScore : 0;
+        ? actorNode.properties.reputationScore : DEFAULT_REPUTATION;
       actorNode.properties.reputationScore = Math.max(0, Math.min(1, current + effect.delta));
       break;
     }
