@@ -15,12 +15,12 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 61 |
+| 🟢 LIVE | 62 |
 | 🟠 PARTIAL | 2 |
 | 🔴 LEAKED | 8 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 19 |
-| **Total** | **90** |
+| **Total** | **91** |
 
 ## Contracts by producing subsystem
 
@@ -140,6 +140,7 @@ remediation ticket or the build fails.
 
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
+| `destroy-candidates-gated-on-motive` | A mortal may only destroy what they have a reason to destroy — candidate generation reads the world's standing quarrels before offering a destroy verb. | function: `motiveGate`, `evaluateMotiveGate`, `resolveTargetOwners`, `MOTIVE_GATE_KINDS` | Ambitions & Undertakings | 🟢 LIVE | — |
 | `guild-rank-gates-senior-content` | A guild's senior and elite work reaches only members who have earned standing in that guild — a passer-by cannot take a captain's commission because they happened to be standing in the hall. | function: `minRank`, `meetsFactionRankRequirement`, `RANK_GATED_QUEST_TYPES` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `reputation-with-unified-read` | Reputation means one thing wherever the game asks it — the social score between a and b — so a standing earned in a town, a guild or a friendship reads in one vocabulary and moves the same things. | function: `getReputationWith`, `applyReputationWithDelta`, `meetsReputationWithRequirement`, `reputationLeverageTerm`, `getNotableStandings` | Encounters & Dilemmas | 🟢 LIVE | — |
 
@@ -668,6 +669,18 @@ exit
 - **Other hits:** `src/data/strategic-action-constants.ts`, `src/engine/decisionBoard.ts`, `src/engine/decisionBoardModeGuard.ts`, `src/types/balanceEval.ts`, `src/types/trace.ts`
 - **Verdict:** Verified 2026-08-27: Two 150-tick medium CLI runs scored 1913 (seed 42) and 1809 (seed 99) decisions on the shadow board and printed the block via `balance summary`. The cutover gate PASSES on seed 42 (undertaking 11.9%, encounter 70.7%, idle 17.5%) and FAILS on seed 99 (undertaking 4.1%, below the 0.10 floor), so the mode stays `shadow` — which is the telemetry doing its job. decisionBoardLiveness.test.ts asserts both channels carry a varying signal on the real pipeline.
 
+### `destroy-candidates-gated-on-motive` — 🟢 LIVE
+
+- **Intent:** A mortal may only destroy what they have a reason to destroy — candidate generation reads the world's standing quarrels before offering a destroy verb.
+- **Producer → Consumer:** Factions & Succession → Ambitions & Undertakings
+- **UL terms:** *Undertaking*, *Faction*
+- **Module:** `src/engine/undertakingMotive.ts`
+- **Production hits:** 6 total — 1 write, 3 read, 2 unclassified
+- **Write sites:** `src/data/strategic-packs/warlordStrategicPack.ts`
+- **Read sites:** `src/data/undertaking-kinds.ts`, `src/engine/strategicActionCandidates.ts`, `src/engine/undertakingMotive.ts`
+- **Other hits:** `src/data/strategic-action-constants.ts`, `src/types/strategicAction.ts`
+- **Verdict:** Verified 2026-08-27: THR-1297 slice 2. The corpus held exactly one `verb: 'destroy'` template in 43 — `strategic_raid_supply_lines` — and it was offerable against any town/city/camp/fort in range with no quarrel behind it, while its own completion prose said "the enemy will feel the lack" about people who were not the actor's enemy. It now declares `motiveGate: ['rivalry','grudge','faction_war']` and generation refuses it unless the actor holds one of those toward a holder of the target. Every motive reads a relation the world already wrote, so nothing new is recorded: `hostile_to` (bare ⇒ rivalry, injury-stamped ⇒ grudge, read across all three provenance keys the three writers each chose independently — `cause`/`reason`/`basis`), a shared `active` `pursues` ambition node, and `relates_to.isRival` via the existing `areFactionsHostile`. Two refusal reasons kept distinct because they want different fixes: `no_motive` (held, no quarrel) and `no_motive_unowned` (nobody holds it). Both reach a trace through the candidate-board trace's new capped `refusals` field — before this the board reported a bare rejection *count*, so every generation gate including `no_eligible_apprentice` was invisible from a run dump. Non-vacuous by `src/engine/__tests__/undertakingMotiveGate.test.ts` (21 tests): each refusal is paired with the same fixture offering the same candidate once the motive exists, so a gate that simply always refused would fail; falsified 8-of-21 red with `evaluateMotiveGate` stubbed to allow. Live measurement, seed 42/medium at tick 60: all 21 raidable settlements carry a controlling faction (so the `unowned` arm is not the common case), against 30 `hostile_to` edges and 12 declared faction rivalries across 49 factions — the verb stays reachable and grows more so as grudges accumulate. Full suite 18569 green; 30-tick seed-42 smoke reached tick 30, 377 agents, 49 events.
+
 ### `draw-together-carries-caster-sphere-to-the-name` — 🟢 LIVE
 
 - **Intent:** A company gathered by a god carries that god in its name — the sphere the verb was cast under reaches the naming of the company it produces, one tick later.
@@ -783,10 +796,10 @@ exit
 - **Producer → Consumer:** Companies & Group Travel → Attention, Chronicle & Narrative
 - **UL terms:** *Company*
 - **Module:** `src/engine/agentDetail.ts`
-- **Production hits:** 53 total — 1 write, 2 read, 50 unclassified
+- **Production hits:** 55 total — 1 write, 2 read, 52 unclassified
 - **Write sites:** `src/engine/groups/bandOpposition.ts`
 - **Read sites:** `src/components/Game/tabs/OverviewTab.tsx`, `src/engine/agentDetail.ts`
-- **Other hits:** `src/components/Game/Encounter/DetectionThread.tsx`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/HexMapV2/HexMapV2.tsx`, `src/components/icons/CoatOfArms.tsx`, `src/data/action-template-content.ts` +45 more
+- **Other hits:** `src/components/Game/Encounter/DetectionThread.tsx`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/HexMapV2/HexMapV2.tsx`, `src/components/icons/CoatOfArms.tsx`, `src/data/action-template-content.ts` +47 more
 - **Verdict:** Verified 2026-07-25: Live CLI run, seed 42 medium: a company relocated into a Great Silverhold guild hall resolved encounter.confront_guild_falls against a colocated Arcane Circle defender band at t61 — company cohesion 0.54 → 0.70, band 0.70 → 0.46 — and the contest wrote mutual grudges, read straight off the graph: "The Watch of the Nameless Road -> The Errant Keys of The Arcane Circle since t61 (group_engagement)" and the reverse. agentDetail reads both edge directions off the group node and dedupes the mutual pair; OverviewTab renders it as one sentence with no numbers and no `since` tick. Locked by src/engine/groups/__tests__/bandDebugSurfaces.test.ts § "Company panel — Rivals" (7 tests: absent when no grudge, outgoing, incoming-only, mutual-dedupe, dangling-target drop, deterministic multi-rival order).
 
 ### `guild-rank-gates-senior-content` — 🟢 LIVE
@@ -954,10 +967,10 @@ exit
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 240 total — 1 write, 1 read, 238 unclassified
+- **Production hits:** 241 total — 1 write, 1 read, 239 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts` +233 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts` +234 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `relocation-intent-steers-agent-movement` — 🔵 UNVERIFIED-OK
@@ -1171,10 +1184,10 @@ exit
 - **Intent:** A work done *through* others — a garrison established, supply lines raided — must reach the site through something its owner actually commands, and is not offered at all when nothing is there. Refusing at proposal is the `no_eligible_apprentice` doctrine: an undertaking nobody can foot is not a decision, and starting one only to stall it teaches the player their armies are decorative. The winning anchor joins the cast as `$anchor` must-persist, so severing an army is a named complication for everything it was footing.
 - **Producer → Consumer:** War, Armies & Battles → Ambitions & Undertakings
 - **Module:** `src/engine/binding/remoteAnchor.ts`
-- **Production hits:** 20 total — 1 write, 2 read, 17 unclassified
+- **Production hits:** 21 total — 1 write, 2 read, 18 unclassified
 - **Write sites:** `src/engine/armySpawning.ts`
 - **Read sites:** `src/engine/binding/remoteAnchor.ts`, `src/engine/strategicActionCandidates.ts`
-- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/GameView.tsx`, `src/data/battle-spotlight-content.ts`, `src/debug-bridge.ts`, `src/engine/armyAttrition.ts` +12 more
+- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/GameView.tsx`, `src/data/battle-spotlight-content.ts`, `src/debug-bridge.ts`, `src/engine/armyAttrition.ts` +13 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `undertow-card-drifts-mortal-values` — 🔴 LEAKED

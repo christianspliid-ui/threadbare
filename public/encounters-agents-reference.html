@@ -1287,6 +1287,23 @@ const CHAPTERS = [
         tags: ['live phase 2b', 'shadow only']
       },
       {
+        name: 'Motive Gate on Destroys (THR-1297 §2)',
+        desc: 'The strategic half of the board can now refuse a candidate for a reason the encounter half has no analogue of. A destroy template declaring <code>motiveGate</code> is not offered unless the actor holds one of the named motives toward whoever holds the target — no motiveless demolition. Every motive reads a relation the world was already writing, so nothing new is recorded to make it work. The refusals reach a trace for the first time: the candidate-board trace carries a capped <code>refusals</code> list where it previously reported a bare rejection <em>count</em>, which had made every generation gate — this one, <code>no_valid_targets</code>, <code>no_eligible_apprentice</code> — invisible from a run.',
+        table: {
+          headers: ['Motive', 'What it reads'],
+          rows: [
+            ['<strong>rivalry</strong>', 'A standing <code>hostile_to</code> edge from the actor toward the holder, whatever wrote it (an excommunication, say).'],
+            ['<strong>grudge</strong>', 'A <code>hostile_to</code> edge stamped with a specific past injury — a band engagement (<code>cause: group_engagement</code>) or a broken mentorship (<code>basis: mentorship_break</code>). Read across three property keys, because the three writers each chose their own.'],
+            ['<strong>contested_ambition</strong>', 'Actor and holder both carry an <code>active</code> <code>pursues</code> edge to the same ambition node — competing for the same thing by construction.'],
+            ['<strong>faction_war</strong>', 'The two factions are declared rivals (<code>relates_to.isRival</code>), via the existing <code>areFactionsHostile</code>.'],
+            ['<strong>no_motive</strong>', 'Refusal: the target is held, and the actor has no quarrel with whoever holds it.'],
+            ['<strong>no_motive_unowned</strong>', 'Refusal: nobody holds the target at all, so the destruction is aimed at no one. Kept distinct because the two want different fixes.'],
+            ['<strong>Shipped consumers</strong>', 'One — <code>strategic_raid_supply_lines</code>, the corpus’ only <code>destroy</code> verb, previously offerable against any settlement in range with no war behind it. Kind rows require the gate of every counter-play they name (<code>src/data/undertaking-kinds.ts</code>).']
+          ]
+        },
+        tags: ['live phase 2b', 'candidate generation']
+      },
+      {
         name: 'Decision Outcomes',
         desc: 'Action type is classified after selection from distance and presence requirements, then idle fallback logic takes over if nothing clears the bar:',
         table: {

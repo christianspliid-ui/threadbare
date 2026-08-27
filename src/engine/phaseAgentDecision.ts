@@ -67,7 +67,7 @@ import type { BalanceEncounterPoolCandidate } from '../types/balanceEval';
 import { deriveOmenEncounterBias, deriveEmittedOmenEncounterBias } from './phaseOmenAgenda';
 import { derivePlantedCompulsionEncounterBias } from './plantedCompulsion';
 import { IDENTITY_ENCOUNTER_BIAS_CAP } from '../types/doomIdentity';
-import { ENABLE_STRATEGIC_ACTIONS } from '../data/strategic-action-constants';
+import { ENABLE_STRATEGIC_ACTIONS, STRATEGIC_BOARD_TRACE_REFUSAL_CAP } from '../data/strategic-action-constants';
 import { generateStrategicCandidates } from './strategicActionCandidates';
 import {
   AMBITION_KIND_FACTION,
@@ -739,6 +739,11 @@ export function phaseAgentDecision(
               topCandidateIds: scored.slice(0, 3).map(c => c.candidateId),
               chosenCandidateId: null, // Updated below if strategic wins
               featureEnabled: true,
+              // THR-1297 §2: the count alone made every generation gate invisible.
+              // Capped detail, exact count — the `BindingDecisionTrace.rows` idiom.
+              refusals: stratResult.rejections
+                .slice(0, STRATEGIC_BOARD_TRACE_REFUSAL_CAP)
+                .map(r => ({ templateId: r.templateId, reason: r.reason })),
               summary: `Strategic board: ${stratResult.candidates.length} generated, ${stratResult.rejections.length} rejected, top=${scored[0]?.finalScore.toFixed(3) ?? 'none'}`,
             } as StrategicCandidateBoardTrace & { summary: string });
 

@@ -111,6 +111,11 @@ export const WARLORD_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     targetRule: { type: 'location_subtype', subtypes: ['town', 'city', 'camp', 'fort'] },
     resourceHint: { reachFloor: { iron: 0.3, shadow: 0.2 } },
     mutationHint: { type: 'modify_location_property', property: 'prosperity', delta: -8, clamp: [0, 100] },
+    // THR-1297 §2 — the corpus' one destroy verb, and until now it could be fired at
+    // any town in range with no quarrel behind it: a warlord starving a settlement
+    // they had never heard of. The prose already assumes a war ("the enemy will feel
+    // the lack"); this makes the world agree before the verb is offered.
+    motiveGate: ['rivalry', 'grudge', 'faction_war'],
   },
 
   // 6. Claim Territory — establish territorial control
