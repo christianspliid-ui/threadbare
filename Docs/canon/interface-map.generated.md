@@ -617,10 +617,10 @@ exit
 - **Intent:** Before one ranking replaces the three winner-take contests an agent’s decision passes through today, what that ranking *would* have chosen is on the record — so the swap is judged against a measured decision mix rather than against confidence.
 - **Producer → Consumer:** Encounters & Dilemmas → Strategic Projects & Control
 - **Module:** `src/engine/decisionBoard.ts`
-- **Production hits:** 6 total — 1 write, 1 read, 4 unclassified
+- **Production hits:** 7 total — 1 write, 1 read, 5 unclassified
 - **Write sites:** `src/engine/phaseAgentDecision.ts`
 - **Read sites:** `src/engine/balanceTelemetry.ts`
-- **Other hits:** `src/data/strategic-action-constants.ts`, `src/engine/decisionBoard.ts`, `src/types/balanceEval.ts`, `src/types/trace.ts`
+- **Other hits:** `src/data/strategic-action-constants.ts`, `src/engine/decisionBoard.ts`, `src/engine/decisionBoardModeGuard.ts`, `src/types/balanceEval.ts`, `src/types/trace.ts`
 - **Verdict:** Verified 2026-08-27: Two 150-tick medium CLI runs scored 1913 (seed 42) and 1809 (seed 99) decisions on the shadow board and printed the block via `balance summary`. The cutover gate PASSES on seed 42 (undertaking 11.9%, encounter 70.7%, idle 17.5%) and FAILS on seed 99 (undertaking 4.1%, below the 0.10 floor), so the mode stays `shadow` — which is the telemetry doing its job. decisionBoardLiveness.test.ts asserts both channels carry a varying signal on the real pipeline.
 
 ### `draw-together-carries-caster-sphere-to-the-name` — 🟢 LIVE

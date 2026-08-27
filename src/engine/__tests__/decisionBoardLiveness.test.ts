@@ -26,11 +26,26 @@ import type { GameState } from '../../types/gameState';
 const TICKS = 60;
 const SEED = 42;
 
+/**
+ * One board entry, with its family kept alongside its multipliers.
+ *
+ * The family pairing is load-bearing rather than cosmetic. The first version of
+ * this file pooled `desires` across both families into one array, and the
+ * "not frozen" assertion below passed on a board whose *undertaking* desire
+ * multiplier was a hard constant — because encounter desires span ~0.01–1.86 and
+ * one varying half is enough to satisfy a pooled `distinct.size > 1`. A guard
+ * over a mixed population only ever measures its loudest member (THR-1292 slice 6).
+ */
+interface BoardEntrySample {
+  family: string;
+  desire: number;
+  temperament: number;
+}
+
 interface BoardSample {
   agreement: boolean;
   boardFamilies: string[];
-  desires: number[];
-  temperaments: number[];
+  entries: BoardEntrySample[];
   advanceProbabilities: number[];
   encounterCandidates: number;
   undertakingCandidates: number;
@@ -61,8 +76,11 @@ function runAndCollect(): { samples: BoardSample[]; errors: number } {
         samples.push({
           agreement: a.agreement as boolean,
           boardFamilies: top.map(e => e.family as string),
-          desires: top.map(e => e.desireMultiplier as number),
-          temperaments: top.map(e => e.temperamentWeight as number),
+          entries: top.map(e => ({
+            family: e.family as string,
+            desire: e.desireMultiplier as number,
+            temperament: e.temperamentWeight as number,
+          })),
           advanceProbabilities: top
             .map(e => e.advanceProbability as number | undefined)
             .filter((v): v is number => v !== undefined),
@@ -112,9 +130,49 @@ describe(`shadow board liveness (${TICKS} ticks, seed ${SEED}, medium)`, () => {
     expect(samples.filter(s => s.agreement).length).toBeGreaterThan(0);
   });
 
-  it('the desire multiplier is not frozen', () => {
-    const distinct = new Set(samples.flatMap(s => s.desires.map(d => d.toFixed(4))));
+  it('the encounter desire multiplier is not frozen', () => {
+    const distinct = new Set(
+      samples.flatMap(s => s.entries)
+        .filter(e => e.family === 'encounter')
+        .map(e => e.desire.toFixed(4)),
+    );
     expect(distinct.size).toBeGreaterThan(1);
+  });
+
+  /**
+   * The undertaking desire multiplier is a **hard constant today**, and this test
+   * pins that as an identity rather than asserting the health it does not have.
+   *
+   * `computeBoardDesireMultiplier` is
+   * `max(axiological × PERSONALITY_SELECTION_WEIGHT + ambitionBoost, MINIMUM_DESIRE) ^ PERSONALITY_SCORE_EXPONENT`,
+   * and for an undertaking **both** input terms are pinned:
+   *
+   * - `axiological` is `computeDesireScore(template.motivations, profile)` and
+   *   `motivations` is unauthored on **all 43** strategic templates — the seam
+   *   slice 5 declared for plan doc 2 — so it is `0` for every candidate.
+   * - `ambitionBoost` is `AMBITION_REACH_BOOST` whenever the agent pursues the
+   *   template's primary reach, and a strategic candidate only ever *exists*
+   *   because an active ambition generated it. So it is true by construction —
+   *   the same vacuity slice 5 found in the temperament bracket, one term over.
+   *
+   * The consequence is that an undertaking's board score is `EVT × constant`:
+   * the board ranks undertakings with no personality signal at all, which is
+   * exactly what the §4 currency was supposed to give them. It is also why the
+   * cutover gate fails on seed 99 — see the slice-6 evidence on THR-1292.
+   *
+   * This test **fails the moment doc 2 authors the first `motivations` row**, and
+   * that failure is the intended signal: swap it for the `> 1` liveness assertion
+   * above and re-run the cutover census. Do not "fix" it by relaxing it.
+   */
+  it('the undertaking desire multiplier is frozen — pinned until doc 2 authors motivations', () => {
+    const undertakingDesires = samples.flatMap(s => s.entries)
+      .filter(e => e.family === 'strategic_action')
+      .map(e => e.desire);
+
+    // A vacuous pass would be an empty population (impediment #599 class): assert
+    // the sample exists before asserting anything about its spread.
+    expect(undertakingDesires.length).toBeGreaterThan(20);
+    expect(new Set(undertakingDesires.map(d => d.toFixed(6))).size).toBe(1);
   });
 
   it('the temperament weight is not frozen', () => {
@@ -122,7 +180,11 @@ describe(`shadow board liveness (${TICKS} ticks, seed ${SEED}, medium)`, () => {
     // would still leave two distinct values here. The assertion therefore excludes
     // the baseline and requires the undertaking side itself to move.
     const nonBaseline = new Set(
-      samples.flatMap(s => s.temperaments).filter(w => w !== 1).map(w => w.toFixed(4)),
+      samples.flatMap(s => s.entries)
+        .filter(e => e.family === 'strategic_action')
+        .map(e => e.temperament)
+        .filter(w => w !== 1)
+        .map(w => w.toFixed(4)),
     );
     expect(nonBaseline.size).toBeGreaterThan(1);
   });
