@@ -21,6 +21,169 @@
 
 **`named` is not second-class.** Both `linked` and `named` satisfy Law 56. The only difference is whether `openEntity` has a route for the kind — it switches on `visualKind`, whose members are exactly `agent`, `faction`, `artifact`, `companion`, `attachment`, `location`. Do not fold a chip merely because its anchor cannot click; fold it when the referent is not a real object at all.
 
+## The kind vocabulary — `WorldRefKind` and its projections
+
+**`WorldRefKind` (`src/types/worldRef.ts`) is this catalog's membership spine** (THR-1212). Every other entity-kind union in the tree is checked as a *projection* of it: a member the spine cannot express, or a spine kind a union drops without saying why, fails this generator by name. The dispositions live in `scripts/anchor-catalog-sources.ts` and are checked in both directions, so a row claiming an absence that has since been filled fails too.
+
+| Kind | What an author is naming |
+|---|---|
+| `agent` | A person — an `actor` node with a person-like `actorType`. The UI word wins over the graph's `actor`. |
+| `faction` | An organisation — an `actor` node with `actorType: 'faction'`. Authored form is `$faction:<defId>`. |
+| `location` | A place-tier location node: a settlement, a ruin, a place of power. |
+| `sublocation` | A place inside a place — a `location` node carrying `parentLocationId` (THR-1183). |
+| `hex` | A map tile, identified by its coordinates (`<col>,<row>`) rather than by a node id. |
+| `artifact` | An `artifact` or `artifact_legendary` node. |
+| `attachment` | An attachment **template** node id — committed content, never a granted instance. |
+| `companion` | A companion — a bonded traveller with a node of their own. |
+| `army` | A fielded force, read on the war readout. |
+| `encounter` | A live encounter or action, by its runtime id. |
+| `journey` | A journey a traveller is on. |
+| `receipt` | A divine receipt — the record of one intervention. |
+| `codex` | A codex entry. Reserved: nothing can route here yet (THR-1315). |
+
+### Coverage — which vocabulary speaks which kind
+
+`✓` the union carries the kind · `·` it deliberately does not (reason below the table).
+
+| Kind | EntityVisualKind | EncounterAftermathConceptRef.<br>visualKind | EncounterStageNarrativeSegment.<br>entityKind | ChangeItem.<br>nounEntityKind | NarrativeSegmentRefLike.<br>entityKind | NavigationTarget | EntityNoticeAnchorKind |
+|---|---|---|---|---|---|---|---|
+| `agent` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `faction` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `location` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · |
+| `sublocation` | ✓ | · | · | · | · | · | · |
+| `hex` | · | · | · | · | · | ✓ | · |
+| `artifact` | ✓ | ✓ | ✓ | ✓ | ✓ | · | · |
+| `attachment` | · | ✓ | ✓ | ✓ | ✓ | · | · |
+| `companion` | ✓ | ✓ | ✓ | ✓ | ✓ | · | · |
+| `army` | ✓ | · | · | · | · | · | · |
+| `encounter` | ✓ | · | · | · | · | ✓ | · |
+| `journey` | · | · | · | · | · | ✓ | · |
+| `receipt` | · | · | · | · | · | ✓ | · |
+| `codex` | · | · | · | · | · | · | · |
+
+**Totals.** 41 union members across 7 vocabularies are `WorldRefKind`s; 3 are not, and carry a curated reason. That ratio is the design's own falsification test — the hub is fiction if the spokes routinely name things it cannot express. Absences are **not** counted against it: a projection admitting fewer kinds is what a projection is, and `EntityNoticeAnchorKind` having two members is a fact about the Threads panel, not a disagreement about vocabulary.
+
+#### `EntityVisualKind`
+
+What the entity-visual resolver can draw a tile for. — `src/data/entity-visual-fallbacks.ts`
+
+Members: `agent`, `avatar`, `location`, `sublocation`, `encounter`, `faction`, `artifact`, `army`, `npc-role`, `companion`, `unknown`
+
+*Not referenceable kinds:*
+
+- **`avatar`** — A render-time refinement of `agent` — the player's own vessel, drawn with its own tile. A reference names the agent; the resolver decides it is the avatar.
+- **`npc-role`** — A render-time refinement — an unnamed role-holder (*the smith*) drawn from a role tile. Nothing can reference one, because it has no node of its own.
+- **`unknown`** — The resolver's fallback tile, not a kind anything can name. Reaching it means resolution failed — which is the drop `__DEBUG.getWorldRefDrops()` records.
+
+*Deliberately absent:*
+
+- **`hex`** — Drawn by the map, not by a tile.
+- **`attachment`** — Deliberate (THR-1120). An attachment's art lives on its template node and `AttachmentDetailView` draws it; `resolveIcon` skips the kind rather than resolving a wrong tile. Adding it here would *create* the bug the union prevents at compile time.
+- **`journey`** — An event, not an entity with a portrait.
+- **`receipt`** — A document, not an entity with a portrait.
+- **`codex`** — Reserved — no in-game codex destination exists (THR-1315).
+
+#### `EncounterAftermathConceptRef.visualKind`
+
+What an aftermath chip may claim its referent is. The declaration vocabulary. — `src/types/unifiedAction.ts`
+
+Members: `agent`, `faction`, `artifact`, `companion`, `attachment`, `location`
+
+*Deliberately absent:*
+
+- **`sublocation`** — A sublocation **is** a `location` node carrying `parentLocationId` (THR-1183), so the narrower word buys an author nothing here — "the tavern's back room" declares `location` and resolves to the back room's own node.
+- **`hex`** — A hex is mutable map state, not a node, and a chip that names terrain is the Unsafe Bridge defect this catalog exists to prevent. Bind the encounter's spawn to hexes carrying the feature, or fold the sentence into band prose.
+- **`army`** — No authored chip has yet named an army. Legal to add when one does — the kind is real and `EntityVisualKind` already draws it.
+- **`encounter`** — A chip is *inside* an encounter's aftermath, so naming that encounter is self-reference. The seed clause covers the useful case: a seed chip anchors through its carrier — the agent or location the seed was planted on.
+- **`journey`** — An engine report, not a claim authored content makes. A journey is summarised on the traveller's sheet; a chip names the traveller.
+- **`receipt`** — A divine receipt is the record *of* an intervention, written after the veil closes. Authored content cannot name one that does not exist yet.
+- **`codex`** — Reserved — no in-game codex destination exists (THR-1315).
+
+#### `EncounterStageNarrativeSegment.entityKind`
+
+What a linked noun inside encounter prose points at. — `src/components/Game/encounter-stage/types.ts`
+
+Members: `agent`, `faction`, `artifact`, `companion`, `attachment`, `location`
+
+*Deliberately absent:*
+
+- **`sublocation`** — A sublocation **is** a `location` node carrying `parentLocationId` (THR-1183), so the narrower word buys an author nothing here — "the tavern's back room" declares `location` and resolves to the back room's own node.
+- **`hex`** — A hex is mutable map state, not a node, and a chip that names terrain is the Unsafe Bridge defect this catalog exists to prevent. Bind the encounter's spawn to hexes carrying the feature, or fold the sentence into band prose.
+- **`army`** — No authored chip has yet named an army. Legal to add when one does — the kind is real and `EntityVisualKind` already draws it.
+- **`encounter`** — A chip is *inside* an encounter's aftermath, so naming that encounter is self-reference. The seed clause covers the useful case: a seed chip anchors through its carrier — the agent or location the seed was planted on.
+- **`journey`** — An engine report, not a claim authored content makes. A journey is summarised on the traveller's sheet; a chip names the traveller.
+- **`receipt`** — A divine receipt is the record *of* an intervention, written after the veil closes. Authored content cannot name one that does not exist yet.
+- **`codex`** — Reserved — no in-game codex destination exists (THR-1315).
+
+#### `ChangeItem.nounEntityKind`
+
+What a consequence row's subject noun points at (THR-1153). — `src/components/Game/encounter-stage/types.ts`
+
+Members: `agent`, `faction`, `artifact`, `companion`, `attachment`, `location`
+
+*Deliberately absent:*
+
+- **`sublocation`** — A sublocation **is** a `location` node carrying `parentLocationId` (THR-1183), so the narrower word buys an author nothing here — "the tavern's back room" declares `location` and resolves to the back room's own node.
+- **`hex`** — A hex is mutable map state, not a node, and a chip that names terrain is the Unsafe Bridge defect this catalog exists to prevent. Bind the encounter's spawn to hexes carrying the feature, or fold the sentence into band prose.
+- **`army`** — No authored chip has yet named an army. Legal to add when one does — the kind is real and `EntityVisualKind` already draws it.
+- **`encounter`** — A chip is *inside* an encounter's aftermath, so naming that encounter is self-reference. The seed clause covers the useful case: a seed chip anchors through its carrier — the agent or location the seed was planted on.
+- **`journey`** — An engine report, not a claim authored content makes. A journey is summarised on the traveller's sheet; a chip names the traveller.
+- **`receipt`** — A divine receipt is the record *of* an intervention, written after the veil closes. Authored content cannot name one that does not exist yet.
+- **`codex`** — Reserved — no in-game codex destination exists (THR-1315).
+
+#### `NarrativeSegmentRefLike.entityKind`
+
+The adapter's structural mirror of the segment union, so `src/types/` need not import a component tree. — `src/types/worldRefAdapters.ts`
+
+Members: `agent`, `faction`, `artifact`, `companion`, `attachment`, `location`
+
+*Deliberately absent:*
+
+- **`sublocation`** — A sublocation **is** a `location` node carrying `parentLocationId` (THR-1183), so the narrower word buys an author nothing here — "the tavern's back room" declares `location` and resolves to the back room's own node.
+- **`hex`** — A hex is mutable map state, not a node, and a chip that names terrain is the Unsafe Bridge defect this catalog exists to prevent. Bind the encounter's spawn to hexes carrying the feature, or fold the sentence into band prose.
+- **`army`** — No authored chip has yet named an army. Legal to add when one does — the kind is real and `EntityVisualKind` already draws it.
+- **`encounter`** — A chip is *inside* an encounter's aftermath, so naming that encounter is self-reference. The seed clause covers the useful case: a seed chip anchors through its carrier — the agent or location the seed was planted on.
+- **`journey`** — An engine report, not a claim authored content makes. A journey is summarised on the traveller's sheet; a chip names the traveller.
+- **`receipt`** — A divine receipt is the record *of* an intervention, written after the veil closes. Authored content cannot name one that does not exist yet.
+- **`codex`** — Reserved — no in-game codex destination exists (THR-1315).
+
+#### `NavigationTarget`
+
+Where `openEntity` can actually route. The arms are discriminated by `kind`. — `src/types/notification.ts`
+
+Members: `agent`, `encounter`, `hex`, `location`, `faction`, `journey`, `receipt`
+
+*Deliberately absent:*
+
+- **`sublocation`** — Routes through the `location` arm — same node id, and the location sheet is the surface that draws a sublocation.
+- **`artifact`** — No sheet of its own yet; an artifact is read on its holder's sheet.
+- **`attachment`** — `AttachmentDetailView` opens from the bearer, not from a navigation target.
+- **`companion`** — Read on the company readout, which opens from a member.
+- **`army`** — Read on the war readout, which opens from the map rather than by reference.
+- **`codex`** — Reserved (THR-1315). `?view=codex` is a full-page swap that tears down the running simulation, so there is no destination a link may open. `toNavigationTarget` returns `undefined`, which is the fail-soft every unroutable kind takes (NFP #4, Law 21).
+
+#### `EntityNoticeAnchorKind`
+
+Whose row in the Threads panel a notice waits on (THR-666, THR-667). — `src/types/notification.ts`
+
+Members: `agent`, `faction`
+
+*Deliberately absent:*
+
+- **`location`** — No row in the Threads panel to wait on.
+- **`sublocation`** — No row in the Threads panel to wait on.
+- **`hex`** — No row in the Threads panel to wait on.
+- **`artifact`** — No row in the Threads panel to wait on.
+- **`attachment`** — No row in the Threads panel to wait on.
+- **`companion`** — No row in the Threads panel to wait on.
+- **`army`** — No row in the Threads panel to wait on.
+- **`encounter`** — Encounters surface as their own notifications and tug badges, not as a notice waiting on a row.
+- **`journey`** — Surfaces on the traveller's row, so the notice anchors to the `agent`.
+- **`receipt`** — Divine receipts have their own surface; a notice would double-report them.
+- **`codex`** — Reserved — no in-game codex destination exists (THR-1315).
+
+**The four chip/segment unions are one union spelled four times** — `EncounterAftermathConceptRef.visualKind`, the segment's `entityKind`, `ChangeItem.nounEntityKind` and the adapter's mirror — and the generator fails if they diverge. Three of them already said so in a doc comment and nothing checked it; a copy that claims to be pinned and is not is worse than an unclaimed one, because a reader stops looking. **Change all four together.**
+
 ## Nodes
 
 | Member | Anchor | Status | How the chip declares it | Where the player sees it |

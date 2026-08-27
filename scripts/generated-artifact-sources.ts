@@ -117,6 +117,19 @@ export const STATIC_ARTIFACT_SOURCES: Readonly<Record<string, readonly string[]>
     "src/types/unifiedAction.ts",
     "src/types/traits.ts",
     "scripts/generate-anchor-catalog.ts",
+    // THR-1212 slice 2 — the membership spine and the six other kind vocabularies the
+    // coverage lint reads. Registered in the same PR that starts parsing them: an
+    // unregistered source is invisible to the freshness gate, so the catalog could
+    // publish a coverage matrix computed from a union that had since changed, and the
+    // gate would report OK. Note `scripts/anchor-catalog-sources.ts` is reachable from
+    // the generator's own entry, but is listed because it holds the curated
+    // dispositions — editing one of those changes the output with no other file moving.
+    "src/types/worldRef.ts",
+    "src/types/worldRefAdapters.ts",
+    "src/types/notification.ts",
+    "src/data/entity-visual-fallbacks.ts",
+    "src/components/Game/encounter-stage/types.ts",
+    "scripts/anchor-catalog-sources.ts",
   ],
   // rebuild-plans-index: doc in, doc out — `Docs/plans/` on both sides, so the
   // coupling classifier answers "none" and a plan-doc PR stays on the docs track.

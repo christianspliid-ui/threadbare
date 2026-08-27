@@ -516,6 +516,55 @@ export function parseUnionMembers(source: string, typeName: string, sourceRel: s
 }
 
 /**
+ * Pull the inline string union off a single property declaration.
+ *
+ * Several of the kind vocabularies are not named types at all — they are inline
+ * unions on one field (`readonly visualKind?: 'agent' | …`), which is exactly why
+ * they drifted apart: an anonymous union has nowhere to hang a comment saying what
+ * it must equal.
+ *
+ * **Requires exactly one declaration.** Two matches is itself the drift this catalog
+ * is looking for — the same vocabulary declared twice in one file — so it fails
+ * rather than silently reading the first. The leading boundary keeps `entityKind`
+ * from matching a longer property that ends in it.
+ */
+export function parsePropertyUnionMembers(
+  source: string,
+  propertyName: string,
+  sourceRel: string,
+): string[] {
+  const declaration = new RegExp(
+    `(?:^|[^A-Za-z0-9_$])${propertyName}\\??\\s*:([^;]*);`,
+    'gm',
+  );
+  const matches = [...stripLineComments(source).matchAll(declaration)];
+
+  if (matches.length === 0) {
+    throw new Error(
+      `generate-anchor-catalog: could not find property \`${propertyName}\` in ${sourceRel}. ` +
+        `The field moved or was renamed — fix the parser rather than shipping a catalog that ` +
+        `silently stops checking one of the kind vocabularies.`,
+    );
+  }
+  if (matches.length > 1) {
+    throw new Error(
+      `generate-anchor-catalog: property \`${propertyName}\` is declared ${matches.length} times ` +
+        `in ${sourceRel}. One vocabulary declared twice in one file is the drift this catalog ` +
+        `exists to catch — reconcile them, or register the second as its own consumer union.`,
+    );
+  }
+
+  const members = [...matches[0][1].matchAll(/'([^']+)'/g)].map((m) => m[1]);
+  if (members.length === 0) {
+    throw new Error(
+      `generate-anchor-catalog: \`${propertyName}\` in ${sourceRel} parsed to zero members. ` +
+        `Refusing to report a vocabulary as empty.`,
+    );
+  }
+  return members;
+}
+
+/**
  * Pull the `visualKind` union off `EncounterAftermathConceptRef`.
  *
  * This is the **declaration** vocabulary — the set of kinds a chip may claim — and
@@ -523,15 +572,57 @@ export function parseUnionMembers(source: string, typeName: string, sourceRel: s
  * "linked" column cannot drift from the field that actually routes.
  */
 export function parseVisualKinds(source: string, sourceRel: string): string[] {
-  const match = /readonly visualKind\?:([^;]*);/.exec(stripLineComments(source));
-  if (!match) {
+  return parsePropertyUnionMembers(source, 'visualKind', sourceRel);
+}
+
+/**
+ * Pull the `kind` discriminants out of a union of object arms.
+ *
+ * `NavigationTarget` cannot be read by {@link parseUnionMembers}: its arms carry
+ * semicolons *inside* the braces (`{ kind: 'agent'; agentId: string }`), so a
+ * `[^;]*` body match stops partway through the first arm and silently reports a
+ * one-member union. Brace depth is tracked instead, and the declaration ends at the
+ * first `;` at depth zero.
+ */
+export function parseDiscriminatedUnionKinds(
+  source: string,
+  typeName: string,
+  sourceRel: string,
+): string[] {
+  const stripped = stripLineComments(source);
+  const start = new RegExp(`export type ${typeName}\\s*=`).exec(stripped);
+  if (!start) {
     throw new Error(
-      `generate-anchor-catalog: could not find \`visualKind\` on EncounterAftermathConceptRef in ${sourceRel}.`,
+      `generate-anchor-catalog: could not find \`export type ${typeName}\` in ${sourceRel}. ` +
+        `The union moved or changed shape — fix the parser rather than shipping a partial catalog.`,
     );
   }
-  const kinds = [...match[1].matchAll(/'([^']+)'/g)].map((m) => m[1]);
+
+  const bodyStart = start.index + start[0].length;
+  let depth = 0;
+  let end = -1;
+  for (let i = bodyStart; i < stripped.length; i += 1) {
+    const ch = stripped[i];
+    if (ch === '{') depth += 1;
+    else if (ch === '}') depth -= 1;
+    else if (ch === ';' && depth === 0) {
+      end = i;
+      break;
+    }
+  }
+  if (end === -1) {
+    throw new Error(
+      `generate-anchor-catalog: \`export type ${typeName}\` in ${sourceRel} has no terminating ` +
+        `\`;\` at brace depth zero. Refusing to guess where the union ends.`,
+    );
+  }
+
+  const kinds = [...stripped.slice(bodyStart, end).matchAll(/kind:\s*'([^']+)'/g)].map((m) => m[1]);
   if (kinds.length === 0) {
-    throw new Error(`generate-anchor-catalog: \`visualKind\` in ${sourceRel} parsed to zero members.`);
+    throw new Error(
+      `generate-anchor-catalog: \`${typeName}\` in ${sourceRel} parsed to zero \`kind\` ` +
+        `discriminants. Refusing to emit an empty section.`,
+    );
   }
   return kinds;
 }
@@ -564,6 +655,424 @@ export function assertEveryMemberAnnotated(
     throw new Error(
       `generate-anchor-catalog: ${stale.length} curated row(s) name a \`${unionName}\` member ` +
         `that no longer exists: ${stale.map((m) => `'${m}'`).join(', ')}. Remove them.`,
+    );
+  }
+}
+
+// ─── The kind vocabulary: `WorldRefKind` and its projections (THR-1212) ───────
+
+/**
+ * The membership spine's source. Kept here rather than in the generator so the
+ * coverage lint can be tested without running file IO through `main()`.
+ */
+export const WORLD_REF_TYPES_REL = 'src/types/worldRef.ts';
+
+/** The codex-surface deferral cited by every `codex` absence row below. */
+export const CODEX_SURFACE_TICKET = 'THR-1315';
+
+/** The ticket that made `attachment`'s absence from `EntityVisualKind` deliberate. */
+const ATTACHMENT_VISUAL_TICKET = 'THR-1120';
+
+/**
+ * What each `WorldRefKind` names, in one line — the membership spine's annotation.
+ *
+ * Same split as everywhere else in this file: which kinds exist is derived from
+ * `src/types/worldRef.ts`; what each one *means to an author* is curated, and a kind
+ * with no row fails the build ({@link assertEveryKindDescribed}).
+ *
+ * This is a different axis from `NodeType` and not a duplicate of it. `agent` is a
+ * kind and `actor` is the node type behind it; `hex` is a kind with no node at all.
+ * The spine is the vocabulary a *reference* speaks — the graph's own words are one
+ * table down.
+ */
+export const WORLD_REF_KIND_DESCRIPTIONS: Readonly<Record<string, string>> = {
+  agent: 'A person — an `actor` node with a person-like `actorType`. The UI word wins over the graph\'s `actor`.',
+  faction: 'An organisation — an `actor` node with `actorType: \'faction\'`. Authored form is `$faction:<defId>`.',
+  location: 'A place-tier location node: a settlement, a ruin, a place of power.',
+  sublocation: 'A place inside a place — a `location` node carrying `parentLocationId` (THR-1183).',
+  hex: 'A map tile, identified by its coordinates (`<col>,<row>`) rather than by a node id.',
+  artifact: 'An `artifact` or `artifact_legendary` node.',
+  attachment: 'An attachment **template** node id — committed content, never a granted instance.',
+  companion: 'A companion — a bonded traveller with a node of their own.',
+  army: 'A fielded force, read on the war readout.',
+  encounter: 'A live encounter or action, by its runtime id.',
+  journey: 'A journey a traveller is on.',
+  receipt: 'A divine receipt — the record of one intervention.',
+  codex: `A codex entry. Reserved: nothing can route here yet (${CODEX_SURFACE_TICKET}).`,
+};
+
+/**
+ * The spine's half of the derived/curated contract.
+ *
+ * Separate from {@link assertEveryMemberAnnotated} only because the spine's annotation
+ * is one sentence rather than an {@link AnchorRow} — `anchor`/`declare`/`surface` are
+ * questions about a *graph* member, and the spine's members are not all graph members.
+ */
+export function assertEveryKindDescribed(
+  kinds: readonly string[],
+  descriptions: Readonly<Record<string, string>> = WORLD_REF_KIND_DESCRIPTIONS,
+): void {
+  const missing = kinds.filter((kind) => descriptions[kind] === undefined);
+  if (missing.length > 0) {
+    throw new Error(
+      `generate-anchor-catalog: ${missing.length} \`WorldRefKind\`(s) have no spine ` +
+        `description: ${missing.map((k) => `'${k}'`).join(', ')}. Add one line per kind to ` +
+        `WORLD_REF_KIND_DESCRIPTIONS in scripts/anchor-catalog-sources.ts saying what an ` +
+        `author is naming when they use it.`,
+    );
+  }
+
+  const stale = Object.keys(descriptions).filter((kind) => !kinds.includes(kind));
+  if (stale.length > 0) {
+    throw new Error(
+      `generate-anchor-catalog: ${stale.length} spine description(s) name a \`WorldRefKind\` ` +
+        `that no longer exists: ${stale.map((k) => `'${k}'`).join(', ')}. Remove them.`,
+    );
+  }
+}
+
+/**
+ * One place the entity-kind vocabulary is spelled, besides `WorldRefKind` itself.
+ *
+ * `WorldRefKind` is the hub; these are the spokes. The lint below asks two questions
+ * of each, and both directions matter:
+ *
+ * 1. **Does the spoke speak a kind the hub does not have?** That is the direction
+ *    that would falsify the normal form — a consumer naming something `WorldRefKind`
+ *    cannot express means the hub is not actually the vocabulary.
+ * 2. **Is a hub kind missing from the spoke, and is that on purpose?** A projection
+ *    admitting fewer kinds is the healthy shape, not a defect — but the *reason* has
+ *    to be written down, because an absence with no reason is indistinguishable from
+ *    an oversight. That is the same silent-default hole {@link assertEveryMemberAnnotated}
+ *    closes for the four membership unions.
+ */
+export interface ConsumerUnionSpec {
+  /** How the union is named in source, for failure messages and the catalog table. */
+  readonly label: string;
+  readonly sourceRel: string;
+  /** One line on what this union is for, rendered into the catalog. */
+  readonly what: string;
+  /**
+   * How to read its members out of the source.
+   *
+   * Carried on the spec rather than dispatched by label in the generator: the shape
+   * a union is written in is a fact about that union, and splitting it from the row
+   * is how a registry acquires a second place to update.
+   */
+  readonly read:
+    | { readonly via: 'named-union'; readonly typeName: string }
+    | { readonly via: 'property'; readonly propertyName: string }
+    | { readonly via: 'discriminated-union'; readonly typeName: string };
+  /**
+   * Members this union has that are **not** `WorldRefKind`s, each with its reason.
+   *
+   * Every row here is a claim that the member is not a referenceable kind at all —
+   * a render-time refinement, a fallback, machinery. A row whose member later joins
+   * `WorldRefKind` is stale and fails.
+   */
+  readonly extraMembers: Readonly<Record<string, string>>;
+  /**
+   * `WorldRefKind`s this union deliberately lacks, each with its reason.
+   *
+   * A row whose kind later appears in the union is stale and fails — which is what
+   * makes these rows self-correcting rather than a comment that rots. Adding a
+   * `codex` arm to `NavigationTarget` breaks the build by name.
+   */
+  readonly absentKinds: Readonly<Record<string, string>>;
+}
+
+/**
+ * The four chip/segment unions are the *same* six-member union, spelled four times.
+ *
+ * `EncounterAftermathConceptRef.visualKind`, the narrative segment's `entityKind`,
+ * `ChangeItem.nounEntityKind` and `NarrativeSegmentRefLike.entityKind` are pinned
+ * mirrors of one another — three of the four say so in a doc comment, and until now
+ * nothing checked it. {@link assertMirroredUnionsAgree} does.
+ *
+ * Their shared absences are declared once here so the four rows cannot drift apart
+ * by being edited independently — which is the identical failure, one level up.
+ */
+const CHIP_UNION_ABSENT_KINDS: Readonly<Record<string, string>> = {
+  sublocation:
+    'A sublocation **is** a `location` node carrying `parentLocationId` (THR-1183), so ' +
+    'the narrower word buys an author nothing here — "the tavern\'s back room" declares ' +
+    '`location` and resolves to the back room\'s own node.',
+  hex:
+    'A hex is mutable map state, not a node, and a chip that names terrain is the Unsafe ' +
+    'Bridge defect this catalog exists to prevent. Bind the encounter\'s spawn to hexes ' +
+    'carrying the feature, or fold the sentence into band prose.',
+  army:
+    'No authored chip has yet named an army. Legal to add when one does — the kind is real ' +
+    'and `EntityVisualKind` already draws it.',
+  encounter:
+    'A chip is *inside* an encounter\'s aftermath, so naming that encounter is self-reference. ' +
+    'The seed clause covers the useful case: a seed chip anchors through its carrier — the ' +
+    'agent or location the seed was planted on.',
+  journey:
+    'An engine report, not a claim authored content makes. A journey is summarised on the ' +
+    'traveller\'s sheet; a chip names the traveller.',
+  receipt:
+    'A divine receipt is the record *of* an intervention, written after the veil closes. ' +
+    'Authored content cannot name one that does not exist yet.',
+  codex: `Reserved — no in-game codex destination exists (${CODEX_SURFACE_TICKET}).`,
+};
+
+/** The six-member chip/segment union, as every one of its four spellings must read. */
+const CHIP_UNION_MEMBERS: readonly string[] = [
+  'agent',
+  'faction',
+  'artifact',
+  'companion',
+  'attachment',
+  'location',
+];
+
+/**
+ * Every consumer union, with its curated dispositions.
+ *
+ * Seven, and the count is not a target — it is what a sweep for kind-shaped unions
+ * found. Adding an eighth means adding a row here; the generator does not discover
+ * them, because a union nobody registered is exactly the drift that would go unseen.
+ */
+export const CONSUMER_UNION_SPECS: readonly ConsumerUnionSpec[] = [
+  {
+    label: 'EntityVisualKind',
+    read: { via: 'named-union', typeName: 'EntityVisualKind' },
+    sourceRel: 'src/data/entity-visual-fallbacks.ts',
+    what: 'What the entity-visual resolver can draw a tile for.',
+    extraMembers: {
+      avatar:
+        'A render-time refinement of `agent` — the player\'s own vessel, drawn with its own ' +
+        'tile. A reference names the agent; the resolver decides it is the avatar.',
+      'npc-role':
+        'A render-time refinement — an unnamed role-holder (*the smith*) drawn from a role ' +
+        'tile. Nothing can reference one, because it has no node of its own.',
+      unknown:
+        'The resolver\'s fallback tile, not a kind anything can name. Reaching it means ' +
+        'resolution failed — which is the drop `__DEBUG.getWorldRefDrops()` records.',
+    },
+    absentKinds: {
+      attachment:
+        `Deliberate (${ATTACHMENT_VISUAL_TICKET}). An attachment's art lives on its template ` +
+        'node and `AttachmentDetailView` draws it; `resolveIcon` skips the kind rather than ' +
+        'resolving a wrong tile. Adding it here would *create* the bug the union prevents at ' +
+        'compile time.',
+      hex: 'Drawn by the map, not by a tile.',
+      journey: 'An event, not an entity with a portrait.',
+      receipt: 'A document, not an entity with a portrait.',
+      codex: `Reserved — no in-game codex destination exists (${CODEX_SURFACE_TICKET}).`,
+    },
+  },
+  {
+    label: 'EncounterAftermathConceptRef.visualKind',
+    read: { via: 'property', propertyName: 'visualKind' },
+    sourceRel: 'src/types/unifiedAction.ts',
+    what: 'What an aftermath chip may claim its referent is. The declaration vocabulary.',
+    extraMembers: {},
+    absentKinds: CHIP_UNION_ABSENT_KINDS,
+  },
+  {
+    label: 'EncounterStageNarrativeSegment.entityKind',
+    read: { via: 'property', propertyName: 'entityKind' },
+    sourceRel: 'src/components/Game/encounter-stage/types.ts',
+    what: 'What a linked noun inside encounter prose points at.',
+    extraMembers: {},
+    absentKinds: CHIP_UNION_ABSENT_KINDS,
+  },
+  {
+    label: 'ChangeItem.nounEntityKind',
+    read: { via: 'property', propertyName: 'nounEntityKind' },
+    sourceRel: 'src/components/Game/encounter-stage/types.ts',
+    what: 'What a consequence row\'s subject noun points at (THR-1153).',
+    extraMembers: {},
+    absentKinds: CHIP_UNION_ABSENT_KINDS,
+  },
+  {
+    label: 'NarrativeSegmentRefLike.entityKind',
+    read: { via: 'property', propertyName: 'entityKind' },
+    sourceRel: 'src/types/worldRefAdapters.ts',
+    what: 'The adapter\'s structural mirror of the segment union, so `src/types/` need not ' +
+      'import a component tree.',
+    extraMembers: {},
+    absentKinds: CHIP_UNION_ABSENT_KINDS,
+  },
+  {
+    label: 'NavigationTarget',
+    read: { via: 'discriminated-union', typeName: 'NavigationTarget' },
+    sourceRel: 'src/types/notification.ts',
+    what: 'Where `openEntity` can actually route. The arms are discriminated by `kind`.',
+    extraMembers: {},
+    absentKinds: {
+      sublocation:
+        'Routes through the `location` arm — same node id, and the location sheet is the ' +
+        'surface that draws a sublocation.',
+      artifact: 'No sheet of its own yet; an artifact is read on its holder\'s sheet.',
+      attachment: '`AttachmentDetailView` opens from the bearer, not from a navigation target.',
+      companion: 'Read on the company readout, which opens from a member.',
+      army: 'Read on the war readout, which opens from the map rather than by reference.',
+      codex:
+        `Reserved (${CODEX_SURFACE_TICKET}). \`?view=codex\` is a full-page swap that tears ` +
+        'down the running simulation, so there is no destination a link may open. ' +
+        '`toNavigationTarget` returns `undefined`, which is the fail-soft every unroutable ' +
+        'kind takes (NFP #4, Law 21).',
+    },
+  },
+  {
+    label: 'EntityNoticeAnchorKind',
+    read: { via: 'named-union', typeName: 'EntityNoticeAnchorKind' },
+    sourceRel: 'src/types/notification.ts',
+    what: 'Whose row in the Threads panel a notice waits on (THR-666, THR-667).',
+    extraMembers: {},
+    absentKinds: {
+      // One reason, eleven times: a notice needs a *row to wait on*, and the Threads
+      // panel has rows for threaded agents and factions only. Spelled per kind rather
+      // than as a blanket rule so that giving some other kind a row fails here by name.
+      location: 'No row in the Threads panel to wait on.',
+      sublocation: 'No row in the Threads panel to wait on.',
+      hex: 'No row in the Threads panel to wait on.',
+      artifact: 'No row in the Threads panel to wait on.',
+      attachment: 'No row in the Threads panel to wait on.',
+      companion: 'No row in the Threads panel to wait on.',
+      army: 'No row in the Threads panel to wait on.',
+      encounter:
+        'Encounters surface as their own notifications and tug badges, not as a notice ' +
+        'waiting on a row.',
+      journey: 'Surfaces on the traveller\'s row, so the notice anchors to the `agent`.',
+      receipt: 'Divine receipts have their own surface; a notice would double-report them.',
+      codex: `Reserved — no in-game codex destination exists (${CODEX_SURFACE_TICKET}).`,
+    },
+  },
+];
+
+/** What {@link assertKindUnionCoverage} resolved for one consumer union. */
+export interface KindUnionCoverage {
+  readonly spec: ConsumerUnionSpec;
+  readonly members: readonly string[];
+  /** Members that are `WorldRefKind`s — the hub-and-spoke agreement. */
+  readonly mapped: readonly string[];
+  /** Members that are not, each carrying a curated reason. */
+  readonly extra: readonly string[];
+  /** `WorldRefKind`s this union lacks, each carrying a curated reason. */
+  readonly absent: readonly string[];
+}
+
+/**
+ * The kind-union coverage lint — the guard that keeps `WorldRefKind` the vocabulary
+ * rather than a fourteenth opinion about entity kinds.
+ *
+ * Fails by name on four drifts, two of them the *stale-row* direction that makes the
+ * dispositions self-correcting instead of comments that rot:
+ *
+ * 1. a member that is not a `WorldRefKind` and has no `extraMembers` row;
+ * 2. a `WorldRefKind` absent from the union with no `absentKinds` row;
+ * 3. an `extraMembers` row for something that is now a `WorldRefKind`, or is not in
+ *    the union at all;
+ * 4. an `absentKinds` row for a kind the union now *has* — the one that fires when
+ *    someone closes ${@link CODEX_SURFACE_TICKET} and the reserved rows start lying.
+ */
+export function assertKindUnionCoverage(
+  spec: ConsumerUnionSpec,
+  members: readonly string[],
+  worldRefKinds: readonly string[],
+): KindUnionCoverage {
+  const where = `\`${spec.label}\` (${spec.sourceRel})`;
+
+  const mapped = members.filter((member) => worldRefKinds.includes(member));
+  const extra = members.filter((member) => !worldRefKinds.includes(member));
+  const absent = worldRefKinds.filter((kind) => !members.includes(kind));
+
+  const undocumentedExtra = extra.filter((member) => spec.extraMembers[member] === undefined);
+  if (undocumentedExtra.length > 0) {
+    throw new Error(
+      `generate-anchor-catalog: ${where} has ${undocumentedExtra.length} member(s) that are ` +
+        `not \`WorldRefKind\`s and have no disposition: ` +
+        `${undocumentedExtra.map((m) => `'${m}'`).join(', ')}.\n` +
+        `Either add the kind to \`WorldRefKind\` in ${WORLD_REF_TYPES_REL}, or add an ` +
+        `\`extraMembers\` row in scripts/anchor-catalog-sources.ts saying why it is a ` +
+        `render-time refinement rather than something a reference can name.`,
+    );
+  }
+
+  const undocumentedAbsence = absent.filter((kind) => spec.absentKinds[kind] === undefined);
+  if (undocumentedAbsence.length > 0) {
+    throw new Error(
+      `generate-anchor-catalog: ${where} lacks ${undocumentedAbsence.length} \`WorldRefKind\`(s) ` +
+        `with no disposition: ${undocumentedAbsence.map((m) => `'${m}'`).join(', ')}.\n` +
+        `A projection admitting fewer kinds is fine — an unexplained one is not, because ` +
+        `absence reads exactly like an oversight. Add an \`absentKinds\` row saying why, or ` +
+        `add the member to the union.`,
+    );
+  }
+
+  const staleExtra = Object.keys(spec.extraMembers).filter(
+    (member) => !extra.includes(member),
+  );
+  if (staleExtra.length > 0) {
+    throw new Error(
+      `generate-anchor-catalog: ${where} has ${staleExtra.length} stale \`extraMembers\` ` +
+        `row(s): ${staleExtra.map((m) => `'${m}'`).join(', ')}. Each either joined ` +
+        `\`WorldRefKind\` or left the union, so the row now describes something that is not ` +
+        `the case. Remove it.`,
+    );
+  }
+
+  const staleAbsence = Object.keys(spec.absentKinds).filter((kind) => !absent.includes(kind));
+  if (staleAbsence.length > 0) {
+    throw new Error(
+      `generate-anchor-catalog: ${where} has ${staleAbsence.length} stale \`absentKinds\` ` +
+        `row(s): ${staleAbsence.map((m) => `'${m}'`).join(', ')}. The union now carries ` +
+        `them (or they are no longer \`WorldRefKind\`s), so the catalog would keep publishing ` +
+        `an absence that is no longer true. Update the row — and if this is the ` +
+        `${CODEX_SURFACE_TICKET} codex arm landing, the catalog's reserved badge goes with it.`,
+    );
+  }
+
+  return { spec, members, mapped, extra, absent };
+}
+
+/**
+ * The four chip/segment unions must be spelled identically, and {@link CHIP_UNION_MEMBERS}
+ * must say what that spelling is.
+ *
+ * **What this adds over the coverage lint, precisely.** Because all four specs share one
+ * {@link CHIP_UNION_ABSENT_KINDS} record, {@link assertKindUnionCoverage} already fails
+ * when one mirror diverges from the others: the odd one out either carries a kind the
+ * shared record calls absent (stale-absence) or drops one the record does not mention
+ * (undocumented-absence). Verified by controlled arm — adding `army` to the adapter
+ * mirror alone fails in the coverage lint, before this function is reached.
+ *
+ * So this guard is **not** the net that catches one copy falling behind; the shared
+ * record is. What it uniquely catches is the case where all four move *together* and
+ * `CHIP_UNION_MEMBERS` — the constant that records what "pinned" means — is left behind.
+ * That constant is the only written statement of the canonical spelling, so a stale one
+ * would leave the four agreeing with each other and with nothing else.
+ *
+ * Stated at this length because the three doc comments in `src/` that claim these unions
+ * are pinned were, until now, checked by nothing at all; a guard that overstated its own
+ * reach would repeat that failure one level up.
+ */
+export function assertMirroredUnionsAgree(
+  coverages: readonly KindUnionCoverage[],
+  expected: readonly string[] = CHIP_UNION_MEMBERS,
+): void {
+  const mirrors = coverages.filter((c) => c.spec.absentKinds === CHIP_UNION_ABSENT_KINDS);
+
+  const canonical = [...expected].sort().join(' | ');
+  const disagreeing = mirrors.filter(
+    (c) => [...c.members].sort().join(' | ') !== canonical,
+  );
+
+  if (disagreeing.length > 0) {
+    throw new Error(
+      `generate-anchor-catalog: ${disagreeing.length} of the ${mirrors.length} pinned chip/` +
+        `segment kind unions disagree with the others:\n` +
+        disagreeing
+          .map((c) => `  ${c.spec.label} (${c.spec.sourceRel}) = ${c.members.join(' | ')}`)
+          .join('\n') +
+        `\n  expected: ${expected.join(' | ')}\n` +
+        `These four are one union spelled four times and three of them say so in a doc ` +
+        `comment. Change all four together, and update CHIP_UNION_MEMBERS in ` +
+        `scripts/anchor-catalog-sources.ts.`,
     );
   }
 }
