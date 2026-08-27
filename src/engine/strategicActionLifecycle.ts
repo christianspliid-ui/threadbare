@@ -47,6 +47,7 @@ import {
   type CheckpointBindingInput,
 } from './undertakingCheckpoints';
 import { runBindPass } from './binding/undertakingBindPass';
+import { applyCreationEffects } from './binding/creationEffects';
 import { releaseBindingsForProject } from './binding/bindingRegistry';
 import { ensureRoleCensus, type SimulationRuntime } from './simulationRuntime';
 import {
@@ -136,6 +137,9 @@ export function executeStrategicAction(
         behaviorFamily: candidate.behaviorFamily,
         targetNodeId: candidate.targetNodeId,
         targetHex: candidate.targetHex,
+        // Carried from the gate that approved this candidate (THR-1296 §6). Absent on
+        // every local undertaking; the bind pass binds it as `$anchor` when set.
+        anchorNodeId: candidate.anchorNodeId,
         progress: 0,
         progressRequired: duration,
         startedTick: tick,
@@ -368,6 +372,23 @@ export function advanceStrategicProjects(
     // The retired phase read a checkpoint array for a record stamped with the
     // current tick — a same-tick ordering contract between two phases. The effect
     // is read straight off the record here instead.
+    // ─── Banded creation effects (THR-1296 §3, slice 5) ───────────────
+    // What this checkpoint *made*. Fires on the band the checkpoint actually landed
+    // on, once, only when the checkpoint resolved this tick — so a `not_due` pass and
+    // a re-read of `lastCheckpoint` on a later tick both create nothing. Costs nothing
+    // on a template with no `creationEffects`, which is every shipped template in v1.
+    if (checked.lastCheckpoint?.tick === tick) {
+      applyCreationEffects({
+        state,
+        graph,
+        project: checked,
+        template: getStrategicTemplate(checked.templateId),
+        band: checked.lastCheckpoint.band,
+        effect: checked.lastCheckpoint.effect,
+        tick,
+      });
+    }
+
     let mentorshipForcedFailure = false;
     if (isMentorship && isMentorshipEnabled()) {
       const resolvedThisTick = checked.lastCheckpoint?.tick === tick;

@@ -2166,6 +2166,66 @@ export const CONTRACTS: readonly Contract[] = [
     deferralTicket: 'THR-1296',
   },
   {
+    id: 'undertaking-creation-effects',
+    producerSystem: 'Ambitions & Undertakings',
+    consumerSystem: 'Encounters & Dilemmas',
+    intent:
+      'A long work now puts things into the world as it runs rather than only at completion: an advancing checkpoint builds what the step earned, an at-cost one builds the cost besides, and a critical failure builds the disaster. A person the work must keep is born through the mint valve; a face that exists for one scene is written by the encounter support bundle’s own walk-on writer, which this contract shares rather than copies. Routing every spawn through the valve would spend the one-per-tick birth budget on faces; copying the node shape instead is how the two writers drift.',
+    // Keyed on the shared writer, not on the band table: the durable thing crossing
+    // the boundary is that an undertaking and an encounter make a walk-on the same
+    // way. The banding is one module's business.
+    mechanism: {
+      kind: 'function',
+      symbols: ['materializeWalkOnActor', 'applyCreationEffects', 'selectCreationBand'],
+      module: 'src/engine/encounterSupportBundle.ts',
+    },
+    writeSites: [
+      'src/engine/binding/creationEffects.ts',
+      'src/engine/strategicActionLifecycle.ts',
+    ],
+    readSites: [
+      'src/engine/encounterSupportBundle.ts',
+      'src/engine/strategicGraphOps.ts',
+      'src/engine/binding/mintInhabitant.ts',
+    ],
+    // UNVERIFIED-OK rather than LIVE: both halves are real and tested — the walk-on
+    // writer has two callers today and the encounter half is exercised on every
+    // seeded run — but no shipped template declares `creationEffects`, so the
+    // undertaking half travels no path the simulation takes. Doc 2 authors the first
+    // band table; the emptiness pin in `creationEffects.test.ts` fails when it lands.
+    deferralTicket: 'THR-1297',
+  },
+  {
+    id: 'undertaking-remote-anchor',
+    producerSystem: 'War, Armies & Battles',
+    consumerSystem: 'Ambitions & Undertakings',
+    intent:
+      'A work done *through* others — a garrison established, supply lines raided — must reach the site through something its owner actually commands, and is not offered at all when nothing is there. Refusing at proposal is the `no_eligible_apprentice` doctrine: an undertaking nobody can foot is not a decision, and starting one only to stall it teaches the player their armies are decorative. The winning anchor joins the cast as `$anchor` must-persist, so severing an army is a named complication for everything it was footing.',
+    // Keyed on the command edge, which is the thing actually crossing the boundary:
+    // `commanded_by` runs army → commander, a direction three separate files carry
+    // warnings about, so the helper is the single reader and every future anchor
+    // source (networks, holdings) registers through it rather than beside it.
+    mechanism: {
+      kind: 'function',
+      symbols: ['findRemoteAnchors', 'evaluateRemoteAnchorGate', 'commanded_by', 'no_remote_anchor'],
+      module: 'src/engine/binding/remoteAnchor.ts',
+    },
+    writeSites: [
+      'src/engine/armySpawning.ts',
+    ],
+    readSites: [
+      'src/engine/binding/remoteAnchor.ts',
+      'src/engine/strategicActionCandidates.ts',
+      'src/engine/binding/undertakingBindPass.ts',
+    ],
+    // UNVERIFIED-OK: the gate is wired into candidate generation and the `$anchor`
+    // binding is exercised by test, but no shipped template declares `remote`, so it
+    // refuses nothing today. That scoping is deliberate and measured — gating on
+    // distance alone (THR-1296 §6 as written) took `trades_with` formation to zero in
+    // the 120-tick smoke and seven doom-identity tests with it (impediment #842).
+    deferralTicket: 'THR-1297',
+  },
+  {
     id: 'binder-decision-traced',
     producerSystem: 'Ambitions & Undertakings',
     consumerSystem: 'Attention, Chronicle & Narrative',

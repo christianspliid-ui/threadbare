@@ -126,6 +126,32 @@ export interface StrategicActionTemplate {
    */
   readonly cast?: readonly UndertakingCastSpec[];
 
+  /**
+   * What this undertaking *makes*, banded by how the checkpoint went (THR-1296 §3).
+   *
+   * Absent ⇒ the undertaking creates nothing, which is every shipped template in v1.
+   * The band tables are doc 2's ([THR-1297](https://linear.app/threadbare/issue/THR-1297))
+   * to author; this field and the engine that honors it are the seam.
+   */
+  readonly creationEffects?: UndertakingCreationEffects;
+
+  /**
+   * Does this verb reach beyond the agent's own presence (THR-1296 §6)?
+   *
+   * A remote undertaking must anchor through something the agent commands at or near
+   * the site; without one, the verb is not offered. Commissioning, garrisoning and
+   * raiding are remote in this sense. Walking four hexes to survey a market is not —
+   * that is travel, and it is the distinction §6 as written did not draw.
+   *
+   * Absent ⇒ `false`, which is every shipped template in v1: with armies alone as the
+   * anchor source, remote undertakings are deliberately **rare** until the T1 network
+   * kind ([THR-1288](https://linear.app/threadbare/issue/THR-1288)) and doc 2's
+   * holdings widen what counts as commanded. Doc 2 authors the rows; this field and
+   * the gate that honors it are the seam, and an emptiness-pinning test fails
+   * deliberately when the first `remote: true` lands.
+   */
+  readonly remote?: boolean;
+
   // ─── Board authoring (THR-1292 §4) ────────────────────────────────
 
   /**
@@ -211,6 +237,17 @@ export interface StrategicActionCandidate {
   readonly targetNodeId?: string;
   readonly targetHex?: { col: number; row: number };
 
+  /**
+   * The commanded entity this remote undertaking reaches through (THR-1296 §6).
+   *
+   * Set by the remote-anchor gate at proposal time, and only for a target beyond
+   * `BINDER_REMOTE_RANGE_HEXES` of the agent — a nearby target needs no anchor and
+   * carries none. The bind pass binds it as the `$anchor` cast slot, must-persist,
+   * which is what makes severing an agent's army a complication for everything that
+   * army was footing rather than a silent stall.
+   */
+  readonly anchorNodeId?: string;
+
   /** Raw score components before normalization */
   readonly scoreComponents: StrategicScoreComponents;
   /** Final normalized score (0-1 range, comparable with encounter scores) */
@@ -264,6 +301,13 @@ export interface StrategicProjectRuntime {
    * that gets garbage-collected, silently evaporating the route.
    */
   readonly originLocationId?: string;
+
+  /**
+   * The commanded entity this remote undertaking reaches through (THR-1296 §6),
+   * carried from the candidate the gate approved. Bound as `$anchor` by the bind
+   * pass; absent on every local undertaking.
+   */
+  readonly anchorNodeId?: string;
 
   /** Ticks of work accumulated */
   progress: number;
@@ -494,6 +538,62 @@ export interface UndertakingIdentityRequirement {
   readonly pole: 'virtue' | 'vice';
   /** Distance from neutral (0.5 canonical) the candidate must clear, 0–0.5. */
   readonly minStrength: number;
+}
+
+/**
+ * One thing an undertaking creates when a checkpoint lands on the right band.
+ *
+ * The two kinds are the ones the recon confirmed missing from the strategic mutation
+ * vocabulary — `StrategicMutationHint` can build a sublocation only at *completion*,
+ * and has never been able to make a person at all. A creation effect fires per
+ * checkpoint instead, which is what makes an undertaking's middle eventful rather
+ * than a progress bar with a payoff bolted to the end.
+ *
+ * `spawn_npc` with `must-persist` routes through the mint valve (§5) and is therefore
+ * budgeted, deterministic, and born real. `scene-only` materializes immediately as a
+ * walk-on through the same writer the encounter support bundle uses — the split is
+ * deliberate: the birth budget exists for people the world will keep, and spending it
+ * on a face in one scene is what would starve it.
+ */
+export type UndertakingCreationEffect =
+  | {
+      readonly kind: 'spawn_npc';
+      /** `NpcRole`, widened to string at the seam (as `UndertakingCastSpec.mintRole` is). */
+      readonly role: string;
+      readonly persistence: import('./encounter').EncounterSupportPersistence;
+      /**
+       * Ledger key for a must-persist spawn. Absent ⇒ derived from the effect's role
+       * and the band, which keeps a template that authors no key idempotent per band
+       * rather than minting a fresh person at every checkpoint.
+       */
+      readonly castKey?: string;
+      readonly spawnName?: string;
+      readonly factionDefId?: string;
+      readonly identityRequirement?: UndertakingIdentityRequirement;
+    }
+  | {
+      readonly kind: 'spawn_sublocation';
+      readonly sublocationTypeId: string;
+      /** Authored name; absent ⇒ the type id, title-cased by the graph op's caller. */
+      readonly nameTemplate?: string;
+    };
+
+/**
+ * Creation effects banded by checkpoint outcome (THR-1290 §4).
+ *
+ * The bands are deliberately not the full six-value `StepOutcome` ladder: what a
+ * creation effect keys on is what the checkpoint *did*, and three of the six bands
+ * advance while two halt. `onCritFailure` is the exception that earns its own entry —
+ * "critical failure creates the problem" is a distinct authoring intent from
+ * "advance creates the reward", and collapsing it into the halt case would make the
+ * worst band the only one that can never put anything in the world.
+ *
+ * A plain `halt` creates nothing. That is the whole halt rule.
+ */
+export interface UndertakingCreationEffects {
+  readonly onAdvance?: readonly UndertakingCreationEffect[];
+  readonly onAtCost?: readonly UndertakingCreationEffect[];
+  readonly onCritFailure?: readonly UndertakingCreationEffect[];
 }
 
 /**

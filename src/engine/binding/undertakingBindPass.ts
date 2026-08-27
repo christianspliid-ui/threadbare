@@ -61,6 +61,7 @@ import {
   markBindingsBroken,
 } from './bindingRegistry';
 import { enqueueMint, isMintReady, mintNodeId, getMintQueue } from './mintInhabitant';
+import { ANCHOR_CAST_KEY } from './remoteAnchor';
 import { scarcity01, type RoleCensus } from './roleCensus';
 import {
   BINDER_SINGULAR_SCARCITY_THRESHOLD,
@@ -247,12 +248,14 @@ export function runBindPass(input: BindPassInput): BindPassResult {
   const { project, template, tick } = input;
 
   const specs = template?.cast;
-  // The v1 case, and the reason this costs nothing: no shipped template declares cast,
-  // so the pass returns before it touches the registry, the census or the graph.
-  if (!specs || specs.length === 0) return NEUTRAL(project);
+  // The v1 case, and the reason this costs nothing: no shipped template declares cast
+  // and no local undertaking carries an anchor, so the pass returns before it touches
+  // the registry, the census or the graph. An anchor alone is enough to run the pass —
+  // it is a must-persist binding like any other, and its severance is a complication.
+  if ((!specs || specs.length === 0) && !project.anchorNodeId) return NEUTRAL(project);
 
   try {
-    return bindPassInner(input, specs);
+    return bindPassInner(input, specs ?? []);
   } catch (err) {
     emitTrace({
       category: 'binding_decision',
@@ -341,6 +344,33 @@ function bindPassInner(
 
   let awaitingMint = false;
   let bound = 0;
+
+  // ─── The `$anchor` slot (THR-1296 §6) ─────────────────────────────
+  // A remote undertaking reaches through something the agent commands, and the gate
+  // that approved it already named which. Binding it must-persist is what turns
+  // "the army footing this was destroyed" into a named complication instead of an
+  // undertaking that stalls for reasons the player can never see. Not an authored
+  // slot — the key is reserved, so a template cannot collide with it — and the node
+  // still has to exist, since the gate ran at proposal and the world has moved since.
+  if (workingProject.anchorNodeId && !liveByKey.has(ANCHOR_CAST_KEY)) {
+    const anchorNode = graph.getNode(workingProject.anchorNodeId);
+    if (anchorNode && !isAgentGone(anchorNode)) {
+      const record = registerBinding(index, bindings, {
+        projectId: project.projectId,
+        castKey: ANCHOR_CAST_KEY,
+        nodeId: workingProject.anchorNodeId,
+        kind: 'actor',
+        persistence: 'must-persist',
+        boundRole: (anchorNode.properties?.npcRole as string | undefined) ?? 'anchor',
+        boundAtTick: tick,
+        stepIndex,
+        status: 'live',
+      });
+      liveByKey.set(ANCHOR_CAST_KEY, record);
+      carryForward.add(workingProject.anchorNodeId);
+      bound++;
+    }
+  }
 
   // Location slots first: an actor slot may anchor to one, and bundle order is the
   // author's business rather than a constraint the engine should impose on them.

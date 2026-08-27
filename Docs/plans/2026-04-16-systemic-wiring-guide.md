@@ -3306,3 +3306,84 @@ the moment that lands, and not before. Every other key in the table bites today.
 **Severity is a band, not a number.** A `1.2` backlash multiplier does nothing —
 the ladder has three rungs and no space between them. Cross `1.5` to escalate a
 band or fall to `0.67` to soften one.
+
+
+## Capability: An undertaking makes things, and the band decides what (THR-1296)
+
+Two new fields on `StrategicActionTemplate`, both unauthored today and both waiting
+for you. They are the difference between a long work that is a progress bar and one
+that changes the map while it runs.
+
+### `creationEffects` — banded creation
+
+```ts
+creationEffects: {
+  onAdvance:     [{ kind: 'spawn_sublocation', sublocationTypeId: 'chapterhouse',
+                    nameTemplate: 'The New Hall' }],
+  onAtCost:      [{ kind: 'spawn_npc', role: 'debt_collector', persistence: 'scene-only' }],
+  onCritFailure: [{ kind: 'spawn_npc', role: 'rival_claimant', persistence: 'must-persist' }],
+}
+```
+
+| Checkpoint | Fires |
+|---|---|
+| `advance` | `onAdvance` — the work bore fruit |
+| `advance_at_cost` | `onAtCost` — it bore fruit **and** the cost is now a thing in the world |
+| `halt` | nothing. A stall leaves no artifact — that is the whole halt rule |
+| band `critical_failure` | `onCritFailure` — the disaster is a thing in the world |
+
+**Read that last row carefully, because it is the one that surprises people.**
+`critical_failure` maps to the `halt` *effect*, so a rule keyed on the effect alone
+would make the one band whose entire job is to leave a mark the only band that never
+could. It is keyed on the **band** instead. Author `onCritFailure` when you want the
+catastrophe to be visible afterwards — the collapsed wing, the rival who arrives to
+take advantage — and leave it absent when a failure should simply be a failure.
+
+**`persistence` picks how the person is made, and the choice is not cosmetic.**
+
+- `must-persist` → queued through the **mint valve**. Born properly: values,
+  capabilities, a culture-phonetic name, an ambition of their own. Budgeted at one
+  birth per tick globally, registered in the binding ledger, so a reaper taking them
+  later is a *named complication* rather than a silence. Use it for anyone the story
+  will refer back to.
+- `scene-only` → an immediate **walk-on** through the encounter support bundle's own
+  writer. A body, a place to stand, a culture, nothing else. Gone when the moment is.
+
+Do not reach for `must-persist` by default. There is exactly one birth per tick to
+spend across the whole world, and spending it on a face at a gate is what starves the
+people the world was meant to keep.
+
+**Idempotency, and when to override it.** A `must-persist` spawn with no `castKey`
+derives one from its band and role, so an undertaking that advances five times makes
+**one** steward rather than five. If you want five, author five keys. Different bands
+derive different keys, so a critical failure's problem is never confused with a
+success's reward.
+
+**Where it lands:** the undertaking's `targetNodeId`. A sublocation stage places a
+person *inside* the sublocation and hangs a new structure off the **parent** place —
+you build a shrine in the town, not inside the counting-house.
+
+### `remote` — a work done through others
+
+```ts
+remote: true,   // absent ⇒ false
+```
+
+Declare it when the verb *means* reaching past yourself: a garrison established, supply
+lines raided, a commission placed. A remote undertaking aimed at a distant site is only
+offered when its owner commands something standing at or near that site; with nothing
+there, the card never appears rather than appearing and stalling. The anchor joins the
+cast as `$anchor`, must-persist — so severing the host footing a distant work is a
+complication that work learns about **by name**.
+
+**Do not declare it just because a target is far away.** Distance is not remoteness: an
+agent who walks four hexes to survey a market is travelling. This distinction is not
+pedantry — gating on distance alone (which is how the plan originally specified it)
+took trade-route formation to *zero* on a seeded run and took seven unrelated tests
+with it (impediment #842). The flag is what keeps the rule narrow enough to be true.
+
+Armies are the only thing that counts as commanded today, so remote works are
+deliberately rare until networks and holdings land. Author them anyway — the engine
+honours the declaration now, and an emptiness-pinning test fails deliberately the
+moment your first `remote: true` row appears, which is exactly the signal that the
+seam has been proven rather than assumed.
