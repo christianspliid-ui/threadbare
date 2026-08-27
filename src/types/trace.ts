@@ -454,7 +454,8 @@ export type TraceCategory =
   | 'effect.revealed'
   // The binder — scored cast/stage binding + persistence ledger (THR-1296)
   | 'binding_decision'
-  | 'binding_severed';
+  | 'binding_severed'
+  | 'binder_mint';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'edge_schema_refused',
@@ -822,6 +823,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   // The binder (THR-1296)
   'binding_decision',
   'binding_severed',
+  'binder_mint',
 ];
 
 /** Base shape for all trace entries */
@@ -1055,6 +1057,37 @@ export interface BindingSeveredTrace extends TraceBase {
     | 'seed_drop'
     | 'dissolution_deferred';
   persistence: 'must-persist' | 'scene-only';
+}
+
+/**
+ * Trace: the binder's mint valve moved (THR-1296 §5).
+ *
+ * One per queue event, so the whole life of a mint request is readable end to end —
+ * `queued` when a bind asked for a person the world does not have, `minted` when the
+ * lifecycle valve actually bore them, `refused` when the queue was full or the
+ * placement had evaporated by the time the valve came round.
+ *
+ * `queueDepth` is on every entry on purpose. The budget (one per tick) is the
+ * deliverable, not a dial to raise, so the number that says whether it is holding —
+ * a queue that only grows — has to be visible without reconstructing it from a
+ * count of `queued` minus `minted` across the ring.
+ */
+export interface BinderMintTrace extends TraceBase {
+  category: 'binder_mint';
+  projectId: string;
+  castKey: string;
+  outcome: 'queued' | 'minted' | 'refused';
+  /** Why nothing was queued or born. */
+  refusedReason?: 'queue_full' | 'placement_missing' | 'duplicate_request' | 'mint_error';
+  role: string;
+  /** The id the mint took (or would have taken) — `mint_<projectId>_<castKey>`. */
+  nodeId?: string;
+  /** Where they were born — stage or place tier. */
+  placementNodeId?: string;
+  /** Requests still owed after this event. */
+  queueDepth: number;
+  /** Ticks between the request and the birth — the valve's observed latency. */
+  waitedTicks?: number;
 }
 
 export interface TraceBase {
@@ -2870,6 +2903,7 @@ export type TraceEntry =
   | EffectRevealedTrace
   | BindingDecisionTrace
   | BindingSeveredTrace
+  | BinderMintTrace
   | FilterPipelineTrace
   | ScoringTrace
   | MovementTrace

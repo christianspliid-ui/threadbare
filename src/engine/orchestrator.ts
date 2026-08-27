@@ -3655,7 +3655,11 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
 
   // Phase 6.75: Agent Lifecycle (death, birth, migration)
   {
-    const r = runInlinePhase('agent_lifecycle', s, () => phaseAgentLifecycle(s, nextEventId));
+    // `runtime` reaches the phase so the binder's mint valve can bump the structural
+    // cache version when it bears someone (THR-1296 §5) — a new actor invalidates the
+    // encounter cache, the distance matrix, and the UI's structural memo. Optional:
+    // the legacy no-runtime test path still works, it simply has no cache to touch.
+    const r = runInlinePhase('agent_lifecycle', s, () => phaseAgentLifecycle(s, nextEventId, undefined, runtime));
     s = r.next;
     phaseEventCounts['agent_lifecycle'] = r.eventDelta;
   }

@@ -6,6 +6,25 @@
 
 ---
 
+## The binder — born-real mint path + the lifecycle valve (THR-1296 slice 3)
+
+Third slice of the binder. Like slices 1–2 it is **additive and consumed by nothing yet** — nothing enqueues a mint until slice 4's bind pass — so this table records a *reachable* path, not a travelled one. The distinction is the whole point of the checklist here: the consumer half is genuinely wired (the lifecycle drains every tick, tests drive it), and the producer half is honestly absent.
+
+| Module | Orchestrator phase | UI component | GameState field | Trace emitted | Debug visibility |
+|--------|-------------------|-------------|-----------------|---------------|-----------------|
+| `engine/binding/mintInhabitant.ts` | 6.75 `phaseAgentLifecycle` (births block head) | N/A — no player surface (doc 5 owns cast tiles) | `strategicState.mintQueue` | `binder_mint` (`queued` / `minted` / `refused`) | trace ring; minted nodes carry `generatedBy: 'undertaking_binder'` + `mintedForProjectId` |
+| `engine/agentGeneration.ts` | N/A (generator, called by both birth paths) | N/A | none | none | — |
+
+**Phase registration is a call, not a new phase.** The valve runs *inside* `phaseAgentLifecycle`'s existing births block rather than as a phase of its own, because a new mortal is a birth and births already have a gate. `runtime` reaches the phase as an optional fourth argument from `orchestrator.ts` so a mint can call `touchStructure`; omitting it (the legacy test path) degrades to no cache touch rather than throwing.
+
+**Trace registration verified at all three surfaces**, not just the payload interface: `TraceCategory` union, `TRACE_CATEGORIES` array, and the `TraceEntry` union — the trio THR-928 exists to stop drifting apart. `binder_mint` was deliberately held back from slices 1–2 because nothing emitted it then.
+
+**The `GameState` field is consumed, which is the half a checklist usually catches missing.** `strategicState.mintQueue` is written by `enqueueMint` and read by `drainMintQueue` from the lifecycle every tick. It is optional on the interface, so a world saved before the binder loads with nothing queued rather than throwing.
+
+**Interface-map row landed with its consumer:** `binder-mint-valve` (`scripts/interface-contracts.ts` + the served wiki page), badged **UNVERIFIED-OK against THR-1296** rather than LIVE — badging a path no simulation travels is the leak that registry exists to prevent. The remaining two rows (`binder-decision-traced`, `binding-registry-reaper-hook`) still wait for the slices that give them consumers.
+
+---
+
 ## Ceremonial reveal surface (THR-799)
 
 Pure-UI feature — **no engine module, no orchestrator phase, no `GameState` field, no new trace.** Recorded here anyway because the checklist's job is to prove a surface is reachable, and three of these are new shared primitives that a later plan will want to find.

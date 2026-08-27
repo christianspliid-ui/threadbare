@@ -7,16 +7,15 @@
  * All functions are pure (read graph, return events + mutations).
  */
 import type { GameState, TickEvent } from '../types/gameState';
-import type { CosmologyProfile, SphereName } from '../types/index';
+import type { SphereName } from '../types/index';
 import type { ReachDomain } from '../types/traits';
 import { SPHERE_NAMES } from '../types/index';
-import type { AxiologicalProfile } from '../types/agent';
-import { VALUE_PAIRS } from '../types/agent';
 import { DEFAULT_REPUTATION } from '../types/disposition';
 import { NARRATIVE_ARCHETYPES } from '../data/archetype-content';
 import type { CultureIdentity, CulturePhoneticSignature } from '../types/culture';
 import { pickCulturalName } from '../data/culture-name-pools';
 import { assignCooperationStrategy } from './disposition';
+import { generateAxiologicalProfile } from './agentGeneration';
 import { assignInitialAmbitions } from './ambitionAssignment';
 import { AMBITION_TEMPLATES } from '../data/ambition-templates';
 import { validateAgentIntegrity } from './agentValidation';
@@ -29,6 +28,8 @@ import {
   type RuleOverrideContext,
 } from './effects/ruleOverrideConsumers';
 import type { EncounterCacheManager } from './encounterCache';
+import type { SimulationRuntime } from './simulationRuntime';
+import { drainMintQueue } from './binding/mintInhabitant';
 import { BORN_LATER_PREFER_CONTENT_LOCATIONS, BORN_LATER_MIN_TEMPLATES } from '../data/agent-behavior-constants';
 import { AMBITION_KIND_KEY, AMBITION_KIND_TEMPLATE } from './ambitionShape';
 
@@ -64,18 +65,10 @@ export const BIRTH_DENSITY_THRESHOLD = 3;
 export const MIGRATION_CHANCE = 0.02;
 
 // ─── Axiological Profile Generator ───────────────────────────────
-
-function generateAxiologicalProfile(rng: () => number, cosmology: CosmologyProfile): AxiologicalProfile {
-  const profile = {} as AxiologicalProfile;
-  const chaosBias = (cosmology.entropy ?? 0) > 0.15 ? 0.2 : -0.1;
-
-  for (const pair of VALUE_PAIRS) {
-    const base = (rng() * 1.6) - 0.8;
-    const bias = pair === 'tradition_novelty' ? chaosBias : 0;
-    profile[pair] = Math.max(-1, Math.min(1, base + bias));
-  }
-  return profile;
-}
+//
+// Moved to `agentGeneration.ts` in THR-1296 slice 3 so the binder's mint path can
+// call the same generator instead of copying it. Unchanged otherwise — same draws,
+// same order, same world from the same seed.
 
 // ─── ID Generator ────────────────────────────────────────────────
 
@@ -111,10 +104,55 @@ function spawnRateMultiplierAt(
   return product;
 }
 
+/**
+ * The binder's mint valve (THR-1296 §5) — run at the head of the births block.
+ *
+ * Binder mints are births, so they pass the same gate every other new mortal does:
+ * inside the no-death-this-tick guard, before the ambient roll, and counted against
+ * the same one-per-tick shape. Returning `true` means a mint was born and the ambient
+ * roll is skipped this tick — that is what "counted against the same shape" means, and
+ * it is the THR-814/THR-162 lesson made mechanical rather than remembered.
+ *
+ * **Draw-count neutral when the queue is empty.** The mint's rng derives from the
+ * request, never from this phase's `rng`, so a world with no undertakings produces the
+ * identical sequence it produced before this landed (NFP #3).
+ */
+function drainMintValve(
+  state: GameState,
+  graph: GameState['graph'],
+  events: TickEvent[],
+  nextEventId: () => string,
+  runtime?: SimulationRuntime,
+): boolean {
+  const drain = drainMintQueue(state, runtime);
+  if (drain.minted.length === 0) return false;
+
+  for (const mintedId of drain.minted) {
+    const node = graph.getNode(mintedId);
+    const locNode = node
+      ? graph.getNode(node.properties.locationId as string)
+      : undefined;
+    events.push({
+      id: nextEventId(),
+      tick: state.tick,
+      type: 'agent_birth' as any,
+      message: `${node?.name ?? 'Someone'} has taken up a place in ${locNode?.name ?? 'the world'}.`,
+      significance: 0.4,
+      actorId: mintedId,
+      notification: { channel: 'toast' },
+      hexCoords: locNode?.properties?.hexCol != null
+        ? { col: locNode.properties.hexCol as number, row: locNode.properties.hexRow as number }
+        : undefined,
+    });
+  }
+  return true;
+}
+
 export function phaseAgentLifecycle(
   state: GameState,
   nextEventId: () => string,
   encounterCache?: EncounterCacheManager,
+  runtime?: SimulationRuntime,
 ): Partial<GameState> {
   const rng = mulberry32(state.seed + state.tick * 71);
   const events: TickEvent[] = [];
@@ -236,7 +274,7 @@ export function phaseAgentLifecycle(
 
   // ── Births ─────────────────────────────────────────────
   // Only if no death occurred this tick (population balance)
-  if (!deathOccurred) {
+  if (!deathOccurred && !drainMintValve(state, graph, events, nextEventId, runtime)) {
     // D.2: Prefer content-rich locations for born-later agents
     let locationIds: string[];
     if (BORN_LATER_PREFER_CONTENT_LOCATIONS && encounterCache && state.tick > 0) {

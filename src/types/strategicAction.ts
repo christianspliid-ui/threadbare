@@ -429,6 +429,64 @@ export interface UndertakingBindingRecord {
   endedAtTick?: number;
 }
 
+// ─── The mint queue (THR-1296 doc 3 §5) ─────────────────────────────
+//
+// A binder mint is never immediate. The request is queued here and drained by
+// `phaseAgentLifecycle`'s births block through the same valve every other new
+// mortal passes — at most `BINDER_MINT_BUDGET_PER_TICK` per tick, never on a
+// death tick. That is the THR-814/THR-162 lesson made mechanical: an unmetered
+// spawn path is how a large map ends up with a thousand agents by tick 72.
+//
+// Queue-before-valve also dissolves the phase-ordering problem: decision runs
+// before lifecycle in the tick, so a request made at tick T is born at T or
+// T+1, and the checkpoint simply binds when the mint exists.
+
+/**
+ * What a cast slot demands of a candidate's stated values.
+ *
+ * Defined here rather than in the binder so the mint request can carry it without
+ * an engine→engine import from a types module — `binder.ts` re-exports it as
+ * `BindingIdentityRequirement`, which is the name the scored board reads it under.
+ * One definition, two names, no drift.
+ *
+ * The schema seam doc 2 ([THR-1297](https://linear.app/threadbare/issue/THR-1297))
+ * authors values into; this plan ships the engine that honors it and deliberately
+ * no authored rows of its own.
+ */
+export interface UndertakingIdentityRequirement {
+  readonly axis: ValuePair;
+  readonly pole: 'virtue' | 'vice';
+  /** Distance from neutral (0.5 canonical) the candidate must clear, 0–0.5. */
+  readonly minStrength: number;
+}
+
+/**
+ * One queued birth, owed to one cast slot of one undertaking.
+ *
+ * The id the mint will take is `mint_<projectId>_<castKey>` — instance-unique by
+ * construction (a project id already is) and seed-deterministic, so replaying a
+ * seed produces the same person under the same name. Deliberately *not* the
+ * encounter path's `enc_support_<templateId>_<locId>_<key>`, whose self-reuse
+ * across every instance of a template is a feature there and would be a collision
+ * here.
+ */
+export interface UndertakingMintRequest {
+  readonly projectId: string;
+  readonly castKey: string;
+  readonly stepIndex: number;
+  /** The role the newborn is born into — `NpcRole`, widened to string at the seam. */
+  readonly role: string;
+  /** Where they are born: the stage node, or the place tier that holds it. */
+  readonly placementNodeId: string;
+  readonly persistence: import('./encounter').EncounterSupportPersistence;
+  /** Authored name wins when the spec provides one; otherwise culture-phonetic. */
+  readonly spawnName?: string;
+  readonly factionDefId?: string;
+  /** Born to the requirement — the reason the mint row scores identity at 1. */
+  readonly identityRequirement?: UndertakingIdentityRequirement;
+  readonly requestedAtTick: number;
+}
+
 // ─── Strategic Runtime State ────────────────────────────────────────
 // Aggregate runtime state stored on GameState for strategic actions.
 
@@ -446,4 +504,12 @@ export interface StrategicRuntimeState {
    * index is a runtime-owned lazy derivation, deliberately not serialized.
    */
   bindings?: UndertakingBindingRecord[];
+  /**
+   * Births the binder owes but has not yet taken through the lifecycle valve
+   * (THR-1296 §5). Optional for the same reason `bindings` is: a world saved
+   * before the binder loads as one with nothing queued. Bounded by
+   * `BINDER_MINT_QUEUE_MAX` — an overflowing queue refuses the bind and traces
+   * it rather than growing without limit.
+   */
+  mintQueue?: UndertakingMintRequest[];
 }
