@@ -31,6 +31,7 @@
  */
 
 import type { WorldGraph } from './graph';
+import { getFactionMembershipEdges } from './graphQueries';
 import { findAllPaths } from './graphUtils';
 import { computeCapability } from './domainCapability';
 import { getDerivedMembershipRank } from './factionReputation';
@@ -230,7 +231,7 @@ function getAgentFactions(
 ): Array<{ factionId: string; rank: number }> {
   const results: Array<{ factionId: string; rank: number }> = [];
 
-  const memberEdges = graph.getOutgoingEdges(agentId, 'member_of');
+  const memberEdges = getFactionMembershipEdges(graph, agentId);
   for (const edge of memberEdges) {
     results.push({
       factionId: edge.target,

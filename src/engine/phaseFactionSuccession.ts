@@ -26,6 +26,7 @@
  * Plan: Docs/plans/2026-05-14-THR-432-anoint-successor.md §5.3.
  */
 import type { GameState } from '../types/gameState';
+import { getFactionMembershipEdges } from './graphQueries';
 import type { GraphNode, GraphEdge } from '../types/graph';
 import type { WorldGraph } from './graph';
 import type { FactionSuccessionTrace } from '../types/factionAction';
@@ -69,8 +70,7 @@ function isLivingMemberOf(
   const node = graph.getNode(agentId);
   if (!node || node.type !== 'actor') return false;
   if (node.properties.armyState != null || node.properties.actorType === 'group') return false;
-  return graph
-    .getOutgoingEdges(agentId, 'member_of')
+  return getFactionMembershipEdges(graph, agentId)
     .some(e => e.target === factionId);
 }
 

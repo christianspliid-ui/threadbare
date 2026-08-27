@@ -214,7 +214,7 @@ function scoreInvolvement(
 
   // Causal (member_of, relates_to)
   if (event.actorId) {
-    const memberOf = graph.getOutgoingEdges(event.actorId, 'member_of');
+    const memberOf = getFactionMembershipEdges(graph, event.actorId);
     const relatesTo = graph.getOutgoingEdges(event.actorId, 'relates_to');
     if (memberOf.some(e => e.target === obj.nodeId) || relatesTo.some(e => e.target === obj.nodeId)) {
       return INVOLVEMENT_SCORES.causal;

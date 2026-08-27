@@ -497,7 +497,7 @@ function executeExcommunicate(
 
     const rep = (edge.properties.reputation as number) ?? 0;
     // Check if this member also belongs to a rival faction
-    const isInRivalFaction = state.graph.getOutgoingEdges(member.id, 'member_of')
+    const isInRivalFaction = getFactionMembershipEdges(state.graph, member.id)
       .some(me => rivalFactionIds.has(me.target));
 
     const score = (isInRivalFaction ? 1.0 : 0) + (1 - rep) * 0.5 + rng() * 0.1;

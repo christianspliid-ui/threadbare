@@ -11,6 +11,7 @@
  */
 
 import type { WorldGraph } from './graph';
+import { getFactionMembershipEdges } from './graphQueries';
 import {
   LOCATION_ROLE_ROSTERS,
   NPC_NAME_POOL,
@@ -358,7 +359,7 @@ export function assignFactionsToExistingNpcs(
     const npcRole = actor.properties.npcRole as NpcRole | undefined;
     if (!npcRole) continue;
 
-    const hasDataDrivenFaction = graph.getOutgoingEdges(actor.id, 'member_of')
+    const hasDataDrivenFaction = getFactionMembershipEdges(graph, actor.id)
       .some(edge => (edge.properties.factionDefId as string | undefined) != null);
     if (hasDataDrivenFaction) continue;
 

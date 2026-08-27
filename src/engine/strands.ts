@@ -14,6 +14,7 @@
  */
 
 import type { WorldGraph } from './graph';
+import { getFactionMembershipEdges } from './graphQueries';
 import { VALUE_PAIRS } from '../types/agent';
 import type { ValuePair, AxiologicalProfile } from '../types/agent';
 import type { ReachDomain } from '../types/traits';
@@ -308,7 +309,7 @@ export function getBondsStrand(graph: WorldGraph, agentId: string): BondsStrandD
 
   // Extract faction membership from member_of edges
   const factions: FactionInfo[] = [];
-  const memberEdges = graph.getOutgoingEdges(agentId, 'member_of');
+  const memberEdges = getFactionMembershipEdges(graph, agentId);
   for (const edge of memberEdges) {
     const factionNode = graph.getNode(edge.target);
     if (factionNode) {

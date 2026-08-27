@@ -207,6 +207,8 @@ export function createBattleNode(
       name: `Battle at ${hexNode.name}`,
       properties: {
         actorType: 'group',
+        // THR-1297: explicit kind tag — see engine/groupShape.ts.
+        groupKind: 'battle',
         battleState,
       },
     });

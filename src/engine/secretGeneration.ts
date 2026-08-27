@@ -18,6 +18,7 @@
  */
 
 import type { WorldGraph } from './graph';
+import { getFactionMembershipEdges } from './graphQueries';
 import type { GraphNode } from '../types/graph';
 import type { SecretType, SecretSource, KnowsSecretOfEdgeProperties } from '../types/secretsFavors';
 import { MAX_SECRETS_PER_AGENT, MAX_FAVORS_PER_AGENT } from '../types/secretsFavors';
@@ -116,7 +117,7 @@ function buildCandidates(agent: GraphNode, graph: WorldGraph): Candidate[] {
 
   // ─── hidden_allegiance ──────────────────────────────────────────────────
   // Agent belongs to factions with conflicting interests (rival factions)
-  const memberEdges = graph.getOutgoingEdges(agentId, 'member_of');
+  const memberEdges = getFactionMembershipEdges(graph, agentId);
   if (memberEdges.length >= 2) {
     // Two or more faction memberships — plausible hidden allegiance
     candidates.push({

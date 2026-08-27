@@ -16,6 +16,7 @@
  */
 
 import type { WorldGraph } from './graph';
+import { getFactionMembershipEdges } from './graphQueries';
 import type { EncounterCacheEntry } from './encounterCache';
 import { CRUD_TO_ENCOUNTER_TYPE, RARITY_TO_THREAT } from './encounterCache';
 import type { UnifiedActionTemplate } from '../types/unifiedAction';
@@ -82,7 +83,7 @@ export function generateFactionQuestCandidates(
   const candidates: EncounterCacheEntry[] = [];
 
   // Find all faction memberships for this agent
-  const memberEdges = graph.getOutgoingEdges(agentId, 'member_of');
+  const memberEdges = getFactionMembershipEdges(graph, agentId);
 
   // Pre-collect active ruin quest hooks once — applies boost for Adventurer's Guild members
   const activeRuinHooks = getActiveRuinQuestTemplateIds(graph, _tick);
@@ -257,7 +258,7 @@ export function generateFactionLifecycleCandidates(
   if (!definition) return candidates;
 
   // Check if agent is already a member of this faction
-  const memberEdges = graph.getOutgoingEdges(agentId, 'member_of')
+  const memberEdges = getFactionMembershipEdges(graph, agentId)
     .filter(e => {
       const props = e.properties as Partial<MemberOfEdgeProperties>;
       return props.factionDefId === factionDefId;

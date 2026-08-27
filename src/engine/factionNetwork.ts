@@ -1,4 +1,5 @@
 import type { GraphNode } from '../types/graph';
+import { getFactionMembershipEdges } from './graphQueries';
 import type { WorldGraph } from './graph';
 import type { MemberOfEdgeProperties } from '../types/disposition';
 import type { FactionDefinition } from '../types/faction';
@@ -553,8 +554,7 @@ export function getAnointedLeaderId(
   // The leader must still be a member of this faction. If they were expelled
   // (e.g. by a Schism partition or excommunicate), drop the edge silently —
   // the next phaseFactionSuccession pass will heal it.
-  const stillMember = graph
-    .getOutgoingEdges(edge.source, 'member_of')
+  const stillMember = getFactionMembershipEdges(graph, edge.source)
     .some(e => e.target === factionId);
   return stillMember ? edge.source : null;
 }

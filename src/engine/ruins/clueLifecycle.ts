@@ -13,6 +13,7 @@
  */
 
 import type { GameState } from '../../types/gameState';
+import { getFactionMembershipEdges } from '../graphQueries';
 import type { WorldGraph } from '../graph';
 import type { EncounterProgress } from '../../types/encounter';
 import type { AttentionTier } from '../../types/attention';
@@ -92,7 +93,7 @@ function getFactionLeaderBonus(agentId: string, graph: WorldGraph): number {
   if ((node.properties as AgentNodeProperties).actorType === 'ascendant') {
     return CLUE_BIAS_FACTION_LEADER;
   }
-  for (const edge of graph.getOutgoingEdges(agentId, 'member_of')) {
+  for (const edge of getFactionMembershipEdges(graph, agentId)) {
     const rep = (edge.properties as Record<string, unknown>).reputation as number | undefined;
     if (rep != null && rep >= FACTION_LEADER_MIN_REPUTATION) return CLUE_BIAS_FACTION_LEADER;
   }

@@ -36,6 +36,7 @@
  */
 
 import type { EncounterCacheEntry } from './encounterCache';
+import { getFactionMembershipEdges } from './graphQueries';
 import type { WorldGraph } from './graph';
 import type { GraphNode } from '../types/graph';
 import { resolveLocationToHex } from './encounterAwareness';
@@ -399,7 +400,7 @@ export function computeRuinsBonus(
   }
 
   // Check Adventurers Guild membership via member_of edges
-  const memberEdges = graph.getOutgoingEdges(agentId, 'member_of');
+  const memberEdges = getFactionMembershipEdges(graph, agentId);
   for (const edge of memberEdges) {
     const factionDefId = edge.properties?.factionDefId as string | undefined;
     if (factionDefId !== 'adventuring_guild') continue;

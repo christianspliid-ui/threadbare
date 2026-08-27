@@ -1,4 +1,5 @@
 import type { GameState, TickEvent } from '../types/gameState';
+import { getFactionMembershipEdges } from './graphQueries';
 import { MAX_RECENT_EVENTS } from '../types/gameState';
 import { DEFAULT_REPUTATION } from '../types/disposition';
 import type {
@@ -3021,7 +3022,7 @@ export function applyEncounterAftermathReaction(
         const repShare = effect.inheritReputationShare ?? FACTION_SPLINTER_DEFAULT_REPUTATION_SHARE;
         for (const member of selectedMembers) {
           // Remove old member_of edge
-          const oldEdges = state.graph.getOutgoingEdges(member.id, 'member_of')
+          const oldEdges = getFactionMembershipEdges(state.graph, member.id)
             .filter(e => e.target === effect.sourceFactionId);
           for (const e of oldEdges) state.graph.removeEdge(e.id);
 
@@ -3127,7 +3128,7 @@ export function applyEncounterAftermathReaction(
         for (const memberEdge of absorbedMembers) {
           const absorbedRep = (memberEdge.properties?.reputation as number | undefined) ?? DEFAULT_FACTION_REPUTATION;
           // Check if already member of absorbing faction
-          const existingEdge = state.graph.getOutgoingEdges(memberEdge.source, 'member_of')
+          const existingEdge = getFactionMembershipEdges(state.graph, memberEdge.source)
             .find(e => e.target === effect.absorbingFactionId);
 
           const newRep = existingEdge

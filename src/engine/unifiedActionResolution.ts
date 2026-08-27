@@ -102,7 +102,7 @@ import type { SpherePressureEvent } from '../types/sphereAffinity';
 import { ACTION_PRESSURE_SUCCESS, ACTION_PRESSURE_FAILURE } from '../types/sphereAffinity';
 import { resolveRevelationAction } from './revelationEmitter';
 import { resolvePerceiveRelayAction, PERCEIVE_RELAY_TEMPLATE_IDS } from './ruins/perceiveRelay';
-import { getAvatarsOf } from './graphQueries';
+import { getAvatarsOf, getFactionMembershipEdges } from './graphQueries';
 import {
   STILLNESS_ESSENCE_REGEN,
   RECEDE_DISCOUNT_FRACTION,
@@ -602,7 +602,7 @@ function snapshotEncounterResolutionContext(
     reputation: number;
     role?: string;
   }>();
-  for (const edge of state.graph.getOutgoingEdges(action.actorId, 'member_of')) {
+  for (const edge of getFactionMembershipEdges(state.graph, action.actorId)) {
     const factionNode = state.graph.getNode(edge.target);
     factionMemberships.set(edge.target, {
       factionName: factionNode?.name ?? edge.target,
@@ -1659,8 +1659,7 @@ export function executeStepResult(
         .map(n => n.id)
         .filter(id => id !== action.actorId)
     : [];
-  const factionIds = state.graph
-    .getOutgoingEdges(action.actorId, 'member_of')
+  const factionIds = getFactionMembershipEdges(state.graph, action.actorId)
     .map(e => e.target);
   const activeOmenCategory = state.omenState?.primary?.category ?? null;
   const doomStage = state.doomClock?.currentStage ?? 0;

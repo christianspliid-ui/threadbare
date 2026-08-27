@@ -20,6 +20,7 @@
  */
 
 import type { WorldGraph } from './graph';
+import { getFactionMembershipEdges } from './graphQueries';
 import type { GraphNode } from '../types/graph';
 import type { MemberOfEdgeProperties } from '../types/disposition';
 import { resolveToParentLocation } from './sublocationShape';
@@ -117,7 +118,7 @@ export function resolveFactionNodeId(
   if (candidates.length === 1) return candidates[0];
 
   if (agentId) {
-    const existing = graph.getOutgoingEdges(agentId, 'member_of')
+    const existing = getFactionMembershipEdges(graph, agentId)
       .map(e => e.target)
       .find(t => candidates.includes(t));
     if (existing) return existing;
@@ -218,7 +219,7 @@ export function findMembershipEdge(
   agentId: string,
   factionId: string,
 ) {
-  return graph.getOutgoingEdges(agentId, 'member_of')
+  return getFactionMembershipEdges(graph, agentId)
     .find(e => e.target === factionId);
 }
 

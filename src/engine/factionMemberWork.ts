@@ -42,6 +42,7 @@
  */
 
 import type { GameState, TickEvent } from '../types/gameState';
+import { getFactionMembershipEdges } from './graphQueries';
 import type { GraphNode } from '../types/graph';
 import type { MemberOfEdgeProperties } from '../types/disposition';
 import type { FactionMemberWorkTrace } from '../types/factionAction';
@@ -302,7 +303,7 @@ function resolveForFaction(state: GameState, faction: GraphNode, events: TickEve
 
 /** Read a membership's current reputation. Returns 0 when the edge is gone. */
 function readReputation(state: GameState, agentId: string, factionDefId: string): number {
-  for (const edge of state.graph.getOutgoingEdges(agentId, 'member_of')) {
+  for (const edge of getFactionMembershipEdges(state.graph, agentId)) {
     const props = edge.properties as Partial<MemberOfEdgeProperties>;
     if (props.factionDefId === factionDefId) return props.reputation ?? 0;
   }

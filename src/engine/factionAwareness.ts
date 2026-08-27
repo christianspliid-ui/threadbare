@@ -34,6 +34,7 @@
  */
 
 import type { EncounterCacheEntry } from './encounterCache';
+import { getFactionMembershipEdges } from './graphQueries';
 import type { WorldGraph } from './graph';
 import { getDerivedMembershipRank } from './factionReputation';
 import type { ReachDomain } from '../types/traits';
@@ -107,7 +108,7 @@ export function getFactionAwarenessEntries(
 ): EncounterCacheEntry[] {
   if (!FACTION_NETWORK_AWARENESS) return [];
 
-  const memberEdges = graph.getOutgoingEdges(agentId, 'member_of');
+  const memberEdges = getFactionMembershipEdges(graph, agentId);
   if (memberEdges.length === 0) return [];
 
   const result: EncounterCacheEntry[] = [];

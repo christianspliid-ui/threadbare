@@ -11,7 +11,7 @@ import type { ReachDomain } from '../types/traits';
 import type { InfluenceTier, ThreadEdgeProperties, CourtPosition } from '../types/influence';
 import { TIER_NAMES } from '../types/influence';
 import { getAgentPortraitUrlFromProperties } from '../data/portrait-assets';
-import { getAgentFaction } from './graphQueries';
+import { getAgentFaction, getFactionMembershipEdges } from './graphQueries';
 import { isSublocationNode } from './sublocationShape';
 import type { ControlEffect } from '../types/controlEffect';
 import type { SphereName } from '../types/index';
@@ -523,7 +523,7 @@ export function getThreadedNodes(
           if (locNode) locationName = locNode.name;
         }
 
-        const memberOfEdges = graph.getOutgoingEdges(targetNode.id, 'member_of');
+        const memberOfEdges = getFactionMembershipEdges(graph, targetNode.id);
         let factionName: string | null = null;
         if (memberOfEdges.length > 0) {
           const factionNode = graph.getNode(memberOfEdges[0].target);

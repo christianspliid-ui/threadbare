@@ -38,6 +38,7 @@
  */
 
 import type { EncounterCacheEntry } from './encounterCache';
+import { getFactionMembershipEdges } from './graphQueries';
 import type { WorldGraph } from './graph';
 import type { DistanceMatrix } from './distanceMatrix';
 import type { ReputationReactionEffect } from '../types/traits';
@@ -582,7 +583,7 @@ function findVisibleAgents(
       if (agentNode.type !== 'actor') continue;
       if (agentNode.properties.actorType !== 'individual') continue;
       const spotlightTier = (agentNode.properties.spotlightTier ?? 'spotlight') as string;
-      const factionLinked = graph.getOutgoingEdges(edge.source, 'member_of')
+      const factionLinked = getFactionMembershipEdges(graph, edge.source)
         .some(memberEdge => (memberEdge.properties.factionDefId as string | undefined) != null);
       if (spotlightTier !== 'spotlight' && !factionLinked) continue;
       if (edge.source === sourceAgentId) continue; // Skip self
@@ -610,8 +611,8 @@ export function getSharedFactionSocialTemplates(
   targetAgentId: string,
   locationType: string,
 ): UnifiedActionTemplate[] {
-  const agentFactions = graph.getOutgoingEdges(agentId, 'member_of');
-  const targetFactions = graph.getOutgoingEdges(targetAgentId, 'member_of');
+  const agentFactions = getFactionMembershipEdges(graph, agentId);
+  const targetFactions = getFactionMembershipEdges(graph, targetAgentId);
 
   // Build set of factionDefIds for the target agent
   const targetFactionDefIds = new Set<string>();

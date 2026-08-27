@@ -16,6 +16,7 @@
  */
 
 import type { WorldGraph } from './graph';
+import { getFactionMembershipEdges } from './graphQueries';
 import type { MemberOfEdgeProperties } from '../types/disposition';
 
 /**
@@ -55,7 +56,7 @@ export function isEncounterVisibleToAgent(
     switch (prefix) {
       case 'faction': {
         // Exclude if agent IS a member of this faction (by factionDefId)
-        const memberEdges = graph.getOutgoingEdges(agentId, 'member_of');
+        const memberEdges = getFactionMembershipEdges(graph, agentId);
         const isMember = memberEdges.some(e => {
           const props = e.properties as Partial<MemberOfEdgeProperties>;
           return props.factionDefId === targetId;
@@ -83,7 +84,7 @@ export function isEncounterVisibleToAgent(
 
       case 'faction': {
         // Check if agent has member_of edge to this faction
-        const factionEdges = graph.getOutgoingEdges(agentId, 'member_of');
+        const factionEdges = getFactionMembershipEdges(graph, agentId);
         if (factionEdges.some(e => e.target === targetId)) return true;
         break;
       }

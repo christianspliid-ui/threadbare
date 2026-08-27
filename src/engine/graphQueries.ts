@@ -11,6 +11,9 @@
 
 import type { WorldGraph } from './graph';
 import type { GraphNode, GraphEdge } from '../types/graph';
+// THR-1297: the single group-family discriminator. Leaf module (types only), so it
+// cannot reintroduce the graphQueries -> groups cycle the old local mirror avoided.
+import { isGroupMembershipTarget } from './groupShape';
 
 // ─── Location ────────────────────────────────────────────────────
 
@@ -69,38 +72,31 @@ export function getLocationsInRegion(graph: WorldGraph, regionId: string): Graph
 
 /**
  * True when a `member_of` edge represents faction membership rather than
- * membership of a company.
+ * membership of a group (a company or, since THR-1297, a network).
  *
- * The `member_of` edge is shared by three kinds: agent → faction, army → faction
- * (`armySpawning.ts`), and — since THR-74 — agent → company. Any consumer that
+ * The `member_of` edge is shared by four kinds: agent → faction, army → faction
+ * (`armySpawning.ts`), agent → company (THR-74), and agent → network (THR-1288).
+ * Any consumer that
  * reads an agent's *outgoing* `member_of` edges and treats the target as the
  * agent's faction must filter with this first, or a companion of the Quiet Wardens
  * is read as belonging to a faction called "The Quiet Wardens".
  *
- * The predicate deliberately **excludes companies** rather than requiring
+ * The predicate deliberately **excludes group-family targets** rather than requiring
  * `actorType === 'faction'`: faction nodes are not uniformly tagged across worldgen
  * and fixtures, so a positive requirement would silently drop real faction
- * memberships. Companies are the only non-faction `member_of` target that exists,
- * so excluding them is both sufficient and safe.
+ * memberships. Excluding the group family is both sufficient and safe.
  *
- * Incoming edges queried *from* a known faction id need no guard — a company is
+ * THR-1297 widened that exclusion from *companies* to *companies and networks*. The old
+ * spelling rested on the premise "companies are the only non-faction `member_of` target",
+ * which the network kind (THR-1288) makes false — a network takes `member_of` contact
+ * edges exactly as a company takes members, so without this an agent's contact web would
+ * read as their faction at every raw call site.
+ *
+ * Incoming edges queried *from* a known faction id need no guard — a group is
  * never the target of a faction lookup.
  */
 export function isFactionMembershipEdge(graph: WorldGraph, edge: GraphEdge): boolean {
-  return !isCompanyMembershipTarget(graph, edge.target);
-}
-
-/**
- * Company discriminator, kept local to avoid a graphQueries → groups import cycle.
- * Mirrors `isCompanyNode` in `engine/groups/groupQueries.ts`: companies carry
- * `groupType`; armies share `actorType: 'group'` but carry `armyState` instead.
- */
-function isCompanyMembershipTarget(graph: WorldGraph, targetId: string): boolean {
-  const props = graph.getNode(targetId)?.properties as Record<string, unknown> | undefined;
-  if (!props) return false;
-  if (props.actorType !== 'group') return false;
-  if (props.armyState != null) return false;
-  return typeof props.groupType === 'string';
+  return !isGroupMembershipTarget(graph.getNode(edge.target));
 }
 
 /**

@@ -35,7 +35,7 @@ import {
 } from '../data/strategic-action-constants';
 import { emitTrace } from './traceBuffer';
 import type { TraceEntry } from '../types/trace';
-import { getAgentLocationId } from './graphQueries';
+import { getAgentLocationId, getFactionMembershipEdges } from './graphQueries';
 import { resolveLocationToHex } from './encounterAwareness';
 import { hexDistance } from '../lib/hexMath';
 import { scoreRoutePairBalance, ROUTE_FORMATION_BALANCE_BIAS } from './tradeRoute';
@@ -301,8 +301,13 @@ function findValidTargets(
     }
 
     case 'faction': {
-      // Find factions the actor is a member of
-      const memberEdges = graph.getOutgoingEdges(actorId, 'member_of');
+      // Find factions the actor is a member of.
+      //
+      // THR-1297 slice 1 fixed a live defect here: this read every outgoing `member_of`
+      // edge raw, so an agent travelling in a company had that *company* returned as a
+      // faction target — every faction-targeted undertaking could then be aimed at a
+      // band of three wanderers. The wrapper filters the group family out.
+      const memberEdges = getFactionMembershipEdges(graph, actorId);
       return memberEdges
         .map(e => graph.getNode(e.target))
         .filter(Boolean) as GraphNode[];

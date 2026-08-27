@@ -7,6 +7,7 @@
  */
 
 import type { WorldGraph } from './graph';
+import { getFactionMembershipEdges } from './graphQueries';
 import {
   THREAT_FACTION_WEIGHT,
   THREAT_HOSTILE_AGENT_WEIGHT,
@@ -45,7 +46,7 @@ export function computeHexThreatRating(graph: WorldGraph, locationId: string): n
         hostileCount++;
       }
       // Also check if agent belongs to a hostile faction
-      const memberEdges = graph.getOutgoingEdges(edge.source, 'member_of');
+      const memberEdges = getFactionMembershipEdges(graph, edge.source);
       for (const mEdge of memberEdges) {
         const faction = graph.getNode(mEdge.target);
         if (faction && ((faction.properties?.hostilityToPlayer as number) ?? 0) > 0.5) {
