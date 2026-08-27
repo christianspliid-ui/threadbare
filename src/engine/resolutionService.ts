@@ -153,8 +153,12 @@ export function classifyResolutionRoll(
 
 /**
  * Derive the OutcomeType from a roll breakdown.
+ *
+ * Exported since THR-1292 §4 so the decision board can enumerate the ladder over
+ * all 100 rolls without a second copy of this three-line rule. A copy would be the
+ * exact drift the one-band-ladder contract test exists to prevent.
  */
-function breakdownToOutcome(breakdown: ResolutionRollBreakdown): OutcomeType {
+export function breakdownToOutcome(breakdown: ResolutionRollBreakdown): OutcomeType {
   const success = breakdown.roll <= breakdown.threshold;
 
   if (breakdown.critClassification === 'critical_success') return 'critical_success';

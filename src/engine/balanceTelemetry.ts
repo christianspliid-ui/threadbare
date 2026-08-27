@@ -88,6 +88,17 @@ export interface BalanceCounters {
     threadedDecisions: number;
     idleReasons: Record<string, number>;
   }>;
+
+  // THR-1292 §4: shadow-board rollup. Counted only on decisions that actually
+  // carried a shadow verdict, so a run with the board off, or a decision whose
+  // board scoring threw, is *absent* from the denominator rather than silently
+  // scored as agreement.
+  /** Decisions on which the board produced a verdict. */
+  shadowDecisions: number;
+  /** Of those, how many agreed with legacy on the winning family. */
+  shadowAgreements: number;
+  /** Board-winner family counts — the decision mix the cutover gate reads. */
+  shadowWinnerFamilyCounts: Record<string, number>;
 }
 
 // ─── Milestones ───────────────────────────────────────────────────
@@ -192,6 +203,9 @@ function createEmptyCounters(): BalanceCounters {
     idleReasonCounts: {},
     decisionTemplateStats: {},
     decisionLocationSubtypeStats: {},
+    shadowDecisions: 0,
+    shadowAgreements: 0,
+    shadowWinnerFamilyCounts: {},
   };
 }
 
@@ -288,6 +302,18 @@ function updateCounters(counters: BalanceCounters, event: BalanceEvent): void {
     case 'encounter_decision': {
       const decisionType = event.decisionType ?? 'unknown';
       counters.encounterDecisionCounts[decisionType] = (counters.encounterDecisionCounts[decisionType] ?? 0) + 1;
+
+      // THR-1292 §4 shadow rollup. The guard is `shadowWinnerFamily !== undefined`
+      // rather than a truthiness test on `shadowAgreement`: a *disagreeing*
+      // decision is exactly the signal the shadow period exists to collect, and a
+      // truthy guard would drop every one of them from the denominator and report
+      // 100% agreement on a board that never agreed once.
+      if (event.shadowWinnerFamily !== undefined) {
+        counters.shadowDecisions++;
+        if (event.shadowAgreement) counters.shadowAgreements++;
+        const fam = event.shadowWinnerFamily;
+        counters.shadowWinnerFamilyCounts[fam] = (counters.shadowWinnerFamilyCounts[fam] ?? 0) + 1;
+      }
 
       if (event.idleReason) {
         counters.idleReasonCounts[event.idleReason] = (counters.idleReasonCounts[event.idleReason] ?? 0) + 1;

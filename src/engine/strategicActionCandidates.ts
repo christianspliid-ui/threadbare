@@ -29,6 +29,8 @@ import { WARLORD_STRATEGIC_TEMPLATES } from '../data/strategic-packs/warlordStra
 import {
   STRATEGIC_MAX_CANDIDATES_PER_ACTOR,
   STRATEGIC_MAX_CANDIDATES_PER_AMBITION,
+  STRATEGIC_VERB_IMPACT,
+  STRATEGIC_VERB_IMPACT_DEFAULT,
   STRATEGIC_CONTROL_RECLAIM_COOLDOWN_TICKS,
 } from '../data/strategic-action-constants';
 import { emitTrace } from './traceBuffer';
@@ -348,15 +350,12 @@ export function computeRouteFormationBias(
     * scoreRoutePairBalance(sourceLocation.properties, target.properties);
 }
 
+// The verb-impact table moved to `strategic-action-constants` when the board
+// began reading it as an undertaking's `payoffValue` fallback (THR-1292 §4). One
+// table, two readers — a copy here would let the board and the scorer it is being
+// measured against disagree about the same verb, invisibly in both files.
 function computeWorldImpact(template: StrategicActionTemplate): number {
-  switch (template.verb) {
-    case 'create': return 0.8;
-    case 'destroy': return 0.7;
-    case 'change': return 0.5;
-    case 'control': return 0.6;
-    case 'gather_info': return 0.3;
-    default: return 0.3;
-  }
+  return STRATEGIC_VERB_IMPACT[template.verb] ?? STRATEGIC_VERB_IMPACT_DEFAULT;
 }
 
 function computeRoleFit(actor: GraphNode, template: StrategicActionTemplate): number {
@@ -486,7 +485,7 @@ function determineGenerationReason(
   return 'ambition_progression';
 }
 
-function findAmbitionTemplate(templateId: string): AmbitionTemplate | undefined {
+export function findAmbitionTemplate(templateId: string): AmbitionTemplate | undefined {
   return AMBITION_TEMPLATES.find(t => t.id === templateId)
     ?? REACTIVE_AMBITION_TEMPLATES.find(t => t.id === templateId);
 }

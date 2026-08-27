@@ -16,6 +16,7 @@ import type {
   BalanceThreatBand,
   BalanceEvent,
   BalanceEncounterDecisionSummary,
+  BalanceShadowBoardSummary,
 } from '../types/balanceEval';
 import { getTrackedAgentEvents } from './balanceTelemetry';
 
@@ -149,6 +150,37 @@ export function buildBalanceRunSummary(
 
     // Encounter decision funnel summary
     encounterDecisions: computeEncounterDecisionSummary(c),
+
+    // THR-1292 §4: what the shadow board would have decided
+    shadowBoard: computeShadowBoardSummary(c),
+  };
+}
+
+/**
+ * Roll the shadow-board counters into shares the cutover gate can be read against.
+ *
+ * Returns `undefined` — not a zeroed record — when no decision carried a board
+ * verdict. A summary of zeros would present "the board chose idle 0% of the time"
+ * as a measurement, and the cutover gate would then pass its idle ceiling on a
+ * board that never ran. Absence is the honest answer and the CLI prints it as one.
+ */
+function computeShadowBoardSummary(
+  counters: BalanceCounters,
+): BalanceShadowBoardSummary | undefined {
+  const decisions = counters.shadowDecisions;
+  if (decisions === 0) return undefined;
+
+  const counts = counters.shadowWinnerFamilyCounts;
+  const share = (family: string): number => (counts[family] ?? 0) / decisions;
+
+  return {
+    decisions,
+    agreements: counters.shadowAgreements,
+    agreementRate: counters.shadowAgreements / decisions,
+    winnerFamilyCounts: { ...counts },
+    undertakingShare: share('strategic_action'),
+    encounterShare: share('encounter'),
+    idleShare: share('idle'),
   };
 }
 

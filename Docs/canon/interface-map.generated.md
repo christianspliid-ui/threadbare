@@ -15,12 +15,12 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 59 |
+| 🟢 LIVE | 60 |
 | 🟠 PARTIAL | 2 |
 | 🔴 LEAKED | 8 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 14 |
-| **Total** | **83** |
+| **Total** | **84** |
 
 ## Contracts by producing subsystem
 
@@ -115,6 +115,7 @@ remediation ticket or the build fails.
 | `authored-tier-ramp-target-scaled-price` | The authored per-tier advancement ramp reaches the player. `TIER_ADVANCEMENT_ESSENCE_COST` / `TIER_ADVANCEMENT_DIFFICULTY` / `TIER_ADVANCEMENT_DURATION` author a 3-row ladder, but only row 1 had a consumer — a static template step cannot read its target's tier — so advancing a Mundane artifact and a Mythic one both cost 4 essence at difficulty 0.20, and both took 2–3 ticks. | function: `tierScaledEssenceCost`, `tierScaledDifficulty`, `tierScaledDuration`, `essenceCostContext` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `branch-decision-writes-archetype-drift` | A fork the mortal took becomes part of who they are: taking the cunning branch drifts them cunning, so a mortal the player keeps leaning one way visibly becomes that person instead of resetting each encounter. | function: `applyAgentDecidedBranches`, `decideBranchPole`, `decideBranchRoute`, `driftAxisIdForValuePair` | Personality & Emergent Traits | 🔴 LEAKED | THR-883 |
 | `compulsion-card-plants-agent-decision-bias` | A god can steer one mortal without seizing them: the card plants an urge, and that mortal's own next decision leans toward it — you steered them, they still chose. | function: `derivePlantedCompulsionEncounterBias`, `phasePlantedCompulsionDecay` | Encounters & Dilemmas | 🔴 LEAKED | THR-883 |
+| `decision-board-shadow-telemetry` | Before one ranking replaces the three winner-take contests an agent’s decision passes through today, what that ranking *would* have chosen is on the record — so the swap is judged against a measured decision mix rather than against confidence. | event: `decision_board_comparison`, `decision_board_error`, `shadowWinnerFamily`, `shadowWinnerId`, `shadowAgreement` | Strategic Projects & Control | 🟢 LIVE | — |
 | `location-condition-taxes-movement-and-gates-templates` | A place can be in a state — a pass shut for the season, a town under a plague scare — and that state is something other systems act on, not scenery. | function: `isLocationCarrier`, `LOCATION_CONDITION_MOVEMENT_TAX`, `buildLocationTargetContext`, `LocationProfileModal` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `meeting-trait-seeds-land-as-narrative-descriptors` | The choices you made while meeting your First stay visible in who they are — the descriptors the meeting authored read back on their character sheet and in their backstory, instead of every First being described in the same default words. | node-prop: `narrativeDescriptors` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 | `membership-change-writes-rank-and-faction-rank-gate-reads-it` | An ending can make someone a member of a faction, or move them up inside it — and a later scene can require the rank it gave them. | function: `joinFaction`, `leaveFaction`, `adjustMemberRank`, `resolveFactionNodeId`, `buildPredicateContext`, `FACTION_RANK_MAX` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
@@ -228,10 +229,10 @@ remediation ticket or the build fails.
 
 - **Intent:** Ambitions explain motives — receipts carry ambition provenance into foreshadowing.
 - **Producer → Consumer:** Ambitions & Undertakings → Omens & Atmospheric Pressure
-- **Production hits:** 4 total — 2 write, 1 read, 1 unclassified
+- **Production hits:** 5 total — 2 write, 1 read, 2 unclassified
 - **Write sites:** `src/engine/agentSelection.ts`, `src/engine/encounterScoring.ts`
 - **Read sites:** `src/engine/foreshadowing/motiveReceipt.ts`
-- **Other hits:** `src/components/CMS/tunableConstants.ts`
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/engine/decisionBoard.ts`
 - **Verdict:** Verified 2026-07-23: ambitionBoost term appears in motiveReceipt provenance. Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified)
 
 ### `ambition-player-visibility` — 🟢 LIVE
@@ -467,10 +468,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Domain Capability*, *UnifiedActionTemplate*
 - **Module:** `src/engine/unifiedActionResolution.ts`
-- **Production hits:** 161 total — 1 write, 2 read, 158 unclassified
+- **Production hits:** 162 total — 1 write, 2 read, 159 unclassified
 - **Write sites:** `src/data/unified-action-templates.ts`
 - **Read sites:** `src/engine/targetActions.ts`, `src/engine/unifiedActionResolution.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/ActionDrawer.tsx` +153 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/ActionDrawer.tsx` +154 more
 - **Verdict:** Verified 2026-07-25: THR-728: `unified-action-templates.ts` authors `steps[].difficulty`; `resolveUncontestedStep` reads it for `source === 'player'` (the auto-success early-return is now gated behind `PLAYER_CAST_VARIANCE_ENABLED`), and `targetActions.ts` reads the same field via `maxStepDifficulty` to render the focused card's risk line. Measured over 400 seeds: the outcome set for a positive-difficulty cast is >1 band. THR-1073 rerouted both read sites through `tierScaledDifficulty`: a step declaring `difficultyContext: 'target_tier_scaled'` treats its authored `difficulty` as a tier-1 baseline and resolves the real value from the target's tier. Both sites resolve through the same helper, so the card's risk line cannot drift from the roll; a step without the marker is returned unchanged.
 
 ### `authored-tier-ramp-target-scaled-price` — 🟢 LIVE
@@ -610,6 +611,17 @@ exit
 - **Read sites:** `src/components/Game/ChapterView.tsx`, `src/engine/playerReceipts.ts`
 - **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/data/content-eval/compositionContract.ts`, `src/data/content-eval/encounterPackage.ts`, `src/data/encounters/apotheosis-ascension.ts`, `src/engine/aftermathWords.ts` +2 more
 - **Verdict:** Verified 2026-07-25: contested_won/contested_lost shipped with TB-044 and had display strings in ChapterView, a playerReceipts severity mapping, and an isActionSuccess branch — with ZERO producers until this PR (grep at implementation time: the only non-declaration hits were the consumer-side switch arms). phaseUnifiedActionProgress now stamps the band on both sides of a resolved group contest, so the vocabulary the UI was already built to speak finally gets spoken. Locked by bandOpposition.test.ts § "gives the contested outcome band its first production producer".
+
+### `decision-board-shadow-telemetry` — 🟢 LIVE
+
+- **Intent:** Before one ranking replaces the three winner-take contests an agent’s decision passes through today, what that ranking *would* have chosen is on the record — so the swap is judged against a measured decision mix rather than against confidence.
+- **Producer → Consumer:** Encounters & Dilemmas → Strategic Projects & Control
+- **Module:** `src/engine/decisionBoard.ts`
+- **Production hits:** 6 total — 1 write, 1 read, 4 unclassified
+- **Write sites:** `src/engine/phaseAgentDecision.ts`
+- **Read sites:** `src/engine/balanceTelemetry.ts`
+- **Other hits:** `src/data/strategic-action-constants.ts`, `src/engine/decisionBoard.ts`, `src/types/balanceEval.ts`, `src/types/trace.ts`
+- **Verdict:** Verified 2026-08-27: Two 150-tick medium CLI runs scored 1913 (seed 42) and 1809 (seed 99) decisions on the shadow board and printed the block via `balance summary`. The cutover gate PASSES on seed 42 (undertaking 11.9%, encounter 70.7%, idle 17.5%) and FAILS on seed 99 (undertaking 4.1%, below the 0.10 floor), so the mode stays `shadow` — which is the telemetry doing its job. decisionBoardLiveness.test.ts asserts both channels carry a varying signal on the real pipeline.
 
 ### `draw-together-carries-caster-sphere-to-the-name` — 🟢 LIVE
 
@@ -886,10 +898,10 @@ exit
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 232 total — 1 write, 1 read, 230 unclassified
+- **Production hits:** 234 total — 1 write, 1 read, 232 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts` +225 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts` +227 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `relocation-intent-steers-agent-movement` — 🔵 UNVERIFIED-OK
@@ -1022,10 +1034,10 @@ exit
 - **Producer → Consumer:** Strategic Projects & Control → Encounters & Dilemmas
 - **UL terms:** *Outcome Band*
 - **Module:** `src/engine/stepResolutionCore.ts`
-- **Production hits:** 5 total — 1 write, 2 read, 2 unclassified
+- **Production hits:** 6 total — 1 write, 2 read, 3 unclassified
 - **Write sites:** `src/engine/stepResolutionCore.ts`
 - **Read sites:** `src/engine/undertakingCheckpoints.ts`, `src/engine/unifiedActionResolution.ts`
-- **Other hits:** `src/engine/encounter.ts`, `src/engine/meetingEncounter.ts`
+- **Other hits:** `src/engine/decisionBoard.ts`, `src/engine/encounter.ts`, `src/engine/meetingEncounter.ts`
 - **Verdict:** Verified 2026-08-27: stepResolutionCore.contract.test.ts pins the permitted direct-caller set and asserts the encounter entry point and a direct core call agree on band/roll/probability; the second caller is exercised in the live simulation by undertakingCheckpointLiveness.test.ts (630 rolled checkpoints across all six bands on a 150-tick seed-42 run).
 
 ### `sunder-window-amplifies-company-decay` — 🟢 LIVE

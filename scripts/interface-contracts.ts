@@ -2073,6 +2073,44 @@ export const CONTRACTS: readonly Contract[] = [
     deferralTicket: 'THR-1293',
   },
   {
+    id: 'decision-board-shadow-telemetry',
+    // Producer is the decision pipeline (phase 2b, ENCOUNTERS); the consumer named
+    // here is the subsystem whose go-live this telemetry gates, not the module that
+    // physically reads it — the balance rollup and the CLI block are the read sites
+    // below, and "Balance telemetry" is not a game subsystem the registry knows.
+    producerSystem: ENCOUNTERS,
+    consumerSystem: 'Strategic Projects & Control',
+    intent:
+      'Before one ranking replaces the three winner-take contests an agent’s decision passes through today, what that ranking *would* have chosen is on the record — so the swap is judged against a measured decision mix rather than against confidence.',
+    mechanism: {
+      kind: 'event',
+      symbols: [
+        'decision_board_comparison',
+        'decision_board_error',
+        'shadowWinnerFamily',
+        'shadowWinnerId',
+        'shadowAgreement',
+      ],
+      module: 'src/engine/decisionBoard.ts',
+    },
+    writeSites: [
+      'src/engine/phaseAgentDecision.ts',
+    ],
+    readSites: [
+      'src/engine/balanceTelemetry.ts',
+      'src/engine/balanceSummary.ts',
+      'scripts/cli.ts',
+    ],
+    // Live from day one, unlike its sibling above: the consumer is the balance
+    // rollup and the CLI block, both of which exist and both of which were read
+    // to produce the gate verdict below. Nothing here waits on a later doc.
+    verifiedLive: {
+      date: '2026-08-27',
+      evidence:
+        'Two 150-tick medium CLI runs scored 1913 (seed 42) and 1809 (seed 99) decisions on the shadow board and printed the block via `balance summary`. The cutover gate PASSES on seed 42 (undertaking 11.9%, encounter 70.7%, idle 17.5%) and FAILS on seed 99 (undertaking 4.1%, below the 0.10 floor), so the mode stays `shadow` — which is the telemetry doing its job. decisionBoardLiveness.test.ts asserts both channels carry a varying signal on the real pipeline.',
+    },
+  },
+  {
     id: 'mentorship-rides-undertaking-checkpoints',
     producerSystem: 'Strategic Projects & Control',
     consumerSystem: AMBITIONS,

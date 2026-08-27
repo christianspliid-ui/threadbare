@@ -266,6 +266,16 @@ describe('contract 2 — one band ladder in the engine', () => {
       .map((f) => f.replace(/.*[\\/]/, ''))
       .sort();
     expect(importers).toEqual([
+      // Added in slice 5 (THR-1292 §4), deliberately and in the open. The decision
+      // board *forecasts* a band rather than rolling one: it enumerates all 100
+      // rolls through `classifyResolutionRoll` + `breakdownToOutcome` +
+      // `mapResolverOutcomeToStep` + `CHECKPOINT_EFFECT_BY_BAND` to get
+      // `P(advance)`. It draws nothing, decides nothing, and — the point of this
+      // pin — reaches a band only through the same exported mapper as every other
+      // entry here, so the ladder stays single-implementation. A forecast that
+      // hand-rolled the classification would drift from the dice silently, which
+      // is the failure this set exists to prevent, not an instance of it.
+      'decisionBoard.ts',
       'encounter.ts',
       'encounterScoring.ts',
       'meetingEncounter.ts',
