@@ -386,6 +386,49 @@ export interface AmbitionStrategicProfile {
   readonly reachEmphasis: Partial<Record<ReachDomain, number>>;
 }
 
+// ─── Binding Ledger (THR-1296 doc 3 §3) ─────────────────────────────
+//
+// Why records and not a `bound_by` edge, addressed against the
+// relationships-are-edges rule rather than skipped: an edge needs two graph
+// endpoints, and the undertaking side of a binding is not a graph node. The
+// ratified substrate verdict (THR-1280 addendum) put undertakings in the
+// strategic runtime as `StrategicProjectRuntime` records — there is no `project`
+// node type in `src/types/graph.ts` — so a `bound_by` edge would first require
+// inventing a node type, which the no-new-node-types rule forbids and nothing in
+// the binding ruling requests. The narrower ground holds too: that rule governs
+// *entity-to-entity* relationships, and a binding is bookkeeping between an
+// entity and a runtime record. The traversal-shaped query an edge would have
+// served ("is this node bound?") is answered by the registry's runtime reverse
+// index plus the `WorldGraph.removeNode` hook.
+
+/** Why a binding stopped being live. */
+export type UndertakingBindingBrokenCause =
+  | 'node_removed'
+  | 'deceased'
+  | 'severed';
+
+/**
+ * One cast or stage slot of one undertaking, bound to one graph node.
+ *
+ * `status: 'broken'` is terminal and triggers a re-bind — it is never a value any
+ * scorer reads. That is the THR-1286 lesson (dead records poison scorers) applied
+ * by construction rather than by discipline.
+ */
+export interface UndertakingBindingRecord {
+  readonly projectId: string;
+  /** The cast-spec key this record fills (`'$anchor'`, an authored cast key, …). */
+  readonly castKey: string;
+  readonly nodeId: string;
+  readonly kind: 'actor' | 'location';
+  readonly persistence: import('./encounter').EncounterSupportPersistence;
+  readonly boundAtTick: number;
+  readonly stepIndex: number;
+  status: 'live' | 'broken' | 'released';
+  brokenCause?: UndertakingBindingBrokenCause;
+  /** Tick at which status left `'live'` — inspection only. */
+  endedAtTick?: number;
+}
+
 // ─── Strategic Runtime State ────────────────────────────────────────
 // Aggregate runtime state stored on GameState for strategic actions.
 
@@ -396,4 +439,11 @@ export interface StrategicRuntimeState {
   readonly controls: StrategicControlState[];
   /** Rolling history window for inspection */
   readonly history: StrategicHistoryEntry[];
+  /**
+   * The binder's persistence ledger (THR-1296). Optional so a world saved before
+   * the binder loads as one with no bindings rather than throwing (NFP #6/#4);
+   * every reader treats absent as empty. The `Map<nodeId, recordIds>` reverse
+   * index is a runtime-owned lazy derivation, deliberately not serialized.
+   */
+  bindings?: UndertakingBindingRecord[];
 }
