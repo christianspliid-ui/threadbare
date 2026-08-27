@@ -290,7 +290,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `game` (1) | `gameInit.ts` | — |
 | `graph` (5) | `graph.ts`, `graphConditions.ts`, `graphOpExecutor.ts`, `graphQueries.ts`, `graphUtils.ts` | `THR-1296`, `THR-1297`, `THR-786`, `THR-822`, `THR-841` |
 | `group` (1) | `groupShape.ts` | `THR-1297` |
-| `groups` (15) | `groups/bandOpposition.ts`, `groups/bandSpawner.ts`, `groups/groupCohesion.ts`, `groups/groupDissolution.ts`, `groups/groupEligibility.ts`, `groups/groupFormation.ts`, `groups/groupFray.ts`, `groups/groupMovement.ts`, `groups/groupNames.ts`, `groups/groupParting.ts`, `groups/groupQueries.ts`, `groups/groupResolution.ts`, `groups/groupReunion.ts`, `groups/groupSeeking.ts`, `groups/phaseGroups.ts` | `TB-044`, `THR-1174`, `THR-731`, `THR-732`, `THR-74` |
+| `groups` (15) | `groups/bandOpposition.ts`, `groups/bandSpawner.ts`, `groups/groupCohesion.ts`, `groups/groupDissolution.ts`, `groups/groupEligibility.ts`, `groups/groupFormation.ts`, `groups/groupFray.ts`, `groups/groupMovement.ts`, `groups/groupNames.ts`, `groups/groupParting.ts`, `groups/groupQueries.ts`, `groups/groupResolution.ts`, `groups/groupReunion.ts`, `groups/groupSeeking.ts`, `groups/phaseGroups.ts` | `TB-044`, `THR-1174`, `THR-1297`, `THR-731`, `THR-732`, `THR-74` |
 | `guild` (1) | `guildSeeding.ts` | — |
 | `hex` (7) | `hexActionBridge.ts`, `hexActorIndex.ts`, `hexGrid.ts`, `hexMovementPath.ts`, `hexRegion.ts`, `hexVignette.ts`, `hexZoom.ts` | `TB-046`, `THR-188` |
 | `hidden` (2) | `hiddenMarkProse.ts`, `hiddenMarks.ts` | `THR-132` |
@@ -312,6 +312,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `modifiers` (1) | `modifiers.ts` | — |
 | `monster` (1) | `monsterFactionSeed.ts` | — |
 | `movement` (3) | `movementCandidates.ts`, `movementCost.ts`, `movementExecution.ts` | `THR-1143` |
+| `naming` (1) | `naming/workNames.ts` | `THR-1291`, `THR-1297` |
 | `narrative` (2) | `narrative-constants.ts`, `narrative.ts` | — |
 | `notable` (1) | `notableAgendas.ts` | `THR-225`, `THR-630`, `THR-66` |
 | `notification` (3) | `notificationRouter.ts`, `notificationThreadingGate.ts`, `notificationVisibilityFilter.ts` | `THR-666`, `THR-667`, `THR-727` |
@@ -396,4 +397,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 26 registered subsystems (1 dormant) · 99 tick phases · 177 engine domains · 521 modules._
+_Counts: 26 registered subsystems (1 dormant) · 99 tick phases · 178 engine domains · 522 modules._
