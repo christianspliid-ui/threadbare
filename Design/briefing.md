@@ -1,11 +1,11 @@
 # Briefing
-**Generated:** 2026-08-27 20:00 local (18:00 UTC) · keep-work-flowing-cc
+**Generated:** 2026-08-27 20:55 local (18:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
 **Play two encounters, then approve the batch-2 brief — [THR-1130](https://linear.app/threadbare/issue/THR-1130) + [THR-1222](https://linear.app/threadbare/issue/THR-1222/run-retrofit-batch-2-the-camp-seven-through-the-factory-line-shrine).**
 
-The build shelf is now **empty** — zero jobs waiting. The one job in flight ([the action library](https://linear.app/threadbare/issue/THR-1297)) just finished its third slice of six, so it has roughly two or three hours left in it. This approval is the only thing on your list that puts a new job on the shelf without costing a design session first.
+Unchanged from the 20:00 brief, and the clock has moved a little. The build shelf is still **empty**. The one job in flight — [the action library](https://linear.app/threadbare/issue/THR-1297) — finished its third slice at 19:56 and picked up the fourth just after 20:00, so it has roughly two hours left in it. This approval is the only thing on your list that puts a new job on the shelf without costing a design session first.
 
 Open the *good ending* links first — about five minutes, and the bond chip now names who owes whom:
 
@@ -31,9 +31,10 @@ The question is yours: *are they worth meeting twice?* Then [the brief](https://
 
 **Starved — 0 items Ready for Dev.** Nothing is waiting to be picked up.
 
-- **In Dev: 4.** One live — [the action library](https://linear.app/threadbare/issue/THR-1297), slice 3 of 6 merged 19:56; three slices left. The other three are parked and are all standing asks above ([THR-1130](https://linear.app/threadbare/issue/THR-1130), [THR-1133](https://linear.app/threadbare/issue/THR-1133), [THR-1168](https://linear.app/threadbare/issue/THR-1168)).
-- When the action library finishes, there is nothing behind it. The lead ask is the cheapest fix; a design session is the other.
+- **In Dev: 4.** One live — [the action library](https://linear.app/threadbare/issue/THR-1297); [slice 3](https://github.com/christianspliid-ui/threadbare/pull/1672) merged 19:56 and slice 4 is being built now, with no pull request open yet. Two slices behind it after that.
+- The other three are parked and are all standing asks above — [THR-1130](https://linear.app/threadbare/issue/THR-1130), [THR-1133](https://linear.app/threadbare/issue/THR-1133), [THR-1168](https://linear.app/threadbare/issue/THR-1168).
+- When the action library finishes there is nothing behind it. The lead ask is the cheapest fix; a design session is the other. The orchestrator re-checked every waiting ticket one by one this afternoon and reached the same verdict: **every startable item left is a design job**, so the shelf cannot be refilled downstream.
 
 ## Health
 
-All green — deploy, automated checks, background jobs, scheduled lanes and the branch reaper are all normal. The one open signal is the 20–22 August lane gap, which is a standing ask above rather than a live fault.
+All green — the live site is serving the latest commit, automated checks, background jobs, scheduled lanes and the branch reaper are all normal, and no pull request is waiting on a gate. The one open signal is the 20–22 August lane gap, which is a standing ask above rather than a live fault.
