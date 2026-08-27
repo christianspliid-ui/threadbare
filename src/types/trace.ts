@@ -451,7 +451,10 @@ export type TraceCategory =
   | 'effect.rule_override_consumed'
   // Consolidation — the two primitives wired in stage 4 (THR-1242)
   | 'effect.suppressed'
-  | 'effect.revealed';
+  | 'effect.revealed'
+  // The binder — scored cast/stage binding + persistence ledger (THR-1296)
+  | 'binding_decision'
+  | 'binding_severed';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'edge_schema_refused',
@@ -816,6 +819,9 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'effect.rule_override_consumed',
   'effect.suppressed',
   'effect.revealed',
+  // The binder (THR-1296)
+  'binding_decision',
+  'binding_severed',
 ];
 
 /** Base shape for all trace entries */
@@ -979,6 +985,76 @@ export interface EffectRevealedTrace extends TraceBase {
   range: number;
   /** How many locations became known that were not already. */
   revealedCount: number;
+}
+
+/** One scored row on the binder's board — reuse, modify, or the single mint row. */
+export interface BindingDecisionRow {
+  /** Candidate node id, or the literal `'mint'` for the mint row. */
+  nodeId: string;
+  /** Whether this row is the additive-modify variant of the candidate. */
+  modified: boolean;
+  score: number;
+  castRoleFit: number;
+  scarcity: number;
+  storyTies: number;
+  distance: number;
+  identity: number;
+  /** Present only when the row was excluded before scoring mattered. */
+  vetoed?: 'identity_contradiction';
+}
+
+/**
+ * Trace: the binder chose who fills a cast slot (THR-1296 §2).
+ *
+ * One per cast slot per bind pass, and — following `UndertakingCheckpointTrace`'s
+ * stated emission rule — **emitted on refusals and deferrals too**. A slot that
+ * bound nothing is exactly the case a reader needs to see; a trace that only
+ * records successes cannot answer "why is this moment generic?", which is the
+ * question this system exists to make answerable.
+ *
+ * `rows` is capped at `BINDER_MAX_CANDIDATE_ROWS` — the payload is a debugging
+ * aid, not a ledger, and the ledger lives in `strategicState.bindings`.
+ */
+export interface BindingDecisionTrace extends TraceBase {
+  category: 'binding_decision';
+  projectId: string;
+  castKey: string;
+  stepIndex: number;
+  mode: 'reuse' | 'modify' | 'mint' | 'deferred_awaiting_mint' | 'refused';
+  winnerNodeId?: string;
+  /** Why nothing bound, when `mode` is `'refused'`. */
+  refusedReason?: 'no_candidates' | 'all_vetoed' | 'mint_queue_full' | 'binder_error';
+  rows: ReadonlyArray<BindingDecisionRow>;
+  /** Rows considered before the trace cap — `rows.length` may be smaller. */
+  rowsConsidered: number;
+}
+
+/**
+ * Trace: a binding stopped being live (THR-1296 §4).
+ *
+ * `cause` names the reaper class, which is the whole point — before this, the
+ * `removeNode` funnel was silent, so a siege razing a bound stage and a
+ * housekeeping sweep dissolving one were indistinguishable from outside.
+ */
+export interface BindingSeveredTrace extends TraceBase {
+  category: 'binding_severed';
+  projectId: string;
+  castKey: string;
+  nodeId: string;
+  /**
+   * The first three mirror `UndertakingBindingBrokenCause` exactly — a severance
+   * trace must be able to name every cause the ledger can record, or the two
+   * vocabularies drift and the trace silently under-reports (the THR-928 shape).
+   * The last two are trace-only: a seed drop and a deferred dissolution are events
+   * worth seeing that do not leave a `broken` ledger record behind them.
+   */
+  cause:
+    | 'node_removed'
+    | 'deceased'
+    | 'severed'
+    | 'seed_drop'
+    | 'dissolution_deferred';
+  persistence: 'must-persist' | 'scene-only';
 }
 
 export interface TraceBase {
@@ -2792,6 +2868,8 @@ export type TraceEntry =
   | RuleOverrideConsumedTrace
   | EffectSuppressedTrace
   | EffectRevealedTrace
+  | BindingDecisionTrace
+  | BindingSeveredTrace
   | FilterPipelineTrace
   | ScoringTrace
   | MovementTrace

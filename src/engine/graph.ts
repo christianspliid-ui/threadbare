@@ -15,6 +15,24 @@ export class WorldGraph {
   private outgoing = new Map<string, Set<string>>(); // nodeId → Set<edgeId>
   private incoming = new Map<string, Set<string>>(); // nodeId → Set<edgeId>
 
+  /**
+   * Removal notification (THR-1296 §4). Registered per session; unset by default.
+   *
+   * `removeNode` is the sole funnel all ~25 deleting call sites already pass
+   * through, and it was entirely silent — so a reaper could take a node an
+   * undertaking had bound as must-persist and nothing would ever notice. One seam
+   * covers every reaper, including the two that bypass the lifecycle entirely
+   * (`battleAftermath` commander kill and sublocation destruction) and any reaper
+   * not yet written; per-reaper enforcement would have been routed around by the
+   * unguarded generic `remove_node` GraphOp.
+   *
+   * Cost is one callback invocation on a rare event — removals are not per-tick
+   * work. Fail-soft in both directions: unset, the binder's lazy dual gone-test
+   * catches the breakage one checkpoint later; and a throwing callback must never
+   * take the tick loop down with it (NFP #4), so the invocation is guarded.
+   */
+  onNodeRemoved?: (nodeId: string) => void;
+
   // --- Node operations ---
 
   addNode(node: GraphNode): void {
@@ -31,6 +49,10 @@ export class WorldGraph {
   }
 
   removeNode(id: string): void {
+    // Only notify for a node that was actually here — removing an absent id is a
+    // no-op today and must stay one, or every speculative delete fires a severance.
+    const existed = this.nodes.has(id);
+
     // Remove all connected edges first
     const allEdges = this.getAllEdgesForNode(id);
     for (const edge of allEdges) {
@@ -39,6 +61,17 @@ export class WorldGraph {
     this.nodes.delete(id);
     this.outgoing.delete(id);
     this.incoming.delete(id);
+
+    // Notify AFTER the removal completes, so an observer that re-reads the graph
+    // sees the world the removal produced rather than a half-torn-down one.
+    if (existed && this.onNodeRemoved) {
+      try {
+        this.onNodeRemoved(id);
+      } catch {
+        // NFP #4: the tick loop must never crash. A broken observer degrades to
+        // the unset case — lazy validation catches the breakage at the next bind.
+      }
+    }
   }
 
   updateNode(id: string, updates: Partial<GraphNode>): void {

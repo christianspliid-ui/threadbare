@@ -614,7 +614,21 @@ export interface DissolutionEvent {
 export function checkDissolutions(
   graph: WorldGraph,
   tick: number,
-  encounterProgress: Array<{ encounterId: string; actorId: string; status: 'active' | 'abandoned' | 'completed' }> = []
+  encounterProgress: Array<{ encounterId: string; actorId: string; status: 'active' | 'abandoned' | 'completed' }> = [],
+  /**
+   * Binding hold (THR-1296 §4) — housekeeping defers, it does not destroy.
+   *
+   * Optional and absent by default, so every existing caller and test keeps today's
+   * behavior exactly. When supplied (by the orchestrator, from the binding registry),
+   * a sublocation currently bound as an undertaking's stage is skipped rather than
+   * dissolved; the predicate traces the deferral itself, so this sweep never needs to
+   * know what a binding is. Dissolution resumes on its own once the binding releases —
+   * the node is not made immortal, only busy.
+   *
+   * This is deliberately NOT how a siege behaves: narrative reapers proceed and break
+   * the binding loudly. Only chores wait.
+   */
+  isBoundStage?: (nodeId: string) => boolean
 ): DissolutionEvent[] {
   const events: DissolutionEvent[] = [];
 
@@ -676,6 +690,13 @@ export function checkDissolutions(
         shouldDissolve = true;
         reason = `conditional predicate false: ${persistence.predicate}`;
       }
+    }
+
+    // THR-1296: a bound stage is busy, not immortal. Checked after the dissolution
+    // decision rather than before it, so the trace records "this one would have
+    // dissolved now" — a hold nobody was going to exercise is not worth a trace line.
+    if (shouldDissolve && isBoundStage?.(sublocation.id)) {
+      continue;
     }
 
     if (shouldDissolve && parentLocationId) {

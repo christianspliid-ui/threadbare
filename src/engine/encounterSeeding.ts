@@ -106,6 +106,7 @@ interface ResolvedInheritance {
 function resolveSeedInheritance(
   seed: PendingEncounterSeed,
   graph: WorldGraph,
+  tick: number,
 ): ResolvedInheritance {
   const applied = seed.inheritedTargetId !== undefined || seed.inheritedBindings !== undefined;
 
@@ -120,7 +121,33 @@ function resolveSeedInheritance(
   let bindingCount = 0;
   let droppedBindingCount = 0;
   if (seed.inheritedBindings && seed.inheritedBindings.length > 0) {
-    const survivors = seed.inheritedBindings.filter(b => graph.getNode(b.nodeId));
+    // THR-1296 §4: the drop keeps its semantics and stops being silent.
+    //
+    // Two changes, both small. The survivor test is now the **dual gone-test** — this
+    // site checked node absence only while its sibling used `isAgentGone`, so a
+    // deceased echo (THR-479 keeps those nodes forever) survived inheritance here and
+    // not there. That inconsistency was inherited deliberately; it no longer is.
+    // And each drop emits `binding_severed`, so a scene that quietly lost its cast
+    // between planting and spawning says so.
+    const survivors = seed.inheritedBindings.filter(b => {
+      const node = graph.getNode(b.nodeId);
+      const gone = !node || (b.kind === 'actor' && isAgentGone(node));
+      if (gone) {
+        emitTrace({
+          category: 'binding_severed',
+          tick,
+          projectId: seed.seedId,
+          castKey: b.key,
+          nodeId: b.nodeId,
+          cause: 'seed_drop',
+          persistence: b.persistence,
+          summary:
+            `seed binding dropped: ${b.key} (${b.persistence}) of seed ${seed.seedId} — ` +
+            `${!node ? 'node removed' : 'deceased'}`,
+        });
+      }
+      return !gone;
+    });
     droppedBindingCount = seed.inheritedBindings.length - survivors.length;
     bindingCount = survivors.length;
     bindings = survivors.length > 0 ? survivors : undefined;
@@ -257,7 +284,7 @@ export function evaluateEncounterSeeds(state: GameState, tick: number, rng: () =
       }
 
       // Slice D: re-validate inherited scene context against the live graph.
-      const inherit = resolveSeedInheritance(seed, state.graph);
+      const inherit = resolveSeedInheritance(seed, state.graph, tick);
       if (inherit.applied) {
         emitTrace({
           tick, category: 'seed_context_inherited',

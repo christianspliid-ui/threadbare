@@ -560,10 +560,10 @@ exit
 - **Intent:** A companion of a company is not a member of a faction by that name — faction rank, allegiance display and heraldry must keep reading the faction.
 - **Producer → Consumer:** Companies & Group Travel → Factions & Succession
 - **UL terms:** *Company*, *Faction*
-- **Production hits:** 14 total — 1 write, 4 read, 9 unclassified
+- **Production hits:** 15 total — 1 write, 4 read, 10 unclassified
 - **Write sites:** `src/engine/graphQueries.ts`
 - **Read sites:** `src/engine/anointSuccessor.ts`, `src/engine/contextBuilder.ts`, `src/engine/detailPageResolvers.ts`, `src/engine/notableAgendas.ts`
-- **Other hits:** `src/components/AgentInfoCard/AgentInfoCard.tsx`, `src/components/Game/debug/RelationshipGraph.tsx`, `src/components/Game/GameView.tsx`, `src/engine/armyNotifications.ts`, `src/engine/callbackEligibility.ts` +4 more
+- **Other hits:** `src/components/AgentInfoCard/AgentInfoCard.tsx`, `src/components/Game/debug/RelationshipGraph.tsx`, `src/components/Game/GameView.tsx`, `src/engine/armyNotifications.ts`, `src/engine/binding/binder.ts` +5 more
 - **Verdict:** Verified 2026-07-24: member_of consumer sweep (THR-74): 14 sites reading an agent's outgoing member_of as "their faction" now route through getFactionMembershipEdges; the remainder gate on factionDefId/reachPreferences/guildType and fail soft on a company target. Locked by src/engine/groups/__tests__/groupQueries.test.ts § "faction lookups are not confused by company membership".
 
 ### `company-position-derives-from-leader` — 🟢 LIVE
@@ -796,10 +796,10 @@ exit
 - **Intent:** A mentorship is a relationship that a piece of work drives. Folding it onto the undertaking checkpoint means the bond moves when the teaching actually goes well or badly, instead of a second phase inferring how it went from the leftovers of a first one.
 - **Producer → Consumer:** Strategic Projects & Control → Ambitions & Undertakings
 - **Module:** `src/engine/mentorshipUndertaking.ts`
-- **Production hits:** 11 total — 2 write, 1 read, 8 unclassified
+- **Production hits:** 12 total — 2 write, 1 read, 9 unclassified
 - **Write sites:** `src/engine/mentorshipUndertaking.ts`, `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/engine/graphQueries.ts`
-- **Other hits:** `src/data/meeting-dilemma-library.ts`, `src/data/mentorship-templates/divine-actions.ts`, `src/data/mentorship-templates/the-offer.ts`, `src/data/strategic-packs/scholarStrategicPack.ts`, `src/engine/mentorshipOutcomes.ts` +3 more
+- **Other hits:** `src/data/meeting-dilemma-library.ts`, `src/data/mentorship-templates/divine-actions.ts`, `src/data/mentorship-templates/the-offer.ts`, `src/data/strategic-packs/scholarStrategicPack.ts`, `src/engine/binding/binder.ts` +4 more
 - **Verdict:** Verified undefined: undefined
 
 ### `milestone-grants-unlock-repertoire-cards` — 🔵 UNVERIFIED-OK
@@ -898,10 +898,10 @@ exit
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 234 total — 1 write, 1 read, 232 unclassified
+- **Production hits:** 237 total — 1 write, 1 read, 235 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts` +227 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts` +230 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `relocation-intent-steers-agent-movement` — 🔵 UNVERIFIED-OK

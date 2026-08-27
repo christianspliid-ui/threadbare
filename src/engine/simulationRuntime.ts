@@ -28,6 +28,8 @@ import { EncounterCacheManager, buildDangerMap } from './encounterCache';
 import { buildDistanceMatrix } from './distanceMatrix';
 import { buildTraitRefIndex } from './traitRefIndex';
 import type { TraitRefIndex } from './traitRefIndex';
+import { buildRoleCensus } from './binding/roleCensus';
+import type { RoleCensus } from './binding/roleCensus';
 import type { DistanceMatrix } from './distanceMatrix';
 import type { WorldGraph } from './graph';
 import type { HexTile } from '../types';
@@ -195,6 +197,19 @@ export interface SimulationRuntime {
   /** structuralCacheVersion at which traitRefIndex was last built. */
   traitRefIndexBuiltAt: number;
 
+  // ── The binder's role census (THR-1296 §8) ──
+  /**
+   * `npcRole` → live actors holding it, feeding the binder's scarcity term.
+   *
+   * Owned here rather than at module scope per the engine-caches-per-session rule.
+   * Recon confirmed no role index existed anywhere and `getNodesByType` is a full
+   * scan, so without this the scarcity term would be O(all actors) per cast slot
+   * per step — the shape NFP #7 refuses.
+   */
+  roleCensus: RoleCensus | null;
+  /** structuralCacheVersion at which roleCensus was last built. */
+  roleCensusBuiltAt: number;
+
   // ── Doom-phase curation generosity (THR-603) ──
   /**
    * Doom-phase generosity multiplier applied to the branching curator's bias,
@@ -237,6 +252,8 @@ export function createSimulationRuntime(): SimulationRuntime {
     proseCacheTick: -1,
     traitRefIndex: null,
     traitRefIndexBuiltAt: -1,
+    roleCensus: null,
+    roleCensusBuiltAt: -1,
     curationPhaseMultiplier: 1.0,
   };
 }
@@ -415,6 +432,27 @@ export function ensureTraitRefIndex(
 }
 
 /**
+ * Ensure the binder's role census is up-to-date (THR-1296 §8).
+ *
+ * Rebuilds when `structuralCacheVersion` has advanced — births, deaths, and mints all
+ * bump it, which is exactly the set of events that can change a role's population.
+ *
+ * Untraced, following `ensureTraitRefIndex` rather than `ensureEncounterCache`: the
+ * rebuild is an O(actors) scan with no sub-structure worth timing, and the trace ring
+ * is a scarce resource. Census *contents* are inspectable via the CLI (`eval`).
+ */
+export function ensureRoleCensus(
+  runtime: SimulationRuntime,
+  graph: WorldGraph,
+): RoleCensus {
+  if (!runtime.roleCensus || runtime.roleCensusBuiltAt < runtime.structuralCacheVersion) {
+    runtime.roleCensus = buildRoleCensus(graph);
+    runtime.roleCensusBuiltAt = runtime.structuralCacheVersion;
+  }
+  return runtime.roleCensus;
+}
+
+/**
  * Reset all runtime caches and timelines (e.g. for cycle transitions).
  * Does NOT reset version counters — those monotonically increase within a session.
  * Does NOT reset balance telemetry — telemetry spans the full session by design.
@@ -431,6 +469,8 @@ export function resetRuntimeCaches(runtime: SimulationRuntime): void {
   runtime.proseCacheTick = -1;
   runtime.traitRefIndex = null;
   runtime.traitRefIndexBuiltAt = -1;
+  runtime.roleCensus = null;
+  runtime.roleCensusBuiltAt = -1;
   clearTimelines();
   clearRewardHistory();
 }
