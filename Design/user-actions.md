@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-27 12:53 local (10:53 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-27 13:53 local (11:53 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -12,18 +12,18 @@
 
 **The bar is live with no caveats:** [The Beast in the Granary](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.hunt.the_beast_in_the_granary). One thing needs your answer: [the brief](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/retrofit-batch-2-brief.md) proposes **seven** rather than your six, because the camp set is one family in one file and splitting the seventh costs a whole factory cycle.
 
-**Three ways to close it:** *"batch 2, seven is fine"*, *"keep it six"*, or *"same rule — judge batch 2 on one first."*
+**Three ways to close it:** *"batch 2, seven is fine"*, *"keep it six"*, or *"same rule — judge batch 2 on one first."* No longer urgent for *today* — the builder has an afternoon of engine work — but it is the next thing to run dry.
 
-### 2. More design hours — still the binding constraint (**corrected 27 August**)
+### 2. More design hours — still the binding constraint
 
-Roughly twenty items sit in Todo and **every one needs a plan doc before an executor can touch it**. One landed this morning without you: a session wrote [the binder](https://linear.app/threadbare/issue/THR-1296) (carve-up doc 3, Tier-1 critical path) between 08:23 and 08:46; the builder claimed it at 09:01 and five of its six slices have shipped since.
+Roughly twenty items sit in Todo and **every one needs a plan doc before an executor can touch it**. Today shows what happens when one lands: a session wrote [the binder](https://linear.app/threadbare/issue/THR-1296) between 08:23 and 08:46, the builder claimed it at 09:01, and all six slices shipped by 13:44.
 
-**Correction to the last two briefs.** They said *"only two can start today"*. That was true of the six proactive-agent documents and quietly became a claim about the whole board, which is larger. Checked against the whole Todo board: **five design tickets are unblocked, unassigned and startable**, and the two named were the least valuable of the five. In the order I would spend the hour:
+**Five design tickets are unblocked, unassigned and startable.** In the order I would spend the hour:
 
 1. **[Your one-button snapshot](https://linear.app/threadbare/issue/THR-1134)** — High, your own request from 16 August, untouched 11 days. When you see a world that looks wrong you currently have no way to hand that world to an agent; this designs the capture, working on the deployed build you actually play on.
 2. **[The shared anchor machinery](https://linear.app/threadbare/issue/THR-1212)** — High, first of the three wave-1 docs you ruled on. [THR-1213](https://linear.app/threadbare/issue/THR-1213) then [THR-1155](https://linear.app/threadbare/issue/THR-1155) are chained behind it, so this hour unjams three tickets rather than one.
 3. **[A beast that can be a real character in a scene](https://linear.app/threadbare/issue/THR-1274)** — only people can be bound into an encounter's cast today, so a hunted animal can be described but never opposed. Four planned hunt encounters are capped by it.
-4. **[The reactive loop](https://linear.app/threadbare/issue/THR-1298)** and 5. **[the calling & the surfaces](https://linear.app/threadbare/issue/THR-1299)** — the two named last hour. Real work, no priority set. [THR-1297](https://linear.app/threadbare/issue/THR-1297) waits on the binder; [THR-1300](https://linear.app/threadbare/issue/THR-1300) behind that.
+4. **[The reactive loop](https://linear.app/threadbare/issue/THR-1298)** and 5. **[the calling & the surfaces](https://linear.app/threadbare/issue/THR-1299)** — plan docs 4 and 5 of your carve-up. Real work, no priority set. [THR-1297](https://linear.app/threadbare/issue/THR-1297) is now unblocked too (the binder landed); [THR-1300](https://linear.app/threadbare/issue/THR-1300) sits behind it.
 
 Also still yours, in the order you set: **[unify the card grammar](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** (your 6 August note; held ten days, three tickets behind it — sit it or say *"park it"*) and **[traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)** (in design, assigned to you, untouched since 15 August — give it the hour or say *"put it back in the pile"*). Nothing to decide on any of them; say the word and sessions write them.
 
@@ -88,7 +88,8 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
-- **The binder is five slices of six done** — [THR-1296](https://linear.app/threadbare/issue/THR-1296) went Todo → Ready for Dev in twenty-three minutes this morning, was claimed at 09:01, and slices 1–5 have merged and deployed since ([#1661](https://github.com/christianspliid-ui/threadbare/pull/1661), [#1662](https://github.com/christianspliid-ui/threadbare/pull/1662), [#1663](https://github.com/christianspliid-ui/threadbare/pull/1663), [#1664](https://github.com/christianspliid-ui/threadbare/pull/1664)) — design → merge → promote → claim → ship, end to end, with no lane intervention.
+- **The binder is done — six slices of six in one day** — [THR-1296](https://linear.app/threadbare/issue/THR-1296) went Todo → Ready for Dev in twenty-three minutes this morning, was claimed at 09:01, and closed at 13:44 ([#1661](https://github.com/christianspliid-ui/threadbare/pull/1661), [#1662](https://github.com/christianspliid-ui/threadbare/pull/1662), [#1663](https://github.com/christianspliid-ui/threadbare/pull/1663), [#1664](https://github.com/christianspliid-ui/threadbare/pull/1664), [#1665](https://github.com/christianspliid-ui/threadbare/pull/1665)) — design → merge → promote → claim → ship, end to end, with no lane intervention.
+- **Docs 1 and 3 of your carve-up — the whole Tier-1 critical path — are now shipped**, and the binder's own recon queued the next job rather than leaving the shelf bare ([THR-1304](https://linear.app/threadbare/issue/THR-1304), [THR-1305](https://linear.app/threadbare/issue/THR-1305)).
 - **The undertaking substrate is done** — slice 6 of 6 merged overnight ([PR #1659](https://github.com/christianspliid-ui/threadbare/pull/1659)) and [THR-1292](https://linear.app/threadbare/issue/THR-1292) closed. Six slices in one day.
 - **The five missing plan-doc tickets now exist** — your carve-up named six docs but only doc 1 had ever become an issue. Filed overnight as THR-1296–THR-1300 with sequencing as Linear relations.
 - **You closed the [Proactive Agent Actions map](https://linear.app/threadbare/issue/THR-1276)** — all ten questions in one day, and answered the carve-up question by filing it.
