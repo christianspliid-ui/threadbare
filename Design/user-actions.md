@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-27 22:56 local (20:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-27 23:56 local (21:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -25,7 +25,7 @@ Three ways to go: **let both stand** (different grammar, never side by side — 
 
 ### 3. More design hours — still the binding constraint
 
-Roughly twenty items sit in Todo and **every one needs a plan doc before an executor can touch it**. Today is the proof of what the hours buy: two wave-1 designs — [the shared anchor machinery](https://linear.app/threadbare/issue/THR-1212) and [hunger vocabulary unification](https://linear.app/threadbare/issue/THR-1213) — went from Todo to queued, checked handoffs this evening.
+Roughly twenty items sit in Todo and **every one needs a plan doc before an executor can touch it**. Today is the proof of what the hours buy: two wave-1 designs — [the shared anchor machinery](https://linear.app/threadbare/issue/THR-1212) and [hunger vocabulary unification](https://linear.app/threadbare/issue/THR-1213) — went from Todo to queued this evening, and the first is already being built.
 
 **Startable now, unassigned, in the order I would spend the hour:**
 
@@ -95,7 +95,7 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 - **The 20–22 August lane-quiet question is closed without needing your answer** — the gap has aged out of the probe's measuring window, and the only quiet periods it now reports are overnight-shaped, already declined under your 8 August ruling. Removed from your list rather than carried indefinitely.
 - **The build shelf is stocked — seven jobs, from one this morning** — your hunger-vocabulary design ([THR-1213](https://linear.app/threadbare/issue/THR-1213)) handed off at 20:41 behind [the shared anchor machinery](https://linear.app/threadbare/issue/THR-1212), and the action-library work filed five checked follow-ups on itself as it finished.
 - **Your design session refilled the build shelf** — [the shared anchor machinery](https://linear.app/threadbare/issue/THR-1212) walked Todo → designed → queued between 20:57 and 21:28, [plan doc](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-08-27-shared-anchor-machinery.md) merged 39 seconds before the handoff.
-- **The action library is on its last slice** — [THR-1297](https://linear.app/threadbare/issue/THR-1297) doc 2 of your carve-up: slices [1](https://github.com/christianspliid-ui/threadbare/pull/1670) 17:35, [2](https://github.com/christianspliid-ui/threadbare/pull/1671) 18:36, [3](https://github.com/christianspliid-ui/threadbare/pull/1672) 19:56, [4](https://github.com/christianspliid-ui/threadbare/pull/1673) 21:11, [5](https://github.com/christianspliid-ui/threadbare/pull/1675) 22:14 — a finished work now earns its own name.
+- **The action library finished whole** — [THR-1297](https://linear.app/threadbare/issue/THR-1297), doc 2 of your carve-up, six slices in nine hours and closed at 23:14. A finished work now earns its own name; ownership is its own edge; a destroy verb needs a reason. Docs 1, 2 and 3 — the whole first tier — are built.
 - **The home-ground rule shipped, by your non-answer** — *your people fight a little better defending what is theirs.* You were given the veto twice; the ask said silence was an equally fine answer. It is now working code: removing it later is a change, not a non-decision. Say so if you want it out and it becomes a ticket.
 - **A complication no longer reads a missing reputation as ruin** — [THR-1306](https://linear.app/threadbare/issue/THR-1306), a Low deferral filed by the previous ticket's own work and shipped inside the hour ([PR #1669](https://github.com/christianspliid-ui/threadbare/pull/1669)), already deployed.
 - **Spawn-review now casts encounters the way live play does** — [THR-1305](https://linear.app/threadbare/issue/THR-1305), filed 14:28 and merged 15:50 ([PR #1668](https://github.com/christianspliid-ui/threadbare/pull/1668)). What you review on a `?spawn=` link is now what ships.
