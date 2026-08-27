@@ -215,7 +215,211 @@ export const COURT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     catalystEncounterIds: ['encounter_informant_exposed'],
     targetRule: { type: 'location_subtype', subtypes: ['city', 'capital'] },
     resourceHint: { wealthCost: 18, reachFloor: { shadow: 0.3, eye: 0.2 } },
+    checkpointDifficulty: 0.5,
+    payoffValue: 0.75,
+    motivations: ['loyalty_ambition', 'honesty_cunning'],
+    // Contacts are people the world keeps — a network whose members evaporate is a
+    // property flag wearing an organisation's name.
+    cast: [
+      {
+        key: 'contact',
+        kind: 'actor',
+        persistence: 'must-persist',
+        acceptedRoles: ['informant', 'clerk', 'fence', 'lookout', 'attendant'],
+        mintRole: 'informant',
+      },
+    ],
     mutationHint: { type: 'record_intelligence', intelligenceType: 'spy_network_established' },
+  },
+
+  // ── The `network` kind's update and counter-play (THR-1297 §5, slice 5) ──
+
+  // 8. Extend Reach — **the first `remote: true` template in the corpus.**
+  //    Extending a network is exactly the case §6 drew the remote line around: the
+  //    work happens somewhere the actor is not, through people the actor commands.
+  //    Walking there would be travel; reaching there is the network's whole point.
+  {
+    id: 'strategic_extend_reach',
+    displayName: 'Extend Reach',
+    verb: 'change',
+    executionMode: 'multi_tick_project',
+    behaviorFamily: 'court-political',
+    reachProfile: { shadow: 0.5, eye: 0.3, gold: 0.2 },
+    projectDuration: 6,
+    activityProse: [
+      'A name passed to a name. The far town does not know it has been reached into yet.',
+      'Reach is patience plus other people. Mostly other people.',
+    ],
+    completionProse: [
+      'The network answers from further out than it did. Nobody travelled to make that true.',
+    ],
+    catalystEncounterIds: ['encounter_informant_exposed'],
+    targetRule: { type: 'location_subtype', subtypes: ['city', 'capital', 'town', 'port'] },
+    resourceHint: { wealthCost: 12, reachFloor: { shadow: 0.3 } },
+    checkpointDifficulty: 0.5,
+    // The one field that makes this the gate's first live subject.
+    remote: true,
+    payoffValue: 0.8,
+    motivations: ['loyalty_ambition', 'revelation_discretion'],
+    mutationHint: { type: 'record_intelligence', intelligenceType: 'network_reach_extended' },
+  },
+
+  // 9. Sever the Network — counter-play. Motive-gated: unpicking somebody's web of
+  //    people is the definition of an act that needs a reason behind it.
+  {
+    id: 'strategic_sever_network',
+    displayName: 'Sever the Network',
+    verb: 'destroy',
+    executionMode: 'multi_tick_project',
+    behaviorFamily: 'court-political',
+    reachProfile: { shadow: 0.5, iron: 0.3, eye: 0.2 },
+    projectDuration: 5,
+    activityProse: [
+      'Finding the one who will talk first. There is always one, and they are never the obvious one.',
+      'You do not cut a network. You make it distrust itself and then watch.',
+    ],
+    completionProse: [
+      'The network stops answering. Some of it walked away; some of it simply stopped existing.',
+    ],
+    catalystEncounterIds: ['encounter_informant_exposed'],
+    targetRule: { type: 'location_subtype', subtypes: ['city', 'capital'] },
+    resourceHint: { reachFloor: { shadow: 0.35 } },
+    checkpointDifficulty: 0.55,
+    payoffValue: 0.7,
+    motivations: ['mercy_ruthlessness', 'honesty_cunning'],
+    motiveGate: ['rivalry', 'grudge', 'contested_ambition', 'faction_war'],
+    mutationHint: { type: 'no_mutation' },
+  },
+
+  // ── The `leverage_mark` kind: the T1 vertical slice (THR-1281 §8) ──
+  //
+  // Cultivate → press → burn, and the arc is genuinely sequential rather than three
+  // verbs sharing a noun: `pressTheMark` refuses without a held mark, and burning
+  // spends what pressing left. All three target *the room* (`colocated_actor`), because
+  // a secret is something held about someone you have met.
+
+  // 10. Cultivate Informant — create.
+  {
+    id: 'strategic_cultivate_informant',
+    displayName: 'Cultivate Informant',
+    verb: 'create',
+    executionMode: 'multi_tick_project',
+    behaviorFamily: 'court-political',
+    reachProfile: { shadow: 0.4, heart: 0.35, eye: 0.25 },
+    projectDuration: 5,
+    activityProse: [
+      'Small kindnesses, precisely aimed. None of them are free and both parties know it.',
+      'Learning what they are afraid of. Not using it yet — that comes later, and later is the point.',
+    ],
+    completionProse: [
+      'They tell you something they should not have. The shape of the hold is set now.',
+    ],
+    catalystEncounterIds: ['encounter_informant_exposed'],
+    targetRule: {
+      type: 'colocated_actor',
+      roles: ['clerk', 'attendant', 'steward', 'innkeeper', 'entertainer', 'guard', 'scribe'],
+    },
+    resourceHint: { wealthCost: 10, reachFloor: { shadow: 0.2, heart: 0.2 } },
+    checkpointDifficulty: 0.45,
+    payoffValue: 0.6,
+    motivations: ['honesty_cunning', 'loyalty_ambition'],
+    mutationHint: { type: 'mint_leverage_mark', secretType: 'indiscretion', magnitude: 0.6 },
+  },
+
+  // 11. Press the Mark — use. Turns the hold into a debt the social systems read.
+  {
+    id: 'strategic_press_the_mark',
+    displayName: 'Press the Mark',
+    verb: 'change',
+    executionMode: 'instant',
+    behaviorFamily: 'court-political',
+    reachProfile: { shadow: 0.45, heart: 0.3, gold: 0.25 },
+    activityProse: [
+      'No threat is made. None needs to be; the silence does the work.',
+    ],
+    completionProse: [
+      'They agree to the thing. Something between the two of you has changed hands.',
+    ],
+    // Only people this actor actually holds something over. Without the edge filter
+    // the press is offered against any co-located clerk and refuses on all of them —
+    // measured 3 completions, 0 debts, before this line existed.
+    targetRule: {
+      type: 'colocated_actor',
+      roles: ['clerk', 'attendant', 'steward', 'innkeeper', 'entertainer', 'guard', 'scribe'],
+      withEdgeFromActor: 'knows_secret_of',
+    },
+    resourceHint: { reachFloor: { shadow: 0.25 } },
+    checkpointDifficulty: 0.45,
+    payoffValue: 0.65,
+    motivations: ['honesty_cunning', 'mercy_ruthlessness'],
+    mutationHint: { type: 'press_the_mark', favorMagnitude: 0.5, context: 'a silence kept' },
+  },
+
+  // 12. Burn the Mark — spending it outright.
+  //
+  //     **`verb: 'change'`, and the corpus invariant is why.** This shipped first as a
+  //     `destroy` on the reasoning that the registry's D column means *counter-play*,
+  //     so a self-spend could be a destroy verb that simply was not counter-play. The
+  //     registry test refused it — its rule is corpus-wide ("no shipped destroy verb
+  //     without a motive gate"), not row-scoped, and it was right to be: an ungated
+  //     destroy is offerable against anyone for no reason, and the target rule was the
+  //     only thing keeping this one pointed at the actor's own marks. That is a
+  //     safety property resting on authoring discipline, which is exactly what the
+  //     gate exists to stop.
+  //
+  //     Spending your own leverage is a *change* to something you hold. The finality
+  //     lives in the prose and in the mark it consumes, not in the verb.
+  {
+    id: 'strategic_burn_the_mark',
+    displayName: 'Burn the Mark',
+    verb: 'change',
+    executionMode: 'instant',
+    behaviorFamily: 'court-political',
+    reachProfile: { shadow: 0.4, iron: 0.35, heart: 0.25 },
+    activityProse: [
+      'Saying it out loud, in the room where it costs them most.',
+    ],
+    completionProse: [
+      'The secret is spent. It will never be worth anything again, and it was worth a great deal once.',
+    ],
+    // Same reason as the press: you cannot burn what you do not hold.
+    targetRule: {
+      type: 'colocated_actor',
+      roles: ['clerk', 'attendant', 'steward', 'innkeeper', 'entertainer', 'guard', 'scribe'],
+      withEdgeFromActor: 'knows_secret_of',
+    },
+    resourceHint: { reachFloor: { shadow: 0.25 } },
+    checkpointDifficulty: 0.4,
+    payoffValue: 0.5,
+    motivations: ['mercy_ruthlessness', 'sacrifice_survival'],
+    mutationHint: { type: 'no_mutation' },
+  },
+
+  // 13. Expose the Mark — the kind's actual counter-play: somebody else surfaces the
+  //     hold you were keeping, and it stops being leverage.
+  {
+    id: 'strategic_expose_mark',
+    displayName: 'Expose the Hold',
+    verb: 'destroy',
+    executionMode: 'instant',
+    behaviorFamily: 'court-political',
+    reachProfile: { eye: 0.4, shadow: 0.35, heart: 0.25 },
+    activityProse: [
+      'Telling the subject what is held over them, and by whom. The rest takes care of itself.',
+    ],
+    completionProse: [
+      'The hold is public, and a public hold is no hold at all.',
+    ],
+    targetRule: {
+      type: 'colocated_actor',
+      roles: ['clerk', 'attendant', 'steward', 'innkeeper', 'entertainer', 'guard', 'scribe'],
+    },
+    resourceHint: { reachFloor: { eye: 0.25 } },
+    checkpointDifficulty: 0.5,
+    payoffValue: 0.55,
+    motivations: ['revelation_discretion', 'honesty_cunning'],
+    motiveGate: ['rivalry', 'grudge', 'contested_ambition', 'faction_war'],
+    mutationHint: { type: 'no_mutation' },
   },
 ];
 

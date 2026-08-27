@@ -140,31 +140,27 @@ describe(`shadow board liveness (${TICKS} ticks, seed ${SEED}, medium)`, () => {
   });
 
   /**
-   * The undertaking desire multiplier is a **hard constant today**, and this test
-   * pins that as an identity rather than asserting the health it does not have.
+   * The undertaking desire multiplier **was** a hard constant, and is not any more.
    *
    * `computeBoardDesireMultiplier` is
-   * `max(axiological × PERSONALITY_SELECTION_WEIGHT + ambitionBoost, MINIMUM_DESIRE) ^ PERSONALITY_SCORE_EXPONENT`,
-   * and for an undertaking **both** input terms are pinned:
+   * `max(axiological × PERSONALITY_SELECTION_WEIGHT + ambitionBoost, MINIMUM_DESIRE) ^ PERSONALITY_SCORE_EXPONENT`.
+   * Until THR-1297 slice 5 **both** input terms were pinned: `ambitionBoost` is true
+   * by construction (a strategic candidate exists only because an ambition generated
+   * it), and `axiological` is `computeDesireScore(template.motivations, profile)` with
+   * `motivations` unauthored on all 43 templates — so every undertaking scored
+   * `EVT × constant` and the board ranked them with no personality signal at all.
    *
-   * - `axiological` is `computeDesireScore(template.motivations, profile)` and
-   *   `motivations` is unauthored on **all 43** strategic templates — the seam
-   *   slice 5 declared for plan doc 2 — so it is `0` for every candidate.
-   * - `ambitionBoost` is `AMBITION_REACH_BOOST` whenever the agent pursues the
-   *   template's primary reach, and a strategic candidate only ever *exists*
-   *   because an active ambition generated it. So it is true by construction —
-   *   the same vacuity slice 5 found in the temperament bracket, one term over.
+   * Slice 5 authored `motivations` on the T1 kinds' templates, which is exactly what
+   * the emptiness pin here existed to announce. Measured at the swap: **51 distinct
+   * desire values** on the same 60-tick seed-42 sample that previously produced one.
    *
-   * The consequence is that an undertaking's board score is `EVT × constant`:
-   * the board ranks undertakings with no personality signal at all, which is
-   * exactly what the §4 currency was supposed to give them. It is also why the
-   * cutover gate fails on seed 99 — see the slice-6 evidence on THR-1292.
-   *
-   * This test **fails the moment doc 2 authors the first `motivations` row**, and
-   * that failure is the intended signal: swap it for the `> 1` liveness assertion
-   * above and re-run the cutover census. Do not "fix" it by relaxing it.
+   * Two things this assertion deliberately does *not* do. It does not assert a count —
+   * 51 is a measurement, not a contract, and pinning it would break on any content
+   * edit. And it does not assert *health* of the ranking, only that the term varies:
+   * whether the new spread actually improves the cutover envelope is THR-1301's
+   * measurement to make, not this test's.
    */
-  it('the undertaking desire multiplier is frozen — pinned until doc 2 authors motivations', () => {
+  it('the undertaking desire multiplier is not frozen', () => {
     const undertakingDesires = samples.flatMap(s => s.entries)
       .filter(e => e.family === 'strategic_action')
       .map(e => e.desire);
@@ -172,7 +168,7 @@ describe(`shadow board liveness (${TICKS} ticks, seed ${SEED}, medium)`, () => {
     // A vacuous pass would be an empty population (impediment #599 class): assert
     // the sample exists before asserting anything about its spread.
     expect(undertakingDesires.length).toBeGreaterThan(20);
-    expect(new Set(undertakingDesires.map(d => d.toFixed(6))).size).toBe(1);
+    expect(new Set(undertakingDesires.map(d => d.toFixed(6))).size).toBeGreaterThan(1);
   });
 
   it('the temperament weight is not frozen', () => {

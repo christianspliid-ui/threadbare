@@ -165,13 +165,44 @@ describe('the shipped registry', () => {
     expect(validateKindRegistry(UNDERTAKING_KIND_ROWS, getStrategicTemplate)).toEqual([]);
   });
 
-  it('registers no kinds yet — the emptiness pin', () => {
-    // Deliberately red when slice 5 authors the first row. This is not "work left
-    // undone": the corpus holds no kind's destroy verb yet, so every row that could
-    // be written today would have to fake its counter-play, which is the exact
-    // vacuity the gate above exists to refuse. Restate this as the first row's
-    // authored identity when it fires.
-    expect(UNDERTAKING_KIND_ROWS.map(r => r.kindId)).toEqual([]);
+  it('registers tier 1 whole, and only tier 1 — the authored identity', () => {
+    // Was the emptiness pin until THR-1297 slice 5 authored the five T1 rows, which
+    // is what the pin existed to announce. Restated as an exact set rather than
+    // relaxed to a count: the identity worth holding is *which* kinds are registered,
+    // because the failure this guards against is a row landing without its
+    // counter-play, and a count cannot see that.
+    expect(UNDERTAKING_KIND_ROWS.map(r => r.kindId)).toEqual([
+      'intelligence_cache',
+      'leverage_mark',
+      'masterwork_item',
+      'chart_find',
+      'network',
+    ]);
+  });
+
+  it('every registered row is tier 1 — T2/T3 land with their own destroys', () => {
+    // The other half of the same identity, and the reason the absent kinds are absent
+    // rather than stubbed: a sublocation, a settlement, a route, a warband and a
+    // faction all lack a shipped destroy verb, so registering them now would mean
+    // pointing `destroyTemplateIds` at something that cannot undo them. That is the
+    // vacuity the gate above refuses, and it does not stop being vacuous because the
+    // rows would look more complete with it.
+    expect(UNDERTAKING_KIND_ROWS.every(r => r.tier === 1)).toBe(true);
+  });
+
+  it('every registered row names a counter-play that exists and is gated', () => {
+    // Deliberately not a re-run of `validateKindRegistry` — this walks the rows the
+    // long way, so a bug that made the validator itself permissive could not hide
+    // behind its own green result.
+    for (const row of UNDERTAKING_KIND_ROWS) {
+      expect(row.destroyTemplateIds.length).toBeGreaterThan(0);
+      for (const id of row.destroyTemplateIds) {
+        const template = getStrategicTemplate(id);
+        expect(template, `${row.kindId} names unreachable destroy '${id}'`).toBeDefined();
+        expect(template!.verb).toBe('destroy');
+        expect(template!.motiveGate?.length ?? 0).toBeGreaterThan(0);
+      }
+    }
   });
 
   it('has no shipped destroy verb without a motive gate', () => {

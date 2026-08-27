@@ -19,6 +19,7 @@ import { SCHOLAR_STRATEGIC_TEMPLATES } from '../../data/strategic-packs/scholarS
 import { ZEALOT_STRATEGIC_TEMPLATES } from '../../data/strategic-packs/zealotStrategicPack';
 import { COURT_STRATEGIC_TEMPLATES } from '../../data/strategic-packs/courtStrategicPack';
 import { WARLORD_STRATEGIC_TEMPLATES } from '../../data/strategic-packs/warlordStrategicPack';
+import { WANDERER_STRATEGIC_TEMPLATES } from '../../data/strategic-packs/wandererStrategicPack';
 import { MERCHANT_STRATEGIC_TEMPLATES } from '../../data/strategic-packs/merchantStrategicPack';
 
 // ─── Helpers ──────────────────────────────────────────────────────────
@@ -128,8 +129,13 @@ function makeCandidateForTemplate(
 
 // ─── Pack Registration ────────────────────────────────────────────────
 
-// The six packs, named once so the identity test and the per-pack tests cannot drift
+// The seven packs, named once so the identity test and the per-pack tests cannot drift
 // apart about what "the packs" means.
+//
+// `wanderer-explorer` joined at THR-1297 slice 5 — the family had a declared union
+// member and a presentation row for a long time with no pack behind it, which is why
+// the measured idle third happened at lairs: no template in six packs named a
+// wilderness subtype as a target.
 const ALL_PACKS = [
   MERCHANT_STRATEGIC_TEMPLATES,
   BUILDER_STRATEGIC_TEMPLATES,
@@ -137,6 +143,7 @@ const ALL_PACKS = [
   ZEALOT_STRATEGIC_TEMPLATES,
   COURT_STRATEGIC_TEMPLATES,
   WARLORD_STRATEGIC_TEMPLATES,
+  WANDERER_STRATEGIC_TEMPLATES,
 ] as const;
 
 describe('behavior family pack registration', () => {
@@ -144,7 +151,7 @@ describe('behavior family pack registration', () => {
   // initiative fold added seven templates (THR-1292 §3), reporting a *correct* change
   // as a failure. Restated as the identity it was reaching for: the registry is exactly
   // the union of the packs, with nothing dropped and nothing minted from elsewhere.
-  it('the registry is exactly the union of the six packs', () => {
+  it('the registry is exactly the union of the seven packs', () => {
     const packTemplates = ALL_PACKS.flat();
     const registered = getAllStrategicTemplates();
     expect(registered.length).toBe(packTemplates.length);

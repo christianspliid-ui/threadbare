@@ -15,12 +15,12 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 64 |
+| 🟢 LIVE | 65 |
 | 🟠 PARTIAL | 2 |
 | 🔴 LEAKED | 8 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 19 |
-| **Total** | **93** |
+| **Total** | **94** |
 
 ## Contracts by producing subsystem
 
@@ -46,6 +46,7 @@ remediation ticket or the build fails.
 | `holdings-single-writer-owns-edge` | What a mortal owns is written in exactly one place. The `owns` edge is the authority; the bearer-side attachment is its face, and both are minted, moved and retired by `holdings.ts` alone. | edge-prop: `owns` | Attachments, Items & Possessions | 🟢 LIVE | — |
 | `minted-ambition-provenance` | Motive receipts name the origin of a minted want — "she seeks vengeance for the blighted fields." | edge-prop: `mintedByEventId` | Omens & Atmospheric Pressure | 🟢 LIVE | — |
 | `one-namer-shared-primitives` | There is one rule for how an id becomes a seed and one rule for English possessives. `naming/workNames.ts` owns both; every other namer imports them rather than minting its own. | module-export: `possessive`, `hashSeed`, `pickFrom`, `generateWorkName` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
+| `t1-undertaking-objects-feed-existing-economies` | A tier-1 undertaking's product is written into an economy that already has consumers — never into a private score only the producing system reads. | edge-prop: `knows_clue_of`, `knows_secret_of`, `owes_favor`, `consumeOnEvent`, `possesses` | Attachments, Items & Possessions | 🟢 LIVE | — |
 | `undertaking-creation-effects` | A long work now puts things into the world as it runs rather than only at completion: an advancing checkpoint builds what the step earned, an at-cost one builds the cost besides, and a critical failure builds the disaster. A person the work must keep is born through the mint valve; a face that exists for one scene is written by the encounter support bundle’s own walk-on writer, which this contract shares rather than copies. Routing every spawn through the valve would spend the one-per-tick birth budget on faces; copying the node shape instead is how the two writers drift. | function: `materializeWalkOnActor`, `applyCreationEffects`, `selectCreationBand` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | THR-1297 |
 
 ### Ascendant Beats & Progression
@@ -372,10 +373,10 @@ exit
 - **Intent:** Items grant traits while held, gating encounter eligibility (treasure-map, ruin_seeker).
 - **Producer → Consumer:** Attachments, Items & Possessions → Encounters & Dilemmas
 - **UL terms:** *Attachment*, *Trait*
-- **Production hits:** 4 total — 2 write, 1 read, 1 unclassified
+- **Production hits:** 5 total — 2 write, 1 read, 2 unclassified
 - **Write sites:** `src/data/reward-attachment-catalog.ts`, `src/types/attachments.ts`
 - **Read sites:** `src/engine/encounterScoring.ts`
-- **Other hits:** `src/engine/effects/effectQueries.ts`
+- **Other hits:** `src/engine/effects/effectQueries.ts`, `src/engine/strategicGraphOps.ts`
 - **Verdict:** Verified 2026-07-23: 3 production files reference grantsTraitWhileHeld incl. the encounterScoring gate. Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified)
 
 ### `attachment-on-use-triggers` — 🟢 LIVE
@@ -677,10 +678,10 @@ exit
 - **Producer → Consumer:** Factions & Succession → Ambitions & Undertakings
 - **UL terms:** *Undertaking*, *Faction*
 - **Module:** `src/engine/undertakingMotive.ts`
-- **Production hits:** 6 total — 1 write, 3 read, 2 unclassified
+- **Production hits:** 11 total — 1 write, 3 read, 7 unclassified
 - **Write sites:** `src/data/strategic-packs/warlordStrategicPack.ts`
 - **Read sites:** `src/data/undertaking-kinds.ts`, `src/engine/strategicActionCandidates.ts`, `src/engine/undertakingMotive.ts`
-- **Other hits:** `src/data/strategic-action-constants.ts`, `src/types/strategicAction.ts`
+- **Other hits:** `src/data/ambition-templates.ts`, `src/data/strategic-action-constants.ts`, `src/data/strategic-packs/builderStrategicPack.ts`, `src/data/strategic-packs/courtStrategicPack.ts`, `src/data/strategic-packs/scholarStrategicPack.ts` +2 more
 - **Verdict:** Verified 2026-08-27: THR-1297 slice 2. The corpus held exactly one `verb: 'destroy'` template in 43 — `strategic_raid_supply_lines` — and it was offerable against any town/city/camp/fort in range with no quarrel behind it, while its own completion prose said "the enemy will feel the lack" about people who were not the actor's enemy. It now declares `motiveGate: ['rivalry','grudge','faction_war']` and generation refuses it unless the actor holds one of those toward a holder of the target. Every motive reads a relation the world already wrote, so nothing new is recorded: `hostile_to` (bare ⇒ rivalry, injury-stamped ⇒ grudge, read across all three provenance keys the three writers each chose independently — `cause`/`reason`/`basis`), a shared `active` `pursues` ambition node, and `relates_to.isRival` via the existing `areFactionsHostile`. Two refusal reasons kept distinct because they want different fixes: `no_motive` (held, no quarrel) and `no_motive_unowned` (nobody holds it). Both reach a trace through the candidate-board trace's new capped `refusals` field — before this the board reported a bare rejection *count*, so every generation gate including `no_eligible_apprentice` was invisible from a run dump. Non-vacuous by `src/engine/__tests__/undertakingMotiveGate.test.ts` (21 tests): each refusal is paired with the same fixture offering the same candidate once the motive exists, so a gate that simply always refused would fail; falsified 8-of-21 red with `evaluateMotiveGate` stubbed to allow. Live measurement, seed 42/medium at tick 60: all 21 raidable settlements carry a controlling faction (so the `unowned` arm is not the common case), against 30 `hostile_to` edges and 12 declared faction rivalries across 49 factions — the verb stays reachable and grows more so as grudges accumulate. Full suite 18569 green; 30-tick seed-42 smoke reached tick 30, 377 agents, 49 events.
 
 ### `draw-together-carries-caster-sphere-to-the-name` — 🟢 LIVE
@@ -822,10 +823,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Attachments, Items & Possessions
 - **UL terms:** *Attachment*, *Undertaking*
 - **Module:** `src/engine/holdings.ts`
-- **Production hits:** 105 total — 3 write, 7 read, 95 unclassified
+- **Production hits:** 107 total — 3 write, 7 read, 97 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`, `src/engine/graphOpExecutor.ts`, `src/engine/holdings.ts`
 - **Read sites:** `src/engine/effects/effectPredicates.ts`, `src/engine/graphConditions.ts`, `src/engine/graphQueries.ts`, `src/engine/notableAgendas.ts`, `src/engine/orchestrator.ts` +2 more
-- **Other hits:** `src/components/Game/attachmentGlyphs.ts`, `src/components/Game/encounter-stage/adapters/buildAftermathConsequences.ts`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts`, `src/components/Game/encounter-stage/nudgeCommit.ts`, `src/components/Game/encounterHandoff.ts` +90 more
+- **Other hits:** `src/components/Game/attachmentGlyphs.ts`, `src/components/Game/encounter-stage/adapters/buildAftermathConsequences.ts`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts`, `src/components/Game/encounter-stage/nudgeCommit.ts`, `src/components/Game/encounterHandoff.ts` +92 more
 - **Verdict:** Verified 2026-08-27: THR-1297 slice 3. `owns` ships as a NEW edge beside `controls` rather than a reuse, on the inventory's measured ground: exactly one of ~30 production `controls` read sites discriminates by any property (`releaseControl`'s `controlType === 'strategic'` filter), `influence` is write-only, and reuse would have broken seven faction-territory consumers outright plus five `[0]?.source` sites that would have become nondeterministic (NFP #3) — including `battleAftermath`'s power vacuum, which would have deleted an agent's holdings on a razing. Both un-flagged agent writers migrated: `encounterAftermath`'s `spawn_unique_location` (`via: 'creation'`) and the two authored `add_edge` templates `action.iron.conquer` / `action.shadow.establish-network`, the latter routed through `grantHolding` from inside `executeAddEdge` so content-authored ownership obeys the single writer too — a raw `addEdge` there would have produced an `owns` edge violating its own `requiredProperties` and carrying no bearer-side face at all. Seize is one atomic call built on a new `WorldGraph.retargetEdgeSource`, because `updateEdge` rewrites the edge record without touching the `outgoing`/`incoming` adjacency maps and would have silently orphaned the edge (~30 existing `updateEdge` callers all pass `properties` only, so nothing depended on that). Non-vacuous by `src/engine/__tests__/holdings.test.ts` (18 tests) and `holdingsIntegration.test.ts` (9): the atomicity test wraps every graph mutator and asserts the place is never ownerless and never faceless at ANY observed instant, not just at the endpoints — falsified 2-of-18 red by replacing the atomic body with a release-then-grant, which is exactly the implementation the plan's kill criterion forbids and which the first draft of this module actually had. Home-ground scoring on your own holding ships as the handoff specified (Christian's veto invited, not exercised), paired with its negative: a non-owner in the same place gets no bonus, and an owner's title now overrides a hostile faction verdict on the same hex — the gap where an owner read as an enemy on their own land. Full suite 18601 green; 30-tick seed-42 smoke reached tick 30.
 
 ### `location-condition-taxes-movement-and-gates-templates` — 🔵 UNVERIFIED-OK
@@ -1146,6 +1147,18 @@ exit
 - **Read sites:** `src/engine/groups/groupCohesion.ts`, `src/engine/groups/groupDissolution.ts`, `src/engine/groups/phaseGroups.ts`
 - **Other hits:** `src/components/Game/debug/CompaniesTabContent.tsx`, `src/data/unified-action-templates.ts`, `src/engine/groups/groupQueries.ts`, `src/types/graphOp.ts`
 - **Verdict:** Verified 2026-07-25: src/engine/groups/__tests__/reuniteSunder.test.ts § "Sunder read sites" measures the doubled dissent delta against the plain constant, confirms non-dissent events are untouched, and confirms an open Bless window still suppresses first (the two windows are read independently and neither cancels the other).
+
+### `t1-undertaking-objects-feed-existing-economies` — 🟢 LIVE
+
+- **Intent:** A tier-1 undertaking's product is written into an economy that already has consumers — never into a private score only the producing system reads.
+- **Producer → Consumer:** Ambitions & Undertakings → Attachments, Items & Possessions
+- **UL terms:** *Undertaking*
+- **Module:** `src/engine/strategicGraphOps.ts`
+- **Production hits:** 90 total — 2 write, 4 read, 84 unclassified
+- **Write sites:** `src/engine/strategicActionLifecycle.ts`, `src/engine/strategicGraphOps.ts`
+- **Read sites:** `src/engine/agentAttachments.ts`, `src/engine/ruins/clueLifecycle.ts`, `src/engine/socialLeverage.ts`, `src/engine/treasureMapConsumption.ts`
+- **Other hits:** `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/adapters/buildUnifiedEncounterStageModel.ts`, `src/data/action-technical-effects.ts`, `src/data/agenda-consequence-templates.ts`, `src/data/ascendant-beat-content.ts` +79 more
+- **Verdict:** Verified 2026-08-27: THR-1297 slice 5. Six ops carry the five T1 kinds' objects, and each writes a shape an existing system consumes rather than a property only the producer reads. `mintLeverageMark` is a dedicated op rather than a `create_relation_edge` call precisely because that primitive stamps only `establishedTick` while `knows_secret_of` declares five required properties — a mark routed through the generic maker would warn on the schema every time and arrive without the fields the economy presses. Proven live on seed 99 at 150 ticks, the whole arc organically: cultivate 8 completed → 5 marks minted → press 7 completed → 6 `owes_favor` debts → burn 7; plus 4 treasure maps and 2 clues from the chart arc and 18 cache exposures. Non-vacuous by `src/engine/__tests__/undertakingT1Kinds.test.ts` (21 tests), which asserts every property each edge's schema row declares required rather than merely that an edge appeared — falsified 2-of-19 red by dropping `revealed` from the mark and by stubbing `pressTheMark`'s no-mark guard, and 1-of-21 by restoring a non-canonical `subcategory`. **Two findings recorded on the row because they are the reason it is worded around destinations.** Both artifact writers first shipped `subcategory: 'tool'` with a string `tier`; neither value exists (`PossessionSubcategory` has seven members, `AttachmentTier` is numeric 1–4), nothing threw, and `getAttachmentArtUrl` simply returned `null` forever — the items would have rendered as blank plates on every possession surface, and the seeded-world coverage test caught it only because that world happened to mint a chart and no masterwork. And `press_the_mark` completed 3 times against 3 strangers minting 0 debts, because its target rule selected on role while its resolution required a held mark: selection and resolution disagreeing silently, fixed by a `withEdgeFromActor` filter on the target rule. Full suite 18713 green; ratchet 2973 unchanged; build 10.44s; 30-tick seed-42 smoke reached tick 30, 377 agents.
 
 ### `trait-predicate-resolution` — 🟢 LIVE
 

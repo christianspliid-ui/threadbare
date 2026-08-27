@@ -2427,6 +2427,52 @@ export const CONTRACTS: readonly Contract[] = [
         'THR-1297 slice 4. `groupNames.ts` becomes the first caller: its local `hashSeed` / `pick` / `possessive` are deleted and imported from the shared module. The group *grammar* is deliberately NOT folded in — folding companies onto the work patterns would have re-rolled every company name in every existing world, a player-facing rename with no ticket behind it, so this row guards shared primitives and two grammars rather than one namer with two callers. Pinned by `groups/__tests__/groupNameStability.test.ts`, a DIFFERENTIAL against a byte-copy of origin/main\'s implementation (a captured-literal golden would agree with itself the moment anyone regenerated it) across 17 contexts chosen to hit every pattern fork; falsified twice — stubbing `possessive` to always add `\'s` went 2-of-20 red, and offsetting `pickFrom` by one went 12-of-20 red. The possessive rule reaches the strategic packs for the first time: `renderNameTemplate` matches `{actor}\'s` as a unit so all seven shipped possessive templates render "Silas\' Workshop" instead of "Silas\'s Workshop", and the two legacy hand-rolled name strings in `executeInstantMutation` now share it (falsified 9-of-22 red by restoring raw substitution). Christening is live: 93 firings in a 150-tick seed-42 run, producing "The Deepset Granary of Thornhaven", "Miriel\'s Surveyed Research Circle", "Elior\'s Auspice Shrine". Two defects the live run caught and unit tests could not: a concatenating `{root}{noun}` pattern produced "The StandingHouse" (removed; a legibility guard over a 200-name sample now falsifies at 55 offenders), and christening initially replaced a specific noun with a generic family one ("Rill\'s Research Circle at Ardenmor Keep" became "The Ardenmor Keep House") because `createSublocation` stamps `sublocationTypeId`, not `locationSubtype`. Names outlive owners: `transferHolding` never renames, `razeHolding` retires the name into the site\'s `nameEchoes`, and `refreshHoldingFaceNames` closes the stale-face gap slice 3\'s checkpoint predicted. The christened name rides the existing completion trace rather than an emission of its own — a separate trace measurably evicted `decision_board_comparison` entries from the per-tick ring buffer and reddened `decisionBoardLiveness`\'s frozen-desire pin on a diff that authored no `motivations`. Full suite 18683 green ×2; ratchet 2973 unchanged; 30-tick seed-42 smoke reached tick 30, 377 agents.',
     },
   },
+  {
+    id: 't1-undertaking-objects-feed-existing-economies',
+    producerSystem: AMBITIONS,
+    consumerSystem: ATTACHMENTS,
+    intent:
+      "A tier-1 undertaking's product is written into an economy that already has consumers — never into a private score only the producing system reads.",
+    ulTerms: ['Undertaking'],
+    // The contract is about *destination*, not about the ops existing. Each of the six
+    // T1 mutation ops writes a shape some other system already consumes: clues the ruins
+    // layer converges to familiarity, treasure maps `treasureMapConsumption` spends,
+    // `knows_secret_of` holds that Secrets & Favors presses into `owes_favor` debts, and
+    // artifacts the attachment layer carries. A find only the finder can read is a
+    // counter, not a kind — which is the whole distinction this row guards.
+    // The symbols are the graph shapes, not the op functions — deliberately, and the
+    // generator caught the first draft for naming the functions. Consumers never import
+    // these ops; they read the edges and possessions the ops write. Declaring the
+    // functions made the row classify LEAKED with "declared read sites empty", which was
+    // an accurate description of a contract stated in the wrong currency: the interface
+    // here *is* the shape, so the shape is what must appear at both ends.
+    mechanism: {
+      kind: 'edge-prop',
+      symbols: [
+        'knows_clue_of',
+        'knows_secret_of',
+        'owes_favor',
+        'consumeOnEvent',
+        'possesses',
+      ],
+      module: 'src/engine/strategicGraphOps.ts',
+    },
+    writeSites: [
+      'src/engine/strategicGraphOps.ts',
+      'src/engine/strategicActionLifecycle.ts',
+    ],
+    readSites: [
+      'src/engine/treasureMapConsumption.ts',
+      'src/engine/socialLeverage.ts',
+      'src/engine/ruins/clueLifecycle.ts',
+      'src/engine/agentAttachments.ts',
+    ],
+    verifiedLive: {
+      date: '2026-08-27',
+      evidence:
+        "THR-1297 slice 5. Six ops carry the five T1 kinds' objects, and each writes a shape an existing system consumes rather than a property only the producer reads. `mintLeverageMark` is a dedicated op rather than a `create_relation_edge` call precisely because that primitive stamps only `establishedTick` while `knows_secret_of` declares five required properties — a mark routed through the generic maker would warn on the schema every time and arrive without the fields the economy presses. Proven live on seed 99 at 150 ticks, the whole arc organically: cultivate 8 completed → 5 marks minted → press 7 completed → 6 `owes_favor` debts → burn 7; plus 4 treasure maps and 2 clues from the chart arc and 18 cache exposures. Non-vacuous by `src/engine/__tests__/undertakingT1Kinds.test.ts` (21 tests), which asserts every property each edge's schema row declares required rather than merely that an edge appeared — falsified 2-of-19 red by dropping `revealed` from the mark and by stubbing `pressTheMark`'s no-mark guard, and 1-of-21 by restoring a non-canonical `subcategory`. **Two findings recorded on the row because they are the reason it is worded around destinations.** Both artifact writers first shipped `subcategory: 'tool'` with a string `tier`; neither value exists (`PossessionSubcategory` has seven members, `AttachmentTier` is numeric 1–4), nothing threw, and `getAttachmentArtUrl` simply returned `null` forever — the items would have rendered as blank plates on every possession surface, and the seeded-world coverage test caught it only because that world happened to mint a chart and no masterwork. And `press_the_mark` completed 3 times against 3 strangers minting 0 debts, because its target rule selected on role while its resolution required a held mark: selection and resolution disagreeing silently, fixed by a `withEdgeFromActor` filter on the target rule. Full suite 18713 green; ratchet 2973 unchanged; build 10.44s; 30-tick seed-42 smoke reached tick 30, 377 agents.",
+    },
+  },
 ];
 
 /** A malformed row — surfaced in the generated output rather than thrown (NFP #4). */

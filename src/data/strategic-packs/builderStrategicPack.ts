@@ -131,6 +131,97 @@ export const BUILDER_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     resourceHint: { reachFloor: { heart: 0.3 } },
     mutationHint: { type: 'no_mutation' },
   },
+
+  // ── The `masterwork_item` kind (THR-1297 §5, slice 5) ──────────────
+  //
+  // The T1 kind whose object is *already* an attachment: an artifact node plus a
+  // `possesses` edge is exactly what the attachment layer reads, so this kind needed
+  // no new carrying mechanism at all. Ownership rides `possesses`, not the `holding`
+  // category — holdings are ground and organisations, and a hammer is neither.
+
+  // 5. Craft Masterwork — create.
+  {
+    id: 'strategic_craft_masterwork',
+    displayName: 'Craft Masterwork',
+    verb: 'create',
+    executionMode: 'multi_tick_project',
+    behaviorFamily: 'builder-civic',
+    reachProfile: { stone: 0.5, iron: 0.3, star: 0.2 },
+    projectDuration: 8,
+    activityProse: [
+      'The fourth attempt. The first three were competent, which is the problem.',
+      'Working past the point where it is finished, toward the point where it is right.',
+    ],
+    completionProse: [
+      'It is done, and it is better than the maker. That is the whole definition.',
+    ],
+    targetRule: { type: 'location_subtype', subtypes: ['town', 'city', 'capital', 'hamlet'] },
+    resourceHint: { wealthCost: 40, reachFloor: { stone: 0.35 } },
+    checkpointDifficulty: 0.5,
+    payoffValue: 0.8,
+    motivations: ['preservation_transformation', 'tradition_novelty'],
+    // The patron is optional in the design and therefore `scene-only`: a commission
+    // shapes the work without owing the world another permanent person.
+    cast: [
+      {
+        key: 'patron',
+        kind: 'actor',
+        persistence: 'scene-only',
+        acceptedRoles: ['noble', 'merchant', 'faction_rep', 'elder'],
+        mintRole: 'noble',
+      },
+    ],
+    // Tier 2 = Storied. A masterwork is by definition not Mundane, and calling it
+    // Mythic would put a smith's good year beside artifacts the world tells stories about.
+    mutationHint: { type: 'mint_masterwork', craftTag: 'masterwork', tier: 2 },
+  },
+
+  // 6. Improve the Work — update. Re-forging what is already made.
+  {
+    id: 'strategic_improve_masterwork',
+    displayName: 'Improve the Work',
+    verb: 'change',
+    executionMode: 'multi_tick_project',
+    behaviorFamily: 'builder-civic',
+    reachProfile: { stone: 0.45, iron: 0.3, eye: 0.25 },
+    projectDuration: 5,
+    activityProse: [
+      'Taking apart something that already worked, on the suspicion that it could work better.',
+    ],
+    completionProse: [
+      'The improvement is small and the difference is not. Anyone who uses it will feel it.',
+    ],
+    targetRule: { type: 'location_subtype', subtypes: ['town', 'city', 'capital', 'hamlet'] },
+    resourceHint: { wealthCost: 20, reachFloor: { stone: 0.3 } },
+    checkpointDifficulty: 0.45,
+    payoffValue: 0.6,
+    motivations: ['preservation_transformation', 'asceticism_extravagance'],
+    mutationHint: { type: 'no_mutation' },
+  },
+
+  // 7. Break the Work — counter-play. Motive-gated: destroying what someone spent a
+  //    season making is the paradigm case of an act that needs a reason behind it.
+  {
+    id: 'strategic_destroy_masterwork',
+    displayName: 'Break the Work',
+    verb: 'destroy',
+    executionMode: 'instant',
+    behaviorFamily: 'builder-civic',
+    reachProfile: { iron: 0.5, shadow: 0.3, stone: 0.2 },
+    activityProse: [
+      'It takes a moment. That is the offensive part, and everyone present knows it.',
+    ],
+    completionProse: [
+      'What took a season to make is scrap. The skill that made it still exists; the thing does not.',
+    ],
+    targetRule: { type: 'location_subtype', subtypes: ['town', 'city', 'capital', 'hamlet'] },
+    resourceHint: { reachFloor: { iron: 0.25 } },
+    checkpointDifficulty: 0.45,
+    payoffValue: 0.55,
+    motivations: ['mercy_ruthlessness', 'preservation_transformation'],
+    motiveGate: ['rivalry', 'grudge', 'contested_ambition', 'faction_war'],
+    mutationHint: { type: 'no_mutation' },
+  },
 ];
 
 /** Look up a builder strategic template by ID */
