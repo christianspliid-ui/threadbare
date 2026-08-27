@@ -1,12 +1,12 @@
 # User Action Required
 
-**Last updated:** 2026-08-27 06:55 local (04:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-27 07:55 local (05:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
 ### 1. One sitting: sample batch 1, approve batch 2 — [THR-1130](https://linear.app/threadbare/issue/THR-1130) + [THR-1222](https://linear.app/threadbare/issue/THR-1222/run-retrofit-batch-2-the-camp-seven-through-the-factory-line-shrine)
 
-**The only thing that puts work on an empty board.** Ready for Dev holds **zero**, no PR is open, and the pickup lane has now woken three times with nothing to claim (04:01, 05:01 and 06:01 local). [The undertaking substrate](https://linear.app/threadbare/issue/THR-1292) closed at 03:42 and the last open PR merged at 04:06.
+**The only thing that puts work on an empty board.** Ready for Dev holds **zero**, no PR is open, and the pickup lane has now woken four times with nothing to claim (04:01, 05:01, 06:01 and 07:01 local). [The undertaking substrate](https://linear.app/threadbare/issue/THR-1292) closed at 03:42 and the last open PR merged at 04:06.
 
 **First, play two — the batch-1 2-of-6 sample, open since 17 August.** [The Grateful Kin](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin) and [The Unsafe Bridge](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge). The question is your own: *are they worth meeting twice?* Both were re-prosed since you last saw them, so a replay is honest. A no is as useful as a yes — it says what the retrofit bar still misses.
 
