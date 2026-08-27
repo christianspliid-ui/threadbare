@@ -392,9 +392,9 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `visibility` (1) | `visibility.ts` | — |
 | `wealth` (1) | `wealth.ts` | — |
 | `wheel` (1) | `wheel.ts` | — |
-| `world` (3) | `worldGenData.ts`, `worldSeed.ts`, `worldSoul.ts` | — |
+| `world` (4) | `worldGenData.ts`, `worldRefResolver.ts`, `worldSeed.ts`, `worldSoul.ts` | `THR-1160`, `THR-1164`, `THR-1165`, `THR-1212` |
 | `worldgen` (15) | `worldgen/WorldGenPipeline.ts`, `worldgen/constants.ts`, `worldgen/passes/pass00-grid.ts`, `worldgen/passes/pass01-provinces.ts`, `worldgen/passes/pass02-elevation.ts`, `worldgen/passes/pass03-coastline.ts`, `worldgen/passes/pass04-climate.ts`, `worldgen/passes/pass05-hydrology.ts`, `worldgen/passes/pass06-tempReassess.ts`, `worldgen/passes/pass07-biome.ts`, `worldgen/passes/pass07b-cultureTerrainNudge.ts`, `worldgen/passes/pass08-smoothing.ts`, `worldgen/passes/pass09-validation.ts`, `worldgen/passes/pass10-fantasyOverlay.ts`, `worldgen/types.ts` | `Phase 3` |
 
 ---
 
-_Counts: 26 registered subsystems (1 dormant) · 99 tick phases · 178 engine domains · 522 modules._
+_Counts: 26 registered subsystems (1 dormant) · 99 tick phases · 178 engine domains · 523 modules._
