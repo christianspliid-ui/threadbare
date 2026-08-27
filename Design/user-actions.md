@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-27 10:54 local (08:54 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-27 11:55 local (09:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -92,7 +92,7 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
-- **The binder is being built** — [THR-1296](https://linear.app/threadbare/issue/THR-1296) went Todo → Ready for Dev in twenty-three minutes this morning ([plan doc, PR #1660](https://github.com/christianspliid-ui/threadbare/pull/1660)), was claimed at 09:01, and slices 1–2 merged by 09:30 ([PR #1661](https://github.com/christianspliid-ui/threadbare/pull/1661)) with slice 3 merged and deployed since ([PR #1662](https://github.com/christianspliid-ui/threadbare/pull/1662)). Design → merge → promote → claim → ship, end to end, with no lane intervention.
+- **The binder is being built** — [THR-1296](https://linear.app/threadbare/issue/THR-1296) went Todo → Ready for Dev in twenty-three minutes this morning ([plan doc, PR #1660](https://github.com/christianspliid-ui/threadbare/pull/1660)), was claimed at 09:01, and four slices have merged since — 1–2 by 09:30 ([PR #1661](https://github.com/christianspliid-ui/threadbare/pull/1661)), slice 3 at 10:38 ([PR #1662](https://github.com/christianspliid-ui/threadbare/pull/1662)), and the undertaking bind pass at 11:52 ([PR #1663](https://github.com/christianspliid-ui/threadbare/pull/1663)), all deployed. Design → merge → promote → claim → ship, end to end, with no lane intervention.
 - **The undertaking substrate is done** — slice 6 of 6 merged overnight ([PR #1659](https://github.com/christianspliid-ui/threadbare/pull/1659)) and [THR-1292](https://linear.app/threadbare/issue/THR-1292) closed. Six slices in one day.
 - **Slice 5 merged** — the shadow prioritization board ([PR #1658](https://github.com/christianspliid-ui/threadbare/pull/1658)).
 - **The five missing plan-doc tickets now exist** — your carve-up named six docs but only doc 1 had ever become an issue. Filed overnight as THR-1296–THR-1300 with sequencing as Linear relations.
