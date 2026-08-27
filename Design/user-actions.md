@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-27 11:55 local (09:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-27 12:53 local (10:53 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -14,22 +14,18 @@
 
 **Three ways to close it:** *"batch 2, seven is fine"*, *"keep it six"*, or *"same rule — judge batch 2 on one first."*
 
-### 2. More design hours — still the binding constraint
+### 2. More design hours — still the binding constraint (**corrected 27 August**)
 
-Roughly twenty items sit in Todo and **every one needs a plan doc before an executor can touch it**. One landed this morning without you: a session wrote [the binder](https://linear.app/threadbare/issue/THR-1296) (carve-up doc 3, Tier-1 critical path) between 08:23 and 08:46; the builder claimed it at 09:01 and is building it now.
+Roughly twenty items sit in Todo and **every one needs a plan doc before an executor can touch it**. One landed this morning without you: a session wrote [the binder](https://linear.app/threadbare/issue/THR-1296) (carve-up doc 3, Tier-1 critical path) between 08:23 and 08:46; the builder claimed it at 09:01 and five of its six slices have shipped since.
 
-Four carve-up docs remain, but **only two can start today** — earlier briefs said four, which was too generous:
+**Correction to the last two briefs.** They said *"only two can start today"*. That was true of the six proactive-agent documents and quietly became a claim about the whole board, which is larger. Checked against the whole Todo board: **five design tickets are unblocked, unassigned and startable**, and the two named were the least valuable of the five. In the order I would spend the hour:
 
-- **Startable now:** [the reactive loop](https://linear.app/threadbare/issue/THR-1298) (how a mortal who is wronged comes to want something about it) and [the calling & the surfaces](https://linear.app/threadbare/issue/THR-1299) (what a mortal's projects look like on screen). Both waited only on the undertaking substrate, which finished last night; they run in parallel and collide with nothing.
-- **Chained behind the work in flight:** [THR-1297](https://linear.app/threadbare/issue/THR-1297) (the action library) waits on the binder, and [THR-1300](https://linear.app/threadbare/issue/THR-1300) waits on that.
+1. **[Your one-button snapshot](https://linear.app/threadbare/issue/THR-1134)** — High, your own request from 16 August, untouched 11 days. When you see a world that looks wrong you currently have no way to hand that world to an agent; this designs the capture, working on the deployed build you actually play on.
+2. **[The shared anchor machinery](https://linear.app/threadbare/issue/THR-1212)** — High, first of the three wave-1 docs you ruled on. [THR-1213](https://linear.app/threadbare/issue/THR-1213) then [THR-1155](https://linear.app/threadbare/issue/THR-1155) are chained behind it, so this hour unjams three tickets rather than one.
+3. **[A beast that can be a real character in a scene](https://linear.app/threadbare/issue/THR-1274)** — only people can be bound into an encounter's cast today, so a hunted animal can be described but never opposed. Four planned hunt encounters are capped by it.
+4. **[The reactive loop](https://linear.app/threadbare/issue/THR-1298)** and 5. **[the calling & the surfaces](https://linear.app/threadbare/issue/THR-1299)** — the two named last hour. Real work, no priority set. [THR-1297](https://linear.app/threadbare/issue/THR-1297) waits on the binder; [THR-1300](https://linear.app/threadbare/issue/THR-1300) behind that.
 
-Nothing to decide on the two open ones; say the word and sessions write them.
-
-In the order you set:
-
-- **[Unify the card grammar](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** — your 6 August note: action cards are too wordy, playing one gives no feedback, while encounter cards already read right. Held **ten days**; three tickets sit behind it. Sit it, or say *"park it"* and [the shared anchor machinery](https://linear.app/threadbare/issue/THR-1212) goes next.
-- **[Traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)** — in design, assigned to you, untouched since 15 August. Give it the hour or say *"put it back in the pile."*
-- **The wave-1 sessions** — [shared machinery](https://linear.app/threadbare/issue/THR-1212), then [the hunger vocabulary](https://linear.app/threadbare/issue/THR-1213), then [nations simulated rather than drawn](https://linear.app/threadbare/issue/THR-1155). Plus your [one-button snapshot](https://linear.app/threadbare/issue/THR-1134).
+Also still yours, in the order you set: **[unify the card grammar](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** (your 6 August note; held ten days, three tickets behind it — sit it or say *"park it"*) and **[traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)** (in design, assigned to you, untouched since 15 August — give it the hour or say *"put it back in the pile"*). Nothing to decide on any of them; say the word and sessions write them.
 
 ### 3. One design map still has questions — and they are all yours
 
@@ -92,11 +88,9 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
-- **The binder is being built** — [THR-1296](https://linear.app/threadbare/issue/THR-1296) went Todo → Ready for Dev in twenty-three minutes this morning ([plan doc, PR #1660](https://github.com/christianspliid-ui/threadbare/pull/1660)), was claimed at 09:01, and four slices have merged since — 1–2 by 09:30 ([PR #1661](https://github.com/christianspliid-ui/threadbare/pull/1661)), slice 3 at 10:38 ([PR #1662](https://github.com/christianspliid-ui/threadbare/pull/1662)), and the undertaking bind pass at 11:52 ([PR #1663](https://github.com/christianspliid-ui/threadbare/pull/1663)), all deployed. Design → merge → promote → claim → ship, end to end, with no lane intervention.
+- **The binder is five slices of six done** — [THR-1296](https://linear.app/threadbare/issue/THR-1296) went Todo → Ready for Dev in twenty-three minutes this morning, was claimed at 09:01, and slices 1–5 have merged and deployed since ([#1661](https://github.com/christianspliid-ui/threadbare/pull/1661), [#1662](https://github.com/christianspliid-ui/threadbare/pull/1662), [#1663](https://github.com/christianspliid-ui/threadbare/pull/1663), [#1664](https://github.com/christianspliid-ui/threadbare/pull/1664)) — design → merge → promote → claim → ship, end to end, with no lane intervention.
 - **The undertaking substrate is done** — slice 6 of 6 merged overnight ([PR #1659](https://github.com/christianspliid-ui/threadbare/pull/1659)) and [THR-1292](https://linear.app/threadbare/issue/THR-1292) closed. Six slices in one day.
-- **Slice 5 merged** — the shadow prioritization board ([PR #1658](https://github.com/christianspliid-ui/threadbare/pull/1658)).
 - **The five missing plan-doc tickets now exist** — your carve-up named six docs but only doc 1 had ever become an issue. Filed overnight as THR-1296–THR-1300 with sequencing as Linear relations.
-- **Slice 4 merged** — the initiative pipeline retired ([PR #1657](https://github.com/christianspliid-ui/threadbare/pull/1657)).
 - **You closed the [Proactive Agent Actions map](https://linear.app/threadbare/issue/THR-1276)** — all ten questions in one day, and answered the carve-up question by filing it.
 - **The three-agent review of that map merged** — [steel-man plus two red teams](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/audits/2026-08-26-proactive-agent-actions-review.md); the core survived and your rulings bind the six plan docs.
 - **Agents who looked ambitious and did nothing are fixed** — [THR-1285](https://linear.app/threadbare/issue/THR-1285) shipped and deployed.
