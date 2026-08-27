@@ -36,6 +36,12 @@ import {
   recordIntelligence,
   modifyLocationProperty,
   createRelationEdge,
+  spawnClue,
+  seedKnowsOf,
+  mintTreasureMap,
+  mintLeverageMark,
+  pressTheMark,
+  mintMasterwork,
   type GraphOpResult,
 } from './strategicGraphOps';
 import { resolveDurableActorLocation } from './tradeRouteOps';
@@ -994,6 +1000,60 @@ function executeInstantMutation(
             }
           }
         }
+        break;
+      }
+
+      // ── The explorer economy (THR-1297 §7) ──────────────────────
+      // Each writes into a system that already has consumers, so a chart verb's
+      // find becomes a lead the world acts on rather than a private score.
+
+      case 'spawn_clue': {
+        if (targetId) {
+          ops.push(spawnClue(
+            graph, candidate.actorId, targetId, tick,
+            hint.magnitude, hint.precision, hint.detail,
+          ));
+        }
+        break;
+      }
+
+      case 'seed_knows_of': {
+        if (targetId) {
+          ops.push(seedKnowsOf(graph, candidate.actorId, targetId, tick));
+        }
+        break;
+      }
+
+      case 'mint_treasure_map': {
+        if (targetId) {
+          ops.push(mintTreasureMap(graph, candidate.actorId, targetId, tick, hint.consumeOnEvent));
+        }
+        break;
+      }
+
+      case 'mint_leverage_mark': {
+        if (targetId) {
+          ops.push(mintLeverageMark(
+            graph, candidate.actorId, targetId, hint.secretType, hint.magnitude, tick,
+          ));
+        }
+        break;
+      }
+
+      case 'press_the_mark': {
+        if (targetId) {
+          ops.push(pressTheMark(
+            graph, candidate.actorId, targetId, hint.favorMagnitude, hint.context, tick,
+          ));
+        }
+        break;
+      }
+
+      // No `targetId` guard: a masterwork is made *by* someone, not *to* something.
+      // Gating it on a target would make the one kind whose object belongs to its
+      // maker silently unbuildable wherever the target rule came up empty.
+      case 'mint_masterwork': {
+        ops.push(mintMasterwork(graph, candidate.actorId, hint.craftTag, tick, hint.tier));
         break;
       }
 

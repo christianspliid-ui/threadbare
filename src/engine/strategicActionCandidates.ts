@@ -26,6 +26,7 @@ import { SCHOLAR_STRATEGIC_TEMPLATES } from '../data/strategic-packs/scholarStra
 import { ZEALOT_STRATEGIC_TEMPLATES } from '../data/strategic-packs/zealotStrategicPack';
 import { COURT_STRATEGIC_TEMPLATES } from '../data/strategic-packs/courtStrategicPack';
 import { WARLORD_STRATEGIC_TEMPLATES } from '../data/strategic-packs/warlordStrategicPack';
+import { WANDERER_STRATEGIC_TEMPLATES } from '../data/strategic-packs/wandererStrategicPack';
 import {
   STRATEGIC_MAX_CANDIDATES_PER_ACTOR,
   STRATEGIC_MAX_CANDIDATES_PER_AMBITION,
@@ -56,6 +57,7 @@ const ALL_PACKS: readonly (readonly StrategicActionTemplate[])[] = [
   ZEALOT_STRATEGIC_TEMPLATES,
   COURT_STRATEGIC_TEMPLATES,
   WARLORD_STRATEGIC_TEMPLATES,
+  WANDERER_STRATEGIC_TEMPLATES,
 ];
 for (const pack of ALL_PACKS) {
   for (const t of pack) {
@@ -366,6 +368,34 @@ function findValidTargets(
         const traits = a.properties.traits as string[] | undefined;
         return traits?.includes(rule.trait);
       }).slice(0, 5);
+    }
+
+    case 'colocated_actor': {
+      // People standing where the actor stands. Deliberately *not* a graph-wide scan
+      // sliced to five (`actor_with_trait`'s shape): a secret is held about someone
+      // you have met, so the target set has to be the room rather than the world.
+      const here = graph.getIncomingEdges(currentLocationId, 'located_at')
+        .map(e => graph.getNode(e.source))
+        .filter((n): n is GraphNode => !!n && n.type === 'actor' && n.id !== actorId);
+
+      const roleFiltered = rule.roles && rule.roles.length > 0
+        ? here.filter(n => {
+            const role = n.properties.npcRole as string | undefined;
+            return role !== undefined && rule.roles!.includes(role);
+          })
+        : here;
+
+      // Narrow to people the actor already holds the named edge toward. Without this
+      // a verb whose *resolution* requires a prior relationship gets offered against
+      // whoever happens to be standing there, and refuses every time — selection and
+      // resolution disagreeing silently, which reads as a dead verb rather than a
+      // mis-targeted one.
+      const edgeFiltered = rule.withEdgeFromActor
+        ? roleFiltered.filter(n =>
+            graph.getOutgoingEdges(actorId, rule.withEdgeFromActor!).some(e => e.target === n.id))
+        : roleFiltered;
+
+      return edgeFiltered.slice(0, 5);
     }
 
     case 'hex_region':

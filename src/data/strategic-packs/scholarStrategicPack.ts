@@ -24,6 +24,9 @@ export const SCHOLAR_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     ],
     targetRule: { type: 'location_subtype', subtypes: ['city', 'capital', 'temple', 'ruins'] },
     resourceHint: { reachFloor: { eye: 0.2 } },
+    checkpointDifficulty: 0.4,
+    payoffValue: 0.5,
+    motivations: ['revelation_discretion', 'tradition_novelty'],
     mutationHint: { type: 'record_intelligence', intelligenceType: 'archival_research' },
   },
 
@@ -44,6 +47,9 @@ export const SCHOLAR_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     ],
     targetRule: { type: 'location_subtype', subtypes: ['ruins', 'shrine', 'temple', 'oasis'] },
     resourceHint: { reachFloor: { eye: 0.3, veil: 0.2 } },
+    checkpointDifficulty: 0.45,
+    payoffValue: 0.6,
+    motivations: ['revelation_discretion', 'courage_prudence'],
     mutationHint: { type: 'record_intelligence', intelligenceType: 'anomaly_investigation' },
   },
 
@@ -66,6 +72,9 @@ export const SCHOLAR_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     catalystEncounterIds: ['encounter_academic_rivalry', 'encounter_forbidden_knowledge'],
     targetRule: { type: 'location_subtype', subtypes: ['city', 'capital', 'temple'] },
     resourceHint: { wealthCost: 30, reachFloor: { eye: 0.4 } },
+    checkpointDifficulty: 0.5,
+    payoffValue: 0.7,
+    motivations: ['revelation_discretion', 'preservation_transformation', 'tradition_novelty'],
     mutationHint: { type: 'record_intelligence', intelligenceType: 'treatise_published' },
   },
 
@@ -110,6 +119,9 @@ export const SCHOLAR_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     catalystEncounterIds: ['encounter_ruin_trap', 'encounter_ancient_guardian'],
     targetRule: { type: 'location_subtype', subtypes: ['ruins', 'shrine', 'temple', 'oasis'] },
     resourceHint: { wealthCost: 50, reachFloor: { eye: 0.3 } },
+    checkpointDifficulty: 0.5,
+    payoffValue: 0.75,
+    motivations: ['courage_prudence', 'tradition_novelty', 'revelation_discretion'],
     mutationHint: { type: 'record_intelligence', intelligenceType: 'expedition_findings' },
   },
 
@@ -158,6 +170,37 @@ export const SCHOLAR_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     // Mentorship advances through conversation and proximity, not at a fixed stage —
     // the separation check in the fold is the real spatial constraint.
     requiresLocation: false,
+    mutationHint: { type: 'no_mutation' },
+  },
+
+  // ── The `intelligence_cache` kind's counter-play (THR-1297 §5, slice 5) ──
+  //
+  // What a scholar accumulates is a *hoard of knowing*, and until now nothing in the
+  // world could take it back — decay was ambient and impersonal. Exposure is the
+  // deliberate act: someone with a reason publishes what you were keeping, and a
+  // known secret is not a cache any more.
+  //
+  // 8. Expose the Cache — destroy, motive-gated.
+  {
+    id: 'strategic_expose_cache',
+    displayName: 'Expose the Cache',
+    verb: 'destroy',
+    executionMode: 'instant',
+    behaviorFamily: 'scholar-seeker',
+    reachProfile: { eye: 0.45, shadow: 0.3, heart: 0.25 },
+    activityProse: [
+      'Copying it out and handing it to people who will not keep it quiet.',
+    ],
+    completionProse: [
+      'What was held closely is now simply known. Nobody owns it, which was exactly the intent.',
+    ],
+    catalystEncounterIds: ['encounter_academic_rivalry'],
+    targetRule: { type: 'location_subtype', subtypes: ['city', 'capital', 'temple', 'ruins'] },
+    resourceHint: { reachFloor: { eye: 0.25 } },
+    checkpointDifficulty: 0.45,
+    payoffValue: 0.6,
+    motivations: ['revelation_discretion', 'honesty_cunning'],
+    motiveGate: ['rivalry', 'grudge', 'contested_ambition', 'faction_war'],
     mutationHint: { type: 'no_mutation' },
   },
 ];

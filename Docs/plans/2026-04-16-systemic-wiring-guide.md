@@ -3387,3 +3387,77 @@ deliberately rare until networks and holdings land. Author them anyway — the e
 honours the declaration now, and an emptiness-pinning test fails deliberately the
 moment your first `remote: true` row appears, which is exactly the signal that the
 seam has been proven rather than assumed.
+
+---
+
+## Capability: What an undertaking *makes* — six mutation ops for T1 kinds (THR-1297)
+
+An undertaking's `mutationHint` is what it leaves in the world when it completes. Six new
+hints landed with tier 1, and they share one authoring rule that matters more than any of
+them individually:
+
+> **Write into an economy that already has consumers.** A find only the finder can read is
+> a counter, not a kind.
+
+| Hint | What it writes | Who already reads it |
+|---|---|---|
+| `spawn_clue` | `knows_clue_of` toward a location | The ruins layer, which converges a clue into `knows_of` familiarity |
+| `seed_knows_of` | `knows_of` directly | Every familiarity reader |
+| `mint_treasure_map` | An artifact possession pointing at a site | `treasureMapConsumption`, which spends it when the site is found |
+| `mint_leverage_mark` | `knows_secret_of` toward an actor | Secrets & Favors |
+| `press_the_mark` | `owes_favor` from the subject | The social systems that read debt |
+| `mint_masterwork` | An artifact the maker holds | The attachment layer — this kind's object *is* an attachment |
+
+**Three things worth knowing before you author against them.**
+
+**A dedicated op beats the generic edge-maker when the edge has required properties.**
+`create_relation_edge` stamps only `establishedTick`. `knows_secret_of` declares five
+required properties, so a mark routed through the generic maker warns on the schema every
+time *and* arrives without the fields the economy presses. If the edge you want has a
+`requiredProperties` row, it wants its own op.
+
+**A closed-vocabulary property must be legal at the writer.** Both artifact ops first
+shipped `subcategory: 'tool'` with a string `tier`; neither exists (`PossessionSubcategory`
+has seven members, `AttachmentTier` is numeric 1–4). Nothing threw — `getAttachmentArtUrl`
+just returned `null` forever, so the items would have rendered as blank plates everywhere a
+possession is shown. Assert membership at the writer; a world-walking coverage test only
+proves the vocabulary held for whatever that seed happened to mint.
+
+**If resolution needs a prior relationship, selection has to know.** `press_the_mark`
+refuses without a held mark — correct, and unit-tested both ways. But its target rule
+selected on role, so it completed three times against three strangers and minted nothing:
+every layer individually right, the arc unable to connect, and the symptom identical to a
+dead verb. The `colocated_actor` rule's `withEdgeFromActor` field exists for exactly this —
+it narrows the target set to people the actor already holds that edge toward. **Any verb
+whose resolution demands a prior relationship needs that relationship in its target rule**,
+or the guard silently converts the verb into a no-op that still shows up in the history.
+
+### The kind registry, and why your destroy verb is not optional
+
+A kind row (`src/data/undertaking-kinds.ts`) is the CRUD closure for one kind of work: what
+builds it, what changes it, and what can undo it. `destroyTemplateIds` **must** be non-empty
+and every id must resolve to a `destroy` verb carrying a `motiveGate`. The gate resolves
+*reachability*, not presence — pointing at a template nobody implements is caught.
+
+Two authoring consequences:
+
+- **Until a kind can be undone, it is not a kind.** Do not register a row whose counter-play
+  you have not written. Registering against a create verb to make the row look complete is
+  the vacuity the gate exists to refuse, and it is why the registry shipped empty for a slice.
+- **Every `destroy` verb in the corpus needs a `motiveGate`, not only those a row names.**
+  This is a corpus-wide invariant with its own test. A self-spend that felt like a destroy
+  (`burn_the_mark`) was authored as `change` because of it — an ungated destroy is offerable
+  against anyone for no reason, with only authoring discipline aiming it, and discipline is
+  not a safety property.
+
+### And your template needs an ambition to live in
+
+Candidate generation iterates `strategicProfile.templateIds` and **nothing else**. A template
+in no ambition profile is unreachable by construction — not rare, impossible — however well
+authored. Profile presence is also the generation gate on the ambition side, which is why
+authoring a wilderness pack meant authoring `strategicProfile`s for the wilderness ambitions
+in the same pass: only 7 of ~25 ambitions carried one, so the rest generated nothing at all.
+
+Note there are **three** ambition arrays (`AMBITION_TEMPLATES`, `REACTIVE_AMBITION_TEMPLATES`,
+`EVENT_MINTED_AMBITION_TEMPLATES`), and candidate generation resolves against the first two.
+A reachability check that reads only the base array reports false negatives.

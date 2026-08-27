@@ -25,18 +25,91 @@ import { MOTIVE_GATE_KINDS } from './strategic-action-constants';
 /**
  * The authored kind rows.
  *
- * **Empty in slice 2, and that emptiness is the gate working rather than work left
- * undone.** A row must name at least one destroy template, and every destroy template
- * must carry a motive gate. Surveyed at authoring time, the shipped corpus holds
- * exactly one `verb: 'destroy'` template in 43 (`strategic_raid_supply_lines`, a raid
- * rather than any kind's counter-play), so there is no kind whose undoing exists yet.
- * Registering a row anyway — pointing `destroyTemplateIds` at a create verb, or at an
- * id nobody implements — is precisely the vacuous satisfaction this plan names as a
- * kill criterion. The rows land with their destroy verbs, kind by kind, in slice 5.
+ * **Tier 1 in slice 5 — five kinds, each shipped with its counter-play in the same
+ * commit.** Slice 2 registered this array empty on purpose: a row must name at least
+ * one destroy template and every destroy must carry a motive gate, and the corpus at
+ * that point held exactly one `destroy` verb in 43 (`strategic_raid_supply_lines`, a
+ * raid rather than any kind's undoing). Registering rows against create verbs would
+ * have been the vacuous satisfaction the plan names as a kill criterion. So the rows
+ * waited for their destroys, and arrive with them.
  *
- * The consequence worth stating plainly: until a kind can be undone, it is not a kind.
+ * The consequence, stated plainly then and honoured here: **until a kind can be undone,
+ * it is not a kind.** Every row below names a real, reachable, motive-gated counter-play.
+ *
+ * Tiers 2 and 3 (sublocation, place-tier location, trade route, warband, faction) land
+ * with their own destroys in the T2/T3 issues filed from this plan. They are absent
+ * rather than stubbed for the same reason the array was empty before.
  */
-export const UNDERTAKING_KIND_ROWS: readonly UndertakingKindRow[] = [];
+export const UNDERTAKING_KIND_ROWS: readonly UndertakingKindRow[] = [
+  {
+    kindId: 'intelligence_cache',
+    tier: 1,
+    displayName: 'Intelligence cache',
+    objectShape: "actor-side `strategicIntelligence` record plus `knows_of` familiarity",
+    // Its own economy: what a scholar knows is not ground, and the holdings system is
+    // about ground and organisations.
+    ownable: false,
+    createTemplateIds: [
+      'strategic_research_archive',
+      'strategic_investigate_anomaly',
+      'strategic_mount_expedition',
+    ],
+    updateTemplateIds: ['strategic_write_treatise'],
+    destroyTemplateIds: ['strategic_expose_cache'],
+    lexicon: 'cache',
+  },
+  {
+    kindId: 'leverage_mark',
+    tier: 1,
+    displayName: 'Leverage mark',
+    objectShape: '`knows_secret_of` edge (Secrets & Favors)',
+    ownable: false,
+    createTemplateIds: ['strategic_cultivate_informant'],
+    // Press and burn are both *uses* of a held mark, not counter-play against it — the
+    // D column is what the **world** can do to take a work back. Burn is authored
+    // `verb: 'change'` for the reason recorded at its template: the corpus invariant
+    // that no destroy verb ships ungated is worth more than the taxonomic neatness of
+    // calling a self-spend a destroy.
+    updateTemplateIds: ['strategic_press_the_mark', 'strategic_burn_the_mark'],
+    destroyTemplateIds: ['strategic_expose_mark'],
+    lexicon: 'mark',
+  },
+  {
+    kindId: 'masterwork_item',
+    tier: 1,
+    displayName: 'Masterwork',
+    objectShape: '`artifact` node held by `possesses` — already an attachment',
+    // Carried on `possesses`, not the `holding` category. A hammer is not ground.
+    ownable: false,
+    createTemplateIds: ['strategic_craft_masterwork'],
+    updateTemplateIds: ['strategic_improve_masterwork'],
+    destroyTemplateIds: ['strategic_destroy_masterwork'],
+    lexicon: 'item',
+  },
+  {
+    kindId: 'chart_find',
+    tier: 1,
+    displayName: 'Chart',
+    objectShape: 'treasure-map possession plus `knows_clue_of` / `knows_of` edges',
+    ownable: false,
+    createTemplateIds: ['strategic_chart_the_wilds'],
+    updateTemplateIds: ['strategic_follow_the_chart', 'strategic_walk_the_unmapped'],
+    destroyTemplateIds: ['strategic_burn_the_charts'],
+    lexicon: 'chart',
+  },
+  {
+    kindId: 'network',
+    tier: 1,
+    displayName: 'Network',
+    objectShape: 'actor-side network record with `member_of` contacts',
+    // Commanded, not held — the distinction slice 3's `owns` edge exists to keep.
+    ownable: false,
+    createTemplateIds: ['strategic_establish_spy_network'],
+    updateTemplateIds: ['strategic_extend_reach'],
+    destroyTemplateIds: ['strategic_sever_network'],
+    lexicon: 'network',
+  },
+];
 
 const ROWS_BY_KIND = new Map<UndertakingKindId, UndertakingKindRow>(
   UNDERTAKING_KIND_ROWS.map(row => [row.kindId, row]),

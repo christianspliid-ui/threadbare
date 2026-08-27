@@ -404,3 +404,365 @@ export function recordIntelligence(
     return { success: false, op: 'record_intelligence', error: String(e) };
   }
 }
+
+// ─── The explorer economy (THR-1297 §7) ─────────────────────────────
+//
+// Three ops, one principle: an explorer's find is a **lead the world can act on**,
+// never a private score. Each writes into an economy that already has consumers —
+// the ruins layer's clue→familiarity convergence, and the treasure-map possession
+// lifecycle — so a chart verb feeds systems that exist rather than minting a
+// currency only it reads. That is what makes the wilderness arc join the game
+// instead of dead-ending in the actor's property bag.
+
+/**
+ * Plant a transient clue about a location on the actor.
+ *
+ * Idempotent per (actor, location): a re-survey of somewhere already clued refuses
+ * rather than stacking leads, because the ruins layer consumes the *first* unconsumed
+ * clue and a pile of duplicates would read as one find repeated forever.
+ */
+export function spawnClue(
+  graph: WorldGraph,
+  actorId: string,
+  targetLocationId: string,
+  tick: number,
+  magnitude: number,
+  precision: number,
+  detail?: string,
+): GraphOpResult {
+  try {
+    const actor = graph.getNode(actorId);
+    const target = graph.getNode(targetLocationId);
+    if (!actor || !target) {
+      return { success: false, op: 'spawn_clue', error: 'node_not_found' };
+    }
+
+    const violation = validateEdgeEndpoints('knows_clue_of', actor.type, target.type);
+    if (violation) {
+      return { success: false, op: 'spawn_clue', error: violation.message };
+    }
+
+    const existing = graph.getOutgoingEdges(actorId, 'knows_clue_of')
+      .find(e => e.target === targetLocationId && e.properties?.consumed !== true);
+    if (existing) {
+      return { success: false, op: 'spawn_clue', error: 'clue_already_held' };
+    }
+
+    const edgeId = `knows_clue_of_${actorId}_${targetLocationId}_${tick}`;
+    graph.addEdge({
+      id: edgeId,
+      source: actorId,
+      target: targetLocationId,
+      type: 'knows_clue_of',
+      properties: {
+        magnitude,
+        precision,
+        source: 'undertaking_survey',
+        discoveredTick: tick,
+        consumed: false,
+        ...(detail ? { detail } : {}),
+      },
+    });
+
+    return { success: true, op: 'spawn_clue', createdId: edgeId };
+  } catch (e) {
+    return { success: false, op: 'spawn_clue', error: String(e) };
+  }
+}
+
+/**
+ * Stamp durable familiarity with a location.
+ *
+ * The same edge clue-convergence writes, written directly because a survey that
+ * *found* the place has already done what convergence does. Refuses a duplicate:
+ * familiarity is a fact, not a counter.
+ */
+export function seedKnowsOf(
+  graph: WorldGraph,
+  actorId: string,
+  targetLocationId: string,
+  tick: number,
+): GraphOpResult {
+  try {
+    const actor = graph.getNode(actorId);
+    const target = graph.getNode(targetLocationId);
+    if (!actor || !target) {
+      return { success: false, op: 'seed_knows_of', error: 'node_not_found' };
+    }
+
+    const violation = validateEdgeEndpoints('knows_of', actor.type, target.type);
+    if (violation) {
+      return { success: false, op: 'seed_knows_of', error: violation.message };
+    }
+
+    const existing = graph.getOutgoingEdges(actorId, 'knows_of')
+      .find(e => e.target === targetLocationId);
+    if (existing) {
+      return { success: false, op: 'seed_knows_of', error: 'already_known' };
+    }
+
+    const edgeId = `knows_of_${actorId}_${targetLocationId}_${tick}`;
+    graph.addEdge({
+      id: edgeId,
+      source: actorId,
+      target: targetLocationId,
+      type: 'knows_of',
+      properties: { fromSurvey: true, convergedTick: tick },
+    });
+
+    return { success: true, op: 'seed_knows_of', createdId: edgeId };
+  } catch (e) {
+    return { success: false, op: 'seed_knows_of', error: String(e) };
+  }
+}
+
+/**
+ * Mint a treasure map possession pointing at a location.
+ *
+ * A **possession**, not a property, and that is the design rather than an
+ * implementation detail: the map can be stolen, and being stealable is the entire
+ * counter-play of the `chart_find` kind. `consumeOnEvent` joins it to the existing
+ * `treasureMapConsumption` lifecycle — a map minted without one is a map nobody can
+ * ever spend, so the default points at the event that sweep already listens for.
+ */
+export function mintTreasureMap(
+  graph: WorldGraph,
+  actorId: string,
+  targetLocationId: string,
+  tick: number,
+  consumeOnEvent: string = 'hidden_site_discovered',
+): GraphOpResult {
+  try {
+    const actor = graph.getNode(actorId);
+    const target = graph.getNode(targetLocationId);
+    if (!actor || !target) {
+      return { success: false, op: 'mint_treasure_map', error: 'node_not_found' };
+    }
+
+    // One live map per (actor, site). A second chart of the same place deepens the
+    // lead through `spawn_clue`; it does not hand the actor a duplicate to sell.
+    const duplicate = graph.getOutgoingEdges(actorId, 'possesses')
+      .map(e => graph.getNode(e.target))
+      .some(n => n?.properties?.mapsToLocationId === targetLocationId);
+    if (duplicate) {
+      return { success: false, op: 'mint_treasure_map', error: 'map_already_held' };
+    }
+
+    const mapId = `artifact_chart_${actorId}_${targetLocationId}_${tick}`;
+    graph.addNode({
+      id: mapId,
+      type: 'artifact',
+      name: `Chart to ${target.name ?? 'an unmarked place'}`,
+      properties: {
+        // Canonical `PossessionSubcategory` — the art resolver keys off it, and a
+        // non-canonical value resolves to no plate at all (caught by the seeded-world
+        // art coverage test, which is why it is not merely cosmetic). A chart is a
+        // document before it is a tool.
+        subcategory: 'tomes_scrolls',
+        // `AttachmentTier` is numeric 1–4 (Mundane…Legendary), not a string.
+        tier: 1,
+        tags: ['treasure_map', 'chart'],
+        mechanicalSummary: 'Marks a place worth finding.',
+        lossCondition: 'losable',
+        grantsTraitWhileHeld: 'ruin_seeker',
+        consumeOnEvent,
+        mapsToLocationId: targetLocationId,
+        createdTick: tick,
+        effects: [],
+      },
+    });
+    graph.addEdge({
+      id: `possesses_${actorId}_${mapId}`,
+      source: actorId,
+      target: mapId,
+      type: 'possesses',
+      properties: { modifiers: {}, tags: ['treasure_map'] },
+    });
+
+    return { success: true, op: 'mint_treasure_map', createdId: mapId };
+  } catch (e) {
+    return { success: false, op: 'mint_treasure_map', error: String(e) };
+  }
+}
+
+/**
+ * Take a `knows_secret_of` hold on another actor — the `leverage_mark` kind's object.
+ *
+ * Writes all five of the row's required properties, which is the reason this exists
+ * rather than a `create_relation_edge` call: the generic maker stamps `establishedTick`
+ * and nothing else, so every mark it minted would warn on the schema and arrive without
+ * the fields the Secrets & Favors economy presses. `revealed: false` is the mark's
+ * whole value — a revealed secret is spent.
+ *
+ * Idempotent per (holder, subject, secretType): pressing an existing mark is the update
+ * verb's job, not a second edge.
+ */
+export function mintLeverageMark(
+  graph: WorldGraph,
+  holderId: string,
+  subjectId: string,
+  secretType: string,
+  magnitude: number,
+  tick: number,
+): GraphOpResult {
+  try {
+    const holder = graph.getNode(holderId);
+    const subject = graph.getNode(subjectId);
+    if (!holder || !subject) {
+      return { success: false, op: 'mint_leverage_mark', error: 'node_not_found' };
+    }
+    if (holderId === subjectId) {
+      return { success: false, op: 'mint_leverage_mark', error: 'self_target' };
+    }
+
+    const violation = validateEdgeEndpoints('knows_secret_of', holder.type, subject.type);
+    if (violation) {
+      return { success: false, op: 'mint_leverage_mark', error: violation.message };
+    }
+
+    const existing = graph.getOutgoingEdges(holderId, 'knows_secret_of')
+      .find(e => e.target === subjectId && e.properties?.secretType === secretType);
+    if (existing) {
+      return { success: false, op: 'mint_leverage_mark', error: 'mark_already_held' };
+    }
+
+    const edgeId = `knows_secret_of_${holderId}_${subjectId}_${tick}`;
+    graph.addEdge({
+      id: edgeId,
+      source: holderId,
+      target: subjectId,
+      type: 'knows_secret_of',
+      properties: {
+        secretType,
+        magnitude,
+        discoveredTick: tick,
+        source: 'undertaking_cultivation',
+        revealed: false,
+      },
+    });
+
+    return { success: true, op: 'mint_leverage_mark', createdId: edgeId };
+  } catch (e) {
+    return { success: false, op: 'mint_leverage_mark', error: String(e) };
+  }
+}
+
+/**
+ * Press a held mark into an owed favor — the leverage arc's *use* step.
+ *
+ * **Refuses when no unrevealed mark is held**, and that refusal is the point: it is
+ * what makes cultivate → press → burn a sequence rather than three verbs that happen
+ * to share a noun. The debt is minted subject → holder (the subject owes), carrying the
+ * five properties `owes_favor` requires.
+ */
+export function pressTheMark(
+  graph: WorldGraph,
+  holderId: string,
+  subjectId: string,
+  favorMagnitude: number,
+  context: string,
+  tick: number,
+): GraphOpResult {
+  try {
+    const holder = graph.getNode(holderId);
+    const subject = graph.getNode(subjectId);
+    if (!holder || !subject) {
+      return { success: false, op: 'press_the_mark', error: 'node_not_found' };
+    }
+
+    const mark = graph.getOutgoingEdges(holderId, 'knows_secret_of')
+      .find(e => e.target === subjectId && e.properties?.revealed !== true);
+    if (!mark) {
+      return { success: false, op: 'press_the_mark', error: 'no_mark_held' };
+    }
+
+    const violation = validateEdgeEndpoints('owes_favor', subject.type, holder.type);
+    if (violation) {
+      return { success: false, op: 'press_the_mark', error: violation.message };
+    }
+
+    const edgeId = `owes_favor_${subjectId}_${holderId}_${tick}`;
+    graph.addEdge({
+      id: edgeId,
+      source: subjectId,
+      target: holderId,
+      type: 'owes_favor',
+      properties: {
+        magnitude: favorMagnitude,
+        context,
+        grantedTick: tick,
+        redeemed: false,
+        broken: false,
+      },
+    });
+
+    // Pressing spends some of the hold's quiet: a secret used is a secret partly out.
+    // The mark survives — burning it is a separate, deliberate act.
+    const current = (mark.properties.magnitude as number | undefined) ?? 0;
+    graph.updateEdge(mark.id, {
+      properties: { ...mark.properties, magnitude: Math.max(0, current - favorMagnitude * 0.5) },
+    });
+
+    return { success: true, op: 'press_the_mark', createdId: edgeId };
+  } catch (e) {
+    return { success: false, op: 'press_the_mark', error: String(e) };
+  }
+}
+
+/**
+ * Forge an artifact the maker keeps — the `masterwork_item` kind's object.
+ *
+ * Deliberately *not* idempotent per maker: a smith may make more than one good thing
+ * in a life, and collapsing them would make the second masterwork silently fail. The
+ * tick in the id is what keeps successive pieces distinct.
+ *
+ * The node is a plain `artifact` carrying the possession property bag the attachment
+ * layer already reads, which is why this kind needs no new carrying mechanism — its
+ * object *is* an attachment, which is the reason it was chosen as a T1 kind at all.
+ */
+export function mintMasterwork(
+  graph: WorldGraph,
+  makerId: string,
+  craftTag: string,
+  tick: number,
+  /** `AttachmentTier`, numeric 1–4. A masterwork defaults to Storied (2). */
+  tier: number = 2,
+): GraphOpResult {
+  try {
+    const maker = graph.getNode(makerId);
+    if (!maker) {
+      return { success: false, op: 'mint_masterwork', error: 'actor_not_found' };
+    }
+
+    const itemId = `artifact_masterwork_${makerId}_${tick}`;
+    graph.addNode({
+      id: itemId,
+      type: 'artifact',
+      // A working name only — the christening seam (slice 4) renames created nodes at
+      // completion through the work namer, which is where the earned name comes from.
+      name: `${maker.name ?? 'a maker'}'s ${craftTag}`,
+      properties: {
+        // Canonical `PossessionSubcategory` — see the note on `mintTreasureMap`.
+        subcategory: 'tools_instruments',
+        tier,
+        tags: ['masterwork', craftTag],
+        mechanicalSummary: 'Made well, by someone who meant it.',
+        lossCondition: 'losable',
+        createdTick: tick,
+        craftedBy: makerId,
+        effects: [],
+      },
+    });
+    graph.addEdge({
+      id: `possesses_${makerId}_${itemId}`,
+      source: makerId,
+      target: itemId,
+      type: 'possesses',
+      properties: { modifiers: {}, tags: ['masterwork'] },
+    });
+
+    return { success: true, op: 'mint_masterwork', createdId: itemId };
+  } catch (e) {
+    return { success: false, op: 'mint_masterwork', error: String(e) };
+  }
+}

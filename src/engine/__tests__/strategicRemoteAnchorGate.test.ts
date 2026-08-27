@@ -136,10 +136,20 @@ describe('remote-anchor gate — inert today', () => {
     expect(result.candidates.some(c => c.targetNodeId === 'loc_far_town')).toBe(true);
   });
 
-  it('no shipped strategic template declares `remote` — the emptiness pin', () => {
-    // Fails deliberately when doc 2 authors the first row, which is the point: the
-    // seam gets proven by the authoring rather than assumed by it.
-    expect(getAllStrategicTemplates().filter(t => t.remote === true).map(t => t.id)).toEqual([]);
+  it('the network kind is the corpus\'s only remote verb — the authored identity', () => {
+    // This was the emptiness pin ("no shipped template declares `remote`") until
+    // THR-1297 slice 5 authored the first one, which is exactly what the pin existed
+    // to announce. Restated rather than relaxed: the identity is still an exact set,
+    // so a second remote verb has to be a deliberate authoring act and not a drift.
+    //
+    // Why `strategic_extend_reach` is the right first subject: §6 drew the remote line
+    // at "work happening somewhere the actor is not, through people the actor
+    // commands" — walking four hexes to survey a market is travel, but reaching into a
+    // far town through a network you built is the case the gate was written for. It is
+    // also the kind whose contacts *are* the anchor, so the gate has something real to
+    // resolve against rather than armies alone.
+    expect(getAllStrategicTemplates().filter(t => t.remote === true).map(t => t.id))
+      .toEqual(['strategic_extend_reach']);
   });
 });
 

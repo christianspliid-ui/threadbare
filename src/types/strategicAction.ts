@@ -6,6 +6,7 @@
 
 import type { ReachDomain } from './traits';
 import type { ValuePair } from './agent';
+import type { EdgeType } from './graph';
 
 // ─── Strategic Verbs ────────────────────────────────────────────────
 // Five world-shaping verbs from the design — the execution language under ambitions.
@@ -277,6 +278,63 @@ export type StrategicMutationHint =
   | { type: 'record_intelligence'; intelligenceType: string }
   | { type: 'create_sublocation'; sublocationTypeId: string; nameTemplate: string }
   | { type: 'create_trade_route' }
+  /**
+   * Plant a transient `knows_clue_of` lead about the target location (THR-1297 §7).
+   *
+   * The explorer arc's output is *a lead the world can act on*, not a stat: the ruins
+   * layer already consumes `knows_clue_of` at convergence and converts it to `knows_of`,
+   * so a chart verb feeds an economy that exists rather than minting a private score.
+   * `magnitude`/`precision` are the clue's strength and how narrowly it points.
+   */
+  | { type: 'spawn_clue'; magnitude: number; precision: number; detail?: string }
+  /**
+   * Stamp durable familiarity with the target location.
+   *
+   * The same edge the ruins layer writes at clue convergence, written directly here
+   * because a survey that *finds* the place has done what convergence does. Idempotent:
+   * the underlying op refuses a duplicate rather than stacking edges.
+   */
+  | { type: 'seed_knows_of' }
+  /**
+   * Mint a treasure map possession pointing at the target (THR-1297 §7).
+   *
+   * A possession rather than a property because the map is meant to be *takeable* —
+   * that is the whole counter-play of the `chart_find` kind, and `treasureMapConsumption`
+   * already removes it when its site is discovered. `consumeOnEvent` is what joins it to
+   * that existing lifecycle; a map minted without one would never be spent.
+   */
+  | { type: 'mint_treasure_map'; consumeOnEvent?: string }
+  /**
+   * Take a `knows_secret_of` hold on the target actor — the `leverage_mark` kind's
+   * object (THR-1297 §5).
+   *
+   * A dedicated op rather than `create_relation_edge` because that primitive stamps
+   * only `establishedTick`, while `knows_secret_of` requires five properties including
+   * a `discoveredTick` no authoring-time literal can carry. Routing a mark through the
+   * generic maker would mint an edge the schema warns on, every time, forever — the
+   * Secrets & Favors economy reads those properties, so a mark missing them is a hold
+   * nothing can press.
+   */
+  | { type: 'mint_leverage_mark'; secretType: string; magnitude: number }
+  /**
+   * Press a held mark into a debt — the `leverage_mark` kind's *use* (THR-1297 §5).
+   *
+   * Converts a standing `knows_secret_of` hold into an `owes_favor` the subject carries,
+   * which is what "feeding Secrets & Favors" means concretely: the mark stops being a
+   * private fact and becomes an obligation the social systems already read. Refuses when
+   * no mark is held, so pressing is genuinely gated on having cultivated one — that
+   * refusal is what makes the arc an arc rather than three unrelated verbs.
+   */
+  | { type: 'press_the_mark'; favorMagnitude: number; context: string }
+  /**
+   * Forge an artifact the maker keeps — the `masterwork_item` kind's object.
+   *
+   * The one T1 kind whose object *is already an attachment*, so it needs no new
+   * carrying mechanism: an artifact node plus the `possesses` edge is exactly what the
+   * attachment layer reads. `craftTag` joins the piece to its maker's trade so the
+   * namer and the codex can say what it is.
+   */
+  | { type: 'mint_masterwork'; craftTag: string; tier?: number }
   | { type: 'create_relation_edge'; edgeType: string; direction: 'actor_to_target' | 'target_to_actor'; properties?: Record<string, unknown> }
   | {
       type: 'modify_location_property';
@@ -306,7 +364,34 @@ export type StrategicTargetRule =
   | { type: 'trade_route' }
   | { type: 'self' }          // No external target needed
   | { type: 'hex_region' }    // Targets a hex area
-  | { type: 'sublocation_type'; subtypeIds: readonly string[] };
+  | { type: 'sublocation_type'; subtypeIds: readonly string[] }
+  /**
+   * People standing where the actor is standing (THR-1297 §5).
+   *
+   * The `leverage_mark` kind needed an actor-shaped target and the only one that
+   * existed — `actor_with_trait` — scans the **whole graph** and slices five, so a
+   * mark could be cultivated on someone the actor has never been within twenty hexes
+   * of. `knows_secret_of` is a relationship between two people who have met; this rule
+   * is what makes the target set say so. Self is always excluded.
+   */
+  | {
+      type: 'colocated_actor';
+      roles?: readonly string[];
+      /**
+       * Narrow to people the actor already holds this edge type toward.
+       *
+       * Measured need, not speculative generality (THR-1297 slice 5): `press_the_mark`
+       * refuses without a held `knows_secret_of`, and a role-only target rule picks
+       * whichever clerk is standing there — so in a 150-tick seed-42 run the press
+       * verb completed 3 times against 3 strangers and minted 0 debts. The guard was
+       * working perfectly and the arc still could not connect, because *selection* did
+       * not know what *resolution* required. This is the field that tells it.
+       */
+      // Typed `EdgeType` rather than `string` so a typo names an edge that exists: an
+      // unregistered type would silently match nothing, reproducing the exact dead-verb
+      // symptom this field was added to cure.
+      readonly withEdgeFromActor?: EdgeType;
+    };
 
 // ─── Strategic Action Candidate ─────────────────────────────────────
 // A scored, concrete candidate generated from an ambition + world state.

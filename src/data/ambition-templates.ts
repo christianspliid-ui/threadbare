@@ -244,6 +244,20 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     // THR-813: retired `perfectionist`; the live mastery boost carries this ambition.
     boostingTraits: ['trait.mastery.spell-weaver'],
     reachAffinity: { iron: 0.7, veil: 0.6, stone: 0.3 },
+    // THR-1297 slice 5: the `masterwork_item` kind's home ambition. A legend needs
+    // both halves — the making, and the going out to find what it is made from —
+    // so the chart verbs sit beside the forge ones rather than in a separate arc.
+    strategicProfile: {
+      behaviorFamily: 'builder-civic',
+      preferredVerbs: ['create', 'change', 'gather_info'],
+      templateIds: [
+        'strategic_craft_masterwork',
+        'strategic_improve_masterwork',
+        'strategic_chart_the_wilds',
+        'strategic_walk_the_unmapped',
+      ],
+      reachEmphasis: { iron: 0.7, veil: 0.6, stone: 0.3 },
+    },
     milestones: [
       {
         id: 'forge_materials',
@@ -445,6 +459,18 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     bondModifiers: [{ bondType: 'fellow_refugee', modifier: 0.3 }],
     boostingTraits: ['trait.mastery.steadfast', 'trait.condition.exhausted'],
     reachAffinity: { stone: 0.6, star: 0.7, shadow: 0.4 },
+    // THR-1297 slice 5: leaving somewhere is a route-finding problem before it is
+    // anything else. Walking and charting are what an escape actually consists of.
+    strategicProfile: {
+      behaviorFamily: 'wanderer-explorer',
+      preferredVerbs: ['gather_info', 'change', 'create'],
+      templateIds: [
+        'strategic_walk_the_unmapped',
+        'strategic_chart_the_wilds',
+        'strategic_follow_the_chart',
+      ],
+      reachEmphasis: { stone: 0.6, star: 0.7, shadow: 0.4 },
+    },
     milestones: [
       {
         id: 'escape_endurance',
@@ -516,6 +542,15 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
         'strategic_mount_expedition',
         'strategic_guard_knowledge',
         'strategic_train_apprentice',
+        // THR-1297 slice 5 — the `leverage_mark` arc's home. An ambition to uncover
+        // what people buried is the one that most naturally turns up what a *living*
+        // person buried, which is what a mark is. Cultivate → press → burn, in order,
+        // plus the cache's counter-play: a secret-seeker is also the world's most
+        // motivated exposer of somebody else's hoard.
+        'strategic_cultivate_informant',
+        'strategic_press_the_mark',
+        'strategic_burn_the_mark',
+        'strategic_expose_cache',
       ],
       reachEmphasis: { eye: 0.8, veil: 0.5, stone: 0.4 },
     },
@@ -770,6 +805,27 @@ export const REACTIVE_AMBITION_TEMPLATES: readonly ReactiveAmbitionTemplate[] = 
     bondModifiers: [{ bondType: 'enemy', modifier: 0.5 }],
     boostingTraits: ['trait.core.core_forgiveness.vice', 'trait.personality.iron.vice'],
     reachAffinity: { iron: 0.6, shadow: 0.8, eye: 0.3 },
+    // THR-1297 slice 5 — the counter-play's home ambition, and the reason every one
+    // of these verbs is reachable rather than dead content.
+    //
+    // This is also where the motive gate stops being an abstraction: all four are
+    // `motiveGate`d, so an agent pursuing revenge is offered them **only against
+    // someone they actually have a quarrel with**. Revenge as an ambition supplies the
+    // desire; the gate supplies the target. Neither alone would produce a narratable
+    // act, which is the whole design of slice 2's gate seen from the content side.
+    strategicProfile: {
+      behaviorFamily: 'court-political',
+      preferredVerbs: ['destroy', 'gather_info', 'change'],
+      templateIds: [
+        'strategic_expose_mark',
+        'strategic_expose_cache',
+        'strategic_sever_network',
+        'strategic_destroy_masterwork',
+        'strategic_burn_the_charts',
+        'strategic_cultivate_informant',
+      ],
+      reachEmphasis: { iron: 0.6, shadow: 0.8, eye: 0.3 },
+    },
     milestones: [
       {
         id: 'revenge_track',
@@ -833,6 +889,19 @@ export const REACTIVE_AMBITION_TEMPLATES: readonly ReactiveAmbitionTemplate[] = 
     // modifier above already steer this ambition toward the dispossessed.
     boostingTraits: ['trait.mastery.steadfast'],
     reachAffinity: { iron: 0.7, heart: 0.6, stone: 0.3 },
+    // THR-1297 slice 5: you cannot reclaim what you cannot find your way back to.
+    // The chart verbs are the approach; the network is how an exile reaches into a
+    // place they cannot yet stand in — the case `remote` was drawn around.
+    strategicProfile: {
+      behaviorFamily: 'wanderer-explorer',
+      preferredVerbs: ['gather_info', 'change', 'create'],
+      templateIds: [
+        'strategic_walk_the_unmapped',
+        'strategic_follow_the_chart',
+        'strategic_extend_reach',
+      ],
+      reachEmphasis: { iron: 0.7, heart: 0.6, stone: 0.3 },
+    },
     milestones: [
       {
         id: 'reclaim_followers',
@@ -1306,6 +1375,21 @@ export const EVENT_MINTED_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     // THR-813: retired `obsessive`; the live `#eye` / `#veil` tag boosts carry this one.
     boostingTraits: ['#eye', '#veil'],
     reachAffinity: { eye: 0.7, veil: 0.6, star: 0.4 },
+    // THR-1297 slice 5: the wanderer pack's home ambition. Chasing a wonder is the
+    // explorer arc stated as a desire, and until this profile existed the ambition
+    // generated no undertakings at all — presence of `strategicProfile` is the
+    // generation gate, and only 7 of ~25 ambitions carried one.
+    strategicProfile: {
+      behaviorFamily: 'wanderer-explorer',
+      preferredVerbs: ['gather_info', 'create', 'change'],
+      templateIds: [
+        'strategic_walk_the_unmapped',
+        'strategic_chart_the_wilds',
+        'strategic_follow_the_chart',
+        'strategic_investigate_anomaly',
+      ],
+      reachEmphasis: { eye: 0.7, veil: 0.6, star: 0.4 },
+    },
     milestones: [
       {
         id: 'wonder_sight',

@@ -86,12 +86,31 @@ describe('resolveUndertakingPayoff', () => {
     expect(resolveUndertakingPayoff(undefined)).toBeCloseTo(STRATEGIC_VERB_IMPACT_DEFAULT, 10);
   });
 
-  it('every shipped template resolves through the verb table (v1 authoring state)', () => {
-    // Not a snapshot count (THR-688 rule A) — the identity is "no template authors
-    // `payoffValue` yet". When doc 2 authors the first one this test fails and its
-    // failure is the reminder that the fallback is no longer universal.
-    const authored = getAllStrategicTemplates().filter(t => t.payoffValue !== undefined);
-    expect(authored.map(t => t.id)).toEqual([]);
+  it('an authored payoff wins over the verb table, and the fallback still covers the rest', () => {
+    // Was the emptiness pin ("no template authors `payoffValue` yet") until THR-1297
+    // slice 5 authored the T1 kinds' rows — which is precisely what the pin existed
+    // to announce: the verb-table fallback is no longer universal.
+    //
+    // Restated as the two-sided property rather than a list of ids or a count
+    // (THR-688 rule A — a snapshot rots on the next content edit). Both halves matter:
+    // an authored row must actually be *used*, and every unauthored template must
+    // still resolve, or the fallback would have quietly stopped covering the corpus.
+    const all = getAllStrategicTemplates();
+    const authored = all.filter(t => t.payoffValue !== undefined);
+    const unauthored = all.filter(t => t.payoffValue === undefined);
+
+    // Vacuity guards on both populations — an empty either side would make one of the
+    // two assertions below pass by describing nothing (impediment #599 class).
+    expect(authored.length).toBeGreaterThan(0);
+    expect(unauthored.length).toBeGreaterThan(0);
+
+    for (const t of authored) {
+      expect(resolveUndertakingPayoff(t)).toBeCloseTo(t.payoffValue!, 10);
+    }
+    for (const t of unauthored) {
+      const impact = STRATEGIC_VERB_IMPACT[t.verb] ?? STRATEGIC_VERB_IMPACT_DEFAULT;
+      expect(resolveUndertakingPayoff(t)).toBeCloseTo(impact * UNDERTAKING_PAYOFF_SCALE, 10);
+    }
   });
 });
 
