@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-27 21:56 local (19:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-27 22:56 local (20:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -13,11 +13,19 @@
 
 **Then approve the brief.** **The camp seven** — shrine offering, sharpening blades, warding the camp, a small prayer, rest and reflection, tending wounds, scouting the perimeter. No typed consequences at all in that set; they are the last encounters below standard. `shrine_offering` is encounter #1 of [your integrated slice checkpoint](https://linear.app/threadbare/issue/THR-1220), which cannot invite you until they are rewritten. The bar is live with no caveats: [The Beast in the Granary](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.hunt.the_beast_in_the_granary).
 
-One thing needs your answer: [the brief](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/retrofit-batch-2-brief.md) proposes **seven** rather than your six, because the camp set is one family in one file and splitting the seventh costs a whole factory cycle. **Three ways to close it:** *"batch 2, seven is fine"*, *"keep it six"*, or *"same rule — judge batch 2 on one first."* The shelf-empty deadline this ask carried on 27 August is **withdrawn** — your own design session refilled the shelf at 21:28. It stays first because it still unlocks the most.
+One thing needs your answer: [the brief](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/retrofit-batch-2-brief.md) proposes **seven** rather than your six, because the camp set is one family in one file and splitting the seventh costs a whole factory cycle. **Three ways to close it:** *"batch 2, seven is fine"*, *"keep it six"*, or *"same rule — judge batch 2 on one first."* No deadline rides on it — the build shelf holds seven jobs.
 
-### 2. More design hours — still the binding constraint
+### 2. One word players see, in two places — [THR-1314](https://linear.app/threadbare/issue/THR-1314/ul-proposal-work-holding-kind-row-christening-failure-name-register)
 
-Roughly twenty items sit in Todo and **every one needs a plan doc before an executor can touch it**. Tonight is the proof of what one hour buys: [the shared anchor machinery](https://linear.app/threadbare/issue/THR-1212) went from Todo to a queued, checked handoff in about thirty minutes, and it was the first job on the build shelf in eleven hours.
+*Surfaced by the orchestrator lane, 27 August.* Two different things are about to be called the same word. A company under strain currently reads as **holding** — one of four states a group's cohesion shows the player (*bound · holding · frayed · breaking*), quoted in the rulebook. The ownership work that just shipped wants **a holding** to mean a thing somebody owns: a mine, a road, a hall, seizable and inheritable.
+
+Three ways to go: **let both stand** (different grammar, never side by side — and exactly the drift the glossary exists to catch); **rename the cohesion state** (cleanest for the new word, most expensive to move); or **rename the new ownership category** (newest word, nothing player-facing depends on it yet).
+
+**Unless you say otherwise the third is taken and the reason recorded** — reversible later at low cost, which is why it is the default. The ticket is queued and will not sit waiting for an answer.
+
+### 3. More design hours — still the binding constraint
+
+Roughly twenty items sit in Todo and **every one needs a plan doc before an executor can touch it**. Today is the proof of what the hours buy: two wave-1 designs — [the shared anchor machinery](https://linear.app/threadbare/issue/THR-1212) and [hunger vocabulary unification](https://linear.app/threadbare/issue/THR-1213) — went from Todo to queued, checked handoffs this evening.
 
 **Startable now, unassigned, in the order I would spend the hour:**
 
@@ -25,11 +33,11 @@ Roughly twenty items sit in Todo and **every one needs a plan doc before an exec
 2. **[A beast that can be a real character in a scene](https://linear.app/threadbare/issue/THR-1274)** — only people can be bound into an encounter's cast today, so a hunted animal can be described but never opposed. Four planned hunt encounters are capped by it.
 3. **[The reactive loop](https://linear.app/threadbare/issue/THR-1298)** and **[the calling & the surfaces](https://linear.app/threadbare/issue/THR-1299)** — docs 4 and 5 of your carve-up; [THR-1300](https://linear.app/threadbare/issue/THR-1300) sits behind them.
 
-The other two wave-1 designs — [hunger vocabulary](https://linear.app/threadbare/issue/THR-1213), then [nations and named areas](https://linear.app/threadbare/issue/THR-1155) — are deliberately sequenced behind THR-1212's build and are **not** available to run beside it.
+The last wave-1 design — [nations and named areas](https://linear.app/threadbare/issue/THR-1155) — is deliberately sequenced behind the two now queued.
 
 Also still yours, in the order you set: **[unify the card grammar](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** (your 6 August note; three tickets behind it — sit it or say *"park it"*) and **[traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)** (in design, assigned to you, untouched since 15 August — give it the hour or say *"put it back in the pile"*).
 
-### 3. One design map still has questions — and they are all yours
+### 4. One design map still has questions — and they are all yours
 
 **[Physical Conflict](https://linear.app/threadbare/issue/THR-1258/wayfinder-map-physical-conflict)** — **nine** open to you. Two are the keystone, because settling them releases three of the rest: [how a duel ends](https://linear.app/threadbare/issue/THR-1264/agent-mode-fight-loop-opposed-band-pairs) and [what a wound costs](https://linear.app/threadbare/issue/THR-1263/npc-mode-fight-loop-the-stat-block-and-test-skeleton). Both are things to look at and react to, not conversations.
 
@@ -37,7 +45,7 @@ Five more are open now and independent: [when a fight starts on its own](https:/
 
 Nothing is stalled — the wayfinder machinery is waiting at the handover. Say *"work the fight map"* in a chat session and it takes them in keystone order.
 
-### 4. Two sketches ready to be built for you to react to
+### 5. Two sketches ready to be built for you to react to
 
 The [powers](https://linear.app/threadbare/issue/THR-1226) and [items](https://linear.app/threadbare/issue/THR-1227) maps have finished everything else — these two sketches are the single open question left on each. A session builds the sketch, you look, and your reaction is the design decision.
 
@@ -46,13 +54,13 @@ The [powers](https://linear.app/threadbare/issue/THR-1226) and [items](https://l
 
 Say **"work the powers map"** or **"work the item map"** in a chat session.
 
-### 5. Image credits — should the spend be gated on you at all?
+### 6. Image credits — should the spend be gated on you at all?
 
 **[THR-876](https://linear.app/threadbare/issue/THR-876/regenerate-the-5-quarantined-meet-the-first-scene-assets-doctrine) — five Meet-The-First scene images that break the art rule.** Two have words painted in, two show individual faces (reserved for portraits), one has old choice buttons as scenery. All five are switched off and substitutes cover the slots, so nothing is broken. Sizes, rules and acceptance are settled. It waits on you for one reason: **it spends image credits.**
 
 **The real question.** The opening beat's three missing plates ([THR-1170](https://linear.app/threadbare/issue/THR-1170)) were listed here for the same reason and a lane made them anyway; a later lane *overruled* a ticket outright ([THR-831](https://linear.app/threadbare/issue/THR-831)). Both judgements look right. So: **do you want image spends gated on you, or decided by the lane and reported after?** Your answer settles these five and every batch after. Until then the standing rule holds: *remap where a match is honest, come to you only when it is not.*
 
-### 6. What is a run *about*? — [THR-1198](https://linear.app/threadbare/issue/THR-1198/the-48-authored-mandate-strings-are-wired-but-unreachable-no-live-game)
+### 7. What is a run *about*? — [THR-1198](https://linear.app/threadbare/issue/THR-1198/the-48-authored-mandate-strings-are-wired-but-unreachable-no-live-game)
 
 Forty-eight authored lines narrate a campaign's milestones. They are wired and working, but written for **twelve named campaigns**, while every live game derives its spine from **what your god remembers**. Correct, connected, unreachable; the game falls back to generated text and nothing is broken.
 
@@ -60,29 +68,23 @@ Forty-eight authored lines narrate a campaign's milestones. They are wired and w
 
 Deliberately left with you: what the game means, not how to wire it. No urgency — [the wiring shipped](https://linear.app/threadbare/issue/THR-1197) and nothing downstream waits.
 
-### 7. One attended dev-server session — [THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server)
+### 8. One attended dev-server session — [THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server)
 
 One `npm run dev` and a browser at 1920×1080: shipped surfaces and the screenshots they owe. Each is a shipped UI change carrying test-level proof but no picture, because a scheduled run is refused a dev server and structurally cannot capture one. Newest two: faction heraldry (does a subordinate charge at 0.42 scale read as *deliberately lesser* or as a broken asset?) and the tooltip focus ring.
 
 It grows as more UI ships behind the same wall. Replaces four tickets (THR-1109, THR-1125, THR-1126, THR-1127), consolidated 2026-08-16 — a merge, not a prune. Get through part of it, say which, and the remainder is re-expanded rather than closed whole. Bundles into whichever sitting you approve a brief in.
 
-### 8. Should committing a nudge be followed by a held breath? — [THR-1168](https://linear.app/threadbare/issue/THR-1168/two-authored-encounter-audio-moments-have-no-live-caller-wire-or)
+### 9. Should committing a nudge be followed by a held breath? — [THR-1168](https://linear.app/threadbare/issue/THR-1168/two-authored-encounter-audio-moments-have-no-live-caller-wire-or)
 
 A finished, unused piece of sound design: on committing a nudge, roughly 1.6 seconds where a tone draws tight, holds, then releases — and only then does the outcome land. Nothing plays it today; the visual it accompanied was deleted, so what remains is the pacing alone.
 
 **Does committing feel better with that beat, or should the outcome land immediately?** Pure feel; no measurement settles it. Two lanes recommend **no** — unskippable on every commit turns tense into waiting, and the timings stay recoverable from history. **Unless you say otherwise an agent will retire it and report after**, per your 12 August rule.
 
-### 9. Chart the hub map
+### 10. Chart the hub map
 
 Two design maps closed 2026-08-24 ([typed game-state](https://linear.app/threadbare/issue/THR-1157), [vertical slice](https://linear.app/threadbare/issue/THR-902)) and Proactive Agent Actions closed 2026-08-26. The hub is still unchartered, and the slice map's charter names it as successor: **the player reaching factions, war, economy and divine actions from inside the encounter interface.**
 
 **Advice: wait one cycle.** Your [integrated slice checkpoint](https://linear.app/threadbare/issue/THR-1220) is this map's entry condition, so chartering from a validated base is the better order. **Only you can charter a map** — say *"chart the hub map"* whenever you want it.
-
-### 10. Was the 20–22 August lane quiet deliberate?
-
-> The scheduled lanes went silent for 35.3h (2026-08-20T19:57:53Z → 2026-08-22T07:15:24Z) and have since resumed, with no pause marker covering that window.
-
-In local terms: 20 Aug 21:57 → 22 Aug 09:15. The pause marker on disk expired 5 August. Lanes have run normally since, so nothing is broken now. **Only you can answer:** if that was a token or usage pause, say so and it is recorded and closed. Later gaps are overnight-shaped and already declined per your 8 August ruling.
 
 ### 11. Parked option, no urgency: a Tenacious-style trait
 
@@ -90,15 +92,15 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
-- **Your design session refilled the build shelf** — [the shared anchor machinery](https://linear.app/threadbare/issue/THR-1212) walked Todo → designed → queued between 20:57 and 21:28, [plan doc](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-08-27-shared-anchor-machinery.md) merged 39 seconds before the handoff. First job waiting on the shelf in eleven hours; it also retires the "shelf is empty by this evening" deadline the last two briefs carried.
-- **The action library is two-thirds built** — [THR-1297](https://linear.app/threadbare/issue/THR-1297) doc 2 of your carve-up: slices [1](https://github.com/christianspliid-ui/threadbare/pull/1670) 17:35, [2](https://github.com/christianspliid-ui/threadbare/pull/1671) 18:36, [3](https://github.com/christianspliid-ui/threadbare/pull/1672) 19:56, [4](https://github.com/christianspliid-ui/threadbare/pull/1673) 21:11 — a finished work now earns its own name. Two slices remain.
+- **The 20–22 August lane-quiet question is closed without needing your answer** — the gap has aged out of the probe's measuring window, and the only quiet periods it now reports are overnight-shaped, already declined under your 8 August ruling. Removed from your list rather than carried indefinitely.
+- **The build shelf is stocked — seven jobs, from one this morning** — your hunger-vocabulary design ([THR-1213](https://linear.app/threadbare/issue/THR-1213)) handed off at 20:41 behind [the shared anchor machinery](https://linear.app/threadbare/issue/THR-1212), and the action-library work filed five checked follow-ups on itself as it finished.
+- **Your design session refilled the build shelf** — [the shared anchor machinery](https://linear.app/threadbare/issue/THR-1212) walked Todo → designed → queued between 20:57 and 21:28, [plan doc](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-08-27-shared-anchor-machinery.md) merged 39 seconds before the handoff.
+- **The action library is on its last slice** — [THR-1297](https://linear.app/threadbare/issue/THR-1297) doc 2 of your carve-up: slices [1](https://github.com/christianspliid-ui/threadbare/pull/1670) 17:35, [2](https://github.com/christianspliid-ui/threadbare/pull/1671) 18:36, [3](https://github.com/christianspliid-ui/threadbare/pull/1672) 19:56, [4](https://github.com/christianspliid-ui/threadbare/pull/1673) 21:11, [5](https://github.com/christianspliid-ui/threadbare/pull/1675) 22:14 — a finished work now earns its own name.
 - **The home-ground rule shipped, by your non-answer** — *your people fight a little better defending what is theirs.* You were given the veto twice; the ask said silence was an equally fine answer. It is now working code: removing it later is a change, not a non-decision. Say so if you want it out and it becomes a ticket.
 - **A complication no longer reads a missing reputation as ruin** — [THR-1306](https://linear.app/threadbare/issue/THR-1306), a Low deferral filed by the previous ticket's own work and shipped inside the hour ([PR #1669](https://github.com/christianspliid-ui/threadbare/pull/1669)), already deployed.
 - **Spawn-review now casts encounters the way live play does** — [THR-1305](https://linear.app/threadbare/issue/THR-1305), filed 14:28 and merged 15:50 ([PR #1668](https://github.com/christianspliid-ui/threadbare/pull/1668)). What you review on a `?spawn=` link is now what ships.
 - **Two of your six plan docs were designed today, and one is fully built** — [the binder](https://linear.app/threadbare/issue/THR-1296) (doc 3) shipped six slices by 13:44. Docs 1, 2 and 3 — the whole Tier-1 critical path — are now designed.
 - **The binder's own defects were found, filed and fixed inside three hours** — [THR-1304](https://linear.app/threadbare/issue/THR-1304), six defects in how newborn mortals are created, filed 13:19 and closed 14:40 ([PR #1667](https://github.com/christianspliid-ui/threadbare/pull/1667)).
-- **The undertaking substrate is done** — slice 6 of 6 merged overnight ([PR #1659](https://github.com/christianspliid-ui/threadbare/pull/1659)) and [THR-1292](https://linear.app/threadbare/issue/THR-1292) closed. Six slices in one day.
-- **The five missing plan-doc tickets now exist** — your carve-up named six docs but only doc 1 had ever become an issue. Filed overnight as THR-1296–THR-1300 with sequencing as Linear relations.
 - **You closed the [Proactive Agent Actions map](https://linear.app/threadbare/issue/THR-1276)** — all ten questions in one day, and answered the carve-up question by filing it.
 
 ---
