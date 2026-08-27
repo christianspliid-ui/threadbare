@@ -139,11 +139,62 @@ export interface AgreementProperties {
 
 // ─── Reward Pool Recipe ─────────────────────────────────────────
 
+/**
+ * `'holding'` (THR-1297) — a place or resource the bearer holds. It is the
+ * bearer-side *face* of an `owns` edge: the edge is the authority, this is
+ * bookkeeping, exactly as `groupFormation`'s roster mirrors `member_of`. Written
+ * only by `src/engine/holdings.ts`.
+ *
+ * Deliberately NOT a `PossessionSubcategory`: a holding is a different KIND of
+ * attachment, not a flavour of loot. It is never drawn from a reward pool —
+ * holdings are earned through undertakings, so `categoryWeights` stays holding-free
+ * and `rewardCategoryNodeQuery` answers `null` for it on purpose.
+ *
+ * This rationale sits ABOVE the union rather than inside it because
+ * `scripts/anchor-catalog-sources.ts`'s `parseUnionMembers` strips line comments but
+ * not block comments, and reads every line between `=` and `;` as a member — a
+ * multi-line JSDoc inside the union makes it report prose as unclassified union
+ * members (impediment logged).
+ */
 export type AttachmentCategory =
   | 'possession' | 'condition' | 'blessing' | 'curse'
   | 'bestowed_power' | 'agreement' | 'spell'
   /** A named person who walks with the bearer, granting small always-on bonuses (THR-1096). */
-  | 'companion';
+  | 'companion'
+  /** A place or resource the bearer owns — the face of an `owns` edge (THR-1297). */
+  | 'holding';
+
+/**
+ * Every attachment category, as values (THR-1297).
+ *
+ * The union alone gave the sweep nothing to stand on: `AttachmentCategory` has no
+ * runtime form, so adding `'holding'` produced compile errors in exactly three
+ * places and silence in the five chains that bucket by category string. This const
+ * plus the exhaustive display map below are the enforcement gift — the *next*
+ * category gets the compile errors this one could not.
+ */
+export const ATTACHMENT_CATEGORIES: readonly AttachmentCategory[] = [
+  'possession', 'condition', 'blessing', 'curse',
+  'bestowed_power', 'agreement', 'spell', 'companion', 'holding',
+] as const;
+
+/**
+ * Player-facing name for each attachment category (UI Law 14 — a `snake_case`
+ * union member never reaches a screen). Exhaustive by type: adding a category
+ * fails to compile until it is named here, mirroring
+ * `POSSESSION_SUBCATEGORY_NAMES`.
+ */
+export const ATTACHMENT_CATEGORY_NAMES: Record<AttachmentCategory, string> = {
+  possession: 'Possession',
+  condition: 'Condition',
+  blessing: 'Blessing',
+  curse: 'Curse',
+  bestowed_power: 'Bestowed Power',
+  agreement: 'Agreement',
+  spell: 'Spell',
+  companion: 'Companion',
+  holding: 'Holding',
+};
 
 /**
  * Template-level reward recipe — what encounter templates specify.

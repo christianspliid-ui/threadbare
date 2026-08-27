@@ -173,7 +173,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     motivations: ['preservation_transformation', 'mercy_ruthlessness'],
     onSuccess: [
       { op: 'remove_node', nodeId: '$target' },
-      { op: 'add_edge', edgeType: 'controls', source: '$actor', target: '$location' },
+      { op: 'add_edge', edgeType: 'owns', source: '$actor', target: '$location' },
     ],
     onFailure: [
       {
@@ -562,7 +562,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
         nodeName: 'Network Agent',
         properties: { hidden: true, allegiance: '$actor' },
       },
-      { op: 'add_edge', edgeType: 'controls', source: '$actor', target: '$location' },
+      { op: 'add_edge', edgeType: 'owns', source: '$actor', target: '$location' },
     ],
     onFailure: [
       { op: 'update_node', nodeId: '$actor', changes: { security: -0.05 } },

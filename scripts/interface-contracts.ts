@@ -2357,6 +2357,43 @@ export const CONTRACTS: readonly Contract[] = [
         'THR-1297 slice 2. The corpus held exactly one `verb: \'destroy\'` template in 43 — `strategic_raid_supply_lines` — and it was offerable against any town/city/camp/fort in range with no quarrel behind it, while its own completion prose said "the enemy will feel the lack" about people who were not the actor\'s enemy. It now declares `motiveGate: [\'rivalry\',\'grudge\',\'faction_war\']` and generation refuses it unless the actor holds one of those toward a holder of the target. Every motive reads a relation the world already wrote, so nothing new is recorded: `hostile_to` (bare ⇒ rivalry, injury-stamped ⇒ grudge, read across all three provenance keys the three writers each chose independently — `cause`/`reason`/`basis`), a shared `active` `pursues` ambition node, and `relates_to.isRival` via the existing `areFactionsHostile`. Two refusal reasons kept distinct because they want different fixes: `no_motive` (held, no quarrel) and `no_motive_unowned` (nobody holds it). Both reach a trace through the candidate-board trace\'s new capped `refusals` field — before this the board reported a bare rejection *count*, so every generation gate including `no_eligible_apprentice` was invisible from a run dump. Non-vacuous by `src/engine/__tests__/undertakingMotiveGate.test.ts` (21 tests): each refusal is paired with the same fixture offering the same candidate once the motive exists, so a gate that simply always refused would fail; falsified 8-of-21 red with `evaluateMotiveGate` stubbed to allow. Live measurement, seed 42/medium at tick 60: all 21 raidable settlements carry a controlling faction (so the `unowned` arm is not the common case), against 30 `hostile_to` edges and 12 declared faction rivalries across 49 factions — the verb stays reachable and grows more so as grudges accumulate. Full suite 18569 green; 30-tick seed-42 smoke reached tick 30, 377 agents, 49 events.',
     },
   },
+  {
+    id: 'holdings-single-writer-owns-edge',
+    producerSystem: AMBITIONS,
+    consumerSystem: ATTACHMENTS,
+    intent:
+      'What a mortal owns is written in exactly one place. The `owns` edge is the authority; the bearer-side attachment is its face, and both are minted, moved and retired by `holdings.ts` alone.',
+    ulTerms: ['Attachment', 'Undertaking'],
+    // The contract this row guards is a NEGATIVE as much as a positive: no module
+    // other than holdings.ts may write an `owns` edge or a `holding`-category
+    // attachment node. A second writer is how `controls` reached 132 occurrences
+    // across 72 files in five property shapes with exactly one site able to tell
+    // them apart — the inventory that made this edge necessary.
+    mechanism: {
+      kind: 'edge-prop',
+      symbols: ['owns'],
+      module: 'src/engine/holdings.ts',
+    },
+    writeSites: [
+      'src/engine/holdings.ts',
+      'src/engine/graphOpExecutor.ts',
+      'src/engine/encounterAftermath.ts',
+    ],
+    readSites: [
+      'src/engine/graphQueries.ts',
+      'src/engine/graphConditions.ts',
+      'src/engine/resolutionModifiers.ts',
+      'src/engine/effects/effectPredicates.ts',
+      'src/engine/strategicGraphOps.ts',
+      'src/engine/notableAgendas.ts',
+      'src/engine/orchestrator.ts',
+    ],
+    verifiedLive: {
+      date: '2026-08-27',
+      evidence:
+        'THR-1297 slice 3. `owns` ships as a NEW edge beside `controls` rather than a reuse, on the inventory\'s measured ground: exactly one of ~30 production `controls` read sites discriminates by any property (`releaseControl`\'s `controlType === \'strategic\'` filter), `influence` is write-only, and reuse would have broken seven faction-territory consumers outright plus five `[0]?.source` sites that would have become nondeterministic (NFP #3) — including `battleAftermath`\'s power vacuum, which would have deleted an agent\'s holdings on a razing. Both un-flagged agent writers migrated: `encounterAftermath`\'s `spawn_unique_location` (`via: \'creation\'`) and the two authored `add_edge` templates `action.iron.conquer` / `action.shadow.establish-network`, the latter routed through `grantHolding` from inside `executeAddEdge` so content-authored ownership obeys the single writer too — a raw `addEdge` there would have produced an `owns` edge violating its own `requiredProperties` and carrying no bearer-side face at all. Seize is one atomic call built on a new `WorldGraph.retargetEdgeSource`, because `updateEdge` rewrites the edge record without touching the `outgoing`/`incoming` adjacency maps and would have silently orphaned the edge (~30 existing `updateEdge` callers all pass `properties` only, so nothing depended on that). Non-vacuous by `src/engine/__tests__/holdings.test.ts` (18 tests) and `holdingsIntegration.test.ts` (9): the atomicity test wraps every graph mutator and asserts the place is never ownerless and never faceless at ANY observed instant, not just at the endpoints — falsified 2-of-18 red by replacing the atomic body with a release-then-grant, which is exactly the implementation the plan\'s kill criterion forbids and which the first draft of this module actually had. Home-ground scoring on your own holding ships as the handoff specified (Christian\'s veto invited, not exercised), paired with its negative: a non-owner in the same place gets no bonus, and an owner\'s title now overrides a hostile faction verdict on the same hex — the gap where an owner read as an enemy on their own land. Full suite 18601 green; 30-tick seed-42 smoke reached tick 30.',
+    },
+  },
 ];
 
 /** A malformed row — surfaced in the generated output rather than thrown (NFP #4). */

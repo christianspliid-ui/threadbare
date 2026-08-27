@@ -1724,7 +1724,8 @@ export interface HiddenSiteRevealedTrace extends TraceBase {
 export interface RevelationTrace extends TraceBase {
   category: 'agent_revelation';
   agentId: string;
-  facetType: 'value' | 'domain' | 'bond' | 'ambition' | 'disposition' | 'possession' | 'power' | 'condition' | 'agreement' | 'threat' | 'chronicle_event';
+  /** `'holding'` (THR-1297): that someone owns a place is a knowable fact about them. */
+  facetType: 'value' | 'domain' | 'bond' | 'ambition' | 'disposition' | 'possession' | 'power' | 'condition' | 'agreement' | 'threat' | 'chronicle_event' | 'holding';
   facetId: string;
   source: 'encounter_observation' | 'divine_action' | 'social_gossip' | 'faction_intel' | 'co_location' | 'public_event' | 'dilemma_witness' | 'first_sighting' | 'power_use_witnessed' | 'agreement_witnessed';
   interactionDepthBefore: number;
@@ -2044,6 +2045,21 @@ export interface StrategicWorldChangeTrace extends TraceBase {
   graphOps: string[];
   catalystSeeded: boolean;
   affectedNodeIds: string[];
+  /**
+   * Set when the change moved a holding through `src/engine/holdings.ts` (THR-1297).
+   *
+   * Additive on the existing category rather than a new one, deliberately: a holding
+   * change IS a strategic world change, and a separate category would mean a reader
+   * following ownership had two feeds to merge. `verb` here is the holdings verb, not
+   * the `StrategicVerb` above — a seize and a grant are the same `control` verb to the
+   * action layer and entirely different events to anyone asking who owns the place.
+   */
+  holdingTransfer?: {
+    verb: 'grant' | 'transfer' | 'release' | 'raze';
+    nodeId: string;
+    fromActorId?: string;
+    toActorId?: string;
+  };
 }
 
 /**

@@ -182,9 +182,14 @@ export function claimControl(
       return { success: false, op: 'claim_control', error: 'node_not_found' };
     }
 
-    // Check existing control
+    // Check existing control. THR-1297: a node this actor already holds as a *holding*
+    // blocks the claim too — otherwise taking title to a place and then claiming a
+    // control stance over it leaves two live claims on one node, and `releaseControl`
+    // (which only retires `controlType: 'strategic'` edges) would clear one and leave
+    // the other standing.
     const existing = graph.getOutgoingEdges(actorId, 'controls')
-      .find(e => e.target === targetNodeId);
+      .find(e => e.target === targetNodeId)
+      ?? graph.getOutgoingEdges(actorId, 'owns').find(e => e.target === targetNodeId);
     if (existing) {
       return { success: false, op: 'claim_control', error: 'already_controls' };
     }

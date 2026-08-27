@@ -168,6 +168,36 @@ export class WorldGraph {
     this.edges.delete(id);
   }
 
+  /**
+   * Move an edge to a new source, reindexing atomically (THR-1297).
+   *
+   * **Why this is not `updateEdge({ source })`.** `updateEdge` rewrites the edge
+   * record but never touches the `outgoing`/`incoming` adjacency maps, so passing a
+   * new `source` there leaves the index pointing at the old node — the edge would
+   * still answer `getOutgoingEdges(oldSource)` and never answer for the new one, with
+   * no error. Measured at the time of writing, every one of the ~30 `updateEdge`
+   * callers passes `properties` only, so nothing depended on that behaviour; this
+   * method exists so the first caller that needs a retarget does not discover the
+   * trap the hard way.
+   *
+   * The atomicity matters to holdings specifically: a seize implemented as
+   * remove-then-add leaves an instant where nobody owns the place, and
+   * add-then-remove leaves an instant where two actors do — and `[0]?.source` readers
+   * would sample either. One reindexing call has no such instant.
+   *
+   * No-ops on a missing edge (NFP #4 — fail-soft, never throws into a tick phase).
+   */
+  retargetEdgeSource(id: string, newSource: string): void {
+    const existing = this.edges.get(id);
+    if (!existing) return;
+    if (existing.source === newSource) return;
+
+    this.outgoing.get(existing.source)?.delete(id);
+    if (!this.outgoing.has(newSource)) this.outgoing.set(newSource, new Set());
+    this.outgoing.get(newSource)!.add(id);
+    this.edges.set(id, { ...existing, source: newSource });
+  }
+
   updateEdge(id: string, updates: Partial<GraphEdge>): void {
     const existing = this.edges.get(id);
     if (!existing) throw new Error(`Edge not found: ${id}`);

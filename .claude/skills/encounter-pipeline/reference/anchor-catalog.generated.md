@@ -7,7 +7,7 @@
 
 **What this is for.** Law 56's second clause requires a chip's referent to be an existing graph object, resolvable in the live world the player is in, and requires the chip's prose to name *that particular object*. This catalog is the list of objects that sentence can be about. THR-1153's anchor-resolution gate checks the declaration forms in the fourth column.
 
-**Totals.** 63 anchorable members across 80 classified.
+**Totals.** 65 anchorable members across 82 classified.
 
 ## How to read the status column
 
@@ -87,10 +87,12 @@ The director's *attachment* anchor — condition, item, artifact, spell, and the
 | `agreement` | Attachment · agreement | 🔗 linked | `entityId` = the **template** node id, `visualKind: 'attachment'` | `AttachmentDetailView`, also reached from the bearer's Attachments tab |
 | `spell` | Attachment · spell | 🔗 linked | `entityId` = the **template** node id, `visualKind: 'attachment'` | `AttachmentDetailView`, also reached from the bearer's Attachments tab |
 | `companion` | Attachment · companion | 📍 named | `entityId` = the companion node id, `visualKind: 'companion'` | The Companions row on the bearer's own surface |
+| `holding` | Attachment · holding | 📍 named | `entityId` = the **owned place's** node id (a location or resource), `visualKind: 'location'` | The Holdings section of the bearer's Attachments tab |
 
 - **`condition`** — An injury is a condition with a duration edge and a negative reach modifier.
 - **`agreement`** — The director's "agreement" anchor — a pact the simulation holds both sides to.
 - **`companion`** — Declared as a companion, not an attachment — see the `companion` node row.
+- **`holding`** — Anchor the PLACE, never the bearer-side face node (THR-1297): the face is bookkeeping that mirrors the `owns` edge, and a chip pointing at it would open a sheet for a record rather than for the mill the player just took. A holding chip is always backed by a real `owns` write (Law 56) — holdings are earned through undertakings and never drawn from a reward pool.
 
 ## Relationships (edges)
 
@@ -105,6 +107,7 @@ The director's *"a particular relationship (edge) between objects"*. An edge has
 | `bonded_to` | Relationship (edge) | 📍 named | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The bearer's possessions, and the legendary artifact's own page |
 | `accompanies` | Relationship (edge) | 📍 named | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The Companions row on the bearer's surface |
 | `controls` | Relationship (edge) | 📍 named | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The controlling faction's holdings |
+| `owns` | Relationship (edge) | 📍 named | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The Holdings section of the owner's Attachments tab, and the owned place's own page |
 | `relates_to` | Relationship (edge) | 📍 named | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The cast tile, and both actors' sheets |
 | `hostile_to` | Relationship (edge) | 📍 named | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | Both actors' sheets |
 | `member_of` | Relationship (edge) | 📍 named | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The faction sheet's roster, and the member's own sheet |
@@ -152,6 +155,7 @@ The director's *"a particular relationship (edge) between objects"*. An edge has
 - **`contains`** — Structural edge — containment is map plumbing; anchor the location itself
 - **`adjacent`** — Structural edge — adjacency is geometry, not a relationship the player has with anything
 - **`has_trait`** — Anchor the trait and its bearer, not the edge.
+- **`owns`** — Anchor the PLACE, not the edge — "Greywater Mill" is what the player recognises. `owns` is title, `controls` is jurisdiction; a chip about taking a place from someone is this edge (THR-1297).
 - **`relates_to`** — Prefer the reified `relationship` node when the bond has an arc worth naming.
 - **`member_of`** — `rank` is a 0–1 scale and `role` is derived from reputation — never integer-compare either.
 - **`mentors`** — Carries domain, progress and phase a player can watch move.

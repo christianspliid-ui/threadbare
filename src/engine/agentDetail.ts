@@ -327,6 +327,8 @@ export interface AgentInfoCardData {
   possessions?: AttachmentFullEntry[];
   afflictions?: AttachmentFullEntry[];
   giftsAndBurdens?: AttachmentFullEntry[];
+  /** Places and resources this agent holds (THR-1297) — their `owns` edges' faces. */
+  holdings?: AttachmentFullEntry[];
   /** Full intent list for the character sheet modal (prototype: always visible) */
   intents?: ActiveIntent[];
   /** Fulfilled ambitions for the ChronicleTab §Completed Ambitions list (THR-721). */
@@ -1248,6 +1250,9 @@ export function getAgentInfoCard(
     }
     if (attachments.conditions.length > 0) {
       card.afflictions = attachments.conditions;
+    }
+    if (attachments.holdings.length > 0) {
+      card.holdings = attachments.holdings;
     }
     const giftsAndBurdens = [...attachments.powers, ...attachments.agreements];
     if (giftsAndBurdens.length > 0) {

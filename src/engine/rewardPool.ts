@@ -63,6 +63,15 @@ export function rewardCategoryNodeQuery(
       return { nodeType: 'trait', subcategory: 'condition' };
     case 'bestowed_power':
       return { nodeType: 'trait', subcategory: 'bestowed' };
+    // Holdings are NEVER drawn (THR-1297). A holding is earned by doing the
+    // undertaking that takes or builds the place; it is not loot, and there is no
+    // catalog of ownable towns to draw one from. The arm is explicit rather than
+    // left to `default` so the *gate* understands the category — a recipe that
+    // weights `holding` is an authoring error the liveness check can now name,
+    // instead of a pool that silently comes up empty (the THR-844 rot class this
+    // function exists to catch). `categoryWeights` stays holding-free.
+    case 'holding':
+      return null;
     // Agreements and companions are catalog/registry-backed, not graph nodes —
     // `assembleRewardPool` handles both before it ever reaches this mapping.
     default:
