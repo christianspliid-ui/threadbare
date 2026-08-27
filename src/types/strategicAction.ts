@@ -5,6 +5,7 @@
 // scored alongside encounter candidates in phaseAgentDecision.
 
 import type { ReachDomain } from './traits';
+import type { ValuePair } from './agent';
 
 // ─── Strategic Verbs ────────────────────────────────────────────────
 // Five world-shaping verbs from the design — the execution language under ambitions.
@@ -46,7 +47,6 @@ export type BehaviorFamily =
 export type DecisionFamily =
   | 'encounter'
   | 'strategic_action'
-  | 'initiative'
   | 'idle'
   | 'forced_travel';
 
@@ -86,6 +86,61 @@ export interface StrategicActionTemplate {
 
   /** Data-driven mutation descriptor — replaces hardcoded switch in lifecycle */
   readonly mutationHint?: StrategicMutationHint;
+
+  // ─── Checkpoint authoring (THR-1292 §2, §5) ───────────────────────
+
+  /**
+   * Normalised 0–1 difficulty each checkpoint rolls against.
+   *
+   * Absent ⇒ `UNDERTAKING_DEFAULT_CHECKPOINT_DIFFICULTY`. Per-kind band tables are
+   * plan doc 2's content; this field is the seam they write into.
+   */
+  readonly checkpointDifficulty?: number;
+
+  /**
+   * Whether the actor must be *at* the undertaking's stage for a checkpoint to
+   * resolve (THR-1279 verdict 7). Absent ⇒ `true`.
+   *
+   * When it holds and the actor is elsewhere the checkpoint defers rather than
+   * halting; `UNDERTAKING_ABSENCE_DEFERRAL_LIMIT` consecutive absences convert to
+   * one halt. That is deliberately not movement AI — moving an actor *toward* its
+   * stage is board/binder behaviour and belongs to docs 3/5.
+   */
+  readonly requiresLocation?: boolean;
+
+  /**
+   * Whether checkpoints may resolve while the actor is mid-encounter. Absent ⇒ `true`.
+   *
+   * A `false` here *reads* the busy set and never writes it — the busy gate is
+   * untouched, and the contract test in slice 2 exists to keep it that way.
+   */
+  readonly canRunBeside?: boolean;
+
+  // ─── Board authoring (THR-1292 §4) ────────────────────────────────
+
+  /**
+   * What completing this undertaking is worth, in the board's common currency.
+   *
+   * Absent ⇒ derived from the shared verb-impact table (`STRATEGIC_VERB_IMPACT`)
+   * scaled by `UNDERTAKING_PAYOFF_SCALE`. **Unauthored on every template in v1**
+   * and deliberately so: per-kind payoff rows are plan doc 2's content, and a
+   * first-guess number hand-written onto 43 templates would be fiction wearing a
+   * data field. The verb table is at least a value the legacy scorer already
+   * ranks on, so the fallback is a real signal rather than a placeholder.
+   */
+  readonly payoffValue?: number;
+
+  /**
+   * Value pairs this undertaking appeals to — the desire term's input, in exactly
+   * the vocabulary encounter `motivations` use, so one function weights both.
+   *
+   * Absent ⇒ the desire multiplier rests on the ambition boost alone, which is
+   * live from day one. Doc 2 authors these per kind. Every entry must be a member
+   * of `VALUE_PAIRS`; slice 1's schema test is what makes that binding rather than
+   * aspirational (a non-member reads `undefined ?? 0` and contributes nothing,
+   * silently, forever).
+   */
+  readonly motivations?: readonly ValuePair[];
 }
 
 // ─── Mutation Hints ─────────────────────────────────────────────────
@@ -96,7 +151,22 @@ export type StrategicMutationHint =
   | { type: 'create_sublocation'; sublocationTypeId: string; nameTemplate: string }
   | { type: 'create_trade_route' }
   | { type: 'create_relation_edge'; edgeType: string; direction: 'actor_to_target' | 'target_to_actor'; properties?: Record<string, unknown> }
-  | { type: 'modify_location_property'; property: string; delta: number; clamp?: [number, number] }
+  | {
+      type: 'modify_location_property';
+      property: string;
+      delta: number;
+      clamp?: [number, number];
+      /**
+       * When set, the write also stamps `<property>ExpiresAtTick` and the boost is
+       * cleared that many ticks later by `phaseStrategicProjects` (THR-1292 §3).
+       *
+       * This exists because the retired initiative pipeline owned the *only* expiry
+       * for the festival boost. Making it a hint field rather than a special case
+       * keeps the retirement additive: the sweep is driven by
+       * `EXPIRING_LOCATION_PROPERTIES`, so a second timed boost is a data edit.
+       */
+      expiresAfterTicks?: number;
+    }
   | { type: 'no_mutation' };
 
 // ─── Target Rules ───────────────────────────────────────────────────
@@ -198,7 +268,70 @@ export interface StrategicProjectRuntime {
 
   /** For control stances: ticks since last upkeep action */
   neglectTicks?: number;
+
+  // ─── Checkpoint state (THR-1292 §2) ───────────────────────────────
+  //
+  // Every field below is optional so a world saved before checkpoints loads as a
+  // fresh, un-checkpointed undertaking rather than throwing (NFP #6/#4). The
+  // reader treats absent as the zero value in each case, and
+  // `nextCheckpointTick` absent means "schedule one from now".
+
+  /** Checkpoints resolved so far — the index carried on the trace */
+  checkpointIndex?: number;
+  /** Tick at or after which the next checkpoint fires */
+  nextCheckpointTick?: number;
+  /** Accumulated ratchet points; at `UNDERTAKING_HALT_RATCHET_N` the fork fires */
+  halts?: number;
+  /** Set once the fork chose to escalate. A second ratchet trip forces abandon. */
+  escalated?: boolean;
+  /**
+   * Whether any moment on this undertaking ever reached the player as an
+   * interrupt. This is the input to the §2.2 residue rule: a failure nobody
+   * watched leaves a chronicle line, a failure they watched leaves a scar.
+   */
+  everInterrupted?: boolean;
+  /** Gates repeat at-cost interrupts — only the *first* advance-at-cost interrupts */
+  atCostMomentFired?: boolean;
+  /** Consecutive absence deferrals; `UNDERTAKING_ABSENCE_DEFERRAL_LIMIT` of them convert to one halt */
+  deferrals?: number;
+  /**
+   * Doc 3's re-binding seam. Set when an escalation asks for the undertaking to be
+   * re-bound with complications; nothing consumes it yet, and that is deliberate —
+   * the flag is the contract, the binder is doc 3.
+   */
+  rebindRequested?: boolean;
+  /** Difficulty override accumulated by escalation, on top of the template's authored value */
+  checkpointDifficultyDelta?: number;
+  /** Why the undertaking failed, when it did */
+  failureReason?: 'abandoned_after_halts' | 'actor_lost' | 'timeout';
+  /** Telemetry from the most recent checkpoint — what the debug surfaces read */
+  lastCheckpoint?: {
+    readonly band: import('./unifiedAction').StepOutcome;
+    readonly effect: UndertakingCheckpointEffect;
+    readonly roll: number;
+    readonly probability: number;
+    readonly tick: number;
+  };
 }
+
+/** What a checkpoint band does to an undertaking (THR-1292 §2). */
+export type UndertakingCheckpointEffect = 'advance' | 'advance_at_cost' | 'halt';
+
+/**
+ * Moment classes emitted by checkpoint resolution and read by
+ * `resolveMomentPresentation`. Doc 5 owns the surfaces; the vocabulary lives here
+ * so the engine can stamp `everInterrupted` without waiting for them.
+ */
+export type UndertakingMomentClass =
+  | 'started'
+  | 'at_cost'
+  | 'completion'
+  | 'fork'
+  | 'abandoned'
+  | 'complication';
+
+/** How a moment reaches the player. `'none'` means chronicle-only. */
+export type UndertakingMomentPresentation = 'interrupt' | 'badge' | 'none';
 
 // ─── Control State ──────────────────────────────────────────────────
 // Ongoing control stance held by an actor over a graph target.

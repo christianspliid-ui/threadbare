@@ -42,7 +42,7 @@ names like `TB-073`) a premise might use.
 | **Culture** | 🟢 ACTIVE | culture, cultural, mores, tradition, phonetics | `culture`, `cultural` | — |
 | **Personality & Emergent Traits** | 🟢 ACTIVE | personality, trait, traits, becoming, axiological, temperament | `personality`, `core` | `6.626` |
 | **Mortal Economy & Prosperity** | 🟢 ACTIVE | economy, trade, resource, resources, prosperity, gold, market, settlement, cargo | `resource`, `settlement`, `economic`, `trade`, `gold`, `prosperity` | `6.62`, `6.63`, `6.632`, `6.635`, `6.636`, `6.65`, `6.66` |
-| **Ambitions & Initiatives** | 🟢 ACTIVE | ambition, initiative, goal, mentorship, apprentice | `ambition`, `initiative`, `mentorship` | `2.32`, `2.33` |
+| **Ambitions & Undertakings** | 🟢 ACTIVE | ambition, undertaking, initiative, goal, mentorship, apprentice | `ambition`, `undertaking`, `mentorship` | — |
 | **Attachments, Items & Possessions** | 🟢 ACTIVE | attachment, attachments, item, items, possession, possessions, artifact, equipment, blessing, retainer, agreement | `attachment`, `seed` | `2a.85` |
 | **Ruins, Clues & Delves** | 🟢 ACTIVE | ruins, delve, dungeon, clue, lair, anomaly, quest | `ruins`, `delve`, `lair`, `anomaly` | `2.3575` |
 | **Stealth, Detection & Hidden Marks** | 🟢 ACTIVE | stealth, detection, hidden, mark, disbelief, faith, signature | `stealth`, `detection`, `hidden` | `1.7`, `2a.605`, `2.356`, `2.36`, `2.5`, `4`, `6.7` |
@@ -55,7 +55,7 @@ names like `TB-073`) a premise might use.
 | **Reputation & Influence** | 🟢 ACTIVE | reputation, influence, renown, standing | `reputation`, `influence` | `6.55`, `6.6`, `6.634`, `6.64` |
 | **Secrets & Favors** | 🟢 ACTIVE | secret, secrets, favor, blackmail, leverage | `secrets`, `favor` | — |
 | **Effects & Conditions** | 🟢 ACTIVE | effect, condition, buff, debuff, status, possession, slot | `effect`, `effects`, `condition`, `conditiondecay`, `conditionoverflow` | `2a.4`, `2a.52`, `2a.85`, `6.625` |
-| **Agent Lifecycle** | 🟢 ACTIVE | lifecycle, birth, death, migration, graduation, apotheosis, npc | `agentlifecycle`, `agent`, `apotheosis`, `anointsuccessor` | `2a.78`, `2.33`, `2.38`, `6.75` |
+| **Agent Lifecycle** | 🟢 ACTIVE | lifecycle, birth, death, migration, graduation, apotheosis, npc | `agentlifecycle`, `agent`, `apotheosis`, `anointsuccessor` | `2a.78`, `2.38`, `6.75` |
 | **Intelligence, Knowledge & Familiarity** | 🟢 ACTIVE | intelligence, knowledge, familiarity, interaction, revelation, facet | `intelligence`, `interaction`, `familiarity`, `knowledge` | `2a.1`, `2.75`, `2.76`, `6.71` |
 | **Spheres & Quintessence** | 🟢 ACTIVE | sphere, quintessence, foundation, creation, saturation, world-soul | `sphere`, `quintessence`, `saturation`, `cosmology` | `2`, `6.638`, `6.639`, `6.6396`, `6.6395` |
 
@@ -69,7 +69,7 @@ names like `TB-073`) a premise might use.
 - **Culture** — Culture generation, gravity, tension, mores, phonetic naming.
 - **Personality & Emergent Traits** — Layered: worldgen baseline → core → emergent traits (THR-527/542/561).
 - **Mortal Economy & Prosperity** — Resource web, stock tiers, prosperity pulse, settlement tiers, trade routes. M3: Dynamic Economy.
-- **Ambitions & Initiatives** — Agent-level drives and multi-tick initiatives; mentorship couples train-apprentice to mentors edges.
+- **Ambitions & Undertakings** — Agent-level drives and the multi-tick undertakings that serve them; mentorship rides the undertaking checkpoint pass (THR-1292 §3 retired the separate initiative pipeline).
 - **Attachments, Items & Possessions** — Items, conditions, blessings, agreements, retainers on `possesses` edges. Effects flow via `effects[]` → `collectTestShapers` (2026-03-31 generic effect system). Contract liveness audited 2026-07-23 (THR-717) — five leaked contracts, see `Docs/canon/interface-map.md`.
 - **Ruins, Clues & Delves** — Ruin density seeding, clue discovery/decay, delve admission→progression→emergence, lair escalation.
 - **Stealth, Detection & Hidden Marks** — Two audiences watch the god: mortals (disbelief→faith) and rivals (signature scans). Hidden-mark decay.
@@ -132,8 +132,6 @@ registry. The wiring ground truth: if it is on the tick path, it is here.
 | `2a.85` | Slot Cap Enforcement — deactivate overflow possessions, handle condition overflow | — | orchestrator |
 | `2a.9` | Divine Premonition | — | orchestrator |
 | `2b` | Agent Decision — unified encounter-driven decision pipeline | — | orchestrator |
-| `2.32` | Initiative Progress — advance active agent initiatives, expire temporary boosts | — | orchestrator |
-| `2.33` | Mentorship Lifecycle | `THR-75` | orchestrator |
 | `2.34` | Companies | `THR-74` | orchestrator |
 | `2.35` | Agent Movement | — | orchestrator |
 | `2.352` | Army Movement | `TB-073` | orchestrator |
@@ -259,6 +257,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `cycle` (1) | `cycleEnd.ts` | — |
 | `debug` (7) | `debugAgentResolver.ts`, `debugCommands.ts`, `debugEncounterTools.ts`, `debugOutcomePin.ts`, `debugTickBatch.ts`, `debugVisibilityOverride.ts`, `debugWorldSpawnTools.ts` | `THR-1030`, `THR-1032`, `THR-689`, `THR-878` |
 | `decay` (1) | `decayCurve.ts` | — |
+| `decision` (2) | `decisionBoard.ts`, `decisionBoardModeGuard.ts` | `THR-1292` |
 | `delivery` (2) | `delivery.ts`, `deliveryBeatAdapter.ts` | `THR-452`, `THR-506`, `THR-514` |
 | `depression` (2) | `depressionFilling.ts`, `depressionLakes.ts` | — |
 | `derive` (1) | `deriveLocationActivities.ts` | — |
@@ -296,7 +295,6 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `historical` (1) | `historicalCulture.ts` | — |
 | `idle` (1) | `idleBehavior.ts` | — |
 | `influence` (1) | `influence.ts` | — |
-| `initiative` (3) | `initiativeCandidates.ts`, `initiativeLifecycle.ts`, `initiativeOutcomes.ts` | `THR-51` |
 | `insider` (1) | `insiderBeatDetection.ts` | — |
 | `intelligence` (1) | `intelligence.ts` | `THR-113`, `THR-140` |
 | `intervention` (4) | `interventionCost.ts`, `interventionEffects.ts`, `interventionStanceWords.ts`, `interventionTracking.ts` | `THR-1048`, `THR-772` |
@@ -307,7 +305,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `magic` (1) | `magicPower.ts` | — |
 | `mandate` (3) | `mandate.ts`, `mandateGenerator.ts`, `mandateMilestoneProse.ts` | `THR-1197`, `THR-1198` |
 | `meeting` (1) | `meetingEncounter.ts` | — |
-| `mentorship` (1) | `mentorshipOutcomes.ts` | `THR-75` |
+| `mentorship` (2) | `mentorshipOutcomes.ts`, `mentorshipUndertaking.ts` | `THR-1292`, `THR-75` |
 | `modifiers` (1) | `modifiers.ts` | — |
 | `monster` (1) | `monsterFactionSeed.ts` | — |
 | `movement` (3) | `movementCandidates.ts`, `movementCost.ts`, `movementExecution.ts` | `THR-1143` |
@@ -321,7 +319,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `pacing` (1) | `pacingGovernor.ts` | — |
 | `pathfinding` (1) | `pathfinding.ts` | — |
 | `personality` (2) | `personality/originBaseline.ts`, `personality/originConstants.ts` | `THR-539`, `THR-561` |
-| `phase` (41) | `phaseAgentDecision.ts`, `phaseAscendantProgression.ts`, `phaseAttention.ts`, `phaseColocationDetection.ts`, `phaseComposition.ts`, `phaseControlEffects.ts`, `phaseDivinePremonition.ts`, `phaseDoom.ts`, `phaseEconomicChronicle.ts`, `phaseEconomicTraits.ts`, `phaseEffectShells.ts`, `phaseEncounterTraits.ts`, `phaseEssenceSources.ts`, `phaseFactionActions.ts`, `phaseFactionSuccession.ts`, `phaseHexState.ts`, `phaseHiddenMarkDecay.ts`, `phaseInitiativeProgress.ts`, `phaseIntelligenceDecay.ts`, `phaseInteractionDepth.ts`, `phaseMagicalSaturation.ts`, `phaseMandate.ts`, `phaseMentorship.ts`, `phaseMovement.ts`, `phaseOmenAgenda.ts`, `phaseProsperity.ts`, `phaseQuintessence.ts`, `phaseRegistry.ts`, `phaseReputationDecay.ts`, `phaseReputationTraits.ts`, `phaseSchismResolution.ts`, `phaseSecretsFavors.ts`, `phaseSettlementPromotion.ts`, `phaseSettlementReassessment.ts`, `phaseSlotCaps.ts`, `phaseSphereAggregation.ts`, `phaseSpherePressure.ts`, `phaseStrategicProjects.ts`, `phaseSublocations.ts`, `phaseTradeRouteDecay.ts`, `phaseUnrest.ts` | `Phase 1`, `Phase 12`, `Phase 2`, `Phase 4`, `Phase 6`, `Phase 7`, `TB-045`, `TB-075`, `THR-1184`, `THR-1206`, `THR-132`, `THR-137`, `THR-19`, `THR-238`, `THR-30`, `THR-430`, `THR-432`, `THR-469`, `THR-481`, `THR-51`, `THR-53`, `THR-611`, `THR-613`, `THR-618`, `THR-75` |
+| `phase` (39) | `phaseAgentDecision.ts`, `phaseAscendantProgression.ts`, `phaseAttention.ts`, `phaseColocationDetection.ts`, `phaseComposition.ts`, `phaseControlEffects.ts`, `phaseDivinePremonition.ts`, `phaseDoom.ts`, `phaseEconomicChronicle.ts`, `phaseEconomicTraits.ts`, `phaseEffectShells.ts`, `phaseEncounterTraits.ts`, `phaseEssenceSources.ts`, `phaseFactionActions.ts`, `phaseFactionSuccession.ts`, `phaseHexState.ts`, `phaseHiddenMarkDecay.ts`, `phaseIntelligenceDecay.ts`, `phaseInteractionDepth.ts`, `phaseMagicalSaturation.ts`, `phaseMandate.ts`, `phaseMovement.ts`, `phaseOmenAgenda.ts`, `phaseProsperity.ts`, `phaseQuintessence.ts`, `phaseRegistry.ts`, `phaseReputationDecay.ts`, `phaseReputationTraits.ts`, `phaseSchismResolution.ts`, `phaseSecretsFavors.ts`, `phaseSettlementPromotion.ts`, `phaseSettlementReassessment.ts`, `phaseSlotCaps.ts`, `phaseSphereAggregation.ts`, `phaseSpherePressure.ts`, `phaseStrategicProjects.ts`, `phaseSublocations.ts`, `phaseTradeRouteDecay.ts`, `phaseUnrest.ts` | `Phase 1`, `Phase 12`, `Phase 2`, `Phase 4`, `Phase 6`, `Phase 7`, `TB-045`, `TB-075`, `THR-1206`, `THR-1292`, `THR-132`, `THR-137`, `THR-19`, `THR-238`, `THR-30`, `THR-430`, `THR-432`, `THR-469`, `THR-481`, `THR-53`, `THR-611`, `THR-613`, `THR-618` |
 | `phases` (26) | `phases/ambitionProgress.ts`, `phases/armySupply.ts`, `phases/clueDecay.ts`, `phases/corePersonality.ts`, `phases/delveAdmission.ts`, `phases/delveEmergence.ts`, `phases/delveProgression.ts`, `phases/doom.ts`, `phases/economicPower.ts`, `phases/emittedOmenDecay.ts`, `phases/factionActions.ts`, `phases/factionAmbitions.ts`, `phases/factionSuccession.ts`, `phases/index.ts`, `phases/mandate.ts`, `phases/personalityOriginSeed.ts`, `phases/personalityTraitEmerge.ts`, `phases/phaseAutonomousAftermath.ts`, `phases/plantedCompulsionDecay.ts`, `phases/popStreams.ts`, `phases/reputationDecay.ts`, `phases/resourceStockTiers.ts`, `phases/routeEvents.ts`, `phases/ruinQuestHooks.ts`, `phases/schismResolution.ts`, `phases/secretsFavors.ts` | `THR-238`, `THR-430`, `THR-432`, `THR-527`, `THR-530`, `THR-539`, `THR-542`, `THR-544`, `THR-559`, `THR-561`, `THR-615`, `THR-617`, `THR-626`, `THR-669`, `THR-815`, `THR-886` |
 | `planner` (1) | `plannerForecast.ts` | `Phase 4` |
 | `planted` (1) | `plantedCompulsion.ts` | `THR-886` |
@@ -361,6 +359,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `spell` (1) | `spellActivation.ts` | — |
 | `sphere` (2) | `sphereAffinity.ts`, `sphereScaling.ts` | — |
 | `stealth` (1) | `stealth.ts` | — |
+| `step` (1) | `stepResolutionCore.ts` | `THR-1292` |
 | `strands` (1) | `strands.ts` | — |
 | `strategic` (6) | `strategicActionCandidates.ts`, `strategicActionLifecycle.ts`, `strategicActionScoring.ts`, `strategicGraphOps.ts`, `strategicPresentation.ts`, `strategicTelemetry.ts` | — |
 | `sublocation` (2) | `sublocation.ts`, `sublocationShape.ts` | `THR-1177`, `THR-1183`, `THR-1193` |
@@ -382,6 +381,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `traits` (1) | `traits.ts` | `THR-786` |
 | `treasure` (1) | `treasureMapConsumption.ts` | — |
 | `trust` (1) | `trustMechanics.ts` | — |
+| `undertaking` (1) | `undertakingCheckpoints.ts` | `THR-1292` |
 | `unified` (4) | `unifiedActionLifecycle.ts`, `unifiedActionPhases.ts`, `unifiedActionResolution.ts`, `unifiedCandidates.ts` | `Phase 1`, `Phase 2`, `Phase 3`, `Phase 4`, `Phase 6`, `Phase 7` |
 | `view` (1) | `viewLevel.ts` | — |
 | `vignette` (2) | `vignetteNotification.ts`, `vignetteProse.ts` | — |
@@ -393,4 +393,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 26 registered subsystems (1 dormant) · 101 tick phases · 172 engine domains · 508 modules._
+_Counts: 26 registered subsystems (1 dormant) · 99 tick phases · 174 engine domains · 508 modules._

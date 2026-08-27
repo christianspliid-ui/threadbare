@@ -565,7 +565,7 @@ export const ROAD_AMBUSH_TEMPLATE: UnifiedActionTemplate = withEncounterContract
   essenceCost: 2,
 
   actorAffinities: ['individual'],
-  motivations: ['justice_mercy', 'order_freedom'],
+  motivations: ['mercy_ruthlessness', 'loyalty_ambition'],
 
   narrativeTemplates: {
     initiation:

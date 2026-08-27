@@ -44,11 +44,18 @@ export const STRATEGIC_CONTROL_PRESSURE_WEIGHT = 0.20;
 
 // ─── Project and Control Cadence ────────────────────────────────────
 
-/** Baseline project advancement cadence before modifiers */
-export const STRATEGIC_PROJECT_PROGRESS_PER_TICK = 1;
-
-/** Fail-soft timeout for stalled multi-tick projects */
-export const STRATEGIC_DEFAULT_PROJECT_TIMEOUT_TICKS = 18;
+/**
+ * Default work an undertaking requires when its template authors no
+ * `projectDuration` — i.e. the default `progressRequired`.
+ *
+ * Named for what it is since THR-1292: it was called
+ * `STRATEGIC_DEFAULT_PROJECT_TIMEOUT_TICKS` while doing double duty as both the
+ * work total and the abandonment timeout, and slice 3 split those. The timeout is
+ * now `UNDERTAKING_TIMEOUT_TICKS`; this is work. The value is unchanged, and the
+ * checkpoint cadence is pinned to it —
+ * `UNDERTAKING_PROGRESS_PER_ADVANCE` × 3 checkpoints = 18.
+ */
+export const STRATEGIC_DEFAULT_PROJECT_WORK_TICKS = 18;
 
 /** Window kept for player/debug strategic history summaries */
 export const STRATEGIC_HISTORY_WINDOW_TICKS = 120;
@@ -128,3 +135,241 @@ export const SACRED_ROUTE_DESTINATION_ENCOUNTER_IDS: readonly string[] = [
 export const ENCOUNTER_POOL_INVALIDATING_EDGE_TYPES: ReadonlySet<string> = new Set([
   'sacred_route',
 ]);
+
+// ─── Undertaking Checkpoints (THR-1292 §2) ──────────────────────────
+//
+// Checkpoint dice replace passive per-tick progress: an undertaking advances
+// because a roll said so, not because a tick elapsed. Every number below is the
+// plan's first-guess calibration — retune against the §2 Done-when (non-zero
+// halts on both seeds) and record the values used.
+
+/** Ticks between checkpoint dice on an active undertaking */
+export const UNDERTAKING_CHECKPOINT_INTERVAL_TICKS = 6;
+
+/**
+ * Progress granted per advancing checkpoint.
+ *
+ * Chosen for parity with the pre-checkpoint world: the default project runs 18
+ * ticks at 1 progress/tick, so an always-succeeding agent still finishes in three
+ * checkpoints. What changes is variance, not expected duration.
+ */
+export const UNDERTAKING_PROGRESS_PER_ADVANCE = 6;
+
+/** Difficulty used when a template authors no `checkpointDifficulty` (doc 2 owns per-kind values) */
+export const UNDERTAKING_DEFAULT_CHECKPOINT_DIFFICULTY = 0.45;
+
+/** Critical success advances this many times the ordinary step (capped at completion) */
+export const UNDERTAKING_CRIT_ADVANCE_MULTIPLIER = 2;
+
+/** Accumulated halts that force the abandon-or-escalate fork */
+export const UNDERTAKING_HALT_RATCHET_N = 3;
+
+/** Ratchet points a critical failure adds (an ordinary halt adds 1) */
+export const UNDERTAKING_CRIT_FAIL_RATCHET_WEIGHT = 2;
+
+/** Fork weight baseline — the disposition to press on before anything is known about the agent */
+export const UNDERTAKING_ESCALATE_BASE = 0.35;
+
+/** Fork weight added while the driving `pursues` ambition edge is still live */
+export const UNDERTAKING_ESCALATE_AMBITION_TERM = 0.25;
+
+/** How hard the courage axis pushes the fork (applied to `courage01 − 0.5`) */
+export const UNDERTAKING_ESCALATE_COURAGE_WEIGHT = 0.4;
+
+/** Push toward abandon per halt accumulated beyond the ratchet threshold */
+export const UNDERTAKING_ESCALATE_HALT_PRESSURE = 0.1;
+
+/** Escalate at or above this weight; abandon below it */
+export const UNDERTAKING_ESCALATE_THRESHOLD = 0.5;
+
+/** Stakes raised on escalation — added to the undertaking's checkpoint difficulty */
+export const UNDERTAKING_ESCALATE_DIFFICULTY_DELTA = 0.1;
+
+/**
+ * Fail-safe backstop replacing the flat 18-tick timeout.
+ *
+ * Halts now legitimately extend an undertaking's duration and the ratchet is the
+ * *designed* exit, so a timeout tuned to the old passive cadence would fire on
+ * healthy work. This one only catches undertakings the ratchet somehow never
+ * reaches (an actor frozen absent, a deferral loop) — NFP #4, not game feel.
+ */
+export const UNDERTAKING_TIMEOUT_TICKS = 60;
+
+/**
+ * PRNG stream multiplier for checkpoint dice (NFP #3).
+ *
+ * Deliberately not 59 or 53: `seed + tick*59` already feeds three phases as
+ * nominally-independent generators and 53 feeds two, so those streams are
+ * correlated. That defect is pre-existing and not widened here.
+ */
+export const UNDERTAKING_CHECKPOINT_STREAM_MULTIPLIER = 97;
+
+/** Consecutive absence deferrals that convert to one halt — neglect with teeth, no new movement AI */
+export const UNDERTAKING_ABSENCE_DEFERRAL_LIMIT = 3;
+
+/**
+ * Default for `requiresLocation` when a template authors none.
+ *
+ * **The plan (§5) names `true` here; this is `false`, and the reversal is
+ * measured.** The plan's stated reason for the conversion default is to *preserve
+ * today's parallel behaviour* — and today an undertaking advances wherever its
+ * owner happens to be standing, because nothing moves an agent toward its stage.
+ * Moving them is explicitly docs 3/5 territory (binder and board), so with `true`
+ * the gate has nothing to wait for.
+ *
+ * Measured on a 150-tick medium run before the flip: of 736 checkpoints on seed 42
+ * only **50 rolled** — 686 deferred `actor_absent`; on seed 99, 15 of 668. A probe
+ * at tick 80 found **0 of 45** active undertakings with their owner at the stage.
+ * That is not the variance §2 designs for ("today's expected duration, now with
+ * variance"); it is a system whose dice are 93–97% inert, whose undertakings die
+ * of absence rather than of failure, and whose band table would ship untested in
+ * the world.
+ *
+ * The gate itself is fully implemented and tested — only its *default* is off.
+ * Doc 2 turns it on per-kind once doc 3's binder can bring an actor to a stage —
+ * TODO(THR-1294), which carries the census above as its acceptance evidence.
+ */
+export const UNDERTAKING_DEFAULT_REQUIRES_LOCATION = false;
+
+/** Default for `canRunBeside` when a template authors none (preserves pre-flag behavior) */
+export const UNDERTAKING_DEFAULT_CAN_RUN_BESIDE = true;
+
+// ─── Expiring location boosts (THR-1292 §3, initiative retirement) ──
+//
+// The retired `phaseInitiativeProgress` owned the *only* expiry for the festival
+// boost. The folded festival undertaking still writes that boost, so the sweep
+// rehomes into `phaseStrategicProjects` — and it is driven by this list rather
+// than by a hardcoded property name, so a second expiring boost is a data edit.
+//
+// Each entry names a location property written with an `expiresAfterTicks`
+// mutation hint. The writer stamps `<property>ExpiresAtTick`; the sweep clears
+// both once the tick arrives.
+
+/** Location properties that carry a timed expiry, swept by `phaseStrategicProjects`. */
+export const EXPIRING_LOCATION_PROPERTIES: readonly string[] = ['festivalBoost'];
+
+/** Suffix of the companion property holding the expiry tick. */
+export const LOCATION_BOOST_EXPIRY_SUFFIX = 'ExpiresAtTick';
+
+/** How long the folded festival undertaking's boost lasts (was INITIATIVE festival duration 10). */
+export const FESTIVAL_BOOST_DURATION_TICKS = 10;
+
+/** Magnitude of the folded festival undertaking's boost (was the initiative outcome's 0.5). */
+export const FESTIVAL_BOOST_DELTA = 0.5;
+
+// ─── Divine riders on undertakings (THR-1292 §3) ────────────────────
+//
+// The retired `action.initiative.inspire` / `.sabotage` wrote a scorer bonus and a
+// force-fail coin flip. Retargeted onto undertakings they write a **one-shot**
+// modifier consumed by the next checkpoint, so a god's nudge tilts one roll rather
+// than deciding the outcome outright.
+
+/** Modifier added to the next checkpoint roll by `action.undertaking.inspire`. */
+export const UNDERTAKING_INSPIRE_MODIFIER = 0.15;
+
+/** Modifier subtracted from the next checkpoint roll by `action.undertaking.sabotage`. */
+export const UNDERTAKING_SABOTAGE_MODIFIER = 0.15;
+
+/** Actor property carrying a pending inspire rider. */
+export const UNDERTAKING_INSPIRE_FLAG = 'undertakingInspireBonus';
+
+/** Actor property carrying a pending sabotage rider. */
+export const UNDERTAKING_SABOTAGE_FLAG = 'undertakingSabotaged';
+
+// ─── The one prioritization board (THR-1292 §4) ─────────────────────
+//
+// Today an agent's decision is three sequential winner-take contests between
+// scorers that are incommensurate by construction: the encounter score is
+// unbounded above while the strategic score is clamped to [0.08, 0.851] by
+// `STRATEGIC_ENCOUNTER_SCORE_BRIDGE`. One clamp and one constant are the entire
+// commensurability story, and the comparison itself has never been traced.
+//
+// The board replaces that with a single ranking in one currency — **expected
+// value per tick (EVT)** — which the encounter scorer already computes as
+// `euRanking / totalCost`. Undertakings join *that* currency rather than
+// inventing a third.
+//
+// It ships in `'shadow'`: the board scores every decision alongside the legacy
+// contests and legacy still decides. Nothing below changes behaviour until the
+// mode flips, and the flip is gated on measurement (see the cutover table).
+
+/** How the board participates: scored not at all, scored-but-ignored, or deciding. */
+export type UnifiedDecisionBoardMode = 'off' | 'shadow' | 'live';
+
+/**
+ * Board participation mode.
+ *
+ * Ships `'shadow'` by the plan's binding obligation: the board is a redesign of
+ * how agents choose, and a redesign that swaps in unmeasured is how a decision
+ * mix silently collapses. In shadow the legacy contests still decide and the
+ * board's ranking is recorded on two channels (the `decision_board_comparison`
+ * trace and the balance-telemetry shadow fields) so the cutover gate below can be
+ * evaluated from a log rather than asserted.
+ */
+export const UNIFIED_DECISION_BOARD_MODE: UnifiedDecisionBoardMode = 'shadow';
+
+/**
+ * Live-mode idle threshold: a board whose best entry scores below this is empty.
+ *
+ * Deliberately equal to `STRATEGIC_SCORE_FLOOR` — in live mode the board is the
+ * only floor there is, so the two cannot be allowed to drift apart and disagree
+ * about what "nothing worth doing" means. Unused while the mode is `'shadow'`.
+ */
+export const BOARD_SCORE_FLOOR = 0.08;
+
+/**
+ * Verb → payoff value, the v1 bridge until doc 2's per-kind rows land.
+ *
+ * This is the **same table** the legacy `worldImpact` score component reads
+ * (`strategicActionCandidates.computeWorldImpact`), deliberately shared rather
+ * than copied: a second copy would drift, and the board and the scorer it is
+ * being measured against would then disagree about the same verb for a reason
+ * nobody could see in either file.
+ */
+export const STRATEGIC_VERB_IMPACT: Readonly<Record<string, number>> = {
+  create: 0.8,
+  destroy: 0.7,
+  change: 0.5,
+  control: 0.6,
+  gather_info: 0.3,
+};
+
+/** Payoff for a verb with no row above — the legacy table's `default`. */
+export const STRATEGIC_VERB_IMPACT_DEFAULT = 0.3;
+
+/** Verb-impact → `payoffValue` bridge scale. Doc 2's kind rows refine per kind. */
+export const UNDERTAKING_PAYOFF_SCALE = 1.0;
+
+/** Board mix: weight of "the agent's active ambition names this kind/verb". */
+export const UNDERTAKING_TEMPERAMENT_AMBITION_WEIGHT = 0.3;
+
+/** Board mix: weight of the agent's reach affinity for the undertaking's reach. */
+export const UNDERTAKING_TEMPERAMENT_REACH_WEIGHT = 0.2;
+
+// ─── Cutover gate (measured, never asserted) ────────────────────────
+//
+// The THR-1277 method: headless CLI, seeds 42 **and** 99, ≥150 ticks, decision mix
+// read from cumulative balance telemetry. The mode flips to `'live'` only when the
+// shadow board's own rankings satisfy every row below on *both* seeds.
+//
+// Agreement with legacy is deliberately **not** a criterion. The board is a
+// redesign; divergence is the point. What gates is distributional health — that
+// the world the board would produce still has mortals doing a mix of things.
+
+/** Undertaking share of spotlight decisions must land inside this range. */
+export const BOARD_UNDERTAKING_SHARE_RANGE: readonly [number, number] = [0.10, 0.35];
+
+/** Encounter share of spotlight decisions must stay at or above this floor. */
+export const BOARD_ENCOUNTER_SHARE_FLOOR = 0.15;
+
+/** Idle share of spotlight decisions must stay at or below this ceiling. */
+export const BOARD_IDLE_SHARE_CEILING = 0.40;
+
+/** Control-deletion gate (§6): undertaking share must have *grown* past this floor. */
+export const DECISION_MIX_FLOOR_UNDERTAKING_SHARE = 0.12;
+
+/** Control-deletion gate (§6): the deletion must not convert control churn into idleness. */
+export const DECISION_MIX_IDLE_CEILING = 0.40;
+
+/** How many board entries the comparison trace carries. */
+export const BOARD_TRACE_TOP_N = 5;

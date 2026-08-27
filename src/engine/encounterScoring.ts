@@ -183,22 +183,37 @@ export const DRIFT_ACTIVATION_THRESHOLD = 0.03;
 /**
  * Sphere → Axiological pair drift mapping.
  * Maps each sphere to its affected axiological pair and direction.
+ *
+ * Sign convention: drift is applied as `deviation * direction * SCALE` onto
+ * `AxiologicalProfile`, where **+1 is the pair's FIRST pole** and -1 the second.
+ * So `tradition_novelty` positive = tradition, negative = novelty;
+ * `loyalty_ambition` positive = loyalty, negative = ambition;
+ * `mercy_ruthlessness` positive = mercy, negative = ruthlessness.
+ *
+ * THR-1292 slice 1 — this table was half-dead and half-inverted:
+ *  - `mercy_ambition` and `tradition_progress` are not members of `VALUE_PAIRS`,
+ *    so nine of the twelve rows wrote keys nothing ever read (`undefined ?? 0`).
+ *  - The three live rows (order/matter/time) carried a sign opposite to their own
+ *    stated intent, because the author's mental axis ran ambition-positive while
+ *    canonical `loyalty_ambition` is loyalty-positive.
+ * Each row below is re-expressed in canonical pairs at the polarity its original
+ * intent comment asked for; the trailing comment states the pole now driven.
  */
 export const SPHERE_DRIFT_MAP: Record<SphereName, { pair: keyof AxiologicalProfile; direction: number }> = {
   // Foundation Spheres
-  chaos: { pair: 'mercy_ambition', direction: 0.5 }, // +ambition (disruption)
-  order: { pair: 'loyalty_ambition', direction: -0.5 }, // +loyalty (stability)
-  light: { pair: 'tradition_progress', direction: 0.5 }, // +progress (revelation)
-  darkness: { pair: 'tradition_progress', direction: -0.5 }, // +tradition (mystery)
+  chaos: { pair: 'loyalty_ambition', direction: -0.5 }, // +ambition (disruption)
+  order: { pair: 'loyalty_ambition', direction: 0.5 }, // +loyalty (stability)
+  light: { pair: 'tradition_novelty', direction: -0.5 }, // +novelty (revelation)
+  darkness: { pair: 'tradition_novelty', direction: 0.5 }, // +tradition (mystery)
   // Creation Spheres
-  force: { pair: 'mercy_ambition', direction: 1 }, // +ambition
-  matter: { pair: 'loyalty_ambition', direction: -1 }, // +loyalty
-  energy: { pair: 'mercy_ambition', direction: 0.5 }, // +ambition (weaker)
-  life: { pair: 'mercy_ambition', direction: -1 }, // +mercy
-  mind: { pair: 'tradition_progress', direction: 1 }, // +progress
-  spirit: { pair: 'tradition_progress', direction: -1 }, // +tradition
-  time: { pair: 'loyalty_ambition', direction: -0.5 }, // +loyalty (weaker)
-  entropy: { pair: 'mercy_ambition', direction: 1 }, // +ambition (ruthlessness)
+  force: { pair: 'loyalty_ambition', direction: -1 }, // +ambition
+  matter: { pair: 'loyalty_ambition', direction: 1 }, // +loyalty
+  energy: { pair: 'loyalty_ambition', direction: -0.5 }, // +ambition (weaker)
+  life: { pair: 'mercy_ruthlessness', direction: 1 }, // +mercy
+  mind: { pair: 'tradition_novelty', direction: -1 }, // +novelty
+  spirit: { pair: 'tradition_novelty', direction: 1 }, // +tradition
+  time: { pair: 'loyalty_ambition', direction: 0.5 }, // +loyalty (weaker)
+  entropy: { pair: 'mercy_ruthlessness', direction: -1 }, // +ruthlessness (decay)
 };
 
 /**
@@ -1460,3 +1475,16 @@ function buildTrace(
       : `Agent ${agentId} idles (no candidates above threshold)`,
   };
 }
+
+// ─── Shared with the unified decision board (THR-1292 §4) ───────
+//
+// Both were private helpers of `scoreAndSelect`. The board weights an
+// undertaking's pull by personality through the *same* two functions rather than
+// through a second implementation that agrees today and drifts tomorrow — which
+// is the whole reason the plan calls for one board rather than two scorers.
+// Exported under their public names; the internal call sites are untouched.
+
+export {
+  getAmbitionBoostForEntry as getAmbitionBoost,
+  resolveProfile as resolveAxiologicalProfile,
+};

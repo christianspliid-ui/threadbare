@@ -1,9 +1,9 @@
 import React, { useMemo } from 'react';
 import type { AgentDetail, TraitSummary, LeverageSummary } from '../../engine/agentDetail';
-import { INITIATIVE_TEMPLATE_MAP } from '../../data/initiative-templates';
 import type { ReachDomain } from '../../types/traits';
 import type { CooperationStrategy } from '../../types/disposition';
 import type { DigestEntry } from '../../types/attention';
+import { getUndertakingProgressWord } from '../../data/domain-words';
 import { ReachIcon } from '../icons';
 import { TIER_COLORS, ARCHETYPE_DOT_COLOR, FACTION_TAG_COLOR, FACTION_TAG_BACKGROUND, FACTION_TAG_BORDER, SENTIMENT_GREEN, SENTIMENT_RED } from '../../data/uiColorPalette';
 import { AttachmentRow } from './AttachmentRow';
@@ -422,57 +422,55 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
           </div>
         )}
 
-        {/* Active Initiative */}
-        {detail.activeInitiative && (() => {
-          const ini = detail.activeInitiative!;
-          const tmpl = INITIATIVE_TEMPLATE_MAP.get(ini.templateId);
-          const tick = currentTick ?? 0;
-          const elapsed = Math.max(0, tick - ini.startedTick);
-          const total = Math.max(1, ini.targetCompletionTick - ini.startedTick);
-          const pct = Math.min(100, Math.round((elapsed / total) * 100));
-          return (
-            <div
-              className="rounded px-3 py-2"
-              style={{
-                backgroundColor: 'var(--bg-raised)',
-                border: '1px solid var(--border-subtle)',
-              }}
-            >
-              <div className="flex items-center justify-between gap-2 mb-1.5">
-                <span
-                  className="text-xs uppercase tracking-wide"
-                  style={{ color: 'var(--sphere-spirit-bright)' }}
-                >
-                  Initiative
-                </span>
-                <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{pct}%</span>
-              </div>
-              <div
-                className="text-xs font-medium mb-2"
-                style={{ color: 'var(--text-primary)' }}
+        {/* Active undertakings (THR-1292 §3 — was the initiative card) */}
+        {detail.activeUndertakings?.map(work => (
+          <div
+            key={work.projectId}
+            className="rounded px-3 py-2"
+            style={{
+              backgroundColor: 'var(--bg-raised)',
+              border: '1px solid var(--border-subtle)',
+            }}
+          >
+            <div className="flex items-center justify-between gap-2 mb-1.5">
+              <span
+                className="text-xs uppercase tracking-wide"
+                style={{ color: 'var(--sphere-spirit-bright)' }}
               >
-                {tmpl?.name ?? ini.templateId}
-              </div>
-              <div
-                className="h-1.5 rounded-full overflow-hidden"
-                style={{ background: 'var(--bg-raised)', outline: '1px solid var(--border-subtle)' }}
-              >
-                <div
-                  className="h-full rounded-full transition-all duration-200"
-                  style={{ width: `${pct}%`, backgroundColor: 'var(--sphere-spirit-bright)', opacity: 0.85 }}
-                />
-              </div>
-              {ini.checkpoints.length > 0 && (
-                <div
-                  className="mt-1.5 text-xs"
-                  style={{ color: 'var(--text-muted)' }}
-                >
-                  {ini.checkpoints.filter(c => c.passed).length}/{ini.checkpoints.length} checkpoints passed
-                </div>
-              )}
+                Undertaking
+              </span>
+              {/* UI Law: magnitudes render as words. The percentage still drives the
+                  bar's width below — the player reads a state, not a number. */}
+              <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+                {getUndertakingProgressWord(work.percentComplete)}
+              </span>
             </div>
-          );
-        })()}
+            <div
+              className="text-xs font-medium mb-2"
+              style={{ color: 'var(--text-primary)' }}
+            >
+              {work.displayName}
+            </div>
+            <div
+              className="h-1.5 rounded-full overflow-hidden"
+              style={{ background: 'var(--bg-raised)', outline: '1px solid var(--border-subtle)' }}
+            >
+              <div
+                className="h-full rounded-full transition-all duration-200"
+                style={{ width: `${work.percentComplete}%`, backgroundColor: 'var(--sphere-spirit-bright)', opacity: 0.85 }}
+              />
+            </div>
+            {/* Trouble reads as a sentence, not a counter — a halt count is a
+                mechanic, "going badly" is what the player actually learns. */}
+            {work.halts > 0 && (
+              <div className="mt-1.5 text-xs" style={{ color: 'var(--text-muted)' }}>
+                {work.escalated
+                  ? 'Doubled down after setbacks — and it is going badly again.'
+                  : 'Not going to plan.'}
+              </div>
+            )}
+          </div>
+        ))}
 
         {/* Capability profile — 5-dot meter rows, sphere-coloured per reach */}
         <div>

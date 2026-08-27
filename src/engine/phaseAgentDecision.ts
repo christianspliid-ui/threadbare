@@ -79,10 +79,11 @@ import { scoreStrategicCandidates } from './strategicActionScoring';
 import { executeStrategicAction } from './strategicActionLifecycle';
 import type { StrategicCandidateBoardTrace, StrategicActionStartedTrace } from '../types/trace';
 import type { DecisionFamily } from '../types/strategicAction';
-import { ENABLE_INITIATIVES } from '../data/initiative-constants';
-import { generateInitiativeCandidates } from './initiativeCandidates';
-import { startInitiative } from './initiativeLifecycle';
+import type { BalanceEvent } from '../types/balanceEval';
+import { scoreUnifiedBoard } from './decisionBoard';
+import { UNIFIED_DECISION_BOARD_MODE } from '../data/strategic-action-constants';
 import { computeSurfaceKey } from './encounterSurface';
+import { warnLiveBoardModeUnimplemented } from './decisionBoardModeGuard';
 import { resolveTemplateFragments } from './fragmentResolution';
 import { getLocationType } from './encounterCache';
 import { settingClassForSubtype } from '../data/settingClasses';
@@ -363,8 +364,6 @@ export function phaseAgentDecision(
       }
       // Also skip if agent already has ANY active encounter (not just occupied ones)
       if (activeEncounter) continue;
-      // Skip if agent is already pursuing an active initiative
-      if ((actor.properties as Record<string, unknown>).activeInitiative != null) continue;
 
       // Gated re-evaluation for moving agents (replaces blanket skip).
       // Moving agents do NOT enter the full decision pipeline. They only check:
@@ -678,6 +677,10 @@ export function phaseAgentDecision(
       // candidate beats the best encounter candidate, override the selection.
       let decisionFamily: DecisionFamily = decision.selected ? 'encounter' : 'idle';
       let strategicWinner: ReturnType<typeof scoreStrategicCandidates>[number] | null = null;
+      // Hoisted out of the try below so the shadow board can read the same ranked
+      // candidates the legacy contest just compared, rather than regenerating them
+      // (which would double the generation cost and could disagree on rng draws).
+      let scoredStrategic: ReturnType<typeof scoreStrategicCandidates> = [];
 
       if (ENABLE_STRATEGIC_ACTIONS) {
         try {
@@ -716,6 +719,7 @@ export function phaseAgentDecision(
             const scored = scoreStrategicCandidates(
               stratResult.candidates, accumulatedStrategicState, state.tick, rng,
             );
+            scoredStrategic = scored;
 
             // Compare best strategic score against best encounter score
             const bestStrategicScore = scored.length > 0 ? scored[0].finalScore : 0;
@@ -744,6 +748,111 @@ export function phaseAgentDecision(
           }
         } catch {
           // Fail-soft: strategic generation failure → fall through to encounter path
+        }
+      }
+
+      // ── The one prioritization board, in shadow (THR-1292 §4) ─────
+      //
+      // Runs *after* the legacy contests and changes nothing about their verdict
+      // while the mode is `'shadow'`. Its whole output is two telemetry channels:
+      // the `decision_board_comparison` trace (full ranking, for a human reading a
+      // log) and three fields on the balance event below (shares, for the cutover
+      // gate's rollup). This is the binding obligation the plan attaches to the
+      // board — the cross-family comparison has never been traced, so there is no
+      // baseline to flip against until a shadow period produces one.
+      //
+      // `agreement` compares the winning *family*, and the legacy family is read
+      // here rather than at the balance-event sites below because this is the
+      // point where the contests have finished and nothing downstream can still
+      // move a decision between families — compulsion redirects *which* encounter,
+      // never whether one happens.
+      let shadowFields: Pick<
+        BalanceEvent, 'shadowWinnerFamily' | 'shadowWinnerId' | 'shadowAgreement'
+      > = {};
+
+      if (UNIFIED_DECISION_BOARD_MODE !== 'off') {
+        // `'live'` is declared in the mode union but the cutover branch is NOT
+        // implemented (THR-1292 slice 6: the §4 gate failed on seed 99, so the
+        // flip did not land). Without this warning, setting the constant to
+        // `'live'` scores the board and then lets the legacy contests decide
+        // anyway — a cutover that reads as done from the constant, from the
+        // trace's own `mode` field, and from every test, while changing nothing.
+        // That is the exact shape of the phantom-ship this ticket has hit twice.
+        warnLiveBoardModeUnimplemented();
+        try {
+          const board = scoreUnifiedBoard({
+            graph,
+            agentId,
+            tick: state.tick,
+            encounterCandidates: decision.topCandidates,
+            strategicCandidates: scoredStrategic,
+            fundament: state.worldSoul?.fundament,
+          });
+
+          // An empty board is a real verdict, not a missing one: it is what the
+          // live mode would read as idle. Recording it as `'idle'` keeps the idle
+          // share the cutover gate reads honest — dropping the row would make the
+          // ceiling trivially passable by a board that finds nothing to do.
+          const boardFamily: DecisionFamily = board.winner?.family ?? 'idle';
+
+          const legacyScore = decisionFamily === 'strategic_action'
+            ? (strategicWinner?.finalScore ?? 0)
+            : (decision.topCandidates.length > 0 ? decision.topCandidates[0].finalScore : 0);
+          const legacyId = decisionFamily === 'strategic_action'
+            ? (strategicWinner?.templateId ?? null)
+            : (decision.selected?.entry.templateId ?? null);
+
+          const agreement = boardFamily === decisionFamily;
+
+          shadowFields = {
+            shadowWinnerFamily: boardFamily,
+            shadowWinnerId: board.winner?.id ?? null,
+            shadowAgreement: agreement,
+          };
+
+          emitTrace({
+            category: 'decision_board_comparison',
+            tick: state.tick,
+            agentId,
+            mode: UNIFIED_DECISION_BOARD_MODE,
+            legacyWinner: { family: decisionFamily, id: legacyId, score: legacyScore },
+            // `advanceProbability` is spread conditionally rather than written as
+            // `advanceProbability: e.advanceProbability`: an encounter entry has
+            // none, and under `exactOptionalPropertyTypes` an explicit `undefined`
+            // is not the same as an absent key. Absent is also the honest reading
+            // — an encounter has no checkpoint to forecast, it does not have a
+            // forecast of unknown value.
+            boardTop: board.top.map(e => ({
+              family: e.family,
+              id: e.id,
+              score: e.score,
+              evt: e.evt,
+              desireMultiplier: e.desireMultiplier,
+              temperamentWeight: e.temperamentWeight,
+              ...(e.advanceProbability !== undefined
+                ? { advanceProbability: e.advanceProbability }
+                : {}),
+            })),
+            agreement,
+            encounterCandidates: decision.topCandidates.length,
+            undertakingCandidates: scoredStrategic.length,
+            summary: `Board (${UNIFIED_DECISION_BOARD_MODE}): legacy=${decisionFamily}, board=${boardFamily}${agreement ? '' : ' [DIVERGED]'}, top=${board.winner?.score.toFixed(3) ?? 'none'}`,
+          });
+        } catch (err) {
+          // Deliberately NOT the empty catch the legacy path above degrades
+          // through. A shadow period that swallowed board throws would report
+          // perfect agreement while having measured nothing at all, and the
+          // cutover gate would then be evaluated against a board that never ran.
+          // `shadowFields` stays empty, so this decision is absent from the
+          // denominator rather than counted as agreement (NFP #2, NFP #4).
+          emitTrace({
+            category: 'decision_board_error',
+            tick: state.tick,
+            agentId,
+            mode: UNIFIED_DECISION_BOARD_MODE,
+            message: err instanceof Error ? err.message : String(err),
+            summary: `Board scoring threw for ${actor.name}: ${err instanceof Error ? err.message : String(err)}`,
+          });
         }
       }
 
@@ -870,6 +979,7 @@ export function phaseAgentDecision(
               tick: state.tick,
               kind: 'encounter_decision',
               agentId,
+              ...shadowFields,
               sourceSystem: 'strategic',
               decisionType: strategicWinner.executionMode === 'instant'
                 ? 'strategic_instant'
@@ -893,71 +1003,11 @@ export function phaseAgentDecision(
         }
       }
 
-      // ── Initiative Candidate Integration ─────────────────────────────
-      // Generate initiative candidates and compare against the best encounter
-      // (or strategic) score. If an initiative wins, start it and skip encounter.
-      if (ENABLE_INITIATIVES && decisionFamily !== 'strategic_action') {
-        try {
-          const pursuesEdges = graph.getOutgoingEdges(agentId, 'pursues');
-          const ambitionIds: string[] = [];
-          for (const edge of pursuesEdges) {
-            const props = edge.properties as Record<string, unknown> | undefined;
-            if (props?.status === 'active') {
-              const node = graph.getNode(edge.target);
-              const tid = node?.properties?.templateId as string | undefined;
-              if (tid) ambitionIds.push(tid);
-            }
-          }
-
-          const initResult = generateInitiativeCandidates(
-            graph, agentId, locationId, state.tick, ambitionIds,
-          );
-
-          if (initResult.candidates.length > 0) {
-            const bestInitiative = initResult.candidates[0];
-            const bestEncounterScore = decision.topCandidates.length > 0
-              ? decision.topCandidates[0].finalScore
-              : 0;
-
-            if (bestInitiative.finalScore > bestEncounterScore) {
-              const progress = startInitiative(graph, bestInitiative, state.tick, rng);
-              decisionFamily = 'initiative';
-
-              newEvents.push({
-                id: `decision_initiative_${agentId}_${state.tick}`,
-                tick: state.tick,
-                type: 'agent_action',
-                message: `${actor.name} begins ${bestInitiative.template.name.toLowerCase()}`,
-                significance: 0.6,
-                actorId: agentId,
-              });
-
-              const freshForInit = graph.getNode(agentId);
-              if (freshForInit) freshForInit.properties.consecutiveIdleTicks = 0;
-
-              if (runtime) {
-                recordBalanceEvent(runtime, {
-                  tick: state.tick,
-                  kind: 'encounter_decision',
-                  agentId,
-                  sourceSystem: 'initiative',
-                  decisionType: 'initiative_start',
-                  templateId: bestInitiative.templateId,
-                  locationId,
-                  locationSubtype: originLocationSubtype,
-                  threaded: threadContext.threaded,
-                  courtPosition: threadContext.courtPosition,
-                });
-              }
-
-              void progress; // suppress unused warning — stored on node
-              continue; // Skip encounter execution path
-            }
-          }
-        } catch {
-          // Fail-soft: initiative generation/start failure → fall through to encounter path
-        }
-      }
+      // The initiative contest block lived here (THR-1292 §3). It was the *third*
+      // competitor in this loop — encounters, strategic actions and initiatives all
+      // bidding on one agent-tick — and its whole job was to start a parallel
+      // multi-tick project system. Undertakings are that system now, so the contest
+      // collapses to two: what the strategic path wins, it wins outright.
 
       if (decision.selected) {
         const sel = decision.selected;
@@ -1237,6 +1287,7 @@ export function phaseAgentDecision(
                 tick: state.tick,
                 kind: 'encounter_decision',
                 agentId,
+                ...shadowFields,
                 sourceSystem: 'planner',
                 decisionType: sel.action,
                 templateId: sel.entry.templateId,
@@ -1356,6 +1407,7 @@ export function phaseAgentDecision(
                 tick: state.tick,
                 kind: 'encounter_decision',
                 agentId,
+                ...shadowFields,
                 sourceSystem: 'planner',
                 decisionType: 'queue_movement',
                 templateId: sel.entry.templateId,
@@ -1494,6 +1546,7 @@ export function phaseAgentDecision(
             tick: state.tick,
             kind: 'encounter_decision',
             agentId,
+            ...shadowFields,
             sourceSystem: 'planner',
             decisionType: 'idle',
             idleReason,
@@ -1628,6 +1681,7 @@ export function phaseAgentDecision(
                   tick: state.tick,
                   kind: 'encounter_decision',
                   agentId,
+                  ...shadowFields,
                   sourceSystem: 'planner',
                   decisionType: 'forced_travel',
                   idleReason,

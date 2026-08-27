@@ -15,12 +15,12 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 57 |
+| 🟢 LIVE | 60 |
 | 🟠 PARTIAL | 2 |
-| 🔴 LEAKED | 7 |
+| 🔴 LEAKED | 8 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 14 |
-| **Total** | **80** |
+| **Total** | **84** |
 
 ## Contracts by producing subsystem
 
@@ -28,10 +28,10 @@ remediation ticket or the build fails.
 
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
-| `ambition-acquisition` | Agents acquire ambitions at worldgen, birth, and re-evaluation. | function: `assignInitialAmbitions` | Ambitions & Initiatives | 🟢 LIVE | — |
+| `ambition-acquisition` | Agents acquire ambitions at worldgen, birth, and re-evaluation. | function: `assignInitialAmbitions` | Ambitions & Undertakings | 🟢 LIVE | — |
 | `attachment-worldgen-starters` | Worldgen seeds starting possessions so agents begin already carrying history. | function: `seedAttachments` | Attachments, Items & Possessions | 🟢 LIVE | — |
 
-### Ambitions & Initiatives
+### Ambitions & Undertakings
 
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
@@ -115,11 +115,12 @@ remediation ticket or the build fails.
 | `authored-tier-ramp-target-scaled-price` | The authored per-tier advancement ramp reaches the player. `TIER_ADVANCEMENT_ESSENCE_COST` / `TIER_ADVANCEMENT_DIFFICULTY` / `TIER_ADVANCEMENT_DURATION` author a 3-row ladder, but only row 1 had a consumer — a static template step cannot read its target's tier — so advancing a Mundane artifact and a Mythic one both cost 4 essence at difficulty 0.20, and both took 2–3 ticks. | function: `tierScaledEssenceCost`, `tierScaledDifficulty`, `tierScaledDuration`, `essenceCostContext` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `branch-decision-writes-archetype-drift` | A fork the mortal took becomes part of who they are: taking the cunning branch drifts them cunning, so a mortal the player keeps leaning one way visibly becomes that person instead of resetting each encounter. | function: `applyAgentDecidedBranches`, `decideBranchPole`, `decideBranchRoute`, `driftAxisIdForValuePair` | Personality & Emergent Traits | 🔴 LEAKED | THR-883 |
 | `compulsion-card-plants-agent-decision-bias` | A god can steer one mortal without seizing them: the card plants an urge, and that mortal's own next decision leans toward it — you steered them, they still chose. | function: `derivePlantedCompulsionEncounterBias`, `phasePlantedCompulsionDecay` | Encounters & Dilemmas | 🔴 LEAKED | THR-883 |
+| `decision-board-shadow-telemetry` | Before one ranking replaces the three winner-take contests an agent’s decision passes through today, what that ranking *would* have chosen is on the record — so the swap is judged against a measured decision mix rather than against confidence. | event: `decision_board_comparison`, `decision_board_error`, `shadowWinnerFamily`, `shadowWinnerId`, `shadowAgreement` | Strategic Projects & Control | 🟢 LIVE | — |
 | `location-condition-taxes-movement-and-gates-templates` | A place can be in a state — a pass shut for the season, a town under a plague scare — and that state is something other systems act on, not scenery. | function: `isLocationCarrier`, `LOCATION_CONDITION_MOVEMENT_TAX`, `buildLocationTargetContext`, `LocationProfileModal` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `meeting-trait-seeds-land-as-narrative-descriptors` | The choices you made while meeting your First stay visible in who they are — the descriptors the meeting authored read back on their character sheet and in their backstory, instead of every First being described in the same default words. | node-prop: `narrativeDescriptors` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 | `membership-change-writes-rank-and-faction-rank-gate-reads-it` | An ending can make someone a member of a faction, or move them up inside it — and a later scene can require the rank it gave them. | function: `joinFaction`, `leaveFaction`, `adjustMemberRank`, `resolveFactionNodeId`, `buildPredicateContext`, `FACTION_RANK_MAX` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `nudge-card-cost-channels-detection-and-doom` | A card can be cheap in essence and expensive somewhere else — visibility to rivals, or the doom clock — so the price of divine help is not always the same currency. | function: `collectNudgeCostChannels`, `applyRawDetectionDelta`, `accelerateDoomClock` | Spheres & Quintessence | 🔴 LEAKED | THR-883 |
-| `nudge-card-grants-dispatch-to-host-systems` | A card that says it changed the world actually changes it, through the system that owns that change — so the fiction the player is shown and the state the world holds cannot disagree. | function: `dispatchNudgeCommitments`, `collectNudgeGrants`, `assignAmbitionToActor` | Ambitions & Initiatives | 🔵 UNVERIFIED-OK | THR-883 |
+| `nudge-card-grants-dispatch-to-host-systems` | A card that says it changed the world actually changes it, through the system that owns that change — so the fiction the player is shown and the state the world holds cannot disagree. | function: `dispatchNudgeCommitments`, `collectNudgeGrants`, `assignAmbitionToActor` | Ambitions & Undertakings | 🔵 UNVERIFIED-OK | THR-883 |
 | `player-action-aftermath-read` | The aftermath a player action already produces finally reaches the player — the receipt phase reads the summary that was built and discarded for player casts. | function: `processPlayerReceipts`, `aftermathSummary` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `player-action-receipts-queue` | A resolved player cast queues a Divine Receipt the UI surfaces as a toast or a receipt dialogue. | node-prop: `playerActionReceipts` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `receipt-event-band-toast` | A receipt toast carries its outcome band so the toast accent matches how the cast landed. | event: `band` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
@@ -129,7 +130,7 @@ remediation ticket or the build fails.
 | `secrets-generation` | Secrets are born from scenes — mortals learn things about each other worth holding. | function: `generateSecret`, `createSecretEdge` | Secrets & Favors | 🟢 LIVE | — |
 | `seeded-opponent-survives-to-spawn` | A grudge planted against a named band is collected against that same band — or, if it died in the meantime, quietly becomes an ordinary encounter instead of pointing at a corpse. | node-prop: `opposingGroupId`, `resolveSeedOpposition` | Companies & Group Travel | 🟢 LIVE | — |
 | `undertow-card-drifts-mortal-values` | The card that says it changes who the mortal is actually changes it, on the same axis their own choices move — so a god who keeps reaching for the ugly method is visibly making someone, not renting a bonus. | function: `dispatchNudgeCommitments`, `collectNudgeValueDrifts`, `driftTowardPole` | Personality & Emergent Traits | 🔴 LEAKED | THR-1130 |
-| `world-events-mint-ambitions` | World events write themselves into mortal desire — a sacked town mints avengers and refugees. | function: `AMBITION_MINTING_RULES`, `mintAmbitionsFromEvents` | Ambitions & Initiatives | 🟢 LIVE | — |
+| `world-events-mint-ambitions` | World events write themselves into mortal desire — a sacked town mints avengers and refugees. | function: `AMBITION_MINTING_RULES`, `mintAmbitionsFromEvents` | Ambitions & Undertakings | 🟢 LIVE | — |
 
 ### Factions & Succession
 
@@ -158,7 +159,7 @@ remediation ticket or the build fails.
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
 | `trait-predicate-resolution` | A trait gate anywhere in the engine means the same thing: the world reacts to who someone is, by the same rules whichever system is asking. | function: `resolveTraitPredicate`, `collectBearerTraitRefs`, `bearerMatchesPredicate` | Encounters & Dilemmas | 🟢 LIVE | — |
-| `trait-ref-authoring-vocabulary` | An authored trait hook names a trait the world can actually mint, so a gate the content promises is a gate the player can meet. | function: `validateTraitRefs`, `buildTraitRefIndex`, `resolveTraitRefs` | Ambitions & Initiatives | 🔴 LEAKED | THR-800 |
+| `trait-ref-authoring-vocabulary` | An authored trait hook names a trait the world can actually mint, so a gate the content promises is a gate the player can meet. | function: `validateTraitRefs`, `buildTraitRefIndex`, `resolveTraitRefs` | Ambitions & Undertakings | 🔴 LEAKED | THR-800 |
 
 ### Secrets & Favors
 
@@ -173,6 +174,14 @@ remediation ticket or the build fails.
 | `essence-earned-unlocks-attunement-cards` | Working a sphere teaches you its deeper tricks: essence drawn through a sphere over a lifetime widens what that sphere deals you, so a god who actually uses their power ends the run holding more of it than a god who hoarded. | state-field: `essenceEarnedBySphere` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `nudge-hand-runtime-filters-and-sphere-discount` | The hand the player is dealt reflects the world as it actually is — group cards only in groups, favor calls only when a favor is owed — and a sphere the god is aligned to makes its own work cheaper. | function: `buildNudgeHand`, `effectiveNudgeCost`, `totalNudgeCost` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | THR-883 |
 | `quintessence-threshold-gates-candidacy-and-movement` | A mortal worn to nothing goes out of the story rather than grinding on unchanged — the previously missing consumer of the weakened/critical threshold states. Without it, quintessence loss has no behavioural consequence at all. | node-prop: `isBrokenMortal`, `brokenGateActive`, `computeBrokenDriftBonus`, `brokenSince` | Encounters & Dilemmas | 🟠 PARTIAL | THR-778 |
+
+### Strategic Projects & Control
+
+| Contract | Intent | Mechanism | Consumer | Status | Ticket |
+|---|---|---|---|---|---|
+| `mentorship-rides-undertaking-checkpoints` | A mentorship is a relationship that a piece of work drives. Folding it onto the undertaking checkpoint means the bond moves when the teaching actually goes well or badly, instead of a second phase inferring how it went from the leftovers of a first one. | edge-prop: `mentors`, `undertakingId` | Ambitions & Undertakings | 🟢 LIVE | — |
+| `shared-step-resolution-two-callers` | One band ladder decides every outcome in the game. An encounter step and an undertaking checkpoint that disagreed about what a critical failure is would be two games wearing one vocabulary — the same roll reading as disaster in a scene and a shrug in a project. | function: `resolveStepCore`, `mapResolverOutcomeToStep` | Encounters & Dilemmas | 🟢 LIVE | — |
+| `undertaking-checkpoint-events` | What happens to an agent’s undertaking reaches the player — the setback, the doubling-down, the abandonment — instead of progress silently accruing until a thing appears in the world with no story attached to it. | event: `undertaking_checkpoint`, `undertaking_fork`, `resolveMomentPresentation`, `followedAgentIds` | Attention, Chronicle & Narrative | 🔴 LEAKED | THR-1293 |
 
 ## Evidence
 
@@ -190,7 +199,7 @@ remediation ticket or the build fails.
 ### `ambition-acquisition` — 🟢 LIVE
 
 - **Intent:** Agents acquire ambitions at worldgen, birth, and re-evaluation.
-- **Producer → Consumer:** Agent Lifecycle → Ambitions & Initiatives
+- **Producer → Consumer:** Agent Lifecycle → Ambitions & Undertakings
 - **UL terms:** *Ambition*
 - **Production hits:** 5 total — 1 write, 4 read, 0 unclassified
 - **Write sites:** `src/engine/ambitionAssignment.ts`
@@ -200,7 +209,7 @@ remediation ticket or the build fails.
 ### `ambition-biases-encounter-choice` — 🟢 LIVE
 
 - **Intent:** An agent's ambitions bias which encounters they choose — motive drives action.
-- **Producer → Consumer:** Ambitions & Initiatives → Encounters & Dilemmas
+- **Producer → Consumer:** Ambitions & Undertakings → Encounters & Dilemmas
 - **Production hits:** 2 total — 1 write, 1 read, 0 unclassified
 - **Write sites:** `src/engine/ambitionBoost.ts`
 - **Read sites:** `src/engine/agentSelection.ts`
@@ -209,7 +218,7 @@ remediation ticket or the build fails.
 ### `ambition-completed-history` — 🟢 LIVE
 
 - **Intent:** Completed ambitions accumulate into a readable history of who an agent became.
-- **Producer → Consumer:** Ambitions & Initiatives → Attention, Chronicle & Narrative
+- **Producer → Consumer:** Ambitions & Undertakings → Attention, Chronicle & Narrative
 - **Production hits:** 3 total — 1 write, 1 read, 1 unclassified
 - **Write sites:** `src/engine/agentDetail.ts`
 - **Read sites:** `src/components/Game/tabs/ChronicleTab.tsx`
@@ -219,17 +228,17 @@ remediation ticket or the build fails.
 ### `ambition-motive-receipts` — 🟢 LIVE
 
 - **Intent:** Ambitions explain motives — receipts carry ambition provenance into foreshadowing.
-- **Producer → Consumer:** Ambitions & Initiatives → Omens & Atmospheric Pressure
-- **Production hits:** 4 total — 2 write, 1 read, 1 unclassified
+- **Producer → Consumer:** Ambitions & Undertakings → Omens & Atmospheric Pressure
+- **Production hits:** 5 total — 2 write, 1 read, 2 unclassified
 - **Write sites:** `src/engine/agentSelection.ts`, `src/engine/encounterScoring.ts`
 - **Read sites:** `src/engine/foreshadowing/motiveReceipt.ts`
-- **Other hits:** `src/components/CMS/tunableConstants.ts`
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/engine/decisionBoard.ts`
 - **Verdict:** Verified 2026-07-23: ambitionBoost term appears in motiveReceipt provenance. Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified)
 
 ### `ambition-player-visibility` — 🟢 LIVE
 
 - **Intent:** The player can see what a mortal is striving for.
-- **Producer → Consumer:** Ambitions & Initiatives → Intelligence, Knowledge & Familiarity
+- **Producer → Consumer:** Ambitions & Undertakings → Intelligence, Knowledge & Familiarity
 - **UL terms:** *Ambition*, *Interaction Depth*
 - **Production hits:** 2 total — 1 write, 1 read, 0 unclassified
 - **Write sites:** `src/engine/strands.ts`
@@ -239,7 +248,7 @@ remediation ticket or the build fails.
 ### `ambition-progress-milestones` — 🟢 LIVE
 
 - **Intent:** Ambitions progress and complete, firing milestone events the player sees.
-- **Producer → Consumer:** Ambitions & Initiatives → Attention, Chronicle & Narrative
+- **Producer → Consumer:** Ambitions & Undertakings → Attention, Chronicle & Narrative
 - **Production hits:** 6 total — 1 write, 1 read, 4 unclassified
 - **Write sites:** `src/engine/phases/ambitionProgress.ts`
 - **Read sites:** `src/engine/ambitionTick.ts`
@@ -435,10 +444,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Nudge*, *Encounter*, *UnifiedActionTemplate*
 - **Module:** `src/engine/encounters/nudges.ts`
-- **Production hits:** 11 total — 1 write, 2 read, 8 unclassified
+- **Production hits:** 12 total — 1 write, 2 read, 9 unclassified
 - **Write sites:** `src/types/unifiedAction.ts`
 - **Read sites:** `src/debug-bridge.ts`, `src/engine/unifiedActionResolution.ts`
-- **Other hits:** `src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts`, `src/components/Game/encounter-stage/nudgeCommit.ts`, `src/components/Game/encounter-stage/types.ts`, `src/engine/encounters/dealHand.ts`, `src/engine/encounters/nudgeDispatch.ts` +3 more
+- **Other hits:** `src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts`, `src/components/Game/encounter-stage/nudgeCommit.ts`, `src/components/Game/encounter-stage/types.ts`, `src/engine/encounters/dealHand.ts`, `src/engine/encounters/nudgeDispatch.ts` +4 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `authored-quintessence-shift` — 🔵 UNVERIFIED-OK
@@ -459,10 +468,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Domain Capability*, *UnifiedActionTemplate*
 - **Module:** `src/engine/unifiedActionResolution.ts`
-- **Production hits:** 156 total — 1 write, 2 read, 153 unclassified
+- **Production hits:** 162 total — 1 write, 2 read, 159 unclassified
 - **Write sites:** `src/data/unified-action-templates.ts`
 - **Read sites:** `src/engine/targetActions.ts`, `src/engine/unifiedActionResolution.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/ActionDrawer.tsx` +148 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/ActionDrawer.tsx` +154 more
 - **Verdict:** Verified 2026-07-25: THR-728: `unified-action-templates.ts` authors `steps[].difficulty`; `resolveUncontestedStep` reads it for `source === 'player'` (the auto-success early-return is now gated behind `PLAYER_CAST_VARIANCE_ENABLED`), and `targetActions.ts` reads the same field via `maxStepDifficulty` to render the focused card's risk line. Measured over 400 seeds: the outcome set for a positive-difficulty cast is >1 band. THR-1073 rerouted both read sites through `tierScaledDifficulty`: a step declaring `difficultyContext: 'target_tier_scaled'` treats its authored `difficulty` as a tier-1 baseline and resolves the real value from the target's tier. Both sites resolve through the same helper, so the card's risk line cannot drift from the roll; a step without the marker is returned unchanged.
 
 ### `authored-tier-ramp-target-scaled-price` — 🟢 LIVE
@@ -603,6 +612,17 @@ exit
 - **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/data/content-eval/compositionContract.ts`, `src/data/content-eval/encounterPackage.ts`, `src/data/encounters/apotheosis-ascension.ts`, `src/engine/aftermathWords.ts` +2 more
 - **Verdict:** Verified 2026-07-25: contested_won/contested_lost shipped with TB-044 and had display strings in ChapterView, a playerReceipts severity mapping, and an isActionSuccess branch — with ZERO producers until this PR (grep at implementation time: the only non-declaration hits were the consumer-side switch arms). phaseUnifiedActionProgress now stamps the band on both sides of a resolved group contest, so the vocabulary the UI was already built to speak finally gets spoken. Locked by bandOpposition.test.ts § "gives the contested outcome band its first production producer".
 
+### `decision-board-shadow-telemetry` — 🟢 LIVE
+
+- **Intent:** Before one ranking replaces the three winner-take contests an agent’s decision passes through today, what that ranking *would* have chosen is on the record — so the swap is judged against a measured decision mix rather than against confidence.
+- **Producer → Consumer:** Encounters & Dilemmas → Strategic Projects & Control
+- **Module:** `src/engine/decisionBoard.ts`
+- **Production hits:** 7 total — 1 write, 1 read, 5 unclassified
+- **Write sites:** `src/engine/phaseAgentDecision.ts`
+- **Read sites:** `src/engine/balanceTelemetry.ts`
+- **Other hits:** `src/data/strategic-action-constants.ts`, `src/engine/decisionBoard.ts`, `src/engine/decisionBoardModeGuard.ts`, `src/types/balanceEval.ts`, `src/types/trace.ts`
+- **Verdict:** Verified 2026-08-27: Two 150-tick medium CLI runs scored 1913 (seed 42) and 1809 (seed 99) decisions on the shadow board and printed the block via `balance summary`. The cutover gate PASSES on seed 42 (undertaking 11.9%, encounter 70.7%, idle 17.5%) and FAILS on seed 99 (undertaking 4.1%, below the 0.10 floor), so the mode stays `shadow` — which is the telemetry doing its job. decisionBoardLiveness.test.ts asserts both channels carry a varying signal on the real pipeline.
+
 ### `draw-together-carries-caster-sphere-to-the-name` — 🟢 LIVE
 
 - **Intent:** A company gathered by a god carries that god in its name — the sphere the verb was cast under reaches the naming of the company it produces, one tick later.
@@ -693,12 +713,12 @@ exit
 ### `faction-ambitions-drive-action` — 🟢 LIVE
 
 - **Intent:** Faction ambitions drive faction action and render on the faction sheet.
-- **Producer → Consumer:** Ambitions & Initiatives → Factions & Succession
+- **Producer → Consumer:** Ambitions & Undertakings → Factions & Succession
 - **Module:** `src/engine/factionAmbitions.ts`
-- **Production hits:** 9 total — 1 write, 3 read, 5 unclassified
+- **Production hits:** 10 total — 1 write, 3 read, 6 unclassified
 - **Write sites:** `src/engine/phases/factionAmbitions.ts`
 - **Read sites:** `src/engine/factionGovernanceVerbs.ts`, `src/engine/phaseControlEffects.ts`, `src/engine/phases/index.ts`
-- **Other hits:** `src/components/Game/ArmySheet.tsx`, `src/data/faction-action-constants.ts`, `src/engine/ambitionShape.ts`, `src/engine/effects/conditionProxyEvents.ts`, `src/engine/phaseMovement.ts`
+- **Other hits:** `src/components/Game/ArmySheet.tsx`, `src/data/faction-action-constants.ts`, `src/engine/ambitionShape.ts`, `src/engine/effects/conditionProxyEvents.ts`, `src/engine/phaseMovement.ts` +1 more
 - **Verdict:** Verified 2026-07-23: FactionSheet.activeAmbition renders; faction phases consume. Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified)
 
 ### `group-grudge-reaches-the-mortal-sheet` — 🟢 LIVE
@@ -771,6 +791,17 @@ exit
 - **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/data/agent-behavior-constants.ts`, `src/data/encounters/the-beast-in-the-granary.ts`, `src/data/encounters/toll-of-blades.ts`, `src/engine/effectResolver.ts` +8 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
+### `mentorship-rides-undertaking-checkpoints` — 🟢 LIVE
+
+- **Intent:** A mentorship is a relationship that a piece of work drives. Folding it onto the undertaking checkpoint means the bond moves when the teaching actually goes well or badly, instead of a second phase inferring how it went from the leftovers of a first one.
+- **Producer → Consumer:** Strategic Projects & Control → Ambitions & Undertakings
+- **Module:** `src/engine/mentorshipUndertaking.ts`
+- **Production hits:** 11 total — 2 write, 1 read, 8 unclassified
+- **Write sites:** `src/engine/mentorshipUndertaking.ts`, `src/engine/strategicActionLifecycle.ts`
+- **Read sites:** `src/engine/graphQueries.ts`
+- **Other hits:** `src/data/meeting-dilemma-library.ts`, `src/data/mentorship-templates/divine-actions.ts`, `src/data/mentorship-templates/the-offer.ts`, `src/data/strategic-packs/scholarStrategicPack.ts`, `src/engine/mentorshipOutcomes.ts` +3 more
+- **Verdict:** Verified undefined: undefined
+
 ### `milestone-grants-unlock-repertoire-cards` — 🔵 UNVERIFIED-OK
 
 - **Intent:** Earning something as a god changes what you can play as a god — a milestone hands you a new way to use a power you already had, not a bigger number on the one you have.
@@ -786,7 +817,7 @@ exit
 ### `minted-ambition-provenance` — 🟢 LIVE
 
 - **Intent:** Motive receipts name the origin of a minted want — "she seeks vengeance for the blighted fields."
-- **Producer → Consumer:** Ambitions & Initiatives → Omens & Atmospheric Pressure
+- **Producer → Consumer:** Ambitions & Undertakings → Omens & Atmospheric Pressure
 - **Production hits:** 3 total — 1 write, 1 read, 1 unclassified
 - **Write sites:** `src/engine/ambitionTick.ts`
 - **Read sites:** `src/engine/foreshadowing/motiveReceipt.ts`
@@ -808,7 +839,7 @@ exit
 ### `nudge-card-grants-dispatch-to-host-systems` — 🔵 UNVERIFIED-OK
 
 - **Intent:** A card that says it changed the world actually changes it, through the system that owns that change — so the fiction the player is shown and the state the world holds cannot disagree.
-- **Producer → Consumer:** Encounters & Dilemmas → Ambitions & Initiatives
+- **Producer → Consumer:** Encounters & Dilemmas → Ambitions & Undertakings
 - **UL terms:** *Nudge*, *Ambition*
 - **Module:** `src/engine/encounters/nudgeDispatch.ts`
 - **Production hits:** 9 total — 1 write, 2 read, 6 unclassified
@@ -867,10 +898,10 @@ exit
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 225 total — 1 write, 1 read, 223 unclassified
+- **Production hits:** 234 total — 1 write, 1 read, 232 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts` +218 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts` +227 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `relocation-intent-steers-agent-movement` — 🔵 UNVERIFIED-OK
@@ -997,6 +1028,18 @@ exit
 - **Other hits:** `src/types/unifiedAction.ts`
 - **Verdict:** Verified 2026-07-25: PR 2 declared PendingEncounterSeed.opposingGroupId and wired findOpposingBand to honour UnifiedAction.opposingGroupId, but nothing carried the value across the seed → action boundary — grep at implementation time found the seed field with zero readers, so a seed naming its enemy dropped it in silence. evaluateEncounterSeeds now re-validates (node exists ∧ isBandNode ∧ groupStatus active ∧ ≥1 living member) and stamps the action. Locked by confrontationContent.test.ts § "evaluateEncounterSeeds — opposingGroupId carry": the live case carries, and dissolved / emptied-out / not-a-band all spawn uncontested rather than blocking the encounter.
 
+### `shared-step-resolution-two-callers` — 🟢 LIVE
+
+- **Intent:** One band ladder decides every outcome in the game. An encounter step and an undertaking checkpoint that disagreed about what a critical failure is would be two games wearing one vocabulary — the same roll reading as disaster in a scene and a shrug in a project.
+- **Producer → Consumer:** Strategic Projects & Control → Encounters & Dilemmas
+- **UL terms:** *Outcome Band*
+- **Module:** `src/engine/stepResolutionCore.ts`
+- **Production hits:** 6 total — 1 write, 2 read, 3 unclassified
+- **Write sites:** `src/engine/stepResolutionCore.ts`
+- **Read sites:** `src/engine/undertakingCheckpoints.ts`, `src/engine/unifiedActionResolution.ts`
+- **Other hits:** `src/engine/decisionBoard.ts`, `src/engine/encounter.ts`, `src/engine/meetingEncounter.ts`
+- **Verdict:** Verified 2026-08-27: stepResolutionCore.contract.test.ts pins the permitted direct-caller set and asserts the encounter entry point and a direct core call agree on band/roll/probability; the second caller is exercised in the live simulation by undertakingCheckpointLiveness.test.ts (630 rolled checkpoints across all six bands on a 150-tick seed-42 run).
+
 ### `sunder-window-amplifies-company-decay` — 🟢 LIVE
 
 - **Intent:** A sundered company comes apart faster and more visibly — quarrels bite harder, people leave sooner, and the drama pool starts telling the story before the numbers justify it.
@@ -1024,7 +1067,7 @@ exit
 ### `trait-ref-authoring-vocabulary` — 🔴 LEAKED
 
 - **Intent:** An authored trait hook names a trait the world can actually mint, so a gate the content promises is a gate the player can meet.
-- **Producer → Consumer:** Personality & Emergent Traits → Ambitions & Initiatives
+- **Producer → Consumer:** Personality & Emergent Traits → Ambitions & Undertakings
 - **UL terms:** *Trait*
 - **Module:** `src/engine/traitRefValidation.ts` — **no production importers**
 - **Production hits:** 21 total — 3 write, 2 read, 16 unclassified
@@ -1045,6 +1088,17 @@ exit
 - **Other hits:** `src/debug-bridge.ts`, `src/engine/echo.ts`, `src/engine/encounters/dealHand.ts`, `src/engine/nudgeCardRepertoire.ts`, `src/types/echo.ts` +1 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
+### `undertaking-checkpoint-events` — 🔴 LEAKED
+
+- **Intent:** What happens to an agent’s undertaking reaches the player — the setback, the doubling-down, the abandonment — instead of progress silently accruing until a thing appears in the world with no story attached to it.
+- **Producer → Consumer:** Strategic Projects & Control → Attention, Chronicle & Narrative
+- **Module:** `src/engine/undertakingCheckpoints.ts`
+- **Production hits:** 5 total — 1 write, 0 read, 4 unclassified
+- **Write sites:** `src/engine/undertakingCheckpoints.ts`
+- **Read sites:** —
+- **Other hits:** `src/engine/gameInit.ts`, `src/types/gameState.ts`, `src/types/strategicAction.ts`, `src/types/trace.ts`
+- **Verdict:** Tier 2: write sites present, declared read sites empty — the consumer is starving. — or the declared symbol does not appear at the declared site: grep 'undertaking_checkpoint' src/engine/traceBuffer.ts before treating this as a leak.
+
 ### `undertow-card-drifts-mortal-values` — 🔴 LEAKED
 
 - **Intent:** The card that says it changes who the mortal is actually changes it, on the same axis their own choices move — so a god who keeps reaching for the ugly method is visibly making someone, not renting a bonus.
@@ -1060,7 +1114,7 @@ exit
 ### `world-events-mint-ambitions` — 🟢 LIVE
 
 - **Intent:** World events write themselves into mortal desire — a sacked town mints avengers and refugees.
-- **Producer → Consumer:** Encounters & Dilemmas → Ambitions & Initiatives
+- **Producer → Consumer:** Encounters & Dilemmas → Ambitions & Undertakings
 - **UL terms:** *AxiologicalProfile*
 - **Production hits:** 3 total — 1 write, 1 read, 1 unclassified
 - **Write sites:** `src/engine/ambitionTick.ts`

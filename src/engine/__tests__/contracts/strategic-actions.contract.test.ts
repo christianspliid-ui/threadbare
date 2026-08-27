@@ -150,17 +150,31 @@ describe('merchant proving slice contract', () => {
     expect(startResult.strategicState.projects.length).toBe(1);
     expect(startResult.strategicState.projects[0].status).toBe('active');
 
-    // Advance until complete (8 ticks)
+    // Advance until complete. THR-1292 §2: progress is no longer a function of
+    // elapsed ticks — it comes from checkpoint dice every
+    // UNDERTAKING_CHECKPOINT_INTERVAL_TICKS, and a halting band grants none. Ten
+    // ticks used to be exactly eight units of progress; now they are at most one
+    // checkpoint, so the horizon has to be a number of *checkpoints* rather than a
+    // number of ticks.
+    //
+    // This stays deterministic despite the dice: every stream is seeded, so this
+    // run resolves the same way every time. The horizon is generous rather than
+    // minimal so a future difficulty retune does not turn a real contract into a
+    // coin flip.
     let currentState = { ...state, strategicState: startResult.strategicState };
-    for (let t = 11; t <= 20; t++) {
+    for (let t = 11; t <= 130; t++) {
       currentState = { ...currentState, tick: t };
       const advanceResult = advanceStrategicProjects(currentState, graph, t, mulberry32(42 + t));
       currentState = { ...currentState, strategicState: advanceResult.strategicState };
+      if (currentState.strategicState!.projects[0].status !== 'active') break;
     }
 
-    // Should be completed
+    // Should be completed — the contract is that a multi-tick undertaking reaches
+    // completion and mints its world change, not that it does so on a given tick.
     const project = currentState.strategicState!.projects[0];
     expect(project.status).toBe('completed');
+    // And it got there by rolling, not by the clock.
+    expect(project.checkpointIndex ?? 0).toBeGreaterThan(0);
 
     // Should have created a sublocation.
     // THR-1183: asserted through the shared discriminator, not `getNodesByType(

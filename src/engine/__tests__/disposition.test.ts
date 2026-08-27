@@ -328,7 +328,7 @@ describe('applyDispositionModifier', () => {
         targetId: 'actor.2',
         domain: 'heart',
         score: 5,
-        motivations: ['compassion'],
+        motivations: ['loyalty_ambition'],
         socialOrientation: 'cooperative',
       },
     ];
@@ -353,7 +353,7 @@ describe('applyDispositionModifier', () => {
         targetId: 'actor.2',
         domain: 'shadow',
         score: 5,
-        motivations: ['cunning'],
+        motivations: ['honesty_cunning'],
         socialOrientation: 'defective',
       },
     ];
@@ -402,7 +402,7 @@ describe('applyDispositionModifier', () => {
         targetId: 'actor.2',
         domain: 'heart',
         score: 5,
-        motivations: ['compassion'],
+        motivations: ['loyalty_ambition'],
         socialOrientation: 'cooperative',
       },
     ];
@@ -421,7 +421,7 @@ describe('applyDispositionModifier', () => {
         targetId: 'actor.2',
         domain: 'heart',
         score: 5,
-        motivations: ['compassion'],
+        motivations: ['loyalty_ambition'],
         socialOrientation: 'cooperative',
       },
     ];
@@ -440,7 +440,7 @@ describe('applyDispositionModifier', () => {
         targetId: 'actor.2',
         domain: 'heart',
         score: 5,
-        motivations: ['compassion'],
+        motivations: ['loyalty_ambition'],
         socialOrientation: 'cooperative',
       },
       {
@@ -465,7 +465,7 @@ describe('applyDispositionModifier', () => {
         targetId: 'actor.2',
         domain: 'shadow',
         score: 5,
-        motivations: ['cunning'],
+        motivations: ['honesty_cunning'],
         socialOrientation: 'defective',
       },
     ];

@@ -49,6 +49,7 @@ import { getDoomIdentityMatrix } from '../data/doom-identity-matrices';
 import { getOriginPortraitUrl } from '../data/avatar-portrait-assets';
 import { MEETING_SETTLED_LOCATION_SUBTYPES } from './meetingEncounter';
 import { AMBITION_KIND_KEY, AMBITION_KIND_TEMPLATE } from './ambitionShape';
+import { defaultFollowedAgentIds } from './undertakingCheckpoints';
 
 /** PRNG offset for pre-worldgen culture identity generation. Unique prime — no collision with worldgen passes. */
 const CULTURE_SEED_OFFSET = 87671;
@@ -333,6 +334,11 @@ export function initializeGameState(
     doomDefinition: doomDef,
     doomClock: doomState,
     doomIdentityMatrix: getDoomIdentityMatrix(doomDef.archetype),
+    // The default-followed set: whoever the god has already reached down to
+    // (THR-1292 §2). Usually empty at this point — The First is bonded later — and
+    // that is fine: `resolveMomentPresentation` reads live `thread` edges whenever
+    // this array cannot answer, so a thread minted after init still follows.
+    followedAgentIds: defaultFollowedAgentIds(graph, ascendantId),
     tickEvents: [],
     recentEvents: [],
     chronicleEntries: [],

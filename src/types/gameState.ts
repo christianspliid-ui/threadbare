@@ -260,6 +260,20 @@ export interface GameState {
   /** Per-archetype configuration bundle; loaded at game-init from doomDefinition.archetype. */
   doomIdentityMatrix: DoomIdentityMatrix | null;
 
+  /**
+   * Agents whose moments interrupt the player rather than merely landing as a
+   * badge (THR-1292 §2). The default-followed set is the ascendant's threaded
+   * retinue — The First and anyone else the god has reached down to.
+   *
+   * **Additive, not authoritative.** The threaded retinue is followed by
+   * construction; this array names anyone else. Threads are minted long after
+   * world init, so a field read as the sole authority would follow nobody for the
+   * whole run. Optional for the same reason a pre-THR-1292 save must behave like a
+   * fresh one. The follow *affordance* (arc panel, encounter UI) is plan doc 5;
+   * the field lives here so the engine can stamp `everInterrupted` without it.
+   */
+  followedAgentIds?: readonly string[];
+
   // Narrative
   tickEvents: TickEvent[];           // events from the current tick (cleared each tick)
   recentEvents: TickEvent[];         // rolling buffer of last ~100 events for UI
@@ -439,7 +453,9 @@ export interface GameState {
   // Cleared each tick. Each shock traces back to a discrete cause (encounter, route loss, etc.)
   prosperityShocks?: ProsperityShock[];
 
-  // Dynamic faction definitions — FactionDefinitions created at runtime by agent initiatives (THR-51)
+  // Dynamic faction definitions created at runtime. NOTE: the initiative pipeline was
+  // its only producer and was retired (THR-1292 §3); the folded found-order undertaking
+  // ships its hall, and the faction payoff waits on the `create_group` op — TODO(THR-1295).
   // Keyed by definition ID. Merged with static FACTION_DEFINITIONS when looking up a faction.
   dynamicFactionDefinitions?: Record<string, import('./faction').FactionDefinition>;
 

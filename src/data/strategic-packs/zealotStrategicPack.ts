@@ -132,6 +132,31 @@ export const ZEALOT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     resourceHint: { reachFloor: { star: 0.4 } },
     mutationHint: { type: 'no_mutation' },
   },
+
+  // ── Folded from the retired initiative pipeline (THR-1292 §3) ──────
+  // 7. Consecrate Holy Site — transform an existing place of power into a shrine
+  //    Distinct from `strategic_found_shrine`, which *builds* one: this one works
+  //    on ground that is already charged, and rolls veil rather than stone.
+  {
+    id: 'strategic_consecrate_holy_site',
+    displayName: 'Consecrate Holy Site',
+    verb: 'create',
+    executionMode: 'multi_tick_project',
+    behaviorFamily: 'zealot-mission',
+    reachProfile: { star: 0.5, veil: 0.4, heart: 0.1 },
+    projectDuration: 8,
+    activityProse: [
+      'Fasting. Walking the perimeter at the same hour each day until the ground learns the rhythm.',
+      'Consecration is negotiation with something that does not speak. It takes as long as it takes.',
+    ],
+    completionProse: [
+      'The site holds the rite now. Pilgrims will feel it before anyone tells them what it is.',
+    ],
+    catalystEncounterIds: ['encounter_shrine_desecration', 'encounter_sacred_vision'],
+    targetRule: { type: 'location_subtype', subtypes: ['ruins', 'shrine', 'temple', 'town', 'hamlet'] },
+    resourceHint: { wealthCost: 12, reachFloor: { star: 0.3, veil: 0.2 } },
+    mutationHint: { type: 'create_sublocation', sublocationTypeId: 'shrine', nameTemplate: "Consecrated Ground at {location}" },
+  },
 ];
 
 /** Look up a zealot strategic template by ID */

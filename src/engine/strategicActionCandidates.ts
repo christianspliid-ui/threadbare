@@ -29,6 +29,8 @@ import { WARLORD_STRATEGIC_TEMPLATES } from '../data/strategic-packs/warlordStra
 import {
   STRATEGIC_MAX_CANDIDATES_PER_ACTOR,
   STRATEGIC_MAX_CANDIDATES_PER_AMBITION,
+  STRATEGIC_VERB_IMPACT,
+  STRATEGIC_VERB_IMPACT_DEFAULT,
   STRATEGIC_CONTROL_RECLAIM_COOLDOWN_TICKS,
 } from '../data/strategic-action-constants';
 import { emitTrace } from './traceBuffer';
@@ -39,6 +41,7 @@ import { hexDistance } from '../lib/hexMath';
 import { scoreRoutePairBalance, ROUTE_FORMATION_BALANCE_BIAS } from './tradeRoute';
 import { getSublocationNodes } from './sublocationShape';
 import type { ReachDomain } from '../types/traits';
+import { findEligibleApprentices, MENTORSHIP_TEMPLATE_ID } from './mentorshipUndertaking';
 
 // ─── Template Registry ──────────────────────────────────────────────
 // All strategic templates by ID. Scales as new packs are added.
@@ -140,6 +143,17 @@ export function generateStrategicCandidates(
         p => p.actorId === actorId && p.templateId === templateId && p.status === 'active',
       )) {
         rejections.push({ templateId, reason: 'project_already_active' });
+        continue;
+      }
+
+      // A mentorship with nobody to teach is not a decision (THR-1292 §3).
+      // Mirrors the THR-1286 control gate: refuse at proposal time rather than
+      // starting an undertaking the bootstrap must immediately fail. The retired
+      // pipeline checked eligibility here *and* again in the phase, from two
+      // copies that had already drifted — this is the single copy.
+      if (template.id === MENTORSHIP_TEMPLATE_ID
+        && findEligibleApprentices(graph, actorId).length === 0) {
+        rejections.push({ templateId, reason: 'no_eligible_apprentice' });
         continue;
       }
 
@@ -336,15 +350,12 @@ export function computeRouteFormationBias(
     * scoreRoutePairBalance(sourceLocation.properties, target.properties);
 }
 
+// The verb-impact table moved to `strategic-action-constants` when the board
+// began reading it as an undertaking's `payoffValue` fallback (THR-1292 §4). One
+// table, two readers — a copy here would let the board and the scorer it is being
+// measured against disagree about the same verb, invisibly in both files.
 function computeWorldImpact(template: StrategicActionTemplate): number {
-  switch (template.verb) {
-    case 'create': return 0.8;
-    case 'destroy': return 0.7;
-    case 'change': return 0.5;
-    case 'control': return 0.6;
-    case 'gather_info': return 0.3;
-    default: return 0.3;
-  }
+  return STRATEGIC_VERB_IMPACT[template.verb] ?? STRATEGIC_VERB_IMPACT_DEFAULT;
 }
 
 function computeRoleFit(actor: GraphNode, template: StrategicActionTemplate): number {
@@ -474,7 +485,7 @@ function determineGenerationReason(
   return 'ambition_progression';
 }
 
-function findAmbitionTemplate(templateId: string): AmbitionTemplate | undefined {
+export function findAmbitionTemplate(templateId: string): AmbitionTemplate | undefined {
   return AMBITION_TEMPLATES.find(t => t.id === templateId)
     ?? REACTIVE_AMBITION_TEMPLATES.find(t => t.id === templateId);
 }

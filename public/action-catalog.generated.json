@@ -661,36 +661,6 @@
       "effectSource": "template-ops"
     },
     {
-      "id": "action.initiative.sabotage",
-      "name": "Sabotage Initiative",
-      "spellName": "Divine Interference",
-      "category": "action",
-      "reach": "shadow",
-      "sphereAffinity": "entropy",
-      "crudType": "update",
-      "scale": "personal",
-      "rarityTier": 2,
-      "rarityName": "Storied",
-      "intrinsicTier": "shaping",
-      "apCost": 1,
-      "essenceCost": 10,
-      "durationMode": "instant",
-      "hasControlSpec": false,
-      "aftermathReactionCount": 0,
-      "targetCategories": [
-        "actor"
-      ],
-      "targetSubtypes": [],
-      "requiresReach": null,
-      "starter": false,
-      "beatGranted": false,
-      "bucket": "unlockable-generic",
-      "bucketDeclared": false,
-      "description": "Whisper doubt into an ongoing initiative. At the next checkpoint it may fail outright. Even if it survives, the setback costs extra ticks.",
-      "technicalEffect": "On success, sets `initiativeSabotaged` on the target, undercutting their next initiative attempt.",
-      "effectSource": "template-ops"
-    },
-    {
       "id": "action.mentorship.sever",
       "name": "Sever the Bond",
       "spellName": "Cut the Cord",
@@ -890,6 +860,36 @@
       "bucketDeclared": false,
       "description": "You breathe a word into the space between thoughts during a negotiation or social contest. The target's argument sharpens — or their opponent's resolve wavers. The scales of the conversation shift toward the outcome you desire. Use it to help a bonded agent close a deal, win an argument, or hold firm under pressure.",
       "technicalEffect": "On success, raises the target's `socialLeverageShift` — biasing the target toward the caster's side in social-leverage contests.",
+      "effectSource": "template-ops"
+    },
+    {
+      "id": "action.undertaking.sabotage",
+      "name": "Sabotage Undertaking",
+      "spellName": "Divine Interference",
+      "category": "action",
+      "reach": "shadow",
+      "sphereAffinity": "entropy",
+      "crudType": "update",
+      "scale": "personal",
+      "rarityTier": 2,
+      "rarityName": "Storied",
+      "intrinsicTier": "shaping",
+      "apCost": 1,
+      "essenceCost": 10,
+      "durationMode": "instant",
+      "hasControlSpec": false,
+      "aftermathReactionCount": 0,
+      "targetCategories": [
+        "actor"
+      ],
+      "targetSubtypes": [],
+      "requiresReach": null,
+      "starter": false,
+      "beatGranted": false,
+      "bucket": "unlockable-generic",
+      "bucketDeclared": false,
+      "description": "Whisper doubt into an undertaking in progress. Its next checkpoint rolls harder — a halt it would have survived may now stick.",
+      "technicalEffect": "On success, sets `undertakingSabotaged` on the target — a one-shot penalty consumed by their next undertaking checkpoint roll.",
       "effectSource": "template-ops"
     },
     {
@@ -1177,36 +1177,6 @@
       "effectSource": "template-ops"
     },
     {
-      "id": "action.initiative.inspire",
-      "name": "Inspire Initiative",
-      "spellName": "Divine Inspiration",
-      "category": "action",
-      "reach": "heart",
-      "sphereAffinity": "spirit",
-      "crudType": "update",
-      "scale": "personal",
-      "rarityTier": 2,
-      "rarityName": "Storied",
-      "intrinsicTier": "shaping",
-      "apCost": 1,
-      "essenceCost": 12,
-      "durationMode": "instant",
-      "hasControlSpec": false,
-      "aftermathReactionCount": 0,
-      "targetCategories": [
-        "actor"
-      ],
-      "targetSubtypes": [],
-      "requiresReach": null,
-      "starter": false,
-      "beatGranted": false,
-      "bucket": "unlockable-generic",
-      "bucketDeclared": false,
-      "description": "Breathe divine ambition into a mortal. Their next initiative scores 0.5 higher, almost guaranteeing they will pursue it over any encounter. Consume on use.",
-      "technicalEffect": "On success, writes an `initiativeInspireBonus` onto the target — boosting their initiative in the relevant contest.",
-      "effectSource": "template-ops"
-    },
-    {
       "id": "action.mentorship.inspire",
       "name": "Inspire Mentorship",
       "spellName": "Pass It On",
@@ -1232,8 +1202,8 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Breathe a duty into a high-capability mortal: pass on what you know. Their next initiative scoring receives a one-time bonus toward Train Apprentice. Consumed on use.",
-      "technicalEffect": "On success, writes a `mentorshipInspireBonus` onto the target mentee.",
+      "description": "Breathe a duty into a mortal teaching someone: pass on what you know. Their next mentorship checkpoint rolls easier. One nudge, one roll — consumed on use.",
+      "technicalEffect": "On success, writes an `undertakingInspireBonus` onto the target mentor, easing the mentorship undertaking's next checkpoint.",
       "effectSource": "template-ops"
     },
     {
@@ -1294,6 +1264,36 @@
       "bucketDeclared": false,
       "description": "A warmth fills the target's chest — the certainty that they are not alone. Their voice steadies. Their gaze hardens. In the next confrontation or social challenge, they will not be moved by counter-arguments or intimidation. Use it when a bonded agent needs to hold firm against pressure they might otherwise fold to.",
       "technicalEffect": "On success, sets `counterResistanceActive` on the target, hardening them against an opponent counter-move in the social contest.",
+      "effectSource": "template-ops"
+    },
+    {
+      "id": "action.undertaking.inspire",
+      "name": "Inspire Undertaking",
+      "spellName": "Divine Inspiration",
+      "category": "action",
+      "reach": "heart",
+      "sphereAffinity": "spirit",
+      "crudType": "update",
+      "scale": "personal",
+      "rarityTier": 2,
+      "rarityName": "Storied",
+      "intrinsicTier": "shaping",
+      "apCost": 1,
+      "essenceCost": 12,
+      "durationMode": "instant",
+      "hasControlSpec": false,
+      "aftermathReactionCount": 0,
+      "targetCategories": [
+        "actor"
+      ],
+      "targetSubtypes": [],
+      "requiresReach": null,
+      "starter": false,
+      "beatGranted": false,
+      "bucket": "unlockable-generic",
+      "bucketDeclared": false,
+      "description": "Breathe divine conviction into a mortal at work. Their next checkpoint rolls easier. One nudge, one roll — consumed on use.",
+      "technicalEffect": "On success, writes an `undertakingInspireBonus` onto the target — a one-shot modifier consumed by their next undertaking checkpoint roll.",
       "effectSource": "template-ops"
     },
     {

@@ -24,7 +24,7 @@
  *
  * Programmatic-spawn signal: `locationSubtypes: []` is preserved on the lifecycle
  * and threshold templates. They are not selected from the location pool; they
- * fire by lifecycle trigger (army-raise initiative, Cohesion threshold
+ * fire by lifecycle trigger (army-raise action, Cohesion threshold
  * crossings, refugee aftermath of major destruction).
  *
  * NFP #1: All difficulty values are named constants.

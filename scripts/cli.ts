@@ -61,6 +61,12 @@ import { hexDistance } from '../src/lib/hexMath';
 import type { SimulationRuntime } from '../src/engine/simulationRuntime';
 import { setTrackedAgents, getBalanceEvents, selectDefaultTrackedHero } from '../src/engine/balanceTelemetry';
 import { buildBalanceRunSummary, buildBalanceAgentJourneySummary } from '../src/engine/balanceSummary';
+import {
+  BOARD_ENCOUNTER_SHARE_FLOOR,
+  BOARD_IDLE_SHARE_CEILING,
+  BOARD_UNDERTAKING_SHARE_RANGE,
+  UNIFIED_DECISION_BOARD_MODE,
+} from '../src/data/strategic-action-constants';
 import { computeGameplayKpiReport, isBranchingTemplate } from '../src/engine/kpi/gameplayKpi';
 import { isEncounterAction } from '../src/engine/chapterArchive';
 import { forceOfferBeatById } from '../src/engine/ascendantBeat';
@@ -558,6 +564,47 @@ function printEncounterDecisionSummary(summary: NonNullable<ReturnType<typeof bu
   }
 }
 
+/**
+ * The shadow-board block (THR-1292 §4) — the surface the cutover gate is read from.
+ *
+ * Each gated share is printed next to its criterion and marked PASS/FAIL, so
+ * "does the board qualify to go live" is answered by reading one screen after a
+ * 150-tick run rather than by exporting telemetry and doing arithmetic. The gate
+ * itself is *this* readout on **two seeds** — the CLI cannot know it is one of a
+ * pair, so the mode flip stays a human judgement over two runs, deliberately.
+ *
+ * A run with no shadow decisions prints that fact rather than a row of zeros: the
+ * board being off and the board choosing nothing are different states and the
+ * gate must never confuse them.
+ */
+function printShadowBoardSummary(summary: NonNullable<ReturnType<typeof buildBalanceRunSummary>>): void {
+  const shadow = summary.shadowBoard;
+  console.log(`  ${BOLD}Shadow board${RESET} (${UNIFIED_DECISION_BOARD_MODE}):`);
+  if (!shadow) {
+    console.log(`    ${DIM}no decisions carried a board verdict this run${RESET}`);
+    return;
+  }
+
+  const pct = (v: number): string => `${(v * 100).toFixed(1)}%`;
+  const verdict = (ok: boolean): string => (ok ? `${GREEN}PASS${RESET}` : `${RED}FAIL${RESET}`);
+
+  const [undertakingMin, undertakingMax] = BOARD_UNDERTAKING_SHARE_RANGE;
+  const undertakingOk = shadow.undertakingShare >= undertakingMin
+    && shadow.undertakingShare <= undertakingMax;
+  const encounterOk = shadow.encounterShare >= BOARD_ENCOUNTER_SHARE_FLOOR;
+  const idleOk = shadow.idleShare <= BOARD_IDLE_SHARE_CEILING;
+
+  console.log(`    Decisions scored: ${shadow.decisions}`);
+  console.log(`    Agreement with legacy: ${pct(shadow.agreementRate)} (${shadow.agreements}/${shadow.decisions}) ${DIM}— reported, not gated${RESET}`);
+  console.log(`    Board winners: ${formatCountMap(shadow.winnerFamilyCounts)}`);
+  console.log(`    Undertaking share: ${pct(shadow.undertakingShare)}  target [${pct(undertakingMin)}, ${pct(undertakingMax)}]  ${verdict(undertakingOk)}`);
+  console.log(`    Encounter share:   ${pct(shadow.encounterShare)}  floor ${pct(BOARD_ENCOUNTER_SHARE_FLOOR)}  ${verdict(encounterOk)}`);
+  console.log(`    Idle share:        ${pct(shadow.idleShare)}  ceiling ${pct(BOARD_IDLE_SHARE_CEILING)}  ${verdict(idleOk)}`);
+  console.log(
+    `    ${DIM}Cutover gate: ${undertakingOk && encounterOk && idleOk ? 'all criteria met on THIS seed' : 'not met on this seed'} — the flip needs both seeds 42 and 99${RESET}`,
+  );
+}
+
 function printBalance(subCmd?: string, subArg?: string): void {
   const tel = runtime.balanceTelemetry;
   if (!tel) {
@@ -580,6 +627,7 @@ function printBalance(subCmd?: string, subArg?: string): void {
     console.log(`  First setback tick: ${summary.pacing.firstSetbackTick ?? 'none'}`);
     console.log(`  First growth beat tick: ${summary.pacing.firstGrowthBeatTick ?? 'none'}`);
     printEncounterDecisionSummary(summary);
+    printShadowBoardSummary(summary);
     if (Object.keys(summary.stepSuccessRates).length > 0) {
       console.log(`  Step success rates by band:`);
       for (const [band, stats] of Object.entries(summary.stepSuccessRates)) {

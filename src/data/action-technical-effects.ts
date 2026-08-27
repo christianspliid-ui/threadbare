@@ -363,13 +363,13 @@ export const ACTION_TECHNICAL_EFFECTS: Readonly<Record<string, string>> = {
   'hex.ward_against_deep':
     "Sustained: `ControlEffect` wrapping the exploring agent so ruin encounter danger is reduced for them, at a per-tick Spirit cost. Persists until it lapses or is destroyed (Veil ≥ t3).",
 
-  // ─── action.initiative.* / action.mentorship.* — social property nudges ────
-  'action.initiative.inspire':
-    "On success, writes an `initiativeInspireBonus` onto the target — boosting their initiative in the relevant contest.",
-  'action.initiative.sabotage':
-    "On success, sets `initiativeSabotaged` on the target, undercutting their next initiative attempt.",
+  // ─── action.undertaking.* / action.mentorship.* — social property nudges ────
+  'action.undertaking.inspire':
+    "On success, writes an `undertakingInspireBonus` onto the target — a one-shot modifier consumed by their next undertaking checkpoint roll.",
+  'action.undertaking.sabotage':
+    "On success, sets `undertakingSabotaged` on the target — a one-shot penalty consumed by their next undertaking checkpoint roll.",
   'action.mentorship.inspire':
-    "On success, writes a `mentorshipInspireBonus` onto the target mentee.",
+    "On success, writes an `undertakingInspireBonus` onto the target mentor, easing the mentorship undertaking's next checkpoint.",
   'action.mentorship.sever':
     "On success, flags `pendingMentorshipSever` on the target — queuing the mentorship bond to be cut.",
 

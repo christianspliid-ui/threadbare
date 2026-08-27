@@ -5,9 +5,8 @@
  * Falling Out / Quiet Parting / Dissolution) and applies the consequences:
  * trait grants, edge phase changes, reputation tallies, terminal encounter seeds.
  *
- * Called from phaseMentorship when the backing initiative reaches a completed
- * or failed status. Single owner — the outcome-kind hook on the initiative
- * registration is purely a convenience marker.
+ * Called from `mentorshipUndertaking` when the backing undertaking reaches a completed
+ * or failed status. Single owner — the fold routes every terminal path here.
  *
  * @see Docs/plans/2026-05-15-thr-75-mentor-apprentice-relationship-chains.md §4.4
  */
@@ -46,17 +45,17 @@ export interface MentorshipResolveResult {
 }
 
 /**
- * Resolve the terminal arc of a completed or failed train-apprentice initiative.
+ * Resolve the terminal arc of a completed or failed train-apprentice undertaking.
  *
  * Mutates the graph in place. Fail-soft per side-effect — a thrown trait grant
  * does not block edge-phase advancement.
  *
- * @param initiativeStatus  'completed' (progress reached 1.0) or 'failed' (other condition)
+ * @param undertakingStatus  'completed' (progress reached 1.0) or 'failed' (other condition)
  */
 export function resolveMentorship(
   graph: WorldGraph,
   edge: GraphEdge,
-  initiativeStatus: 'completed' | 'failed',
+  undertakingStatus: 'completed' | 'failed',
   tick: number,
   runtime?: SimulationRuntime,
 ): MentorshipResolveResult {
@@ -76,7 +75,7 @@ export function resolveMentorship(
   // ── Decision table ──────────────────────────────────────────────
   let arc: MentorshipArc;
 
-  if (initiativeStatus === 'failed') {
+  if (undertakingStatus === 'failed') {
     arc = 'dissolution';
   } else if (progress >= 1.0 && bondQuality >= GRADUATION_BOND_THRESHOLD) {
     const apprTier = apprenticeNode
@@ -108,7 +107,7 @@ export function resolveMentorship(
       } catch { /* fail-soft */ }
 
       edge.properties.phase = 'graduated';
-      edge.properties.initiativeId = undefined;
+      edge.properties.undertakingId = undefined;
       newEncounterSeeds.push(buildSystemSeed('mentorship.graduation', apprenticeId, tick, 'mentorship_graduation'));
 
       const traitId = MASTERY_TRAIT_BY_REACH[domain] ?? null;
@@ -144,7 +143,7 @@ export function resolveMentorship(
       } catch { /* fail-soft */ }
 
       edge.properties.phase = 'graduated';
-      edge.properties.initiativeId = undefined;
+      edge.properties.undertakingId = undefined;
       // Surpassing branch is selected by seedLabel — encounter aftermathConfig reads
       // the label and routes to the bittersweet sub-voice.
       newEncounterSeeds.push(buildSystemSeed('mentorship.graduation', apprenticeId, tick, 'mentorship_surpassing'));
@@ -198,7 +197,7 @@ export function resolveMentorship(
       }
 
       edge.properties.phase = 'estranged';
-      edge.properties.initiativeId = undefined;
+      edge.properties.undertakingId = undefined;
       newEncounterSeeds.push(buildSystemSeed('mentorship.the-falling-out', apprenticeId, tick, 'mentorship_falling_out'));
 
       emitTraceSevered('falling_out', tick, mentorId, apprenticeId, bondQuality,
@@ -222,7 +221,7 @@ export function resolveMentorship(
       } catch { /* fail-soft */ }
 
       edge.properties.phase = 'estranged';
-      edge.properties.initiativeId = undefined;
+      edge.properties.undertakingId = undefined;
 
       emitTraceSevered('incomplete', tick, mentorId, apprenticeId, bondQuality,
         `${apprenticeName} parts quietly from ${mentorName}`);
@@ -240,7 +239,7 @@ export function resolveMentorship(
 
     case 'dissolution': {
       edge.properties.phase = 'estranged';
-      edge.properties.initiativeId = undefined;
+      edge.properties.undertakingId = undefined;
 
       emitTraceSevered('failed', tick, mentorId, apprenticeId, bondQuality,
         `${apprenticeName}'s training under ${mentorName} dissolves`);

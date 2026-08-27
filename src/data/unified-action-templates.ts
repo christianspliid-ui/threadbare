@@ -20,6 +20,7 @@ import type {
 import type { ActorType } from '../types/graph';
 import { ACTION_TEMPLATES, type ActionTemplateData } from './action-template-content';
 import { REKINDLE_ESSENCE_COST } from './nudge-constants';
+import { UNDERTAKING_INSPIRE_MODIFIER } from './strategic-action-constants';
 import {
   TIER_ADVANCEMENT_ESSENCE_COST,
   TIER_ADVANCEMENT_DIFFICULTY,
@@ -4859,15 +4860,15 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     },
   },
 
-  // ─── Initiative Divine Actions (THR-51) ─────────────────────────────────
+  // ─── Undertaking Divine Actions (THR-51; retargeted onto undertakings, THR-1292 §3) ──
 
   {
-    id: 'action.initiative.inspire',
-    name: 'Inspire Initiative',
+    id: 'action.undertaking.inspire',
+    name: 'Inspire Undertaking',
     spellName: 'Divine Inspiration',
     rarityTier: 2,
     intrinsicTier: 'shaping',
-    description: 'Breathe divine ambition into a mortal. Their next initiative scores 0.5 higher, almost guaranteeing they will pursue it over any encounter. Consume on use.',
+    description: 'Breathe divine conviction into a mortal at work. Their next checkpoint rolls easier. One nudge, one roll — consumed on use.',
     reach: 'heart',
     crudType: 'update',
     scale: 'personal',
@@ -4878,7 +4879,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
       onSuccess: [{
         op: 'update_node',
         nodeId: '$target',
-        changes: { initiativeInspireBonus: 0.5 },
+        changes: { undertakingInspireBonus: UNDERTAKING_INSPIRE_MODIFIER },
       }],
       onFailure: [],
       failBehavior: 'fail_action',
@@ -4890,19 +4891,19 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     motivations: ['loyalty_ambition', 'sacrifice_survival'],
     targetCategories: ['actor'],
     narrativeTemplates: {
-      initiation: 'kindles a divine spark of purpose in a mortal soul',
-      success: 'the mortal\'s eyes catch fire — an initiative stirs in their heart',
+      initiation: 'kindles a divine spark of purpose in a mortal already at work',
+      success: 'the mortal\'s eyes catch fire — the next hard moment will come easier',
       failure: 'the spark finds no purchase in this weary soul',
     },
   },
 
   {
-    id: 'action.initiative.sabotage',
-    name: 'Sabotage Initiative',
+    id: 'action.undertaking.sabotage',
+    name: 'Sabotage Undertaking',
     spellName: 'Divine Interference',
     rarityTier: 2,
     intrinsicTier: 'shaping',
-    description: 'Whisper doubt into an ongoing initiative. At the next checkpoint it may fail outright. Even if it survives, the setback costs extra ticks.',
+    description: 'Whisper doubt into an undertaking in progress. Its next checkpoint rolls harder — a halt it would have survived may now stick.',
     reach: 'shadow',
     crudType: 'update',
     scale: 'personal',
@@ -4913,7 +4914,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
       onSuccess: [{
         op: 'update_node',
         nodeId: '$target',
-        changes: { initiativeSabotaged: true },
+        changes: { undertakingSabotaged: true },
       }],
       onFailure: [],
       failBehavior: 'fail_action',
@@ -4926,7 +4927,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     targetCategories: ['actor'],
     narrativeTemplates: {
       initiation: 'breathes invisible doubt into the threads of a mortal\'s ambition',
-      success: 'something goes wrong — the initiative will face a reckoning at its next milestone',
+      success: 'something goes wrong — the work will face a reckoning at its next milestone',
       failure: 'the sabotage finds no grip — the mortal\'s resolve is too strong',
     },
   },

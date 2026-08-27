@@ -96,7 +96,7 @@ const AUDIT_EVIDENCE =
 
 /** Subsystem name constants, so a typo is a compile error rather than a silent unmatched row. */
 const ATTACHMENTS = 'Attachments, Items & Possessions';
-const AMBITIONS = 'Ambitions & Initiatives';
+const AMBITIONS = 'Ambitions & Undertakings';
 const ENCOUNTERS = 'Encounters & Dilemmas';
 const COMPANIES = 'Companies & Group Travel';
 const FACTIONS = 'Factions & Succession';
@@ -2011,6 +2011,132 @@ export const CONTRACTS: readonly Contract[] = [
     // template authors a `valueDrift` card yet — THR-1130 owns that content.
     // Badging LIVE would badge a path nothing travels (the THR-614 error class).
     deferralTicket: 'THR-1130',
+  },
+
+  // ── Strategic Projects & Control → audit-on-touch (THR-1292 slices 2–3) ────
+  // This subsystem was ⚪ UNAUDITED. These two rows cover exactly the seams this
+  // plan creates; the board-telemetry row the plan also names belongs to slice 5,
+  // where its consumer starts existing.
+  {
+    id: 'shared-step-resolution-two-callers',
+    producerSystem: 'Strategic Projects & Control',
+    consumerSystem: ENCOUNTERS,
+    intent:
+      'One band ladder decides every outcome in the game. An encounter step and an undertaking checkpoint that disagreed about what a critical failure is would be two games wearing one vocabulary — the same roll reading as disaster in a scene and a shrug in a project.',
+    ulTerms: ['Outcome Band'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['resolveStepCore', 'mapResolverOutcomeToStep'],
+      module: 'src/engine/stepResolutionCore.ts',
+    },
+    writeSites: ['src/engine/stepResolutionCore.ts'],
+    readSites: [
+      'src/engine/unifiedActionResolution.ts',
+      'src/engine/undertakingCheckpoints.ts',
+    ],
+    // The row deliberately did not exist in slice 2. It was written with one
+    // caller, and a row asserting *two* would have been the fiction this map
+    // exists to prevent. Slice 3 landed the second caller, so it is true now.
+    verifiedLive: {
+      date: '2026-08-27',
+      evidence:
+        'stepResolutionCore.contract.test.ts pins the permitted direct-caller set and asserts the encounter entry point and a direct core call agree on band/roll/probability; the second caller is exercised in the live simulation by undertakingCheckpointLiveness.test.ts (630 rolled checkpoints across all six bands on a 150-tick seed-42 run).',
+    },
+  },
+  {
+    id: 'undertaking-checkpoint-events',
+    producerSystem: 'Strategic Projects & Control',
+    consumerSystem: NARRATIVE,
+    intent:
+      'What happens to an agent’s undertaking reaches the player — the setback, the doubling-down, the abandonment — instead of progress silently accruing until a thing appears in the world with no story attached to it.',
+    mechanism: {
+      kind: 'event',
+      symbols: ['undertaking_checkpoint', 'undertaking_fork', 'resolveMomentPresentation', 'followedAgentIds'],
+      module: 'src/engine/undertakingCheckpoints.ts',
+    },
+    writeSites: [
+      'src/engine/undertakingCheckpoints.ts',
+      'src/engine/strategicActionLifecycle.ts',
+    ],
+    readSites: [
+      // Until plan doc 5 builds the arc panel and moment cards, the read side is
+      // the TickEvent stream and the trace buffer — stated rather than implied,
+      // because a row claiming a surface that does not exist is the leak this
+      // registry is for. Doc 5 adds the second consumer.
+      'src/engine/traceBuffer.ts',
+    ],
+    // No `verifiedLive`: the producer is wired and measured, but the *player-facing*
+    // consumer is doc 5's. Badging LIVE would badge a path nothing travels.
+    // `presentation` currently resolves to 'badge' or 'none' in every CLI run,
+    // because a CLI world carries no `thread` edges and so follows nobody — the
+    // interrupt arm is covered by unit tests, not by the simulation.
+    deferralTicket: 'THR-1293',
+  },
+  {
+    id: 'decision-board-shadow-telemetry',
+    // Producer is the decision pipeline (phase 2b, ENCOUNTERS); the consumer named
+    // here is the subsystem whose go-live this telemetry gates, not the module that
+    // physically reads it — the balance rollup and the CLI block are the read sites
+    // below, and "Balance telemetry" is not a game subsystem the registry knows.
+    producerSystem: ENCOUNTERS,
+    consumerSystem: 'Strategic Projects & Control',
+    intent:
+      'Before one ranking replaces the three winner-take contests an agent’s decision passes through today, what that ranking *would* have chosen is on the record — so the swap is judged against a measured decision mix rather than against confidence.',
+    mechanism: {
+      kind: 'event',
+      symbols: [
+        'decision_board_comparison',
+        'decision_board_error',
+        'shadowWinnerFamily',
+        'shadowWinnerId',
+        'shadowAgreement',
+      ],
+      module: 'src/engine/decisionBoard.ts',
+    },
+    writeSites: [
+      'src/engine/phaseAgentDecision.ts',
+    ],
+    readSites: [
+      'src/engine/balanceTelemetry.ts',
+      'src/engine/balanceSummary.ts',
+      'scripts/cli.ts',
+    ],
+    // Live from day one, unlike its sibling above: the consumer is the balance
+    // rollup and the CLI block, both of which exist and both of which were read
+    // to produce the gate verdict below. Nothing here waits on a later doc.
+    verifiedLive: {
+      date: '2026-08-27',
+      evidence:
+        'Two 150-tick medium CLI runs scored 1913 (seed 42) and 1809 (seed 99) decisions on the shadow board and printed the block via `balance summary`. The cutover gate PASSES on seed 42 (undertaking 11.9%, encounter 70.7%, idle 17.5%) and FAILS on seed 99 (undertaking 4.1%, below the 0.10 floor), so the mode stays `shadow` — which is the telemetry doing its job. decisionBoardLiveness.test.ts asserts both channels carry a varying signal on the real pipeline.',
+    },
+  },
+  {
+    id: 'mentorship-rides-undertaking-checkpoints',
+    producerSystem: 'Strategic Projects & Control',
+    consumerSystem: AMBITIONS,
+    intent:
+      'A mentorship is a relationship that a piece of work drives. Folding it onto the undertaking checkpoint means the bond moves when the teaching actually goes well or badly, instead of a second phase inferring how it went from the leftovers of a first one.',
+    // Keyed on the edge, not on the functions: the durable thing crossing the
+    // boundary is the `mentors` edge and its `undertakingId` back-reference. A
+    // function-keyed row would have named symbols that live in exactly one module,
+    // which is a call, not an interface.
+    mechanism: {
+      kind: 'edge-prop',
+      symbols: ['mentors', 'undertakingId'],
+      module: 'src/engine/mentorshipUndertaking.ts',
+    },
+    writeSites: [
+      'src/engine/strategicActionLifecycle.ts',
+      'src/engine/mentorshipUndertaking.ts',
+    ],
+    readSites: [
+      'src/engine/graphQueries.ts',
+    ],
+    // The retired producer was phase 2.33 reading phase 2.32's `activeInitiative`
+    // record; both are deleted (THR-1292 §3) and the `mentors` edge now carries
+    // `undertakingId` rather than `initiativeId`.
+    verifiedLive:
+      'mentorshipUndertaking.test.ts (30 tests) covers eligibility, bootstrap, band-driven bond drift, milestone seeds, separation, divine sever and both terminal verdicts; a 150-tick seed-42 CLI run produced live `mentors` edges and one completed `strategic_train_apprentice`.',
   },
 ];
 

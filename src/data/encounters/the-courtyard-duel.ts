@@ -513,7 +513,7 @@ export const COURTYARD_DUEL_TEMPLATE: UnifiedActionTemplate = withEncounterContr
 
   actorAffinities: ['individual'],
   locationSubtypes: ['town', 'castle', 'keep', 'fortress'],
-  motivations: ['courage_prudence', 'justice_mercy'],
+  motivations: ['courage_prudence', 'mercy_ruthlessness'],
 
   narrativeTemplates: {
     initiation:

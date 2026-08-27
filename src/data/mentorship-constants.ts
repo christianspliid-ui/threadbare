@@ -36,7 +36,7 @@ export const MENTORSHIP_DURATION_VARIANCE = 3;
  * @range 2–4 */
 export const MENTORSHIP_CHECK_INTERVAL = 2;
 
-/** Apprentice straying beyond this hex distance fails the initiative.
+/** Apprentice straying beyond this hex distance ends the mentorship undertaking.
  * @range 2–5 */
 export const MENTORSHIP_MAX_SEPARATION_HEXES = 3;
 
@@ -78,11 +78,6 @@ export const FALLING_OUT_TRANSFER_FRACTION = 0.5;
  *  Zero means: equal-or-greater tier triggers Surpassing.
  * @range 0–2 */
 export const SURPASSING_TIER_DELTA = 0;
-
-/** One-time candidate-score bonus from the Inspire Mentorship divine action.
- *  Consumed once. Mirrors initiativeInspireBonus.
- * @range 0.2–0.7 */
-export const INSPIRE_MENTORSHIP_SCORE_BONUS = 0.4;
 
 /** Essence cost of "Inspire Mentorship" divine action. */
 export const INSPIRE_MENTORSHIP_ESSENCE_COST = 2;

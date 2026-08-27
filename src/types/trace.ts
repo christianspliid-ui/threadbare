@@ -37,7 +37,7 @@ import type {
 } from './attention';
 import type { CourtPosition } from './influence';
 import type { BeatKind, BeatTrigger } from './ascendantBeat';
-import type { BehaviorFamily, StrategicVerb, StrategicExecutionMode } from './strategicAction';
+import type { BehaviorFamily, DecisionFamily, StrategicVerb, StrategicExecutionMode } from './strategicAction';
 import type { ComplicationSeverity } from './complication';
 import type { SyllableTemplate } from './culture';
 import type { ReliabilityBand } from '../engine/intelligence';
@@ -114,6 +114,12 @@ export type TraceCategory =
   | 'strategic_project_progress'
   | 'strategic_world_change'
   | 'strategic_control_lifecycle'
+  // Undertaking checkpoints (THR-1292)
+  | 'undertaking_checkpoint'
+  | 'undertaking_fork'
+  // The one prioritization board (THR-1292 §4)
+  | 'decision_board_comparison'
+  | 'decision_board_error'
   // Omen agenda traces (THR-19)
   | 'omen_selection'
   | 'omen_beat'
@@ -177,11 +183,6 @@ export type TraceCategory =
   | 'favor_broken'
   | 'favor_tension'
   | 'secret_decayed'
-  // Agent initiatives traces (THR-51)
-  | 'initiative_started'
-  | 'initiative_checkpoint'
-  | 'initiative_completed'
-  | 'initiative_failed'
   // Portfolio-pinning traces (THR-148)
   | 'portfolio.pinned'
   | 'portfolio.unpinned'
@@ -502,6 +503,10 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'strategic_project_progress',
   'strategic_world_change',
   'strategic_control_lifecycle',
+  'undertaking_checkpoint',
+  'undertaking_fork',
+  'decision_board_comparison',
+  'decision_board_error',
   'omen_selection',
   'omen_beat',
   // Mortal economy — resource stock tiers (THR-615)
@@ -571,11 +576,6 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'favor_broken',
   'favor_tension',
   'secret_decayed',
-  // Agent initiatives traces (THR-51)
-  'initiative_started',
-  'initiative_checkpoint',
-  'initiative_completed',
-  'initiative_failed',
   // Portfolio-pinning traces (THR-148)
   'portfolio.pinned',
   'portfolio.unpinned',
@@ -1800,6 +1800,111 @@ export interface StrategicProjectProgressTrace extends TraceBase {
   status: 'active' | 'completed' | 'stalled' | 'failed';
 }
 
+/**
+ * Trace: one undertaking checkpoint resolved (THR-1292 §2).
+ *
+ * Emitted once per checkpoint *attempt*, including the deferred ones — a
+ * checkpoint that never rolled because the actor was absent is exactly the thing
+ * a tuning pass needs to see, and a trace that only fires on the rolls would hide
+ * a stage nobody ever reaches (NFP #2).
+ */
+export interface UndertakingCheckpointTrace extends TraceBase {
+  category: 'undertaking_checkpoint';
+  actorId: string;
+  projectId: string;
+  templateId: string;
+  checkpointIndex: number;
+  reach: ReachDomain;
+  /** Absent on a deferral — nothing was rolled */
+  band?: StepOutcome;
+  effect?: 'advance' | 'advance_at_cost' | 'halt';
+  roll?: number;
+  probability?: number;
+  capability?: number;
+  difficulty?: number;
+  /** Inspire/sabotage riders and escalation stakes, folded into one additive term */
+  modifiers?: number;
+  halts: number;
+  atCost: boolean;
+  progress: number;
+  progressRequired: number;
+  /** Set instead of the roll fields when the checkpoint could not resolve */
+  deferred?: 'actor_absent' | 'actor_busy';
+  presentation: 'interrupt' | 'badge' | 'none';
+}
+
+/**
+ * Trace: the halt ratchet forced the abandon-or-escalate fork (THR-1292 §2).
+ *
+ * Carries every input to the weight, not just the verdict, because the fork is
+ * first-guess calibration the plan explicitly invites retuning — and a verdict
+ * without its terms cannot be retuned from a log (NFP #2).
+ */
+export interface UndertakingForkTrace extends TraceBase {
+  category: 'undertaking_fork';
+  actorId: string;
+  projectId: string;
+  escalationWeight: number;
+  threshold: number;
+  decision: 'abandon' | 'escalate';
+  halts: number;
+  ambitionActive: boolean;
+  courage01: number;
+  /** Abandon only — the §2.2 residue rule's input (`everInterrupted`) */
+  visibleFailure?: boolean;
+}
+
+/**
+ * Trace: what the one prioritization board would have chosen (THR-1292 §4).
+ *
+ * The cross-family comparison this records has **never been traced** — nothing
+ * anywhere captured what the losing family's best score was, which is precisely
+ * why the board must run in shadow before it decides anything. One of these per
+ * agent decision while the mode is `'shadow'` or `'live'`.
+ *
+ * `agreement` compares the *family* the two paths picked, not the specific
+ * candidate: the board is a redesign, so a divergence in which encounter is best
+ * is uninteresting next to a divergence in whether an encounter should happen at
+ * all. It is telemetry, never a gate — the cutover criteria are distributional
+ * (see `BOARD_UNDERTAKING_SHARE_RANGE` and its siblings).
+ */
+export interface DecisionBoardComparisonTrace extends TraceBase {
+  category: 'decision_board_comparison';
+  agentId: string;
+  mode: 'shadow' | 'live';
+  /** What the legacy contests actually decided this tick. */
+  legacyWinner: { family: DecisionFamily; id: string | null; score: number };
+  /** The board’s top `BOARD_TRACE_TOP_N`, descending. */
+  boardTop: ReadonlyArray<{
+    family: DecisionFamily;
+    id: string;
+    score: number;
+    evt: number;
+    desireMultiplier: number;
+    temperamentWeight: number;
+    advanceProbability?: number;
+  }>;
+  /** Whether legacy and the board agree on the winning *family*. */
+  agreement: boolean;
+  encounterCandidates: number;
+  undertakingCandidates: number;
+}
+
+/**
+ * Trace: the board scorer threw and contributed nothing to this decision.
+ *
+ * Explicitly **not** the empty `catch` the legacy strategic path degrades
+ * through. A shadow period that swallowed board throws would report perfect
+ * agreement while measuring nothing, and the cutover gate would then be evaluated
+ * against a board that never ran (NFP #2, NFP #4).
+ */
+export interface DecisionBoardErrorTrace extends TraceBase {
+  category: 'decision_board_error';
+  agentId: string;
+  mode: 'shadow' | 'live';
+  message: string;
+}
+
 /** Trace: strategic action produced a world graph change */
 export interface StrategicWorldChangeTrace extends TraceBase {
   category: 'strategic_world_change';
@@ -2730,6 +2835,10 @@ export type TraceEntry =
   | StrategicCandidateBoardTrace
   | StrategicActionStartedTrace
   | StrategicProjectProgressTrace
+  | UndertakingCheckpointTrace
+  | UndertakingForkTrace
+  | DecisionBoardComparisonTrace
+  | DecisionBoardErrorTrace
   | StrategicWorldChangeTrace
   | StrategicControlLifecycleTrace
   | ChoiceSetPlayerResolvedTrace
@@ -2785,11 +2894,7 @@ export type TraceEntry =
   // Seed system v2: family matching + context inheritance (THR-697, Slice D)
   | SeedFamilyMatchedTrace
   | SeedContextInheritedTrace
-  // Initiative traces (THR-51)
-  | InitiativeStartedTrace
-  | InitiativeCheckpointTrace
-  | InitiativeCompletedTrace
-  | InitiativeFailedTrace
+  // (Initiative traces retired with the pipeline — THR-1292 §3)
   // Portfolio-pinning traces (THR-148)
   | PortfolioPinnedTrace
   | PortfolioUnpinnedTrace
@@ -3445,48 +3550,6 @@ export interface OmenBeatTrace extends TraceBase {
   omenId: string;
   slot: 'primary' | 'secondary';
   prose: string;
-}
-
-// ─── Initiative Traces (THR-51) ──────────────────────────────────
-
-/** Trace: agent starts a new initiative */
-export interface InitiativeStartedTrace extends TraceBase {
-  category: 'initiative_started';
-  initiativeId: string;
-  templateId: string;
-  locationId: string;
-  targetCompletionTick: number;
-  finalScore: number;
-  summary: string;
-}
-
-/** Trace: initiative checkpoint evaluation */
-export interface InitiativeCheckpointTrace extends TraceBase {
-  category: 'initiative_checkpoint';
-  initiativeId: string;
-  templateId: string;
-  passed: boolean;
-  checkpointIndex: number;
-  summary: string;
-}
-
-/** Trace: initiative completed — outcomes applied */
-export interface InitiativeCompletedTrace extends TraceBase {
-  category: 'initiative_completed';
-  initiativeId: string;
-  templateId: string;
-  locationId: string;
-  summary: string;
-}
-
-/** Trace: initiative failed — condition triggered */
-export interface InitiativeFailedTrace extends TraceBase {
-  category: 'initiative_failed';
-  initiativeId: string;
-  templateId: string;
-  locationId: string;
-  reason: string;
-  summary: string;
 }
 
 /** Trace: agent added to player's protagonist portfolio (THR-148) */

@@ -2,7 +2,7 @@
  * Contract tests for incremental encounter-cache updates (THR-187).
  *
  * Verifies that phaseSettlementPromotion, phaseSublocations, and
- * phaseInitiativeProgress apply encounter-cache updates incrementally
+ * strategic project completion applies encounter-cache updates incrementally
  * when a runtime is provided, without triggering a full rebuild next tick.
  */
 import { describe, it, expect } from 'vitest';
