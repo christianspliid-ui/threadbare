@@ -1,11 +1,11 @@
 # Briefing
-**Generated:** 2026-08-28 16:55 local (14:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-08-28 17:56 local (15:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
 **Play two encounters, then approve the batch-2 brief — [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to) + [THR-1222](https://linear.app/threadbare/issue/THR-1222/run-retrofit-batch-2-the-camp-seven-through-the-factory-line-shrine).**
 
-Unchanged. **The last job your approved design supplied has now landed** — [lairs can be cleared](https://linear.app/threadbare/issue/THR-1319) merged and is live on the site. That is the good news and also the whole problem: the shelf it emptied has nothing High-priority left on it, and the one job filed since was filed by a build against its own work. These two approvals remain the only route by which new content work reaches an executor.
+Unchanged, and the shelf got thinner rather than fuller this hour: **five jobs are queued and every one is a small follow-up an earlier build filed on itself.** Nothing High-priority, and no content work at all. These two approvals remain the only route by which new content work reaches an executor.
 
 Open the *good ending* links first — about five minutes:
 
@@ -29,19 +29,20 @@ The question is yours: *are they worth meeting twice?* Then [the brief](https://
 
 ## Queue
 
-**8 items Ready for Dev — every one a small follow-up, six of them Low.** One arrived this hour, again filed by a build against its own work: [a settlement's trade-and-craft profile has never worked in any world](https://linear.app/threadbare/issue/THR-1323/faction-nodes-never-carry-reachweights-so-computesettlementreaches) — nothing broke, because nothing reads it, so it is a straight wire-it-or-delete-it call an agent makes alone. **No High-priority product work is queued at all.** That is the supply gate the lead ask opens, not a queue defect.
+**5 items Ready for Dev, down from 8 — and the three that left were all built and merged within the hour.** What remains is one Medium and four Low, every one a small follow-up filed by an earlier build on its own work. The most substantial is [trade routes dissolving six ticks after anyone founds them](https://linear.app/threadbare/issue/THR-1320/a-strategically-founded-trade-route-dissolves-6-ticks-after-founding) — a real defect in the thing that shipped this afternoon, and a straightforward fix an agent makes alone. **Still no High-priority product work queued at all.** That is the supply gate the lead ask opens, not a queue defect.
 
-- **In Dev: 5.** [Warbands](https://linear.app/threadbare/issue/THR-1309/t3-undertaking-tier-the-warband-kind-and-the-create-group-strategic-op) and [the dead genome term](https://linear.app/threadbare/issue/THR-1311) are both built but stuck at the merge — see Health. Plus the same three parked items, which are standing asks above ([THR-1130](https://linear.app/threadbare/issue/THR-1130), [THR-1133](https://linear.app/threadbare/issue/THR-1133), [THR-1168](https://linear.app/threadbare/issue/THR-1168)). Park shape verified intact this run.
+- **The weekly retrospective ran at 17:28** and promoted five process items into Todo ([THR-1324](https://linear.app/threadbare/issue/THR-1324) … [THR-1328](https://linear.app/threadbare/issue/THR-1328)) — delivery-machinery repairs, none of them game work, and none needing you. Noted only so the Todo column's growth is not mistaken for the shelf refilling.
+- **In Dev: 5.** Two are built and stuck at the merge ([warbands](https://linear.app/threadbare/issue/THR-1309/t3-undertaking-tier-the-warband-kind-and-the-create-group-strategic-op) and [a ternary that decided nothing](https://linear.app/threadbare/issue/THR-1313)) — see Health. The other three are the parked standing asks above ([THR-1130](https://linear.app/threadbare/issue/THR-1130), [THR-1133](https://linear.app/threadbare/issue/THR-1133), [THR-1168](https://linear.app/threadbare/issue/THR-1168)). Park shape verified intact this run.
 
 ## Health
 
-**Two finished jobs cannot merge, and nothing needs you.** Both are written, pushed and waiting at the last gate:
+**Two finished jobs cannot merge, and nothing needs you.** Last hour's pair is down to one — [the dead genome term](https://github.com/christianspliid-ui/threadbare/pull/1692) freed itself, merged at 17:19 and is live. A new one took its place:
 
-- [Warbands](https://github.com/christianspliid-ui/threadbare/pull/1690) — now about two hours stuck, with **both** a merge conflict and a failing required check. Resolving the conflict alone will not free it.
-- [The dead genome term](https://github.com/christianspliid-ui/threadbare/pull/1692) — pushed half an hour ago, also conflicted, and separately **GitHub has not scheduled a single check on it**. That kind of silence does not clear itself; pushing any new commit restarts the checks.
+- [Warbands](https://github.com/christianspliid-ui/threadbare/pull/1690) — now about three hours stuck, with **both** a merge conflict and a failing required check. Resolving the conflict alone will not free it.
+- [A ternary that decided nothing](https://github.com/christianspliid-ui/threadbare/pull/1693) — pushed half an hour ago, conflicted, checks not yet run. Young; the ordinary fix applies.
 
 Auto-merge is armed on both, so they read as shipped from every surface except the checks. An executor session has to resolve each conflict, read the warband failure, and push. Nothing unsafe can merge in the meantime, and no finished work is at risk.
 
-Everything else is green: the live site is serving the newest commit on main (`d5efd808`, the lair work), background jobs are healthy, all nine scheduled lanes are on schedule, and the branch reaper ran fifteen minutes ago.
+Everything else is green: the live site is serving the newest game code on main (`5ee32819`), background jobs are healthy, all nine scheduled lanes are on schedule, and the branch reaper ran at 17:40.
 
-Unchanged and worth seeing rather than acting on: **the only lane quiet in the probe's window is overnight-shaped** — 22 and 23 August, both roughly 22:00–07:30 local, every lane stopping and resuming together. Declined under your 8 August ruling that overnight quiet is normal. Nothing was lost.
+Unchanged and worth seeing rather than acting on: **the only lane quiet in the probe's window is overnight-shaped** — 22–23 and 23–24 August, both roughly 21:00–08:00 local, every lane stopping and resuming together. Declined under your 8 August ruling that overnight quiet is normal. Nothing was lost.

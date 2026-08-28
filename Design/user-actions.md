@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-28 16:55 local (14:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-28 17:56 local (15:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -25,7 +25,7 @@ Three ways to go: **let both stand** (different grammar, never side by side — 
 
 Roughly twenty items sit in Todo and **every one needs a plan doc before an executor can touch it**. That is what the hours buy.
 
-**Every job your designs supplied is now spent, and the shelf will not refill itself.** When [the proximity fix](https://linear.app/threadbare/issue/THR-1310) shipped it released two jobs blocked behind it — [trade routes and blockades](https://linear.app/threadbare/issue/THR-1308), then [warbands](https://linear.app/threadbare/issue/THR-1309) — both from design you had already approved, and [lairs can be cleared](https://linear.app/threadbare/issue/THR-1319) landed after them. That was a queue draining, not a source. Everything now on the shelf is a small follow-up some earlier build filed on itself; **three of the eight were filed in the last two hours by the very builds they describe.** A healthy habit, and not a pipeline. **And it moves fast:** trade routes was claimed, built, merged and deployed inside two hours. That is what the blocked design column costs, expressed in jobs rather than days.
+**Every job your designs supplied is now spent, and the shelf will not refill itself.** Three more of them shipped this afternoon — [trade routes and blockades](https://linear.app/threadbare/issue/THR-1308), [lairs can be cleared](https://linear.app/threadbare/issue/THR-1319), [named lairs](https://linear.app/threadbare/issue/THR-1312) — all from design you had already approved. That was a queue draining, not a source. **Five jobs remain, and every one is a small follow-up some earlier build filed on itself**; none is High priority and none is content work. **And it moves fast:** trade routes was claimed, built, merged and deployed inside two hours. That is what the blocked design column costs, expressed in jobs rather than days.
 
 **The block has two names on it** *(orchestrator lane, standing)*: **[unify the card grammar](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** (your 6 August note, untouched 9 days; three tickets behind it) and **[traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)** (assigned to you, untouched 13 days). That lane holds one design slot and will not walk either backwards out of the column on its own. **Sit one, or say *"park it"*** — four more plan-doc sessions are unblocked behind them.
 
@@ -86,6 +86,7 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
+- **A dead term in how settlements are built, and the deeper one it hid** — [THR-1311](https://linear.app/threadbare/issue/THR-1311) merged 17:19 and deployed ([PR #1692](https://github.com/christianspliid-ui/threadbare/pull/1692)). Factions were supposed to shape what a settlement is good at; the code that read them could never match anything, silently, since it was written.
 - **The world pushes back — a lair can now be cleared** — [THR-1319](https://linear.app/threadbare/issue/THR-1319) merged 15:40 and deployed ([PR #1691](https://github.com/christianspliid-ui/threadbare/pull/1691)). A lair could be found and feared but never emptied; clearing one had no way to be recorded, so the danger was permanent by accident.
 - **Works that are places, and the verbs that take them back** — [THR-1308](https://linear.app/threadbare/issue/THR-1308/t2-undertaking-tier-route-blockade-kinds-and-the-create-location) merged 13:58 and deployed ([PR #1689](https://github.com/christianspliid-ui/threadbare/pull/1689)). Agents can now undertake to found a trade route or blockade one — each a real thing on the map, and each with a way for someone else to undo it.
 - **Every lair earns a name instead of a loop index** — [THR-1312](https://linear.app/threadbare/issue/THR-1312/every-lair-in-the-world-is-named-lair-0-lair-1-placeholder-names-ship) merged 12:34 and deployed ([PR #1688](https://github.com/christianspliid-ui/threadbare/pull/1688)). "Lair 0", "Lair 1", "Lair 2" were shipping to the player as scenery.
@@ -95,7 +96,6 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 - **The 20–22 August lane-quiet question is closed without needing your answer** — the gap aged out of the probe's window, and the only quiet now reported is overnight-shaped, already declined under your 8 August ruling.
 - **The action library finished whole** — [THR-1297](https://linear.app/threadbare/issue/THR-1297), doc 2 of your carve-up, six slices in nine hours. A finished work now earns its own name; ownership is its own edge; a destroy verb needs a reason. Docs 1, 2 and 3 — the whole first tier — are built.
 - **The home-ground rule shipped, by your non-answer** — *your people fight a little better defending what is theirs.* You were given the veto twice; the ask said silence was an equally fine answer. It is now working code: removing it later is a change, not a non-decision.
-- **A complication no longer reads a missing reputation as ruin** — [THR-1306](https://linear.app/threadbare/issue/THR-1306), a Low deferral filed by the previous ticket's own work and shipped inside the hour ([PR #1669](https://github.com/christianspliid-ui/threadbare/pull/1669)), already deployed.
 
 ---
 
