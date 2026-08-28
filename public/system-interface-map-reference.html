@@ -529,6 +529,17 @@
   </div>
 
   <div class="section">
+    <h2>Spotlight — The Hunger you chose
+      <span class="lead">Audited 2026-08-28 (audit-on-touch, THR-1213). The seam carried no contract row at all, which is how a weight stayed dead for the whole life of the feature without anyone noticing.</span>
+    </h2>
+
+    <ul class="contracts">
+      <li class="live" id="hunger-resonance"><span class="flow">The Hunger you chose in remembrance <span class="arrow">⟶</span> which formative tests the meeting asks of your First</span><span class="chip live">LIVE</span>
+        <span class="note">THR-1213, the wave-1 seam. The resonance weight had never fired — not rarely, <strong>never</strong>, for every god, across all 167 shipped dilemmas (THR-1158). Three things had to be true at once for that, and all three were: the scoring module <code>engine/dilemmaSelection.ts</code> was imported by nothing but its own tests; the only <code>AscendantLens</code> in the tree was built from <em>archetype</em> spheres into a <code>GameView</code> memo nothing consumed; and the scored field, <code>resonance.hungerResonance</code>, held bare hunger <em>ids</em> while the reader compared them against theme <em>tags</em>. <strong>Any one of those alone makes the feature inert — having all three is why nothing ever went red</strong>, and why this row exists as much for the pattern as for the repair. The replacement compares one tag space with itself (<code>emotionalRegister ∩ hunger.dilemmaResonanceTags</code>), and the dead field, its reader module and the fixtures asserting its dead vocabulary are deleted together, per the rule that retiring a contract deletes the tests asserting its dead side. <strong>The load-bearing implementation decision is the PRNG draw count</strong>, because the no-op gate turns on it: scoring runs on every pick whether or not a lens is present and consumes identical draws, so a no-lens deal is uniform-but-not-byte-identical to the old one. Had the count been lens-conditional, <em>every</em> hunger's deal would differ from the no-lens deal by stream offset alone, the gate's central assertion would pass unconditionally, and it would certify a dead weight — reproducing the exact failure it exists to catch, inside its own measuring instrument. The gate therefore asserts both that at least one hunger differs <strong>and</strong> that fewer than all twelve do. <strong>Badged LIVE on a measured corpus, not an assumed one:</strong> only 10 of 167 dilemmas carry a non-empty <code>emotionalRegister</code> and those ten were authored around one hunger — coverage <code>gather</code>=10, <code>preserve</code>=4, <code>reclaim</code>=1, <code>bind</code>=1, zero for the other eight — so exactly one hunger deals differently today. That is a live channel with sparse content, which is a different thing from a dead one, and the coverage assertion ships advisory until the labeling pass fills the other 157. Inspectability is a persisted <code>DilemmaSelectionRecord</code> rather than a trace, stated deliberately: selection runs flow-time, before the bonded agent is a graph node, so there is no tick to attach a trace to.</span></li>
+    </ul>
+  </div>
+
+  <div class="section">
     <h2>Spotlight — Trait gates
       <span class="lead">Audited 2026-07-27 (audit-on-touch, THR-802). One consumer the shared-predicate migration could not see — because the compiler had already given up on it.</span>
     </h2>

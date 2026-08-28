@@ -264,7 +264,6 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `derive` (1) | `deriveLocationActivities.ts` | — |
 | `detail` (2) | `detailPageGenerator.ts`, `detailPageResolvers.ts` | `THR-577` |
 | `digest` (1) | `digestBuffer.ts` | — |
-| `dilemma` (1) | `dilemmaSelection.ts` | — |
 | `disposition` (1) | `disposition.ts` | — |
 | `distance` (1) | `distanceMatrix.ts` | `TB-088` |
 | `divine` (1) | `divineAttention.ts` | — |
@@ -307,7 +306,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `lake` (2) | `lakeGeneration.ts`, `lakeOutflow.ts` | — |
 | `magic` (1) | `magicPower.ts` | — |
 | `mandate` (3) | `mandate.ts`, `mandateGenerator.ts`, `mandateMilestoneProse.ts` | `THR-1197`, `THR-1198` |
-| `meeting` (1) | `meetingEncounter.ts` | — |
+| `meeting` (1) | `meetingEncounter.ts` | `THR-1213` |
 | `mentorship` (2) | `mentorshipOutcomes.ts`, `mentorshipUndertaking.ts` | `THR-1292`, `THR-75` |
 | `modifiers` (1) | `modifiers.ts` | — |
 | `monster` (1) | `monsterFactionSeed.ts` | — |
@@ -397,4 +396,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 26 registered subsystems (1 dormant) · 99 tick phases · 178 engine domains · 523 modules._
+_Counts: 26 registered subsystems (1 dormant) · 99 tick phases · 177 engine domains · 522 modules._
