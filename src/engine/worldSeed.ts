@@ -366,16 +366,18 @@ function generateLocationName(
     const root = roots[Math.floor(rng() * roots.length)];
     const suffix = suffixes[Math.floor(rng() * suffixes.length)];
 
+    // No `suffix.startsWith(' ')` branch here, deliberately (THR-1313): the separator
+    // is carried by the suffix data itself. Settlement-tier suffixes are agglutinative
+    // ('ton', 'bury', 'town'), place-tier ones lead with a space (' Camp', ' Tower',
+    // ' Shrine'), so plain concatenation is already correct for both — `Wolfton` and
+    // `Wolf Pastures` from the same expression. Both arms of the old ternary were
+    // byte-identical in both branches, which is why removing it changes no name.
     let name: string;
     if (usePrefix) {
       const prefix = prefixes[Math.floor(rng() * prefixes.length)];
-      name = suffix.startsWith(' ')
-        ? `${prefix} ${root}${suffix}`
-        : `${prefix} ${root}${suffix}`;
+      name = `${prefix} ${root}${suffix}`;
     } else {
-      name = suffix.startsWith(' ')
-        ? `${root}${suffix}`
-        : `${root}${suffix}`;
+      name = `${root}${suffix}`;
     }
 
     if (!usedNames.has(name)) {
