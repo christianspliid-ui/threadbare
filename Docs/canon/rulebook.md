@@ -1,6 +1,6 @@
 ---
 domain: rulebook
-last_reviewed: 2026-07-21
+last_reviewed: 2026-08-19
 reviewer: claude-code
 ul_shards: [Cosmology, Agents, Encounters, Prose, Graph, Process]
 status: live
@@ -200,7 +200,7 @@ Why: TheFantasyWorldSimulator/Vision/00-north-star.md (the player hesitates and 
 
 An encounter is not a flat success/fail roll. It is a **framed chapter** — a curated moment where one threaded mortal's situation crystallises and the game pulls the camera onto it [IMPL — `UnifiedActionTemplate` is the single format since THR-108; full pipeline in `src/engine/encounter*` and aftermath in `phaseEncounterAftermath.ts`]. Encounters come in two shapes that share a format but split on pipeline:
 
-- **Branching encounters** are authored, multi-step, with `ActionStepBranch` arms that produce genuinely different paths [IMPL — branching encounters in `src/data/encounters/`, exemplars `rival-shrine-betrayal.ts` and `flawed-steel.ts`].
+- **Branching encounters** are authored, multi-step, with `ActionStepBranch` arms that produce genuinely different paths [IMPL — branching encounters in `src/data/encounters/`, wiring exemplars `rival-shrine-betrayal.ts` and `flawed-steel.ts` — wiring only: their prose predates Prose Doctrine v2 and is ruled "prose drifted — do not copy" in `Docs/exemplars.md`].
 - **Linear template encounters** (guild, social, tavern, combat, borderland) are systemic — they fire repeatedly across the world, instantiated from templates that share structure but vary in particulars [IMPL — templates compiled via `template-encounter-rewrite` skill pipeline].
 
 **Encounter awareness is hex-granular** [IMPL — `encounterAwareness.ts`]. If you can see a hex, you see everything on it — every location, sublocation, and encounter. Cross-hex visibility is computed as hex coordinate distance vs. per-reach awareness hops. The distance matrix between locations is *not* used for encounter awareness; we resolve to the hex level [IMPL — rejected approach: location-hop awareness, see [CLAUDE.md](../../CLAUDE.md) Rejected Approaches].
@@ -454,7 +454,7 @@ The Phase 1 review pass (THR-414) verdicted all six on **2026-06-23**. Resolved 
 
 **Spawned (tracked as issues):**
 
-3. **Find gates Change/Control → soft + lint.** Kept soft (per-template prerequisites + layer-revelation gating), with an advisory content-lint to catch violations — **not** a hard runtime invariant. Lint: **THR-476** (Ready for Codex). Surfaced in §4.
+3. **Find gates Change/Control → soft + lint.** Kept soft (per-template prerequisites + layer-revelation gating), with an advisory content-lint to catch violations — **not** a hard runtime invariant. Lint: **THR-476**. Surfaced in §4.
 6. **Twilight authorship vs. emergence → specify a lightweight split.** Verdict: define authored closing beats + a procedural echo-selection rule (which emergent threads get harvested into the finale). Spec task to be filed as a follow-up. Surfaced in §8.
 
 **Deferred to KPI data (revisit post-THR-457 harness):**

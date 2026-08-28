@@ -162,4 +162,4 @@ Two signals feed into the weekly drift scan:
 
 **B — Used-uncanonical:** a capitalized identifier or repeated concept phrase appears in `src/**` or `Docs/**` but not in UL. The drift scan opens a UL-proposal automatically.
 
-In v1, both signals are produced by the drift scan GitHub Action. The skill's `proposeNewTerm()` and `proposeRetirement()` stubs are called by that action — they are not interactive in this version.
+In v1, both signals are produced by the drift scan GitHub Action, which files the proposal issues directly. (An earlier revision claimed this skill carried `proposeNewTerm()` / `proposeRetirement()` stubs the action calls — no such symbols exist anywhere in the repo; the action does its own filing. Corrected 2026-08-28, THR-1334.)

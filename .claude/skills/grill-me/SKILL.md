@@ -106,7 +106,7 @@ See: `agents/synthesis-prompt.md`
 3b. **If the concept touches a player-facing surface, load `Docs/design-system/laws.md` before interrogating** (THR-1007). The Laws ground the questions two ways: an answer the Laws already settle is not asked (cite the law instead), and a direction Christian describes that would *break* a law is surfaced during the grilling as a joint amendment decision — named law number, his call — never absorbed silently into the synthesis. The synthesis artifact lists which laws the concept engages.
 4. Run interrogation using question design rules
 5. Handle parked questions and revisit once
-6. Generate synthesis artifact in `Docs/plans/`
+6. Generate synthesis artifact in the vault at `Brainstorms/YYYY-MM-DD-<topic>-grill-me.md` (filesystem via `OBSIDIAN_VAULT_PATH`; exploratory artifact, never committed to `Docs/plans/` — see the rules above and THR-944)
 7. Continue to design workflow step 1 using the synthesis as input
 
 ## Relationship to Design Governance
