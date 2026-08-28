@@ -2228,3 +2228,23 @@ the THR-489 baseline that evaluate to `undefined`. `branchDecision.ts` derives
 | Interface map | `destroy-candidates-gated-on-motive` in `scripts/interface-contracts.ts`, 🟢 LIVE. |
 | Wiki pages | `public/agents-reference.html` (the behaviour change in the decision loop), `public/essence-control-reference.html` (the sibling of the control-claim gate), `public/encounters-agents-reference.html` (the motive table on the decision board). |
 | Deliberately NOT wired | `motiveGate` is authored on exactly one template (`strategic_raid_supply_lines`). The other 42 stay ungated because none of them destroys anything. Adding the field defensively to non-destroy verbs would make the corpus-wide "no shipped destroy verb without a motive gate" pin unfalsifiable. |
+
+## Hunger vocabulary unification — one catalog, one key scheme (THR-1213 slice 1)
+
+A type and data reshuffle with no new surface and no behaviour change. It is in this checklist for the one thing it *does* rewire: the module that owns the twelve hunger definitions, and the direction data flows to reach them.
+
+| Module | Orchestrator phase | UI component | GameState field | Trace emitted | Debug visibility |
+|--------|-------------------|-------------|-----------------|---------------|-----------------|
+| `src/types/hunger.ts` (unions, merged `HungerDefinition`, the two id bridges) | N/A — type layer | every meeting/remembrance component, types only | none | none | the unions are the documentation |
+| `src/data/hunger-catalog.ts` (the single merged catalog) | N/A — data | `RemembranceFlow`, `MeetTheFirst*` | none | none | one authority, greppable by symbol |
+| `buildStubAscendantLens` + `SPHERE_TO_HUNGER` (relocated to `src/engine/ascendantLens.ts`) | N/A — flow-time, pre-bond | `GameView` (import repointed) | none | none | unchanged |
+
+**The import direction is the wiring change.** `buildStubAscendantLens` reads the catalog, and the catalog is data; keeping it in `src/types/hunger.ts` is what forced a second, engine-shaped catalog to live in the type layer in the first place. The direction is now engine → data → types, one way, and the duplicate is gone rather than documented — the THR-891 comment describing how the two were kept in step by hand retires with the duplication it described.
+
+**No CI step is added, and that is checked rather than assumed.** Everything this slice ships is enforced by `tsc` and by tests that already run inside `npm test`, a step of the required `Test · Typecheck · Build` check. Two runtime parity assertions moved *into* the compiler (both meeting prose maps are total `Record<StoredHungerId, string>`), which is a gate becoming stronger, not a gate disappearing.
+
+**What is deliberately still owed, so slice 2 does not have to rediscover it.** The dilemma-side `resonance.hungerResonance` field survives this slice with its 10 shipped entries, because its only reader is `scoreDilemmaResonance` in the dormant `src/engine/dilemmaSelection.ts` and both die together in slice 2 — along with the fixtures asserting the dead vocabulary, per the interface-map rule that retiring a contract deletes the tests asserting its dead side. `ResonanceTag` likewise does not yet type remembrance fragment `tags`; they reach the lens only through `identity.mortalTags` in slice 2's `buildLensFromIdentity`, which is a resolver boundary and the honest place to narrow.
+
+**Interface map:** no row. `Docs/canon/interface-map.md` carries no audited hunger contract (verified by grep in the design session and again here), and this slice changes no cross-system read or write — `AscendantIdentity.hungerId`'s wire format is byte-identical, pinned by the new stored-spelling assertion in `hungerIdBridge.test.ts`. The row lands with slice 2, where `selectDilemmas` gains a lens and the meeting callers start passing one.
+
+**Wiki pages:** none matched. `check:wiki-freshness:blocking` is the authority and was run last, after every closeout edit.

@@ -8,10 +8,16 @@
  * hunger variants differ in the *motivation* they name, because naming what a mortal
  * wants is what the sensing beat is for. Enforced by
  * `src/data/__tests__/meetingProseRegister.test.ts` — zero vagueness-lexicon words.
+ *
+ * THR-1213: both hunger-keyed maps are total `Record<StoredHungerId, …>`, so
+ * the key-set parity the register test used to assert at runtime is now a
+ * compile-time fact — a missing or misspelled hunger is a build error.
  */
 
+import type { StoredHungerId } from '../types/hunger';
+
 /** Beat 1 opening prose — what the god is looking for, per hunger. */
-export const SENSING_OPENING_PROSE: Record<string, string> = {
+export const SENSING_OPENING_PROSE: Record<StoredHungerId, string> = {
   'hunger.gather':   'You look for the one who keeps taking people in. Three mortals come into focus.',
   'hunger.witness':  'You look for the one who has seen what the others walked past. Three mortals come into focus.',
   'hunger.preserve': 'You look for the one holding a line that is about to give. Three mortals come into focus.',
@@ -49,7 +55,7 @@ export const MEETING_FATE_REVEAL_CONTINUE = 'Let it stand';
 export const SPARK_TRANSITION_IN = 'They have changed, and they are open to you now. What do you give them?';
 
 /** Beat 4 bond prose — Hunger-specific. */
-export const BOND_PROSE: Record<string, string> = {
+export const BOND_PROSE: Record<StoredHungerId, string> = {
   'hunger.gather':   'You will shelter them. They are the first you take in.',
   'hunger.witness':  'You will watch over them. Their truth is the first you guard.',
   'hunger.preserve': 'You will hold them against what is coming. They are the first you keep.',

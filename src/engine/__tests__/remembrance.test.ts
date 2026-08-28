@@ -12,6 +12,7 @@ import { SPHERE_NAMES } from '../../types/index';
 import { STIRRING_IMAGES } from '../../data/stirring-images';
 import { ORIGIN_FRAGMENTS, DRIVE_FRAGMENTS } from '../../data/remembrance-fragments';
 import { HUNGER_CATALOG } from '../../data/hunger-catalog';
+import { toStoredHungerId } from '../../types/hunger';
 
 describe('filterOriginFragments', () => {
   it('returns fragments matching the stirring image clusters', () => {
@@ -71,11 +72,12 @@ describe('filterHungers', () => {
     const results = filterHungers(origin, drive, HUNGER_CATALOG, 42);
     expect(results.length).toBeGreaterThanOrEqual(1);
     expect(results.length).toBeLessThanOrEqual(3);
-    expect(results[0].id).toBe('hunger.witness');
+    expect(results[0].id).toBe('witness');
     // Every returned hunger should have positive weight from at least one fragment
     for (const hunger of results) {
-      const originWeight = origin.hungerWeights[hunger.id] ?? 0;
-      const driveWeight = drive.hungerWeights[hunger.id] ?? 0;
+      const stored = toStoredHungerId(hunger.id);
+      const originWeight = origin.hungerWeights[stored] ?? 0;
+      const driveWeight = drive.hungerWeights[stored] ?? 0;
       expect(originWeight + driveWeight).toBeGreaterThan(0);
     }
   });
@@ -85,20 +87,28 @@ describe('filterHungers', () => {
     const love = DRIVE_FRAGMENTS.find(f => f.id === 'drive.undying-love')!;
     const results = filterHungers(shepherd, love, HUNGER_CATALOG, 42);
     // reclaim and reshape have 0 weight for shepherd+love path
-    expect(results.every(h => h.id !== 'hunger.reclaim' || (shepherd.hungerWeights[h.id] ?? 0) + (love.hungerWeights[h.id] ?? 0) > 0)).toBe(true);
+    expect(
+      results.every(
+        h =>
+          h.id !== 'reclaim' ||
+          (shepherd.hungerWeights[toStoredHungerId(h.id)] ?? 0) +
+            (love.hungerWeights[toStoredHungerId(h.id)] ?? 0) >
+            0,
+      ),
+    ).toBe(true);
   });
 });
 
 describe('selectHungerProse', () => {
   it('selects the prose variant matching the drive tags', () => {
-    const hunger = HUNGER_CATALOG.find(h => h.id === 'hunger.witness')!;
+    const hunger = HUNGER_CATALOG.find(h => h.id === 'witness')!;
     const drive = DRIVE_FRAGMENTS.find(f => f.id === 'drive.unanswered-question')!;
     const prose = selectHungerProse(hunger, drive);
     expect(prose).toContain('question became a hunger');
   });
 
   it('falls back to first variant if no tag match', () => {
-    const hunger = HUNGER_CATALOG.find(h => h.id === 'hunger.witness')!;
+    const hunger = HUNGER_CATALOG.find(h => h.id === 'witness')!;
     const drive = DRIVE_FRAGMENTS.find(f => f.id === 'drive.stolen-legacy')!;
     const prose = selectHungerProse(hunger, drive);
     expect(prose.length).toBeGreaterThan(0);
@@ -109,7 +119,7 @@ describe('buildPersonalitySeed', () => {
   it('returns an AxiologicalProfile with 9 value pairs', () => {
     const origin = ORIGIN_FRAGMENTS.find(f => f.id === 'origin.recent-shepherd')!;
     const drive = DRIVE_FRAGMENTS.find(f => f.id === 'drive.undying-love')!;
-    const hunger = HUNGER_CATALOG.find(h => h.id === 'hunger.gather')!;
+    const hunger = HUNGER_CATALOG.find(h => h.id === 'gather')!;
     const profile = buildPersonalitySeed(origin, drive, hunger, 42);
     const keys = Object.keys(profile);
     expect(keys).toHaveLength(9);
@@ -132,8 +142,8 @@ describe('buildPersonalitySeed', () => {
   it('produces different profiles for different hungers', () => {
     const origin = ORIGIN_FRAGMENTS.find(f => f.id === 'origin.ancient-scholar')!;
     const drive = DRIVE_FRAGMENTS.find(f => f.id === 'drive.unanswered-question')!;
-    const gather = HUNGER_CATALOG.find(h => h.id === 'hunger.gather')!;
-    const witness = HUNGER_CATALOG.find(h => h.id === 'hunger.witness')!;
+    const gather = HUNGER_CATALOG.find(h => h.id === 'gather')!;
+    const witness = HUNGER_CATALOG.find(h => h.id === 'witness')!;
     const profileA = buildPersonalitySeed(origin, drive, gather, 42);
     const profileB = buildPersonalitySeed(origin, drive, witness, 42);
     // Same origin + drive but different hunger should yield different profiles
@@ -145,7 +155,7 @@ describe('buildPersonalitySeed', () => {
 
 describe('generateDivineName', () => {
   it('returns a title-format name', () => {
-    const hunger = HUNGER_CATALOG.find(h => h.id === 'hunger.witness')!;
+    const hunger = HUNGER_CATALOG.find(h => h.id === 'witness')!;
     const origin = ORIGIN_FRAGMENTS.find(f => f.id === 'origin.ancient-scholar')!;
     const name = generateDivineName(hunger, origin, 42);
     expect(name).toMatch(/^The /);

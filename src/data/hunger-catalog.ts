@@ -1,9 +1,18 @@
-import type { HungerDefinition } from '../types/remembrance';
+import type { HungerDefinition } from '../types/hunger';
 
-export const HUNGER_CATALOG: HungerDefinition[] = [
+/**
+ * The twelve Hungers — the single catalog (THR-1213).
+ *
+ * Until this ticket a second `HUNGER_CATALOG` with the same symbol name and
+ * a different key scheme lived in `src/types/hunger.ts`, carrying the engine
+ * half of each definition. The two are merged here, values verbatim from both
+ * sources; ids are the bare canonical form and the dotted `StoredHungerId`
+ * spelling is derived through `toStoredHungerId`, never authored twice.
+ */
+export const HUNGER_CATALOG: readonly HungerDefinition[] = [
   // ─── life/spirit ───────────────────────────────────────────────
   {
-    id: 'hunger.gather',
+    id: 'gather',
     name: 'Gather',
     imageAssetPath: '/assets/remembrance/hunger/gather.jpg',
     proseVariants: [
@@ -23,11 +32,16 @@ export const HUNGER_CATALOG: HungerDefinition[] = [
       perceptionStyle: 'You see vulnerability first — who needs shelter, who is alone, who is about to break.',
       emotionalTone: 'Protective warmth edged with possessiveness. The flock must grow.',
     },
+    perceptionStyle:
+      'reads the threads of belonging — who protects, who needs shelter, who holds a community together without being seen',
+    emotionalTone: 'warmth edged with possessiveness',
+    candidateReachBias: ['heart', 'stone', 'gold'],
+    dilemmaResonanceTags: ['belonging', 'protection', 'community', 'sacrifice', 'loyalty', 'shelter'],
   },
 
   // ─── mind/spirit ───────────────────────────────────────────────
   {
-    id: 'hunger.witness',
+    id: 'witness',
     name: 'Witness',
     imageAssetPath: '/assets/remembrance/hunger/witness.jpg',
     proseVariants: [
@@ -46,11 +60,16 @@ export const HUNGER_CATALOG: HungerDefinition[] = [
       perceptionStyle: 'You see what others hide — the thought behind the smile, the fear behind the bravado, the secret behind the silence.',
       emotionalTone: 'Detached fascination edged with voyeuristic hunger. Everything must be known.',
     },
+    perceptionStyle:
+      'sees what is hidden — lies behind smiles, patterns beneath chaos, the secret architecture of every situation',
+    emotionalTone: 'detached curiosity sharpening into hunger',
+    candidateReachBias: ['eye', 'shadow', 'veil'],
+    dilemmaResonanceTags: ['secrets', 'knowledge', 'observation', 'truth', 'patterns', 'investigation'],
   },
 
   // ─── force/time ────────────────────────────────────────────────
   {
-    id: 'hunger.reclaim',
+    id: 'reclaim',
     name: 'Reclaim',
     imageAssetPath: '/assets/remembrance/hunger/reclaim.jpg',
     proseVariants: [
@@ -69,11 +88,16 @@ export const HUNGER_CATALOG: HungerDefinition[] = [
       perceptionStyle: 'You see what was taken — the scars, the absences, the places where something used to be. Every ruin speaks to you.',
       emotionalTone: 'Cold determination edged with old grief. What was lost will be found.',
     },
+    perceptionStyle:
+      'perceives injustice like a wound — stolen things, broken oaths, debts unpaid, the gap between what is and what should have been',
+    emotionalTone: 'cold fury beneath careful patience',
+    candidateReachBias: ['iron', 'shadow', 'star'],
+    dilemmaResonanceTags: ['justice', 'vengeance', 'restoration', 'duty', 'oath', 'debt'],
   },
 
   // ─── force/mind ────────────────────────────────────────────────
   {
-    id: 'hunger.reshape',
+    id: 'reshape',
     name: 'Reshape',
     imageAssetPath: '/assets/remembrance/hunger/reshape.jpg',
     proseVariants: [
@@ -92,11 +116,16 @@ export const HUNGER_CATALOG: HungerDefinition[] = [
       perceptionStyle: 'You see potential — what someone could become, what a place could be, the gap between what is and what should be.',
       emotionalTone: 'Visionary intensity edged with impatience. The world is not yet right.',
     },
+    perceptionStyle:
+      'sees potential — not what is, but what could be, if the right pressure were applied at the right moment',
+    emotionalTone: 'visionary impatience',
+    candidateReachBias: ['iron', 'heart', 'eye'],
+    dilemmaResonanceTags: ['transformation', 'ambition', 'vision', 'power', 'revolution', 'creation'],
   },
 
   // ─── time/spirit ───────────────────────────────────────────────
   {
-    id: 'hunger.preserve',
+    id: 'preserve',
     name: 'Preserve',
     imageAssetPath: '/assets/remembrance/hunger/preserve.jpg',
     proseVariants: [
@@ -116,11 +145,16 @@ export const HUNGER_CATALOG: HungerDefinition[] = [
       perceptionStyle: 'You see fragility — what is about to break, what is fading, what the next wind will carry away. Everything is always almost ending.',
       emotionalTone: 'Fierce tenderness edged with paralysis. To change is to lose.',
     },
+    perceptionStyle:
+      'feels the weight of what has been lost — every crack in a wall, every forgotten name, every story fading into silence',
+    emotionalTone: 'grief transmuted into iron determination',
+    candidateReachBias: ['stone', 'star', 'veil'],
+    dilemmaResonanceTags: ['loss', 'memory', 'restoration', 'tradition', 'endurance', 'legacy'],
   },
 
   // ─── energy/life ───────────────────────────────────────────────
   {
-    id: 'hunger.kindle',
+    id: 'kindle',
     name: 'Kindle',
     imageAssetPath: '/assets/remembrance/hunger/kindle.jpg',
     proseVariants: [
@@ -140,11 +174,16 @@ export const HUNGER_CATALOG: HungerDefinition[] = [
       perceptionStyle: 'You see the ember in everyone — the untapped potential, the suppressed fire, the dream they abandoned. You see what they could become if someone just struck the match.',
       emotionalTone: 'Infectious intensity edged with recklessness. The fire must spread.',
     },
+    perceptionStyle:
+      'perceives the spark in others — dormant talent, suppressed passion, the ember of something extraordinary waiting for a breath of air',
+    emotionalTone: 'infectious enthusiasm verging on recklessness',
+    candidateReachBias: ['heart', 'star', 'eye'],
+    dilemmaResonanceTags: ['creation', 'inspiration', 'passion', 'art', 'movement', 'spark'],
   },
 
   // ─── entropy/mind ──────────────────────────────────────────────
   {
-    id: 'hunger.sever',
+    id: 'sever',
     name: 'Sever',
     imageAssetPath: '/assets/remembrance/hunger/sever.jpg',
     proseVariants: [
@@ -164,11 +203,16 @@ export const HUNGER_CATALOG: HungerDefinition[] = [
       perceptionStyle: 'You see the chains — the obligations, the debts, the loyalties, the loves that bind people to places and each other. You see where to cut.',
       emotionalTone: 'Glacial clarity edged with loneliness. Freedom is the only truth.',
     },
+    perceptionStyle:
+      'sees chains — obligations, debts, loyalties, traditions, every invisible thread binding a person to something they did not choose',
+    emotionalTone: 'fierce tenderness for the trapped',
+    candidateReachBias: ['shadow', 'veil', 'star'],
+    dilemmaResonanceTags: ['freedom', 'rebellion', 'independence', 'chains', 'escape', 'solitude'],
   },
 
   // ─── matter/mind ───────────────────────────────────────────────
   {
-    id: 'hunger.bind',
+    id: 'bind',
     name: 'Bind',
     imageAssetPath: '/assets/remembrance/hunger/bind.jpg',
     proseVariants: [
@@ -188,11 +232,16 @@ export const HUNGER_CATALOG: HungerDefinition[] = [
       perceptionStyle: 'You see the agreements — spoken and unspoken. The debts. The promises. The places where the social fabric is frayed and needs repair.',
       emotionalTone: 'Patient authority edged with inflexibility. What is bound stays bound.',
     },
+    perceptionStyle:
+      'sees the architecture of obligation — who owes what to whom, where promises are kept and where they fray, the invisible scaffolding of civilization',
+    emotionalTone: 'the serenity of someone who believes order is love',
+    candidateReachBias: ['gold', 'eye', 'heart'],
+    dilemmaResonanceTags: ['order', 'law', 'covenant', 'structure', 'loyalty', 'obligation'],
   },
 
   // ─── energy/time ───────────────────────────────────────────────
   {
-    id: 'hunger.wander',
+    id: 'wander',
     name: 'Wander',
     imageAssetPath: '/assets/remembrance/hunger/wander.jpg',
     proseVariants: [
@@ -212,11 +261,16 @@ export const HUNGER_CATALOG: HungerDefinition[] = [
       perceptionStyle: 'You see the roads — the paths taken and not taken, the borders, the edges, the places where the map goes blank. Every horizon calls to you.',
       emotionalTone: 'Restless wonder edged with inability to stay. There is always something beyond.',
     },
+    perceptionStyle:
+      'notices what others walk past — the path nobody takes, the sound from behind the locked door, the horizon line that promises something uncharted',
+    emotionalTone: 'restless joy in the unknown',
+    candidateReachBias: ['veil', 'eye', 'star'],
+    dilemmaResonanceTags: ['journey', 'discovery', 'curiosity', 'exploration', 'wonder', 'horizon'],
   },
 
   // ─── entropy/force ─────────────────────────────────────────────
   {
-    id: 'hunger.consume',
+    id: 'consume',
     name: 'Consume',
     imageAssetPath: '/assets/remembrance/hunger/consume.jpg',
     proseVariants: [
@@ -236,11 +290,16 @@ export const HUNGER_CATALOG: HungerDefinition[] = [
       perceptionStyle: 'You see resources — who has what you need, what can be taken, where the weak points are. Every rival is a meal. Every territory is an appetizer.',
       emotionalTone: 'Insatiable appetite edged with desperation. It is never enough.',
     },
+    perceptionStyle:
+      'senses vitality — strength waiting to be absorbed, territory waiting to be claimed, power waiting to be gathered',
+    emotionalTone: 'appetite wearing the mask of purpose',
+    candidateReachBias: ['iron', 'gold', 'shadow'],
+    dilemmaResonanceTags: ['power', 'conquest', 'growth', 'hunger', 'domination', 'territory'],
   },
 
   // ─── spirit/darkness ───────────────────────────────────────────
   {
-    id: 'hunger.haunt',
+    id: 'haunt',
     name: 'Haunt',
     imageAssetPath: '/assets/remembrance/hunger/haunt.jpg',
     proseVariants: [
@@ -260,11 +319,16 @@ export const HUNGER_CATALOG: HungerDefinition[] = [
       perceptionStyle: 'You see the inner world — dreams, fears, unspoken longings, the ghosts people carry without knowing. The surface is irrelevant; you see what haunts them.',
       emotionalTone: 'Intimate presence edged with invasiveness. You are always too close.',
     },
+    perceptionStyle:
+      'sees the inner weather — dreams, private fears, unspoken longings, the ghosts a person carries without ever naming them',
+    emotionalTone: 'intimate presence edged with invasiveness',
+    candidateReachBias: ['veil', 'shadow', 'heart'],
+    dilemmaResonanceTags: ['memory', 'grief', 'dreams', 'obsession', 'presence', 'remembrance'],
   },
 
   // ─── light/order ───────────────────────────────────────────────
   {
-    id: 'hunger.illuminate',
+    id: 'illuminate',
     name: 'Illuminate',
     imageAssetPath: '/assets/remembrance/hunger/illuminate.jpg',
     proseVariants: [
@@ -284,5 +348,10 @@ export const HUNGER_CATALOG: HungerDefinition[] = [
       perceptionStyle: 'You see deception — every lie, every hidden motive, every shadow cast by half-truths. You see where light needs to fall.',
       emotionalTone: 'Righteous clarity edged with mercilessness. Truth does not negotiate.',
     },
+    perceptionStyle:
+      'sees where the light does not reach — the buried motive, the comfortable lie, the rot that survives only because nobody has looked straight at it',
+    emotionalTone: 'righteous clarity edged with mercilessness',
+    candidateReachBias: ['eye', 'star', 'gold'],
+    dilemmaResonanceTags: ['truth', 'justice', 'revelation', 'knowledge', 'corruption', 'clarity'],
   },
 ];

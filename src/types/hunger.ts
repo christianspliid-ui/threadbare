@@ -6,11 +6,18 @@
  * the god's mortal-era backstory to produce a unique narrative voice that
  * colors all meeting encounter prose.
  *
- * Until the Remembrance Flow ships, `buildStubAscendantLens` provides
- * defaults derived from the current archetype system's sphere pair.
+ * THR-1213 — this module is the **type layer only**. The twelve hunger
+ * definitions live in exactly one place, `src/data/hunger-catalog.ts`; until
+ * this ticket there were two `HUNGER_CATALOG` exports with the same symbol
+ * name, different key schemes and different field sets, which is how a
+ * lookup could silently miss for every god (THR-891). Types must not import
+ * data, so the stub-lens builder that needed the catalog moved to
+ * `src/engine/ascendantLens.ts` — the import direction is engine → data →
+ * types, one way.
  */
 
-import type { CreationSphereName, SphereName } from './index';
+import type { SphereName } from './index';
+import type { SphereAlignment } from './influence';
 import type { ReachDomain } from './traits';
 
 // ─── Hunger IDs ──────────────────────────────────────────────────
@@ -40,13 +47,184 @@ export type HungerId =
   | 'haunt'
   | 'illuminate';
 
+/**
+ * The persisted and authored spelling of a hunger id (`hunger.witness`).
+ *
+ * Derived from {@link HungerId}, never listed twice — a form the union does
+ * not know is a compile error rather than a lookup that silently misses.
+ * Saved worlds, the remembrance catalog's authored keys, the meeting prose
+ * maps and the vignette resonance lists all speak this form; every consumer
+ * that keys on a bare id goes through {@link toHungerId}.
+ */
+export type StoredHungerId = `hunger.${HungerId}`;
+
+/**
+ * Every live hunger id, in catalog order — the union's runtime witness.
+ *
+ * `satisfies` keeps it honest in both directions: a member the union does not
+ * carry fails to compile, and {@link HUNGER_ID_SET} narrowing an unknown
+ * string is the only place a string becomes a `HungerId`.
+ */
+export const HUNGER_IDS = [
+  'gather',
+  'witness',
+  'preserve',
+  'reshape',
+  'reclaim',
+  'consume',
+  'sever',
+  'kindle',
+  'bind',
+  'wander',
+  'haunt',
+  'illuminate',
+] as const satisfies readonly HungerId[];
+
+// ─── Resonance Tags ──────────────────────────────────────────────
+
+/**
+ * The closed thematic vocabulary shared by hunger tag lists, dilemma
+ * emotional registers and drive tags (THR-1213 ruling 3).
+ *
+ * Before this union the same theme space was spelled in three unrelated
+ * places with nothing closing it, and the dilemma reader compared hunger
+ * *ids* against theme *tags* — disjoint vocabularies, so the resonance
+ * weight fired zero times across all 167 shipped dilemmas (THR-1158).
+ *
+ * The member list is a **predicate, not a snapshot** (THR-688 rule A): it is
+ * the union of every tag appearing in a hunger's `dilemmaResonanceTags`, a
+ * dilemma's `emotionalRegister`, and a dilemma's `driveResonance`. Widen it
+ * in the same PR as the content that needs a new theme — it is the
+ * vocabulary authority, not a cage. Never reach for an untyped string.
+ *
+ * Note the four members carried by dilemma registers and by no hunger
+ * (`compassion`, `desperation`, `devotion`, `nurturing`): they are real
+ * themes, and their absence from every hunger list is the same
+ * disjoint-vocabulary drift in miniature.
+ */
+export type ResonanceTag =
+  | 'ambition'
+  | 'art'
+  | 'belonging'
+  | 'chains'
+  | 'clarity'
+  | 'community'
+  | 'compassion'
+  | 'conquest'
+  | 'corruption'
+  | 'covenant'
+  | 'creation'
+  | 'curiosity'
+  | 'debt'
+  | 'desperation'
+  | 'devotion'
+  | 'discovery'
+  | 'domination'
+  | 'dreams'
+  | 'duty'
+  | 'endurance'
+  | 'escape'
+  | 'exploration'
+  | 'freedom'
+  | 'grief'
+  | 'growth'
+  | 'horizon'
+  | 'hunger'
+  | 'independence'
+  | 'inspiration'
+  | 'investigation'
+  | 'journey'
+  | 'justice'
+  | 'knowledge'
+  | 'law'
+  | 'legacy'
+  | 'loss'
+  | 'loyalty'
+  | 'memory'
+  | 'movement'
+  | 'nurturing'
+  | 'oath'
+  | 'obligation'
+  | 'observation'
+  | 'obsession'
+  | 'order'
+  | 'passion'
+  | 'patterns'
+  | 'power'
+  | 'presence'
+  | 'protection'
+  | 'rebellion'
+  | 'remembrance'
+  | 'restoration'
+  | 'revelation'
+  | 'revolution'
+  | 'sacrifice'
+  | 'secrets'
+  | 'shelter'
+  | 'solitude'
+  | 'spark'
+  | 'structure'
+  | 'territory'
+  | 'tradition'
+  | 'transformation'
+  | 'truth'
+  | 'vengeance'
+  | 'vision'
+  | 'wonder';
+
 // ─── Hunger Definition ───────────────────────────────────────────
 
+/** One Hunger-reveal passage, keyed by the Drive tag that triggers it. */
+export interface HungerProseVariant {
+  /** Which Drive tag triggers this variant */
+  driveTag: string;
+  /** The Hunger reveal passage */
+  prose: string;
+}
+
+/** One shape a god's court can take, offered at the Hunger beat. */
+export interface CourtOption {
+  courtType: 'high_house' | 'circle' | 'web' | 'abyss';
+  /** Evocative description of this court shape */
+  prose: string;
+  isDefault: boolean;
+}
+
+/**
+ * One Hunger, whole — the field union of the two catalogs THR-1213 merged.
+ *
+ * The remembrance half (`imageAssetPath` … `ascendantLens`) speaks to the
+ * player in second person at the Hunger beat; the engine half
+ * (`perceptionStyle` … `dilemmaResonanceTags`) speaks about the god in third
+ * person to the meeting prose. Both halves ship verbatim from the two
+ * pre-merge sources; the interface is **total**, so an entry missing a field
+ * is a build error rather than a runtime hole (the documented build-time
+ * exception to NFP #4).
+ */
 export interface HungerDefinition {
-  /** Unique hunger identifier */
+  /** Unique hunger identifier — the bare canonical form */
   id: HungerId;
   /** Display name */
   name: string;
+
+  // ── Remembrance surface (the Hunger beat the player picks from) ──
+  /** Cosmic abstract art */
+  imageAssetPath: string;
+  /** Reveal passages, one per Drive tag */
+  proseVariants: HungerProseVariant[];
+  /** One-line mandate summary */
+  mandateDirection: string;
+  /** Default + alternative court shape */
+  courtOptions: [CourtOption, CourtOption];
+  sphereAlignment: SphereAlignment;
+  domainAffinities: Partial<Record<ReachDomain, number>>;
+  /** Second-person voice — how the player is told they see mortals */
+  ascendantLens: {
+    perceptionStyle: string;
+    emotionalTone: string;
+  };
+
+  // ── Engine surface (the narrator's voice, and the scoring inputs) ──
   /** How this god perceives mortals — the narrative filter on every scene */
   perceptionStyle: string;
   /** Emotional coloring of all prose generated under this hunger */
@@ -54,7 +232,7 @@ export interface HungerDefinition {
   /** Reach domains this Hunger draws toward when generating candidates */
   candidateReachBias: readonly string[];
   /** Emotional registers this Hunger resonates with in dilemma scoring */
-  dilemmaResonanceTags: readonly string[];
+  dilemmaResonanceTags: readonly ResonanceTag[];
 }
 
 // ─── Ascendant Lens ──────────────────────────────────────────────
@@ -71,135 +249,17 @@ export interface AscendantLens {
   /** The obsession that survived ascension */
   drive: string;
   /** Drive's emotional core for resonance matching */
-  driveTags: readonly string[];
+  driveTags: readonly ResonanceTag[];
   /** How long ago the god ascended — affects prose tone */
   timeSinceAscension: 'recent' | 'ancient';
   /** The god's mortal name — for rare intimate surfacing */
   mortalName: string;
 }
 
-// ─── Hunger Catalog ──────────────────────────────────────────────
-
-/** All 12 Hunger definitions — the complete catalog */
-export const HUNGER_CATALOG: readonly HungerDefinition[] = [
-  {
-    id: 'gather',
-    name: 'Gather',
-    perceptionStyle:
-      'reads the threads of belonging — who protects, who needs shelter, who holds a community together without being seen',
-    emotionalTone: 'warmth edged with possessiveness',
-    candidateReachBias: ['heart', 'stone', 'gold'],
-    dilemmaResonanceTags: ['belonging', 'protection', 'community', 'sacrifice', 'loyalty', 'shelter'],
-  },
-  {
-    id: 'witness',
-    name: 'Witness',
-    perceptionStyle:
-      'sees what is hidden — lies behind smiles, patterns beneath chaos, the secret architecture of every situation',
-    emotionalTone: 'detached curiosity sharpening into hunger',
-    candidateReachBias: ['eye', 'shadow', 'veil'],
-    dilemmaResonanceTags: ['secrets', 'knowledge', 'observation', 'truth', 'patterns', 'investigation'],
-  },
-  {
-    id: 'preserve',
-    name: 'Preserve',
-    perceptionStyle:
-      'feels the weight of what has been lost — every crack in a wall, every forgotten name, every story fading into silence',
-    emotionalTone: 'grief transmuted into iron determination',
-    candidateReachBias: ['stone', 'star', 'veil'],
-    dilemmaResonanceTags: ['loss', 'memory', 'restoration', 'tradition', 'endurance', 'legacy'],
-  },
-  {
-    id: 'reshape',
-    name: 'Reshape',
-    perceptionStyle:
-      'sees potential — not what is, but what could be, if the right pressure were applied at the right moment',
-    emotionalTone: 'visionary impatience',
-    candidateReachBias: ['iron', 'heart', 'eye'],
-    dilemmaResonanceTags: ['transformation', 'ambition', 'vision', 'power', 'revolution', 'creation'],
-  },
-  {
-    id: 'reclaim',
-    name: 'Reclaim',
-    perceptionStyle:
-      'perceives injustice like a wound — stolen things, broken oaths, debts unpaid, the gap between what is and what should have been',
-    emotionalTone: 'cold fury beneath careful patience',
-    candidateReachBias: ['iron', 'shadow', 'star'],
-    dilemmaResonanceTags: ['justice', 'vengeance', 'restoration', 'duty', 'oath', 'debt'],
-  },
-  {
-    id: 'consume',
-    name: 'Consume',
-    perceptionStyle:
-      'senses vitality — strength waiting to be absorbed, territory waiting to be claimed, power waiting to be gathered',
-    emotionalTone: 'appetite wearing the mask of purpose',
-    candidateReachBias: ['iron', 'gold', 'shadow'],
-    dilemmaResonanceTags: ['power', 'conquest', 'growth', 'hunger', 'domination', 'territory'],
-  },
-  {
-    id: 'sever',
-    name: 'Sever',
-    perceptionStyle:
-      'sees chains — obligations, debts, loyalties, traditions, every invisible thread binding a person to something they did not choose',
-    emotionalTone: 'fierce tenderness for the trapped',
-    candidateReachBias: ['shadow', 'veil', 'star'],
-    dilemmaResonanceTags: ['freedom', 'rebellion', 'independence', 'chains', 'escape', 'solitude'],
-  },
-  {
-    id: 'kindle',
-    name: 'Kindle',
-    perceptionStyle:
-      'perceives the spark in others — dormant talent, suppressed passion, the ember of something extraordinary waiting for a breath of air',
-    emotionalTone: 'infectious enthusiasm verging on recklessness',
-    candidateReachBias: ['heart', 'star', 'eye'],
-    dilemmaResonanceTags: ['creation', 'inspiration', 'passion', 'art', 'movement', 'spark'],
-  },
-  {
-    id: 'bind',
-    name: 'Bind',
-    perceptionStyle:
-      'sees the architecture of obligation — who owes what to whom, where promises are kept and where they fray, the invisible scaffolding of civilization',
-    emotionalTone: 'the serenity of someone who believes order is love',
-    candidateReachBias: ['gold', 'eye', 'heart'],
-    dilemmaResonanceTags: ['order', 'law', 'covenant', 'structure', 'loyalty', 'obligation'],
-  },
-  {
-    id: 'wander',
-    name: 'Wander',
-    perceptionStyle:
-      'notices what others walk past — the path nobody takes, the sound from behind the locked door, the horizon line that promises something uncharted',
-    emotionalTone: 'restless joy in the unknown',
-    candidateReachBias: ['veil', 'eye', 'star'],
-    dilemmaResonanceTags: ['journey', 'discovery', 'curiosity', 'exploration', 'wonder', 'horizon'],
-  },
-  // THR-891 — the two hungers this catalog was missing. Both are *derived*
-  // from their already-blessed entries in `src/data/hunger-catalog.ts` (voice
-  // shifted from that file's second person to this file's third), not newly
-  // invented: `candidateReachBias` reads their `domainAffinities` in weight
-  // order, `emotionalTone` their `ascendantLens.emotionalTone`, and the
-  // resonance tags their `proseVariants` drive tags.
-  {
-    id: 'haunt',
-    name: 'Haunt',
-    perceptionStyle:
-      'sees the inner weather — dreams, private fears, unspoken longings, the ghosts a person carries without ever naming them',
-    emotionalTone: 'intimate presence edged with invasiveness',
-    candidateReachBias: ['veil', 'shadow', 'heart'],
-    dilemmaResonanceTags: ['memory', 'grief', 'dreams', 'obsession', 'presence', 'remembrance'],
-  },
-  {
-    id: 'illuminate',
-    name: 'Illuminate',
-    perceptionStyle:
-      'sees where the light does not reach — the buried motive, the comfortable lie, the rot that survives only because nobody has looked straight at it',
-    emotionalTone: 'righteous clarity edged with mercilessness',
-    candidateReachBias: ['eye', 'star', 'gold'],
-    dilemmaResonanceTags: ['truth', 'justice', 'revelation', 'knowledge', 'corruption', 'clarity'],
-  },
-] as const;
+// ─── Id Bridge ───────────────────────────────────────────────────
 
 /** Every live hunger id, for narrowing a stored identity id. */
-const LIVE_HUNGER_IDS: ReadonlySet<string> = new Set(HUNGER_CATALOG.map((h) => h.id));
+const HUNGER_ID_SET: ReadonlySet<string> = new Set<string>(HUNGER_IDS);
 
 /** The prefix the remembrance catalog stores its ids under (`hunger.witness`). */
 const STORED_HUNGER_PREFIX = 'hunger.';
@@ -223,51 +283,19 @@ export function toHungerId(storedId: string | undefined | null): HungerId | unde
   const bare = storedId.startsWith(STORED_HUNGER_PREFIX)
     ? storedId.slice(STORED_HUNGER_PREFIX.length)
     : storedId;
-  return LIVE_HUNGER_IDS.has(bare) ? (bare as HungerId) : undefined;
+  return HUNGER_ID_SET.has(bare) ? (bare as HungerId) : undefined;
 }
 
-// ─── Sphere → Hunger Mapping ─────────────────────────────────────
-
-/** Default Hunger for each Creation Sphere — used by `buildStubAscendantLens` */
-const SPHERE_TO_HUNGER: Record<CreationSphereName, HungerId> = {
-  force: 'reshape',
-  matter: 'bind',
-  energy: 'kindle',
-  life: 'gather',
-  mind: 'witness',
-  spirit: 'preserve',
-  time: 'preserve',
-  entropy: 'consume',
-};
-
-/** Default fallback Hunger when sphere doesn't map */
-const FALLBACK_HUNGER_ID: HungerId = 'gather';
-
-// ─── Stub Builder ────────────────────────────────────────────────
-
 /**
- * Build a stub AscendantLens from sphere pair.
- * Used until the Remembrance Flow provides a player-authored lens.
+ * Derive the stored spelling from a live {@link HungerId}.
  *
- * Maps the primary sphere to a default Hunger and fills in placeholder
- * mortal-origin data. The secondary sphere is currently unused but
- * reserved for future nuance.
+ * The inverse of {@link toHungerId}, and the only place the dotted form is
+ * built — the catalog stores the bare id once and every dotted key (saves,
+ * prose maps, vignette resonance, the remembrance weight tables) is derived
+ * from it rather than authored a second time.
  */
-export function buildStubAscendantLens(
-  primarySphere: CreationSphereName,
-  _secondarySphere: CreationSphereName,
-): AscendantLens {
-  const hungerId = SPHERE_TO_HUNGER[primarySphere] ?? FALLBACK_HUNGER_ID;
-  const hunger = HUNGER_CATALOG.find((h) => h.id === hungerId) ?? HUNGER_CATALOG[0];
-
-  return {
-    hunger,
-    mortalOrigin: 'unknown',
-    drive: 'a nameless yearning that survived the crossing',
-    driveTags: [...hunger.dilemmaResonanceTags.slice(0, 3)],
-    timeSinceAscension: 'ancient',
-    mortalName: 'the Forgotten',
-  };
+export function toStoredHungerId(id: HungerId): StoredHungerId {
+  return `${STORED_HUNGER_PREFIX}${id}` as StoredHungerId;
 }
 
 // ─── Intent Derivation ──────────────────────────────────────────
@@ -321,3 +349,9 @@ export function deriveIntentFromHunger(
     sphere: ascendantSphere,
   };
 }
+
+/**
+ * The sphere → hunger default map and `buildStubAscendantLens` moved to
+ * `src/engine/ascendantLens.ts` in THR-1213: they need the catalog, and the
+ * catalog is data. Import them from there.
+ */

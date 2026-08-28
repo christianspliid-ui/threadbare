@@ -17,6 +17,8 @@ import type {
   RemembranceFragment,
   HungerDefinition,
 } from '../types/remembrance';
+import type { StoredHungerId } from '../types/hunger';
+import { toHungerId, toStoredHungerId } from '../types/hunger';
 import type { MapSizePreset } from './gameInit';
 
 // ─── Seeded PRNG (mulberry32) ─────────────────────────────────────────────────
@@ -85,7 +87,7 @@ const TAG_BIASES: Partial<Record<string, Partial<Record<ValuePair, number>>>> = 
  * Maps hunger IDs to personality adjustments. These represent how the divine
  * transformation distorts the mortal personality — the Hunger's mark.
  */
-const HUNGER_PERSONALITY_BIASES: Partial<Record<string, Partial<Record<ValuePair, number>>>> = {
+const HUNGER_PERSONALITY_BIASES: Partial<Record<StoredHungerId, Partial<Record<ValuePair, number>>>> = {
   'hunger.gather':   { loyalty_ambition: 0.3, mercy_ruthlessness: 0.2, sacrifice_survival: 0.2 },
   'hunger.witness':  { revelation_discretion: -0.3, honesty_cunning: -0.2, courage_prudence: -0.2 },
   'hunger.reclaim':  { mercy_ruthlessness: -0.3, courage_prudence: 0.3, preservation_transformation: 0.2 },
@@ -100,7 +102,7 @@ const HUNGER_PERSONALITY_BIASES: Partial<Record<string, Partial<Record<ValuePair
 // ─── Divine Name Tables ───────────────────────────────────────────────────────
 
 /** Maps hunger IDs to pools of adjectives for divine name generation */
-const HUNGER_ADJECTIVES: Record<string, string[]> = {
+const HUNGER_ADJECTIVES: Partial<Record<StoredHungerId, string[]>> = {
   'hunger.gather':   ['Patient', 'Boundless', 'Sheltering', 'Endless', 'Steadfast'],
   'hunger.witness':  ['Knowing', 'Unveiled', 'Dreaming', 'Watching', 'Silent'],
   'hunger.reclaim':  ['Unyielding', 'Returning', 'Exacting', 'Sovereign', 'Reborn'],
@@ -129,7 +131,7 @@ const FALLBACK_NOUNS = ['One', 'Voice', 'Hand', 'Eye', 'Heart'];
 // ─── Hunger → Map Size ───────────────────────────────────────────────────────
 
 /** Maps hunger IDs to preferred map sizes. Wider hungers prefer larger worlds. */
-const HUNGER_MAP_SIZES: Record<string, MapSizePreset> = {
+const HUNGER_MAP_SIZES: Partial<Record<StoredHungerId, MapSizePreset>> = {
   'hunger.gather':   'medium',
   'hunger.witness':  'large',
   'hunger.reclaim':  'medium',
@@ -154,7 +156,7 @@ const MIN_SCORE_THRESHOLD = 0.5;
 
 /** Score + jitter sort, return top N items that have positive real scores. */
 function scoredTopN<T>(
-  items: T[],
+  items: readonly T[],
   scoreFn: (item: T) => number,
   n: number,
   rng: () => number,
@@ -224,7 +226,7 @@ export function filterDriveFragments(
 export function filterHungers(
   origin: RemembranceFragment,
   drive: RemembranceFragment,
-  allHungers: HungerDefinition[],
+  allHungers: readonly HungerDefinition[],
   seed: number,
 ): HungerDefinition[] {
   const rng = mulberry32(seed);
@@ -241,7 +243,7 @@ export function filterHungers(
   const count = 2 + Math.floor(rng() * 2); // 2 or 3
   return scoredTopN(
     allHungers,
-    hunger => combined[hunger.id] ?? 0,
+    hunger => combined[toStoredHungerId(hunger.id)] ?? 0,
     count,
     rng,
   );
@@ -290,7 +292,7 @@ export function buildPersonalitySeed(
   }
 
   // Apply hunger-specific personality biases
-  const hungerBiases = HUNGER_PERSONALITY_BIASES[hunger.id];
+  const hungerBiases = HUNGER_PERSONALITY_BIASES[toStoredHungerId(hunger.id)];
   if (hungerBiases) {
     for (const [pair, delta] of Object.entries(hungerBiases) as [ValuePair, number][]) {
       biases[pair] = (biases[pair] ?? 0) + delta;
@@ -320,7 +322,7 @@ export function generateDivineName(
 ): string {
   const rng = mulberry32(seed);
 
-  const adjectives = HUNGER_ADJECTIVES[hunger.id] ?? FALLBACK_ADJECTIVES;
+  const adjectives = HUNGER_ADJECTIVES[toStoredHungerId(hunger.id)] ?? FALLBACK_ADJECTIVES;
   const adjective = adjectives[Math.floor(rng() * adjectives.length)];
 
   // Find noun pool from first matching origin tag
@@ -422,5 +424,7 @@ export function deriveCosmologyFromIdentity(identity: {
  * Hungers that drive exploration prefer larger worlds.
  */
 export function deriveMapSize(hungerId: string): MapSizePreset {
-  return HUNGER_MAP_SIZES[hungerId] ?? 'medium';
+  // Read boundary: accepts either spelling (and anything else) and fails soft.
+  const bare = toHungerId(hungerId);
+  return (bare ? HUNGER_MAP_SIZES[toStoredHungerId(bare)] : undefined) ?? 'medium';
 }

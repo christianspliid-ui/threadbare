@@ -11,7 +11,7 @@ import {
   shouldFireMortalEcho,
   composeLensedProse,
 } from '../ascendantLens';
-import { HUNGER_CATALOG } from '../../types/hunger';
+import { HUNGER_CATALOG } from '../../data/hunger-catalog';
 import type { AscendantLens } from '../../types/hunger';
 import type { LensOverlay } from '../../types/meetingEncounter';
 

@@ -423,7 +423,7 @@ describe('authored meeting content invariants', () => {
   });
 
   it('authors a god-voice line for every hunger in the catalog', async () => {
-    const { HUNGER_CATALOG } = await import('../../types/hunger');
+    const { HUNGER_CATALOG } = await import('../../data/hunger-catalog');
     expect(HUNGER_CATALOG.length).toBeGreaterThan(0);
     for (const hunger of HUNGER_CATALOG) {
       expect(MEETING_BOND_TEST.godVoiceByHunger[hunger.id]).toBeTypeOf('string');

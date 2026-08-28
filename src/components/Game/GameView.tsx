@@ -146,7 +146,7 @@ import { applyBeatChoice } from '../../engine/journeyEngine';
 import { getThreadsFrom, getFactionMembershipEdges, getAvatarsOf } from '../../engine/graphQueries';
 import type { ThreadEdgeProperties } from '../../types/influence';
 import { createMeetingEncounterState, createAgentFromMeeting, isMeetTheFirstAvailable, MEETING_SETTLED_LOCATION_SUBTYPES } from '../../engine/meetingEncounter';
-import { buildStubAscendantLens } from '../../types/hunger';
+import { buildStubAscendantLens } from '../../engine/ascendantLens';
 import type { AscendantLens } from '../../types/hunger';
 import { useNotifications } from './hooks/useNotifications';
 import { useInterruptAutoPause } from './hooks/useInterruptAutoPause';

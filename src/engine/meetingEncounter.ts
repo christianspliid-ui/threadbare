@@ -857,7 +857,10 @@ export function generateNarrativeCandidates(
 
   // Score vignettes by Hunger resonance
   const scored = CANDIDATE_VIGNETTES.map(v => {
-    const resonance = v.hungerResonance.includes(hungerId) ? HUNGER_RESONANCE_WEIGHT : 0;
+    // Read boundary: hungerId arrives as an untyped string (identity or stub).
+    const resonance = (v.hungerResonance as readonly string[]).includes(hungerId)
+      ? HUNGER_RESONANCE_WEIGHT
+      : 0;
     const jitter = rng() * 0.5;
     return { vignette: v, score: resonance + jitter };
   });

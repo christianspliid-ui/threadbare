@@ -18,6 +18,7 @@ import type { ValuePair, AxiologicalProfile } from './agent';
 import type { CooperationStrategy } from './disposition';
 import type { StepFactorLine, StepNudge, StepOutcome } from './unifiedAction';
 import type { BondReception } from '../data/meeting-nudge-constants';
+import type { HungerId, ResonanceTag } from './hunger';
 
 // ─── Constants ────────────────────────────────────────────────────
 
@@ -515,11 +516,11 @@ export interface MeetingEncounterResult {
  */
 export interface DilemmaResonanceTags {
   /** Core emotional registers of this dilemma (e.g. 'loss', 'ambition') */
-  emotionalRegister: readonly string[];
+  emotionalRegister: readonly ResonanceTag[];
   /** Hunger IDs or resonance tags this dilemma resonates with */
   hungerResonance: readonly string[];
   /** Drive tags this dilemma resonates with */
-  driveResonance: readonly string[];
+  driveResonance: readonly ResonanceTag[];
   /** Tags that make this dilemma a poor fit (negative scoring) */
   incompatibleWith: readonly string[];
 }
@@ -530,8 +531,8 @@ export interface DilemmaResonanceTags {
  * or augments the default template prose.
  */
 export interface LensOverlay {
-  /** Which Hunger this overlay is written for */
-  hungerId: string;
+  /** Which Hunger this overlay is written for — the bare canonical id (THR-1213) */
+  hungerId: HungerId;
   /** Perception prose — how this god sees the dilemma situation */
   perceptionProse: string;
   /** Resonance threshold above which echo prose fires (0-1) */

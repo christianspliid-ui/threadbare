@@ -3,6 +3,14 @@ import type { SphereName } from './index';
 import type { AxiologicalProfile } from './agent';
 import type { SphereAlignment } from './influence';
 import type { ReachDomain } from './traits';
+import type { CourtOption, HungerDefinition, HungerProseVariant, StoredHungerId } from './hunger';
+
+/**
+ * The Hunger shapes moved to `./hunger` in THR-1213, where the remembrance
+ * half and the engine half of a hunger merged into one total definition.
+ * Re-exported here so every existing importer keeps working unchanged.
+ */
+export type { CourtOption, HungerDefinition, HungerProseVariant, StoredHungerId };
 
 // --- Stirring (Beat 1) ---
 
@@ -32,31 +40,8 @@ export interface RemembranceFragment {
 
 // --- Hunger (Beat 4) ---
 
-export interface HungerProseVariant {
-  driveTag: string;                  // which Drive tag triggers this variant
-  prose: string;                     // the Hunger reveal passage
-}
-
-export interface CourtOption {
-  courtType: 'high_house' | 'circle' | 'web' | 'abyss';
-  prose: string;                     // evocative description of this court shape
-  isDefault: boolean;
-}
-
-export interface HungerDefinition {
-  id: string;                        // e.g. 'hunger.witness'
-  name: string;                      // e.g. 'Witness'
-  imageAssetPath: string;            // cosmic abstract art
-  proseVariants: HungerProseVariant[];
-  mandateDirection: string;          // one-line mandate summary
-  courtOptions: [CourtOption, CourtOption]; // default + alternative
-  sphereAlignment: SphereAlignment;
-  domainAffinities: Partial<Record<ReachDomain, number>>;
-  ascendantLens: {
-    perceptionStyle: string;         // how this god sees mortals
-    emotionalTone: string;           // what colors their interactions
-  };
-}
+// `HungerProseVariant`, `CourtOption` and `HungerDefinition` are defined in
+// `./hunger` (THR-1213) and re-exported at the top of this file.
 
 // --- Flow State ---
 
@@ -83,7 +68,8 @@ export interface AscendantIdentity {
   mortalTags: string[];              // combined tags from origin + drive
   // Divine transformation
   divineName: string;
-  hungerId: string;
+  /** The persisted dotted spelling — read back through `toHungerId` (THR-1213). */
+  hungerId: StoredHungerId;
   hungerName: string;
   mandateDirection: string;
   courtType: 'high_house' | 'circle' | 'web' | 'abyss';
