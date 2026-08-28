@@ -261,17 +261,35 @@ describe('The Broken Seal — aftermath', () => {
     expect(variant?.addNudgeIds).toEqual(['seal.draw_on_character']);
   });
 
-  it('carries exactly one individual-anchored chip (the package-critic correction)', () => {
+  it('carries two individual-anchored chips (THR-1317 restored the ambition carrier)', () => {
     const allChanges = Object.values(byOutcome ?? {}).flatMap((band) => band?.changes ?? []);
     const individualAnchored = allChanges.filter((c) => c.stateNoun?.visualKind === 'agent');
-    expect(individualAnchored.map((c) => c.id)).toEqual(['seal.fail.driven_out']);
+    expect(individualAnchored.map((c) => c.id).sort()).toEqual([
+      'seal.crit_fail.the_wanting',
+      'seal.fail.driven_out',
+    ]);
   });
 
-  it('the ambition chip on critical_failure names the actor sentinel with no visualKind', () => {
+  /**
+   * THR-1317 — was "names the actor sentinel with no visualKind", pinning a shape
+   * that could not render.
+   *
+   * The package-critic correction dropped `visualKind` to stop the chip reading as
+   * being about the person, and kept `entityId: '$actor'` as the ambition's carrier
+   * route. Only the second half survived contact with the machinery: `fromConceptRef`
+   * returns `undefined` unless *both* fields are present, so the route was never drawn
+   * and Law 56 clause 2 read the noun as anchoring nothing. Dropping the `entityId`
+   * instead fails `check:chip-anchors` outright — clause 2 wants an `entityId` or a
+   * resolving `tooltipId`, and no tooltip concept names an ambition.
+   *
+   * So the assertion is inverted rather than deleted: the carrier route the correction
+   * asked for is now the one that actually exists.
+   */
+  it('the ambition chip on critical_failure anchors the actor as the ambition carrier', () => {
     const chip = byOutcome?.critical_failure?.changes?.find((c) => c.id === 'seal.crit_fail.the_wanting');
     expect(chip).toBeDefined();
     expect(chip?.stateNoun?.entityId).toBe('$actor');
-    expect(chip?.stateNoun?.visualKind).toBeUndefined();
+    expect(chip?.stateNoun?.visualKind).toBe('agent');
   });
 
   it('carries exactly one location-anchored chip', () => {
