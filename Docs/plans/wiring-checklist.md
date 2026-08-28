@@ -2297,3 +2297,26 @@ A type and data reshuffle with no new surface and no behaviour change. It is in 
 
 **Wiki pages:** none matched. `check:wiki-freshness:blocking` is the authority and was run last, after every closeout edit.
 
+## Lair naming (THR-1312)
+
+A new engine module with two callers and no new surface. It is in this checklist because a namer is exactly the kind of module that can ship wired to nothing — `workNames.ts` was imported by one caller for a slice before the strategic-pack path reached it — so the callers are named here explicitly.
+
+| Module | Orchestrator phase | UI component | GameState field | Trace emitted | Debug visibility |
+|--------|-------------------|-------------|-----------------|---------------|-----------------|
+| `src/engine/naming/lairNames.ts` (`generateLairName`) | N/A — called from a worldgen pass and from phase 2.3575, never itself a phase | none directly; output lands in `node.name` | none — the name is graph state, not `GameState` | none (see below) | `eval state.graph.getNodesByType('location').filter(l=>l.properties.locationSubtype==='lair').map(l=>l.name)` |
+| `src/data/lair-name-content.ts` | N/A — data | none | none | none | greppable tables; families and pools are closed sets |
+| `src/engine/lairSeeding.ts` (caller 1) | worldgen, via `gameInit` | `HexSidebar` "Monster Lair" block renders `loc.name` | none | none | CLI `eval` above at tick 0 |
+| `src/engine/lairEscalation.ts` (caller 2) | 2.3575 `phaseLairEscalation` | same | none | existing escalation traces, unchanged | `lair_adj_*` node ids |
+
+**Both writers are wired, and that is asserted rather than claimed.** The seeded path is covered by a predicate over a real `seedMonsterLairs` pass; the escalation path by a test that drives `phaseLairEscalation` on the seed Test 7 pins as producing exactly one adjacent spawn, then asserts the spawned node's name. Both assertions carry a non-emptiness guard first — a "no placeholder names" assertion passes perfectly over zero lairs, which is the failure shape this checklist exists to catch.
+
+**No trace is emitted, deliberately.** Naming is a pure function of the node id with no branch worth explaining after the fact: given the id you can recompute the name, so a trace would carry no information the graph does not already hold. Inspectability (NFP #2) is served by the name being *on the node* rather than by an event.
+
+**The PRNG boundary is the load-bearing wiring detail.** `generateLairName` seeds its own stream via `workNames.hashSeed(lairId)` and never touches the caller's `rng`. That is what allowed a naming change to land inside `seedMonsterLairs` without moving a lair — asserted directly (same seed → same hex coordinates) with a different-seed arm so the comparison cannot pass vacuously. Any future caller must preserve this: drawing from the caller's stream would silently reshuffle worldgen.
+
+**Interface map:** no row. `Docs/canon/interface-map.md` carries no lair or naming contract (verified by grep over both the map and `scripts/interface-contracts.ts`), and this change adds no cross-system read or write — the sidebar already read `loc.name` and still does.
+
+**Wiki pages:** `armies-battles-reference` matched — its `sources` list names both `lairSeeding.ts` and `lairEscalation.ts`. Updated in the same PR on both layers (player-facing paragraph on names persisting through clearing; technical bullet with before/after measurements; `LAIR_NAME_MAX_ATTEMPTS` in the constants table). `check:wiki-freshness:blocking` is the authority and was run last, after every closeout edit.
+
+**Deferred, filed, not absorbed.** `cleared_lair` has no live writer and `clearedAtTick` has none either, so the clearing half of the lair system — and the reinfestation branch that reads it — is unreachable in a running world. THR-1319.
+

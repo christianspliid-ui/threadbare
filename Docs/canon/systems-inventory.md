@@ -311,7 +311,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `modifiers` (1) | `modifiers.ts` | — |
 | `monster` (1) | `monsterFactionSeed.ts` | — |
 | `movement` (3) | `movementCandidates.ts`, `movementCost.ts`, `movementExecution.ts` | `THR-1143` |
-| `naming` (1) | `naming/workNames.ts` | `THR-1291`, `THR-1297` |
+| `naming` (2) | `naming/lairNames.ts`, `naming/workNames.ts` | `THR-1291`, `THR-1297`, `THR-1312` |
 | `narrative` (2) | `narrative-constants.ts`, `narrative.ts` | — |
 | `notable` (1) | `notableAgendas.ts` | `THR-225`, `THR-630`, `THR-66` |
 | `notification` (3) | `notificationRouter.ts`, `notificationThreadingGate.ts`, `notificationVisibilityFilter.ts` | `THR-666`, `THR-667`, `THR-727` |
@@ -396,4 +396,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 26 registered subsystems (1 dormant) · 99 tick phases · 177 engine domains · 522 modules._
+_Counts: 26 registered subsystems (1 dormant) · 99 tick phases · 177 engine domains · 523 modules._

@@ -25,6 +25,8 @@ import { isWaterTerrain } from './coastline';
 import { seedMonsterFaction } from './monsterFactionSeed';
 import { emitTrace } from './traceBuffer';
 import { pickCulturalName } from '../data/culture-name-pools';
+import { generateLairName } from './naming/lairNames';
+import type { WorldGraph } from './graph';
 
 // ─── Constants (NFP #1: Tunability) ──────────────────────────────────────────
 
@@ -248,6 +250,24 @@ function getHexSphereScore(hexNode: GraphNode, sphere: SphereName): number {
  */
 let adjacentLairCounter = 0;
 
+/**
+ * Names already worn by a lair or a cleared lair anywhere in the world (THR-1312).
+ *
+ * Both subtypes are read, not just `lair`: a cleared lair keeps the name it was born
+ * with, so it is still holding that name against a new spawn. Reading only active
+ * lairs would let a freshly-spawned den take the name of the one the player cleared
+ * last week — the exact confusion the persistent-name rule exists to prevent.
+ */
+function existingLairNames(graph: WorldGraph): ReadonlySet<string> {
+  const names = new Set<string>();
+  for (const node of graph.getNodesByType('location')) {
+    const subtype = node.properties.locationSubtype;
+    if (subtype !== 'lair' && subtype !== 'cleared_lair') continue;
+    if (typeof node.name === 'string' && node.name.length > 0) names.add(node.name);
+  }
+  return names;
+}
+
 /** Reset the adjacent-lair id sequence. Session-boundary seam (see above). */
 export function resetAdjacentLairCounter(): void {
   adjacentLairCounter = 0;
@@ -259,19 +279,32 @@ function spawnAdjacentLair(
   row: number,
   dominantSphere: SphereName,
   dangerZone: string,
+  terrain: string | undefined,
 ): void {
   const { graph, tick } = state;
 
   // Use a timestamp-based ID to ensure uniqueness
   const lairId = `lair_adj_${tick}_${col}_${row}_${adjacentLairCounter++}`;
 
+  // Named on the same terms as a seeded lair (THR-1312). The used-name set is read
+  // from the graph rather than carried in a local: this spawns one lair per call
+  // across many ticks, so the only durable record of what is already taken is the
+  // world itself.
+  const lairName = generateLairName({
+    lairId,
+    terrain,
+    dominantSphere,
+    usedNames: existingLairNames(graph),
+  });
+
   graph.addNode({
     id: lairId,
     type: 'location',
-    name: `Lair (spawned t${tick})`,
+    name: lairName,
     properties: {
       locationType: 'lair',
       locationSubtype: 'lair',
+      terrain,
       hexCol: col,
       hexRow: row,
       lairTier: 'minor',
@@ -437,8 +470,10 @@ export function phaseLairEscalation(state: GameState): void {
         );
         if (existingLairAtHex) continue;
 
-        // Spawn adjacent minor lair
-        spawnAdjacentLair(state, neighbor.col, neighbor.row, dominantSphere, dangerZone);
+        // Spawn adjacent minor lair. `tile` is already in hand from the land check
+        // above, so the namer gets the neighbour's real terrain rather than the
+        // source lair's (THR-1312).
+        spawnAdjacentLair(state, neighbor.col, neighbor.row, dominantSphere, dangerZone, tile.terrain);
       }
     }
   }
