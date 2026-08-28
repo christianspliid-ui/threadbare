@@ -63,7 +63,7 @@ Per-item modifier 0.15; global aggregate cap 0.30 (`EFFECT_MODIFIER_CAP` in [`sr
 
 ### Authoring entrypoints
 
-- **Composable attachments (4-pass pipeline):** [`.claude/skills/attachment-pipeline/SKILL.md`](../../.claude/skills/attachment-pipeline/SKILL.md) (mirror at `.agents/skills/`). Pipeline: draft → editorial → systems audit → implementation. Mandates pre-reading `Docs/authoring-brief.md` (or fallback to systemic wiring guide + game-design-direction) before drafting.
+- **Composable attachments (4-pass pipeline):** [`.claude/skills/attachment-pipeline/SKILL.md`](../../.claude/skills/attachment-pipeline/SKILL.md). Pipeline: draft → editorial → systems audit → implementation. Mandates pre-reading `Docs/authoring-brief.md` (or fallback to systemic wiring guide + game-design-direction) before drafting.
 - **In-encounter conditions:** UnifiedActionTemplate aftermath uses `condition_attachment` — see encounter authoring skills.
 - **Quality tags as encounter loot signal:** `#trinket` (background tier 1–2), `#relic` (shaping / tier 2–3), `#artifact` (story-beat / tier 3–4). Quality tags compose with any slot tag.
 
