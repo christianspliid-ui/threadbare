@@ -186,6 +186,13 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
       templateIds: [
         'strategic_scout_defenses',
         'strategic_recruit_warband',
+        // THR-1309: placed beside the verb it continues, not appended. The cap is
+        // `min(2, max(1, floor(5 / templateIds.length)))` = 1 candidate per template
+        // with a break at 5 per ambition, so on a list this long a trailing entry is
+        // reached only when five earlier templates find no targets — and this one
+        // self-gates already (its target rule returns nothing until the commander
+        // actually holds a band). Trailing *and* self-gating would be dead content.
+        'strategic_reinforce_warband',
         'strategic_fortify_position',
         'strategic_establish_garrison',
         'strategic_raid_supply_lines',
@@ -829,6 +836,20 @@ export const REACTIVE_AMBITION_TEMPLATES: readonly ReactiveAmbitionTemplate[] = 
       preferredVerbs: ['destroy', 'gather_info', 'change'],
       templateIds: [
         'strategic_expose_mark',
+        // THR-1309 — the `warband` kind's counter-play. This is its natural home
+        // rather than the warlord list: every verb here is motive-gated, so it is
+        // offered only against a commander the actor actually has a quarrel with,
+        // which is the same reasoning the four others were placed on.
+        //
+        // **Placed second, not appended, and that position is measured.** The cap is
+        // 1 candidate per template with a break at 5 per ambition, and
+        // `strategic_expose_cache` finds targets on almost every pass — appended, this
+        // verb was reached 0 times in 150 ticks on seed 99 while `expose_cache` fired
+        // 23. Both `expose_mark` and this one are self-gating (no held mark / no
+        // nearby band ⇒ no targets ⇒ the slot passes straight on), so putting them
+        // ahead of the always-available verb costs `expose_cache` nothing it would
+        // otherwise have had.
+        'strategic_suborn_warband',
         'strategic_expose_cache',
         'strategic_sever_network',
         'strategic_destroy_masterwork',
