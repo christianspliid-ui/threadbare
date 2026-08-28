@@ -400,3 +400,57 @@ export const MOTIVE_GATE_KINDS = [
  * reason `BindingDecisionTrace.rows` is: the count stays exact, the detail is bounded.
  */
 export const STRATEGIC_BOARD_TRACE_REFUSAL_CAP = 8;
+
+// ─── Target selection reach (THR-1310) ──────────────────────────────
+//
+// `findValidTargets` resolves a scanning target rule — `location_subtype` and its
+// three siblings — by walking the whole graph, filtering, and keeping the first N in
+// **insertion order**. Insertion order is worldgen order, which is identical for every
+// agent, so every agent pursuing the same ambition proposed the same distant site and
+// the near ones were sliced away before scoring ever saw them.
+//
+// Measured at THR-1297 slice 5, seed 42 / medium / 150 ticks: with the wilderness chart
+// verbs gated on presence (`requiresLocation: true`) the `chart_find` kind produced
+// **nothing at all** — 0 completed, 0 treasure maps, 0 clues — because the site an agent
+// was sent to was never the site it stood near. Slice 5 shipped `requiresLocation: false`
+// to buy liveness, which removed the stage requirement rather than making the stage
+// reachable.
+//
+// **The fix is ordering, not a second penalty.** The cap is applied to a set sorted by
+// hex distance from the acting agent, so what survives is the nearest N rather than the
+// oldest N. `travelPenalty` (see `STRATEGIC_TRAVEL_PENALTY_WEIGHT`) still does all the
+// *scoring* of distance and is deliberately not duplicated here — a hard exclusion
+// radius would have been a second, uncalibrated distance term, and on a sparse map it
+// could empty a target set that the scan had legitimately filled.
+//
+// The caps below preserve each rule's shipped value exactly (NFP #6, additive): this
+// sweep re-points *which* targets survive, never *how many*, so the golden comparison
+// has one variable in it.
+
+/**
+ * How many targets each graph-scanning target rule returns, after proximity ordering.
+ *
+ * Keyed by `StrategicTargetRule['type']`. Only rules that scan the whole graph appear —
+ * `self`, `faction`, `trade_route` and `hex_region` are bounded by graph structure and
+ * need no cap. `colocated_actor` is listed because it carries a cap, but it is already
+ * proximity-bounded by construction (it reads one location's `located_at` edges), so it
+ * is capped without being reordered.
+ */
+export const STRATEGIC_TARGET_SCAN_CAPS: Readonly<Record<string, number>> = {
+  any_location: 5,
+  location_subtype: 8,
+  sublocation_type: 5,
+  actor_with_trait: 5,
+  colocated_actor: 5,
+};
+
+/**
+ * Distance assigned to a target whose hex cannot be resolved (NFP #4, fail-soft).
+ *
+ * Deliberately sorts such a target **last** rather than dropping it: a node with no
+ * resolvable hex is still a legal target, and dropping it would let this sweep empty a
+ * target set that the pre-THR-1310 scan filled — turning a targeting fix into a
+ * liveness regression. Same treatment when the *acting agent's* hex is unresolvable, in
+ * which case there is no proximity information at all and insertion order is kept.
+ */
+export const STRATEGIC_TARGET_UNRESOLVED_HEX_DISTANCE = Number.MAX_SAFE_INTEGER;
