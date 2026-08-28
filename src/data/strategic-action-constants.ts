@@ -442,6 +442,9 @@ export const STRATEGIC_TARGET_SCAN_CAPS: Readonly<Record<string, number>> = {
   sublocation_type: 5,
   actor_with_trait: 5,
   colocated_actor: 5,
+  // THR-1309. Small because both arms of the rule are naturally small: a commander
+  // holds very few bands, and a rival only needs the nearest few to have a real choice.
+  group_node: 5,
 };
 
 /**
@@ -490,3 +493,52 @@ export const FOUNDED_SETTLEMENT_INITIAL_PROSPERITY = 8;
  * is standing somewhere that already exists, which is nearly everywhere agents are.
  */
 export const FOUNDED_SETTLEMENT_SITE_SEARCH_RADIUS = 2;
+
+// ─── The T3 undertaking tier (THR-1309) ─────────────────────────────
+//
+// T3's objects are *organisations* — people who answer to someone. T1 minted records
+// and edges, T2 minted places; this tier mints the one thing that can act back.
+
+/**
+ * How many companions a raised warband musters beyond its commander.
+ *
+ * `createGroup` refuses below `GROUP_MIN_MEMBERS` (2, counting the leader), so this
+ * is the authored intent rather than the floor: a warband is meant to read as a
+ * force, and a commander plus one is a pair. Capped by `GROUP_MAX_MEMBERS` inside
+ * `createGroup`, so raising the number here can never overflow the roster.
+ */
+export const WARBAND_TARGET_MEMBER_COUNT = 5;
+
+/**
+ * The cast key a raised warband's recruits fill.
+ *
+ * Named rather than inlined because two files have to agree on it exactly — the
+ * template that authors the slot and the completion dispatch that reads the ledger
+ * back by `castKey`. A literal in both places is a silent empty roster the moment
+ * either is renamed: the ledger read would match nothing, `raiseWarband` would fall
+ * through to colocation, and the failure would look like an empty field rather than
+ * a typo.
+ */
+export const WARBAND_RECRUIT_CAST_KEY = 'recruit';
+
+/**
+ * Starting cohesion for a raised warband.
+ *
+ * Deliberately above `GROUP_COHESION_START_BASE` (0.55): a company that forms because
+ * strangers fell in together starts at the base, but a warband was *recruited* — the
+ * undertaking's checkpoints are the recruiting, and the commander who passed them has
+ * already done the work that cohesion measures. Not so high that upkeep never bites;
+ * the band still frays if it is led badly.
+ */
+export const WARBAND_INITIAL_COHESION = 0.7;
+
+/**
+ * The dissolution reason a suborned warband records.
+ *
+ * Reuses the existing `betrayal` member rather than widening `DissolutionReason` with
+ * a `suborned` synonym: buying a band's captains *is* the band turning on its
+ * commander, which is what `betrayal` already means and what every existing consumer
+ * of the reason already handles. A new member would need every one of those consumers
+ * revisited to earn a distinction the fiction does not actually make.
+ */
+export const SUBORNED_WARBAND_DISSOLUTION_REASON = 'betrayal' as const;

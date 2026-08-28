@@ -1,7 +1,7 @@
 ---
 domain: process
-last_reviewed: 2026-05-06
-reviewer: cowork
+last_reviewed: 2026-08-28
+reviewer: claude-code
 ul_shards: [Process, Coordination]
 status: live
 ---
@@ -125,4 +125,4 @@ The `pull-work` skill (CC) is the canonical pickup entrypoint and links back to 
 
 ## Last-reviewed
 
-2026-08-01 (THR-918 — § Plan-doc lifecycle now carries the exploratory/committed two-stage table and the promotion trigger; the vault is the exploratory home, `Docs/plans/` the committed one). Previously 2026-07-29 (THR-842 — recorded the verdict on a `SKIPPED` required check satisfying branch protection under § Current spec — coordination; the guard shipped in THR-768 and the residual risk is accepted). Previously 2026-07-26 (THR-760 CLAUDE.md slimming — Design Governance + Per-system required sections repointed to `design-governance.md`, which is now authoritative; scheduled-task registry moved to `Docs/ops/scheduled-tasks-registry.md`; vault conventions moved to `Docs/documentation-ownership.md`. Previously 2026-07-21 THR-654 demolition pass; originally 2026-05-06). Review trigger: monthly, or when CLAUDE.md's Process / Coordination / Documentation Strategy / Definition of Done sections change shape, or when any linked plan moves to `superseded`.
+2026-08-28 (THR-1331/THR-1334, context-cleanup round 1 — sandbox pointer line updated to the filesystem-only vault rule; frontmatter `last_reviewed`/`reviewer` synced to this section, which had drifted 3 months apart; the canon index in `README.md` is now the single full index). Previously 2026-08-01 (THR-918 — § Plan-doc lifecycle now carries the exploratory/committed two-stage table and the promotion trigger; the vault is the exploratory home, `Docs/plans/` the committed one). Previously 2026-07-29 (THR-842 — recorded the verdict on a `SKIPPED` required check satisfying branch protection under § Current spec — coordination; the guard shipped in THR-768 and the residual risk is accepted). Previously 2026-07-26 (THR-760 CLAUDE.md slimming — Design Governance + Per-system required sections repointed to `design-governance.md`, which is now authoritative; scheduled-task registry moved to `Docs/ops/scheduled-tasks-registry.md`; vault conventions moved to `Docs/documentation-ownership.md`. Previously 2026-07-21 THR-654 demolition pass; originally 2026-05-06). Review trigger: monthly, or when CLAUDE.md's Process / Coordination / Documentation Strategy / Definition of Done sections change shape, or when any linked plan moves to `superseded`.

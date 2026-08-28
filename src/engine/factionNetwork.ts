@@ -140,9 +140,15 @@ export function getFactionDefinitionForNode(node: GraphNode): FactionDefinition 
 }
 
 /**
- * Look up a FactionDefinition by ID, checking dynamic runtime definitions first
- * (no live producer since THR-1292 §3 retired initiatives — see TODO(THR-1295)),
+ * Look up a FactionDefinition by ID, checking dynamic runtime definitions first,
  * then falling back to static FACTION_DEFINITIONS.
+ *
+ * **The dynamic half is live again as of THR-1309.** `foundFaction` writes
+ * `state.dynamicFactionDefinitions` when `strategic_found_order` charters an order,
+ * restoring the producer this map lost when THR-1292 §3 retired the initiative
+ * pipeline — its only writer. Between those two tickets the `dynamicDefs` branch below
+ * was unreachable in a real run, so "checking dynamic definitions first" described a
+ * path nothing could take.
  */
 export function getFactionDefinition(
   id: string,

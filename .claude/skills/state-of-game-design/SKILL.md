@@ -51,7 +51,7 @@ Multi-domain tasks load multiple shards (e.g., an encounter touching resolution 
 | Hex map / HexMapV2 | `Docs/canon/hex-map.md` |
 | Agents | `Docs/canon/agents.md` |
 
-Canon pages are the per-domain entrypoints — they list current spec pointers and stale sources to avoid. They do NOT duplicate shard content.
+Canon pages are the per-domain entrypoints — they list current spec pointers and stale sources to avoid. They do NOT duplicate shard content. This table routes the common domains only; **the one full canon index is [`Docs/canon/README.md`](../../../Docs/canon/README.md)** (THR-1334 — three partial indexes used to disagree with the directory and each other).
 
 ---
 

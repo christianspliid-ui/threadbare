@@ -28,6 +28,7 @@ import {
   STRATEGIC_HISTORY_WINDOW_TICKS,
   ENCOUNTER_POOL_INVALIDATING_EDGE_TYPES,
   ROUTE_IDENTITY_SUBTYPE,
+  WARBAND_RECRUIT_CAST_KEY,
   FOUNDED_SETTLEMENT_INITIAL_PROSPERITY,
   FOUNDED_SETTLEMENT_SITE_SEARCH_RADIUS,
 } from '../data/strategic-action-constants';
@@ -47,6 +48,10 @@ import {
   mintLeverageMark,
   pressTheMark,
   mintMasterwork,
+  raiseWarband,
+  reinforceWarband,
+  disbandGroup,
+  foundFaction,
   type GraphOpResult,
 } from './strategicGraphOps';
 import { resolveDurableActorLocation } from './tradeRouteOps';
@@ -64,7 +69,7 @@ import {
 } from './undertakingCheckpoints';
 import { runBindPass } from './binding/undertakingBindPass';
 import { applyCreationEffects } from './binding/creationEffects';
-import { releaseBindingsForProject } from './binding/bindingRegistry';
+import { getBindings, releaseBindingsForProject } from './binding/bindingRegistry';
 import { ensureRoleCensus, type SimulationRuntime } from './simulationRuntime';
 import {
   MENTORSHIP_TEMPLATE_ID,
@@ -393,7 +398,7 @@ export function executeStrategicAction(
   switch (candidate.executionMode) {
     case 'instant': {
       // Execute the graph mutation immediately
-      const { ops, poolInvalidatedLocationIds } = executeInstantMutation(graph, candidate, tick);
+      const { ops, poolInvalidatedLocationIds } = executeInstantMutation(state, graph, candidate, tick);
       graphOps.push(...ops);
 
       // Check for catalyst seeding
@@ -773,7 +778,7 @@ export function advanceStrategicProjects(
         generationReason: 'ambition_progression',
       };
 
-      const mutation = executeInstantMutation(graph, candidate, tick);
+      const mutation = executeInstantMutation(state, graph, candidate, tick);
       const ops = mutation.ops;
       completedOps.push(...ops);
       poolInvalidatedLocationIds.push(...mutation.poolInvalidatedLocationIds);
@@ -980,6 +985,7 @@ function retireControl(
 // as a durable route endpoint. Behaviour is unchanged.
 
 function executeInstantMutation(
+  state: GameState,
   graph: WorldGraph,
   candidate: StrategicActionCandidate,
   tick: number,
@@ -1192,6 +1198,95 @@ function executeInstantMutation(
       // maker silently unbuildable wherever the target rule came up empty.
       case 'mint_masterwork': {
         ops.push(mintMasterwork(graph, candidate.actorId, hint.craftTag, tick, hint.tier));
+        break;
+      }
+
+      // ── The T3 tier: organisations, and breaking them (THR-1309) ──
+
+      case 'create_group': {
+        if (hint.groupKind === 'company') {
+          // The bound `recruit` cast — the people this undertaking actually engaged,
+          // minted by the bind pass when nobody suitable stood there. At completion
+          // `candidate.candidateId` IS the projectId (see the synthesized candidate
+          // above), which is what makes this ledger read possible at all.
+          const boundRecruitIds = getBindings(state.strategicState)
+            .filter(b =>
+              b.projectId === candidate.candidateId &&
+              b.castKey === WARBAND_RECRUIT_CAST_KEY &&
+              b.kind === 'actor' &&
+              b.status === 'live')
+            .map(b => b.nodeId);
+          const raised = raiseWarband(state, candidate.actorId, boundRecruitIds);
+          ops.push(raised);
+          // A raised band changes what the place can host — the same reason
+          // `create_sublocation` invalidates (THR-1184). Anchor on the commander's
+          // own location: the company node carries no `located_at` of its own.
+          if (raised.success) {
+            const locId = getAgentLocationId(graph, candidate.actorId);
+            if (locId) poolInvalidatedLocationIds.push(locId);
+          }
+          break;
+        }
+
+        // ── faction ──
+        if (!hint.factionSeed) {
+          // Authoring error rather than a world state: a faction with no seed has no
+          // content ids, and the op would mint an order whose encounters resolve to
+          // nothing. Refuse loudly rather than found something inert.
+          ops.push({ success: false, op: 'create_group', error: 'faction_seed_missing' });
+          break;
+        }
+        if (!targetId) {
+          ops.push({ success: false, op: 'create_group', error: 'no_target_location' });
+          break;
+        }
+
+        const actorNode = graph.getNode(candidate.actorId);
+        const locNode = graph.getNode(targetId);
+        const orderName = renderNameTemplate(
+          hint.nameTemplate ?? hint.factionSeed.nameTemplate,
+          actorNode?.name,
+          locNode?.name,
+        );
+        const founded = foundFaction(
+          state,
+          candidate.actorId,
+          targetId,
+          hint.factionSeed,
+          // The order inherits the shape of the work that chartered it — see
+          // `foundFaction`'s note on why this is the template's profile and not a
+          // capability bag read off the founder.
+          template?.reachProfile ?? {},
+          orderName,
+          tick,
+        );
+        ops.push(founded);
+        if (founded.success) poolInvalidatedLocationIds.push(targetId);
+        break;
+      }
+
+      case 'reinforce_group': {
+        if (targetId) {
+          const boundRecruitIds = getBindings(state.strategicState)
+            .filter(b =>
+              b.projectId === candidate.candidateId &&
+              b.castKey === WARBAND_RECRUIT_CAST_KEY &&
+              b.kind === 'actor' &&
+              b.status === 'live')
+            .map(b => b.nodeId);
+          ops.push(reinforceWarband(state, candidate.actorId, targetId, boundRecruitIds));
+        } else {
+          ops.push({ success: false, op: 'reinforce_group', error: 'no_target_group' });
+        }
+        break;
+      }
+
+      case 'disband_group': {
+        if (targetId) {
+          ops.push(disbandGroup(state, targetId));
+        } else {
+          ops.push({ success: false, op: 'disband_group', error: 'no_target_group' });
+        }
         break;
       }
 

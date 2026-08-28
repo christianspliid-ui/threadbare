@@ -9,7 +9,7 @@ companion_of: rulebook.md
 
 # Rulebook — Quick Reference
 
-> The board-game reference card. **Current rules only** — no status flags, no caveats. For "is this real yet?" load the full [rulebook](rulebook.md). For *why*, load Vision. For terms, load UL.
+> The board-game reference card: current rules of play, with sparse `[IMPL]`/`[DESIGN]` tags marking the few pieces not yet shipped. For full status flags, source citations, and open questions load the full [rulebook](rulebook.md). For *why*, load Vision. For terms, load UL.
 
 ## What You Are
 
@@ -96,4 +96,4 @@ The game is not, structurally, about winning. It is about what kind of being you
 
 For the full rulebook (with status flags, source citations, and open questions): [rulebook.md](rulebook.md).
 For terms: [Ubiquitous Language index](../ubiquitous-language/README.md).
-For why: [Vision/](../../TheFantasyWorldSimulator/Vision/) (Obsidian vault).
+For why: the vault's `TheFantasyWorldSimulator/Vision/` folder (filesystem via `OBSIDIAN_VAULT_PATH` — outside this repo, so no relative link resolves to it).

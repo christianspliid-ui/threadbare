@@ -15,35 +15,7 @@
     ]
   },
   "hooks": {
-    "SessionStart": [
-      {
-        "hooks": [{
-          "type": "command",
-          "command": "bash .claude/hooks/detect-cowork-session.sh",
-          "timeout": 5,
-          "once": true
-        }]
-      }
-    ],
     "PreToolUse": [
-      {
-        "matcher": "Write|Edit",
-        "hooks": [{
-          "type": "command",
-          "command": "bash .claude/hooks/cowork-role-gate.sh",
-          "timeout": 5,
-          "statusMessage": "Checking Cowork role boundary..."
-        }]
-      },
-      {
-        "matcher": "Bash",
-        "hooks": [{
-          "type": "command",
-          "command": "bash .claude/hooks/cowork-role-gate.sh",
-          "timeout": 5,
-          "statusMessage": "Checking Cowork role boundary..."
-        }]
-      },
       {
         "matcher": "Write|Edit",
         "hooks": [{

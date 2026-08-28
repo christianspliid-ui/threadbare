@@ -4261,7 +4261,7 @@
       ],
       "status": "canonical",
       "oneLiner": "seven ordered priorities: Tunability, Inspectability, Determinism, Fail-soft, Narrative, Additive, Performance",
-      "body": "One of seven ordered development priorities that govern design trade-offs when in tension. In order: (1) Tunability, (2) Inspectability, (3) Determinism, (4) Fail-soft, (5) Narrative over mechanical, (6) Additive over destructive, (7) Performance budget. Higher-numbered NFPs yield to lower-numbered ones when they conflict.",
+      "body": "One of seven ordered development priorities that govern design trade-offs when in tension: Tunability, Inspectability, Determinism, Fail-soft, Narrative over mechanical, Additive over destructive, Performance budget — higher-numbered yield to lower-numbered. The authoritative statement (with each priority's gloss) is CLAUDE.md § Non-Functional Priorities; this entry defines the term and does not restate the glosses (single-authority rule, 2026-08-25).",
       "seeAlso": [
         {
           "raw": "Three-Pillar Rule",
@@ -4287,7 +4287,7 @@
       ],
       "status": "canonical",
       "oneLiner": "every feature addresses Engine, Content, and UI; mark each N/A with rationale if not applicable",
-      "body": "Every feature must address all three pillars — **Engine** (systems, tick loop, graph), **Content** (encounters, prose, templates, data), and **UI** (components, player controls, debug visibility) — or explicitly mark each as N/A with rationale. Designs and plans covering only one or two pillars produce incomplete features. Incomplete features are not forwarded to executors.",
+      "body": "Every feature must address all three pillars — **Engine** (systems, tick loop, graph), **Content** (encounters, prose, templates, data), and **UI** (components, player controls, debug visibility) — or explicitly mark each as N/A with rationale. One- or two-pillar designs are not forwarded to the executor. Authoritative statement: `Docs/canon/design-governance.md` § Three-Pillar Rule (THR-760).",
       "seeAlso": [
         {
           "raw": "Non-Functional Priority",
@@ -4339,8 +4339,8 @@
         "Design Workflow"
       ],
       "status": "canonical",
-      "oneLiner": "8-step checklist: grill-me → draft → brainstorm → audit → revise → NFP table → three-pillar check → Vision audit → present",
-      "body": "The 8-step checklist governing how features are designed before implementation: (0) grill-me pre-pass, (1) draft covering all three pillars, (2) draft brainstorm companion, (3) audit against NFPs, (4) revise inline, (5) add NFP compliance table, (6) three-pillar check, (7) Vision audit, (8) present finished design. Steps 1–4 happen in a single internal pass — never present a non-compliant design.",
+      "oneLiner": "the pre-implementation design checklist; authoritative home `Docs/canon/design-governance.md` (this index deliberately carries no step list — the last copy drifted to 8 steps against the authority's 15)",
+      "body": "The checklist governing how features are designed before implementation — draft through audits to presentation, with the invariant that a non-compliant design is never presented. The authoritative checklist lives at `Docs/canon/design-governance.md` (THR-760) and has grown well past the \"8 steps\" this entry once restated (substrate-existence, interface-impact, intent-judge, and forked-audit gates among the additions); this entry deliberately does not carry a copy, because the copy drifted (caught by the 2026-08-28 audit at 8 steps vs the authority's 15).",
       "seeAlso": [
         {
           "raw": "Three-Pillar Rule",
@@ -4423,7 +4423,7 @@
       ],
       "status": "canonical",
       "oneLiner": "adversarial pre-design questioning skill; Design Governance step 0 for non-trivial work",
-      "body": "The adversarial pre-design questioning skill that extracts scope ambiguities, alternative approaches, and grey zones before implementation begins. Invoked as step 0 of Design Governance for non-trivial work. Auto-triggers on large scope, multi-pillar tasks, or explicit user request. Output is written to `Docs/plans/YYYY-MM-DD-<topic>-grill-me.md` and consumed by step 1 of the design checklist.",
+      "body": "The adversarial pre-design questioning skill that extracts scope ambiguities, alternative approaches, and grey zones before implementation begins. Invoked as step 0 of Design Governance for non-trivial work. Auto-triggers on large scope, multi-pillar tasks, or explicit user request. Output is written to the **vault** at `Brainstorms/YYYY-MM-DD-<topic>-grill-me.md` — an exploratory artifact, never committed to `Docs/plans/` (THR-918/THR-944; this entry previously taught the repo path, contradicting the authority — caught by the 2026-08-28 audit). Its surviving conclusions ride the plan doc's own argument.",
       "seeAlso": [
         {
           "raw": "Design Governance",

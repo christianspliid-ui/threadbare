@@ -43,6 +43,8 @@ import { resolveLocationToHex } from './encounterAwareness';
 import { hexDistance } from '../lib/hexMath';
 import { scoreRoutePairBalance, ROUTE_FORMATION_BALANCE_BIAS } from './tradeRoute';
 import { getSublocationNodes } from './sublocationShape';
+import { getGroupKind } from './groupShape';
+import { getGroupPosition } from './groups/groupQueries';
 import type { ReachDomain } from '../types/traits';
 import { findEligibleApprentices, MENTORSHIP_TEMPLATE_ID } from './mentorshipUndertaking';
 import { evaluateRemoteAnchorGate, ANCHOR_CAST_KEY } from './binding/remoteAnchor';
@@ -317,7 +319,16 @@ export function generateStrategicCandidates(
  */
 function resolveTargetHex(graph: WorldGraph, node: GraphNode): { col: number; row: number } | null {
   if (node.type === 'actor') {
-    const locId = getAgentLocationId(graph, node.id);
+    // A group-family node carries no `located_at` of its own — the groups system
+    // derives a company's position from its leader, and failing that from any living
+    // member (`groupQueries.ts` header). Without this branch every company resolved to
+    // `null` here and sorted last under `STRATEGIC_TARGET_UNRESOLVED_HEX_DISTANCE`, so
+    // the `group_node` rule's proximity ordering would silently degrade to insertion
+    // order — reintroducing the exact defect THR-1310 fixed, for the one target shape
+    // that arrived after it (THR-1309).
+    const locId = getGroupKind(node) !== undefined
+      ? getGroupPosition(graph, node.id)
+      : getAgentLocationId(graph, node.id);
     return locId ? resolveLocationToHex(graph, locId) : null;
   }
   return resolveLocationToHex(graph, node.id);
@@ -489,6 +500,42 @@ function findValidTargets(
       // every candidate here stands at `currentLocationId`, so all distances are 0 and
       // sorting would only churn the order for no gain.
       return edgeFiltered.slice(0, STRATEGIC_TARGET_SCAN_CAPS.colocated_actor);
+    }
+
+    case 'group_node': {
+      // Group-family nodes, split by who commands them (THR-1309).
+      //
+      // No existing rule can see a company: it is an `actor` node with no `located_at`
+      // edge of its own — position derives from its leader — so `colocated_actor` finds
+      // nothing, `actor_with_trait` wants a trait companies never carry, and `self`
+      // returns the commander rather than the band. Authoring the warband's update and
+      // destroy against any of those would offer both verbs against targets that can
+      // never satisfy them: `press_the_mark`'s failure exactly.
+      //
+      // `commanded_by` runs group → leader, so a commander's own bands are the sources
+      // of that edge type *incoming* to them.
+      const commandedIds = new Set(
+        graph.getIncomingEdges(actorId, 'commanded_by').map(e => e.source),
+      );
+
+      const candidates = graph.getNodesByType('actor').filter(n => {
+        if (getGroupKind(n) !== rule.groupKind) return false;
+        // An inert node is not a target — neither to reinforce nor to break.
+        if ((n.properties as Record<string, unknown>).groupStatus === 'disbanded') return false;
+        return rule.ownership === 'commanded_by_actor'
+          ? commandedIds.has(n.id)
+          : !commandedIds.has(n.id);
+      });
+
+      // Proximity ordering matters chiefly for the `other_commander` arm — a commander
+      // holds very few bands and all of them are equally theirs, while a rival needs
+      // the *nearest* warband to be reachable at all. `resolveTargetHex` resolves a
+      // group through `getGroupPosition` (leader, then any living member) precisely so
+      // this rule inherits the THR-1310 fix rather than silently falling back to
+      // insertion order.
+      return orderTargetsByProximity(
+        graph, candidates, actorHex, STRATEGIC_TARGET_SCAN_CAPS.group_node,
+      );
     }
 
     case 'hex_region':
