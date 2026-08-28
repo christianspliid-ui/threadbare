@@ -2320,3 +2320,64 @@ A new engine module with two callers and no new surface. It is in this checklist
 
 **Deferred, filed, not absorbed.** `cleared_lair` has no live writer and `clearedAtTick` has none either, so the clearing half of the lair system — and the reinfestation branch that reads it — is unreachable in a running world. THR-1319.
 
+
+---
+
+## THR-1319 — lair clearing (the writer `cleared_lair` never had)
+
+Engine pillar only. Content and UI are **N/A by path, not by exemption**: no component or
+content file changed, because `HexSidebar`'s Cleared Lair block, the cleared icon and its
+fill colour, `locationSoundKey`'s `cleared_lair` row and the `prose-layer-content` entries
+were all already authored and merely unreachable. This ticket makes existing surfaces
+render rather than adding new ones — which is exactly why the wiring question here is
+"does the state now occur?", not "is the reader connected?".
+
+| Module | Phase | Called from | New GameState field | Traces | Node/property writes |
+|---|---|---|---|---|---|
+| `src/engine/lairClearing.ts` | 2.3575 `phaseLairEscalation` | `resolveLairClearing(state)` inside the phase, after the active-lair loop | none | `faction_ambition` (`result: 'lair_pressed'` / `'lair_cleared'`) | `locationSubtype`, `locationType`, `clearedAtTick`, `clearedByFactionId`, `clearingProgress` |
+
+**No new orchestrator phase, deliberately.** The lair lifecycle already owns phase 2.3575
+and the right cadence (`LAIR_ESCALATION_INTERVAL 25`); a separate phase would split seed →
+escalate → clear → reinfest across two registry entries with no gain (systems-inventory
+rule). The clearing pass runs *after* the active-lair loop so a lair that upgraded or
+spawned this pass is pressed at the tier it now holds, and lairs cleared this pass are
+deliberately excluded from the reinfestation loop's snapshot so a den cannot fall and seep
+back on the same tick.
+
+**The writer is a chokepoint, and that is the wiring claim.** `clearLair` is the only
+writer of `cleared_lair` in `src/`. Subtype and `clearedAtTick` leave together in one
+`updateNode` call because reinfestation gates on `tick - (clearedAtTick ?? 0)` — a subtype
+written alone reads as cleared at tick 0 and reinfests instantly. Any future caller
+(an authored aftermath effect, a battle outcome) must route through it rather than setting
+the subtype directly.
+
+**Structural cache invalidation was owed and unpaid.** `phaseLairEscalation` now takes an
+optional `runtime` and calls `touchStructure` when a subtype moves in either direction.
+`touchStructure`'s own contract names "locationSubtype changes that affect encounter
+scoring"; reinfestation has always owed that bump and never made it, which was invisible
+because the branch it sits on was unreachable. The orchestrator already had `runtime` in
+scope at the call site (`phaseGroups(s, runtime)` is the precedent).
+
+**The live caller was chosen by measurement, and that is the wiring risk this ticket was
+about.** `clearedByFactionId` implies an army; the world holds **1 army against 36 lairs**,
+so an army-gated writer would have been wired and still dead — the ticket's own defect one
+layer down. Presence is read at **hex** level via `resolveLocationToHex`: at the lair node
+all 10 occupants were the lairs' own `isMonsterElite` bosses and none were mortals.
+Verified firing rather than assumed — seed 42 / medium / t150 clears 3 lairs at ticks 25,
+125 and 150.
+
+**Interface map:** no row. `Docs/canon/interface-map.md` and `scripts/interface-contracts.ts`
+carry no lair contract (verified by grep over both), and this adds no cross-system read or
+write — the readers listed above already read these properties and still do.
+
+**Wiki pages:** `armies-battles-reference` matched via `src/engine/lairEscalation.ts`.
+Updated in the same PR on both layers, and `src/engine/lairClearing.ts` added to the page's
+`sources` so the new module is covered going forward. `check:wiki-freshness:blocking` is the
+authority and was run last, after every closeout edit.
+
+**Residue, filed rather than absorbed.** `clearedByFactionId` is written when affiliated
+mortals do the clearing and is unit-tested, but on seeds 42 and 99 every mortal standing on
+a lair hex was unaffiliated, so organic clearings record no faction. That is the designed
+behaviour — an unaffiliated clearing is a real clearing with nobody to credit — but the
+field still has no organic writer, and a future faction-credited clearing path would need
+affiliated mortals to reach lair hexes.

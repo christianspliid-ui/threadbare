@@ -13,7 +13,7 @@ import {
   phaseLairEscalation,
   LAIR_ESCALATION_INTERVAL,
   LAIR_SPHERE_PRESSURE_EMISSION,
-  LAIR_SPAWN_SPHERE_THRESHOLD,
+  LAIR_REINFESTATION_SPHERE_THRESHOLD,
   LAIR_UPGRADE_MIN_TICKS,
   LAIR_LEGENDARY_MIN_TICKS,
   LAIR_REINFESTATION_MIN_TICKS,
@@ -104,8 +104,18 @@ function addClearedLairNode(
     dominantSphere?: string;
     hexCol?: number;
     hexRow?: number;
+    /**
+     * Accrued score in the lair's dominant sphere — what reinfestation actually reads
+     * since THR-1319. These fixtures used to put the score on a companion hex *node*
+     * built by `addHexNode`, which is a shape no generated world contains: the gate
+     * read undefined → 0 → blocked, so the passing tests were describing a branch that
+     * could not fire in any real world. The score belongs on the lair because that is
+     * the entity escalation aims its sphere pressure at.
+     */
+    sphereScore?: number;
   } = {},
 ): void {
+  const sphere = opts.dominantSphere ?? 'force';
   graph.addNode({
     id,
     type: 'location',
@@ -115,11 +125,19 @@ function addClearedLairNode(
       lairTier: 'minor',
       spawnedAtTick: 0,
       lastEscalationTick: 0,
-      dominantSphere: opts.dominantSphere ?? 'force',
+      dominantSphere: sphere,
       hexCol: opts.hexCol ?? 5,
       hexRow: opts.hexRow ?? 5,
       clearedAtTick: opts.clearedAtTick ?? 0,
       dangerZone: 'wilderness',
+      sphereAffinity: {
+        scores: {
+          force: 0, matter: 0, energy: 0, life: 0,
+          mind: 0, spirit: 0, time: 0, entropy: 0,
+          [sphere]: opts.sphereScore ?? 0,
+        },
+        progress: {},
+      },
     },
   });
 }
@@ -387,16 +405,14 @@ describe('phaseLairEscalation — cleared lair reinfestation', () => {
     const graph = new WorldGraph();
     const tick = LAIR_ESCALATION_INTERVAL;
 
-    // Add cleared lair with sphere pressure already in hex
+    // Cleared lair still steeped in the sphere that birthed it
     addClearedLairNode(graph, 'cleared_0', {
       clearedAtTick: 0, // elapsed = tick >= LAIR_REINFESTATION_MIN_TICKS
       dominantSphere: 'force',
       hexCol: 5,
       hexRow: 5,
+      sphereScore: LAIR_REINFESTATION_SPHERE_THRESHOLD,
     });
-
-    // Add hex node with high sphere pressure for 'force'
-    addHexNode(graph, 'hex_5_5', 5, 5, { force: LAIR_SPAWN_SPHERE_THRESHOLD });
 
     const state = makeMinimalState({
       graph,
@@ -416,15 +432,15 @@ describe('phaseLairEscalation — cleared lair reinfestation', () => {
     const graph = new WorldGraph();
     const tick = LAIR_ESCALATION_INTERVAL;
 
+    // Barely steeped — one under the bar, so this asserts the threshold and not
+    // merely the absence of any score at all.
     addClearedLairNode(graph, 'cleared_0', {
       clearedAtTick: 0,
       dominantSphere: 'force',
       hexCol: 3,
       hexRow: 3,
+      sphereScore: LAIR_REINFESTATION_SPHERE_THRESHOLD - 1,
     });
-
-    // Low sphere pressure
-    addHexNode(graph, 'hex_3_3', 3, 3, { force: LAIR_SPAWN_SPHERE_THRESHOLD - 20 });
 
     const state = makeMinimalState({
       graph,
@@ -449,9 +465,8 @@ describe('phaseLairEscalation — cleared lair reinfestation', () => {
       dominantSphere: 'force',
       hexCol: 7,
       hexRow: 7,
+      sphereScore: LAIR_REINFESTATION_SPHERE_THRESHOLD + 10,
     });
-
-    addHexNode(graph, 'hex_7_7', 7, 7, { force: LAIR_SPAWN_SPHERE_THRESHOLD + 10 });
 
     const state = makeMinimalState({
       graph,
@@ -479,9 +494,8 @@ describe('phaseLairEscalation — cleared lair with controlling faction', () => 
       dominantSphere: 'force',
       hexCol: 9,
       hexRow: 9,
+      sphereScore: LAIR_REINFESTATION_SPHERE_THRESHOLD + 20,
     });
-
-    addHexNode(graph, 'hex_9_9', 9, 9, { force: LAIR_SPAWN_SPHERE_THRESHOLD + 20 });
 
     // Add a non-monster faction node that controls the cleared lair
     graph.addNode({
@@ -839,9 +853,9 @@ describe('phaseLairEscalation — lair naming', () => {
       dominantSphere: 'force',
       hexCol: 5,
       hexRow: 5,
+      sphereScore: LAIR_REINFESTATION_SPHERE_THRESHOLD,
     });
     graph.updateNode('cleared_named', { name: 'The Choking Snare' });
-    addHexNode(graph, 'hex_5_5', 5, 5, { force: LAIR_SPAWN_SPHERE_THRESHOLD });
 
     const state = makeMinimalState({ graph, tick, seed: 42, pendingSpherePressures: [] });
 
@@ -884,7 +898,7 @@ describe('phaseLairEscalation — exported constants', () => {
   it('exports all required LAIR_* constants', () => {
     expect(LAIR_ESCALATION_INTERVAL).toBe(25);
     expect(LAIR_SPHERE_PRESSURE_EMISSION).toBeGreaterThan(0);
-    expect(LAIR_SPAWN_SPHERE_THRESHOLD).toBeGreaterThan(0);
+    expect(LAIR_REINFESTATION_SPHERE_THRESHOLD).toBeGreaterThan(0);
     expect(LAIR_UPGRADE_MIN_TICKS).toBeGreaterThan(0);
     expect(LAIR_LEGENDARY_MIN_TICKS).toBeGreaterThan(LAIR_UPGRADE_MIN_TICKS);
     expect(LAIR_REINFESTATION_MIN_TICKS).toBeGreaterThan(0);
