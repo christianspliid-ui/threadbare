@@ -92,7 +92,36 @@ Build time only, like slices 2 and 3, so the runtime columns are N/A by construc
 
 **Deliberately NOT wired: the interface-map badge extension.** The plan's wiring item 2 has it riding this PR, but absorbed ruling 3 defines the new content-claims badge **by pointer to the UL entry**, and no UL entry exists yet. A badge pointing at nothing is the drift that registry exists to catch. Filed as **THR-1316** (UL-proposal: `WorldRef` + the three violation classes) with its coordination block as first comment; the badge lands there, in the PR that creates the thing it points at.
 
-**Still owed by later slices of THR-1212:** the no-op gate contract test on a seeded world (item 5), and the `followOnTags` retirement (item 6) — which now has its ledger row as the evidence the plan said it should cite.
+**Still owed by later slices of THR-1212:** the no-op gate contract test on a seeded world (item 5 — **shipped, see below**), and the `followOnTags` retirement (item 6) — which now has its ledger row as the evidence the plan said it should cite.
+
+---
+
+## Shared anchor machinery — the seeded-world no-op gate (THR-1212 slice 5)
+
+The first of this ticket's gates that runs against a world rather than against source. Slices 2–4 are build-time generators; this one builds a world through the real `initializeGameState` → `runTick` pipeline and asks the question none of the static gates can: *does representative content resolve to something that is actually there?*
+
+| Module | Orchestrator phase | UI component | GameState field | Trace emitted | Debug visibility |
+|--------|-------------------|-------------|-----------------|---------------|-----------------|
+| `declaredChipAnchors` (new export, `compositionContract.ts`) | N/A — content-eval, called from tests and gates | N/A | none | none | returns the declarations, so a caller can report by name |
+| `src/engine/__tests__/contracts/worldRefNoOpGate.contract.test.ts` (new) | N/A — CI (vitest) | N/A | reads `state.graph`, `state.tick` | none | drops land in `__DEBUG.getWorldRefDrops()` (slice 1) |
+
+**CI wiring is already done and deliberately not re-done.** A vitest contract test runs inside `npm test`, which is a step of the required `Test · Typecheck · Build` check — so unlike slice 3's `check:chip-anchors` ratchet, this needs no `ci.yml` step of its own. Slice 3 found the opposite case (`check:chip-anchors` had been running nowhere since it shipped); the check that avoids repeating it is *name the job this gate runs in*, and here it is `npm test`.
+
+**The walk is shared, not reimplemented.** `declaredChipAnchors` reads through `aftermathFaces` — the same walk `chipAnchorViolations` (clause 2) and `chipsWithoutReferent` (slice 3) use — for the reason slice 3 recorded: a second walk drifts, and two populations that stop describing the same corpus is this ticket's own subject in miniature. It dedupes by `changeId::entityId` rather than by `changeId`, because one change can carry a `stateNoun` and several `concepts` naming different objects, and collapsing to the change would hide every anchor after the first.
+
+**The staging is real machinery, and that is the whole point.** Cast bindings come from `prepareEncounterSupportBundle` — the function the engine calls at spawn — not from a hand-built map. An invented map would supply both sides of the question and could never have caught THR-1165, where the sentinels were well-formed and the binder produced `supportBindings: []`.
+
+**Two vacuity guards, because this test's failure mode is passing over nothing.** 665 of 698 templates declare no anchor, so a walk that silently returned `[]` would pass every assertion. So (a) the population is asserted non-empty **per form** — a total-only guard is discharged by the 63 literals alone while the cast class that actually broke sits at zero — and (b) `EXPECTED_FORMS` is closed: a form appearing in the corpus with no disposition fails by name rather than being skipped, the `assertEveryMemberAnnotated` pattern the anchor catalog uses.
+
+**Measured on seed 42 / small / 20 ticks:** 33 templates declare 189 anchors — 63 `attachment_template`, 49 `$actor`, 30 `$target`, 24 `$faction:`, 23 `$cast:`, 0 `$artifact`. Zero unclassified, zero literals unresolved, zero faction definitions absent from the world, zero cast keys the binder failed to bind. The THR-1165 class is currently clean, which is what a guard rather than a sweep looks like.
+
+**Existence is checked across both id spaces the resolver returns from.** A sentinel resolves to a per-world graph node; an attachment-template literal passes through unchanged to a node in `attachmentTemplateIndex`, which is committed content and not in the world graph at all. Checking only the graph fails all 63 literals; checking only the index passes any string the graph never heard of.
+
+**Guard falsified twice, with the perturbation confirmed before the verdict** (the check impediment #872 asked for). Retargeting `encounter.slice.bargain_at_crossroads`'s chip anchor from `$cast:stranger` to `$cast:keeper` — a key its `supportBundle` *does* declare and the binder never produces, which is the THR-1165 shape exactly — failed by name (`supportBundle bound no 'keeper' in a real world`) and exited 1; reverted. Deleting one entry from `ANCHORS_WITHOUT_VISUAL_KIND` failed the enumeration assertion; reverted.
+
+**One finding, enumerated rather than tolerated.** Seven declared anchors carry an `entityId` and no `visualKind`, so `fromConceptRef` returns `undefined` and they never reach a resolver at all — an anchor authored into a field its own surface ignores (`visualKind`'s own doc: *"Absent ⇒ neither is drawn"*). Not a dead link (Law 21 holds — no affordance is drawn) and not a clause-2 violation (the declaration is well-formed), so no existing gate is about it. Pinned by name as `ANCHORS_WITHOUT_VISUAL_KIND` and filed as **THR-1317** with its coordination block as first comment (THR-836). A ceiling was rejected: it would let one be fixed and another appear with the gate none the wiser.
+
+**Still owed by the last slice of THR-1212:** the `followOnTags` retirement (item 6), which has slice 4's ledger row as its evidence.
 
 ---
 
