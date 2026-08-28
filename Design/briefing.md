@@ -1,11 +1,11 @@
 # Briefing
-**Generated:** 2026-08-29 00:55 local (22:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-08-29 01:57 local (23:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
 **Play two encounters, then approve the batch-2 brief — [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to) + [THR-1222](https://linear.app/threadbare/issue/THR-1222/run-retrofit-batch-2-the-camp-seven-through-the-factory-line-shrine).**
 
-Unchanged. Nothing merged this hour and nothing new arrived, so the shelf is exactly where the last brief left it: **seven items, none of them encounter writing.** This ask is still the only route by which any reaches it.
+Same ask as the last few hours — but the reason got sharper this hour. **Two more items shipped and nothing refilled behind them, so the shelf is now six items of which exactly one is real game work** ([the prose doctrine sweep](https://linear.app/threadbare/issue/THR-1324/prose-doctrine-v2-remediation-sweep-10-operative-surfaces-still-teach)). The other five are small deferred clean-ups. The builders are not stuck; they are running out of things to build, and this ask is the fastest route by which *content* reaches them — one word from you puts seven encounters on the shelf tonight.
 
 About five minutes. Open the *good ending* links first:
 
@@ -31,18 +31,18 @@ Unchanged since last hour — skip if you have read them. Detail in [user-action
 
 ## Queue
 
-**7 items Ready for Dev — healthy, but thin and mostly Low. Nothing merged this hour.**
+**6 items Ready for Dev — and only one of them is game work.**
 
-- **One new claim, no completions.** A session picked up [the run-founded faction bug](https://linear.app/threadbare/issue/THR-1322/a-run-founded-faction-renders-as-a-fallback-everywhere-in-the-ui) — a faction founded during play shows as a generic placeholder everywhere in the interface — and opened its PR at 00:23 local. It is red on the same blocked check as the handbook diet (see Health), so neither has landed.
-- **In Dev: 5, two of them live** — the faction fix above and [the handbook diet](https://linear.app/threadbare/issue/THR-1336/claudemd-diet-gate-law-and-sandbox-lore-move-to-canonops-pages-with). The other three are your parked standing asks ([THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to), [THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server), [THR-1168](https://linear.app/threadbare/issue/THR-1168/two-authored-encounter-audio-moments-have-no-live-caller-wire-or)); park shape verified intact this run.
-- **The shelf: one High** ([a claim-rule gap in the pickup lane](https://linear.app/threadbare/issue/THR-1325/pull-works-claim-predicates-miss-two-live-states-a-lane-resumes-a-live)), two Medium, four Low — and **still no encounter writing at all**.
+- **Two shipped this hour, nothing refilled.** [The handbook diet](https://linear.app/threadbare/issue/THR-1336/claudemd-diet-gate-law-and-sandbox-lore-move-to-canonops-pages-with) and [a claim-rule gap in the pickup lane](https://linear.app/threadbare/issue/THR-1325/pull-works-claim-predicates-miss-two-live-states-a-lane-resumes-a-live) both merged at 01:15. That closes out round 2 of the agent-handbook cleanup entirely.
+- **The shelf: one Medium that is real game work** ([the prose doctrine sweep](https://linear.app/threadbare/issue/THR-1324/prose-doctrine-v2-remediation-sweep-10-operative-surfaces-still-teach)) **and five small deferred clean-ups** — no High, and **still no encounter writing at all**. The orchestrator lane flagged the same crossing independently this hour.
+- **In Dev: 4, one of them live** — [the run-founded faction bug](https://linear.app/threadbare/issue/THR-1322/a-run-founded-faction-renders-as-a-fallback-everywhere-in-the-ui) (a faction founded during play shows as a generic placeholder everywhere in the interface). The other three are your parked standing asks ([THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to), [THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server), [THR-1168](https://linear.app/threadbare/issue/THR-1168/two-authored-encounter-audio-moments-have-no-live-caller-wire-or)); park shape verified intact this run.
 
 ## Health
 
-**The merge lane has stopped, and last hour's "just a flake" verdict was wrong. Nothing needs you — this is the executor lane's to fix.**
+**Green, with one PR needing a session. Nothing here needs you.**
 
-- **One test is now blocking every open PR.** `debugTickBatch.test.ts > clamps a request above DEBUG_TICK_MAX` times out at its 180-second ceiling. It has now done so on **three CI runs across two unrelated branches** — [the handbook diet](https://github.com/christianspliid-ui/threadbare/pull/1704) (a docs-only change, red ~4.5 hours, failed it twice) and [the faction fix](https://github.com/christianspliid-ui/threadbare/pull/1714) (a UI change, red since 00:23). Everything else passes both times: 18,974 of 18,975 tests green.
-- **Why that changes the read.** The standing note on #1704 called this a one-off caused by an overloaded test machine, and told the next session to re-run rather than touch anything. A re-run did not clear it, and it then reproduced on a different branch whose diff cannot reach that code. Two PRs deep, that is no longer machine noise — the test itself has outgrown its ceiling on CI hardware, and it will red every PR that follows until someone changes it. **The correct next action is to fix or re-scope the test, not to re-run the check again.** Auto-merge stays armed on both and cannot fire, so nothing unsafe merges meanwhile.
-- Everything else is green: the live site is up to date (recent commits touched only notes and docs, so no rebuild was needed), background jobs healthy, all nine scheduled lanes on schedule, the branch reaper ran at 00:40, and the home copy of the repo is clean and current.
+- **Last hour's blocked merge lane cleared itself.** Both PRs that were red on the same 180-second test timeout have now merged. Correcting last hour's read: I said a re-run would not clear it and the test needed re-scoping — a re-run did clear it. No code changed, so the underlying fragility is still there; the session logged it as impediment #926 rather than papering over it, which is the right record if it comes back.
+- **One open PR cannot merge — [#1714](https://github.com/christianspliid-ui/threadbare/pull/1714)** (the faction fix above) has a genuine merge conflict, armed since 00:23 and now ~1.5 hours old. Auto-merge stays armed and correctly refuses to fire. A session needs to merge `origin/main`, resolve by hand and push; nothing unsafe merges meanwhile.
+- Everything else is green: the live site is serving the latest commit, background jobs healthy, all nine scheduled lanes on schedule, the branch reaper ran at 01:40, and the home copy of the repo is clean and current.
 
 Unchanged and worth seeing rather than acting on: **the only lane quiet in the probe's window is overnight-shaped** — 22–23 and 23–24 August, both roughly 21:00–08:00 local, every lane stopping and resuming together. Declined under your 8 August ruling that overnight quiet is normal. Nothing was lost.

@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-29 00:55 local (22:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-29 01:57 local (23:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -11,7 +11,9 @@
 - The Grateful Kin — [play](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin) · [good ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin&outcome=critical_success) · [bad ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin&outcome=critical_failure)
 - The Unsafe Bridge — [play](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge) · [good ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge&outcome=critical_success) · [costly ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge&outcome=success_at_cost)
 
-**Then approve the brief — the camp seven:** shrine offering, sharpening blades, warding the camp, a small prayer, rest and reflection, tending wounds, scouting the perimeter. No typed consequences at all in that set; they are the last encounters below standard, and `shrine_offering` is encounter #1 of [your integrated slice checkpoint](https://linear.app/threadbare/issue/THR-1220), which cannot invite you until they are rewritten. The bar is live with no caveats: [The Beast in the Granary](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.hunt.the_beast_in_the_granary). [The brief](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/retrofit-batch-2-brief.md) proposes **seven** rather than your six, because the camp set is one family in one file and splitting the seventh costs a whole factory cycle. **Three ways to close it:** *"batch 2, seven is fine"*, *"keep it six"*, or *"same rule — judge batch 2 on one first."* It is also the **only** route by which new content reaches the shelf — and the evening's cleanup sweep has now finished, leaving seven items that are engine, docs and process work, with no writing at all.
+**Then approve the brief — the camp seven:** shrine offering, sharpening blades, warding the camp, a small prayer, rest and reflection, tending wounds, scouting the perimeter. No typed consequences at all in that set; they are the last encounters below standard, and `shrine_offering` is encounter #1 of [your integrated slice checkpoint](https://linear.app/threadbare/issue/THR-1220), which cannot invite you until they are rewritten. The bar is live with no caveats: [The Beast in the Granary](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.hunt.the_beast_in_the_granary). [The brief](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/retrofit-batch-2-brief.md) proposes **seven** rather than your six, because the camp set is one family in one file and splitting the seventh costs a whole factory cycle. **Three ways to close it:** *"batch 2, seven is fine"*, *"keep it six"*, or *"same rule — judge batch 2 on one first."*
+
+**Why it matters more tonight:** two more items shipped this hour and nothing refilled behind them. The shelf is six items, of which **exactly one is real game work** and none is encounter writing. This is the fastest route by which content reaches the builders.
 
 ### 2. One word players see, in two places — [THR-1314](https://linear.app/threadbare/issue/THR-1314/ul-proposal-work-holding-kind-row-christening-failure-name-register)
 
@@ -25,7 +27,7 @@ Three ways to go: **let both stand** (different grammar, never side by side — 
 
 Roughly twenty items sit in Todo and **every one needs a plan doc before an executor can touch it**. That is what the hours buy.
 
-**The builders just finished a seven-piece sweep in about an hour and are nearly empty-handed — and the design pipeline is exactly as blocked as it was.** All of that throughput was cleanup of what agents read, not new game, so none of it touches this.
+**The builders drained two more items this hour and the shelf fell to six, only one of which is real game work.** They are not stuck — they are running out of things to build, and no new design can be prepared while the design column is full.
 
 **The block has two names on it** *(orchestrator lane, standing — nine days at the same two)*: **[unify the card grammar](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** (your 6 August note, untouched 9 days; three tickets behind it) and **[traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)** (assigned to you, untouched 13 days). That lane holds one design slot and will not walk either backwards out of the column on its own. **Sit one, or say *"park it"*** — four more plan-doc sessions are unblocked behind them.
 
@@ -86,6 +88,8 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
+- **The agent handbook is on a diet** — [THR-1336](https://linear.app/threadbare/issue/THR-1336/claudemd-diet-gate-law-and-sandbox-lore-move-to-canonops-pages-with) merged 01:15 ([PR #1704](https://github.com/christianspliid-ui/threadbare/pull/1704)). Gate law and sandbox lore moved out of the always-loaded file and behind pointers; nothing in the game changes.
+- **A lane could resume work nobody had started** — [THR-1325](https://linear.app/threadbare/issue/THR-1325/pull-works-claim-predicates-miss-two-live-states-a-lane-resumes-a-live) merged 01:11. Resuming now proves the previous session is actually gone, and a hand-made ticket reads as unclaimed rather than resumable.
 - **A warband nobody could be recruited into** — [THR-1321](https://linear.app/threadbare/issue/THR-1321/a-cast-on-strategic-recruit-warband-halts-it-completely-13-completions) merged 22:28. One line of scene-casting stopped the recruit action dead: thirteen completions in a test run became zero, on both save modes.
 - **Round 2 of the agent-handbook cleanup — complete** — all seven pieces under [THR-1337](https://linear.app/threadbare/issue/THR-1337/context-cleanup-round-2-the-game-design-layer-audit-sweep-per-the) merged between 22:26 and 23:15: authority corrections, the glossary repair, the skills pass, old plan-doc markers, the vault rebuild, and the rules-of-play register. Nothing in the game changes; what agents read before they build does. Rounds 3–5 remain.
 - **A work that is people, and the offer that takes them away** — [THR-1309](https://linear.app/threadbare/issue/THR-1309) merged 20:22 ([PR #1690](https://github.com/christianspliid-ui/threadbare/pull/1690)) after five hours stuck on a conflict, resolved by hand. Agents can now undertake to raise a warband and offer others a place in it.
@@ -94,8 +98,6 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 - **Three rows of your status bar that were empty in every game ever played** — [THR-1307](https://linear.app/threadbare/issue/THR-1307) merged 19:39. Conditions, clues and vows read from a link type nothing has ever written.
 - **A choice that was never a choice** — [THR-1313](https://linear.app/threadbare/issue/THR-1313) merged and deployed ([PR #1693](https://github.com/christianspliid-ui/threadbare/pull/1693)). A branch in the code picked between two identical outcomes.
 - **A road that stands long enough to be taken** — [THR-1320](https://linear.app/threadbare/issue/THR-1320) claimed 18:02, merged 18:48 ([PR #1696](https://github.com/christianspliid-ui/threadbare/pull/1696)). A trade route founded by a season's work dissolved six ticks later, so the blockade meant to counter it never once had a road to cut.
-- **A dead term in how settlements are built, and the deeper one it hid** — [THR-1311](https://linear.app/threadbare/issue/THR-1311) merged 17:19 ([PR #1692](https://github.com/christianspliid-ui/threadbare/pull/1692)). Factions were supposed to shape what a settlement is good at; the code that read them could never match anything, silently, since it was written.
-- **The world pushes back — a lair can now be cleared** — [THR-1319](https://linear.app/threadbare/issue/THR-1319) merged 15:40 ([PR #1691](https://github.com/christianspliid-ui/threadbare/pull/1691)). A lair could be found and feared but never emptied, so the danger was permanent by accident.
 
 ---
 
