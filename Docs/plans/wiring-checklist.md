@@ -6,6 +6,39 @@
 
 ---
 
+## Hunger resonance reaches the meeting deal (THR-1213 slice 2)
+
+> Plan doc: `Docs/plans/2026-08-27-hunger-vocabulary-unification.md` § Wiring.
+
+| Module | Orchestrator phase | UI component | GameState field | Trace emitted | Debug visibility |
+|--------|-------------------|-------------|-----------------|---------------|------------------|
+| `engine/ascendantLens.ts` — `buildLensFromIdentity` (new) | N/A — flow-time, pre-bond; the meeting is component-driven, not a tick phase | `MeetTheFirst/MeetTheFirstFlow` | none | none | lens inputs are readable off the selection record below |
+| `engine/meetingEncounter.ts` — `scoreDilemmaResonance`, `pickFromPool`, `selectDilemmasScored` (new); `selectDilemmas` gains an optional `lens` | N/A — same | `MeetTheFirst/MeetTheFirstFlow`, `Game/MeetingEncounterModal` | `meetingChoiceRecord.dilemmaSelection` (thread edge, existing record extended) | **none, deliberately** — see below | `__DEBUG.getMeetingState()` for the live flow; the record persists on the thread edge after bond |
+| `types/hunger.ts` — `RESONANCE_TAGS`, `toResonanceTags` (new) | N/A — type/vocabulary layer | all meeting components (types only) | none | none | the array **is** the vocabulary surface |
+| `engine/dilemmaSelection.ts` | — | — | — | — | **deleted** — dormant V2 duplicate, zero production callers |
+
+**Why no trace, stated rather than assumed.** Dilemma selection runs inside the
+Meet-The-First flow, before the bonded agent exists as a graph node, and not from
+any tick phase — so there is no tick to attach a trace to and nothing for the
+trace buffer to ring. NFP #2 is served instead by `DilemmaSelectionRecord`, which
+persists **where meeting choices already persist** and answers the same question a
+trace would ("why did this god get these tests") from a surface that survives the
+run: per-slot hunger, score, pool size, and whether the anti-resonance valve
+fired. A token trace here would be inspectability theatre.
+
+**The connection that had to be made, and had been missed three ways.** Before
+this slice the scoring module had no production caller, the only `AscendantLens`
+in the tree was a `GameView` memo nothing consumed, and the field being scored
+spoke a vocabulary disjoint from the one it was compared against. Any *one* of
+those makes a wired-looking feature inert — which is the general lesson for this
+checklist: a module reaching an import graph is not the same as it reaching a
+player.
+
+**Left dormant on purpose, chartered not smuggled:** the lens *overlay prose*
+engine in the same module (`resolveLensOverlay`, `shouldFireMortalEcho`,
+`composeLensedProse`) still has no caller. Activating it changes what the player
+reads at the bonding beat, which is an experiential decision — THR-1318.
+
 ## Shared anchor machinery — the `WorldRef` type, adapters, and the live resolver (THR-1212 slice 1)
 
 First slice of wave-1 design A. **Additive and migrated into nothing** — every existing shape (`NavigationTarget`, `EntityVisualRef`, `EncounterAftermathConceptRef`, the narrative-segment quadruple) stays the format its consumers already speak, and this slice only makes the normal form and the translations exist. Strangler, per the standing preference. So this table records a *reachable* path, not a travelled one, and says so rather than badging a road nobody drives.

@@ -43,7 +43,10 @@ describe('meeting-dilemma-library', () => {
     for (const t of ENRICHED_DILEMMA_LIBRARY) {
       expect(t.resonance).toBeDefined();
       expect(t.resonance.emotionalRegister).toBeDefined();
-      expect(t.resonance.hungerResonance).toBeDefined();
+      // `hungerResonance` was asserted here until THR-1213 slice 2 retired it.
+      // The field held bare hunger ids compared against theme tags, so the
+      // assertion was green on a channel that had never scored anything — the
+      // exact shape the interface map says to delete with the contract.
       expect(t.resonance.driveResonance).toBeDefined();
       expect(t.resonance.incompatibleWith).toBeDefined();
     }

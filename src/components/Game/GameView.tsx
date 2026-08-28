@@ -146,8 +146,6 @@ import { applyBeatChoice } from '../../engine/journeyEngine';
 import { getThreadsFrom, getFactionMembershipEdges, getAvatarsOf } from '../../engine/graphQueries';
 import type { ThreadEdgeProperties } from '../../types/influence';
 import { createMeetingEncounterState, createAgentFromMeeting, isMeetTheFirstAvailable, MEETING_SETTLED_LOCATION_SUBTYPES } from '../../engine/meetingEncounter';
-import { buildStubAscendantLens } from '../../engine/ascendantLens';
-import type { AscendantLens } from '../../types/hunger';
 import { useNotifications } from './hooks/useNotifications';
 import { useInterruptAutoPause } from './hooks/useInterruptAutoPause';
 import { selectEncounterBadges, type EncounterBadgeModel } from './encounterBadgeModel';
@@ -605,11 +603,11 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     });
   }, [fogDisabled, gameState.visibilityMap]);
 
-  // ── Ascendant Lens (Hunger-based intent derivation for meetings) ──
-  const ascendantLens = useMemo<AscendantLens>(
-    () => buildStubAscendantLens(archetype.sphereAlignment.primary, archetype.sphereAlignment.secondary),
-    [archetype.sphereAlignment.primary, archetype.sphereAlignment.secondary],
-  );
+  // THR-1213 slice 2 deleted an `ascendantLens` memo here. It built a stub lens
+  // from *archetype* spheres, nothing read it, and the real lens now comes from
+  // the player's remembrance identity inside `MeetTheFirstFlow` — where a lens
+  // can actually reach the deal. The identity-less path builds its own stub in
+  // `MeetingEncounterModal`, at the one call site that needs it.
 
   // ── Shared actor + faction lookups (single graph traversal per tick) ──
   // TB-086: Key off runtime.worldVersion, not graph identity (graph is mutated in place)

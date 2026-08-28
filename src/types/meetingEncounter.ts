@@ -437,6 +437,37 @@ export interface MeetingChoiceRecord {
   formativeOutcomes?: FormativeOutcome[];
   /** How the mortal received the bond. Absent on legacy-path records. */
   bondReception?: BondReception;
+
+  // ── Hunger resonance (THR-1213 slice 2, additive) ──
+  /**
+   * Why this god got these formative tests. Absent when the deal was made
+   * without a lens (a caller with neither identity nor spheres).
+   */
+  dilemmaSelection?: DilemmaSelectionRecord;
+}
+
+/**
+ * The inspectable record of a resonance-scored deal.
+ *
+ * Dilemma selection runs inside the Meet-The-First flow, not the tick loop, so
+ * there is no trace to emit and nothing to register with the trace buffer. This
+ * record is the deliberate substitute (NFP #2): it answers "why did this god get
+ * these tests" from state that already persists on the thread edge, readable via
+ * `window.__DEBUG.getMeetingState()`.
+ */
+export interface DilemmaSelectionRecord {
+  /** The lens hunger that scored the deal. Absent on the stub/identity-less lens. */
+  hungerId?: HungerId;
+  /** One entry per filled slot, in deal order. */
+  slots: ReadonlyArray<{
+    templateId: string;
+    /** Resonance score of the winner, jitter excluded. */
+    score: number;
+    /** How many candidates it beat. */
+    poolSize: number;
+    /** The variety valve fired for this slot — the *least* resonant was taken. */
+    antiResonance: boolean;
+  }>;
 }
 
 // ─── Spark Investment Options (Step 3) ────────────────────────────
@@ -515,10 +546,16 @@ export interface MeetingEncounterResult {
  * narratively fitting dilemmas for a given god.
  */
 export interface DilemmaResonanceTags {
-  /** Core emotional registers of this dilemma (e.g. 'loss', 'ambition') */
+  /**
+   * Core emotional registers of this dilemma (e.g. 'loss', 'ambition').
+   *
+   * This is the channel hunger resonance scores against (THR-1213 slice 2):
+   * `emotionalRegister ∩ hunger.dilemmaResonanceTags`. The retired
+   * `hungerResonance` field held bare hunger *ids* and was compared against
+   * theme *tags* — disjoint vocabularies, zero fires across all 167 shipped
+   * dilemmas ever (THR-1158). One tag space, one comparison.
+   */
   emotionalRegister: readonly ResonanceTag[];
-  /** Hunger IDs or resonance tags this dilemma resonates with */
-  hungerResonance: readonly string[];
   /** Drive tags this dilemma resonates with */
   driveResonance: readonly ResonanceTag[];
   /** Tags that make this dilemma a poor fit (negative scoring) */

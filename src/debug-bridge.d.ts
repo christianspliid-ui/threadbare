@@ -1111,6 +1111,12 @@ export interface DebugBridge {
    *  legacy choice scene is showing — a real state during the THR-868 rollout, not a
    *  fault. `convertedCount` is how many of `dilemmaIds` carried a `test`.
    *
+   *  *Why* those dilemmas were dealt is a different question, answered elsewhere: the
+   *  resonance scoring behind the deal persists as `meetingChoiceRecord.dilemmaSelection`
+   *  on the thread edge once the meeting completes (THR-1213 slice 2) — hunger, per-slot
+   *  score, pool size, and whether the anti-resonance valve fired. Selection is flow-time,
+   *  not tick-loop, so that record is the inspectability channel in place of a trace.
+   *
    *  **Async** (`await` it) — the bridge has no static imports, so the store module is
    *  pulled in on call. An unawaited call logs a Promise. */
   getMeetingState: () => Promise<

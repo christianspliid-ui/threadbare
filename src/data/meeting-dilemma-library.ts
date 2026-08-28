@@ -115,7 +115,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: ['compassion', 'loss', 'protection'],
-      hungerResonance: ['gather'],
       driveResonance: ['protection', 'belonging'],
       incompatibleWith: ['AX-IRON-02'],
     },
@@ -244,7 +243,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: ['desperation', 'sacrifice', 'belonging'],
-      hungerResonance: ['gather'],
       driveResonance: ['protection', 'sacrifice'],
       incompatibleWith: ['AX-IRON-01'],
     },
@@ -374,7 +372,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: ['sacrifice', 'protection', 'loss'],
-      hungerResonance: ['gather'],
       driveResonance: ['protection', 'sacrifice'],
       incompatibleWith: [],
     },
@@ -504,7 +501,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -626,7 +622,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -749,7 +744,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -872,7 +866,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -995,7 +988,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -1118,7 +1110,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -1241,7 +1232,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -1368,7 +1358,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -1490,7 +1479,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -1614,7 +1602,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -1737,7 +1724,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -1863,7 +1849,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -1986,7 +1971,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: ['AX-VEIL-03'],
     },
@@ -2109,7 +2093,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -2232,7 +2215,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: ['AX-VEIL-01'],
     },
@@ -2355,7 +2337,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -2478,7 +2459,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -2601,7 +2581,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: ['loyalty', 'belonging', 'duty'],
-      hungerResonance: ['gather'],
       driveResonance: ['belonging', 'community'],
       incompatibleWith: [],
     },
@@ -2731,7 +2710,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -2855,7 +2833,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: ['devotion', 'sacrifice', 'belonging'],
-      hungerResonance: ['gather'],
       driveResonance: ['belonging', 'protection'],
       incompatibleWith: [],
     },
@@ -2986,7 +2963,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -3110,7 +3086,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -3233,7 +3208,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -3356,7 +3330,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -3480,7 +3453,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -3604,7 +3576,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -3727,7 +3698,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -3852,7 +3822,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -3987,7 +3956,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -4111,7 +4079,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -4236,7 +4203,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -4361,7 +4327,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -4486,7 +4451,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -4609,7 +4573,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -4732,7 +4695,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -4857,7 +4819,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -4983,7 +4944,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -5106,7 +5066,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -5139,7 +5098,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -5172,7 +5130,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -5205,7 +5162,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -5238,7 +5194,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -5273,7 +5228,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -5308,7 +5262,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -5424,7 +5377,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -5540,7 +5492,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -5656,7 +5607,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -5691,7 +5641,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -5726,7 +5675,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -5842,7 +5790,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -5877,7 +5824,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -5993,7 +5939,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -6109,7 +6054,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -6144,7 +6088,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -6260,7 +6203,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -6375,7 +6317,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -6410,7 +6351,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -6526,7 +6466,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -6561,7 +6500,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -6596,7 +6534,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -6712,7 +6649,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -6828,7 +6764,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -6944,7 +6879,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -6979,7 +6913,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: ['belonging', 'shelter', 'community'],
-      hungerResonance: ['gather'],
       driveResonance: ['community', 'belonging'],
       incompatibleWith: [],
     },
@@ -7102,7 +7035,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -7218,7 +7150,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -7334,7 +7265,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: ['nurturing', 'belonging', 'protection'],
-      hungerResonance: ['gather'],
       driveResonance: ['protection', 'community'],
       incompatibleWith: [],
     },
@@ -7376,7 +7306,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -7411,7 +7340,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -7527,7 +7455,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -7643,7 +7570,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -7759,7 +7685,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -7794,7 +7719,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -7829,7 +7753,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -7864,7 +7787,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -7980,7 +7902,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: ['protection', 'sacrifice', 'endurance'],
-      hungerResonance: ['gather', 'preserve'],
       driveResonance: ['protection', 'community'],
       incompatibleWith: [],
     },
@@ -8104,7 +8025,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -8221,7 +8141,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -8256,7 +8175,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -8372,7 +8290,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -8489,7 +8406,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -8524,7 +8440,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -8638,7 +8553,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -8671,7 +8585,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -8711,7 +8624,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -8751,7 +8663,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -8784,7 +8695,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -8824,7 +8734,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -8857,7 +8766,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -8890,7 +8798,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -8923,7 +8830,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -8956,7 +8862,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -8989,7 +8894,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -9022,7 +8926,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -9055,7 +8958,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -9088,7 +8990,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -9121,7 +9022,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -9154,7 +9054,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -9187,7 +9086,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -9220,7 +9118,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -9253,7 +9150,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -9293,7 +9189,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -9326,7 +9221,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -9359,7 +9253,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -9392,7 +9285,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -9432,7 +9324,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -9465,7 +9356,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -9498,7 +9388,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -9531,7 +9420,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -9564,7 +9452,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -9597,7 +9484,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -9630,7 +9516,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -9663,7 +9548,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -9696,7 +9580,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -9729,7 +9612,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -9762,7 +9644,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -9795,7 +9676,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -9828,7 +9708,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -9861,7 +9740,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -9894,7 +9772,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -9927,7 +9804,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -9960,7 +9836,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -10006,7 +9881,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: ['nurturing', 'belonging', 'loss'],
-      hungerResonance: ['gather'],
       driveResonance: ['protection', 'belonging'],
       incompatibleWith: [],
     },
@@ -10059,7 +9933,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -10110,7 +9983,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -10161,7 +10033,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: ['devotion', 'protection', 'belonging'],
-      hungerResonance: ['gather'],
       driveResonance: ['protection', 'sacrifice'],
       incompatibleWith: [],
     },
@@ -10214,7 +10085,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -10260,7 +10130,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -10306,7 +10175,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -10352,7 +10220,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -10398,7 +10265,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -10444,7 +10310,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -10490,7 +10355,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -10536,7 +10400,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -10582,7 +10445,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -10628,7 +10490,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -10679,7 +10540,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -10725,7 +10585,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -10771,7 +10630,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -10810,7 +10668,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -10849,7 +10706,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -10888,7 +10744,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -10927,7 +10782,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -10973,7 +10827,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -11019,7 +10872,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -11065,7 +10917,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -11097,7 +10948,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -11129,7 +10979,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -11161,7 +11010,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -11200,7 +11048,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -11232,7 +11079,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -11278,7 +11124,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -11310,7 +11155,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -11342,7 +11186,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -11374,7 +11217,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: ['GR-FACTION-02'],
     },
@@ -11406,7 +11248,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -11438,7 +11279,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -11470,7 +11310,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -11502,7 +11341,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -11534,7 +11372,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -11566,7 +11403,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -11598,7 +11434,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },
@@ -11630,7 +11465,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: ['GR-FACTION-04'],
     },
@@ -11662,7 +11496,6 @@ export const ENRICHED_DILEMMA_LIBRARY: readonly EnrichedDilemmaTemplate[] = [
     ],
     resonance: {
       emotionalRegister: [],
-      hungerResonance: [],
       driveResonance: [],
       incompatibleWith: [],
     },

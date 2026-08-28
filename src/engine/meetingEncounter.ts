@@ -15,7 +15,10 @@ import type { WorldGraph } from './graph';
 import type { ReachDomain } from '../types/traits';
 import type { SphereName } from '../types/index';
 import type { AxiologicalProfile, ValuePair } from '../types/agent';
-// AscendantLens + deriveIntentFromHunger removed — narrative flow derives intent in the sensing beat
+// `deriveIntentFromHunger` stays out — the narrative flow derives intent in the
+// sensing beat. `AscendantLens` came back in THR-1213 slice 2: dilemma selection
+// now scores against it.
+import type { AscendantLens } from '../types/hunger';
 import { REACH_VALUE_PAIR, VALUE_PAIRS } from '../types/agent';
 import { REACH_DOMAINS } from '../types/traits';
 import { DEFAULT_REPUTATION } from '../types/disposition';
@@ -28,6 +31,7 @@ import type {
   DilemmaTemplate,
   DilemmaInstance,
   DilemmaChoiceRecord,
+  DilemmaSelectionRecord,
   EnrichedDilemmaTemplate,
   IntentOption,
   NarrativeCandidate,
@@ -278,10 +282,122 @@ function generateCandidateName(
 
 // ─── Step 2: Dilemma Selection ────────────────────────────────────
 
+// ── Resonance scoring constants (NFP #1) ──
+//
+// These moved here from the dormant `dilemmaSelection.ts` V2 module, which was
+// deleted with them (THR-1213 slice 2): it held the only copy of this scoring
+// and had zero production callers, so the weights had never priced a real deal.
+// One home per knob — the vignette weight below is named for its own system.
+
+/** Score per tag overlap between a dilemma's `emotionalRegister` and the hunger's tags. */
+export const HUNGER_RESONANCE_WEIGHT = 2.0;
+
+/** Score per tag overlap between a dilemma's `driveResonance` and the lens `driveTags`. */
+export const DRIVE_RESONANCE_WEIGHT = 3.0;
+
+/**
+ * Chance a slot takes its *least* resonant candidate instead of its most.
+ *
+ * The variety valve, carried over from V2. A god who is always mirrored back at
+ * themselves stops being a god with a perspective and becomes a filter; this is
+ * the mechanical guarantee that resonance weighs the deal without dictating it.
+ */
+export const ANTI_RESONANCE_PROBABILITY = 0.15;
+
+/** Deterministic jitter magnitude, for breaking ties inside a pool. */
+export const RESONANCE_TIE_JITTER = 0.001;
+
+/**
+ * Score one candidate's resonance against the god's lens.
+ *
+ * Scores `emotionalRegister` — *not* the retired `hungerResonance`, which held
+ * bare hunger ids and was compared against theme tags. Two disjoint
+ * vocabularies, so this function's ancestor returned 0 for all 167 shipped
+ * dilemmas, for every god, always (THR-1158). One tag space now.
+ *
+ * `DilemmaTemplate` does not declare `resonance` — only the enriched subtype
+ * does — so this is a guarded read, the same shape as the `test` carriage
+ * below. An unenriched template scores 0 and stays selectable: resonance
+ * weighs, it never gates.
+ */
+export function scoreDilemmaResonance(
+  template: DilemmaTemplate,
+  lens: AscendantLens | undefined,
+): number {
+  if (!lens) return 0;
+  const resonance = (template as Partial<EnrichedDilemmaTemplate>).resonance;
+  if (!resonance) return 0;
+
+  const hungerTags = new Set<string>(lens.hunger.dilemmaResonanceTags);
+  const driveTags = new Set<string>(lens.driveTags);
+
+  let score = 0;
+  for (const tag of resonance.emotionalRegister) {
+    if (hungerTags.has(tag)) score += HUNGER_RESONANCE_WEIGHT;
+  }
+  for (const tag of resonance.driveResonance) {
+    if (driveTags.has(tag)) score += DRIVE_RESONANCE_WEIGHT;
+  }
+  return score;
+}
+
+/** One slot's pick, plus what the record needs to explain it. */
+interface PoolPick {
+  template: DilemmaTemplate;
+  score: number;
+  poolSize: number;
+  antiResonance: boolean;
+}
+
+/**
+ * Pick one template from a pool, weighted by resonance.
+ *
+ * **Draw-count discipline (NFP #3).** This runs on every pick whether or not a
+ * lens is present, and consumes the same draws either way: one anti-resonance
+ * roll, then one jitter draw per candidate. A lens changes only the *score*
+ * term, never the shape of the stream — so passing a lens can never shift an
+ * unrelated downstream pick, and the no-op gate's "this hunger's deal differs
+ * from the no-lens deal at the same seed" comparison isolates resonance instead
+ * of measuring stream drift. (That is the failure it would otherwise report as
+ * a pass: with a lens-conditional draw count, *every* deal differs, and the
+ * gate goes green while proving nothing.)
+ *
+ * With no lens every base score is 0, so the jitter alone orders the pool and
+ * the pick is uniform over it — the same distribution as the plain
+ * `floor(rng() * length)` this replaced, though not the same element.
+ */
+function pickFromPool(
+  pool: readonly DilemmaTemplate[],
+  lens: AscendantLens | undefined,
+  rng: () => number,
+): PoolPick | undefined {
+  const antiResonance = rng() < ANTI_RESONANCE_PROBABILITY;
+  if (pool.length === 0) return undefined;
+
+  const scored = pool.map((template) => {
+    const score = scoreDilemmaResonance(template, lens);
+    return { template, score, sortKey: score + rng() * RESONANCE_TIE_JITTER };
+  });
+  scored.sort((a, b) => b.sortKey - a.sortKey);
+
+  const winner = antiResonance ? scored[scored.length - 1] : scored[0];
+  return {
+    template: winner.template,
+    score: winner.score,
+    poolSize: pool.length,
+    antiResonance,
+  };
+}
+
 /**
  * Select dilemmas for a meeting encounter.
  * Ensures one dilemma targets the primary reach's value pair.
  * Fills remaining slots from reach-specific, domain-specific, and general pools.
+ *
+ * Thin wrapper over {@link selectDilemmasScored} for the callers that want only
+ * the deal. Everything the lens changes is *which* eligible template wins a
+ * slot — eligibility, count, slot structure and the THR-868 `test` carriage are
+ * untouched.
  */
 export function selectDilemmas(
   templates: DilemmaTemplate[],
@@ -291,8 +407,30 @@ export function selectDilemmas(
   archetypeId: string,
   locationSubtype: string,
   seed: number,
+  lens?: AscendantLens,
 ): DilemmaInstance[] {
+  return selectDilemmasScored(
+    templates, primaryReach, secondaryReach, sphere, archetypeId, locationSubtype, seed, lens,
+  ).dilemmas;
+}
+
+/**
+ * {@link selectDilemmas}, plus the {@link DilemmaSelectionRecord} explaining the
+ * deal. Separate export rather than a changed return type so every existing
+ * caller and test keeps working unchanged (NFP #6).
+ */
+export function selectDilemmasScored(
+  templates: DilemmaTemplate[],
+  primaryReach: ReachDomain,
+  secondaryReach: ReachDomain,
+  sphere: SphereName,
+  archetypeId: string,
+  locationSubtype: string,
+  seed: number,
+  lens?: AscendantLens,
+): { dilemmas: DilemmaInstance[]; record: DilemmaSelectionRecord } {
   const rng = createSeededRng(seed, 'dilemma_select');
+  const slots: Array<DilemmaSelectionRecord['slots'][number]> = [];
 
   // Determine count (2-3)
   const count = MEETING_DILEMMA_COUNT_MIN +
@@ -312,10 +450,16 @@ export function selectDilemmas(
   const axiologicalCandidates = templates.filter(t =>
     t.category === 'axiological' && t.targetValuePair === primaryPair && eligible(t)
   );
-  if (axiologicalCandidates.length > 0) {
-    const pick = axiologicalCandidates[Math.floor(rng() * axiologicalCandidates.length)];
-    selected.push(pick);
-    usedIds.add(pick.id);
+  const axioPick = pickFromPool(axiologicalCandidates, lens, rng);
+  if (axioPick) {
+    selected.push(axioPick.template);
+    usedIds.add(axioPick.template.id);
+    slots.push({
+      templateId: axioPick.template.id,
+      score: axioPick.score,
+      poolSize: axioPick.poolSize,
+      antiResonance: axioPick.antiResonance,
+    });
   }
 
   // 2. Fill remaining slots from other categories
@@ -353,24 +497,38 @@ export function selectDilemmas(
     return true;
   });
 
-  // Pick remaining
+  // Pick remaining. The priority window is unchanged — category priority still
+  // decides *which candidates compete* for a slot; resonance decides which of
+  // them wins it.
   for (let i = 0; i < remainingNeeded && i < uniquePrioritized.length; i++) {
-    // Weighted random from prioritized list (earlier = higher weight)
-    const idx = Math.floor(rng() * Math.min(uniquePrioritized.length, remainingNeeded * 3));
-    const clamped = Math.min(idx, uniquePrioritized.length - 1);
-    const pick = uniquePrioritized.splice(clamped, 1)[0];
+    const window = uniquePrioritized.slice(
+      0,
+      Math.min(uniquePrioritized.length, remainingNeeded * 3),
+    );
+    const pick = pickFromPool(window, lens, rng);
     if (pick) {
-      selected.push(pick);
-      usedIds.add(pick.id);
+      selected.push(pick.template);
+      usedIds.add(pick.template.id);
+      slots.push({
+        templateId: pick.template.id,
+        score: pick.score,
+        poolSize: pick.poolSize,
+        antiResonance: pick.antiResonance,
+      });
+      uniquePrioritized.splice(uniquePrioritized.indexOf(pick.template), 1);
     }
   }
 
-  // Fail-soft: if we don't have enough, pad with any remaining eligible
+  // Fail-soft: if we don't have enough, pad with any remaining eligible.
+  // A padded slot is recorded with score 0 and poolSize 0 — the record should
+  // say "resonance did not choose this one" rather than omit the slot and make
+  // the deal and the explanation different lengths.
   while (selected.length < MEETING_DILEMMA_COUNT_MIN) {
     const any = templates.find(t => eligible(t) && !usedIds.has(t.id));
     if (!any) break;
     selected.push(any);
     usedIds.add(any.id);
+    slots.push({ templateId: any.id, score: 0, poolSize: 0, antiResonance: false });
   }
 
   // Convert to instances.
@@ -380,7 +538,7 @@ export function selectDilemmas(
   // here or the converted path is unreachable no matter how many templates
   // carry a test. `DilemmaTemplate` does not declare it — only the enriched
   // subtype does — hence the guarded read rather than a plain property access.
-  return selected.map(t => {
+  const dilemmas = selected.map(t => {
     const test = (t as Partial<EnrichedDilemmaTemplate>).test;
     return {
       templateId: t.id,
@@ -391,6 +549,14 @@ export function selectDilemmas(
       ...(test ? { test } : {}),
     };
   });
+
+  return {
+    dilemmas,
+    record: {
+      ...(lens ? { hungerId: lens.hunger.id } : {}),
+      slots,
+    },
+  };
 }
 
 // ─── Step 2: Apply Dilemma Choice ─────────────────────────────────
@@ -837,8 +1003,15 @@ export function createAgentFromMeeting(
 /** Number of narrative candidates to show the player. */
 const NARRATIVE_CANDIDATE_COUNT = 3;
 
-/** Score multiplier applied to vignettes that resonate with the active Hunger. */
-const HUNGER_RESONANCE_WEIGHT = 2.0;
+/**
+ * Score multiplier applied to vignettes that resonate with the active Hunger.
+ *
+ * Named for its system (THR-1213 slice 2). It was `HUNGER_RESONANCE_WEIGHT` —
+ * the third symbol of that name in the tree, and the only live one — which meant
+ * tuning "the hunger resonance weight" could silently mean the candidate
+ * vignettes or the dilemma deal. One knob, one name, one system.
+ */
+const VIGNETTE_HUNGER_RESONANCE_WEIGHT = 2.0;
 
 /**
  * Generate 3 narrative candidates biased by Hunger resonance.
@@ -859,7 +1032,7 @@ export function generateNarrativeCandidates(
   const scored = CANDIDATE_VIGNETTES.map(v => {
     // Read boundary: hungerId arrives as an untyped string (identity or stub).
     const resonance = (v.hungerResonance as readonly string[]).includes(hungerId)
-      ? HUNGER_RESONANCE_WEIGHT
+      ? VIGNETTE_HUNGER_RESONANCE_WEIGHT
       : 0;
     const jitter = rng() * 0.5;
     return { vignette: v, score: resonance + jitter };
