@@ -25,7 +25,7 @@ import { hexToWorld } from '../../../lib/worldPosition';
 import { HEX_CONSTANTS } from './HexFillMesh';
 import { FACTION_HERALDIC_COLORS } from '../agents/agentSpriteTypes';
 import { generateCoatOfArmsSvg, buildCoatOfArmsConfig } from '../../icons';
-import { ALL_FACTION_DEFINITIONS as ALL_FACTION_DEFS } from '../../../data/faction-definition-lookup';
+import { getFactionDefinitionRoster } from '../../../data/faction-definition-lookup';
 import type { ArmyRenderData as SpriteArmyRenderData } from './ArmySpriteMesh';
 
 // ── Constants ────────────────────────────────────────────────────────────────
@@ -137,11 +137,20 @@ const coaTextureCache = new Map<string, THREE.CanvasTexture | 'failed'>();
  * Call this once before building the army layer so textures are
  * ready synchronously when createArmyLayer runs.
  *
+ * **Reads the live roster, not the authored tables (THR-1322).** A faction
+ * chartered mid-run by `strategic_found_order` does not exist when the scene is
+ * first built, so enumerating the static map left its armies drawing the plain
+ * fallback dot forever. The roster is re-read here rather than at module scope,
+ * and the army-layer rebuild effect already re-runs this whenever `armies`
+ * changes — which is exactly when a founded order's host first appears — so the
+ * new definition is picked up with no extra invalidation path. Already-cached
+ * ids are skipped, so the re-read costs one map build per army change.
+ *
  * Returns a promise that resolves when all textures are cached.
  */
 export async function preloadCoatOfArmsTextures(texSize: number): Promise<void> {
   const promises: Promise<void>[] = [];
-  for (const [defId, def] of ALL_FACTION_DEFS) {
+  for (const [defId, def] of getFactionDefinitionRoster()) {
     if (coaTextureCache.has(defId)) continue;
 
     let svgStr: string;
@@ -193,7 +202,6 @@ export async function preloadCoatOfArmsTextures(texSize: number): Promise<void> 
  */
 function getCoatOfArmsTexture(factionDefId: string): THREE.CanvasTexture | null {
   const cached = coaTextureCache.get(factionDefId);
-  console.debug('[CoA] getCoatOfArmsTexture', factionDefId, 'cached=', cached ? (cached === 'failed' ? 'failed' : 'texture') : 'miss', 'allDefs has?', ALL_FACTION_DEFS.has(factionDefId));
   if (!cached || cached === 'failed') return null;
   return cached;
 }

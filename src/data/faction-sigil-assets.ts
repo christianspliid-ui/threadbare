@@ -81,11 +81,17 @@ function buildSigilDataUri(factionDefId: string): string | null {
 export function getFactionSigilUrl(factionDefId: string | null | undefined): string | null {
   if (!factionDefId) return null;
 
+  // Only a *successful* build is cached (THR-1322). A miss is recomputed on
+  // every call, because the definition set grows during a run — an id asked for
+  // before `strategic_found_order` charters it resolves to null, and a cached
+  // null would outlive the founding and pin that order to a blank shield for
+  // the rest of the session. The recomputation is a map miss and a return; the
+  // expensive half (SVG string building) still only runs on a hit.
   const cached = sigilCache.get(factionDefId);
-  if (cached !== undefined) return cached;
+  if (cached != null) return cached;
 
   const uri = buildSigilDataUri(factionDefId);
-  sigilCache.set(factionDefId, uri);
+  if (uri !== null) sigilCache.set(factionDefId, uri);
   return uri;
 }
 

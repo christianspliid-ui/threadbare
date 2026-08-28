@@ -461,11 +461,13 @@ export interface GameState {
   // so it was a declared field nothing filled: a founded "order" got a guild hall and
   // no organisation.
   //
-  // Merged with static FACTION_DEFINITIONS by `factionNetwork.getFactionDefinition`,
-  // which takes this map as a parameter. Note the *other* lookup —
-  // `data/faction-definition-lookup.ts`, which the UI uses — builds its map once at
-  // module eval from the static tables and cannot see this one, so a founded faction
-  // resolves to `null` there and renders a fallback (TODO(THR-1322)).
+  // Read through `data/faction-definition-lookup.ts`, the one lookup for both
+  // context-carrying and context-free callers (THR-1322). Callers that hold a
+  // `GameState` pass this map explicitly; the render side — tooltips, the sigil
+  // registry, the hex map's coat-of-arms roster — resolves from an id alone
+  // against a session-scoped mirror of this field, written where this field is
+  // written. This map remains the authority; the mirror is republished from it
+  // at game init.
   dynamicFactionDefinitions?: Record<string, import('./faction').FactionDefinition>;
 
   // Strategic actions — proactive world-shaping behavior driven by ambitions

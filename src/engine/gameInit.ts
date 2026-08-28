@@ -50,6 +50,7 @@ import { getOriginPortraitUrl } from '../data/avatar-portrait-assets';
 import { MEETING_SETTLED_LOCATION_SUBTYPES } from './meetingEncounter';
 import { AMBITION_KIND_KEY, AMBITION_KIND_TEMPLATE } from './ambitionShape';
 import { defaultFollowedAgentIds } from './undertakingCheckpoints';
+import { publishDynamicFactionDefinitions } from '../data/faction-definition-lookup';
 
 /** PRNG offset for pre-worldgen culture identity generation. Unique prime — no collision with worldgen passes. */
 const CULTURE_SEED_OFFSET = 87671;
@@ -373,6 +374,13 @@ export function initializeGameState(
     echoStates: [],
     chronicle: createGreatChronicle(),
   };
+
+  // The run-founded faction overlay is a projection of this state, so a new
+  // world republishes it rather than inheriting the previous run's entries
+  // (THR-1322). A freshly-initialised state carries none, which makes this a
+  // clear; a state that already holds founded definitions publishes them all
+  // without the mirror having had to observe the mints.
+  publishDynamicFactionDefinitions(state.dynamicFactionDefinitions);
 
   return {
     state,

@@ -25,6 +25,10 @@ import type { LocationSubtype } from '../types/index';
 import type { StrategicFactionSeed } from '../types/strategicAction';
 import type { FactionDefinition, FactionRankTier, FactionType } from '../types/faction';
 import { FACTION_REPUTATION_DECAY_PER_TICK } from '../data/faction-constants';
+import {
+  registerDynamicFactionDefinition,
+  unregisterDynamicFactionDefinition,
+} from '../data/faction-definition-lookup';
 import { GROUP_MAX_MEMBERS, GROUP_MIN_MEMBERS } from '../data/group-constants';
 import { createGroup } from './groups/groupFormation';
 import { dissolveGroup } from './groups/groupDissolution';
@@ -1368,6 +1372,12 @@ export function foundFaction(
     // Recorded before seeding — see the doc comment.
     if (!state.dynamicFactionDefinitions) state.dynamicFactionDefinitions = {};
     state.dynamicFactionDefinitions[definitionId] = definition;
+    // Mirrored to the shared lookup in the same breath (THR-1322). The render
+    // side resolves definitions from an id with no `GameState` in hand — every
+    // tooltip, the sigil registry, the hex map's coat-of-arms roster — so a
+    // definition recorded only in state is a faction that draws as a nameless
+    // fallback everywhere the player can actually see it.
+    registerDynamicFactionDefinition(definition);
 
     const allLocationIds = graph.getNodesByType('location').map(n => n.id);
     const result = seedFactionFromDefinition(
@@ -1385,6 +1395,7 @@ export function foundFaction(
       // an order with no seat, so roll the definition back rather than leaving a
       // half-founded entry the faction layer would go on reading forever.
       delete state.dynamicFactionDefinitions[definitionId];
+      unregisterDynamicFactionDefinition(definitionId);
       return { success: false, op: 'create_group', error: 'no_qualifying_locations' };
     }
 
