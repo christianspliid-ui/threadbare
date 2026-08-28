@@ -32,7 +32,7 @@
 - **What to build next** → Linear (Threadbare team) only. Issues sorted by priority within projects.
 - **Active milestone tracking** → Linear Projects (lifecycle: Idea → Next → Research → Discovery → Now → Done).
 - **Legacy milestone overview** → `.planning/ROADMAP.md`. Phase-level history.
-- **Project status** → `Docs/project-status.md` (current focus, ≤60 lines) + `Docs/project-history.md` (append-only archive).
+- **Project status** → one `Docs/status/YYYY-MM-DD-thr-XXXX.md` fragment per shipped ticket (`Docs/project-status.md` is **generated and untracked** since THR-1016 — assembled from the newest fragments under a ≤60-line cap; never hand-edit it) + `Docs/project-history.md` (append-only archive).
 - **System definitions** (e.g. "what is the Doom Clock") → Obsidian only. Other surfaces link to it.
 - **Why a decision was made** → `Docs/plans/` only. CLAUDE.md references the plan doc, not the rationale itself.
 - **Visual style** → `STYLE.md` + `Design/style-tile.html` in repo.
@@ -68,7 +68,7 @@
 - Tradeoffs, alternatives considered, "why not X"
 
 ### Repo — `Docs/` (top level)
-- `project-status.md` — current focus + next priority (≤60 lines, orientation only)
+- `status/` — one fragment per shipped ticket (`project-status.md` is generated from the newest of these and untracked, THR-1016 — never hand-edit)
 - `project-history.md` — append-only completed milestone archive (troubleshooting reference)
 - `changelog.md` — append-only log of changes (date | where | what | why)
 - `ubiquitous-language/` — canonical terminology (UL wins on disagreements)
