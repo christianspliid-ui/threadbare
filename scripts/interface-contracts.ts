@@ -804,14 +804,25 @@ export const CONTRACTS: readonly Contract[] = [
     // relationships that already exist*, not a durable edge someone writes.
     //   1. `resourceBalance` — the aggregate a location carries after
     //      `phaseResourceStockTiers`, gating whether a town can host an army at all.
-    //   2. `threatened` — the flag `routeEvents.ts` sets when banditry materializes
-    //      on a `trades_with` edge; it multiplies throughput rather than zeroing it,
-    //      so bandits STRANGLE a line instead of cutting it.
+    //   2. `threatened` — the flag set when a `trades_with` edge stops carrying: by
+    //      `routeEvents.ts` when banditry materializes on it, and since THR-1308 by
+    //      `strategicGraphOps.blockadeRoute` when a motivated warlord shuts a road
+    //      deliberately. Either way it multiplies throughput rather than zeroing it,
+    //      so a line is STRANGLED instead of cut — and `routeEvents` clears both
+    //      after the same horizon, which is what keeps a blockade a counter rather
+    //      than an erasure. The second writer is why this bullet names the property's
+    //      meaning rather than one phase: a war-system reader must not care which
+    //      cause stopped the wagons.
     // Declaring the consumer's own function names here would pin the row LEAKED
     // forever, for the reason `economy-sustains-essence-sources` records above: the
     // producing phases have no reason to name a war-system reader.
     mechanism: { kind: 'node-prop', symbols: ['resourceBalance', 'threatened'] },
-    writeSites: ['src/engine/phases/resourceStockTiers.ts', 'src/engine/phases/routeEvents.ts'],
+    writeSites: [
+      'src/engine/phases/resourceStockTiers.ts',
+      'src/engine/phases/routeEvents.ts',
+      // THR-1308: the warlord's blockade verb is the second writer of `threatened`.
+      'src/engine/strategicGraphOps.ts',
+    ],
     readSites: ['src/engine/armySupply.ts'],
     verifiedLive: {
       date: '2026-08-05',

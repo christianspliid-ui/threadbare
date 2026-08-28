@@ -165,29 +165,71 @@ describe('the shipped registry', () => {
     expect(validateKindRegistry(UNDERTAKING_KIND_ROWS, getStrategicTemplate)).toEqual([]);
   });
 
-  it('registers tier 1 whole, and only tier 1 — the authored identity', () => {
+  it('registers T1 and T2 whole — the authored identity', () => {
     // Was the emptiness pin until THR-1297 slice 5 authored the five T1 rows, which
     // is what the pin existed to announce. Restated as an exact set rather than
     // relaxed to a count: the identity worth holding is *which* kinds are registered,
     // because the failure this guards against is a row landing without its
     // counter-play, and a count cannot see that.
+    //
+    // THR-1308 appended the two T2 rows. The set stays exact for the same reason.
     expect(UNDERTAKING_KIND_ROWS.map(r => r.kindId)).toEqual([
       'intelligence_cache',
       'leverage_mark',
       'masterwork_item',
       'chart_find',
       'network',
+      'trade_route',
+      'place_location',
     ]);
   });
 
-  it('every registered row is tier 1 — T2/T3 land with their own destroys', () => {
+  it('registers no tier above 2 — T3 lands with its own destroys', () => {
     // The other half of the same identity, and the reason the absent kinds are absent
-    // rather than stubbed: a sublocation, a settlement, a route, a warband and a
-    // faction all lack a shipped destroy verb, so registering them now would mean
-    // pointing `destroyTemplateIds` at something that cannot undo them. That is the
-    // vacuity the gate above refuses, and it does not stop being vacuous because the
-    // rows would look more complete with it.
-    expect(UNDERTAKING_KIND_ROWS.every(r => r.tier === 1)).toBe(true);
+    // rather than stubbed: `warband` and `faction` lack a shipped destroy verb, so
+    // registering them now would mean pointing `destroyTemplateIds` at something that
+    // cannot undo them. That is the vacuity the gate above refuses, and it does not
+    // stop being vacuous because the rows would look more complete with it.
+    //
+    // `sublocation` is the T2 row that is *also* still absent, and for the same
+    // reason rather than an oversight: its six build templates ship, its raze does
+    // not. THR-1308 shipped the two T2 kinds whose counter-play it could author.
+    expect(UNDERTAKING_KIND_ROWS.every(r => r.tier <= 2)).toBe(true);
+    expect(UNDERTAKING_KIND_ROWS.map(r => r.kindId)).not.toContain('sublocation');
+    expect(UNDERTAKING_KIND_ROWS.map(r => r.kindId)).not.toContain('warband');
+    expect(UNDERTAKING_KIND_ROWS.map(r => r.kindId)).not.toContain('faction');
+  });
+
+  it('every T2 row is ownable, and every T1 row is not — the tier boundary', () => {
+    // The substantive difference the tier marks (THR-1308). T1's objects are edges,
+    // possessions and actor-side records; T2's are ground. Holdings is about ground,
+    // so `ownable` tracks the tier exactly — and a future row that breaks this will
+    // have to say why here rather than drifting into it.
+    for (const row of UNDERTAKING_KIND_ROWS) {
+      expect(row.ownable, `${row.kindId} (tier ${row.tier})`).toBe(row.tier >= 2);
+    }
+  });
+
+  it('every T2 counter-play is cross-family — the world takes a work back, the owner does not', () => {
+    // The D column is what the *world* can do, not what the owner may spend. Both T2
+    // destroys are warlord verbs against merchant and builder works; a row whose
+    // destroy sat in its own creating family would be a self-spend miscast as a
+    // counter, which is the `strategic_burn_the_mark` distinction one tier up.
+    const t2 = UNDERTAKING_KIND_ROWS.filter(r => r.tier === 2);
+    expect(t2.length).toBeGreaterThan(0);
+    for (const row of t2) {
+      const creatorFamilies = new Set(
+        row.createTemplateIds.map(id => getStrategicTemplate(id)?.behaviorFamily),
+      );
+      for (const destroyId of row.destroyTemplateIds) {
+        const destroyFamily = getStrategicTemplate(destroyId)?.behaviorFamily;
+        expect(destroyFamily, `${row.kindId} destroy '${destroyId}'`).toBeDefined();
+        expect(
+          creatorFamilies.has(destroyFamily),
+          `${row.kindId}: '${destroyId}' undoes its own family's work`,
+        ).toBe(false);
+      }
+    }
   });
 
   it('every registered row names a counter-play that exists and is gated', () => {

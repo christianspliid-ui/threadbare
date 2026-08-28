@@ -279,6 +279,43 @@ export type StrategicMutationHint =
   | { type: 'create_sublocation'; sublocationTypeId: string; nameTemplate: string }
   | { type: 'create_trade_route' }
   /**
+   * Mint a place-tier `location` node — the T2 tier's object (THR-1308).
+   *
+   * The corpus had no op that founds a *place*. `create_sublocation` mints a room
+   * inside somewhere that already exists (`parentLocationId` is required, and that
+   * field is the sublocation discriminator, THR-1183); this mints the somewhere.
+   * The node is place-tier by construction: it carries `hexCol`/`hexRow` and no
+   * `parentLocationId`, which is exactly what `isPlaceTierLocation` tests.
+   *
+   * `anchor` decides whose hex it lands on. `actor_hex` founds where the founder
+   * stands — the settlement case, and the reason this is not simply the target's
+   * hex: founding a settlement *on top of* the town you targeted is not founding
+   * anything. `target_hex` co-locates with the target, which is what a route
+   * identity wants (it belongs at its origin endpoint).
+   */
+  | {
+      type: 'create_location';
+      locationSubtype: string;
+      nameTemplate: string;
+      anchor: 'actor_hex' | 'target_hex';
+      /** Seed prosperity for the founded place. Omitted → 0, the worldSeed default. */
+      prosperity?: number;
+    }
+  /**
+   * Suspend a trade route the target endpoint carries — the `trade_route` kind's
+   * counter-play (THR-1308; the plan's T2 vertical slice, "merchant route vs
+   * warlord blockade").
+   *
+   * Writes `threatened: true` on the `trades_with` edge rather than deleting it,
+   * because `threatened` is a property the world **already consumes**:
+   * `phaseProsperity` skips a threatened route when it counts active routes at both
+   * endpoints, so the blockade lands as a prosperity shock on the owner rather than
+   * as a silent graph edit. `routeEvents` clears the flag after
+   * `ROUTE_THREATENED_CLEAR_TICKS`, which is the right shape for counter-play — a
+   * blockade that never lifts is deletion, not a counter.
+   */
+  | { type: 'blockade_route' }
+  /**
    * Plant a transient `knows_clue_of` lead about the target location (THR-1297 §7).
    *
    * The explorer arc's output is *a lead the world can act on*, not a stat: the ruins

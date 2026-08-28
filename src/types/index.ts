@@ -106,7 +106,16 @@ export type LocationSubtype =
   | 'cleared_lair' // lair cleared by a faction (m2.5)
   // ── Ruins layer (THR-149) ──
   | 'elder_ruin'      // systemic ruin eligible for delves (distinct from cosmetic 'ruins'/'ruined_*')
-  | 'place_of_power'; // transformed elder_ruin — permanent essence stream source
+  | 'place_of_power'  // transformed elder_ruin — permanent essence stream source
+  // ── Work identities (THR-1308, T2 undertaking tier) ──
+  //
+  // A route's *identity* face, not the route itself. `trades_with` remains the
+  // economic authority every existing consumer reads (`phaseProsperity` counts it,
+  // `routeEvents` threatens it, `armySupply` and `economicPower` price it); this
+  // subtype marks the node that carries the name, the owner and the blockade state,
+  // because an edge has nowhere to put any of them. Kept consistent with the edge by
+  // the same single-writer discipline sublocations use.
+  | 'trade_route';
 
 /** A single hex tile with all computed properties */
 export interface HexTile {

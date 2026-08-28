@@ -65,7 +65,44 @@ export const MERCHANT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = 
     catalystEncounterIds: ['encounter_route_ambush', 'encounter_toll_dispute'],
     targetRule: { type: 'location_subtype', subtypes: ['market', 'town', 'city', 'trading_post', 'port'] },
     resourceHint: { wealthCost: 40, reachFloor: { gold: 0.4 } },
+    // ── T2 seams (THR-1308) ──
+    checkpointDifficulty: 0.5,
+    // `false`, on THR-1310's evidence rather than on preference. Proximity landed and
+    // presence still starves the checkpoint: nothing moves an agent to its stage until
+    // doc 3's binder ships (TODO(THR-1294)), so `true` would make the whole route kind
+    // inert the way it made the wanderer family inert. Re-measure when the binder lands.
+    requiresLocation: false,
+    payoffValue: 1.2,
+    motivations: ['asceticism_extravagance', 'loyalty_ambition', 'tradition_novelty'],
     mutationHint: { type: 'create_trade_route' },
+  },
+
+  // 3b. Widen the Road — the route kind's update verb (THR-1308). A route that can
+  //     only be founded and destroyed is a two-state flag; this is the middle of the
+  //     arc, where the thing gets better and therefore worth taking.
+  {
+    id: 'strategic_extend_route',
+    displayName: 'Widen the Road',
+    verb: 'change',
+    executionMode: 'multi_tick_project',
+    behaviorFamily: 'merchant-expansion',
+    reachProfile: { gold: 0.6, stone: 0.2, eye: 0.2 },
+    projectDuration: 5,
+    activityProse: [
+      'Second wagon, then a third. The road complains and then it widens.',
+      'Bridges where there were fords. Wells where there were dry stretches. None of it is glamorous and all of it is the work.',
+    ],
+    completionProse: [
+      'What was a track is a road. The cargo doubles and the season stops mattering so much.',
+    ],
+    catalystEncounterIds: ['encounter_toll_dispute'],
+    targetRule: { type: 'location_subtype', subtypes: ['market', 'town', 'city', 'trading_post', 'port'] },
+    resourceHint: { wealthCost: 30, reachFloor: { gold: 0.35 } },
+    checkpointDifficulty: 0.45,
+    requiresLocation: false,
+    payoffValue: 1.0,
+    motivations: ['asceticism_extravagance', 'preservation_transformation'],
+    mutationHint: { type: 'modify_location_property', property: 'prosperity', delta: 6, clamp: [0, 100] },
   },
 
   // 4. Build Warehouse — create a sublocation with constructed_by edge

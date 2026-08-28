@@ -222,6 +222,76 @@ export const BUILDER_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     motiveGate: ['rivalry', 'grudge', 'contested_ambition', 'faction_war'],
     mutationHint: { type: 'no_mutation' },
   },
+
+  // ── The place-tier location kind (THR-1308, T2) ─────────────────
+  //
+  // The corpus could build a warehouse *inside* a town and could not build the town.
+  // These two verbs close that: found the place, then grow it. Its counter-play is
+  // the warlord's torch — a cross-family destroy, because the founder should not be
+  // the one who decides the place stops existing.
+
+  // 8. Break New Ground — the create verb. Mints a real place-tier `location` node at
+  //    an unclaimed hex near the founder, which is what `create_location` exists for.
+  {
+    id: 'strategic_found_settlement',
+    displayName: 'Break New Ground',
+    verb: 'create',
+    executionMode: 'multi_tick_project',
+    behaviorFamily: 'builder-civic',
+    reachProfile: { stone: 0.5, gold: 0.3, heart: 0.2 },
+    projectDuration: 8,
+    activityProse: [
+      'Stakes in the ground. An argument about the well. Another argument about the well.',
+      'The first winter decides whether this was a settlement or a story about one.',
+    ],
+    completionProse: [
+      'Roofs. Smoke going up in a place where none went up before. It has a name now and the name will outlast everyone using it.',
+    ],
+    catalystEncounterIds: ['encounter_civilian_unrest'],
+    targetRule: { type: 'location_subtype', subtypes: ['town', 'city', 'capital', 'hamlet', 'farmland'] },
+    resourceHint: { wealthCost: 60, reachFloor: { stone: 0.35, gold: 0.25 } },
+    checkpointDifficulty: 0.55,
+    // The measured corpus default — see the wanderer pack header, TODO(THR-1294).
+    requiresLocation: false,
+    payoffValue: 1.5,
+    motivations: ['preservation_transformation', 'tradition_novelty', 'courage_prudence'],
+    // Anchored on the founder, not the target: founding a settlement on top of the
+    // town you were looking at is not founding anything. The target is the demand the
+    // new place is *near*; `findUnclaimedSite` picks the ground.
+    mutationHint: {
+      type: 'create_location',
+      locationSubtype: 'hamlet',
+      nameTemplate: "{actor}'s Rest",
+      anchor: 'actor_hex',
+    },
+  },
+
+  // 9. Raise the Walls — the update verb. A settlement that can only be founded and
+  //    burned has no middle; this is the middle.
+  {
+    id: 'strategic_grow_settlement',
+    displayName: 'Raise the Walls',
+    verb: 'change',
+    executionMode: 'multi_tick_project',
+    behaviorFamily: 'builder-civic',
+    reachProfile: { stone: 0.5, iron: 0.3, gold: 0.2 },
+    projectDuration: 6,
+    activityProse: [
+      'Quarry, cart, course, repeat. The wall goes up at the speed of the slowest part of that.',
+      'Nobody thanks a builder for a wall until the year somebody comes.',
+    ],
+    completionProse: [
+      'The place has an inside and an outside now. That is most of what a town is.',
+    ],
+    catalystEncounterIds: ['encounter_civilian_unrest'],
+    targetRule: { type: 'location_subtype', subtypes: ['hamlet', 'town', 'camp'] },
+    resourceHint: { wealthCost: 35, reachFloor: { stone: 0.3 } },
+    checkpointDifficulty: 0.5,
+    requiresLocation: false,
+    payoffValue: 1.2,
+    motivations: ['preservation_transformation', 'courage_prudence'],
+    mutationHint: { type: 'modify_location_property', property: 'prosperity', delta: 10, clamp: [0, 100] },
+  },
 ];
 
 /** Look up a builder strategic template by ID */

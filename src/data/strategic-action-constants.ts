@@ -454,3 +454,39 @@ export const STRATEGIC_TARGET_SCAN_CAPS: Readonly<Record<string, number>> = {
  * which case there is no proximity information at all and insertion order is kept.
  */
 export const STRATEGIC_TARGET_UNRESOLVED_HEX_DISTANCE = Number.MAX_SAFE_INTEGER;
+
+// ─── The T2 undertaking tier (THR-1308) ─────────────────────────────
+//
+// T2's objects are *places*, which is the whole reason this tier needed a new op:
+// every T1 kind's object was an edge, a possession or an actor-side record, and none
+// of those needed a node minted at a hex.
+
+/**
+ * The `LocationSubtype` a route-identity node carries.
+ *
+ * Named rather than inlined because three writers/readers have to agree on it — the
+ * minting op, the blockade verb that finds the node again, and the display tables
+ * keyed by subtype. A literal in three files is the drift this constant prevents.
+ */
+export const ROUTE_IDENTITY_SUBTYPE = 'trade_route';
+
+/**
+ * Seed prosperity for a settlement founded by `create_location`.
+ *
+ * Deliberately below `INITIAL_PROSPERITY.hamlet` (20 at worldgen): a place founded
+ * inside the run is a season old, not a generation old, and `phaseProsperity` grows
+ * it from here on the same curve as everywhere else. Starting it level with a seeded
+ * hamlet would hand the founder the outcome the undertaking's checkpoints are there
+ * to make them earn.
+ */
+export const FOUNDED_SETTLEMENT_INITIAL_PROSPERITY = 8;
+
+/**
+ * Hex ring searched for an unclaimed site when founding a place-tier location.
+ *
+ * A founded settlement lands on the founder's own hex when nothing is there, and
+ * otherwise on the nearest empty hex within this radius — "an unclaimed hex adjacent
+ * to demand", as the plan puts it. Zero would make the verb fail wherever the founder
+ * is standing somewhere that already exists, which is nearly everywhere agents are.
+ */
+export const FOUNDED_SETTLEMENT_SITE_SEARCH_RADIUS = 2;
