@@ -27,7 +27,6 @@ export interface ClearanceGateTransitionRule {
   readonly outcomes: readonly ClearanceGateOutcome[];
   readonly revealSignals?: readonly string[];
   readonly nextState?: ClearanceGateState;
-  readonly addFollowOnTags?: readonly string[];
   readonly note?: string;
 }
 
@@ -41,7 +40,6 @@ export interface ClearanceGateConfig {
   readonly signals: readonly ClearanceSignalConfig[];
   readonly transitions?: readonly ClearanceGateTransitionRule[];
   readonly persistence: 'scene-only' | 'must-persist';
-  readonly followOnTags?: readonly string[];
 }
 
 export interface ClearanceGateTransitionRecord {
@@ -51,7 +49,6 @@ export interface ClearanceGateTransitionRecord {
   readonly previousState: ClearanceGateState;
   readonly nextState: ClearanceGateState;
   readonly revealedSignals: readonly string[];
-  readonly addedFollowOnTags: readonly string[];
   readonly note?: string;
 }
 
@@ -67,7 +64,6 @@ export interface ClearanceGateRuntimeState {
   readonly persistence: 'scene-only' | 'must-persist';
   readonly state: ClearanceGateState;
   readonly revealedSignalKeys: readonly string[];
-  readonly followOnTags: readonly string[];
   readonly attempts: number;
   readonly lastUpdatedTick: number;
   readonly history: readonly ClearanceGateTransitionRecord[];

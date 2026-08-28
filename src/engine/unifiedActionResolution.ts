@@ -31,7 +31,6 @@ import { applyEncounterAftermathReaction } from './encounterAftermath';
 import {
   type DerivedChange,
   factionStandingSentence,
-  gateFollowOnSentence,
   gateStateSentence,
   growthSentence,
   overviewHighlightPhrase,
@@ -585,7 +584,6 @@ interface EncounterResolutionSnapshot {
   reputationTallies: Readonly<Record<string, number>>;
   clearanceGates: ReadonlyMap<string, {
     state: ClearanceGateState;
-    followOnTags: readonly string[];
   }>;
 }
 
@@ -617,14 +615,12 @@ function snapshotEncounterResolutionContext(
 
   const clearanceGates = new Map<string, {
     state: ClearanceGateState;
-    followOnTags: readonly string[];
   }>();
   for (const runtimeId of action.clearanceGateIds ?? []) {
     const gate = state.clearanceGateStates?.get(runtimeId);
     if (!gate) continue;
     clearanceGates.set(runtimeId, {
       state: gate.state,
-      followOnTags: [...gate.followOnTags],
     });
   }
 
@@ -693,12 +689,10 @@ function buildEncounterAftermathOverview(
 }
 
 function buildEncounterAftermathReactions(
-  action: UnifiedAction,
   template: UnifiedActionTemplate,
 ): readonly EncounterAftermathReaction[] | undefined {
   if (template.id !== 'cg.quest.gate_duty') return undefined;
 
-  const gateRuntimeId = action.clearanceGateIds?.[0];
   return [
     {
       id: 'follow_witness_story',
@@ -706,7 +700,6 @@ function buildEncounterAftermathReactions(
       intent: 'Keep one thread of your attention on the mortal version of the night that will travel furthest, so the story leaves the gate carrying your pressure inside it.',
       closeAfterSelection: true,
       effects: [
-        { kind: 'clearance_gate_tag', runtimeId: gateRuntimeId, tag: '#witness_story_followed' },
         // THR-1206 — was `gate_duty.witness_story_followed`, an off-axis key the
         // aftermath handler rejects: `isValidReputationTallyKey` accepts only
         // `<reach>.positive|negative`, so this write was traced and discarded on
@@ -729,7 +722,6 @@ function buildEncounterAftermathReactions(
       intent: 'Remember exactly how the captain held or lost the line, preserving the moment as leverage, omen, or future favor when the watch comes into your hands again.',
       closeAfterSelection: true,
       effects: [
-        { kind: 'clearance_gate_tag', runtimeId: gateRuntimeId, tag: '#captain_marked_for_later' },
         // THR-1206 — was `gate_duty.captain_marked`, discarded for the same reason.
         // The fiction is standing inside the watch whose gate this is, which is what
         // `faction_reputation_gain` exists to carry — the replacement
@@ -749,7 +741,6 @@ function buildEncounterAftermathReactions(
       intent: 'Take the lesson, but leave the aftermath in mortal hands. You do not tighten the thread further; you let the district decide what sort of memory it wants to keep.',
       closeAfterSelection: true,
       effects: [
-        { kind: 'clearance_gate_tag', runtimeId: gateRuntimeId, tag: '#district_left_to_carry_it' },
         // THR-1206 — was `gate_duty.left_to_settle`, discarded for the same reason.
         // Declining to press is not a reach the tallies score; it is a quiet note
         // about how this god handles a district, which is what a hidden mark is for.
@@ -940,8 +931,6 @@ function applyReputationScoreDelta(
 type GateDutyCardId = string;
 
 interface GateDutyBranchConsequence {
-  successTags?: readonly string[];
-  failureTags?: readonly string[];
   successDelta?: number;
   failureDelta?: number;
   successNarrative?: string;
@@ -953,24 +942,18 @@ interface GateDutyBranchConsequence {
 const GATE_DUTY_BRANCH_CONSEQUENCES: Record<number, Record<GateDutyCardId, GateDutyBranchConsequence>> = {
   0: {
     [GATE_DUTY_NUDGE_IDS[0].steady]: {
-      successTags: ['#courier_steadied'],
-      failureTags: ['#borrowed_calm_slipped'],
       successDelta: 0.01,
       failureDelta: -0.005,
       successNarrative: 'The courier keeps moving as though held together by borrowed calm.',
       failureNarrative: 'The borrowed calm slips, and the line notices how close the panic was to breaking loose.',
     },
     [GATE_DUTY_NUDGE_IDS[0].force]: {
-      successTags: ['#captain_forced'],
-      failureTags: ['#captain_shoved_too_hard'],
       successDelta: -0.005,
       failureDelta: -0.015,
       successNarrative: 'The captain acts quickly, but the line can taste the shove behind the order.',
       failureNarrative: 'The captain moves under pressure that no longer feels entirely her own.',
     },
     [GATE_DUTY_NUDGE_IDS[0].withhold]: {
-      successTags: ['#witness_primed'],
-      failureTags: ['#witness_claimed_scene'],
       successDelta: 0,
       failureDelta: -0.01,
       successNarrative: 'The witness begins shaping the tale before the watch can settle on its own version.',
@@ -979,24 +962,18 @@ const GATE_DUTY_BRANCH_CONSEQUENCES: Record<number, Record<GateDutyCardId, GateD
   },
   1: {
     [GATE_DUTY_NUDGE_IDS[1].steady]: {
-      successTags: ['#measured_seizure'],
-      failureTags: ['#discipline_turned_strange'],
       successDelta: 0.02,
       failureDelta: -0.01,
       successNarrative: 'The seizure lands as discipline rather than appetite.',
       failureNarrative: 'The restraint feels strange enough that the crowd mistrusts it anyway.',
     },
     [GATE_DUTY_NUDGE_IDS[1].force]: {
-      successTags: ['#public_break'],
-      failureTags: ['#courier_shattered_publicly'],
       successDelta: -0.02,
       failureDelta: -0.03,
       successNarrative: 'The watch gains a harsher legitimacy by stepping through the courier’s public breaking.',
       failureNarrative: 'The courier’s collapse stains the checkpoint more deeply than the cargo ever could.',
     },
     [GATE_DUTY_NUDGE_IDS[1].withhold]: {
-      successTags: ['#crowd_authored'],
-      failureTags: ['#checkpoint_story_escaped'],
       successDelta: -0.01,
       failureDelta: -0.02,
       successNarrative: 'The crowd now owns part of the scene the watch wanted to contain.',
@@ -1007,24 +984,18 @@ const GATE_DUTY_BRANCH_CONSEQUENCES: Record<number, Record<GateDutyCardId, GateD
   },
   2: {
     [GATE_DUTY_NUDGE_IDS[2].steady]: {
-      successTags: ['#watch_trusted', '#mercy_remembered'],
-      failureTags: ['#mercy_failed_to_land'],
       successDelta: 0.03,
       failureDelta: -0.01,
       successNarrative: 'The line leaves remembering restraint.',
       failureNarrative: 'Mercy arrives too late to keep the checkpoint from feeling wounded.',
     },
     [GATE_DUTY_NUDGE_IDS[2].force]: {
-      successTags: ['#watch_feared', '#authority_consecrated'],
-      failureTags: ['#authority_overreached'],
       successDelta: -0.03,
       failureDelta: -0.04,
       successNarrative: 'Order holds, but what remains of the evening tastes of dread.',
       failureNarrative: 'Authority wins the posture of command and loses the district’s confidence in the same breath.',
     },
     [GATE_DUTY_NUDGE_IDS[2].withhold]: {
-      successTags: ['#witness_story_spreads', '#official_story_thins'],
-      failureTags: ['#story_escaped_the_gate'],
       successDelta: -0.01,
       failureDelta: -0.02,
       successNarrative: 'The official account survives, but the witness carries the sharper story beyond the gate.',
@@ -1075,17 +1046,15 @@ function applyGateDutyBranchConsequences(
   const success = isStepSuccess(outcome);
   const delta = success ? (branchConfig.successDelta ?? 0) : (branchConfig.failureDelta ?? 0);
   const appliedDelta = applyReputationScoreDelta(state, action.actorId, delta);
-  const tags = success ? (branchConfig.successTags ?? []) : (branchConfig.failureTags ?? []);
   const nextState = success ? branchConfig.successState : branchConfig.failureState;
 
-  if ((tags.length > 0 || nextState) && action.clearanceGateIds?.length) {
+  if (nextState && action.clearanceGateIds?.length) {
     for (const runtimeId of action.clearanceGateIds) {
       const current = nextStates.get(runtimeId);
       if (!current) continue;
       nextStates.set(runtimeId, {
         ...current,
-        state: nextState ?? current.state,
-        followOnTags: [...new Set([...current.followOnTags, ...tags])],
+        state: nextState,
       });
     }
   }
@@ -2458,18 +2427,6 @@ export function executeStepResult(
         polarity: 'info',
       });
     }
-    const newTags = afterGate.followOnTags.filter(tag => !beforeGate.followOnTags.includes(tag));
-    for (const tag of newTags) {
-      const sentence = gateFollowOnSentence(tag);
-      aftermathChanges.push({
-        id: `${action.actionId}:step:${action.currentStep}:gate:${runtimeId}:tag:${tag}`,
-        kind: 'future_hook',
-        title: 'A follow-on thread was seeded',
-        detail: sentence.detail,
-        ...derivedFields(sentence),
-        polarity: 'info',
-      });
-    }
   }
 
   finalAction = appendAftermathChanges(finalAction, aftermathChanges);
@@ -2491,7 +2448,7 @@ export function executeStepResult(
     recordOutcomePinVerdict(template, finalAction.outcome);
 
     const reactions = aftermathVariant?.reactions
-      ?? buildEncounterAftermathReactions(finalAction, template);
+      ?? buildEncounterAftermathReactions(template);
     const finalSummary: EncounterAftermathSummary = {
       encounterId: action.templateId,
       outcome: finalAction.outcome,

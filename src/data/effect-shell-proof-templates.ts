@@ -165,7 +165,6 @@ export const TIERED_PROVING_TEMPLATE: UnifiedActionTemplate = {
       label: 'Master',
       outcomeBand: 'critical_success',
       effects: [],
-      followOnTags: ['proven_master'],
     },
     {
       id: 'adept',

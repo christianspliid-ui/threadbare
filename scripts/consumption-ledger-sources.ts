@@ -13,10 +13,15 @@
  * and the whole point is that "a reader exists" does not answer it. Two failures
  * this ledger exists to catch both have readers:
  *
- * - `clearance_gate_tag` writes `followOnTags`, and `unifiedActionResolution.ts`
- *   reads it — to render a chip saying *"A follow-on thread was seeded"*. The tag
- *   is read, described to the player, and then nothing in the game ever consults
- *   it again. A grep for readers reports this seam healthy.
+ * - `clearance_gate_tag` wrote `followOnTags`, and `unifiedActionResolution.ts`
+ *   read it — to render a chip saying *"A follow-on thread was seeded"*. The tag
+ *   was read, described to the player, and then nothing in the game ever consulted
+ *   it again. A grep for readers reported that seam healthy. **This ledger found
+ *   it anyway, unprompted, and THR-1212 slice 6 retired it** — so the member is
+ *   gone from the union and the row is gone from the table. The example is kept
+ *   in the past tense because it is the reason this file is shaped the way it is,
+ *   and a design whose only worked example has been deleted still needs to say
+ *   what it was.
  * - The Grateful Kin lesson (THR-1175): `favor_creation` had a consumer, and the
  *   consumer could not act on the operand it was actually being handed.
  *
@@ -154,18 +159,6 @@ export const EFFECT_ROWS: Readonly<Record<string, LedgerRow>> = {
       'The 2026-08-16 ruling (THR-1136 §5) put reach tallies deliberately out of ' +
       'sight; the threshold trait mint is the tally-point where the accumulated ' +
       'result becomes a visible entity change.',
-  },
-  clearance_gate_tag: {
-    writes: "a string appended to `followOnTags` on the runtime clearance-gate state",
-    consumers: [reports('src/engine/unifiedActionResolution.ts', 'gateFollowOnSentence')],
-    deferralTicket: 'THR-1212',
-    note:
-      'The single reader turns each new tag into a `future_hook` aftermath change ' +
-      'titled "A follow-on thread was seeded", and that is the end of it: no ' +
-      'encounter is seeded, no attachment is timed, no metadata governs firing, ' +
-      'and nothing ever reads a tag back. Three tag conventions (`#watch_trusted`, ' +
-      '`#papers_flagged`, `proven_master`) rot in one field. It fails the ' +
-      'dormant-hook bar precisely because hooks are not passive — see the header.',
   },
   recent_event: {
     writes: "an event appended to the actor's `recentEvents` (and the tick event stream)",

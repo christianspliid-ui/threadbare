@@ -245,11 +245,9 @@ describe('clearanceGate Gate Duty proving slice', () => {
     );
     gateState = gateId ? state.clearanceGateStates?.get(gateId) : undefined;
     expect(gateState?.state).toBe('cleared');
-    expect(gateState?.followOnTags).toContain('#watch_credible');
-    expect(gateState?.followOnTags).toContain('#checkpoint_stable');
   });
 
-  it('lets different Gate Duty branches leave different follow-on tags and reputation outcomes', () => {
+  it('lets different Gate Duty branches leave different reputation outcomes', () => {
     resetUnifiedActionCounter();
     clearTraces();
 
@@ -334,10 +332,13 @@ describe('clearanceGate Gate Duty proving slice', () => {
     const coerciveGate = coercivePrep.gateId ? coerciveState.clearanceGateStates?.get(coercivePrep.gateId) : undefined;
     const coerciveRep = (coerciveState.graph.getNode('agent_1')?.properties?.reputationScore as number | undefined) ?? DEFAULT_REPUTATION;
 
-    expect(supportiveGate?.followOnTags).toContain('#mercy_remembered');
-    expect(supportiveGate?.followOnTags).toContain('#watch_trusted');
-    expect(coerciveGate?.followOnTags).toContain('#authority_consecrated');
-    expect(coerciveGate?.followOnTags).toContain('#watch_feared');
+    // THR-1212 slice 6 — the branches used to diverge on two channels, follow-on
+    // tags and reputation. The tag channel is retired (nothing ever read a tag
+    // back), so reputation is the divergence that remains, and both branches
+    // still resolve a real gate — asserted so this does not quietly become a
+    // test of two `undefined`s.
+    expect(supportiveGate).toBeDefined();
+    expect(coerciveGate).toBeDefined();
     expect(supportiveRep).toBeGreaterThan(coerciveRep);
   });
 });

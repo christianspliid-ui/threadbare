@@ -12,8 +12,9 @@
  * what happens to a write was a grep anyone could run and nobody did. Three
  * measured failures share one shape — a write whose reader does not act on it:
  * `hungerResonance` (its reader spoke a disjoint vocabulary), mandate milestone
- * prose (zero importers), and `followOnTags` (its reader renders a sentence about
- * the write and then forgets it).
+ * prose (zero importers), and `followOnTags` (its reader rendered a sentence about
+ * the write and then forgot it — found by this ledger unprompted, retired by
+ * THR-1212 slice 6, and so no longer a member of any union it reads).
  *
  * A grep for readers reports all three healthy. That is why this ledger records
  * **what the reader does**, and derives the class from it.

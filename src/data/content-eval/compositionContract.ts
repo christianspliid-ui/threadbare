@@ -225,7 +225,6 @@ export const CHIP_BACKING_EFFECT_KINDS: ReadonlySet<string> = new Set([
   'agent_relocation',
   'plant_compulsion',
   'quintessence_shift',
-  'clearance_gate_tag',
   'archetype_drift_register',
   'sphere_influence_amplify',
 ]);
