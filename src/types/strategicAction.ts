@@ -7,6 +7,12 @@
 import type { ReachDomain } from './traits';
 import type { ValuePair } from './agent';
 import type { EdgeType } from './graph';
+// The group family's discriminator, imported rather than restated (THR-1309). A
+// literal copy of the union here would be a second authority on what a group kind
+// is, which is exactly the drift `groupShape.ts` was created to end (THR-1297 §4).
+// `groupShape` is a leaf that imports only `types/graph`, so this cannot cycle, and
+// the types layer already takes engine types this way (`gameState`, `prose`, `trace`).
+import type { GroupKind } from '../engine/groupShape';
 
 // ─── Strategic Verbs ────────────────────────────────────────────────
 // Five world-shaping verbs from the design — the execution language under ambitions.
@@ -372,6 +378,63 @@ export type StrategicMutationHint =
    * namer and the codex can say what it is.
    */
   | { type: 'mint_masterwork'; craftTag: string; tier?: number }
+  /**
+   * Mint a real organisation — the T3 tier's object (THR-1309).
+   *
+   * **Two group kinds, one hint, because they are the same authored act at two
+   * scales**: a commander raises a *company* of people who follow them, and a
+   * founder charters a *faction* that outlives them. Both were previously faked.
+   * `strategic_recruit_warband` wrote an intelligence record called
+   * `warband_recruited` and minted nobody — the "recruit-warband mirage" the plan
+   * names — and `strategic_found_order` shipped only a guild-hall sublocation, with
+   * `dynamicFactionDefinitions` carrying no live producer at all since the
+   * initiative retirement (THR-1295, absorbed here).
+   *
+   * `company` routes through `createGroup` (`groups/groupFormation.ts`), the one
+   * code path that mints a company, so the node arrives already carrying
+   * `groupKind: 'company'` and its `member_of` / `commanded_by` edges. `faction`
+   * routes through a `FactionDefinition` synthesized from `factionSeed` into
+   * `seedFactionFromDefinition`, which is what restores the missing producer.
+   *
+   * **Why `factionSeed` is authored content rather than derived.** A
+   * `FactionDefinition` carries ~20 fields including four content-id lists (join,
+   * promotion, quest and social template ids). Synthesizing those from nothing
+   * would mint a faction whose encounters resolve to no content — a faction only
+   * its founder can see, which is the orphan the kind registry exists to refuse.
+   * The seed points them at existing generic guild content instead.
+   */
+  | {
+      type: 'create_group';
+      groupKind: 'company' | 'faction';
+      /** `{actor}` / `{location}` placeholders, as `create_sublocation` uses. */
+      nameTemplate?: string;
+      /** Required when `groupKind` is `'faction'`; ignored for a company. */
+      factionSeed?: StrategicFactionSeed;
+    }
+  /**
+   * Add fighters to a warband the actor already commands — the `warband` kind's
+   * *update* (THR-1309).
+   *
+   * A real `member_of` write rather than an intelligence record, deliberately. The
+   * update column is where a T3 verb could most easily become a second mirage: the
+   * nearest precedent (`strategic_extend_reach`, the network's update) records an
+   * intelligence entry and changes nothing about the network it claims to extend,
+   * which is the same shape as the `warband_recruited` record this slice removes.
+   * Replacing one mirage while shipping another would be a wash.
+   */
+  | { type: 'reinforce_group' }
+  /**
+   * Break an organisation the actor did not raise — the `warband` kind's
+   * counter-play (THR-1309).
+   *
+   * Writes through `dissolveGroup`, the single dissolution writer, so a suborned
+   * warband inertifies exactly as one that starved does: the node and every
+   * `member_of` edge stay in the graph carrying `leftAtTick`, because this is
+   * inertification rather than deletion. A hand-rolled `groupStatus` write here
+   * would leave live membership edges pointing at a dead company, which every
+   * roster reader would then report as an active band.
+   */
+  | { type: 'disband_group' }
   | { type: 'create_relation_edge'; edgeType: string; direction: 'actor_to_target' | 'target_to_actor'; properties?: Record<string, unknown> }
   | {
       type: 'modify_location_property';
@@ -390,6 +453,35 @@ export type StrategicMutationHint =
       expiresAfterTicks?: number;
     }
   | { type: 'no_mutation' };
+
+/**
+ * The authored half of a founded faction (THR-1309; THR-1295's Done-when).
+ *
+ * A `FactionDefinition` is ~20 fields and four of them are **content-id lists** the
+ * encounter layer resolves against. Everything mechanical — reach weights from the
+ * founder's own profile, hall locations from where they stand, rank tiers from the
+ * shared ladder — the op derives. What it cannot derive is which encounters the new
+ * order runs, so those ids are authored here and point at existing generic guild
+ * content. A faction founded with unresolvable ids would offer join and quest
+ * encounters that resolve to nothing: live by every dashboard, inert in play.
+ */
+export interface StrategicFactionSeed {
+  /** Faction archetype — drives UI glyph/colour defaults and ambition weighting. */
+  readonly factionType: string;
+  /** `{actor}` / `{location}` placeholders, rendered at completion. */
+  readonly nameTemplate: string;
+  readonly description: string;
+  readonly motto?: string;
+  readonly iconGlyph: string;
+  readonly themeColor: string;
+  /** Settlement subtypes that can carry this order's halls. */
+  readonly locationTypes: readonly string[];
+  /** The four content-id lists. Every id must resolve — see the interface note. */
+  readonly joinEncounterTemplateId: string;
+  readonly promotionEncounterTemplateId: string;
+  readonly questTemplateIds: readonly string[];
+  readonly socialTemplateIds: readonly string[];
+}
 
 // ─── Target Rules ───────────────────────────────────────────────────
 
@@ -428,6 +520,30 @@ export type StrategicTargetRule =
       // unregistered type would silently match nothing, reproducing the exact dead-verb
       // symptom this field was added to cure.
       readonly withEdgeFromActor?: EdgeType;
+    }
+  /**
+   * Group-family `actor` nodes, split by who commands them (THR-1309).
+   *
+   * **This rule exists because trap 1 has a shape, and the warband walks straight
+   * into it.** A company is an `actor` node with no `located_at` edge of its own —
+   * position derives from its leader — so no existing rule can see one:
+   * `colocated_actor` reads `located_at` incoming and finds nothing,
+   * `actor_with_trait` wants a trait a company has never carried, and `self` returns
+   * the commander rather than the band. Authoring the warband's update and destroy
+   * against any of those would offer both verbs against targets that can never
+   * satisfy them — `press_the_mark`'s failure exactly, where the guard was correct,
+   * every layer was correct, and the arc still could not connect.
+   *
+   * `ownership` is the half that makes selection know what resolution requires. A
+   * commander reinforces the band they *have* (`commanded_by_actor`); a rival breaks
+   * one they do *not* (`other_commander`), because the D column is what the world can
+   * do to take a work back and a self-spend is a use, not a counter. Disbanded groups
+   * are excluded from both — an inert node is not a target.
+   */
+  | {
+      type: 'group_node';
+      groupKind: GroupKind;
+      ownership: 'commanded_by_actor' | 'other_commander';
     };
 
 // ─── Strategic Action Candidate ─────────────────────────────────────

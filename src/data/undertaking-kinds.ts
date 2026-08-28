@@ -43,9 +43,21 @@ import { MOTIVE_GATE_KINDS } from './strategic-action-constants';
  * none of those needs a node standing on the map, so nothing in the corpus minted a
  * *place*. `create_location` is that op.
  *
+ * **Tier 3 arrived in THR-1309** with `warband`, on the same terms again: the band's
+ * counter-play (`strategic_suborn_warband`, the court buying its captains) ships in the
+ * same commit as the verb that raises it. That tier needed an op too — `create_group`,
+ * routing to `createGroup` for a company and to a synthesized `FactionDefinition` for
+ * an order, which also restores the producer `dynamicFactionDefinitions` has lacked
+ * since the initiative retirement (THR-1295, absorbed).
+ *
  * Still absent, still not stubbed: `sublocation` (T2 — its six build templates exist,
- * its raze does not), and both T3 kinds, `warband` and `faction`. Same rule as ever —
- * until a kind can be undone, it is not a kind.
+ * its raze does not) and `faction` (T3). The faction case is worth stating precisely,
+ * because its *op* now ships while its row does not: `strategic_found_order` charters a
+ * real faction, but nothing in the corpus dissolves one. `phaseSchismResolution` exists
+ * and splits factions; it is not a motive-gated `destroy` **verb** an agent can choose,
+ * which is what a D column names. Registering the row against an ambient process would
+ * be presence of a counter-play rather than a counter-play — the exact substitution the
+ * gate refuses. Same rule as ever: until a kind can be undone, it is not a kind.
  */
 export const UNDERTAKING_KIND_ROWS: readonly UndertakingKindRow[] = [
   {
@@ -172,6 +184,38 @@ export const UNDERTAKING_KIND_ROWS: readonly UndertakingKindRow[] = [
     updateTemplateIds: ['strategic_grow_settlement'],
     destroyTemplateIds: ['strategic_raze_settlement'],
     lexicon: 'place',
+  },
+
+  // ── Tier 3 (THR-1309) — the tier where a work becomes *people* ──
+  //
+  // T1's objects were records and edges, T2's were places. This is the first kind
+  // whose object can act back on the world by itself: a company of mortals who move,
+  // fight, fray and can be led badly.
+  //
+  // It is also the tier that had to *remove* something to arrive.
+  // `strategic_recruit_warband` has completed for the whole life of the corpus while
+  // minting nobody — its mutation wrote an intelligence record called
+  // `warband_recruited`, so the verb entered the completion history and every
+  // dashboard counted it, and no band ever existed. Registering a `warband` row
+  // against that template would have been the vacuity this gate exists to refuse:
+  // presence of a create id, no created thing. The template now routes through
+  // `create_group{company}` → `createGroup`, the single company mint site.
+  {
+    kindId: 'warband',
+    tier: 3,
+    displayName: 'Warband',
+    objectShape: "`actor` node, `groupKind: 'company'`, `member_of` roster and `commanded_by` owner",
+    // Commanded, not held — the same line the `network` row draws one tier down, and
+    // the distinction slice 3's `owns` edge exists to keep. People are not ground.
+    ownable: false,
+    createTemplateIds: ['strategic_recruit_warband'],
+    // A real `member_of` write, not an intelligence record. See the template.
+    updateTemplateIds: ['strategic_reinforce_warband'],
+    // Cross-family and motive-gated: a warlord cannot un-raise their own band,
+    // because the D column is what the *world* can do to take a work back. The
+    // court buys the captains.
+    destroyTemplateIds: ['strategic_suborn_warband'],
+    lexicon: 'band',
   },
 ];
 

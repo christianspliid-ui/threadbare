@@ -4471,7 +4471,7 @@ export interface GroupFormedTrace extends TraceBase {
   name: string;
   memberIds: string[];
   /** Mirrors `GroupFormationCause` (groupQueries.ts) — kept inline to avoid a types→engine import. */
-  cause: 'systemic' | 'seeking_companions' | 'draw_together' | 'band_spawn' | 'reunite';
+  cause: 'systemic' | 'seeking_companions' | 'draw_together' | 'band_spawn' | 'reunite' | 'raised_warband';
   startingCohesion: number;
 }
 

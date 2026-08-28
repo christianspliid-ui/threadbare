@@ -161,9 +161,46 @@ export const COURT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     catalystEncounterIds: ['encounter_guild_dispute'],
     targetRule: { type: 'location_subtype', subtypes: ['town', 'city', 'capital'] },
     resourceHint: { wealthCost: 20, reachFloor: { heart: 0.25, gold: 0.15 } },
-    // The faction payoff the retired `initiativeOutcomes` produced waits on the
-    // `create_group` strategic op (doc 2's tier plan) — TODO(THR-1295). The hall ships now.
-    mutationHint: { type: 'create_sublocation', sublocationTypeId: 'guild-hall', nameTemplate: "{actor}'s Order at {location}" },
+    checkpointDifficulty: 0.6,
+    payoffValue: 2.0,
+    motivations: ['sacrifice_survival', 'loyalty_ambition'],
+    // THR-1309 (absorbing THR-1295): the faction payoff the retired `initiativeOutcomes`
+    // produced is restored. This template shipped its guild-hall sublocation and
+    // stopped, so a founded "order" was a room — and `dynamicFactionDefinitions`, the
+    // `GameState` field that exists to hold run-authored faction definitions, had no
+    // live producer anywhere in the codebase.
+    //
+    // **The hall is not lost by the switch.** `seedFactionFromDefinition` seeds 3–5
+    // guild halls of its own, anchored at this location via `primaryLocationOverride`,
+    // so the order gains real halls the faction layer reads instead of one sublocation
+    // only its founder could see.
+    //
+    // The four content-id lists point at existing generic guild content on purpose: a
+    // faction whose join and quest encounters resolve to nothing would be live by every
+    // dashboard and inert in play.
+    mutationHint: {
+      type: 'create_group',
+      groupKind: 'faction',
+      nameTemplate: "{actor}'s Order of {location}",
+      factionSeed: {
+        factionType: 'guild',
+        nameTemplate: "{actor}'s Order of {location}",
+        description: 'A chartered order, founded within living memory, still deciding what it is for.',
+        motto: 'Newly sworn, and swearing still.',
+        iconGlyph: '⚜',
+        themeColor: '#B8A56A',
+        locationTypes: ['town', 'city', 'capital'],
+        joinEncounterTemplateId: 'ag.join',
+        promotionEncounterTemplateId: 'ag.promotion',
+        questTemplateIds: [
+          'ag.quest.escort_caravan', 'ag.quest.recover_artifact', 'ag.quest.wilderness_survey',
+          'ag.senior.bounty_hunt',
+        ],
+        socialTemplateIds: [
+          'ag.social.tavern_tales', 'ag.social.mentor', 'ag.social.rivalry',
+        ],
+      },
+    },
   },
 
   // 8. Organize Festival — a celebration that lifts the settlement, for a while
@@ -420,6 +457,44 @@ export const COURT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     motivations: ['revelation_discretion', 'honesty_cunning'],
     motiveGate: ['rivalry', 'grudge', 'contested_ambition', 'faction_war'],
     mutationHint: { type: 'no_mutation' },
+  },
+
+  // ── The `warband` kind's counter-play (THR-1309) ──
+  //
+  // **Cross-family, and that is the design rather than an accident of which pack had
+  // room.** The D column is what the *world* can do to take a work back, so a warlord
+  // cannot un-raise their own band: a self-spend is a use, not a counter — the same
+  // reasoning that keeps `strategic_burn_the_mark` in the U column at T1 and put both
+  // T2 destroys in this pack's warlord counterpart. A warband is broken by someone who
+  // buys its captains, which is court work, not battlefield work.
+  //
+  // Appended rather than inserted, per the T2 candidate-cap finding.
+  {
+    id: 'strategic_suborn_warband',
+    displayName: 'Buy the Captains',
+    verb: 'destroy',
+    executionMode: 'multi_tick_project',
+    behaviorFamily: 'court-political',
+    reachProfile: { gold: 0.5, shadow: 0.3, heart: 0.2 },
+    projectDuration: 5,
+    activityProse: [
+      'You do not fight a warband. You find the two men it cannot do without, and you make them a better offer.',
+      'Coin, and a quiet room, and the suggestion that loyalty has a market rate like everything else.',
+    ],
+    completionProse: [
+      'The band does not lose a battle. It simply stops being a band — paid apart, one captain at a time.',
+    ],
+    catalystEncounterIds: ['encounter_desertion', 'encounter_warband_rivalry'],
+    // A band the actor does **not** command. `other_commander` is what makes the verb
+    // a counter rather than a self-spend, and it is checked at *selection*, so the
+    // verb is never offered against the actor's own people (THR-1309 trap 1).
+    targetRule: { type: 'group_node', groupKind: 'company', ownership: 'other_commander' },
+    resourceHint: { wealthCost: 40, reachFloor: { gold: 0.3, shadow: 0.2 } },
+    checkpointDifficulty: 0.55,
+    payoffValue: 1.6,
+    motivations: ['honesty_cunning', 'loyalty_ambition'],
+    motiveGate: ['rivalry', 'grudge', 'contested_ambition', 'faction_war'],
+    mutationHint: { type: 'disband_group' },
   },
 ];
 

@@ -621,10 +621,10 @@ exit
 - **Intent:** A company has no position of its own — asking where it is means asking where its leader is, so there is never a second spatial truth to drift.
 - **Producer → Consumer:** Companies & Group Travel → Movement & Colocation
 - **UL terms:** *Company*
-- **Production hits:** 7 total — 1 write, 1 read, 5 unclassified
+- **Production hits:** 9 total — 1 write, 1 read, 7 unclassified
 - **Write sites:** `src/engine/groups/groupQueries.ts`
 - **Read sites:** `src/debug-bridge.ts`
-- **Other hits:** `src/components/Game/debug/CompaniesTabContent.tsx`, `src/components/Game/GameView.tsx`, `src/engine/binding/remoteAnchor.ts`, `src/engine/groups/bandOpposition.ts`, `src/engine/groups/groupFormation.ts`
+- **Other hits:** `src/components/Game/debug/CompaniesTabContent.tsx`, `src/components/Game/GameView.tsx`, `src/engine/binding/remoteAnchor.ts`, `src/engine/groups/bandOpposition.ts`, `src/engine/groups/groupFormation.ts` +2 more
 - **Verdict:** Verified 2026-07-24: Company nodes carry no located_at edge; locked by src/engine/groups/__tests__/groupLifecycle.test.ts § "never attaches a located_at edge to the company node".
 
 ### `compulsion-card-plants-agent-decision-bias` — 🔴 LEAKED
@@ -1006,10 +1006,10 @@ exit
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 242 total — 1 write, 1 read, 240 unclassified
+- **Production hits:** 247 total — 1 write, 1 read, 245 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts` +235 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts` +240 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `relocation-intent-steers-agent-movement` — 🔵 UNVERIFIED-OK
@@ -1053,10 +1053,10 @@ exit
 - **Intent:** Who once rode with a company survives its ending — the record is the membership edges dissolution stamped, never the roster it emptied.
 - **Producer → Consumer:** Companies & Group Travel → Companies & Group Travel
 - **UL terms:** *Company*
-- **Production hits:** 5 total — 1 write, 2 read, 2 unclassified
+- **Production hits:** 7 total — 1 write, 2 read, 4 unclassified
 - **Write sites:** `src/engine/groups/groupDissolution.ts`
 - **Read sites:** `src/engine/groups/groupFormation.ts`, `src/engine/groups/groupQueries.ts`
-- **Other hits:** `src/engine/graphOpExecutor.ts`, `src/engine/groups/groupCohesion.ts`
+- **Other hits:** `src/engine/graphOpExecutor.ts`, `src/engine/groups/groupCohesion.ts`, `src/engine/strategicGraphOps.ts`, `src/types/strategicAction.ts`
 - **Verdict:** Verified 2026-07-25: src/engine/groups/__tests__/reuniteSunder.test.ts § "the cleared-roster trap" asserts roster === [] after dissolveGroup *and* that getFormerGroupMembers still returns all three riders — so a roster-based implementation fails the same test that documents why.
 
 ### `reunite-rides-draw-together-convergence` — 🟢 LIVE
@@ -1235,10 +1235,10 @@ exit
 - **Intent:** A work done *through* others — a garrison established, supply lines raided — must reach the site through something its owner actually commands, and is not offered at all when nothing is there. Refusing at proposal is the `no_eligible_apprentice` doctrine: an undertaking nobody can foot is not a decision, and starting one only to stall it teaches the player their armies are decorative. The winning anchor joins the cast as `$anchor` must-persist, so severing an army is a named complication for everything it was footing.
 - **Producer → Consumer:** War, Armies & Battles → Ambitions & Undertakings
 - **Module:** `src/engine/binding/remoteAnchor.ts`
-- **Production hits:** 21 total — 1 write, 2 read, 18 unclassified
+- **Production hits:** 25 total — 1 write, 2 read, 22 unclassified
 - **Write sites:** `src/engine/armySpawning.ts`
 - **Read sites:** `src/engine/binding/remoteAnchor.ts`, `src/engine/strategicActionCandidates.ts`
-- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/GameView.tsx`, `src/data/battle-spotlight-content.ts`, `src/debug-bridge.ts`, `src/engine/armyAttrition.ts` +13 more
+- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/GameView.tsx`, `src/data/battle-spotlight-content.ts`, `src/data/strategic-packs/warlordStrategicPack.ts`, `src/data/undertaking-kinds.ts` +17 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `undertow-card-drifts-mortal-values` — 🔴 LEAKED

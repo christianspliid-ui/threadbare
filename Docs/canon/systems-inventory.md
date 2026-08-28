@@ -364,7 +364,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `stealth` (1) | `stealth.ts` | — |
 | `step` (1) | `stepResolutionCore.ts` | `THR-1292` |
 | `strands` (1) | `strands.ts` | — |
-| `strategic` (6) | `strategicActionCandidates.ts`, `strategicActionLifecycle.ts`, `strategicActionScoring.ts`, `strategicGraphOps.ts`, `strategicPresentation.ts`, `strategicTelemetry.ts` | — |
+| `strategic` (6) | `strategicActionCandidates.ts`, `strategicActionLifecycle.ts`, `strategicActionScoring.ts`, `strategicGraphOps.ts`, `strategicPresentation.ts`, `strategicTelemetry.ts` | `THR-1309` |
 | `sublocation` (2) | `sublocation.ts`, `sublocationShape.ts` | `THR-1177`, `THR-1183`, `THR-1193` |
 | `support` (1) | `supportRoleWords.ts` | `THR-1041` |
 | `survey` (1) | `surveyProseComposer.ts` | `THR-415` |

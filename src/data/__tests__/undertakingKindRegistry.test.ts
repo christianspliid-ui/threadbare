@@ -172,7 +172,8 @@ describe('the shipped registry', () => {
     // because the failure this guards against is a row landing without its
     // counter-play, and a count cannot see that.
     //
-    // THR-1308 appended the two T2 rows. The set stays exact for the same reason.
+    // THR-1308 appended the two T2 rows; THR-1309 appended `warband`. The set stays
+    // exact for the same reason.
     expect(UNDERTAKING_KIND_ROWS.map(r => r.kindId)).toEqual([
       'intelligence_cache',
       'leverage_mark',
@@ -181,32 +182,47 @@ describe('the shipped registry', () => {
       'network',
       'trade_route',
       'place_location',
+      'warband',
     ]);
   });
 
-  it('registers no tier above 2 — T3 lands with its own destroys', () => {
+  it('registers no kind whose counter-play is unshipped — `sublocation` and `faction`', () => {
     // The other half of the same identity, and the reason the absent kinds are absent
-    // rather than stubbed: `warband` and `faction` lack a shipped destroy verb, so
-    // registering them now would mean pointing `destroyTemplateIds` at something that
-    // cannot undo them. That is the vacuity the gate above refuses, and it does not
-    // stop being vacuous because the rows would look more complete with it.
+    // rather than stubbed: they lack a shipped destroy *verb*, so registering them
+    // would mean pointing `destroyTemplateIds` at something that cannot undo them.
+    // That is the vacuity the gate above refuses, and it does not stop being vacuous
+    // because the rows would look more complete with it.
     //
-    // `sublocation` is the T2 row that is *also* still absent, and for the same
-    // reason rather than an oversight: its six build templates ship, its raze does
-    // not. THR-1308 shipped the two T2 kinds whose counter-play it could author.
-    expect(UNDERTAKING_KIND_ROWS.every(r => r.tier <= 2)).toBe(true);
+    // `sublocation` (T2): its six build templates ship, its raze does not.
+    //
+    // `faction` (T3): THR-1309 shipped the op that *founds* one —
+    // `strategic_found_order` now charters a real faction — but nothing in the corpus
+    // dissolves one. `phaseSchismResolution` exists and splits factions; it is an
+    // ambient process, not a motive-gated `destroy` verb an agent can choose, which is
+    // what a D column names. This is the sharpest case yet for the rule, because the
+    // create half is live and the row still may not land.
+    //
+    // Note this assertion is no longer "no tier above 2" (THR-1309): tier is not the
+    // predicate and never was — a shipped, reachable, motive-gated destroy is.
     expect(UNDERTAKING_KIND_ROWS.map(r => r.kindId)).not.toContain('sublocation');
-    expect(UNDERTAKING_KIND_ROWS.map(r => r.kindId)).not.toContain('warband');
     expect(UNDERTAKING_KIND_ROWS.map(r => r.kindId)).not.toContain('faction');
   });
 
-  it('every T2 row is ownable, and every T1 row is not — the tier boundary', () => {
-    // The substantive difference the tier marks (THR-1308). T1's objects are edges,
-    // possessions and actor-side records; T2's are ground. Holdings is about ground,
-    // so `ownable` tracks the tier exactly — and a future row that breaks this will
-    // have to say why here rather than drifting into it.
+  it('`ownable` tracks whether the object is ground — not the tier', () => {
+    // **Corrected at THR-1309, on the invitation the previous version left.** This
+    // asserted `ownable === (tier >= 2)`, which was true of every row that existed
+    // when it was written and false as a law. Both tier-2 rows are ground (a route,
+    // a settlement) and holdings is about ground — but `warband` is tier 3 and its
+    // object is *people*, which the plan's own table marks "commanded", exactly as it
+    // marks the tier-1 `network`. Commanded is not held.
+    //
+    // So the predicate is the object's nature, stated as an explicit set. A tier
+    // threshold happened to coincide with it across two rows and generalised a
+    // snapshot into a rule — the shape that makes a guard pass on a population it was
+    // never tested against.
+    const GROUND_KINDS = new Set(['trade_route', 'place_location']);
     for (const row of UNDERTAKING_KIND_ROWS) {
-      expect(row.ownable, `${row.kindId} (tier ${row.tier})`).toBe(row.tier >= 2);
+      expect(row.ownable, `${row.kindId} (tier ${row.tier})`).toBe(GROUND_KINDS.has(row.kindId));
     }
   });
 

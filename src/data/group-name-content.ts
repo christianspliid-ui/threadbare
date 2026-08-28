@@ -57,6 +57,10 @@ export const GROUP_NAME_CAUSE_ADJECTIVES: Record<string, readonly string[]> = {
   // predecessor's name is unavailable; a reunion that knows what it used to be
   // called takes a REFORMED_NAME_PATTERNS variant of that instead.
   reunite: ['Returned', 'Remembered', 'Second', 'Rekindled', 'Unfinished'],
+  // Raised warbands (THR-1309) — recruited on purpose, by someone who wanted them.
+  // Martial where `systemic` is incidental: these people were *asked*, and the
+  // adjectives carry the coin and the oath that got them there.
+  raised_warband: ['Mustered', 'Paid', 'Raised', 'Bannered', 'Levied', 'Hired'],
 };
 
 /**
