@@ -2222,12 +2222,17 @@ export const CONTRACTS: readonly Contract[] = [
     readSites: [
       'src/engine/agentLifecycle.ts',
     ],
-    // No `verifiedLive`: the valve is wired and tested end to end, but nothing
-    // *enqueues* yet — the bind pass that produces requests is slice 4 (THR-1296
-    // §3). Badging LIVE would badge a path no simulation travels. The consumer half
-    // is real today: `phaseAgentLifecycle` drains the queue inside its births block
-    // on every tick, and `mintInhabitant.test.ts` drives that path.
-    deferralTicket: 'THR-1296',
+    // Promoted at THR-1321, on a measurement rather than on the bind pass having
+    // shipped. The old note here said "nothing *enqueues* yet — the bind pass is
+    // slice 4". Slice 4 landed, and the path still travelled nowhere: requests were
+    // enqueued onto `strategicState.mintQueue` and the whole object was then
+    // discarded by `advanceStrategicProjects`, which rebuilt `strategicState` as a
+    // literal naming only `projects`/`controls`/`history`. The valve drained an
+    // always-empty queue every tick and reported no births, so the row would have
+    // read LIVE off symbol presence while no mortal had ever been born through it —
+    // exactly the false-promotion the downgrade-only rule exists to refuse.
+    verifiedLive:
+      'Controlled arm, CLI seed 42 / medium / 150 ticks, counting `generatedBy === "undertaking_binder"` actors: `origin/main` → 0, post-fix → 42, each carrying `mintedForProjectId` and placed at a named location (e.g. `mint_proj_strategic_recruit_warband_ind_7_28_recruit`, role `mercenary`, at Ardenmor Keep). Two distinct templates feed it (`strategic_recruit_warband`, `strategic_chart_the_wilds`), so the row is not one template deep. The 0 arm is the load-bearing half: it shows the valve had never fired in a live simulation before this, which no symbol grep could have detected.',
   },
   {
     id: 'undertaking-creation-effects',
