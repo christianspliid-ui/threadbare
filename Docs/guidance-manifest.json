@@ -31,7 +31,10 @@
     "cover every dependent. The stamp check is advisory ALWAYS — forcing it mechanically would recreate",
     "the date-bump theater `last_validated_against` already demonstrated.",
     "",
-    "SCOPE — one doctrine (prose), the domain with demonstrated loss. Adding a doctrine is a deliberate",
+    "SCOPE — four doctrines: prose (the original, registered on demonstrated loss), plus the three",
+    "general-layer doctrines registered at THR-1331 (identity-vision, cosmology, coordination-process)",
+    "after the 2026-08-28 context audit found the unregistered general layer rotting — two finished",
+    "retirements unswept, every core rule in 3-4 drifting copies. Adding a doctrine is a deliberate",
     "registration, not a default. This file is small on purpose.",
     "",
     "SUNSET — the gate, the stamps and the retro step enter the standing six-week sunset presumption",
@@ -58,6 +61,7 @@
         ".claude/skills/attachment-pipeline/agents/editorial-prompt.md",
         "Docs/exemplars.md",
         "Docs/canon/encounters.md",
+        "Docs/canon/rulebook.md",
         "Docs/plans/2026-04-16-game-design-direction.md",
         "Docs/plans/2026-07-04-voice-register-plainspoken-malazan.md",
         "Docs/plans/2026-07-26-nudge-model-encounter-system.md",
@@ -70,6 +74,81 @@
         "vault:Systems/Tonal Bible.md",
         "vault:Systems/Content Creator Cheat Sheet.md"
       ]
+    },
+    "identity-vision": {
+      "version": 1,
+      "versionNote": "Registered 2026-08-28 (THR-1331, context-cleanup round 1). The game is named Threadbearer (threadbearer.co) — director ruling 2026-08-28. Player = Ascendant. Nudge model: the god nudges odds with essence-priced cards, fate picks the outcome, mortals decide forks. Core loop: portfolio scan -> curated moment -> aftermath, 12 ticks/day.",
+      "authorities": [
+        "Docs/design-brief.md",
+        "Docs/canon/rulebook-quick-reference.md"
+      ],
+      "dependents": [
+        "CLAUDE.md",
+        ".claude/skills/state-of-game-design/SKILL.md",
+        ".claude/skills/game-design-direction/SKILL.md",
+        "Docs/ubiquitous-language/README.md",
+        "Docs/ways-of-working.md"
+      ],
+      "manualDependents": [
+        "vault:CLAUDE.md",
+        "vault:Index.md",
+        "vault:Systems Overview.md",
+        "vault:Product Strategy.md",
+        "vault:Vision/README.md",
+        "vault:Vision/00-north-star.md",
+        "vault:Vision/01-core-loop.md",
+        "vault:Vision/02-non-negotiables.md",
+        "vault:Vision/03-design-tensions.md",
+        "vault:Vision/taste-profile.md"
+      ]
+    },
+    "cosmology": {
+      "version": 1,
+      "versionNote": "Registered 2026-08-28 (THR-1331). Eight Reaches (Iron, Gold, Shadow, Veil, Heart, Eye, Stone, Star) x Twelve Spheres, orthogonal axes; Quintessence is a meta-property, not a ninth Reach. Nine-Reaches/Flesh retired 2026-03-28 (THR-307 sweep).",
+      "authorities": [
+        "Docs/canon/cosmology.md",
+        "Docs/ubiquitous-language/Cosmology.md"
+      ],
+      "dependents": [
+        "CLAUDE.md",
+        "STYLE.md",
+        "Docs/canon/rulebook-quick-reference.md",
+        "Docs/canon/rulebook.md",
+        ".claude/skills/game-design-direction/SKILL.md",
+        ".claude/skills/state-of-game-design/reference/cosmology.md",
+        ".claude/skills/state-of-game-design/reference/deprecated.md"
+      ],
+      "manualDependents": [
+        "vault:Cosmology/Reaches.md",
+        "vault:Systems/Domain Word Scales.md",
+        "vault:Systems Overview.md",
+        "vault:Domains/reach.flesh.md"
+      ]
+    },
+    "coordination-process": {
+      "version": 1,
+      "versionNote": "Registered 2026-08-28 (THR-1331). Single CC runtime (Codex retired THR-486, Cowork retired THR-654); design session vs execution session; vault filesystem-only via OBSIDIAN_VAULT_PATH; single-authority + pointers; merge = Done via line-anchored Fixes THR-XX in commit AND PR body.",
+      "authorities": [
+        "Docs/canon/process.md",
+        "Docs/canon/design-governance.md"
+      ],
+      "dependents": [
+        "CLAUDE.md",
+        "Docs/ubiquitous-language/README.md",
+        "Docs/ubiquitous-language/Process.md",
+        "Docs/ubiquitous-language/Coordination.md",
+        "Docs/documentation-ownership.md",
+        "Docs/ways-of-working.md",
+        ".claude/skills/design-session/SKILL.md",
+        ".claude/skills/pull-work/SKILL.md",
+        ".claude/skills/intent-judge/SKILL.md",
+        ".claude/skills/grill-me/SKILL.md",
+        ".claude/skills/gamedocumenter/SKILL.md",
+        ".claude/skills/session-handoff/SKILL.md",
+        ".claude/skills/wayfinder/SKILL.md",
+        "Docs/plans/2026-04-13-linear-coordination-protocol.md"
+      ],
+      "manualDependents": []
     }
   }
 }

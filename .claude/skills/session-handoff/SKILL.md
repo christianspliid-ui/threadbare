@@ -1,7 +1,7 @@
 ---
 name: session-handoff
 description: End-of-session closeout summary aligned with Linear handoff protocol (no Slack trigger flow).
-last_validated_against: 2026-06-12
+last_validated_against: 2026-08-28
 ---
 
 # Session Handoff
@@ -40,7 +40,7 @@ Run only after implementation is complete and closeout work is done:
 
 ```
 Session handoff summary
-- Mode: <Cowork planning | Claude Code executor>
+- Mode: <design session | execution session>
 - Issue: <THR-XXX title>
 - State now: <In Dev | Ready for Dev | Done (if auto-closed already)>
 - Shipped/Handoff: <one line>
@@ -55,7 +55,7 @@ Session handoff summary
 - Do not manually force `Done` from executor sessions.
 - Do not send Slack messages from this skill.
 - Do not fire remote triggers from this skill.
-- When invoked from the scheduled `keep-work-flowing` task, post the produced summary to Linear as a comment on the handed-off issue (or the active project when no issue was handed off).
+- When invoked from the scheduled `keep-work-flowing-cc` task, post the produced summary to Linear as a comment on the handed-off issue (or the active project when no issue was handed off).
 
 ## Notes
 

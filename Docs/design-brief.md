@@ -1,7 +1,7 @@
 ---
 title: Threadbearer — Design Brief
 purpose: ≤2-page orientation for any agent entering a design session. Read this BEFORE any shard, canon page, or domain skill.
-audience: agents (Cowork, CC, Codex) starting any design or content work
+audience: any agent starting design or content work (Claude Code — design or execution session)
 companions:
   - Docs/canon/rulebook-quick-reference.md
   - TheFantasyWorldSimulator/Index.md
@@ -54,11 +54,11 @@ Every design decision — engine, content, UI, prose — is checked against thes
 
 **Next reads (load on demand):**
 - Rules of play: `Docs/canon/rulebook.md`
-- Reaches × Spheres deep dive: `TheFantasyWorldSimulator/Cosmology/Spheres and Reaches.md` (Obsidian MCP)
+- Reaches × Spheres deep dive: `TheFantasyWorldSimulator/Cosmology/Spheres and Reaches.md` (vault, filesystem via `OBSIDIAN_VAULT_PATH`)
 - Action verb mechanics: `.claude/skills/state-of-game-design/reference/verbs-resolution.md`
 - Encounters: `Docs/canon/encounters.md`
 - Agents & threads: `Docs/canon/agents.md`
 - Prose authoring: `Docs/canon/prose.md`
 - Hex map / HexMapV2: `Docs/canon/hex-map.md`
 - Experiential compass: `Docs/plans/2026-04-16-game-design-direction.md`
-- Vision premises: `TheFantasyWorldSimulator/Vision/` (Obsidian MCP)
+- Vision premises: `TheFantasyWorldSimulator/Vision/` (vault, filesystem via `OBSIDIAN_VAULT_PATH`)

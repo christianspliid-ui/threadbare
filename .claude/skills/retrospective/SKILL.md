@@ -71,7 +71,7 @@ For each top friction source (and all unresolved blockers), propose a concrete f
 
 | Fix Type | What It Means | Example |
 |----------|--------------|---------|
-| **skill-update** | Modify an existing skill's instructions | Add workaround to gamedocumenter for Obsidian MCP quirk |
+| **skill-update** | Modify an existing skill's instructions | Add the CRLF-safe vault-write rule to `vault-ingest` |
 | **skill-create** | Create a new skill | Reusable pattern that agents keep rediscovering |
 | **claude-md-update** | Add/modify instruction in CLAUDE.md | New architectural decision, new gotcha |
 | **tool-config** | Change MCP server config, permissions, hooks | Fix a permission that keeps blocking agents |

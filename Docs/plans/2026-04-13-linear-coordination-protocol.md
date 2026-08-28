@@ -298,7 +298,7 @@ $ npx vite build
 
 **How to apply:**
 - Handoff templates and Done-when checklists must not contain "diff-reviewed by Christian"-style gates. Human sign-off, when needed, is a chat summary + one yes/no question, recorded as a Linear comment (`human gate satisfied via chat review <date>`).
-- Anything needing Christian's attention is surfaced in **chat** — primarily the hourly `keep-work-flowing` Cowork session output — never a Linear comment addressed to him.
+- Anything needing Christian's attention is surfaced in **chat** — primarily the hourly `keep-work-flowing-cc` briefing output — never a Linear comment addressed to him.
 - If an issue is complete but parked behind a human gate that is actually a technical verdict, the agent resolves it (e.g. Cancel with a closing comment, or merge once CI is green) rather than parking the lane. Full rationale: `Docs/plans/2026-07-04-user-review-interface.md`.
 
 ### The park shape, and the two rules that protect it (THR-1283)
@@ -587,7 +587,7 @@ save_issue(id: "THR-42", links: [{url: "https://github.com/.../Docs/plans/2026-0
 |-----------|-------------|
 | `Docs/plans/` design docs | These are content, not coordination — they belong in the repo |
 | `Docs/changelog.md` | Git-tracked audit trail, referenced by DoD hooks |
-| `Docs/project-status.md` | High-level summary, referenced by DoD hooks |
+| `Docs/project-status.md` | High-level summary — since THR-1016 **generated** from `Docs/status/` fragments and **untracked**; never hand-edit it |
 | `Docs/project-history.md` | Append-only archive, referenced by DoD hooks |
 | `.planning/ROADMAP.md` | Milestone-level roadmap (could move to Linear Projects later) |
 | CLAUDE.md | Session instructions — updated to reference Linear |
@@ -601,9 +601,9 @@ The hooks design (Gates 1-3) and the Linear protocol are complementary:
 - **Hooks** enforce the *mechanical* DoD: tests pass, build succeeds, docs updated, no loose ends
 - **Linear** enforces the *coordination* protocol: who owns what, what state it's in, handoff context
 
-Gate 4 (Cowork role boundary) remains as a speculative hook — if hooks fire in Cowork, it adds defense-in-depth. If not, Linear's audit trail at least makes violations visible.
+Gate 4 (Cowork role boundary) was a speculative hook for the Cowork runtime, which retired 2026-07-21 (THR-654); the hook scripts were removed 2026-08-28 (THR-1332). Linear's audit trail is where role violations would surface.
 
-The pre-push hook (Gate 2) still checks that `changelog.md`, `project-status.md`, and `project-history.md` are updated. These docs stay in the repo. The hook no longer needs to check BACKLOG.md since that's retired.
+The pre-push hook (Gate 2) still checks that `changelog.md` and `project-history.md` are updated. (`Docs/project-status.md` left the tracked tree at THR-1016 — generated from `Docs/status/` fragments, untracked, never hand-edited.) The hook no longer needs to check BACKLOG.md since that's retired.
 
 ---
 

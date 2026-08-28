@@ -1,5 +1,7 @@
 # Cowork Ways of Working
 
+> **SUPERSEDED (2026-08-28, THR-1331).** The Cowork lane this document governs was retired 2026-07-21 (THR-654) — four weeks after this file's last sweep, which is why it reads freshly tended while every rule in it is dead. Its claims no longer hold: there is no Cowork agent, and the "Obsidian vault updates (MCP access works)" line below is the retired access path — vault work is filesystem-only via `OBSIDIAN_VAULT_PATH`. Current homes: [`Docs/canon/process.md`](canon/process.md) § Two session types (the design-session/execution-session split that replaced the Cowork/CC split), [`.claude/skills/design-session/SKILL.md`](../.claude/skills/design-session/SKILL.md), and [`Docs/ways-of-working.md`](ways-of-working.md) for the collaboration layer. Kept for history; nothing loads this as live guidance.
+
 > Added 2026-03-16. Updated 2026-04-26: rewrote for Linear-first coordination (BACKLOG.md and HANDOVER.md retired 2026-04-13).
 
 ## Cowork's Role
