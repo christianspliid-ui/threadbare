@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-28 17:56 local (15:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-28 18:55 local (16:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -25,9 +25,9 @@ Three ways to go: **let both stand** (different grammar, never side by side — 
 
 Roughly twenty items sit in Todo and **every one needs a plan doc before an executor can touch it**. That is what the hours buy.
 
-**Every job your designs supplied is now spent, and the shelf will not refill itself.** Three more of them shipped this afternoon — [trade routes and blockades](https://linear.app/threadbare/issue/THR-1308), [lairs can be cleared](https://linear.app/threadbare/issue/THR-1319), [named lairs](https://linear.app/threadbare/issue/THR-1312) — all from design you had already approved. That was a queue draining, not a source. **Five jobs remain, and every one is a small follow-up some earlier build filed on itself**; none is High priority and none is content work. **And it moves fast:** trade routes was claimed, built, merged and deployed inside two hours. That is what the blocked design column costs, expressed in jobs rather than days.
+**Every job your designs supplied is now spent, and today's last Medium went with it.** [Trade routes dissolving six ticks after founding](https://linear.app/threadbare/issue/THR-1320) was claimed at 18:02, merged at 18:48 and deployed — inside one hour. **Five jobs remain and every one is now Low priority**: two glossary proposals, a chip-anchor tidy, a faction-weights gap, and a status-bar row wired to nothing. No High-priority work, no content work. That is a queue that drained, not a source that refilled.
 
-**The block has two names on it** *(orchestrator lane, standing)*: **[unify the card grammar](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** (your 6 August note, untouched 9 days; three tickets behind it) and **[traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)** (assigned to you, untouched 13 days). That lane holds one design slot and will not walk either backwards out of the column on its own. **Sit one, or say *"park it"*** — four more plan-doc sessions are unblocked behind them.
+**The block has two names on it** *(orchestrator lane, standing — nine days at the same two)*: **[unify the card grammar](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** (your 6 August note, untouched 9 days; three tickets behind it) and **[traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)** (assigned to you, untouched 13 days). That lane holds one design slot and will not walk either backwards out of the column on its own. **Sit one, or say *"park it"*** — four more plan-doc sessions are unblocked behind them.
 
 **Unblocked and waiting:** all three remaining carve-up docs — [the reactive loop](https://linear.app/threadbare/issue/THR-1298) and [the calling & the surfaces](https://linear.app/threadbare/issue/THR-1299) can run in parallel, with [the undertaking factory](https://linear.app/threadbare/issue/THR-1300) last. Then [your one-button snapshot](https://linear.app/threadbare/issue/THR-1134) (High, your own 16 August request, untouched 12 days — you still have no way to hand a wrong-looking world to an agent); [a beast that can be a real character in a scene](https://linear.app/threadbare/issue/THR-1274) (only people can be cast today, capping four hunt encounters); and [nations and named areas](https://linear.app/threadbare/issue/THR-1155), the last wave-1 design — nations and named regions are drawn but not simulated, so nothing in the game can point at one.
 
@@ -86,6 +86,7 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
+- **A road that stands long enough to be taken** — [THR-1320](https://linear.app/threadbare/issue/THR-1320) claimed 18:02, merged 18:48 and deployed ([PR #1696](https://github.com/christianspliid-ui/threadbare/pull/1696)). A trade route founded by a season's work dissolved six ticks later, so the blockade that was supposed to counter it never once had a road to cut.
 - **A dead term in how settlements are built, and the deeper one it hid** — [THR-1311](https://linear.app/threadbare/issue/THR-1311) merged 17:19 and deployed ([PR #1692](https://github.com/christianspliid-ui/threadbare/pull/1692)). Factions were supposed to shape what a settlement is good at; the code that read them could never match anything, silently, since it was written.
 - **The world pushes back — a lair can now be cleared** — [THR-1319](https://linear.app/threadbare/issue/THR-1319) merged 15:40 and deployed ([PR #1691](https://github.com/christianspliid-ui/threadbare/pull/1691)). A lair could be found and feared but never emptied; clearing one had no way to be recorded, so the danger was permanent by accident.
 - **Works that are places, and the verbs that take them back** — [THR-1308](https://linear.app/threadbare/issue/THR-1308/t2-undertaking-tier-route-blockade-kinds-and-the-create-location) merged 13:58 and deployed ([PR #1689](https://github.com/christianspliid-ui/threadbare/pull/1689)). Agents can now undertake to found a trade route or blockade one — each a real thing on the map, and each with a way for someone else to undo it.
@@ -95,7 +96,6 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 - **Your second Wave-1 design is built, whole** — [hunger vocabulary](https://linear.app/threadbare/issue/THR-1213) closed at 10:36, four slices in two and a half hours, all deployed: the Hunger you chose finally decides what the meeting asks of your First, and [157 scenes learned what they are about](https://github.com/christianspliid-ui/threadbare/pull/1686).
 - **The 20–22 August lane-quiet question is closed without needing your answer** — the gap aged out of the probe's window, and the only quiet now reported is overnight-shaped, already declined under your 8 August ruling.
 - **The action library finished whole** — [THR-1297](https://linear.app/threadbare/issue/THR-1297), doc 2 of your carve-up, six slices in nine hours. A finished work now earns its own name; ownership is its own edge; a destroy verb needs a reason. Docs 1, 2 and 3 — the whole first tier — are built.
-- **The home-ground rule shipped, by your non-answer** — *your people fight a little better defending what is theirs.* You were given the veto twice; the ask said silence was an equally fine answer. It is now working code: removing it later is a change, not a non-decision.
 
 ---
 
