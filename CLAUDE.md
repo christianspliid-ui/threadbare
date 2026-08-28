@@ -1,4 +1,4 @@
-This folder contains The Fantasy World Simulator — a systemic god-game/rogue-lite narrative simulation built in React + TypeScript + Vite.
+This folder contains **Threadbearer** ([threadbearer.co](https://threadbearer.co)) — a systemic god-game/rogue-lite narrative simulation built in React + TypeScript + Vite. ("Threadbare" is the repo/Linear codename; "The Fantasy World Simulator" is the retired working title that survives only in paths. UL: `Docs/ubiquitous-language/Process.md` → Threadbearer.)
 
 [![CI](https://github.com/christianspliid-ui/threadbare/actions/workflows/ci.yml/badge.svg)](https://github.com/christianspliid-ui/threadbare/actions/workflows/ci.yml)
 
@@ -328,7 +328,7 @@ Settled. Do not revisit.
 
 ## Rejected Approaches (do not reintroduce)
 
-- ❌ Classical stats (STR/DEX/INT) — replaced by Domain Capability across Nine Reaches
+- ❌ Classical stats (STR/DEX/INT) — replaced by Domain Capability across the Eight Reaches
 - ❌ Fixed rival pantheon — replaced by generated rivals from World-Soul
 - ❌ Old 5-force cosmology — replaced by Foundation + Creation Sphere model
 - ❌ Pure template-based prose — replaced by hybrid layered engine

@@ -6,12 +6,12 @@ companions:
   - Docs/canon/rulebook-quick-reference.md
   - TheFantasyWorldSimulator/Index.md
 status: stable
-last_validated_against: 2026-06-11
+last_validated_against: 2026-08-28
 ---
 
 # Threadbearer — Design Brief
 
-**The Fantasy World Simulator** is a systemic god-game and rogue-lite narrative simulation. You play an Ascendant — a former mortal turned demigod — shaping a procedurally generated fantasy world through indirect influence, divine interventions, and sustained control, while a Doom Clock ticks toward the Unmaking.
+**Threadbearer** ([threadbearer.co](https://threadbearer.co)) is a systemic god-game and rogue-lite narrative simulation. You play an Ascendant — a former mortal turned demigod — shaping a procedurally generated fantasy world through indirect influence, divine interventions, and sustained control, while a Doom Clock ticks toward the Unmaking.
 
 ## The core fantasy
 
