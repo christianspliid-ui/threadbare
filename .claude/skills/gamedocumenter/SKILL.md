@@ -113,7 +113,7 @@ the `old_string` when editing near a heading.
 
 **Actions:**
 1. Add a completion comment summarizing what shipped, commit SHA, and any deferrals created.
-2. Ensure your merge-path commit body includes `Fixes THR-XX` so merge-to-main auto-close fires.
+2. Ensure `Fixes THR-XX` appears in **both** the commit body **and** the PR description body (impediment #140 — a merge commit can drop the feature commit's body), each **alone on its own line** — the auto-close workflow is line-anchored (THR-738), so the keyword inside a prose sentence closes nothing.
 3. If any deferrals were introduced, create linked Linear issues and include `// TODO(THR-XX)` references in code.
 4. Keep issue tracking in Linear only and do not recreate retired backlog files.
 
@@ -127,7 +127,7 @@ git commit -m "docs: update project status for Phase 6X completion
 
 <brief summary of what was documented>
 
-Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
+Co-Authored-By: <the current model's trailer, as the harness instructs> <noreply@anthropic.com>"
 ```
 
 Commit all repo-level docs: CLAUDE.md, `Docs/changelog.md`, your new `Docs/status/` fragment, `Docs/project-history.md`, and files in `Docs/plans/`. `Docs/project-status.md` is generated and gitignored — do not stage it. Obsidian changes land in a separate tree under `$OBSIDIAN_VAULT_PATH` and are not part of this commit.
