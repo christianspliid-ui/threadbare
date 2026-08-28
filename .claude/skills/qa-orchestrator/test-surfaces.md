@@ -2,7 +2,7 @@
 
 Last updated: 2026-03-10
 
-This file is the single source of truth for every testable UI surface in The Fantasy World Simulator. The QA orchestrator uses this registry to ensure full coverage across sweeps.
+This file is the single source of truth for every testable UI surface in Threadbearer. The QA orchestrator uses this registry to ensure full coverage across sweeps.
 
 ## How to Use
 
@@ -91,8 +91,7 @@ This file is the single source of truth for every testable UI surface in The Fan
 
 | ID | Surface | Component | Category | File | Testable Actions | Prerequisites |
 |----|---------|-----------|----------|------|------------------|---------------|
-| S-070 | Agent Wheel | AgentWheel | overlay | components/Game/AgentWheel.tsx | Radial menu with action slots, opens on agent click in hex zoom | In hex zoom, click agent |
-| S-071 | Action Drawer | ActionDrawer | overlay | components/Game/ActionDrawer.tsx | Bottom drawer, agent header, horizontally scrolling action cards | Action triggered via HUD or wheel |
+| S-071 | Action Drawer | ActionDrawer | overlay | components/Game/ActionDrawer.tsx | Bottom drawer, agent header, horizontally scrolling action cards | Action triggered via HUD or detail view |
 | S-072 | Action Card | ActionCard | sub-component | components/Game/ActionCard.tsx | Glyph, name, cost, detection risk, range info, click triggers confirm | Inside ActionDrawer |
 | S-073 | Intervention Confirm | InterventionConfirm | overlay | components/Game/InterventionConfirm.tsx | Cost, detection risk, range, essence requirement, confirm/cancel | Clicked an ActionCard |
 | S-074 | Agenda Picker | AgendaPicker | overlay | components/Game/AgendaPicker.tsx | Centered modal, agenda template list, selection | Intervention requires agenda |

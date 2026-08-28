@@ -1,11 +1,11 @@
 ---
 name: state-of-game-design/verbs-resolution
 description: >
-  Engine reference for The Fantasy World Simulator: the 5 action verbs,
+  Engine reference for Threadbearer: the 5 action verbs,
   sigmoid → d100 resolution system, actor prerequisites (two-axis), generalized
   action targeting, and player influence. Load for engine code, tick loop work,
   resolution logic, or PRNG work.
-last_validated_against: 2026-05-16
+last_validated_against: 2026-08-28
 ---
 
 # Verbs, Resolution & Prerequisites
@@ -30,9 +30,11 @@ last_validated_against: 2026-05-16
 
 Unified sigmoid pool → d100:
 1. Gather domain capability scores for the relevant Reach
-2. Feed through sigmoid curve → probability (0–1)
+2. Feed through sigmoid curve → probability (0–1), **clamped to a 5% floor** (`PROBABILITY_FLOOR`) — and the clamp bites *before* any nudge cards are counted (THR-821: you bend a mortal's odds, you do not lend them your competence)
 3. Roll d100 against that probability
 4. No alternative dice systems, no special-case resolution
+
+**Outcomes land on a five-band ladder** (THR-571): *clean success · success-at-cost · failure · critical success · critical failure*. The world is capability-poor by design, so **success-at-cost is the dominant, expected texture** (~45–60% of resolutions); clean and critical success are rare signals a god notices. Critical failure survives at every scale — its severity scales, its classification does not — except under an active `no_crit_fail` nudge rider, an authored, essence-priced, per-step exception. **Every failure leaves a story artifact** (`guaranteeFailureStoryArtifact`): no outcome is dead air. A binary succeed/fail read of this system is pre-THR-571 and wrong.
 
 ---
 
@@ -42,7 +44,7 @@ Actions are gated by two orthogonal checks:
 - **Reach prerequisite** — Domain Capability tier (competence: "can you do this type of activity?")
 - **Sphere prerequisite** — sphere alignment match (alignment: "does your cosmic energy resonate?")
 
-Both optional per template. Some actions only need reach competence. Some only need sphere alignment. The interesting ones need both. Prerequisites also gate *visibility* — you don't see what you can't attempt.
+Both optional per template. Some actions only need reach competence. Some only need sphere alignment. The interesting ones need both. Prerequisites also gate *visibility* in the ActionDrawer — the player does not see cards they cannot attempt. (Scope note: this is the drawer's prerequisite filter on the *god's own* action pool. It is not intelligence-gating of encounter candidates — that design space is closed: intel enriches an encounter when present, it never hides one, THR-138.)
 
 ---
 
@@ -64,10 +66,11 @@ Templates declare `targetCategories` (actor, location, sublocation, hex, artifac
 
 The Ascendant's core loop: influence mortal agents through tiers of connection.
 
-- **Influence Tiers:** Unaware → Curious → Recognized → Devoted → Enthralled → Aspect
+- **Influence Tiers:** five — Unaware → Curious → Recognized → Devoted → Enthralled (integers 0–4 in code). **'Aspect' is not a sixth rung**: it is a separate apex milestone reached only through the Apotheosis encounter, where the *mortal* decides sacrifice-vs-survival, the god leans with cards, and the roll decides whether the frame holds (THR-414 verdict; THR-1086).
 - **Influence Essence:** Sphere-typed divine currency. Regenerates from worshippers and places of power
 - **Stealth:** Two-audience detection (mortals notice your meddling, rival gods detect your presence)
 - Higher tiers = cheaper aligned nudges, but higher detection risk
+- **The attended-encounter surface is the nudge hand** (THR-772/775): authored, essence-priced cards bend the named odds; fate rolls the outcome; forks are decided by the mortal (`decidedBy` + net card lean). The player never sees a number (five forecast words, four difficulty words) and never picks an ending.
 
 ---
 

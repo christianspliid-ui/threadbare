@@ -1,18 +1,18 @@
 ---
 name: state-of-game-design/cosmology
 description: >
-  Cosmology reference for The Fantasy World Simulator: Reaches, Spheres, scales,
+  Cosmology reference for Threadbearer: Reaches, Spheres, scales,
   actor types, Hex Chronicle layers, and game design direction principles.
   Load for content authoring, encounter design, cosmology work, or prose that
   references Sphere/Reach combinations.
-last_validated_against: 2026-05-16
+last_validated_against: 2026-08-28
 ---
 
 # Cosmology & Game Design Direction
 
 ## Game Design Direction (Experiential Compass)
 
-**Read `Docs/plans/2026-04-16-game-design-direction.md` before any design or content work.** That document defines what Threadbare is supposed to *feel like* to play. This shard covers the mechanical foundations — reaches, spheres, actor types. The game design direction covers the experiential foundations — what the player does, how they feel, and what makes moments matter. Both are required context.
+**Read `Docs/plans/2026-04-16-game-design-direction.md` before any design or content work.** That document defines what Threadbearer is supposed to *feel like* to play. This shard covers the mechanical foundations — reaches, spheres, actor types. The game design direction covers the experiential foundations — what the player does, how they feel, and what makes moments matter. Both are required context.
 
 **Core principles (summary — read the full doc for depth):**
 
@@ -20,7 +20,7 @@ last_validated_against: 2026-05-16
 
 **The three-beat core loop** (every play session):
 1. **Portfolio scan** — "How are my people doing?" Read protagonist states at a glance via emotional/iconic signals + human-textured prose.
-2. **Curated moment** — The game identifies emotionally significant encounters and pulls the player in for branching decision-making under uncertainty.
+2. **Curated moment** — The game identifies emotionally significant encounters and pulls the player in. In an attended encounter the player is dealt a hand of authored, essence-priced **nudge cards** that bend the named odds; **fate rolls the outcome** on the band ladder, and **forks are decided by the mortal** (standing on the value axis + the net lean of committed cards). The player never picks an ending — that is the rejected authored-futures model (THR-772).
 3. **Aftermath** — Resolution reshapes the protagonist's trajectory. Failure is not a loss state — it's a story turn.
 
 **Six principles every feature and content piece must satisfy:**
@@ -56,12 +56,16 @@ Every action in the world is described by two independent dimensions.
 
 Each Reach operates at four scales: **Individual** → **Group** → **Faction** → **God**.
 
+> **THR-870 guardrail:** the Sphere-Governed Ascendant pivot (god sphere-governed, reaches demoted to mortal-past echo) is **parked at Idea** — before authoring any *new* reach-keyed ascendant-facing content, read `Docs/plans/2026-07-30-sphere-governed-ascendant-decision-record.md` and extend nothing the pivot would immediately unwind. Mortal-facing reach content is unaffected.
+
+**Quintessence is not a ninth Reach.** It is a separate meta-property tracking an actor's integrity-of-self and narrative centrality (threadbare-ness) — not biology, not a death meter. The old Flesh Reach was retired for it (TB-075); see `Docs/canon/cosmology.md`.
+
 Agent competence per-Reach is computed via the **Domain Capability** system: sigmoid curve over trait contributions → 10-tier narrative lexicon (e.g., Iron tier 5 = "Steeled", Veil tier 7 = "Arcane").
 
 **Spheres = What Fuels It** (cosmic energies). Threads that power activities, making some easier, others harder.
 
 Foundation Spheres (2 opposed pairs — cosmic structure): **Chaos ↔ Order**, **Light ↔ Darkness**
-Creation Spheres (8 independent — domains of existence): **Force**, **Matter**, **Energy**, **Life**, **Mind**, **Spirit**, **Time**, **Entropy**
+Creation Spheres (4 opposed pairs — domains of existence): **Force ↔ Mind**, **Matter ↔ Time**, **Energy ↔ Spirit**, **Life ↔ Entropy** (`SPHERE_OPPOSITES` in `src/engine/cosmology.ts`)
 
 No inherent alignment — context determines expression. Entropy is freedom and dissolution, not evil. Life is growth and mutation, not goodness.
 
@@ -73,7 +77,7 @@ No inherent alignment — context determines expression. Entropy is freedom and 
 | **Veil** | Growth ritual | Decay curse | Psychic ward |
 | **Shadow** | Covert healer network | Poisoner's guild | Psychic espionage |
 
-Canonical Obsidian reference: `TheFantasyWorldSimulator/Cosmology/Spheres and Reaches.md`
+Canonical Obsidian reference: `TheFantasyWorldSimulator/Cosmology/The Cosmological Pattern.md`
 
 **Cultural naming:** Each culture names the same Reaches differently. The Aurelian Empire calls Iron "Imperium"; the Warrens goblins call it "Smash". These naming differences ARE worldbuilding — they encode what a culture values and despises without exposition.
 
@@ -89,7 +93,7 @@ Six types as graph node categories (not a strict hierarchy):
 | **Ascendant / Demigod** | Regional → Local | The player (and rivals). Subtle manipulation, indirect influence |
 | **Faction / Organization** | Regional → Local | Doctrine, expansion, institutional ambition |
 | **Culture / Nation** | Regional | Civilizational momentum, migration, identity |
-| **Group / Party** | Local → Personal | Adventure arcs, fellowship, small-band purpose |
+| **Group / Company** | Local → Personal | Adventure arcs, fellowship, small-band purpose (player-facing word is *Company*, never "party") |
 | **Individual** | Local → Personal | Personal destiny, moral dilemma |
 
 Scale is a property, not a constraint. A peasant *could* attempt "Overthrow a Kingdom" — near-zero probability without the right graph edges. But with `inspires → rebel group → allies_with → rival faction → supported_by → Ascendant`... revolution.
@@ -113,7 +117,7 @@ The hex detail view has 4 narrative layers, each an action target context:
 
 | What | Where |
 |------|-------|
-| Spheres and Reaches deep-dive | `TheFantasyWorldSimulator/Cosmology/Spheres and Reaches.md` (vault filesystem via `OBSIDIAN_VAULT_PATH`) |
+| Spheres and Reaches deep-dive | `TheFantasyWorldSimulator/Cosmology/The Cosmological Pattern.md` (vault filesystem via `OBSIDIAN_VAULT_PATH`) |
 | Cosmology canon page | `Docs/canon/cosmology.md` |
 | Encounter canon page | `Docs/canon/encounters.md` |
 | Game design direction (full) | `Docs/plans/2026-04-16-game-design-direction.md` |

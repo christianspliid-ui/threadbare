@@ -1,7 +1,7 @@
 ---
 name: playtest-interface
-description: Interface regression sweep for The Fantasy World Simulator. Drives a Chrome MCP session through the game, asserts structural presence of every IA manifest surface via __DEBUG, and produces a structured finding report.
-last_validated_against: 2026-07-30
+description: Interface regression sweep for Threadbearer. Drives a Chrome MCP session through the game, asserts structural presence of every IA manifest surface via __DEBUG, and produces a structured finding report.
+last_validated_against: 2026-08-28
 invocation: /playtest-interface [url]
 audience: claude-code
 ---

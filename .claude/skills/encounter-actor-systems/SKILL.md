@@ -9,7 +9,7 @@ description: >
   "encounter template", "encounter seeding", "encounter aftermath", or when debugging why
   an agent is idle, stuck, choosing wrong encounters, or failing resolution unexpectedly.
   Also use when updating encounters-agents-reference.html or tick-cycle-reference.html.
-last_validated_against: 2026-06-28
+last_validated_against: 2026-08-28
 ---
 
 # Encounter & Actor Systems — Analysis, Debugging & Iteration
@@ -89,8 +89,8 @@ Tick Phase 2b: Agent Decision (the big one — choose next encounter)
 | File | What it does | Key exports |
 |------|-------------|-------------|
 | `src/data/encounter-content.ts` | Registry of all encounter templates | `getAnyEncounterById()`, `getEncountersByLocationType()` |
-| `src/data/encounters/*.ts` | Individual encounter template files | Each exports an `EncounterTemplate` |
-| `src/types/encounter.ts` | Type definitions + tuning constants | `EncounterTemplate`, `EncounterStep`, `EncounterProgress`, `ENCOUNTER_TYPE_MOTIVATIONS` |
+| `src/data/encounters/*.ts` | Individual encounter template files | Each exports a `UnifiedActionTemplate` (the single format since THR-108 — `EncounterTemplate` no longer exists; do not reference it) |
+| `src/types/encounter.ts` | Encounter-side tuning constants + outcome types | `EncounterType`, `ThreatRating`, `ENCOUNTER_TYPE_MOTIVATIONS`, cooldown/difficulty constants (template shape lives in `src/types/unifiedAction.ts`) |
 
 ### Awareness & Visibility
 
@@ -145,17 +145,16 @@ When debugging "why didn't agent X pick encounter Y?", trace through these stage
 ## 4. Resolution Formula
 
 ```
-P = capability + sphereFactor + actionModifiers + influenceNudge - difficulty
-    clamped to [0.05, 0.95]
-
-Roll d100:
-  roll ≤ P  AND doubles → Critical Success
-  roll ≤ P  NOT doubles → Success
-  roll > P  NOT doubles → Failure
-  roll > P  AND doubles → Critical Failure
+P = capability + sphereFactor + actionModifiers - difficulty
+    clamped to [0.05, 0.95]   ← the 5% floor bites BEFORE nudge cards are
+                                 counted (THR-821); a committed hand then
+                                 shifts P, but cannot lift a mortal off
+                                 the floor
+Roll d100 → five-band ladder (THR-571):
+  clean success · success-at-cost · failure · critical success · critical failure
 ```
 
-**Doubles** = both digits match (11, 22, 33, ..., 99). This means higher capability shifts doubles toward crits-success and away from crits-failure.
+**Success-at-cost is the dominant, expected texture** (~45–60% of world resolutions — the acting population is capability-poor by design); clean and critical success are the rare bands a god notices. Critical failure's classification survives at every scale (severity scales via `CRIT_FAILURE_SEVERITY_BY_SCALE`) except under an active `no_crit_fail` nudge rider — riders remap the band *after* the roll and take no extra dice. Every failure leaves a story artifact (`guaranteeFailureStoryArtifact`). A four-band doubles-based read of this system is pre-THR-571 and stale; the live resolver is `src/engine/unifiedActionResolution.ts`.
 
 **Modifier sources** (collapsed into `actionModifiers`):
 - Sphere alignment/opposition
@@ -383,7 +382,7 @@ Both pages are part of the **Design Reference Wiki** and are registered in `publ
 This skill owns the accuracy of two public reference documents:
 
 ### `public/encounters-agents-reference.html`
-**Covers:** the Eight Reaches, Domain Capability (sigmoid, tiers, narrative lexicon), Species profiles, Traits & Mastery, Attachments (6 categories, rarity tiers, equipment mechanics), Encounters (10 types, threat ratings, location coverage, reward pool), Resolution Pipeline (formula, modifiers, fate forecast, doubles, contested actions), Divine Intervention (nudge levels, thread tiers, dream interface, alignment costs, notifications), Agent Decisions (8-stage pipeline, scoring signals, decision outcomes, runtime guards, quintessence).
+**Covers:** the Eight Reaches, Domain Capability (sigmoid, tiers, narrative lexicon), Species profiles, Traits & Mastery, Attachments (6 categories, rarity tiers, equipment mechanics), Encounters (types, threat ratings, location coverage, reward pool), Resolution Pipeline, Divine Intervention, Agent Decisions (8-stage pipeline, scoring signals, decision outcomes, runtime guards, quintessence). **Freshness caveat (2026-08-28):** the page's Resolution and Divine Intervention sections predate the five-band ladder (THR-571) and the nudge-card model (THR-772) — a "doubles" resolution read or a "nudge levels / dream interface" intervention read on that page is stale; trust §4 of this skill and `Docs/canon/encounters.md` over the wiki page until its regeneration catches up.
 
 **Structure:** JavaScript `CHAPTERS` array of `{ num, title, color, summary, rules[] }`. Each rule has `{ name, desc, tags[], table?, formula? }`. The HTML renders these as collapsible chapters with searchable rule cards.
 
