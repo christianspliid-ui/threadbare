@@ -131,6 +131,18 @@ export const STATIC_ARTIFACT_SOURCES: Readonly<Record<string, readonly string[]>
     "src/components/Game/encounter-stage/types.ts",
     "scripts/anchor-catalog-sources.ts",
   ],
+  // generate-consumption-ledger (THR-1212 slice 4): code in, doc out — the harmless
+  // direction, so no DOC_TO_CODE_ALLOWLIST entry is needed. Both membership unions are
+  // listed because the ledger fails by name on an unrowed member, so an edit to either
+  // union must re-run the generator; `scripts/consumption-ledger-sources.ts` is listed
+  // for the same reason `anchor-catalog-sources.ts` is — it holds the curated consumer
+  // annotations, and editing one changes the output with no other file moving.
+  "Docs/canon/consumption-ledger.generated.md": [
+    "src/types/unifiedAction.ts",
+    "src/types/graphOp.ts",
+    "scripts/generate-consumption-ledger.ts",
+    "scripts/consumption-ledger-sources.ts",
+  ],
   // rebuild-plans-index: doc in, doc out — `Docs/plans/` on both sides, so the
   // coupling classifier answers "none" and a plan-doc PR stays on the docs track.
   // Registered by THR-987; THR-807 deliberately left its own gate advisory pending

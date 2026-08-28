@@ -77,6 +77,14 @@ const STATIC_GENERATED_PATHS: readonly string[] = [
   // kind vocabularies — see this artifact's row in STATIC_ARTIFACT_SOURCES, which is
   // the single place those sources are declared.
   ".claude/skills/encounter-pipeline/reference/anchor-catalog.generated.md",
+  // generate-consumption-ledger (THR-1212 slice 4). Registered in the same PR that
+  // adds the generator: this artifact's whole claim is that 89 writes were checked
+  // and one of them is dead, so a stale copy makes a checked-sounding claim about a
+  // set of effect kinds the code no longer has — the one failure mode strictly worse
+  // than having no ledger at all, because it is read as a settled answer.
+  // (Deliberately quote-free: the registry parser below extracts double-quoted
+  // strings, so a quoted phrase in a comment here is read as a registered path.)
+  "Docs/canon/consumption-ledger.generated.md",
 ];
 
 /**
