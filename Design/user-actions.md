@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-28 11:57 local (09:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-28 12:55 local (10:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -21,11 +21,11 @@ Three ways to go: **let both stand** (different grammar, never side by side — 
 
 **Unless you say otherwise the third is taken and the reason recorded** — reversible later at low cost, which is why it is the default. The ticket is queued and will not sit waiting for an answer.
 
-### 3. More design hours — still the binding constraint, and the shelf is draining
+### 3. More design hours — still the binding constraint
 
 Roughly twenty items sit in Todo and **every one needs a plan doc before an executor can touch it**. That is what the hours buy.
 
-**Both jobs your designs supplied are spent.** Your [shared-anchor design](https://linear.app/threadbare/issue/THR-1212) finished whole at 10:14 (six slices), and [hunger vocabulary](https://linear.app/threadbare/issue/THR-1213) followed it at 10:36 (four slices in two and a half hours). What is left on the shelf are small follow-ups the anchor-machinery and action-library builds filed on themselves as they finished — real work, all of it cleanup, none of it new. **And it is going fast:** one of the seven was claimed at 11:02 and deployed at 11:36. That is what the blocked design column costs, expressed in jobs rather than in days.
+**Both jobs your designs supplied are spent** — [shared anchors](https://linear.app/threadbare/issue/THR-1212) at 10:14, [hunger vocabulary](https://linear.app/threadbare/issue/THR-1213) at 10:36. The shelf refilled once on its own afterwards, and it is worth knowing why it will not do so again: when [the proximity fix](https://linear.app/threadbare/issue/THR-1310) shipped, it released two jobs that had been blocked behind it — [trade routes and blockades](https://linear.app/threadbare/issue/THR-1308), then [warbands](https://linear.app/threadbare/issue/THR-1309) — both from design already approved. That was a queue, not a source. Everything else on the shelf is a small follow-up some earlier build filed on itself. **And it moves fast:** one job was claimed at 11:02 and deployed at 11:36; another shipped at 12:34. That is what the blocked design column costs, expressed in jobs rather than in days.
 
 **The block has two names on it** *(orchestrator lane, standing)*: **[unify the card grammar](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** (your 6 August note, untouched 10 days; three tickets behind it) and **[traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)** (assigned to you, untouched 13 days). That lane holds one design slot and will not walk either backwards out of the column on its own. **Sit one, or say *"park it"*** — four more plan-doc sessions are unblocked and waiting behind them.
 
@@ -90,6 +90,7 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
+- **Every lair earns a name instead of a loop index** — [THR-1312](https://linear.app/threadbare/issue/THR-1312/every-lair-in-the-world-is-named-lair-0-lair-1-placeholder-names-ship) merged 12:34 and deployed ([PR #1688](https://github.com/christianspliid-ui/threadbare/pull/1688)). "Lair 0", "Lair 1", "Lair 2" were shipping to the player as scenery; the most player-visible thing on the cleanup shelf is gone.
 - **A work now looks for somewhere near to do itself** — [THR-1310](https://linear.app/threadbare/issue/THR-1310) claimed 11:02 and deployed 11:36 ([PR #1687](https://github.com/christianspliid-ui/threadbare/pull/1687)). Every agent pursuing the same ambition used to pick the same distant site, because the target search scanned all 868 locations with no sense of distance; charting verbs produced literally nothing. Two more jobs unlock behind it.
 - **Your shared-anchor design is built, whole** — [THR-1212](https://linear.app/threadbare/issue/THR-1212) closed at 08:14 after six slices in eleven hours ([PR #1678](https://github.com/christianspliid-ui/threadbare/pull/1678) … [PR #1683](https://github.com/christianspliid-ui/threadbare/pull/1683)), all deployed. A thing in the world now has one way to be named, the catalog is checked in both directions, the chips the anchor gate cannot see sit under a ceiling that cannot quietly rise, the ledger asks what a reader does with an anchor rather than whether one exists — and the last slice retired a promise with no mechanism behind it.
 - **Your second Wave-1 design is built, whole** — [hunger vocabulary](https://linear.app/threadbare/issue/THR-1213) closed at 10:36, four slices in two and a half hours, all deployed: [two catalogs that were named the same thing are now one](https://github.com/christianspliid-ui/threadbare/pull/1684), [the Hunger you chose finally decides what the meeting asks of your First](https://github.com/christianspliid-ui/threadbare/pull/1685), and [157 scenes learned what they are about](https://github.com/christianspliid-ui/threadbare/pull/1686) — so a resonance weight that fired zero times across 167 dilemmas now has one vocabulary to fire against, and the gate that proves it is blocking.
@@ -99,7 +100,6 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 - **A complication no longer reads a missing reputation as ruin** — [THR-1306](https://linear.app/threadbare/issue/THR-1306), a Low deferral filed by the previous ticket's own work and shipped inside the hour ([PR #1669](https://github.com/christianspliid-ui/threadbare/pull/1669)), already deployed.
 - **Spawn-review now casts encounters the way live play does** — [THR-1305](https://linear.app/threadbare/issue/THR-1305), filed 14:28 and merged 15:50 ([PR #1668](https://github.com/christianspliid-ui/threadbare/pull/1668)). What you review on a `?spawn=` link is now what ships.
 - **The binder's own defects were found, filed and fixed inside three hours** — [THR-1304](https://linear.app/threadbare/issue/THR-1304), six defects in how newborn mortals are created, filed 13:19 and closed 14:40 ([PR #1667](https://github.com/christianspliid-ui/threadbare/pull/1667)).
-- **You closed the [Proactive Agent Actions map](https://linear.app/threadbare/issue/THR-1276)** — all ten questions in one day, and answered the carve-up question by filing it.
 
 ---
 
