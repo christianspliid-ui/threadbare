@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-28 20:55 local (18:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-28 21:55 local (19:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -25,7 +25,7 @@ Three ways to go: **let both stand** (different grammar, never side by side — 
 
 Roughly twenty items sit in Todo and **every one needs a plan doc before an executor can touch it**. That is what the hours buy.
 
-**Less acute than it was an hour ago, and the reason matters.** The shelf refilled to eight jobs tonight — including a recruitment system that stops dead, a founded faction with no crest, and a High-priority pickup fix — but it refilled from *work that finished filing follow-ups on itself*, not from a design session. So the builders are busy and the design pipeline is exactly as blocked as it was.
+**The builders are busy — three jobs are being worked on right now — and the design pipeline is exactly as blocked as it was.** The shelf refilled tonight from *work that finished filing follow-ups on itself*, not from a design session, so nothing about that refill touches this.
 
 **The block has two names on it** *(orchestrator lane, standing — nine days at the same two)*: **[unify the card grammar](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** (your 6 August note, untouched 9 days; three tickets behind it) and **[traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)** (assigned to you, untouched 13 days). That lane holds one design slot and will not walk either backwards out of the column on its own. **Sit one, or say *"park it"*** — four more plan-doc sessions are unblocked behind them.
 
