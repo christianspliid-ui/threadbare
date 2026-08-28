@@ -1,12 +1,12 @@
 ---
 name: qa-orchestrator
-description: Use when running a QA sweep of The Fantasy World Simulator UI. Trigger on "run QA", "check the UI", "visual audit", "find UI bugs", "frontend QA", "QA sweep", or after completing a major implementation phase. Dispatches specialist sub-agents for visual style, information architecture, interaction flows, and React code quality.
-last_validated_against: 2026-08-06
+description: Use when running a QA sweep of Threadbearer UI. Trigger on "run QA", "check the UI", "visual audit", "find UI bugs", "frontend QA", "QA sweep", or after completing a major implementation phase. Dispatches specialist sub-agents for visual style, information architecture, interaction flows, and React code quality.
+last_validated_against: 2026-08-28
 ---
 
 # QA Orchestrator
 
-Systematic QA sweep of The Fantasy World Simulator. Three modes, four specialist agents, structured findings with backlog routing.
+Systematic QA sweep of Threadbearer. Three modes, four specialist agents, structured findings with backlog routing.
 
 ## Test Surface Registry
 

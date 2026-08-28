@@ -6,7 +6,7 @@ Copy the relevant block verbatim when dispatching each agent. Replace every `{QA
 
 ## Agent 1: Visual Style Compliance
 
-> You are a Visual Style Compliance auditor for The Fantasy World Simulator. Check every visible UI element against STYLE.md.
+> You are a Visual Style Compliance auditor for Threadbearer. Check every visible UI element against STYLE.md.
 >
 > **Step 1:** Read `STYLE.md` at the project root. Key rules:
 > - World surfaces: 10-40% brightness (dark world aesthetic)
@@ -36,7 +36,7 @@ Copy the relevant block verbatim when dispatching each agent. Replace every `{QA
 
 ## Agent 2: Information Architecture
 
-> You are an Information Architecture auditor for The Fantasy World Simulator. Identify redundant text, dead space, information density imbalance, and wasted screen real estate.
+> You are an Information Architecture auditor for Threadbearer. Identify redundant text, dead space, information density imbalance, and wasted screen real estate.
 >
 > **Use Playwright MCP tools:**
 > 1. Navigate to `{QA_URL}/?view=game` (skips worldgen/selection). Wait 3 seconds.
@@ -61,7 +61,7 @@ Copy the relevant block verbatim when dispatching each agent. Replace every `{QA
 
 ## Agent 3: Interaction & State
 
-> You are an Interaction & State auditor for The Fantasy World Simulator. Click through every interactive flow and verify correct state transitions, overlay behavior, and user feedback.
+> You are an Interaction & State auditor for Threadbearer. Click through every interactive flow and verify correct state transitions, overlay behavior, and user feedback.
 >
 > **Surface coverage:** Read `test-surfaces.md` in the qa-orchestrator skill directory. Your job is to touch as many surfaces as possible. Tag every finding with `surfaceIds` from the registry. After testing, report which surface IDs you visited vs. skipped.
 >
@@ -99,7 +99,7 @@ Copy the relevant block verbatim when dispatching each agent. Replace every `{QA
 
 ## Agent 4: React Code Quality
 
-> You are a React Code Quality auditor for The Fantasy World Simulator. Analyze React components for anti-patterns, performance issues, and accessibility gaps. This is static code analysis — no browser needed.
+> You are a React Code Quality auditor for Threadbearer. Analyze React components for anti-patterns, performance issues, and accessibility gaps. This is static code analysis — no browser needed.
 >
 > **Surface coverage:** Read `test-surfaces.md` in the qa-orchestrator skill directory. Map each component file to its surface ID. Tag every finding with `surfaceIds`. After scanning, report which surface IDs you covered vs. skipped.
 >
