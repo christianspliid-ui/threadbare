@@ -46,11 +46,13 @@ The game watches the simulation and identifies emotionally significant encounter
 **What happens inside the moment:**
 - **Time functionally slows.** The encounter is not a single resolution roll. It's an unfolding micro-narrative with multiple beats.
 - **The situation is set up with emotional context.** Before any choices appear, the player understands the stakes in human terms. "Kael is exhausted, alone, and facing the goblin boss who took his sword. If he fails here, he loses more than a fight — he loses the belief that he can be more than a beggar."
-- **The player makes choices under uncertainty.** Multiple intervention options, each a genuine dilemma. No obvious right answer. The player needs to *understand the protagonist* — their personality, their state, their capabilities — to make good judgments. "Do I inspire his courage (risky — he might overextend) or steady his nerves (safer — but is it enough)?"
-- **The situation shifts.** Choices have visible consequences within the encounter. The tide turns, or doesn't. New complications emerge. The roller coaster has ups and downs.
-- **Resolution arrives.** It could go either way, and *both outcomes must be interesting.*
+- **The player plays a hand under uncertainty.** At each attended step the player weighs a hand of authored, essence-priced nudge cards, each a genuine dilemma of spend and lean. No obvious right play. The player needs to *understand the protagonist* — their personality, their state, their capabilities — to judge which odds are worth bending and which floors cannot be lifted.
+- **The situation shifts.** Fate rolls each step on the band ladder; committed cards have visible consequences in the forecast and the prose. The tide turns, or doesn't. New complications emerge.
+- **Resolution arrives.** It could go either way, and *both outcomes must be interesting.* Where the encounter forks, the *mortal* decides it — the player leans with cards, never picks.
 
-**The emotional curve:** Tension builds → player makes choices → situation shifts → more choices → resolution → aftermath. The player stays engaged throughout because they're making real decisions about someone they care about.
+*Superseded in part 2026-08-28 (THR-1341).* The two bullets above previously read "The player makes choices under uncertainty — multiple intervention options … 'Do I inspire his courage or steady his nerves?'" and "Choices have visible consequences" — the rejected authored-futures model (THR-772), surviving here unmarked after the 2026-08-25 pass amended the principles section but not Beat 2. The *dilemma-under-uncertainty* aspiration stands; the mechanic is the nudge hand.
+
+**The emotional curve:** Tension builds → the player commits a hand → fate rolls → the situation shifts → another hand → resolution → aftermath. The player stays engaged throughout because they're making real decisions about someone they care about.
 
 ### Beat 3: "The Aftermath"
 
@@ -82,7 +84,7 @@ Continuous real-time play actively works against the core experience. If the gam
 
 **Quick turns:** Nothing major happened. The player scans their protagonist statuses, sees nothing urgent, maybe reads a background event, and advances. This is the "reading between chapters" feel. The player might advance several turns quickly when their protagonists are in stable arcs.
 
-**Deep turns:** A significant encounter fired. The player stops advancing and goes deep — reads the encounter setup, makes choices through branching decisions, witnesses the resolution, reads the aftermath. This might take several minutes for a single turn. This is the "turning point in the novel" feel.
+**Deep turns:** A significant encounter fired. The player stops advancing and goes deep — reads the encounter setup, plays their nudge hand step by step *(wording updated 2026-08-28, THR-1341; was "makes choices through branching decisions", the pre-nudge model)*, witnesses the resolution, reads the aftermath. This might take several minutes for a single turn. This is the "turning point in the novel" feel.
 
 **The key insight:** The dramatic encounters *are* the game. The quick turns between them are what makes them meaningful — context, buildup, the quiet before the storm. But the emotional engagement lives in the encounters where the player stops and goes deep.
 
@@ -189,7 +191,7 @@ You're playing the whole board. You push one protagonist toward the adventuring 
 
 The player's protagonist portfolio is managed through the **divine cord** (the connection system) and the **threads bar** (the right-side UI). But critically, **the game does not surface multiple storylines in parallel.** 
 
-In a turn-based frame, each protagonist's significant encounter is surfaced and completed as a unit — the player dives into one story, experiences it through its branches and resolution, then returns to the world. For longer encounters (multi-step arcs like Gate Duty), the game can compress multiple steps into a single deep session rather than spreading them across turns. The player uploads the story context to their mental working memory, engages deeply, and finishes (or reaches a natural pause point) before the next story surfaces.
+In a turn-based frame, each protagonist's significant encounter is surfaced and completed as a unit — the player dives into one story, experiences it through its steps and resolution, then returns to the world. For longer encounters (multi-step arcs like Gate Duty), the game can compress multiple steps into a single deep session rather than spreading them across turns. The player uploads the story context to their mental working memory, engages deeply, and finishes (or reaches a natural pause point) before the next story surfaces.
 
 **Hard limit:** Maximum one complex (multi-branch) story active at any time. Other protagonists' significant encounters queue — they don't fire simultaneously. Simpler encounters (single-step, background events) can resolve in parallel, but the player's *attention* is focused on one narrative thread at a time.
 
@@ -249,7 +251,9 @@ Both features work because they combine prose, meaningful choices, and a payoff 
 
 - **Gate Duty encounter** (`civic-guard-encounter-content.ts`) — the first branching encounter prototype. Three steps, three intervention branches per step (supportive, coercive, withdrawn), prose that genuinely changes based on prior choices, and consequences that carry thematic weight. The clearance gate signal system adds state-aware branching on top. This is the closest prototype to the encounter vision described in Beat 2 — a micro-narrative with real choice points where the player's approach reshapes the story. What's missing: scaling the pattern, making branch choices carry mechanical weight beyond essence cost, and deeper "cool failure" aftermath.
 
-Gate Duty, Remembrance, and Meet The First together form the **design DNA** of the game. New features should study all three.
+*Superseded 2026-08-28 (THR-1341).* The Gate Duty bullet above sat outside the 2026-08-25 marker (which covered only the two benchmarks above it) and still promotes the rejected authored-futures shape — "three intervention branches per step" is the player picking the mortal's path (THR-772). What Gate Duty still demonstrates: multi-step structure, state-aware prose, consequences with thematic weight. What it must not be studied for: its choice mechanics. The current quality bar is the Swollen Ford exemplar (`Docs/exemplars.md`).
+
+Remembrance and Meet The First (in its nudge-native WS6 form) form the **design DNA** of the game; Gate Duty joins them as structural archaeology only. *(This line read "Gate Duty, Remembrance, and Meet The First together form the design DNA … study all three" until 2026-08-28.)*
 
 ---
 
@@ -282,7 +286,7 @@ Decisions that were open during drafting but are now settled:
 
 These are genuine design challenges that this document identifies but does not solve:
 
-1. **Encounter interaction depth and variety.** The branching encounter system supports short, medium, and long encounters with up to five branch points. The right answer isn't a fixed depth — it's variety. Some encounters should be quick (one meaningful choice), others should be deep multi-branch arcs. But the balance matters: too much player agency becomes control, and control kills the living world feeling. The world needs to push back. How do we calibrate the spectrum so the player feels like a participant, not an author?
+1. **Encounter interaction depth and variety.** *(Reframed 2026-08-28, THR-1341 — the original wording, "up to five branch points … one meaningful choice … deep multi-branch arcs", predates the nudge pivot; player-picked branches are the rejected model.)* Encounters vary from one attended step to long multi-step arcs whose forks are decided by the mortal. The open question survives in its real form: how much *hand depth* and step count is right, and how do we calibrate the spectrum so the player feels like a participant, not an author? The pivot answered the "too much player agency becomes control" worry structurally — the player never picks an ending — but pacing and depth calibration remain open to KPI/playtest data.
 
 2. **Narrative portfolio management.** With 3-5 protagonists at different investment levels, how does the game help the player manage attention across stories? This isn't "notification fatigue" — it's "how many stories can you follow and care about simultaneously?" How does the game signal which stories are peaking vs. cruising? How does encounter depth scale with protagonist tier (First gets complex branches, bench agents get simple check-ins)?
 
