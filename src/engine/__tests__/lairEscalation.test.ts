@@ -767,6 +767,117 @@ describe('phaseLairEscalation — determinism', () => {
   });
 });
 
+// ─── Test 8.5: Lair naming (THR-1312) ────────────────────────────────────────
+
+/**
+ * The escalation writer used to stamp `Lair (spawned t${tick})`, which meant two
+ * lairs spawned on the same tick were *the same string* on a player-facing surface.
+ *
+ * The persistence tests below are the "cleared_lair keeps its identity" done-when.
+ * They are behavioural rather than a code-reading claim: reinfestation rewrites the
+ * whole property bag, so "it happens not to touch `name` today" is exactly the kind
+ * of thing that silently stops being true.
+ */
+describe('phaseLairEscalation — lair naming', () => {
+  const SEEDED_PLACEHOLDER = /^Lair \d/;
+  const ESCALATION_PLACEHOLDER = /^Lair \(spawned/;
+
+  it('names an adjacent spawn instead of stamping the tick', () => {
+    const graph = new WorldGraph();
+    const tick = LAIR_ESCALATION_INTERVAL * 4;
+
+    addLairNode(graph, 'lair_spawn_src', {
+      lairTier: 'minor',
+      spawnedAtTick: tick - 5,
+      dominantSphere: 'entropy',
+      hexCol: 20,
+      hexRow: 20,
+      dangerZone: 'wilderness',
+    });
+
+    const neighbours: Array<[number, number]> = [
+      [19, 20], [21, 20], [20, 19], [20, 21], [19, 21], [21, 21],
+    ];
+    for (const [col, row] of neighbours) addHexNode(graph, `hex_${col}_${row}`, col, row);
+
+    const tile = (col: number, row: number): HexTile => ({
+      coord: { col, row },
+      geoParams: { elevation: 0.4, temperature: 0.5, moisture: 0.5 },
+      terrain: 'dense_forest',
+      dangerLevel: 0.5,
+    } as HexTile);
+
+    const state = makeMinimalState({
+      graph,
+      tick,
+      seed: 2026, // the seed Test 7 pins as producing exactly one adjacent spawn
+      pendingSpherePressures: [],
+      tiles: [tile(20, 20), ...neighbours.map(([c, r]) => tile(c, r))],
+    });
+
+    phaseLairEscalation(state);
+
+    const spawned = graph
+      .getNodesByType('location')
+      .filter(n => n.id.startsWith('lair_adj_'));
+
+    // Anti-vacuous guard: the name assertions below hold trivially on zero spawns.
+    expect(spawned.length).toBeGreaterThan(0);
+    for (const node of spawned) {
+      expect(node.name).not.toMatch(ESCALATION_PLACEHOLDER);
+      expect(node.name).not.toMatch(SEEDED_PLACEHOLDER);
+      expect((node.name as string).trim().length).toBeGreaterThan(0);
+    }
+  });
+
+  it('a reinfested lair keeps the name it was cleared under', () => {
+    const graph = new WorldGraph();
+    const tick = LAIR_ESCALATION_INTERVAL;
+
+    addClearedLairNode(graph, 'cleared_named', {
+      clearedAtTick: 0,
+      dominantSphere: 'force',
+      hexCol: 5,
+      hexRow: 5,
+    });
+    graph.updateNode('cleared_named', { name: 'The Choking Snare' });
+    addHexNode(graph, 'hex_5_5', 5, 5, { force: LAIR_SPAWN_SPHERE_THRESHOLD });
+
+    const state = makeMinimalState({ graph, tick, seed: 42, pendingSpherePressures: [] });
+
+    phaseLairEscalation(state);
+
+    const lair = graph.getNode('cleared_named');
+    // The transition must actually have happened, or the name check proves nothing.
+    expect(lair?.properties.locationSubtype).toBe('lair');
+    expect(lair?.name).toBe('The Choking Snare');
+  });
+
+  it('a lair that survives escalation keeps its name', () => {
+    const graph = new WorldGraph();
+    const tick = LAIR_ESCALATION_INTERVAL * 2;
+
+    addLairNode(graph, 'lair_named', {
+      lairTier: 'minor',
+      spawnedAtTick: tick - LAIR_UPGRADE_MIN_TICKS, // old enough to upgrade tier
+      dominantSphere: 'force',
+      hexCol: 40,
+      hexRow: 40,
+      dangerZone: 'wilderness',
+    });
+    graph.updateNode('lair_named', { name: 'Blackleaf Thicket' });
+
+    const state = makeMinimalState({ graph, tick, seed: 42, pendingSpherePressures: [] });
+
+    phaseLairEscalation(state);
+
+    const lair = graph.getNode('lair_named');
+    // A tier upgrade is the property rewrite most likely to clobber a name.
+    expect(lair?.properties.lairTier).toBe('major');
+    expect(lair?.name).toBe('Blackleaf Thicket');
+  });
+});
+
 // ─── Test 9: Export constants ──────────────────────────────────────────────────
 
 describe('phaseLairEscalation — exported constants', () => {

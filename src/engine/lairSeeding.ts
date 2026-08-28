@@ -29,6 +29,7 @@ import type { HexTile, SphereName } from '../types/index';
 import { SPHERE_NAMES } from '../types/index';
 import type { DangerZone } from '../types/monster';
 import { seedHexSphereAffinity } from './sphereAffinity';
+import { generateLairName } from './naming/lairNames';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -131,6 +132,9 @@ export function seedMonsterLairs(
 
   // Track placed lair coordinates for separation check
   const placedLairs: Array<{ col: number; row: number }> = [];
+  // Names already handed out this pass — lairs cluster hard by terrain, so without
+  // this the namer would repeat itself across a wilderness province (THR-1312).
+  const usedLairNames = new Set<string>();
   let lairIndex = 0;
 
   for (const tile of tiles) {
@@ -173,12 +177,24 @@ export function seedMonsterLairs(
     // Derive dominant sphere from terrain
     const dominantSphere = getDominantSphere(tile.terrain);
 
-    // Create lair location node
+    // Create lair location node.
+    //
+    // The name is drawn from the lair namer's own PRNG (seeded off `lairId`), not
+    // from `rng` above — so adding naming here cannot shift worldgen's draw
+    // sequence, and the same seed still places the same lairs on the same hexes.
     const lairId = `lair_${lairIndex}`;
+    const lairName = generateLairName({
+      lairId,
+      terrain: tile.terrain,
+      dominantSphere,
+      usedNames: usedLairNames,
+    });
+    usedLairNames.add(lairName);
+
     graph.addNode({
       id: lairId,
       type: 'location',
-      name: `Lair ${lairIndex}`,
+      name: lairName,
       properties: {
         locationType: 'lair',
         locationSubtype: 'lair',
