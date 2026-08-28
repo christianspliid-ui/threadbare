@@ -5,6 +5,7 @@ description: >
   decisions, NFP priorities, all major systems, and how they connect. Load for
   plan-doc authoring, audit work, governance work, or any task where you need to
   understand how the systems interrelate.
+validated_doctrine: rules-of-play@1
 last_validated_against: 2026-08-28
 ---
 

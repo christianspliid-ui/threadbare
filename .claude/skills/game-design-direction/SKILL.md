@@ -9,6 +9,7 @@ description: >
   finalization. Load the state-of-game-design router first, then this skill,
   for any In Design phase work on player-facing features. Skip for pure-infrastructure
   design passes where Vision premises are not in scope.
+validated_doctrine: rules-of-play@1
 last_validated_against: 2026-08-28
 ---
 

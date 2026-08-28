@@ -4,6 +4,7 @@ description: >
   Rejected approaches for Threadbearer. Load this shard when
   proposing a pattern that might have been tried and rejected — check here first
   to avoid reintroducing a known anti-pattern.
+validated_doctrine: rules-of-play@1
 last_validated_against: 2026-08-28
 ---
 
