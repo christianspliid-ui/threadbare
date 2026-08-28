@@ -72,16 +72,18 @@ const CHIP_LABEL = 'Hollow-Marked';
 const CHIP_DEF = 'A thinning where something reached through and did not fully withdraw.';
 
 /**
- * `HooksBlock` reads chips off `has_attachment` edges from the ascendant node.
- * Stub shape follows the established component-test pattern
+ * `HooksBlock` reads chips off the ascendant's `has_trait` edges (THR-1307 — it read a
+ * writerless `has_attachment` until then, so this stub described a shape no world
+ * produced). Stub shape follows the established component-test pattern
  * (`src/components/ruins/__tests__/DelveProgressPanel.test.tsx:25`).
  */
 function makeHooksState(): GameState {
   const graph = {
     getOutgoingEdges: (source: string, type: string) =>
-      source === 'ascendant-1' && type === 'has_attachment'
+      source === 'ascendant-1' && type === 'has_trait'
         ? [{ source, target: 'mark-1', type }]
         : [],
+    getIncomingEdges: () => [],
     getNode: (id: string) =>
       id === 'mark-1'
         ? {
@@ -89,7 +91,7 @@ function makeHooksState(): GameState {
             properties: {
               name: CHIP_LABEL,
               description: CHIP_DEF,
-              category: 'condition',
+              subcategory: 'condition',
               valence: 'curse',
             },
           }
