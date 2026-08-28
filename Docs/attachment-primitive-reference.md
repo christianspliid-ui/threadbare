@@ -267,6 +267,6 @@ Per-item cap: 0.15 total across all reaches. No single effect should exceed this
 
 ## Quick Reference
 
-Nine reaches: iron, gold, shadow, veil, heart, eye, stone, star, flesh
+Eight reaches: iron, gold, shadow, veil, heart, eye, stone, star (flesh retired 2026-03-28 — Quintessence is a meta-property, not a Reach; see `Docs/canon/cosmology.md`)
 Loss conditions: arms→breakable, provisions→consumable, relics→permanent/cursed, tools→breakable, vestments→breakable/stealable, mounts→permanent, tomes→stealable
 Tags: always `#<primary_reach>`, `#<subcategory>`, optionally `#<sphere>`

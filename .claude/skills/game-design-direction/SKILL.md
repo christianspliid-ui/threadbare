@@ -9,7 +9,7 @@ description: >
   finalization. Load the state-of-game-design router first, then this skill,
   for any In Design phase work on player-facing features. Skip for pure-infrastructure
   design passes where Vision premises are not in scope.
-last_validated_against: 2026-07-30
+last_validated_against: 2026-08-28
 ---
 
 # Game Design Direction
@@ -63,7 +63,7 @@ The profile has three sections. Each entry has a concrete example and a source r
 
 **Soft patterns** — hypotheses. Aesthetic instincts that feel right but have not yet been stress-tested across multiple designs. Treat them as working defaults that can flip into strong opinions (on repeat confirmation) or anti-patterns (on failure). Example: *marketing copy sparks imagination through concrete scenes, not mechanics explanation.*
 
-**Anti-patterns** — formally rejected approaches, with the rejection reason recorded. Do not silently reintroduce. Example: *classical STR/DEX/INT stats — replaced by Domain Capability across Nine Reaches.*
+**Anti-patterns** — formally rejected approaches, with the rejection reason recorded. Do not silently reintroduce. Example: *classical STR/DEX/INT stats — replaced by Domain Capability across the Eight Reaches.*
 
 ### Update protocol
 
@@ -260,4 +260,4 @@ The Vision premises in this skill **do not duplicate** Systems/ content. They na
 
 **Relationship to `design-council`:** Pre-design debate (this skill) surfaces options during brainstorming. `design-council` runs consent-based deliberation on concrete proposals. A debate may escalate to a council when the user wants agent consent on a written proposal; a council may trigger a debate when a proposal surfaces a direction the current brainstorm did not consider. They are complementary stages, not alternatives.
 
-**Relationship to `threadbearer-design` (design system):** The design system is the *render* of the taste profile's strong opinions into CSS tokens, type, and assets. When a taste-profile entry changes, check whether the design system needs an update too.
+**Relationship to the design system (`Docs/design-system/laws.md`, loaded via `frontend-ui`):** The design system is the *render* of the taste profile's strong opinions into CSS tokens, type, and assets. When a taste-profile entry changes, check whether the design system needs an update too. (An earlier revision pointed at a `threadbearer-design` skill that no longer exists.)

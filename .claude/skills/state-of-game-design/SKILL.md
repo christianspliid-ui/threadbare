@@ -1,16 +1,16 @@
 ---
 name: state-of-game-design
 description: >
-  Router for The Fantasy World Simulator game design context. Load this first,
+  Router for the Threadbearer game-design context. Load this first,
   then follow the routing table to pull in the one or two reference shards your
   task actually needs. Replaces the monolithic SKILL.md with a thin router +
   on-demand shards pattern (THR-377).
-last_validated_against: 2026-06-11
+last_validated_against: 2026-08-28
 ---
 
 # State of the Game Design — Router
 
-> **The Fantasy World Simulator** — A systemic god-game / rogue-lite narrative simulation.
+> **Threadbearer** ([threadbearer.co](https://threadbearer.co)) — A systemic god-game / rogue-lite narrative simulation.
 > The player is an Ascendant (a former mortal turned demigod) shaping a procedurally generated fantasy world through indirect influence, divine interventions, and sustained control — all while a Doom Clock ticks toward the Unmaking.
 
 **Always (first read):**
