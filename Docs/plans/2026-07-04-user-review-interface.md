@@ -11,8 +11,8 @@ status: current
 Christian's interface to the development system is **chat only, plain language only**. Three hard rules:
 
 1. **Christian does not review code diffs or PRs.** A Done-when criterion like "diff-reviewed by Christian" is invalid. When human review of a change is genuinely needed, the agent presents a **plain-language summary in chat** (what changed, why, what could be lost, recommendation) and asks a single yes/no question. Chat approval satisfies the human gate; the agent records "human gate satisfied via chat review \<date\>" as a Linear comment so the executor may merge.
-2. **Christian does not read Linear issues or comments.** Linear is the agents' coordination surface, not a channel to the user. Anything needing Christian's attention must be surfaced in chat — primarily via the `keep-work-flowing` hourly Cowork session output. A Linear comment addressed to Christian reaches no one.
-3. **Technical assessments are agent verdicts, not user verdicts.** CI/CD state, git forensics, merge mechanics, not-a-defect determinations, sandbox issues: the Cowork agent decides, acts (e.g. moves the issue to Canceled with a closing comment), and records reasoning on the issue. Only creative/product/design-vision decisions go to Christian, framed in game terms.
+2. **Christian does not read Linear issues or comments.** Linear is the agents' coordination surface, not a channel to the user. Anything needing Christian's attention must be surfaced in chat — primarily via the hourly briefing lane (`keep-work-flowing-cc`; the Cowork-run lane named here originally was retired 2026-07-21, THR-654). A Linear comment addressed to Christian reaches no one.
+3. **Technical assessments are agent verdicts, not user verdicts.** CI/CD state, git forensics, merge mechanics, not-a-defect determinations, sandbox issues: the agent decides, acts (e.g. moves the issue to Canceled with a closing comment), and records reasoning on the issue. Only creative/product/design-vision decisions go to Christian, framed in game terms.
 
 ## Why
 
@@ -23,7 +23,9 @@ THR-575 sat parked 4+ hourly executor cycles behind a "diff-reviewed by Christia
 - `keep-work-flowing` scheduled-task prompt rewritten: Christian's-interface hard rules + a Step 0 "unblock parked work" pass that resolves technical gates itself and surfaces judgment gates in chat.
 - THR-606 closed as Canceled by Cowork (not-a-defect on main, per CC investigation).
 
-## Remaining deliverable (executor)
+## Remaining deliverable (executor) — all shipped
+
+> **Shipped note (2026-08-28, THR-1331):** every propagation below landed long ago — `Docs/canon/process.md` § User review interface, the CLAUDE.md session-types paragraph, and coordination-protocol Rule 10 all exist on `main`. Kept for history; nothing here is a to-do.
 
 Propagate the three rules into the durable doc surfaces:
 

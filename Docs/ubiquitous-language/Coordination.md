@@ -8,9 +8,9 @@ Not content-adjacent. Terms covering the multi-agent coordination protocol: role
 
 **Aliases:** Cowork Agent, Design Agent
 **Also see:** `[[Claude Code]]`, `[[Handoff Comment]]`
-**Status:** canonical
+**Status:** deprecated
 
-The design and planning agent. Cowork produces plans, manages Linear issues, updates documentation, and authors design docs. Cowork does not write code or run git commands. Its output is design artifacts and Linear state transitions. When a design is complete, Cowork posts a Handoff Comment and moves the issue to Ready for Dev.
+*Retired 2026-07-21 (THR-654).* Cowork was the design-and-planning agent of the two-runtime model: it produced plans, managed Linear issues, and posted Handoff Comments, and never wrote code. The lane was retired with the consolidation to a single Claude Code runtime; its role is carried by the **design session** (`/design-session`) — a CC session type, not a separate agent. The term is preserved here so it resolves in historical plan docs, retros, and changelog entries.
 
 ---
 
@@ -72,7 +72,7 @@ Maximum 1 In Dev issue at a time, across all sessions and worktrees. Parallel wo
 **Also see:** `[[Cowork]]`, `[[Coordination Block]]`, `[[Ready for Dev]]`
 **Status:** canonical
 
-The final comment posted by Cowork when moving an issue to Ready for Dev. The Handoff Comment is the authoritative statement of what to build — it supersedes the original description when it diverges. Must contain the full Coordination Block. For reopened issues, read ALL comments back to the original handoff before acting.
+The final comment posted by the design session when moving an issue to Ready for Dev. The Handoff Comment is the authoritative statement of what to build — it supersedes the original description when it diverges. Must contain the full Coordination Block. For reopened issues, read ALL comments back to the original handoff before acting.
 
 ---
 

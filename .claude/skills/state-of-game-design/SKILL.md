@@ -18,7 +18,7 @@ last_validated_against: 2026-06-11
 
 **Always-load companions:**
 - [`Docs/canon/rulebook-quick-reference.md`](../../../Docs/canon/rulebook-quick-reference.md) — board-game card (~80 lines, always-load)
-- `TheFantasyWorldSimulator/Index.md` via Obsidian MCP — vault navigation
+- `TheFantasyWorldSimulator/Index.md` — vault navigation (filesystem via `OBSIDIAN_VAULT_PATH`; no Obsidian MCP for vault work, THR-654)
 
 **Agent-domain cross-reference:** For actor/agent/faction/Ascendant/thread/archetype questions, read `Docs/canon/agents.md` as Step 0 before domain implementation.
 

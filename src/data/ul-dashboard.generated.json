@@ -3860,9 +3860,9 @@
         "Cowork Agent",
         "Design Agent"
       ],
-      "status": "canonical",
-      "oneLiner": "design/planning agent; produces plans and Linear transitions; never writes code",
-      "body": "The design and planning agent. Cowork produces plans, manages Linear issues, updates documentation, and authors design docs. Cowork does not write code or run git commands. Its output is design artifacts and Linear state transitions. When a design is complete, Cowork posts a Handoff Comment and moves the issue to Ready for Dev.",
+      "status": "deprecated",
+      "oneLiner": "*deprecated* (retired 2026-07-21, THR-654) — the design/planning agent of the two-runtime model; replaced by the CC design session",
+      "body": "*Retired 2026-07-21 (THR-654).* Cowork was the design-and-planning agent of the two-runtime model: it produced plans, managed Linear issues, and posted Handoff Comments, and never wrote code. The lane was retired with the consolidation to a single Claude Code runtime; its role is carried by the **design session** (`/design-session`) — a CC session type, not a separate agent. The term is preserved here so it resolves in historical plan docs, retros, and changelog entries.",
       "seeAlso": [
         {
           "raw": "Claude Code",
@@ -3887,7 +3887,7 @@
         "Claude Code Agent"
       ],
       "status": "canonical",
-      "oneLiner": "primary executor; claims Ready for Dev; WIP limit 1",
+      "oneLiner": "the single runtime; executor sessions claim Ready for Dev; WIP limit 1",
       "body": "The single executor agent. CC claims Ready for Dev issues, implements them, commits with `Fixes THR-XX`, and follows the full Definition of Done. CC's queue is Ready for Dev — the only executor queue. WIP limit: 1 In Dev issue per session.",
       "seeAlso": [
         {
@@ -3913,7 +3913,7 @@
         "Codex Executor"
       ],
       "status": "deprecated",
-      "oneLiner": "secondary executor; claims Ready for Codex; WIP limit 1",
+      "oneLiner": "*deprecated* (retired 2026-06-23, THR-486) — secondary executor on the Ready for Codex queue",
       "body": "*Retired 2026-06-23 (THR-486).* Codex was a secondary executor agent that pulled mechanical, pattern-following work from the `Ready for Codex` queue. The two-executor / two-queue model was collapsed to a single Claude Code executor; the queue and the agent were retired. The term is preserved here so it resolves when it appears in historical plan docs, retros, and changelog entries.\n\nNote: The `/codex:*` code-review skill integration is a separate tool — distinct from Codex-the-executor — and is not part of the coordination workflow.",
       "seeAlso": [
         {
@@ -4022,8 +4022,8 @@
         "Handover Comment"
       ],
       "status": "canonical",
-      "oneLiner": "Cowork's final comment moving an issue to Ready-for-Dev/Codex; supersedes original description when it diverges",
-      "body": "The final comment posted by Cowork when moving an issue to Ready for Dev. The Handoff Comment is the authoritative statement of what to build — it supersedes the original description when it diverges. Must contain the full Coordination Block. For reopened issues, read ALL comments back to the original handoff before acting.",
+      "oneLiner": "the design session's final comment moving an issue to Ready for Dev; supersedes original description when it diverges",
+      "body": "The final comment posted by the design session when moving an issue to Ready for Dev. The Handoff Comment is the authoritative statement of what to build — it supersedes the original description when it diverges. Must contain the full Coordination Block. For reopened issues, read ALL comments back to the original handoff before acting.",
       "seeAlso": [
         {
           "raw": "Cowork",
@@ -4077,7 +4077,7 @@
         "RFC"
       ],
       "status": "deprecated",
-      "oneLiner": "Linear state: Codex pickup queue; filter `assignee: null`",
+      "oneLiner": "*deprecated* (retired 2026-06-23, THR-486) — the Linear state that fed the Codex queue",
       "body": "*Retired 2026-06-23 (THR-486).* The Linear state that fed the Codex executor queue. Retired with the single-executor consolidation — confirm the queue is empty, then archive the state in Linear team settings. The term is preserved here so it resolves when it appears in historical records.",
       "seeAlso": [
         {
@@ -4541,7 +4541,7 @@
         "Plan"
       ],
       "status": "canonical",
-      "oneLiner": "Cowork-authored design artifact in Docs/plans/; the executor's input",
+      "oneLiner": "design-session-authored artifact in Docs/plans/; the executor's input",
       "body": "The design artifact in `Docs/plans/YYYY-MM-DD-<topic>.md`, authored in a design session, that turns a Linear issue into something an executor can implement. Each plan covers all three pillars (Engine, Content, UI), runs the NFP audit, lists constants and traces, marks fail-soft cases, and produces the wiring section that connects new modules to orchestrator phases, UI components, and trace categories. The design session commits the file directly via its own `docs/plan-*` PR. Distinct from the Linear state **Implementation Planning**, which is the workflow phase where the plan is being written.",
       "seeAlso": [
         {

@@ -7,10 +7,10 @@ description: >
   per-dimension findings. The judge boots cold (no shared context with the
   author), reads the structured action proposal first, then the plan doc,
   then the originating intent (Linear issue + verbatim user ask). Auto-invoked
-  by Cowork after writing any plan doc in Docs/plans/ or Docs/audits/ and
+  by the design session after writing any plan doc in Docs/plans/ or Docs/audits/ and
   before the Linear state transitions to Ready for Dev.
   Also callable manually via `/intent-judge <plan-doc-path>`.
-last_validated_against: 2026-08-22
+last_validated_against: 2026-08-28
 ---
 
 # Intent Judge
@@ -18,7 +18,7 @@ last_validated_against: 2026-08-22
 ## Purpose
 
 A separate judge persona that guards user intent on plan-doc handoffs. The
-author (Cowork) is optimizing for task completion. The judge is optimizing
+author (the design session) is optimizing for task completion. The judge is optimizing
 for one thing only: does this plan serve the user's actual ask, and does it
 respect the project's load-bearing constraints?
 
@@ -99,12 +99,12 @@ inputs are what the prompt names explicitly.
 Binary is too simple — humans learn to bypass yes/no gates. The middle paths
 (Revise, Escalate) are what make the layer trustworthy.
 
-| Verdict   | Meaning                                                                                | What Cowork does next                                                                                                  |
+| Verdict   | Meaning                                                                                | What the author does next                                                                                              |
 |-----------|----------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------|
 | Allow     | Plan faithfully serves intent and respects governance.                                 | Open the `docs/plan-*` PR; move Linear to Ready for Dev.                                                                |
-| Revise    | Specific gaps; author can fix without re-checking with user.                           | Cowork edits the doc inline, re-runs the judge. No user ping.                                                          |
-| Block     | Plan misses intent, violates a load-bearing decision, or reintroduces rejected approach. | Cowork rewrites materially, re-runs judge. Third Block on the same plan forces Escalate.                                |
-| Escalate  | Judgment requires the user — ambiguous intent, contested premise, or high-risk class.  | Cowork pings user with the judge's finding verbatim before any state transition.                                       |
+| Revise    | Specific gaps; author can fix without re-checking with user.                           | The author edits the doc inline, re-runs the judge. No user ping.                                                      |
+| Block     | Plan misses intent, violates a load-bearing decision, or reintroduces rejected approach. | The author rewrites materially, re-runs judge. Third Block on the same plan forces Escalate.                            |
+| Escalate  | Judgment requires the user — ambiguous intent, contested premise, or high-risk class.  | The author pings the user with the judge's finding verbatim before any state transition.                               |
 
 ## Impact classification (drives judge intensity)
 
@@ -271,7 +271,7 @@ avoid.
   judge-metrics row, which the spawner writes (§ Metrics to track). This is the
   anti-rubber-stamp property: a judge that writes nothing cannot quietly launder
   its own record.
-- **Never moves Linear issues.** State transitions are Cowork's job, gated on the verdict.
+- **Never moves Linear issues.** State transitions are the design session's job, gated on the verdict.
 - **Never approves a High-risk plan without explicit user sign-off line.** Default to Escalate.
 - **Never silently widens scope.** Extra coverage = GAP on dimension 1.
 - **Refuses to run without an action proposal.** Missing proposal = Block.
@@ -298,7 +298,7 @@ criterion met; keep the skill.** The escalation rate sitting under its own
 declared floor of 0.05 is a tuning signal, not a retirement one.
 
 Retirement: archive SKILL.md to `Docs/retired/skills/intent-judge/`, remove
-auto-invocation from Cowork's plan-doc workflow.
+auto-invocation from the design session's plan-doc workflow.
 
 ## Procedure (for the spawned subagent)
 
@@ -323,8 +323,9 @@ the skill existed (THR-762). Persisting the row belongs to the spawner — see
 
 ## Relationship to design governance
 
-This is the Audit step of CLAUDE.md's Design workflow checklist, automated.
-The existing checklist already asks Cowork to self-audit against NFPs,
+This is the Audit step of the design workflow checklist, automated — the
+checklist's authoritative home is `Docs/canon/design-governance.md` (THR-760).
+That checklist already asks the design session to self-audit against NFPs,
 load-bearing decisions, and rejected approaches before presenting. The
 intent-judge replaces self-audit (which is correlated with the author) with
 a separate-context judge.

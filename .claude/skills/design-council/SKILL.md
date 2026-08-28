@@ -1,7 +1,7 @@
 ---
 name: design-council
 description: Orchestrate multi-agent consent-based design discussions on a shared markdown page. Agents from different perspectives (content, engine, coordination, etc.) pass the ball, propose concrete actions, and reach decisions via sociocratic consent ("good enough for now, safe enough to try"). Trigger with "/design-council", "run a council on X", "let's get multiple perspectives on this", or any ways-of-working improvement question.
-last_validated_against: 2026-06-23
+last_validated_against: 2026-08-28
 ---
 # Design Council
 ## Purpose
@@ -23,7 +23,7 @@ Not a fit (skip the council, just do the work):
 - Anything where the same decision would be reached by one informed agent.
 ## Core Concepts
 ### The page is the memory
-Subagents are stateless. The council works because a **single markdown file** is the shared state. Every agent reads the full page at the start of its turn and writes its contribution under a designated section. The orchestrator (you, Cowork) never lets two agents write simultaneously — serial writes, no races.
+Subagents are stateless. The council works because a **single markdown file** is the shared state. Every agent reads the full page at the start of its turn and writes its contribution under a designated section. The orchestrator (you, the session running the council) never lets two agents write simultaneously — serial writes, no races.
 Council pages live at `Docs/design-councils/YYYY-MM-DD-<topic-slug>.md`.
 ### Turn-taking, not free-for-all
 Turns are explicit. Every turn ends with **"Pass to &lt;agent&gt;"** or **"Pass to open floor."** The orchestrator picks the next speaker based on the pass. Round 1 is parallel (each perspective speaks independently); Round 2+ is sequential (each turn responds to a prior claim).
@@ -38,7 +38,7 @@ An objection must cite which half fails. Seeking the optimum is perfectionism, n
 2. Pick 2–4 perspectives. Typical frames:
    - **Content iteration** (authoring pipelines, prose, encounter/attachment speed)
    - **Engine / architecture** (change-amplification in code, coupling, testing)
-   - **Coordination / process** (Cowork ↔ CC, Linear discipline, review)
+   - **Coordination / process** (design → execution pipeline, Linear discipline, review)
    - **Game-feel / player experience** (when the question touches design direction)
    - **State-of-the-product** (Linear, backlog, roadmap, release readiness)
 3. Create the council page using the template at the bottom of this SKILL.
@@ -174,7 +174,7 @@ These are NOT paramount objections:
 ```
 ## Output Handling
 Decisions made in council should become one or more of:
-- A new **Linear issue** in the appropriate project (Cowork moves to Implementation Planning or Ready for Dev per the usual protocol).
+- A new **Linear issue** in the appropriate project (the design session moves it to Implementation Planning or Ready for Dev per the usual protocol).
 - A **CLAUDE.md update** if the decision is a load-bearing rule.
 - A **Docs/plans/YYYY-MM-DD-*.md** entry if the decision needs a full implementation plan.
 - A **memory entry** if the decision is a working-style preference for future sessions.

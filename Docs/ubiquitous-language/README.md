@@ -18,7 +18,7 @@ Load this file at session start (referenced from CLAUDE.md). Load specific shard
 | [Traits.md](./Traits.md) | Trait, Trait Category, Destiny, Trait Ref, TraitPredicate, Trait Hook, Visibility — plus the attachment layer: Attachment, Effect, Power, Spell, Bestowal, Innate Power | ✅ |
 | [Prose.md](./Prose.md) | IPK, Enrichment Placeholder, Resolver, Strata, Narrative Lexicon, Chronicle | ✅ |
 | [Graph.md](./Graph.md) | Node, Edge, WorldGraph, NodeType, EdgeType, versioning, position model | ❌ |
-| [Coordination.md](./Coordination.md) | Cowork/CC/Codex, Linear states, claim discipline, WIP, Coordination Block | ❌ |
+| [Coordination.md](./Coordination.md) | CC session types, Linear states, claim discipline, WIP, Coordination Block (+ retired Cowork/Codex terms) | ❌ |
 | [Process.md](./Process.md) | NFPs, Three-Pillar Rule, Definition of Done, Design Governance, UL, Drift Scan | ❌ |
 
 ---
@@ -161,15 +161,15 @@ Load this file at session start (referenced from CLAUDE.md). Load specific shard
 
 ### Coordination
 
-- **[Cowork](./Coordination.md#cowork)** — design/planning agent; produces plans and Linear transitions; never writes code
-- **[Claude Code (CC)](./Coordination.md#claude-code-cc)** — primary executor; claims Ready for Dev; WIP limit 1
-- **[Codex](./Coordination.md#codex)** — secondary executor; claims Ready for Codex; WIP limit 1
+- **[Cowork](./Coordination.md#cowork)** — *deprecated* (retired 2026-07-21, THR-654) — the design/planning agent of the two-runtime model; replaced by the CC design session
+- **[Claude Code (CC)](./Coordination.md#claude-code-cc)** — the single runtime; executor sessions claim Ready for Dev; WIP limit 1
+- **[Codex](./Coordination.md#codex)** — *deprecated* (retired 2026-06-23, THR-486) — secondary executor on the Ready for Codex queue
 - **[Linear](./Coordination.md#linear)** — single source of truth for all issues, states, and dependencies
 - **[Claim-before-read](./Coordination.md#claim-before-read)** — `save_issue(In Dev, me)` before reading any plan doc; verified with `get_issue` immediately after
 - **[WIP Limit](./Coordination.md#wip-limit)** — 1 In Dev issue per executor at a time, across all sessions and worktrees
-- **[Handoff Comment](./Coordination.md#handoff-comment)** — Cowork's final comment moving an issue to Ready-for-Dev/Codex; supersedes original description when it diverges
+- **[Handoff Comment](./Coordination.md#handoff-comment)** — the design session's final comment moving an issue to Ready for Dev; supersedes original description when it diverges
 - **[Ready for Dev](./Coordination.md#ready-for-dev)** — Linear state: CC pickup queue; filter `assignee: null`
-- **[Ready for Codex](./Coordination.md#ready-for-codex)** — Linear state: Codex pickup queue; filter `assignee: null`
+- **[Ready for Codex](./Coordination.md#ready-for-codex)** — *deprecated* (retired 2026-06-23, THR-486) — the Linear state that fed the Codex queue
 - **[In Dev](./Coordination.md#in-dev)** — Linear state: active implementation; never close manually; use `Fixes THR-XX` auto-close
 - **[Coordination Block](./Coordination.md#coordination-block)** — mandatory handoff fields: Suggested model, Parallel-safe with, Mutex with
 - **[Parallel-safe](./Coordination.md#parallel-safe)** — issues that can be worked concurrently without file conflicts
@@ -190,7 +190,7 @@ Load this file at session start (referenced from CLAUDE.md). Load specific shard
 - **[Drift Scan](./Process.md#drift-scan)** — weekly GitHub Action producing `drift-scan`-labeled Linear issues from four codebase health signals
 - **[Retrospective](./Process.md#retrospective)** — weekly synthesis of impediment log + drift scan issues; run via `retrospective` skill
 - **[UL-proposal](./Process.md#ul-proposal)** — Linear issue label for proposed new terms or retirements; always human-approved, never auto-merged
-- **[Implementation Plan](./Process.md#implementation-plan)** — Cowork-authored design artifact in Docs/plans/; the executor's input
+- **[Implementation Plan](./Process.md#implementation-plan)** — design-session-authored artifact in Docs/plans/; the executor's input
 
 ---
 

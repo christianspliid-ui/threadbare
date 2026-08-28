@@ -201,7 +201,7 @@ Vault work goes through the **filesystem**, not the Obsidian MCP — set `OBSIDI
 - **Roadmap milestones: [Linear Projects](https://linear.app/threadbare/projects)** — 8 projects (Linear Setup, UI/UX Design Infrastructure, Procedural Hex Vignettes, Content Architecture, Attention Tier Model, Thematic Pressure, Social Systems Expansion, Rarity Model) with lifecycle statuses (Idea → Next → Research → Discovery → Now → Done)
 - Legacy milestone roadmap: `.planning/ROADMAP.md` (still maintained for high-level overview)
 - Completed items archive: `.planning/BACKLOG_HISTORY.md` (pre-Linear history)
-- Obsidian vault index: read via Obsidian MCP → `TheFantasyWorldSimulator/Index.md`
+- Obsidian vault index: `TheFantasyWorldSimulator/Index.md`, read from the filesystem via `OBSIDIAN_VAULT_PATH` (no Obsidian MCP for vault work — THR-654)
 - Documentation ownership: `Docs/documentation-ownership.md`
 - Integration wiring checklist: `Docs/plans/wiring-checklist.md`
 - Design Reference Wiki (self-maintaining served HTML pages): `Docs/design-reference-wiki.md` — register a new served reference page in `public/wiki-manifest.json`; `npm run build` regenerates the hub + nav.
@@ -346,7 +346,7 @@ When modifying Obsidian vault notes:
 
 - **In the document:** Dated inline note near the change (date, what, why — one line).
 - **In the changelog:** Append to `Docs/changelog.md` (format: `| date | where | what changed | why |`).
-- **In the vault log:** Append to `log.md` via Obsidian MCP (format: `- **<type>** | <description>`).
+- **In the vault log:** Append to `log.md` via the `vault-log` skill — a filesystem write to `OBSIDIAN_VAULT_PATH` (format: `- **<type>** | <description>`).
 
 ## Debugging Protocol: Verify the Noun Before the Verb
 
@@ -439,8 +439,8 @@ Work is not "done" until it is deployed and documented. Do all of these automati
   - **Design session:** Run the board scan from `Docs/plans/2026-04-13-linear-coordination-protocol.md` § Design Session Start — a state-filtered fan-out across In Design, Implementation Planning, Ready for Dev, In Dev, and Todo, bucketed in memory by `status` (never an unfiltered `list_issues` — it overflows the response budget; see Limitations §).
   - **Execution session:** `list_issues state:"Ready for Dev" assignee:null` (pick up handoffs), `list_issues state:"In Dev" assignee:"me"` (resume active work)
 - [ ] **Design session — plan doc authoring:** After writing a plan doc to `Docs/plans/` or `Docs/audits/`, commit it directly via its own `docs/plan-*` PR (CI-gated, merged immediately). **Put the `Plan doc:` path in the issue *description* as well as the handoff comment** — a `**Plan doc:** \`Docs/plans/…md\`` line in both, so neither is a single point of failure. Then move the issue to the appropriate state (e.g. Ready for Dev) with the coordination block.
-- [ ] Read Obsidian `Index.md` via MCP → follow links to the relevant system. Index.md is the comprehensive catalog — use it as the LLM's navigation system.
-- [ ] **For design work**, load the rulebook synthesis first: `Docs/canon/rulebook-quick-reference.md` is always-load; `Docs/canon/rulebook.md` for any work touching rules of play (turn structure, action verbs, prerequisites, resources, encounters, clocks, win/loss). Then load `state-of-game-design` (mechanical foundation) and `game-design-direction` (experiential foundation), then descend into Vision/ via Obsidian MCP and the relevant per-domain canon page.
+- [ ] Read the vault's `Index.md` (filesystem via `OBSIDIAN_VAULT_PATH`) → follow links to the relevant system. Index.md is the comprehensive catalog — use it as the LLM's navigation system.
+- [ ] **For design work**, load the rulebook synthesis first: `Docs/canon/rulebook-quick-reference.md` is always-load; `Docs/canon/rulebook.md` for any work touching rules of play (turn structure, action verbs, prerequisites, resources, encounters, clocks, win/loss). Then load `state-of-game-design` (mechanical foundation) and `game-design-direction` (experiential foundation), then descend into Vision/ (vault filesystem via `OBSIDIAN_VAULT_PATH`) and the relevant per-domain canon page.
 - [ ] **Check Linear Projects for milestone context** — `list_projects` to see which milestones are in Now/Discovery/Research. Issues belong to projects; projects show the big picture.
 - [ ] Check `.planning/ROADMAP.md` for legacy milestone overview
 - [ ] Read relevant design doc in `Docs/plans/` before writing code
@@ -449,11 +449,11 @@ Work is not "done" until it is deployed and documented. Do all of these automati
 - [ ] **Terminology authority check** — if sources disagree on term definitions, UL wins (`Docs/ubiquitous-language/README.md` + shard entries)
 - [ ] After completing work, follow the **Definition of Done** above
 - [ ] **Update Linear** — move issue to appropriate state, add completion comment
-- [ ] **Update vault log** — Append to `log.md` via Obsidian MCP what was changed in this session
+- [ ] **Update vault log** — Append what changed this session to `log.md` via the `vault-log` skill (filesystem write)
 
 ### Scheduled Tasks
 
-**Registry: [`Docs/ops/scheduled-tasks-registry.md`](Docs/ops/scheduled-tasks-registry.md)** — all four lanes (CC automation, GitHub Actions, Windows Task Scheduler, the Cowork lane pending disable), their cron *and observed fire time*, the reaper's guardrails, and the weekly continuous-improvement cycle. Slot name ≠ cron minute ≠ fire time; the registry's `Fires` column is the operational one.
+**Registry: [`Docs/ops/scheduled-tasks-registry.md`](Docs/ops/scheduled-tasks-registry.md)** — all three lanes (CC automation, GitHub Actions, Windows Task Scheduler; the Cowork lane retired with THR-654), their cron *and observed fire time*, the reaper's guardrails, and the weekly continuous-improvement cycle. Slot name ≠ cron minute ≠ fire time; the registry's `Fires` column is the operational one.
 
 Two rules stay here because they gate live session behavior:
 
