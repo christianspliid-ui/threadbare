@@ -110,7 +110,7 @@
       ],
       "status": "canonical",
       "oneLiner": "a cosmic energy that fuels action; orthogonal to Reaches, not a subcategory of them",
-      "body": "One of the cosmic energies that *fuel* action. Spheres are orthogonal to Reaches — the same Reach action can be performed with different Sphere colorings, producing different flavors and eligibility. Sphere ≠ Reach. Neither subsumes the other.\n\nA god's standing in a Sphere is read two independent ways, and they are not interchangeable: `[[Sphere Alignment]]` is an actor's *affinity* for the Sphere (an `aligned_with` edge), while `[[Sphere Attunement]]` is the lifetime essence the god has *drawn through* it. Alignment is who you are; attunement is what you have practised.",
+      "body": "One of the cosmic energies that *fuel* action. Spheres are orthogonal to Reaches — the same Reach action can be performed with different Sphere colorings, producing different flavors and eligibility. Sphere ≠ Reach. Neither subsumes the other.\n\nThere are **twelve Spheres**, in two groups of opposed pairs. The four **Foundation** Spheres: **Chaos ↔ Order**, **Light ↔ Darkness**. The eight **Creation** Spheres: **Force ↔ Mind**, **Matter ↔ Time**, **Energy ↔ Spirit**, **Life ↔ Entropy**. Code source of truth: `src/engine/cosmology.ts` (`SPHERE_ALLIES`, `SPHERE_OPPOSITES`); spec: `Docs/canon/cosmology.md`.\n\nA god's standing in a Sphere is read two independent ways, and they are not interchangeable: `[[Sphere Alignment]]` is an actor's *affinity* for the Sphere (an `aligned_with` edge), while `[[Sphere Attunement]]` is the lifetime essence the god has *drawn through* it. Alignment is who you are; attunement is what you have practised.",
       "seeAlso": [
         {
           "raw": "Foundation",
@@ -145,7 +145,7 @@
       ],
       "status": "canonical",
       "oneLiner": "root Sphere anchoring stability and permanence",
-      "body": "One of the two root Spheres. Anchors stability, permanence, memory, and continuity. Foundation-aligned cosmologies tend toward order, preservation, and deep time.",
+      "body": "One of the two Sphere *groups* — not itself a Sphere. Holds the four Foundation Spheres in two opposed pairs: **Chaos ↔ Order**, **Light ↔ Darkness** (\"elder magic,\" discovered through ruins, not chosen at chargen). The group anchors stability, permanence, memory, and continuity; Foundation-aligned cosmologies tend toward order, preservation, and deep time.",
       "seeAlso": [
         {
           "raw": "Sphere",
@@ -170,7 +170,7 @@
       ],
       "status": "canonical",
       "oneLiner": "root Sphere driving change and generativity",
-      "body": "One of the two root Spheres. Drives change, generativity, transformation, and emergence. Creation-aligned cosmologies tend toward dynamism, experimentation, and renewal.",
+      "body": "One of the two Sphere *groups* — not itself a Sphere. Holds the eight Creation Spheres in four opposed pairs: **Force ↔ Mind**, **Matter ↔ Time**, **Energy ↔ Spirit**, **Life ↔ Entropy**. The group drives change, generativity, transformation, and emergence; Creation-aligned cosmologies tend toward dynamism, experimentation, and renewal.",
       "seeAlso": [
         {
           "raw": "Sphere",
@@ -279,7 +279,7 @@
       ],
       "status": "canonical",
       "oneLiner": "the system that absorbed the deprecated Flesh Reach in TB-075; not a ninth Reach",
-      "body": "The derived meta-property tracking an actor's integrity-of-self and centrality to the simulated story. Quintessence is not a Reach domain. Higher Quintessence signals sovereignty, resilience, and resistance to being owned, reduced, or written out; lower Quintessence signals thinning confidence, narrower options, and rising risk of becoming a vessel, symbol, or tool. It functions as a threshold meter for phase shifts (including death, transformation, or symbolic capture), not as a personality axis. Replaces the deprecated Flesh Reach (TB-075, 2026-03-28); do not reintroduce Flesh as a ninth Reach.",
+      "body": "The derived meta-property tracking an actor's integrity-of-self and centrality to the simulated story. Quintessence is not a Reach domain. Higher Quintessence signals sovereignty, resilience, and resistance to being owned, reduced, or written out; lower Quintessence signals thinning confidence, narrower options, and rising risk of becoming a vessel, symbol, or tool. It functions as a threshold meter for *narrative* phase shifts — transformation, symbolic capture, being written out of the story — not as a personality axis and **not as a death meter**: death stays owned by the zero-state rules, and Quintessence erosion alone never kills (`QUINTESSENCE_RATIO_FLOOR`). The biology/survival framing belonged to the deprecated Flesh Reach; Quintessence replaced it with the narrative-abstract concept (user verdict 2026-05-05, `Docs/canon/cosmology.md`). Replaces the deprecated Flesh Reach (TB-075, 2026-03-28); do not reintroduce Flesh as a ninth Reach.",
       "seeAlso": [
         {
           "raw": "Reach",
@@ -300,7 +300,7 @@
       ],
       "status": "canonical",
       "oneLiner": "domain tier + sphere alignment check gating action availability; uniform for Ascendants and mortals",
-      "body": "A guard on action availability combining a Domain Capability tier threshold and a Sphere alignment check. Applied uniformly to Ascendants and mortal agents — there is no special-cased eligibility logic for player-characters. Both conditions must pass for the action to appear in the action pool.",
+      "body": "A guard on action availability combining a Domain Capability tier threshold and a Sphere alignment check. Applied uniformly to Ascendants and mortal agents — there is no special-cased eligibility logic for the Ascendant. Both conditions must pass for the action to appear in the action pool.",
       "seeAlso": [
         {
           "raw": "Domain Capability",
@@ -413,12 +413,11 @@
       "name": "Ascendant",
       "aliases": [
         "The Ascendant",
-        "Player Character",
         "God-Self"
       ],
       "status": "canonical",
       "oneLiner": "the player-character; a former mortal transcended to divine status; uses same prerequisite system as mortals",
-      "body": "The player-character: a powerful former mortal who has transcended to divine status. Stored as an actor node with `actorType: 'ascendant'`. Uses the same Domain Capability prerequisite system as mortal agents — no special-cased entity logic. Power level is tunable via constants, not architecturally different.",
+      "body": "The player's seat in the world: a powerful former mortal who has transcended to divine status. The player is a god, never a protagonist — the Ascendant is not a directly-controlled player character (\"Player Character\" was retired as an alias 2026-08-28, THR-1338; the rejected framing). Stored as an actor node with `actorType: 'ascendant'`. Uses the same Domain Capability prerequisite system as mortal agents — no special-cased entity logic. Power level is tunable via constants, not architecturally different.",
       "seeAlso": [
         {
           "raw": "The First",

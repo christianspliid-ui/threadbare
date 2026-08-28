@@ -163,20 +163,7 @@ From `2026-05-04-encounter-experience-design-plan.md` §1 — the executor's con
 
 ## Reach→archetype-pair axis reference
 
-Each encounter's primary reach maps to an archetype-axis in the Cosmological Pattern:
-
-| Reach | Archetype axis |
-|-------|----------------|
-| Iron | Protector ↔ Conqueror |
-| Gold | Patron ↔ Extractor |
-| Shadow | Saboteur ↔ Deceiver |
-| Veil | Seer ↔ Manipulator |
-| Heart | Sworn ↔ Renegade |
-| Eye | Witness ↔ Judge |
-| Stone | Keeper ↔ Destroyer |
-| Star | Beacon ↔ Wrecker |
-
-Source: `Docs/plans/2026-05-04-encounter-experience-design-plan.md` §2.2 and `Brainstorms/brainstorm-cosmological-symmetry.md`.
+Each encounter's primary reach maps to an archetype-axis in the Cosmological Pattern. **Do not reproduce the pole-name table here** — [Docs/canon/cosmology.md](cosmology.md) §Cosmological Pattern is the single source of truth, and the names have been revised twice by director decision (2026-06-29: Shadow → Broker ↔ Manipulator, Veil → Weaver ↔ Unraveller, Eye → Seer ↔ Inquisitor; 2026-08-16/THR-1135: Stone's virtue word → Careful). The registry `src/types/axisRegistry.ts` is the code source of truth. Any surface still carrying Saboteur/Deceiver, Veil-Seer/Manipulator, or Witness/Judge is stale — this page carried exactly that table until 2026-08-28 (THR-1338), sourced to a plan section that never contained one.
 
 ## Rejected approaches
 
@@ -185,7 +172,7 @@ Source: `Docs/plans/2026-05-04-encounter-experience-design-plan.md` §2.2 and `B
 - ❌ AgentWheel / fixed action-count slots — replaced by `ActionDrawer` with context-filtered cards via Generalized Action Targeting (see CLAUDE.md Rejected Approaches)
 - ❌ Pure LLM-generated encounter prose — replaced by hybrid layered engine with enrichment placeholders
 - ❌ Player-as-character framing ("choose how the character responds") — the player is a god who intervenes indirectly. All player-facing options must be *god actions*. Any choice that makes the mortal the agent must be reframed.
-- ❌ **Choosing between authored futures** ("Forge the truth" / "Temper the narrative") — rejected 2026-07-26 (THR-772, Christian, chat). The player must never pick an ending. The god plays concrete, sphere-flavoured **nudges** that shift the odds; fate rolls the outcome. Superseded the `authoredChoices` layer at design level; code retirement is staged (WS5 conversion, THR-778). Do not author `authoredChoices` on a new encounter.
+- ❌ **Choosing between authored futures** ("Forge the truth" / "Temper the narrative") — rejected 2026-07-26 (THR-772, Christian, chat). The player must never pick an ending. The god plays concrete, sphere-flavoured **nudges** that shift the odds; fate rolls the outcome. Superseded the `authoredChoices` layer at design level; the content migration is **complete** (WS5, THR-1086 — zero shipped encounters author it, re-verified 2026-08-25). Do not author `authoredChoices` on a new encounter.
 - ❌ **A percentage anywhere on the mortal-facing surface** — rejected 2026-07-26 (THR-772 ruling 1). Odds are legible in words only: the five forecast tier words and the four difficulty words (`severe / steep / fair / gentle`). Numbers exist behind the words; the designer/debug view is the sole exception. An `effectLine` carrying a digit is an editorial reject, not a nit.
 - ❌ **A nudge with no failure-band payoff** — the god's hand must be traceable in failure at any size (THR-772 program ruling: payoff at every band). A card that vanishes on a loss makes failure read as punishment, which inverts the design.
 - ❌ **Scene art that depicts the interaction, or a second human likeness** — rejected 2026-07-30 (THR-868 audit). Image doctrine ruling 10: a scene omits or silhouettes the agent, because the portrait chosen at Sensing is the only likeness across the flow. The audit of all 32 meeting scene files found five violations, and the reachable one was rendering: `plague-ward.jpg` (an individuated child's face) won any dilemma tagged `sacrifice` or `compassion`. `prison-cell.jpg` had the retired choice mechanic painted in as two UI buttons — "GRANT MERCY" / "IMPOSE JUDGMENT" — so the art taught the rejected model even after the code stopped. Two more carried baked-in caption text. Quarantine list + enforcement: `QUARANTINED_SCENE_ASSETS` in `src/data/meeting-art-library.ts`, pinned by `src/data/__tests__/meetingSceneDoctrine.test.ts`. **A wrong picture type-checks** — this class is invisible to every test that does not look at the pool.

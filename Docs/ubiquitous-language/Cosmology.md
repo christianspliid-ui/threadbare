@@ -26,6 +26,8 @@ The ninth Reach, Flesh, was absorbed into the Quintessence system in TB-075. Do 
 
 One of the cosmic energies that *fuel* action. Spheres are orthogonal to Reaches — the same Reach action can be performed with different Sphere colorings, producing different flavors and eligibility. Sphere ≠ Reach. Neither subsumes the other.
 
+There are **twelve Spheres**, in two groups of opposed pairs. The four **Foundation** Spheres: **Chaos ↔ Order**, **Light ↔ Darkness**. The eight **Creation** Spheres: **Force ↔ Mind**, **Matter ↔ Time**, **Energy ↔ Spirit**, **Life ↔ Entropy**. Code source of truth: `src/engine/cosmology.ts` (`SPHERE_ALLIES`, `SPHERE_OPPOSITES`); spec: `Docs/canon/cosmology.md`.
+
 A god's standing in a Sphere is read two independent ways, and they are not interchangeable: `[[Sphere Alignment]]` is an actor's *affinity* for the Sphere (an `aligned_with` edge), while `[[Sphere Attunement]]` is the lifetime essence the god has *drawn through* it. Alignment is who you are; attunement is what you have practised.
 
 ---
@@ -36,7 +38,7 @@ A god's standing in a Sphere is read two independent ways, and they are not inte
 **Also see:** `[[Sphere]]`, `[[Creation]]`
 **Status:** canonical
 
-One of the two root Spheres. Anchors stability, permanence, memory, and continuity. Foundation-aligned cosmologies tend toward order, preservation, and deep time.
+One of the two Sphere *groups* — not itself a Sphere. Holds the four Foundation Spheres in two opposed pairs: **Chaos ↔ Order**, **Light ↔ Darkness** ("elder magic," discovered through ruins, not chosen at chargen). The group anchors stability, permanence, memory, and continuity; Foundation-aligned cosmologies tend toward order, preservation, and deep time.
 
 ---
 
@@ -46,7 +48,7 @@ One of the two root Spheres. Anchors stability, permanence, memory, and continui
 **Also see:** `[[Sphere]]`, `[[Foundation]]`
 **Status:** canonical
 
-One of the two root Spheres. Drives change, generativity, transformation, and emergence. Creation-aligned cosmologies tend toward dynamism, experimentation, and renewal.
+One of the two Sphere *groups* — not itself a Sphere. Holds the eight Creation Spheres in four opposed pairs: **Force ↔ Mind**, **Matter ↔ Time**, **Energy ↔ Spirit**, **Life ↔ Entropy**. The group drives change, generativity, transformation, and emergence; Creation-aligned cosmologies tend toward dynamism, experimentation, and renewal.
 
 ---
 
@@ -86,7 +88,7 @@ The seeded configuration of Sphere weights, alignments, and relationships for a 
 **Also see:** `[[Reach]]`
 **Status:** canonical
 
-The derived meta-property tracking an actor's integrity-of-self and centrality to the simulated story. Quintessence is not a Reach domain. Higher Quintessence signals sovereignty, resilience, and resistance to being owned, reduced, or written out; lower Quintessence signals thinning confidence, narrower options, and rising risk of becoming a vessel, symbol, or tool. It functions as a threshold meter for phase shifts (including death, transformation, or symbolic capture), not as a personality axis. Replaces the deprecated Flesh Reach (TB-075, 2026-03-28); do not reintroduce Flesh as a ninth Reach.
+The derived meta-property tracking an actor's integrity-of-self and centrality to the simulated story. Quintessence is not a Reach domain. Higher Quintessence signals sovereignty, resilience, and resistance to being owned, reduced, or written out; lower Quintessence signals thinning confidence, narrower options, and rising risk of becoming a vessel, symbol, or tool. It functions as a threshold meter for *narrative* phase shifts — transformation, symbolic capture, being written out of the story — not as a personality axis and **not as a death meter**: death stays owned by the zero-state rules, and Quintessence erosion alone never kills (`QUINTESSENCE_RATIO_FLOOR`). The biology/survival framing belonged to the deprecated Flesh Reach; Quintessence replaced it with the narrative-abstract concept (user verdict 2026-05-05, `Docs/canon/cosmology.md`). Replaces the deprecated Flesh Reach (TB-075, 2026-03-28); do not reintroduce Flesh as a ninth Reach.
 
 ---
 
@@ -96,4 +98,4 @@ The derived meta-property tracking an actor's integrity-of-self and centrality t
 **Also see:** `[[Domain Capability]]`, `[[Sphere Alignment]]`
 **Status:** canonical
 
-A guard on action availability combining a Domain Capability tier threshold and a Sphere alignment check. Applied uniformly to Ascendants and mortal agents — there is no special-cased eligibility logic for player-characters. Both conditions must pass for the action to appear in the action pool.
+A guard on action availability combining a Domain Capability tier threshold and a Sphere alignment check. Applied uniformly to Ascendants and mortal agents — there is no special-cased eligibility logic for the Ascendant. Both conditions must pass for the action to appear in the action pool.
