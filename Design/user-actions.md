@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-28 01:55 local (23:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-28 02:55 local (00:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -23,7 +23,7 @@ Three ways to go: **let both stand** (different grammar, never side by side — 
 
 ### 3. More design hours — still the binding constraint
 
-Roughly twenty items sit in Todo and **every one needs a plan doc before an executor can touch it**. Your [shared-anchor design](https://linear.app/threadbare/issue/THR-1212) is three slices into being built and [hunger vocabulary](https://linear.app/threadbare/issue/THR-1213) is queued behind it — that is what the hours buy.
+Roughly twenty items sit in Todo and **every one needs a plan doc before an executor can touch it**. Your [shared-anchor design](https://linear.app/threadbare/issue/THR-1212) is four slices into being built and [hunger vocabulary](https://linear.app/threadbare/issue/THR-1213) is queued behind it — that is what the hours buy.
 
 **The block now has two names on it** *(orchestrator lane, 01:31 on 28 August)*: the design column holds **[unify the card grammar](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** (your 6 August note, untouched 9 days; three tickets behind it) and **[traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)** (assigned to you, untouched 13 days). That lane holds one design slot and will not walk either backwards out of the column on its own. **Sit one, or say *"park it"*** — three more plan-doc sessions for the same program are unblocked and waiting behind them.
 
@@ -84,7 +84,7 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
-- **Your shared-anchor design is being built, three slices deep** — [THR-1212](https://linear.app/threadbare/issue/THR-1212) walked Todo → designed → queued → claimed last night, and slices 1, 2 and 3 merged at 23:37, 00:37 and 01:31 ([PR #1678](https://github.com/christianspliid-ui/threadbare/pull/1678), [PR #1679](https://github.com/christianspliid-ui/threadbare/pull/1679), [PR #1680](https://github.com/christianspliid-ui/threadbare/pull/1680)), all deployed. A thing in the world now has one way to be named, the catalog is checked in both directions, and the chips the anchor gate cannot see sit under a ceiling that cannot quietly rise.
+- **Your shared-anchor design is being built, four slices deep** — [THR-1212](https://linear.app/threadbare/issue/THR-1212) walked Todo → designed → queued → claimed last night, and slices 1–4 merged at 23:37, 00:37, 01:31 and 02:27 ([PR #1678](https://github.com/christianspliid-ui/threadbare/pull/1678), [PR #1679](https://github.com/christianspliid-ui/threadbare/pull/1679), [PR #1680](https://github.com/christianspliid-ui/threadbare/pull/1680), [PR #1681](https://github.com/christianspliid-ui/threadbare/pull/1681)), all deployed. A thing in the world now has one way to be named, the catalog is checked in both directions, the chips the anchor gate cannot see sit under a ceiling that cannot quietly rise, and the ledger asks what a reader does with an anchor rather than whether one exists.
 - **The 20–22 August lane-quiet question is closed without needing your answer** — the gap has aged out of the probe's measuring window, and the only quiet periods it now reports are overnight-shaped, already declined under your 8 August ruling. Removed from your list rather than carried indefinitely.
 - **The build shelf is stocked — six jobs, from one yesterday morning** — your hunger-vocabulary design ([THR-1213](https://linear.app/threadbare/issue/THR-1213)) handed off behind the shared anchor machinery, and the action-library work filed five checked follow-ups on itself as it finished.
 - **The action library finished whole** — [THR-1297](https://linear.app/threadbare/issue/THR-1297), doc 2 of your carve-up, six slices in nine hours. A finished work now earns its own name; ownership is its own edge; a destroy verb needs a reason. Docs 1, 2 and 3 — the whole first tier — are built.
