@@ -108,7 +108,6 @@ describe('buildGateDutyEncounterStageModel', () => {
       persistence: 'must-persist',
       state: 'flagged',
       revealedSignalKeys: ['witness_pressure', 'forged_papers'],
-      followOnTags: ['#papers_flagged'],
       attempts: 1,
       lastUpdatedTick: 14,
       history: [],
@@ -245,7 +244,6 @@ describe('buildGateDutyEncounterStageModel', () => {
       persistence: 'must-persist',
       state: 'pending',
       revealedSignalKeys: ['witness_pressure'],
-      followOnTags: [],
       attempts: 0,
       lastUpdatedTick: 10,
       history: [],
@@ -374,7 +372,6 @@ describe('buildGateDutyEncounterStageModel', () => {
       persistence: 'must-persist',
       state: 'exposed',
       revealedSignalKeys: ['witness_pressure', 'forged_papers', 'hidden_cargo'],
-      followOnTags: ['#papers_flagged'],
       attempts: 2,
       lastUpdatedTick: 15,
       history: [],
@@ -483,7 +480,6 @@ describe('buildGateDutyEncounterStageModel', () => {
       persistence: 'must-persist',
       state: 'pending',
       revealedSignalKeys: [],
-      followOnTags: [],
       attempts: 0,
       lastUpdatedTick: 10,
       history: [],
@@ -616,7 +612,6 @@ describe('buildGateDutyEncounterStageModel', () => {
       persistence: 'must-persist',
       state: 'cleared',
       revealedSignalKeys: ['witness_pressure', 'forged_papers', 'hidden_cargo'],
-      followOnTags: ['#watch_trusted'],
       attempts: 3,
       lastUpdatedTick: 17,
       history: [],
@@ -651,7 +646,14 @@ describe('buildGateDutyEncounterStageModel', () => {
     expect(model.illustration).toBeUndefined();
     expect(model.choices).toEqual([]);
     expect(model.aftermath?.overview).toMatch(/district|unchanged|consequences/i);
-    expect(model.aftermath?.highlights?.[0]?.title).toMatch(/night will keep travelling|follow-on thread/i);
+    // THR-1212 slice 6 — this alternated with `follow-on thread` until the
+    // followOnTags convention was retired. The surviving title is the authored
+    // aftermath highlight; the retired arm was kept loose enough that a stale
+    // value would still have matched, so it is pinned to the one real answer.
+    expect(model.aftermath?.highlights?.[0]?.title).toMatch(/night will keep travelling/i);
+    // Absence where the element should no longer render: no surface may carry the
+    // retired chip's title, on any face of this model.
+    expect(JSON.stringify(model)).not.toContain('A follow-on thread was seeded');
     expect(model.aftermath?.reactions).toEqual([
       {
         id: 'follow_witness_story',
@@ -720,7 +722,6 @@ describe('THR-1173 — the gate duty location reaches link tier', () => {
       persistence: 'must-persist',
       state: 'pending',
       revealedSignalKeys: [],
-      followOnTags: [],
       attempts: 0,
       lastUpdatedTick: 11,
       history: [],

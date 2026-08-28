@@ -107,7 +107,6 @@ const CLEARANCE_GATE_STATE: ClearanceGateRuntimeState = {
   persistence: 'must-persist',
   state: 'pending',
   revealedSignalKeys: ['witness_pressure'],
-  followOnTags: [],
   attempts: 0,
   lastUpdatedTick: 10,
   history: [],

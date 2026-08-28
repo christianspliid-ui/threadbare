@@ -2145,7 +2145,7 @@ export interface EncounterAftermathEffectTrace extends TraceBase {
   /** Index in reaction.effects array */
   effectIndex: number;
   effectKind:
-    | 'reputation_score' | 'reputation_tally' | 'clearance_gate_tag'
+    | 'reputation_score' | 'reputation_tally'
     | 'recent_event' | 'encounter_seed' | 'hidden_mark' | 'intelligence'
     | 'reputation_set' | 'apply_condition' | 'remove_condition' | 'condition_attachment'
     | 'grant_aspect' | 'signature_warhost'
@@ -3885,7 +3885,6 @@ export interface EffectShellGateTransitionTrace extends TraceBase {
   previousState: ClearanceGateState;
   nextState: ClearanceGateState;
   revealedSignals: readonly string[];
-  followOnTagsAdded: readonly string[];
 }
 
 /** Trace: result band selected for an action resolution */

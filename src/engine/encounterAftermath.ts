@@ -937,10 +937,6 @@ export function applyEncounterAftermathReaction(
 
   let nextRecentEvents = state.recentEvents;
   let nextTickEvents = state.tickEvents;
-  let nextClearanceGateStates = state.clearanceGateStates
-    ? new Map(state.clearanceGateStates)
-    : undefined;
-  let touchedClearanceGateStates = false;
   let nextSeeds: PendingEncounterSeed[] = [];
   let nextHiddenMarks: HiddenMark[] = [];
   let nextIntelligenceRecords: IntelligenceRecord[] = [];
@@ -1475,45 +1471,6 @@ export function applyEncounterAftermathReaction(
           success: true,
           effectiveTargetId: resolvedId, effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'location' | 'actor_fallback',
           summary: `reputation_set[${i}]: ${resolvedId} → ${clamped.toFixed(2)}`,
-        });
-        break;
-      }
-
-      case 'clearance_gate_tag': {
-        const runtimeId = effect.runtimeId ?? action?.clearanceGateIds?.[0];
-        if (!runtimeId || !nextClearanceGateStates) {
-          emitTrace({
-            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
-            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
-            effectKind: 'clearance_gate_tag', effectDetail: { runtimeId, tag: effect.tag },
-            success: false, failReason: !runtimeId ? 'no_runtime_id' : 'no_clearance_gate_states',
-            summary: `clearance_gate_tag[${i}] skipped: ${!runtimeId ? 'no runtimeId' : 'no clearanceGateStates'}`,
-          });
-          break;
-        }
-        const gate = nextClearanceGateStates.get(runtimeId);
-        if (!gate) {
-          emitTrace({
-            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
-            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
-            effectKind: 'clearance_gate_tag', effectDetail: { runtimeId, tag: effect.tag },
-            success: false, failReason: 'gate_not_found',
-            summary: `clearance_gate_tag[${i}] skipped: gate ${runtimeId} not found`,
-          });
-          break;
-        }
-        nextClearanceGateStates.set(runtimeId, {
-          ...gate,
-          followOnTags: [...new Set([...gate.followOnTags, effect.tag])],
-        });
-        touchedClearanceGateStates = true;
-        emitTrace({
-          tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
-          encounterId, actionId, reactionId: reaction.id, effectIndex: i,
-          effectKind: 'clearance_gate_tag',
-          effectDetail: { runtimeId, tag: effect.tag },
-          success: true,
-          summary: `clearance_gate_tag[${i}]: gate ${runtimeId} tagged '${effect.tag}'`,
         });
         break;
       }
@@ -4845,7 +4802,6 @@ export function applyEncounterAftermathReaction(
     ...state,
     tickEvents: nextTickEvents,
     recentEvents: nextRecentEvents,
-    clearanceGateStates: touchedClearanceGateStates ? nextClearanceGateStates : state.clearanceGateStates,
     pendingEncounterSeeds: nextSeeds.length > 0
       ? [...(state.pendingEncounterSeeds ?? []), ...nextSeeds]
       : state.pendingEncounterSeeds,

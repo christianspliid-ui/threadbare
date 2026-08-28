@@ -27,18 +27,17 @@ Settled at the attended sitting of 2026-08-17 ([THR-1161](https://linear.app/thr
 | ✅ acted-on | 42 | 43 | 85 |
 | 📒 bookkeeping | 1 | 0 | 1 |
 | 🌱 dormant-hook | 1 | 1 | 2 |
-| 🕳️ write-without-consumer | 1 | 0 | 1 |
-| **Total** | **45** | **44** | **89** |
+| 🕳️ write-without-consumer | 0 | 0 | 0 |
+| **Total** | **44** | **44** | **88** |
 
 ## Aftermath effect kinds
 
-Membership derived from `export type EncounterAftermathReactionEffect` in `src/types/unifiedAction.ts` — 45 members.
+Membership derived from `export type EncounterAftermathReactionEffect` in `src/types/unifiedAction.ts` — 44 members.
 
 | Member | Class | What it writes | Who reads it, and what they do |
 |---|---|---|---|
 | `reputation_score` | ✅ acted-on | `reputationScore` on the target actor node | `src/engine/effects/effectPredicates.ts` → `reputationScore` (acts) |
 | `reputation_tally` | 📒 bookkeeping | a keyed counter in `reputationTallies` on the target actor | `src/engine/phaseReputationTraits.ts` → `reputationTallies` (tally-point) |
-| `clearance_gate_tag` | 🕳️ write-without-consumer | a string appended to `followOnTags` on the runtime clearance-gate state | `src/engine/unifiedActionResolution.ts` → `gateFollowOnSentence` (reports only) |
 | `recent_event` | ✅ acted-on | an event appended to the actor's `recentEvents` (and the tick event stream) | `src/engine/ambitionTick.ts` → `recentEvents` (acts) |
 | `encounter_seed` | 🌱 dormant-hook | a seed record in `pendingEncounterSeeds` | `src/engine/encounterSeeding.ts` → `evaluateEncounterSeeds` (spawns) |
 | `quintessence_shift` | ✅ acted-on | `quintessence` on the target actor | `src/engine/brokenState.ts` → `isBrokenMortal` (acts) |
@@ -85,7 +84,6 @@ Membership derived from `export type EncounterAftermathReactionEffect` in `src/t
 ### Notes
 
 - **`reputation_tally`** — The 2026-08-16 ruling (THR-1136 §5) put reach tallies deliberately out of sight; the threshold trait mint is the tally-point where the accumulated result becomes a visible entity change.
-- **`clearance_gate_tag`** *(deferral: THR-1212)* — The single reader turns each new tag into a `future_hook` aftermath change titled "A follow-on thread was seeded", and that is the end of it: no encounter is seeded, no attachment is timed, no metadata governs firing, and nothing ever reads a tag back. Three tag conventions (`#watch_trusted`, `#papers_flagged`, `proven_master`) rot in one field. It fails the dormant-hook bar precisely because hooks are not passive — see the header.
 - **`encounter_seed`** — The canonical dormant-hook substrate: `delayTicks` + `priority` are the firing metadata.
 - **`hidden_mark`** — Awareness-scoped by design — hidden until its reveal route fires.
 - **`intel_referenced_prose`** — The prose *selection* is report-only; what makes the row acted-on is the event it appends, which is the same consumed buffer `recent_event` writes.

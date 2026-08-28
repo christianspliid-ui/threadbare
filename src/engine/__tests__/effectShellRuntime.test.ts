@@ -161,7 +161,7 @@ describe('resolveDuplicateGain', () => {
 
 describe('selectResultBand', () => {
   const bands: ResultBandConfig[] = [
-    { id: 'crit', threshold: 15, label: 'Critical', outcomeBand: 'critical_success', effects: [], followOnTags: [] },
+    { id: 'crit', threshold: 15, label: 'Critical', outcomeBand: 'critical_success', effects: [] },
     { id: 'success', threshold: 5, label: 'Success', outcomeBand: 'success', effects: [] },
     { id: 'fail', threshold: -5, label: 'Fail', outcomeBand: 'failure', effects: [] },
   ];

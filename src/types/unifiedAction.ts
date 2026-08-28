@@ -412,12 +412,6 @@ export type EncounterAftermathReactionEffect =
     readonly when?: EffectPredicate;
   }
   | {
-    readonly kind: 'clearance_gate_tag';
-    readonly runtimeId?: string;
-    readonly tag: string;
-    readonly when?: EffectPredicate;
-  }
-  | {
     readonly kind: 'recent_event';
     readonly eventType?: 'narrative' | 'ripple_consequence';
     readonly message: string;

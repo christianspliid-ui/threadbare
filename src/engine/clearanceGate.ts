@@ -79,7 +79,6 @@ export function initializeClearanceGates(
       persistence: config.persistence,
       state: config.initialState ?? 'pending',
       revealedSignalKeys: resolveKnownSignals(config),
-      followOnTags: config.followOnTags ?? [],
       attempts: 0,
       lastUpdatedTick: tick,
       history: [],
@@ -131,11 +130,6 @@ export function applyClearanceGateStepOutcome(
       ...current.revealedSignalKeys,
       ...matched.flatMap(rule => rule.revealSignals ?? []),
     ]);
-    const addedFollowOnTags = unique(matched.flatMap(rule => rule.addFollowOnTags ?? []));
-    const followOnTags = unique([
-      ...current.followOnTags,
-      ...addedFollowOnTags,
-    ]);
     const nextState = findLastDefined(matched, rule => rule.nextState) ?? current.state;
     const note = findLastDefined(matched, rule => rule.note);
 
@@ -146,7 +140,6 @@ export function applyClearanceGateStepOutcome(
       previousState: current.state,
       nextState,
       revealedSignals: revealedSignals.filter(key => !current.revealedSignalKeys.includes(key)),
-      addedFollowOnTags: addedFollowOnTags.filter(tag => !current.followOnTags.includes(tag)),
       note,
     };
 
@@ -154,7 +147,6 @@ export function applyClearanceGateStepOutcome(
       ...current,
       state: nextState,
       revealedSignalKeys: revealedSignals,
-      followOnTags,
       attempts: current.attempts + 1,
       lastUpdatedTick: tick,
       history: [...current.history, transition],
