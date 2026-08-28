@@ -20,9 +20,11 @@
  *  1. `seal.crit_fail.the_wanting`'s `stateNoun` drops `visualKind: 'agent'` —
  *     the sentence is about the ambition (a lawful `named` anchor), not the
  *     person, and the packet's own §13 table already claimed only one
- *     `individual`-anchored chip (`seal.fail.driven_out`). `entityId: '$actor'`
- *     stays — it is the carrier route the anchor catalog names for an
- *     ambition.
+ *     `individual`-anchored chip (`seal.fail.driven_out`). **THR-1317 restored
+ *     `visualKind: 'agent'`** — the correction's own carrier route
+ *     (`entityId: '$actor'`, the ambition seen on the pursuing actor's sheet)
+ *     cannot be drawn without a kind, so dropping it silently removed the
+ *     route rather than narrowing it. See the comment on the change itself.
  *  2. Both `assign_ambition` effects (critical_success, critical_failure) carry
  *     a code comment recording that `assignAmbitionToActor` refuses on
  *     `no_free_slot` (measured ~21% of actors in a mature world, no eviction)
@@ -791,9 +793,27 @@ export const THE_BROKEN_SEAL_TEMPLATE: UnifiedActionTemplate = compileOpeningEnv
               // stateNoun. The sentence is about the ambition — a lawful
               // `named` anchor — not about the person, and this is the
               // encounter's only `individual`-anchored chip
-              // (`seal.fail.driven_out` is the other). `entityId: '$actor'`
-              // stays — it is the carrier route the anchor catalog names for
-              // an ambition (seen on the pursuing actor's sheet).
+              // (`seal.fail.driven_out` is the other).
+              //
+              // THR-1317 reinstates `visualKind: 'agent'`, and the correction
+              // above is the reason rather than an objection to it. It kept
+              // `entityId: '$actor'` precisely *because* it is "the carrier
+              // route the anchor catalog names for an ambition (seen on the
+              // pursuing actor's sheet)" — but a carrier route does not exist
+              // without a kind: `fromConceptRef` reads
+              // `if (!ref.entityId || !ref.visualKind) return undefined`, so
+              // the route it meant to keep was never drawn, and Law 56
+              // clause 2 then reads the noun as anchoring nothing.
+              //
+              // Anchorless is not the alternative it looks like: dropping the
+              // `entityId` fails `check:chip-anchors` outright (measured — the
+              // gate names this chip), because clause 2 requires a `stateNoun`
+              // to carry an `entityId` *or* a resolving `tooltipId`, and no
+              // tooltip concept names an ambition today. Nor is there an
+              // `ambition` member of the `visualKind` union to resolve it *as*
+              // an ambition. So the honest options were the carrier route or
+              // minting a tooltip concept, and the carrier route is the one
+              // this comment already asked for.
               id: 'seal.crit_fail.the_wanting',
               kind: 'growth',
               category: 'boon',
@@ -811,7 +831,7 @@ export const THE_BROKEN_SEAL_TEMPLATE: UnifiedActionTemplate = compileOpeningEnv
               title: 'They Have To Know',
               causeClause: 'They were dragged out before the lid came off',
               detail: '{actor} is pursuing Uncover Ancient Secrets now, and the coffer they never opened is the reason.',
-              stateNoun: { text: 'a new ambition', entityId: '$actor' },
+              stateNoun: { text: 'a new ambition', entityId: '$actor', visualKind: 'agent' },
               concepts: [{ text: 'Uncover Ancient Secrets' }],
             },
           ],

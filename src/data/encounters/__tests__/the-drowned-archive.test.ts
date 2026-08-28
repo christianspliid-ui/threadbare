@@ -297,10 +297,17 @@ describe('The Drowned Archive — aftermath', () => {
     expect(variant?.addNudgeIds).toEqual(['archive.draw_on_character']);
   });
 
-  it('carries exactly one individual-anchored chip', () => {
+  it('carries six individual-anchored chips (THR-1317 made the five knowledge chips live)', () => {
     const allChanges = Object.values(byOutcome ?? {}).flatMap((band) => band?.changes ?? []);
     const individualAnchored = allChanges.filter((c) => c.stateNoun?.visualKind === 'agent');
-    expect(individualAnchored.map((c) => c.id)).toEqual(['archive.crit.keeper_trusts']);
+    expect(individualAnchored.map((c) => c.id).sort()).toEqual([
+      'archive.cost.charter_known',
+      'archive.crit.charter_known',
+      'archive.crit.keeper_trusts',
+      'archive.crit_fail.one_line',
+      'archive.fail.kept_name',
+      'archive.success.charter_known',
+    ]);
   });
 
   it('carries exactly one location-anchored chip', () => {
@@ -314,7 +321,22 @@ describe('The Drowned Archive — aftermath', () => {
     expect(allChanges.some((c) => c.kind === 'reputation_tally')).toBe(false);
   });
 
-  it('package-critic fix (A1): the five knowledge chips anchor $actor with no visualKind', () => {
+  /**
+   * THR-1317 — was "…anchor $actor with no visualKind".
+   *
+   * The A1 correction re-anchored these five from `$target`/`location` to `$actor` so
+   * the click would land where the `intelligence` write actually lands, and dropped the
+   * `visualKind` to shed the wrong location tile. Shedding the kind sheds the whole
+   * reference: `fromConceptRef` returns `undefined` unless `entityId` *and* `visualKind`
+   * are both set, so these five rendered as plain text carrying a `$actor` sentinel no
+   * consumer ever read — the click landed nowhere, which is the opposite of what A1 asked
+   * for. `visualKind: 'agent'` is what that intent compiles to, and the tile it draws is
+   * the actor's, which is correct here: the sentence is about a record *they* gained.
+   *
+   * A1's other half is untouched and still asserted below — `targetEntityId` is not a
+   * scene-sentinel field and no intelligence effect authors one.
+   */
+  it('package-critic fix (A1): the five knowledge chips anchor $actor as an agent', () => {
     const knowledgeChipIds = [
       'archive.crit.charter_known',
       'archive.success.charter_known',
@@ -327,7 +349,7 @@ describe('The Drowned Archive — aftermath', () => {
       const chip = allChanges.find((c) => c.id === id);
       expect(chip, `chip "${id}" should exist`).toBeDefined();
       expect(chip?.stateNoun?.entityId, `chip "${id}" should anchor $actor`).toBe('$actor');
-      expect(chip?.stateNoun?.visualKind, `chip "${id}" should carry no visualKind`).toBeUndefined();
+      expect(chip?.stateNoun?.visualKind, `chip "${id}" should anchor as an agent`).toBe('agent');
     }
   });
 
