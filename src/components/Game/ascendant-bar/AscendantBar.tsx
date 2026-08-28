@@ -23,7 +23,7 @@ import { SignaturesBlock } from './SignaturesBlock';
 import { ActionsBlock } from './ActionsBlock';
 import { CovenantsBlock } from './CovenantsBlock';
 import { MandateBlock } from './MandateBlock';
-import { HooksBlock } from './HooksBlock';
+import { HooksBlock, countHooks } from './HooksBlock';
 import {
   selectAscendantIdentityView,
   selectQuintessenceView,
@@ -136,11 +136,15 @@ export function AscendantBar({
   );
 
   const actionCount = 2 + actionTray.self.length + actionTray.rare.length; // 2 = hardcoded core (Move + Investiture)
-  const hookCount = useMemo(() => {
-    const ascendantId = gameState.ascendantId;
-    return gameState.graph.getOutgoingEdges(ascendantId, 'has_attachment').length;
+  // THR-1307: counted off the same walk that renders the chips. It used to count
+  // `has_attachment` edges — an edge type with no writer, so the number was zero in
+  // every world — and even had it been live, counting raw edges would have disagreed
+  // with a block that drops anything outside its three buckets.
+  const hookCount = useMemo(
+    () => countHooks(gameState),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gameState, worldVersion]);
+    [gameState, worldVersion],
+  );
 
   return (
     <aside className={styles.bar} aria-label="Ascendant status">
