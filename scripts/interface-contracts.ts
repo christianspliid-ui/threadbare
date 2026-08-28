@@ -813,6 +813,16 @@ export const CONTRACTS: readonly Contract[] = [
     //      than an erasure. The second writer is why this bullet names the property's
     //      meaning rather than one phase: a war-system reader must not care which
     //      cause stopped the wagons.
+    //      THR-1320 is worth knowing here even though it changes no symbol on this
+    //      row: until it landed, the `trades_with` half of this contract was live in
+    //      code and dead in every world. A strategically founded route was removed six
+    //      ticks after it opened, so `resolveSupplyLine`'s walk found zero route
+    //      conduits at tick 150 on seeds 42 and 99 and every supply line ran over
+    //      `road` edges alone — and `threatened` on a route could never be read here,
+    //      because no route survived to carry it. The row was not wrong; it was
+    //      unreachable on one of its two conduits, which no test on either side could
+    //      show. Founded routes now stand out a grace window and both conduits are
+    //      genuinely exercised.
     // Declaring the consumer's own function names here would pin the row LEAKED
     // forever, for the reason `economy-sustains-essence-sources` records above: the
     // producing phases have no reason to name a war-system reader.
