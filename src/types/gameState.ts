@@ -453,10 +453,19 @@ export interface GameState {
   // Cleared each tick. Each shock traces back to a discrete cause (encounter, route loss, etc.)
   prosperityShocks?: ProsperityShock[];
 
-  // Dynamic faction definitions created at runtime. NOTE: the initiative pipeline was
-  // its only producer and was retired (THR-1292 §3); the folded found-order undertaking
-  // ships its hall, and the faction payoff waits on the `create_group` op — TODO(THR-1295).
-  // Keyed by definition ID. Merged with static FACTION_DEFINITIONS when looking up a faction.
+  // Dynamic faction definitions created at runtime, keyed by definition ID.
+  //
+  // **This field has a live producer again as of THR-1309** (`foundFaction` in
+  // `strategicGraphOps.ts`, reached by `strategic_found_order`). It had none between
+  // THR-1292 §3 retiring the initiative pipeline — its sole writer — and that ticket,
+  // so it was a declared field nothing filled: a founded "order" got a guild hall and
+  // no organisation.
+  //
+  // Merged with static FACTION_DEFINITIONS by `factionNetwork.getFactionDefinition`,
+  // which takes this map as a parameter. Note the *other* lookup —
+  // `data/faction-definition-lookup.ts`, which the UI uses — builds its map once at
+  // module eval from the static tables and cannot see this one, so a founded faction
+  // resolves to `null` there and renders a fallback (TODO(THR-1322)).
   dynamicFactionDefinitions?: Record<string, import('./faction').FactionDefinition>;
 
   // Strategic actions — proactive world-shaping behavior driven by ambitions
