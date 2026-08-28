@@ -491,14 +491,19 @@ Aftermath reactions can now permanently reshape world topology: spawning artifac
 ```typescript
 {
   kind: 'spawn_artifact',
-  artifactName: "The Thornweave Seal",
-  artifactSubtype: 'relic',                     // relic | weapon | scroll | vessel | etc.
-  possessedByAgentId: '$actor',                 // who carries it (defaults to actor)
-  bondedToAgentId?: '$actor',                   // mystical bond (optional)
-  targetLocationId?: 'loc_throne_room',         // contained within a location (optional)
-  chronicleEntry?: "A seal of binding was forged in the ruins."
+  templateId: 'artifact_seal_of_binding',       // artifact template id from the content catalog (preferred)
+  category: 'relic',                            // ArtifactCategory fallback when templateId is not given
+  tier: 'legendary',                            // optional ArtifactTier override — determines node type and edge kind
+  nameOverride: "The Thornweave Seal",          // optional display-name override
+  targetAgentId: '$actor',                      // place in an agent's inventory (possesses / bonded_to); symbolic: $actor | $ally | $rival | $witness
+  targetLocationId: 'loc_throne_room',          // OR place at a location (contains)
+  messageOverride: "A seal of binding was forged in the ruins.",  // optional chronicle message override
+  tags: ['binding'],                            // optional
+  when: { /* EffectPredicate, optional */ }
 }
 ```
+
+*(Field names corrected 2026-08-28 against the live type — the previous `artifactName` / `artifactSubtype` / `possessedByAgentId` / `chronicleEntry` spellings were never fields of the shipped effect and silently did nothing; impediment #739. The authoritative shape is the `spawn_artifact` member in [`src/types/unifiedAction.ts`](../../src/types/unifiedAction.ts) — when this guide and that type disagree, the type wins.)*
 
 Creates an `artifact` graph node, adds `possesses` / `bonded_to` / `contains` edges as declared, and optionally appends a chronicle event. The artifact becomes part of the world graph — prose resolvers can reference it via `{artifact:relic}`, and other encounters can discover it.
 
