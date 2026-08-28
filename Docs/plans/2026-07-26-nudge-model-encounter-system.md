@@ -31,7 +31,7 @@ This program is the delivery staging for that pivot. Origin chain: Malazan-tone 
 | Step difficulty + reach | `steps[].difficulty` (0–1), `steps[].reach` | **EXISTS** (difficulty→word mapping is a trivial add) |
 | Agent capability tiers | `domainCapabilities` | **EXISTS** |
 | Quintessence value, words, states | `src/types/quintessence.ts` — `quintessenceToWord()`, 10-word `QUINTESSENCE_LEXICON`, `QUINTESSENCE_THRESHOLDS` (healthy/strained/weakened/critical/broken), erosion sources incl. `encounter_failure`, passive regen | **EXISTS** (words-not-numbers is already the game's rule) |
-| Broken → out-of-the-story behavior | thresholds exist; no behavioral consequence wired | **GAP (WS0)** |
+| Broken → out-of-the-story behavior | thresholds exist; no behavioral consequence wired | **GAP (WS0)** *(closed since: `brokenState.ts` shipped with WS0; the consequence gate ships disabled behind `BROKEN_GATE_ENABLED` until the rebuild road exists — rulebook §7)* |
 | Rebuild encounters + god restore action | — | **GAP (WS5 content + WS0 action)** |
 | Per-sphere essence pools | `EssencePool` (`src/types/influence.ts`) | **EXISTS** |
 | Hand filtering (cost/sphere/bond/place; hidden vs dimmed) | `src/engine/encounters/handFilter.ts` | **EXISTS** |
@@ -66,21 +66,24 @@ This program is the delivery staging for that pivot. Origin chain: Malazan-tone 
 
 ## Workstreams
 
+*(Table brought to shipped reality 2026-08-28, THR-1341 — it had read all-Todo since filing while the program shipped underneath it.)*
+
 | WS | Issue | Scope | State | Depends on |
 |---|---|---|---|---|
-| epic | THR-772 | staging container | Todo | — |
-| WS0 | THR-773 | engine substrate: `nudges[]` schema, forecast riders, broken-state behavior, motive classification, trait variants | Todo (needs design finalization) | — |
-| WS1 | THR-774 | encounter builder skills + pipeline to nudge spec (incl. prose rubric, sphere-coverage rule, image tag step) | Todo | WS0 |
-| WS2 | THR-775 | new encounter interface (test panel, hand, fate reveal, aftermath modals, hidden options, designer view) | Todo | WS0 |
-| WS3 | THR-776 | migration audit: keep/rewrite/kill over the mortal-drawable predicate + branching + scenes | **Ready for Dev** | — |
-| WS4 | THR-777 | image library: manifest + per-Reach fate sets + scene/nudge/portrait generics | Todo | manifest schema agreed with WS1 |
-| WS5 | THR-778 | content migration batches + kill list + rebuild encounters per Reach + god restore action | Todo | WS0, WS1, WS3 (WS4 may lag) |
+| epic | THR-772 | staging container | **Done** (program shipped through WS6) | — |
+| WS0 | THR-773 | engine substrate: `nudges[]` schema, forecast riders, broken-state behavior, motive classification, trait variants | **Shipped** | — |
+| WS1 | THR-774 | encounter builder skills + pipeline to nudge spec (incl. prose rubric, sphere-coverage rule, image tag step) | **Shipped** | WS0 |
+| WS2 | THR-775 | new encounter interface (test panel, hand, fate reveal, aftermath modals, hidden options, designer view) | **Shipped** | WS0 |
+| WS3 | THR-776 | migration audit: keep/rewrite/kill over the mortal-drawable predicate + branching + scenes | **Shipped** | — |
+| WS4 | THR-777 | image library: manifest + per-Reach fate sets + scene/nudge/portrait generics | **Shipped** (dead-tag fallback: `generic.blessing`) | manifest schema agreed with WS1 |
+| WS5 | THR-778 | content migration batches + kill list + rebuild encounters per Reach + god restore action | **Complete** (THR-1086, 2026-08-11 — zero shipped encounters author `authoredChoices`) | WS0, WS1, WS3 |
+| WS6 | THR-868 | Meet The First nudge conversion: formative tests + bond test, pole lean, reception bands | **Shipped** 2026-07-30 (dilemma-library conversion tail: THR-875) | WS0, WS2 |
 
 Each non-audit workstream runs its own design finalization (intent-judge + forked audits, per-system required sections incl. constants/tracing/fail-soft/interface-impact) before its Ready for Dev handoff. WS0's design pass owes a **Blast Radius** section (`src/types/unifiedAction.ts`, 278 importers) and the Step 0.7 interface-impact table (encounters subsystem is mapped).
 
 ## Three pillars & governance notes
 
-**Engine** = WS0 (all additive; the census above is the Step 0.6 substrate evidence — this program activates `outcomeForecast`/`handFilter`/`quintessenceActions` rather than green-fielding). **UI** = WS2 (mockup v3 is the reference; DoD browser-verify applies). **Content** = WS1+WS3+WS5 (predicates, not counts — WS3's membership predicate is authoritative; the 531/28/30 figures are audit-time snapshots). **Rulebook impact:** yes — encounter interaction is a rule of play; the rulebook update lands with WS0+WS2, not as a follow-up. **Vision audit:** the model strengthens player-as-god framing (gods act diegetically); the authored-choices retirement contradicts no Vision premise but the encounters canon page and UL (nudge, fate forecast wording, broken) need updates — carried inside WS0/WS1 scope. This document is a **program staging plan**: it is the map, not any single feature's finished design, and no implementation should proceed from it directly except THR-776.
+**Engine** = WS0 (all additive; the census above is the Step 0.6 substrate evidence — this program activates `outcomeForecast`/`handFilter`/`quintessenceActions` rather than green-fielding). **UI** = WS2 (mockup v3 is the reference; DoD browser-verify applies). **Content** = WS1+WS3+WS5 (predicates, not counts — WS3's membership predicate is authoritative; the 531/28/30 figures are audit-time snapshots). **Rulebook impact:** yes — encounter interaction is a rule of play; the rulebook update lands with WS0+WS2, not as a follow-up. **Vision audit:** the model strengthens player-as-god framing (gods act diegetically); the authored-choices retirement contradicts no Vision premise but the encounters canon page and UL (nudge, fate forecast wording, broken) need updates — carried inside WS0/WS1 scope. This document is a **program staging plan**: it is the map, not any single feature's finished design, and no implementation should proceed from it directly — every workstream has since shipped through its own design pass (see the workstream table's 2026-08-28 state note); the document is now the program's historical map.
 
 ## NFP compliance (program level)
 

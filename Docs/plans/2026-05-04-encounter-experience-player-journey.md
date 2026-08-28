@@ -1,6 +1,15 @@
 # Encounter Experience — Player Journey Analysis (2026-05-04)
 
-**Status:** Game-designer walkthrough of the v3 wireframe before committing to long-form design. Companion to `2026-05-04-encounter-experience-v3.html` and `2026-05-04-encounter-experience-grill-me.md`.
+> **SUPERSEDED (2026-08-28, THR-1341 — context-cleanup round 2).** This walkthrough is
+> fully pre-nudge: it narrates the player picking lean cards, locking a "lean choice",
+> and choosing between two face-down endings ("the player picks one") — the
+> authored-futures model rejected 2026-07-26 (THR-772). It also says "retinue panel"
+> throughout where the divine-court sense is meant. The current player journey runs
+> through the nudge hand: cards bend odds, fate rolls the band, forks are the mortal's.
+> Read `Docs/canon/encounters.md` and the rulebook §7 for the live model; keep this page
+> only as design archaeology for the v3 wireframe era. Do not author or design against it.
+
+**Status:** Historical. Game-designer walkthrough of the v3 wireframe before committing to long-form design. Companion to `2026-05-04-encounter-experience-v3.html` and `2026-05-04-encounter-experience-grill-me.md`.
 
 This doc does two things:
 

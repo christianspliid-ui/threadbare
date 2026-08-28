@@ -164,7 +164,7 @@ When the player commits a choice:
 2. If `consumes_item` is set, the corresponding `possesses` edge is queued for removal.
 3. `drift_magnitude` is added to the agent's archetype-drift accumulator on the moral axis paired with the choice's reach (see §3.6).
 4. Essence is spent from the Ascendant.
-5. The d100 rolls against the (tilted) sigmoid. Outcome lands in one of five bands (critical fail / fail / fail-forward / success / critical success).
+5. The d100 rolls against the (tilted) sigmoid. Outcome lands in one of five bands (critical fail / fail / fail-forward / success / critical success). *(Band-name note, 2026-08-28 THR-1341: the shipped THR-571 ladder is `clean success · success-at-cost · failure · critical success · critical failure` — "fail-forward" became success-at-cost; this whole choice-commit flow is the pre-nudge surface per Rule 3's marker.)*
 6. Prose for the outcome is selected from the choice's outcome variants OR the engine's prose-lookup table (the 240 consequence templates, see §3.5).
 
 **Probability tilt calibration** — initial constants (see §7):
@@ -197,7 +197,7 @@ The new outcome forecast band (rendered above the prose in v7) is computed at be
 
 ### 3.4 Hand filter
 
-The Ascendant hand is a scene-relevance filter on the existing UnifiedActionTemplate pool. Filter cascade:
+*Superseded 2026-08-28 (THR-1341).* `Docs/canon/encounters.md` claimed this section was already marked in-file; it was not — this marker closes that gap. The shipped hand is **not** a scene-relevance filter over the whole UnifiedActionTemplate pool: a hand is authored specials plus an opt-in **repertoire deal** (`ActionStep.deal`, THR-1247), resolved by `buildNudgePhaseModel`. The dimming rule below is also inverted from the shipped policy — a card is greyed **only when the player's own budget is the blocker**; sphere-, power-, and trait-gated cards are *hidden entirely* (a deliberate divergence recorded in the rulebook §7). Kept verbatim below for history.
 
 1. **Target match** — template's `targetCategories` includes a present primitive (cast actor, place, sublocation, attached item).
 2. **Cost availability** — Ascendant has enough essence after current commitments.
@@ -316,7 +316,7 @@ interface RelationshipNode {
 
 ### 3.10 Divine marks
 
-Per decision 2.3, new node type:
+*Contradiction note, 2026-08-28 (THR-1341).* Decision §2.3 **retracted** divine marks as a distinct primitive ("**NO, retracted** … No new node type") — this section then specs the node type anyway. §2.3 is the decision of record; do not implement `DivineMarkNode` from this section. Kept for history:
 
 ```typescript
 interface DivineMarkNode {
@@ -426,7 +426,7 @@ encounter:
 
 ### 4.2 Encounter choice cosmological pattern v1 (enumerated)
 
-Per Rule 2 and `Brainstorms/brainstorm-cosmological-symmetry.md`, every reach has its sphere pair and archetype-pole pair:
+*Superseded 2026-08-28 (THR-1341).* Two things in the table below are stale. **(a) Six of the eight pole-name pairs are a retired generation** — the current registry (`src/types/axisRegistry.ts`; `Docs/canon/cosmology.md` §Cosmological Pattern, director revisions 2026-06-29 + THR-1135) reads Gold Patron ↔ Extractor, Shadow Broker ↔ Manipulator, Veil Weaver ↔ Unraveller, Eye Seer ↔ Inquisitor, Stone Keeper ↔ Destroyer, Star Beacon ↔ Wrecker; only Iron and Heart survive as written. **(b) The fixed 1:1 Reach→Sphere column contradicts the load-bearing orthogonality decision** — Reaches and Spheres combine freely; no reach owns a sphere. The *tension* (value-pair) column is still current. Kept verbatim for history:
 
 | Reach | Sphere | Tension | Pole A | Pole B |
 |---|---|---|---|---|
