@@ -1,7 +1,16 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeAll } from 'vitest';
 import { computeSettlementReaches } from '../settlementGenome/runGenome';
 import { computeVitality } from '../settlementGenome/vitality';
 import { WorldGraph } from '../graph';
+import { initializeGameState, MAP_SIZE_PRESETS } from '../gameInit';
+import { runTick } from '../orchestrator';
+import { createBalancedCosmology } from '../cosmology';
+import { generateArchetypes } from '../ascendant';
+import { createSimulationRuntime } from '../simulationRuntime';
+import type { GameState } from '../../types/gameState';
+
+const SEED = 42;
+const WARMUP_TICKS = 3;
 
 describe('computeSettlementReaches', () => {
   it('returns non-zero gold reach when merchant faction is present via located_at', () => {
@@ -25,7 +34,13 @@ describe('computeSettlementReaches', () => {
     expect(reaches.gold).toBeGreaterThan(0);
   });
 
-  it('returns non-zero gold reach when merchant faction is present via member_of', () => {
+  // THR-1311. This assertion used to run the other way — it built a `member_of` edge from a
+  // faction to a location and asserted a non-zero reach, which passed for the whole life of
+  // the dead term it was covering. That is the fixture-invents-both-sides shape: the test
+  // wrote an edge `EDGE_SCHEMA.member_of` forbids (it is `actor → actor`), then asserted the
+  // reader consumed it, so a green test certified a path no conforming world could produce.
+  // Inverted, it now pins the deletion instead of the fiction.
+  it('ignores a schema-illegal member_of edge targeting a location', () => {
     const graph = new WorldGraph();
     graph.addNode({ id: 'loc_1', type: 'location', name: 'Town', properties: {} });
     graph.addNode({
@@ -43,7 +58,7 @@ describe('computeSettlementReaches', () => {
     });
 
     const reaches = computeSettlementReaches(graph, 'loc_1');
-    expect(reaches.gold).toBeGreaterThan(0);
+    expect(Object.keys(reaches)).toHaveLength(0);
   });
 
   it('returns empty object when no factions are present', () => {
@@ -97,6 +112,72 @@ describe('computeSettlementReaches', () => {
 
     const reaches = computeSettlementReaches(graph, 'loc_1');
     expect(Object.keys(reaches)).toHaveLength(0);
+  });
+});
+
+/**
+ * THR-1311 — the surviving term, measured against a generated world rather than a fixture.
+ *
+ * Every assertion above builds its own graph, and that is precisely how the deleted
+ * `member_of` loop stayed green for its whole life: a fixture that hands the reader its
+ * edge can never answer the question that matters, which is whether anything in a real
+ * world still *produces* the shape being read. These two run `initializeGameState` →
+ * `runTick` and ask it of the live `located_at` term.
+ */
+describe('computeSettlementReaches — against a generated world (THR-1311)', () => {
+  let state: GameState;
+
+  beforeAll(() => {
+    const runtime = createSimulationRuntime();
+    const archetype = generateArchetypes(4, SEED)[0];
+    const preset = MAP_SIZE_PRESETS.small ?? MAP_SIZE_PRESETS.medium;
+    const { state: initState } = initializeGameState(
+      archetype, 'GenomeProbe', createBalancedCosmology(), SEED, preset.cols, preset.rows,
+    );
+    state = initState;
+    for (let t = 0; t < WARMUP_TICKS; t++) state = runTick(state, [], runtime);
+  });
+
+  // CHARACTERIZATION, NOT AN ENDORSEMENT — this asserts a defect on purpose (THR-1323).
+  // Written as a liveness assertion first, where it failed: the `located_at` term is dead too,
+  // because `factionSeeding.ts` derives `domainCapabilities` from `definition.reachWeights`
+  // and never stores the weights on the node, so the loop's `if (!weights) continue` fires on
+  // every faction in the world. Pinned in the failing direction so that fixing THR-1323 turns
+  // this red and forces the assertion to be inverted, rather than the repair landing silently.
+  it('characterization: the reach profile is dead world-wide (THR-1323)', () => {
+    const locations = state.graph.getNodesByType('location');
+    expect(locations.length).toBeGreaterThan(0); // guards against a vacuous pass on an empty world
+
+    // The edges are live and plentiful. This half is load-bearing: it proves the harness built
+    // a real world, so the emptiness below reads as a missing property and not an empty graph.
+    const factionEdges = locations.reduce(
+      (n, loc) =>
+        n +
+        state.graph.getIncomingEdges(loc.id, 'located_at').filter(e => {
+          const actor = state.graph.getNode(e.source);
+          return !!actor && actor.properties.actorType === 'faction';
+        }).length,
+      0,
+    );
+    expect(factionEdges).toBeGreaterThan(0);
+
+    // …and yet no settlement draws a single reach from any of them.
+    const withReach = locations
+      .filter(loc =>
+        Object.values(computeSettlementReaches(state.graph, loc.id)).some(v => (v ?? 0) > 0),
+      )
+      .map(loc => loc.id);
+    expect(withReach).toEqual([]); // THR-1323 flips this to expect(withReach.length).toBeGreaterThan(0)
+  });
+
+  it('no writer produces a location-targeted member_of edge', () => {
+    const locations = state.graph.getNodesByType('location');
+    expect(locations.length).toBeGreaterThan(0); // same vacuity guard — 0 of 0 is not a pass
+
+    const offenders = locations
+      .filter(loc => state.graph.getIncomingEdges(loc.id, 'member_of').length > 0)
+      .map(loc => loc.id);
+    expect(offenders).toEqual([]);
   });
 });
 
