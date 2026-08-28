@@ -1,6 +1,6 @@
 /**
- * The no-op gate for hunger resonance (THR-1213 slice 3, landing advisory with
- * slice 2).
+ * The no-op gate for hunger resonance (THR-1213 slice 3, landed advisory with
+ * slice 2; **blocking** as of the slice-4 content pass).
  *
  * This exists because the thing it guards was dead for the entire life of the
  * feature and every test in the tree was green throughout. `hungerResonance`
@@ -37,28 +37,27 @@ import type { ReachDomain } from '../../types/traits';
 import type { SphereName } from '../../types/index';
 
 /**
- * Dilemmas each hunger must resonate with before the gate's coverage assertion
- * flips blocking. Held at the plan's `HUNGER_RESONANCE_MIN_COVERAGE` value; the
- * assertion below is advisory until the slice-2 content pass authors
- * `emotionalRegister` for the 157 dilemmas whose resonance blocks are empty.
+ * Dilemmas each hunger must resonate with. **Blocking as of the content pass**
+ * (THR-1213 slice 4), which authored `emotionalRegister` + `driveResonance` for
+ * the 157 dilemmas whose resonance blocks were empty — every one of the 167
+ * shipped dilemmas now carries a register.
+ *
+ * Measured after that pass: `gather`=59, `witness`=58, `reclaim`=26,
+ * `reshape`=40, `preserve`=65, `kindle`=20, `sever`=8, `bind`=26, `wander`=32,
+ * `consume`=18, `haunt`=37, `illuminate`=50. The floor sits at 6 rather than at
+ * the observed minimum on purpose: it is the point below which a hunger's deal
+ * stops being meaningfully steerable, not a snapshot of today's corpus, so
+ * authoring a new batch of dilemmas cannot fail this by accident.
+ *
+ * `sever` is the thin one, and honestly so — freedom, rebellion, independence,
+ * chains, escape and solitude are a narrow band in a corpus of scenes set
+ * inside settlements a mortal is bound to. Its eight are the scenes that
+ * genuinely turn on getting out; spraying `freedom` across the rest to flatter
+ * the distribution would restore the exact defect this file exists to catch,
+ * one layer up — a number that looks alive because the labels were written to
+ * make it look alive.
  */
 const HUNGER_RESONANCE_MIN_COVERAGE = 6;
-
-/**
- * What the shipped corpus supports *today*, measured pre-content-pass: 4 of the
- * 12 hungers resonate with anything at all — `gather`=10, `preserve`=4,
- * `reclaim`=1, `bind`=1 — because only **10 of 167** dilemmas carry a non-empty
- * `emotionalRegister`, and those ten were authored around one hunger. So the
- * assertion this file can make honestly right now is "the channel is not dead",
- * not "every hunger is served" — the latter is what the content pass buys, and
- * asserting it early would just mean disabling the test until then.
- *
- * A floor of 1 *hunger-with-coverage* is still the assertion that the retired
- * channel could never have passed: `hungerResonance` scored 0 for all 12, so
- * any regression back to a disjoint vocabulary fails here rather than sliding
- * through green as it did for the whole life of the feature.
- */
-const HUNGERS_WITH_COVERAGE_FLOOR = 1;
 
 /** A lens per hunger, sharing the drive tags so the hunger axis is what varies. */
 function lensFor(hungerId: string): AscendantLens {
@@ -92,7 +91,7 @@ describe('THR-1213 — hunger resonance fires in the live picker', () => {
     expect(withRegister.length).toBeGreaterThan(0);
   });
 
-  it('the resonance channel is live — at least one hunger resonates with shipped content', () => {
+  it('every hunger resonates with at least HUNGER_RESONANCE_MIN_COVERAGE dilemmas', () => {
     const coverage = new Map<string, number>();
     for (const hunger of HUNGER_CATALOG) {
       const lens = lensFor(hunger.id);
@@ -102,28 +101,21 @@ describe('THR-1213 — hunger resonance fires in the live picker', () => {
       coverage.set(hunger.id, n);
     }
 
+    const report = [...coverage.entries()].map(([id, n]) => `${id}=${n}`).join(', ');
     const below = [...coverage.entries()].filter(
       ([, n]) => n < HUNGER_RESONANCE_MIN_COVERAGE,
     );
-    if (below.length > 0) {
-      // Advisory until the content pass. Reported, never silent — a gate that
-      // drops what it could not assert is how the last dead channel survived.
-      console.warn(
-        `[THR-1213 coverage, advisory] ${below.length}/12 hungers below ` +
-          `HUNGER_RESONANCE_MIN_COVERAGE=${HUNGER_RESONANCE_MIN_COVERAGE}: ` +
-          below.map(([id, n]) => `${id}=${n}`).join(', ') +
-          ' — the 157 empty-register dilemmas are the content pass this waits on.',
-      );
-    }
 
-    const served = [...coverage.entries()].filter(([, n]) => n > 0);
     expect(
-      served.length,
-      `no hunger resonates with any shipped dilemma — the vocabularies are ` +
-        `disjoint again (coverage: ${[...coverage.entries()]
-          .map(([id, n]) => `${id}=${n}`)
-          .join(', ')})`,
-    ).toBeGreaterThanOrEqual(HUNGERS_WITH_COVERAGE_FLOOR);
+      below.map(([id, n]) => `${id}=${n}`),
+      `${below.length}/12 hungers resonate with fewer than ` +
+        `HUNGER_RESONANCE_MIN_COVERAGE=${HUNGER_RESONANCE_MIN_COVERAGE} dilemmas. ` +
+        `A hunger below the floor barely steers its god's deal, which is the ` +
+        `dead-channel defect in miniature. Either the new content needs a ` +
+        `register the starved hungers can see, or a hunger's ` +
+        `dilemmaResonanceTags have drifted out of the dilemmas' vocabulary. ` +
+        `Full coverage: ${report}`,
+    ).toEqual([]);
   });
 
   it('at least one hunger deals differently from the no-lens deal at the same seed', () => {
@@ -156,10 +148,20 @@ describe('THR-1213 — hunger resonance fires in the live picker', () => {
       'no hunger changed the deal — the weight is wired but inert',
     ).toBeGreaterThan(0);
 
-    // The other half of the same claim, and the one that catches stream drift:
-    // a hunger that resonates with nothing must deal *exactly* the baseline. If
-    // all 12 differed, the difference would be draw-offset rather than scoring,
-    // and the assertion above would be certifying a dead weight.
+    // The other half of the same claim, and the one that catches stream drift.
+    // A lens changes the deal only where its resonance actually reorders the
+    // top of a pool the deal draws from; a hunger whose tags do not reach this
+    // seed's pools must land on *exactly* the baseline. So some hunger has to
+    // agree with the no-lens deal, and if all 12 differed the difference would
+    // be draw-offset rather than scoring — the gate certifying a dead weight.
+    //
+    // Before the content pass this held for the plain reason that 8 of the 12
+    // hungers resonated with nothing at all. That reason is gone — every hunger
+    // now clears the coverage floor above — and the assertion is unchanged and
+    // still passing, which is the useful reading: 4 of 12 differ at seed 42, so
+    // eight hungers hold the baseline on coverage they *have* rather than
+    // coverage they lack. Measure it here rather than reasoning about it; the
+    // count is a property of the seed and the pools, not a constant.
     expect(
       differing.length,
       'every hunger changed the deal — that is stream drift, not resonance',
