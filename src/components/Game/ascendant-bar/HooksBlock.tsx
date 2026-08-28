@@ -2,6 +2,28 @@
  * HooksBlock — conditions, clues, and vows chips.
  * Reads from the ascendant node's attachments in the world graph.
  * THR-184: Ascendant Bar
+ *
+ * ─── THR-1307: the carrier, and why it changed ───────────────────────────────
+ *
+ * This block used to read `graph.getOutgoingEdges(ascendantId, 'has_attachment')`.
+ * `has_attachment` is not an `EdgeType`, has no `EDGE_SCHEMA` row, and has never had
+ * a single writer anywhere in the repo — `src/data/__tests__/graphOp-patterns.test.ts`
+ * has documented that gap since the graph-op migration ("wounds must use `has_trait`,
+ * not `has_attachment`") and still pins the absence. So the loop below iterated an
+ * array that was empty in every world, and all three rows were unreachable code: the
+ * bucketing ternary, the Law-14 label fallbacks, the valence handling, and the count
+ * beside the section header.
+ *
+ * The verdict was **repoint, not retire** — the producer exists and always did. In a
+ * seeded world `devSeedAscendantTestPackage` writes exactly these three rows onto the
+ * ascendant node (`src/engine/gameInit.ts`): four `has_trait` edges to
+ * `subcategory: 'condition'` traits, three to `subcategory: 'clue'` traits, and four
+ * `relates_to` edges carrying `agreement` properties. Those are the same three families
+ * `getAgentAttachments` reads for the character sheet, so the bar and the sheet now
+ * agree on what the player holds instead of disagreeing silently.
+ *
+ * The authored `category` vocabulary is still honoured alongside `subcategory`, because
+ * content may write either and dropping one would retire live content to fix a reader.
  */
 import React from 'react';
 import type { GameState } from '../../../types/gameState';
@@ -33,6 +55,22 @@ interface ChipData {
 }
 
 /**
+ * Law 14 — an agreement's `type` is an internal enum and never reaches the surface.
+ *
+ * Only consulted when an agreement edge carries no authored `agreementName`; the dev
+ * seed always writes one, so this is the unnamed-content path. Without it the fallback
+ * label read `debt with The Grey Seer` — a `snake_case`-family key printed verbatim,
+ * which is the exact shape Law 14 forbids. An unrecognised type takes the bucket's
+ * plain-English stand-in rather than inventing a word for it.
+ */
+const AGREEMENT_TYPE_WORD: Record<string, string> = {
+  pact: 'A pact',
+  oath: 'An oath',
+  debt: 'A debt',
+  favour: 'A favour',
+};
+
+/**
  * Chip hover explanation (THR-1118).
  *
  * Routed through the shared `Tooltip` rather than the bespoke `styles.chipTooltip` div
@@ -48,6 +86,15 @@ interface ChipData {
 function Chip({ chip, onOpen }: { chip: ChipData; onOpen?: (chip: ChipData) => void }) {
   const colors = VALENCE_COLORS[chip.valence] ?? VALENCE_COLORS.neutral;
 
+  // Law 25 — a control that does nothing does not render as a control (THR-1307).
+  // The button affordances were unconditional: `role="button"`, `tabIndex={0}` and an
+  // Enter handler advertised a click target on every chip, while `HooksBlock` passes
+  // no `onOpen` at all. That was invisible only because the block's carrier was
+  // writerless and no chip ever rendered; making the chips reachable would have
+  // shipped a keyboard-focusable control that silently does nothing. The hover
+  // explanation is the chip's real Tier-1 affordance and is unaffected.
+  const interactive = Boolean(onOpen);
+
   return (
     <Tooltip label={chip.label} desc={chip.def || HOOK_DEF_FALLBACK}>
       <div
@@ -55,10 +102,14 @@ function Chip({ chip, onOpen }: { chip: ChipData; onOpen?: (chip: ChipData) => v
         style={{
           background: colors.bg, borderColor: colors.border, color: colors.text,
         }}
-        onClick={() => onOpen?.(chip)}
-        role="button"
-        tabIndex={0}
-        onKeyDown={(e) => { if (e.key === 'Enter') onOpen?.(chip); }}
+        {...(interactive
+          ? {
+              onClick: () => onOpen?.(chip),
+              role: 'button',
+              tabIndex: 0,
+              onKeyDown: (e: React.KeyboardEvent) => { if (e.key === 'Enter') onOpen?.(chip); },
+            }
+          : {})}
       >
         {chip.label}
       </div>
@@ -83,10 +134,15 @@ const warnedMissingLabel = new Set<string>();
  * readable for the player (NFP #4) while the missing name stays findable for us.
  */
 function resolveChipLabel(
-  node: { id: string; properties: Record<string, unknown> },
+  node: { id: string; name?: string; properties: Record<string, unknown> },
   bucket: HookBucket,
 ): string {
-  const raw = node.properties.name ?? node.properties.label;
+  // THR-1307: `node.name` FIRST, because that is where a `GraphNode` keeps its name —
+  // `properties.name` is the authored-content spelling and a real trait node has none.
+  // Reading only the property meant every seeded condition and clue resolved to the
+  // Law-14 fallback and warned; the warn never fired in practice only because the
+  // block's carrier was writerless, so no node ever reached this function.
+  const raw = node.name ?? node.properties.name ?? node.properties.label;
   if (typeof raw === 'string' && raw.trim()) return raw;
 
   if (!warnedMissingLabel.has(node.id)) {
@@ -108,7 +164,16 @@ interface HooksBlockProps {
   gameState: GameState;
 }
 
-function extractChips(gameState: GameState): {
+/**
+ * The bar's three rows, extracted from the ascendant's live graph edges.
+ *
+ * Exported so `AscendantBar`'s hook count is derived from the same walk that renders
+ * the chips (THR-1307). The count used to run its own `getOutgoingEdges(…).length`,
+ * which counted *edges* while the block rendered *bucketed chips* — a header reading
+ * "4" above three chips was reachable the moment either side started working. One
+ * producer, one number.
+ */
+export function extractChips(gameState: GameState): {
   conditions: ChipData[];
   clues: ChipData[];
   vows: ChipData[];
@@ -116,35 +181,33 @@ function extractChips(gameState: GameState): {
   const ascendantId = gameState.ascendantId;
   const graph = gameState.graph;
 
-  const attachmentEdges = graph.getOutgoingEdges(ascendantId, 'has_attachment');
-
   const conditions: ChipData[] = [];
   const clues: ChipData[] = [];
   const vows: ChipData[] = [];
 
-  for (const edge of attachmentEdges) {
+  // ─── Conditions and clues: `has_trait` → trait node ───────────────────────
+  //
+  // The same edge family and the same property pair `getAgentAttachments` reads
+  // (`subcategory ?? category`), so a trait the character sheet files under
+  // Conditions cannot silently fail to reach the bar.
+  for (const edge of graph.getOutgoingEdges(ascendantId, 'has_trait')) {
     const node = graph.getNode(edge.target);
     if (!node) continue;
     const p = node.properties;
-    const def = (p.description ?? p.flavorText ?? '') as string;
-    const category = (p.category ?? p.attachmentCategory ?? '') as string;
+    const def = (p.description ?? p.flavorText ?? p.mechanicalSummary ?? '') as string;
+    const category = (p.subcategory ?? p.category ?? p.attachmentCategory ?? '') as string;
     const valence = (p.valence ?? 'neutral') as string;
 
     // Bucket first, label second: the label's fallback names the *kind* of thing
     // (THR-1118), so it cannot be resolved before we know which row this lands in.
-    // An attachment whose category matches no bucket is dropped, as it always was.
+    // A trait whose category matches no bucket is dropped, as it always was — that
+    // is how `bestowed` powers stay off a bar about what pulls on the player, and
+    // how a `blessing`/`curse` reaches Conditions only when content tags it one.
     const bucket: HookBucket | null =
       category === 'condition' || category === 'mark' ? 'condition'
       : category === 'clue' || category === 'lore' ? 'clue'
       : category === 'agreement' || category === 'vow' || category === 'pact' ? 'vow'
       : null;
-    // THR-1297: `holding` reaches this ternary and is dropped ON PURPOSE — a holding
-    // is a possession of the world, not a hook pulling on the player, and this bar
-    // shows what is tugging at them. The exclusion is named rather than left to the
-    // `null` fallthrough so the decision is visible and testable: a later author
-    // wondering why holdings never appear here finds an answer instead of a silence.
-    // Holdings render on the character sheet (`AttachmentsTab`); a holdings row on the
-    // ascendant bar, if ever wanted, is doc 5's surface work (THR-1299).
     if (!bucket) continue;
 
     const label = resolveChipLabel(node, bucket);
@@ -159,7 +222,58 @@ function extractChips(gameState: GameState): {
     }
   }
 
+  // ─── Vows: `relates_to` edges carrying `agreement` properties ─────────────
+  //
+  // An agreement is edge state, not a node — its terms, tier and type live on the
+  // edge and the target is the *counterparty*, so this cannot ride the loop above:
+  // reading the counterparty's properties would put a person's name and description
+  // on the chip instead of the pact's. Both directions are walked for parity with
+  // `getAgentAttachments`, since either party may have authored the edge.
+  //
+  // THR-1297: holdings are deliberately absent from all three rows. A holding rides
+  // `possesses`, which this block does not read at all — a holding is a possession of
+  // the world, not a hook pulling on the player, and this bar shows what is tugging at
+  // them. Stated rather than left to a silence, so a later author wondering why
+  // holdings never appear here finds an answer. They render on the character sheet
+  // (`AttachmentsTab`); a holdings row on the bar, if ever wanted, is THR-1299.
+  const agreementEdges = [
+    ...graph.getOutgoingEdges(ascendantId, 'relates_to'),
+    ...graph.getIncomingEdges(ascendantId, 'relates_to'),
+  ];
+  for (const edge of agreementEdges) {
+    const edgeProps = edge.properties as Record<string, unknown>;
+    const agreement = edgeProps.agreement as
+      | { type?: string; terms?: string }
+      | undefined;
+    if (!agreement) continue;
+
+    const counterpartyId = edge.source === ascendantId ? edge.target : edge.source;
+    const counterpartyName = graph.getNode(counterpartyId)?.name;
+    const authored = edgeProps.agreementName;
+    const typeWord = agreement.type ? AGREEMENT_TYPE_WORD[agreement.type] : undefined;
+    const label =
+      typeof authored === 'string' && authored.trim()
+        ? authored
+        : typeWord && counterpartyName
+          ? `${typeWord} with ${counterpartyName}`
+          : HOOK_LABEL_FALLBACK.vow;
+
+    // `oath`, `pact` and `debt` each have their own swatch in VALENCE_COLORS; anything
+    // else (a `favour`, a type authored later) reads as a pact rather than falling
+    // through to the neutral grey, which on this row would look like a missing value.
+    const valence =
+      agreement.type && agreement.type in VALENCE_COLORS ? agreement.type : 'pact';
+
+    vows.push({ id: edge.id, label, def: agreement.terms ?? '', valence });
+  }
+
   return { conditions, clues, vows };
+}
+
+/** Chips actually rendered on the bar — the number the section header shows. */
+export function countHooks(gameState: GameState): number {
+  const { conditions, clues, vows } = extractChips(gameState);
+  return conditions.length + clues.length + vows.length;
 }
 
 export function HooksBlock({ gameState }: HooksBlockProps) {
