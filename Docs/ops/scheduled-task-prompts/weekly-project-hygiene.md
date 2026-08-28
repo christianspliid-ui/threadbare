@@ -32,7 +32,7 @@ Christian does not read Linear. The hourly `keep-work-flowing-cc` task owns `Des
 2. Read **CLAUDE.md**. Pay particular attention to:
    - `## Session Types: Design vs Execution — Read This First` (one runtime, one executor queue: **Ready for Dev**)
    - `## Skill Tree Layout` (`.claude/skills/` is the only skill tree)
-   - `## Known Sandbox Limitations`
+   - `## Known Sandbox Limitations` (a summary — the full catalog is `Docs/ops/sandbox-limitations.md`, THR-1336)
    - `## Definition of Done`
    - `Docs/ops/scheduled-tasks-registry.md` (the registry this sweep should keep honest; CLAUDE.md § Scheduled Tasks is now a pointer at it)
 3. Read `Docs/plans/2026-04-13-linear-coordination-protocol.md` — full protocol, especially "Coordination Failure Modes — Hard Rules" (Rules 1–10).
@@ -115,7 +115,7 @@ Read `Docs/impediments.md`. For each impediment:
 
 - **Still recurring?** Count ≥ 3 is chronic.
 - **Resolution path?** "No" in the workaround column plus recurrence is a Continuous Improvement candidate.
-- **Promoted to CLAUDE.md `Known Sandbox Limitations`?** Recurring and well-known belongs there, not only in the log.
+- **Promoted to the sandbox-limitations catalog (`Docs/ops/sandbox-limitations.md`)?** Recurring and well-known belongs there (CLAUDE.md keeps only the top five), not only in the log.
 - **Retro coverage** — the most recent retro in `Design/retros/` should reference the top impediments. If not, flag.
 
 ### 6. Retrospective follow-through
@@ -126,7 +126,7 @@ Read `Docs/impediments.md`. For each impediment:
 
 ### 7. Sandbox limitations check
 
-Compare `CLAUDE.md § Known Sandbox Limitations` against the impediment log. Any new chronic issue that should be promoted? Any listed limitation now resolved and removable?
+Compare `Docs/ops/sandbox-limitations.md` (the catalog; CLAUDE.md § Known Sandbox Limitations is its five-rule summary) against the impediment log. Any new chronic issue that should be promoted? Any listed limitation now resolved and removable?
 
 ### 8. Three-pillar compliance on in-flight design
 

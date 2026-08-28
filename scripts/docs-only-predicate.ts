@@ -137,11 +137,23 @@ export type PredicateCopy = {
  * renamed, and would pick up any doc that merely quotes the pattern in passing.
  * Adding a sixth copy means adding a row here, which is the point — the row is
  * cheap and the drift it prevents is not.
+ *
+ * **A row tracks a literal copy, not a topic (THR-1336).** A file that classifies by
+ * naming `npm run classify:diff` instead of inlining the regex carries no copy to
+ * drift — it delegates to the one implementation this module already is — so it is
+ * deliberately unregistered. Registering such a file makes the gate demand a literal
+ * the file is right not to have, which is exactly how the CLAUDE.md diet went red:
+ * the predicate moved to `Docs/canon/verification-gates.md` and the rows stayed
+ * pointed at the two surfaces it had just been lifted out of. **When content moves,
+ * the row moves with it** — repoint it at the file that now holds the literal, and
+ * drop the row for a surface that became a pointer.
  */
 export const PREDICATE_COPIES: readonly PredicateCopy[] = [
-  { path: "CLAUDE.md", why: "the canonical prose copy — § Testing, the two-track gate" },
+  {
+    path: "Docs/canon/verification-gates.md",
+    why: "the canonical prose copy — the gate authority page (was CLAUDE.md § Testing until THR-1336)",
+  },
   { path: "AGENTS.md", why: "the non-CC agent instruction file" },
-  { path: "Docs/canon/process.md", why: "session Step 0 pointer surface" },
   { path: ".claude/skills/pull-work/SKILL.md", why: "the drain's mis-tag guard" },
   {
     path: "Docs/ops/scheduled-task-prompts/tb-opus-pickup.md",
