@@ -295,6 +295,7 @@
         "src/engine/battleSpotlights.ts",
         "src/engine/siegeResolution.ts",
         "src/engine/lairEscalation.ts",
+        "src/engine/lairClearing.ts",
         "src/engine/lairSeeding.ts",
         "src/types/army.ts",
         "src/types/battle.ts",

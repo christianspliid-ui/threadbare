@@ -2707,6 +2707,40 @@ export interface CompulsionDecayedTrace extends TraceBase {
  * name. Narrowing further would mean widening the emit sites to satisfy the type,
  * which is how a payload interface ends up asserted past with `as` instead of used.
  */
+/**
+ * Trace: faction-scale world movement — army spawn/movement/attrition, battle and siege
+ * resolution, faction ambitions, and the lair lifecycle (escalation, clearing,
+ * reinfestation).
+ *
+ * `faction_ambition` has been in `TRACE_CATEGORIES` since TB-062 with **no declared
+ * payload**, so it was absent from the `TraceEntry` union and all 35 of its emit sites
+ * were type errors against `TraceEntryInput` — every one of them written as
+ * `as Parameters<typeof emitTrace>[0]` to get past it, and every one sitting in the
+ * THR-489 baseline. Declaring the payload here is the same fix THR-1175 applied to
+ * `secret_discovered` / `favor_created` and THR-1174 to `ambition_progress`, for the
+ * same reason: it removes those errors rather than adding two more for THR-1319's
+ * clearing traces, and the next author to emit one gets checked instead of baselined.
+ *
+ * Fields are optional beyond `category` because the sites carry genuinely different
+ * subsets — an army row names `armyId`, a battle row `battleId`, a lair row
+ * `locationId` — and several carry nothing but the summary. Narrowing further would
+ * mean widening 35 emit sites to satisfy the type, which is how a payload interface
+ * ends up asserted past with `as` instead of used.
+ */
+export interface FactionAmbitionTrace extends TraceBase {
+  category: 'faction_ambition';
+  /** Faction the row is about, where one owns it. */
+  factionId?: string;
+  /** Army the row is about — spawn, movement, attrition, disband. */
+  armyId?: string;
+  /** Battle or siege the row is about. */
+  battleId?: string;
+  /** Location the row is about — the lair lifecycle rows use this. */
+  locationId?: string;
+  /** What happened, when the site distinguishes several outcomes. */
+  result?: string;
+}
+
 export interface AmbitionProgressTrace extends TraceBase {
   category: 'ambition_progress';
   actorId?: string;
@@ -3058,6 +3092,7 @@ export type TraceEntry =
   | CompulsionPlantedTrace
   | CompulsionDecayedTrace
   | AmbitionProgressTrace
+  | FactionAmbitionTrace
   // Scene-targeting aftermath sentinels + bond_change (THR-695, Slice B)
   | AftermathSentinelBoundTrace
   | BondChangeAppliedTrace

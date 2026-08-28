@@ -7,6 +7,9 @@
  *   3. Upgrades major→legendary lairs after LAIR_LEGENDARY_MIN_TICKS (seeds monster faction)
  *   4. Rolls adjacent lair spawning for wilderness/borderland hexes
  *
+ * For each active lair:
+ *   4.5 Clearing pressure from mortals standing on its hex (THR-1319, `lairClearing.ts`)
+ *
  * For each cleared lair:
  *   5. Reinfests when sphere pressure is high + no controlling faction + elapsed >= LAIR_REINFESTATION_MIN_TICKS
  *
@@ -26,6 +29,8 @@ import { seedMonsterFaction } from './monsterFactionSeed';
 import { emitTrace } from './traceBuffer';
 import { pickCulturalName } from '../data/culture-name-pools';
 import { generateLairName } from './naming/lairNames';
+import { resolveLairClearing } from './lairClearing';
+import { touchStructure, type SimulationRuntime } from './simulationRuntime';
 import type { WorldGraph } from './graph';
 
 // ─── Constants (NFP #1: Tunability) ──────────────────────────────────────────
@@ -36,8 +41,26 @@ export const LAIR_ESCALATION_INTERVAL = 25;
 /** Sphere pressure magnitude emitted by each active lair per escalation tick */
 export const LAIR_SPHERE_PRESSURE_EMISSION = 8;
 
-/** Minimum sphere score on a hex before a cleared lair can be reinfested */
-export const LAIR_SPAWN_SPHERE_THRESHOLD = 60;
+/**
+ * Minimum accrued sphere score on the *cleared lair itself* before it can reinfest.
+ *
+ * Renamed and re-scaled from `LAIR_SPAWN_SPHERE_THRESHOLD = 60` (THR-1319). The old
+ * constant was calibrated against a **hex location node's** sphere score, and a
+ * generated world contains no such nodes — `findHexNode` returns undefined for every
+ * one of them, the score fell back to 0, and `0 < 60` blocked reinfestation on every
+ * pass. That was the third of three independent deadnesses stacked on this branch,
+ * behind "nothing writes `cleared_lair`" and "nothing writes `clearedAtTick`".
+ *
+ * The gate now reads the lair's own accrued affinity — the entity the escalation
+ * pressure has always targeted (`targetEntityId: lairNode.id`) — which is also the
+ * better reading of the fiction: what seeps back is how deeply *this site* was steeped
+ * when it fell, and a cleared lair stops accruing, so the value freezes at its clearing.
+ *
+ * Scale measured on seed 42 / medium: a legendary lair reaches 9 by tick 200, a minor
+ * one about 1. At 4, a den cleared while it was still minor stays cleared, and one that
+ * grew before anyone pressed it can come back — which is the asymmetry worth having.
+ */
+export const LAIR_REINFESTATION_SPHERE_THRESHOLD = 4;
 
 /** Minimum ticks after spawnedAtTick before minor lair upgrades to major */
 export const LAIR_UPGRADE_MIN_TICKS = 30;
@@ -220,10 +243,10 @@ function createNamedElite(state: GameState, lairNode: GraphNode): string {
   return eliteId;
 }
 
-// ─── Helper: get sphere score from a hex node ─────────────────────────────────
+// ─── Helper: get a node's accrued score in one sphere ─────────────────────────
 
-function getHexSphereScore(hexNode: GraphNode, sphere: SphereName): number {
-  const affinity = hexNode.properties.sphereAffinity as
+function getNodeSphereScore(node: GraphNode, sphere: SphereName): number {
+  const affinity = node.properties.sphereAffinity as
     { scores?: Record<string, number> } | undefined;
   return affinity?.scores?.[sphere] ?? 0;
 }
@@ -325,8 +348,14 @@ function spawnAdjacentLair(
  *
  * Position: after phaseBattleTick (2.357), before phaseArmyNotifications (2.358).
  * This ensures battles at lair hexes resolve before escalation ticks.
+ *
+ * `runtime` is optional so fixtures can drive the phase bare. When present, a subtype
+ * flip in either direction bumps the structural cache — `touchStructure`'s own contract
+ * names "locationSubtype changes that affect encounter scoring", and both clearing and
+ * reinfestation are exactly that. Reinfestation has always owed this bump and never
+ * paid it; it could not be seen because the branch it sits on was unreachable.
  */
-export function phaseLairEscalation(state: GameState): void {
+export function phaseLairEscalation(state: GameState, runtime?: SimulationRuntime): void {
   // Guard: only run every LAIR_ESCALATION_INTERVAL ticks
   if (state.tick % LAIR_ESCALATION_INTERVAL !== 0) return;
 
@@ -478,48 +507,67 @@ export function phaseLairEscalation(state: GameState): void {
     }
   }
 
+  // ── 4.5 Clearing pressure (THR-1319) ─────────────────────────────────────
+  // Runs after the active-lair loop so a lair that upgraded or spawned this pass is
+  // pressed at the tier it now holds. Lairs cleared here are deliberately NOT added to
+  // `allClearedLairNodes`: the reinfestation loop below was built from a snapshot taken
+  // before this ran, and a lair must not fall and seep back on the same tick.
+  const clearedThisPass = resolveLairClearing(state);
+
   // ── Process cleared lairs (reinfestation check) ──────────────────────────
+  const reinfestedThisPass: string[] = [];
   for (const clearedNode of allClearedLairNodes) {
     const props = clearedNode.properties;
     const clearedAtTick = props.clearedAtTick as number | undefined;
     const dominantSphere = props.dominantSphere as SphereName;
-    const hexCol = props.hexCol as number;
-    const hexRow = props.hexRow as number;
 
     // Check time elapsed since clearing
     const ticksSinceCleared = tick - (clearedAtTick ?? 0);
     if (ticksSinceCleared < LAIR_REINFESTATION_MIN_TICKS) continue;
 
-    // Check sphere pressure on the hex
-    const hexNode = findHexNode(state, hexCol, hexRow);
-    const sphereScore = hexNode
-      ? getHexSphereScore(hexNode, dominantSphere)
-      : 0;
+    // How deeply this site is still steeped in the sphere that birthed it. Read from
+    // the lair node, not from a hex node: escalation aims its pressure at the lair
+    // (`targetEntityId: lairNode.id`), and a generated world has no hex nodes at all,
+    // so the old `findHexNode` reading was 0 on every pass in every real world.
+    const sphereScore = getNodeSphereScore(clearedNode, dominantSphere);
 
-    if (sphereScore < LAIR_SPAWN_SPHERE_THRESHOLD) continue;
+    if (sphereScore < LAIR_REINFESTATION_SPHERE_THRESHOLD) continue;
 
     // Check no controlling non-monster faction
     if (hasControllingNonMonsterFaction(state, clearedNode.id)) continue;
 
-    // Reinstate as active lair
+    // Reinstate as active lair. `locationType` is reset alongside `locationSubtype`
+    // because the clearing writer sets both, and `HexSidebar` reads either one — a
+    // reinfested lair that kept `locationType: 'cleared_lair'` would still render as
+    // cleared while attriting armies as an active den.
     graph.updateNode(clearedNode.id, {
       properties: {
         ...props,
         locationSubtype: 'lair',
+        locationType: 'lair',
         lairTier: 'minor',
         spawnedAtTick: tick,
         lastEscalationTick: tick,
         clearedAtTick: undefined,
         clearedByFactionId: undefined,
+        clearingProgress: undefined,
         monsterFactionId: undefined,
         namedEliteId: undefined,
       },
     });
+    reinfestedThisPass.push(clearedNode.id);
 
     emitTrace({
       category: 'faction_ambition',
       summary: `Cleared lair ${clearedNode.id} reinfested at tick ${tick} (sphere: ${dominantSphere}, score: ${sphereScore})`,
       tick,
     } as Parameters<typeof emitTrace>[0]);
+  }
+
+  // A subtype moved in either direction, so encounter scoring and the distance matrix
+  // are now stale. Bumped once per pass rather than per lair — the caches are rebuilt
+  // lazily, so N bumps and one bump invalidate identically.
+  if (runtime && (clearedThisPass.length > 0 || reinfestedThisPass.length > 0)) {
+    touchStructure(runtime);
   }
 }
