@@ -65,6 +65,25 @@ describe('readTradeRouteProps', () => {
     expect(result.threatened).toBe(true);
   });
 
+  // THR-1320. `createTradeRoute` — the sole minter of `trades_with` edges — stamps
+  // the birth tick as `establishedTick`, so reading only `established` resolved to 0
+  // on every route that has ever existed, and the dissolved trace's `totalTicksActive`
+  // reported the absolute tick as a lifetime. Pin the spelling writers actually use.
+  it('reads the birth tick from `establishedTick`, the spelling every writer stamps', () => {
+    const result = readTradeRouteProps({ volume: 1, establishedTick: 42, establishedBy: 'agent.m' });
+    expect(result.established).toBe(42);
+    expect(result.establishedBy).toBe('agent.m');
+  });
+
+  it('still reads a legacy `established` edge, and prefers `establishedTick` when both are present', () => {
+    expect(readTradeRouteProps({ established: 7 }).established).toBe(7);
+    expect(readTradeRouteProps({ established: 7, establishedTick: 99 }).established).toBe(99);
+  });
+
+  it('reads establishedBy as null when the route was not founded by anyone', () => {
+    expect(readTradeRouteProps({ volume: 2 }).establishedBy).toBe(null);
+  });
+
   it('returns canonical defaults for a legacy edge with only volume', () => {
     const result = readTradeRouteProps({ volume: 3 });
     expect(result.volume).toBe(3);

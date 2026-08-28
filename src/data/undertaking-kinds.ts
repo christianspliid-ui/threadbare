@@ -143,22 +143,22 @@ export const UNDERTAKING_KIND_ROWS: readonly UndertakingKindRow[] = [
     // blockade that never lifted would be deletion wearing a counter's name, and
     // `routeEvents` clearing the flag after its horizon is the counter staying one.
     //
-    // TODO(THR-1320): the counter-play is authored, gated, unit-proven and genuinely
-    // *offered* — and it has never once landed. Be precise about where it bites: the
-    // verb is not starved at generation (9 blockade undertakings on seed 42, 16 on
-    // seed 99, 150 ticks, medium map). It is the mutation at completion that no-ops,
-    // because a strategically founded route is minted at `volume: 1` and
-    // `phaseTradeRouteDecay` removes it six ticks later — 0 routes standing at ticks
-    // 40/60/80/150 on either seed, so `blockadeRoute` returns `no_route` every time.
+    // THR-1320 closed the gap that made this counter-play unreachable, and the shape of
+    // it is worth keeping: the verb was never starved at *generation* (9 blockade
+    // undertakings on seed 42, 16 on seed 99, 150 ticks, medium map) — it was the
+    // mutation at completion that no-op'd, because a strategically founded route was
+    // minted at `volume: 1` and `phaseTradeRouteDecay` removed it six ticks later. Zero
+    // routes stood at any sampling point, so `blockadeRoute` returned `no_route` every
+    // time. Every board-level instrument (candidates generated, undertakings completed,
+    // census liveness 94.6% / 97.1%) read healthy throughout — which is the reason to
+    // read this comment rather than the dashboards.
     //
-    // That shape is the reason to read this comment rather than the dashboards: every
-    // board-level instrument (candidates generated, undertakings completed, census
-    // liveness 94.6% / 97.1%) reads healthy while the counter-play does nothing.
-    //
-    // The row stays registered because the gate it has to pass is that the counter-play
-    // *exists, resolves and is motive-gated*, which it does; making it land is a
-    // durability decision over the shared route economy, with its own golden comparison
-    // (the THR-1310 precedent).
+    // Fixed by `TRADE_ROUTE_FOUNDING_GRACE_WINDOW`: a route carrying an `establishedBy`
+    // stamp stands out a founder's warranty before the freshness rule applies. Measured
+    // after, seed 42, 150 ticks: the Thornhaven–Hawkgate Road was founded, christened,
+    // and blockaded by `ind_7` at tick 96 — Hawkgate's prosperity fell 35.35 → 6.73 and
+    // recovered to 29.58 by tick 130 as `routeEvents` lifted the horizon. The slice is
+    // whole: a route founded, owned, and taken back.
     destroyTemplateIds: ['strategic_blockade_route'],
     lexicon: 'route',
   },
