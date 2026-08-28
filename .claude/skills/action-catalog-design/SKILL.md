@@ -13,6 +13,7 @@ description: >
   Surface-Shape Check. Load alongside `game-design-direction` for In
   Design phase work; this skill is the action-catalog-specific extension
   of that skill's general Vision audit.
+validated_doctrine: rules-of-play@1
 last_validated_against: 2026-08-28
 ---
 

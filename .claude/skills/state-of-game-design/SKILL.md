@@ -5,6 +5,7 @@ description: >
   then follow the routing table to pull in the one or two reference shards your
   task actually needs. Replaces the monolithic SKILL.md with a thin router +
   on-demand shards pattern (THR-377).
+validated_doctrine: rules-of-play@1
 last_validated_against: 2026-08-28
 ---
 

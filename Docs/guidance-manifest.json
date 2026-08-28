@@ -31,11 +31,13 @@
     "cover every dependent. The stamp check is advisory ALWAYS — forcing it mechanically would recreate",
     "the date-bump theater `last_validated_against` already demonstrated.",
     "",
-    "SCOPE — four doctrines: prose (the original, registered on demonstrated loss), plus the three",
+    "SCOPE — five doctrines: prose (the original, registered on demonstrated loss), the three",
     "general-layer doctrines registered at THR-1331 (identity-vision, cosmology, coordination-process)",
     "after the 2026-08-28 context audit found the unregistered general layer rotting — two finished",
-    "retirements unswept, every core rule in 3-4 drifting copies. Adding a doctrine is a deliberate",
-    "registration, not a default. This file is small on purpose.",
+    "retirements unswept, every core rule in 3-4 drifting copies — and rules-of-play, registered at",
+    "THR-1343 (context-cleanup round 2) after the game-design audit found three retired eras live on",
+    "high-traffic surfaces. Adding a doctrine is a deliberate registration, not a default. This file",
+    "is small on purpose.",
     "",
     "SUNSET — the gate, the stamps and the retro step enter the standing six-week sunset presumption",
     "(CLAUDE.md § process-work throttle): renewed at retro by citing a catch, else deleted."
@@ -66,7 +68,8 @@
         "Docs/plans/2026-07-04-voice-register-plainspoken-malazan.md",
         "Docs/plans/2026-07-26-nudge-model-encounter-system.md",
         "Docs/plans/2026-07-30-nudge-card-repertoire.md",
-        "Docs/plans/2026-05-04-encounter-experience-design-plan.md"
+        "Docs/plans/2026-05-04-encounter-experience-design-plan.md",
+        "Docs/plans/2026-05-04-encounter-experience-player-journey.md"
       ],
       "manualDependents": [
         "vault:Vision/taste-profile.md",
@@ -120,9 +123,41 @@
       ],
       "manualDependents": [
         "vault:Cosmology/Reaches.md",
+        "vault:Cosmology/The Cosmological Pattern.md",
+        "vault:Cosmology/foundation.shadow.md",
         "vault:Systems/Domain Word Scales.md",
         "vault:Systems Overview.md",
         "vault:Domains/reach.flesh.md"
+      ]
+    },
+    "rules-of-play": {
+      "version": 1,
+      "versionNote": "Registered 2026-08-28 (THR-1343, context-cleanup round 2). The rules of play as synthesised by the rulebook: nudge model (cards bend odds, fate rolls the five-band ladder, forks are the mortal's, player never picks an ending or sees a number), UnifiedActionTemplate single format, five verbs, three-beat turn at 12 ticks/day, five influence tiers with Aspect as the Apotheosis milestone, success-at-cost as dominant texture, 5% floor before cards. Round-2 audit found three retired eras (Godling/daily-tick, authored-choices, old pole names) live on high-traffic dependents; the sweep THR-1338..1342 cleared them.",
+      "authorities": [
+        "Docs/canon/rulebook.md",
+        "Docs/canon/rulebook-quick-reference.md"
+      ],
+      "dependents": [
+        ".claude/skills/state-of-game-design/SKILL.md",
+        ".claude/skills/state-of-game-design/reference/cosmology.md",
+        ".claude/skills/state-of-game-design/reference/verbs-resolution.md",
+        ".claude/skills/state-of-game-design/reference/architectural-decisions.md",
+        ".claude/skills/state-of-game-design/reference/deprecated.md",
+        ".claude/skills/game-design-direction/SKILL.md",
+        ".claude/skills/encounter-actor-systems/SKILL.md",
+        ".claude/skills/action-catalog-design/SKILL.md",
+        "Docs/ubiquitous-language/Encounters.md",
+        "Docs/ubiquitous-language/Agents.md",
+        "Docs/canon/encounters.md",
+        "Docs/plans/2026-04-16-game-design-direction.md",
+        "Docs/design-brief.md"
+      ],
+      "manualDependents": [
+        "vault:Systems Overview.md",
+        "vault:Systems/Encounter System.md",
+        "vault:Vision/01-core-loop.md",
+        "vault:Vision/taste-profile.md",
+        "vault:Cosmology/Reaches.md"
       ]
     },
     "coordination-process": {

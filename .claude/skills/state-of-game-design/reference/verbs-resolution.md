@@ -5,6 +5,7 @@ description: >
   sigmoid → d100 resolution system, actor prerequisites (two-axis), generalized
   action targeting, and player influence. Load for engine code, tick loop work,
   resolution logic, or PRNG work.
+validated_doctrine: rules-of-play@1
 last_validated_against: 2026-08-28
 ---
 

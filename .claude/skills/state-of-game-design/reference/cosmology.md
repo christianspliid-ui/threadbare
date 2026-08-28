@@ -5,6 +5,7 @@ description: >
   actor types, Hex Chronicle layers, and game design direction principles.
   Load for content authoring, encounter design, cosmology work, or prose that
   references Sphere/Reach combinations.
+validated_doctrine: rules-of-play@1
 last_validated_against: 2026-08-28
 ---
 
