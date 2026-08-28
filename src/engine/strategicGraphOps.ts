@@ -8,6 +8,8 @@
 // NFP #2 (Inspectability): Returns descriptions of operations performed.
 
 import type { WorldGraph } from './graph';
+import type { GraphNode } from '../types/graph';
+import { ROUTE_IDENTITY_SUBTYPE } from '../data/strategic-action-constants';
 import { getFactionMembershipEdges } from './graphQueries';
 import { buildRouteManifest } from './tradeRoute';
 import { validateEdgeEndpoints } from '../types/edgeSchema';
@@ -765,4 +767,180 @@ export function mintMasterwork(
   } catch (e) {
     return { success: false, op: 'mint_masterwork', error: String(e) };
   }
+}
+
+// ─── The T2 tier: places, and taking them back (THR-1308) ───────────
+
+/**
+ * Mint a place-tier `location` node at a hex — the T2 tier's object.
+ *
+ * **Why this op did not exist before.** Every T1 kind's object was an edge
+ * (`knows_secret_of`), a possession (masterwork, treasure map) or an actor-side
+ * record (intelligence, network), and none of those needs a node standing on the
+ * map. `createSublocation` mints a room *inside* a place that already exists — its
+ * `parentLocationId` is required, and that field is precisely the sublocation
+ * discriminator (THR-1183). Nothing minted the place.
+ *
+ * **Place-tier by construction, not by convention.** The node carries `hexCol` /
+ * `hexRow` and deliberately no `parentLocationId`, which is exactly what
+ * `isPlaceTierLocation` tests — so a founded settlement is visible to
+ * `getPlaceTierLocations` sweeps and invisible to `getSublocationNodes` ones,
+ * without either having to learn a new shape.
+ *
+ * `locationType` is written alongside `locationSubtype` because `worldSeed` writes
+ * both on every location it seeds and several readers still take the older key;
+ * a node with only one of them is half-visible in the way THR-1183 documents.
+ *
+ * NFP #4: returns a failure result, never throws. NFP #3: the id is derived from
+ * subtype + hex + tick, so the same run mints the same id.
+ */
+export function createLocation(
+  graph: WorldGraph,
+  hex: { col: number; row: number },
+  actorId: string,
+  name: string,
+  locationSubtype: string,
+  tick: number,
+  extraProperties: Record<string, unknown> = {},
+): GraphOpResult {
+  try {
+    const nodeId = `loc_${locationSubtype}_${hex.col}_${hex.row}_${tick}`;
+    if (graph.getNode(nodeId)) {
+      return { success: false, op: 'create_location', error: 'location_already_exists' };
+    }
+
+    graph.addNode({
+      id: nodeId,
+      name,
+      type: 'location',
+      properties: {
+        locationType: locationSubtype,
+        locationSubtype,
+        hexCol: hex.col,
+        hexRow: hex.row,
+        prosperity: 0,
+        createdTick: tick,
+        createdBy: actorId,
+        ...extraProperties,
+      },
+    });
+
+    // `constructed_by` is the edge the world already reads to say who raised a thing
+    // — the same one `createSublocation` writes. A founded place with no builder edge
+    // would be a settlement nobody founded.
+    graph.addEdge({
+      id: `constructed_by_${nodeId}_${actorId}`,
+      source: nodeId,
+      target: actorId,
+      type: 'constructed_by',
+      properties: { tick },
+    });
+
+    return { success: true, op: 'create_location', createdId: nodeId };
+  } catch (e) {
+    return { success: false, op: 'create_location', error: String(e) };
+  }
+}
+
+/**
+ * Suspend a trade route running through the target location — the `trade_route`
+ * kind's counter-play.
+ *
+ * **Writes `threatened`, does not delete.** That property is the one the world
+ * already consumes: `phaseProsperity` skips a threatened route when it counts the
+ * active routes at each endpoint, so a blockade arrives as a prosperity shock the
+ * owner feels rather than as a graph edit nobody reads. `routeEvents` clears the
+ * flag after `ROUTE_THREATENED_CLEAR_TICKS`, which is the shape counter-play should
+ * have — a blockade that never lifts is deletion wearing a counter's name.
+ *
+ * Picks the lowest-id unthreatened route touching the target, in either direction,
+ * so the same world blockades the same route (NFP #3). Also stamps the route's
+ * identity node when one exists, so the blockade is legible on the thing that
+ * carries the route's name rather than only on an edge property.
+ *
+ * @returns `no_route` when the endpoint carries none, `already_blockaded` when every
+ *   route through it is already suspended — both ordinary refusals, not errors.
+ */
+export function blockadeRoute(
+  graph: WorldGraph,
+  actorId: string,
+  targetLocationId: string,
+  tick: number,
+): GraphOpResult {
+  try {
+    if (!graph.getNode(targetLocationId)) {
+      return { success: false, op: 'blockade_route', error: 'location_not_found' };
+    }
+
+    const touching = [
+      ...graph.getOutgoingEdges(targetLocationId, 'trades_with'),
+      ...graph.getIncomingEdges(targetLocationId, 'trades_with'),
+    ];
+    if (touching.length === 0) {
+      return { success: false, op: 'blockade_route', error: 'no_route' };
+    }
+
+    const open = touching
+      .filter(edge => edge.properties?.threatened !== true)
+      .sort((a, b) => a.id.localeCompare(b.id));
+    if (open.length === 0) {
+      return { success: false, op: 'blockade_route', error: 'already_blockaded' };
+    }
+
+    const route = open[0];
+    graph.updateEdge(route.id, {
+      properties: {
+        ...route.properties,
+        threatened: true,
+        threatenedSinceTick: tick,
+        blockadedBy: actorId,
+      },
+    });
+
+    // The identity face, when the route has one. Fail-soft by omission: a route
+    // established before this tier shipped carries no identity node, and blockading
+    // it must still work — the edge is the economic authority, the node is the name.
+    const identity = findRouteIdentityNode(graph, route.source, route.target);
+    if (identity) {
+      graph.updateNode(identity.id, {
+        properties: {
+          ...identity.properties,
+          blockaded: true,
+          blockadedSinceTick: tick,
+          blockadedBy: actorId,
+        },
+      });
+    }
+
+    return { success: true, op: 'blockade_route', createdId: route.id };
+  } catch (e) {
+    return { success: false, op: 'blockade_route', error: String(e) };
+  }
+}
+
+/**
+ * The identity node for the route between two endpoints, if one was minted.
+ *
+ * Matches on the endpoint pair recorded in properties rather than on the edge id,
+ * because the edge id encodes the tick it was created on and the identity node is
+ * looked up long afterwards. Direction-insensitive: a route is the same route read
+ * from either end.
+ */
+export function findRouteIdentityNode(
+  graph: WorldGraph,
+  endpointA: string,
+  endpointB: string,
+): GraphNode | undefined {
+  const candidates = graph.getNodesByType('location').filter(node => {
+    const props = node.properties;
+    if (props.locationSubtype !== ROUTE_IDENTITY_SUBTYPE) return false;
+    const from = props.routeSourceId;
+    const to = props.routeTargetId;
+    return (
+      (from === endpointA && to === endpointB) || (from === endpointB && to === endpointA)
+    );
+  });
+  // Deterministic when a world somehow carries two (NFP #3).
+  candidates.sort((a, b) => a.id.localeCompare(b.id));
+  return candidates[0];
 }

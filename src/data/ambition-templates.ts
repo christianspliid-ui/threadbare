@@ -117,6 +117,11 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
         'strategic_found_guild_chapter',
         'strategic_maintain_monopoly',
         'strategic_commission_quest',
+        // THR-1308: appended, not inserted. `generateStrategicCandidates` walks this
+        // list in order and breaks at STRATEGIC_MAX_CANDIDATES_PER_AMBITION, so a
+        // mid-list insert silently pushes a shipped verb out of reach — it pushed
+        // `strategic_found_guild_chapter` past the cap and took two test files with it.
+        'strategic_extend_route',
       ],
       reachEmphasis: { gold: 0.8, eye: 0.5, shadow: 0.2, heart: 0.2 },
     },
@@ -186,6 +191,9 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
         'strategic_raid_supply_lines',
         'strategic_claim_territory',
         'strategic_recruit_companions',
+        // THR-1308 T2 counter-play — appended for the ordering reason above.
+        'strategic_blockade_route',
+        'strategic_raze_settlement',
       ],
       reachEmphasis: { iron: 0.8, heart: 0.6, eye: 0.3 },
     },
@@ -687,6 +695,9 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
         'strategic_fortify_defenses',
         'strategic_build_granary',
         'strategic_maintain_civic_order',
+        // THR-1308 place-tier kind — appended for the ordering reason above.
+        'strategic_found_settlement',
+        'strategic_grow_settlement',
       ],
       reachEmphasis: { gold: 0.5, iron: 0.4, stone: 0.7 },
     },

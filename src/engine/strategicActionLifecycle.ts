@@ -27,9 +27,14 @@ import {
   STRATEGIC_CONTROL_DEGRADATION_RATE,
   STRATEGIC_HISTORY_WINDOW_TICKS,
   ENCOUNTER_POOL_INVALIDATING_EDGE_TYPES,
+  ROUTE_IDENTITY_SUBTYPE,
+  FOUNDED_SETTLEMENT_INITIAL_PROSPERITY,
+  FOUNDED_SETTLEMENT_SITE_SEARCH_RADIUS,
 } from '../data/strategic-action-constants';
 import {
   createTradeRoute,
+  createLocation,
+  blockadeRoute,
   createSublocation,
   claimControl,
   releaseControl,
@@ -45,6 +50,10 @@ import {
   type GraphOpResult,
 } from './strategicGraphOps';
 import { resolveDurableActorLocation } from './tradeRouteOps';
+import { resolveLocationToHex } from './encounterAwareness';
+import { getAgentLocationId } from './graphQueries';
+import { getPlaceTierLocations } from './sublocationShape';
+import { hexDistance } from '../lib/hexMath';
 import { getStrategicTemplate } from './strategicActionCandidates';
 import {
   resolveUndertakingCheckpoint,
@@ -111,6 +120,56 @@ export function renderNameTemplate(
     .replace(/\{thing\}/g, thing ?? '')
     .replace(/\s+/g, ' ')
     .trim();
+}
+
+/**
+ * An unclaimed hex to found a place-tier location on (THR-1308).
+ *
+ * Starts at `origin` and, if something already stands there, spirals outward through
+ * whole rings up to `FOUNDED_SETTLEMENT_SITE_SEARCH_RADIUS`. Returns `null` when the
+ * whole neighbourhood is built up — a refusal, not a fallback: founding a settlement
+ * on top of one that exists is not founding anything, and the *right* answer when
+ * there is no room is that the undertaking fails.
+ *
+ * Only **place-tier** locations occupy a hex. Sublocations sit inside a parent and
+ * share its hex by construction, so counting them would make every settled hex look
+ * doubly occupied and change nothing but the arithmetic (`sublocationShape.ts`,
+ * THR-1183).
+ *
+ * NFP #3 (Determinism): candidates are ordered by ring distance, then by column, then
+ * by row — no PRNG, so the same world founds on the same hex.
+ */
+export function findUnclaimedSite(
+  graph: WorldGraph,
+  origin: { col: number; row: number },
+  radius: number = FOUNDED_SETTLEMENT_SITE_SEARCH_RADIUS,
+): { col: number; row: number } | null {
+  const occupied = new Set<string>();
+  for (const node of getPlaceTierLocations(graph)) {
+    const col = node.properties.hexCol;
+    const row = node.properties.hexRow;
+    if (typeof col === 'number' && typeof row === 'number') occupied.add(`${col},${row}`);
+  }
+
+  const candidates: { col: number; row: number }[] = [];
+  for (let col = origin.col - radius; col <= origin.col + radius; col++) {
+    for (let row = origin.row - radius; row <= origin.row + radius; row++) {
+      const hex = { col, row };
+      if (hexDistance(origin, hex) > radius) continue;
+      if (occupied.has(`${col},${row}`)) continue;
+      candidates.push(hex);
+    }
+  }
+
+  candidates.sort((a, b) => {
+    const da = hexDistance(origin, a);
+    const db = hexDistance(origin, b);
+    if (da !== db) return da - db;
+    if (a.col !== b.col) return a.col - b.col;
+    return a.row - b.row;
+  });
+
+  return candidates[0] ?? null;
 }
 
 /**
@@ -962,8 +1021,87 @@ function executeInstantMutation(
           if (!sourceLocId) {
             ops.push({ success: false, op: 'create_trade_route', error: 'no_durable_source_location' });
           } else if (sourceLocId !== targetId) {
-            ops.push(createTradeRoute(graph, sourceLocId, targetId, candidate.actorId, tick));
+            const routeResult = createTradeRoute(graph, sourceLocId, targetId, candidate.actorId, tick);
+            ops.push(routeResult);
+
+            // THR-1308: the route gains an identity face. The `trades_with` edge stays
+            // the economic authority — every existing consumer reads it and none of
+            // them changes — but an edge has nowhere to carry a name, an owner or a
+            // blockade state, so the `trade_route` kind's object is this node. Minted
+            // only when the edge actually landed: an identity for a route that does
+            // not exist is exactly the orphan the kind registry exists to refuse.
+            if (routeResult.success) {
+              const originHex = resolveLocationToHex(graph, sourceLocId);
+              if (originHex) {
+                const originNode = graph.getNode(sourceLocId);
+                const destNode = graph.getNode(targetId);
+                ops.push(
+                  createLocation(
+                    graph,
+                    originHex,
+                    candidate.actorId,
+                    // No article of our own: settlement names already carry one where
+                    // they want one ("The Shattered Sanctum"), and prepending a second
+                    // produced "The The Shattered Sanctum–Greycity Road" in the first
+                    // 150-tick run this shipped against.
+                    `${originNode?.name ?? 'Unknown'}–${destNode?.name ?? 'Unknown'} Road`,
+                    ROUTE_IDENTITY_SUBTYPE,
+                    tick,
+                    {
+                      routeSourceId: sourceLocId,
+                      routeTargetId: targetId,
+                      routeEdgeId: routeResult.createdId,
+                    },
+                  ),
+                );
+              }
+            }
           }
+        }
+        break;
+      }
+
+      // ── The T2 tier: places, and taking them back (THR-1308) ────
+
+      case 'create_location': {
+        const anchorLocId =
+          hint.anchor === 'target_hex'
+            ? targetId
+            : (candidate.originLocationId ?? getAgentLocationId(graph, candidate.actorId));
+        const anchorHex = anchorLocId ? resolveLocationToHex(graph, anchorLocId) : null;
+
+        if (!anchorHex) {
+          ops.push({ success: false, op: 'create_location', error: 'no_anchor_hex' });
+          break;
+        }
+
+        const site = findUnclaimedSite(graph, anchorHex);
+        if (!site) {
+          // Every hex in range is built up. A refusal, not a fallback — see
+          // `findUnclaimedSite`.
+          ops.push({ success: false, op: 'create_location', error: 'no_unclaimed_site' });
+          break;
+        }
+
+        const actorNode = graph.getNode(candidate.actorId);
+        const anchorNode = anchorLocId ? graph.getNode(anchorLocId) : undefined;
+        ops.push(
+          createLocation(
+            graph,
+            site,
+            candidate.actorId,
+            renderNameTemplate(hint.nameTemplate, actorNode?.name, anchorNode?.name),
+            hint.locationSubtype,
+            tick,
+            { prosperity: hint.prosperity ?? FOUNDED_SETTLEMENT_INITIAL_PROSPERITY },
+          ),
+        );
+        break;
+      }
+
+      case 'blockade_route': {
+        if (targetId) {
+          ops.push(blockadeRoute(graph, candidate.actorId, targetId, tick));
         }
         break;
       }

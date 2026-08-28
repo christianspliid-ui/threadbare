@@ -36,9 +36,16 @@ import { MOTIVE_GATE_KINDS } from './strategic-action-constants';
  * The consequence, stated plainly then and honoured here: **until a kind can be undone,
  * it is not a kind.** Every row below names a real, reachable, motive-gated counter-play.
  *
- * Tiers 2 and 3 (sublocation, place-tier location, trade route, warband, faction) land
- * with their own destroys in the T2/T3 issues filed from this plan. They are absent
- * rather than stubbed for the same reason the array was empty before.
+ * **Tier 2 arrived in THR-1308** on the same terms — `trade_route` and `place_location`,
+ * each landing in one commit with the verb that undoes it (the warlord's blockade and
+ * the warlord's torch, both cross-family). The tier needed a new mutation op before it
+ * could ship at all: T1's objects were edges, possessions and actor-side records, and
+ * none of those needs a node standing on the map, so nothing in the corpus minted a
+ * *place*. `create_location` is that op.
+ *
+ * Still absent, still not stubbed: `sublocation` (T2 — its six build templates exist,
+ * its raze does not), and both T3 kinds, `warband` and `faction`. Same rule as ever —
+ * until a kind can be undone, it is not a kind.
  */
 export const UNDERTAKING_KIND_ROWS: readonly UndertakingKindRow[] = [
   {
@@ -108,6 +115,63 @@ export const UNDERTAKING_KIND_ROWS: readonly UndertakingKindRow[] = [
     updateTemplateIds: ['strategic_extend_reach'],
     destroyTemplateIds: ['strategic_sever_network'],
     lexicon: 'network',
+  },
+
+  // ── Tier 2 (THR-1308) — the tier where a work becomes a *place* ──
+  //
+  // Both rows are **ownable**, which is what separates T2 from T1: every T1 object was
+  // an edge, a possession or an actor-side record, and none of them is ground. These
+  // are ground, and ground is the thing the holdings system exists for.
+  //
+  // Both counter-plays are **cross-family**. The merchant founds the route and the
+  // builder founds the settlement, and neither can undo their own: the D column is
+  // what the *world* can do to take a work back, and a self-spend is a use, not a
+  // counter (the same reasoning that keeps `strategic_burn_the_mark` in the U column
+  // one tier up). So both destroys are the warlord's.
+  {
+    kindId: 'trade_route',
+    tier: 2,
+    displayName: 'Trade route',
+    objectShape:
+      '`trades_with` edge (the economic authority) plus a `locationSubtype: \'trade_route\'` identity node',
+    // Ground, and therefore holdable — the first kind for which that is true.
+    ownable: true,
+    createTemplateIds: ['strategic_establish_trade_route'],
+    updateTemplateIds: ['strategic_extend_route'],
+    // Suspends rather than deletes: `threatened` is a property `phaseProsperity`
+    // already reads, so the blockade lands as the owner's town going hungry. A
+    // blockade that never lifted would be deletion wearing a counter's name, and
+    // `routeEvents` clearing the flag after its horizon is the counter staying one.
+    //
+    // TODO(THR-1320): the counter-play is authored, gated, unit-proven and genuinely
+    // *offered* — and it has never once landed. Be precise about where it bites: the
+    // verb is not starved at generation (9 blockade undertakings on seed 42, 16 on
+    // seed 99, 150 ticks, medium map). It is the mutation at completion that no-ops,
+    // because a strategically founded route is minted at `volume: 1` and
+    // `phaseTradeRouteDecay` removes it six ticks later — 0 routes standing at ticks
+    // 40/60/80/150 on either seed, so `blockadeRoute` returns `no_route` every time.
+    //
+    // That shape is the reason to read this comment rather than the dashboards: every
+    // board-level instrument (candidates generated, undertakings completed, census
+    // liveness 94.6% / 97.1%) reads healthy while the counter-play does nothing.
+    //
+    // The row stays registered because the gate it has to pass is that the counter-play
+    // *exists, resolves and is motive-gated*, which it does; making it land is a
+    // durability decision over the shared route economy, with its own golden comparison
+    // (the THR-1310 precedent).
+    destroyTemplateIds: ['strategic_blockade_route'],
+    lexicon: 'route',
+  },
+  {
+    kindId: 'place_location',
+    tier: 2,
+    displayName: 'Settlement',
+    objectShape: "place-tier `location` node at a hex — `hexCol`/`hexRow`, no `parentLocationId`",
+    ownable: true,
+    createTemplateIds: ['strategic_found_settlement'],
+    updateTemplateIds: ['strategic_grow_settlement'],
+    destroyTemplateIds: ['strategic_raze_settlement'],
+    lexicon: 'place',
   },
 ];
 

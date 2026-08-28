@@ -160,6 +160,75 @@ export const WARLORD_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     resourceHint: { wealthCost: 3, reachFloor: { heart: 0.2 } },
     mutationHint: { type: 'create_relation_edge', edgeType: 'relates_to', direction: 'actor_to_target', properties: { basis: 'sworn_ally', sentiment: 0.6 } },
   },
+
+  // ── T2 counter-play (THR-1308) ──────────────────────────────────
+  //
+  // Both are **cross-family destroys**: the merchant founds the route and the builder
+  // founds the settlement, and neither can undo their own work. That asymmetry is the
+  // design — counter-play the world does to you, not a self-spend you choose — and it
+  // is why these two live in the warlord pack rather than beside the verbs they undo.
+
+  // 8. Blockade the Road — the trade route kind's counter-play, and the T2 vertical
+  //    slice's second half: a route founded, christened and owned, then a motivated
+  //    warlord shuts it. Suspends rather than deletes, because `threatened` is the
+  //    property `phaseProsperity` already reads — so the owner feels this as their
+  //    town going hungry, not as an edge quietly changing shape.
+  {
+    id: 'strategic_blockade_route',
+    displayName: 'Blockade the Road',
+    verb: 'destroy',
+    executionMode: 'multi_tick_project',
+    behaviorFamily: 'warlord-expansion',
+    reachProfile: { iron: 0.5, eye: 0.3, shadow: 0.2 },
+    projectDuration: 4,
+    activityProse: [
+      'Not a battle. A crossing, held. Everything that wants past has to come to you first.',
+      'The road is only worth something if the wagons move. So the wagons stop.',
+    ],
+    completionProse: [
+      'Nothing moves. The ledger at the far end starts saying things the owner does not want to read.',
+    ],
+    catalystEncounterIds: ['encounter_route_ambush', 'encounter_toll_dispute'],
+    targetRule: { type: 'location_subtype', subtypes: ['market', 'town', 'city', 'trading_post', 'port'] },
+    resourceHint: { wealthCost: 20, reachFloor: { iron: 0.3, eye: 0.2 } },
+    checkpointDifficulty: 0.5,
+    // Same measured reason as every other multi-tick verb in the corpus — see the
+    // wanderer pack header and TODO(THR-1294).
+    requiresLocation: false,
+    payoffValue: 1.1,
+    motivations: ['mercy_ruthlessness', 'courage_prudence'],
+    motiveGate: ['rivalry', 'grudge', 'contested_ambition', 'faction_war'],
+    mutationHint: { type: 'blockade_route' },
+  },
+
+  // 9. Put It to the Torch — the place-tier location kind's counter-play. A founded
+  //    settlement is the largest thing an agent can make in this catalog, so its
+  //    undoing is the slowest and the most gated.
+  {
+    id: 'strategic_raze_settlement',
+    displayName: 'Put It to the Torch',
+    verb: 'destroy',
+    executionMode: 'multi_tick_project',
+    behaviorFamily: 'warlord-expansion',
+    reachProfile: { iron: 0.6, shadow: 0.3, heart: 0.1 },
+    projectDuration: 5,
+    activityProse: [
+      'A season of somebody else\'s hope, and it burns at the same rate as anything else does.',
+      'The people leave first. That is the part the songs omit and the survivors do not.',
+    ],
+    completionProse: [
+      'Char and posts. In ten years it will be called ruins and nobody will remember whose it was.',
+    ],
+    catalystEncounterIds: ['encounter_civilian_unrest', 'encounter_garrison_mutiny'],
+    targetRule: { type: 'location_subtype', subtypes: ['hamlet', 'camp', 'town'] },
+    resourceHint: { wealthCost: 25, reachFloor: { iron: 0.35 } },
+    checkpointDifficulty: 0.55,
+    requiresLocation: false,
+    payoffValue: 1.3,
+    motivations: ['mercy_ruthlessness', 'preservation_transformation'],
+    motiveGate: ['rivalry', 'grudge', 'contested_ambition', 'faction_war'],
+    mutationHint: { type: 'modify_location_property', property: 'prosperity', delta: -25, clamp: [0, 100] },
+  },
 ];
 
 /** Look up a warlord strategic template by ID */

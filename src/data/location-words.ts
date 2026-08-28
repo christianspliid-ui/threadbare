@@ -83,6 +83,9 @@ export const LOCATION_SUBTYPE_NAMES: Record<LocationSubtype, string> = {
   // ── Ruins layer (THR-149) ──
   elder_ruin: 'Elder Ruin',
   place_of_power: 'Place of Power',
+  // ── Work identities (THR-1308) ──
+  // The route's name-bearing face. Players read "Trade Route", never the raw key.
+  trade_route: 'Trade Route',
 };
 
 /**
