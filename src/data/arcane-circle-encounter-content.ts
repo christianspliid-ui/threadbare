@@ -2126,7 +2126,6 @@ export const AC_PROMOTION_TEMPLATE: UnifiedActionTemplate = {
             'A new rank in the circle means different access, different assignments, ' +
             'and different expectations. The god marks the transition and what it opens.',
           effects: [
-            { kind: 'clearance_gate_tag', tag: 'ac.rank_advanced' },
             { kind: 'faction_reputation_gain', factionId: 'arcane_circle', amount: 0.2 },
             {
               kind: 'recent_event',

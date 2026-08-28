@@ -18,7 +18,6 @@ import {
   countWord,
   describeTallyKey,
   factionStandingSentence,
-  gateFollowOnSentence,
   gateStateSentence,
   growthSentence,
   magnitudeBandIndex,
@@ -281,7 +280,6 @@ describe('every derived sentence builder is numeral-free', () => {
     record('gate-state', gateStateSentence({
       beforeState: 'closed_watchful', afterState: 'open',
     }).detail);
-    record('gate-follow-on', gateFollowOnSentence('#witness_story_followed').detail);
 
     for (let n = 0; n <= 12; n++) {
       const phrase = overviewHighlightPhrase({ traits: n, rewards: n, growth: n, hooks: n });
@@ -317,7 +315,6 @@ describe('every derived builder returns the structure it spent on the sentence',
     })],
     ['reward', rewardSentence({ actorName: 'Vara', rewardName: 'Meditation Stones', gained: true })],
     ['gate-state', gateStateSentence({ beforeState: 'closed_watchful', afterState: 'open' })],
-    ['gate-follow-on', gateFollowOnSentence('#witness_story_followed')],
   ];
 
   it('names a state noun with non-empty text', () => {

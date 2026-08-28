@@ -950,7 +950,6 @@ export const THIEVES_GUILD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
               'A working smuggler\'s route through {location} is not just one job — it\'s ' +
               'a recurring capability. The god marks it as a structural asset.',
             effects: [
-              { kind: 'clearance_gate_tag', tag: 'tg.smuggler_route_open' },
               { kind: 'faction_reputation_gain', factionId: 'thieves_guild', amount: 0.1 },
             ],
             closeAfterSelection: true,
@@ -962,7 +961,6 @@ export const THIEVES_GUILD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
               'A new customs arrangement in {location} is not invisible to those who already ' +
               'profit from the existing arrangements. Someone will push back.',
             effects: [
-              { kind: 'clearance_gate_tag', tag: 'tg.smuggler_route_open' },
               {
                 kind: 'encounter_seed',
                 encounterFamily: 'tg.quest',
@@ -1930,7 +1928,6 @@ export const TG_PROMOTION_TEMPLATE: UnifiedActionTemplate = {
             'Advancement in the guild carries real weight — new territories, higher-grade assignments, ' +
             'different risks. The god marks the transition.',
           effects: [
-            { kind: 'clearance_gate_tag', tag: 'tg.rank_advanced' },
             { kind: 'faction_reputation_gain', factionId: 'thieves_guild', amount: 0.2 },
             {
               kind: 'recent_event',

@@ -494,18 +494,6 @@ export function gateStateSentence(args: {
   };
 }
 
-/** A follow-on tag the gate leaves behind. */
-export function gateFollowOnSentence(tag: string): DerivedChange {
-  const label = humanizeKeySegment(tag.replace(/^#/, ''));
-  return {
-    detail: `The gate leaves behind ${label}.`,
-    concepts: [],
-    stateNoun: { text: label },
-    direction: 'opens',
-    storyWeight: 'beat',
-  };
-}
-
 /**
  * A reward changing hands, or a mark taken in its place.
  *

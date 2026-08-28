@@ -2,8 +2,11 @@
  * Integration test: aftermath reaction effect kinds (THR-90 task 3).
  *
  * Gap filled: src/engine/__tests__/encounterAftermath.test.ts covers each kind
- * in isolation. This test fires a SINGLE reaction with ALL 7 kinds on a non-
+ * in isolation. This test fires a SINGLE reaction with all 6 kinds on a non-
  * Gate-Duty template and asserts the full contract end-to-end:
+ *
+ * THR-1212 slice 6 — this was 7 until `clearance_gate_tag` was retired. The
+ * count is asserted below, so it is a real check rather than a label.
  *   (a) every effect mutated state as expected (checked via returned state)
  *   (b) every effect emitted encounter_aftermath_effect
  *   (c) per-kind sub-traces fired (encounter_seed_planted, hidden_mark_placed, intelligence_granted)
@@ -73,7 +76,6 @@ function createGameState(): GameState {
         persistence: 'must-persist',
         state: 'pending',
         revealedSignalKeys: [],
-        followOnTags: [],
         attempts: 0,
         lastUpdatedTick: 10,
         history: [],
@@ -100,12 +102,12 @@ function makeAction(): UnifiedAction {
   };
 }
 
-describe('unifiedAftermath — all 7 effect kinds (THR-90)', () => {
+describe('unifiedAftermath — all 6 effect kinds (THR-90)', () => {
   let runtime: SimulationRuntime;
   beforeEach(() => { clearTraces(); enableTracing(); runtime = createSimulationRuntime(); });
   afterEach(() => { clearTraces(); disableTracing(); });
 
-  it('fires all 7 effect kinds: correct state mutations + trace contract', () => {
+  it('fires all 6 effect kinds: correct state mutations + trace contract', () => {
     const state = createGameState();
     const action = makeAction();
 
@@ -118,15 +120,13 @@ describe('unifiedAftermath — all 7 effect kinds (THR-90)', () => {
         { kind: 'reputation_score', delta: 0.05 },
         // 2. reputation_tally
         { kind: 'reputation_tally', key: 'shadow.positive', delta: 1 },
-        // 3. clearance_gate_tag (valid runtimeId in state)
-        { kind: 'clearance_gate_tag', runtimeId: 'gate-thr90', tag: '#verified' },
-        // 4. recent_event
+        // 3. recent_event
         { kind: 'recent_event', eventType: 'ripple_consequence', message: 'Something shifted.', significance: 0.4 },
-        // 5. encounter_seed
+        // 4. encounter_seed
         { kind: 'encounter_seed', encounterFamily: 'thieves_guild', seedLabel: 'The mark knows your face', delayTicks: 12, priority: 1.5 },
-        // 6. hidden_mark — 'concealed_action' is a valid HiddenMarkCategory
+        // 5. hidden_mark — 'concealed_action' is a valid HiddenMarkCategory
         { kind: 'hidden_mark', category: 'concealed_action', severity: 0.6, label: 'Witnessed the theft', revealFamilies: ['investigation'] },
-        // 7. intelligence — 'trade_route' is a valid IntelligenceCategory
+        // 6. intelligence — 'trade_route' is a valid IntelligenceCategory
         { kind: 'intelligence', category: 'trade_route', label: 'Northern caravan schedule', detail: 'Wagons leave at dawn every 6 ticks', reliability: 0.85, targetRegion: 'city_north' },
       ],
     };
@@ -164,22 +164,15 @@ describe('unifiedAftermath — all 7 effect kinds (THR-90)', () => {
     // recent_event: recentEvents has new entry
     expect(updated.recentEvents.length).toBeGreaterThan(state.recentEvents.length);
 
-    // clearance_gate_tag: clearanceGateStates updated for the matching gate
-    expect(updated.clearanceGateStates).toBeDefined();
-    const gate = updated.clearanceGateStates!.get('gate-thr90');
-    expect(gate).toBeDefined();
-    expect(gate!.followOnTags).toContain('#verified');
-
-    // (b) — encounter_aftermath_effect traces: one per effect (7 total)
+    // (b) — encounter_aftermath_effect traces: one per effect (6 total)
     const effectTraces = traces.filter(t => t.category === 'encounter_aftermath_effect');
-    expect(effectTraces).toHaveLength(7);
+    expect(effectTraces).toHaveLength(6);
 
     const effectKinds = effectTraces.map(t =>
       t.category === 'encounter_aftermath_effect' ? t.effectKind : null,
     );
     expect(effectKinds).toContain('reputation_score');
     expect(effectKinds).toContain('reputation_tally');
-    expect(effectKinds).toContain('clearance_gate_tag');
     expect(effectKinds).toContain('recent_event');
     expect(effectKinds).toContain('encounter_seed');
     expect(effectKinds).toContain('hidden_mark');
@@ -224,7 +217,7 @@ describe('unifiedAftermath — all 7 effect kinds (THR-90)', () => {
     if (appliedTraces[0].category === 'encounter_aftermath_applied') {
       expect(appliedTraces[0].encounterId).toBe('enc.test.all_kinds');
       expect(appliedTraces[0].reactionId).toBe('react.all_kinds');
-      expect(appliedTraces[0].effectKinds).toHaveLength(7);
+      expect(appliedTraces[0].effectKinds).toHaveLength(6);
     }
   });
 });

@@ -24,7 +24,6 @@ const LEGACY_ENCOUNTER_REACHES = new Set<string>(['flesh', 'spirit', 'dominance'
 const KNOWN_AFTERMATH_EFFECT_KINDS = new Set<EncounterAftermathReactionEffect['kind']>([
   'reputation_score',
   'reputation_tally',
-  'clearance_gate_tag',
   'recent_event',
   'encounter_seed',
   'hidden_mark',

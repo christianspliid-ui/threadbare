@@ -116,7 +116,7 @@ describe('consumption ledger — the class is derived, never authored', () => {
 
   it('a spawn with no acting consumer is a dormant hook', () => {
     // Hooks are not passive (THR-1161): the class requires a real spawn, which is
-    // exactly the bar `followOnTags` fails.
+    // exactly the bar `followOnTags` failed before it was retired.
     expect(classifyRow({ writes: 'x', consumers: [spawns('a', 'b')] })).toBe('dormant-hook');
   });
 
@@ -125,8 +125,8 @@ describe('consumption ledger — the class is derived, never authored', () => {
   });
 
   it('a reader that only reports is not a consumer', () => {
-    // The whole ledger turns on this line. `followOnTags` has a reader; a grep for
-    // readers calls that seam healthy; and this is where that answer is refused.
+    // The whole ledger turns on this line. `followOnTags` had a reader; a grep for
+    // readers called that seam healthy; and this is where that answer was refused.
     expect(classifyRow({ writes: 'x', consumers: [reports('a', 'b')] })).toBe(
       'write-without-consumer',
     );
@@ -162,37 +162,49 @@ describe('consumption ledger — write-without-consumer is deferred, not silent'
   });
 });
 
-describe('consumption ledger — the followOnTags demonstration', () => {
+describe('consumption ledger — the followOnTags demonstration, after the retirement', () => {
   /**
    * The plan's falsification check (THR-1212, absorbed ruling 2): the ledger had to
    * surface `followOnTags` *on its own*, or the design was wrong and went back for
-   * rework. It did — and this pins the reason it did, which is not that anyone
-   * wrote "dead" in the row.
+   * rework. It did, slice 6 retired the member it found, and these tests are what
+   * that block became.
    *
-   * If someone gives the tag a consumer that acts, this test fails, and that is
-   * correct: the demonstration case would have stopped being one.
+   * **A deletion can weaken the test that proved it was warranted, and this is the
+   * shape of that trap.** The old assertion read `toEqual(['clearance_gate_tag'])`;
+   * the honest post-retirement form is `toEqual([])`, which also passes when the
+   * corpus is empty, when membership stops being derived, or when `classifyRow`
+   * returns nothing at all. So "zero" is asserted only alongside the two things
+   * that make zero mean something: a non-empty population, and a classifier still
+   * demonstrably able to return the class — the latter proved on synthetic rows in
+   * the `class is derived, never authored` block above, which is deliberately not
+   * coupled to any live member and so survives every future retirement.
    */
-  it('clearance_gate_tag classifies write-without-consumer, from its consumers alone', () => {
-    const row = EFFECT_ROWS.clearance_gate_tag;
-    expect(row.consumers.length).toBeGreaterThan(0);
-    expect(row.consumers.every((c) => c.kind === 'reports')).toBe(true);
-    expect(classifyRow(row)).toBe('write-without-consumer');
+  it('still has a population to classify, so an empty dead-list means something', () => {
+    expect(effectKinds.length).toBeGreaterThan(0);
+    expect(graphOps.length).toBeGreaterThan(0);
   });
 
-  it('is the only write-without-consumer in the committed ledger', () => {
+  it('no longer carries the retired member in its derived membership', () => {
+    // Membership comes from the union, so this fails by name if the effect kind is
+    // ever reintroduced — at which point it owes a row, and a real consumer.
+    expect(effectKinds).not.toContain('clearance_gate_tag');
+    expect(Object.keys(EFFECT_ROWS)).not.toContain('clearance_gate_tag');
+  });
+
+  it('has no write-without-consumer left in the committed ledger', () => {
     const dead = [
       ...effectKinds.filter((m) => classifyRow(EFFECT_ROWS[m]) === 'write-without-consumer'),
       ...graphOps.filter((m) => classifyRow(GRAPH_OP_ROWS[m]) === 'write-without-consumer'),
     ];
-    expect(dead).toEqual(['clearance_gate_tag']);
+    expect(dead).toEqual([]);
   });
 
-  it('its cited reader really is the follow-on sentence, not a consumer', () => {
-    // Pinned against the source rather than trusted from the row: the citation is
-    // only evidence while the reader still does what the row says it does.
+  it('has lost the reader the retired row cited', () => {
+    // The row's evidence was that its only reader merely reported. The retirement
+    // deleted that reader, and this pins the deletion against the source rather
+    // than trusting the diff.
     const source = read('src/engine/unifiedActionResolution.ts');
-    expect(source).toContain('gateFollowOnSentence');
-    expect(source).toContain("kind: 'future_hook'");
+    expect(source).not.toContain('gateFollowOnSentence');
   });
 });
 
