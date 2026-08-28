@@ -111,16 +111,30 @@ const MINT_BOUND_FORMS: ReadonlySet<AnchorForm> = new Set<AnchorForm>(['artifact
  * explicitly rather than tolerating a rate"*. A ceiling would let one of these be fixed
  * and a different one appear with the gate none the wiser. Filed as THR-1317; each id
  * leaves this list when its chip gains a `visualKind` or drops the `entityId`.
+ *
+ * **Emptied by THR-1317 — and kept, empty, on purpose.** All seven gained
+ * `visualKind: 'agent'`, because in every case the *stated* authorial intent was already
+ * to anchor the actor and only the mechanism was misunderstood. Each site said so in its
+ * own comment: the drowned-archive re-anchor wanted "the chip's click [to land] where the
+ * state actually changed", toll-of-blades cited the catalog's "bearer entityId plus stat
+ * tooltipId", and the broken seal kept `$actor` as "the carrier route the anchor catalog
+ * names for an ambition". All three then dropped or omitted the `visualKind`, believing
+ * the id alone carried the route — but `fromConceptRef` returns `undefined` unless both
+ * are present, so what they removed was the route itself.
+ *
+ * Anchorlessness was considered for the broken seal, whose comment is explicit that the
+ * sentence is *not* about the person, and rejected on measurement: dropping the
+ * `entityId` fails `check:chip-anchors`, since Law 56 clause 2 requires a `stateNoun` to
+ * carry an `entityId` or a resolving `tooltipId` and no tooltip concept names an
+ * ambition. There is likewise no `ambition` member of the `visualKind` union. The carrier
+ * route is therefore the only shape available, and it is the one that comment asked for.
+ *
+ * The empty list is the live assertion, not a leftover: the `toEqual` below now fails
+ * the moment any new chip declares an `entityId` its surface will ignore, which is the
+ * regression this whole enumeration exists to catch. Do not delete it because it is
+ * empty — empty is the passing state.
  */
-const ANCHORS_WITHOUT_VISUAL_KIND: readonly string[] = [
-  'encounter.border.toll_of_blades::toll.iron_tested::$actor',
-  'encounter.delve.the_broken_seal::seal.crit_fail.the_wanting::$actor',
-  'encounter.delve.the_drowned_archive::archive.cost.charter_known::$actor',
-  'encounter.delve.the_drowned_archive::archive.crit.charter_known::$actor',
-  'encounter.delve.the_drowned_archive::archive.crit_fail.one_line::$actor',
-  'encounter.delve.the_drowned_archive::archive.fail.kept_name::$actor',
-  'encounter.delve.the_drowned_archive::archive.success.charter_known::$actor',
-];
+const ANCHORS_WITHOUT_VISUAL_KIND: readonly string[] = [];
 
 /**
  * Faction definitions a chip anchors that this world spawned no chapter of.

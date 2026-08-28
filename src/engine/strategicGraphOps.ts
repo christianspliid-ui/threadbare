@@ -9,8 +9,29 @@
 
 import type { WorldGraph } from './graph';
 import type { GraphNode } from '../types/graph';
-import { ROUTE_IDENTITY_SUBTYPE } from '../data/strategic-action-constants';
-import { getFactionMembershipEdges } from './graphQueries';
+import {
+  ROUTE_IDENTITY_SUBTYPE,
+  SUBORNED_WARBAND_DISSOLUTION_REASON,
+  WARBAND_INITIAL_COHESION,
+  WARBAND_TARGET_MEMBER_COUNT,
+} from '../data/strategic-action-constants';
+import { getAgentLocationId, getAgentsAtLocation, getFactionMembershipEdges } from './graphQueries';
+// ── The T3 tier's writers (THR-1309) ──
+// Imported rather than reproduced: each of these is the *single* writer for its shape,
+// and a second mint site is a second shape (the lesson `groupShape.ts` records).
+import type { GameState } from '../types/gameState';
+import type { ReachDomain } from '../types/traits';
+import type { LocationSubtype } from '../types/index';
+import type { StrategicFactionSeed } from '../types/strategicAction';
+import type { FactionDefinition, FactionRankTier, FactionType } from '../types/faction';
+import { FACTION_REPUTATION_DECAY_PER_TICK } from '../data/faction-constants';
+import { GROUP_MAX_MEMBERS, GROUP_MIN_MEMBERS } from '../data/group-constants';
+import { createGroup } from './groups/groupFormation';
+import { dissolveGroup } from './groups/groupDissolution';
+import { getGroupMemberEdges, getGroupPosition, isAgentGone, isGrouped } from './groups/groupQueries';
+import { refreshRoster } from './groups/groupCohesion';
+import { isCompanyGroupNode } from './groupShape';
+import { seedFactionFromDefinition } from './factionSeeding';
 import { buildRouteManifest } from './tradeRoute';
 import { validateEdgeEndpoints } from '../types/edgeSchema';
 import { emitTrace } from './traceBuffer';
@@ -943,4 +964,450 @@ export function findRouteIdentityNode(
   // Deterministic when a world somehow carries two (NFP #3).
   candidates.sort((a, b) => a.id.localeCompare(b.id));
   return candidates[0];
+}
+
+// ─── The T3 tier: organisations, and breaking them (THR-1309) ───────
+//
+// T1's objects were records and edges; T2's were places. T3 mints the one kind of
+// object that can act back — people who answer to someone. Both ops here write
+// **through** the existing single writers (`createGroup`, `seedFactionFromDefinition`,
+// `dissolveGroup`) rather than reproducing their graph writes, for the reason
+// `groupShape.ts` exists at all: a second minter is a second shape, and the group
+// family has already paid for that once.
+
+/**
+ * Raise a warband — a real company commanded by the actor (THR-1309).
+ *
+ * **What this replaces.** `strategic_recruit_warband` completed for the whole life of
+ * the corpus and minted nobody: its mutation wrote an intelligence record called
+ * `warband_recruited`, so the verb appeared in the completion history, the dashboards
+ * counted it, and no band ever existed. That is the "recruit-warband mirage" the plan
+ * names, and it is the same failure shape as `press_the_mark` — every layer correct,
+ * the arc unable to connect.
+ *
+ * Routes through `createGroup`, which is the one code path that mints a company: it
+ * stamps `groupKind: 'company'` (so `groupShape`'s discriminator sees it without a
+ * fallback), writes `commanded_by` to the leader and `member_of` for every recruit
+ * with the schema-required `role`/`rank`/`joinedTick` trio, and generates the name.
+ * Writing those edges here instead would be a second mint site for a family that
+ * THR-1297 §4 spent a slice consolidating.
+ *
+ * **Where the recruits come from, and why the cast is the load-bearing half.** The
+ * template binds a `recruit` cast slot, which the bind pass fills from real people and
+ * *mints* when nobody suitable is there. Those bound actors arrive here as
+ * `boundRecruitIds` and go into the band first. Colocated ungrouped mortals top the
+ * roster up to `WARBAND_TARGET_MEMBER_COUNT` after them.
+ *
+ * That ordering is the trap-1 answer rather than a nicety. Recruiting purely from
+ * whoever happens to be standing at the commander's completion-time location makes the
+ * verb's *resolution* depend on a condition its *selection* never checked — the exact
+ * shape that let `press_the_mark` complete three times and mint zero debts. The cast is
+ * what makes the people a precondition the binding system guarantees, so a raised
+ * warband cannot silently be a warband of nobody.
+ *
+ * `isGrouped` filters both sources: a company whose members belong to another company
+ * is two rosters claiming the same people.
+ *
+ * @returns `no_location` when the commander is nowhere resolvable, `no_recruits` when
+ *   too few eligible mortals can be found even so — both ordinary refusals, not
+ *   errors. A refusal is the correct outcome of trying to raise a band in an empty
+ *   field, and it is visible in the op result rather than silently succeeding.
+ */
+export function raiseWarband(
+  state: GameState,
+  actorId: string,
+  boundRecruitIds: readonly string[] = [],
+): GraphOpResult {
+  try {
+    const graph = state.graph;
+    const locationId = getAgentLocationId(graph, actorId);
+    if (!locationId) {
+      return { success: false, op: 'create_group', error: 'no_location' };
+    }
+
+    const commander = graph.getNode(actorId);
+    if (!commander) {
+      return { success: false, op: 'create_group', error: 'actor_not_found' };
+    }
+
+    const eligible = (n: GraphNode | undefined): n is GraphNode =>
+      !!n && n.id !== actorId && !isGrouped(graph, n.id) && !isAgentGone(n);
+
+    // Bound cast first — these are the people the undertaking actually engaged.
+    const seen = new Set<string>();
+    const recruits: GraphNode[] = [];
+    for (const id of boundRecruitIds) {
+      const node = graph.getNode(id);
+      if (eligible(node) && !seen.has(id)) {
+        seen.add(id);
+        recruits.push(node);
+      }
+    }
+
+    // Then whoever else is standing here. Deterministic (NFP #3):
+    // `getAgentsAtLocation` returns edge order, which is insertion order, and the
+    // slice below is stable — no PRNG draw anywhere in this function.
+    for (const node of getAgentsAtLocation(graph, locationId)) {
+      if (recruits.length >= WARBAND_TARGET_MEMBER_COUNT) break;
+      if (eligible(node) && !seen.has(node.id)) {
+        seen.add(node.id);
+        recruits.push(node);
+      }
+    }
+    recruits.length = Math.min(recruits.length, WARBAND_TARGET_MEMBER_COUNT);
+
+    // `createGroup` counts the leader in its own `GROUP_MIN_MEMBERS` check, so the
+    // commander goes in the member list rather than only on the `commanded_by` edge.
+    const members = [commander, ...recruits];
+    if (members.length < GROUP_MIN_MEMBERS) {
+      return { success: false, op: 'create_group', error: 'no_recruits' };
+    }
+
+    const created = createGroup(state, {
+      members,
+      leaderId: actorId,
+      locationId,
+      // `raised_warband` rather than `systemic` (THR-1309): the naming layer keys
+      // adjectives off `cause`, and `systemic` means strangers who fell in together
+      // at the same place — the one thing a recruited band is not. `squad` is the
+      // closest `GroupType` the company system carries; a warband is a fighting
+      // unit under one commander, which is what that member already means.
+      cause: 'raised_warband',
+      groupType: 'squad',
+      startingCohesion: WARBAND_INITIAL_COHESION,
+    });
+
+    if (!created) {
+      // `createGroup` is fail-soft and returns undefined on a rejected write or a
+      // same-tick id collision. Surfacing it as a refusal keeps that contract.
+      return { success: false, op: 'create_group', error: 'group_creation_refused' };
+    }
+
+    return { success: true, op: 'create_group', createdId: created.groupId };
+  } catch (e) {
+    return { success: false, op: 'create_group', error: String(e) };
+  }
+}
+
+/**
+ * Add fighters to a warband the actor already commands — the `warband` kind's *update*.
+ *
+ * **Why this is a real graph write and not an intelligence record.** The kind's update
+ * column is the one place a T3 verb could most easily become a second mirage: the
+ * precedent immediately to hand (`strategic_extend_reach`, the network's update) writes
+ * `record_intelligence` and changes nothing about the network it claims to extend. That
+ * pattern is exactly what `strategic_recruit_warband` was doing before this slice, and
+ * shipping a new instance of it while removing the old one would be a wash.
+ *
+ * So reinforcement writes the same `member_of` edge `createGroup` writes, with the same
+ * schema-required `role`/`rank`/`joinedTick` trio, and refreshes the roster mirror
+ * through `refreshRoster` — the bookkeeping copy the groups system keeps so a
+ * cascade-deleted edge stays detectable. A band that gains people gains *people*.
+ *
+ * Capped at `GROUP_MAX_MEMBERS` by the same rule `createGroup` applies, so reinforcing
+ * a full band is a refusal rather than an overflow.
+ *
+ * @returns `not_a_company` / `already_disbanded` / `band_full` / `no_recruits` — all
+ *   ordinary refusals.
+ */
+export function reinforceWarband(
+  state: GameState,
+  actorId: string,
+  targetGroupId: string,
+  boundRecruitIds: readonly string[] = [],
+): GraphOpResult {
+  try {
+    const graph = state.graph;
+    const group = graph.getNode(targetGroupId);
+    if (!group) {
+      return { success: false, op: 'reinforce_group', error: 'group_not_found' };
+    }
+    if (!isCompanyGroupNode(group)) {
+      return { success: false, op: 'reinforce_group', error: 'not_a_company' };
+    }
+    if ((group.properties as Record<string, unknown>).groupStatus === 'disbanded') {
+      return { success: false, op: 'reinforce_group', error: 'already_disbanded' };
+    }
+
+    const currentCount = getGroupMemberEdges(graph, targetGroupId)
+      .filter(e => (e.properties as Record<string, unknown>).leftAtTick === undefined).length;
+    const room = GROUP_MAX_MEMBERS - currentCount;
+    if (room <= 0) {
+      return { success: false, op: 'reinforce_group', error: 'band_full' };
+    }
+
+    const locationId = getGroupPosition(graph, targetGroupId) ?? getAgentLocationId(graph, actorId);
+    if (!locationId) {
+      return { success: false, op: 'reinforce_group', error: 'no_location' };
+    }
+
+    const eligible = (n: GraphNode | undefined): n is GraphNode =>
+      !!n && n.id !== actorId && !isGrouped(graph, n.id) && !isAgentGone(n);
+
+    const seen = new Set<string>();
+    const recruits: GraphNode[] = [];
+    for (const id of boundRecruitIds) {
+      const node = graph.getNode(id);
+      if (recruits.length >= room) break;
+      if (eligible(node) && !seen.has(id)) { seen.add(id); recruits.push(node); }
+    }
+    for (const node of getAgentsAtLocation(graph, locationId)) {
+      if (recruits.length >= room) break;
+      if (eligible(node) && !seen.has(node.id)) { seen.add(node.id); recruits.push(node); }
+    }
+
+    if (recruits.length === 0) {
+      return { success: false, op: 'reinforce_group', error: 'no_recruits' };
+    }
+
+    for (const member of recruits) {
+      graph.addEdge({
+        id: `e_member_of_${member.id}_${targetGroupId}`,
+        source: member.id,
+        target: targetGroupId,
+        type: 'member_of',
+        properties: { role: 'member', rank: 0, joinedTick: state.tick },
+      });
+    }
+    refreshRoster(graph, targetGroupId);
+
+    // Deliberately NO `createdId`: that field means *a node was created*, and
+    // `christenCompletedWork` renames whatever it names. Reinforcing creates edges, not
+    // a node — returning the band's id here re-christened an already-named company on
+    // every reinforcement and produced 'The Murkford Company Company' in a 150-tick
+    // seed-99 run. Visible only by reading names out of a real world (the T2 slice hit
+    // the same class with 'The The Shattered Sanctum-Greycity Road').
+    return { success: true, op: 'reinforce_group' };
+  } catch (e) {
+    return { success: false, op: 'reinforce_group', error: String(e) };
+  }
+}
+
+/**
+ * Break a warband the actor did not raise — the `warband` kind's counter-play.
+ *
+ * Writes through `dissolveGroup`, the single dissolution writer, so a suborned band
+ * inertifies exactly as a starved one does: node and `member_of` edges stay, each
+ * edge stamped `leftAtTick` and `leaveReason`, roster cleared. A hand-rolled
+ * `groupStatus: 'disbanded'` write would leave live membership edges pointing at a
+ * dead company, and every roster reader in the groups system would go on reporting
+ * it as an active band — the counter-play landing on paper and not in the world.
+ *
+ * @returns `not_a_company` when the target is some other group-family node,
+ *   `already_disbanded` when it is already inert. Both ordinary refusals.
+ */
+export function disbandGroup(
+  state: GameState,
+  targetGroupId: string,
+): GraphOpResult {
+  try {
+    const graph = state.graph;
+    const group = graph.getNode(targetGroupId);
+    if (!group) {
+      return { success: false, op: 'disband_group', error: 'group_not_found' };
+    }
+    if (!isCompanyGroupNode(group)) {
+      return { success: false, op: 'disband_group', error: 'not_a_company' };
+    }
+    if ((group.properties as Record<string, unknown>).groupStatus === 'disbanded') {
+      return { success: false, op: 'disband_group', error: 'already_disbanded' };
+    }
+
+    dissolveGroup(state, group, SUBORNED_WARBAND_DISSOLUTION_REASON);
+
+    // No bespoke trace here: the lifecycle already emits `strategic_world_change`
+    // for every completed undertaking's ops, and `faction_seed` — the one shape that
+    // looked like a precedent — turns out to be a trace object that is built,
+    // returned and never emitted by anybody. Adding an unregistered category would
+    // be inventing a feed rather than joining one.
+    // No `createdId` here either — breaking a band creates nothing, and the field
+    // would send the christener at a company that already has a name.
+    return { success: true, op: 'disband_group' };
+  } catch (e) {
+    return { success: false, op: 'disband_group', error: String(e) };
+  }
+}
+
+/**
+ * The rank ladder every founded order shares.
+ *
+ * Three tiers rather than the seeded guilds' four: a chartered order has not had time
+ * to grow a middle. The `encounterAccess` prefixes point at the same generic guild
+ * pools the seed's content ids do, so a member's rank actually gates what the order
+ * offers them — a ladder whose tiers unlock nothing is a display string.
+ */
+const FOUNDED_ORDER_RANK_TIERS: readonly FactionRankTier[] = [
+  {
+    id: 'sworn',
+    name: 'Sworn',
+    minReputation: 0.0,
+    maxSlots: null,
+    bonuses: [],
+    encounterAccess: ['ag.quest.'],
+  },
+  {
+    id: 'keeper',
+    name: 'Keeper',
+    minReputation: 0.4,
+    maxSlots: null,
+    bonuses: [
+      { type: 'encounter_reward_multiplier', value: 1.2, description: '+20% order rewards' },
+    ],
+    encounterAccess: ['ag.quest.', 'ag.senior.'],
+  },
+  {
+    id: 'leader',
+    name: 'Chartermaster',
+    minReputation: 0.85,
+    maxSlots: 1,
+    bonuses: [
+      { type: 'scoring_boost', value: 0.2, description: '+0.2 scoring for order encounters' },
+    ],
+    encounterAccess: ['ag.quest.', 'ag.senior.', 'ag.elite.'],
+  },
+];
+
+/**
+ * FNV-1a over a string, to a positive 32-bit seed.
+ *
+ * The work namer's idiom (`naming/workNames.ts`), reused so a chartered order's hall
+ * placement is a function of its own id and of nothing else — in particular not of
+ * how many dice anything else happened to draw earlier in the same tick (NFP #3).
+ */
+function hashStringToSeed(input: string): number {
+  let hash = 0x811c9dc5;
+  for (let i = 0; i < input.length; i++) {
+    hash ^= input.charCodeAt(i);
+    hash = Math.imul(hash, 0x01000193);
+  }
+  return Math.abs(hash | 0);
+}
+
+/**
+ * Charter a faction — the founded order (THR-1309, absorbing THR-1295).
+ *
+ * **The gap this closes, stated precisely.** `strategic_found_order` was folded out of
+ * the retired initiative pipeline (THR-1292 §3) carrying only half its old payoff: it
+ * built a guild-hall sublocation and stopped, with a `TODO(THR-1295)` at its mutation
+ * hint recording that the faction waited on this op. Meanwhile
+ * `dynamicFactionDefinitions` — the `GameState` field whose entire purpose is holding
+ * run-authored faction definitions — has had **no live producer at all** since that
+ * retirement: a declared field, an IA-manifest row, and nothing anywhere that writes
+ * it. The world could not gain a faction after worldgen by any path.
+ *
+ * **Why the definition is synthesized rather than picked.** A `FactionDefinition` is
+ * the contract the whole faction layer reads — rank ladder, join and promotion
+ * encounters, quest and social pools, reputation decay. Reusing a seeded definition
+ * would make the founded order a second *instance* of an existing guild rather than a
+ * new order; inventing the content ids would make it a faction whose encounters
+ * resolve to nothing. So the mechanical half is derived (halls at the founding
+ * settlement, reach weights from the founding work) and the content half comes from
+ * the template's authored `factionSeed`, pointed at existing generic guild content.
+ *
+ * **Reach weights come from the template's `reachProfile`, not the founder's node.**
+ * The profile is authored, always present, and says what kind of work chartered the
+ * order — which is the thing the order should inherit. Reading a capability bag off
+ * the actor would make the same verb produce a differently-shaped faction depending
+ * on a property whose absence would silently yield `{}`.
+ *
+ * The definition is recorded into `state.dynamicFactionDefinitions` **before** seeding,
+ * so a faction node can always resolve its own definition: every reader of a faction's
+ * rank ladder goes through that map, and a node seeded against a definition nobody
+ * stored is a faction that cannot answer what its own ranks are. On a hall-less seed
+ * the entry is rolled back rather than left behind.
+ *
+ * @returns `no_qualifying_locations` when the seeder found nowhere to seat a hall — an
+ *   ordinary refusal, not an error: you cannot charter an order with no town to
+ *   charter it in.
+ */
+export function foundFaction(
+  state: GameState,
+  actorId: string,
+  targetLocationId: string,
+  seed: StrategicFactionSeed,
+  reachWeights: Partial<Record<ReachDomain, number>>,
+  renderedName: string,
+  tick: number,
+): GraphOpResult {
+  try {
+    const graph = state.graph;
+    if (!graph.getNode(actorId)) {
+      return { success: false, op: 'create_group', error: 'actor_not_found' };
+    }
+    if (!graph.getNode(targetLocationId)) {
+      return { success: false, op: 'create_group', error: 'location_not_found' };
+    }
+
+    // Deterministic id (NFP #3): founder plus tick, so the same run charters the same
+    // order under the same id. Also the natural uniqueness key — one actor cannot
+    // found two orders on the same tick.
+    const definitionId = `founded_${actorId}_${tick}`;
+    if (state.dynamicFactionDefinitions?.[definitionId]) {
+      return { success: false, op: 'create_group', error: 'faction_already_founded' };
+    }
+
+    const definition: FactionDefinition = {
+      id: definitionId,
+      nameTemplate: renderedName,
+      description: seed.description,
+      motto: seed.motto,
+      iconGlyph: seed.iconGlyph,
+      themeColor: seed.themeColor,
+      factionType: seed.factionType as FactionType,
+      reachWeights,
+      locationTypes: seed.locationTypes as LocationSubtype[],
+      rankTiers: [...FOUNDED_ORDER_RANK_TIERS],
+      reputationDecayPerTick: FACTION_REPUTATION_DECAY_PER_TICK,
+      joinEncounterTemplateId: seed.joinEncounterTemplateId,
+      promotionEncounterTemplateId: seed.promotionEncounterTemplateId,
+      questTemplateIds: [...seed.questTemplateIds],
+      socialTemplateIds: [...seed.socialTemplateIds],
+      expulsionConsequences: [{ type: 'remove_encounters', params: {} }],
+    };
+
+    // Recorded before seeding — see the doc comment.
+    if (!state.dynamicFactionDefinitions) state.dynamicFactionDefinitions = {};
+    state.dynamicFactionDefinitions[definitionId] = definition;
+
+    const allLocationIds = graph.getNodesByType('location').map(n => n.id);
+    const result = seedFactionFromDefinition(
+      graph,
+      definition,
+      allLocationIds,
+      hashStringToSeed(definitionId),
+      undefined,
+      // Chartered where the founder did the work, not at a shuffled site.
+      targetLocationId,
+    );
+
+    if (result.guildHallIds.length === 0) {
+      // The seeder fail-softs to a hall-less faction when nothing qualifies. That is
+      // an order with no seat, so roll the definition back rather than leaving a
+      // half-founded entry the faction layer would go on reading forever.
+      delete state.dynamicFactionDefinitions[definitionId];
+      return { success: false, op: 'create_group', error: 'no_qualifying_locations' };
+    }
+
+    // `commanded_by`, not `constructed_by`. The latter is the edge that says who
+    // *built* a thing and its schema is `location|sublocation → actor` — a faction is
+    // an actor, so writing it there logs a `[GraphSchema]` violation on every founding
+    // and gives the world a malformed edge (trap 2: assert well-formedness at the
+    // writer, not where a seed happens to exercise it).
+    //
+    // `commanded_by` is `actor → actor` and says the truer thing anyway: the plan
+    // marks a faction "led, not held". It also earns its keep — `getCommandedEntities`
+    // reads this edge, so the founder can reach through their own order for remote
+    // undertakings rather than the founding being a fact nothing consults.
+    graph.addEdge({
+      id: `commanded_by_${result.factionId}_${actorId}`,
+      source: result.factionId,
+      target: actorId,
+      type: 'commanded_by',
+      properties: { assignedTick: tick },
+    });
+
+    return { success: true, op: 'create_group', createdId: result.factionId };
+  } catch (e) {
+    return { success: false, op: 'create_group', error: String(e) };
+  }
 }

@@ -668,7 +668,13 @@ export const TOLL_OF_BLADES_TEMPLATE: UnifiedActionTemplate = compileOpeningEnve
               causeClause: 'A war column that came forward and stopped',
               detail: "{actor}'s capability in the iron reach moved. Standing a war column down teaches it faster than a drill yard does.",
               stateNoun: { text: 'iron capability', tooltipId: 'reach.iron' },
-              concepts: [{ text: 'the iron reach', entityId: '$actor', tooltipId: 'reach.iron' }],
+              // THR-1317: `visualKind: 'agent'` was missing, so `fromConceptRef`
+              // returned `undefined` and the bearer route this comment describes
+              // was never drawn. A reach is a stat read off its bearer's sheet —
+              // the same shape `one-body-short` uses for quintessence.
+              concepts: [
+                { text: 'the iron reach', entityId: '$actor', visualKind: 'agent', tooltipId: 'reach.iron' },
+              ],
             },
             {
               // Backing write: step 2 successMetadata -> membership_change

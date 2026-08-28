@@ -138,7 +138,16 @@ export type GroupFormationCause =
    * so a reunion would otherwise read as an ordinary divine gathering and lose the
    * fact that these people had ridden together before.
    */
-  | 'reunite';
+  | 'reunite'
+  /**
+   * THR-1309 — a commander raised this band deliberately, through the `warband`
+   * undertaking's checkpoints. Distinct from `systemic` for the same reason
+   * `reunite` is distinct from `draw_together`: `systemic` means strangers who fell
+   * in together at the same place, which is precisely what a recruited warband is
+   * not. The naming layer reads `cause`, so collapsing the two would name a
+   * mustered company as an accident of colocation.
+   */
+  | 'raised_warband';
 
 /**
  * True when a group node is an NPC band rather than a mortal company.

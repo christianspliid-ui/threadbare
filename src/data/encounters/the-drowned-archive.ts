@@ -23,9 +23,18 @@
  * `stateNoun` at `$target` with `visualKind: 'location'`, but the write behind
  * them (`intelligence`) only ever touches the actor — `targetEntityId` cannot
  * be authored (see the comment on § 12 below). Re-anchored to
- * `entityId: '$actor'` with `visualKind` dropped so the chip's click lands
- * where the state actually changed. Implemented as written below; not
- * reverted.
+ * `entityId: '$actor'` so the chip's click lands where the state actually
+ * changed.
+ *
+ * **THR-1317 correction to that correction.** The re-anchor originally also
+ * *dropped* `visualKind`, on the belief that removing the wrong `location`
+ * tile left the actor route intact. It does not: `fromConceptRef` reads
+ * `if (!ref.entityId || !ref.visualKind) return undefined`, so dropping the
+ * kind kills the whole reference — the chip rendered as plain text carrying a
+ * `$actor` sentinel nothing would ever read, and the click landed nowhere at
+ * all. `visualKind: 'agent'` is what the stated intent actually compiles to:
+ * the actor's route *and* the actor's tile, both correct here because the
+ * sentence is about a record the actor gained.
  */
 
 import type {
@@ -722,7 +731,7 @@ export const THE_DROWNED_ARCHIVE_TEMPLATE: UnifiedActionTemplate = compileOpenin
               // agent end — see the comment on the reaction's `intelligence`
               // effect below — so the tile has to open the agent's own sheet,
               // not the settlement's.
-              stateNoun: { text: 'a record gained', entityId: '$actor' },
+              stateNoun: { text: 'a record gained', entityId: '$actor', visualKind: 'agent' },
               concepts: [{ text: 'intelligence record' }],
             },
             {
@@ -809,7 +818,7 @@ export const THE_DROWNED_ARCHIVE_TEMPLATE: UnifiedActionTemplate = compileOpenin
               detail:
                 '{actor} carries an intelligence record on {location}: the founding families were granted ' +
                 'this ground by another house.',
-              stateNoun: { text: 'a record gained', entityId: '$actor' },
+              stateNoun: { text: 'a record gained', entityId: '$actor', visualKind: 'agent' },
               concepts: [{ text: 'intelligence record' }],
             },
           ],
@@ -870,7 +879,7 @@ export const THE_DROWNED_ARCHIVE_TEMPLATE: UnifiedActionTemplate = compileOpenin
               detail:
                 "{actor} carries an intelligence record on {location}, bought at the warden's price: the " +
                 'founding families held this ground on a grant.',
-              stateNoun: { text: 'a record gained', entityId: '$actor' },
+              stateNoun: { text: 'a record gained', entityId: '$actor', visualKind: 'agent' },
               concepts: [{ text: 'intelligence record' }],
             },
           ],
@@ -924,7 +933,7 @@ export const THE_DROWNED_ARCHIVE_TEMPLATE: UnifiedActionTemplate = compileOpenin
               title: 'One Name Kept',
               causeClause: 'They read one line before the warden turned them out',
               detail: '{actor} carries an unreliable intelligence record on {location}: one name from the charter, and no proof of it.',
-              stateNoun: { text: 'a record gained', entityId: '$actor' },
+              stateNoun: { text: 'a record gained', entityId: '$actor', visualKind: 'agent' },
               concepts: [{ text: 'intelligence record' }],
             },
           ],
@@ -993,7 +1002,7 @@ export const THE_DROWNED_ARCHIVE_TEMPLATE: UnifiedActionTemplate = compileOpenin
               title: 'One Line Remembered',
               causeClause: 'They read a line off the charter before the shelf tipped',
               detail: '{actor} carries an unreliable intelligence record on {location}: one line of a charter nobody can produce now.',
-              stateNoun: { text: 'a record gained', entityId: '$actor' },
+              stateNoun: { text: 'a record gained', entityId: '$actor', visualKind: 'agent' },
               concepts: [{ text: 'intelligence record' }],
             },
           ],

@@ -27,7 +27,21 @@ export const WARLORD_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     mutationHint: { type: 'record_intelligence', intelligenceType: 'defense_scouting' },
   },
 
-  // 2. Recruit Warband — gather fighting strength
+  // 2. Recruit Warband — gather fighting strength.
+  //
+  // **This template used to mint nobody** (THR-1309). Its mutation wrote an
+  // intelligence record called `warband_recruited`, so the verb completed, entered the
+  // completion history and was counted by every dashboard, while no band ever existed
+  // — the "recruit-warband mirage" the T3 plan names. It now routes through
+  // `create_group{company}` → `createGroup`, the single company mint site, so a
+  // completed recruitment produces a real company node carrying `groupKind: 'company'`
+  // with `member_of` and `commanded_by` edges.
+  //
+  // `requiresLocation` is deliberately absent (⇒ false). THR-1310's re-measurement
+  // found the wanderer family at 0/115 rolled on seed 42 with `true` — 100%
+  // `actor_absent` — because `isActorAtStage` demands presence and the mover that would
+  // deliver it is doc 3's binder, unshipped. This verb does not need stage presence:
+  // it recruits at the commander's own completion-time location.
   {
     id: 'strategic_recruit_warband',
     displayName: 'Recruit Warband',
@@ -46,7 +60,34 @@ export const WARLORD_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     catalystEncounterIds: ['encounter_desertion', 'encounter_warband_rivalry'],
     targetRule: { type: 'location_subtype', subtypes: ['town', 'city', 'capital', 'camp', 'fort'] },
     resourceHint: { wealthCost: 50, reachFloor: { iron: 0.3, heart: 0.2 } },
-    mutationHint: { type: 'record_intelligence', intelligenceType: 'warband_recruited' },
+    checkpointDifficulty: 0.55,
+    payoffValue: 2.0,
+    motivations: ['courage_prudence', 'loyalty_ambition'],
+    // **No `cast` — and that is a measured decision, not an omission
+    // (TODO(THR-1321)).** The recruits *should* be a cast slot: that is the trap-1
+    // guarantee, making the people a precondition the binding system supplies rather
+    // than a hope about who happens to be standing here. It was authored that way
+    // first, and it made this verb inert.
+    //
+    // Two controlled arms, seed 99 / medium / 150 ticks, each confirmed applied
+    // before it ran:
+    //   cast `must-persist`  → recruit_warband 0 ok / 6 fail, 0 warbands
+    //   cast `scene-only`    → recruit_warband 0 ok / 6 fail, 0 warbands
+    //   no cast              → recruit_warband 13 ok / 1 fail, 7 warbands standing
+    // So it is the presence of a cast on this template that halts it, not the
+    // persistence mode — and `strategic_establish_spy_network` carries a
+    // `must-persist` cast and completes, so it is not casts in general either. That
+    // makes it a binding-layer question over a shared subsystem with its own golden
+    // comparison, filed rather than fixed inline (the THR-1310/THR-1320 precedent).
+    //
+    // Shipping the cast anyway would have delivered a `warband` kind whose create
+    // verb never fires — the same "counted by every dashboard, mints nothing" shape
+    // this template is being repaired *out of*, and worse for being freshly written.
+    // `raiseWarband` therefore recruits from colocated ungrouped mortals, and returns
+    // a visible `no_recruits` refusal when the field is empty rather than reporting a
+    // success. Its `boundRecruitIds` path stays live and unit-tested, so restoring the
+    // cast under THR-1321 is a content edit and nothing more.
+    mutationHint: { type: 'create_group', groupKind: 'company' },
   },
 
   // 3. Fortify Position — build defensive works at a strategic location
@@ -228,6 +269,42 @@ export const WARLORD_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     motivations: ['mercy_ruthlessness', 'preservation_transformation'],
     motiveGate: ['rivalry', 'grudge', 'contested_ambition', 'faction_war'],
     mutationHint: { type: 'modify_location_property', property: 'prosperity', delta: -25, clamp: [0, 100] },
+  },
+
+  // ── The `warband` kind's update (THR-1309) ──
+  //
+  // **Appended, not inserted.** `generateStrategicCandidates` walks an ambition's
+  // `templateIds` in authoring order and breaks at
+  // `STRATEGIC_MAX_CANDIDATES_PER_AMBITION` (5), so a mid-list insert silently pushes
+  // a later template out of reach — that is finding 1 from the T2 slice, which failed
+  // six assertions across two files before it was understood.
+  {
+    id: 'strategic_reinforce_warband',
+    displayName: 'Reinforce the Warband',
+    verb: 'change',
+    executionMode: 'multi_tick_project',
+    behaviorFamily: 'warlord-expansion',
+    reachProfile: { iron: 0.5, heart: 0.4, gold: 0.1 },
+    projectDuration: 4,
+    activityProse: [
+      'Word goes out that the band is taking names again. It always is.',
+      'Feeding more mouths than you did last season. That is what winning looks like from inside.',
+    ],
+    completionProse: [
+      'More spears answer than left. The band is heavier now, and slower, and harder to break.',
+    ],
+    catalystEncounterIds: ['encounter_desertion', 'encounter_warband_rivalry'],
+    // The band the commander *has* — not a location, and not a stranger's band. This
+    // is the half that keeps selection and resolution agreeing (THR-1309 trap 1).
+    targetRule: { type: 'group_node', groupKind: 'company', ownership: 'commanded_by_actor' },
+    resourceHint: { wealthCost: 25, reachFloor: { iron: 0.25, heart: 0.2 } },
+    checkpointDifficulty: 0.45,
+    payoffValue: 1.4,
+    motivations: ['courage_prudence', 'loyalty_ambition'],
+    // No `cast`, for the reason measured on `strategic_recruit_warband` above
+    // (TODO(THR-1321)) — a cast on that template took it from 13 completions to 0.
+    // Authoring one here would import the same halt into the update column.
+    mutationHint: { type: 'reinforce_group' },
   },
 ];
 
