@@ -1,11 +1,11 @@
 # Briefing
-**Generated:** 2026-08-28 18:55 local (16:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-08-28 19:55 local (17:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
 **Play two encounters, then approve the batch-2 brief — [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to) + [THR-1222](https://linear.app/threadbare/issue/THR-1222/run-retrofit-batch-2-the-camp-seven-through-the-factory-line-shrine).**
 
-Unchanged, and the shelf is now at its thinnest quality all day: **five jobs queued, and after this hour's merge every single one is Low priority.** No High, no Medium, no content work — all five are small follow-ups an earlier build filed on its own work. Both other lanes reached the same conclusion independently this hour and named this same pair as the only route by which new content work reaches an executor.
+Unchanged, and the shelf has now fully bottomed out: **four jobs queued, every one Low priority, and every one a leftover tidy split off from finished work.** Nothing queued builds, changes or fixes anything a player would meet. The one High-priority job in flight this hour is housekeeping — removing retired tooling hooks — not game work.
 
 Open the *good ending* links first — about five minutes:
 
@@ -16,7 +16,7 @@ The question is yours: *are they worth meeting twice?* Then [the brief](https://
 
 ## Also waiting (10)
 
-- **More design hours — still the binding constraint.** Same two names: [the card-grammar unification](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card) (9 days unpicked) and [traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools) (13 days, assigned to you). **Sit one, or say "park it."** Unblocked and parallel-safe behind them: [the reactive loop](https://linear.app/threadbare/issue/THR-1298), [the calling & the surfaces](https://linear.app/threadbare/issue/THR-1299), [the undertaking factory](https://linear.app/threadbare/issue/THR-1300), [nations and named areas](https://linear.app/threadbare/issue/THR-1155). Next in line: [your one-button snapshot](https://linear.app/threadbare/issue/THR-1134) (High, untouched 12 days), [a beast that can be a real character in a scene](https://linear.app/threadbare/issue/THR-1274).
+- **More design hours — still the binding constraint.** Same two names, now a day older: [the card-grammar unification](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card) (9 days unpicked) and [traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools) (13 days, assigned to you). **Sit one, or say "park it."** Unblocked and parallel-safe behind them: [the reactive loop](https://linear.app/threadbare/issue/THR-1298), [the calling & the surfaces](https://linear.app/threadbare/issue/THR-1299), [the undertaking factory](https://linear.app/threadbare/issue/THR-1300), [nations and named areas](https://linear.app/threadbare/issue/THR-1155). Next in line: [your one-button snapshot](https://linear.app/threadbare/issue/THR-1134) (High, untouched 12 days), [a beast that can be a real character in a scene](https://linear.app/threadbare/issue/THR-1274).
 - **One word players see, and a default already taken — [THR-1314](https://linear.app/threadbare/issue/THR-1314/ul-proposal-work-holding-kind-row-christening-failure-name-register).** A company under strain reads as **holding**; the ownership work that just shipped wants **a holding** to mean an owned thing — a mine, a road, a hall. Unless you say otherwise the newer word moves, because nothing player-facing depends on it yet. Reversible; the ticket does not wait for you.
 - **[The Physical Conflict map](https://linear.app/threadbare/issue/THR-1258/wayfinder-map-physical-conflict)** — nine questions open to you; [how a duel ends](https://linear.app/threadbare/issue/THR-1264/agent-mode-fight-loop-opposed-band-pairs) and [what a wound costs](https://linear.app/threadbare/issue/THR-1263/npc-mode-fight-loop-the-stat-block-and-test-skeleton) release three more. Every piece of research that map ever needed is finished — it is 100% waiting on you.
 - **[Twenty spells](https://linear.app/threadbare/issue/THR-1232) and [thirty items](https://linear.app/threadbare/issue/THR-1236)** — sketches a session builds for you to react to.
@@ -29,20 +29,20 @@ The question is yours: *are they worth meeting twice?* Then [the brief](https://
 
 ## Queue
 
-**5 items Ready for Dev — and for the first time today, not one of them is above Low priority.** The Medium that led the shelf an hour ago is gone because it was built: [trade routes dissolving six ticks after anyone founds them](https://linear.app/threadbare/issue/THR-1320/a-strategically-founded-trade-route-dissolves-6-ticks-after-founding) was claimed at 18:02, merged at 18:48 and is live. What remains is five Low-priority follow-ups — two glossary proposals, a chip-anchor tidy, a faction-weights gap, and a status-bar row wired to a data source nothing writes. **No High-priority product work and no content work is queued at all.** That is the supply gate the lead ask opens, not a queue defect.
+**4 items Ready for Dev, all Low priority, and the shelf is now empty of game work entirely.** One more job left it this hour by being built: [a strip of the god's status bar that read a source nothing writes](https://linear.app/threadbare/issue/THR-1307/the-ascendant-hooks-block-reads-an-edge-type-that-has-no-writer-and-is) — conditions, clues and vows, empty in every game ever played — was claimed, fixed and merged inside the hour. Nothing arrived to replace it.
 
-- **One new job arrived this hour** — [a strip of the god's status bar](https://linear.app/threadbare/issue/THR-1307/the-ascendant-hooks-block-reads-an-edge-type-that-has-no-writer-and-is) (conditions, clues, vows) reads a source nothing has ever written to, so those rows have been empty in every game ever played. A builder can decide alone whether to repoint, fill, or remove it.
-- **In Dev: 5.** Two are built and stuck at the merge ([warbands](https://linear.app/threadbare/issue/THR-1309/t3-undertaking-tier-the-warband-kind-and-the-create-group-strategic-op) and [a ternary that decided nothing](https://linear.app/threadbare/issue/THR-1313)) — see Health. The other three are the parked standing asks above ([THR-1130](https://linear.app/threadbare/issue/THR-1130), [THR-1133](https://linear.app/threadbare/issue/THR-1133), [THR-1168](https://linear.app/threadbare/issue/THR-1168)). Park shape verified intact this run.
+- **What remains is four follow-ups an earlier build filed on its own work:** two glossary proposals ([THR-1314](https://linear.app/threadbare/issue/THR-1314), [THR-1316](https://linear.app/threadbare/issue/THR-1316)), [a chip-anchor tidy](https://linear.app/threadbare/issue/THR-1317) and [a faction-weights gap](https://linear.app/threadbare/issue/THR-1323). **No High-priority product work and no content work is queued at all.** That is the supply gate the lead ask opens, not a queue defect.
+- **In Dev: 5.** Two are claimed and mid-flight — [warbands](https://linear.app/threadbare/issue/THR-1309/t3-undertaking-tier-the-warband-kind-and-the-create-group-strategic-op) (stuck at the merge, see Health) and [removing retired tooling hooks](https://linear.app/threadbare/issue/THR-1332) (claimed this hour, High, housekeeping). The other three are the parked standing asks above ([THR-1130](https://linear.app/threadbare/issue/THR-1130), [THR-1133](https://linear.app/threadbare/issue/THR-1133), [THR-1168](https://linear.app/threadbare/issue/THR-1168)). Park shape verified intact this run.
 
 ## Health
 
-**Two finished jobs still cannot merge, and nothing needs you.** Both are the same pair as last hour, both an hour older:
+**Two finished jobs cannot merge, and nothing needs you.** One is the same warband job as the last four hours; the other is new this hour:
 
-- [Warbands](https://github.com/christianspliid-ui/threadbare/pull/1690) — now about four hours stuck, with **both** a merge conflict and a failing required check. Resolving the conflict alone will not free it.
-- [A ternary that decided nothing](https://github.com/christianspliid-ui/threadbare/pull/1693) — about an hour and a half, conflicted, required check not yet run.
+- [Warbands](https://github.com/christianspliid-ui/threadbare/pull/1690) — now about five hours stuck, conflicted and escalated. An executor session has to resolve the conflict by hand; auto-merge cannot.
+- [Removing retired tooling hooks](https://github.com/christianspliid-ui/threadbare/pull/1699) — minutes old, conflicted on arrival. Ordinary; the next executor session clears it.
 
-Auto-merge is armed on both, so they read as shipped from every surface except the checks. An executor session has to resolve each conflict, read the warband failure, and push. Nothing unsafe can merge in the meantime, and no finished work is at risk.
+Last hour's second stuck job cleared on its own: [a ternary that decided nothing](https://linear.app/threadbare/issue/THR-1313) merged and deployed. Auto-merge is armed on both remaining, so they read as shipped from every surface except the checks. Nothing unsafe can merge in the meantime, and no finished work is at risk.
 
-Everything else is green: the live site is serving the newest game code on main (`d78f29e0`, this hour's trade-route fix included), background jobs are healthy, all nine scheduled lanes are on schedule, and the branch reaper ran at 18:40.
+Everything else is green: the live site is serving the newest commit on main (`8f90dfd6`), background jobs are healthy, all nine scheduled lanes are on schedule, and the branch reaper ran at 19:40.
 
 Unchanged and worth seeing rather than acting on: **the only lane quiet in the probe's window is overnight-shaped** — 22–23 and 23–24 August, both roughly 21:00–08:00 local, every lane stopping and resuming together. Declined under your 8 August ruling that overnight quiet is normal. Nothing was lost.
