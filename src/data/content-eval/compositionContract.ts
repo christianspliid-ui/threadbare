@@ -792,6 +792,61 @@ export function chipsWithoutReferent(template: UnifiedActionTemplate): readonly 
   return [...out];
 }
 
+/** One anchor a chip declares, with enough context to say where it was written. */
+export interface DeclaredChipAnchor {
+  /** The `EncounterAftermathChange` carrying it. */
+  readonly changeId: string;
+  /** `variantKey` or `variantKey/band` — the ending this declaration is reachable on. */
+  readonly where: string;
+  /** The concept reference itself, carrying `entityId`, `visualKind` and `tooltipId`. */
+  readonly ref: EncounterAftermathConceptRef;
+}
+
+/**
+ * THR-1212 — every anchor this template declares, for the seeded-world no-op gate.
+ *
+ * {@link chipAnchorViolations} answers *"could this declaration ever resolve"* and
+ * throws the answer away; the no-op gate needs the declarations themselves, so it can
+ * ask the harder question *"does it resolve in a world that actually exists"*. That is
+ * the THR-1165 class: two `$cast:` sentinels passed every static check while the
+ * caravan they named was never cast.
+ *
+ * Read through {@link aftermathFaces} — the same walk clause 2 and
+ * {@link chipsWithoutReferent} use — for the reason stated on those two: a second walk
+ * drifts, and two populations that stop describing the same corpus is this ticket's
+ * own subject in miniature.
+ *
+ * **Deduped by `changeId::entityId`, not by `changeId`.** Faces overlap (a band that
+ * authors no `changes` inherits the variant's), so the same declaration is reachable on
+ * several endings and reporting it once is what an author acts on. But one change can
+ * carry a `stateNoun` *and* several `concepts`, each naming a different object — those
+ * are distinct anchors and collapsing them to the change would hide every anchor after
+ * the first. Refs without an `entityId` are omitted: they declare no anchor, so there is
+ * nothing for a resolver to be right or wrong about.
+ */
+export function declaredChipAnchors(
+  template: UnifiedActionTemplate,
+): readonly DeclaredChipAnchor[] {
+  const out: DeclaredChipAnchor[] = [];
+  const seen = new Set<string>();
+  for (const face of aftermathFaces(template)) {
+    const where = face.band ? `${face.variantKey}/${face.band}` : face.variantKey;
+    for (const change of face.changes) {
+      const declared = [change.stateNoun, ...(change.concepts ?? [])].filter(
+        (ref): ref is EncounterAftermathConceptRef => ref !== undefined,
+      );
+      for (const ref of declared) {
+        if (!ref.entityId) continue;
+        const key = `${change.id}::${ref.entityId}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        out.push({ changeId: change.id, where, ref });
+      }
+    }
+  }
+  return out;
+}
+
 /**
  * Effect kinds that write a **persistent consequence** to the person they name.
  *
