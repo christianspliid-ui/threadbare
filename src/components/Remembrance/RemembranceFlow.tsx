@@ -16,6 +16,7 @@ import {
 import { STIRRING_IMAGES } from '../../data/stirring-images';
 import { ORIGIN_FRAGMENTS, DRIVE_FRAGMENTS } from '../../data/remembrance-fragments';
 import { HUNGER_CATALOG } from '../../data/hunger-catalog';
+import { toStoredHungerId } from '../../types/hunger';
 import { StirringBeat } from './StirringBeat';
 import { OriginBeat } from './OriginBeat';
 import { DriveBeat } from './DriveBeat';
@@ -94,7 +95,7 @@ export function RemembranceFlow({ seed, onComplete }: RemembranceFlowProps) {
       timeSinceAscension: originFragment.timeSinceAscension ?? 'recent',
       mortalTags: [...originFragment.tags, ...driveFragment.tags],
       divineName,
-      hungerId: hunger.id,
+      hungerId: toStoredHungerId(hunger.id),
       hungerName: hunger.name,
       mandateDirection: hunger.mandateDirection,
       courtType: courtType as AscendantIdentity['courtType'],

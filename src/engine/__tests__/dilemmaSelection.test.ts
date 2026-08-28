@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { selectDilemmasV2, scoreDilemmaResonance } from '../dilemmaSelection';
 import type { EnrichedDilemmaTemplate } from '../../types/meetingEncounter';
 import type { AscendantLens } from '../../types/hunger';
-import { HUNGER_CATALOG, buildStubAscendantLens } from '../../types/hunger';
+import { buildStubAscendantLens } from '../ascendantLens';
 
 // ─── Test Template Factory ──────────────────────────────────────
 
@@ -60,7 +60,7 @@ const AX_MERCY_2 = makeTemplate({
   category: 'axiological',
   targetValuePair: 'mercy_ruthlessness',
   resonance: {
-    emotionalRegister: ['fury'],
+    emotionalRegister: ['vengeance'],
     hungerResonance: ['conquest', 'power'],
     driveResonance: ['domination'],
     incompatibleWith: ['ax-mercy-1'],
@@ -73,7 +73,7 @@ const REACH_IRON_1 = makeTemplate({
   category: 'reach_specific',
   targetReach: 'iron',
   resonance: {
-    emotionalRegister: ['determination'],
+    emotionalRegister: ['endurance'],
     hungerResonance: ['protection', 'sacrifice'],
     driveResonance: ['belonging'],
     incompatibleWith: [],
@@ -111,7 +111,7 @@ const GENERAL_1 = makeTemplate({
   id: 'general-1',
   category: 'general',
   resonance: {
-    emotionalRegister: ['ambivalence'],
+    emotionalRegister: ['solitude'],
     hungerResonance: ['ambition'],
     driveResonance: ['transformation'],
     incompatibleWith: [],
@@ -151,7 +151,7 @@ describe('scoreDilemmaResonance', () => {
       resonance: {
         emotionalRegister: [],
         hungerResonance: ['conquest', 'domination', 'territory'],
-        driveResonance: ['revolution', 'destruction'],
+        driveResonance: ['revolution', 'conquest'],
         incompatibleWith: [],
       },
     });

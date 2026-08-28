@@ -1,5 +1,5 @@
 {
-  "total": 2973,
+  "total": 2972,
   "command": "npx tsc -b --force --pretty false",
   "perFile": {
     "scripts/lint-encounter-content.ts": 2,
@@ -304,7 +304,7 @@
     "src/engine/__tests__/delivery.test.ts": 3,
     "src/engine/__tests__/deriveLocationActivities.test.ts": 2,
     "src/engine/__tests__/digestBuffer.test.ts": 1,
-    "src/engine/__tests__/dilemmaSelection.test.ts": 2,
+    "src/engine/__tests__/dilemmaSelection.test.ts": 1,
     "src/engine/__tests__/disposition-dilemma-integration.test.ts": 6,
     "src/engine/__tests__/disposition-integration.test.ts": 10,
     "src/engine/__tests__/disposition-pipeline.test.ts": 1,

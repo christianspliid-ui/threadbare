@@ -1,4 +1,5 @@
 import type { ReachDomain } from '../types/traits';
+import type { StoredHungerId } from '../types/hunger';
 
 export interface CandidateVignette {
   /** Unique ID (e.g. 'vignette.iron.sentinel'). */
@@ -24,8 +25,8 @@ export interface CandidateVignette {
   imageAssetPath: string;
   /** Gradient fallback. */
   placeholderGradient: string;
-  /** Hunger IDs this vignette resonates with (for filtering). */
-  hungerResonance: string[];
+  /** Hunger IDs this vignette resonates with (for filtering) — the stored dotted form. */
+  hungerResonance: StoredHungerId[];
   /** Emotional tags for art matching. */
   emotionalTags: string[];
 }

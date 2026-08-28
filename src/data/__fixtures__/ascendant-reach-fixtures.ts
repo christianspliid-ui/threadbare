@@ -92,7 +92,14 @@ export function buildReachAscendantIdentity(
     timeSinceAscension: 'ancient',
     mortalTags: [reach, primarySphere],
     divineName: `The ${cap(reach)} Sovereign`,
-    hungerId: `hunger.reach.${reach}`,
+    // Deliberately NOT a live hunger (THR-1213). These fixtures pin a reach,
+    // not a hunger; the sentinel resolves to `undefined` through `toHungerId`,
+    // which is the behaviour every reach-matrix run has always had. Typing
+    // `hungerId` as `StoredHungerId` makes that deliberate non-membership
+    // visible instead of silent — the cast is the record of it, not a
+    // shortcut past it. Change this to a real hunger only with a measurement
+    // showing what it does to the reach matrix.
+    hungerId: `hunger.reach.${reach}` as AscendantIdentity['hungerId'],
     hungerName: `${cap(reach)} Hunger`,
     mandateDirection: `Drive the world toward ${reach} through the ${primarySphere} sphere.`,
     courtType: 'circle',

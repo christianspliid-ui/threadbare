@@ -63,8 +63,10 @@ export function scoreDilemmaResonance(
   template: EnrichedDilemmaTemplate,
   lens: AscendantLens,
 ): number {
-  const hungerTags = new Set(lens.hunger.dilemmaResonanceTags);
-  const driveTags = new Set(lens.driveTags);
+  // Widened to `string`: `hungerResonance` still carries the pre-THR-1213
+  // vocabulary this reader was comparing against (and never matching).
+  const hungerTags = new Set<string>(lens.hunger.dilemmaResonanceTags);
+  const driveTags = new Set<string>(lens.driveTags);
 
   let score = 0;
 

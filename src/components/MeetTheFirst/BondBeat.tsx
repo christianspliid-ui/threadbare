@@ -7,12 +7,13 @@ import { NudgePhaseShell } from '../Game/encounter-stage/shells/NudgePhaseShell'
 import { buildMeetingNudgePhaseModel } from './buildMeetingNudgePhaseModel';
 import { resolveBondTest } from '../../engine/meetingEncounter';
 import { toHungerId } from '../../types/hunger';
+import type { StoredHungerId } from '../../types/hunger';
 import { MEETING_FORMATIVE_TEST_COUNT } from '../../data/meeting-nudge-constants';
 
 interface BondBeatProps {
   candidate: NarrativeCandidate;
   vision: SparkVision;
-  hungerId: string;
+  hungerId: StoredHungerId;
   primarySphere: SphereName;
   /**
    * The bond test. Absent ⇒ the beat plays exactly as it did before THR-868
