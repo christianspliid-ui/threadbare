@@ -190,7 +190,7 @@ World Generation (seeded by World-Soul)
 
 | What | Where |
 |------|-------|
-| Obsidian vault index | `TheFantasyWorldSimulator/Index.md` via Obsidian MCP |
+| Obsidian vault index | `TheFantasyWorldSimulator/Index.md` (vault filesystem via `OBSIDIAN_VAULT_PATH`) |
 | Generalized Action Targeting | `Docs/plans/2026-03-17-generalized-action-targeting-design.md` |
 | Hex state + hex actions | `Docs/plans/2026-03-17-world-state-and-hex-actions-design.md` |
 | Hex action brainstorm | `Docs/plans/2026-03-17-brainstorm-hex-actions-and-control-mechanic.md` |

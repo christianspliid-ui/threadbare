@@ -1,6 +1,6 @@
 # Action Proposal Template
 
-Authors (Cowork): copy this file to `Docs/plans/.intent-proposals/<plan-doc-slug>.md`
+Authors (the design session): copy this file to `Docs/plans/.intent-proposals/<plan-doc-slug>.md`
 and fill in every field before invoking `/intent-judge` or auto-spawning the
 judge. Empty or omitted fields = the judge will Block on "malformed proposal".
 

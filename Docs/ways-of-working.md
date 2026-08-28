@@ -2,8 +2,9 @@
 
 How Christian and the agents collaborate on Threadbearer: who decides what, how design
 decisions get made, and the taste rules that shape the work. This is the *collaboration
-and judgment* layer — the mechanical process (NFPs, three-pillar rule, Definition of Done,
-coordination protocol, sandbox limits) lives in `CLAUDE.md` and `Docs/ubiquitous-language/Process.md`,
+and judgment* layer — the mechanical process lives in `CLAUDE.md` (Definition of Done, sandbox limits),
+`Docs/canon/design-governance.md` (three-pillar rule + design workflow, authoritative since THR-760),
+`Docs/canon/process.md` (pointer canon), and the UL `Process` shard for terms,
 and game-design canon lives in `Vision/` and `Docs/canon/`. This file holds only the durable
 working-agreement facts that had no home in the repo.
 

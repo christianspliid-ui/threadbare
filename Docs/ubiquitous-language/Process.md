@@ -1,6 +1,16 @@
 # Ubiquitous Language — Process
 
-Not content-adjacent. Terms covering the development process: NFPs, design governance, definitions, and continuous improvement tooling.
+Not content-adjacent. Terms covering the development process: NFPs, design governance, definitions, and continuous improvement tooling — plus the project's identity terms.
+
+---
+
+### Threadbearer
+
+**Aliases:** The Game, TFWS (retired)
+**Also see:** `[[Ascendant]]`, `[[Quintessence]]`
+**Status:** canonical
+
+The game's name — director ruling 2026-08-28 (THR-1333), verbatim: *"the game is called threadbearer, it is available on threadbearer.co on the internet. that is it."* Its home on the internet is [threadbearer.co](https://threadbearer.co). Two other names appear in the project's history and remain valid **only** as identifiers, never as the game's name: **Threadbare** is the repo / Linear-team / codebase codename (`christianspliid-ui/threadbare`), and **The Fantasy World Simulator** is the retired working title that survives in directory names (the vault's `TheFantasyWorldSimulator/` folder, the local project path). Player-facing and design-facing surfaces say Threadbearer; paths and identifiers are not renamed for it.
 
 ---
 
