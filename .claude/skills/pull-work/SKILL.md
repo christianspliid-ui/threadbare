@@ -1,7 +1,7 @@
 ---
 name: pull-work
 description: Canonical Claude Code pickup workflow for claiming Linear work safely from Ready for Dev.
-last_validated_against: 2026-08-26
+last_validated_against: 2026-08-28
 ---
 
 # Pull Work
@@ -267,6 +267,8 @@ If a specific issue id was provided, skip to Step 3.
 If the Step 1 board scan's "In Dev" slice filtered to `assignee:"me"` is empty, continue to Step 2.
 
 **Count in-flight implementations, not open claims (THR-927 — supersedes THR-938's flat subtraction).** The gate protects an invariant about *concurrent implementation*: one thing being built at a time. A claim whose PR is already open and carries its close keyword is **discharged** — the building is finished, and the merge fires with no session present, by design after this run ends. Counting it as work-in-progress red-exits the *next* run on a leak that does not exist. That is not hypothetical; it is how the rule was found (`tb-opus-pickup`, 2026-07-31 ~19:00Z, impediment #365: THR-925 and THR-926 both sat `In Dev`, both shipped by the single armed PR #1191, and the documented response to a count above 1 is "surface and stop").
+
+**A `DIRTY` PR does not discharge (2026-08-28 retro; impediment #765).** "The merge fires with no session present" is true for a PR waiting on checks and **false for a conflicted one** — GitHub does not build a conflicted PR, so not one check runs, auto-merge can never fire, and every surface reads healthy. Measured 2026-08-25: PR #1618 (High-priority content, armed 13:28Z) sat `DIRTY` for ~4.5 hours with `gh pr checks` showing only passing Vercel entries, while the WIP gate counted it as shipped. When resolving claims to PRs, also read `mergeStateStatus` (the same `gh pr list` call takes it in `--json`; re-query `UNKNOWN` 2–3 times per the Step 0.8 rule): a claim carried by a **`DIRTY`** PR is **undischarged — route it to Step 1.7 resume as your own claim** and resolve the conflict per the conflicted-PR closeout, which converts a silent indefinite stall into a normal pickup.
 
 Resolve each `In Dev` claim assigned to you to the open PR that closes it, then count only the claims that resolve to nothing:
 

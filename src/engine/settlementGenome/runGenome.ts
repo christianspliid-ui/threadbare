@@ -236,17 +236,22 @@ export function computeSettlementReaches(
     }
   }
 
-  // Faction contributions via member_of edges (faction is a member of this location/group)
-  const memberEdges = graph.getIncomingEdges(locationId, 'member_of');
-  for (const edge of memberEdges) {
-    const actor = graph.getNode(edge.source);
-    if (!actor || actor.properties.actorType !== 'faction') continue;
-    const weights = actor.properties.reachWeights as Partial<Record<ReachDomain, number>> | undefined;
-    if (!weights) continue;
-    for (const [reach, weight] of Object.entries(weights)) {
-      reaches[reach as ReachDomain] = (reaches[reach as ReachDomain] ?? 0) + (weight ?? 0);
-    }
-  }
+  // A second loop here once summed the same weights over *incoming* `member_of` edges,
+  // commented "faction is a member of this location/group". It was removed in THR-1311:
+  // `EDGE_SCHEMA.member_of` is `actor → actor` ("Source = member, target = faction-or-group"),
+  // so a location is never a legal target and no conforming writer could feed it. Measured
+  // before removal — 0 location-targeted `member_of` edges across 731 locations (seed 42)
+  // and 876 (seed 99), both at tick 30.
+  //
+  // It was deleted rather than repointed onto `controls` because its body was byte-identical
+  // to the `located_at` loop above, and that loop already carries the stated intent: 85 faction
+  // contributions on seed 42, 91 on seed 99. Nothing was lost when the dead term went, so
+  // repointing would not have restored a missing contribution — it would have added a second,
+  // different one and moved worldgen output on every seed under the guise of a repair.
+  //
+  // Do not reinstate it by writing location-targeted `member_of` edges: that makes the graph
+  // violate its own schema to satisfy a reader, and the target kind is load-bearing for the
+  // `groupShape.ts` wrapper sweep (THR-1297 slice 1).
 
   // Normalize all values to 0–1 range so no single faction dominates absolutely
   const maxVal = Math.max(...Object.values(reaches).map(v => v ?? 0), 1);

@@ -5,6 +5,10 @@
  * lose TRADE_ROUTE_DECAY_RATE volume per tick. When volume reaches 0 the edge
  * is removed from the graph and a trade_route_dissolved summary trace is emitted.
  *
+ * A **founded** route (one carrying an `establishedBy` stamp) is exempt from that
+ * rule for its first TRADE_ROUTE_FOUNDING_GRACE_WINDOW ticks — see THR-1320 and the
+ * constant's own note. After the window lapses it decays on exactly the old terms.
+ *
  * Design doc: Docs/plans/2026-03-17-gold-reach-economic-systems-design.md
  * System 2 — Trade Routes & Agreements
  * NFP priorities: Tunability, Inspectability, Determinism, Fail-soft
@@ -16,6 +20,7 @@ import {
   TRADE_ROUTE_FRESHNESS_WINDOW,
   readTradeRouteProps,
   isRouteStale,
+  isRouteUnderFoundersGrace,
 } from './tradeRoute';
 import { SHOCK_TRADE_ROUTE_LOST } from './phaseProsperity';
 import { emitTrace } from './traceBuffer';
@@ -28,6 +33,7 @@ import { resolveEconomicChronicle, chronicleSeed } from './economicChronicle';
  *
  * For each trades_with edge:
  * 1. Read properties with fail-soft defaults (readTradeRouteProps)
+ * 1b. If the route is inside its founder's grace window: no-op (THR-1320)
  * 2. If route is stale (lastTraded + TRADE_ROUTE_FRESHNESS_WINDOW < currentTick):
  *    a. Subtract TRADE_ROUTE_DECAY_RATE from volume
  *    b. Emit trade_route_volume_change trace with cause='decayed'
@@ -67,6 +73,20 @@ export function phaseTradeRouteDecay(state: GameState): Partial<GameState> {
     }
 
     const props = readTradeRouteProps(edge.properties as Record<string, unknown>);
+
+    // A founded route stands out its founder's warranty before the freshness rule
+    // applies to it at all (THR-1320). Nothing in the strategic path refreshes
+    // `lastTraded`, so without this a route minted by a six-tick undertaking was
+    // stale at +6, hit volume 0 on that same tick and was removed — and the
+    // `trade_route` kind's counter-play could never land on anything.
+    //
+    // Not traced: the decision is a pure function of `establishedBy` + `established`,
+    // both already on the edge and readable from any inspector, and a per-route
+    // per-tick trace would swamp the buffer for a phase that is otherwise silent
+    // when nothing changes.
+    if (isRouteUnderFoundersGrace(props, tick)) {
+      continue;
+    }
 
     // Only decay stale routes
     if (!isRouteStale(props.lastTraded, tick)) {

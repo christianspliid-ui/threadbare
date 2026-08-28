@@ -491,14 +491,19 @@ Aftermath reactions can now permanently reshape world topology: spawning artifac
 ```typescript
 {
   kind: 'spawn_artifact',
-  artifactName: "The Thornweave Seal",
-  artifactSubtype: 'relic',                     // relic | weapon | scroll | vessel | etc.
-  possessedByAgentId: '$actor',                 // who carries it (defaults to actor)
-  bondedToAgentId?: '$actor',                   // mystical bond (optional)
-  targetLocationId?: 'loc_throne_room',         // contained within a location (optional)
-  chronicleEntry?: "A seal of binding was forged in the ruins."
+  templateId: 'artifact_seal_of_binding',       // artifact template id from the content catalog (preferred)
+  category: 'relic',                            // ArtifactCategory fallback when templateId is not given
+  tier: 'legendary',                            // optional ArtifactTier override — determines node type and edge kind
+  nameOverride: "The Thornweave Seal",          // optional display-name override
+  targetAgentId: '$actor',                      // place in an agent's inventory (possesses / bonded_to); symbolic: $actor | $ally | $rival | $witness
+  targetLocationId: 'loc_throne_room',          // OR place at a location (contains)
+  messageOverride: "A seal of binding was forged in the ruins.",  // optional chronicle message override
+  tags: ['binding'],                            // optional
+  when: { /* EffectPredicate, optional */ }
 }
 ```
+
+*(Field names corrected 2026-08-28 against the live type — the previous `artifactName` / `artifactSubtype` / `possessedByAgentId` / `chronicleEntry` spellings were never fields of the shipped effect and silently did nothing; impediment #739. The authoritative shape is the `spawn_artifact` member in [`src/types/unifiedAction.ts`](../../src/types/unifiedAction.ts) — when this guide and that type disagree, the type wins.)*
 
 Creates an `artifact` graph node, adds `possesses` / `bonded_to` / `contains` edges as declared, and optionally appends a chronicle event. The artifact becomes part of the world graph — prose resolvers can reference it via `{artifact:relic}`, and other encounters can discover it.
 
@@ -1765,6 +1770,8 @@ Tuning constants: `CONSECRATE_ESTABLISH_COST` / `CONSECRATE_PERTICK` (`ascendant
 (1) **Stock tiers are the vocabulary.** Every location derives a coarse `stockTier` per resource — `scarce | adequate | surplus` — each tick in `phaseResourceStockTiers` (`src/engine/phases/resourceStockTiers.ts`, registered in `src/engine/phases/index.ts` ahead of prosperity). Resource classes and their categories (`staple | strategic | luxury | arcane`), sphere affinities, and tier prose fragments live in `src/data/resource-classes.ts`. **Write against the tier, never a raw quantity** — the tier is what the prose layer, the Livelihood line, and the IPK Famine/Glut keywords all consume, and it is the only stable reading (quantities move every tick). `RESOURCE_TIER_PROSE` / `getResourceTierProse()` already supply per-resource fragments; extend that table rather than hardcoding "the granary is empty" in an encounter.
 
 (2) **Trade routes carry a cargo manifest.** A `trades_with` edge now has an additive `manifest` (`CargoManifest`, `src/engine/tradeRoute.ts`) naming the goods actually moving, derived at formation from both endpoints' tiers. **Always read it through `readCargoManifest()`**, never off the raw property: the helper is fail-soft in both directions (legacy `goodsType` → single-good manifest; neither present → empty manifest), which is what lets pre-P2 routes keep working. This is the hook for route-flavoured content — a caravan carrying grain into a famine reads differently from one carrying luxuries, and the manifest is where you find out which. Note the deliberate gap: route state does **not** yet materialize into encounters (banditry / embargo / toll), which is THR-669 — until it lands, manifest-aware content has to ride existing encounter surfaces rather than expecting a route-event seed.
+
+**A route you can now count on existing (THR-1320).** Until this landed, route-flavoured content had a harder problem than the missing seed: routes barely existed at all. `createTradeRoute` mints at `volume: 1`, nothing in the strategic path refreshes `lastTraded`, and `phaseTradeRouteDecay` removed a stale route on the tick it went stale — so a road founded by a six-tick undertaking was gone six ticks later, and a 150-tick run finished with **zero** `trades_with` edges standing on either measurement seed. Any content keyed on "there is a road here" was writing against a world that had none. A route carrying an `establishedBy` stamp now stands for `TRADE_ROUTE_FOUNDING_GRACE_WINDOW` (36 ticks, three days) before the freshness rule applies at all. Two things follow for authoring: a founded road is a **durable enough noun to reference** — it will still be there when the scene you seeded off it resolves — and its dissolution is now a *story* rather than an accident, since a road that falls silent has either been abandoned past its warranty or deliberately blockaded by someone. An unowned route still decays on inactivity alone, so do not assume permanence for a road nobody made.
 
 (3) **Two divine verbs move staples.** `bless_harvest` / `blight_harvest` (graph-executor cases, the essence-source pattern above) shift every **staple** resource's quantity at the target location by `LOC_BLESS_HARVEST_STOCK_DELTA` / `LOC_BLIGHT_STOCK_DELTA` (`src/data/location-action-constants.ts`), clamped to `[0,100]`. **The consequence is deliberately one tick late** — the op writes quantities and does not `touchWorld()`, because the stock-tier phase already touches on a *tier* change (the `locationSubtype` precedent) and touching on the raw write would over-invalidate. Author the prose accordingly: the payoff beat is the world *noticing* a good or bad year, not an immediate stat pop. Two authoring rules learned here: **target staples only** (blessing a luxury stock is a no-op with no player-legible signal), and **surface new economic cards through a beat grant, never `starter: true`** — under the empty THR-501 starter floor an ungranted template is unreachable forever, so `loc.bless_harvest` / `loc.blight` ride the essence-source milestone beat's `grantsActionIds` alongside `loc.open_markets`.
 

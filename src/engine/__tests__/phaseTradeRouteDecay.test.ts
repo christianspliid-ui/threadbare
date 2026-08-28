@@ -4,8 +4,10 @@ import { phaseTradeRouteDecay } from '../phaseTradeRouteDecay';
 import {
   TRADE_ROUTE_DECAY_RATE,
   TRADE_ROUTE_FRESHNESS_WINDOW,
+  TRADE_ROUTE_FOUNDING_GRACE_WINDOW,
   TRADE_ROUTE_MAX_VOLUME,
 } from '../tradeRoute';
+import { UNDERTAKING_CHECKPOINT_INTERVAL_TICKS } from '../../data/strategic-action-constants';
 import type { GameState } from '../../types/gameState';
 import { clearTraces, getTraces, enableTracing } from '../traceBuffer';
 
@@ -259,11 +261,129 @@ describe('phaseTradeRouteDecay', () => {
   });
 });
 
+// ─── Founder's grace window (THR-1320) ─────────────────────────────────────
+//
+// The defect these cover: a route minted by `createTradeRoute` at `volume: 1` with
+// nothing in the strategic path ever refreshing `lastTraded` went stale at +6, lost
+// its only point of volume on that tick and was removed — so `blockadeRoute` found
+// `no_route` every time and the `trade_route` kind's counter-play could never land.
+
+describe('phaseTradeRouteDecay — founder\'s grace (THR-1320)', () => {
+  let graph: WorldGraph;
+
+  beforeEach(() => {
+    graph = new WorldGraph();
+    enableTracing();
+    clearTraces();
+  });
+
+  afterEach(() => {
+    clearTraces();
+  });
+
+  /** A route minted the way `createTradeRoute` mints one: volume 1, founder stamped. */
+  function addFoundedRoute(establishedTick = 0): void {
+    graph.addNode({ id: 'loc.a', type: 'location', name: 'A', properties: {} });
+    graph.addNode({ id: 'loc.b', type: 'location', name: 'B', properties: {} });
+    graph.addEdge({
+      id: 'route.founded',
+      source: 'loc.a',
+      target: 'loc.b',
+      type: 'trades_with',
+      properties: {
+        volume: 1,
+        establishedTick,
+        establishedBy: 'agent.merchant',
+        lastTraded: establishedTick,
+      },
+    });
+  }
+
+  const routeStanding = (): boolean => graph.getAllEdges().some(e => e.id === 'route.founded');
+
+  it('the exact tick the defect fired: a founded route still stands where it used to be deleted', () => {
+    addFoundedRoute(0);
+    // One past the freshness window is where `isRouteStale` first fires, and a
+    // volume-1 route dies on that same tick. This is the measured failure.
+    phaseTradeRouteDecay(makeState(graph, TRADE_ROUTE_FRESHNESS_WINDOW + 1));
+    expect(routeStanding()).toBe(true);
+    expect((graph.getAllEdges().find(e => e.id === 'route.founded')!
+      .properties as Record<string, unknown>).volume).toBe(1);
+  });
+
+  it('stands for the whole grace window, and long enough to be blockaded', () => {
+    addFoundedRoute(0);
+    for (let tick = 1; tick < TRADE_ROUTE_FOUNDING_GRACE_WINDOW; tick++) {
+      phaseTradeRouteDecay(makeState(graph, tick));
+    }
+    expect(routeStanding()).toBe(true);
+  });
+
+  it('decays once the grace window lapses — the window is a delay, not an exemption', () => {
+    addFoundedRoute(0);
+    phaseTradeRouteDecay(makeState(graph, TRADE_ROUTE_FOUNDING_GRACE_WINDOW));
+    expect(routeStanding()).toBe(false);
+  });
+
+  it('measures the window from the founding tick, not from tick 0', () => {
+    const founded = 40;
+    addFoundedRoute(founded);
+    phaseTradeRouteDecay(makeState(graph, founded + TRADE_ROUTE_FOUNDING_GRACE_WINDOW - 1));
+    expect(routeStanding()).toBe(true);
+    phaseTradeRouteDecay(makeState(graph, founded + TRADE_ROUTE_FOUNDING_GRACE_WINDOW));
+    expect(routeStanding()).toBe(false);
+  });
+
+  // The scope line from the ticket: an unowned route decaying on inactivity is
+  // arguably correct and must not be swept up. Falsifies the guard above — if the
+  // grace were applied to every route rather than to founded ones, this fails.
+  it('grants NO grace to a route with no founder', () => {
+    graph.addNode({ id: 'loc.a', type: 'location', name: 'A', properties: {} });
+    graph.addNode({ id: 'loc.b', type: 'location', name: 'B', properties: {} });
+    graph.addEdge({
+      id: 'route.founded', // same id so `routeStanding` reads it
+      source: 'loc.a',
+      target: 'loc.b',
+      type: 'trades_with',
+      properties: { volume: 1, establishedTick: 0, lastTraded: 0 },
+    });
+
+    phaseTradeRouteDecay(makeState(graph, TRADE_ROUTE_FRESHNESS_WINDOW + 1));
+    expect(routeStanding()).toBe(false);
+  });
+
+  it('a founded route past its grace still dies on the ordinary freshness rule, not sooner', () => {
+    addFoundedRoute(0);
+    // Trade on it right as the window lapses: `lastTraded` moves, so the ordinary
+    // rule now governs and the route survives its own grace expiry.
+    const edge = graph.getAllEdges().find(e => e.id === 'route.founded')!;
+    (edge.properties as Record<string, unknown>).lastTraded = TRADE_ROUTE_FOUNDING_GRACE_WINDOW;
+    (edge.properties as Record<string, unknown>).volume = 3;
+
+    phaseTradeRouteDecay(makeState(graph, TRADE_ROUTE_FOUNDING_GRACE_WINDOW));
+    expect(routeStanding()).toBe(true);
+  });
+});
+
 // ─── Constants contract ────────────────────────────────────────────────────
 
 describe('tradeRoute decay constants', () => {
   it('TRADE_ROUTE_FRESHNESS_WINDOW is >= 1', () => {
     expect(TRADE_ROUTE_FRESHNESS_WINDOW).toBeGreaterThanOrEqual(1);
+  });
+
+  // The reachability contract this ticket exists to hold: the grace has to outlast a
+  // warlord noticing the route (one checkpoint interval) plus the blockade project
+  // itself, or the counter-play stays unreachable however the constant is spelled.
+  it('TRADE_ROUTE_FOUNDING_GRACE_WINDOW outlasts the blockade detect-and-complete cycle', () => {
+    const BLOCKADE_PROJECT_DURATION = 4; // strategic_blockade_route.projectDuration
+    expect(TRADE_ROUTE_FOUNDING_GRACE_WINDOW).toBeGreaterThan(
+      UNDERTAKING_CHECKPOINT_INTERVAL_TICKS + BLOCKADE_PROJECT_DURATION,
+    );
+  });
+
+  it('TRADE_ROUTE_FOUNDING_GRACE_WINDOW outlasts the freshness window it defers', () => {
+    expect(TRADE_ROUTE_FOUNDING_GRACE_WINDOW).toBeGreaterThan(TRADE_ROUTE_FRESHNESS_WINDOW);
   });
 
   it('TRADE_ROUTE_DECAY_RATE is less than TRADE_ROUTE_MAX_VOLUME (routes survive multiple ticks)', () => {

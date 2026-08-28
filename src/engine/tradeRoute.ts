@@ -36,6 +36,44 @@ export const TRADE_ROUTE_DECAY_RATE = 1;
  */
 export const TRADE_ROUTE_FRESHNESS_WINDOW = 5;
 
+/**
+ * Ticks a **founded** route stands before the freshness rule applies to it at all
+ * (THR-1320). A route carrying an `establishedBy` stamp was made by someone — it is
+ * a *work*, in the holdings sense — and this is its founder's warranty.
+ *
+ * Why it has to exist. A route is minted at `volume: 1`; `TRADE_ROUTE_DECAY_RATE`
+ * is also 1; `isRouteStale` fires at `lastTraded + TRADE_ROUTE_FRESHNESS_WINDOW`.
+ * Nothing in the strategic path ever refreshes `lastTraded` — the only refreshers
+ * are the divine trade verbs in `tradeRouteOps` / `graphOpExecutor`. So a route
+ * founded by a **six-tick** undertaking reached volume 0 and was removed **six ticks
+ * after it opened**, and measurably: 0 `trades_with` edges standing at tick 150 on
+ * seeds 42 and 99, medium map. Every board-level instrument read healthy — the
+ * blockade counter-play was offered and pursued 9 and 16 times — while
+ * `blockadeRoute` returned `no_route` every single time, because no route was ever
+ * standing to blockade.
+ *
+ * Why 36 rather than a rounder-sounding number. It has to outlast the counter-play's
+ * whole detect-and-complete cycle, or the kind is still unreachable: one
+ * `UNDERTAKING_CHECKPOINT_INTERVAL_TICKS` (6) for a warlord to notice and select the
+ * candidate, plus `strategic_blockade_route`'s `projectDuration` (4) — ~10 ticks —
+ * and a warlord is rarely both adjacent and motivated at the first opportunity. 36 is
+ * three days (`TICKS_PER_DAY` 12), roughly three of those cycles, which leaves room
+ * for the second or third warlord to be the one who comes.
+ *
+ * Why it is a window and not an exemption. Making a held route immortal would be the
+ * larger behaviour change — routes would accumulate for the whole run and inflate
+ * prosperity across the map — and it would move the dissolution of every abandoned
+ * route onto paths that do not all exist yet. A window keeps the decay economy
+ * intact and dying on the same rule as before; it only stops the world deleting a
+ * season of work before anything can react to it.
+ *
+ * Scoped to founded routes deliberately: an unowned route decaying on inactivity is
+ * arguably correct behaviour and is not swept up here. In practice every route
+ * carries the stamp today (`createTradeRoute` is the sole minter of `trades_with`),
+ * but the predicate is written on the stamp rather than on that fact.
+ */
+export const TRADE_ROUTE_FOUNDING_GRACE_WINDOW = 36;
+
 // ─── Cargo manifest constants (Mortal Economy P2, THR-616) ────────────────
 
 /**
@@ -130,8 +168,26 @@ export interface TradeRouteProperties {
   goodsType?: string;
   /** Cargo manifest — the specific goods this route carries (P2, THR-616). */
   manifest?: CargoManifest;
-  /** Tick when this route was established */
+  /**
+   * Tick when this route was established.
+   *
+   * **Read it from here, never from a raw property bag.** Every writer in the tree
+   * stamps the birth tick as `establishedTick`, not `established` — so until
+   * THR-1320 this field resolved to its `0` fail-soft default on *every* route
+   * ever minted. It was load-bearing in exactly one place, the `totalTicksActive`
+   * on the dissolved trace, which therefore reported the absolute tick rather than
+   * a lifetime. `readTradeRouteProps` now reads the spelling writers actually use
+   * and keeps `established` as a legacy fallback.
+   */
   established?: number;
+  /**
+   * NodeId of the actor who founded this route, when one did.
+   *
+   * Stamped by `createTradeRoute`. This is what makes a route a *work* rather than
+   * weather, and it is the sole gate on the founder's grace window — see
+   * `TRADE_ROUTE_FOUNDING_GRACE_WINDOW`.
+   */
+  establishedBy?: string | null;
   /** Tick of the most recent Trade action on this route */
   lastTraded?: number;
   /** NodeId of the faction/agent controlling (taxing) this route; null if uncontrolled */
@@ -164,7 +220,13 @@ export function readTradeRouteProps(raw: Record<string, unknown>): Required<Trad
     volume: typeof raw.volume === 'number' ? raw.volume : 1,
     goodsType,
     manifest: readCargoManifest(raw.manifest, goodsType),
-    established: typeof raw.established === 'number' ? raw.established : 0,
+    // `establishedTick` is the spelling every writer uses; `established` is kept as a
+    // legacy fallback for saved worlds and fixtures that carry it (THR-1320).
+    established:
+      typeof raw.establishedTick === 'number' ? raw.establishedTick
+      : typeof raw.established === 'number' ? raw.established
+      : 0,
+    establishedBy: typeof raw.establishedBy === 'string' ? raw.establishedBy : null,
     lastTraded: typeof raw.lastTraded === 'number' ? raw.lastTraded : 0,
     controlledBy: raw.controlledBy != null ? (raw.controlledBy as string) : null,
     taxRate: typeof raw.taxRate === 'number' ? raw.taxRate : 0,
@@ -284,4 +346,26 @@ export function scoreRoutePairBalance(
  */
 export function isRouteStale(lastTraded: number, currentTick: number): boolean {
   return currentTick - lastTraded > TRADE_ROUTE_FRESHNESS_WINDOW;
+}
+
+/**
+ * Whether a route is still inside its founder's warranty and so exempt from the
+ * freshness rule (THR-1320). See `TRADE_ROUTE_FOUNDING_GRACE_WINDOW` for why.
+ *
+ * Two conditions, both required: the route was **founded** (it carries an
+ * `establishedBy` stamp), and fewer than `TRADE_ROUTE_FOUNDING_GRACE_WINDOW` ticks
+ * have passed since it was established. A route with no founder is weather and gets
+ * no grace — which is also why the pre-existing decay tests, whose fixtures carry no
+ * `establishedBy`, are untouched by this rule.
+ *
+ * Deliberately takes the *read* props rather than a raw bag, so the `establishedTick`
+ * fallback is applied once, in `readTradeRouteProps`, and cannot be forgotten here.
+ * Pure + deterministic.
+ */
+export function isRouteUnderFoundersGrace(
+  props: Pick<Required<TradeRouteProperties>, 'establishedBy' | 'established'>,
+  currentTick: number,
+): boolean {
+  if (!props.establishedBy) return false;
+  return currentTick - props.established < TRADE_ROUTE_FOUNDING_GRACE_WINDOW;
 }
