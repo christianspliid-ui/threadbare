@@ -1,11 +1,11 @@
 # Briefing
-**Generated:** 2026-08-28 22:56 local (20:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-08-28 23:55 local (21:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
 **Play two encounters, then approve the batch-2 brief — [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to) + [THR-1222](https://linear.app/threadbare/issue/THR-1222/run-retrofit-batch-2-the-camp-seven-through-the-factory-line-shrine).**
 
-Unchanged, and nothing this hour changed the case for it: **no encounter-writing work is queued at all**, and this is the only route by which any reaches the shelf. Tonight's builders shipped four cleanup jobs and are holding four more — every one of them engine, docs or process.
+Unchanged — and the case for it got *stronger* this hour, not weaker. **The cleanup sweep that filled tonight's queue has finished.** Round 2 of the agent-handbook work closed at 23:15 local, seven pieces done. The builders are now nearly empty-handed, and **there is still no encounter-writing work queued at all**. This is the only route by which any reaches the shelf.
 
 About five minutes. Open the *good ending* links first:
 
@@ -31,20 +31,19 @@ Unchanged since last hour — skip if you have read them. Detail in [user-action
 
 ## Queue
 
-**8 items Ready for Dev — healthy. A cleanup sweep is moving fast: four jobs finished this hour.**
+**8 items Ready for Dev — healthy. The sweep that ran all evening is done, and the builders are nearly empty-handed.**
 
-- **Finished since the last brief:** [the warband that could not be recruited](https://linear.app/threadbare/issue/THR-1321/a-cast-on-strategic-recruit-warband-halts-it-completely-13-completions), plus the first and third passes of [round 2 of the agent-handbook cleanup](https://linear.app/threadbare/issue/THR-1337/context-cleanup-round-2-the-game-design-layer-audit-sweep-per-the) — [authority corrections](https://linear.app/threadbare/issue/THR-1338/r2-sweep-t1-authority-corrections-encounters-pole-table-ul-cosmology) and [the skills pass](https://linear.app/threadbare/issue/THR-1340/r2-sweep-t3-skills-state-of-game-design-shards-encounter-actor-systems). None of it changes the game; all of it changes what agents read before they build.
-- **In Dev: 8.** Five live — [the handbook diet](https://linear.app/threadbare/issue/THR-1336/claudemd-diet-gate-law-and-sandbox-lore-move-to-canonops-pages-with) (PR red, see Health), [round 2's umbrella](https://linear.app/threadbare/issue/THR-1337/context-cleanup-round-2-the-game-design-layer-audit-sweep-per-the), and its three remaining passes ([glossary](https://linear.app/threadbare/issue/THR-1339/r2-sweep-t2-ul-encounters-shard-repair-encountertemplate-retirement), [old plan docs](https://linear.app/threadbare/issue/THR-1341/r2-sweep-t4-plan-doc-supersession-markers-2026-04-16-2026-05-04-2-2026), [vault](https://linear.app/threadbare/issue/THR-1342/r2-sweep-t5-vault-pass-systems-overview-thin-rebuild-godling-era)). The other three are your parked standing asks ([THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to), [THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server), [THR-1168](https://linear.app/threadbare/issue/THR-1168/two-authored-encounter-audio-moments-have-no-live-caller-wire-or)); park shape verified intact this run.
-- **Five open claims at once is well above the one-at-a-time rule** — they are the sequenced passes of a single sweep, all genuinely mid-flight, so nothing is stale or stuck. Noted for the executor lane, not for you.
-- **Still no encounter writing queued.** That is the gap the lead ask closes, and this hour's four completions did not touch it.
+- **Finished since the last brief:** the last three passes of [round 2 of the agent-handbook cleanup](https://linear.app/threadbare/issue/THR-1337/context-cleanup-round-2-the-game-design-layer-audit-sweep-per-the) — [old plan docs](https://linear.app/threadbare/issue/THR-1341/r2-sweep-t4-plan-doc-supersession-markers-2026-04-16-2026-05-04-2-2026), [the vault](https://linear.app/threadbare/issue/THR-1342/r2-sweep-t5-vault-pass-systems-overview-thin-rebuild-godling-era), and the rules-of-play register — **round 2 complete**, seven pieces in about an hour. None of it changes the game; all of it changes what agents read before they build.
+- **In Dev: 4, and only one is live** — [the handbook diet](https://linear.app/threadbare/issue/THR-1336/claudemd-diet-gate-law-and-sandbox-lore-move-to-canonops-pages-with), whose PR is red on a flake (see Health). The other three are your parked standing asks ([THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to), [THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server), [THR-1168](https://linear.app/threadbare/issue/THR-1168/two-authored-encounter-audio-moments-have-no-live-caller-wire-or)); park shape verified intact this run. Down from eight open claims last hour — the sweep drained cleanly, nothing went stale.
+- **What is left on the shelf is thin and mostly Low.** One High ([a claim-rule gap in the pickup lane](https://linear.app/threadbare/issue/THR-1325/pull-works-claim-predicates-miss-two-live-states-a-lane-resumes-a-live)), two Medium, five Low — and **still no encounter writing at all**. That is the gap the lead ask closes, and tonight's seven completions did not touch it.
 
 ## Health
 
-**One finished job still cannot merge, and nothing needs you.**
+**One finished job cannot merge, on a flake that is already diagnosed. Nothing needs you.**
 
-- [The handbook diet](https://github.com/christianspliid-ui/threadbare/pull/1704) — **a genuine red, unchanged for about two and a half hours.** A guard noticed the move left two files without the rule they are registered to carry; the cause is diagnosed and written onto the ticket, and the session holding it pushes the fix. Auto-merge stays armed and cannot fire, which reads as shipped everywhere except the check itself. Nothing unsafe can merge meanwhile.
-- [The old-plan-docs pass](https://github.com/christianspliid-ui/threadbare/pull/1710) opened two minutes ago with a merge conflict — the sweep is moving faster than main settles. The live session resolves it; a conflict this fresh is not a stall.
+- [The handbook diet](https://github.com/christianspliid-ui/threadbare/pull/1704) — **red for about three and a half hours, and the red is not real.** A test run hit a 180-second ceiling on a machine running several jobs at once; nothing in the change caused it. Two lanes reached that verdict independently, and it is written onto the job and into the impediment log. The fix is re-running the check, not touching the code. Auto-merge stays armed and cannot fire, so it reads as shipped everywhere except the check itself — nothing unsafe merges meanwhile.
+- Last hour's conflicted PR resolved itself as expected and merged at 23:00 local.
 
-Everything else is green: the live site is up to date (recent commits touched only notes and docs, so no rebuild was needed), background jobs healthy, all nine scheduled lanes on schedule, the branch reaper ran at 22:40, and the home copy of the repo is clean and current.
+Everything else is green: the live site is up to date (recent commits touched only notes and docs, so no rebuild was needed), background jobs healthy, all nine scheduled lanes on schedule, the branch reaper ran at 23:40, and the home copy of the repo is clean and current.
 
 Unchanged and worth seeing rather than acting on: **the only lane quiet in the probe's window is overnight-shaped** — 22–23 and 23–24 August, both roughly 21:00–08:00 local, every lane stopping and resuming together. Declined under your 8 August ruling that overnight quiet is normal. Nothing was lost.
