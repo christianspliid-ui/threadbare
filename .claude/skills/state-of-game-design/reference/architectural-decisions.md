@@ -1,11 +1,11 @@
 ---
 name: state-of-game-design/architectural-decisions
 description: >
-  Architectural and systems reference for The Fantasy World Simulator: load-bearing
+  Architectural and systems reference for Threadbearer: load-bearing
   decisions, NFP priorities, all major systems, and how they connect. Load for
   plan-doc authoring, audit work, governance work, or any task where you need to
   understand how the systems interrelate.
-last_validated_against: 2026-05-16
+last_validated_against: 2026-08-28
 ---
 
 # Architectural Decisions & Systems Reference
@@ -153,7 +153,9 @@ Agent Action Selection (Maslow) → Encounter/Action Choice → Resolution (sigm
 ```
 Observe (Fog of War, Hex Chronicle, Detail Views)
     → Focus (enter detail view → TargetContext constructed)
-    → Act (ActionDrawer shows filtered actions → player picks one)
+    → Act (ActionDrawer shows filtered actions → player picks one;
+           in an attended encounter, the surface is the nudge hand —
+           cards bend odds, fate rolls the band, forks are the mortal's)
     → Resolve (action enters tick pipeline as UnifiedAction)
     → Consequence (state changes, narrative feedback, detection risk)
 ```
