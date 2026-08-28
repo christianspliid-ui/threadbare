@@ -10,21 +10,20 @@ status: live
 
 > The cosmological system governs how divine energy flows through the world: 8 Reaches (action domains) × 12 Spheres (cosmic energy flavors) = the full space of divine action. Quintessence is a separate meta-property, not a Reach.
 
-## ⚠️ STALE-SOURCE WARNING
+## ⚠️ STALE-SOURCE WARNING (re-verified 2026-08-28, THR-1333)
 
-Several widely-read documentation surfaces still present the **old 9-Reach + Flesh framing** as current. These are **stale**. Do not use them as authoritative:
+> **History lesson this list now carries:** the previous seven-row version of this list was **100% false by 2026-08-28** — every named surface had been fixed on 2026-05-05 (THR-307), one no longer existed in the named shape, and the list itself was never re-verified, so for months it sent remediators at ghosts while missing the live pollution. A stale-source list is itself a source that can go stale: **re-verify every row whenever this page is reviewed**, and date the verification in this heading.
 
-- `vault/Systems/Domain Word Scales.md` — says "Nine Reaches ... Flesh". **Stale.** Last updated 2026-03-08, before the 2026-03-28 decision.
-- `.claude/skills/state-of-game-design/SKILL.md` lines 71, 357, 367, 415, 423 — Flesh row in reach table, "9 Reaches" references. **Stale.**
-- `vault/CLAUDE.md` — "Nine Reaches (Action Domains)". **Stale.**
-- `vault/Systems Overview.md` — Flesh row, 16× `[[Nine Reaches]]` wikilinks. **Stale.**
-- `STYLE.md` lines 251–264 — "Nine Reaches ... Flesh" table. **Stale.**
-- `vault/Index.md` — Flesh listed under Reaches. **Stale.**
-- `Docs/ubiquitous-language/Cosmology.md` Quintessence definition — "Manages vitality, life force, and physical existence." **Stale.** The correct definition is below.
+Live stale surfaces as verified 2026-08-28:
+
+- `vault/Domains/reach.flesh.md` + the four `vault/Actions/Flesh/action.flesh.*.md` pages — the retired ninth Reach, now **bannered deprecated** (2026-08-28, THR-1333) but still **regenerable**: `src/data/world-model.json` still carries the `reach.flesh` node (12 refs), so `npm run generate-vault` would recreate the pages banner-less. The model-side removal is scoped to the content round of the 2026-08-28 context-cleanup program — until it lands, treat any regenerated Flesh page as stale on sight.
+- `vault/Index.md` — lists the four Flesh actions without retirement markers; regeneration + banner-check scoped to THR-1335.
+
+Everything else previously listed here (vault `Domain Word Scales`, vault `CLAUDE.md`, vault `Systems Overview` reach rows, `STYLE.md`, the old monolithic `state-of-game-design/SKILL.md`, the UL Quintessence definition) is **verified fixed** — say Eight Reaches, carry no Flesh rows.
 
 **The canonical source is `src/types/traits.ts` `ReachDomain` type and the user verdict recorded here (2026-05-05). When any surface disagrees with this page, this page is correct.**
 
-Full remediation list: `Docs/audits/2026-05-05-cosmological-canon-drift-audit.md`.
+Historical remediation record: `Docs/audits/2026-05-05-cosmological-canon-drift-audit.md`.
 
 ---
 
@@ -150,8 +149,8 @@ Each of the 8 Reaches maps to an archetype-pair axis (the moral dimension in the
 ## Open questions
 
 - **`[[The Cosmological Pattern]]` wikilink resolves to nothing** — dozens of vault pages cite this page and get a 404. Fix: create `vault/Cosmology/The Cosmological Pattern.md`. Tracked in Phase 5 of canonical documentation strategy (THR-307). Until then, agents following this wikilink must fall back to `Brainstorms/brainstorm-cosmological-symmetry.md`.
-- **`[[Nine Reaches]]` wikilink resolves to nothing** — cited 16× in `vault/Systems Overview.md` and 10+ other vault files. Fix: bulk-rename to `[[Reaches]]` once `vault/Cosmology/Reaches.md` exists. Tracked in Phase 5 / THR-307.
-- **Stale documentation propagation** — all Category A sources listed in the drift audit still carry old framing. Phase 5 (THR-307) is the remediation plan. Until Phase 5 lands, treat all documentation surfaces as potentially stale; this Canon page is the authoritative override.
+- ~~**`[[Nine Reaches]]` wikilink resolves to nothing**~~ — **resolved by THR-307** (verified 2026-08-28: `vault/Systems Overview.md` carries zero `[[Nine Reaches]]` links; `vault/Cosmology/Reaches.md` exists and carries the migration map).
+- ~~**Stale documentation propagation**~~ — **Phase 5 (THR-307) landed 2026-05-05**; the Category-A sources were fixed. The residue that outlived it is in the § STALE-SOURCE WARNING above (vault Flesh pages + their `world-model.json` source), re-verified 2026-08-28 (THR-1333).
 
 ## Last-reviewed
 

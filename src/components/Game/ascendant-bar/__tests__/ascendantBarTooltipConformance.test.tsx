@@ -162,12 +162,21 @@ describe('IdentityStrip — Law 14: no raw sphere enum on the surface (THR-1118)
 
 // ─── Law 14 — the chip label never falls through to a node id ────────────────
 
+/**
+ * THR-1307: the carrier is `has_trait`, and the bucket key is `subcategory`.
+ *
+ * This fixture used to mint a `has_attachment` edge and a `category` property — both
+ * sides invented, neither written by anything in the repo — so it passed against a
+ * shape no world produces. It now mirrors what `devSeedAscendantTestPackage` actually
+ * writes onto the ascendant node (`src/engine/gameInit.ts`).
+ */
 function makeHooksState(properties: Record<string, unknown>): GameState {
   const graph = {
     getOutgoingEdges: (source: string, type: string) =>
-      source === 'ascendant-1' && type === 'has_attachment'
+      source === 'ascendant-1' && type === 'has_trait'
         ? [{ source, target: 'mark.hollow_touched.7f3a', type }]
         : [],
+    getIncomingEdges: () => [],
     getNode: (id: string) =>
       id === 'mark.hollow_touched.7f3a' ? { id, properties } : undefined,
   } as unknown as WorldGraph;
@@ -180,7 +189,7 @@ describe('HooksBlock — Law 14: an unnamed attachment never renders as its node
 
   it('renders the named label when the node has one (premise for the fallback cases)', () => {
     render(<HooksBlock gameState={makeHooksState({
-      name: 'Hollow-Marked', description: 'A thinning.', category: 'condition', valence: 'curse',
+      name: 'Hollow-Marked', description: 'A thinning.', subcategory: 'condition', valence: 'curse',
     })} />);
 
     expect(screen.getByText('Hollow-Marked')).toBeInTheDocument();
@@ -192,7 +201,7 @@ describe('HooksBlock — Law 14: an unnamed attachment never renders as its node
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     try {
       render(<HooksBlock gameState={makeHooksState({
-        description: 'A thinning.', category: 'condition', valence: 'curse',
+        description: 'A thinning.', subcategory: 'condition', valence: 'curse',
       })} />);
 
       expect(screen.getByText(HOOK_LABEL_FALLBACK.condition)).toBeInTheDocument();
@@ -206,7 +215,7 @@ describe('HooksBlock — Law 14: an unnamed attachment never renders as its node
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     try {
       render(<HooksBlock gameState={makeHooksState({
-        description: 'Something overheard.', category: 'clue',
+        description: 'Something overheard.', subcategory: 'clue',
       })} />);
 
       expect(screen.getByText(HOOK_LABEL_FALLBACK.clue)).toBeInTheDocument();
@@ -219,7 +228,7 @@ describe('HooksBlock — Law 14: an unnamed attachment never renders as its node
   it('warns once for the missing name, not once per render', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     try {
-      const state = makeHooksState({ description: 'A thinning.', category: 'condition' });
+      const state = makeHooksState({ description: 'A thinning.', subcategory: 'condition' });
       const { rerender } = render(<HooksBlock gameState={state} />);
       rerender(<HooksBlock gameState={state} />);
       rerender(<HooksBlock gameState={state} />);
@@ -240,7 +249,7 @@ describe('HooksBlock — Law 14: an unnamed attachment never renders as its node
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     try {
       render(<HooksBlock gameState={makeHooksState({
-        name: 'Hollow-Marked', category: 'condition',
+        name: 'Hollow-Marked', subcategory: 'condition',
       })} />);
 
       const forThisNode = warn.mock.calls.filter(

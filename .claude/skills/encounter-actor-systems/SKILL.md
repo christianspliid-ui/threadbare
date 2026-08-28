@@ -383,7 +383,7 @@ Both pages are part of the **Design Reference Wiki** and are registered in `publ
 This skill owns the accuracy of two public reference documents:
 
 ### `public/encounters-agents-reference.html`
-**Covers:** Nine Reaches, Domain Capability (sigmoid, tiers, narrative lexicon), Species profiles, Traits & Mastery, Attachments (6 categories, rarity tiers, equipment mechanics), Encounters (10 types, threat ratings, location coverage, reward pool), Resolution Pipeline (formula, modifiers, fate forecast, doubles, contested actions), Divine Intervention (nudge levels, thread tiers, dream interface, alignment costs, notifications), Agent Decisions (8-stage pipeline, scoring signals, decision outcomes, runtime guards, quintessence).
+**Covers:** the Eight Reaches, Domain Capability (sigmoid, tiers, narrative lexicon), Species profiles, Traits & Mastery, Attachments (6 categories, rarity tiers, equipment mechanics), Encounters (10 types, threat ratings, location coverage, reward pool), Resolution Pipeline (formula, modifiers, fate forecast, doubles, contested actions), Divine Intervention (nudge levels, thread tiers, dream interface, alignment costs, notifications), Agent Decisions (8-stage pipeline, scoring signals, decision outcomes, runtime guards, quintessence).
 
 **Structure:** JavaScript `CHAPTERS` array of `{ num, title, color, summary, rules[] }`. Each rule has `{ name, desc, tags[], table?, formula? }`. The HTML renders these as collapsible chapters with searchable rule cards.
 

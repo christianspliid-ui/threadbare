@@ -1,6 +1,6 @@
 ---
 name: design-session
-description: Use when running a Claude Code session that designs or plans rather than implements — authoring a plan doc, running the design-governance checklist, moving a Linear issue toward Ready for Dev, or writing a handoff for the executor lane. The CC replacement for the Cowork design role. For efforts too big for one session, see the scale gate — suggest a wayfinder map (THR-900).
+description: Use when running a Claude Code session that designs or plans rather than implements — authoring a plan doc, running the design-governance checklist, moving a Linear issue toward Ready for Dev, or writing a handoff for the executor lane. (Replaced the Cowork design role, retired 2026-07-21, THR-654.) For efforts too big for one session, see the scale gate — suggest a wayfinder map (THR-900).
 last_validated_against: 2026-08-06
 ---
 
@@ -10,7 +10,7 @@ last_validated_against: 2026-08-06
 
 Run the **design/planning half** of Threadbare's workflow as a Claude Code session type. A design session
 produces a compliant plan doc and hands it to the executor lane — it does **not** implement the feature.
-This is the CC replacement for the retiring Cowork design role (Pure Claude Code Migration, THR-648–655).
+This is the CC replacement for the retired Cowork design role (Pure Claude Code Migration, THR-648–655; retirement completed 2026-07-21, THR-654).
 
 Invoke via the Skill tool: `/design-session` (or when a request is "design X", "plan X", "write a spec for X").
 

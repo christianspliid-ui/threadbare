@@ -113,7 +113,7 @@ The hex detail view has 4 narrative layers, each an action target context:
 
 | What | Where |
 |------|-------|
-| Spheres and Reaches deep-dive | `TheFantasyWorldSimulator/Cosmology/Spheres and Reaches.md` via Obsidian MCP |
+| Spheres and Reaches deep-dive | `TheFantasyWorldSimulator/Cosmology/Spheres and Reaches.md` (vault filesystem via `OBSIDIAN_VAULT_PATH`) |
 | Cosmology canon page | `Docs/canon/cosmology.md` |
 | Encounter canon page | `Docs/canon/encounters.md` |
 | Game design direction (full) | `Docs/plans/2026-04-16-game-design-direction.md` |
