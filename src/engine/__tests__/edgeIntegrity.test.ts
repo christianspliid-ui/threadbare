@@ -219,7 +219,31 @@ describe('THR-1177 — registry completeness', () => {
   });
 });
 
-describe('THR-1177 — 120-tick seeded smoke', () => {
+/**
+ * Window widened 120 → 150 ticks (THR-1321), and the reason belongs here rather than
+ * in a commit message, because the number is now load-bearing.
+ *
+ * `trades_with` is a **rare** family: measured across seeds 42/99/7/13 at 120 ticks it
+ * fires 1, 0, 0, 0 times on the pre-THR-1321 engine. This smoke passed on a population
+ * of a handful from one seed — so any change that shifts world trajectory at all can
+ * push the family's first occurrence past the window and read as a suppression.
+ *
+ * THR-1321 did exactly that, benignly. It stopped `strategicActionLifecycle` dropping
+ * `mintQueue` and `bindings` from `strategicState` once per tick, so binder mints are
+ * actually born; the extra people move the world. Undertaking completions rose on every
+ * seed (395→442, 180→318, 256→472, 378→481 across 42/99/7/13), and trade routes still
+ * fire — seed 42 writes 5 of them by tick 250. Only the 120-tick window went empty.
+ *
+ * 150 is the measured minimum that restores the family (2 routes). 180 was measured too
+ * and yields the same 2 for ~50% more runtime, so the extra ticks buy no margin.
+ *
+ * **This widened the window, it did not weaken the assertion.** The claim is unchanged
+ * and still falsifiable: the family must really have been written this run. If it goes
+ * to 0 again, do not raise this number reflexively — measure whether routes still fire
+ * at all (they did here, at 250 ticks) before deciding it is the window and not a real
+ * suppression.
+ */
+describe('THR-1177 — 150-tick seeded smoke', () => {
   let state: GameState;
   /** Every `[GraphSchema]` line console.warn saw during the run (THR-830). */
   let schemaWarnings: string[];
@@ -255,7 +279,7 @@ describe('THR-1177 — 120-tick seeded smoke', () => {
     };
 
     try {
-      for (let t = 0; t < 120; t++) state = runTick(state, [], runtime);
+      for (let t = 0; t < 150; t++) state = runTick(state, [], runtime);
     } finally {
       console.warn = realWarn;
       (graph as unknown as { addEdge: typeof graph.addEdge }).addEdge = realAddEdge;
@@ -307,7 +331,7 @@ describe('THR-1177 — 120-tick seeded smoke', () => {
    *
    *  1. `trades_with` routes really were created this run — otherwise "no warnings"
    *     is the trivially-true statement of a world that never exercised the family
-   *     (the measured run writes 5).
+   *     (the measured run writes 2 at 150 ticks — see the widening note above).
    *  2. No `trades_with` warning fired at creation time, which is the actual
    *     Done-when. The final-graph test above cannot make this claim: these routes
    *     are gone by tick 120.
@@ -315,6 +339,9 @@ describe('THR-1177 — 120-tick seeded smoke', () => {
    *     be graded on the one family it was aimed at while breaking a neighbour.
    */
   it('writes trade routes without a single schema warning', () => {
+    // Measured 2 at 150 ticks on this seed (THR-1321). Thin, and deliberately still a
+    // `> 0` floor rather than a pinned count — pinning 2 would fail on every future
+    // world-shifting change while proving nothing extra.
     expect(writtenByType.get('trades_with') ?? 0).toBeGreaterThan(0);
     expect(schemaWarnings.filter((w) => w.includes('"trades_with"'))).toEqual([]);
     expect(schemaWarnings).toEqual([]);

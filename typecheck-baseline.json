@@ -1,5 +1,5 @@
 {
-  "total": 2954,
+  "total": 2953,
   "command": "npx tsc -b --force --pretty false",
   "perFile": {
     "scripts/lint-encounter-content.ts": 2,
@@ -456,7 +456,7 @@
     "src/engine/__tests__/spellActivation.test.ts": 3,
     "src/engine/__tests__/stealth.test.ts": 3,
     "src/engine/__tests__/strands.test.ts": 1,
-    "src/engine/__tests__/strategicActionLifecycle.test.ts": 2,
+    "src/engine/__tests__/strategicActionLifecycle.test.ts": 1,
     "src/engine/__tests__/sublocation-integration.test.ts": 8,
     "src/engine/__tests__/sublocation.test.ts": 24,
     "src/engine/__tests__/targetActions.test.ts": 2,

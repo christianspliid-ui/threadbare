@@ -8,7 +8,9 @@
  * Two properties get deliberate falsification rather than a happy-path assertion,
  * because both are the kind that pass vacuously:
  *
- * - **The empty case.** No shipped template declares `cast`, so a test that only
+ * - **The empty case.** Most shipped templates declare no `cast` (two now do —
+ *   `strategic_establish_spy_network` and, since THR-1321, `strategic_recruit_warband`),
+ *   so a test that only
  *   asserts "nothing happens with no cast" would still pass if the pass were a stub.
  *   Every neutrality test here is paired with a positive control on the same fixture
  *   that proves the pass *does* act when given a bundle.

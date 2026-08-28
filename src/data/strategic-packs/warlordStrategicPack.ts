@@ -63,30 +63,36 @@ export const WARLORD_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     checkpointDifficulty: 0.55,
     payoffValue: 2.0,
     motivations: ['courage_prudence', 'loyalty_ambition'],
-    // **No `cast` — and that is a measured decision, not an omission
-    // (TODO(THR-1321)).** The recruits *should* be a cast slot: that is the trap-1
-    // guarantee, making the people a precondition the binding system supplies rather
-    // than a hope about who happens to be standing here. It was authored that way
-    // first, and it made this verb inert.
+    // **The cast, restored (THR-1321).** It is the trap-1 guarantee for this verb:
+    // the recruits are a precondition the binding system supplies — minting when
+    // nobody suitable is standing here — rather than a hope about who happens to be
+    // at the commander's completion-time location.
     //
-    // Two controlled arms, seed 99 / medium / 150 ticks, each confirmed applied
-    // before it ran:
-    //   cast `must-persist`  → recruit_warband 0 ok / 6 fail, 0 warbands
-    //   cast `scene-only`    → recruit_warband 0 ok / 6 fail, 0 warbands
-    //   no cast              → recruit_warband 13 ok / 1 fail, 7 warbands standing
-    // So it is the presence of a cast on this template that halts it, not the
-    // persistence mode — and `strategic_establish_spy_network` carries a
-    // `must-persist` cast and completes, so it is not casts in general either. That
-    // makes it a binding-layer question over a shared subsystem with its own golden
-    // comparison, filed rather than fixed inline (the THR-1310/THR-1320 precedent).
+    // It was authored this way at THR-1309 and measured inert: 0 completions on both
+    // persistence modes. The cause was not this template and not casts — it was
+    // `strategicActionLifecycle`'s phase return rebuilding `strategicState` as a
+    // literal naming only `projects`/`controls`/`history`, which dropped `mintQueue`
+    // and `bindings` once per tick. A slot needing a mint enqueued a birth into a
+    // queue that was discarded before the lifecycle valve could drain it, so it
+    // deferred on `awaiting_mint` forever and timed out. `strategic_establish_spy_-
+    // network` survived because its slot binds to somebody already present and rolls
+    // in the same pass, never needing either field to cross a tick boundary. Fixed
+    // with a `...currentState` spread; see the comment at that return.
     //
-    // Shipping the cast anyway would have delivered a `warband` kind whose create
-    // verb never fires — the same "counted by every dashboard, mints nothing" shape
-    // this template is being repaired *out of*, and worse for being freshly written.
-    // `raiseWarband` therefore recruits from colocated ungrouped mortals, and returns
-    // a visible `no_recruits` refusal when the field is empty rather than reporting a
-    // success. Its `boundRecruitIds` path stays live and unit-tested, so restoring the
-    // cast under THR-1321 is a content edit and nothing more.
+    // Measured after the fix, seeds 42/99 × 150 ticks, medium, each arm confirmed
+    // applied before it ran — completions *and* bands standing, because a cast that
+    // completes while minting nothing is the same defect wearing the other face:
+    //   cast + fix   → 12 ok / 0 fail, 9 bands  ·  12 ok / 1 fail, 11 bands
+    //   fix, no cast →  8 ok / 1 fail, 4 bands  ·  10 ok / 4 fail,  8 bands
+    // The cast is ahead on both halves on both seeds, which is the comparison that
+    // decides it: same engine, one variable.
+    cast: [{
+      key: 'recruit',
+      kind: 'actor',
+      persistence: 'must-persist',
+      acceptedRoles: ['mercenary', 'guard', 'hunter', 'labourer', 'drifter'],
+      mintRole: 'mercenary',
+    }],
     mutationHint: { type: 'create_group', groupKind: 'company' },
   },
 
@@ -301,9 +307,26 @@ export const WARLORD_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     checkpointDifficulty: 0.45,
     payoffValue: 1.4,
     motivations: ['courage_prudence', 'loyalty_ambition'],
-    // No `cast`, for the reason measured on `strategic_recruit_warband` above
-    // (TODO(THR-1321)) — a cast on that template took it from 13 completions to 0.
-    // Authoring one here would import the same halt into the update column.
+    // **No `cast`, and unlike the create verb above this one is structural (THR-1321).**
+    // The halt that kept a cast off both templates is fixed — but a cast still cannot
+    // serve *this* template, for a reason that is about `targetRule`, not the binder.
+    //
+    // A cast slot's stage is `spec.anchor`'s bound node or, absent one, the
+    // undertaking's own `targetNodeId`. This verb targets `{ type: 'group_node' }` —
+    // the band the commander already has — so the stage resolves to a **group** node,
+    // and `enqueueMint` places the mint there. Measured with the same cast the create
+    // verb now carries, seeds 42/99 × 150 ticks: every mint landed
+    // `locationId → actor:group` (4 and 1 respectively), i.e. a person standing inside
+    // a group rather than anywhere on the map. `buildHexActorIndex` reads that
+    // property, so those recruits are on no hex and visible to no location-scoped
+    // reader. The undertaking still completes, which is what makes it worth writing
+    // down: the defect is silent, not loud.
+    //
+    // Reinforcement does not need the guarantee anyway — `reinforce_group` adds to a
+    // band that by definition already exists, so there is no empty-field case for a
+    // cast to insure against. Giving this verb a cast needs a location-tier stage
+    // first (an `anchor` slot resolving the band's own location), which is a design
+    // question for the binder's anchor vocabulary rather than a content edit.
     mutationHint: { type: 'reinforce_group' },
   },
 ];
