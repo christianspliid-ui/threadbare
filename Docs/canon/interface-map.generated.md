@@ -15,11 +15,11 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 66 |
+| 🟢 LIVE | 67 |
 | 🟠 PARTIAL | 2 |
 | 🔴 LEAKED | 8 |
 | ⚫ UNWIRED | 0 |
-| 🔵 UNVERIFIED-OK | 19 |
+| 🔵 UNVERIFIED-OK | 18 |
 | **Total** | **95** |
 
 ## Contracts by producing subsystem
@@ -41,7 +41,7 @@ remediation ticket or the build fails.
 | `ambition-player-visibility` | The player can see what a mortal is striving for. | function: `getAmbitionsStrand` | Intelligence, Knowledge & Familiarity | 🟢 LIVE | — |
 | `ambition-progress-milestones` | Ambitions progress and complete, firing milestone events the player sees. | function: `phaseAmbitionProgress` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 | `binder-decision-traced` | Every casting decision an undertaking makes reaches the narrative surface: the trace answers "why is this moment generic?" after the fact (it fires on a slot that bound nobody as loudly as on one that bound somebody), and a lost must-persist cast member is carried into the checkpoint moment by name — "loses Old Maerin" rather than the anonymous "hits serious trouble" the complication class produced before. | trace: `binding_decision`, `resolveBinding`, `runBindPass` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | THR-1297 |
-| `binder-mint-valve` | When an undertaking needs a person the world does not have, that person is born the way every other mortal is born — through the lifecycle’s one-per-tick gate — instead of appearing on the spot. An unmetered spawn path is how a large map reached ~1010 agents by tick 72 (THR-814/THR-162), and the budget is what stops the binder becoming a second one. | state-field: `mintQueue`, `drainMintQueue`, `BINDER_MINT_BUDGET_PER_TICK`, `binder_mint` | Agent Lifecycle | 🔵 UNVERIFIED-OK | THR-1296 |
+| `binder-mint-valve` | When an undertaking needs a person the world does not have, that person is born the way every other mortal is born — through the lifecycle’s one-per-tick gate — instead of appearing on the spot. An unmetered spawn path is how a large map reached ~1010 agents by tick 72 (THR-814/THR-162), and the budget is what stops the binder becoming a second one. | state-field: `mintQueue`, `drainMintQueue`, `BINDER_MINT_BUDGET_PER_TICK`, `binder_mint` | Agent Lifecycle | 🟢 LIVE | — |
 | `faction-ambitions-drive-action` | Faction ambitions drive faction action and render on the faction sheet. | function: `factionAmbitions` | Factions & Succession | 🟢 LIVE | — |
 | `holdings-single-writer-owns-edge` | What a mortal owns is written in exactly one place. The `owns` edge is the authority; the bearer-side attachment is its face, and both are minted, moved and retired by `holdings.ts` alone. | edge-prop: `owns` | Attachments, Items & Possessions | 🟢 LIVE | — |
 | `minted-ambition-provenance` | Motive receipts name the origin of a minted want — "she seeks vengeance for the blighted fields." | edge-prop: `mintedByEventId` | Omens & Atmospheric Pressure | 🟢 LIVE | — |
@@ -526,16 +526,16 @@ exit
 - **Other hits:** `src/engine/binding/applyBinding.ts`, `src/engine/encounterSupportBundle.ts`, `src/engine/strategicActionCandidates.ts`, `src/engine/strategicActionLifecycle.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
-### `binder-mint-valve` — 🔵 UNVERIFIED-OK
+### `binder-mint-valve` — 🟢 LIVE
 
 - **Intent:** When an undertaking needs a person the world does not have, that person is born the way every other mortal is born — through the lifecycle’s one-per-tick gate — instead of appearing on the spot. An unmetered spawn path is how a large map reached ~1010 agents by tick 72 (THR-814/THR-162), and the budget is what stops the binder becoming a second one.
 - **Producer → Consumer:** Ambitions & Undertakings → Agent Lifecycle
 - **Module:** `src/engine/binding/mintInhabitant.ts`
-- **Production hits:** 6 total — 1 write, 1 read, 4 unclassified
+- **Production hits:** 9 total — 1 write, 1 read, 7 unclassified
 - **Write sites:** `src/engine/binding/mintInhabitant.ts`
 - **Read sites:** `src/engine/agentLifecycle.ts`
-- **Other hits:** `src/data/binder-constants.ts`, `src/engine/binding/creationEffects.ts`, `src/types/strategicAction.ts`, `src/types/trace.ts`
-- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+- **Other hits:** `src/data/binder-constants.ts`, `src/data/strategic-packs/warlordStrategicPack.ts`, `src/engine/binding/creationEffects.ts`, `src/engine/binding/undertakingBindPass.ts`, `src/engine/strategicActionLifecycle.ts` +2 more
+- **Verdict:** Verified undefined: undefined
 
 ### `binding-registry-reaper-hook` — 🔵 UNVERIFIED-OK
 

@@ -124,16 +124,43 @@ describe('the recruit-warband mirage', () => {
     expect(template.mutationHint).toEqual({ type: 'create_group', groupKind: 'company' });
   });
 
-  it('carries no cast — measured, not omitted (TODO(THR-1321))', () => {
-    // A `recruit` cast is what trap 1 asks for, and it was authored first. Measured
-    // on seed 99 / medium / 150 ticks, each arm confirmed applied before it ran:
-    //   `must-persist` → 0 ok / 6 fail, 0 warbands
-    //   `scene-only`   → 0 ok / 6 fail, 0 warbands
-    //   no cast        → 13 ok / 1 fail, 7 warbands standing
-    // Shipping the cast would deliver a create verb that never fires — the same
-    // shape this template is being repaired out of. Pinned so restoring the cast is
-    // a deliberate act that has to come back here and say the halt is fixed.
+  it('carries the recruit cast — the halt that kept it off is fixed (THR-1321)', () => {
+    // This pin is the inverse of the one it replaces, and the inversion is the point:
+    // the old assertion said `false` and carried "restoring the cast is a deliberate
+    // act that has to come back here and say the halt is fixed." This is that.
+    //
+    // The halt was never this template. `strategicActionLifecycle`'s phase return
+    // rebuilt `strategicState` as a literal naming only `projects`/`controls`/
+    // `history`, dropping `mintQueue` and `bindings` every tick — so a slot needing a
+    // mint enqueued a birth the lifecycle valve never saw, deferred on `awaiting_mint`
+    // forever, and timed out. Measured after the fix, seeds 42/99 × 150 ticks:
+    //   cast + fix   → 12 ok / 0 fail, 9 bands  ·  12 ok / 1 fail, 11 bands
+    //   fix, no cast →  8 ok / 1 fail, 4 bands  ·  10 ok / 4 fail,  8 bands
+    //
+    // Asserted on the *slot's shape*, not merely its presence: a cast whose
+    // `acceptedRoles` were emptied or whose `mintRole` went missing would still
+    // satisfy a bare `toBe(true)` while being unable to bind or mint anyone, which is
+    // the same silent-inertness this ticket exists to end.
     const template = getStrategicTemplate('strategic_recruit_warband')!;
+    const slot = template.cast?.find(c => c.key === WARBAND_RECRUIT_CAST_KEY);
+    expect(slot).toBeDefined();
+    expect(slot!.kind).toBe('actor');
+    expect(slot!.persistence).toBe('must-persist');
+    expect(slot!.mintRole).toBe('mercenary');
+    expect(slot!.acceptedRoles?.length ?? 0).toBeGreaterThan(0);
+  });
+
+  it('leaves the reinforce verb castless, for a reason that is about its target', () => {
+    // Not an oversight and not the same reason as the create verb's old one. A cast
+    // slot's stage falls back to the undertaking's `targetNodeId`, and this verb
+    // targets `{ type: 'group_node' }` — so the stage is a *group*, and a mint placed
+    // there gets a group id as its `locationId`. Measured with the same cast the
+    // create verb carries, seeds 42/99 × 150 ticks: every mint landed
+    // `locationId → actor:group` (4 and 1). `buildHexActorIndex` reads that property,
+    // so those recruits stand on no hex at all — and the undertaking still completes,
+    // which is what makes it worth pinning rather than leaving to be rediscovered.
+    const template = getStrategicTemplate('strategic_reinforce_warband')!;
+    expect(template.targetRule?.type).toBe('group_node');
     expect(template.cast?.some(c => c.key === WARBAND_RECRUIT_CAST_KEY) ?? false).toBe(false);
   });
 

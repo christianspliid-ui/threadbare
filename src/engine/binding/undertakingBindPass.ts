@@ -36,10 +36,18 @@
  *
  * ## The empty case is the common case
  *
- * No shipped template declares `cast` in v1 — doc 2 authors those rows. The pass
- * therefore early-returns on an absent bundle *before* touching the registry, the
- * census or the graph, and `undertakingBindPass.test.ts` pins that neutrality so the
- * first authored row fails a test deliberately rather than landing on an unproven seam.
+ * Most shipped templates declare no `cast`, so the pass early-returns on an absent
+ * bundle *before* touching the registry, the census or the graph, and
+ * `undertakingBindPass.test.ts` pins that neutrality.
+ *
+ * It is no longer *no* template, and the correction is worth making rather than
+ * leaving as a stale absolute: `strategic_establish_spy_network` has carried one since
+ * THR-1296, and `strategic_recruit_warband` gained one at THR-1321. Until that ticket
+ * the second was impossible — `strategicActionLifecycle` dropped `mintQueue` and
+ * `bindings` from `strategicState` every tick, so any slot that needed a *mint*
+ * deferred on `awaiting_mint` forever while a slot that bound to somebody already
+ * present worked fine. That is the whole reason one of these templates shipped a cast
+ * and the other could not.
  */
 import type { WorldGraph } from '../graph';
 import type { GraphNode } from '../../types/graph';
@@ -322,7 +330,14 @@ function bindPassInner(
         nodeId: workingProject.anchorNodeId,
         kind: 'actor',
         persistence: 'must-persist',
-        boundRole: (anchorNode.properties?.npcRole as string | undefined) ?? 'anchor',
+        // No `?? 'anchor'` sentinel (THR-1321). `boundRole` is read by `reportLoss`
+        // and handed to `scarcity01`, which asks the role census how many people hold
+        // this role — so a synthetic name the census has never heard of counts 0 and
+        // scores 1.0, maximally scarce. An anchor is usually an army or a holding with
+        // no `npcRole` at all, so every anchor severance was reading as "the world's
+        // last one of these just died" and halting the undertaking outright. Absent is
+        // the honest answer: this binding has no role population to be singular in.
+        boundRole: anchorNode.properties?.npcRole as string | undefined,
         boundAtTick: tick,
         stepIndex,
         status: 'live',
@@ -489,8 +504,19 @@ function reportLoss(
       // remembers there was somebody there at all.
       lostName: node?.name ?? record.castKey,
       cause: record.brokenCause ?? 'severed',
+      // `role !== undefined` is load-bearing, not defensive (THR-1321). "Singular" is
+      // a claim about a *named role's* population, and `scarcity01` answers `1.0` for
+      // any role the census cannot find — which is both "the last archmage died" and
+      // "this binding never had a role", two cases that must not resolve the same way.
+      // The role name is what separates them: a dead archmage still carries
+      // `boundRole: 'archmage'` on the ledger row (which is why that read comes first
+      // below), while a roleless anchor carries nothing. Without this guard every
+      // anchor severance halted its undertaking instead of downgrading it to
+      // advance-at-cost — measured as `abandoned_after_halts` across seeds 42/99 the
+      // moment the ledger started surviving the tick boundary at all.
       singular:
         record.kind === 'actor' &&
+        role !== undefined &&
         scarcity01(census, role) >= BINDER_SINGULAR_SCARCITY_THRESHOLD,
     });
   }

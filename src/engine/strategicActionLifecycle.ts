@@ -879,6 +879,25 @@ export function advanceStrategicProjects(
 
   return {
     strategicState: {
+      // `...currentState` first, and it is load-bearing (THR-1321). This was a literal
+      // naming only the three fields below, which silently dropped every *other* field
+      // on `StrategicRuntimeState` once per tick — `bindings` and `mintQueue`, the two
+      // the binder owns. Every sibling return in this module already spreads; this was
+      // the one drifted writer.
+      //
+      // What that cost: the bind pass enqueues a mint in the `strategic_projects`
+      // phase, and `phaseAgentLifecycle` drains it later in the same tick — but the
+      // queue it pushed to was discarded with the old object before the valve ever saw
+      // it. So a slot that needed a mint deferred on `awaiting_mint` forever, never
+      // rolled, and timed out: `strategic_recruit_warband` measured 0 completions
+      // against a no-cast baseline of 15. The dropped `bindings` is why the two
+      // persistence modes measured identically — the ledger was wiped every tick, so
+      // `must-persist` and `scene-only` were the same thing.
+      //
+      // A template whose slot binds to somebody already standing there was unaffected
+      // and hid this: it binds within the pass and rolls the same tick, so it never
+      // needs either field to survive the boundary.
+      ...currentState,
       projects: updatedProjects,
       controls: updatedControls,
       history: updatedHistoryFull,

@@ -385,4 +385,76 @@ describe('strategicActionLifecycle', () => {
       expect(result.strategicState.controls[0].active).toBe(true);
     });
   });
+
+  // ─── The phase return carries the binder's state (THR-1321) ──────────
+  //
+  // `advanceStrategicProjects` used to build its returned `strategicState` as a
+  // literal naming only `projects`, `controls` and `history`. Every *other* field on
+  // `StrategicRuntimeState` was therefore dropped once per tick — `mintQueue` and
+  // `bindings`, the two the binder owns and the only two that are optional.
+  //
+  // The cost was total and silent. The bind pass enqueues a birth during the
+  // `strategic_projects` phase; `phaseAgentLifecycle` drains that queue later in the
+  // same tick. But the object holding the queue was discarded before the valve ran,
+  // so the drain always found an empty queue, no mint was ever born, and any slot
+  // that needed one deferred on `awaiting_mint` until the undertaking timed out —
+  // `strategic_recruit_warband` measured 0 completions against a no-cast baseline of
+  // 15. The dropped `bindings` is why the two persistence modes measured identically:
+  // the ledger was wiped every tick, so `must-persist` and `scene-only` were the same
+  // thing.
+  //
+  // Asserted on the phase return rather than through a full tick because that return
+  // *is* the seam that broke, and a tick-level test would pass the moment any other
+  // phase happened to rewrite the field.
+  describe('binder state survives the phase return (THR-1321)', () => {
+    it('carries mintQueue and bindings through a tick that changes neither', () => {
+      const graph = buildTestGraph();
+      const state = buildMinimalState(graph);
+
+      const queued = {
+        projectId: 'proj_x', castKey: 'recruit', stepIndex: 0, role: 'mercenary',
+        placementNodeId: 'loc_town', persistence: 'must-persist' as const,
+        requestedAtTick: 9,
+      };
+      const ledgerRow = {
+        recordId: 'rec_1', projectId: 'proj_x', castKey: 'recruit', nodeId: 'actor_1',
+        kind: 'actor' as const, persistence: 'must-persist' as const,
+        boundAtTick: 9, stepIndex: 0, status: 'live' as const,
+      };
+
+      state.strategicState = {
+        projects: [],
+        controls: [],
+        history: [],
+        mintQueue: [queued],
+        bindings: [ledgerRow],
+      } as StrategicRuntimeState;
+
+      const result = advanceStrategicProjects(state, graph, 10, mulberry32(42));
+
+      // The regression: both of these read `undefined` before the fix.
+      expect(result.strategicState.mintQueue).toBeDefined();
+      expect(result.strategicState.bindings).toBeDefined();
+      expect(result.strategicState.mintQueue).toHaveLength(1);
+      expect(result.strategicState.bindings).toHaveLength(1);
+      // Identity, not just shape — a queue rebuilt empty-then-refilled would still
+      // strand the request the valve was about to drain.
+      expect(result.strategicState.mintQueue![0].projectId).toBe('proj_x');
+      expect(result.strategicState.bindings![0].nodeId).toBe('actor_1');
+    });
+
+    it('does not resurrect fields the caller never set', () => {
+      // The complement, so the guard above cannot be satisfied by a writer that
+      // manufactures empty collections: absent stays absent. This is what makes the
+      // assertion above evidence of a *spread* rather than of a default.
+      const graph = buildTestGraph();
+      const state = buildMinimalState(graph);
+      state.strategicState = { projects: [], controls: [], history: [] };
+
+      const result = advanceStrategicProjects(state, graph, 10, mulberry32(42));
+
+      expect(result.strategicState.mintQueue).toBeUndefined();
+      expect(result.strategicState.bindings).toBeUndefined();
+    });
+  });
 });
