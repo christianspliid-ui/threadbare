@@ -36,10 +36,25 @@ export interface LairProperties {
   monsterFactionId?: string;
   /** Optional: node ID for the named elite boss of this lair */
   namedEliteId?: string;
-  /** Set when the lair is cleared by a faction */
+  /**
+   * Tick the lair was cleared. Written only by `clearLair` (THR-1319), always in the
+   * same call that sets `locationSubtype: 'cleared_lair'` — reinfestation gates on
+   * `tick - (clearedAtTick ?? 0)`, so a clearing that set the subtype alone would make
+   * the lair instantly eligible to seep back.
+   */
   clearedAtTick?: number;
-  /** Faction ID that cleared this lair */
+  /**
+   * Faction credited with the clearing — the one most represented among the mortals who
+   * pressed it. Absent when unaffiliated wanderers did the work, which is a real
+   * clearing with nobody to credit rather than a missing value.
+   */
   clearedByFactionId?: string;
+  /**
+   * Clearing pressure absorbed so far, against `LAIR_CLEARING_RESISTANCE[tier]`.
+   * Accumulates across escalations so a siege resumes rather than restarting, and is
+   * cleared on both clearing and reinfestation. Absent means never pressed.
+   */
+  clearingProgress?: number;
 }
 
 // ─── Monster Archetype ───────────────────────────────────────────────────────
