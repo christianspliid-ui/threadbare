@@ -33,6 +33,8 @@ import {
   STRATEGIC_VERB_IMPACT,
   STRATEGIC_VERB_IMPACT_DEFAULT,
   STRATEGIC_CONTROL_RECLAIM_COOLDOWN_TICKS,
+  STRATEGIC_TARGET_SCAN_CAPS,
+  STRATEGIC_TARGET_UNRESOLVED_HEX_DISTANCE,
 } from '../data/strategic-action-constants';
 import { emitTrace } from './traceBuffer';
 import type { TraceEntry } from '../types/trace';
@@ -162,7 +164,7 @@ export function generateStrategicCandidates(
       }
 
       // Find valid targets
-      const targets = findValidTargets(graph, actorId, template, locationId);
+      const targets = findValidTargets(graph, actorId, template, locationId, actorHex);
       if (targets.length === 0) {
         rejections.push({ templateId, reason: 'no_valid_targets' });
         continue;
@@ -304,11 +306,78 @@ export function generateStrategicCandidates(
 
 // ─── Target Finding ─────────────────────────────────────────────────
 
+/**
+ * Resolve any target node to the hex it stands on (NFP #4, fail-soft → null).
+ *
+ * Locations and sublocations resolve directly; `resolveLocationToHex` already walks
+ * `parentLocationId` upward. An **actor** carries no `hexCol`/`hexRow` of its own, so it
+ * resolves through its `located_at` target first — without that hop every actor-valued
+ * target would read as unresolvable and the ordering would degrade to insertion order,
+ * which is the defect this exists to fix.
+ */
+function resolveTargetHex(graph: WorldGraph, node: GraphNode): { col: number; row: number } | null {
+  if (node.type === 'actor') {
+    const locId = getAgentLocationId(graph, node.id);
+    return locId ? resolveLocationToHex(graph, locId) : null;
+  }
+  return resolveLocationToHex(graph, node.id);
+}
+
+/**
+ * Order a scanned target set by hex distance from the acting agent, then cap it.
+ *
+ * **This is the THR-1310 fix.** Every scanning rule used to `.slice(0, N)` a set in
+ * worldgen insertion order — the same order for every agent on the map — so the cap
+ * kept the *oldest* N candidates rather than the *nearest* N, and near sites were
+ * discarded before `travelPenalty` could ever score them. Sorting first makes the cap
+ * keep what is close.
+ *
+ * Distance only *orders*; it is never a score and never an exclusion. `travelPenalty`
+ * remains the sole place distance is priced (THR-1310 scope: "honouring the existing
+ * `travelPenalty` rather than duplicating it"), so a far target that is the only target
+ * still gets proposed — and still gets penalised downstream exactly as before.
+ *
+ * NFP #3 (Determinism): ties break on node id, so the same world yields the same order
+ * regardless of engine sort stability. NFP #4 (Fail-soft): an unresolvable hex sorts
+ * last rather than being dropped, and an unresolvable *actor* hex disables ordering
+ * altogether rather than scrambling it.
+ *
+ * Exported for focused tests (NFP #2), matching `computeRouteFormationBias`'s precedent.
+ */
+export function orderTargetsByProximity(
+  graph: WorldGraph,
+  targets: GraphNode[],
+  actorHex: { col: number; row: number } | null,
+  cap: number,
+): GraphNode[] {
+  if (!actorHex) return targets.slice(0, cap);
+
+  const withDistance = targets.map(node => {
+    const hex = resolveTargetHex(graph, node);
+    return {
+      node,
+      distance: hex
+        ? hexDistance(actorHex, hex)
+        : STRATEGIC_TARGET_UNRESOLVED_HEX_DISTANCE,
+    };
+  });
+
+  withDistance.sort((a, b) =>
+    a.distance !== b.distance
+      ? a.distance - b.distance
+      : a.node.id.localeCompare(b.node.id));
+
+  return withDistance.slice(0, cap).map(entry => entry.node);
+}
+
 function findValidTargets(
   graph: WorldGraph,
   actorId: string,
   template: StrategicActionTemplate,
   currentLocationId: string,
+  // THR-1310: the caller already resolved this once per actor; threading it through
+  // keeps one source for where the agent stands rather than re-deriving it per template.
+  actorHex: { col: number; row: number } | null,
 ): GraphNode[] {
   const rule = template.targetRule;
 
@@ -317,14 +386,24 @@ function findValidTargets(
       return [graph.getNode(actorId)].filter(Boolean) as GraphNode[];
 
     case 'any_location':
-      return graph.getNodesByType('location').slice(0, 5);
+      return orderTargetsByProximity(
+        graph,
+        graph.getNodesByType('location'),
+        actorHex,
+        STRATEGIC_TARGET_SCAN_CAPS.any_location,
+      );
 
     case 'location_subtype': {
       const allLocations = graph.getNodesByType('location');
-      return allLocations.filter(loc => {
+      const matching = allLocations.filter(loc => {
         const subtype = (loc.properties.locationSubtype ?? loc.properties.locationType) as string | undefined;
         return subtype && rule.subtypes.includes(subtype);
-      }).slice(0, 8); // Cap to prevent explosion
+      });
+      // THR-1310: the cap keeps the nearest, not the first-minted. Shared by all seven
+      // packs (53 templates), so this ordering is the whole sweep's blast radius.
+      return orderTargetsByProximity(
+        graph, matching, actorHex, STRATEGIC_TARGET_SCAN_CAPS.location_subtype,
+      );
     }
 
     case 'faction': {
@@ -357,17 +436,28 @@ function findValidTargets(
       // shape — every worldgen-minted sublocation (the overwhelming majority) was
       // invisible here, so this rule matched almost nothing on a normal map.
       const allSublocations = getSublocationNodes(graph);
-      return allSublocations.filter(sub => {
+      const matching = allSublocations.filter(sub => {
         const typeId = sub.properties.sublocationTypeId as string | undefined;
         return typeId && rule.subtypeIds.includes(typeId);
-      }).slice(0, 5);
+      });
+      // THR-1310: same unbounded-scan shape as `location_subtype`. No shipped template
+      // names this rule today, so the ordering is prophylactic — it stops the next pack
+      // that reaches for it from re-inheriting the defect.
+      return orderTargetsByProximity(
+        graph, matching, actorHex, STRATEGIC_TARGET_SCAN_CAPS.sublocation_type,
+      );
     }
 
     case 'actor_with_trait': {
-      return graph.getNodesByType('actor').filter(a => {
+      const matching = graph.getNodesByType('actor').filter(a => {
         const traits = a.properties.traits as string[] | undefined;
         return traits?.includes(rule.trait);
-      }).slice(0, 5);
+      });
+      // THR-1310: actors resolve through `located_at` before their hex is known — see
+      // `resolveTargetHex`. Also prophylactic; no shipped template names this rule.
+      return orderTargetsByProximity(
+        graph, matching, actorHex, STRATEGIC_TARGET_SCAN_CAPS.actor_with_trait,
+      );
     }
 
     case 'colocated_actor': {
@@ -395,7 +485,10 @@ function findValidTargets(
             graph.getOutgoingEdges(actorId, rule.withEdgeFromActor!).some(e => e.target === n.id))
         : roleFiltered;
 
-      return edgeFiltered.slice(0, 5);
+      // THR-1310: capped by the named constant, but deliberately *not* reordered —
+      // every candidate here stands at `currentLocationId`, so all distances are 0 and
+      // sorting would only churn the order for no gain.
+      return edgeFiltered.slice(0, STRATEGIC_TARGET_SCAN_CAPS.colocated_actor);
     }
 
     case 'hex_region':

@@ -36,10 +36,21 @@
 // revert to `false` for the offending kinds and record which"). The instant verbs omit
 // the field: checkpoints never run for them, so any value there is decoration.
 //
-// The *right* long-term fix is a proximity-aware target rule, which would let locality
-// hold without starving the kind — but that rule is shared by all six existing packs
-// and re-pointing it is a behaviour change to every shipped template, so it belongs in
-// its own ticket rather than riding this slice.
+// Slice 5 predicted the remedy would be a proximity-aware target rule, "which would let
+// locality hold without starving the kind". **THR-1310 shipped that rule and re-measured:
+// the prediction was wrong.** With targeting proximity-bounded, seeds 42 and 99 at 150
+// ticks still report the wanderer family 0/115 and 0/31 rolled at `requiresLocation:
+// true` — 100% `actor_absent`, the same total inertness as before.
+//
+// The reason is that proximity and presence are different claims. A near target is not a
+// *present* one, and `isActorAtStage` demands presence; nothing in the engine moves an
+// agent toward its undertaking's stage, because that mover is doc 3's binder and has not
+// shipped (see `UNDERTAKING_DEFAULT_REQUIRES_LOCATION`'s note, and TODO(THR-1294)).
+// Targeting was never the whole cause — it was the visible half of a two-part gap.
+//
+// So these verbs keep `false`, now on sharper evidence than slice 5 had: not "we could
+// not tell why presence starves the kind" but "presence starves it for a reason a
+// targeting fix provably cannot reach". Re-measure when the binder lands, not before.
 
 import type { StrategicActionTemplate } from '../../types/strategicAction';
 
