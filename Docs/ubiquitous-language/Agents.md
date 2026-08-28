@@ -36,11 +36,11 @@ The taxonomy of actor subtypes stored in `actor.properties.actorType`: `god`, `a
 
 ### Ascendant
 
-**Aliases:** The Ascendant, Player Character, God-Self
+**Aliases:** The Ascendant, God-Self
 **Also see:** `[[The First]]`, `[[Thread]]`, `[[Actor]]`
 **Status:** canonical
 
-The player-character: a powerful former mortal who has transcended to divine status. Stored as an actor node with `actorType: 'ascendant'`. Uses the same Domain Capability prerequisite system as mortal agents — no special-cased entity logic. Power level is tunable via constants, not architecturally different.
+The player's seat in the world: a powerful former mortal who has transcended to divine status. The player is a god, never a protagonist — the Ascendant is not a directly-controlled player character ("Player Character" was retired as an alias 2026-08-28, THR-1338; the rejected framing). Stored as an actor node with `actorType: 'ascendant'`. Uses the same Domain Capability prerequisite system as mortal agents — no special-cased entity logic. Power level is tunable via constants, not architecturally different.
 
 ---
 

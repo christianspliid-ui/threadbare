@@ -54,7 +54,7 @@ Every design decision — engine, content, UI, prose — is checked against thes
 
 **Next reads (load on demand):**
 - Rules of play: `Docs/canon/rulebook.md`
-- Reaches × Spheres deep dive: `TheFantasyWorldSimulator/Cosmology/Spheres and Reaches.md` (vault, filesystem via `OBSIDIAN_VAULT_PATH`)
+- Reaches × Spheres deep dive: `TheFantasyWorldSimulator/Cosmology/The Cosmological Pattern.md` (vault, filesystem via `OBSIDIAN_VAULT_PATH`)
 - Action verb mechanics: `.claude/skills/state-of-game-design/reference/verbs-resolution.md`
 - Encounters: `Docs/canon/encounters.md`
 - Agents & threads: `Docs/canon/agents.md`

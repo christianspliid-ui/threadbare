@@ -1,14 +1,14 @@
 ---
 name: gamedocumenter
-description: Use after completing any implementation work on The Fantasy World Simulator to update all documentation layers (Docs/changelog.md + Docs/project-status.md + Docs/project-history.md, Linear closeout, and Obsidian vault system notes). Trigger whenever you finish a phase, task, or group of commits — even small ones. Also trigger when someone says "update docs", "document this", "update Linear", or "update obsidian". Linear (Threadbare team) is the single source of truth for backlog and issue state; `.planning/BACKLOG.md` was retired 2026-04-13. Vault work is filesystem-only via OBSIDIAN_VAULT_PATH — there is no Obsidian MCP (THR-654).
-last_validated_against: 2026-08-07
+description: Use after completing any implementation work on Threadbearer to update all documentation layers (Docs/changelog.md + Docs/project-status.md + Docs/project-history.md, Linear closeout, and Obsidian vault system notes). Trigger whenever you finish a phase, task, or group of commits — even small ones. Also trigger when someone says "update docs", "document this", "update Linear", or "update obsidian". Linear (Threadbare team) is the single source of truth for backlog and issue state; `.planning/BACKLOG.md` was retired 2026-04-13. Vault work is filesystem-only via OBSIDIAN_VAULT_PATH — there is no Obsidian MCP (THR-654).
+last_validated_against: 2026-08-28
 ---
 
 # Game Documenter
 
 ## Overview
 
-A rigid post-implementation checklist for updating The Fantasy World Simulator's three documentation layers. Every step includes the exact tool calls, known API workarounds, and expected output format. Follow this start-to-finish after completing implementation work — no steps are optional.
+A rigid post-implementation checklist for updating Threadbearer's three documentation layers. Every step includes the exact tool calls, known API workarounds, and expected output format. Follow this start-to-finish after completing implementation work — no steps are optional.
 
 The documentation layers serve different purposes and must stay in sync:
 - **`Docs/changelog.md`** + **`Docs/project-status.md`** + **`Docs/project-history.md`** (in repo) — changelog + project status. Says "what changed and where we are."

@@ -1,7 +1,7 @@
 ---
 name: retrospective
 description: Review the impediment log (Docs/impediments.md) and conduct a structured retrospective. Reads this week's drift-scan Linear issues as the first input, then analyzes patterns, proposes concrete improvements to tools, skills, CLAUDE.md, and processes. Trigger with "/retrospective" or "run a retro" or "review impediments" or "continuous improvement review".
-last_validated_against: 2026-08-26
+last_validated_against: 2026-08-28
 ---
 
 # Retrospective
@@ -110,7 +110,7 @@ For larger fixes, **draft** the Linear issue now but **do not file it yet** — 
 
 1. Grep `src/types/effects.ts` for effect type names and compare against the capability inventory in `Docs/plans/2026-04-16-systemic-wiring-guide.md` Part 5.
 2. Check `src/engine/proseEnrichment.ts` for placeholder patterns vs. what the guide documents in Part 2 Capability 1.
-3. Check `src/types/encounter.ts` for EncounterTemplate fields vs. the guide's template-level fields table.
+3. Check `src/types/unifiedAction.ts` for `UnifiedActionTemplate` fields vs. the guide's template-level fields table (`EncounterTemplate` was removed with THR-108 — if this step ever finds it again, that is a regression, not a capability).
 4. Check `src/engine/strategicGraphOps.ts` for available operations vs. Part 2 Capability 5.
 
 If there are undocumented capabilities, flag them as a quick-win improvement (edit the guide immediately) or backlog if the capability is complex enough to need a worked example.

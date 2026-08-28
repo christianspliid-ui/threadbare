@@ -13,7 +13,7 @@ description: >
   Surface-Shape Check. Load alongside `game-design-direction` for In
   Design phase work; this skill is the action-catalog-specific extension
   of that skill's general Vision audit.
-last_validated_against: 2026-07-30
+last_validated_against: 2026-08-28
 ---
 
 # Action Catalog Design — Pre-flight
@@ -89,12 +89,12 @@ Before adding to `src/data/unified-action-templates.ts`, read `Docs/plans/2026-0
 
 > *Verdict: this verb should live as [a global `UnifiedActionTemplate` / a per-scene god-verb inside an encounter template]. Reasoning: [...]*
 
-Why: `Vision/taste-profile.md` (strong opinion, updated 2026-05-07) records the **2026-05-04 retirement of fixed verbs** in favor of encounter-specific god-verbs. The catalog surface itself is under pressure. The right answer per scope is plausibly:
+Why: the fixed divine verb trio was retired 2026-05-04, and the encounter-side surface was then **settled by the 2026-07-30 format lock** (THR-883, amended by Prose Doctrine v2 2026-08-25): inside an attended encounter the player-facing surface is the **nudge hand** — spell-style, library-generic card faces from the 21-type library, never scene-bespoke verb prose (`Docs/canon/encounters.md` § the format lock). So the split is:
 
-- **Per-scene** when the verb is intimate, agent-scale, anchored in a specific encounter beat.
-- **Global** when the verb is institutional, world-scale, fired from the action drawer against a focused target.
+- **In-encounter** — the verb is a nudge card: authored specials plus repertoire deals, library vocabulary, essence-priced. Per-scene *card text* is the rejected pre-pivot model; the scene's particularity lives in the prose, not on the card face.
+- **Global** — the verb is a `UnifiedActionTemplate` in the drawer: institutional, world-scale, fired against a focused target.
 
-But the question is **not yet settled across all scales** — that's the open work. Your plan must state which side it lands on and why, not silently default to global because that's where `unified-action-templates.ts` lives.
+State in your plan which surface the verb lives on and why — do not silently default to global because that's where `unified-action-templates.ts` lives, and do not author scene-bespoke card text, which the format lock retired.
 
 ---
 
