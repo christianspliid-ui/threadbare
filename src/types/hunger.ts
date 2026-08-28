@@ -101,76 +101,103 @@ export const HUNGER_IDS = [
  * (`compassion`, `desperation`, `devotion`, `nurturing`): they are real
  * themes, and their absence from every hunger list is the same
  * disjoint-vocabulary drift in miniature.
+ *
+ * The vocabulary has one authority — this array — and the type is derived from
+ * it rather than maintained beside it.
+ *
+ * A runtime list is what lets an untyped tag source be narrowed instead of cast:
+ * `AscendantIdentity.mortalTags` mixes real themes (`knowledge`, `devotion`) with
+ * origin words that are not themes at all (`scholar`, `rural`, `recent`), so the
+ * lens resolver has to *filter*, and a filter needs values (THR-1213 slice 2).
  */
-export type ResonanceTag =
-  | 'ambition'
-  | 'art'
-  | 'belonging'
-  | 'chains'
-  | 'clarity'
-  | 'community'
-  | 'compassion'
-  | 'conquest'
-  | 'corruption'
-  | 'covenant'
-  | 'creation'
-  | 'curiosity'
-  | 'debt'
-  | 'desperation'
-  | 'devotion'
-  | 'discovery'
-  | 'domination'
-  | 'dreams'
-  | 'duty'
-  | 'endurance'
-  | 'escape'
-  | 'exploration'
-  | 'freedom'
-  | 'grief'
-  | 'growth'
-  | 'horizon'
-  | 'hunger'
-  | 'independence'
-  | 'inspiration'
-  | 'investigation'
-  | 'journey'
-  | 'justice'
-  | 'knowledge'
-  | 'law'
-  | 'legacy'
-  | 'loss'
-  | 'loyalty'
-  | 'memory'
-  | 'movement'
-  | 'nurturing'
-  | 'oath'
-  | 'obligation'
-  | 'observation'
-  | 'obsession'
-  | 'order'
-  | 'passion'
-  | 'patterns'
-  | 'power'
-  | 'presence'
-  | 'protection'
-  | 'rebellion'
-  | 'remembrance'
-  | 'restoration'
-  | 'revelation'
-  | 'revolution'
-  | 'sacrifice'
-  | 'secrets'
-  | 'shelter'
-  | 'solitude'
-  | 'spark'
-  | 'structure'
-  | 'territory'
-  | 'tradition'
-  | 'transformation'
-  | 'truth'
-  | 'vengeance'
-  | 'vision'
-  | 'wonder';
+export const RESONANCE_TAGS = [
+  'ambition',
+  'art',
+  'belonging',
+  'chains',
+  'clarity',
+  'community',
+  'compassion',
+  'conquest',
+  'corruption',
+  'covenant',
+  'creation',
+  'curiosity',
+  'debt',
+  'desperation',
+  'devotion',
+  'discovery',
+  'domination',
+  'dreams',
+  'duty',
+  'endurance',
+  'escape',
+  'exploration',
+  'freedom',
+  'grief',
+  'growth',
+  'horizon',
+  'hunger',
+  'independence',
+  'inspiration',
+  'investigation',
+  'journey',
+  'justice',
+  'knowledge',
+  'law',
+  'legacy',
+  'loss',
+  'loyalty',
+  'memory',
+  'movement',
+  'nurturing',
+  'oath',
+  'obligation',
+  'observation',
+  'obsession',
+  'order',
+  'passion',
+  'patterns',
+  'power',
+  'presence',
+  'protection',
+  'rebellion',
+  'remembrance',
+  'restoration',
+  'revelation',
+  'revolution',
+  'sacrifice',
+  'secrets',
+  'shelter',
+  'solitude',
+  'spark',
+  'structure',
+  'territory',
+  'tradition',
+  'transformation',
+  'truth',
+  'vengeance',
+  'vision',
+  'wonder',
+] as const;
+
+/** @see RESONANCE_TAGS — the value list this union is derived from. */
+export type ResonanceTag = typeof RESONANCE_TAGS[number];
+
+/** Membership set for {@link toResonanceTags}. */
+const RESONANCE_TAG_SET: ReadonlySet<string> = new Set<string>(RESONANCE_TAGS);
+
+/**
+ * Narrow an untyped tag list to the closed resonance vocabulary — the single
+ * place a `string[]` becomes `ResonanceTag[]` (the `toHungerId` pattern).
+ *
+ * Fail-soft (NFP #4): an unknown tag is dropped, never thrown on. Dropping is
+ * the honest reading — a tag outside the vocabulary cannot overlap anything in
+ * it, so keeping it could only ever contribute zero.
+ */
+export function toResonanceTags(tags: readonly string[]): ResonanceTag[] {
+  return tags.filter((t): t is ResonanceTag => RESONANCE_TAG_SET.has(t));
+}
 
 // ─── Hunger Definition ───────────────────────────────────────────
 

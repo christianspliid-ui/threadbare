@@ -12,9 +12,11 @@
  */
 
 import { HUNGER_CATALOG } from '../data/hunger-catalog';
-import type { CreationSphereName } from '../types';
+import type { CreationSphereName, SphereName } from '../types';
 import type { AscendantLens, HungerId } from '../types/hunger';
+import { toHungerId, toResonanceTags } from '../types/hunger';
 import type { LensOverlay } from '../types/meetingEncounter';
+import type { AscendantIdentity } from '../types/remembrance';
 
 // ─── Stub Lens Builder ───────────────────────────────────────────
 
@@ -48,10 +50,15 @@ const FALLBACK_HUNGER_ID: HungerId = 'gather';
  * and the catalog is data — types must not import data.
  */
 export function buildStubAscendantLens(
-  primarySphere: CreationSphereName,
-  _secondarySphere: CreationSphereName,
+  primarySphere: SphereName,
+  _secondarySphere: SphereName,
 ): AscendantLens {
-  const hungerId = SPHERE_TO_HUNGER[primarySphere] ?? FALLBACK_HUNGER_ID;
+  // Partial index: the map is keyed on the eight Creation spheres, and a
+  // Foundation-sphere ascendant is representable — it falls through to the
+  // default rather than being unrepresentable at the type level (NFP #4).
+  const hungerId =
+    (SPHERE_TO_HUNGER as Partial<Record<SphereName, HungerId>>)[primarySphere] ??
+    FALLBACK_HUNGER_ID;
   const hunger = HUNGER_CATALOG.find((h) => h.id === hungerId) ?? HUNGER_CATALOG[0];
 
   return {
@@ -61,6 +68,51 @@ export function buildStubAscendantLens(
     driveTags: [...hunger.dilemmaResonanceTags.slice(0, 3)],
     timeSinceAscension: 'ancient',
     mortalName: 'the Forgotten',
+  };
+}
+
+/**
+ * Build the lens from the player's own remembrance identity — the god the
+ * player actually authored, not the archetype they were dealt.
+ *
+ * This is the resolver the seam existed for (THR-1213 slice 2). Before it, the
+ * only lens in the tree was {@link buildStubAscendantLens} reading *archetype*
+ * spheres, and its one caller was a memo nothing consumed: the Hunger chosen in
+ * remembrance shaped prose framing and never the deal.
+ *
+ * `driveTags` narrows `identity.mortalTags` rather than casting it, because that
+ * list is genuinely mixed — a fragment contributes real themes (`knowledge`,
+ * `devotion`) alongside origin words that are not themes at all (`scholar`,
+ * `rural`, `recent`). Narrowing keeps the tags that can overlap and drops the
+ * ones that provably cannot.
+ *
+ * Fail-soft (NFP #4): a legacy, unknown, or corrupt `hungerId` resolves to
+ * `undefined` through the bridge and falls back to the sphere stub, so selection
+ * still gets a lens and the meeting still deals.
+ */
+export function buildLensFromIdentity(identity: AscendantIdentity): AscendantLens {
+  const hungerId = toHungerId(identity.hungerId);
+  const hunger = hungerId ? HUNGER_CATALOG.find((h) => h.id === hungerId) : undefined;
+
+  if (!hunger) {
+    return buildStubAscendantLens(
+      identity.sphereAlignment.primary,
+      identity.sphereAlignment.secondary,
+    );
+  }
+
+  const driveTags = toResonanceTags(identity.mortalTags);
+
+  return {
+    hunger,
+    mortalOrigin: identity.originFragmentId,
+    drive: identity.mandateDirection,
+    // An identity whose fragments contributed no in-vocabulary tag would
+    // otherwise score every drive overlap at zero; fall back to the hunger's
+    // own themes so the drive axis degrades to the hunger axis, never to dead.
+    driveTags: driveTags.length > 0 ? driveTags : [...hunger.dilemmaResonanceTags.slice(0, 3)],
+    timeSinceAscension: identity.timeSinceAscension,
+    mortalName: identity.mortalName,
   };
 }
 

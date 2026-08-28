@@ -31,6 +31,7 @@ import {
   buildMeetingResult,
   createAgentFromMeeting,
 } from '../../engine/meetingEncounter';
+import { buildStubAscendantLens } from '../../engine/ascendantLens';
 import {
   ARCHETYPE_NAME_MAP,
   DILEMMA_TEMPLATES,
@@ -124,9 +125,14 @@ function StepSeekingThreads({
 
   const handleConfirm = useCallback(() => {
     if (!primaryReach || !secondaryReach || !sphere || selectedCandidate == null || !candidates) return;
+    // The identity-less floor (THR-1213 slice 2). This path has an archetype
+    // and no authored remembrance, so the sphere stub is the honest lens —
+    // the same one `GameView` used to build in a memo nothing consumed. The
+    // deal is weighed by the archetype's default Hunger rather than by nothing.
+    const lens = buildStubAscendantLens(ascendantSphere, ascendantSecondSphere);
     const dilemmas = selectDilemmas(
       DILEMMA_TEMPLATES, primaryReach, secondaryReach, sphere,
-      candidates[selectedCandidate].archetypeId, '', seed,
+      candidates[selectedCandidate].archetypeId, '', seed, lens,
     );
     onStateChange({
       ...state,
@@ -139,7 +145,7 @@ function StepSeekingThreads({
       dilemmas,
       currentDilemmaIndex: 0,
     });
-  }, [primaryReach, secondaryReach, sphere, selectedCandidate, candidates, state, onStateChange, seed]);
+  }, [primaryReach, secondaryReach, sphere, selectedCandidate, candidates, state, onStateChange, seed, ascendantSphere, ascendantSecondSphere]);
 
   const sphereOptions: SphereName[] = ['force', 'matter', 'energy', 'life', 'mind', 'spirit', 'time', 'entropy'];
 

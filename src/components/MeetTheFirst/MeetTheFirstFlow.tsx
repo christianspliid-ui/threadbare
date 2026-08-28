@@ -18,7 +18,8 @@ import { TestingBeat } from './TestingBeat';
 import { FormativeTestBeat, type ConvertedTest } from './FormativeTestBeat';
 import { SparkBeat } from './SparkBeat';
 import { BondBeat } from './BondBeat';
-import { generateNarrativeCandidates, generateSparkVisions, buildNarrativeResult, selectDilemmas, applyMeetingOutcomes } from '../../engine/meetingEncounter';
+import { generateNarrativeCandidates, generateSparkVisions, buildNarrativeResult, selectDilemmasScored, applyMeetingOutcomes } from '../../engine/meetingEncounter';
+import { buildLensFromIdentity } from '../../engine/ascendantLens';
 import { ENRICHED_DILEMMA_LIBRARY } from '../../data/meeting-dilemma-library';
 import { MEETING_BOND_TEST } from '../../data/meeting-bond-test';
 import { clearMeetingDebugState, publishMeetingDebugState } from './meetingDebugState';
@@ -114,6 +115,30 @@ export function MeetTheFirstFlow({
     setBeat('bond');
   }, []);
 
+  // The god's own lens — built from the remembrance identity the player
+  // authored, which is what makes the chosen Hunger weigh the deal (THR-1213
+  // slice 2). Before this the only lens in the tree read *archetype* spheres
+  // and nothing consumed it.
+  const lens = useMemo(() => buildLensFromIdentity(ascendantIdentity), [ascendantIdentity]);
+
+  // Generate dilemmas for the selected candidate
+  const dilemmaSelection = useMemo(() => {
+    if (!selectedCandidate) return null;
+    const templates = ENRICHED_DILEMMA_LIBRARY.length > 0 ? [...ENRICHED_DILEMMA_LIBRARY] : DILEMMA_TEMPLATES;
+    return selectDilemmasScored(
+      templates,
+      selectedCandidate.primaryReach,
+      selectedCandidate.secondaryReach,
+      selectedCandidate.sphere,
+      selectedCandidate.archetypeId,
+      locationSubtype,
+      seed + 1,
+      lens,
+    );
+  }, [selectedCandidate, locationSubtype, seed, lens]);
+
+  const dilemmas = useMemo(() => dilemmaSelection?.dilemmas ?? [], [dilemmaSelection]);
+
   const handleBondComplete = useCallback((
     editedName: string | undefined,
     resolvedBond?: BondOutcome,
@@ -139,6 +164,13 @@ export function MeetTheFirstFlow({
     // Set the candidate index in the record
     result.meetingChoiceRecord.candidateIndex = selectedCandidateIndex;
 
+    // Why this god got these tests, persisted alongside what they chose to do
+    // about them (THR-1213 slice 2). Selection runs flow-time, not in the tick
+    // loop, so this record is the inspectability channel in place of a trace.
+    if (dilemmaSelection) {
+      result.meetingChoiceRecord.dilemmaSelection = dilemmaSelection.record;
+    }
+
     onComplete(result);
   }, [
     selectedCandidate,
@@ -149,23 +181,9 @@ export function MeetTheFirstFlow({
     primarySphere,
     tick,
     selectedCandidateIndex,
+    dilemmaSelection,
     onComplete,
   ]);
-
-  // Generate dilemmas for the selected candidate
-  const dilemmas = useMemo(() => {
-    if (!selectedCandidate) return [];
-    const templates = ENRICHED_DILEMMA_LIBRARY.length > 0 ? [...ENRICHED_DILEMMA_LIBRARY] : DILEMMA_TEMPLATES;
-    return selectDilemmas(
-      templates,
-      selectedCandidate.primaryReach,
-      selectedCandidate.secondaryReach,
-      selectedCandidate.sphere,
-      selectedCandidate.archetypeId,
-      locationSubtype,
-      seed + 1,
-    );
-  }, [selectedCandidate, locationSubtype, seed]);
 
   // Converted subset of this run's dilemmas, in draw order. Presence of `test`
   // is the whole branch condition — a partially-converted library yields a

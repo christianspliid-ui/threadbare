@@ -1865,6 +1865,40 @@ export const CONTRACTS: readonly Contract[] = [
     },
   },
 
+  // ── Hunger resonance shapes the meeting deal (THR-1213) ───────────────────
+  {
+    id: 'hunger-resonance-weighs-the-meeting-deal',
+    producerSystem: PROGRESSION,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      'The Hunger you chose in remembrance decides which formative tests your First is put through — the god you said you were shows up in what the world asks of them, instead of only in how the prose is framed.',
+    ulTerms: ['Hunger', 'Meet The First', 'Ascendant Lens'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['buildLensFromIdentity', 'scoreDilemmaResonance', 'selectDilemmasScored'],
+      module: 'src/engine/meetingEncounter.ts',
+    },
+    writeSites: ['src/engine/ascendantLens.ts', 'src/engine/meetingEncounter.ts'],
+    readSites: [
+      'src/components/MeetTheFirst/MeetTheFirstFlow.tsx',
+      'src/components/Game/MeetingEncounterModal.tsx',
+    ],
+    // This row replaces a contract that was LEAKED for the whole life of the
+    // feature and never audited, because it was never written down: the dilemma
+    // library's `resonance.hungerResonance` held bare hunger *ids*, the reader
+    // compared them against theme *tags*, and the weight fired zero times across
+    // all 167 shipped dilemmas for every god (THR-1158). The field, its reader
+    // module (`engine/dilemmaSelection.ts`) and the fixtures asserting the dead
+    // vocabulary are all deleted with it — a green test on a dead contract is
+    // the pathology this map exists to kill. The replacement compares one tag
+    // space to itself: `emotionalRegister ∩ hunger.dilemmaResonanceTags`.
+    verifiedLive: {
+      date: '2026-08-28',
+      evidence:
+        'src/engine/__tests__/hungerResonanceGate.test.ts runs the shipped 167-dilemma library through the live `selectDilemmas` for all 12 hungers, guarding population-non-empty first so the sweep cannot pass vacuously, and asserts at least one hunger deals differently from the no-lens deal at the same seed — AND fewer than all 12 do, which is what distinguishes resonance from PRNG stream drift (the draw count is lens-independent by construction). Measured: `gather` alone differs, matching the coverage measurement (gather=10, preserve=4, reclaim=1, bind=1 of 167). Reader pinned at the surface too: src/components/MeetTheFirst/__tests__/hungerShapesTheDeal.test.tsx renders the real TestingBeat on the real deal and asserts two identities differing only in `hungerId` put different authored prose in the DOM.',
+    },
+  },
+
   // ── The Repertoire (THR-887) ──────────────────────────────────────────────
   {
     id: 'milestone-grants-unlock-repertoire-cards',
