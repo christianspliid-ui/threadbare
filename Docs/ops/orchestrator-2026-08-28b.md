@@ -4,7 +4,7 @@ run: 2026-08-28b
 promoted: 2
 filed: 0
 resolved: 0
-newFindings: 2
+newFindings: 3
 needsChristian: true
 ---
 # Orchestrator — 2026-08-28 (run b, ~05:40Z)
@@ -79,12 +79,12 @@ Non-`Deferral` items in Ready for Dev: **1** ([THR-1213](https://linear.app/thre
 |---|---|---|
 | `generate-interface-map:dry` | **8 LEAKED** contracts, all carrying a remediation ticket (exit 0 — the generator fails the build otherwise) | **Unchanged at 8, same membership.** But the *LIVE* number is not comparable — see finding 2 |
 | `check:canon-staleness` | **22 warnings** | **21 → 22 — see finding 1.** Fully attributed |
-| `sweep:rank-reach` | **UNAVAILABLE this sweep** — started 07:40 local, still running at ~35 min with no output when the report closed. **Not reported as clean** | No comparison possible. Yesterday's PASS (60 rank-gated templates reachable, 0 blocked, 0 unowned) is **not** carried forward as today's result |
+| `sweep:rank-reach` | **PASS** — 60 rank-gated templates reachable, 0 blocked, 0 unowned; 13 apex holders at tick 900. *(Landed after the first publish of this report — see the correction note below)* | Verdict identical. **Its incidental `DistanceMatrix` warn moved +142 and, for the first time, was caught rising *within a single run* — see finding 3** |
 | `check:process` | exit 0. `check-design-wiki` OK (24 pages, 23 served files accounted for); `check-wiki-freshness` OK (24 pages, no stale); `check-guidance-freshness` OK, 1 doctrine, `mode=advisory`; four generators up to date; `check:authoring-brief` up to date | **Unchanged in every row.** Its `[WorldGen] Ocean fraction too low: 7.4%` incidental now fires a **fourth** consecutive day at the identical value — recurring, not new, not drifting |
 
 `__DEBUG.validateTraitRefs()` is browser-only and cannot be invoked from a headless scheduled context. **Not run, and not reported as clean.**
 
-**Three of four detectors ran; `sweep:rank-reach` did not finish and is recorded as unavailable, not as passing.** It was still burning CPU at ~35 minutes (PID alive, memory stable, no output) against a second heavy node process holding 1.7 GB on the same box — the sibling-contention shape, not an obvious hang. It was left running rather than killed; the next daily sweep re-runs it. **Yesterday's PASS is deliberately not carried forward** — an unmeasured check reported as clean is the exact pathology this tier exists to catch, and the rank/reach coverage question is therefore simply unanswered today. The distance-matrix overrun tracked as finding 2 on 2026-08-27 rides on this detector's incidental output, so **that series has no data point today either** and its next reading is tomorrow's sweep.
+**All four detectors ran. Correction: this report was first published saying `sweep:rank-reach` was unavailable, and that is now wrong.** The sweep was still burning CPU at ~35 minutes with no output — starved to roughly one-third of a core by a second heavy node process holding 1.7 GB on the same box, the sibling-contention shape rather than a hang — and with the next hourly run due it was recorded as **unavailable, not as passing**, per the fail-soft rule. It then completed at ~40 minutes, and this file was re-published at the same path with the real result. The original call is left described here rather than quietly overwritten, because "the detector was slow, so I reported it as unmeasured" is the correct behaviour and the record should show it happening. What would have been wrong is carrying yesterday's PASS forward as today's.
 
 ### The eight LEAKED contracts, listed in full so tomorrow's diff is real
 
@@ -117,6 +117,34 @@ Two plan docs dominate: `2026-04-16-systemic-wiring-guide.md` (5 rows) and `wiri
 Yesterday reported *"8 LEAKED, 122 LIVE"*. Counting unique contract headings today gives **8 LEAKED, 65 LIVE, 19 UNVERIFIED-OK, 94 contracts total** — while counting raw badge occurrences anywhere in the output gives 18 / 132 / 40, because verdict and summary lines repeat the emoji. Yesterday's 122 is an occurrence count; today's 65 is a heading count.
 
 **This is a measurement artifact, not a collapse**, and it is recorded because "LIVE fell 122 → 65 overnight" is exactly the false alarm the next reader would raise. The LEAKED figure is unaffected — it reads 8 either way at the heading level, and its membership is listed above. Future sweeps should count headings (`^### \`name\` — badge`).
+
+### New finding 3 — the distance-matrix overrun was caught growing *inside a single run*, which is the evidence yesterday's reading was missing
+
+Yesterday's finding 2 argued the overrun has changed character — from a fixed content-volume cost to one that **grows with play**, because the undertaking lifecycle mints sublocations and (per THR-1183) a sublocation *is* a `location` node, so every completed economic undertaking permanently consumes a matrix slot. That argument rested on four day-over-day points plus a structural mechanism read off the tree.
+
+Today's sweep shows it directly. The warning fired **13 times within the one 900-tick run**, with a monotonically rising count:
+
+```
+[DistanceMatrix] Location count (1685) exceeds MAX_DISTANCE_MATRIX_SIZE (1200). 485 … not indexed.
+[DistanceMatrix] Location count (1689) … 489 …
+[DistanceMatrix] Location count (1692) … 492 …
+… (13 lines, strictly increasing) …
+[DistanceMatrix] Location count (1735) … 535 will not be indexed.
+```
+
+| Sweep | Locations counted | Unindexed (dropped) |
+|---|---|---|
+| 2026-08-24 | 1555 | 355 |
+| 2026-08-25 | 1688 | 488 |
+| 2026-08-26 | 1442 | 242 |
+| 2026-08-27 | 1593 | 393 |
+| **2026-08-28** | **1735** (rising 1685 → 1735 in-run) | **535** |
+
+**+142 on the day, and the dropped set is now 535.** The day-over-day series alone was equivocal — it dipped on 08-26 — which is why yesterday's report had to lean on the mechanism. A strictly increasing count *within one run* is not equivocal: locations are being minted as the simulation advances, exactly as the mechanism predicts, and each one past 1200 lands in the dropped set.
+
+The budget CLAUDE.md documents still reads *"all supported presets (`large` ~584, `epic` ~805)"* — **settlement** counts. The cap is sized in place-tier units and measured in both-tier units, and it is now overshot by 45%. Blast radius remains narrow and fail-soft (two `getDistance` consumers, both in the tick loop; encounter awareness uses hex distance and is unaffected), and `buildDistanceMatrix` truncates by insertion order, so *which* 535 get dropped is arbitrary rather than chosen.
+
+**Not filed** — the process-work throttle bars scheduled lanes from filing infrastructure tickets, and the weekly retro is the single promotion point. Recorded for that batch, now with in-run evidence attached rather than a fifth number in a column.
 
 ### Redundancy pass — assessed, negative on the area probed
 
