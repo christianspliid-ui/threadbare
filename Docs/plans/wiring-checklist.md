@@ -69,7 +69,30 @@ CI-time only, like slice 2, so the runtime columns are N/A by construction. What
 
 **Known limit, stated rather than discovered later.** The gate compares totals, so a change anchoring three chips in one template while authoring three unanchored ones in another passes. Per-template growth is printed but advisory, mirroring `check:typecheck`, whose pattern the plan cited by name. If that swap ever actually happens it is the defect evidence that charters tightening this to a per-template ratchet — it is not assumed in advance.
 
-**Still owed by later slices of THR-1212:** the consumption ledger (item 4), the no-op gate contract test on a seeded world (item 5), and the `followOnTags` retirement (item 6).
+**Still owed by later slices of THR-1212:** the consumption ledger (item 4 — **shipped, see below**), the no-op gate contract test on a seeded world (item 5), and the `followOnTags` retirement (item 6).
+
+## Shared anchor machinery — the reachable-consumption ledger (THR-1212 slice 4)
+
+Build time only, like slices 2 and 3, so the runtime columns are N/A by construction. What this slice owes instead is that the artifact is **registered in both freshness registries** and that its verdicts are **derived, not authored**.
+
+| Module | Orchestrator phase | UI component | GameState field | Trace emitted | Debug visibility |
+|--------|-------------------|-------------|-----------------|---------------|-----------------|
+| `scripts/generate-consumption-ledger.ts` (new) | N/A — build time (`prebuild`) | N/A | none | none | the generated `.md` **is** the surface |
+| `scripts/consumption-ledger-sources.ts` (new) | N/A — curated rows + guards | N/A | none | none | every failure names the member and the file |
+
+**Freshness registration, in the same PR that adds the generator.** `Docs/canon/consumption-ledger.generated.md` is in `STATIC_GENERATED_PATHS` (`scripts/check-generated-freshness.ts`) and has its sources row in `STATIC_ARTIFACT_SOURCES` (`scripts/generated-artifact-sources.ts`): both membership unions plus the generator and its sources module. Slice 2's lesson applies with more force here — this artifact's claim is *"these 89 writes were checked"*, so a stale copy makes a checked-sounding claim about a set of effect kinds the code no longer has.
+
+**The class is derived, and that is the whole design.** A row records what a member writes and **who reads it and what that reader does** (`acts` / `spawns` / `tally-point` / `reports`); `classifyRow` derives `acted-on` / `dormant-hook` / `bookkeeping` / `write-without-consumer` from those kinds. No row states its own verdict, so an author filling one in honestly cannot avoid the finding. That inversion is what makes the artifact evidence rather than an opinion — and it is why the plan's falsification check could pass at all.
+
+**Falsification check — PASS, unprompted.** The plan's acceptance criterion (absorbed ruling 2): *"the consumption ledger's derived membership + consumer grep must flag `followOnTags` as `write-without-consumer` on its own — if the ledger's first run does not surface it unprompted, the ledger design has failed and goes back for rework."* The first honest run reported exactly one: `clearance_gate_tag: 1 write-without-consumer`. It reaches that verdict because its one reader — `gateFollowOnSentence` in `unifiedActionResolution.ts` — turns each tag into a `future_hook` chip reading *"A follow-on thread was seeded"* and nothing else ever consults the tag. **Why a grep could not have found it:** the field *is* read. The taxonomy is what refuses that answer, and specifically the settled definition that hooks are **not passive** (THR-1161) — a dormant hook spawns a real entity with firing metadata, and `followOnTags` spawns nothing.
+
+**Citations are checked, because a citation is cheap to write.** `assertConsumerSitesResolve` reads every cited file and fails unless the cited symbol is in it. It caught **9 of this slice's own 89 rows** on the first run — four consumer files or symbols that did not exist as written — which is the guard doing its job on its author, and the reason the remaining 80 are worth reading. `assertWriteWithoutConsumerIsDeferred` reuses the interface map's LEAKED→Deferral rule verbatim: a dead write may ship while it is being retired, and may not ship silently.
+
+**Two argument-level dead writes recorded but not classified dead**, because the rows they sit in are genuinely live and flattening them to "dead" would be false: `unlock_action`'s `revealStyle` (`'card_flight' | 'silent'`) reaches the trace payload and nothing else, so an author choosing `silent` gets a card flight anyway; and `attune_artifact`'s `attunedSphere` stamp appears nowhere in `src/` outside its two writers. Both are in the ledger's Notes, which is what the operand column exists for — the Grateful Kin shape (THR-1175), one level down.
+
+**Deliberately NOT wired: the interface-map badge extension.** The plan's wiring item 2 has it riding this PR, but absorbed ruling 3 defines the new content-claims badge **by pointer to the UL entry**, and no UL entry exists yet. A badge pointing at nothing is the drift that registry exists to catch. Filed as **THR-1316** (UL-proposal: `WorldRef` + the three violation classes) with its coordination block as first comment; the badge lands there, in the PR that creates the thing it points at.
+
+**Still owed by later slices of THR-1212:** the no-op gate contract test on a seeded world (item 5), and the `followOnTags` retirement (item 6) — which now has its ledger row as the evidence the plan said it should cite.
 
 ---
 
