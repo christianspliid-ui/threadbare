@@ -78,7 +78,7 @@ Load this file at session start (referenced from CLAUDE.md). Load specific shard
 ### Encounters
 
 - **[Encounter](./Encounters.md#encounter)** — a narrative event resolved through the encounter pipeline
-- **[EncounterTemplate](./Encounters.md#encountertemplate)** — data-driven definition of an encounter's structure, steps, and outcomes
+- **[EncounterTemplate](./Encounters.md#encountertemplate)** — retired format (THR-108); the live authored unit is [UnifiedActionTemplate](./Encounters.md#unifiedactiontemplate)
 - **[UnifiedActionTemplate (UAT)](./Encounters.md#unifiedactiontemplate)** — unified definition covering divine interventions and mortal encounter actions; replaces fixed action slots
 - **[Aftermath](./Encounters.md#aftermath)** — the resolution phase; presents Reactions, applies world-graph consequences
 - **[Reaction](./Encounters.md#reaction)** — a player/agent choice in the Aftermath phase; applies world-graph mutations
