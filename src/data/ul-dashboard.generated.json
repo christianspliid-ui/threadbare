@@ -1487,9 +1487,9 @@
       "body": "A narrative event resolved through the encounter pipeline. Encounters are instantiated from templates, progress through steps, and conclude with an Aftermath phase that produces consequences in the world graph. Encounters are the primary narrative output of the simulation tick loop.",
       "seeAlso": [
         {
-          "raw": "EncounterTemplate",
-          "termName": "EncounterTemplate",
-          "resolvedSlug": "encounters#encountertemplate"
+          "raw": "UnifiedActionTemplate",
+          "termName": "UnifiedActionTemplate",
+          "resolvedSlug": "encounters#unifiedactiontemplate"
         },
         {
           "raw": "Aftermath",
@@ -1510,32 +1510,21 @@
       "slug": "encountertemplate",
       "name": "EncounterTemplate",
       "aliases": [
-        "Encounter Definition",
-        "Template"
+        "— (retired term)"
       ],
-      "status": "canonical",
-      "oneLiner": "data-driven definition of an encounter's structure, steps, and outcomes",
-      "body": "A data-driven definition specifying an encounter's structure: premise, steps, reactions, outcome branches, scope, scale, and prerequisite checks. Templates are the authored unit of encounter content. A template becomes an Encounter when instantiated at a location for a specific agent. Stored as `action_template` nodes with encounter-specific properties.",
+      "status": "unknown",
+      "oneLiner": "retired format (THR-108); the live authored unit is [UnifiedActionTemplate](./Encounters.md#unifiedactiontemplate)",
+      "body": "**Retired format.** `EncounterTemplate` was the pre-unification encounter type; it was replaced by `[[UnifiedActionTemplate]]` (THR-108) and **no longer exists anywhere in the codebase**. Do not author, import, or reference it — a document or skill that presents `EncounterTemplate` as the authored unit of encounter content is stale (`Docs/canon/encounters.md` §Rejected approaches is the ruling). This entry survives only so old wikilinks resolve to the retirement notice instead of a 404. Until 2026-08-28 it read `Status: canonical` and taught the retired format as live — the round-2 context audit's motivating example of UL drift.",
       "seeAlso": [
-        {
-          "raw": "Encounter",
-          "termName": "Encounter",
-          "resolvedSlug": "encounters#encounter"
-        },
         {
           "raw": "UnifiedActionTemplate",
           "termName": "UnifiedActionTemplate",
           "resolvedSlug": "encounters#unifiedactiontemplate"
         },
         {
-          "raw": "mentorship.graduation",
-          "termName": "mentorship.graduation",
-          "resolvedSlug": null
-        },
-        {
-          "raw": "mentorship.the-falling-out",
-          "termName": "mentorship.the-falling-out",
-          "resolvedSlug": "agents#falling-out"
+          "raw": "Encounter",
+          "termName": "Encounter",
+          "resolvedSlug": "encounters#encounter"
         }
       ],
       "sourcePath": "Docs/ubiquitous-language/Encounters.md#encountertemplate",
@@ -1555,11 +1544,6 @@
       "body": "The unified definition covering both divine interventions (Ascendant actions on agents) and mortal encounter actions. Stored as `action_template` nodes in the world graph. Replaces the deprecated Intervention Wheel and fixed action slot designs. The full pool is filtered per target context at runtime — there is no fixed action count.",
       "seeAlso": [
         {
-          "raw": "EncounterTemplate",
-          "termName": "EncounterTemplate",
-          "resolvedSlug": "encounters#encountertemplate"
-        },
-        {
           "raw": "Reach",
           "termName": "Reach",
           "resolvedSlug": "cosmology#reach"
@@ -1568,6 +1552,11 @@
           "raw": "Sphere",
           "termName": "Sphere",
           "resolvedSlug": "cosmology#sphere"
+        },
+        {
+          "raw": "EncounterTemplate",
+          "termName": "EncounterTemplate",
+          "resolvedSlug": "encounters#encountertemplate"
         }
       ],
       "sourcePath": "Docs/ubiquitous-language/Encounters.md#unifiedactiontemplate",
@@ -1583,7 +1572,7 @@
       ],
       "status": "canonical",
       "oneLiner": "the resolution phase; presents Reactions, applies world-graph consequences",
-      "body": "The resolution phase of an encounter, reached after all encounter steps complete. The Aftermath presents the player with Reactions to choose from and applies the selected consequences to the world graph. Aftermath picks can be made headlessly via `aftermath pick` in the CLI or `window.__DEBUG.pickAftermathReaction()`.",
+      "body": "The resolution phase of an encounter, reached after all encounter steps complete. **The outcome is already decided when the Aftermath opens** — fate rolled it on the outcome ladder; nothing in the Aftermath re-litigates the band (see `[[Nudge]]`: a nudge never picks an outcome). What the Aftermath does is *land* the resolved outcome: it renders the ending's overview and consequence chips, applies the world-graph mutations for the band that fate picked, and may offer `[[Reaction]]`s — follow-up responses to an ending that already happened. Aftermath picks can be made headlessly via `aftermath pick` in the CLI or `window.__DEBUG.pickAftermathReaction()`.",
       "seeAlso": [
         {
           "raw": "Encounter",
@@ -1604,12 +1593,11 @@
       "slug": "reaction",
       "name": "Reaction",
       "aliases": [
-        "Aftermath Reaction",
-        "Player Choice"
+        "Aftermath Reaction"
       ],
-      "status": "canonical",
+      "status": "unknown",
       "oneLiner": "a player/agent choice in the Aftermath phase; applies world-graph mutations",
-      "body": "A player or agent choice presented during the Aftermath phase. Each Reaction has an ID, label, and a set of world-graph mutations it applies when selected. Reactions are the primary mechanism through which players shape the simulation through encounter outcomes.",
+      "body": "A follow-up response offered during the Aftermath phase, *after* fate has already resolved the encounter's outcome. Each Reaction has an ID, label, and a set of world-graph mutations it applies when selected. **A Reaction never picks or alters the ending** — the band is rolled before the Aftermath opens, and the player's odds-shaping happened earlier, through the `[[Nudge]]` hand (the \"Player Choice\" alias and \"primary mechanism through which players shape the simulation\" framing were retired 2026-08-28: they described the rejected authored-futures model). Reactions are how the player (or, headlessly, the agent) chooses what to *do about* an ending: which thread to pull on next, which consequence to lean into.",
       "seeAlso": [
         {
           "raw": "Aftermath",
@@ -1620,6 +1608,11 @@
           "raw": "Encounter",
           "termName": "Encounter",
           "resolvedSlug": "encounters#encounter"
+        },
+        {
+          "raw": "Nudge",
+          "termName": "Nudge",
+          "resolvedSlug": "encounters#nudge"
         }
       ],
       "sourcePath": "Docs/ubiquitous-language/Encounters.md#reaction",
@@ -1887,12 +1880,11 @@
       "slug": "court-position",
       "name": "Court Position",
       "aliases": [
-        "Position",
-        "Encounter Role"
+        "Position"
       ],
-      "status": "canonical",
+      "status": "unknown",
       "oneLiner": "the role an agent plays in an encounter's framing; affects scoring and prose",
-      "body": "The role an agent plays in an encounter's social or political framing. Court Position affects encounter scoring, available reactions, and prose generation. Stored as a numeric property; can be specified when spawning encounters via the CLI `--courtPosition` flag.",
+      "body": "An agent's standing in the Ascendant's divine court, stored as the string enum `CourtPosition = 'the_first' | 'retinue' | 'watched' | 'dormant'` on the `thread` edge's properties (`src/types/influence.ts`) — never a numeric. It organises the god's portfolio and drives attention-tier and encounter-visibility behavior (a dormant-position agent's encounters resolve silently). The CLI `spawn encounter … --courtPosition <value>` flag takes one of the four enum strings. Until 2026-08-28 this entry defined the term as a numeric \"encounter role\", contradicting the Agents shard and the code — the Agents shard's usage was always the correct one.",
       "seeAlso": [
         {
           "raw": "Encounter",
@@ -1900,9 +1892,14 @@
           "resolvedSlug": "encounters#encounter"
         },
         {
-          "raw": "EncounterTemplate",
-          "termName": "EncounterTemplate",
-          "resolvedSlug": "encounters#encountertemplate"
+          "raw": "Thread",
+          "termName": "Thread",
+          "resolvedSlug": "agents#thread"
+        },
+        {
+          "raw": "The First",
+          "termName": "The First",
+          "resolvedSlug": "agents#the-first"
         }
       ],
       "sourcePath": "Docs/ubiquitous-language/Encounters.md#court-position",
@@ -2165,9 +2162,9 @@
           "resolvedSlug": "encounters#scene"
         },
         {
-          "raw": "EncounterTemplate",
-          "termName": "EncounterTemplate",
-          "resolvedSlug": "encounters#encountertemplate"
+          "raw": "UnifiedActionTemplate",
+          "termName": "UnifiedActionTemplate",
+          "resolvedSlug": "encounters#unifiedactiontemplate"
         }
       ],
       "sourcePath": "Docs/ubiquitous-language/Encounters.md#support-bundle",
@@ -2189,11 +2186,6 @@
           "raw": "Context Fragment",
           "termName": "Context Fragment",
           "resolvedSlug": "encounters#context-fragment"
-        },
-        {
-          "raw": "EncounterTemplate",
-          "termName": "EncounterTemplate",
-          "resolvedSlug": "encounters#encountertemplate"
         },
         {
           "raw": "UnifiedActionTemplate",
@@ -2561,9 +2553,9 @@
           "resolvedSlug": "encounters#nudge"
         },
         {
-          "raw": "EncounterTemplate",
-          "termName": "EncounterTemplate",
-          "resolvedSlug": "encounters#encountertemplate"
+          "raw": "UnifiedActionTemplate",
+          "termName": "UnifiedActionTemplate",
+          "resolvedSlug": "encounters#unifiedactiontemplate"
         }
       ],
       "sourcePath": "Docs/ubiquitous-language/Encounters.md#deal-declaration",
@@ -4591,6 +4583,42 @@
   ],
   "warnings": [
     {
+      "kind": "missing_status",
+      "shardId": "encounters",
+      "termSlug": "encountertemplate",
+      "detail": "Unrecognized status value \"retired (THR-108; entry corrected 2026-08-28, THR-1339)\"."
+    },
+    {
+      "kind": "missing_status",
+      "shardId": "encounters",
+      "termSlug": "encountertemplate",
+      "detail": "No `**Status:**` line found."
+    },
+    {
+      "kind": "missing_status",
+      "shardId": "encounters",
+      "termSlug": "reaction",
+      "detail": "Unrecognized status value \"canonical (rewritten 2026-08-28, THR-1339)\"."
+    },
+    {
+      "kind": "missing_status",
+      "shardId": "encounters",
+      "termSlug": "reaction",
+      "detail": "No `**Status:**` line found."
+    },
+    {
+      "kind": "missing_status",
+      "shardId": "encounters",
+      "termSlug": "court-position",
+      "detail": "Unrecognized status value \"canonical (corrected 2026-08-28, THR-1339)\"."
+    },
+    {
+      "kind": "missing_status",
+      "shardId": "encounters",
+      "termSlug": "court-position",
+      "detail": "No `**Status:**` line found."
+    },
+    {
       "kind": "unresolved_see_also",
       "shardId": "agents",
       "termSlug": "agent",
@@ -4601,12 +4629,6 @@
       "shardId": "agents",
       "termSlug": "faction",
       "detail": "See-Also \"Member Of\" did not resolve to a known term."
-    },
-    {
-      "kind": "unresolved_see_also",
-      "shardId": "encounters",
-      "termSlug": "encountertemplate",
-      "detail": "See-Also \"mentorship.graduation\" did not resolve to a known term."
     },
     {
       "kind": "unresolved_see_also",

@@ -7,7 +7,7 @@ Content-adjacent shard. Terms covering the encounter pipeline: templates, resolu
 ### Encounter
 
 **Aliases:** Encounter Event
-**Also see:** `[[EncounterTemplate]]`, `[[Aftermath]]`, `[[Encounter Awareness]]`
+**Also see:** `[[UnifiedActionTemplate]]`, `[[Aftermath]]`, `[[Encounter Awareness]]`
 **Status:** canonical
 
 A narrative event resolved through the encounter pipeline. Encounters are instantiated from templates, progress through steps, and conclude with an Aftermath phase that produces consequences in the world graph. Encounters are the primary narrative output of the simulation tick loop.
@@ -16,18 +16,18 @@ A narrative event resolved through the encounter pipeline. Encounters are instan
 
 ### EncounterTemplate
 
-**Aliases:** Encounter Definition, Template
-**Also see:** `[[Encounter]]`, `[[UnifiedActionTemplate]]`, `[[mentorship.graduation]]`, `[[mentorship.the-falling-out]]` (mentorship terminal-arc templates)
-**Status:** canonical
+**Aliases:** — (retired term)
+**Also see:** `[[UnifiedActionTemplate]]`, `[[Encounter]]`
+**Status:** retired (THR-108; entry corrected 2026-08-28, THR-1339)
 
-A data-driven definition specifying an encounter's structure: premise, steps, reactions, outcome branches, scope, scale, and prerequisite checks. Templates are the authored unit of encounter content. A template becomes an Encounter when instantiated at a location for a specific agent. Stored as `action_template` nodes with encounter-specific properties.
+**Retired format.** `EncounterTemplate` was the pre-unification encounter type; it was replaced by `[[UnifiedActionTemplate]]` (THR-108) and **no longer exists anywhere in the codebase**. Do not author, import, or reference it — a document or skill that presents `EncounterTemplate` as the authored unit of encounter content is stale (`Docs/canon/encounters.md` §Rejected approaches is the ruling). This entry survives only so old wikilinks resolve to the retirement notice instead of a 404. Until 2026-08-28 it read `Status: canonical` and taught the retired format as live — the round-2 context audit's motivating example of UL drift.
 
 ---
 
 ### UnifiedActionTemplate
 
 **Aliases:** UAT, Action Template, Unified Action
-**Also see:** `[[EncounterTemplate]]`, `[[Reach]]`, `[[Sphere]]`
+**Also see:** `[[Reach]]`, `[[Sphere]]`, `[[EncounterTemplate]]` (the retired predecessor)
 **Status:** canonical
 
 The unified definition covering both divine interventions (Ascendant actions on agents) and mortal encounter actions. Stored as `action_template` nodes in the world graph. Replaces the deprecated Intervention Wheel and fixed action slot designs. The full pool is filtered per target context at runtime — there is no fixed action count.
@@ -40,17 +40,17 @@ The unified definition covering both divine interventions (Ascendant actions on 
 **Also see:** `[[Encounter]]`, `[[Reaction]]`
 **Status:** canonical
 
-The resolution phase of an encounter, reached after all encounter steps complete. The Aftermath presents the player with Reactions to choose from and applies the selected consequences to the world graph. Aftermath picks can be made headlessly via `aftermath pick` in the CLI or `window.__DEBUG.pickAftermathReaction()`.
+The resolution phase of an encounter, reached after all encounter steps complete. **The outcome is already decided when the Aftermath opens** — fate rolled it on the outcome ladder; nothing in the Aftermath re-litigates the band (see `[[Nudge]]`: a nudge never picks an outcome). What the Aftermath does is *land* the resolved outcome: it renders the ending's overview and consequence chips, applies the world-graph mutations for the band that fate picked, and may offer `[[Reaction]]`s — follow-up responses to an ending that already happened. Aftermath picks can be made headlessly via `aftermath pick` in the CLI or `window.__DEBUG.pickAftermathReaction()`.
 
 ---
 
 ### Reaction
 
-**Aliases:** Aftermath Reaction, Player Choice
-**Also see:** `[[Aftermath]]`, `[[Encounter]]`
-**Status:** canonical
+**Aliases:** Aftermath Reaction
+**Also see:** `[[Aftermath]]`, `[[Encounter]]`, `[[Nudge]]`
+**Status:** canonical (rewritten 2026-08-28, THR-1339)
 
-A player or agent choice presented during the Aftermath phase. Each Reaction has an ID, label, and a set of world-graph mutations it applies when selected. Reactions are the primary mechanism through which players shape the simulation through encounter outcomes.
+A follow-up response offered during the Aftermath phase, *after* fate has already resolved the encounter's outcome. Each Reaction has an ID, label, and a set of world-graph mutations it applies when selected. **A Reaction never picks or alters the ending** — the band is rolled before the Aftermath opens, and the player's odds-shaping happened earlier, through the `[[Nudge]]` hand (the "Player Choice" alias and "primary mechanism through which players shape the simulation" framing were retired 2026-08-28: they described the rejected authored-futures model). Reactions are how the player (or, headlessly, the agent) chooses what to *do about* an ending: which thread to pull on next, which consequence to lean into.
 
 ---
 
@@ -146,11 +146,11 @@ The hex-granular visibility system determining which encounters an agent can see
 
 ### Court Position
 
-**Aliases:** Position, Encounter Role
-**Also see:** `[[Encounter]]`, `[[EncounterTemplate]]`
-**Status:** canonical
+**Aliases:** Position
+**Also see:** `[[Encounter]]`, `[[Thread]]`, `[[The First]]`
+**Status:** canonical (corrected 2026-08-28, THR-1339)
 
-The role an agent plays in an encounter's social or political framing. Court Position affects encounter scoring, available reactions, and prose generation. Stored as a numeric property; can be specified when spawning encounters via the CLI `--courtPosition` flag.
+An agent's standing in the Ascendant's divine court, stored as the string enum `CourtPosition = 'the_first' | 'retinue' | 'watched' | 'dormant'` on the `thread` edge's properties (`src/types/influence.ts`) — never a numeric. It organises the god's portfolio and drives attention-tier and encounter-visibility behavior (a dormant-position agent's encounters resolve silently). The CLI `spawn encounter … --courtPosition <value>` flag takes one of the four enum strings. Until 2026-08-28 this entry defined the term as a numeric "encounter role", contradicting the Agents shard and the code — the Agents shard's usage was always the correct one.
 
 ---
 
@@ -227,7 +227,7 @@ The node an action is performed on or with (`action.targetId`) — distinct from
 ### Support Bundle
 
 **Aliases:** EncounterSupportBundle, Support Specs
-**Also see:** `[[Cast]]`, `[[Scene]]`, `[[EncounterTemplate]]`
+**Also see:** `[[Cast]]`, `[[Scene]]`, `[[UnifiedActionTemplate]]`
 **Status:** canonical
 
 The authored, template-side declaration of an encounter's supporting entities: `EncounterSupportBundle` is a list of `EncounterSupportSpec`s (in use since 2026-04-03), each describing a keyed supporting actor or location — how it is delivered (reused from the graph or spawned), its `spawnName` fallback, and its persistence after the encounter. At instantiation the bundle resolves into the action's `supportBindings` — the Cast. The bundle is the recipe; the Cast is the dish.
@@ -237,7 +237,7 @@ The authored, template-side declaration of an encounter's supporting entities: `
 ### Surface
 
 **Aliases:** Encounter Surface, SurfaceKey
-**Also see:** `[[Context Fragment]]`, `[[EncounterTemplate]]`, `[[UnifiedActionTemplate]]`, `[[Encounter]]`
+**Also see:** `[[Context Fragment]]`, `[[UnifiedActionTemplate]]`, `[[Encounter]]`
 **Status:** canonical
 
 A template **bound to its context axes** — the player-facing unit of encounter identity, and the granularity at which novelty and recency are tracked (THR-475). One template yields many surfaces: the same template at a market district, on a road, and against a shadow-court counterpart are three surfaces, and a player who has seen one has not seen the others.
@@ -383,7 +383,7 @@ The portion of an attended step's nudge hand supplied by the god's `[[Repertoire
 ### Deal Declaration
 
 **Aliases:** `StepDealDeclaration`, `ActionStep.deal`, the fill declaration
-**Also see:** `[[Dealt Hand]]`, `[[Play Profile]]`, `[[Nudge]]`, `[[EncounterTemplate]]`
+**Also see:** `[[Dealt Hand]]`, `[[Play Profile]]`, `[[Nudge]]`, `[[UnifiedActionTemplate]]`
 **Status:** canonical
 
 The authored field by which an encounter step **opts into dealing** — `ActionStep.deal` (`src/types/unifiedAction.ts`), carrying `count` (how many cards to ask for), optional `tags` (what the step is *about*, for the dealer's context-match term), and optional `exclude` (card types this scene refuses). It is a request, not a guarantee: the dealer clamps `count` so the *composed* hand stays inside the hand window and under the total-delta cap, so a step asking for more than the hand can hold gets what fits rather than an oversized hand or an error.
