@@ -1,7 +1,7 @@
 ---
 name: qa-orchestrator
 description: Use when running a QA sweep of Threadbearer UI. Trigger on "run QA", "check the UI", "visual audit", "find UI bugs", "frontend QA", "QA sweep", or after completing a major implementation phase. Dispatches specialist sub-agents for visual style, information architecture, interaction flows, and React code quality.
-last_validated_against: 2026-08-28
+last_validated_against: 2026-08-29
 ---
 
 # QA Orchestrator
@@ -10,7 +10,7 @@ Systematic QA sweep of Threadbearer. Three modes, four specialist agents, struct
 
 ## Test Surface Registry
 
-**CRITICAL — Read before every sweep:** This skill maintains a companion file `test-surfaces.md` in the same directory. It lists every testable UI surface (49 components + 7 cross-cutting concerns) with:
+**CRITICAL — Read before every sweep:** This skill maintains a companion file `test-surfaces.md` in the same directory. It lists every testable UI surface (45 components + 7 cross-cutting concerns; deprecated V1 rows retained for historical findings) with:
 - **Surface IDs** (S-001 through S-106, X-001 through X-007)
 - **Prerequisites** for reaching each surface
 - **Testable actions** per surface
@@ -28,10 +28,10 @@ After merging findings from all agents, produce a coverage summary:
 
 ```
 ## Coverage: YYYY-MM-DD
-Tested: S-001, S-002, S-010, S-011, S-020, ... (N/49)
+Tested: S-001, S-002, S-010, S-011, S-020, ... (N/45)
 Skipped: S-078 (harvest — cycle end not reached), S-091 (dev-only)
 Cross-cutting: X-001 ✓, X-002 ✓, X-003 ✗ (not checked), ...
-Coverage: N/49 surfaces (XX%)
+Coverage: N/45 surfaces (XX%)
 ```
 
 Save coverage data alongside findings in the JSON archive.
@@ -84,7 +84,7 @@ Before dispatching browser-based agents, verify:
 1. **Start isolated QA server** — run `bash scripts/qa-server.sh start` and capture the URL from the output. This is `QA_URL` for all agent prompts.
 2. **Playwright MCP connected** — `browser_navigate` must respond
 3. **STYLE.md exists** — read it for visual spec reference
-4. **The UI Laws are the audit rubric** — `Docs/design-system/laws.md` (55 numbered laws, ratified 2026-08-06). Every finding any sub-agent reports cites the law number it violates; a finding no law covers is either not a defect or a missing-law proposal for Christian, and the report says which.
+4. **The UI Laws are the audit rubric** — `Docs/design-system/laws.md` (56 numbered laws, ratified 2026-08-06 with amendments through 2026-08-17 — Law 56, consequence chips, included). Every finding any sub-agent reports cites the law number it violates; a finding no law covers is either not a defect or a missing-law proposal for Christian, and the report says which.
 
 **Pre-flight check:** Navigate to `{QA_URL}/?view=game&seeded` via Playwright. This skips worldgen, ascendant selection, AND Meet The First — jumping straight to a fully populated game view with HexMapV2, pre-seeded ascendant identity (Witness/mind+spirit), and The First agent ("Kael Thornweaver") already bonded (seed 42). If the page doesn't load, check `bash scripts/qa-server.sh status` and the log at `/tmp/qa-vite-{port}.log`.
 
@@ -128,7 +128,7 @@ Every agent produces findings in this exact JSON structure. Consistent schema en
   "description": "Background color rgb(244,232,193) computes to 88% brightness. STYLE.md requires world surfaces in 10-40% range.",
   "evidence": "CSS: background-color: rgb(244, 232, 193); HSL: hsl(39, 76%, 86%)",
   "screenshot": "Docs/qa/screenshots/QA-2026-03-10-001.png",
-  "location": "HexMap.tsx / SVG background rect",
+  "location": "src/components/HexMapV2/palette/terrainPalette.ts / hex fill color",
   "effort": "S",
   "suggestedFix": "Change to oklch(0.25, 0.02, 80) or similar dark warm tone"
 }
@@ -212,7 +212,7 @@ This is the rigid flow for a full QA sweep. Do not skip steps. Do not reorder.
 2. Read `test-surfaces.md` (companion file in this skill directory) — this is your surface checklist
 3. Read `STYLE.md` for current visual spec
 4. **Start isolated QA server:** Run `bash scripts/qa-server.sh start`. Parse the JSON output to get `QA_URL` (e.g., `http://localhost:5183`). If it fails, check the log and tell the user.
-5. Pre-flight: `browser_navigate` to `{QA_URL}/?view=game` — must load into game view.
+5. Pre-flight: `browser_navigate` to `{QA_URL}/?view=game&seeded` — must load into the fully populated game view (same route as the header pre-flight; bare `?view=game` boots identity-less and is only for testing the entry screens themselves).
 6. Initialize findings collection and surface coverage tracker (all surface IDs start as "untested")
 
 ### Phase 2: Agent Dispatch (Sequential)
