@@ -1,5 +1,7 @@
 # Content Package Expansion Checklist
 
+> **⚠️ HISTORICAL — tombstoned 2026-08-29 (THR-1365, context-cleanup round 4).** This is a March-2026 audit's work queue; its gap list has long since rotted and its verification steps teach the forbidden `npx tsc --noEmit` (a no-op in this repo — the gate is `npm run check:typecheck`, see `Docs/canon/verification-gates.md`). **Do not work items from this list.** Current content-authoring routing: `Docs/canon/prose.md` (Step 0), the `encounter-pipeline` / `attachment-pipeline` skills, and `Docs/plans/2026-04-16-systemic-wiring-guide.md`. Kept as history of the 2026-03-09 audit only.
+
 **Quick reference for addressing coverage gaps identified in 2026-03-09 audit**
 
 ---
@@ -183,7 +185,7 @@ Each encounter needs:
 
 ### Before Committing Changes
 
-- [ ] **Type checking:** `npx tsc --noEmit` passes
+- [ ] **Type checking:** `npm run check:typecheck` passes (historical text said `npx tsc --noEmit`, a no-op — THR-686)
 - [ ] **Tests pass:** `npm test` (especially content package tests)
 - [ ] **No duplicate IDs:** All new entries have unique IDs
 - [ ] **Consistent structure:** New entries match existing pattern
@@ -232,7 +234,7 @@ After completing any expansion section above:
 
 - [ ] **Code complete:** All new entries added to source files
 - [ ] **Tests updated:** Content package tests run and pass
-- [ ] **Type check:** `npx tsc --noEmit` shows no errors
+- [ ] **Type check:** `npm run check:typecheck` shows no new errors (historical text said `npx tsc --noEmit`, a no-op — THR-686)
 - [ ] **Audit updated:** Rerun audit to verify new counts
 - [ ] **Docs updated:** Update Obsidian or Notion if adding new systems
 - [ ] **Changelog entry:** Add one-line entry to CLAUDE.md changelog
