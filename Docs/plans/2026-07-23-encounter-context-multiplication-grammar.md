@@ -6,6 +6,8 @@
 
 # Encounter context-multiplication grammar — THR-573
 
+> **lint_plan_doc:** exempt — shipped THR-573 plan slightly predating the current template's checkbox minima; edited in place only for the scene-first retirement markers (THR-1372).
+
 *One authored skeleton becomes ~20 distinct, fully-authored player experiences by letting prose respond to the same context axes the selection engine already keys surface identity on.*
 
 ## Why this is load-bearing
@@ -151,7 +153,7 @@ Deterministic two-step lookup: `variants[boundAxisValue] ?? variants['*']`. Slot
 
 ### Prose tables
 
-The fragment tables ARE the new prose surface. Authoring rules (binding, enforced by the pipeline skill): scene-first (write the paragraph, then extract); baseline register unless the surface is a designated peak; every variant passes the 5-question bar; fragments never hardcode entity names — `{name}`/`{cast:*}`/`{target}` remain the only name sources; the `'*'` default is a real authored fragment, not a stub.
+The fragment tables ARE the new prose surface. Authoring rules (binding, enforced by the pipeline skill — *amended 2026-08-29, round-5 sweep: the original scene-first rule ("write the paragraph, then extract") was retired 2026-08-25 with Prose Doctrine v2; the skill's Pass 2 is now design-first fragment drafting in narrator mode*): baseline register — encounter surfaces never qualify for peak (v2 closed the peak list to non-encounter surfaces); every variant passes the 5-question bar; fragments never hardcode entity names — `{name}`/`{cast:*}`/`{target}` remain the only name sources; the `'*'` default is a real authored fragment, not a stub.
 
 ### Attachment content
 
@@ -328,7 +330,7 @@ One aggregate trace per encounter instantiation, never per step render (ring-buf
 New skill `.claude/skills/template-context-rewrite/SKILL.md` (name per parent design), four passes mirroring the encounter-pipeline shape:
 
 1. **Axis election** — for the family: which 4–6 place values and 4–6 role values earn fragments, from the family's `locationTypes` gates and plausible counterparts. Output: the election table with one-line rationale per value. Guard: never elect a value the selection layer cannot actually bind (check the family's location gating first — electing `throne-room` for a tavern-gated family is dead content).
-2. **Scene-first fragment drafting** — write the paragraph per elected value, then extract the fragment. Canon Step 0: `Docs/canon/encounters.md` + `Docs/canon/prose.md`. Register: baseline unless the slot is a designated peak surface. Names come only from enrichment tokens.
+2. **Design-first fragment drafting (narrator mode)** — *(pass renamed 2026-08-25/29; the original "scene-first: write the paragraph, then extract" instruction is the retired workflow — the shipped skill drafts fields directly in narrator mode)*. Canon Step 0: `Docs/canon/encounters.md` + `Docs/canon/prose.md`. Register: baseline — no fragment slot is a peak surface. Names come only from enrichment tokens.
 3. **QA pass** — mechanical: register scorer over every variant (fail = rewrite), `'*'` present in every map, enumeration within `MAX_SURFACES_PER_TEMPLATE`. Editorial: 5-question bar per fragment; composed-sample read (skeleton + fragment) for at least 3 surfaces.
 4. **Merge** — fragments into the template file; wiring-guide cross-check; evidence block.
 

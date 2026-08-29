@@ -52,9 +52,8 @@ the corpus is compliant" is measuring the 42% that can be measured.**
 
 | Tier | Count | Which |
 |---|---:|---|
-| Composition-complete (off the ratchet, passes `check:encounter`) | **10** | 6 slice + 4 company |
-| Nudge-native but still on the ratchet | 10 | 2 slice, 7 WS5 batch-1 camp templates, `apotheosis.ascension` |
-| Legacy, on the ratchet | 175 | the rest of `encounter.*` |
+| Composition-complete (off the ratchet, passes `check:encounter`) | **~20** *(refreshed 2026-08-29 — the 08-24 count of 10 predated the late-August batches: toll-of-blades, standing-the-line, the-drowned-archive, the-broken-seal, granary/garrison/ruin/relic/rite, one-body-short; the live membership predicate is "`encounter.*` and not on `RETROFIT_PENDING`")* | slice + company + the post-batch files in `src/data/encounters/` |
+| On the ratchet (`RETROFIT_PENDING`) | 185 *(refreshed 2026-08-29; only ever shrinks — read the live count from the file)* | legacy + un-retrofitted nudge-era |
 | Outside the gate entirely | 271 | guild / borderland / social / tavern / old branching |
 
 `RETROFIT_PENDING` holds 185 ids — every one of them an `encounter.*` template. THR-1130
@@ -62,7 +61,10 @@ owns retrofitting the 15 nudge-era ones.
 
 ### 1c. Setting — the skew, measured
 
-**Thirteen templates in the entire 687-template corpus declare a setting envelope.** Every
+**~25 templates in the 687-template corpus declare a setting envelope** *(refreshed
+2026-08-29 — the 08-24 census counted 13; the late-August batches roughly doubled it: 14
+shipped content files now carry `settings:` declarations. Measure with
+`grep -rE "^\s+settings: \[" src/data --include=*.ts`, never trust this number)*. Every
 one is nudge-era; no legacy template has one.
 
 | Setting class | Openings authored | Where |
@@ -115,11 +117,11 @@ Step counts: 3 steps ×108 · 2 steps ×74 · 1 step ×13. Structurally uniform.
 
 Two rows deserve to be read twice. **`conditions` is a mature, target-freely system and one
 single `encounter.*` template uses it** — the catalog's core traveling-agent loop
-(exhausted, wounded, Balm targets) is essentially unexercised. And **zero `{cast:*}` tokens
-across all 195**: every scene person in the `encounter.*` family is inline prose, never a
-bound cast actor, which the composition audit
-(`Docs/audits/2026-08-08-encounter-composition-audit.md` §2c) traces to the family having no
-default support bundle.
+(exhausted, wounded, Balm targets) is essentially unexercised. And the 08-24 census's
+**"zero `{cast:*}` tokens across all 195" is no longer true** *(refreshed 2026-08-29: 21
+files in `src/data/encounters/` now carry `{cast:*}` bindings — the post-batch templates
+bind cast routinely, and THR-1044's setting-class default bundles closed the structural
+gap the composition audit §2c traced this to)*. The legacy majority still binds nothing.
 
 ### 1f. Genre bands
 
@@ -157,7 +159,7 @@ has only ever spoken slice-of-life.
 - **Near-zero grants/costs channel users.** Confirmed by proxy — `conditions` 1,
   `spawn_artifact` 2, `favors` 0, `groups` 0.
 - **Zero fate-branching users.** 4 templates use `decidedBy`, all slice/company.
-- **New, not previously recorded:** zero `{cast:*}` in the entire `encounter.*` family; a
+- **New, not previously recorded** *(the cast-token half closed by the late-August batches — see §1e's refresh)*: zero `{cast:*}` in the entire `encounter.*` family; a
   single condition write; a single omen emitter; 271 encounter-shaped templates outside the
   gate's reach.
 
@@ -214,5 +216,8 @@ is repair, not portfolio growth, and it does not compete with this list for cate
 
 ## Last-reviewed
 
-2026-08-24 — created (THR-1215). Census machine-measured against `68226bdb`; target mix
-awaiting the director's ruling.
+2026-08-29 — census refreshed (THR-1372, round-5 context-cleanup): composition-tier counts,
+envelope count and the cast-token zero-claim were stale against the late-August batches;
+each refreshed row now carries its membership predicate or measurement command so the next
+refresh is a re-run, not a rewrite. Previous: 2026-08-24 — created (THR-1215). Census
+machine-measured against `68226bdb`; target mix awaiting the director's ruling.

@@ -1,5 +1,5 @@
 ---
-status: current
+status: historical
 title: Encounter Content Authoring Breakdown — THR-318 child filing strategy
 date: 2026-05-07
 linear: THR-318
@@ -9,6 +9,10 @@ audience: cowork, codex
 ---
 
 # Encounter Content Authoring Breakdown (2026-05-07)
+
+> **lint_plan_doc:** exempt — historical breakdown predating the plan-doc template; bannered, not maintained (THR-1372).
+
+> **⚠️ HISTORICAL (marked 2026-08-29, round-5 context-cleanup — THR-1372). Do not execute against this doc.** Its content mappings run through `authoredChoices` / `AuthoredChoiceCard` — the player-picks-an-ending model rejected 2026-07-26 (THR-772) and fully migrated off (WS5 complete, THR-1086) — and its Cowork/Codex audience lines predate both retirements (THR-654/THR-486). The live authoring route is the Encounter Factory: `.claude/skills/encounter-pipeline/SKILL.md` + the nudge-authoring-spec.
 
 **Status:** Cowork breakdown of THR-318 (Encounter content authoring — parallel epic for v1 ship). Files the architecture decisions and child-ticket split for the four content streams. Sibling to the implementation phasing plan (THR-317) — engine + UI ride that plan; content rides this one.
 

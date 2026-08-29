@@ -115,7 +115,7 @@ Available conditionals: `has_artifact`, `has_ally`, `has_rival`, `has_faction`, 
 
 **Family default support bundles (THR-698):** every linear template in the `tavern`, `social`, and ten guild families (`tg`, `ac`, `bf`, `cg`, `hod`, `uk`, `rb`, `mct`, `lk`, `ts`) automatically carries a small default cast even when it declares no `supportBundle` — merged at registry assembly from `DEFAULT_FAMILY_SUPPORT_BUNDLES` (`src/data/default-support-bundles.ts`, cap `DEFAULT_BUNDLE_MAX_SPECS` = 3). What authors get for free: prose in those families can reference the family's cast keys (e.g. tavern → `{cast:keeper}` / `{cast:performer}` / `{cast:regular}`; cg → `{cast:officer}` / `{cast:watch_guard}` — see the data file for every family's keys) and the scene binds the world's *existing* NPC in that role when one is present at the anchor. Defaults are **bind-only**: every spec is `pre-seeded` with `reuseNpcRoles`, so an unmatched key stays unresolved and falls back to the spec's `spawnName` in prose — they never spawn anyone (zero world population). **To override:** declare a `supportBundle` on the template — a template-declared bundle wins outright (no per-key merge). Borderland has no default cast by design (wilderness has no settlement roster to bind).
 
-> **Never aim a persistent consequence at a default key (THR-1165).** The two facts above compose into a trap. "Defaults are bind-only" is safe for *prose* — an unbound `{cast:keeper}` falls back to the spec's `spawnName` and the sentence still reads. It is **not** safe for an effect that writes a durable fact onto a person: `bond_change`, `hidden_mark`, `attachment_grant`, `membership_change`, `agent_relocation`. Those bind through `action.supportBindings`, which a bind-only spec populates only when a matching NPC happens to stand at the anchor — measured on seed 42, `encounter.slice.riders_behind_caravan` spawned with `supportBindings: []` and its `bond_change` wrote nothing. **And the failure is worse when it succeeds:** the default key is *ambient scenery*, so `wayside`'s `keeper` is a hermit and `urban`'s `trader` is an honest market trader — a mark reading "sells deeds to land that was never his" aimed at `$cast:trader` brands a bystander, discoverable later by the very investigation content the mark exists to feed. Declaring the key is not enough and the static classifier will not save you: `check:chip-anchors` passes a bind-only key because it *is* a real declared cast member. **Cast the scene's subject yourself** — a spec with `delivery: 'lazy-materialize-on-trigger'` and `persistence: 'must-persist'`, appended to the setting default rather than replacing it (see `CROSSROADS_SUPPORT_BUNDLE` / `SWINDLER_SUPPORT_BUNDLE` in `vertical-slice.ts`). `npm run check:cast-targets` gates this across the whole 683-template catalog.
+> **Never aim a persistent consequence at a default key (THR-1165).** The two facts above compose into a trap. "Defaults are bind-only" is safe for *prose* — an unbound `{cast:keeper}` falls back to the spec's `spawnName` and the sentence still reads. It is **not** safe for an effect that writes a durable fact onto a person: `bond_change`, `hidden_mark`, `attachment_grant`, `membership_change`, `agent_relocation`. Those bind through `action.supportBindings`, which a bind-only spec populates only when a matching NPC happens to stand at the anchor — measured on seed 42, `encounter.slice.riders_behind_caravan` spawned with `supportBindings: []` and its `bond_change` wrote nothing. **And the failure is worse when it succeeds:** the default key is *ambient scenery*, so `wayside`'s `keeper` is a hermit and `urban`'s `trader` is an honest market trader — a mark reading "sells deeds to land that was never his" aimed at `$cast:trader` brands a bystander, discoverable later by the very investigation content the mark exists to feed. Declaring the key is not enough and the static classifier will not save you: `check:chip-anchors` passes a bind-only key because it *is* a real declared cast member. **Cast the scene's subject yourself** — a spec with `delivery: 'lazy-materialize-on-trigger'` and `persistence: 'must-persist'`, appended to the setting default rather than replacing it (see `CROSSROADS_SUPPORT_BUNDLE` / `SWINDLER_SUPPORT_BUNDLE` in `vertical-slice.ts`). `npm run check:cast-targets` gates this across the whole template catalog (687 at last count — read the live number from the gate's output, not this page).
 
 **Setting-class default support bundles — the `encounter.*` family (THR-1044):** the family table above keys on the id prefix, which works when the prefix names *a place with people in it* (`cg.` is the city guard). `encounter.` names nothing: it is the whole nudge-era id space, and before this change **none of its 191 templates carried a cast** — one flat family default would have put a taproom keeper on a battlefield. So the `encounter.*` family resolves its default by **setting class** instead, from `DEFAULT_SETTING_SUPPORT_BUNDLES` (same file, same bind-only rule, same 3-spec cap). What authors get for free: declare a THR-884 envelope (`settings: ['wayside']`) and your template automatically carries that class's cast keys — `wayside` → `{cast:keeper}` / `{cast:traveler}` / `{cast:outrider}`; `urban` → `{cast:clerk}` / `{cast:trader}` / `{cast:watch}`; `sacred` → `{cast:celebrant}` / `{cast:attendant}` / `{cast:supplicant}`; and so on for all eight classes (see the data file). Multi-class envelopes resolve in canonical `SETTING_CLASSES` order, so `['rural','urban']` gets the rural cast.
 
@@ -399,7 +399,7 @@ The player is a god. Their choices are always divine interventions, never direct
 > | The step authored… | The player gets |
 > |---|---|
 > | a `nudges` hand (capability 14) | the nudge stage: those cards, plus `Let fate decide` |
-> | `authoredChoices` (legacy, 30 templates pending WS5) | the choice screen, committed with `Let fate decide` |
+> | `authoredChoices` (retired — WS5 complete, THR-1086: zero shipped templates author it; the row survives for un-migrated saves only) | the choice screen, committed with `Let fate decide` |
 > | neither | **fate alone** — *"Nothing here answers to you. Let it play out."* and `Let fate decide` |
 >
 > The third case is the model working, not a gap: a step where the god has no purchase is a real state. **What you must not expect any more is a free floor of choices under an unauthored step** — if you want the player to have a move, author one.
@@ -780,7 +780,7 @@ Reference the slot from any prose field with `{frag:opening}`. That's the whole 
 
 **Inspecting it:** the DebugPanel **Fragments** tab shows the static inventory (which templates multiply, on which axes, how many surfaces) and the live bindings; `window.__DEBUG.resolveSurfaceFragments('<agent>')` returns the bound scene headlessly, and the no-arg form returns the inventory. `npm run volume-model` reports **measured** surface counts, so the ~1,000 target is an observable, not an assertion. The `surface_fragments_bound` trace fires once per encounter instantiation. Watch `usedDefault`: a surface that always defaults means the axis election missed.
 
-**Authoring pipeline:** `.claude/skills/template-context-rewrite/SKILL.md` (four passes: axis election → scene-first drafting → QA → merge). Every fragment is swept by the prose-QA scorer, so multiplied surfaces clear the same register bar as inline prose.
+**Authoring pipeline:** `.claude/skills/template-context-rewrite/SKILL.md` (four passes: axis election → design-first fragment drafting in narrator mode → QA → merge; the scene-first pass name is retired — Doctrine v2). Every fragment is swept by the prose-QA scorer, so multiplied surfaces clear the same register bar as inline prose.
 
 **Where to find the implementation:** `src/engine/fragmentResolution.ts` (resolution + enumeration), `src/engine/content-eval/surfaceFragmentReport.ts` (inventory), `{frag:*}` handling in `src/engine/proseEnrichment.ts`. Worked example: `social_scene.recruitment_pitch` — 9 fragments → 20 surfaces.
 
@@ -888,7 +888,7 @@ At most one rider applies per step — the strongest wins (`NUDGE_RIDER_PRIORITY
 | Band coverage | the hand's fragments cover all six `StepOutcome`s between them | `near_miss` has no afterimage field on `ActionStep`; fragments are the only place it gets paid off. |
 | Base-text independence | nudge-specific payoffs live in `bandProse`, never in `narrativeTemplate` | The base text must read correctly with **any** subset of the hand active, including none. |
 | `effectLine` | words, zero digits or `%`; **states mechanism, not mood** | Ruling 1: odds are legible in words only (pips render magnitude). The pivot: the effect line is the rules text — what the god does and why that moves the odds. |
-| Card faces | library-generic: 2–4 word title, one-line flavor quote, zero scene-bespoke prose | The THR-883 communication pivot: prose does the scene, cards do the rules. Band fragments stay bespoke — they are outcome prose, not card prose. |
+| Card faces | library-generic and spell-style: imperative verb + noun title (2–4 words), 1–2 direct effect sentences, zero scene-bespoke prose — **the flavor quote is retired** (2026-08-25, fields removed by THR-1225) | The THR-883 communication pivot: prose does the scene, cards do the rules. Band fragments stay bespoke — they are outcome prose, not card prose. |
 | Riders | ≤1 per hand; justify each in a code comment | Two riders answer the same question twice; a rider on every card turns the outcome ladder into a floor. |
 | Trait options | `essenceCost: 0` | The price was paid by being that person. |
 | Zero essence otherwise | only with another cost channel (`costs.doomDelta` / `costs.detectionDelta` / obligation) | A card that is simply free is a pricing bug (THR-885 cost channels). |
@@ -957,7 +957,7 @@ A hook on a dead ref is a gate that never opens. It is invisible to every test t
 | `locationTypes` | raw entry | Now the **override** for genuinely specific encounters (a temple rite). Unioned with the envelope when both are present. |
 | `openings` | raw entry | One paragraph per declared class. Compiled into a `{frag:opening}` fragment set on the `setting` axis, with the first step's authored narrative as the `'*'` default. |
 
-**Write flexibly, then make it honest.** Flexibility is the default (Christian's explicit direction): reach for the widest envelope you can defend, and pay for it with openings rather than by narrowing to one subtype. Checklist questions 1–4 (where are we, how does it feel, who is here, what must we know) live in the opening; the complication, stakes, and hand are setting-neutral.
+**Write flexibly, then make it honest.** Flexibility is the default (Christian's explicit direction): reach for the widest envelope you can defend, and pay for it with openings rather than by narrowing to one subtype. The per-class opening carries the narrator's opening skeleton (P1 arrival · P2 situation with costs paid · P3 the stake — the 12-question narrator's checklist; the old scene-writer questions incl. "how does it feel" are retired, Doctrine v2); the complication, stakes, and hand are setting-neutral.
 
 **The rule that catches people: declare a class, write its opening.** A template that authors `openings` must cover every class in its `settings` — build-time, fail loud (`validateSettingEnvelope`, `src/data/__tests__/settingClasses.test.ts`). The reverse also fails: an opening for a class the envelope never declares is prose that can never render.
 
@@ -1348,6 +1348,16 @@ Before writing any encounter, answer these questions. If the answer to most of t
 ---
 
 ## Part 4: Worked Example — From Premise to Wired Encounter
+
+> **⚠️ Superseded as a model (2026-08-29, round-5 sweep).** This example predates the nudge
+> model, the Composition Contract, and Prose Doctrine v2: its "alive version" carries no
+> `nudges`, no setting envelope, no cast binding, no `byOutcome`, no `consequenceDraw` — it
+> would fail `check:encounter` today — and its prose is the retired in-situ mode ("not with
+> pride exactly, but with the specific relief of…") with a foreshadowed watcher the doctrine
+> now says to announce plainly. **Read it only for the capability-wiring *contrast* it was
+> written to teach** (book page vs. graph-connected). The live worked example for everything
+> — format, prose, contract — is `src/data/__fixtures__/nudge-exemplar/swollen-ford-exemplar.ts`
+> (`Docs/exemplars.md`), and the binding authoring order is the nudge-authoring-spec's.
 
 **Premise:** "Pyra organizes a harvest festival at the settlement."
 
@@ -1744,7 +1754,7 @@ Starter actions (`STARTER_ACTION_IDS` / `starter: true`) are always available an
 If you author a **branching encounter** (`UnifiedActionTemplate` in `src/data/encounters/`, registered in `LOCATION_BRANCHING_ENCOUNTER_TEMPLATES`), you do **not** need to also solve "how does a mortal ever reach this?" — the *delivery-beat adapter* (`src/engine/deliveryBeatAdapter.ts`) automatically wraps every such template into a `delivery` Ascendant Beat the Director can offer the player directly, **as a divine vision that sidesteps the encounter's reputation/mark/court prereqs**. This is the answer to THR-452: rich branching content that ambient simulation never matures the preconditions for is still reachable, because the god is shown it rather than a mortal walking into it.
 
 - Authoring a new branching encounter and registering it in `LOCATION_BRANCHING_ENCOUNTER_TEMPLATES` is enough — `ALL_DELIVERY_BEATS` picks it up at module load (id `beat.delivery.<templateId>`). No per-encounter beat wiring.
-- A delivery beat is the **host shell**; its `templateId` points at your encounter, so its content (steps, authored choices, aftermath) is the same content that runs anywhere else — no duplication.
+- A delivery beat is the **host shell**; its `templateId` points at your encounter, so its content (steps, nudge hands, aftermath) is the same content that runs anywhere else — no duplication.
 - The Director draws delivery beats at `DELIVERY_BEAT_WEIGHT × BEAT_KIND_WEIGHTS.delivery`, deduped against already-delivered beats. The offer→enter→resolve player path is THR-514; until then, fire one headlessly with the CLI (`beat fire beat.delivery.<templateId>`) or `__DEBUG.fireBeat`.
 
 #### Ascendant action primitives — the per-graph investment toolkit (THR-509)
@@ -2099,15 +2109,15 @@ The one shipped milestone is the **essence-source milestone** (`beat.milestone.t
 
 ## Part 6: The Exemplars — Study These Encounters
 
-These encounters demonstrate championship-level systemic wiring. Read them before authoring new content.
+These encounters demonstrate championship-level systemic **wiring**. Read them before authoring new content — for the wiring. **The prose bar lives elsewhere:** `Docs/exemplars.md` is the exemplar index, and the one prose + structure model is `src/data/__fixtures__/nudge-exemplar/swollen-ford-exemplar.ts` (Nudge format + Prose Doctrine v2). The two encounters below were demoted to **wiring-only, prose do-not-copy** by THR-1250 — past tense, encoded facts, similes in baseline, and a choice model that predates the nudge pivot.
 
-### Rival Shrine Betrayal (`broker.quest.rival_shrine_betrayal`)
+### Rival Shrine Betrayal (`broker.quest.rival_shrine_betrayal`) — wiring only
 **File:** `src/data/encounters/rival-shrine-betrayal.ts`
-**Why it's exemplary:** Creates an intelligence artifact as a graph node that future encounters can reference via `revealFamilies`. Plants 4 encounter seeds across 2 branches. Uses hidden marks with severity tracking. Multi-layered reputation consequences ripple through faction network.
+**Why the wiring is exemplary:** Creates an intelligence artifact as a graph node that future encounters can reference via `revealFamilies`. Plants 4 encounter seeds across 2 branches. Uses hidden marks with severity tracking. Multi-layered reputation consequences ripple through faction network. **Do not imitate its sentences.**
 
-### Flawed Steel (`crafting.quest.flawed_steel`)
+### Flawed Steel (`crafting.quest.flawed_steel`) — wiring only
 **File:** `src/data/encounters/flawed-steel.ts`
-**Why it's exemplary:** Three branches with 6 total aftermath reaction paths, each producing distinct systemic fingerprints. Deception severity varies by reaction choice (prepared vs. unguarded). Seeds different encounter families per path. The prose and the wiring are inseparable — the narrative about managed truth IS the hidden mark system.
+**Why the wiring is exemplary:** Three branches with 6 total aftermath reaction paths, each producing distinct systemic fingerprints. Deception severity varies by reaction choice (prepared vs. unguarded). Seeds different encounter families per path. *(A pre-THR-1250 line here claimed "the prose and the wiring are inseparable" — they are separable, and the prose side is the pre-register-model lyricism the doctrine retired. Its premise is also the named rejected authored-futures example.)*
 
 ### The Contrast — Wandering Healer (`healer.quest.wandering_healer_shrine_access`)
 **File:** `src/data/encounters/wandering-healer-shrine-access.ts`
@@ -3025,7 +3035,7 @@ printf "tick 60\nagent @hero\nevents 20\nexit\n" | npm run cli -- --seed 42 --ma
 
 Everything else takes the toast. A one-step Mundane cast whose aftermath changes nothing structural is *meant* to be a toast — do not raise its rarity to get a dialogue.
 
-**Voice: frame the witnessed consequence, never the verdict.** Framing lines are player-as-god register, and THR-609's peak register is acceptable here because the receipt is a rare, deliberate reflection surface rather than at-a-glance UI. The fortunate band says *"the world bent, but only just"* — **not** "Success!". No numbers, no `key: value`.
+**Voice: frame the witnessed consequence, never the verdict.** Framing lines are player-as-god register — **baseline, not peak** (amended 2026-08-29, round-5 sweep: peak is a closed enumeration of non-encounter surfaces — doom transitions, Twilight, World-Soul/Echo — and the receipt is not on it; the earlier "peak is acceptable here" grant predates that closure). The fortunate band says *"the world bent, but only just"* — plain, one image at most — **not** "Success!". No numbers, no `key: value`.
 
 **Ascendant Beats are excluded by construction.** Beat templates keep their own `AscendantBeatModal`, so the receipt phase skips any template id in `ASCENDANT_POOL_BEAT_TEMPLATES` (matched against a lazily-built id set). Authoring a beat does not get you a receipt, and should not.
 
@@ -3078,8 +3088,9 @@ token dry-run (every `{...}` is one `enrichProse` resolves, every `{frag:*}` and
 **There is no exemption mechanism** (Christian's ruling 3, 2026-08-08). A shape
 that cannot carry a block is a future encounter *type* with its own contract, not
 a waiver. The one escape is `RETROFIT_PENDING` in
-`src/data/content-eval/retrofitPending.ts`, which holds the 191 pre-contract
-templates and **only ever shrinks** — deleting a name is the retrofit's proof, and
+`src/data/content-eval/retrofitPending.ts`, which holds the pre-contract
+templates (read the live count from the file — it was 191 at ship, 185 by 2026-08-29, and a
+number written here rots) and **only ever shrinks** — deleting a name is the retrofit's proof, and
 CI fails if a listed template starts passing just as it fails on a new one that
 does not.
 
@@ -3228,10 +3239,10 @@ fix no author owns.
 
 So when an aftermath screen reads like mad-libs, check which half you are
 looking at before reaching for the prose. Authored → fix it here. Generated →
-that is THR-1082, which replaces those chips with a typed icon + noun +
-direction, on Christian's 2026-08-10 ruling that consequence chips become
-authored and reserved. Once that lands the generated half stops feeding the
-surface and every consequence line the player reads is yours.
+that was THR-1082 (**shipped**: chips are typed icon + noun + direction, on
+Christian's 2026-08-10 ruling that consequence chips become authored and
+reserved — SCAR/BOND/BOON/PATH are canonical in the UL). The generated half no
+longer feeds the surface; every consequence line the player reads is yours.
 
 ## Capability: Mandate milestone prose — the campaign spine narrates in your voice (THR-1197)
 

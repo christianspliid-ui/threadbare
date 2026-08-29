@@ -8,9 +8,20 @@ three_pillars: Engine (envelope expansion, riders, cost channels, dispatch hooks
 
 # Encounter Authoring Frameworks — Setting Envelopes & the Nudge Card Library
 
+> **lint_plan_doc:** exempt — live-session design record in the pre-template shape; superseded in large part and bannered, not maintained (THR-1372).
+
+> **⚠️ SUPERSEDED IN LARGE PART (marked 2026-08-29, round-5 context-cleanup — THR-1372). Do not author against this doc.**
+> The setting-envelope architecture (Decision 2) and the 21-type library concept survive; four of its rules were later retired or reversed and are stated below as if live:
+> - **Decision 1's 14-question scene-writer checklist** (incl. "how does it feel? two senses beyond sight" and scene-first building) — retired 2026-08-25 by **Prose Doctrine v2 (narrator mode)**; the live checklist is the 12-question narrator's checklist.
+> - **"Hands are fully authored at encounter design time / no runtime generic deck"** — superseded by the composed-hand model (THR-1247/1248): 0–2 authored specials + a declared `deal` fill; dealing is live and still takes zero PRNG.
+> - **`HAND_SIZE_MIN`/`MAX` = 4/6** — the live window is `NUDGE_HAND_MIN`/`MAX` = **4/8** (`nudgeAuthoringConstants.ts`).
+> - **Per-card `fiction` / `fictionBySetting` variants** — the flavor quote was retired 2026-08-25 and the fields removed (THR-1225); card faces are spell-style and carry no card prose to vary.
+>
+> **Live authorities:** `.claude/skills/encounter-pipeline/reference/nudge-authoring-spec.md` (the authoring contract) · `Docs/canon/encounters.md` · `Docs/canon/prose.md`. This doc remains the design record of the 2026-07-30 sessions.
+
 **Date:** 2026-07-30
 **Origin:** THR-883 (Fable encounter-writing prototype) — live design session with Christian, chat, 2026-07-30. Every decision below carries his explicit chat approval (THR-608: chat approval satisfies the gate).
-**Status:** Decided. Two implementation tickets carry the engine work; prose authoring stays inside THR-883 and remains paused for everything else.
+**Status:** Historical design record — superseded in part; see the banner above.
 
 ## Why this is load-bearing
 

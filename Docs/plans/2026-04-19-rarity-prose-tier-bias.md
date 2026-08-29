@@ -1,6 +1,8 @@
 # Rarity-Driven Prose Tier Bias (THR-24)
 
-**Status:** Implementation Planning → Ready for Codex
+> **lint_plan_doc:** exempt — legacy plan doc predating the plan-doc template; edited in place only for its status correction (THR-1372).
+
+**Status:** Shipped *(status corrected 2026-08-29, THR-1372 — this line read "Ready for Codex" long after the work landed: `PROSE_TIER_FLOOR_BY_RARITY` lives at `src/data/rarity-constants.ts:149` and `classifyEvent()` takes the rarity parameter in `src/engine/narrative.ts`. The Codex queue itself retired 2026-06-23, THR-486.)*
 **Owner:** Codex executor
 **Parent:** Rarity Model project
 **Date:** 2026-04-19

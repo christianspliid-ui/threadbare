@@ -17,13 +17,12 @@
  *     the god does and why that moves the odds. Zero scene-bespoke card prose.
  *     The scene lives in the openings, the step spine, and the band prose.
  *
- *     **The flavor quote is retired** (Prose Doctrine v2, 2026-08-25; THR-1224).
- *     Every card below still carries a `fiction` string and **no card face draws
- *     one** — `NudgePhaseShell` stopped rendering the field, and the doctrine
- *     strikes "the flavor quote" by name. The strings survive here only because
- *     emptying them corpus-wide collides with the doctrine-v2 rewrite (THR-1223)
- *     and rides THR-1225. **Do not copy the `fiction` lines when using this as a
- *     worked example** — copy the names, the effect lines, and the band prose.
+ *     **The flavor quote is retired** (Prose Doctrine v2, 2026-08-25; THR-1224),
+ *     and the `fiction` / `fictionBySetting` fields themselves are gone — THR-1225
+ *     stripped the corpus strings and dropped the fields from the schema, so the
+ *     cards below author none. (An earlier version of this note said the strings
+ *     "survive here pending THR-1225"; that shipped — note updated 2026-08-29,
+ *     THR-1372.) A card's only prose is its spell-style `effectLine`.
  *
  *     The name shape also tightened: doctrine v2 wants **imperative verb + noun**
  *     within four words ("Widen The Swing", never "The Wider Swing"), reported at
