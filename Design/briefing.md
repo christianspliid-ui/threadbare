@@ -1,9 +1,9 @@
 # Briefing
-**Generated:** 2026-08-29 23:00 local (21:00 UTC) · keep-work-flowing-cc
+**Generated:** 2026-08-29 23:55 local (21:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**Play two encounters, then say one word about the next seven.** Five days open on the approval, twelve on the sample, and still the only thing standing between the encounter factory and its next batch of content.
+**Play two encounters, then say one word about the next seven.** Five days open on the approval, twelve on the sample. Nothing else on this list makes the game bigger; this one does.
 
 First, the two-of-six sample from batch 1 — the question is yours alone: *are they worth meeting twice?* Both were re-prosed since you last saw them, so a replay is honest, and a no is as useful as a yes. Open the *good ending* links first (~5 minutes total).
 
@@ -16,8 +16,8 @@ Then the brief: [the camp seven](https://github.com/christianspliid-ui/threadbar
 
 ## Also waiting (10)
 
-- **[Design hours — the shelf is dry](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** · **two** items Ready for Dev, both clean-ups, and nothing new arrived in the last hour either. Sit [the card grammar](https://linear.app/threadbare/issue/THR-1002) or [traits wave 2](https://linear.app/threadbare/issue/THR-790), or say *"park it"* — four plan-doc sessions are behind them. Detail: [user-actions §2](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md).
-- **[THR-1314](https://linear.app/threadbare/issue/THR-1314/ul-proposal-work-holding-kind-row-christening-failure-name-register)** · **now shipped** — what a character owns reads **freehold** to the player; *holding* keeps every other sense. Veto still open, four lines to reverse.
+- **[Design hours — the shelf is dry](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** · **two** items Ready for Dev, both clean-ups, and nothing new arrived this hour either. Sit [the card grammar](https://linear.app/threadbare/issue/THR-1002) or [traits wave 2](https://linear.app/threadbare/issue/THR-790), or say *"park it"* — four plan-doc sessions are behind them. Detail: [user-actions §2](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md).
+- **[THR-1314](https://linear.app/threadbare/issue/THR-1314/ul-proposal-work-holding-kind-row-christening-failure-name-register)** · **shipped** — what a character owns reads **freehold** to the player; *holding* keeps every other sense. Veto still open, four lines to reverse.
 - **[Physical Conflict map](https://linear.app/threadbare/issue/THR-1258/wayfinder-map-physical-conflict)** · nine questions open, all yours, every research question finished. Say *"work the fight map"*.
 - **[Twenty spells](https://linear.app/threadbare/issue/THR-1232) / [thirty items](https://linear.app/threadbare/issue/THR-1236)** · two sketches to build for you to react to. Say *"work the powers map"* or *"work the item map"*.
 - **[THR-876](https://linear.app/threadbare/issue/THR-876/regenerate-the-5-quarantined-meet-the-first-scene-assets-doctrine)** · the real question is whether image spends should be gated on you at all, or decided by a lane and reported after.
@@ -29,14 +29,13 @@ Then the brief: [the camp seven](https://github.com/christianspliid-ui/threadbar
 
 ## Queue
 
-**Round 5 is most of the way through, and two of its five tasks turned out to be smaller than written.** [The round](https://linear.app/threadbare/issue/THR-1369/context-cleanup-round-5-the-content-and-narrative-layer-audit-sweep) opened on your *"go"* at 19:44Z. Since then: [the skills sweep](https://linear.app/threadbare/issue/THR-1370) merged, [the brief-generator fix](https://linear.app/threadbare/issue/THR-1371) merged ([#1750](https://github.com/christianspliid-ui/threadbare/pull/1750)), [the Flesh rename](https://linear.app/threadbare/issue/THR-1373) was **cancelled** because [an earlier ticket](https://linear.app/threadbare/issue/THR-1368) had already done its work, and [the repo-docs sweep](https://linear.app/threadbare/issue/THR-1372) is armed to merge as [#1751](https://github.com/christianspliid-ui/threadbare/pull/1751). Two tasks left. Nothing in the game changes; nothing is needed from you.
+**Round 5 is down to its last two tasks, and it picked one of them up itself.** [The round](https://linear.app/threadbare/issue/THR-1369/context-cleanup-round-5-the-content-and-narrative-layer-audit-sweep) opened on your *"go"* at 19:44Z. [The skills sweep](https://linear.app/threadbare/issue/THR-1370) and [the brief-generator fix](https://linear.app/threadbare/issue/THR-1371) are merged; [the Flesh rename](https://linear.app/threadbare/issue/THR-1373) was cancelled as already done. What remains: [the repo-docs sweep](https://linear.app/threadbare/issue/THR-1372) is armed as [#1751](https://github.com/christianspliid-ui/threadbare/pull/1751) and re-running its checks, and [the vault content pass](https://linear.app/threadbare/issue/THR-1374) was taken up by the round session at 20:56Z. Nothing in the game changes; nothing is needed from you.
 
-**Ready for Dev: 2 — unchanged, and still starved of product work rather than of items.** Both are Low-priority clean-up: [a test de-flake](https://linear.app/threadbare/issue/THR-1328) and [a glossary proposal](https://linear.app/threadbare/issue/THR-1316). An hour has passed with no new product work arriving — that is the evidence behind also-waiting item 1.
+**Ready for Dev: 2 — unchanged for a third hour, and still starved of product work rather than of items.** Both are Low-priority clean-up: [a test de-flake](https://linear.app/threadbare/issue/THR-1328) and [a glossary proposal](https://linear.app/threadbare/issue/THR-1316). No new product work arrived this hour — that is the evidence behind also-waiting item 1.
 
-In Dev: 5 — two live (the round-5 tickets), three deliberately `Parked` and unassigned ([THR-1130](https://linear.app/threadbare/issue/THR-1130) 28h, [THR-1133](https://linear.app/threadbare/issue/THR-1133) 26h, [THR-1168](https://linear.app/threadbare/issue/THR-1168) 28h). All three are parked on questions in your ask list, not on anything an agent can decide. Nothing stale, no orphaned claims.
+In Dev: 6 — three live (the round-5 tickets), three deliberately `Parked` and unassigned ([THR-1130](https://linear.app/threadbare/issue/THR-1130) 29h, [THR-1133](https://linear.app/threadbare/issue/THR-1133) 27h, [THR-1168](https://linear.app/threadbare/issue/THR-1168) 29h). All three are parked on questions in your ask list, not on anything an agent can decide. Nothing stale, no orphaned claims.
 
 ## Health
 
-- **Last hour's stuck pull request cleared itself** — [#1747](https://github.com/christianspliid-ui/threadbare/pull/1747), the freehold glossary change, merged. No PR is failing or stranded now; [#1751](https://github.com/christianspliid-ui/threadbare/pull/1751) is armed and one minute into its checks, which is the normal state.
-- **One overnight lane gap still recorded, still declined.** 10.6h of scheduled-lane silence on 23–24 August, overnight-shaped. Declined per your 2026-08-08 ruling that overnight quiet is normal; noted only so the probe's finding is visible rather than swallowed.
-- A deploy is in flight for the newest commit, pushed minutes ago — normal, not a fault. CI checks, scheduled background jobs, task heartbeats and the worktree reaper: all green.
+- **All green.** No pull request is failing or stranded. [#1751](https://github.com/christianspliid-ui/threadbare/pull/1751) is armed and one minute into a fresh check run after a push — the normal state, not a stall. CI, scheduled background jobs, task heartbeats, the deploy and the worktree reaper are all healthy; the live site is current (the newest commits touched only notes and docs, so no rebuild was needed).
+- **One overnight lane gap still recorded, still declined.** 10.6h of scheduled-lane silence on 23–24 August, overnight-shaped. Declined per your 2026-08-08 ruling that overnight quiet is normal; noted only so the probe's finding stays visible rather than swallowed.

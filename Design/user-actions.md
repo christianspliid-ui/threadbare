@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-29 23:00 local (21:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-29 23:55 local (21:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -86,7 +86,7 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
-- **You started the last cleanup round** (2026-08-29, chat: *"go"*) — [round 5](https://linear.app/threadbare/issue/THR-1369) opened 19:44Z; [skills sweep](https://linear.app/threadbare/issue/THR-1370) and [brief-generator fix](https://linear.app/threadbare/issue/THR-1371) merged, [the Flesh rename](https://linear.app/threadbare/issue/THR-1373) cancelled as already done, two tasks left.
+- **You started the last cleanup round** (2026-08-29, chat: *"go"*) — [round 5](https://linear.app/threadbare/issue/THR-1369) opened 19:44Z; [skills sweep](https://linear.app/threadbare/issue/THR-1370) and [brief-generator fix](https://linear.app/threadbare/issue/THR-1371) merged, [the Flesh rename](https://linear.app/threadbare/issue/THR-1373) cancelled as already done. Two tasks left: [repo-docs](https://linear.app/threadbare/issue/THR-1372) armed as [#1751](https://github.com/christianspliid-ui/threadbare/pull/1751), [the vault pass](https://linear.app/threadbare/issue/THR-1374) in progress since 20:56Z.
 - **You settled how much of the world happens off-screen** (2026-08-29, Discord): off-screen life comes from **threading** — rival gods holding their own threaded agents — not from opening the attention gate; [THR-1348](https://linear.app/threadbare/issue/THR-1348) becomes long-term direction and [THR-1349](https://linear.app/threadbare/issue/THR-1349) a content fix.
 - **The afternoon's stuck pull requests were one cause, and it is fixed** — automated checks were being killed at a 20-minute ceiling, not failing; [raised to 35 minutes](https://github.com/christianspliid-ui/threadbare/pull/1740) at 18:04. Delivery machinery only.
 - **Four bits of prose stopped hedging** — [THR-1360](https://linear.app/threadbare/issue/THR-1360) merged 17:23; lines that hint at what is coming were opening on evasive words, so a promise of trouble read as a shrug. Players will read the difference.
