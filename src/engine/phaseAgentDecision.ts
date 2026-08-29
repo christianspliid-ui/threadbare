@@ -82,9 +82,8 @@ import type { StrategicCandidateBoardTrace, StrategicActionStartedTrace } from '
 import type { DecisionFamily } from '../types/strategicAction';
 import type { BalanceEvent } from '../types/balanceEval';
 import { scoreUnifiedBoard } from './decisionBoard';
-import { UNIFIED_DECISION_BOARD_MODE } from '../data/strategic-action-constants';
+import { UNIFIED_DECISION_BOARD_MODE, BOARD_SCORE_FLOOR } from '../data/strategic-action-constants';
 import { computeSurfaceKey } from './encounterSurface';
-import { warnLiveBoardModeUnimplemented } from './decisionBoardModeGuard';
 import { resolveTemplateFragments } from './fragmentResolution';
 import { getLocationType } from './encounterCache';
 import { settingClassForSubtype } from '../data/settingClasses';
@@ -725,7 +724,17 @@ export function phaseAgentDecision(
             );
             scoredStrategic = scored;
 
-            // Compare best strategic score against best encounter score
+            // The strategic-vs-encounter contest (THR-1292 §4 calls it contest B).
+            // It compares two scores that are only commensurable because one has
+            // been clamped into the other's range by `STRATEGIC_ENCOUNTER_SCORE_BRIDGE`,
+            // and the board below exists to replace it.
+            //
+            // It is still here because the cutover has **not** flipped (THR-1301).
+            // The board's live branch is implemented and inert under `'shadow'`;
+            // deleting this block is the same commit as setting the mode to
+            // `'live'`, never an earlier one, because in `'shadow'` nothing else
+            // would ever select a strategic action and undertakings would silently
+            // stop happening altogether.
             const bestStrategicScore = scored.length > 0 ? scored[0].finalScore : 0;
             const bestEncounterScore = decision.topCandidates.length > 0
               ? decision.topCandidates[0].finalScore
@@ -760,19 +769,18 @@ export function phaseAgentDecision(
         }
       }
 
-      // ── The one prioritization board, in shadow (THR-1292 §4) ─────
+      // ── The one prioritization board (THR-1292 §4; live since THR-1301) ─────
       //
-      // Runs *after* the legacy contests and changes nothing about their verdict
-      // while the mode is `'shadow'`. Its whole output is two telemetry channels:
-      // the `decision_board_comparison` trace (full ranking, for a human reading a
-      // log) and three fields on the balance event below (shares, for the cutover
-      // gate's rollup). This is the binding obligation the plan attaches to the
-      // board — the cross-family comparison has never been traced, so there is no
-      // baseline to flip against until a shadow period produces one.
+      // In `'live'` this **is** the decision: it ranks both families in one
+      // currency and its winner becomes `decisionFamily`, the strategic winner and
+      // the selected encounter alike. In `'shadow'` it changes nothing and only
+      // records — the mode is kept rather than deleted because the shadow channel
+      // is how the cutover envelope is re-measured whenever the scorers are
+      // retuned, and the census script re-runs the same comparison.
       //
-      // `agreement` compares the winning *family*, and the legacy family is read
-      // here rather than at the balance-event sites below because this is the
-      // point where the contests have finished and nothing downstream can still
+      // `agreement` compares the winning *family* against what legacy would have
+      // said, read here rather than at the balance-event sites below because this
+      // is the point where scoring has finished and nothing downstream can still
       // move a decision between families — compulsion redirects *which* encounter,
       // never whether one happens.
       let shadowFields: Pick<
@@ -780,14 +788,6 @@ export function phaseAgentDecision(
       > = {};
 
       if (UNIFIED_DECISION_BOARD_MODE !== 'off') {
-        // `'live'` is declared in the mode union but the cutover branch is NOT
-        // implemented (THR-1292 slice 6: the §4 gate failed on seed 99, so the
-        // flip did not land). Without this warning, setting the constant to
-        // `'live'` scores the board and then lets the legacy contests decide
-        // anyway — a cutover that reads as done from the constant, from the
-        // trace's own `mode` field, and from every test, while changing nothing.
-        // That is the exact shape of the phantom-ship this ticket has hit twice.
-        warnLiveBoardModeUnimplemented();
         try {
           const board = scoreUnifiedBoard({
             graph,
@@ -799,10 +799,28 @@ export function phaseAgentDecision(
           });
 
           // An empty board is a real verdict, not a missing one: it is what the
-          // live mode would read as idle. Recording it as `'idle'` keeps the idle
-          // share the cutover gate reads honest — dropping the row would make the
-          // ceiling trivially passable by a board that finds nothing to do.
-          const boardFamily: DecisionFamily = board.winner?.family ?? 'idle';
+          // live mode reads as idle. Recording it as `'idle'` keeps the idle share
+          // the cutover gate reads honest — dropping the row would make the ceiling
+          // trivially passable by a board that finds nothing to do.
+          //
+          // **A below-floor winner is the same verdict and must count the same
+          // way.** This line read `board.winner?.family ?? 'idle'` and so counted
+          // idle only when the board was *empty*, never when its winner failed the
+          // floor — while the live branch below idles on both. The gate and the
+          // behaviour therefore disagreed about what idle means, and the gate was
+          // the blind one: at the mis-scaled `BOARD_SCORE_FLOOR = 0.08` the census
+          // reported **idle 0.0%, PASS** on a seed where 2646 of 2882 decisions
+          // (91.8%) actually idled. Every criterion passed on both seeds and the
+          // world had stopped moving.
+          //
+          // So the floor is applied once, here, and both the telemetry and the
+          // cutover read the same resolved winner. A gate that cannot observe the
+          // failure mode it exists to catch is not a weak gate, it is a vacuous
+          // one, and this was the shape of it.
+          const boardWinner = board.winner && board.winner.score >= BOARD_SCORE_FLOOR
+            ? board.winner
+            : null;
+          const boardFamily: DecisionFamily = boardWinner?.family ?? 'idle';
 
           const legacyScore = decisionFamily === 'strategic_action'
             ? (strategicWinner?.finalScore ?? 0)
@@ -811,6 +829,11 @@ export function phaseAgentDecision(
             ? (strategicWinner?.templateId ?? null)
             : (decision.selected?.entry.templateId ?? null);
 
+          // Read *before* the live branch below mutates `decisionFamily`, which is
+          // what keeps the legacy baseline a baseline rather than a comparison of
+          // the board against itself. (Under `'shadow'` that branch is inert, so
+          // this ordering only starts mattering at the flip — which is exactly when
+          // getting it wrong would be invisible.)
           const agreement = boardFamily === decisionFamily;
 
           shadowFields = {
@@ -846,10 +869,71 @@ export function phaseAgentDecision(
                 : {}),
             })),
             agreement,
+            boardFamily,
             encounterCandidates: decision.topCandidates.length,
             undertakingCandidates: scoredStrategic.length,
             summary: `Board (${UNIFIED_DECISION_BOARD_MODE}): legacy=${decisionFamily}, board=${boardFamily}${agreement ? '' : ' [DIVERGED]'}, top=${board.winner?.score.toFixed(3) ?? 'none'}`,
           });
+
+          // ── The cutover branch (THR-1301) — implemented, not yet flipped ──
+          //
+          // Everything above is measurement and runs in both modes. Below is the
+          // only place the board's ranking touches behaviour, and it does three
+          // things the legacy contests did between them.
+          //
+          // **Why this ships inert.** The §4 gate passes on both seeds with the
+          // corrected floor (seed 42 undertaking 33.4% / encounter 33.8% / idle
+          // 32.8%; seed 99 21.1% / 43.6% / 35.3%). Flipping anyway is still wrong,
+          // because a third blind spot in that gate is now measured: the gate reads
+          // the *share between* families and says nothing about composition
+          // *within* one. Under a live board, `trades_with` edges written over 150
+          // ticks on seed 42 go from non-zero to **zero** —
+          // `strategic_establish_trade_route` takes zero board wins and is never
+          // generated as a candidate — while every criterion still reads green.
+          // The mechanism is that board score is `EVT × desire × temperament` and
+          // carries no variety term at all; the legacy scorer's
+          // `STRATEGIC_VARIETY_PENALTY_WEIGHT` was supposed to "survive as a
+          // candidate-generation feature feeding EVT inputs" (plan §4) and in fact
+          // feeds nothing the board reads. Adding a diversity term to the board's
+          // currency is a design change with its own balance envelope, so it is
+          // its own slice rather than a constant nudged here.
+          //
+          // 1. **Idle is re-keyed to the board.** The legacy idle branch is
+          //    encounter-only — a strategic winner `continue`s past it, so idle
+          //    meant "no *encounter* worth doing" while an undertaking may have
+          //    been available all along. Live idle is "the board is empty, or its
+          //    best entry is below `BOARD_SCORE_FLOOR`" — one floor over both
+          //    families, which is why that constant is pinned equal to
+          //    `STRATEGIC_SCORE_FLOOR`.
+          // 2. **The winner resolves by index, never by id.** `candidateIndex`
+          //    exists for this line; see its contract note on `BoardEntry`.
+          // 3. **The legacy encounter selection is overridden, not consulted.**
+          //    `scoreAndSelect` applies its own threshold to pick `selected`, and
+          //    in live mode that threshold is not the one that decides — the
+          //    board's floor is. So a board-chosen encounter is selected even
+          //    where legacy declined to, and a board that chooses an undertaking
+          //    leaves `decision.selected` in place *deliberately*: the strategic
+          //    execution path below fails soft onto it.
+          if (UNIFIED_DECISION_BOARD_MODE === 'live') {
+            if (!boardWinner) {
+              decisionFamily = 'idle';
+              strategicWinner = null;
+              decision.selected = null;
+            } else if (boardWinner.family === 'strategic_action') {
+              const chosen = scoredStrategic[boardWinner.candidateIndex];
+              if (chosen) {
+                strategicWinner = chosen;
+                decisionFamily = 'strategic_action';
+              }
+            } else {
+              const chosen = decision.topCandidates[boardWinner.candidateIndex];
+              if (chosen) {
+                strategicWinner = null;
+                decisionFamily = 'encounter';
+                decision.selected = chosen;
+              }
+            }
+          }
         } catch (err) {
           // Deliberately NOT the empty catch the legacy path above degrades
           // through. A shadow period that swallowed board throws would report
