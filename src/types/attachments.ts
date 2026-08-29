@@ -140,7 +140,8 @@ export interface AgreementProperties {
 // ─── Reward Pool Recipe ─────────────────────────────────────────
 
 /**
- * `'holding'` (THR-1297) — a place or resource the bearer holds. It is the
+ * `'holding'` (THR-1297) — a place or resource the bearer holds; **said *freehold* on
+ * every player surface** (THR-1314 — the engine literal is deliberately untouched). It is the
  * bearer-side *face* of an `owns` edge: the edge is the authority, this is
  * bookkeeping, exactly as `groupFormation`'s roster mirrors `member_of`. Written
  * only by `src/engine/holdings.ts`.
@@ -193,7 +194,14 @@ export const ATTACHMENT_CATEGORY_NAMES: Record<AttachmentCategory, string> = {
   agreement: 'Agreement',
   spell: 'Spell',
   companion: 'Companion',
-  holding: 'Holding',
+  // THR-1314: the player-facing word is *Freehold*, not "Holding". The engine literal
+  // stays `'holding'` — this map is the UI Law 14 boundary, so the rename costs one
+  // line here instead of ~500 sites. "Holding" was measured as a six-way player-facing
+  // collision (group cohesion band, mandate trend, army stance, ascendant-bar steady,
+  // Fury tier word, `hunger.preserve` remembrance), and in five of the six it is a
+  // participle meaning *steady*; this ownership sense was the lone count noun, so it
+  // is the one that moved. See UL `[[Freehold]]` in `Docs/ubiquitous-language/Agents.md`.
+  holding: 'Freehold',
 };
 
 /**

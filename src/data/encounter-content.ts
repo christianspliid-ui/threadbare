@@ -7347,7 +7347,8 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.assess_holdings',
-    name: 'Take Stock of Holdings',
+    // THR-1314: id keeps the engine literal; the player-facing name says *Freeholds*.
+    name: 'Take Stock of Freeholds',
     locationTypes: [...ALL_LOCATION_SUBTYPES],
     reachPrimary: 'gold',
     reachSecondary: 'eye',

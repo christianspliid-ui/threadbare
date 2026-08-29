@@ -149,7 +149,7 @@ export function getMilestoneBeatById(beatId: string): BeatDefinition | null {
 export const MILESTONE_BEAT_PRESENTATION: Readonly<Record<string, SpineBeatPresentation>> = {
   [MILESTONE_SOURCE_BEAT_ID]: {
     eyebrow: 'A Wellspring',
-    title: 'What Your Holdings Have Become',
+    title: 'What Your Freeholds Have Become',
     prose:
       'The places you took have stopped merely belonging to you and started paying you back. Pilgrims wear a path to them; keepers argue over who tends them; the roads between them are busier than the roads around them. A god who holds ground can lean on the ground. A god whose ground is wanted can lean on everyone who wants it — and there is a square, in some town below, that has been waiting for you to notice what it could be.',
     cta: 'Receive',

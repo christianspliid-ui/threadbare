@@ -93,7 +93,10 @@ describe('AttachmentsTab — Holdings section', () => {
 
     expect(SLOT_CAPS.holding).toBeUndefined();
     expect(heading?.textContent).toBe(SLOT_TAG_DISPLAY_NAMES.holding);
-    expect(heading?.textContent).toBe('Holdings');
+    // The literal is pinned deliberately beside the constant: the constant-only
+    // assertion would pass on any rename, including one back into the six-way
+    // "Holding" collision THR-1314 resolved. Player-facing word is *Freeholds*.
+    expect(heading?.textContent).toBe('Freeholds');
     expect(heading?.textContent).not.toMatch(/\d+\s*\/\s*\d+/);
   });
 
@@ -133,7 +136,7 @@ describe('AttachmentsTab — Holdings section', () => {
     render(<AttachmentsTab card={card({ possessions: [possession()] })} />);
 
     expect(screen.queryByTestId('attachments-slot-holding')).toBeNull();
-    expect(screen.queryByText('Holdings')).toBeNull();
+    expect(screen.queryByText('Freeholds')).toBeNull();
   });
 
   it('names the place in plain language, never a slot tag or node id', () => {

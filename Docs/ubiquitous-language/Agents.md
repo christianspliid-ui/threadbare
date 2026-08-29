@@ -372,7 +372,7 @@ Design: `Docs/plans/2026-08-12-thr-1096-companion-attachments.md`. Code anchors 
 ### Group Cohesion
 
 **Aliases:** Cohesion (group-scoped)
-**Also see:** `[[Group]]`, `[[Company]]`, `[[Bless this Company]]`
+**Also see:** `[[Group]]`, `[[Company]]`, `[[Bless this Company]]`, `[[Freehold]]`
 **Status:** canonical
 
 The event-driven 0–1 aggregate on a group node measuring how well a company holds together — its health bar. Starts at `GROUP_COHESION_START_BASE` (currently 0.55, adjusted by formation quality) and moves on events rather than per-tick drift: shared encounter success `+0.06`, failure `−0.08`, a positive member-to-member social `+0.03`, a member's death `−0.15`, each registered dissent `−0.04`.
@@ -380,6 +380,8 @@ The event-driven 0–1 aggregate on a group node measuring how well a company ho
 UI renders a **prose state**, never the number (`getCohesionState`): `bound` at or above `GROUP_COHESION_BOUND_THRESHOLD` (0.75), which also earns the resolution bonus; `holding` at or above `GROUP_FRAY_THRESHOLD` (0.4); `frayed` at or above `GROUP_DISSOLUTION_THRESHOLD` (0.15), where the fray drama pool activates; and `breaking` below that, where dissolution triggers. The DebugPanel is the one surface that shows the raw value.
 
 This is the group-scoped sense only. Army cohesion is a separate quantity on the sibling army system — do not conflate the two.
+
+The `holding` band is a **participle** — the company *is holding*, one notch below `bound`. It is not the count noun "a holding"; that ownership sense is player-facing as `[[Freehold]]`, which see for the full disambiguation (THR-1314).
 
 Code anchors: `src/engine/groups/groupQueries.ts` (`getCohesionState`, `CohesionState`), `src/data/group-constants.ts`.
 
@@ -442,3 +444,105 @@ The existing `QuintessenceThresholdState` literal `'broken'` — quintessence ra
 **This is a naming-collision fix, not a new mechanic.** The code literal predates the `[[Broken]]` mortal state and is untouched; the UL says "Dissolution threshold" in prose so the two never get conflated. They are genuinely different: the Dissolution Threshold is a *ratio band* at zero, while `[[Broken]]` is a *behavioural state* entered at `'critical'` and released at `'strained'`. An agent can be Broken without being anywhere near dissolution.
 
 When you read `'broken'` in a `QuintessenceThresholdState` comparison, that is this term. When you read "broken mortal", that is the other one.
+
+---
+
+### Undertaking
+
+**Aliases:** strategic project, the `StrategicProjectRuntime` (engine)
+**Also see:** `[[Work]]`, `[[Kind Row]]`, `[[Christening]]`, `[[Failure-Name Register]]`, `[[Freehold]]`
+**Status:** canonical
+
+A multi-tick project an agent takes on of its own motion — the proactive counterpart to an `[[Encounter]]`, which the world offers *to* an agent. An undertaking runs to completion or failure across ticks and, on completion, leaves a `[[Work]]` behind.
+
+The word was settled by THR-1281's grammar verdict and used throughout THR-1297's six slices, but was never filed here; this entry closes that gap (THR-1314) rather than proposing anything new. Each undertaking is declared by a `[[Kind Row]]` and its verbs come from the strategic packs — a row declares what a verb *builds* and how the world can take it back, never whether the verb is offerable.
+
+Code anchors: `src/engine/strategicActionLifecycle.ts`, `src/types/strategicAction.ts` (`UndertakingKindId`, `UndertakingKindRow`), `src/data/undertaking-kinds.ts`.
+
+---
+
+### Kind Row
+
+**Aliases:** undertaking kind row, a `UndertakingKindRow`
+**Also see:** `[[Undertaking]]`, `[[Work]]`, `[[Freehold]]`
+**Status:** canonical
+
+A registry entry declaring one kind of `[[Undertaking]]`: the CRUD closure for one kind of `[[Work]]` — what builds it, what changes it, and, non-negotiably, what can undo it.
+
+**A row must name at least one reachable, motive-gated destroy.** This is the rule the registry exists to enforce, stated in THR-1297 §1 as *"until a kind can be undone, it is not a kind"* — the registry shipped deliberately **empty** in slice 2 rather than register rows against create verbs, and the rows arrived only in slice 5 alongside the destroy verbs that undo them. Registering a row whose destroy does not exist, or exists ungated, is the vacuous satisfaction the plan names as a kill criterion.
+
+Adding a kind is a row, not a code path (NFP #1). A malformed row is a build-time failure via the schema test, never a runtime throw; `validateKindRegistry` returns named problems rather than a boolean.
+
+Code anchors: `src/data/undertaking-kinds.ts` (`UNDERTAKING_KIND_ROWS`, `validateKindRegistry`, `getUndertakingKindRow`), `src/data/strategic-action-constants.ts` (`MOTIVE_GATE_KINDS`).
+
+---
+
+### Work
+
+**Aliases:** the work, a completed undertaking's object
+**Also see:** `[[Undertaking]]`, `[[Christening]]`, `[[Kind Row]]`, `[[Freehold]]`, `[[Failure-Name Register]]`
+**Status:** canonical
+
+The named object a completed `[[Undertaking]]` leaves behind — the thing that outlives both its maker and its owner. A road, a hall, a mine, a network, a masterwork.
+
+A work is not a new node type: it is an ordinary world node (location, sublocation, resource, artifact) that has been through `[[Christening]]`. What makes it a work is that it carries an earned proper name and, usually, an `owns` edge naming whoever holds it — see `[[Freehold]]`.
+
+Names are a pure function of the named node's id (NFP #3), with phonetic flavour drawn from a *separately salted* stream so that whether a culture signature is available cannot shift the main sequence. The namer never throws, never returns blank, and never lets a raw template or kind id reach a player surface: the ladder is anchored name → flavoured name → possessive → terminal family noun.
+
+**One set of naming primitives, two grammars.** `generateWorkName` generalises the primitives the company namer already had (possessive, seed rule, fallback discipline); the company namer's own pattern set and draw sequence are deliberately untouched, since folding companies onto the work grammar would have re-rolled every company name in every existing world.
+
+Code anchors: `src/engine/naming/workNames.ts` (`generateWorkName`, `workingName`, `possessive`, `WorkNameContext`), `src/engine/naming/__tests__/groupNameStability.test.ts`.
+
+---
+
+### Christening
+
+**Aliases:** the christening, naming-at-completion
+**Also see:** `[[Work]]`, `[[Undertaking]]`, `[[Freehold]]`, `[[Failure-Name Register]]`
+**Status:** canonical
+
+The moment a `[[Work]]` earns its proper name: **at completion, and only at completion.**
+
+Until then the work carries a **working possessive** — `workingName` renders "Corran's Road", the maker's name plus a family noun — because an undertaking in progress belongs to whoever is doing it, while a finished one belongs to the world and takes a proper name (THR-1291 §2). **Failures are never christened**; what a visible failure leaves is a register entry, not a name — see `[[Failure-Name Register]]`.
+
+Fail-soft (NFP #4): a christening that cannot resolve leaves the created node's minted name untouched and returns `undefined`. **A christening that cannot happen is not an error.** Where the same mutation already granted the work as a `[[Freehold]]`, the bearer-side face is refreshed in the same pass rather than at the next reconcile, so the character sheet and the world never disagree about what a thing is called even for one tick.
+
+Code anchors: `src/engine/strategicActionLifecycle.ts` (`christenCompletedWork`, `nounForCreatedNode`), `src/engine/naming/workNames.ts` (`workingName`).
+
+---
+
+### Failure-Name Register
+
+**Aliases:** failure scar, the register, `failureScars`
+**Also see:** `[[Christening]]`, `[[Work]]`, `[[Undertaking]]`
+**Status:** canonical
+
+Where a **visible** failed `[[Undertaking]]` is recorded on the ground it failed on, so that failure leaves a story artifact rather than dead air — "Corran's Folly".
+
+**A register, not a name.** The distinction is deliberate (THR-1297 review ruling 2.2): the work earned nothing, but the ground remembers that someone tried here and it went badly. That is a fact about the place, not a name the work earned — which is why it is never a `[[Christening]]`.
+
+**Clean failures write nothing.** The caller gates on the residue class (`undertaking_failed_visible`), not the namer, so an undertaking that fails without visible residue leaves the site untouched.
+
+Additive by construction (NFP #6): entries are a property array on an existing location node, so nothing is minted and no reader that does not know about scars is affected.
+
+Code anchors: `src/engine/strategicActionLifecycle.ts` (`recordFailureScar`), `src/engine/naming/workNames.ts` (`generateFailureScarName`, `FAILURE_SCAR_LEXICON`).
+
+---
+
+### Freehold
+
+**Aliases:** the `'holding'` `AttachmentCategory` (engine literal only)
+**Also see:** `[[Work]]`, `[[Undertaking]]`, `[[Group Cohesion]]`, `[[Companion]]`, `[[Attachment]]`
+**Status:** canonical
+
+The attachment category for a place or resource an actor owns — a mine, a road, a hall. Seize-transferable and exempt from slot caps, and earned through an `[[Undertaking]]` rather than looted.
+
+**The `owns` edge is the authority; the freehold attachment is a face.** A freehold is three objects that must agree: the world object node (an existing type — the module never mints it), the `owns` edge actor → object, and the bearer-side attachment held via `possesses`, which is pure bookkeeping. Where edge and face disagree the edge wins and the face is re-minted — never the reverse. **Nothing downstream may decide ownership by reading the face.**
+
+Deliberately **not** a `PossessionSubcategory`: a freehold is a different *kind* of thing from an item in a bag, so `categoryWeights` stays freehold-free and `rewardCategoryNodeQuery` answers `null` for it on purpose. It is uncapped by construction — an absent `SLOT_CAPS` row reads as uncapped, so freeholds need no exemption logic anywhere.
+
+**This is a naming-collision fix, not a new mechanic (THR-1314).** The engine literal is `'holding'` and is **untouched**; the UL and every player surface say *freehold*, so the two never get conflated — the same engine-term/narrative-term split `[[Group]]`/`[[Company]]` and `[[Dissolution Threshold]]`/`[[Broken]]` already use. The word "holding" was measured as a **six-way** player-facing collision, not the two-way one the proposal assumed: it renders as the `[[Group Cohesion]]` band, the mandate trend, an army's defensive stance, the ascendant bar's steady state, a Fury tier word, and a `hunger.preserve` remembrance word. Every one of those is a **participle** meaning *steady, enduring*; the ownership sense was the lone count noun, so it is the sense that moved. Renaming the engine literal instead was measured at ~30 identifiers, five strategic verbs and ~500 sites — a destructive sweep (against NFP #6) that would still have left the other five senses colliding.
+
+When you read `'holding'` as an `AttachmentCategory`, that is this term. When you read "the company is holding", that is `[[Group Cohesion]]`.
+
+Code anchors: `src/engine/holdings.ts` (`grantHolding`, `reconcileHoldingFaces`, `refreshHoldingFaceNames`), `src/types/attachments.ts` (`AttachmentCategory`, `ATTACHMENT_CATEGORY_NAMES`), `src/data/attachment-slot-constants.ts` (`SLOT_TAG_DISPLAY_NAMES`).
