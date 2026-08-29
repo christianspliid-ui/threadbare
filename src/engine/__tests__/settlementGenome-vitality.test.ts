@@ -138,18 +138,21 @@ describe('computeSettlementReaches — against a generated world (THR-1311)', ()
     for (let t = 0; t < WARMUP_TICKS; t++) state = runTick(state, [], runtime);
   });
 
-  // CHARACTERIZATION, NOT AN ENDORSEMENT — this asserts a defect on purpose (THR-1323).
-  // Written as a liveness assertion first, where it failed: the `located_at` term is dead too,
-  // because `factionSeeding.ts` derives `domainCapabilities` from `definition.reachWeights`
-  // and never stores the weights on the node, so the loop's `if (!weights) continue` fires on
-  // every faction in the world. Pinned in the failing direction so that fixing THR-1323 turns
-  // this red and forces the assertion to be inverted, rather than the repair landing silently.
-  it('characterization: the reach profile is dead world-wide (THR-1323)', () => {
+  // THR-1323 — inverted from the characterization it replaced. This assertion stood as
+  // `expect(withReach).toEqual([])` while `factionSeeding.ts` derived `domainCapabilities`
+  // from `definition.reachWeights` and discarded the weights, so the reader's
+  // `if (!weights) continue` fired on all 49 factions of a seeded world. The seeder now
+  // stores the source weights and this runs in the liveness direction.
+  //
+  // It must stay on the generated world. Five fixture tests above assert the same function
+  // and every one of them passed for the entire life of the defect, because each hands the
+  // reader a `reachWeights` bag the real seeder never wrote — the shape that hid this.
+  it('the reach profile is live world-wide (THR-1323)', () => {
     const locations = state.graph.getNodesByType('location');
     expect(locations.length).toBeGreaterThan(0); // guards against a vacuous pass on an empty world
 
-    // The edges are live and plentiful. This half is load-bearing: it proves the harness built
-    // a real world, so the emptiness below reads as a missing property and not an empty graph.
+    // Load-bearing: proves the harness built a real world, so a non-empty result below is
+    // the property arriving and not an accident of an unusually dense graph.
     const factionEdges = locations.reduce(
       (n, loc) =>
         n +
@@ -161,13 +164,45 @@ describe('computeSettlementReaches — against a generated world (THR-1311)', ()
     );
     expect(factionEdges).toBeGreaterThan(0);
 
-    // …and yet no settlement draws a single reach from any of them.
-    const withReach = locations
-      .filter(loc =>
-        Object.values(computeSettlementReaches(state.graph, loc.id)).some(v => (v ?? 0) > 0),
-      )
-      .map(loc => loc.id);
-    expect(withReach).toEqual([]); // THR-1323 flips this to expect(withReach.length).toBeGreaterThan(0)
+    // The seeder writes the weights the reader looks for…
+    const factionsWithWeights = state.graph
+      .getNodesByType('actor')
+      .filter(a => a.properties.actorType === 'faction' && a.properties.reachWeights);
+    expect(factionsWithWeights.length).toBeGreaterThan(0);
+
+    // …and settlements now draw reaches from them. Measured on this harness (seed 42, small,
+    // 3 ticks): 0 before the fix. Asserted as a floor, not a count — the number moves with
+    // worldgen and a pinned count would rot (THR-688 rule A).
+    const withReach = locations.filter(loc =>
+      Object.values(computeSettlementReaches(state.graph, loc.id)).some(v => (v ?? 0) > 0),
+    );
+    expect(withReach.length).toBeGreaterThan(0);
+  });
+
+  // CHARACTERIZATION, NOT AN ENDORSEMENT — this asserts a defect on purpose (THR-1344).
+  //
+  // Storing the weights makes the *reader* live, which is all THR-1323 scoped. It does not
+  // make the genome's Reach pass live at worldgen, because of an ordering the fix cannot
+  // reach from `factionSeeding.ts`: `worldSeed.ts` runs the settlement genome at :1198 and
+  // seeds definition factions at :1648, so at genome time no faction node exists and
+  // `computeSettlementReaches` is still `{}` for every settlement being built. Re-running
+  // the genome after seeding (what `phaseSettlementReassessment` does) yields 230
+  // reach-sourced sublocations and 264 NPC roles on seed 42/medium — authored
+  // REACH_SUBLOCATION_MENU content that no *initial* world has ever contained.
+  //
+  // Pinned so the gap is visible and so closing THR-1344 turns this red rather than landing
+  // silently. It is also the proof that THR-1323 moved no worldgen output: zero reach-sourced
+  // sublocations before the fix, zero after.
+  it('characterization: the genome Reach pass is still dead at worldgen (THR-1344)', () => {
+    const sublocations = state.graph
+      .getNodesByType('location')
+      .filter(n => n.properties.parentLocationId);
+    expect(sublocations.length).toBeGreaterThan(0); // 0 of 0 is not a pass
+
+    const reachSourced = sublocations.filter(
+      s => s.properties.genomeSourcePass === 'reach',
+    );
+    expect(reachSourced).toEqual([]); // THR-1344 flips this to .length toBeGreaterThan(0)
   });
 
   it('no writer produces a location-targeted member_of edge', () => {
