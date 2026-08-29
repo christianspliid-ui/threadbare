@@ -129,20 +129,23 @@ describe('HarvestScreen', () => {
     expect(screen.getByText('Time')).toBeInTheDocument();
   });
 
-  it('renders significance scores for echoes', () => {
+  it('renders banded significance words for echoes, never a percentage (Law 13, THR-1357)', () => {
     render(<HarvestScreen harvest={mockBitterSweetHarvest} cycle={1} onBeginNextCycle={vi.fn()} />);
-    expect(screen.getByText(/significance: 85/i)).toBeInTheDocument();
-    expect(screen.getByText(/significance: 72/i)).toBeInTheDocument();
+    // scores 0.85 / 0.72 band to 'defining' (≥0.75) and 'resonant' (≥0.5)
+    expect(screen.getByText(/a defining echo of the age/i)).toBeInTheDocument();
+    expect(screen.getByText(/a resonant echo of the age/i)).toBeInTheDocument();
+    expect(screen.queryByText(/%/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/significance:/i)).not.toBeInTheDocument();
   });
 
   it('renders divine echo slot count', () => {
     render(<HarvestScreen harvest={mockBitterSweetHarvest} cycle={1} onBeginNextCycle={vi.fn()} />);
-    expect(screen.getByText(/2 divine echo slots available/i)).toBeInTheDocument();
+    expect(screen.getByText(/two divine echo slots available/i)).toBeInTheDocument();
   });
 
   it('renders singular slot text when divineEchoSlots is 1', () => {
     render(<HarvestScreen harvest={mockSomberHarvest} cycle={3} onBeginNextCycle={vi.fn()} />);
-    expect(screen.getByText(/1 divine echo slot available/i)).toBeInTheDocument();
+    expect(screen.getByText(/one divine echo slot available/i)).toBeInTheDocument();
   });
 
   it('does not render divine slots section when divineEchoSlots is 0', () => {
@@ -174,8 +177,8 @@ describe('HarvestScreen', () => {
     expect(onBeginNextCycle).toHaveBeenCalledTimes(1);
   });
 
-  it('renders cosmic echo count in heading', () => {
+  it('renders cosmic echo count in heading as a word (Law 13)', () => {
     render(<HarvestScreen harvest={mockBitterSweetHarvest} cycle={1} onBeginNextCycle={vi.fn()} />);
-    expect(screen.getByText(/echoes preserved \(2 cosmic\)/i)).toBeInTheDocument();
+    expect(screen.getByText(/echoes preserved — two cosmic/i)).toBeInTheDocument();
   });
 });

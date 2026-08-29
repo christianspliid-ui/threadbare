@@ -1,4 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 import { getAgentWheelSlots } from '../wheel';
 import { createEmptyEssencePool } from '../influence';
 import type { EssencePool } from '../../types/influence';
@@ -204,20 +206,17 @@ describe('Action Card Redesign Integration', () => {
   });
 
   describe('AgentWheel component is fully removed', () => {
-    it('no AgentWheel import exists in the codebase', async () => {
-      // This test verifies that the old AgentWheel component has been removed
-      // We check that wheel.ts is imported but AgentWheel.tsx is not
-      // (getAgentWheelSlots is the data layer, not the old SVG component)
+    it('AgentWheel.tsx does not exist on disk (rejected approach; THR-1357)', () => {
+      // The previous version of this test asserted nothing about the filesystem
+      // and stayed green for months while AgentWheel.tsx sat in the tree
+      // (round-3 context-cleanup audit, 2026-08-29). Check the actual files.
+      const componentsDir = path.resolve(__dirname, '../../components/Game');
+      expect(fs.existsSync(path.join(componentsDir, 'AgentWheel.tsx'))).toBe(false);
+      expect(fs.existsSync(path.join(componentsDir, '__tests__', 'AgentWheel.test.tsx'))).toBe(false);
 
-      // Import should work fine (wheel.ts data layer exists)
+      // The wheel.ts data layer deliberately survives (@deprecated; ActionDrawer
+      // still types on WheelSlot) — assert it is data, not a component.
       expect(typeof getAgentWheelSlots).toBe('function');
-
-      // The old component should not be importable
-      // This is tested implicitly: if AgentWheel.tsx existed, we could import it
-      // Since this test runs without error, it implies AgentWheel is gone
-
-      // Verify wheel.ts exports only data functions, not a component
-      expect(getAgentWheelSlots.name).toBe('getAgentWheelSlots');
     });
   });
 
