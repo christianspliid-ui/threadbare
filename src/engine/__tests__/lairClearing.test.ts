@@ -11,9 +11,9 @@
  * So the world here is the real one — `initializeGameState` + `runTick` — and the
  * cleared state under test is whatever the engine actually produced.
  *
- * The world is built once in `beforeAll` (~15s for 150 ticks) and the single
+ * The world is built once in `beforeAll` (~46s for 150 ticks) and the single
  * reinfestation pass is driven there too, so the assertions below are order-independent
- * readings of one deterministic run rather than five separate 15-second worlds.
+ * readings of one deterministic run rather than five separate 46-second worlds.
  */
 
 import { describe, it, expect, beforeAll } from 'vitest';
@@ -36,8 +36,20 @@ import type { GraphNode } from '../../types/graph';
 /** Ticks to run before asserting. Clearing first fires at tick 25 on this seed. */
 const RUN_TICKS = 150;
 const SEED = 42;
-/** A 150-tick generated world is ~15s; the default 5s timeout cannot hold it. */
-const WORLD_BUILD_TIMEOUT_MS = 180_000;
+/**
+ * The default 5s timeout cannot hold a 150-tick generated world.
+ *
+ * Measured standalone on `main` (a0e52b8d) 2026-08-29: **45.7s** — three times the
+ * "~15s" this budget was originally justified against, because the engine has gained
+ * real per-tick work since. The sibling heavy world-build test (`debugTickBatch`)
+ * carried the identical stale 180s budget and timed out under CI parallel load,
+ * holding two armed PRs red for 526 and 342 minutes (THR-1352, impediment #940).
+ * This budget was one engine-fix away from the same failure, so it is recalibrated
+ * on the same evidence rather than left to fail next.
+ *
+ * Re-measure standalone before changing this, and update the figure above with it.
+ */
+const WORLD_BUILD_TIMEOUT_MS = 420_000;
 
 function lairsOfSubtype(state: GameState, subtype: string): GraphNode[] {
   return state.graph.getNodesByType('location')
