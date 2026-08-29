@@ -45,7 +45,7 @@ The second version uses enrichment placeholders, conditional blocks, and implies
 
 > The list has grown past the original seven; it is numbered, not counted, so a new capability appends rather than renumbering. Capabilities 14 (nudge hand) and 15 (trait hooks) are the newest and are **mandatory** checklist steps for any new encounter, not optional flourishes.
 
-Every encounter has access to seven systemic capabilities. These aren't optional extras — they're the tools that make content alive. When you sit down to write, you should be asking: "which of these seven am I using, and why am I not using the others?"
+Every encounter has access to the systemic capabilities below. These aren't optional extras — they're the tools that make content alive. When you sit down to write, you should be asking: "which of these am I using, and why am I not using the others?" (Cite capabilities by **Part + number** — later Parts restart their own numbering, so a bare "Capability 10" is ambiguous across the file.)
 
 ### Capability 1: Enrichment Placeholders — Prose That Knows Who's Reading
 
@@ -299,7 +299,7 @@ The attachment and spell systems compose effects from a category pool of ~40 pri
 | `SpawnEffect` | Brings entities into existence (agents, encounters, attachments, locations) |
 | `StatContributionEffect` | **(THR-718)** Raises the bearer's **Domain Capability tier** while possessed/bonded: `{ type: 'stat_contribution', contributions: { iron: 1.5 } }`. Summed by `collectStatContributions` into `computeRawScore` — the one item→tier substrate (do NOT write bare `domainContributions` bags on possession entries). Distinct from `passive`/`permanent`/`conditional` (which shape resolution *rolls*, not tiers). Magnitudes are capped by the `ITEM_STAT_BAND_*` bands in `src/data/item-stat-bands.ts` (a content test fails the build past the legendary ceiling); magnitude renders as dots on the Prowess-tab DomainCard. |
 
-**For encounter aftermath authoring, use the typed aftermath effect kinds in Part 5 § "Aftermath Reaction Effect Types" (23 kinds).** Raw graph-mutation primitives are not exposed to authored aftermath — propose a new typed kind if you need one.
+**For encounter aftermath authoring, use the typed aftermath effect kinds in Part 5 § "Aftermath Reaction Effect Types" — the authoritative count is `KNOWN_AFTERMATH_EFFECT_KINDS` in `src/testing/contentInvariants.ts` (32+ and growing; never trust a number quoted in prose).** Raw graph-mutation primitives are not exposed to authored aftermath — propose a new typed kind if you need one.
 
 #### Authored aftermath surface for graph mutation
 
@@ -2095,8 +2095,8 @@ The `narrativeTemplate` field contains prose with no placeholders, no conditiona
 ### Anti-Pattern 3: "Aftermath as Epilogue"
 Aftermath reactions have evocative prose but no effects array, or only a `recent_event`. The aftermath doesn't change the world — it just describes what happened. **Fix:** Every aftermath reaction should have at least one effect that creates persistent state: a seed, a mark, a tally, or intelligence.
 
-### Anti-Pattern 4: "Seeds Without Templates"
-An encounter plants seeds using `encounterFamily` only, with no `templateId`. Since family-matching is v1/narrative-only, the seed emits a narrative event but doesn't spawn an actual follow-up encounter. **Fix:** Use `templateId` for guaranteed follow-up spawning. Use `encounterFamily` only when you intentionally want a narrative event without a specific follow-up.
+### Anti-Pattern 4: "Seeds That Assume Family-Matching Is Dead"
+*(Corrected 2026-08-29, THR-1365 — this entry previously taught the pre-THR-697 stub.)* Family-only seeds **do** spawn real follow-up encounters since THR-697 Slice D: a family-only `encounter_seed` draws an eligible member of `${family}.*` from the template pool and spawns it, falling back to the withered narrative event only when zero members are eligible (see Part 2, Capability 2). The live anti-pattern is the inverse: writing `templateId` seeds everywhere out of distrust of family-matching, which bypasses the eligibility filter's variety. **Fix:** use `encounterFamily` when any family member is a valid follow-up (the common case); reserve `templateId` for a specifically authored continuation. Note a `templateId` seed skips the eligibility filter (memory/THR-697) — it spawns even where the template wouldn't normally qualify.
 
 ### Anti-Pattern 5: "Scoring Blindness"
 The author doesn't set `crudType`, `motivations`, `locationSubtypes`, or `actorAffinities` thoughtfully. The encounter exists in the content registry but never surfaces for appropriate agents because the scoring system can't match it. **Fix:** Think about scoring as design. A festival encounter should be `crudType: 'update'` with `motivations: [['loyalty', 'ambition']]` and `locationSubtypes: ['market', 'settlement']`. These fields determine whether the encounter finds its audience.
@@ -2111,7 +2111,7 @@ Success and failure both produce the same kind of persistence — maybe both add
 This guide should be read before these skills:
 
 - **`encounter-pipeline`** — The four-pass pipeline authors encounters. This guide tells authors *what to write about* based on engine capabilities. The systems-audit agent (Pass 3) should validate wiring against this guide.
-- **`attachment-pipeline`** — Attachments compose behavior from the engine's effect primitive categories (`GraphMutationEffect`, `CreateStructureEffect`, `SpawnEffect`, etc.). These primitives are distinct from the 18 typed aftermath effect kinds — the attachment pool is authored at a lower level. See the attachment-pipeline skill for the full vocabulary.
+- **`attachment-pipeline`** — Attachments compose behavior from the engine's effect primitive categories (`GraphMutationEffect`, `CreateStructureEffect`, `SpawnEffect`, etc.). These primitives are distinct from the typed aftermath effect kinds (count per `KNOWN_AFTERMATH_EFFECT_KINDS` in `src/testing/contentInvariants.ts`) — the attachment pool is authored at a lower level. See the attachment-pipeline skill for the full vocabulary.
 - **`prose-content-systems`** — Day-to-day content uses enrichment placeholders and narrative templates. This guide explains what those placeholders resolve to and why they matter.
 - **`prose-pipeline`** — Resolver architecture for graph-walking prose. This guide explains the other side: how encounter outcomes create the graph state that resolvers later walk.
 - **`encounter-actor-systems`** — The scoring, filtering, and resolution systems. This guide explains how template fields feed into those systems.

@@ -69,11 +69,12 @@ export const NOT_AN_ANCHOR = (what: string, why: string): AnchorRow => ({
 /**
  * `NodeType` → what a chip can do with it.
  *
- * Note `location` covers sublocations too: there is no `sublocation` NodeType, and
- * deliberately so — the three-tier position model (hex → location → sublocation)
- * nests sublocations inside locations as `location` nodes carrying a
- * `parentLocationId`. An author anchoring to "the tavern's back room" is anchoring
- * to a `location`.
+ * Note `location` covers sublocations too: the three-tier position model
+ * (hex → location → sublocation) nests sublocations inside locations as `location`
+ * nodes carrying a `parentLocationId` (THR-1183 — the single mint shape). A
+ * `sublocation` NodeType *does* exist in the union, but only as a reader-accepted
+ * legacy shape (THR-1177) with no producer — see its own row below. An author
+ * anchoring to "the tavern's back room" is anchoring to a `location`.
  */
 export const NODE_TYPE_ROWS: Readonly<Record<string, AnchorRow>> = {
   actor: {

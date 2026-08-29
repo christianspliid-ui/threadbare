@@ -1,5 +1,7 @@
 # Agent Spawn Assessment Framework
 
+> **⚠️ HISTORICAL — tombstoned 2026-08-29 (THR-1365, context-cleanup round 4).** A one-off March-2026 assessment. Its headline recommendation — remove `properties.locationId` and canonicalize on the `located_at` edge — **never landed and is not current direction**: `locationId` is still written (`gameInit.ts`), still read as a fallback (`agentLifecycle.ts`), and validated rather than removed (`agentValidation.ts`). Do not start that removal from this doc. Current spawn/position truth: `Docs/canon/engine.md`, `Docs/ai-index/graph-contract.md`, and the UL Graph shard. Kept as history only.
+
 > Created 2026-03-25. Purpose: verify that every agent in the game is spawned with correct, complete data so they don't misbehave during map testing.
 
 ## Overview: Agents in the Game
