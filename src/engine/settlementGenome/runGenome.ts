@@ -10,7 +10,7 @@ import { REACH_SUBLOCATION_MENU } from './reachMenu';
 import { SETTLEMENT_ARCHETYPES } from './archetypes';
 import {
   SPHERE_CONTRIBUTION_THRESHOLD, SPHERE_STRONG_THRESHOLD,
-  REACH_CONTRIBUTION_THRESHOLD, NPC_BUDGET,
+  REACH_CONTRIBUTION_THRESHOLD, NPC_BUDGET, SUBLOCATION_BUDGET,
   CULTURE_STRENGTH_BASE, CULTURE_STRENGTH_MIN_FOR_ADDITIONS,
 } from './constants';
 import { CULTURE_BASELINE_MAP } from './cultureBaseline';
@@ -164,6 +164,27 @@ export function runSettlementGenome(
       if (tierAtOrBelow(tier, npc.minTier)) {
         npcList.push({ role: npc.role, sourcePass: 'reach' });
       }
+    }
+  }
+
+  // ── Sublocation Budget Enforcement (THR-1344) ──
+  // Applied after the three additive passes and *before* archetype recognition, so a
+  // settlement's archetype is read off what it actually holds rather than off a menu
+  // that was then trimmed away.
+  //
+  // Infrastructure is exempt: it is the baseline a tier owes, not a contribution.
+  // The discretionary entries yield in reverse insertion order — reach first, then
+  // sphere, then culture — which is deterministic (NFP #3) because `accumulated` is
+  // insertion-ordered and the passes run in a fixed sequence. Reach yields first
+  // because it is both last in and by far the most numerous: 215 of the 313
+  // sublocations the second worldgen pass added on seed 42 / medium.
+  const budgetCap = SUBLOCATION_BUDGET[tier] ?? SUBLOCATION_BUDGET.hamlet;
+  if (accumulated.size > budgetCap) {
+    const ordered = Array.from(accumulated.entries());
+    for (let i = ordered.length - 1; i >= 0 && accumulated.size > budgetCap; i--) {
+      const [id, data] = ordered[i];
+      if (data.sourcePass === 'infrastructure') continue;
+      accumulated.delete(id);
     }
   }
 
