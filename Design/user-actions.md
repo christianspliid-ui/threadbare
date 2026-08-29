@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-29 03:54 local (01:54 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-29 04:54 local (02:54 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -88,6 +88,7 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
+- **A distance table that was never dead** — [THR-1346](https://linear.app/threadbare/issue/THR-1346/the-distance-matrix-is-rebuilt-on-every-structural-change-and-read-by) merged 04:35 ([PR #1718](https://github.com/christianspliid-ui/threadbare/pull/1718)). The ticket said nobody read it; the executor proved otherwise — it feeds every agent-to-agent social encounter and every restless mortal's destination — and found the real bug: it was indexing the wrong kind of place and silently dropping 235 real settlements on your dev link's map size.
 - **Settlements that never knew what they were good at** — [THR-1323](https://linear.app/threadbare/issue/THR-1323/faction-nodes-never-carry-reachweights-so-computesettlementreaches) merged 02:34 ([PR #1716](https://github.com/christianspliid-ui/threadbare/pull/1716)). The seeder worked out each faction's leanings and then threw them away, so every settlement's character came back empty. Fixing it surfaced two further world-generation problems, both now queued.
 - **The agent handbook is on a diet** — [THR-1336](https://linear.app/threadbare/issue/THR-1336/claudemd-diet-gate-law-and-sandbox-lore-move-to-canonops-pages-with) merged 01:15 ([PR #1704](https://github.com/christianspliid-ui/threadbare/pull/1704)). Gate law and sandbox lore moved out of the always-loaded file and behind pointers; nothing in the game changes.
 - **A lane could resume work nobody had started** — [THR-1325](https://linear.app/threadbare/issue/THR-1325/pull-works-claim-predicates-miss-two-live-states-a-lane-resumes-a-live) merged 01:11. Resuming now proves the previous session is actually gone, and a hand-made ticket reads as unclaimed rather than resumable.
@@ -97,7 +98,6 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 - **An anchor that named someone and pointed nowhere** — [THR-1317](https://linear.app/threadbare/issue/THR-1317) merged 20:37 ([PR #1703](https://github.com/christianspliid-ui/threadbare/pull/1703)).
 - **Retired tooling hooks removed** — [THR-1332](https://linear.app/threadbare/issue/THR-1332) merged 20:14 ([PR #1699](https://github.com/christianspliid-ui/threadbare/pull/1699)); the Cowork/Codex/Obsidian-MCP retirement sweep landed alongside it ([THR-1331](https://linear.app/threadbare/issue/THR-1331), [THR-1333](https://linear.app/threadbare/issue/THR-1333), [THR-1334](https://linear.app/threadbare/issue/THR-1334), [THR-1335](https://linear.app/threadbare/issue/THR-1335)) — the game's name is now Threadbearer everywhere the agents read.
 - **Three rows of your status bar that were empty in every game ever played** — [THR-1307](https://linear.app/threadbare/issue/THR-1307) merged 19:39. Conditions, clues and vows read from a link type nothing has ever written.
-- **A choice that was never a choice** — [THR-1313](https://linear.app/threadbare/issue/THR-1313) merged and deployed ([PR #1693](https://github.com/christianspliid-ui/threadbare/pull/1693)). A branch in the code picked between two identical outcomes.
 
 ---
 

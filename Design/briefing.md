@@ -1,18 +1,18 @@
 # Briefing
-**Generated:** 2026-08-29 03:54 local (01:54 UTC) · keep-work-flowing-cc
+**Generated:** 2026-08-29 04:54 local (02:54 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
 **Play two encounters, then approve the batch-2 brief — [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to) + [THR-1222](https://linear.app/threadbare/issue/THR-1222/run-retrofit-batch-2-the-camp-seven-through-the-factory-line-shrine).**
 
-Unchanged from last hour, and unchanged in reasoning: it is the only High-priority content work on the board, it is written, and **no encounter writing reaches the shelf until it clears.** Both other lanes named it independently again tonight.
+Unchanged, and unchanged in reasoning: it is the only High-priority content work on the board, it is written, and **no encounter writing reaches the shelf until it clears.** Both other lanes named it independently again tonight.
 
 About five minutes. Open the *good ending* links first:
 
 - The Grateful Kin — [play](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin) · [good ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.grateful_kin&outcome=critical_success)
 - The Unsafe Bridge — [play](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge) · [good ending](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge&outcome=critical_success)
 
-The question is yours: *are they worth meeting twice?* Then [the brief](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/retrofit-batch-2-brief.md) needs one word — *"batch 2, seven is fine"*, *"keep it six"*, or *"same rule — judge batch 2 on one first."*
+Your question: *are they worth meeting twice?* Then [the brief](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/retrofit-batch-2-brief.md) needs one word — *"batch 2, seven is fine"*, *"keep it six"*, or *"same rule — judge batch 2 on one first."*
 
 ## Also waiting (10)
 
@@ -31,20 +31,19 @@ Unchanged since last hour — skip if you have read them. Detail in [user-action
 
 ## Queue
 
-**8 items Ready for Dev — the shelf kept climbing. Healthy; nothing here needs you.**
+**8 items Ready for Dev. Healthy; nothing here needs you.**
 
-- **I gave you a wrong number last hour, and I am correcting it.** Last hour's brief said the dead world-generator pass was *"230 places and 264 named roles"* away from existing. **The places are real. The 264 named roles were not.** The generator does work out a roster of townspeople — guild masters, hospice keepers, spymasters, one per authored table — and then throws the list away, because nothing on either side of the ordering fix ever turns it into actual people ([THR-1347](https://linear.app/threadbare/issue/THR-1347/genomeresultnpcs-has-no-consumer-every-genome-pass-computes-an-npc)). So once this lands the world will feel more **built**, but not more **peopled**. Correcting it because the figure was mine and it was wrong — nothing here needs deciding.
-- **Two more engine problems arrived at 03:20–03:21**, both found by the executor while working the ordering fix, both promoted with their coordination blocks attached: the roster above, and [a distance table the game rebuilds constantly and nobody reads](https://linear.app/threadbare/issue/THR-1346/the-distance-matrix-is-rebuilt-on-every-structural-change-and-read-by) — which also overflows its own safety limit on the map size your dev link uses.
-- **One decision inside THR-1347 was taken by the lane rather than sent to you, deliberately.** Its cheapest fix is additive and reversible; the alternative deletes real authored content (the role tables) and is not reversible, so the lane recorded that the deletion arm is not an agent's to take alone. If it ever becomes the recommendation it comes to you first. Flagging the shape, not asking.
-- **The rest of the shelf:** [the prose doctrine sweep](https://linear.app/threadbare/issue/THR-1324/prose-doctrine-v2-remediation-sweep-10-operative-surfaces-still-teach) plus five small deferred clean-ups. Still no encounter writing on it — which is what the ask above changes.
-- **In Dev: 5, two of them live** — [the world-generator ordering fix](https://linear.app/threadbare/issue/THR-1344/the-genomes-reach-pass-is-dead-at-worldgen-worldseed-runs-the-genome) (claimed 02:29, now in review) and [the run-founded faction bug](https://linear.app/threadbare/issue/THR-1322/a-run-founded-faction-renders-as-a-fallback-everywhere-in-the-ui). The other three are your parked standing asks ([THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to), [THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server), [THR-1168](https://linear.app/threadbare/issue/THR-1168/two-authored-encounter-audio-moments-have-no-live-caller-wire-or)); park shape verified intact this run.
+- **One item came off your queue this hour, and nothing went onto it.** A piece of the agent-ambition work ([THR-1302](https://linear.app/threadbare/issue/THR-1302/the-boards-ambition-boost-is-true-by-construction-for-undertakings-a)) had sat in your column for four sweeps labelled "needs a design call". Read properly, the call was already written in the ticket two days ago — what was left was picking a signal against a measurement that already says pass or fail, which under your 12 August rule is the agent's. It is on the work shelf now. It was also the **head of a stuck chain**: [switching agent decision-making to the new unified board](https://linear.app/threadbare/issue/THR-1301/cut-the-unified-decision-board-over-to-live-blocked-on-undertaking) now unblocks on its own when it lands.
+- **The distance-table fix shipped and is live** ([THR-1346](https://linear.app/threadbare/issue/THR-1346/the-distance-matrix-is-rebuilt-on-every-structural-change-and-read-by), merged 04:35). Worth noting because the executor **disproved the ticket's own premise**: the table was not unread — it feeds every agent-to-agent social encounter and every restless mortal's destination. It was indexing the wrong kind of place, silently dropping 235 real settlements on your dev link's map size. Claimed and closed inside two hours.
+- **The rest of the shelf:** [the prose doctrine sweep](https://linear.app/threadbare/issue/THR-1324/prose-doctrine-v2-remediation-sweep-10-operative-surfaces-still-teach) plus six small deferred clean-ups, all engine and content hygiene found by builders while building. Still no encounter writing on it — which is what the ask above changes.
+- **In Dev: 5, two of them live** — [the world-generator ordering fix](https://linear.app/threadbare/issue/THR-1344/the-genomes-reach-pass-is-dead-at-worldgen-worldseed-runs-the-genome) and [the run-founded faction bug](https://linear.app/threadbare/issue/THR-1322/a-run-founded-faction-renders-as-a-fallback-everywhere-in-the-ui), both in review. The other three are your parked standing asks ([THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to), [THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server), [THR-1168](https://linear.app/threadbare/issue/THR-1168/two-authored-encounter-audio-moments-have-no-live-caller-wire-or)); park shape verified intact this run.
 
 ## Health
 
 **Green, with two PRs needing a session. Nothing here needs you.**
 
-- **[#1714](https://github.com/christianspliid-ui/threadbare/pull/1714)** (the run-founded faction fix) still has a genuine merge conflict, now ~3.5 hours old. Auto-merge stays armed and correctly refuses to fire. A session needs to merge `origin/main`, resolve by hand and push.
-- **[#1717](https://github.com/christianspliid-ui/threadbare/pull/1717)** (the world-generator ordering fix) opened ~28 minutes ago with checks failing. Young enough that it may simply be the first run of a gate the author is still iterating on; either way it is the executor's to clear, and nothing merges while it is red.
-- Everything else is green: the live site is serving the latest commit ([dd1a260d](https://github.com/christianspliid-ui/threadbare/commit/dd1a260dca92f10173e8c963b0b1c48e8cd9ea56)), background jobs healthy, all nine scheduled lanes on schedule, the branch reaper ran at 03:41, and the home copy of the repo is clean and current.
+- **[#1714](https://github.com/christianspliid-ui/threadbare/pull/1714)** (the run-founded faction fix) — genuine merge conflict, now ~4.5 hours old. Auto-merge stays armed and correctly refuses to fire; a session must merge `origin/main`, resolve by hand and push.
+- **[#1717](https://github.com/christianspliid-ui/threadbare/pull/1717)** (the world-generator ordering fix) — now conflicted *and* failing a required check, ~1.5 hours old. Both must clear; the conflict alone is not the diagnosis. Executor's to work.
+- Everything else green: the live site serves the latest commit ([6f7fa560](https://github.com/christianspliid-ui/threadbare/commit/6f7fa560a7d279fafc2d587a54dcd0341523e290)), background jobs healthy, all nine scheduled lanes on schedule, the branch reaper ran at 04:40, and the home copy of the repo is clean and current.
 
 Unchanged and worth seeing rather than acting on: **the only lane quiet in the probe's window is overnight-shaped** — 22–23 and 23–24 August, both roughly 21:00–08:00 local, every lane stopping and resuming together. Declined under your 8 August ruling that overnight quiet is normal. Nothing was lost.
