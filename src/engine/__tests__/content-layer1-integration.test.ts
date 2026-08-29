@@ -5,7 +5,7 @@ import { ENCOUNTER_TEMPLATES } from '../../data/encounter-content';
 import { ROUTINE_TEMPLATES, LIFECYCLE_TEMPLATES } from '../../data/narrative-content';
 import { DOOM_VOCABULARY } from '../../data/doom-content';
 import type { AscendantArchetype, CosmologyProfile } from '../../types';
-import { WORLD_SIM_TEST_TIMEOUT_MS } from '../../testing/testTimeouts';
+import { WORLD_SIM_TEST_TIMEOUT_MS, MULTI_WORLD_SIM_TEST_TIMEOUT_MS } from '../../testing/testTimeouts';
 
 const testArchetype: AscendantArchetype = {
   id: 'arch.test',
@@ -164,7 +164,7 @@ describe('Layer 1 content integration (100-tick simulation)', { timeout: WORLD_S
 
 // ─── Multi-seed divergence test ─────────────────────────────────────
 
-describe('Layer 1 seed divergence', { timeout: WORLD_SIM_TEST_TIMEOUT_MS }, () => {
+describe('Layer 1 seed divergence', { timeout: MULTI_WORLD_SIM_TEST_TIMEOUT_MS }, () => {
   it('different seeds produce different narratives', () => {
     resetDecisionCache();
     resetEventCounter();
@@ -207,7 +207,7 @@ describe('Layer 1 seed divergence', { timeout: WORLD_SIM_TEST_TIMEOUT_MS }, () =
 
 // ─── Determinism ─────────────────────────────────────────────────────
 
-describe('Layer 1 determinism', () => {
+describe('Layer 1 determinism', { timeout: MULTI_WORLD_SIM_TEST_TIMEOUT_MS }, () => {
   it('same seed produces deterministic results', () => {
     // Run A: 100 ticks from seed 42 (fresh module cache)
     //
@@ -267,5 +267,5 @@ describe('Layer 1 determinism', () => {
         }
       }
     }
-  }, 120000);
+  }, MULTI_WORLD_SIM_TEST_TIMEOUT_MS);
 });

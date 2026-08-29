@@ -58,6 +58,26 @@
 export const WORLD_SIM_TEST_TIMEOUT_MS = 120_000;
 
 /**
+ * Hang-detector timeout for a test that builds and runs TWO (or more) full
+ * simulations in one case — the A/B shape used by determinism and seed-divergence
+ * tests, which run a world twice and diff the outputs.
+ *
+ * A distinct constant because the shape breaks the measurement the 120 s value
+ * above was derived from: that value gave "every currently-measured world-sim
+ * test a margin of 14× or better", but a case that pays the whole world-build +
+ * N-tick cost twice does not resemble those tests. Measured 2026-08-29:
+ * `content-layer1-integration`'s `same seed produces deterministic results` at
+ * **108 224 ms standalone** — a 1.1× margin against 120 s — and it duly timed out
+ * in CI (run 33272123551) on a runner where the suite ran ~2× slower than local.
+ * Its sibling `different seeds produce different narratives` measured 52 809 ms,
+ * also past the qualifying predicate (local × ~5 exceeds the timeout).
+ *
+ * 600 s keeps the doctrine's margin (~5× runner spread on the 108 s measurement).
+ * Same contract as above: a hang detector, never a performance budget.
+ */
+export const MULTI_WORLD_SIM_TEST_TIMEOUT_MS = 600_000;
+
+/**
  * Hang-detector timeout for a test whose first case absorbs a heavy module import.
  *
  * A distinct constant rather than a reuse of the one above, because the shape is

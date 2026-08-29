@@ -129,7 +129,7 @@ export const FOUNDATION_SPHERE_ICONS: Record<'chaos' | 'order' | 'light' | 'dark
 };
 
 /**
- * Wheel slot icons — action glyphs used in AgentWheel (non-emoji Unicode symbols)
+ * Wheel slot icons — action glyphs used in ActionCard (non-emoji Unicode symbols)
  * Descriptive of the action type using simple geometric Unicode chars
  */
 export const WHEEL_SLOT_GLYPHS: Record<string, string> = {
