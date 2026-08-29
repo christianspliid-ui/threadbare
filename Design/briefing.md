@@ -1,11 +1,11 @@
 # Briefing
-**Generated:** 2026-08-29 04:54 local (02:54 UTC) · keep-work-flowing-cc
+**Generated:** 2026-08-29 05:55 local (03:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
 **Play two encounters, then approve the batch-2 brief — [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to) + [THR-1222](https://linear.app/threadbare/issue/THR-1222/run-retrofit-batch-2-the-camp-seven-through-the-factory-line-shrine).**
 
-Unchanged, and unchanged in reasoning: it is the only High-priority content work on the board, it is written, and **no encounter writing reaches the shelf until it clears.** Both other lanes named it independently again tonight.
+Unchanged, and unchanged in reasoning: it is the only High-priority content work on the board, it is written, and **no encounter writing reaches the shelf until it clears.** Both other lanes named it independently again overnight.
 
 About five minutes. Open the *good ending* links first:
 
@@ -31,19 +31,19 @@ Unchanged since last hour — skip if you have read them. Detail in [user-action
 
 ## Queue
 
-**8 items Ready for Dev. Healthy; nothing here needs you.**
+**7 items Ready for Dev. Healthy; nothing here needs you.**
 
-- **One item came off your queue this hour, and nothing went onto it.** A piece of the agent-ambition work ([THR-1302](https://linear.app/threadbare/issue/THR-1302/the-boards-ambition-boost-is-true-by-construction-for-undertakings-a)) had sat in your column for four sweeps labelled "needs a design call". Read properly, the call was already written in the ticket two days ago — what was left was picking a signal against a measurement that already says pass or fail, which under your 12 August rule is the agent's. It is on the work shelf now. It was also the **head of a stuck chain**: [switching agent decision-making to the new unified board](https://linear.app/threadbare/issue/THR-1301/cut-the-unified-decision-board-over-to-live-blocked-on-undertaking) now unblocks on its own when it lands.
-- **The distance-table fix shipped and is live** ([THR-1346](https://linear.app/threadbare/issue/THR-1346/the-distance-matrix-is-rebuilt-on-every-structural-change-and-read-by), merged 04:35). Worth noting because the executor **disproved the ticket's own premise**: the table was not unread — it feeds every agent-to-agent social encounter and every restless mortal's destination. It was indexing the wrong kind of place, silently dropping 235 real settlements on your dev link's map size. Claimed and closed inside two hours.
-- **The rest of the shelf:** [the prose doctrine sweep](https://linear.app/threadbare/issue/THR-1324/prose-doctrine-v2-remediation-sweep-10-operative-surfaces-still-teach) plus six small deferred clean-ups, all engine and content hygiene found by builders while building. Still no encounter writing on it — which is what the ask above changes.
+- **The stuck chain broke overnight.** [The ambition-boost fix](https://linear.app/threadbare/issue/THR-1302/the-boards-ambition-boost-is-true-by-construction-for-undertakings-a) — the one the orchestrator took off your design queue an hour ago, judging the call already written in the ticket — was claimed, built and merged at 05:42, and is live. It was the head of the chain: [switching agent decision-making to the new unified board](https://linear.app/threadbare/issue/THR-1301/cut-the-unified-decision-board-over-to-live-blocked-on-undertaking) is the payoff for the whole undertaking effort, and its blocker is now gone. It still reads as Todo; the orchestrator's next sweep promotes it. Nothing for you either way.
+- **Two more shipped in the same stretch** — [the distance-table fix](https://linear.app/threadbare/issue/THR-1346/the-distance-matrix-is-rebuilt-on-every-structural-change-and-read-by) (04:35) and [the settlement-character fix](https://linear.app/threadbare/issue/THR-1323/faction-nodes-never-carry-reachweights-so-computesettlementreaches) (02:34). Four merges since midnight, all engine.
+- **The rest of the shelf:** [the prose doctrine sweep](https://linear.app/threadbare/issue/THR-1324/prose-doctrine-v2-remediation-sweep-10-operative-surfaces-still-teach) plus six small deferred clean-ups — engine and content hygiene found by builders while building. Still no encounter writing on it, which is what the ask above changes.
 - **In Dev: 5, two of them live** — [the world-generator ordering fix](https://linear.app/threadbare/issue/THR-1344/the-genomes-reach-pass-is-dead-at-worldgen-worldseed-runs-the-genome) and [the run-founded faction bug](https://linear.app/threadbare/issue/THR-1322/a-run-founded-faction-renders-as-a-fallback-everywhere-in-the-ui), both in review. The other three are your parked standing asks ([THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to), [THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server), [THR-1168](https://linear.app/threadbare/issue/THR-1168/two-authored-encounter-audio-moments-have-no-live-caller-wire-or)); park shape verified intact this run.
 
 ## Health
 
-**Green, with two PRs needing a session. Nothing here needs you.**
+**Green, with the same two PRs needing a session. Nothing here needs you.**
 
-- **[#1714](https://github.com/christianspliid-ui/threadbare/pull/1714)** (the run-founded faction fix) — genuine merge conflict, now ~4.5 hours old. Auto-merge stays armed and correctly refuses to fire; a session must merge `origin/main`, resolve by hand and push.
-- **[#1717](https://github.com/christianspliid-ui/threadbare/pull/1717)** (the world-generator ordering fix) — now conflicted *and* failing a required check, ~1.5 hours old. Both must clear; the conflict alone is not the diagnosis. Executor's to work.
-- Everything else green: the live site serves the latest commit ([6f7fa560](https://github.com/christianspliid-ui/threadbare/commit/6f7fa560a7d279fafc2d587a54dcd0341523e290)), background jobs healthy, all nine scheduled lanes on schedule, the branch reaper ran at 04:40, and the home copy of the repo is clean and current.
+- **[#1714](https://github.com/christianspliid-ui/threadbare/pull/1714)** (the run-founded faction fix) — genuine merge conflict, now ~5.5 hours old. Auto-merge stays armed and correctly refuses to fire; a session must merge `origin/main`, resolve by hand and push.
+- **[#1717](https://github.com/christianspliid-ui/threadbare/pull/1717)** (the world-generator ordering fix) — conflicted *and* failing a required check, ~2.5 hours old. Both must clear; the conflict alone is not the diagnosis. Executor's to work.
+- Everything else green: the live site serves the latest commit ([ee2bad8b](https://github.com/christianspliid-ui/threadbare/commit/ee2bad8bd7e30aa9848c13a3c19fd5c2ce7f5b36)), background jobs healthy, all nine scheduled lanes on schedule, the branch reaper ran at 05:40, and the home copy of the repo is clean and current.
 
 Unchanged and worth seeing rather than acting on: **the only lane quiet in the probe's window is overnight-shaped** — 22–23 and 23–24 August, both roughly 21:00–08:00 local, every lane stopping and resuming together. Declined under your 8 August ruling that overnight quiet is normal. Nothing was lost.

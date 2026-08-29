@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-29 04:54 local (02:54 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-29 05:55 local (03:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -13,7 +13,7 @@
 
 **Then approve the brief — the camp seven:** shrine offering, sharpening blades, warding the camp, a small prayer, rest and reflection, tending wounds, scouting the perimeter. No typed consequences at all in that set; they are the last encounters below standard, and `shrine_offering` is encounter #1 of [your integrated slice checkpoint](https://linear.app/threadbare/issue/THR-1220), which cannot invite you until they are rewritten. The bar is live with no caveats: [The Beast in the Granary](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.hunt.the_beast_in_the_granary). [The brief](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/retrofit-batch-2-brief.md) proposes **seven** rather than your six, because the camp set is one family in one file and splitting the seventh costs a whole factory cycle. **Three ways to close it:** *"batch 2, seven is fine"*, *"keep it six"*, or *"same rule — judge batch 2 on one first."*
 
-**Why it still matters:** the shelf is not short of work — it has climbed to eight, all of it engine and clean-up found by builders while building. Take this on its own merit instead: it is the only High-priority content work on the board, it is written and waiting on one word, and **no encounter writing reaches the shelf until it clears.**
+**Why it still matters:** the shelf is not short of work — it holds seven items, all engine and clean-up found by builders while building. Take this on its own merit instead: it is the only High-priority content work on the board, it is written and waiting on one word, and **no encounter writing reaches the shelf until it clears.**
 
 ### 2. One word players see, in two places — [THR-1314](https://linear.app/threadbare/issue/THR-1314/ul-proposal-work-holding-kind-row-christening-failure-name-register)
 
@@ -88,6 +88,7 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
+- **The stuck chain broke** — [THR-1302](https://linear.app/threadbare/issue/THR-1302/the-boards-ambition-boost-is-true-by-construction-for-undertakings-a) merged 05:42 and is live. It sat in your design column for four sweeps labelled "needs a design call"; read properly, the call was already written in the ticket two days earlier, and what remained was calibration against a measurement that already says pass or fail — the agent's under your 12 August rule. It was the head of a stuck chain: [switching agent decision-making to the unified board](https://linear.app/threadbare/issue/THR-1301) now unblocks on its own.
 - **A distance table that was never dead** — [THR-1346](https://linear.app/threadbare/issue/THR-1346/the-distance-matrix-is-rebuilt-on-every-structural-change-and-read-by) merged 04:35 ([PR #1718](https://github.com/christianspliid-ui/threadbare/pull/1718)). The ticket said nobody read it; the executor proved otherwise — it feeds every agent-to-agent social encounter and every restless mortal's destination — and found the real bug: it was indexing the wrong kind of place and silently dropping 235 real settlements on your dev link's map size.
 - **Settlements that never knew what they were good at** — [THR-1323](https://linear.app/threadbare/issue/THR-1323/faction-nodes-never-carry-reachweights-so-computesettlementreaches) merged 02:34 ([PR #1716](https://github.com/christianspliid-ui/threadbare/pull/1716)). The seeder worked out each faction's leanings and then threw them away, so every settlement's character came back empty. Fixing it surfaced two further world-generation problems, both now queued.
 - **The agent handbook is on a diet** — [THR-1336](https://linear.app/threadbare/issue/THR-1336/claudemd-diet-gate-law-and-sandbox-lore-move-to-canonops-pages-with) merged 01:15 ([PR #1704](https://github.com/christianspliid-ui/threadbare/pull/1704)). Gate law and sandbox lore moved out of the always-loaded file and behind pointers; nothing in the game changes.
@@ -97,7 +98,6 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 - **A work that is people, and the offer that takes them away** — [THR-1309](https://linear.app/threadbare/issue/THR-1309) merged 20:22 ([PR #1690](https://github.com/christianspliid-ui/threadbare/pull/1690)) after five hours stuck on a conflict, resolved by hand. Agents can now undertake to raise a warband and offer others a place in it.
 - **An anchor that named someone and pointed nowhere** — [THR-1317](https://linear.app/threadbare/issue/THR-1317) merged 20:37 ([PR #1703](https://github.com/christianspliid-ui/threadbare/pull/1703)).
 - **Retired tooling hooks removed** — [THR-1332](https://linear.app/threadbare/issue/THR-1332) merged 20:14 ([PR #1699](https://github.com/christianspliid-ui/threadbare/pull/1699)); the Cowork/Codex/Obsidian-MCP retirement sweep landed alongside it ([THR-1331](https://linear.app/threadbare/issue/THR-1331), [THR-1333](https://linear.app/threadbare/issue/THR-1333), [THR-1334](https://linear.app/threadbare/issue/THR-1334), [THR-1335](https://linear.app/threadbare/issue/THR-1335)) — the game's name is now Threadbearer everywhere the agents read.
-- **Three rows of your status bar that were empty in every game ever played** — [THR-1307](https://linear.app/threadbare/issue/THR-1307) merged 19:39. Conditions, clues and vows read from a link type nothing has ever written.
 
 ---
 
