@@ -56,8 +56,15 @@ export function resetRevEventCounter(): void {
 /**
  * Maps reach domain to its primary axiological pair (for encounter value reveals).
  * NFP #1 Tunability: named constant, not inline strings.
+ *
+ * THR-1359: annotated `Record<ReachDomain, string>`, not `Record<string, string>`.
+ * The widened annotation is what let a `flesh` row survive the Reach's retirement
+ * invisibly, and this map is not inert: the substring fallback below casts
+ * `Object.keys(this)` to `ReachDomain[]`, so a stale key here is reachable — it
+ * would have written a retired Reach into an agent's revealed-knowledge record.
+ * Keeping the key set pinned to `ReachDomain` is what makes that cast honest.
  */
-export const REACH_TO_VALUE_MAP: Record<string, string> = {
+export const REACH_TO_VALUE_MAP: Record<ReachDomain, string> = {
   iron:   'courage_prudence',
   gold:   'honesty_cunning',
   shadow: 'honesty_cunning',
@@ -66,7 +73,6 @@ export const REACH_TO_VALUE_MAP: Record<string, string> = {
   eye:    'honesty_cunning',
   stone:  'courage_prudence',
   star:   'mercy_ruthlessness',
-  flesh:  'mercy_ruthlessness',
 };
 
 /** Significance for domain_revealed TickEvents */
@@ -142,7 +148,10 @@ export function emitEncounterRevelations(state: GameState): void {
 
         // Find the reach domain for this encounter
         const encounterTemplate = getAnyEncounterById(encounterId);
-        let reach = encounterTemplate?.reachPrimary;
+        // THR-1359: annotated rather than inferred. `reachPrimary` is absent from
+        // `UnifiedActionTemplate`, so this read is `any`, and an `any` reach silently
+        // indexed the map above — the same invisibility that let `flesh` live here.
+        let reach: ReachDomain | undefined = encounterTemplate?.reachPrimary;
 
         // Fallback: check if encounter ID contains a known reach domain name
         if (!reach) {

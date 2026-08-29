@@ -6,6 +6,7 @@ description: >
   "world model", "constraint layer", "category", "World-Soul", "rival gods",
   or when designing new game content or narrative systems.
 last_validated_against: 2026-07-30
+validated_doctrine: architecture@1
 ---
 
 # Content & Worldbuilding — Domain Context

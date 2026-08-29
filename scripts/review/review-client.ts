@@ -16,7 +16,7 @@ import { type ReviewFindings } from './types.js';
 const HEARTBEAT_INTERVAL_MS = 30_000;
 const MODEL = 'claude-sonnet-4-6';
 
-const REVIEW_SYSTEM_PROMPT = `You are a structural code reviewer for a TypeScript/React game engine project (The Fantasy World Simulator).
+const REVIEW_SYSTEM_PROMPT = `You are a structural code reviewer for a TypeScript/React game engine project (Threadbearer).
 
 Review the provided git diff for:
 1. Type errors or TypeScript violations that tsc --noEmit would not catch (runtime type unsafety, etc.)

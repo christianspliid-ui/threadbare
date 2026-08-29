@@ -1914,6 +1914,17 @@ export interface StrategicActionStartedTrace extends TraceBase {
   category: 'strategic_action_started';
   actorId: string;
   candidateId: string;
+  /**
+   * The template this start came from, carried as its own field.
+   *
+   * `candidateId` embeds it (`strat_${templateId}_${targetId}_${tick}`) and every
+   * template id itself contains underscores, so recovering the template from that
+   * string is a parse that guesses where the id ends. The composition gate in
+   * `scripts/undertaking-census.ts` counts *distinct templates started*, which is
+   * a question about this field; asking it of a concatenation is how a gate ends
+   * up measuring its own parser (NFP #2).
+   */
+  templateId: string;
   behaviorFamily: BehaviorFamily;
   verb: StrategicVerb;
   targetNodeId?: string;

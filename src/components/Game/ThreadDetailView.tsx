@@ -46,7 +46,6 @@ const DOMAIN_NAMES: Record<ReachDomain, string> = {
   eye: 'Eye',
   stone: 'Stone',
   star: 'Star',
-  flesh: 'Flesh',
 };
 
 // Category display labels

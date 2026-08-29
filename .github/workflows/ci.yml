@@ -383,7 +383,15 @@ jobs:
     # exactly the retro-verification path THR-842 added it for.
     if: ${{ !cancelled() && github.event_name != 'push' && (github.event_name == 'workflow_dispatch' || needs.detect.result != 'success' || needs.detect.outputs.code == 'true') }}
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    # Budget dated 2026-08-29 (THR-1361 / impediment #948): the suite alone measured
+    # 16m48s on a hosted runner (1135 files / 19037 tests) and the freshness step
+    # (which runs a full 120-tick headless world via generate-systems-inventory)
+    # follows it, so the previous 20-minute budget cancelled every code PR at
+    # exactly 20m15s mid-freshness — PR #1738 hit it twice in a row. Measured
+    # end-to-end need: ~19-22 min; 35 gives the same ~1.6x headroom the original
+    # budget had when it was sized. Re-measure before changing (see impediments
+    # #941/#948 — undated budgets decay in silence).
+    timeout-minutes: 35
 
     steps:
       # The vacuous-gate guard. If change detection did not succeed, this required

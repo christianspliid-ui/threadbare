@@ -48,7 +48,7 @@ Each surface gets at least one assertion. Use `__DEBUG` methods — not pixel as
 
 | ID | Tier | Assertion | Method |
 |----|------|-----------|--------|
-| A-start.settings-modal-1 | P | Click settings button → `getOpenModals()` includes `'SettingsModal'` | `getOpenModals()` |
+| A-start.settings-modal-1 | P | Click settings button → `getOpenModals()` includes `'SettingsPanel'` (the component registers as SettingsPanel, not SettingsModal — EXPECTED-FINDINGS baseline, absorbed 2026-08-29) | `getOpenModals()` |
 
 ---
 
@@ -355,16 +355,6 @@ All assertions below require the game to be loaded at `?view=game&seeded&nofog`.
 
 ---
 
-### game.retinue-panel — RetinuePanel
-
-**Mount:** drillin (player retinue)
-
-| ID | Tier | Assertion | Method |
-|----|------|-----------|--------|
-| A-game.retinue-panel-1 | P | RetinuePanel is accessible via its UI entry point (tab, button) — confirm the panel mounts | DOM or `getActiveUIState()` |
-
----
-
 ### game.threads-panel — ThreadsPanel
 
 **Mount:** drillin (player threads)
@@ -403,6 +393,27 @@ All assertions below require the game to be loaded at `?view=game&seeded&nofog`.
 |----|------|-----------|--------|
 | A-game.narrative-feed-1 | P | NarrativeFeed is accessible and mounts without error | DOM snapshot |
 | A-game.narrative-feed-2 | S | After ticking once, `getEventsSince(tickBefore).length > 0` → feed has new entries | `getEventsSince()` |
+
+---
+
+### game.chapter-ledger — ChapterLedger
+
+**Mount:** drillin (THR-603 — merged list of active encounters + resolved chapters)
+
+| ID | Tier | Assertion | Method |
+|----|------|-----------|--------|
+| A-game.chapter-ledger-1 | P | ChapterLedger is accessible via its UI entry point (Chapters tab/ledger route) — confirm it mounts | DOM or `getActiveUIState()` |
+| A-game.chapter-ledger-2 | S | Ledger rows reflect `chapterArchive` + live `unifiedActions` (count matches, newest first) | `getActiveUIState()` + DOM |
+
+---
+
+### game.chapter-view — ChapterView
+
+**Mount:** drillin (full reading surface for one chapter)
+
+| ID | Tier | Assertion | Method |
+|----|------|-----------|--------|
+| A-game.chapter-view-1 | P | Click a ledger row → ChapterView mounts with that chapter's prose and step outcomes | DOM snapshot |
 
 ---
 
@@ -644,6 +655,36 @@ All assertions below require the game to be loaded at `?view=game&seeded&nofog`.
 
 ---
 
+### ul.dashboard — UbiquitousLanguageDashboard
+
+**Mount:** always when `view === 'ul'` (`/?view=ul`)
+
+| ID | Tier | Assertion | Method |
+|----|------|-----------|--------|
+| A-ul.dashboard-1 | P | Navigate to `/?view=ul` → dashboard renders from `ul-dashboard.generated.json` (term table visible) | DOM snapshot |
+
+---
+
+### ul.sidebar — ULSidebar
+
+**Mount:** drillin (shard tabs + filter chips)
+
+| ID | Tier | Assertion | Method |
+|----|------|-----------|--------|
+| A-ul.sidebar-1 | P | Shard tabs render; clicking a shard filters the term table | DOM snapshot |
+
+---
+
+### ul.detail-pane — ULDetailPane
+
+**Mount:** drillin (selected term)
+
+| ID | Tier | Assertion | Method |
+|----|------|-----------|--------|
+| A-ul.detail-pane-1 | P | Click a term → detail pane renders markdown body and See-Also chips | DOM snapshot |
+
+---
+
 ---
 
 ## Modal Dismiss
@@ -680,5 +721,5 @@ These assertions apply to any modal opened during the run:
 
 ## Summary counts
 
-Total surfaces in manifest: 54
-Required assertion coverage: ≥1 per surface (met above — every surface has at least one row)
+Total surfaces in manifest: 63 (re-counted against `src/data/ia-manifest.ts` 2026-08-29, THR-1355)
+Required assertion coverage: ≥1 per surface. When `IA_SURFACES` grows, this file owes a section for each new surface **and this count line moves** — a stale count here previously self-certified coverage that did not exist.

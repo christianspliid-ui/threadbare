@@ -17,7 +17,7 @@ Copy the relevant block verbatim when dispatching each agent. Replace every `{QA
 > - Fog of war: unexplored=black, remembered=dim, visible=normal
 >
 > **Step 2:** Use Playwright MCP to play through the game:
-> 1. `browser_navigate` to `{QA_URL}/?view=game` (skips worldgen/selection). Wait 3 seconds for the game to load.
+> 1. `browser_navigate` to `{QA_URL}/?view=game&seeded` (skips worldgen/selection/Meet-The-First). Wait 3 seconds for the game to load.
 > 2. `browser_take_screenshot` — full viewport
 > 4. `browser_evaluate` to extract ALL computed CSS background-color, color, border-color values from visible elements. Convert each to HSL and check the L (lightness) component against STYLE.md brightness thresholds.
 > 5. Screenshot individual panels for detail inspection
@@ -26,7 +26,7 @@ Copy the relevant block verbatim when dispatching each agent. Replace every `{QA
 >
 > **Step 3:** If `window.__DEBUG` is available, enable tracing and read traces after ticking to cross-reference visual state with engine state.
 >
-> **Output:** Return a JSON array of Finding objects with these fields: id (VS-NNN), agent ("visual"), severity, category, backlog, notionPrefix, title, description, evidence, screenshot, location, effort, suggestedFix. Apply the backlog routing tree: STYLE.md violations -> backlog "visual-assets", notionPrefix "ART".
+> **Output:** Return a JSON array of Finding objects with these fields: id (VS-NNN), agent ("visual"), severity, category, backlog, projectHint, surfaceIds, title, description, evidence, screenshot, location, effort, suggestedFix. Apply the backlog routing tree: STYLE.md violations -> backlog "visual-assets", projectHint "UI Visual Overhaul".
 
 **Tools needed:** Playwright MCP (browser_navigate, browser_take_screenshot, browser_evaluate, browser_snapshot, browser_click)
 
@@ -39,7 +39,7 @@ Copy the relevant block verbatim when dispatching each agent. Replace every `{QA
 > You are an Information Architecture auditor for Threadbearer. Identify redundant text, dead space, information density imbalance, and wasted screen real estate.
 >
 > **Use Playwright MCP tools:**
-> 1. Navigate to `{QA_URL}/?view=game` (skips worldgen/selection). Wait 3 seconds.
+> 1. Navigate to `{QA_URL}/?view=game&seeded` (skips worldgen/selection/Meet-The-First). Wait 3 seconds.
 > 2. `browser_evaluate` to run a DOM analysis that:
 >    - Extracts all visible text nodes with their parent element tags and bounding rects
 >    - Groups by screen zone (LEFT_SIDEBAR: x<250, TOP_BAR: y<60, CENTER_MAP: 250<x<viewport-350, RIGHT_SIDEBAR: x>viewport-350, BOTTOM: bottom 200px)
@@ -51,7 +51,7 @@ Copy the relevant block verbatim when dispatching each agent. Replace every `{QA
 > 5. Check the right sidebar — is it populated or empty when no agent is selected?
 > 6. Check the narrative log — how many items? Are they repetitive?
 >
-> **Output:** Return a JSON array of Finding objects with: id (IA-NNN), agent ("info-arch"), severity, category, backlog, notionPrefix, title, description, evidence, location, effort, suggestedFix. Most info-arch findings route to backlog "frontend", notionPrefix "FE". Repetitive content routes to backlog "content", notionPrefix "CB".
+> **Output:** Return a JSON array of Finding objects with: id (IA-NNN), agent ("info-arch"), severity, category, backlog, projectHint, surfaceIds, title, description, evidence, location, effort, suggestedFix. Most info-arch findings route to backlog "frontend", projectHint "UI Visual Overhaul". Repetitive content routes to backlog "content", projectHint "Content Architecture".
 
 **Tools needed:** Playwright MCP (browser_evaluate, browser_snapshot, browser_click)
 
@@ -67,7 +67,7 @@ Copy the relevant block verbatim when dispatching each agent. Replace every `{QA
 >
 > **Use Playwright MCP to systematically test each flow:**
 >
-> 1. **Game Entry:** Navigate to `{QA_URL}/?view=game` (skips worldgen/selection). Wait 3 seconds. Screenshot to confirm game loaded.
+> 1. **Game Entry:** Navigate to `{QA_URL}/?view=game&seeded` (skips worldgen/selection/Meet-The-First). Wait 3 seconds. Screenshot to confirm game loaded.
 >
 > 2. **Tick Progression:** Click "Step" button 5+ times. Verify: narrative log updates, doom bar moves, essence values change. Screenshot before/after.
 >
@@ -89,7 +89,7 @@ Copy the relevant block verbatim when dispatching each agent. Replace every `{QA
 >
 > **For each test:** `browser_snapshot` to verify DOM state, `browser_take_screenshot` for visual evidence.
 >
-> **Output:** Return a JSON array of Finding objects with: id (IX-NNN), agent ("interaction"), severity, category, backlog, notionPrefix, title, description, evidence, screenshot, location, effort, suggestedFix. Broken flows -> severity critical. Missing feedback -> major. Edge cases -> minor. Most route to backlog "frontend", notionPrefix "FE".
+> **Output:** Return a JSON array of Finding objects with: id (IX-NNN), agent ("interaction"), severity, category, backlog, projectHint, surfaceIds, title, description, evidence, screenshot, location, effort, suggestedFix. Broken flows -> severity critical. Missing feedback -> major. Edge cases -> minor. Most route to backlog "frontend", projectHint "UI Visual Overhaul".
 
 **Tools needed:** Playwright MCP (full set — navigate, click, snapshot, screenshot, evaluate, wait_for)
 
@@ -126,9 +126,9 @@ Copy the relevant block verbatim when dispatching each agent. Replace every `{QA
 >    - Missing error boundaries around component subtrees
 >    - Components that crash on undefined/null data instead of showing empty states
 >
-> **Key files to prioritize:** GameView.tsx, ActionDrawer.tsx, ActionCard.tsx, NarrativeLog.tsx, RetinuePanel.tsx, AgentInfoCard.tsx, AgentProfileModal.tsx, HexZoomView.tsx, LocationView.tsx, EncounterLog.tsx, InterventionConfirm.tsx, ScryOverlay.tsx, DebugPanel.tsx, DoomBar.tsx, MandateTracker.tsx, AvatarHUD.tsx, HexTile.tsx, HexMap.tsx, CoastlineOverlay.tsx, AgendaPicker.tsx, Tooltip.tsx
+> **Key files to prioritize:** GameView.tsx, ActionDrawer.tsx, ActionCard.tsx, NarrativeFeed.tsx, ThreadsPanel.tsx, AgentInfoCard.tsx, AgentProfileModal.tsx, HexZoomView.tsx, LocationView.tsx, EncounterLog.tsx, InterventionConfirm.tsx, ScryOverlay.tsx, DebugPanel.tsx, DoomBar.tsx, MandateTracker.tsx, AvatarHUD.tsx, HexMapV2/HexMapV2.tsx, HexMapV2/scene/CoastlineMesh.ts, AgendaPicker.tsx, shared/Tooltip.tsx
 >
-> **Output:** Return a JSON array of Finding objects with: id (RC-NNN), agent ("react-code"), severity, category, backlog, notionPrefix, title, description, evidence (include code snippet), location (file:line), effort, suggestedFix (include corrected code). Performance in hot paths -> major. Style issues -> minor. All route to backlog "frontend", notionPrefix "FE" unless it's an engine bug (-> "architecture", "SYS").
+> **Output:** Return a JSON array of Finding objects with: id (RC-NNN), agent ("react-code"), severity, category, backlog, projectHint, surfaceIds, title, description, evidence (include code snippet), location (file:line), effort, suggestedFix (include corrected code). Performance in hot paths -> major. Style issues -> minor. All route to backlog "frontend", projectHint "UI Visual Overhaul" unless it's an engine bug (-> backlog "architecture", projectHint "Code Hygiene").
 
 **Tools needed:** File system only (Read, Grep, Glob) — no browser.
 

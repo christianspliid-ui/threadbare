@@ -4,7 +4,7 @@
 **Source:** `Docs/plans/2026-07-05-action-unlock-reveal-and-artifact-representation.md`
 **Generalizes:** THR-637 Entity Visual Header (image-only → image **+** information)
 
-A core UX pattern for The Fantasy World Simulator. Loaded by the `frontend-ui` skill, so it is binding for future UI work.
+A core UX pattern for Threadbearer. Loaded by the `frontend-ui` skill, so it is binding for future UI work.
 
 ## Statement
 

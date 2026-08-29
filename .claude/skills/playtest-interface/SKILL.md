@@ -1,7 +1,8 @@
 ---
 name: playtest-interface
 description: Interface regression sweep for Threadbearer. Drives a Chrome MCP session through the game, asserts structural presence of every IA manifest surface via __DEBUG, and produces a structured finding report.
-last_validated_against: 2026-08-28
+last_validated_against: 2026-08-29
+validated_doctrine: ui-laws@1
 invocation: /playtest-interface [url]
 audience: claude-code
 ---
@@ -10,9 +11,11 @@ audience: claude-code
 
 Invoke as `/playtest-interface [url]`.
 
-Default URL: `http://localhost:5173/?view=game&seeded&nofog`
+Default URL: `http://localhost:5173/?view=game&seeded&nofog` — but **never assume port 5173 is yours**: the user's own dev server may live there. If no URL is passed and 5173 isn't reachable (or you need isolation), start one with `bash scripts/qa-server.sh start` and use its reported URL with the same query string.
 
-The URL can be a local dev server or a Vercel preview link — the skill works either way.
+The URL can be a local dev server, an isolated QA server, or a Vercel preview link — the skill works either way. Every step below uses **the resolved target URL**, not a hardcoded port.
+
+**Evidence contract:** captures produced by this skill follow `Docs/canon/verification-gates.md` § Browser-verify — 1920×1080 pre-capture, WebGL surfaces are invisible to DOM screenshots (assert via `__DEBUG.snapshotScene()`), and a UI-Laws judgment accompanies visual findings.
 
 ## When to use
 
@@ -45,7 +48,7 @@ Execute the following steps in order. For each assertion, record the result (PAS
 ### Step 1 — Navigate to game view
 
 ```javascript
-browser_navigate('http://localhost:5173/?view=game&seeded&nofog')
+browser_navigate(targetUrl) // resolved URL + '?view=game&seeded&nofog'
 // Wait for the page to settle — no loading spinner, HexMapV2 canvas visible
 browser_wait_for('.hex-map-canvas, canvas', { timeout: 10000 })
 ```
@@ -198,16 +201,19 @@ Run assertions from **RUBRIC.md § Simulation & Events**.
 Navigate to each secondary view and assert it loads:
 
 ```javascript
-browser_navigate('http://localhost:5173/?view=codex')
+browser_navigate(base + '/?view=codex')
 // Assert CodexSidebar + CodexDetailPanel mount
 
-browser_navigate('http://localhost:5173/?view=styleguide')
+browser_navigate(base + '/?view=styleguide')
 // Assert StyleGuide renders
 
-browser_navigate('http://localhost:5173/?view=cms')
+browser_navigate(base + '/?view=cms')
 // Assert ContentBrowser renders
 
-browser_navigate('http://localhost:5173/')
+browser_navigate(base + '/?view=ul')
+// Assert UbiquitousLanguageDashboard renders
+
+browser_navigate(base + '/')
 // Assert StartPage renders
 ```
 

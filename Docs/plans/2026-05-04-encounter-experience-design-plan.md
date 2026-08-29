@@ -1,6 +1,8 @@
 # Encounter Experience — Long-Form Design Plan (2026-05-04)
 
-**Status:** Canonical design plan for the encounter experience overhaul. Engine / Content / UI pillars, NFP-compliant. Implementation contract for the executor.
+**Status:** **Historical — superseded in part. Not an implementation contract.** *(Amended 2026-08-29, THR-1324; the line previously read "Canonical design plan … Implementation contract for the executor," which reads as live to anyone landing mid-file.)* This was the May 2026 canonical plan; the **nudge pivot** (THR-772/THR-883) and **Prose Doctrine v2** (2026-08-25) have since retired its choice-card model and its prose contract. Sections carrying in-file supersession markers: **§3.2, §3.4, §4.1, §4.2, §5.3**, and Rule 3 in §1. Much of the structural design — scene state, cast attention priority, forecast bands, aftermath effect kinds, detection escalation — did ship and is still accurate.
+
+**Read instead, for anything you are about to build or author:** [`Docs/canon/encounters.md`](../canon/encounters.md) · [`Docs/canon/prose.md`](../canon/prose.md) · [`nudge-authoring-spec.md`](../../.claude/skills/encounter-pipeline/reference/nudge-authoring-spec.md). Where any of those disagree with this page, they win.
 
 **Linear issue:** THR-300 (Encounter Experience design exploration). On approval of this plan, the issue moves to *Implementation Planning* for breakout into executable child tickets.
 
@@ -141,6 +143,8 @@ The encounter-template-graph-node decision (2.1) supports this via `spawns_from`
 4. **Aftermath** — existing `aftermathConfig.reactions[]` is preserved. Each reaction effect kind drives a corresponding registration animation in the protagonist panel (see §5.5). New optional reaction kind: `archetype_drift_register` (for surfacing cumulative drift crossing a threshold).
 
 ### 3.2 Choice resolution
+
+*Superseded 2026-08-29 (THR-1324).* **`EncounterChoice` is the pre-nudge primitive and is not the shipped shape.** The player does not pick an authored branch for the mortal (rejected by the nudge pivot, THR-772); they spend essence on library-generic **nudge cards** that shift the named odds, and fate rolls the outcome on the five-band ladder — `StepNudge` in `src/types/unifiedAction.ts`, resolved by `buildNudgePhaseModel`. Three fields below are retired outright: `god_verb` and `agent_reaction` are per-scene card prose (the THR-883 communication pivot moved the scene into the prose and made card faces generic), and `fail_forward` is superseded by the six-band `bandProse` payoff. The *concepts* that survive: a reach, an essence cost, an odds shift, and a value-axis lean. Kept verbatim below for history.
 
 An encounter choice is a typed primitive with this shape (TypeScript):
 
@@ -349,6 +353,8 @@ Per CLAUDE.md load-bearing decision: *the world graph is mutated in place — ne
 ## 4. Content pillar
 
 ### 4.1 Encounter authoring contract (final form)
+
+*Superseded 2026-08-29 (THR-1324).* **"Final form" was true in May and is not the authoring contract now.** The live one is the THR-883 locked format — [`.claude/skills/encounter-pipeline/reference/nudge-authoring-spec.md`](../../.claude/skills/encounter-pipeline/reference/nudge-authoring-spec.md), whose § Prose doctrine v2 binds every prose field. Two blocks below are retired: `encounter_choices` (per-beat authored branches with `god_verb` / `agent_reaction` / `fail_forward`, superseded by generic `StepNudge` cards — see the §3.2 marker), and the `beats[].prose` free-prose slot, which is now the three-paragraph narrator-mode opening (arrival · situation & complication · the problem, ≤80 words) plus per-band outcome prose. The *structural* inventory this section pioneered — place, cast with attention priority, scene state, protagonist view, forecast factors, aftermath change kinds — is broadly what shipped and remains useful reading. Kept verbatim below for history.
 
 ```yaml
 encounter:
@@ -559,6 +565,8 @@ New component `OutcomeForecastBand`:
 - No numbers. Ever. Per taste-profile.
 
 ### 5.3 Encounter choice card
+
+*Superseded 2026-08-29 (THR-1324).* **The shipped card is a nudge card, not a choice card.** Its face is library-generic and spell-style — keyword + icon, imperative-verb-plus-noun title, cost in essence pips, and one or two plain sentences of effect with the odds shift in the pip vocabulary (`Docs/plans/2026-07-30-nudge-card-repertoire.md` § Decision 4, as amended). Four rows below are retired: **god-verb** and **agent reaction** are per-scene card prose the communication pivot removed, **tilts-toward** is replaced by the rendered odds pips, and **fail-forward** by the six-band `bandProse` payoff. There is also no display-large-italic treatment — interactive text is always plain (canon, hard rule). The moral-axis tilt line survives as a concept. Kept verbatim below for history.
 
 Updated component `EncounterChoiceCard`:
 - SPHERE label · cost (top)

@@ -1119,6 +1119,5 @@ function createTestDomainCapabilities(): Record<ReachDomain, number> {
     eye: 9,
     stone: 4,
     star: 7,
-    flesh: 6,
   };
 }

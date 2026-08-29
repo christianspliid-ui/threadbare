@@ -6,6 +6,8 @@ supersedes: none (amends the voice section of Docs/canon/prose.md)
 
 # Voice Register Calibration — Plainspoken Malazan
 
+> **`status: current`, with one section superseded in part.** The three-register model is live canon. Its **peak-surface list** (§ 3 below) was narrowed by Prose Doctrine v2 on 2026-08-25 — encounter surfaces no longer qualify for peak. Read § 3's banner before authoring against it; [`Docs/canon/prose.md`](../canon/prose.md) wins on any disagreement.
+
 **User verdict (Christian, 2026-07-04, chat — settled):** In-game voice must be simpler in tone while keeping the Malazan-esque vibe. Malazan is not high lyrical literature all the time — its funny parts use plain language. Make plainness the baseline; lyricism is the rationed exception, not the default.
 
 This resolves the long-standing tension between the Vision's "dense and particular" prose and the recorded feedback that in-game prose/labels are too literary and hurt comprehension. Both were right; the register model below is the reconciliation.
@@ -21,7 +23,9 @@ Plain, concrete, active. Short-to-medium sentences, one idea each. Concrete noun
 Idiosyncratic per persona, but comprehension-first: wit over ornament. A character may be florid *as characterization* (sparingly, one per scene, the Kruppe allowance), but the narration around them stays baseline.
 
 **3. Peak register (rationed lyricism).**
-Reserved for designated surfaces: doom stage transitions, Twilight Phase, encounter climax steps (final step of branching encounters), major aftermath beats, World-Soul/Echo prose. Here the cosmic-melancholy lyric is earned. Budget: at most one figurative image per paragraph; sentence rhythm may stretch. Rare vocabulary allowed only if the sentence glosses it in context.
+Reserved for designated **non-encounter** surfaces: doom stage transitions, Twilight Phase, World-Soul/Echo prose. Here the cosmic-melancholy lyric is earned. Budget: at most one figurative image per paragraph; sentence rhythm may stretch. Rare vocabulary allowed only if the sentence glosses it in context.
+
+> *Superseded in part 2026-08-25, marked 2026-08-29 (THR-1324).* The register model itself is live and this doc remains its origin — but the peak list above previously also granted *"encounter climax steps (final step of branching encounters), major aftermath beats"*. **Prose Doctrine v2 revoked peak on every encounter surface**: encounter prose is narrator mode throughout, climaxes included. See [`Docs/canon/prose.md` § Narrator mode](../canon/prose.md), which is authoritative over this page wherever the two disagree.
 
 **Hard rule — interactive text is always plain.** Choice labels, action card names, buttons, IPK keywords, tooltips, panel headings: no metaphor, no archaic words, no ambiguity about what a click does. A player must never misread an affordance because the label was being literary. IPK keywords are the learning engine; they stay mechanical-plain.
 

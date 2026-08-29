@@ -1,6 +1,6 @@
 # Graph Contract
 
-> Added 2026-04-02. Source of truth: `src/types/graph.ts`, `src/types/edgeSchema.ts`, `src/engine/graph.ts`, `src/engine/graphQueries.ts`.
+> Added 2026-04-02; refreshed 2026-08-29 (THR-1363). Source of truth: `src/types/graph.ts`, `src/types/edgeSchema.ts`, `src/engine/graph.ts`, `src/engine/graphQueries.ts`.
 > Purpose: define how the live runtime graph is meant to be interpreted.
 
 ## Core Idea
@@ -13,20 +13,32 @@ The world is a typed property graph:
 
 The runtime graph is implemented by `WorldGraph` in `src/engine/graph.ts` and is mutated in place.
 
+**Hexes are NOT graph nodes.** Hexes live in `GameState.tiles[]` and mutate via `HexMutation[]` applied in `phaseHexState`; terrain and hex adjacency are read from tiles and hex coordinates, never from graph edges. `location` nodes *sit on* hexes via `hexCol`/`hexRow` properties.
+
 ## Node Families
 
-The key node categories from `src/types/graph.ts` are:
+The full `NodeType` union in `src/types/graph.ts` (15 types — this list is the doc's snapshot; the union is the truth):
 
 - `actor`
-  - includes `god`, `ascendant`, `faction`, `culture`, `group`, and `individual`
+  - `ActorType`: `god`, `ascendant`, `faction`, `culture`, `group`, `individual`, `place_spirit`
 - `location`
-  - includes hexes, locations, and sublocations via properties/subtypes
+  - **both place tiers**: settlements/wilds AND sublocations. The sublocation tier is one node shape — `type: 'location'` carrying `parentLocationId` (THR-1183). Ask through `src/engine/sublocationShape.ts` (`isSublocationNode` / `getPlaceTierLocations` / `resolveToParentLocation`); a bare `getNodesByType('location')` returns both tiers.
+- `sublocation`
+  - registered by THR-1177 so readers stay legal for saved worlds; **no producer writes it** since THR-1183 — do not mint it
 - `trait`
 - `artifact` and `artifact_legendary`
 - `resource`
+- `action_template`
 - `event`
   - durable history/event records, not just UI events
+- `cosmology`
+- `region`
 - `ambition`
+- `encounter_template`
+- `relationship`
+  - reified relationship between two actors
+- `companion`
+  - a named person who walks with a mortal (THR-1096) — deliberately NOT an actor
 
 Important consequence:
 

@@ -2,73 +2,69 @@
 name: art-direction
 description: >
   Use when generating hex tile art, constructing image prompts, working with STYLE.md,
-  updating the style tile, or making any visual asset decisions. Triggers on "hex tile",
-  "art direction", "Threadbare", "STYLE.md", "style tile", "prompt construction",
+  or making any visual asset decisions. Triggers on "hex tile",
+  "art direction", "STYLE.md", "prompt construction",
   "color palette", "sphere color", "lighting", "visual asset", "terrain tile",
   or when generating or evaluating game artwork.
-last_validated_against: 2026-07-30
+last_validated_against: 2026-08-29
+validated_doctrine: ui-laws@1
 ---
 
 # Art Direction — Domain Context
 
 This skill provides visual style and asset pipeline context. Load this before generating art, modifying STYLE.md, or working on the hex tile system.
 
-## Threadbare Aesthetic
+## Dark Tapestry Aesthetic
 
-The visual identity is called **Threadbare** — dark world, hidden magic, threads that break through. Key qualities:
-- Dark, muted base palette
-- Luminous accents from sphere-associated colors
-- Texture-heavy, worn surfaces
-- Magic expressed as glowing threads, fractures, or emanations — not flashy particle effects
+The game is **Threadbearer**; its design system is called **Dark Tapestry** — dark world, hidden magic, threads that break through. ("Threadbare" is the repo codename only and must never appear in art or player-facing surfaces.) Key qualities:
+- Dark, muted base palette — the world sits at **10–40% brightness** (charcoal, burnt umber, cold slate); no bright daylight, ever
+- Magic is the only strong color: **concentrated, threadlike, networked** — 5–15% of image area at 70–100% brightness, never ambient glow or color wash
+- Texture-heavy, worn surfaces; painterly oil, not photoreal
+- Each of the 12 spheres has a **color AND a form language** (STYLE.md's sphere table) — always specify both; each of the Eight Reaches has a scene tint (STYLE.md § Eight Reaches)
+- The ONLY text ever allowed in generated art is the game title **"Threadbearer"** — most images carry no text at all
 
 ## Source of Truth Files
 
 ### STYLE.md
 The authoritative source for all visual style decisions:
-- Color definitions (hex values, usage rules)
-- Sphere form language (how each sphere's influence looks visually)
-- Art direction principles
-- Lighting rules
-- Prompt construction guidelines (what to include, how to structure)
-- Exclusions (what the visual style explicitly avoids)
+- Color definitions (hex values, usage rules) and the sphere color + form-language table
+- Art direction principles, lighting rules, magic-spectrum-by-content-type
+- **The canonical hex prompt template** (§ Hex Prompt Template) — do not deviate from its structure
+- Prompt construction guidelines and exclusions
 
 **Always read STYLE.md before constructing any image prompt.**
 
-### Design/style-tile.html
-HTML visualization of STYLE.md:
-- Color swatches and gradients
-- UI chrome samples
-- **Master registry of all hex tile assets** — terrain tiles, clear fills, overlay icons, size tiers, active/reserve status
+### Asset registries
+- **`src/data/hex-tile-assets.ts`** — the authoritative registry of every hex terrain tile, clear fill, and location overlay icon. **Asset existence rule:** if an asset isn't mapped there, it doesn't exist in the game; register new assets there when creating them.
+- **`?view=styleguide`** — the living visual reference for shared UI components (UI Law 29).
 
-**Coupling rule:** Style tile must always reflect STYLE.md. Update both in the same session. Never leave them diverged.
-
-**Asset existence rule:** If an asset isn't in the style tile's "Hex Asset Legend" section, it doesn't exist in the game. Register new assets there when creating them.
+*(The rendered style tile `Design/style-tile.html` was retired 2026-08-29 (THR-1354) — it lived untracked outside git and was lost. The code registry above was already the ground truth and is now the only one.)*
 
 ## Hex Tile Pipeline
 
 Use the `image-manipulation` skill for the technical pipeline (geometric clipping, alpha masks, bundled scripts). This skill covers the *art direction* layer:
 
 - Terrain types have associated color palettes from STYLE.md
-- Sphere influence overlays use the sphere's signature color
+- Sphere influence overlays use the sphere's signature color + form language
 - Size tiers define resolution and detail level
-- All tiles must pass the Threadbare aesthetic check: dark base, luminous accents, textured
+- All tiles must pass the Dark Tapestry check: dark base (10–40%), luminous concentrated accents, textured
 
 ## Prompt Construction
 
 When building prompts for image generation:
 1. Start with the structural description (what the tile depicts)
-2. Add Threadbare aesthetic modifiers from STYLE.md
-3. Include sphere-specific form language if applicable
-4. Apply lighting rules from STYLE.md
-5. Include exclusions (what to avoid)
+2. Apply STYLE.md's prompt structure (§ Prompt Construction Guide) — narrative-first, elements ordered by importance
+3. Include sphere-specific color **and form language** if applicable
+4. Apply lighting rules from STYLE.md (magic is the light source; concentrated, never ambient)
+5. Include exclusions (no text, no UI, no modern elements — plus the content-type's known failure modes)
 6. Use the `image-generation` platform skill for the actual API call
 
 ## Color System
 
 Sphere colors are defined in STYLE.md and must be used consistently across:
 - Hex tile overlays
-- UI elements (see `frontend-ui` skill)
+- UI elements (tokens in `src/index.css` + `src/data/sphereColors.ts` — see `frontend-ui` skill; never hardcode sphere hexes in components, UI Law 30)
 - Prose flavor text markers
 - Any visual representation of sphere influence
 
-When changing a sphere color, update: STYLE.md → style-tile.html → any affected UI components → changelog. Same session.
+When changing a sphere color, update: STYLE.md → `src/index.css` sphere tokens + `src/data/sphereColors.ts` → any affected UI components → changelog. Same session.

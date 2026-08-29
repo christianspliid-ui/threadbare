@@ -5,7 +5,8 @@ description: >
   tracing, PRNG usage, or any code that lives in src/engine/. Triggers on "engine",
   "tick loop", "sigmoid", "resolution", "trace", "PRNG", "Maslow", "action pipeline",
   "graph op", "fail-soft", or when implementing systems described in Obsidian vault notes.
-last_validated_against: 2026-07-30
+last_validated_against: 2026-08-29
+validated_doctrine: architecture@1
 ---
 
 # Engine Architecture — Domain Context
@@ -42,7 +43,15 @@ Every random decision uses the seeded PRNG. Never use `Math.random()`.
 - Essential for replay: "I liked seed 7, let me tweak doom speed and replay"
 - The PRNG is the single source of randomness in the engine
 
-## Resolution: Shared Resolution Service (Phase 2)
+## Tick Loop & State (read before touching any phase)
+
+- **Entry:** `runTick(state, runtime)` in `src/engine/orchestrator.ts`. **New phases are registered `EnginePhase` descriptors** (`src/engine/phases/` + `src/engine/phases/index.ts`, run by `runRegisteredPhases` — THR-238); ~70 legacy phases remain inline and migrate opportunistically. Phase order and slot details: `Docs/ai-index/tick-phases.md`; the authoritative wiring table is the generated `Docs/canon/systems-inventory.md` — **grep it before designing any engine system** (extend/activate, never green-field a listed subsystem).
+- **Change detection:** the graph mutates in place — never key memos/caches on `gameState.graph` identity; bump `worldVersion` (UI) / `structuralCacheVersion` (structural caches) via `touchWorld()` / `touchStructure()`.
+- **Caches:** owned per session on `SimulationRuntime` (`src/engine/simulationRuntime.ts`) — module-scope singletons are a rejected approach.
+- **Position:** three tiers, hex → location → sublocation, one `located_at` edge to the most-specific node; the sublocation tier is one node shape (`type: 'location'` + `parentLocationId`, THR-1183) — ask through `src/engine/sublocationShape.ts`.
+- **Gates:** the pre-commit law is `Docs/canon/verification-gates.md` — including the 30-tick CLI engine smoke owed by any `src/engine/` touch.
+
+## Resolution: Shared Resolution Service
 
 The single authoritative resolution system lives in `src/engine/resolutionService.ts`. All callers (unified actions, legacy encounters, planner forecast) use the same math.
 
@@ -54,14 +63,14 @@ The single authoritative resolution system lives in `src/engine/resolutionServic
 
 **Canonical difficulty normalization:** All callers provide `difficulty` in `0..1`. Legacy encounters use `normalizeLegacyDifficulty()` at their boundary (divides integer difficulty by 100). Unified actions pass through directly.
 
-**Crit model (doubles-based, Phase 2):**
+**Crit model (doubles-based):**
 - Doubles (11, 22, 33, ..., 99) determine crits
 - Doubles at or under threshold = `critical_success`
 - Doubles over threshold = `critical_failure`
 - Crit frequency scales with competence (replaces old flat `roll ≥ 96` tail)
 
 **Outcome ladder:** `critical_success | success | success_at_cost | failure | critical_failure`
-(`success_at_cost` exists in the contract for Phase 3 expansion)
+— all five bands fully live. **`success_at_cost` is the dominant, expected texture** (~45–60% of resolutions; THR-571) — a binary succeed/fail read of this system is wrong. See `state-of-game-design/reference/verbs-resolution.md`.
 
 **Forecast/live parity:** `forecastAction(inputs)` and `resolveAction(inputs, rng)` use the same threshold and crit rules. No planner-only offsets.
 
@@ -70,7 +79,7 @@ The single authoritative resolution system lives in `src/engine/resolutionServic
 - `src/engine/resolution.ts` — legacy low-level implementation (still used by contestation)
 - `src/types/resolution.ts` — `ResolutionInput`, `OutcomeType`, `ResolutionResult`, `ResolutionRollBreakdown`, `ResolutionProbabilitySummary`
 
-## Quintessence: Current/Max Model (Phase 2)
+## Quintessence: Current/Max Model
 
 Actor-level quintessence is a reserve/capacity system:
 - `quintessence` — current reserve (0 to `quintessenceMax`)
@@ -86,7 +95,7 @@ Actor-level quintessence is a reserve/capacity system:
 - `canSpendQuintessence(node, kind)` / `spendQuintessence(node, kind, source, tick)`
 - `getPushModifier(node)` — probability bonus from push spend
 - `canResistOutcome(node)` / `applyResistOutcome(node, source, tick)`
-- Phase 2 implements the contract; full content wiring is Phase 3+
+- The contract is implemented; content wiring continues to widen as encounters adopt the hooks
 
 **Balance telemetry:**
 - `quintessence_changed` events with `reason: 'pending_event' | 'passive_regen' | 'encounter_failure_by_band'`
@@ -134,14 +143,13 @@ Hexes aren't graph nodes — they live in `GameState.tiles[]`. Hex actions produ
 - Terrain transformation is threshold-based via lookup table
 - Design doc: `Docs/plans/2026-03-17-world-state-and-hex-actions-design.md`
 
-## Control Actions (Design Phase)
+## Control Actions (shipped)
 
-A 5th action verb beyond CRUD: sustained actions requiring ongoing resources/focus/stability.
-- Control slots scale with Domain Capability tier
-- Three sustain models: essence drain, state threshold, ritual investment
-- Active controls spawn visible encounter nodes that rivals can contest
-- Prerequisites: Reach tier + Sphere alignment gate who can see/attempt contestation
-- Brainstorm: `Docs/plans/2026-03-17-brainstorm-hex-actions-and-control-mechanic.md`
+The 5th action verb — sustained actions requiring ongoing resources/focus/stability — **is live**; do not green-field it:
+- Templates declare `controlSpec?: ControlSpec` (`src/types/unifiedAction.ts` importing `src/types/controlEffect.ts`)
+- Active-control state lives on `GameState.controlEffects[]`, ticked by `phaseControlEffects` (`src/engine/phaseControlEffects.ts`); the actor holds a `controls` edge — NOT a new node type
+- Contestation resolves via `src/engine/controlContestationResolver.ts` (rivals can usurp/destroy)
+- Rationale history only: `Docs/plans/2026-03-17-brainstorm-hex-actions-and-control-mechanic.md`
 
 ## Module Conventions
 
@@ -152,6 +160,8 @@ A 5th action verb beyond CRUD: sustained actions requiring ongoing resources/foc
 ## Key Source Paths
 
 - `src/engine/` — core engine modules
+- `src/engine/orchestrator.ts` — `runTick` entry + inline legacy phases; `src/engine/phaseRegistry.ts` + `src/engine/phases/` — the registered-phase mode (THR-238)
+- `src/engine/simulationRuntime.ts` — per-session cache/version owner
 - `src/engine/traceBuffer.ts` — trace emission system
 - `src/types/` — shared type definitions (`gameState.ts`, `graph.ts`, `unifiedAction.ts`, `traits.ts`, `effects.ts`). There is no `src/engine/types/`.
 - Obsidian vault for system specs (filesystem, `$OBSIDIAN_VAULT_PATH` — no MCP, THR-654): read `Index.md` first, follow wikilinks

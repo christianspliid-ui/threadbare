@@ -1,10 +1,15 @@
 import { describe, expect, it } from "vitest";
 import {
+  INSTALL_UNUSABLE_VERDICTS,
   STALENESS_BEHIND_THRESHOLD,
   STALENESS_BRANCH_AGE_THRESHOLD_MS,
+  formatFingerprintTestValue,
   probeBranchStaleness,
+  probeNpmSingleTestTiming,
+  testProbeAbstentionReason,
   type BranchStalenessResult,
 } from "../session-precheck";
+import type { HealthReport, HealthVerdict, TreeHealth } from "../node-modules-health";
 
 // Fixed "now" for deterministic age calculations
 const NOW_MS = new Date("2026-05-09T12:00:00Z").getTime();
@@ -228,5 +233,127 @@ describe("probeBranchStaleness — constants", () => {
 
   it("STALENESS_BRANCH_AGE_THRESHOLD_MS is 24 hours in ms", () => {
     expect(STALENESS_BRANCH_AGE_THRESHOLD_MS).toBe(24 * 3600 * 1000);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// test: probe abstention (THR-1326)
+//
+// The failure under test is a CONTRADICTION, not a crash: `test: yes (1.25s)` printed
+// one line above `nm: no — session tree stub`, in the same run, both true in isolation.
+// Node resolves vitest by walking up the directory tree, so a worktree at
+// <repo>/.claude/worktrees/<name> finds <repo>/node_modules and times the donor's
+// packages while its own tree holds no install.
+// ---------------------------------------------------------------------------
+
+function tree(verdict: HealthVerdict, role: TreeHealth["role"] = "session"): TreeHealth {
+  return {
+    root: role === "session" ? "/repo/.claude/worktrees/wt" : "/repo",
+    role,
+    verdict,
+    packageCount: verdict === "healthy" ? 289 : 1,
+    binCount: verdict === "healthy" ? 99 : 0,
+    missingShims: verdict === "healthy" ? [] : ["esbuild", "vitest"],
+    linked: false,
+    mtimeMs: 0,
+    detail: `${verdict} (fixture)`,
+  };
+}
+
+/** Only the session verdict varies; the donor stays healthy, as in the real failure. */
+function report(sessionVerdict: HealthVerdict): HealthReport {
+  const session = tree(sessionVerdict);
+  return {
+    verdict: sessionVerdict,
+    session,
+    donor: tree("healthy", "donor"),
+    degraded: sessionVerdict !== "healthy" && sessionVerdict !== "unknown",
+    summary: `session tree ${sessionVerdict}`,
+  };
+}
+
+describe("testProbeAbstentionReason — which verdicts silence the timing", () => {
+  it("pins the unusable set — a new verdict must be classified deliberately", () => {
+    expect([...INSTALL_UNUSABLE_VERDICTS]).toEqual(["stub", "absent", "shim-stripped"]);
+  });
+
+  for (const verdict of INSTALL_UNUSABLE_VERDICTS) {
+    it(`abstains on session verdict "${verdict}"`, () => {
+      const reason = testProbeAbstentionReason(report(verdict));
+      expect(reason).not.toBeNull();
+      expect(reason).toContain(verdict);
+    });
+  }
+
+  it("does NOT abstain when the session tree is healthy", () => {
+    expect(testProbeAbstentionReason(report("healthy"))).toBeNull();
+  });
+
+  it("does NOT abstain on `unknown` — an unreadable probe is not evidence of damage", () => {
+    // Controlled pair: the two reports differ ONLY in the session verdict, so the
+    // stub arm proves the fixture can produce an abstention at all — without it,
+    // the null on `unknown` would pass even if abstention were dead code.
+    expect(testProbeAbstentionReason(report("unknown"))).toBeNull();
+    expect(testProbeAbstentionReason(report("stub"))).not.toBeNull();
+  });
+
+  it("does NOT abstain when health could not be resolved at all (null report)", () => {
+    expect(testProbeAbstentionReason(null)).toBeNull();
+  });
+
+  it("ignores a damaged DONOR when the session tree itself is healthy", () => {
+    // The donor is repaired by its own lane; it does not invalidate a timing taken
+    // against a healthy session tree.
+    const donorDamaged: HealthReport = {
+      ...report("healthy"),
+      donor: tree("stub", "donor"),
+      degraded: true,
+    };
+    expect(testProbeAbstentionReason(donorDamaged)).toBeNull();
+  });
+});
+
+describe("probeNpmSingleTestTiming — abstains instead of timing a donor", () => {
+  it("returns status=unknown and abstained=true on a stub session tree", () => {
+    const result = probeNpmSingleTestTiming(report("stub"));
+    expect(result.status).toBe("unknown");
+    expect(result.abstained).toBe(true);
+  });
+
+  it("does not shell out at all when abstaining", () => {
+    // Structural proof that no command ran: every executed path stamps durationMs,
+    // and only the abstention path returns without one. Asserting on elapsed time
+    // would be a flake; asserting on the field is exact.
+    const result = probeNpmSingleTestTiming(report("absent"));
+    expect(result.durationMs).toBeUndefined();
+  });
+
+  it("names the repair route rather than blaming the suite", () => {
+    const result = probeNpmSingleTestTiming(report("stub"));
+    expect(result.detail).toContain("nm:");
+    expect(result.status).not.toBe("no");
+  });
+});
+
+describe("formatFingerprintTestValue — abstained is its own token", () => {
+  it("renders `abstained`, distinct from the `unknown` of a probe that tried", () => {
+    const abstained = probeNpmSingleTestTiming(report("stub"));
+    expect(formatFingerprintTestValue(abstained)).toBe("abstained");
+    // The discriminating half: before THR-1326 this same status would have rendered
+    // `unknown`, which reads as "could not tell" rather than "declined on purpose".
+    expect(formatFingerprintTestValue({ name: "test", status: "unknown", detail: "x" })).toBe(
+      "unknown",
+    );
+  });
+
+  it("never renders a duration for an unusable session tree", () => {
+    // The exact regression: fingerprint read `test=1.25s nm=session:stub/donor:healthy`.
+    const value = formatFingerprintTestValue(probeNpmSingleTestTiming(report("stub")));
+    expect(value).not.toMatch(/^\d+\.\d+s$/);
+  });
+
+  it("still renders a duration for a probe that genuinely ran", () => {
+    const ran = { name: "test", status: "yes" as const, detail: "ok", durationMs: 1250 };
+    expect(formatFingerprintTestValue(ran)).toBe("1.25s");
   });
 });

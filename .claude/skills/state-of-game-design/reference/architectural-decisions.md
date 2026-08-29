@@ -6,7 +6,7 @@ description: >
   plan-doc authoring, audit work, governance work, or any task where you need to
   understand how the systems interrelate.
 validated_doctrine: rules-of-play@1
-last_validated_against: 2026-08-28
+last_validated_against: 2026-08-29
 ---
 
 # Architectural Decisions & Systems Reference
@@ -38,7 +38,7 @@ When in tension, higher priorities win.
 - **Encounter awareness is hex-granular.** Hex distance (not location-hop BFS) determines awareness. Cross-hex visibility computed via per-reach awareness hops.
 - **The world graph is mutated in place.** Never depend on graph object identity for change detection. Use `touchWorld()` / `touchStructure()` version counters.
 - **Engine caches must be owned per session, not stored at module scope.** Module-level singletons persist across game sessions; use `SimulationRuntime` scoped to the current playthrough.
-- **The distance matrix caps indexed locations at `MAX_DISTANCE_MATRIX_SIZE` (1200).** Covers all supported presets (`large` ~584, `epic` ~805).
+- **The distance matrix indexes the place tier only and caps at `MAX_DISTANCE_MATRIX_SIZE` (1200).** THR-1346 scoped the build to `getPlaceTierLocations` (measured place-tier counts, seed 42: small 131, medium 214, large 542, epic 791). It is live on the per-tick path — social encounter generation and idle-ambition targeting walk whole rows — while encounter *awareness* never uses it (hex distance only).
 
 > **Canonical source:** CLAUDE.md § "Load-Bearing Architectural Decisions" is the primary ledger. This shard mirrors the settled subset; if they diverge, CLAUDE.md wins.
 
@@ -52,12 +52,13 @@ When in tension, higher priorities win.
 
 - All entities (actors, locations, objects, traits) are graph nodes
 - All relationships are typed edges with properties
-- `world-model.json` is the canonical data file
-- Current: 244 nodes, 371 typed edges, 18 categories, 19 content packages
+- `world-model.json` is the canonical data file — read its self-describing `meta` block for current node/edge/category counts rather than trusting a number quoted in any doc (THR-688 rule A: predicates, not counts)
 
 **Exception:** Hexes are NOT graph nodes. They live in `GameState.tiles[]` indexed by coordinate. Hex actions produce `HexMutation[]` instead of `GraphOp[]`.
 
-### The Control Mechanic (Design Phase)
+### The Control Mechanic (shipped)
+
+Live in the engine — extend, never green-field: templates declare `controlSpec?: ControlSpec` (`src/types/unifiedAction.ts`), active controls live on `GameState.controlEffects[]` ticked by `phaseControlEffects`, the actor holds a `controls` edge, and contestation resolves via `controlContestationResolver.ts`.
 
 **Control slots:** Limited number, scaling with Domain Capability tier.
 

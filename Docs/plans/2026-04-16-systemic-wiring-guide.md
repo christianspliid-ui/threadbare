@@ -45,7 +45,7 @@ The second version uses enrichment placeholders, conditional blocks, and implies
 
 > The list has grown past the original seven; it is numbered, not counted, so a new capability appends rather than renumbering. Capabilities 14 (nudge hand) and 15 (trait hooks) are the newest and are **mandatory** checklist steps for any new encounter, not optional flourishes.
 
-Every encounter has access to seven systemic capabilities. These aren't optional extras — they're the tools that make content alive. When you sit down to write, you should be asking: "which of these seven am I using, and why am I not using the others?"
+Every encounter has access to the systemic capabilities below. These aren't optional extras — they're the tools that make content alive. When you sit down to write, you should be asking: "which of these am I using, and why am I not using the others?" (Cite capabilities by **Part + number** — later Parts restart their own numbering, so a bare "Capability 10" is ambiguous across the file.)
 
 ### Capability 1: Enrichment Placeholders — Prose That Knows Who's Reading
 
@@ -299,7 +299,7 @@ The attachment and spell systems compose effects from a category pool of ~40 pri
 | `SpawnEffect` | Brings entities into existence (agents, encounters, attachments, locations) |
 | `StatContributionEffect` | **(THR-718)** Raises the bearer's **Domain Capability tier** while possessed/bonded: `{ type: 'stat_contribution', contributions: { iron: 1.5 } }`. Summed by `collectStatContributions` into `computeRawScore` — the one item→tier substrate (do NOT write bare `domainContributions` bags on possession entries). Distinct from `passive`/`permanent`/`conditional` (which shape resolution *rolls*, not tiers). Magnitudes are capped by the `ITEM_STAT_BAND_*` bands in `src/data/item-stat-bands.ts` (a content test fails the build past the legendary ceiling); magnitude renders as dots on the Prowess-tab DomainCard. |
 
-**For encounter aftermath authoring, use the typed aftermath effect kinds in Part 5 § "Aftermath Reaction Effect Types" (23 kinds).** Raw graph-mutation primitives are not exposed to authored aftermath — propose a new typed kind if you need one.
+**For encounter aftermath authoring, use the typed aftermath effect kinds in Part 5 § "Aftermath Reaction Effect Types" — the authoritative count is `KNOWN_AFTERMATH_EFFECT_KINDS` in `src/testing/contentInvariants.ts` (32+ and growing; never trust a number quoted in prose).** Raw graph-mutation primitives are not exposed to authored aftermath — propose a new typed kind if you need one.
 
 #### Authored aftermath surface for graph mutation
 
@@ -1282,6 +1282,37 @@ With the markers, `artifact.enchant` / `artifact.empower` charge 4 essence at di
 
 **Where to find the implementation:** `src/engine/effects/effectSuppression.ts` (the suppression pass), `getRevealRanges` / `isImmuneToAnyTag` / `normalizeTag` in `src/engine/effects/effectQueries.ts`, and the overlay reads in `src/engine/movementCost.ts` and `src/engine/encounterAwareness.ts`.
 
+### Capability 26: Settlement Genome NPC Roles — Naming Who Lives Here (THR-1347)
+
+**What it does:** the `npcRoles` you author in a sphere menu, a reach menu or a culture baseline — and the `capstoneNpcs` on an archetype — now become real `actor` nodes standing in the settlements that qualify for them.
+
+**Why you want it:** until THR-1347 they did not. Four of the settlement genome's five passes built an NPC roster, `NPC_BUDGET` sliced it, and `materializeGenome` stored it on the location where nobody read it. Every one of those tables was authored content that could not become a person. If you have ever added a role to `SPHERE_SUBLOCATION_MENU`, `REACH_SUBLOCATION_MENU`, `CULTURE_BASELINE_MAP` or `SETTLEMENT_ARCHETYPES` and never met that character in a world, this is why.
+
+**Where to author:**
+
+| Table | File | What it says |
+|---|---|---|
+| `INFRASTRUCTURE_NPCS` | `settlementGenome/infrastructure.ts` | Roles a tier owes regardless of character |
+| `CULTURE_BASELINE_MAP[...].npcRoles` | `settlementGenome/cultureBaseline.ts` | Roles a foundation's tradition puts here |
+| `SPHERE_SUBLOCATION_MENU[...].npcRoles` | `settlementGenome/sphereMenu.ts` | Roles a sphere's influence draws in |
+| `REACH_SUBLOCATION_MENU[...].npcRoles` | `settlementGenome/reachMenu.ts` | Roles the local factions' reaches imply |
+| `SETTLEMENT_ARCHETYPES[...].capstoneNpcs` | `settlementGenome/archetypes.ts` | The one figure that *is* the settlement's identity |
+
+Each entry is `{ role: NpcRole, minTier }` (capstones are bare roles). `role` must be one of the 56 in `NPC_ROLE_REACH_MAP` — the reach pair it maps to is what gives the seeded NPC its capability spread, so an invented string is not a new role, it is a missing one.
+
+**Four rules that decide whether your role reaches a world:**
+
+1. **It competes for a small number of slots.** `GENOME_NPC_TOPUP_CAP` (hamlet 2 → capital 5) bounds how many genome roles a settlement gains *beyond* its generic `LOCATION_ROLE_ROSTERS` draw. The cap is small on purpose: the roster is what makes every hamlet a hamlet, the genome is what makes *this* hamlet the one beside the mine.
+2. **Identity outranks baseline.** When more roles are authored than the cap admits, `GENOME_NPC_PASS_PRIORITY` decides — archetype, then culture, then sphere, then reach, then infrastructure. An archetype capstone is appended last by the genome and would otherwise be the first thing a cap discarded. A role authored only in `INFRASTRUCTURE_NPCS` at a tier whose roster already covers it will usually lose, which is correct.
+3. **A role the generic roster already seeds is skipped, not doubled.** The top-up seeds only what is missing at that settlement, counting NPCs placed in its sublocations as standing in it. So adding `innkeeper` to a sphere menu changes nothing — every tier roster already has one.
+4. **`minTier` gates it before any of the above.** A `city`-tier role never appears in a town, however strong the sphere.
+
+**Placement is inferred, not authored.** There is no `preferredSublocation` field — one existed, with no writer and no reader, and was removed. Where an NPC stands comes from `NPC_ROLE_SUBLOCATION_MAP` in `src/types/npc.ts`: add your role there to give it a home (a `librarian` goes to the library), or leave it out to have it stand at the settlement itself.
+
+**How to tell whether yours landed.** Seeded NPCs carry their provenance on the node: `npcSource: 'genome' | 'roster'` and, for genome ones, `genomeSourcePass`. In the CLI, `eval state.graph.getNodesByType('actor').filter(a => a.properties.npcSource === 'genome').length`. Do **not** check `location.properties.genomeResult.npcs` — that field is populated whether or not anything consumed it, which is the exact trap this capability exists to close.
+
+**Where to find the implementation:** `seedGenomeNpcsAtSettlements` in `src/engine/npcSeeding.ts` (sharing its `mintNpc` path with `seedNpcsAtLocations`, so both producers mint identical node shapes), called from the tail of `src/engine/worldSeed.ts` after the genome's second pass — which is the only point where the stored roster carries its culture and reach contributions.
+
 ---
 
 ---
@@ -2095,8 +2126,8 @@ The `narrativeTemplate` field contains prose with no placeholders, no conditiona
 ### Anti-Pattern 3: "Aftermath as Epilogue"
 Aftermath reactions have evocative prose but no effects array, or only a `recent_event`. The aftermath doesn't change the world — it just describes what happened. **Fix:** Every aftermath reaction should have at least one effect that creates persistent state: a seed, a mark, a tally, or intelligence.
 
-### Anti-Pattern 4: "Seeds Without Templates"
-An encounter plants seeds using `encounterFamily` only, with no `templateId`. Since family-matching is v1/narrative-only, the seed emits a narrative event but doesn't spawn an actual follow-up encounter. **Fix:** Use `templateId` for guaranteed follow-up spawning. Use `encounterFamily` only when you intentionally want a narrative event without a specific follow-up.
+### Anti-Pattern 4: "Seeds That Assume Family-Matching Is Dead"
+*(Corrected 2026-08-29, THR-1365 — this entry previously taught the pre-THR-697 stub.)* Family-only seeds **do** spawn real follow-up encounters since THR-697 Slice D: a family-only `encounter_seed` draws an eligible member of `${family}.*` from the template pool and spawns it, falling back to the withered narrative event only when zero members are eligible (see Part 2, Capability 2). The live anti-pattern is the inverse: writing `templateId` seeds everywhere out of distrust of family-matching, which bypasses the eligibility filter's variety. **Fix:** use `encounterFamily` when any family member is a valid follow-up (the common case); reserve `templateId` for a specifically authored continuation. Note a `templateId` seed skips the eligibility filter (memory/THR-697) — it spawns even where the template wouldn't normally qualify.
 
 ### Anti-Pattern 5: "Scoring Blindness"
 The author doesn't set `crudType`, `motivations`, `locationSubtypes`, or `actorAffinities` thoughtfully. The encounter exists in the content registry but never surfaces for appropriate agents because the scoring system can't match it. **Fix:** Think about scoring as design. A festival encounter should be `crudType: 'update'` with `motivations: [['loyalty', 'ambition']]` and `locationSubtypes: ['market', 'settlement']`. These fields determine whether the encounter finds its audience.
@@ -2111,7 +2142,7 @@ Success and failure both produce the same kind of persistence — maybe both add
 This guide should be read before these skills:
 
 - **`encounter-pipeline`** — The four-pass pipeline authors encounters. This guide tells authors *what to write about* based on engine capabilities. The systems-audit agent (Pass 3) should validate wiring against this guide.
-- **`attachment-pipeline`** — Attachments compose behavior from the engine's effect primitive categories (`GraphMutationEffect`, `CreateStructureEffect`, `SpawnEffect`, etc.). These primitives are distinct from the 18 typed aftermath effect kinds — the attachment pool is authored at a lower level. See the attachment-pipeline skill for the full vocabulary.
+- **`attachment-pipeline`** — Attachments compose behavior from the engine's effect primitive categories (`GraphMutationEffect`, `CreateStructureEffect`, `SpawnEffect`, etc.). These primitives are distinct from the typed aftermath effect kinds (count per `KNOWN_AFTERMATH_EFFECT_KINDS` in `src/testing/contentInvariants.ts`) — the attachment pool is authored at a lower level. See the attachment-pipeline skill for the full vocabulary.
 - **`prose-content-systems`** — Day-to-day content uses enrichment placeholders and narrative templates. This guide explains what those placeholders resolve to and why they matter.
 - **`prose-pipeline`** — Resolver architecture for graph-walking prose. This guide explains the other side: how encounter outcomes create the graph state that resolvers later walk.
 - **`encounter-actor-systems`** — The scoring, filtering, and resolution systems. This guide explains how template fields feed into those systems.

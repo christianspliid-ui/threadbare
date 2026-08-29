@@ -69,6 +69,11 @@ interface AscendantBarProps {
   onReleaseControl?: (effectId: string) => void;
   /** Open the Codex path catalog, optionally pre-filtered to a run state (THR-613 Slice 3b-tail). */
   onOpenCodex?: (filter?: CodexRunStateFilter) => void;
+  /**
+   * Open an attachment's sheet from a Hooks chip (THR-1330). Routed straight to
+   * `HooksBlock`; the bar itself has no chip of its own to link.
+   */
+  onOpenAttachment?: (templateNodeId: string) => void;
 }
 
 export function AscendantBar({
@@ -83,6 +88,7 @@ export function AscendantBar({
   onInvestiture,
   onReleaseControl,
   onOpenCodex,
+  onOpenAttachment,
 }: AscendantBarProps) {
   const [open, setOpen] = useState({ ...ASCENDANT_BAR_SECTION_DEFAULT_OPEN });
   const toggle = (key: keyof typeof open) => setOpen((o) => ({ ...o, [key]: !o[key] }));
@@ -230,7 +236,7 @@ export function AscendantBar({
         onToggle={() => toggle('hooks')}
         placeholder="No marks, clues, or vows."
       >
-        <HooksBlock gameState={gameState} />
+        <HooksBlock gameState={gameState} onOpenAttachment={onOpenAttachment} />
       </BarSection>
     </aside>
   );

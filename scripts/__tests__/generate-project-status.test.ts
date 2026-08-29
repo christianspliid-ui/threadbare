@@ -22,11 +22,15 @@ import path from 'node:path';
 import {
   ENTRIES_MARKER,
   MAX_PAGE_LINES,
+  SUMMARY_GIST_CHARS,
   assemble,
+  fragmentGist,
+  fragmentLabel,
   newestDate,
   readFragments,
   selectFragments,
   sortKey,
+  summaryLine,
   type Fragment,
 } from '../generate-project-status.ts';
 
@@ -112,8 +116,10 @@ describe('fragment ordering is newest-first (THR-1016)', () => {
 
 describe('the line cap is a rendering budget, not an editing discipline (THR-1016)', () => {
   it('holds the cap by rendering only the newest fragments that fit', () => {
-    const fragments = Array.from({ length: 40 }, (_, i) =>
-      frag(`2026-08-${String(i + 1).padStart(2, '0')}-thr-${1000 + i}.md`, 1),
+    // More fragments than any budget under MAX_PAGE_LINES can hold, so the
+    // held-back set is non-empty by construction rather than by coincidence.
+    const fragments = Array.from({ length: MAX_PAGE_LINES * 3 }, (_, i) =>
+      frag(`2026-08-01-thr-${1000 + i}.md`, 1),
     ).reverse();
 
     const { content, rendered, dropped, lineCount } = assemble(TEMPLATE, fragments);
@@ -126,12 +132,31 @@ describe('the line cap is a rendering budget, not an editing discipline (THR-101
     expect(content).not.toContain('moved to `project-history.md`');
   });
 
-  it('renders the newest entry even when it alone exceeds the budget', () => {
-    // An oversized entry must overrun visibly, never produce an empty Current Focus.
-    const { rendered, lineCount } = assemble(TEMPLATE, [frag('2026-08-07-thr-1.md', 200)]);
+  it('cannot be defeated by one long entry — the page is an index (THR-1327)', () => {
+    // The defect this pins: the old renderer spliced whole bodies in, so a single
+    // long fragment consumed the entire budget and the page showed one entry
+    // wearing the name of a page. Measured `1 of 281` (2026-08-27) and `4 of 341`
+    // (2026-08-29) with nothing changed but how long the last author wrote.
+    // Restoring body-splicing to `assemble` reddens this.
+    const fragments = [
+      frag('2026-08-07-thr-3.md', 200),
+      frag('2026-08-06-thr-2.md', 150),
+      frag('2026-08-05-thr-1.md', 1),
+    ];
 
-    expect(rendered).toHaveLength(1);
-    expect(lineCount).toBeGreaterThan(MAX_PAGE_LINES);
+    const { rendered, lineCount } = assemble(TEMPLATE, fragments);
+
+    expect(rendered).toHaveLength(3);
+    expect(lineCount).toBeLessThanOrEqual(MAX_PAGE_LINES);
+  });
+
+  it('costs exactly one line per entry regardless of fragment length', () => {
+    // The property that makes the cap mean a stable entry count: a 1-line and a
+    // 200-line fragment occupy the same space on the page.
+    const short = assemble(TEMPLATE, [frag('2026-08-07-thr-1.md', 1)]).lineCount;
+    const long = assemble(TEMPLATE, [frag('2026-08-07-thr-1.md', 200)]).lineCount;
+
+    expect(long).toBe(short);
   });
 
   it('keeps every fragment when they all fit', () => {
@@ -142,10 +167,83 @@ describe('the line cap is a rendering budget, not an editing discipline (THR-101
     expect(dropped).toHaveLength(0);
   });
 
-  it('charges each entry a blank-line separator', () => {
-    // Budget of 4 fits two 1-line entries (2 lines each incl. separator), not three.
-    const fragments = Array.from({ length: 3 }, (_, i) => frag(`2026-08-0${3 - i}-thr-${3 - i}.md`, 1));
-    expect(selectFragments(fragments, 4).rendered).toHaveLength(2);
+  it('fills the budget with one entry per line', () => {
+    // Budget of 4 fits four index lines, not two — the separator charge went away
+    // with body-splicing (THR-1327).
+    const fragments = Array.from({ length: 6 }, (_, i) => frag(`2026-08-0${6 - i}-thr-${6 - i}.md`, 1));
+    const { rendered, dropped } = selectFragments(fragments, 4);
+
+    expect(rendered).toHaveLength(4);
+    expect(dropped).toHaveLength(2);
+    expect(rendered.map((f) => f.file)).toEqual(fragments.slice(0, 4).map((f) => f.file));
+  });
+
+  it('still renders one entry when the budget is exhausted by scaffolding', () => {
+    // A page whose scaffolding leaves no room must show the newest entry anyway,
+    // never an empty Current Focus.
+    expect(selectFragments([frag('2026-08-07-thr-1.md', 1)], 0).rendered).toHaveLength(1);
+  });
+});
+
+describe('the index line names the entry it links to (THR-1327)', () => {
+  it('labels from the filename, which both body shapes share', () => {
+    // 100 of the 341 fragments live when this landed lead with a bold sentence
+    // rather than a heading, so a body-derived label would be absent for a third
+    // of the corpus. The filename carries date and ticket by construction.
+    expect(fragmentLabel('2026-08-29-thr-1364.md')).toBe('2026-08-29 — THR-1364');
+  });
+
+  it('degrades to the basename for a fragment matching neither shape', () => {
+    // `2026-07-22-marathon.md` is real and undated-by-ticket; it must not throw.
+    expect(fragmentLabel('2026-07-22-marathon.md')).toBe('2026-07-22');
+    expect(fragmentLabel('notes.md')).toBe('notes');
+  });
+
+  it('reads the gist from a dated heading, dropping the prefix the label repeats', () => {
+    expect(
+      fragmentGist({ file: 'x.md', body: '# 2026-08-29 — THR-1364: R4-T3 skills sweep\n\nbody' }),
+    ).toBe('R4-T3 skills sweep');
+  });
+
+  it('reads the gist from the older ticket-first heading too', () => {
+    expect(
+      fragmentGist({ file: 'x.md', body: '# THR-1358 — round 3 closes: ui-laws is a doctrine now' }),
+    ).toBe('round 3 closes: ui-laws is a doctrine now');
+  });
+
+  it('reads the first sentence of a bold-lead fragment, stripping emphasis', () => {
+    // The pre-heading norm: no `#` line at all, a bolded lead sentence instead.
+    const body =
+      '**A 400-seed loop was measuring a value the seed cannot move (THR-1000, 2026-08-06).** ' +
+      'The rest of the paragraph runs on for a very long time indeed.';
+
+    expect(fragmentGist({ file: 'x.md', body })).toBe(
+      'A 400-seed loop was measuring a value the seed cannot move',
+    );
+  });
+
+  it('truncates a long gist to one line, on a word boundary', () => {
+    const gist = fragmentGist({ file: 'x.md', body: `# ${'word '.repeat(80)}` });
+
+    expect(gist.length).toBeLessThanOrEqual(SUMMARY_GIST_CHARS + 1);
+    expect(gist.endsWith('…')).toBe(true);
+    expect(gist).not.toMatch(/\s…$/);
+  });
+
+  it('renders label, link and gist as a single line', () => {
+    const line = summaryLine({ file: '2026-08-29-thr-1364.md', body: '# 2026-08-29 — THR-1364: R4-T3 skills sweep' });
+
+    expect(line).toBe(
+      '- **[2026-08-29 — THR-1364](status/2026-08-29-thr-1364.md)** — R4-T3 skills sweep',
+    );
+    expect(line.split('\n')).toHaveLength(1);
+  });
+
+  it('still renders a link when the gist comes out empty', () => {
+    // A fragment whose whole body is the prefix the label already carries.
+    expect(summaryLine({ file: '2026-08-29-thr-1364.md', body: '# THR-1364' })).toBe(
+      '- **[2026-08-29 — THR-1364](status/2026-08-29-thr-1364.md)**',
+    );
   });
 });
 

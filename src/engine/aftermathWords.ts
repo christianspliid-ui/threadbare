@@ -47,11 +47,23 @@ import type {
  * Reach → display name. Same set the Codex draws (`components/Codex/codexRegistry.ts`);
  * duplicated as data rather than imported because the engine must not depend on a
  * component module.
+ *
+ * THR-1368: the `flesh` row is gone, together with the `reach.flesh` node and its six
+ * edges in `world-model.json` — the two halves that THR-1359 correctly refused to
+ * separate. This bag is keyed by world-model `reach.*` node suffix rather than by
+ * `ReachDomain`, so the row and the node had to retire in one change or the surviving
+ * half would point the mismatch the other way.
+ *
+ * `time` and `life` stay, and are deliberately *not* residue of the retired Reach: they
+ * are display words for keys that have never had a `reach.*` node, already excluded from
+ * `TOOLTIP_BACKED_REACHES` below so they draw no dead link. The `Record<string, string>`
+ * annotation is what keeps them legal, and is therefore still correct rather than a
+ * widening hole.
  */
 export const REACH_DISPLAY_NAMES: Record<string, string> = {
   iron: 'Iron', gold: 'Gold', shadow: 'Shadow', veil: 'Veil',
   heart: 'Heart', eye: 'Eye', stone: 'Stone', star: 'Star',
-  flesh: 'Flesh', time: 'Time', life: 'Life',
+  time: 'Time', life: 'Life',
 };
 
 /** True when `raw` names a reach this module has a display word for. */
@@ -60,8 +72,8 @@ export function isReachName(raw: string): raw is ReachDomain {
 }
 
 /**
- * The reaches the tooltip registry can actually resolve — the nine `reach.*`
- * nodes in `world-model.json` (THR-1033).
+ * The reaches the tooltip registry can actually resolve — the eight `reach.*`
+ * nodes in `world-model.json` (THR-1033; nine until THR-1368 retired `reach.flesh`).
  *
  * This is deliberately *narrower* than `REACH_DISPLAY_NAMES`, which also holds
  * `time` and `life`. Those two have display words but no world-model node, so
@@ -75,7 +87,7 @@ export function isReachName(raw: string): raw is ReachDomain {
  * cannot drift away from the registry the way the implicit one did.
  */
 export const TOOLTIP_BACKED_REACHES: readonly string[] = [
-  'iron', 'gold', 'shadow', 'veil', 'heart', 'eye', 'stone', 'star', 'flesh',
+  'iron', 'gold', 'shadow', 'veil', 'heart', 'eye', 'stone', 'star',
 ];
 
 /** Reach → display name, falling back to a humanised form of an unknown key. */

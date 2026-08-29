@@ -9,6 +9,8 @@ import type {
   UnifiedActionTemplate,
 } from '../types/unifiedAction';
 import { isActionStepBranch, isRouteDecision } from '../types/unifiedAction';
+import type { FactionDefinition } from '../types/faction';
+import type { GraphNode } from '../types/graph';
 import { REACH_DOMAINS } from '../types/traits';
 import { VALUE_PAIRS } from '../types/agent';
 import { leansOnAxis, leansOnRoute } from '../engine/encounters/poleLean';
@@ -490,5 +492,73 @@ export function assertAllValidReaches(templates: readonly UnifiedActionTemplate[
     for (const step of template.steps) {
       assertValidStep(step, template.id);
     }
+  }
+}
+
+/**
+ * Every key of a faction's `reachWeights` must be a live `ReachDomain` (THR-1345).
+ *
+ * `reachWeights` is declared `Partial<Record<ReachDomain, number>>`, so excess-property
+ * checking already rejects a stale key on a directly-annotated literal — but that only
+ * holds for literals the typechecker still looks at. Five such errors sat unread in the
+ * THR-489 red baseline for the life of the defect, and a bag reached through a widened
+ * annotation (`Record<string, number>`) is invisible to `tsc` outright. This invariant
+ * closes both paths by reading the values the seeder will actually read.
+ *
+ * Stale keys are not inert: `factionSeeding` stores this bag on the faction node, from
+ * where `computeSettlementReaches` normalizes across *all* keys present — so a key no
+ * consumer can use still scales down every legitimate reach at that settlement.
+ */
+export function assertValidReachWeights(definition: FactionDefinition): void {
+  for (const key of Object.keys(definition.reachWeights)) {
+    expect(
+      VALID_REACHES.has(key),
+      `faction '${definition.id}' declares reachWeights key '${key}', which is not a ReachDomain. `
+        + `Valid: ${REACH_DOMAINS.join(', ')}. `
+        + `'flesh' is the retired 9th Reach (migrate per Docs/canon/cosmology.md); `
+        + `'force' is a Sphere name, not a Reach — the axes are orthogonal.`,
+    ).toBe(true);
+  }
+}
+
+/**
+ * Every Reach an attachment node names — in an effect's `reach`/`onUse.reach` or in a
+ * `modifiers` bag — must be a live `ReachDomain` (THR-1359).
+ *
+ * The sibling of {@link assertValidReachWeights}, for the other half of the same defect.
+ * THR-1345 closed `reachWeights`; the sweep it required found `flesh` still keyed into
+ * ten further production sites. Most were unreachable by construction, but two were not:
+ * `Battle Salve` granted `+0.10 Flesh` on each of three charges, so the item did nothing
+ * when used, and a seeded rations edge carried a `modifiers: { flesh: 0.05 }` that
+ * `computeRawScore` could never score.
+ *
+ * `tsc` is not a substitute here. It catches an `as const` literal, but a `modifiers` bag
+ * lives in an untyped edge property bag, and a recorded error in `typecheck-baseline.json`
+ * is a permitted error indefinitely — which is exactly how every one of these survived.
+ * This invariant reads the values the graph will actually carry.
+ */
+export function assertValidAttachmentReaches(node: GraphNode): void {
+  const props = (node.properties ?? {}) as Record<string, unknown>;
+
+  const check = (reach: unknown, where: string): void => {
+    if (typeof reach !== 'string') return;
+    expect(
+      VALID_REACHES.has(reach),
+      `attachment '${node.id}' names reach '${reach}' at ${where}, which is not a ReachDomain. `
+        + `Valid: ${REACH_DOMAINS.join(', ')}. `
+        + `'flesh' is the retired 9th Reach — migrate per the table in Docs/canon/cosmology.md `
+        + `(healing → Gold, athletics → Iron, body modification → Stone, survival → Star).`,
+    ).toBe(true);
+  };
+
+  for (const key of Object.keys((props.modifiers ?? {}) as Record<string, unknown>)) {
+    check(key, 'modifiers');
+  }
+
+  const effects = Array.isArray(props.effects) ? props.effects : [];
+  for (const [i, raw] of effects.entries()) {
+    const effect = (raw ?? {}) as Record<string, unknown>;
+    check(effect.reach, `effects[${i}].reach`);
+    check((effect.onUse as Record<string, unknown> | undefined)?.reach, `effects[${i}].onUse.reach`);
   }
 }

@@ -3892,6 +3892,12 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
           onOpenSheet={() => setAscendantSheetOpen(true)}
           onOpenMandate={() => setMandateDetailOpen(true)}
           onOpenCodex={openCodex}
+          // THR-1330 — a Hooks chip's link half. Deliberately the same setter the
+          // aftermath consequence chip uses (THR-1120), so the condition the player
+          // was granted at the end of an encounter and the condition sitting on their
+          // bar afterwards open the one sheet. A second attachment surface for the
+          // same concept class is what Law 3 exists to prevent.
+          onOpenAttachment={setAttachmentSheetId}
           onMove={handleAvatarMoveClick}
           onInvestiture={handleScryWithMutex}
           onReleaseControl={(effectId) =>

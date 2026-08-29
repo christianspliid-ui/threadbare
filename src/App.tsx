@@ -244,7 +244,7 @@ function App() {
             color: 'var(--text-primary)',
           }}
         >
-          Fantasy World Simulator
+          Threadbearer
         </h1>
         <CosmologyPanel
           cosmology={cosmology}

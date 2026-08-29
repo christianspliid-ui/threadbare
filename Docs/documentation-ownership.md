@@ -11,7 +11,8 @@
 | **Repo** (`Docs/`, `.planning/`) | Implementation rationale, design plans, changelog, UI patterns, project status, milestone roadmaps | System definitions, issue tracking (that's Linear) |
 | **Linear** ([Threadbare team](https://linear.app/threadbare)) | Issue tracking, backlog prioritization, handoff comments, project milestones, agent coordination state | System definitions, implementation rationale |
 | **`CLAUDE.md`** | Session workflow, architectural decisions, non-functional priorities, skill routing, rejected approaches | Anything duplicated from the above — link, don't copy |
-| **Canon pages** (`Docs/canon/`) | Per-domain navigation layer: current spec pointers, rejected approaches, open questions, last-reviewed date. Agent Step 0 for authoring work. | Definitions (those live in UL), rationale (those live in plans) |
+| **Canon pages** (`Docs/canon/`) | Per-domain navigation layer: current spec pointers, rejected approaches, open questions, last-reviewed date. Agent Step 0 for authoring work. Also hosts **generated** artifacts (`systems-inventory.md`, `interface-map.generated.md`, `consumption-ledger.generated.md`, `setting-coverage.generated.md`) — never hand-edit those; edit their registries/generators (e.g. `scripts/interface-contracts.ts`) and regenerate. | Definitions (those live in UL), rationale (those live in plans) |
+| **AI index** (`Docs/ai-index/`) | Thin live runtime contracts for engine work — graph interpretation, tick-phase order, refactor footguns. The *detail* layer under `Docs/canon/engine.md`, which routes to it; registered as dependents of the `architecture` doctrine (guidance manifest), so an engine-authority edit flags them. Refreshed when `src/types/graph.ts` / `orchestrator.ts` / `phaseRegistry.ts` change shape. | Design rationale (plans), definitions (UL), gate law (canon/verification-gates.md) |
 
 ### Archived surfaces
 
@@ -21,7 +22,7 @@
 | **`.planning/BACKLOG.md`** | Retired 2026-04-13 | Replaced by Linear (Threadbare team). File tombstoned with pointer to Linear. |
 | **`.planning/HANDOVER.md`** | Retired 2026-04-13 | Replaced by Linear issue comments with coordination blocks. File tombstoned with pointer to Linear. |
 | **Obsidian** `Build Status` note | Deprecated 2026-03-22 | Was frozen at 2026-03-05. Project status lives in `Docs/project-status.md` + `Docs/project-history.md`. |
-| **Paper** | Archived 2026-03-29 | Was planned for visual documentation (component anatomy, style tiles, asset registry). Never actively maintained. Visual docs live in `STYLE.md` and `Design/style-tile.html`. |
+| **Paper** | Archived 2026-03-29 | Was planned for visual documentation (component anatomy, style tiles, asset registry). Never actively maintained. Visual docs live in `STYLE.md` and the in-app `?view=styleguide`. |
 
 ---
 
@@ -35,7 +36,7 @@
 - **Project status** → one `Docs/status/YYYY-MM-DD-thr-XXXX.md` fragment per shipped ticket (`Docs/project-status.md` is **generated and untracked** since THR-1016 — assembled from the newest fragments under a ≤60-line cap; never hand-edit it) + `Docs/project-history.md` (append-only archive).
 - **System definitions** (e.g. "what is the Doom Clock") → Obsidian only. Other surfaces link to it.
 - **Why a decision was made** → `Docs/plans/` only. CLAUDE.md references the plan doc, not the rationale itself.
-- **Visual style** → `STYLE.md` + `Design/style-tile.html` in repo.
+- **Visual style** → `STYLE.md` (art direction) + `Docs/design-system/` (UI) + `?view=styleguide` (living component reference). Hex asset registry: `src/data/hex-tile-assets.ts`.
 - **Canonical terminology** → `Docs/ubiquitous-language/` (UL wins on disagreements).
 
 ---
@@ -73,6 +74,7 @@
 - `changelog.md` — append-only log of changes (date | where | what | why)
 - `ubiquitous-language/` — canonical terminology (UL wins on disagreements)
 - `canon/` — per-domain Canon pages (agent Step 0 for authoring tasks); schema in `canon/README.md`
+- `ai-index/` — live runtime contracts for engine work (graph-contract, tick-phases, invariants-and-footguns); routed to by `canon/engine.md`
 - `documentation-ownership.md` — this file
 
 ---

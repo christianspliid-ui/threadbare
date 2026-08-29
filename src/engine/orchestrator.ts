@@ -205,6 +205,7 @@ import { processFactionOutcome, resetFactionEventSeq } from './factionOutcome';
 import type { DistanceMatrix } from './distanceMatrix';
 import { clearTimelines, appendEvent } from './encounterTimeline';
 import { recordReward, clearRewardHistory } from './rewardHistory';
+import { clearDynamicFactionDefinitions } from '../data/faction-definition-lookup';
 import type { SpherePressureEvent } from '../types/sphereAffinity';
 import { ENCOUNTER_PRESSURE_PER_STEP, RIVAL_PRESSURE_MAGNITUDE, RIVAL_AWARENESS_HOSTILITY_WEIGHT } from '../types/sphereAffinity';
 import { ANOMALY_RESOURCE_MAP, RESOURCE_DEFINITIONS } from '../data/resource-content';
@@ -273,6 +274,10 @@ export function resetDecisionCache(): void {
   legacyRuntime = null;
   clearTimelines();
   clearRewardHistory();
+  // The run-founded faction overlay is session-scoped state, not a cache: a run
+  // that chartered an order must not leave it resolvable in the next run's
+  // lookups (THR-1322). Same treatment as the two clears above.
+  clearDynamicFactionDefinitions();
   // Persistent graph-node / action ID counters — reset for determinism across runs
   resetLifecycleCounter();
   resetUnifiedActionCounter();
@@ -1324,11 +1329,16 @@ export function phaseEncounterProgressionV2(state: GameState, runtime?: Simulati
 // ─── Phase 2.5: Dilemma Detection ──────────────────────────────────────
 
 /** Map Creation Sphere to Reach Domain for dilemma stakes computation */
+// THR-1359: `life` mapped to `flesh`, the retired 9th Reach, so this live tick
+// phase fed a non-`ReachDomain` into `computeStakes`. Remapped to `heart`, the
+// pairing `SPHERE_DOMAIN_AFFINITY` in `scry.ts` already asserts (heart → life).
+// Behaviour is unchanged today: `computeStakes` special-cases only gold and iron,
+// so `flesh` and `heart` both fall through to the base floor.
 const SPHERE_TO_DOMAIN = {
   force: 'iron',
   matter: 'gold',
   energy: 'veil',
-  life: 'flesh',
+  life: 'heart',
   mind: 'shadow',
   spirit: 'heart',
   time: 'star',
@@ -1381,7 +1391,10 @@ export function phaseDilemmaDetection(state: GameState): Partial<GameState> {
     // Map sphere to reach domain for stakes computation
     const sphere = event.sphere ?? 'force';
     const domain = SPHERE_TO_DOMAIN[sphere as keyof typeof SPHERE_TO_DOMAIN] ?? 'stone';
-    const sentiment = relationshipEdge?.properties?.sentiment ?? 0;
+    // THR-1359: coerced. The edge property bag is untyped, so this read is `{}` —
+    // an error that only became visible once the `flesh` domain above stopped being
+    // the first bad argument to `computeStakes`. Numeric at runtime either way.
+    const sentiment = Number(relationshipEdge?.properties?.sentiment ?? 0);
     const isFactionLeader = actor.properties?.isFactionLeader === true || targetActor.properties?.isFactionLeader === true;
     const isTerritory = false; // Simplified
 

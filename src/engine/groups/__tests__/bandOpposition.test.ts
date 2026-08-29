@@ -190,7 +190,7 @@ describe('findOpposingBand', () => {
 describe('synthesizeBandCounter', () => {
   it('answers with the counter template for the band role', () => {
     const { graph } = confrontationWorld();
-    const counter = synthesizeBandCounter(makeAction(), graph.getNode('band')!, 'co', graph)!;
+    const counter = synthesizeBandCounter(makeAction(), graph.getNode('band')!, 'co', graph, 7)!;
 
     expect(counter.templateId).toBe(BAND_COUNTER_TEMPLATES.defender);
     expect(counter.counterToActionId).toBe('ua_1');
@@ -215,38 +215,61 @@ describe('synthesizeBandCounter', () => {
 
   it('derives the counter id from the action it answers, not from a sequence', () => {
     const { graph } = confrontationWorld();
-    const counter = synthesizeBandCounter(makeAction(), graph.getNode('band')!, 'co', graph)!;
+    const counter = synthesizeBandCounter(makeAction(), graph.getNode('band')!, 'co', graph, 7)!;
 
-    expect(counter.actionId).toBe('ua_band_counter_ua_1');
-    expect(counter.actionId).toBe(bandCounterIdFor(counter.counterToActionId!));
+    expect(counter.actionId).toBe('ua_band_counter_t7_ua_1');
+    expect(counter.actionId).toBe(bandCounterIdFor(counter.counterToActionId!, 7));
   });
 
-  it('mints the same id every time for the same initiator, with no reset seam', () => {
+  it('mints the same id every time for the same initiator on one tick, with no reset seam', () => {
     const { graph } = confrontationWorld();
     const band = graph.getNode('band')!;
 
     const ids = Array.from({ length: 5 }, () =>
-      synthesizeBandCounter(makeAction(), band, 'co', graph)!.actionId,
+      synthesizeBandCounter(makeAction(), band, 'co', graph, 7)!.actionId,
     );
 
     // A monotonic counter would have produced five distinct ids here.
     expect(new Set(ids).size).toBe(1);
-    expect(ids[0]).toBe('ua_band_counter_ua_1');
+    expect(ids[0]).toBe('ua_band_counter_t7_ua_1');
   });
 
   it('still separates two different initiators answered in the same tick', () => {
     const { graph } = confrontationWorld();
     const band = graph.getNode('band')!;
 
-    const first = synthesizeBandCounter(makeAction(), band, 'co', graph)!;
+    const first = synthesizeBandCounter(makeAction(), band, 'co', graph, 7)!;
     const second = synthesizeBandCounter(
-      makeAction({ actionId: 'ua_2' }), band, 'co', graph,
+      makeAction({ actionId: 'ua_2' }), band, 'co', graph, 7,
     )!;
 
     // Uniqueness within the tick's counter pool is what the sequence used to buy;
     // derivation has to keep it, or two fights would collide on one id.
     expect(first.actionId).not.toBe(second.actionId);
-    expect(second.actionId).toBe('ua_band_counter_ua_2');
+    expect(second.actionId).toBe('ua_band_counter_t7_ua_2');
+  });
+
+  // ── THR-1347: the id separates ticks as well as initiators ────────
+  //
+  // THR-817 removed a module-scope sequence and left uniqueness resting on three
+  // facts that all hold *within* one tick. A counter is re-synthesized on every tick
+  // its initiator is still completing, each with `currentStep: 0` and
+  // `stepDuration: 1`, so each resolves step 1 and `unifiedActionResolution` keys
+  // that event on `ua_${actionId}_step${stepNum}`. With a tick-free counter id, a
+  // two-tick initiator minted that TickEvent id twice — observed in a generated
+  // world as `ua_ua_band_counter_ua_34_step1` on ticks 40 and 41.
+
+  it('separates the same initiator answered on two different ticks', () => {
+    const { graph } = confrontationWorld();
+    const band = graph.getNode('band')!;
+    const action = makeAction();
+
+    const onTick40 = synthesizeBandCounter(action, band, 'co', graph, 40)!;
+    const onTick41 = synthesizeBandCounter(action, band, 'co', graph, 41)!;
+
+    expect(onTick40.actionId).not.toBe(onTick41.actionId);
+    // And the derived step-event id — the one React actually keys on — differs too.
+    expect(`ua_${onTick40.actionId}_step1`).not.toBe(`ua_${onTick41.actionId}_step1`);
   });
 });
 
@@ -341,7 +364,7 @@ describe('applyContestConsequences', () => {
 
   function opposition(state: GameState) {
     const action = makeAction();
-    const counter = synthesizeBandCounter(action, state.graph.getNode('band')!, 'co', state.graph)!;
+    const counter = synthesizeBandCounter(action, state.graph.getNode('band')!, 'co', state.graph, state.tick)!;
     return { initiator: action, counter, initiatorGroupId: 'co', bandGroupId: 'band' };
   }
 

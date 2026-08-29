@@ -1,6 +1,6 @@
 # QA Test Surface Registry
 
-Last updated: 2026-03-10
+Last updated: 2026-08-29 (THR-1355 — V1 SVG map rows deprecated, live HexMapV2/ThreadsPanel/NarrativeFeed rows added, Wheel/Scry actions retired)
 
 This file is the single source of truth for every testable UI surface in Threadbearer. The QA orchestrator uses this registry to ensure full coverage across sweeps.
 
@@ -31,7 +31,7 @@ This file is the single source of truth for every testable UI surface in Threadb
 | S-001 | World Gen Screen | App (worldgen phase) | screen | App.tsx | Page loads, phase routing works | Dev server running |
 | S-002 | Cosmology Panel | CosmologyPanel | panel | components/Cosmology/CosmologyPanel.tsx | Drag sphere sliders, enter seed, select presets, click Generate World | On worldgen phase |
 | S-003 | Sphere Slider | SphereSlider | sub-component | components/Cosmology/SphereSlider.tsx | Drag slider, value updates, label displays | Inside CosmologyPanel |
-| S-004 | Hex Map (worldgen) | HexMap | panel | components/HexMap/HexMap.tsx | Renders after generation, zoom/pan, hover shows info | World generated |
+| S-004 | ~~Hex Map (worldgen)~~ | HexMap | panel | *deprecated* — V1 SVG map deleted Phase 8; see S-108 (HexMapV2) | — | — |
 | S-005 | Hex Info Panel | InfoPanel | widget | components/UI/InfoPanel.tsx | Shows terrain/elevation/temp/moisture on hover | Hovering a hex tile |
 
 ### Phase 2: Ascendant Selection
@@ -51,17 +51,18 @@ This file is the single source of truth for every testable UI surface in Threadb
 | S-023 | Mandate Tracker | MandateTracker | widget | components/Game/MandateTracker.tsx | Stage pips render, progress bar fills, click for details | Mandate exists |
 | S-024 | Essence Panel | EssencePanel | widget | components/Game/EssencePanel.tsx | 8 sphere bars render, values update on tick, pulse on change, sorted by alignment | In game |
 | S-025 | Rival Panel | RivalPanel | widget | components/Game/RivalPanel.tsx | Rival gods list, icons, behavior colors, status text | Rivals generated |
-| S-026 | Avatar HUD | AvatarHUD | widget | components/Game/AvatarHUD.tsx | Avatar name, Center/Move/Wheel/Scry/Zoom buttons functional | World map view |
-| S-027 | Narrative Log | NarrativeLog | widget | components/Game/NarrativeLog.tsx | Events appear after ticks, type-colored, auto-opens on intervention beats | In game |
+| S-026 | Avatar HUD | AvatarHUD | widget | components/Game/AvatarHUD.tsx | Avatar name click centers map; Move / Actions / Investiture buttons functional (the Wheel is a rejected approach — its presence would be a finding, not a pass) | World map view |
+| S-027 | Narrative Feed | NarrativeFeed | widget | components/Game/NarrativeFeed.tsx | Events appear after ticks, type-colored | In game |
 
 ### Phase 3: Main Game — World Map
 
 | ID | Surface | Component | Category | File | Testable Actions | Prerequisites |
 |----|---------|-----------|----------|------|------------------|---------------|
-| S-030 | Hex Map (game) | HexMap | panel | components/HexMap/HexMap.tsx | Zoom/pan, fog of war (black/dim/visible), location overlays, avatar position | In game |
-| S-031 | Hex Tile | HexTile | sub-component | components/HexMap/HexTile.tsx | Terrain image renders, location overlay icon, hex clip mask | Inside HexMap |
-| S-032 | Coastline Overlay | CoastlineOverlay | sub-component | components/HexMap/CoastlineOverlay.tsx | Coastline lines render correctly around land/water boundaries | Inside HexMap |
-| S-033 | Hex Defs | HexDefs | sub-component | components/HexMap/HexDefs.tsx | SVG clip paths defined correctly | Inside HexMap |
+| S-030 | ~~Hex Map (game)~~ | HexMap | panel | *deprecated* — V1 SVG map deleted Phase 8; see S-108 (HexMapV2) | — | — |
+| S-031 | ~~Hex Tile~~ | HexTile | sub-component | *deprecated* — V1; terrain now HexMapV2 InstancedMesh | — | — |
+| S-032 | ~~Coastline Overlay~~ | CoastlineOverlay | sub-component | *deprecated* — V1; live: HexMapV2/scene/CoastlineMesh.ts (WebGL) | — | — |
+| S-033 | ~~Hex Defs~~ | HexDefs | sub-component | *deprecated* — V1 SVG clip paths; no equivalent in HexMapV2 | — | — |
+| S-108 | Hex Map (HexMapV2) | HexMapV2 | panel | components/HexMapV2/HexMapV2.tsx | Zoom/pan (d3-zoom tiers), fog of war (black/dim/visible), signifiers, location icons, agent sprites, hex click/hover. **WebGL — Playwright cannot see canvas content; visual checks need Claude in Chrome** | In game |
 
 ### Phase 3: Main Game — Hex Zoom
 
@@ -83,7 +84,8 @@ This file is the single source of truth for every testable UI surface in Threadb
 
 | ID | Surface | Component | Category | File | Testable Actions | Prerequisites |
 |----|---------|-----------|----------|------|------------------|---------------|
-| S-060 | Retinue Panel | RetinuePanel | panel | components/Game/RetinuePanel.tsx | Agent list, tier badges, selection highlight, zoom buttons | No agent selected |
+| S-060 | ~~Retinue Panel~~ | RetinuePanel | panel | *deprecated* — component removed ("Retinue" names the divine court only, THR-1099); see S-107 (ThreadsPanel) | — | — |
+| S-107 | Threads Panel | ThreadsPanel | panel | components/Game/ThreadsPanel.tsx | Collapsible thread categories, counts, row selection, eye-zoom buttons | In game |
 | S-061 | Agent Info Card | AgentInfoCard | panel | components/Game/AgentInfoCard.tsx | Name, portrait, domains, knowledge level, prose | Agent selected |
 | S-062 | World Pulse | WorldPulse | widget | components/Game/WorldPulse.tsx | Tick, active agent count, culture count, mood summary | No agent selected |
 
@@ -99,7 +101,7 @@ This file is the single source of truth for every testable UI surface in Threadb
 | S-076 | Agent Detail Panel | AgentDetailPanel | panel | components/Game/AgentDetailPanel.tsx | Domain grid, allegiances, strategies | Alternative agent view |
 | S-077 | Strand View | StrandView | overlay | components/Game/StrandView.tsx | Six strands (Presence/Desires/Bonds/Ambitions/Beliefs/Fears), insights | Click "View Psyche" |
 | S-078 | Harvest Screen | HarvestScreen | overlay | components/Game/HarvestScreen.tsx | Full-screen cycle end, harvest type, echoes, "Begin Next Cycle" | Cycle ends |
-| S-079 | Scry Overlay | ScryOverlay | overlay | components/Game/ScryOverlay.tsx | Divine court visualization, position slots, assignment UI, title proposals | Click "Scry" in HUD |
+| S-079 | Scry Overlay | ScryOverlay | overlay | components/Game/ScryOverlay.tsx | Divine court visualization, position slots, assignment UI, title proposals | Click "Investiture" in HUD |
 
 ### Debug & Dev Surfaces
 
@@ -142,5 +144,5 @@ When adding a surface:
 2. Fill in all columns
 3. Update the count below
 
-**Total surfaces: 49 testable components + 7 cross-cutting concerns**
-**Last full sweep coverage: 0/49** (registry is new — first tracked sweep pending)
+**Total surfaces: 45 testable components + 7 cross-cutting concerns** (6 deprecated V1/retired rows retained so historical findings still resolve)
+**Last full sweep coverage: untracked** — the next full sweep records its coverage here

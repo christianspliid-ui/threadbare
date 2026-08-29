@@ -123,11 +123,12 @@ const CONSEQUENCE_LEGEND_ENTRIES: readonly {
 /**
  * A reach state-noun draws the shared reach glyph — but only where one exists.
  *
- * `REACH_TO_SPHERE` holds eight reaches; the tooltip registry backs nine
- * (`flesh` has an entry and no icon). Guarding on the icon set rather than on
- * the tooltip id is what keeps `reach.flesh` from rendering a glyph with an
- * undefined sphere colour — it falls through to the category tile instead,
- * which is a designed fallback rather than a broken one (Law 4).
+ * `REACH_TO_SPHERE` and the tooltip registry now both hold the same eight reaches
+ * (THR-1368 retired `reach.flesh`, which was the ninth). The guard stays on the icon
+ * set rather than on the tooltip id, because `REACH_DISPLAY_NAMES` still carries
+ * `time` and `life` — display words with no icon and no world-model node. Guarding
+ * here is what keeps those from rendering a glyph with an undefined sphere colour:
+ * they fall through to the category tile, a designed fallback, not a broken one (Law 4).
  */
 function consequenceReach(domain: string | undefined): ReachDomain | undefined {
   if (!domain) return undefined;

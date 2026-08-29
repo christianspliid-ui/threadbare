@@ -64,8 +64,12 @@ export const ADVENTURING_GUILD_DEFINITION: FactionDefinition = {
     shadow: 0.3,
     heart: 0.2,
     gold: 0.3,
-    flesh: 0.4,
-    star: 0.1,
+    // THR-1345: was `flesh: 0.4` alongside `star: 0.1`. Flesh is the retired 9th
+    // Reach (Docs/canon/cosmology.md — "Do not re-introduce Flesh as a Reach");
+    // canon migrates its survival content to Star. For a guild of explorers and
+    // monster hunters the field-hardiness weight belongs on Star, which was
+    // implausibly low precisely because it was being carried by Flesh.
+    star: 0.4,
     veil: 0.2,
   },
   locationTypes: ['town', 'city', 'capital'],

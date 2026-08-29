@@ -87,6 +87,20 @@ export interface CodexCategory {
 
 // ─── Reach Glyphs ────────────────────────────────────────────────
 
+/**
+ * THR-1368: the `flesh` rows are gone from this map and from `REACH_DISPLAY` below,
+ * in the same change that deleted the `reach.flesh` node from `world-model.json`.
+ * Both bags are keyed by a template's raw `reach` string and by world-model `reach.*`
+ * node suffix — not by `ReachDomain` — which is exactly why the row and the node had
+ * to retire together: either one alone leaves the mismatch pointing the other way.
+ *
+ * `time` and `life` remain and are **not** retired-Reach residue: they carry display
+ * words for keys that never had a world-model node at all, and are excluded from
+ * `TOOLTIP_BACKED_REACHES` in `engine/aftermathWords.ts` so they offer no tooltip id.
+ * The `Record<string, string>` annotation is what keeps that legal, so it is still
+ * correct here rather than a widening hole. A reach with no display entry paints raw
+ * in the nav rail (see `SUBCATEGORY_DISPLAY` below) — the designed fail-open path.
+ */
 const REACH_GLYPHS: Record<string, string> = {
   iron: '\u2694',    // ⚔
   gold: '\u2696',    // ⚖
@@ -96,7 +110,6 @@ const REACH_GLYPHS: Record<string, string> = {
   eye: '\u25C9',     // ◉
   stone: '\u25A0',   // ■
   star: '\u2605',    // ★
-  flesh: '\u25CF',   // ●
   time: '\u231A',    // ⌚
   life: '\u2618',    // ☘
 };
@@ -104,7 +117,7 @@ const REACH_GLYPHS: Record<string, string> = {
 const REACH_DISPLAY: Record<string, string> = {
   iron: 'Iron', gold: 'Gold', shadow: 'Shadow', veil: 'Veil',
   heart: 'Heart', eye: 'Eye', stone: 'Stone', star: 'Star',
-  flesh: 'Flesh', time: 'Time', life: 'Life',
+  time: 'Time', life: 'Life',
 };
 
 /**
