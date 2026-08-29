@@ -1,7 +1,7 @@
 ---
 name: blender-to-hexmap
 description: Build 3D models in Blender via MCP and import them into the HexMapV2 Three.js hex renderer. Use this skill EVERY TIME you create, modify, or re-export a 3D model for the hex map — including city models, fortress models, landmark models, or any GLTF/GLB asset destined for HexMapV2. Triggers on "blender", "3D model", "city model", "GLB", "GLTF", "import model", "hex signifier model", "build in blender", or any task involving creating 3D assets for the game map.
-last_validated_against: 2026-07-30
+last_validated_against: 2026-08-29
 ---
 
 # Blender → HexMap Pipeline
@@ -26,9 +26,9 @@ Blender (MCP)                    Export                     Three.js (HexMapV2)
 
 Use `mcp__blender__execute_blender_code` to build models procedurally. Break the build into multiple code blocks (materials → helpers → structures → details → lighting/viewport).
 
-### Threadbare Palette (mandatory)
+### Dark Tapestry Palette (mandatory)
 
-All models must use colors from the style tile (`Design/style-tile.html`). Convert hex colors to RGBA for Blender materials:
+All models must use colors from `STYLE.md` and the HexMapV2 palette modules (`src/components/HexMapV2/palette/terrainPalette.ts`, `waterPalette.ts`). Convert hex colors to RGBA for Blender materials:
 
 ```python
 def hex_to_rgba(h):
@@ -243,7 +243,7 @@ export function disposeModelMesh(group: THREE.Group): void {
 
 Before committing a new model:
 
-- [ ] Colors match Threadbare palette (check `Design/style-tile.html`)
+- [ ] Colors match the Dark Tapestry palette (check `STYLE.md` + `src/components/HexMapV2/palette/`)
 - [ ] Objects merged by material (one mesh per material)
 - [ ] Material slots collapsed to 1 per mesh
 - [ ] 90° X rotation baked in Blender (not applied in Three.js)
@@ -277,5 +277,5 @@ Before committing a new model:
 | `src/components/HexMapV2/scene/ZoomVisibilityMatrix.ts` | Zoom tier thresholds and visibility matrix |
 | `src/components/HexMapV2/hooks/useZoomLayerVisibility.ts` | Zoom visibility hook (add new groups here) |
 | `src/components/HexMapV2/HexMapV2.tsx` | Main component — scene lifecycle, ref wiring |
-| `Design/style-tile.html` | Threadbare color palette source of truth |
+| `STYLE.md` + `src/components/HexMapV2/palette/` | Dark Tapestry color palette sources of truth |
 | `public/models/city.glb` | Existing city model (reference for scale and structure) |

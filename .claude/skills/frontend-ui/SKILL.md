@@ -3,10 +3,11 @@ name: frontend-ui
 description: >
   Use when building UI components, styling, accessibility work, debug panel features,
   or any code that lives in src/components/ or index.css. Triggers on "component",
-  "UI", "frontend", "panel", "layout", "accessibility", "style tile", "CSS",
+  "UI", "frontend", "panel", "layout", "accessibility", "styleguide", "CSS",
   "responsive", "interaction", or when the task involves visual presentation.
   Also load when designing the **UI pillar** of any feature.
 last_validated_against: 2026-08-29
+validated_doctrine: ui-laws@1
 ---
 
 # Frontend & UI — Domain Context
@@ -25,7 +26,7 @@ The design system is called **Dark Tapestry**; the game it serves is **Threadbea
 - Mechanics communicated through narrative prose, never numbers. Use verbal word scales from `domain-words.ts`.
 - Progressive disclosure: hover → click → deep-dive. Don't frontload information.
 
-**Source of truth:** `STYLE.md` (repo root) for colors, sphere form language, art direction. `Design/style-tile.html` for visual reference and hex asset registry. These two files are coupled — update both in the same session when either changes.
+**Source of truth:** `STYLE.md` (repo root) for colors, sphere form language, art direction. `src/data/hex-tile-assets.ts` for the hex asset registry; `?view=styleguide` for the living component reference (Law 29). *(The rendered style tile was retired 2026-08-29 — THR-1354.)*
 
 ---
 
@@ -285,7 +286,8 @@ Load these only when doing specialized work in that domain:
 | React UI patterns | `Docs/ui-patterns.md` |
 | Primitives spec | `Docs/design-system/primitives.md` |
 | Art direction | `STYLE.md` |
-| Style tile (visual) | `Design/style-tile.html` |
+| Styleguide (visual, in-app) | `?view=styleguide` |
+| Hex asset registry | `src/data/hex-tile-assets.ts` |
 | CSS source of truth | `src/index.css` |
 | Component source | `src/components/` |
 | Codesight component catalog | `.codesight/components.md` |
