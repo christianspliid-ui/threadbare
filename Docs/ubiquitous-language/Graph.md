@@ -141,3 +141,21 @@ One cell on the world's hex grid — the top tier of the three-tier position mod
 **Status:** canonical
 
 The 42-value biome enum on every `HexTile.terrain`. Categories include water (`ocean`, `lake`, `river`, `reef`), lowlands (`grassland`, `farmland`, `savanna`), forest (`temperate_forest`, `dense_forest`, `boreal_forest`, `jungle`), wet (`swamp`, `marsh`, `moor_bog`), elevated (`hills`, `mountains`, `plateau`, `badlands`), special (`great_home_trees`, `broken_lands`, `oasis`), and extreme (`desert`, `tundra`, `glacier`, `volcano`). Used by encounter scoring, awareness rules, sublocation eligibility, and prose tier biasing. Definition: `src/types/index.ts`.
+
+---
+
+### WorldRef
+
+**Aliases:** WorldRefKind, world reference
+**Also see:** `[[Node]]`, `[[NodeType]]`, `[[claim-without-anchor]]`, `[[Consequence Chip]]`
+**Status:** canonical
+
+The normalised way anything in the game names a game-state object: a `kind` drawn from `WorldRefKind` plus the id that kind addresses. Thirteen kinds — `agent`, `faction`, `location`, `sublocation`, `hex`, `artifact`, `attachment`, `companion`, `army`, `encounter`, `journey`, `receipt`, `codex`. Definition: `src/types/worldRef.ts` (THR-1212 slice 1).
+
+**It is the membership spine, not a replacement format.** Seven consumer vocabularies name world objects and disagree with each other — the graph says `actor` where every UI layer says `agent`; `faction` is type-illegal in `TargetCategory`; `attachment` is legal in the aftermath concept vocabulary and deliberately illegal in the visual resolver it feeds. `WorldRefKind` is *the* kind vocabulary, and the generated anchor catalog projects each consumer union against it, failing by name on an unmapped member. `NavigationTarget`, `EntityVisualRef` and the rest keep the shapes their consumers already speak (hub-and-spoke / strangler, NFP #6); what unified immediately is the kind vocabulary, not the wire shapes.
+
+**Deliberately not called "anchor".** `EntityNotice` already owns that word on the interface side, and a second referent for it would collide on the surface where the distinction matters most. The violation class named for the missing referent keeps the anchor word (`[[claim-without-anchor]]`); the referent vocabulary itself is `WorldRef`.
+
+**The module is import-free by construction.** It is a membership source parsed by `scripts/generate-anchor-catalog.ts`, and a generator that must resolve an import graph to read a union breaks when an unrelated module moves. Adapters live in `worldRefAdapters`, which may import freely.
+
+`codex` is *reserved*, not live: `?view=codex` is a full-page navigation that tears down the running simulation, so no in-game codex destination exists for a link to open. `toNavigationTarget` returns `undefined` for it — the fail-soft every unroutable kind takes (NFP #4).

@@ -18,6 +18,7 @@ remediation ticket or the build fails.
 | 🟢 LIVE | 67 |
 | 🟠 PARTIAL | 2 |
 | 🔴 LEAKED | 8 |
+| 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 18 |
 | **Total** | **95** |

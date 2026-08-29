@@ -141,3 +141,45 @@ The Linear issue label used by the `ubiquitous-language` skill when proposing a 
 **Status:** canonical
 
 The design artifact in `Docs/plans/YYYY-MM-DD-<topic>.md`, authored in a design session, that turns a Linear issue into something an executor can implement. Each plan covers all three pillars (Engine, Content, UI), runs the NFP audit, lists constants and traces, marks fail-soft cases, and produces the wiring section that connects new modules to orchestrator phases, UI components, and trace categories. The design session commits the file directly via its own `docs/plan-*` PR. Distinct from the Linear state **Implementation Planning**, which is the workflow phase where the plan is being written.
+
+---
+
+### claim-without-anchor
+
+**Aliases:** Law 56-hollow, hollow chip
+**Also see:** `[[write-without-consumer]]`, `[[render-private-pipeline]]`, `[[Consequence Chip]]`, `[[WorldRef]]`, `[[Wiring Checklist]]`
+**Status:** canonical
+
+**Interface text names a simulation object without declaring a referent.** The surface tells the player something about the world; nothing in the payload says *which* world object it means, so no consumer can route to it, verify it, or notice when it stops being true. The canonical instance is a `[[Consequence Chip]]` reporting a change no game-state write backs — the violation UI Law 56 forbids (`Docs/design-system/laws.md`, law 56).
+
+**The alias is recorded rather than replaced.** "Law-56-hollow" was already in-tree at `src/types/unifiedAction.ts` before this entry existed. Minting a competing term would have left the code and the glossary naming the same defect two ways, which is the drift the UL exists to end — so `claim-without-anchor` is the UL head term and *Law 56-hollow* is its alias, not a rival.
+
+**Detected in two populations, because one gate cannot see both.** `check:chip-anchors` clause 2 fails a chip that *declares* a referent and anchors nothing. Chips declaring neither a `stateNoun` nor a `concepts` list are outside that clause by construction, and green there means **unmeasured, not clean** — so `check:chip-anchors -- --baseline` counts that population against the committed `chip-referent-baseline.json` and fails on an increase. Measured population at the ratchet's introduction (THR-1212 slice 3): **443 chips**, drained at batch cadence by the encounter-factory retrofit line rather than swept, because a gate red on arrival blocks every PR. The ratchet compares totals, so anchoring three chips while authoring three unanchored ones passes — a stated limitation, not coverage.
+
+The referent vocabulary a chip should declare against is `[[WorldRef]]`. On the interface map this class carries its own badge (🟣 HOLLOW), defined by pointer to this entry — the map points here; it does not restate the definition.
+
+---
+
+### write-without-consumer
+
+**Aliases:** unconsumed write, dead write
+**Also see:** `[[claim-without-anchor]]`, `[[render-private-pipeline]]`, `[[Wiring Checklist]]`, `[[Definition of Done]]`
+**Status:** canonical
+
+**A write nothing acts on.** A producer keeps writing a property, edge, event or trace whose consumer was rewritten away — or never existed. Tests still assert the write, typecheck passes, and the game silently loses the richness the write was for. This is the defect class the system interface map was built to catch, where it is badged 🔴 LEAKED; the two are the same class under two names, the UL term being the general one and the badge its expression on one registry.
+
+**It is now derived rather than asserted.** `Docs/canon/consumption-ledger.generated.md` (THR-1212 slice 4) classifies every aftermath effect kind and GraphOp by *what reads it*, so membership in this class falls out of each row's consumer list instead of being authored per row — a ledger that asks what the reader does, not whether one exists. An empty-consumer row is legal only with a cited `Deferral` ticket; the generator exits non-zero otherwise.
+
+**"Something will read this later" without a ticket is how features leak** — the interface map's second stewardship rule states the obligation directly: a plan that adds a write must name the production read site in the same plan, or open a `Deferral` issue and cite it in the contract row.
+
+---
+
+### render-private-pipeline
+
+**Aliases:** private-pipeline render
+**Also see:** `[[claim-without-anchor]]`, `[[write-without-consumer]]`, `[[Wiring Checklist]]`
+**Status:** canonical
+
+**A surface renders from a pipeline no other consumer can reach.** The display works, so nothing looks broken; but the data path feeding it is private to that one surface, so no other system can read the same state, no gate can verify it, and a second surface wanting the same fact must build a parallel path rather than share one. The failure is architectural rather than visible — it surfaces later as two surfaces disagreeing about the same world fact.
+
+The interface map covers this class **partially**: a private pipeline whose producer and consumer are the same subsystem passes every symbol check, because both halves genuinely exist. What the map catches is the downstream shape — the second consumer that cannot reach the data — not the privacy itself. Recorded here with that gap stated, rather than badged as covered.

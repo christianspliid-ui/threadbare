@@ -45,8 +45,35 @@ import { SUBSYSTEM_NAMES } from './subsystems-registry.ts';
 /** How a contract is carried across the subsystem boundary. */
 export type MechanismKind = 'node-prop' | 'edge-prop' | 'function' | 'event' | 'trace';
 
-/** Badges a row can carry. LIVE is never assigned mechanically — see the header. */
-export type ContractBadge = 'LIVE' | 'PARTIAL' | 'LEAKED' | 'UNWIRED' | 'UNVERIFIED-OK';
+/**
+ * Badges a row can carry. LIVE is never assigned mechanically — see the header.
+ *
+ * `HOLLOW` is the content-claims class and is **pin-only**: it arrives solely
+ * through `badgeOverride`, never from a mechanical check. That is not a gap, it is
+ * the class's shape — a hollow claim is interface text naming a simulation object
+ * with no referent, and symbol matching cannot see the absence of a referent it was
+ * never told to look for. Its population is measured where the referents live, by
+ * `check:chip-anchors` (clause 2 plus the `--baseline` ratchet over the chips that
+ * declare none), at template rather than contract granularity.
+ *
+ * **Defined by pointer, not here.** The definition is the UL entry
+ * `claim-without-anchor` (`Docs/ubiquitous-language/Process.md`, alias
+ * *Law 56-hollow*, already in-tree at `src/types/unifiedAction.ts`); UI Law 56 is the
+ * rule it violates. Single authority + pointers — this registry must never carry a
+ * second definition of it (THR-1212 absorbed ruling 3, THR-1316).
+ */
+export type ContractBadge = 'LIVE' | 'PARTIAL' | 'LEAKED' | 'UNWIRED' | 'UNVERIFIED-OK' | 'HOLLOW';
+
+/**
+ * Badges that must carry a remediation ticket or fail the build.
+ *
+ * LEAKED is the historical member; HOLLOW joins it because a claim the player can
+ * read and nothing backs is a released defect of the same severity, not a lesser
+ * one. Structurally `badgeOverride` already requires a ticket, so a pinned HOLLOW
+ * cannot arrive without one — this constant states the rule anyway, so a future
+ * mechanical assignment path inherits the ratchet instead of quietly escaping it.
+ */
+export const TICKETED_BADGES: readonly ContractBadge[] = ['LEAKED', 'HOLLOW'];
 
 export interface Contract {
   /** Stable kebab-case id; also the anchor in the generated doc. */
@@ -86,7 +113,7 @@ export interface Contract {
    * Pin a row LEAKED despite a passing mechanical check — for display-only
    * readers and documented-dead components. Carries its own ticket.
    */
-  badgeOverride?: { badge: 'LEAKED' | 'PARTIAL'; reason: string; deferralTicket: string };
+  badgeOverride?: { badge: 'LEAKED' | 'PARTIAL' | 'HOLLOW'; reason: string; deferralTicket: string };
   /** Remediation ticket for a known-LEAKED row. Required, or the build fails. */
   deferralTicket?: string;
 }
