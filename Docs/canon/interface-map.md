@@ -1,6 +1,6 @@
 ---
 domain: interfaces
-last_reviewed: 2026-07-23
+last_reviewed: 2026-08-06
 reviewer: claude-code
 ul_shards: [Graph, Agents, Encounters, Cosmology]
 status: live
