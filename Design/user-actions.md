@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-29 01:57 local (23:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-29 03:00 local (01:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -13,7 +13,7 @@
 
 **Then approve the brief — the camp seven:** shrine offering, sharpening blades, warding the camp, a small prayer, rest and reflection, tending wounds, scouting the perimeter. No typed consequences at all in that set; they are the last encounters below standard, and `shrine_offering` is encounter #1 of [your integrated slice checkpoint](https://linear.app/threadbare/issue/THR-1220), which cannot invite you until they are rewritten. The bar is live with no caveats: [The Beast in the Granary](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.hunt.the_beast_in_the_granary). [The brief](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/retrofit-batch-2-brief.md) proposes **seven** rather than your six, because the camp set is one family in one file and splitting the seventh costs a whole factory cycle. **Three ways to close it:** *"batch 2, seven is fine"*, *"keep it six"*, or *"same rule — judge batch 2 on one first."*
 
-**Why it matters more tonight:** two more items shipped this hour and nothing refilled behind them. The shelf is six items, of which **exactly one is real game work** and none is encounter writing. This is the fastest route by which content reaches the builders.
+**Why it still matters:** the shelf refilled itself this hour — two engine items arrived, so the builders are not short of work. Take this on its own merit instead: it is the only High-priority content work on the board, it is written and waiting on one word, and **no encounter writing reaches the shelf until it clears.**
 
 ### 2. One word players see, in two places — [THR-1314](https://linear.app/threadbare/issue/THR-1314/ul-proposal-work-holding-kind-row-christening-failure-name-register)
 
@@ -27,9 +27,9 @@ Three ways to go: **let both stand** (different grammar, never side by side — 
 
 Roughly twenty items sit in Todo and **every one needs a plan doc before an executor can touch it**. That is what the hours buy.
 
-**The builders drained two more items this hour and the shelf fell to six, only one of which is real game work.** They are not stuck — they are running out of things to build, and no new design can be prepared while the design column is full.
+**The shelf refilled this hour, so this is not urgent — it is structural.** The executor writes up problems it finds while building, which is what refilled it; that source produces engine fixes, never new designed features. Only a design session produces those, and none can be prepared while the design column is full.
 
-**The block has two names on it** *(orchestrator lane, standing — nine days at the same two)*: **[unify the card grammar](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** (your 6 August note, untouched 9 days; three tickets behind it) and **[traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)** (assigned to you, untouched 13 days). That lane holds one design slot and will not walk either backwards out of the column on its own. **Sit one, or say *"park it"*** — four more plan-doc sessions are unblocked behind them.
+**The block has two names on it** *(orchestrator lane, standing — ten days at the same two)*: **[unify the card grammar](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** (your 6 August note, untouched 10 days; three tickets behind it) and **[traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)** (assigned to you, untouched 14 days). That lane holds one design slot and will not walk either backwards out of the column on its own. **Sit one, or say *"park it"*** — four more plan-doc sessions are unblocked behind them.
 
 **Unblocked and waiting:** all three remaining carve-up docs — [the reactive loop](https://linear.app/threadbare/issue/THR-1298) and [the calling & the surfaces](https://linear.app/threadbare/issue/THR-1299) can run in parallel, with [the undertaking factory](https://linear.app/threadbare/issue/THR-1300) last. Then [your one-button snapshot](https://linear.app/threadbare/issue/THR-1134) (High, your own 16 August request, untouched 12 days — you still have no way to hand a wrong-looking world to an agent); [a beast that can be a real character in a scene](https://linear.app/threadbare/issue/THR-1274) (only people can be cast today, capping four hunt encounters); and [nations and named areas](https://linear.app/threadbare/issue/THR-1155), the last wave-1 design — nations and named regions are drawn but not simulated, so nothing in the game can point at one.
 
@@ -88,6 +88,7 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
+- **Settlements that never knew what they were good at** — [THR-1323](https://linear.app/threadbare/issue/THR-1323/faction-nodes-never-carry-reachweights-so-computesettlementreaches) merged 02:34 ([PR #1716](https://github.com/christianspliid-ui/threadbare/pull/1716)). The seeder worked out each faction's leanings and then threw them away, so every settlement's character came back empty. Fixing it surfaced two further world-generation problems, both now queued.
 - **The agent handbook is on a diet** — [THR-1336](https://linear.app/threadbare/issue/THR-1336/claudemd-diet-gate-law-and-sandbox-lore-move-to-canonops-pages-with) merged 01:15 ([PR #1704](https://github.com/christianspliid-ui/threadbare/pull/1704)). Gate law and sandbox lore moved out of the always-loaded file and behind pointers; nothing in the game changes.
 - **A lane could resume work nobody had started** — [THR-1325](https://linear.app/threadbare/issue/THR-1325/pull-works-claim-predicates-miss-two-live-states-a-lane-resumes-a-live) merged 01:11. Resuming now proves the previous session is actually gone, and a hand-made ticket reads as unclaimed rather than resumable.
 - **A warband nobody could be recruited into** — [THR-1321](https://linear.app/threadbare/issue/THR-1321/a-cast-on-strategic-recruit-warband-halts-it-completely-13-completions) merged 22:28. One line of scene-casting stopped the recruit action dead: thirteen completions in a test run became zero, on both save modes.
@@ -97,7 +98,6 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 - **Retired tooling hooks removed** — [THR-1332](https://linear.app/threadbare/issue/THR-1332) merged 20:14 ([PR #1699](https://github.com/christianspliid-ui/threadbare/pull/1699)); the Cowork/Codex/Obsidian-MCP retirement sweep landed alongside it ([THR-1331](https://linear.app/threadbare/issue/THR-1331), [THR-1333](https://linear.app/threadbare/issue/THR-1333), [THR-1334](https://linear.app/threadbare/issue/THR-1334), [THR-1335](https://linear.app/threadbare/issue/THR-1335)) — the game's name is now Threadbearer everywhere the agents read.
 - **Three rows of your status bar that were empty in every game ever played** — [THR-1307](https://linear.app/threadbare/issue/THR-1307) merged 19:39. Conditions, clues and vows read from a link type nothing has ever written.
 - **A choice that was never a choice** — [THR-1313](https://linear.app/threadbare/issue/THR-1313) merged and deployed ([PR #1693](https://github.com/christianspliid-ui/threadbare/pull/1693)). A branch in the code picked between two identical outcomes.
-- **A road that stands long enough to be taken** — [THR-1320](https://linear.app/threadbare/issue/THR-1320) claimed 18:02, merged 18:48 ([PR #1696](https://github.com/christianspliid-ui/threadbare/pull/1696)). A trade route founded by a season's work dissolved six ticks later, so the blockade meant to counter it never once had a road to cut.
 
 ---
 
