@@ -34,6 +34,28 @@ function freshState(): GameState {
 
 const noTargets = () => [];
 
+/**
+ * Budget for the one test that runs real ticks up to the cap (THR-1352).
+ *
+ * Sized against measurement, not against a guess, because the previous two values
+ * were both outgrown in silence. History: 60s blew outright under CI load (PR #830)
+ * and was raised to 180s when the test cost ~18s standalone — a 10x margin. By
+ * 2026-08-29 the same test measured **44.9s** standalone on `main` (a0e52b8d), and
+ * **90.8s** on a branch adding engine work (THR-1344, which activates a previously
+ * dead genome pass). That left a 2x margin, and on a runner executing 1136 test
+ * files in parallel a 2x margin is not a margin: the 180s budget timed out and held
+ * PRs #1714 and #1717 armed-and-red for 526 and 342 minutes.
+ *
+ * 420s restores roughly the original 10x-class headroom over the worst measured
+ * case while keeping the guard rail sharp — a genuinely unbounded loop runs 10,000
+ * ticks (50x the capped work, well over 2000s) and still fails here.
+ *
+ * If you find this test timing out again, re-measure standalone first and update
+ * BOTH this constant and the figure above; a budget whose justification has gone
+ * stale is what caused this outage twice.
+ */
+const CAPPED_BATCH_TIMEOUT_MS = 420_000;
+
 describe('runTickBatch', () => {
   beforeEach(() => {
     clearTraces();
@@ -54,10 +76,8 @@ describe('runTickBatch', () => {
   });
 
   // Runs real ticks up to the cap, so it needs headroom over vitest's 5s default.
-  // The budget is sized for CI, not for an idle machine: this takes ~18s standalone,
-  // but on a shared runner executing 880 test files in parallel it once blew a 60s
-  // budget outright (PR #830). 180s keeps the guard rail meaningful — a genuinely
-  // unbounded loop still fails — without making the required check flaky under load.
+  // The budget is sized for CI, not for an idle machine — see CAPPED_BATCH_TIMEOUT_MS
+  // above for the measured costs it is sized against and the outage that set it.
   it('clamps a request above DEBUG_TICK_MAX instead of rejecting it', () => {
     const state = freshState();
     const startTick = state.tick;
@@ -78,7 +98,7 @@ describe('runTickBatch', () => {
     expect(result.ticksRun).toBeLessThanOrEqual(DEBUG_TICK_MAX);
     expect(result.tick).toBe(startTick + result.ticksRun);
     expect(['capped', 'phase_left_playing']).toContain(result.stoppedReason);
-  }, 180_000);
+  }, CAPPED_BATCH_TIMEOUT_MS);
 
   it('has a cap that is a named constant, not a literal', () => {
     expect(DEBUG_TICK_MAX).toBe(200);
