@@ -37,6 +37,25 @@
  * nothing is annotated, and everything older stays on disk in `Docs/status/`,
  * uncapped and readable, with its one-liner already in `project-history.md`.
  *
+ * ## Why the page is an index (THR-1327)
+ *
+ * The first cut spliced whole fragment bodies in, and that made "how many
+ * entries does the status page show" a function of how long the last author
+ * happened to write. Measured 2026-08-27: `1 of 281 fragment(s) rendered` — and
+ * the one that fit was the *shortest* of that day's eight. Measured 2026-08-29
+ * on a corpus of short entries: `4 of 341`. Same generator, same cap, nothing
+ * changed but the prose, and the page swung between defeated and merely thin
+ * while its WARN blamed whoever shipped last.
+ *
+ * So the page renders one **summary line** per fragment — label, link, gist —
+ * at a fixed cost of one line each. The cap now buys a stable entry count
+ * (~40), overrun is impossible by construction, and the page is what THR-1016
+ * intended it to be: a recent overview whose detail is one click away in
+ * `Docs/status/`. The three options were weighed on the ticket; this is option
+ * 2, chosen because raising the cap (option 1) keeps the coupling to authored
+ * length and only moves the threshold, and shrinking the authored norm (option
+ * 3) fights what the Definition of Done's "Current-Focus narrative" elicits.
+ *
  * ## Determinism
  *
  * Output must be a pure function of the fragment set, because
@@ -76,6 +95,28 @@ export const ENTRIES_MARKER = "<!-- ENTRIES -->";
  * CLAUDE.md has always stated, now enforced by construction instead of by hand.
  */
 export const MAX_PAGE_LINES = 60;
+
+/**
+ * Per-entry character budget for the gist half of a summary line (THR-1327).
+ *
+ * The line is `- **[label](link)** — gist`, so this is what keeps one entry to
+ * one line at any sane terminal width. Truncation is by character rather than
+ * by word count because the gist is prose of wildly varying density.
+ */
+export const SUMMARY_GIST_CHARS = 140;
+
+/**
+ * Per-fragment line budget, checked against the **newest** fragment only.
+ *
+ * The old WARN measured the assembled page, which meant it fired on whoever
+ * happened to ship last rather than on anything actionable. This one is aimed
+ * at the entry being authored right now: a closeout narrative past this length
+ * belongs in a plan doc with a pointer from the fragment. Set inside the
+ * measured range on purpose — 6 of 341 fragments exceeded it when THR-1327
+ * landed, so it flags real outliers rather than sitting above the corpus doing
+ * nothing.
+ */
+export const MAX_FRAGMENT_LINES = 120;
 
 /**
  * Fragment files that are not entries. Anything starting with `_` is scaffolding;
@@ -143,29 +184,97 @@ export function newestDate(fragments: readonly Fragment[]): string | null {
 }
 
 /**
+ * The `YYYY-MM-DD — THR-XXXX` label for one fragment, read from its **filename**.
+ *
+ * Deliberately not read from the body: 100 of the 341 fragments live when
+ * THR-1327 landed lead with a bold sentence rather than a heading, so a
+ * body-derived label would be absent for a third of the corpus. The filename
+ * carries both facts by construction — it is the same key the page sorts on.
+ * A fragment matching neither shape (`2026-07-22-marathon.md`) degrades to its
+ * bare basename rather than throwing.
+ */
+export function fragmentLabel(file: string): string {
+  const base = file.replace(/\.md$/, "");
+  const [date, ticket] = sortKey(file);
+  if (date === "") return base;
+  return ticket < 0 ? date : `${date} — THR-${ticket}`;
+}
+
+/**
+ * A one-clause gist of what the entry says, for the index line.
+ *
+ * Two body shapes exist in the corpus and both are handled: a `# ` heading
+ * (241 of 341), whose text after the `date — THR-XXXX:` prefix is already a
+ * title; and a bold lead sentence (the older norm, 100 of 341), whose first
+ * sentence is the summary. Markdown emphasis, links and code ticks are stripped
+ * so the line renders as prose inside the bullet.
+ */
+export function fragmentGist(fragment: Fragment): string {
+  const firstLine = fragment.body.split("\n").find((line) => line.trim() !== "") ?? "";
+
+  let gist = /^#{1,6}\s+(.*)$/.exec(firstLine.trim())?.[1] ?? firstLine.trim();
+
+  // A heading usually restates the label the summary line already carries, in
+  // one of two authored shapes: `2026-08-29 — THR-1364: title` and the older
+  // `THR-1358 — title`. Both prefixes go; a heading with neither is kept whole.
+  gist = gist
+    .replace(/^\d{4}-\d{2}-\d{2}\s*(?:[—–-]\s*)?/, "")
+    // Separator optional: a heading of a bare `THR-1364` and nothing else must
+    // strip to empty, so `summaryLine` falls back to the bare link.
+    .replace(/^THR-\d+\s*(?:[—–:-]\s*)*/i, "");
+
+  gist = gist
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1") // links → their text
+    .replace(/[*_`]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  // A bold lead sentence is a whole paragraph; keep its first sentence only.
+  const sentenceEnd = /[.?!]\s/.exec(gist);
+  if (sentenceEnd && sentenceEnd.index + 1 > 0) gist = gist.slice(0, sentenceEnd.index + 1);
+
+  // Both shapes also *close* on the id the label already carries — a heading's
+  // trailing `(THR-1335)`, a bold lead's `(THR-1000, 2026-08-06).`. Stripped
+  // after the sentence cut, because in the bold-lead shape the id sits at the
+  // end of the first sentence rather than the end of the line.
+  gist = gist.replace(/\s*\(THR-\d+(?:,\s*\d{4}-\d{2}-\d{2})?\)\s*\.?\s*$/i, "").trim();
+
+  if (gist.length > SUMMARY_GIST_CHARS) {
+    gist = `${gist.slice(0, SUMMARY_GIST_CHARS).replace(/\s+\S*$/, "")}…`;
+  }
+
+  return gist;
+}
+
+/**
+ * One entry as one line: label, link to the full fragment, gist.
+ *
+ * The link is relative to `Docs/project-status.md`, which sits one level above
+ * `Docs/status/`.
+ */
+export function summaryLine(fragment: Fragment): string {
+  const gist = fragmentGist(fragment);
+  const link = `- **[${fragmentLabel(fragment.file)}](status/${fragment.file})**`;
+  return gist === "" ? link : `${link} — ${gist}`;
+}
+
+/**
  * Choose the newest fragments that fit the line budget.
  *
- * At least one entry is always rendered: a page whose single newest entry is
- * longer than the whole budget should show that entry and overrun, not show an
- * empty `## Current Focus`. Overrun is reported by the caller rather than
- * silently tolerated.
+ * Each entry costs exactly one line, because the page renders an index rather
+ * than the fragment bodies (THR-1327). That is the whole point of the change:
+ * the old renderer spliced whole bodies in, so how many entries the page showed
+ * was a function of how long the last author happened to write — measured at
+ * `1 of 281` on 2026-08-27 and `4 of 341` two days later, with nothing changed
+ * but the prose. A fixed per-entry cost makes the cap mean a stable entry
+ * count, and makes page overrun impossible by construction.
  */
 export function selectFragments(
   fragments: readonly Fragment[],
   budgetLines: number,
 ): { rendered: Fragment[]; dropped: Fragment[] } {
-  const rendered: Fragment[] = [];
-  let used = 0;
-
-  for (const fragment of fragments) {
-    // Each entry costs its own lines plus one blank separator.
-    const cost = fragment.body.split("\n").length + 1;
-    if (rendered.length > 0 && used + cost > budgetLines) break;
-    rendered.push(fragment);
-    used += cost;
-  }
-
-  return { rendered, dropped: fragments.slice(rendered.length) };
+  const rendered = fragments.slice(0, Math.max(1, budgetLines));
+  return { rendered: [...rendered], dropped: fragments.slice(rendered.length) };
 }
 
 export type Assembly = {
@@ -190,7 +299,7 @@ export function assemble(template: string, fragments: readonly Fragment[]): Asse
   const budget = MAX_PAGE_LINES - scaffoldLines;
 
   const { rendered, dropped } = selectFragments(fragments, budget);
-  const body = rendered.map((fragment) => fragment.body).join("\n\n");
+  const body = rendered.map(summaryLine).join("\n");
 
   let content = `${head}${body}${tail}`;
   const stamp = newestDate(fragments);
@@ -232,13 +341,20 @@ export function generateProjectStatus(options: { dryRun?: boolean; check?: boole
   );
 
   const summary =
-    `${rendered.length} of ${fragments.length} fragment(s) rendered, ` +
+    `${rendered.length} of ${fragments.length} fragment(s) indexed, ` +
     `${dropped.length} held back by the ${MAX_PAGE_LINES}-line cap, ${lineCount} lines`;
 
-  if (lineCount > MAX_PAGE_LINES) {
+  // The page cannot overrun any more — one entry costs one line — so the only
+  // budget worth reporting is the one the author can still act on: the entry
+  // they are shipping right now (THR-1327).
+  const newest = fragments[0];
+  const newestLines = newest.body.split("\n").length;
+  if (newestLines > MAX_FRAGMENT_LINES) {
     console.warn(
-      `generate-project-status: WARN — ${lineCount} lines exceeds MAX_PAGE_LINES ` +
-        `(${MAX_PAGE_LINES}); the newest entry alone is over budget.`,
+      `generate-project-status: WARN — the newest fragment (${newest.file}) is ` +
+        `${newestLines} lines, over MAX_FRAGMENT_LINES (${MAX_FRAGMENT_LINES}). ` +
+        `The page is unaffected; consider moving the detail to a plan doc and ` +
+        `pointing at it from the fragment.`,
     );
   }
 
