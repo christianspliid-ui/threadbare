@@ -6,7 +6,7 @@ description: >
   "UI", "frontend", "panel", "layout", "accessibility", "style tile", "CSS",
   "responsive", "interaction", or when the task involves visual presentation.
   Also load when designing the **UI pillar** of any feature.
-last_validated_against: 2026-08-06
+last_validated_against: 2026-08-29
 ---
 
 # Frontend & UI — Domain Context
@@ -17,7 +17,7 @@ This skill is the **single-load context** for designing and building UI in Threa
 
 ## 1. Dark Tapestry Design Language
 
-The visual identity is called **Threadbare** — dark world, hidden magic, threads that break through.
+The design system is called **Dark Tapestry**; the game it serves is **Threadbearer** — dark world, hidden magic, threads that break through. ("Threadbare" is the repo codename only, never a player-facing or aesthetic name.)
 
 **Core principles:**
 - Always dark. No light mode. Background never brighter than `--bg-surface`.

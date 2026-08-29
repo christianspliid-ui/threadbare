@@ -10,7 +10,7 @@
 2. **Fast by default.** Game UI responds at `--anim-fast` (150ms). Only narrative moments use `--anim-slow`.
 3. **Respect the simulation.** During simulation running, minimize idle animations — the world's activity should feel like the only thing moving.
 4. **Spatial consistency.** Elements that enter from below exit below. Elements that come from the right exit right. Don't mix entry/exit directions.
-5. **No bounce or spring.** The Threadbare aesthetic is measured and ancient, not bouncy. Use `ease-out` for entrances, `ease-in` for exits. Never `spring` or `bounce` easing.
+5. **No bounce or spring.** The Dark Tapestry aesthetic is measured and ancient, not bouncy. Use `ease-out` for entrances, `ease-in` for exits. Never `spring` or `bounce` easing.
 
 ---
 
@@ -94,7 +94,7 @@ These run continuously but must be lightweight:
 |-------|-----|-----------------|
 | `.animate-breathe` | Empty state placeholder, waiting for data | Low CPU — opacity only |
 | `animate-pulse` (Tailwind) | Alert dot, hostile indicator | Only use on tiny elements |
-| Agent dot breathing | `breathe` keyframe on SVG circle | Runs per-agent — cap visible agents in spotlight tier |
+| Agent marker breathing | `breathe`-family pulse on the HexMapV2 agent layer | Runs per-agent — cap visible agents in spotlight tier |
 
 **Rule:** Never run `pulseGlow` or `pulseGoldFlare` continuously — one-shot only. Continuous glow creates visual noise that competes with the map.
 

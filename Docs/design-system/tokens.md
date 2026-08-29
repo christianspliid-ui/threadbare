@@ -29,7 +29,7 @@ Dark surfaces from deepest to most raised. Use in order — never skip layers.
 | `--text-primary` | `#e8dcc8` | Main content, names, values |
 | `--text-secondary` | `#c8b89a` | Supporting info, subtitles |
 | `--text-tertiary` | `#a89880` | Labels, metadata, section headers |
-| `--text-muted` | `#7a6e60` | Hints, placeholders, disabled |
+| `--text-muted` | `#9a8e7e` | Hints, placeholders, disabled — dim but readable, WCAG AA on `--bg-abyss` |
 
 **Rule:** Never use a custom color for text outside these four. For emphasis use `--text-primary` + display font, not a brighter color.
 
@@ -78,7 +78,7 @@ Each sphere has a base color and a bright variant. Used for sphere-specific UI e
 |-------|-------|-----|
 | `--border-subtle` | `#2a2520` | Default panel/card borders |
 | `--border-medium` | `#3a3530` | Stronger separation, hover borders |
-| `--border-accent` | `#d4a04025` | Gold-tinted borders for special panels |
+| `--border-accent` | `#d4a04040` | Gold-tinted borders for special panels |
 
 ---
 
