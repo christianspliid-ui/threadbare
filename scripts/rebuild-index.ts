@@ -321,7 +321,7 @@ export async function rebuildIndex(options: RebuildIndexOptions = {}) {
   lines.push('');
 
   // Title and intro
-  lines.push('# The Fantasy World Simulator \u2014 Knowledge Base');
+  lines.push('# Threadbearer \u2014 Knowledge Base');
   lines.push('');
   lines.push('> LLM-maintained index of all vault pages. Read this first to navigate the domain model.');
   lines.push('');

@@ -1,5 +1,6 @@
 import type { HarvestResult, HarvestEchoCandidate } from '../../engine/cycleEnd';
 import type { HarvestType } from '../../types/worldSoul';
+import { countWord, magnitudeWord, type MagnitudeBand } from '../../engine/aftermathWords';
 import { Tooltip } from '../shared/Tooltip';
 import { Button } from '../shared/Button';
 
@@ -8,6 +9,17 @@ interface HarvestScreenProps {
   cycle: number;
   onBeginNextCycle: () => void;
 }
+
+/**
+ * Echo significance is a 0–1 score; the player reads a banded word, the raw
+ * value stays on the trace (Law 13 — no percentages player-facing, THR-1357).
+ */
+const ECHO_SIGNIFICANCE_BANDS: readonly MagnitudeBand[] = [
+  { min: 0.75, word: 'defining' },
+  { min: 0.5, word: 'resonant' },
+  { min: 0.25, word: 'notable' },
+  { min: 0, word: 'faint' },
+];
 
 const HARVEST_STYLES: Record<HarvestType, { title: string; color: string; bg: string }> = {
   triumphant: { title: 'A Triumphant Age', color: '#eab308', bg: 'from-yellow-900/30' },
@@ -31,8 +43,8 @@ function EchoCard({ candidate }: { candidate: HarvestEchoCandidate }) {
           </span>
         ))}
       </div>
-      <div className="mt-1 text-xs text-amber-200/60">
-        Significance: {(candidate.score * 100).toFixed(0)}%
+      <div className="mt-1 text-xs text-amber-200/60 italic">
+        A {magnitudeWord(candidate.score, ECHO_SIGNIFICANCE_BANDS)} echo of the age
       </div>
     </div>
   );
@@ -68,7 +80,7 @@ export function HarvestScreen({ harvest, cycle, onBeginNextCycle }: HarvestScree
           <div className="mb-6">
             <Tooltip id="ui.harvest_echo">
               <h3 className="text-xs font-bold text-amber-100/80 uppercase tracking-wider mb-3 cursor-help">
-                Echoes Preserved ({harvest.cosmicEchoCandidates.length} cosmic)
+                Echoes Preserved — {countWord(harvest.cosmicEchoCandidates.length)} cosmic
               </h3>
             </Tooltip>
             <div className="flex gap-3 overflow-x-auto pb-2">
@@ -81,7 +93,7 @@ export function HarvestScreen({ harvest, cycle, onBeginNextCycle }: HarvestScree
 
         {harvest.divineEchoSlots > 0 && (
           <p className="text-xs text-amber-200/70 text-center mb-6">
-            {harvest.divineEchoSlots} divine echo slot{harvest.divineEchoSlots > 1 ? 's' : ''} available
+            {countWord(harvest.divineEchoSlots).replace(/^./, c => c.toUpperCase())} divine echo slot{harvest.divineEchoSlots > 1 ? 's' : ''} available
             <span className="text-amber-200/50 ml-1">(selection coming in a future update)</span>
           </p>
         )}

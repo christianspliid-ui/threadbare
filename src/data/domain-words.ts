@@ -1,7 +1,7 @@
 /**
  * Domain Word Scales — Verbal descriptors for all numeric stats.
  *
- * The Fantasy World Simulator's core principle: no numbers in the UI. Every stat
+ * Threadbearer's core principle: no numbers in the UI. Every stat
  * (domain capability, value orientation, reputation, bond strength) maps to a word.
  *
  * ═══════════════════════════════════════════════════════════════════

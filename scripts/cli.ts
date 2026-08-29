@@ -2130,7 +2130,7 @@ function main(): void {
 
   console.log(`${BOLD}${CYAN}`);
   console.log(`  ╔══════════════════════════════════════╗`);
-  console.log(`  ║   The Fantasy World Simulator  CLI   ║`);
+  console.log(`  ║          Threadbearer  CLI           ║`);
   console.log(`  ╚══════════════════════════════════════╝${RESET}`);
   console.log('');
 
