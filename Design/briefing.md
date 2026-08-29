@@ -1,9 +1,9 @@
 # Briefing
-**Generated:** 2026-08-30 00:55 local (22:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-08-30 01:55 local (23:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**Play two encounters, then say one word about the next seven.** Six days open on the approval, thirteen on the sample — and as of tonight it is also the only thing that would put real work back in front of the builders. The last cleanup round finished an hour ago and **nothing product-shaped is left on the shelf**: two items are queued and both are tidying.
+**Play two encounters, then say one word about the next seven.** Six days open on the approval, thirteen on the sample. The cleanup programme that had been carrying the board finished two hours ago, so this is now the only agreed work in reach that makes the game *bigger* rather than tidier.
 
 First, the two-of-six sample from batch 1 — the question is yours alone: *are they worth meeting twice?* Both were re-prosed since you last saw them, so a replay is honest, and a no is as useful as a yes. Open the *good ending* links first (~5 minutes total).
 
@@ -16,7 +16,7 @@ Then the brief: [the camp seven](https://github.com/christianspliid-ui/threadbar
 
 ## Also waiting (10)
 
-- **[Design hours — the shelf is dry](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** · sharper tonight: with the cleanup programme finished, **nothing is actively being built**. Sit [the card grammar](https://linear.app/threadbare/issue/THR-1002) or [traits wave 2](https://linear.app/threadbare/issue/THR-790), or say *"park it"* — four plan-doc sessions are behind them. Detail: [user-actions §2](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md).
+- **[Design hours — the shelf is dry](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** · one thing is being built tonight and it is a glossary document. Sit [the card grammar](https://linear.app/threadbare/issue/THR-1002) or [traits wave 2](https://linear.app/threadbare/issue/THR-790), or say *"park it"* — four plan-doc sessions are behind them. Detail: [user-actions §2](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md).
 - **[THR-1314](https://linear.app/threadbare/issue/THR-1314/ul-proposal-work-holding-kind-row-christening-failure-name-register)** · **shipped** — what a character owns reads **freehold** to the player; *holding* keeps every other sense. Veto still open, four lines to reverse.
 - **[Physical Conflict map](https://linear.app/threadbare/issue/THR-1258/wayfinder-map-physical-conflict)** · nine questions open, all yours, every research question finished. Say *"work the fight map"*.
 - **[Twenty spells](https://linear.app/threadbare/issue/THR-1232) / [thirty items](https://linear.app/threadbare/issue/THR-1236)** · two sketches to build for you to react to. Say *"work the powers map"* or *"work the item map"*.
@@ -29,13 +29,14 @@ Then the brief: [the camp seven](https://github.com/christianspliid-ui/threadbar
 
 ## Queue
 
-**Starved — 2 ready, nothing active.** The context-cleanup programme closed out tonight ([the last piece](https://github.com/christianspliid-ui/threadbare/pull/1754) merged 00:31 local — "round 5 complete, program complete"), and it was the only thing running. What remains queued is [a test de-flake](https://linear.app/threadbare/issue/THR-1328) and [a glossary proposal](https://linear.app/threadbare/issue/THR-1316), both Low, both tidying.
+**Starved — 2 ready, one item live.** The one live piece is [the glossary proposal](https://linear.app/threadbare/issue/THR-1316) (moved into build at 23:29 UTC, [PR #1755](https://github.com/christianspliid-ui/threadbare/pull/1755) — currently red, see Health). What remains queued is [a test de-flake](https://linear.app/threadbare/issue/THR-1328) and [a glossary index gap](https://linear.app/threadbare/issue/THR-1376), both Low, both tidying. No product-shaped work is on the shelf.
 
-- Three items sit In Dev and all three are **deliberately parked**, not stalled: [the pixel-pass sweep](https://linear.app/threadbare/issue/THR-1133) (waits on your dev-server sitting, 1 day), [the batch-2 retrofit's sibling volume ticket](https://linear.app/threadbare/issue/THR-1130) (waits on the same approval as the lead ask, 1 day), [the audio moments](https://linear.app/threadbare/issue/THR-1168) (waits on your feel call, 1 day). Each is already on the list above; none needs freeing.
+- Three items sit In Dev and all three are **deliberately parked**, not stalled: [the pixel-pass sweep](https://linear.app/threadbare/issue/THR-1133) (waits on your dev-server sitting), [the batch-2 sibling volume ticket](https://linear.app/threadbare/issue/THR-1130) (waits on the same approval as the lead ask), [the audio moments](https://linear.app/threadbare/issue/THR-1168) (waits on your feel call). Each is already on the list above; none needs freeing.
 - Nothing stale: no Ready-for-Dev item is older than 7 days, and no In-Dev item is silently blocked.
 
 ## Health
 
-All green — deploys current, checks and background jobs healthy, no PR waiting to merge, all nine scheduled lanes on time, the branch reaper ran 15 minutes ago.
+Deploys current, background jobs healthy, all nine scheduled lanes on time, the branch reaper ran 15 minutes ago.
 
+- **One red pull request, and no session is on it.** [PR #1755](https://github.com/christianspliid-ui/threadbare/pull/1755) (the glossary proposal, [THR-1316](https://linear.app/threadbare/issue/THR-1316)) fails the required `Test · Typecheck · Build` check. Auto-merge is armed, so it reads as shipped everywhere except the check itself and will sit there indefinitely. An executor session needs to read the failure and push a fix. **Nothing here for you.**
 - *Visibility only, no action:* the lane-silence probe still reports the overnight 23–24 August gap (10.6h, 19:06→05:41 UTC, since recovered). Nightly-shaped, and declined per your 8 August ruling that overnight quiet is normal.
