@@ -24,9 +24,35 @@
  *
  * The authored `category` vocabulary is still honoured alongside `subcategory`, because
  * content may write either and dropping one would retire live content to fix a reader.
+ *
+ * ─── THR-1330: the chip's link half, and why it carries no tile ──────────────
+ *
+ * Making the rows reachable exposed the chips to Law 1 for the first time: they had a
+ * tooltip and neither an image nor a link. Both halves are answered here.
+ *
+ * **Link — probed, never assumed.** A chip links when, and only when, the concept it
+ * names resolves to a sheet: `attachmentDetailFromNode`, the same classifier
+ * `resolveAttachmentTemplateDetail` runs for the aftermath chip (THR-1120), decides.
+ * That keeps Law 21 honest in both directions — a condition reaches
+ * `AttachmentDetailView`, and a clue, whose `clue` subcategory is deliberately outside
+ * `ATTACHMENT_TRAIT_SUBCATEGORIES`, stays plain styled text rather than acquiring a
+ * link into a blank sheet. Nothing is special-cased per row; the three rows differ in
+ * where they land only because the probe answers differently for what they hold. An
+ * agreement is edge state with no node at all, so it fails open by the same rule.
+ *
+ * **Image — none, by the standing ruling.** `EntityVisualKind` excludes `attachment` on
+ * purpose (THR-1120: *"an attachment has a page but no entity-visual family … it takes
+ * the link tier and no tile, which is the documented fail-open path rather than a wrong
+ * glyph"*), and `buildUnifiedEncounterStageModel`'s `resolveIcon` skips the kind for
+ * that reason. An attachment's art lives on its own template node as `props.image` and
+ * `AttachmentDetailView` draws it; measured at the time of writing, 0 of 214 attachment
+ * templates carry one, so a tile here would be a fallback glyph on every chip. Passing
+ * `resolveEntityVisual` a borrowed kind to get one is the hand-plumbed second lookup
+ * Law 3 forbids. Same representation class, same verdict as the aftermath chip.
  */
 import React from 'react';
 import type { GameState } from '../../../types/gameState';
+import { attachmentDetailFromNode } from '../../../engine/attachmentTemplateDetail';
 import { Tooltip } from '../../shared/Tooltip';
 import {
   HOOK_LABEL_FALLBACK,
@@ -52,6 +78,16 @@ interface ChipData {
   label: string;
   def: string;
   valence: string;
+  /**
+   * The attachment-template node whose sheet this chip opens, when one resolves
+   * (THR-1330). Absent means the concept has no page — the chip stays plain
+   * styled text and carries no control affordance (Law 21's fail-open, Law 25).
+   *
+   * Always equal to `id` when present, but kept as its own field so the *decision*
+   * is data on the chip rather than a re-derivation at every render site: a reader
+   * asking "does this chip link?" must not have to re-run the classifier to find out.
+   */
+  sheetId?: string;
 }
 
 /**
@@ -83,7 +119,7 @@ const AGREEMENT_TYPE_WORD: Record<string, string> = {
  * and its own unmount timer cleanup — the last of which is the THR-1108 guarantee, now
  * held by the primitive instead of a copy of it living here.
  */
-function Chip({ chip, onOpen }: { chip: ChipData; onOpen?: (chip: ChipData) => void }) {
+function Chip({ chip, onOpen }: { chip: ChipData; onOpen?: (sheetId: string) => void }) {
   const colors = VALENCE_COLORS[chip.valence] ?? VALENCE_COLORS.neutral;
 
   // Law 25 — a control that does nothing does not render as a control (THR-1307).
@@ -93,7 +129,12 @@ function Chip({ chip, onOpen }: { chip: ChipData; onOpen?: (chip: ChipData) => v
   // writerless and no chip ever rendered; making the chips reachable would have
   // shipped a keyboard-focusable control that silently does nothing. The hover
   // explanation is the chip's real Tier-1 affordance and is unaffected.
-  const interactive = Boolean(onOpen);
+  //
+  // THR-1330 — two conditions now, not one. A handler is not enough: the chip must also
+  // have somewhere to go. A clue in a bar wired with `onOpenAttachment` would otherwise
+  // regain the affordance and open nothing, which is the same released defect with a
+  // longer fuse.
+  const open = onOpen && chip.sheetId ? () => onOpen(chip.sheetId!) : undefined;
 
   return (
     <Tooltip label={chip.label} desc={chip.def || HOOK_DEF_FALLBACK}>
@@ -101,13 +142,27 @@ function Chip({ chip, onOpen }: { chip: ChipData; onOpen?: (chip: ChipData) => v
         className={styles.chip}
         style={{
           background: colors.bg, borderColor: colors.border, color: colors.text,
+          // The cursor is part of the advertisement (THR-1330). `.chip` set
+          // `cursor: pointer` unconditionally, so every inert chip claimed to be
+          // clickable in the one channel Law 25 cares about most — the one the player
+          // reads before committing to a click. `default` is the honest rest state for
+          // a chip whose only affordance is its hover explanation.
+          cursor: open ? 'pointer' : 'default',
         }}
-        {...(interactive
+        {...(open
           ? {
-              onClick: () => onOpen?.(chip),
+              onClick: open,
               role: 'button',
               tabIndex: 0,
-              onKeyDown: (e: React.KeyboardEvent) => { if (e.key === 'Enter') onOpen?.(chip); },
+              // Enter *and* Space: `role="button"` promises both to a screen-reader
+              // user, and the pre-THR-1307 handler answered only Enter. Space is also
+              // page-scroll by default, so it is prevented once the chip claims it.
+              onKeyDown: (e: React.KeyboardEvent) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  open();
+                }
+              },
             }
           : {})}
       >
@@ -162,6 +217,14 @@ export function __resetHookLabelWarnings(): void {
 
 interface HooksBlockProps {
   gameState: GameState;
+  /**
+   * Open the attachment sheet for a template node (THR-1330). Optional: without it
+   * every chip stays inert, which is what the block did before and what the styleguide
+   * and any graph-free render still get. `GameView` passes the same
+   * `setAttachmentSheetId` the aftermath consequence chip uses, so the bar and the
+   * ending open one sheet, not two that could drift (Law 3).
+   */
+  onOpenAttachment?: (templateNodeId: string) => void;
 }
 
 /**
@@ -211,7 +274,13 @@ export function extractChips(gameState: GameState): {
     if (!bucket) continue;
 
     const label = resolveChipLabel(node, bucket);
-    const chip: ChipData = { id: node.id, label, def, valence };
+    // THR-1330 — the link probe. Asking the sheet's own classifier whether this node
+    // *is* an attachment is what stops the three rows from needing three hand-written
+    // rules that could disagree with the sheet: a `condition` resolves and links, a
+    // `clue` does not and stays plain, and an authored `mark` follows whichever answer
+    // the classifier gives rather than whichever this file guessed.
+    const sheetId = attachmentDetailFromNode(node) ? node.id : undefined;
+    const chip: ChipData = { id: node.id, label, def, valence, sheetId };
 
     if (bucket === 'condition') {
       conditions.push(chip);
@@ -264,6 +333,10 @@ export function extractChips(gameState: GameState): {
     const valence =
       agreement.type && agreement.type in VALENCE_COLORS ? agreement.type : 'pact';
 
+    // No `sheetId` (THR-1330). An agreement is edge state — `edge.id` is not a node id,
+    // so there is nothing for `AttachmentDetailView` to draw, and its terms are already
+    // on the chip's tooltip. Law 21's fail-open: plain styled text, no control. If an
+    // agreement ever becomes a node with a page, this is the one line that changes.
     vows.push({ id: edge.id, label, def: agreement.terms ?? '', valence });
   }
 
@@ -276,7 +349,7 @@ export function countHooks(gameState: GameState): number {
   return conditions.length + clues.length + vows.length;
 }
 
-export function HooksBlock({ gameState }: HooksBlockProps) {
+export function HooksBlock({ gameState, onOpenAttachment }: HooksBlockProps) {
   const { conditions, clues, vows } = extractChips(gameState);
 
   if (conditions.length === 0 && clues.length === 0 && vows.length === 0) {
@@ -288,14 +361,14 @@ export function HooksBlock({ gameState }: HooksBlockProps) {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+    <div data-testid="ascendant-hooks" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
       {conditions.length > 0 && (
         <div>
           <div style={{ fontFamily: 'var(--font-display)', fontSize: 10, color: 'var(--text-muted)', letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: 4 }}>
             Conditions
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
-            {conditions.map((c) => <Chip key={c.id} chip={c} />)}
+            {conditions.map((c) => <Chip key={c.id} chip={c} onOpen={onOpenAttachment} />)}
           </div>
         </div>
       )}
@@ -305,7 +378,7 @@ export function HooksBlock({ gameState }: HooksBlockProps) {
             Clues
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
-            {clues.map((c) => <Chip key={c.id} chip={c} />)}
+            {clues.map((c) => <Chip key={c.id} chip={c} onOpen={onOpenAttachment} />)}
           </div>
         </div>
       )}
@@ -315,7 +388,7 @@ export function HooksBlock({ gameState }: HooksBlockProps) {
             Vows & Bonds
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
-            {vows.map((v) => <Chip key={v.id} chip={v} />)}
+            {vows.map((v) => <Chip key={v.id} chip={v} onOpen={onOpenAttachment} />)}
           </div>
         </div>
       )}

@@ -264,10 +264,16 @@
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.06em;
-  cursor: pointer;
+  /* No `cursor` here (THR-1330). It read `pointer` unconditionally, so an inert chip
+     advertised a click target in the one channel the player reads *before* committing
+     to the click — Law 25's cursor half, which THR-1307 left behind when it removed the
+     role/tabindex half. `Chip` now sets the cursor inline from whether the chip actually
+     resolved a destination, so the advertisement and the behaviour cannot disagree. */
   position: relative;
   transition: opacity 0.15s ease;
 }
+/* Hover still responds on every chip, linked or not: hovering genuinely does something
+   — it opens the explanation, which is the chip's Tier-1 affordance (Law 20). */
 .chip:hover {
   opacity: 0.85;
 }
