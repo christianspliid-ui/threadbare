@@ -36,7 +36,6 @@ import type { AxiologicalProfile } from '../types/agent';
 import type { EncounterCacheEntry } from './encounterCache';
 import type { WorldGraph } from './graph';
 import type { DistanceMatrix } from './distanceMatrix';
-import { getDistance } from './distanceMatrix';
 
 // ─── Constants (re-exported from central tuning file) ───────────
 export {

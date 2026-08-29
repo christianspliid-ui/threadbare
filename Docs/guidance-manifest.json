@@ -165,10 +165,12 @@
       "versionNote": "Registered 2026-08-28 (THR-1331). Single CC runtime (Codex retired THR-486, Cowork retired THR-654); design session vs execution session; vault filesystem-only via OBSIDIAN_VAULT_PATH; single-authority + pointers; merge = Done via line-anchored Fixes THR-XX in commit AND PR body.",
       "authorities": [
         "Docs/canon/process.md",
-        "Docs/canon/design-governance.md"
+        "Docs/canon/design-governance.md",
+        "Docs/canon/verification-gates.md"
       ],
       "dependents": [
         "CLAUDE.md",
+        "Docs/ops/sandbox-limitations.md",
         "Docs/ubiquitous-language/README.md",
         "Docs/ubiquitous-language/Process.md",
         "Docs/ubiquitous-language/Coordination.md",

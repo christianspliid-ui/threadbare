@@ -254,6 +254,16 @@ export function seedFactionFromDefinition(
       axiologicalProfile: profile,
       domainCapabilities: caps,
       reachPreferences: reachPrefs,
+      // THR-1323 — the source weights, stored alongside the two derivations above.
+      // `computeSettlementReaches` (settlementGenome/runGenome.ts) sums this key over the
+      // factions a settlement holds via `located_at`. It read a property no writer produced:
+      // the derivations were kept and their source discarded, so the read's `if (!weights)
+      // continue` fired on all 49 factions of a seeded world and the function returned `{}`.
+      // That emptiness also silenced the genome's Reach pass, which is the sole reader of
+      // REACH_SUBLOCATION_MENU — 8 reaches of authored sublocations and NPC roles that had
+      // never fired in a generated world. Store, do not re-derive: `deriveDomainCapabilities`
+      // is lossy (it takes an rng) and cannot be inverted back to the weights.
+      reachWeights: definition.reachWeights,
       homeLocationId,
       wealth: 0,
       displaced: false,

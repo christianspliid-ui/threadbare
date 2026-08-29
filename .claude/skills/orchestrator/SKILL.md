@@ -1,7 +1,7 @@
 ---
 name: orchestrator
 description: The lane that decides what happens next — reads the Blocked by half of coordination blocks and promotes unblocked work to Ready for Dev (T1), stages design requests when the program shelf runs thin (T2; Sonnet lane by Christian's ruling 2026-08-06 — never authors plan docs), and owns architecture-health surfacing as a standing daily duty (T3). Runs hourly as tb-orchestrator. Never claims an issue, never sets In Dev, never writes Design/briefing.md.
-last_validated_against: 2026-08-06
+last_validated_against: 2026-08-29
 ---
 
 # Orchestrator
@@ -238,13 +238,25 @@ Do not build a new sweep. These already run:
 
 Report **new** findings only, diffed against the previous `orchestrator-*.md` — read from `origin/ops` (`git show origin/ops:<path>`), not the working tree, since THR-947. A tier that re-lists the same forty findings every day trains its reader to skip it, which makes it indistinguishable from a detector nobody runs. Diffing against the frozen archive would re-report the whole standing set as new every run, which is the same failure wearing the opposite face.
 
-### The two things no existing detector does
+### The three things no existing detector does
 
 1. **Redundancy, not reachability.** D7 covers *redundant* systems — two implementations doing one job. **Both are reachable, so no reachability sweep will ever flag them.** This is a genuine judgement pass over `Docs/canon/interface-map.md` and `Docs/canon/systems-inventory.md`, not a script.
 
    **Do not ship a reachability result labelled as a redundancy result.** That is a green check on an uncovered condition — the pathology this repo has logged eleven times in four days. When the judgement pass did not happen in a given sweep, the report says *"redundancy: not assessed this sweep"*. Accept that this is the weaker half and say so, rather than implying coverage.
 
 2. **Stalled-work detection.** An issue claimed `ORCH_STALLED_PICKUP_THRESHOLD` times without a merge is failing repeatedly and nothing currently notices. Read `stateHistory` for repeated `Ready for Dev → In Dev` transitions with no `Done`, and surface the count.
+
+3. **Hand-created `In Dev` tickets — surface them, never normalise them (ruling, THR-1325 item 3).** A ticket created *directly* into `In Dev` never passed through `Ready for Dev`, so it skipped both the claim step — the mutual-exclusion primitive — and this lane's T1 promotion, and therefore carries no coordination block and no Rule 0 classification. That is how THR-1245 came to be **implemented twice, concurrently, by two sessions** (impediment #763, ~1 full session lost).
+
+   **The ruling: the orchestrator does not write to these. It reports them.** Read the `In Dev` slice, flag any issue whose `stateHistory` shows no `Ready for Dev` state ever, and list it under T3 with its id, age, and assignee. Do **not** move it back to `Ready for Dev`.
+
+   Three reasons the read-only answer wins over normalising, recorded so this is not re-litigated:
+
+   - **It preserves the one invariant this lane has.** "Never set `In Dev`, never touch the executor's slot" is what keeps the orchestrator from writing over a running session. A normalisation write is a write *into* `In Dev` justified by an inference about liveness — the exact shape impediment #755 punished, where a lane stripped another session's assignee twice while it was shipping. A lane that may rewrite `In Dev` on inference will eventually do it to live work.
+   - **The race is already closed downstream, where the information is.** `pull-work` Step 1.8 now treats `In Dev` + assigned + *no claim comment* as **unclaimed**, asserts a claim comment, and re-reads the thread so comment ordering arbitrates — plus a point-of-commitment PR sweep before `gh pr create`. Arbitration needs comment timestamps and open PRs; the orchestrator has neither in view at the moment of the race.
+   - **Surfacing fixes it upstream; normalising only hides it.** Silently rerouting these makes the practice of creating tickets in `In Dev` invisible and therefore permanent. A line in the T3 report makes it countable, and the retro can then stop it at the source — which is the actual repair.
+
+   Report line: `hand-created In Dev (never in Ready for Dev): THR-XXXX (Nh old, assignee <name>) — claim arbitration is pull-work Step 1.8's; not normalised.`
 
 ### Test-suite health (weekly, `ORCH_TESTHEALTH_DOW`)
 

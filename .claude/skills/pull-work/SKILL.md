@@ -1,7 +1,7 @@
 ---
 name: pull-work
 description: Canonical Claude Code pickup workflow for claiming Linear work safely from Ready for Dev.
-last_validated_against: 2026-08-28
+last_validated_against: 2026-08-29
 ---
 
 # Pull Work
@@ -280,7 +280,7 @@ gh pr list --state open --json number,body \
 | In-flight claims (those resolving to **no** open PR) | Verdict |
 |---|---|
 | 0 | Nothing is being built. Continue to Step 2 and claim. |
-| 1 | Route to Step 1.7 (resume — upstream-shipped check). |
+| 1 | Route to Step 1.6 (resume — predecessor-liveness proof, then the upstream-shipped check). |
 | >1 | Genuine cross-session leak (Rule 6). Surface and exit 1 so it is visible in cron logs. Do not claim more. |
 
 **Match the closer's predicate exactly — the keyword alone on its own line (THR-738).** `linear-autoclose.yml` is line-anchored, so a body that merely *mentions* `Fixes THR-XXX` mid-sentence will never close that issue. A gate that discharges a claim on such a mention has declared finished a ticket that nothing will close — and the superseded `grep -oE '(Fixes|Closes|Resolves) THR-[0-9]+'` matched exactly that prose, because it was unanchored. The two predicates must not drift apart again; this one is the workflow's.
@@ -291,11 +291,11 @@ gh pr list --state open --json number,body \
 
 ```
 [pull-work] Step 1.5: WIP gate — 0 in flight (discharged: THR-582→PR#1299). Continuing to Step 2.
-[pull-work] Step 1.5: WIP gate — 1 in flight (THR-927). Routing to Step 1.7 resume.
+[pull-work] Step 1.5: WIP gate — 1 in flight (THR-927). Routing to Step 1.6 resume.
 [pull-work] Step 1.5: WIP gate — 2 in flight ({issueIds}), neither carried by an open PR. Cross-session leak. Surface and stop.
 ```
 
-The single-in-flight case routes to Step 1.7 (resume-from-In-Dev upstream-shipped check) rather than exiting clean. The resumed issue may have shipped while the session was paused; the upstream-shipped check decides whether to resume work or stand down.
+The single-in-flight case routes to Step 1.6 (predecessor-liveness proof) and then Step 1.7 (upstream-shipped check) rather than exiting clean. Two questions have to be answered in that order: **is the predecessor still alive** (1.6 — if so, every later step is a write against a running session), and only then **did the work already ship** (1.7).
 
 **Constants:**
 
@@ -306,9 +306,73 @@ The single-in-flight case routes to Step 1.7 (resume-from-In-Dev upstream-shippe
 
 **Fail-soft:** If the Linear API errors during the In Dev query, treat as gate-fired (refuse to pull when state is unknown). Log an impediment and exit 0.
 
+### Step 1.6 — Predecessor-liveness proof — prove the previous session is dead before resuming it
+
+Reached from Step 1.5's single-in-flight branch. **Run this before every other read or write on the resumed issue**, including the Step 1.7 upstream grep's disposition, the Step 1.8 comment read, and any `save_issue`/`save_comment`.
+
+**A resume and an overlap are the same shape (impediment #743, 2026-08-25).** An hourly lane found one `In Dev` claim assigned to itself and was routed to resume it — onto a branch whose **live predecessor had committed 3.5 minutes earlier** and written 16 files inside 20 minutes. Every documented gate said resume. The checkpoint comment read exactly like a finished handoff, because a live session has no reason to post one and the *previous* run's checkpoint was still the newest comment. It was a near-miss only because that run stood down on its own suspicion, which is not a mechanism. The lane overlapping *itself* is the ordinary case, not the exotic one: sessions run long, the schedule does not wait, and nothing in Linear's state field distinguishes "paused" from "running right now".
+
+**The two reads.** Both must come back idle. Recent on **either** ⇒ stand down.
+
+```bash
+# The predecessor's branch: Linear's `gitBranchName`, or the branch named in the
+# latest checkpoint comment if it differs (a prior run may have worked elsewhere).
+BRANCH="<gitBranchName | branch named in the latest checkpoint comment>"
+
+# (a) Branch-tip age. Use %ct — Unix epoch seconds, timezone-free BY CONSTRUCTION.
+TIP=$(git log --format=%ct -1 "$BRANCH" 2>/dev/null)
+if [ -n "$TIP" ]; then
+  TIP_IDLE_MIN=$(( ($(date +%s) - TIP) / 60 ))
+else
+  TIP_IDLE_MIN=999999   # branch absent locally — no tip signal; (b) decides alone
+fi
+
+# (b) Working-tree activity in the worktree checked out on that branch. Same probe,
+# same prune list, same threshold as the reaper's `worktree_recently_touched`.
+WT=$(git worktree list --porcelain \
+     | awk -v b="refs/heads/$BRANCH" '/^worktree /{w=$2} /^branch /{if($2==b) print w}')
+
+wt_recently_touched() {   # verbatim from Docs/ops/clean-stale-git.sh.md
+  [ -n "$1" ] && [ -d "$1" ] || return 1
+  find "$1" -maxdepth 3 \
+       \( -name node_modules -o -name .git -o -name dist -o -name coverage \
+          -o -name .codesight -o -name .vite \) -prune -o \
+       -newermt "-$RESUME_MIN_IDLE_MINUTES minutes" -print -quit 2>/dev/null | grep -q .
+}
+
+if [ "$TIP_IDLE_MIN" -lt "$RESUME_MIN_IDLE_MINUTES" ] || wt_recently_touched "$WT"; then
+  echo "[pull-work] Step 1.6: predecessor LIVE (tip ${TIP_IDLE_MIN}m idle, worktree $WT). Standing down."
+  exit 0     # no comment, no state write, no assignee write
+fi
+```
+
+**The `%ci` trap, stated inline because it is what nearly swallowed #743.** `git log --format=%ci` renders the committer date in the **local offset** (`+0200` on this box), and comparing that string against a UTC "now" reads a branch committed two minutes ago as two hours idle — failing *open*, into exactly the duplicate-session shape this step exists to close. `%ct` is Unix epoch seconds and carries no offset at all, so there is nothing to convert and nothing to get wrong. Never introduce a timezone into this comparison; if you find yourself writing a conversion, you have picked the wrong format specifier.
+
+**One definition of "alive", reused rather than re-minted.** `RESUME_MIN_IDLE_MINUTES` defaults to the reaper's `WORKTREE_MIN_IDLE_MINUTES` (180). Impediment #743's own evidence quotes a 20-minute write window, and 20 would have caught that case — but the reaper already owns the question "is a session still using this worktree", answered conservatively at 180 because deleting a live worktree and resuming a live branch are the same category of unrecoverable, and 180 strictly covers 20. Two thresholds for one question is how they drift apart. **Do not add a second definition**; if 180 is ever wrong, change it where the reaper defines it.
+
+**The asymmetry decides the fail direction: this probe fails CLOSED.** An unreadable signal — `git log` errors, the worktree path cannot be resolved, `find` fails — is read as **live**, matching the reaper's `|| return 0` ("unreadable → assume live"). Standing down costs one hour and the next run retries; resuming a live session costs a full duplicated implementation (#763) plus a mid-batch branch collision. Every other fail-soft in this skill continues on error because the cost of stopping exceeds the cost of proceeding. Here it is the reverse, and the rule inverts with it.
+
+**Stand-down is silent.** Exit clean and write **nothing** — no Linear comment, no state change, no assignee change. The live session is mid-run and owns that ticket; a comment races its own closeout comment, and an assignee write is precisely the failure impediment #755 punished (a lane stripped another session's assignee twice while it was shipping, on an inference about liveness). Log the trace line to the session log and end the run. The predecessor will finish, or it will not and its worktree will age past the threshold, and the next hourly run resumes for real.
+
+**Trace lines** (NFP #2 — exactly one fires):
+
+```
+[pull-work] Step 1.6: predecessor dead (tip 214m idle, worktree idle). Continuing to Step 1.7.
+[pull-work] Step 1.6: predecessor LIVE (tip 3m idle) — standing down silently, no writes.
+[pull-work] Step 1.6: predecessor LIVE (worktree ../wt-x written 4m ago) — standing down silently, no writes.
+[pull-work] Step 1.6: liveness probe unreadable — assuming LIVE (fail-closed). Standing down.
+```
+
+**Constants:**
+
+| Constant | Default | Purpose |
+|---|---|---|
+| `RESUME_MIN_IDLE_MINUTES` | 180 (= the reaper's `WORKTREE_MIN_IDLE_MINUTES`) | Idle window on both reads below which the predecessor counts as alive |
+| `RESUME_LIVENESS_FAIL_CLOSED` | `true` | An unreadable probe is read as live, not as dead |
+
 ### Step 1.7 — Resume-from-In-Dev — upstream-shipped check
 
-When Step 1.5 detects exactly one In Dev issue assigned to the executor, run the upstream-shipped check on that issue before doing any other work (including reading comments or plan doc).
+Reached from Step 1.6 once the predecessor is proven dead. Run the upstream-shipped check on the resumed issue before doing any other work (including reading comments or plan doc). **Do not run this step's disposition ahead of Step 1.6** — it unassigns, and unassigning a ticket a live session is still shipping is impediment #755's failure exactly.
 
 ```bash
 git fetch origin main
@@ -345,7 +409,30 @@ Reached only on the Step 1.7 upstream-clean path (work still in flight). Before 
 - **If `MAX_CHECKPOINTS_BEFORE_SPLIT` (3) or more checkpoint comments exist without a ship:** the issue is churning and needs re-scoping. Post a recommend-split comment naming the seams, then **move it to `Todo` and unassign** — `save_issue(id, state: "Todo", assignee: null)`, verify-after-write per impediment #48, **re-asserting the null once if it comes back** (§ *The verified-shipped park*) — and exit clean. `tb-orchestrator` re-scopes from there (T2), and T1 promotes it back to `Ready for Dev` once the split is authored.
 
   **`Todo`, not `In Dev` — the destination is the whole point (THR-846).** This line used to read "keep state In Dev … Cowork re-scopes", naming a lane retired 2026-07-21 (THR-654) *and* a state its successor never reads: `tb-orchestrator` scans `Todo` and `Ready for Dev` only and is forbidden from touching `In Dev` at all, while `stale-claim-sweep` keys off **stale claims**, which a deliberate unassigned park is not. THR-838 escalated exactly as instructed at 2026-07-29T00:12Z and then sat ~13 h holding a finished, well-argued split proposal that no lane could see, as the orchestrator promoted other work past it twice. Two grooming runs had already applied this same move by hand (THR-838; THR-778 on 2026-07-28) before it was written down here. The general rule the line is an instance of: **every park must name the lane that reads the destination.**
-- **If no checkpoint exists:** fall through to Step 5 and re-read the plan doc as normal.
+- **If no checkpoint exists *and* no claim comment from this lane exists:** the ticket is **unclaimed, not resumable** — see below. This is the hand-created-`In Dev` shape, and it is the one case where "resume" is the wrong verb.
+- **If no checkpoint exists but a claim comment does:** fall through to Step 5 and re-read the plan doc as normal. A prior run of this lane did claim it; the pass simply ended without checkpointing.
+
+#### `In Dev` + assigned-to-me + no claim comment = unclaimed (impediment #763)
+
+**A ticket can reach `In Dev` without ever passing through the claim step, and the claim step is the mutual-exclusion primitive.** THR-1245 was created directly in `In Dev`, already assigned. Because nothing in the state field records *who* claimed it or *when*, it appeared to two concurrent lanes as "my resumable claim" — and each lane's orientation `gh pr list` sweep ran before the other's PR existed, so neither saw the other. **It was implemented twice, concurrently: two complete PRs three minutes apart**, costing ~1 full session of duplicated implementation plus a `DIRTY` duplicate PR carrying a close keyword for an already-`Done` ticket.
+
+The state field cannot arbitrate this, because it holds no ordering. **Linear's comment ordering can**, so make the claim a comment and read it back:
+
+```
+save_comment(issueId: id, body: "Claim asserted by tb-opus-pickup at <ISO-8601 UTC>. This ticket was found In Dev with no prior claim comment (hand-created); asserting the claim so comment order arbitrates. Branch: <branch>.")
+list_comments(issueId: id, orderBy: "createdAt", limit: 10)
+```
+
+Re-read the thread. **If another lane's claim comment is older than yours, that lane owns it** — stand down silently per Step 1.6 (no state write, no assignee write) and end the run. If yours is the oldest claim comment, proceed to Step 5. Bare `THR-XXX` references only in a claim comment — never a close keyword (THR-738).
+
+**Re-run the PR sweep immediately before opening the PR — the point-of-commitment re-read.** The orientation sweep in Step 1.5 proves nothing about the moment you commit, and #763's whole failure lived in that gap: both sweeps were honest and both were stale. Directly before `gh pr create`, re-ask whether anyone else has opened a PR for this id:
+
+```bash
+gh pr list --state open --json number,headRefName,body \
+  --jq ".[] | select((.headRefName | test(\"$ISSUE_ID\"; \"i\")) or (.body | test(\"$ISSUE_ID\"; \"i\"))) | \"PR#\(.number)\t\(.headRefName)\""
+```
+
+A hit that is not your own branch means someone shipped this while you built it: **do not open a second PR.** Post a comment naming their PR number, leave your branch unpushed or pushed-but-unarmed, and exit clean. This is the same rule THR-1283 wrote for assignee writes — re-read at the point of commitment, because an exclusivity assumption is only worth the instant it was checked — applied to the other write that assumes exclusivity.
 
 **Constant:**
 
@@ -357,7 +444,9 @@ Reached only on the Step 1.7 upstream-clean path (work still in flight). Before 
 
 ```
 [pull-work] Step 1.8: checkpoint found (branch pickup/thr-247, next: wire phase). Resuming from checkpoint.
-[pull-work] Step 1.8: no checkpoint — falling through to Step 5 plan-doc re-read.
+[pull-work] Step 1.8: no checkpoint, claim comment present — falling through to Step 5 plan-doc re-read.
+[pull-work] Step 1.8: no checkpoint, no claim comment — hand-created In Dev. Asserting claim comment, re-reading thread.
+[pull-work] Step 1.8: claim comment re-read — another lane claimed at <ts>, earlier than mine. Standing down silently.
 [pull-work] Step 1.8: 3 checkpoints without ship — recommend-split, moved to Todo + unassigned for tb-orchestrator re-scope, exit.
 ```
 
@@ -739,6 +828,8 @@ this gate is the audit.
 
 **Standard closeout is `gh pr merge --auto --merge`.** GitHub holds the merge until the required `Test · Typecheck · Build` check goes green, then merges without a session present. Do not sit in a poll loop waiting on CI — that burned 3–8 minutes of session wall-clock per ship for no added safety (THR-675).
 
+**Re-run the duplicate-PR sweep immediately before `gh pr create` — every ship, not only the hand-created-`In Dev` path (impediment #763).** The orientation sweep at Step 1.5 was honest when it ran and says nothing about now; a concurrent lane's PR can appear in the gap between the two. The command and the disposition are in Step 1.8 § *point-of-commitment re-read*. A hit that is not your own branch means the work already shipped: comment their PR number and exit clean rather than opening a second PR for the same id.
+
 ```bash
 gh pr create --title "<type>(thr-XXX): <summary>" --body "$(printf 'Summary line.\n\nFixes THR-XXX\n')"
 gh pr merge --auto --merge
@@ -859,7 +950,7 @@ For each `docs-only` ticket, up to `DRAIN_MAX_TICKETS`, **sequentially — never
 
 1. `list_issues(team:"Threadbare", state:"Ready for Dev", label:"docs-only", limit:50, includeArchived:false)`, **Rule 0-partitioned then sorted by priority, then oldest `createdAt` — exactly as Step 1.** The partition matters here more than anywhere: a documentation defect that misroutes sessions is a flow impediment carrying real cost (a stale instruction that makes every session redo work), and the drain is where those tickets actually get picked up.
 2. Claim and verify per Step 4 (`save_issue` → `get_issue`), run the Step 4.4 upstream-shipped check, and validate the coordination block per Step 3. **The drain relaxes no discipline** — it only removes the one-ticket-per-run ceiling.
-3. Implement, then close out on the **docs-only track** of CLAUDE.md § Testing: steps 3b, 5, and `npm run check:impediment-ids`, and nothing else. Do not run `npm test` / `check:typecheck` / `vite build` on a diff with no code in it.
+3. Implement, then close out on the **docs-only track** of [`Docs/canon/verification-gates.md`](../../Docs/canon/verification-gates.md) (authoritative since THR-1336): `check:generated-freshness` (run last), `lint:plan-doc -- --staged`, and `npm run check:impediment-ids`, and nothing else. Do not run `npm test` / `check:typecheck` / `vite build` on a diff with no code in it.
 4. Ship per the closeout above — `Fixes THR-XXX` alone on its own line in both the commit body and the PR body, then `gh pr merge --auto --merge`.
 
 One In Dev at a time: finish a ticket's ship before claiming the next. Step 1.5's in-flight count is what keeps the resulting armed-but-unmerged claims from reading as a leak next run — each one resolves to its own open PR, so all of them are discharged and none of them gate.

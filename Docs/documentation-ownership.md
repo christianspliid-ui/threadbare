@@ -94,7 +94,7 @@ The vault follows the Karpathy LLM Knowledge Base pattern — a persistent, comp
 - **`Index.md`** — Comprehensive catalog of ALL vault pages with one-line summaries. LLM-maintained. Read this first to navigate.
 - **`log.md`** — Append-only chronological record of ingests, queries, lints, and updates.
 
-**Access:** vault writes go through the **filesystem**, not the Obsidian MCP — set `OBSIDIAN_VAULT_PATH` in `.claude/settings.local.json`. See `CLAUDE.md` § Known Sandbox Limitations for why (structurally closed 2026-07-21, THR-654).
+**Access:** vault writes go through the **filesystem**, not the Obsidian MCP — set `OBSIDIAN_VAULT_PATH` in `.claude/settings.local.json`. See `Docs/ops/sandbox-limitations.md` for why (structurally closed 2026-07-21, THR-654).
 
 **Core workflows** (each skill documents its own procedure; this table is routing only):
 

@@ -201,13 +201,18 @@ describe('the allowlist and the CI filter cannot drift apart', () => {
     }
   });
 
-  it('CLAUDE.md classifies the diff with the same predicate', () => {
-    const claudeMd = fs.readFileSync(path.join(REPO_ROOT, 'CLAUDE.md'), 'utf8');
+  it('the gate authority page classifies the diff with the same predicate', () => {
+    // THR-1336 moved the documented grep out of CLAUDE.md § Testing and into the
+    // gate authority page; CLAUDE.md now delegates via `npm run classify:diff`.
+    // The assertion follows the literal, because the literal is what can drift —
+    // pinning it to a file that deliberately stopped carrying one tests the old
+    // filing system rather than the predicate.
+    const gatePage = fs.readFileSync(path.join(REPO_ROOT, 'Docs/canon/verification-gates.md'), 'utf8');
     // The documented grep is what an agent actually runs to decide which gate
     // track it owes; if it disagrees with ci.yml, agents and CI classify the same
     // PR differently.
     for (const artifact of DOC_TO_CODE_ALLOWLIST) {
-      expect(claudeMd).toContain(artifact.replaceAll('.', '\\.'));
+      expect(gatePage).toContain(artifact.replaceAll('.', '\\.'));
     }
   });
 });

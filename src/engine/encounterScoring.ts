@@ -1479,13 +1479,18 @@ function buildTrace(
 
 // ─── Shared with the unified decision board (THR-1292 §4) ───────
 //
-// Both were private helpers of `scoreAndSelect`. The board weights an
-// undertaking's pull by personality through the *same* two functions rather than
-// through a second implementation that agrees today and drifts tomorrow — which
-// is the whole reason the plan calls for one board rather than two scorers.
-// Exported under their public names; the internal call sites are untouched.
+// A private helper of `scoreAndSelect`. The board resolves an agent's profile
+// through the *same* function rather than through a second implementation that
+// agrees today and drifts tomorrow — which is the whole reason the plan calls for
+// one board rather than two scorers. Exported under its public name; the internal
+// call sites are untouched.
+//
+// `getAmbitionBoostForEntry` was exported here as `getAmbitionBoost` for the same
+// reason and is not any more (THR-1302). Sharing it turned out to be the bug:
+// "does the agent pursue any ambition with affinity for this reach?" discriminates
+// for encounters, whose candidates come from the hex, and is true by construction
+// for undertakings, whose candidates come from the ambition that proposed them.
+// The board asks the sharper question in `computeAmbitionCentralityBoost` now, and
+// this stays private to the encounter path so retuning one cannot move the other.
 
-export {
-  getAmbitionBoostForEntry as getAmbitionBoost,
-  resolveProfile as resolveAxiologicalProfile,
-};
+export { resolveProfile as resolveAxiologicalProfile };

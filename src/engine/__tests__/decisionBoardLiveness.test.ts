@@ -40,6 +40,8 @@ interface BoardEntrySample {
   family: string;
   desire: number;
   temperament: number;
+  /** Absent on encounter rows by design; see the ambition-boost assertion below. */
+  ambitionBoost?: number;
 }
 
 interface BoardSample {
@@ -80,6 +82,7 @@ function runAndCollect(): { samples: BoardSample[]; errors: number } {
             family: e.family as string,
             desire: e.desireMultiplier as number,
             temperament: e.temperamentWeight as number,
+            ambitionBoost: e.ambitionBoost as number | undefined,
           })),
           advanceProbabilities: top
             .map(e => e.advanceProbability as number | undefined)
@@ -169,6 +172,52 @@ describe(`shadow board liveness (${TICKS} ticks, seed ${SEED}, medium)`, () => {
     // the sample exists before asserting anything about its spread.
     expect(undertakingDesires.length).toBeGreaterThan(20);
     expect(new Set(undertakingDesires.map(d => d.toFixed(6))).size).toBeGreaterThan(1);
+  });
+
+  /**
+   * The undertaking ambition boost **was** the desire multiplier's other pinned
+   * input, and is not any more (THR-1302).
+   *
+   * The sibling assertion above went green when slice 5 authored `motivations`,
+   * and it went green *over a still-frozen boost* — a product varies as soon as
+   * one factor does, so `desireMultiplier` could not have announced this. The term
+   * was `agentPursuesReach(...) ? AMBITION_REACH_BOOST : 0`, asking whether the
+   * agent pursues **any** ambition caring about this reach, of a population the
+   * proposing ambition itself generated. Measured over 150 ticks on seeds 42 and
+   * 99: `0.354` at p25, p50 and p75, identical on both seeds.
+   *
+   * `computeAmbitionCentralityBoost` asks the proposing ambition how *central* the
+   * undertaking's reach is to it, so the input is now carried on the entry — a
+   * multiplier's inputs being exactly where this defect class hides — and this
+   * assertion reads that input directly rather than the product it disappears
+   * into. That is the difference between this pin and the one it sits beside.
+   *
+   * Deliberately not a count and not a health claim: whether the new spread
+   * improves the cutover envelope is the census's measurement (THR-1301), not
+   * this test's.
+   */
+  it('the undertaking ambition boost is not frozen', () => {
+    const boosts = samples.flatMap(s => s.entries)
+      .filter(e => e.family === 'strategic_action')
+      .map(e => e.ambitionBoost)
+      .filter((v): v is number => v !== undefined);
+
+    // Two separate vacuity traps, both live here (impediment #599 class). An empty
+    // population passes a spread assertion, and so does a population that is all
+    // encounters — whose rows carry no boost at all and would filter to nothing.
+    expect(boosts.length).toBeGreaterThan(20);
+    expect(new Set(boosts.map(b => b.toFixed(6))).size).toBeGreaterThan(1);
+  });
+
+  it('the ambition boost is carried only on undertaking rows', () => {
+    // The term is an undertaking-side input; an encounter's desire comes from the
+    // encounter scorer's own path. A boost appearing on an encounter row would
+    // mean the two paths had been merged by accident.
+    const encounterBoosts = samples.flatMap(s => s.entries)
+      .filter(e => e.family === 'encounter')
+      .map(e => e.ambitionBoost);
+    expect(encounterBoosts.length).toBeGreaterThan(0);
+    expect(encounterBoosts.every(b => b === undefined)).toBe(true);
   });
 
   it('the temperament weight is not frozen', () => {
