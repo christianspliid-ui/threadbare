@@ -78,7 +78,7 @@ import type { AxiologicalProfile, ValuePair } from '../types/agent';
 import type { DecisionFamily, StrategicActionTemplate } from '../types/strategicAction';
 import type { ScoredCandidate } from './encounterScoring';
 import type { ScoredStrategicCandidate } from './strategicActionScoring';
-import { computeDesireScore, getAmbitionBoost, resolveAxiologicalProfile } from './encounterScoring';
+import { computeDesireScore, resolveAxiologicalProfile } from './encounterScoring';
 import {
   breakdownToOutcome,
   classifyResolutionRoll,
@@ -103,6 +103,7 @@ import {
   UNDERTAKING_DEFAULT_CHECKPOINT_DIFFICULTY,
   UNDERTAKING_PAYOFF_SCALE,
   UNDERTAKING_PROGRESS_PER_ADVANCE,
+  UNDERTAKING_AMBITION_CENTRALITY_BOOST,
   UNDERTAKING_TEMPERAMENT_AMBITION_WEIGHT,
   UNDERTAKING_TEMPERAMENT_REACH_WEIGHT,
 } from '../data/strategic-action-constants';
@@ -125,6 +126,17 @@ export interface BoardEntry {
    * whose EVT already folds its five-band expected utility.
    */
   readonly advanceProbability?: number;
+  /**
+   * The ambition-centrality term inside `desireMultiplier`, for an undertaking;
+   * `undefined` for an encounter, which is scored on its own path.
+   *
+   * Carried separately because a multiplier's *inputs* are where this family of
+   * defect hides: the term was a frozen constant for the whole shadow period and
+   * `desireMultiplier` still varied — its other input moved — so nothing on the
+   * trace could have shown it (THR-1302). Surfacing the input is what makes the
+   * liveness assertion possible at all (NFP #2).
+   */
+  readonly ambitionBoost?: number;
 }
 
 export interface BoardResult {
@@ -207,6 +219,68 @@ export function computeBoardDesireMultiplier(
  * Fail-soft: an ambition with no strategic profile, or a template that cannot be
  * resolved, reads `false` — an absent signal, never a thrown one.
  */
+/**
+ * How central is this undertaking's reach to the ambition that proposed it?
+ *
+ * **The term this replaces was true by construction** (THR-1302). The board read
+ * the encounter path's `getAmbitionBoost`, which asks *"does the agent pursue
+ * **any** ambition with positive affinity for this reach?"* — a question whose
+ * population the board itself generates, since `generateStrategicCandidates` only
+ * ever walks an active ambition's own `templateIds` and the board takes its reach
+ * from that same template. Measured over 150 ticks on seeds 42 and 99, the
+ * undertaking desire multiplier was `0.354` at p25, p50 **and** p75, identical on
+ * both seeds: the boost was a flat constant wearing a predicate's clothes. This is
+ * the same vacuity one term over from the one the temperament bracket caught
+ * (impediment #829), and `ambitionPrefersVerb`'s docblock above is its sibling.
+ *
+ * Two changes make it discriminate:
+ *
+ * 1. **It asks the generating ambition, not the agent's whole pursued set.** The
+ *    board knows *which* ambition proposed this candidate, so the diffuse question
+ *    is not the one it has to ask. On the shipped corpus **19 of 77** real
+ *    (ambition, template) pairs sit on a reach the proposing ambition has no
+ *    affinity for at all — permitted by its template list, but not what it is
+ *    about. Every one of those was paid the full flat boost before.
+ * 2. **It reads the magnitude, not `> 0`.** `reachAffinity` is authored as a
+ *    graded map (0.2–0.9) and was being collapsed to a boolean.
+ *
+ * Normalised by the ambition's *own* maximum affinity rather than used raw. Raw
+ * magnitudes are not calibrated across 24 separately-authored ambitions, and since
+ * no ambition authors a `1.0`, the raw form would cap every undertaking at `0.4`
+ * — a uniform level cut dressed as a spread (measured: raw max `0.400`, mean
+ * `0.258`; normalised max `0.500`, mean `0.331`, and 8 distinct values against 6).
+ * Normalised, an undertaking on its ambition's most-preferred reach is paid
+ * exactly what the flat term paid, and everything else is paid less in proportion
+ * to how peripheral it is — which is the "how strongly, not whether" this term was
+ * asked for.
+ *
+ * **Not a double-count of the temperament weight** (this issue's second Done-when).
+ * `computeTemperamentWeight` reads two signals, and this reads neither: the
+ * ambition's `preferredVerbs` *membership* (via `ambitionPrefersVerb`) and the
+ * **template's** own `reachProfile`. This reads the **ambition's** `reachAffinity`
+ * — a different field on a different entity. `decisionBoard.test.ts` pins the
+ * independence on real data rather than leaving it to this paragraph.
+ *
+ * Fail-soft (NFP #4): an unresolvable ambition, an absent `reachAffinity`, or an
+ * all-zero one reads `0` — an absent signal, never a thrown one, and never a
+ * divide-by-zero.
+ */
+export function computeAmbitionCentralityBoost(
+  ambitionTemplateId: string,
+  reach: ReachDomain,
+): number {
+  const affinities = findAmbitionTemplate(ambitionTemplateId)?.reachAffinity;
+  if (!affinities) return 0;
+
+  const own = affinities[reach] ?? 0;
+  if (own <= 0) return 0;
+
+  const strongest = Math.max(...REACH_DOMAINS.map(d => affinities[d] ?? 0));
+  if (strongest <= 0) return 0;
+
+  return UNDERTAKING_AMBITION_CENTRALITY_BOOST * clamp01(own / strongest);
+}
+
 export function ambitionPrefersVerb(
   ambitionTemplateId: string,
   template: StrategicActionTemplate | undefined,
@@ -287,7 +361,7 @@ export function scoreUnifiedBoard(input: BoardInput): BoardResult {
 
     const evt = undertakingEVT(payoff, advanceProbability, checkpointsRemaining);
 
-    const ambitionBoost = getAmbitionBoost(graph, agentId, reach);
+    const ambitionBoost = computeAmbitionCentralityBoost(candidate.ambitionId, reach);
     const desireMultiplier = computeBoardDesireMultiplier(
       template?.motivations ?? [],
       profile,
@@ -305,6 +379,7 @@ export function scoreUnifiedBoard(input: BoardInput): BoardResult {
       desireMultiplier,
       temperamentWeight,
       advanceProbability,
+      ambitionBoost,
       score: evt * desireMultiplier * temperamentWeight,
     });
   }

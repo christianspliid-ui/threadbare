@@ -346,6 +346,22 @@ export const UNDERTAKING_TEMPERAMENT_AMBITION_WEIGHT = 0.3;
 /** Board mix: weight of the agent's reach affinity for the undertaking's reach. */
 export const UNDERTAKING_TEMPERAMENT_REACH_WEIGHT = 0.2;
 
+/**
+ * Board desire: the **ceiling** of the undertaking ambition boost (THR-1302).
+ *
+ * Deliberately equal to the encounter path's `AMBITION_REACH_BOOST`, and
+ * deliberately a separate constant. Same number, different meaning: on the
+ * encounter path 0.5 is the flat boost paid whenever *any* pursued ambition
+ * cares about the candidate's reach; here it is the *most* an undertaking can be
+ * paid, earned only by one sitting on its own ambition's most-preferred reach.
+ *
+ * Separate rather than shared because the two are now different shapes, and
+ * `getAmbitionBoostForEntry` is on the encounter ranking path — turning one knob
+ * must not move the other. Retuning the board's undertaking pull relative to
+ * encounters is what this constant is for (NFP #1).
+ */
+export const UNDERTAKING_AMBITION_CENTRALITY_BOOST = 0.5;
+
 // ─── Cutover gate (measured, never asserted) ────────────────────────
 //
 // The THR-1277 method: headless CLI, seeds 42 **and** 99, ≥150 ticks, decision mix
