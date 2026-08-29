@@ -18,9 +18,9 @@ This folder is the single source of truth for all UI decisions. It is structured
 | Choosing colors, borders, shadows | `tokens.md` |
 | Choosing font sizes or font families | `typography.md` |
 | Adding animations or transitions | `motion.md` |
-| Checking what a component should look like | `components.md` |
+| Checking what a component should look like | `?view=styleguide` (live samples) + `primitives.md` |
 | Implementing hover/focus/active/disabled states | `interactions.md` |
-| QA-ing the UI at a specific viewport | `layout.md` §Breakpoints + `components.md` §Scaling |
+| QA-ing the UI at a specific viewport | `layout.md` §Breakpoints + `layout-zones.md` §Responsive scaling |
 | Art direction for images or hex tiles | `STYLE.md` (repo root) |
 | React interaction patterns (overlays, portals, etc.) | `Docs/ui-patterns.md` |
 
@@ -47,7 +47,6 @@ This folder is the single source of truth for all UI decisions. It is structured
 | `tokens.md` | All CSS custom properties with semantic meaning and usage rules |
 | `typography.md` | Type scale, font families, text hierarchy, usage per context |
 | `motion.md` | Animation principles, keyframe inventory, timing rules |
-| `components.md` | Component inventory, sizing per breakpoint, scaling notes |
 | `interactions.md` | Hover, focus, active, disabled states; cursor rules; keyboard patterns |
 | `primitives.md` | Shared primitive component specs (Button, Card, Modal, etc.) |
 | `entity-visual-header.md` | **Entity Visual Header pattern** (THR-637) — every detail surface opens with its subject's image via the `EntityVisual` primitive + resolver |
@@ -55,9 +54,12 @@ This folder is the single source of truth for all UI decisions. It is structured
 
 ---
 
-## Living Style Tile
+## Living Registries
 
-`Design/style-tile.html` — open in a browser for a visual reference of colors, type, and components. When tokens change, update the style tile in the same session.
+- **Components:** `?view=styleguide` — every shared primitive rendered with sample data; the living contract (Law 29).
+- **Hex assets:** `src/data/hex-tile-assets.ts` — the authoritative code mapping of every hex terrain tile, clear fill, and location overlay icon.
+
+*(The rendered style tile `Design/style-tile.html` was retired 2026-08-29 (THR-1354, Christian's call) — it lived untracked outside git and was lost; these two registries were already doing its jobs.)*
 
 ---
 
@@ -66,5 +68,5 @@ This folder is the single source of truth for all UI decisions. It is structured
 When any design decision changes:
 1. Update the relevant file in this folder
 2. Update `src/index.css` if it's a token change
-3. Update `Design/style-tile.html` if it's visible in the tile
+3. If a shared primitive changed visibly, verify its `?view=styleguide` entry still holds (Law 29)
 4. Add a row to `Docs/changelog.md`

@@ -13,8 +13,6 @@
 
 **Rule:** Use `--font-display` only for titles and headings that carry narrative weight. UI labels, numbers, and status text always use `--font-body`. Never use a third font family.
 
-**Note:** `Design/style-tile.html` currently loads Inter — this is wrong. The style tile should use Cinzel + Alegreya Sans. Fix in next style tile update.
-
 ---
 
 ## Type Scale
