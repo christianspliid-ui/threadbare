@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-29 16:54 local (14:54 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-29 17:56 local (15:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -17,7 +17,7 @@
 
 ### 2. Design hours — the shelf has actually run dry now
 
-**What changed today:** for twelve runs the orchestrator reported that it *could not* stage new design work, and that was harmless because ready work still existed. As of this morning it does not. Five items sit Ready for Dev and **all five** are clean-up — one test/tooling fix, two glossary proposals, two engine tidies. **New product work has stopped arriving**, and the lane that would fix that is blocked.
+**What changed today:** for twelve runs the orchestrator reported that it *could not* stage new design work, and that was harmless because ready work still existed. As of this morning it does not. Four items sit Ready for Dev and **all four** are clean-up — one test fix, one engine tidy, two glossary proposals — with the last player-facing item having shipped at 17:23. **New product work has stopped arriving**, and the lane that would fix that is blocked.
 
 Roughly forty-seven items sit in Todo and **every one needs a plan doc before an executor can touch it**. The executor writes up problems it finds while building, which is what has been filling the shelf; that source produces engine fixes and clean-ups, never new designed features.
 
@@ -88,16 +88,16 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
+- **Four bits of prose stopped hedging** — [THR-1360](https://linear.app/threadbare/issue/THR-1360/four-shipped-foreshadowing-clauses-open-on-the-evasive-lexicons) merged 17:23. Lines that hint at what is coming were opening on evasive words, so a promise of trouble read as a shrug. Players will read the difference.
 - **A worktree that lied about being ready to work** — [THR-1326](https://linear.app/threadbare/issue/THR-1326/fresh-worktree-node-modules-stub-find-the-producer-31-arrivalsweek-and) merged 15:32. The first status line every agent session reads was reporting that it could run the test suite in workspaces that could not, costing roughly an hour a week of rote repair. Delivery machinery only; nothing in the game changes.
 - **The guidance stopped teaching a mode you retired** — [THR-1324](https://linear.app/threadbare/issue/THR-1324/prose-doctrine-v2-remediation-sweep-10-operative-surfaces-still-teach) merged 14:26. Ten places in the agent handbook still taught the old prose mode after you replaced it; they now teach the current one. Its content residue was filed and is already queued.
 - **Two retired mistakes riding in the same bag** — [THR-1345](https://linear.app/threadbare/issue/THR-1345) merged 13:45; a leftover from an old Reach naming scheme that the type system could not see.
 - **You settled how much of the world happens off-screen** (2026-08-29 12:39, Discord): *"so i think in the longer term we want other gods competing and so having threaded agents that are not the players. those would be able to do stuff 'off-screen'."* Off-screen life comes from **threading** — rival gods holding their own threaded agents — not from opening the attention gate so background characters gain agency. Neither reading the fork offered survives: you replaced the question with a mechanism. Consequences, both agent calls: the attention gate stands, so [THR-1348](https://linear.app/threadbare/issue/THR-1348) becomes an entry on the long-term competing-gods direction rather than a defect; and [THR-1349](https://linear.app/threadbare/issue/THR-1349)'s ~90× trade-route mismatch is a content fix — the route's motivations are written wrong for merchants — with no number tuned to force the graph.
 - **Round 3 of the agent-handbook cleanup is finished** — all six pieces merged: the [correctness sweep](https://linear.app/threadbare/issue/THR-1353), [deleting superseded UI scaffolding](https://linear.app/threadbare/issue/THR-1354), [repairing three skills](https://linear.app/threadbare/issue/THR-1355), [re-syncing the vault pages](https://linear.app/threadbare/issue/THR-1356), [registering the UI-laws doctrine](https://linear.app/threadbare/issue/THR-1358), and [code debts](https://linear.app/threadbare/issue/THR-1357). Nothing in the game changes.
-- **Round 4 is three-quarters through in one afternoon** — [the engine-canon rewrite](https://linear.app/threadbare/issue/THR-1362) merged 16:12 and [the AI-index refresh](https://linear.app/threadbare/issue/THR-1363) at 16:44; [the skills pass](https://linear.app/threadbare/issue/THR-1364) is in flight now. Round 5 remains. Agent handbook only; nothing in the game changes.
+- **Round 4 is three-quarters through in one afternoon** — [the engine-canon rewrite](https://linear.app/threadbare/issue/THR-1362) merged 16:12 and [the AI-index refresh](https://linear.app/threadbare/issue/THR-1363) at 16:44; [the skills pass](https://linear.app/threadbare/issue/THR-1364) and [the wiring pass](https://linear.app/threadbare/issue/THR-1365) are both in flight now. Round 5 remains. Agent handbook only; nothing in the game changes.
 - **A world-generator that ran its steps out of order** — [THR-1344](https://linear.app/threadbare/issue/THR-1344/the-genomes-reach-pass-is-dead-at-worldgen-worldseed-runs-the-genome) merged; the pass that gives a region its character was running before the thing it was meant to describe existed, so its work was thrown away.
 - **A missing ingredient built, and an honest "still not it"** — the [variety term](https://linear.app/threadbare/issue/THR-1349/the-decision-board-has-no-variety-term-a-live-board-writes-zero-trade) that kept characters from all chasing the same plan merged 10:54. The builder then measured the switch it was meant to unblock, found the real obstacle had moved again, and put the ticket back rather than call it finished — which is what produced the question you just answered.
 - **A faction you founded looked like a stranger everywhere** — [THR-1322](https://linear.app/threadbare/issue/THR-1322/a-run-founded-faction-renders-as-a-fallback-everywhere-in-the-ui) merged 09:21 after an 8.5-hour wait at the door; factions founded during a run now render as themselves.
-- **A test time limit nobody had re-measured in months** — [THR-1352](https://linear.app/threadbare/issue/THR-1352) merged 09:34. It had quietly become too tight for a world that has grown since, and was failing finished work for no real reason.
 
 ---
 
