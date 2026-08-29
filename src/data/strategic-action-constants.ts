@@ -395,6 +395,32 @@ export const STRATEGIC_VERB_IMPACT_DEFAULT = 0.3;
 /** Verb-impact → `payoffValue` bridge scale. Doc 2's kind rows refine per kind. */
 export const UNDERTAKING_PAYOFF_SCALE = 1.0;
 
+/**
+ * Board variety: how much of an undertaking's board score a fully-repeated
+ * template gives up (THR-1349).
+ *
+ * The board's score is `EVT × desire × temperament` and carried no variety term
+ * at all, while the legacy contest-B scorer subtracted
+ * `STRATEGIC_VARIETY_PENALTY_WEIGHT × varietyPenalty` from a `[0, 1]` normalised
+ * score. Plan §4 asserted that penalty would "survive as a candidate-generation
+ * feature feeding EVT inputs"; it does not — `varietyPenalty` lands in
+ * `ScoredStrategicCandidate.finalScore`, which the board never reads.
+ *
+ * **It enters multiplicatively, not by subtraction, and that is not a stylistic
+ * choice.** `varietyPenalty` is a `[0, 1]` quantity and board score is an
+ * EVT-scaled one whose median strategic entry is `1.9e-3`; subtracting `0.18 ×
+ * penalty` from that would not discount a repeat, it would annihilate every
+ * undertaking on the board. Copying a constant across two currencies is precisely
+ * the units error `BOARD_SCORE_FLOOR` shipped and this file has now documented
+ * twice, so the term is expressed as the *fraction of its score* a maximally
+ * repeated candidate forfeits.
+ *
+ * At `0.18` a candidate at full penalty keeps 82% of its score — deliberately the
+ * same magnitude the legacy scorer applied, so the cutover moves the mechanism
+ * rather than also retuning it.
+ */
+export const BOARD_VARIETY_PENALTY_WEIGHT = 0.18;
+
 /** Board mix: weight of "the agent's active ambition names this kind/verb". */
 export const UNDERTAKING_TEMPERAMENT_AMBITION_WEIGHT = 0.3;
 
@@ -435,6 +461,45 @@ export const BOARD_ENCOUNTER_SHARE_FLOOR = 0.15;
 
 /** Idle share of spotlight decisions must stay at or below this ceiling. */
 export const BOARD_IDLE_SHARE_CEILING = 0.40;
+
+/**
+ * Composition floor: how many *distinct* undertaking templates a census run must
+ * actually start (THR-1349).
+ *
+ * The three share gates above read the mix *between* families and say nothing
+ * about composition *within* one: a board that starts a single template ten
+ * thousand times satisfies every one of them. This reads inside the undertaking
+ * family and is the anti-collapse floor.
+ *
+ * ## What it is sized against, and what it does *not* catch
+ *
+ * Measured, medium, 150 ticks, distinct templates started:
+ *
+ * | arm | seed 42 | seed 99 |
+ * | -- | -- | -- |
+ * | `'shadow'` (shipped) | 56 | 45 |
+ * | `'live'`, no variety term | 40 | 34 |
+ * | `'live'`, with the variety term | 41 | 33 |
+ *
+ * `30` sits under every arm measured, with the tightest margin against live seed
+ * 99 at 33. It is therefore a real tripwire for a *further* collapse and not a
+ * decoration — but it is stated plainly here that **it does not, by itself, catch
+ * the failure THR-1349 was filed on.** A live board still starts 33–41 distinct
+ * templates while writing zero trade routes; the loss is concentrated in *which*
+ * templates starve, not in how many.
+ *
+ * Setting it high enough to separate the shadow arm from the live one would put it
+ * at ~41–44, one point under seed 99's healthy 45, and it would then be measuring
+ * *throughput* rather than variety — the live arm starts 228–538 undertakings
+ * against shadow's 673–953, and distinct-template count tracks sample size. A gate
+ * that fails for a reason other than the one it names is the vacuity this file has
+ * already shipped twice (see `BOARD_SCORE_FLOOR`), so it is deliberately not that.
+ *
+ * The trade-route count that motivated the ticket is *reported* by the census
+ * rather than gated, because the healthy baseline is itself 2 and 0 on the two
+ * seeds — "non-zero" was one seed's luck, not a floor anything can hold.
+ */
+export const CENSUS_DISTINCT_TEMPLATE_FLOOR = 30;
 
 /** Control-deletion gate (§6): undertaking share must have *grown* past this floor. */
 export const DECISION_MIX_FLOOR_UNDERTAKING_SHARE = 0.12;

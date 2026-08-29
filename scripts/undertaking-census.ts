@@ -51,6 +51,7 @@ import {
   BOARD_UNDERTAKING_SHARE_RANGE,
   BOARD_ENCOUNTER_SHARE_FLOOR,
   BOARD_IDLE_SHARE_CEILING,
+  CENSUS_DISTINCT_TEMPLATE_FLOOR,
 } from '../src/data/strategic-action-constants';
 import { MERCHANT_STRATEGIC_TEMPLATES } from '../src/data/strategic-packs/merchantStrategicPack';
 import { BUILDER_STRATEGIC_TEMPLATES } from '../src/data/strategic-packs/builderStrategicPack';
@@ -73,6 +74,9 @@ const CENSUS_DEFAULT_TICKS = 150;
 
 /** The family whose remedy must be reported apart from the corpus it was not applied to. */
 const WANDERER_FAMILY = 'wanderer-explorer';
+
+/** How many templates the composition line names. Reporting only — not a gate. */
+const CENSUS_COMPOSITION_REPORT_TOP_N = 6;
 
 // ─── Template → family index ──────────────────────────────────────
 
@@ -99,12 +103,38 @@ interface RolledSplit {
   deferrals: Record<string, number>;
 }
 
+/**
+ * What the run actually *started*, as opposed to how the families shared out.
+ *
+ * The three envelope gates are ratios between families; this is the composition
+ * inside the undertaking family. It is measured from `strategic_action_started`
+ * traces (every start emits exactly one) rather than from checkpoints, because a
+ * checkpoint census counts the arc of whatever already began — a corpus that
+ * collapsed to one template still rolls plenty of checkpoints, all of them for
+ * that template.
+ *
+ * `tradeRouteEdges` is read off the finished graph rather than from a trace: it is
+ * the specific downstream loss THR-1349 was filed on, and an edge count is the
+ * thing a reader can check by hand. It is reported, never gated — measured on the
+ * shipped `'shadow'` board it is already 2 on seed 42 and **0 on seed 99**, so
+ * "non-zero trade routes" describes one seed's luck rather than a property the
+ * healthy configuration has.
+ */
+interface Composition {
+  starts: number;
+  distinctTemplates: number;
+  /** Start count per template, descending — the shape a collapse is visible in. */
+  topTemplates: (readonly [string, number])[];
+  tradeRouteEdges: number;
+}
+
 interface SeedCensus {
   seed: number;
   ticks: number;
   overall: RolledSplit;
   wanderer: RolledSplit;
   established: RolledSplit;
+  composition: Composition;
   distinctBands: number;
   decisionMix: {
     decisions: number;
@@ -184,6 +214,7 @@ function censusOneSeed(seed: number, ticks: number, map: MapSizePreset): SeedCen
   const wanderer = emptySplit();
   const established = emptySplit();
   const allBands = new Set<string>();
+  const startsByTemplate = new Map<string, number>();
 
   try {
     const runtime = createSimulationRuntime();
@@ -200,6 +231,13 @@ function censusOneSeed(seed: number, ticks: number, map: MapSizePreset): SeedCen
       state = runTick(state, [], runtime);
       for (const t of getTraces()) {
         const a = t as unknown as Record<string, unknown>;
+
+        if (a.category === 'strategic_action_started') {
+          const id = a.templateId as string | undefined;
+          if (id) startsByTemplate.set(id, (startsByTemplate.get(id) ?? 0) + 1);
+          continue;
+        }
+
         if (a.category !== 'undertaking_checkpoint') continue;
         const band = a.band as string | undefined;
         const deferred = a.deferred as string | undefined;
@@ -214,6 +252,15 @@ function censusOneSeed(seed: number, ticks: number, map: MapSizePreset): SeedCen
 
     [overall, wanderer, established].forEach(finalize);
 
+    const composition: Composition = {
+      starts: [...startsByTemplate.values()].reduce((a, b) => a + b, 0),
+      distinctTemplates: startsByTemplate.size,
+      topTemplates: [...startsByTemplate.entries()]
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, CENSUS_COMPOSITION_REPORT_TOP_N),
+      tradeRouteEdges: state.graph.getEdgesByType('trades_with').length,
+    };
+
     const summary = buildBalanceRunSummary(runtime, state.tick);
     const sb = summary?.shadowBoard;
 
@@ -223,6 +270,7 @@ function censusOneSeed(seed: number, ticks: number, map: MapSizePreset): SeedCen
       overall,
       wanderer,
       established,
+      composition,
       distinctBands: allBands.size,
       decisionMix: sb
         ? {
@@ -278,6 +326,23 @@ function evaluateGates(c: SeedCensus): Record<string, { pass: boolean; detail: s
     pass: m !== undefined && m.idleShare <= BOARD_IDLE_SHARE_CEILING,
     detail: m ? pct(m.idleShare) : 'no board verdicts',
   };
+
+  // Composition (THR-1349). The three gates above are ratios *between* families
+  // and are all satisfiable by an undertaking family that has collapsed onto one
+  // template. This one reads inside that family.
+  //
+  // Zero starts fails rather than passes, for the same reason the liveness gate
+  // treats an empty population as a failure: "0 distinct templates" is not a
+  // variety verdict, it is the absence of one.
+  //
+  // `tradeRouteEdges` is deliberately **reported and not gated** — see
+  // `CENSUS_DISTINCT_TEMPLATE_FLOOR`. Gating it would red the census on the
+  // currently shipped `'shadow'` configuration, where seed 99 already writes zero.
+  const comp = c.composition;
+  gates[`distinct templates started ≥ ${CENSUS_DISTINCT_TEMPLATE_FLOOR}`] = {
+    pass: comp.starts > 0 && comp.distinctTemplates >= CENSUS_DISTINCT_TEMPLATE_FLOOR,
+    detail: `${comp.distinctTemplates} distinct of ${comp.starts} starts`,
+  };
   return gates;
 }
 
@@ -312,6 +377,13 @@ function report(all: SeedCensus[]): boolean {
     } else {
       console.log('  no board verdicts — the board did not run');
     }
+
+    console.log('\nUndertaking composition');
+    const comp = c.composition;
+    console.log(`  ${comp.starts} starts across ${comp.distinctTemplates} distinct templates · ${comp.tradeRouteEdges} trades_with edges`);
+    console.log(`  top: ${comp.topTemplates.length
+      ? comp.topTemplates.map(([id, n]) => `${id} ${n}`).join(', ')
+      : '—'}`);
 
     console.log('\nGates');
     for (const [name, g] of Object.entries(c.gates)) {

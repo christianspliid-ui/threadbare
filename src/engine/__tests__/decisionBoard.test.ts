@@ -21,6 +21,7 @@ import {
   ambitionPrefersVerb,
   computeAmbitionCentralityBoost,
   computeBoardDesireMultiplier,
+  computeBoardVarietyMultiplier,
   computeTemperamentWeight,
   forecastAdvanceProbability,
   resolveUndertakingPayoff,
@@ -39,6 +40,7 @@ import type { StrategicActionTemplate } from '../../types/strategicAction';
 import {
   STRATEGIC_VERB_IMPACT,
   STRATEGIC_VERB_IMPACT_DEFAULT,
+  BOARD_VARIETY_PENALTY_WEIGHT,
   UNDERTAKING_AMBITION_CENTRALITY_BOOST,
   UNDERTAKING_CHECKPOINT_INTERVAL_TICKS,
   UNDERTAKING_PAYOFF_SCALE,
@@ -507,5 +509,97 @@ describe('scoreUnifiedBoard', () => {
     expect(board.entries.map(e => e.id)).toEqual(['high', 'mid', 'low']);
     expect(board.winner?.id).toBe('high');
     expect(board.top.length).toBeLessThanOrEqual(5);
+  });
+
+  it('does not discount an encounter for variety — it has no repetition counter', () => {
+    const candidate = {
+      entry: { templateId: 'enc.test' },
+      valuePerTick: 0.4,
+      desireMultiplier: 1.25,
+    } as never;
+
+    const board = scoreUnifiedBoard({
+      graph: emptyGraph,
+      agentId: 'a',
+      tick: 1,
+      encounterCandidates: [candidate],
+      strategicCandidates: [],
+    });
+
+    expect(board.entries[0].varietyMultiplier).toBeUndefined();
+    expect(board.entries[0].score).toBeCloseTo(0.4 * 1.25, 10);
+  });
+});
+
+/**
+ * The variety term (THR-1349).
+ *
+ * It exists because plan §4 asserted the legacy scorer's `varietyPenalty` would
+ * "survive as a candidate-generation feature feeding EVT inputs" and it did not —
+ * it lands in `finalScore`, which the board never reads. So a live board carried
+ * no variety mechanism at all.
+ *
+ * The multiplier is pinned against the **constant**, not against a literal, and
+ * the discount is asserted as a *ratio* between two otherwise-identical inputs
+ * rather than as an absolute score. A test that hard-coded `0.82` would pass
+ * against a term that had been silently re-tuned to nothing.
+ */
+describe('computeBoardVarietyMultiplier', () => {
+  it('is exactly 1 for an unrepeated candidate', () => {
+    expect(computeBoardVarietyMultiplier(0)).toBe(1);
+  });
+
+  it('forfeits the full weight at maximum repetition', () => {
+    expect(computeBoardVarietyMultiplier(1))
+      .toBeCloseTo(1 - BOARD_VARIETY_PENALTY_WEIGHT, 10);
+  });
+
+  it('is monotone decreasing across the penalty range, not a step', () => {
+    const xs = [0, 0.2, 0.4, 0.6, 0.8, 1].map(computeBoardVarietyMultiplier);
+    for (let i = 1; i < xs.length; i++) expect(xs[i]).toBeLessThan(xs[i - 1]);
+    // Guard against a term that "varies" over two values and is flat between.
+    expect(new Set(xs).size).toBe(xs.length);
+  });
+
+  it('reads an absent or non-finite penalty as unrepeated, never as a penalty', () => {
+    expect(computeBoardVarietyMultiplier(undefined)).toBe(1);
+    expect(computeBoardVarietyMultiplier(NaN)).toBe(1);
+  });
+
+  it('clamps a penalty outside [0, 1] rather than inverting the score', () => {
+    expect(computeBoardVarietyMultiplier(-5)).toBe(1);
+    expect(computeBoardVarietyMultiplier(5))
+      .toBeCloseTo(1 - BOARD_VARIETY_PENALTY_WEIGHT, 10);
+  });
+
+  it('actually moves a board ranking — the repeated candidate loses to its twin', () => {
+    // Identical in every scored input except repetition, so nothing but the
+    // variety term can order them. If the board ever stops reading
+    // `varietyPenalty`, these tie and the assertion fails.
+    const mk = (templateId: string, varietyPenalty: number) => ({
+      templateId,
+      actorId: 'actor',
+      ambitionId: 'ambition_none',
+      scoreComponents: { varietyPenalty },
+    }) as never;
+
+    const board = scoreUnifiedBoard({
+      graph: { getNode: () => null, getOutgoingEdges: () => [] } as never,
+      agentId: 'a',
+      tick: 1,
+      encounterCandidates: [],
+      strategicCandidates: [mk('repeated', 1), mk('fresh', 0)],
+    });
+
+    expect(board.entries).toHaveLength(2);
+    expect(board.winner?.id).toBe('fresh');
+
+    const fresh = board.entries.find(e => e.id === 'fresh');
+    const repeated = board.entries.find(e => e.id === 'repeated');
+    expect(fresh?.varietyMultiplier).toBe(1);
+    expect(repeated?.varietyMultiplier).toBeCloseTo(1 - BOARD_VARIETY_PENALTY_WEIGHT, 10);
+    // Same EVT and desire, so the score ratio IS the multiplier ratio.
+    expect((repeated?.score ?? 0) / (fresh?.score ?? 1))
+      .toBeCloseTo(1 - BOARD_VARIETY_PENALTY_WEIGHT, 6);
   });
 });
