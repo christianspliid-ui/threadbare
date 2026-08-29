@@ -1894,12 +1894,18 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       subcategory: 'provisions',
       tier: 1,
       tags: ['#flesh', '#consumable', '#healing', '#life'],
-      mechanicalSummary: '3 charges: +0.10 Flesh per use, destroyed when empty',
+      mechanicalSummary: '3 charges: +0.10 Stone per use, destroyed when empty',
       censusTag: { reach: 'stone', scale: 'local' },
       lossCondition: 'consumable',
       flavorText: 'Smells of pine tar and something sharper. Three doses, no more.',
+      // THR-1359: `onUse.reach` was `flesh`, the retired 9th Reach, so this item's
+      // three charges granted nothing — the only catalog entry still doing that
+      // (every peer in `anomaly-reward-catalog.ts` uses a live Reach). Remapped to
+      // `stone`, which the item's own `censusTag` above already declares and which
+      // is the canon migration target for body-and-endurance content
+      // (`Docs/canon/cosmology.md`: body modification → Stone).
       effects: [
-        { type: 'consumable_charge', charges: 3, onUse: { reach: 'flesh' as const, value: 0.10 }, destroyOnEmpty: true },
+        { type: 'consumable_charge', charges: 3, onUse: { reach: 'stone' as const, value: 0.10 }, destroyOnEmpty: true },
       ],
     } as PossessionNodeProperties,
   },

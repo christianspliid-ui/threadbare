@@ -54,7 +54,6 @@ export const PROMOTION_TRAITS: Record<ReachDomain, Partial<Record<number, string
   eye:    { 2: 'Perceptive', 4: 'Scholar', 6: 'Sage', 8: 'Oracle', 10: 'Avatar of Eye' },
   stone:  { 2: 'Stonehand', 4: 'Builder', 6: 'Architect', 8: 'Earthshaper', 10: 'Avatar of Stone' },
   star:   { 2: 'Faithful', 4: 'Consecrated', 6: 'Hierophant', 8: 'Exalted', 10: 'Avatar of Star' },
-  flesh:  { 2: 'Hardy', 4: 'Ironflesh', 6: 'Unbreakable', 8: 'Deathless', 10: 'Avatar of Flesh' },
 };
 
 // ─── Result Types ───────────────────────────────────────────────
