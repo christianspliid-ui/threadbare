@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-08-29 15:55 local (13:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-08-29 16:54 local (14:54 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -29,16 +29,17 @@ Detail in [user-actions.md](https://github.com/christianspliid-ui/threadbare/blo
 
 ## Queue
 
-**6 items Ready for Dev — one fewer than an hour ago, because one shipped. Still starved by kind, not by count.**
+**5 items Ready for Dev — one fewer again, because another was claimed. Still starved by kind, not by count.**
 
-- **Shipped this hour:** [the worktree stub that lied about being ready](https://linear.app/threadbare/issue/THR-1326/fresh-worktree-node-modules-stub-find-the-producer-31-arrivalsweek-and) merged at 15:32 — the first signal every session reads was reporting it could run the test suite in trees that could not. Delivery-machine repair; nothing in the game changes.
-- **Five of the remaining six are still clean-up:** one test/tooling fix, two glossary proposals, two engine tidies. The sixth — [four bits of foreshadowing prose that hedge](https://linear.app/threadbare/issue/THR-1360/four-shipped-foreshadowing-clauses-open-on-the-evasive-lexicons) — is the only player-facing item, and it is Low. **No new content or feature work has arrived since this morning**, which is what the two asks above address. Nothing is stale; everything moved today.
-- **In Dev: 4 — one live, three parked.** The live one is [hook chips that go nowhere](https://linear.app/threadbare/issue/THR-1330/ascendant-bar-hook-chips-carry-a-tooltip-but-no-image-and-no-link-law) (see Health). The three parked are your standing asks ([THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to), [THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server), [THR-1168](https://linear.app/threadbare/issue/THR-1168/two-authored-encounter-audio-moments-have-no-live-caller-wire-or)); park shape verified intact this run.
+- **All five remaining are clean-up:** one test/tooling fix, two glossary proposals, two engine tidies. The only player-facing item among them — [four bits of foreshadowing prose that hedge](https://linear.app/threadbare/issue/THR-1360/four-shipped-foreshadowing-clauses-open-on-the-evasive-lexicons) — is Low. **Still no new content or feature work since this morning**, which is what the two asks above address. Nothing is stale; everything on the board moved today.
+- **In Dev: 7 — four live, three parked.** More hands working than at any point today. The live four are [the agent-handbook round-4 sweep](https://linear.app/threadbare/issue/THR-1361/context-cleanup-round-4-the-technical-architecture-layer-audit-sweep) and [its skills pass](https://linear.app/threadbare/issue/THR-1364/r4-t3-skills-sweep-engine-architecture-testing-patterns-architectural), [a genome that named people the world never built](https://linear.app/threadbare/issue/THR-1347/genomeresultnpcs-has-no-consumer-every-genome-pass-computes-an-npc), and [hook chips that go nowhere](https://linear.app/threadbare/issue/THR-1330/ascendant-bar-hook-chips-carry-a-tooltip-but-no-image-and-no-link-law) (see Health). The three parked are your standing asks ([THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to), [THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server), [THR-1168](https://linear.app/threadbare/issue/THR-1168/two-authored-encounter-audio-moments-have-no-live-caller-wire-or)); park shape verified intact this run.
+- **Two more pieces of the handbook cleanup landed this hour** — [the engine-canon rewrite](https://linear.app/threadbare/issue/THR-1362) and [the AI-index refresh](https://linear.app/threadbare/issue/THR-1363), merged 16:12 and 16:44. Round 4 is three-quarters through in a single afternoon. Nothing in the game changes.
 
 ## Health
 
-**Green except the same PR, which is the executor lane's to sort out — not yours.**
+**Green except two stuck PRs, both the executor lane's to sort out — neither yours.**
 
-- **[PR #1731](https://github.com/christianspliid-ui/threadbare/pull/1731)** (hook chips, THR-1330) still carries *both* a merge conflict and a failing required check, now 209 minutes old — up from 150 an hour ago and 89 before that. Third consecutive hour without movement. It is the only live In-Dev item; clearing the conflict alone will not make it mergeable, so a session has to read the failing check first. Executor lane's, escalating.
-- Deploys current (live site serving `fe22c255`, this hour's merge), automated checks running, both background jobs healthy, all nine scheduled lanes on schedule, git housekeeping fresh at 15:40.
+- **[PR #1731](https://github.com/christianspliid-ui/threadbare/pull/1731)** (hook chips, THR-1330) still carries *both* a merge conflict and a failing required check, now 269 minutes old — up from 209 an hour ago. Fourth consecutive hour without movement. Clearing the conflict alone will not make it mergeable, so a session has to read the failing check first. Escalating.
+- **[PR #1735](https://github.com/christianspliid-ui/threadbare/pull/1735)** (the genome NPC roster, THR-1347) opened 15 minutes ago and already conflicts with main — unsurprising with four merges in three hours. Checks still running. Routine; flagged only so it does not become another #1731.
+- Deploys current — the live site is up to date and the last four merges were notes and docs, so nothing needed rebuilding. Automated checks running, both background jobs healthy, all nine scheduled lanes on schedule, git housekeeping fresh at 16:40.
 - Two overnight quiet windows (22–23 and 23–24 August, ~11h each) still surface in the lane probe. **Declined as normal per your 8 August ruling**; noted for visibility only, no action.
