@@ -96,10 +96,23 @@ export function validateWorldModel(model: any): ValidationResult {
 }
 
 // CLI mode
-if (
-  import.meta.url === `file://${process.argv[1]}` ||
-  process.argv[1]?.endsWith('validate-world-model.ts')
-) {
+//
+// THR-1368: this guard used to compare `import.meta.url` against a bare
+// `file://${process.argv[1]}` and, failing that, test for a `.ts` suffix. Neither arm
+// can match once the script is bundled and run on Windows: `argv[1]` is a backslashed
+// `C:\...\validate-world-model.mjs` while `import.meta.url` is `file:///C:/...`, and
+// the bundle is `.mjs`, not `.ts`. The block therefore never ran — `npm run
+// validate-model` exited 0 having validated nothing, so every check below was dead.
+//
+// It matches on the entry basename rather than on `import.meta.url`, and that is
+// load-bearing: `scripts/generate-vault.ts` imports `validateWorldModel`, so esbuild
+// inlines this module into *that* bundle too. Under an `import.meta.url` comparison
+// the block fires there as well and `process.exit` kills the vault generator before
+// its own main runs. The basename distinguishes the two bundles; a URL cannot.
+const entryPath = (process.argv[1] ?? '').replace(/\\/g, '/');
+const invokedDirectly = /\/validate-world-model\.(ts|mjs|js)$/.test(entryPath);
+
+if (invokedDirectly) {
   // Import using dynamic require for JSON
   const fs = await import('fs');
   const path = await import('path');
