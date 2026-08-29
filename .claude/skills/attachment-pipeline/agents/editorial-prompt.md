@@ -35,7 +35,7 @@ The full draft with every REVISE applied and every CUT removed, same structure a
 
 - A name that is metaphor-first or requires lore to parse.
 - Flavor prose over ~3 sentences without a declared reason.
-- An undeclared `peak` register reach ("the sigh of dying stars…" on a tier-2 tonic).
+- Any peak-register reach, declared or not ("the sigh of dying stars…" on any tier of attachment). Peak is a closed enumeration of non-encounter surfaces (doom transitions, Twilight, World-Soul/Echo — SKILL.md ruling 2026-08-29); no attachment surface is on it.
 - Any entry whose human-condition sentence could be deleted with no change to the prose.
 - Two entries in the batch with interchangeable voices.
 

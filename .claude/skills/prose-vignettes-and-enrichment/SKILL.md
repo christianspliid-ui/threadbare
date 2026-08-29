@@ -9,7 +9,7 @@ description: >
   "backstory", "encounter history", "biography", "forecast tier",
   "prose enrichment", "{name}", "{artifact}", "{ally}", "conditional block".
 model: opus
-last_validated_against: 2026-08-25
+last_validated_against: 2026-08-29
 validated_doctrine: prose@2
 ---
 
@@ -31,7 +31,18 @@ If the Canon page disagrees with this skill, the Canon page wins until this skil
 
 ## Register: plainspoken Malazan (THR-609)
 
-**Plainness is the baseline; lyricism is the rationed exception.** Vignette parts (Scene / Lens / Stakes / Forecast) and enriched prose are **baseline register** by default — plain, concrete, one idea per sentence, dry wit over ornament; no archaic diction, no stacked metaphor. The one place lyricism is earned is a **peak** surface (Twilight, doom transition, World-Soul prose — encounter climaxes and aftermath beats lost peak status 2026-08-25, Doctrine v2) — declare it, and even then budget one figurative image per paragraph. Enrichment placeholders (`{name}`, `{ally:…}`, conditional blocks) and the 3–5-variant minimum are non-negotiable: a register rewrite must never flatten a placeholder into a hardcoded name or collapse variants. Declare non-default register with the additive `register?: 'baseline' | 'character' | 'peak'` field (absent → baseline). Canon: [`Docs/canon/prose.md` § the register model](../../../Docs/canon/prose.md); deterministic floor: `registerCompliance` in `window.__DEBUG.proseQualityReport()`.
+**Plainness is the baseline; lyricism is the rationed exception.** Vignette parts (Scene / Lens / Stakes / Forecast) and enriched prose are **baseline register** by default — plain, concrete, one idea per sentence, dry wit over ornament; no archaic diction, no stacked metaphor. The one place lyricism is earned is a **peak** surface (Twilight, doom transition, World-Soul prose — encounter climaxes and aftermath beats lost peak status 2026-08-25, Doctrine v2) — declare it, and even then budget one figurative image per paragraph. Enrichment placeholders (`{name}`, `{ally:…}`, conditional blocks) and the 3–5-variant minimum are non-negotiable: a register rewrite must never flatten a placeholder into a hardcoded name or collapse variants. Declare non-default register with the additive `register?: 'baseline' | 'character' | 'peak'` field (absent → baseline). Canon: [`Docs/canon/prose.md` § the register model](../../../Docs/canon/prose.md); deterministic floor: `registerCompliance` in `window.__DEBUG.proseQualityReport()` (report-only — THR-1250 calibration verdict).
+
+## Mode: narrator, not inhabitant (Prose Doctrine v2, 2026-08-25 — governs every rule below)
+
+Register says how plain; **mode says where the narrator stands**, and mode is the rule the vignette systems are most prone to break. Write every vignette part, enrichment variant, and backstory block as a **game master reading a module aloud** — a narrator reporting events from outside the scene, to a god reading a chronicle.
+
+- **Banned: in-situ writing.** No interior sensation ("cold through a boot sole"), no camera work, no atmosphere without a job. A Scene part *states what is happening and what it has cost*, never how it feels from inside a body.
+- **State facts, never encode them.** If the fact is "no one dares approach it," write that sentence — not the physical evidence the reader must decode.
+- **Two v1 rules are reversed:** foreshadow-never-announce (now: announce plainly — a Stakes part names the stake as a fact and a cost) and show-don't-tell (now: tell).
+- Enrichment conditionals and placeholders are unaffected — they are graph reads, and narrator mode *wants* named real things (`{name}`, `{ally:strongest}`) over unnamed figures.
+
+Authoritative text: the [nudge authoring spec § Prose doctrine v2](../encounter-pipeline/reference/nudge-authoring-spec.md); the backstory strata keep their four *depths* (what is revealed), but every stratum's prose is narrator-mode — the pre-v2 per-stratum voice ladder (gossip / biographer / confessor / oracle) is retired with the rest of in-situ writing.
 
 ---
 
@@ -46,7 +57,7 @@ Every encounter step vignette has:
 
 | Part | Purpose | Max Length |
 |------|---------|-----------|
-| **Scene** | Sets the physical/emotional stage | 3 sentences |
+| **Scene** | States what is happening and what has gone wrong (narrator mode — events and costs, never interior/emotional staging) | 3 sentences |
 | **Lens** | Sphere-specific perspective on what's happening | Sphere-variant |
 | **Stakes** | What's at risk | 2 sentences |
 | **Forecast** | Narrative prediction based on probability | Tier-variant |

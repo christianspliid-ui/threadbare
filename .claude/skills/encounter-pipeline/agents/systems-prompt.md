@@ -47,7 +47,9 @@ You write TWO files:
    - `encounter_seed` effect kind — follow-on encounter seeding
    - `hidden_mark` effect kind — delayed-reveal hidden marks
    - `intelligence` effect kind — structured intelligence attachments
-   - `AuthoredChoiceCard` — per-step authored choices
+   - `ActionStepBranch.decidedBy` — agent-decided branches (the mortal's pole lean picks the fork; fate rolls how cleanly)
+
+   **Rejected primitive (flag it if a draft leans on it):** `authoredChoices` / `AuthoredChoiceCard` — the player-picks-an-ending model, rejected 2026-07-26 (THR-772); WS5 migration complete (THR-1086), zero shipped encounters author it.
 
 3. **Runtime Feasibility** — Beat count supported? Branching profile supported? Outcome ladder tiers? Aftermath wirable?
 

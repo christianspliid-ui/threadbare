@@ -36,7 +36,7 @@ Write a complete batch packet to `Docs/plans/attachments/{{SLUG}}-draft.md` with
 3. **Per-Attachment Entries** — For EVERY attachment in the batch:
    - **Name** — interactive text, always plain register (THR-609): a player reads the name to know what the item is. No metaphor, no archaic diction.
    - **Tier** — 1 Mundane / 2 Storied / 3 Mythic / 4 Legendary, with one line of why.
-   - **Description + flavor prose** — baseline register (plain, concrete, dry wit over ornament). Declare `register: 'peak'` explicitly only for marquee tier-3/4 lore, and say why.
+   - **Description + flavor prose** — baseline register (plain, concrete, dry wit over ornament). **Never declare `peak` on an attachment surface** — the marquee-lore carve-out was revoked 2026-08-29 (SKILL.md ruling block): peak is a closed enumeration of non-encounter surfaces (doom transitions, Twilight, World-Soul/Echo), and attachment lore is not on it. Marquee tier-3/4 lore is baseline like everything else here.
    - **The human condition** — one sentence: what it is about being a person this thing makes playable.
    - **Effect composition** — which primitives (`stacking`, `decay`, `conditional`, `cooldown`, `consumable_charge`, `tradeoff`, `test_shaper`, `prevent_loss`, `transform`, `reactive`, `trait_grant`, `until_event`, `aura`) with every parameter named and valued. Story pattern first ("it gets stronger the more you use it"), then the primitive that realizes it.
    - **Modifier math** — per-item total vs the 0.15 per-item cap; note anything approaching it.
@@ -55,7 +55,7 @@ Write a complete batch packet to `Docs/plans/attachments/{{SLUG}}-draft.md` with
 - **Names are UI.** If a name needs a tooltip to parse, it fails. "Traveling Physician's Satchel", not "The Alabaster Sigh".
 - **Primitives, not prose-mechanics.** If a behavior can't be expressed in the primitive vocabulary, don't hand-wave it — either recompose it from real primitives or FLAG it explicitly as needing a tier-2/3 stub (`teleport`, `reveal`, `spawn`, `dispel`, `alter_terrain`, `compel`, `modify_rules` are designed but not all orchestrator-wired).
 - **Tier honesty.** A tier-4 with a +0.05 conditional is mislabeled; a tier-1 with three primitives and an aura is mislabeled. Tier tracks narrative weight AND mechanical presence.
-- **Flavor earns its length.** Two tight sentences beat a paragraph of lore. Baseline register unless declared otherwise.
+- **Flavor earns its length.** Two tight sentences beat a paragraph of lore. Baseline register, always — no attachment surface qualifies for peak.
 
 ## Minimum Quality Floor
 

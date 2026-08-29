@@ -42,9 +42,13 @@ should (life). What stays forbidden is unchanged: never instruct the mortal, nev
 between authored endings.
 
 A linear template is no longer prose plus an aftermath. Every step that deserves the
-player's hand gets a **hand**: 4–8 authored, essence-priced `StepNudge`s that shift the
-named odds, with **fate rolling the outcome** on the five-band ladder and prose paying the
-nudge off at *every* band, misfires included.
+player's hand gets a **hand** — and a hand is **composed, not typed out (THR-1247/1248)**:
+you author the **0–2 specials** only this encounter could offer and declare a `deal` fill;
+the god's Repertoire supplies the rest from the 21-type library, landing the composed hand
+inside 4–8 cards. Fully authoring a hand remains legal (a step with no `deal` behaves as
+before), but it is no longer the default. Either way the cards shift the named odds,
+**fate rolls the outcome** on the five-band ladder, and prose pays the nudge off at
+*every* band, misfires included. Spec § 3/3b owns the rules.
 
 This is the biggest change to this skill since the `EncounterTemplate` migration, and it
 lands on the fields you already author:
@@ -53,7 +57,7 @@ lands on the fields you already author:
 |---|---|
 | `narrativeTemplate` per step | The step's **base band text** — what happens when the god did nothing |
 | `successAfterimage` / `failureAfterimage` / band afterimages | Unchanged (five fields; `near_miss` has none — it is paid off through fragments) |
-| — | `steps[].nudges` — the 4–8 card hand |
+| — | `steps[].nudges` (0–2 authored specials) + `steps[].deal` (the declared fill) — the composed 4–8 hand |
 | — | `traitVariants` — the trait hook |
 
 **The two rules that catch most first attempts:**
@@ -93,7 +97,7 @@ Read these in order. Skipping any of them produces content that fails the qualit
 2. **`Docs/plans/2026-04-16-systemic-wiring-guide.md`** — The engine capabilities that should shape your creative decisions. If you don't know what encounter seeds, hidden marks, and conditional blocks can do, you'll write hardcoded fiction.
 3. **`Docs/plans/2026-04-16-design-quality-gate.md`** — Section 9 benchmark moments. Your output must meet this standard.
 4. **The file you're working on** — Read the current template to understand the TypeScript structure, step count, reaches, difficulty curve, and reward pools.
-5. **One benchmark encounter** — Read `src/data/encounters/soul-ferryman.ts` or `src/data/borderland-encounter-content.ts` (top entry) to calibrate the quality standard.
+5. **The exemplar index** — `Docs/exemplars.md` is the single source of truth. The prose + structure bar is `swollen-ford-exemplar.ts` (already item 0b); `rival-shrine-betrayal.ts` / `flawed-steel.ts` are **wiring references only — do not imitate their prose** (pre-register, pre-nudge; demoted THR-1250).
 
 ---
 
@@ -150,13 +154,12 @@ All linear template encounters use this shape. You are responsible for authoring
     fallback: {
       overview: '...',   // ← YOU WRITE THIS — 1-2 sentence aftermath framing
       changes: [
-        {
-          id: 'unique_change_id',
-          kind: 'reputation_tally',
-          title: 'Change Title',
-          detail: '...',
-          polarity: 'mixed', // 'positive' | 'negative' | 'mixed'
-        },
+        // Chips are authored and reserved (spec § Consequences, THR-1082). Every chip
+        // is backed by an effect that fires on that band (UI Law 56); its referent is
+        // a real, named object (rule 0b); its stateNoun names the mechanic (rule 0c);
+        // and it never reports a quantity the player cannot look up (rule 0d — a
+        // `reputation_tally` chip is a released defect: keep the tally *effect*, fold
+        // its sentence into `overview`). If no effect backs the claim, author no chip.
       ],
       reactionPrompt: 'What does the god mark in this moment?',
       reactions: [
@@ -333,7 +336,7 @@ Before submitting rewritten prose, check every field against these questions. If
 
 **Nudge gates (0a–0h) — run these first. They are structural; the prose questions below assume they pass.**
 
-- **0a.** Does every nudge-bearing step carry **4–8** cards?
+- **0a.** Does every nudge-bearing step land a **composed** hand of **4–8** cards — at most **2 authored specials** beside a `deal` declaration (`DEAL_MAX_AUTHORED_SPECIALS`), or a deliberate fully-authored hand? (`check:encounter`'s `checkComposedHand()` reports the composed result; whole-hand variety rules stand down on a `deal`-bearing step.)
 - **0b.** Does every hand span **≥4 distinct spheres** and offer **≥1 common (sphere-less) option**?
 - **0c.** Does **every** nudge carry at least one failure-band fragment (`near_miss`, `failure`, or `critical_failure`)?
 - **0d.** Does every nudge with `forecastDelta ≥ 0.15` cover **both** `failure` and `critical_failure`?
@@ -461,15 +464,11 @@ Before submitting rewritten prose, check every field against these questions. If
     fallback: {
       overview:
         'A clean job leaves no thread. A failed one leaves exactly the kind of thread ' +
-        'the guild uses to evaluate whose hands can be trusted.',
+        'the guild uses to evaluate whose hands can be trusted. Lifts reported, lifts ' +
+        'blown — the guild tracks both.',
       changes: [
-        {
-          id: 'pocket_run_outcome',
-          kind: 'reputation_tally',
-          title: 'Guild Craft Record',
-          detail: 'Lifts reported, lifts blown — the guild tracks both.',
-          polarity: 'mixed',
-        },
+        // No chip: the tally effect below steers scoring but its number renders on no
+        // player surface (rule 0d), so its sentence lives in the overview instead.
       ],
       reactionPrompt: 'What does the god note in this small theft?',
       reactions: [
@@ -532,7 +531,7 @@ For each encounter file you write or rewrite:
 2. **Read the systemic wiring guide** — know what the capabilities can do
 3. **Identify the guild voice** — use the voice guide above
 4. **For each template, settle the game design first, then write the fields directly in narrator mode** (the scene-first workflow is retired — Doctrine v2 / the 2026-08-24 game-design-first ruling): what is tested, what the outcomes cost, what the world remembers — then state the situation plainly into the template fields. Writing a scene and extracting fields from it is how in-situ prose got in.
-4b. **Author the hand** — walk steps 3–5 of the [shared authoring spec](../encounter-pipeline/reference/nudge-authoring-spec.md): 4–8 cards cut from the 21-type library with generic faces, the band fragments, the trait hook. Copy the shape from `src/data/__fixtures__/nudge-exemplar/swollen-ford-exemplar.ts` rather than re-deriving it.
+4b. **Compose the hand** — walk steps 3–3b–5 of the [shared authoring spec](../encounter-pipeline/reference/nudge-authoring-spec.md): author the 0–2 specials, declare the `deal` fill (count, tags, exclude), write the band fragments and the trait hook. Copy the shape from `src/data/__fixtures__/nudge-exemplar/swollen-ford-exemplar.ts` rather than re-deriving it.
 5. **Wire the dynamics** — add enrichment placeholders, conditional blocks, and ensure success/failure produce structurally different persistence
 6. **Run the editorial checklist** — the nudge gates (0a–0l) and all prose questions must pass
 7. **Preserve the TypeScript skeleton** — same IDs, same reaches, same difficulties, same reward pools unless clearly wrong. You're upgrading prose and adding wiring, not restructuring encounters.
@@ -542,7 +541,17 @@ For each encounter file you write or rewrite:
 
 ## Populated `aftermathConfig.variants` — Signal model, budget, and editorial gates (THR-447)
 
-Most linear templates ship `variants: {}` (empty) + `fallback`. This is correct for the majority. A family becomes a **candidate for populated `variants`** only when **≥3 of 5 signals** below are present. See `Docs/plans/2026-05-16-thr-447-aftermath-variants-format-decision.md` for the full framework and the approved family scoring matrix.
+> **Mechanism note (2026-08-29, round-5 sweep).** THR-447's framework predates the WS5
+> completion: its variant paths were keyed on `authoredChoices` IDs, and **`authoredChoices`
+> is the rejected player-picks-an-ending model — author it on nothing** (WS5 complete,
+> THR-1086). The live per-ending axis on a linear template is **`AftermathVariant.byOutcome`**
+> (THR-969): key the ending on *how it went*, hung off `fallback`. A fork the *mortal* decides
+> is a branching-encounter shape (`ActionStepBranch.decidedBy` — promote it, per THR-191).
+> The signal model (S1–S5) and gates (G1–G4) below survive as the quality bar for any future
+> variant work under a live keying mechanism; the choice-count/`likelyBurden` budget rows are
+> historical until then.
+
+Most linear templates ship `variants: {}` (empty) + `fallback` (with `byOutcome` bands per the Composition Contract's ≥3-band floor). This is correct for the majority. A family becomes a **candidate for populated `variants`** only when **≥3 of 5 signals** below are present. See `Docs/plans/2026-05-16-thr-447-aftermath-variants-format-decision.md` for the full framework and the approved family scoring matrix.
 
 ### §2.1 Selection signals (S1–S5)
 
@@ -585,4 +594,4 @@ A template that cannot clear all four gates without inflating beyond the §2.2 b
 
 ### Procedural note
 
-When rewriting a template in a family that has been *approved for populated variants* (see canon and the family scoring matrix in `Docs/plans/2026-05-16-thr-447-aftermath-variants-format-decision.md`), populate `authoredChoices[0]` with exactly 2 choices and `aftermathConfig.variants` keyed on those choice IDs. Every populated template must clear G1–G4. When rewriting a template in a family that has *not* been approved (default), leave `variants: {}` and write the systemic depth into `fallback.reactions[]` — the same bar that THR-96 (Lorekeepers Covenant) hit.
+When rewriting any linear template today, leave `variants: {}` and write the systemic depth into `fallback.reactions[]` plus `fallback.byOutcome` bands (THR-969 — the ≥3-band floor: one success-side, one failure-side, one extreme). Do **not** populate `authoredChoices` — the mechanism THR-447 keyed variants on is the rejected model (see the mechanism note above). A family that genuinely needs a mortal-decided fork is promoted to a branching encounter via `encounter-pipeline`, never retrofitted here.

@@ -83,9 +83,10 @@ narrative") is the **rejected** model this replaced. A draft whose player-facing
 is *what the mortal does* is not a revision note — it is the wrong encounter, and Pass 2
 must reject it outright.
 
-`authoredChoices` still renders for un-migrated templates (the stage branches on data
-presence, so the rollout is per-template and reversible), but **new encounters do not
-author it.** Conversion of the existing 28 is WS5.
+**The `authoredChoices` migration is complete (WS5, THR-1086, 2026-08-11):** zero shipped
+encounters author it. The render layer still branches on data presence (kept deliberately —
+per-template and reversible), but nothing exercises it, and no new encounter may author the
+field. A fork the mortal picks is `ActionStepBranch.decidedBy`.
 
 ## Scope
 
