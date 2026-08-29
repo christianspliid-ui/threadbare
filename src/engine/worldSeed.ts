@@ -1185,24 +1185,43 @@ export function seedWorld(
 
   // ── Eager Base Sublocations ──────────────────────────────
   const GENOME_SUBTYPES = new Set(['hamlet', 'town', 'city', 'capital']);
+
+  /**
+   * Run the genome for one settlement and materialize the result.
+   *
+   * Extracted in THR-1344 because worldgen now runs the genome twice — once here,
+   * where only infrastructure and sphere inputs exist, and once at the tail of the
+   * seeder, where culture edges and definition factions finally do. Two call sites
+   * reading the same inputs by two hand-copied expressions is how the passes drift
+   * apart; one function is how they cannot.
+   *
+   * `materializeGenome` is idempotent on `sublocationTypeId`, so the second call
+   * adds only what the first could not see and re-stores the fuller `genomeResult`.
+   */
+  const runGenomeForSettlement = (locId: string, tier: string, genomeSeed: number) => {
+    const loc = graph.getNode(locId);
+    if (!loc) return;
+    const cultureEdge = graph.getOutgoingEdges(locId, 'belongs_to')
+      .find(e => (e.properties as any)?.cultureLayer === 'current');
+    const sphereInfluence = (loc.properties.sphereInfluence ?? {}) as Record<string, number>;
+    const position = (loc.properties.position ?? 'heartland') as 'heartland' | 'borderland';
+
+    const genomeResult = runSettlementGenome(graph, locId, {
+      tier: tier as any,
+      sphereInfluence,
+      position,
+      cultureId: cultureEdge?.target ?? null,
+      seed: genomeSeed,
+    });
+    materializeGenome(graph, locId, genomeResult, genomeSeed);
+  };
+
   for (let i = 0; i < locationIds.length; i++) {
     const loc = graph.getNode(locationIds[i]);
     const subtype = loc?.properties.locationSubtype as string;
     if (loc && GENOME_SUBTYPES.has(subtype)) {
       // Settlement genome pipeline for hamlet/town/city/capital
-      const cultureEdge = graph.getOutgoingEdges(locationIds[i], 'belongs_to')
-        .find(e => (e.properties as any)?.cultureLayer === 'current');
-      const sphereInfluence = (loc.properties.sphereInfluence ?? {}) as Record<string, number>;
-      const position = (loc.properties.position ?? 'heartland') as 'heartland' | 'borderland';
-
-      const genomeResult = runSettlementGenome(graph, locationIds[i], {
-        tier: subtype as any,
-        sphereInfluence,
-        position,
-        cultureId: cultureEdge?.target ?? null,
-        seed: seed + i * 7717,
-      });
-      materializeGenome(graph, locationIds[i], genomeResult, seed + i * 7717);
+      runGenomeForSettlement(locationIds[i], subtype, seed + i * 7717);
     } else {
       // Non-settlement locations use legacy ensureSublocations
       ensureSublocations(graph, locationIds[i], seed + i * 7717);
@@ -1766,6 +1785,40 @@ export function seedWorld(
   ensureFactionControlAtHomeLocations(graph, factionDefIds);
   const factionLocationMap = buildDataDrivenFactionLocationMap(graph, factionDefIds);
   assignFactionsToExistingNpcs(graph, factionLocationMap);
+
+  // ── Settlement genome — second pass (THR-1344) ───────────────────────
+  // The eager pass above runs at the only point in this seeder where settlements
+  // exist, and that point is upstream of two of the genome's own five inputs:
+  //
+  //   genome (eager pass)     here
+  //   Cultures                 ~35 lines later   → Pass 2 read `belongs_to` before any existed
+  //   Faction Definitions      ~450 lines later  → Pass 4 read faction `reachWeights` before any existed
+  //
+  // So Passes 2 and 4 evaluated against an empty graph and contributed nothing to any
+  // world this seeder has ever built. Measured on seed 42 / medium before this pass:
+  // 440 sublocations, of which `culture` 0 and `reach` 0 — the whole of
+  // REACH_SUBLOCATION_MENU and CULTURE_BASELINE_MAP's additions, authored and unreachable.
+  //
+  // This is the additive arm of THR-1344 (NFP #6) rather than the reorder arm. Moving the
+  // eager pass down here was the cheaper-looking fix and is the riskier one: the settlement
+  // promotion pass rewrites `locationSubtype`, `seedGuilds` and `seedAllFactions` both write
+  // sublocations of their own, and `seedNpcsAtLocations` places NPCs into what exists at the
+  // time — so relocating the eager pass changes what four unrelated systems observe. Running
+  // the genome a second time changes what only the genome observes.
+  //
+  // Cost is bounded and paid once at worldgen: one `runSettlementGenome` per genome-tier
+  // settlement (32 on seed 42 / medium), no ticks involved. `materializeGenome` is idempotent
+  // on `sublocationTypeId`, so this adds the delta and re-stores the fuller `genomeResult` —
+  // which is also what finally gives `settlementReachProfile` a non-empty value in a
+  // generated world, and what `proseResolvers` reads for its sublocation tag profile.
+  for (let i = 0; i < locationIds.length; i++) {
+    const loc = graph.getNode(locationIds[i]);
+    const subtype = loc?.properties.locationSubtype as string;
+    if (!loc || !GENOME_SUBTYPES.has(subtype)) continue;
+    // Same PRNG derivation as the eager pass — the genome consumes no randomness today
+    // (`seed` is destructured as `_seed`), so this is stream hygiene, not a live draw.
+    runGenomeForSettlement(locationIds[i], subtype, seed + i * 7717);
+  }
 
   return { graph, individualIds, factionIds, guildIds, factionDefIds, locationIds, artifactIds, cultureIds, regionIds, historicalCultureIds };
 }
