@@ -87,6 +87,9 @@ export function composeGenericForeshadowing(
 
   // Fixed pick order keeps the seed → prose mapping stable.
   const matter = locationName ? matterAtPlace(locationName) : pick(MATTER_NO_PLACE);
+  // Every matter phrase is lowercase by construction ("what stirs at Ashmarket"),
+  // so a clause that opens on the matter needs the capitalized form (THR-1360).
+  const Matter = matter.charAt(0).toUpperCase() + matter.slice(1);
   const knowledgeTpl = pick(KNOWLEDGE_CLAUSES[tier]);
   const pullTpl = pick(pullPool);
   const expectationTpl = pick(EXPECTATION_CLAUSES[tier]);
@@ -98,6 +101,7 @@ export function composeGenericForeshadowing(
     object: objectForm,
     Object: ObjectForm,
     matter,
+    Matter,
     place: locationName,
   };
   const ctx = { number, slots };

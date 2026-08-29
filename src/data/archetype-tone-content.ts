@@ -75,12 +75,6 @@ export const ARCHETYPE_TONE_OVERLAYS: Record<ReachDomain, ArchetypeToneOverlay> 
     godVoiceStyle: 'reverent and prophetic',
     descriptor: 'faithful',
   },
-  flesh: {
-    adjectives: ['resilient', 'primal', 'weathered', 'tenacious', 'scarred', 'raw', 'vital'],
-    verbs: ['endures', 'survives', 'adapts', 'perseveres', 'wrestles', 'overcomes', 'regenerates'],
-    godVoiceStyle: 'earthy and practical',
-    descriptor: 'survivor',
-  },
 };
 
 /**

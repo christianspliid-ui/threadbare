@@ -47,6 +47,17 @@ import type {
  * Reach → display name. Same set the Codex draws (`components/Codex/codexRegistry.ts`);
  * duplicated as data rather than imported because the engine must not depend on a
  * component module.
+ *
+ * THR-1359: the `flesh` row is a **deliberate legacy mapping, not residue**, and the
+ * `Record<string, string>` annotation is correct rather than a widening hole. This bag
+ * is keyed by world-model `reach.*` node suffix, not by `ReachDomain`, and
+ * `world-model.json` still ships nine reach nodes — `reach.flesh` among them, with six
+ * edges. Deleting the row would not remove a retired Reach; it would make a node that
+ * still exists render as a raw key. `TOOLTIP_BACKED_REACHES` below lists the same nine
+ * and is pinned against the live resolver by `tooltipValidation.test.ts`.
+ *
+ * Removing the node and this row is THR-1368, and they must land together: either one
+ * alone leaves the nine-vs-eight mismatch pointing the other way.
  */
 export const REACH_DISPLAY_NAMES: Record<string, string> = {
   iron: 'Iron', gold: 'Gold', shadow: 'Shadow', veil: 'Veil',
