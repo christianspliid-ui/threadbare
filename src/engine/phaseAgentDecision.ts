@@ -75,6 +75,7 @@ import {
   getAmbitionTemplateId,
   traceUnevaluableAmbition,
 } from './ambitionShape';
+import { isAutonomousDecisionActor } from './strategicKindReachability';
 import { scoreStrategicCandidates } from './strategicActionScoring';
 import { executeStrategicAction } from './strategicActionLifecycle';
 import type { StrategicCandidateBoardTrace, StrategicActionStartedTrace } from '../types/trace';
@@ -292,10 +293,13 @@ export function phaseAgentDecision(
   // Get all individual spotlight actors, excluding the player's avatar.
   // Ambient/notable NPCs are excluded — they don't participate in autonomous decision-making.
   // Legacy nodes without spotlightTier default to 'spotlight' for backward compatibility.
+  //
+  // THR-1329: the tier test itself now lives in `strategicKindReachability`, so the
+  // reachability instrument measures the population this loop actually runs rather
+  // than a copy of it that can drift. The avatar exclusion stays here — the player
+  // drives that agent, which is not a statement about the tier.
   const actors = graph.getNodesByType('actor').filter(
-    (n) => n.properties.actorType === 'individual'
-      && (n.properties.spotlightTier ?? 'spotlight') === 'spotlight'
-      && !avatarNodeIds.has(n.id),
+    (n) => isAutonomousDecisionActor(n) && !avatarNodeIds.has(n.id),
   );
 
   // Pre-compute set of agents with active (unresolved) unified actions — O(actions) once

@@ -114,7 +114,8 @@
     "check:node-modules": "node --experimental-strip-types scripts/node-modules-health.ts",
     "repair:donor-node-modules": "node --experimental-strip-types scripts/repair-donor-node-modules.ts",
     "check:cast-targets": "esbuild scripts/check-cast-targets.ts --bundle --platform=node --format=esm --outfile=.cache/check-cast-targets.mjs --external:fs --external:path --external:process --external:url && node .cache/check-cast-targets.mjs",
-    "census:undertakings": "esbuild scripts/undertaking-census.ts --bundle --platform=node --format=esm --outfile=.cache/undertaking-census.mjs --external:fs --external:path && node .cache/undertaking-census.mjs"
+    "census:undertakings": "esbuild scripts/undertaking-census.ts --bundle --platform=node --format=esm --outfile=.cache/undertaking-census.mjs --external:fs --external:path && node .cache/undertaking-census.mjs",
+    "census:reachability": "esbuild scripts/kind-reachability.ts --bundle --platform=node --format=esm --outfile=.cache/kind-reachability.mjs --external:fs --external:path && node .cache/kind-reachability.mjs"
   },
   "dependencies": {
     "@sentry/react": "^10.49.0",
