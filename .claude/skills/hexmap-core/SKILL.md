@@ -11,6 +11,7 @@ description: >
   system", "zoom tier", "render layer", "stencil", "InstancedMesh",
   "terrain palette".
 last_validated_against: 2026-08-29
+validated_doctrine: architecture@1
 ---
 
 # HexMap Core — Architecture & Foundation

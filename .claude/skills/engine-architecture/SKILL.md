@@ -6,6 +6,7 @@ description: >
   "tick loop", "sigmoid", "resolution", "trace", "PRNG", "Maslow", "action pipeline",
   "graph op", "fail-soft", or when implementing systems described in Obsidian vault notes.
 last_validated_against: 2026-08-29
+validated_doctrine: architecture@1
 ---
 
 # Engine Architecture — Domain Context

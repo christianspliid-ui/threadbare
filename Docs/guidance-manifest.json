@@ -31,14 +31,16 @@
     "cover every dependent. The stamp check is advisory ALWAYS — forcing it mechanically would recreate",
     "the date-bump theater `last_validated_against` already demonstrated.",
     "",
-    "SCOPE — six doctrines: prose (the original, registered on demonstrated loss), the three",
+    "SCOPE — seven doctrines: prose (the original, registered on demonstrated loss), the three",
     "general-layer doctrines registered at THR-1331 (identity-vision, cosmology, coordination-process)",
     "after the 2026-08-28 context audit found the unregistered general layer rotting — two finished",
     "retirements unswept, every core rule in 3-4 drifting copies — rules-of-play, registered at",
     "THR-1343 (context-cleanup round 2) after the game-design audit found three retired eras live on",
     "high-traffic surfaces, and ui-laws, registered at THR-1358 (round 3) after the UI/UX audit found",
-    "26 of 42 applying surfaces drifted around a healthy constitution. Adding a doctrine is a",
-    "deliberate registration, not a default. This file is small on purpose.",
+    "26 of 42 applying surfaces drifted around a healthy constitution — and architecture,",
+    "registered at THR-1367 (round 4) after the technical-architecture audit found shipped",
+    "work still taught as future work on 32 of 60 surfaces, including the engine canon itself.",
+    "Adding a doctrine is a deliberate registration, not a default. This file is small on purpose.",
     "",
     "SUNSET — the gate, the stamps and the retro step enter the standing six-week sunset presumption",
     "(CLAUDE.md § process-work throttle): renewed at retro by citing a catch, else deleted."
@@ -211,6 +213,46 @@
         "vault:Systems/Narrative Log.md",
         "vault:Systems/Fog of War.md",
         "vault:Systems/Agent Movement System.md"
+      ]
+    },
+    "architecture": {
+      "version": 1,
+      "versionNote": "Registered 2026-08-29 (THR-1367, context-cleanup round 4). The technical-architecture doctrine: graph-first (everything is a node/edge; relationships are edges, never property IDs; hexes are NOT graph nodes — GameState.tiles[]), three-tier position with the THR-1183 single-shape sublocation rule, hex-granular awareness (location-hop is rejected), in-place mutation with worldVersion/structuralCacheVersion, SimulationRuntime-owned caches, seeded PRNG + fail-soft tick loop, the THR-238 registry as the required mode for new phases, sigmoid->d100 resolution with the five-band ladder fully live, systems-inventory as engine-design Step 0, downgrade-only interface-map classification, and the THR-1156 typed-gamestate program. Round-4 audit found the failure shape 'shipped work still taught as future work': the engine canon itself said THR-238 was Ready-for-Dev four months after it shipped, the ai-index runtime contracts taught pre-registry wiring and hexes-as-nodes, the top engine skill taught the Control verb and success_at_cost as unbuilt, and CLAUDE.md's codesight counts were ~50% understated. The sweep THR-1362..1366 cleared them. Christian's calls: World Graph vault page rewritten (not bannered); Docs/ai-index/ refreshed in place and registered here rather than folded into canon.",
+      "authorities": [
+        "Docs/canon/engine.md",
+        "Docs/canon/interface-map.md",
+        "Docs/canon/verification-gates.md"
+      ],
+      "dependents": [
+        "CLAUDE.md",
+        "Docs/ai-index/INDEX.md",
+        "Docs/ai-index/graph-contract.md",
+        "Docs/ai-index/tick-phases.md",
+        "Docs/ai-index/invariants-and-footguns.md",
+        "Docs/ubiquitous-language/Graph.md",
+        "Docs/plans/wiring-checklist.md",
+        "Docs/plans/2026-04-16-systemic-wiring-guide.md",
+        "Docs/plans/2026-04-29-declarative-engine-phase-registry.md",
+        "Docs/documentation-ownership.md",
+        ".claude/skills/engine-architecture/SKILL.md",
+        ".claude/skills/testing-patterns/SKILL.md",
+        ".claude/skills/content-worldbuilding/SKILL.md",
+        ".claude/skills/hexmap-core/SKILL.md",
+        ".claude/skills/state-of-game-design/reference/architectural-decisions.md",
+        ".claude/skills/state-of-game-design/reference/deprecated.md"
+      ],
+      "manualDependents": [
+        "vault:Systems/World Graph.md",
+        "vault:Systems/Sublocation System.md",
+        "vault:Systems/Agent Movement System.md",
+        "vault:Systems/Debug Trace System.md",
+        "vault:Systems/Performance Scaling.md",
+        "vault:Systems/Agent Lifecycle.md",
+        "vault:Systems/Colocation Detection.md",
+        "vault:Systems/Generalized Action Targeting.md",
+        "vault:Systems/CRUD Action Unification.md",
+        "vault:Systems/Graph-Native Modifier System.md",
+        "vault:Systems/Anti-Patterns.md"
       ]
     },
     "coordination-process": {
