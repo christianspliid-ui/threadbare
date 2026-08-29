@@ -23,8 +23,14 @@
  * a third scale:
  *
  * ```
- * boardScore = EVT × desireMultiplier × temperamentFamilyWeight
+ * boardScore = EVT × desireMultiplier × temperamentFamilyWeight × varietyMultiplier
  * ```
+ *
+ * The fourth term arrived with THR-1349 and applies to undertakings only: it is
+ * the legacy scorer's `varietyPenalty`, relocated into this currency as a
+ * proportional discount. Plan §4 claimed the penalty would survive the cutover as
+ * an EVT input and it did not, so a live board had no variety mechanism of any
+ * kind. See `computeBoardVarietyMultiplier`.
  *
  * - **Encounters** contribute `valuePerTick` and `desireMultiplier` straight from
  *   `ScoredCandidate` — the same two numbers the live scorer multiplies — at
@@ -106,6 +112,7 @@ import {
   UNDERTAKING_AMBITION_CENTRALITY_BOOST,
   UNDERTAKING_TEMPERAMENT_AMBITION_WEIGHT,
   UNDERTAKING_TEMPERAMENT_REACH_WEIGHT,
+  BOARD_VARIETY_PENALTY_WEIGHT,
 } from '../data/strategic-action-constants';
 
 // ─── Contract ───────────────────────────────────────────────────
@@ -122,6 +129,16 @@ export interface BoardEntry {
   readonly desireMultiplier: number;
   readonly temperamentWeight: number;
   /**
+   * The repetition discount, for an undertaking; `undefined` for an encounter,
+   * which has no repetition counter to read.
+   *
+   * On the entry rather than folded silently into `score` for the reason
+   * `ambitionBoost` is: a multiplier's *inputs* are where this family of defect
+   * hides, and the last variety mechanism to go missing did so by being asserted
+   * in a plan and present in no trace (THR-1349).
+   */
+  readonly varietyMultiplier?: number;
+  /**
    * `P(advance-equivalent)` for an undertaking; `undefined` for an encounter,
    * whose EVT already folds its five-band expected utility.
    */
@@ -137,6 +154,21 @@ export interface BoardEntry {
    * liveness assertion possible at all (NFP #2).
    */
   readonly ambitionBoost?: number;
+  /**
+   * Index of this entry's source candidate in its own family's input array —
+   * `encounterCandidates` for an encounter, `strategicCandidates` for an
+   * undertaking.
+   *
+   * Carried because in `'live'` mode the winner has to resolve back to the exact
+   * candidate object, and `id` cannot do that: two encounter candidates for the
+   * same template at different locations share a `templateId` but score
+   * differently here (board score is `valuePerTick × desire`, both per-instance).
+   * A `find` by id would silently execute the higher-ranked *legacy* instance
+   * whenever the board preferred the other one — a wrong-noun bug of exactly the
+   * kind the debugging protocol exists to catch, and invisible in every trace
+   * because both rows would print the same id.
+   */
+  readonly candidateIndex: number;
 }
 
 export interface BoardResult {
@@ -312,6 +344,31 @@ export function computeTemperamentWeight(
     + UNDERTAKING_TEMPERAMENT_REACH_WEIGHT * clamp01(reachAffinity);
 }
 
+// ─── Variety ────────────────────────────────────────────────────
+
+/**
+ * The share of its score a candidate keeps given how repeated it is.
+ *
+ * `varietyPenalty` is already computed per candidate by `scoreStrategicCandidates`
+ * — `min(1, (boardCount - 1) × 0.2 + historyCount × 0.15)` over this agent's own
+ * board duplicates and its recent starts — so this consumes the existing signal
+ * rather than inventing a second one. That is the relocation plan §4 promised and
+ * did not perform.
+ *
+ * Returns a multiplier in `[1 - BOARD_VARIETY_PENALTY_WEIGHT, 1]`. An encounter
+ * entry has no analogue and is not discounted: `varietyPenalty` is defined over an
+ * actor's undertaking history, and there is no encounter-side counter to read.
+ * That asymmetry is deliberate and is the same one `temperamentWeight` already
+ * carries, where the encounter family sits at a flat `1.0` baseline.
+ *
+ * Fail-soft (NFP #4): a candidate whose `varietyPenalty` is absent or non-finite
+ * reads as unrepeated — an absent signal is never a penalty.
+ */
+export function computeBoardVarietyMultiplier(varietyPenalty: number | undefined): number {
+  if (varietyPenalty === undefined || !Number.isFinite(varietyPenalty)) return 1;
+  return 1 - BOARD_VARIETY_PENALTY_WEIGHT * clamp01(varietyPenalty);
+}
+
 // ─── The board ──────────────────────────────────────────────────
 
 /**
@@ -333,7 +390,7 @@ export function scoreUnifiedBoard(input: BoardInput): BoardResult {
   // recomputing is what makes this a genuine comparison: if the board and the
   // encounter scorer ever disagree about an encounter's value, the disagreement
   // is in the multipliers, which are visible on the entry.
-  for (const candidate of input.encounterCandidates) {
+  for (const [index, candidate] of input.encounterCandidates.entries()) {
     entries.push({
       family: 'encounter',
       id: candidate.entry.templateId,
@@ -341,11 +398,12 @@ export function scoreUnifiedBoard(input: BoardInput): BoardResult {
       desireMultiplier: candidate.desireMultiplier,
       temperamentWeight: 1,
       score: candidate.valuePerTick * candidate.desireMultiplier,
+      candidateIndex: index,
     });
   }
 
   // ── Undertakings ──
-  for (const candidate of input.strategicCandidates) {
+  for (const [index, candidate] of input.strategicCandidates.entries()) {
     const template = getStrategicTemplate(candidate.templateId);
     const reach = pickPrimaryReach(template);
 
@@ -372,19 +430,28 @@ export function scoreUnifiedBoard(input: BoardInput): BoardResult {
       template, reach, ambitionPrefersVerb(candidate.ambitionId, template),
     );
 
+    const varietyMultiplier = computeBoardVarietyMultiplier(
+      candidate.scoreComponents?.varietyPenalty,
+    );
+
     entries.push({
       family: 'strategic_action',
       id: candidate.templateId,
       evt,
       desireMultiplier,
       temperamentWeight,
+      varietyMultiplier,
       advanceProbability,
       ambitionBoost,
-      score: evt * desireMultiplier * temperamentWeight,
+      score: evt * desireMultiplier * temperamentWeight * varietyMultiplier,
+      candidateIndex: index,
     });
   }
 
-  entries.sort((a, b) => b.score - a.score);
+  // Ties break on the input order both families already arrived in (each is
+  // pre-ranked by its own scorer), never on `sort`'s unspecified behaviour for
+  // equal keys — the board decides in live mode, and determinism is NFP #3.
+  entries.sort((a, b) => (b.score - a.score) || (a.candidateIndex - b.candidateIndex));
 
   return {
     entries,

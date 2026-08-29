@@ -1914,6 +1914,17 @@ export interface StrategicActionStartedTrace extends TraceBase {
   category: 'strategic_action_started';
   actorId: string;
   candidateId: string;
+  /**
+   * The template this start came from, carried as its own field.
+   *
+   * `candidateId` embeds it (`strat_${templateId}_${targetId}_${tick}`) and every
+   * template id itself contains underscores, so recovering the template from that
+   * string is a parse that guesses where the id ends. The composition gate in
+   * `scripts/undertaking-census.ts` counts *distinct templates started*, which is
+   * a question about this field; asking it of a concatenation is how a gate ends
+   * up measuring its own parser (NFP #2).
+   */
+  templateId: string;
   behaviorFamily: BehaviorFamily;
   verb: StrategicVerb;
   targetNodeId?: string;
@@ -2048,6 +2059,17 @@ export interface DecisionBoardComparisonTrace extends TraceBase {
   }>;
   /** Whether legacy and the board agree on the winning *family*. */
   agreement: boolean;
+  /**
+   * The board's verdict **after `BOARD_SCORE_FLOOR` is applied** — `'idle'` when
+   * the board is empty *or* its best entry fails the floor. In `'live'` this is
+   * what the agent then did.
+   *
+   * Carried as its own field rather than left to be re-derived from `boardTop[0]`
+   * by every reader, because re-deriving it is exactly how the cutover gate went
+   * blind: the balance-telemetry copy of this value omitted the floor and so
+   * reported `idle 0.0%` on a run that idled 91.8% of the time (THR-1301).
+   */
+  boardFamily: DecisionFamily;
   encounterCandidates: number;
   undertakingCandidates: number;
 }

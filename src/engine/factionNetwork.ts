@@ -3,7 +3,7 @@ import { getFactionMembershipEdges } from './graphQueries';
 import type { WorldGraph } from './graph';
 import type { MemberOfEdgeProperties } from '../types/disposition';
 import type { FactionDefinition } from '../types/faction';
-import { FACTION_DEFINITIONS } from '../data/faction-definitions';
+import { getFactionDefinition as lookupFactionDefinition } from '../data/faction-definition-lookup';
 import { computeRankFromReputation } from '../types/faction';
 import { REACH_DOMAINS, type ReachDomain, type ReputationPolarity } from '../types/traits';
 import { SURFACE_DOUBTER_MIN_DISTANCE } from '../data/faction-action-constants';
@@ -134,14 +134,31 @@ export function getFactionNodes(graph: WorldGraph): GraphNode[] {
     .filter(node => node.properties.actorType === 'faction');
 }
 
-export function getFactionDefinitionForNode(node: GraphNode): FactionDefinition | null {
+/**
+ * Resolve a faction node's own definition.
+ *
+ * **Retired its private lookup in THR-1322.** This read the static
+ * `FACTION_DEFINITIONS` map directly and so could not see a run-founded order at
+ * all — a chartered faction resolved to `null` here while
+ * `getFactionDefinition` below, one function away, resolved it correctly from
+ * the same id. Two lookups over the same key space that disagree is precisely
+ * the drift `data/faction-definition-lookup.ts` exists to prevent, so both now
+ * go through it. `dynamicDefs` is optional because most callers hold a graph
+ * rather than a `GameState`; the shared lookup's overlay covers them.
+ */
+export function getFactionDefinitionForNode(
+  node: GraphNode,
+  dynamicDefs?: Record<string, FactionDefinition>,
+): FactionDefinition | null {
   const defId = node.properties.factionDefId as string | undefined;
-  return defId ? (FACTION_DEFINITIONS.get(defId) ?? null) : null;
+  return lookupFactionDefinition(defId, dynamicDefs);
 }
 
 /**
  * Look up a FactionDefinition by ID, checking dynamic runtime definitions first,
- * then falling back to static FACTION_DEFINITIONS.
+ * then falling back to the authored definition tables. Delegates to the shared
+ * `data/faction-definition-lookup` so this and the UI's lookup cannot disagree
+ * (THR-1322); the `| undefined` return is kept for its existing callers.
  *
  * **The dynamic half is live again as of THR-1309.** `foundFaction` writes
  * `state.dynamicFactionDefinitions` when `strategic_found_order` charters an order,
@@ -154,7 +171,7 @@ export function getFactionDefinition(
   id: string,
   dynamicDefs?: Record<string, FactionDefinition>,
 ): FactionDefinition | undefined {
-  return dynamicDefs?.[id] ?? FACTION_DEFINITIONS.get(id);
+  return lookupFactionDefinition(id, dynamicDefs) ?? undefined;
 }
 
 export function getFactionNetworkSummary(

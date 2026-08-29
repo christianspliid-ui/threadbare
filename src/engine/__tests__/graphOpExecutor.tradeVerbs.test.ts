@@ -30,6 +30,7 @@ import { WorldGraph } from '../graph';
 import { executeGraphOps, resetOpCounter } from '../graphOpExecutor';
 import type { GraphOp, GraphOpContext } from '../../types/graphOp';
 import { validateEdgeEndpoints } from '../../types/edgeSchema';
+import { isPlaceTierLocation } from '../sublocationShape';
 import { ACTION_TEMPLATES, getActionTemplateById } from '../../data/action-template-content';
 import {
   readTradeRouteProps,
@@ -370,11 +371,22 @@ describe('establish_trade_route against a real seeded world', () => {
     const graph = state.graph;
 
     // A real agent standing at a real, durable settlement — not a fixture.
+    //
+    // `isPlaceTierLocation`, not a bare `type === 'location'` test: since THR-1183
+    // a sublocation IS a `location` node (discriminated by `parentLocationId`), so
+    // the bare test also matches an agent standing in an inn. This assertion then
+    // requires the anchor to be a route endpoint, and the verb correctly resolves a
+    // sublocation *up to its parent* before laying the route — so a sublocation
+    // anchor fails an assertion about the verb, for a reason that is entirely about
+    // the fixture. It passed only because the first matching agent happened to be
+    // place-tier; any change to what agents do moves that. Asking through the
+    // shape module is the rule CLAUDE.md states, and it is what makes this test
+    // measure the verb rather than the seating plan.
     const caster = graph.getNodesByType('actor').find(a => {
       const locId = graph.getOutgoingEdges(a.id, 'located_at')[0]?.target;
       if (!locId || locId.startsWith('loc.transient.')) return false;
       const loc = graph.getNode(locId);
-      return loc?.type === 'location' && typeof loc.properties.hexCol === 'number';
+      return isPlaceTierLocation(loc) && typeof loc?.properties.hexCol === 'number';
     });
     expect(caster, 'seeded world must contain an agent at a durable location').toBeDefined();
 

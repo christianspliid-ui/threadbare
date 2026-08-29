@@ -205,6 +205,7 @@ import { processFactionOutcome, resetFactionEventSeq } from './factionOutcome';
 import type { DistanceMatrix } from './distanceMatrix';
 import { clearTimelines, appendEvent } from './encounterTimeline';
 import { recordReward, clearRewardHistory } from './rewardHistory';
+import { clearDynamicFactionDefinitions } from '../data/faction-definition-lookup';
 import type { SpherePressureEvent } from '../types/sphereAffinity';
 import { ENCOUNTER_PRESSURE_PER_STEP, RIVAL_PRESSURE_MAGNITUDE, RIVAL_AWARENESS_HOSTILITY_WEIGHT } from '../types/sphereAffinity';
 import { ANOMALY_RESOURCE_MAP, RESOURCE_DEFINITIONS } from '../data/resource-content';
@@ -273,6 +274,10 @@ export function resetDecisionCache(): void {
   legacyRuntime = null;
   clearTimelines();
   clearRewardHistory();
+  // The run-founded faction overlay is session-scoped state, not a cache: a run
+  // that chartered an order must not leave it resolvable in the next run's
+  // lookups (THR-1322). Same treatment as the two clears above.
+  clearDynamicFactionDefinitions();
   // Persistent graph-node / action ID counters — reset for determinism across runs
   resetLifecycleCounter();
   resetUnifiedActionCounter();

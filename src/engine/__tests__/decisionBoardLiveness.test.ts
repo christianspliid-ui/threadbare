@@ -20,7 +20,7 @@ import { runTick } from '../orchestrator';
 import { generateArchetypes } from '../ascendant';
 import { createBalancedCosmology } from '../cosmology';
 import { enableTracing, disableTracing, getTraces, clearTraces } from '../traceBuffer';
-import { UNIFIED_DECISION_BOARD_MODE } from '../../data/strategic-action-constants';
+import { UNIFIED_DECISION_BOARD_MODE, BOARD_SCORE_FLOOR } from '../../data/strategic-action-constants';
 import type { GameState } from '../../types/gameState';
 
 const TICKS = 60;
@@ -46,6 +46,10 @@ interface BoardEntrySample {
 
 interface BoardSample {
   agreement: boolean;
+  /** The floor-applied verdict — what the agent actually did in live mode. */
+  boardFamily: string;
+  /** Best entry's raw score, before the floor. */
+  topScore: number | undefined;
   boardFamilies: string[];
   entries: BoardEntrySample[];
   advanceProbabilities: number[];
@@ -77,6 +81,8 @@ function runAndCollect(): { samples: BoardSample[]; errors: number } {
         const top = (a.boardTop ?? []) as Array<Record<string, number | string | undefined>>;
         samples.push({
           agreement: a.agreement as boolean,
+          boardFamily: a.boardFamily as string,
+          topScore: top.length > 0 ? (top[0].score as number) : undefined,
           boardFamilies: top.map(e => e.family as string),
           entries: top.map(e => ({
             family: e.family as string,
@@ -103,6 +109,10 @@ describe(`shadow board liveness (${TICKS} ticks, seed ${SEED}, medium)`, () => {
   const { samples, errors } = runAndCollect();
 
   it('ships in shadow — the board must not decide anything yet', () => {
+    // Still shadow after THR-1301: the §4 criteria pass on both seeds, but the
+    // gate does not read composition *within* a family, and a live board writes
+    // zero trade routes over 150 ticks while reading green. See the mode
+    // constant's note for the measurement.
     expect(UNIFIED_DECISION_BOARD_MODE).toBe('shadow');
   });
 
@@ -207,6 +217,37 @@ describe(`shadow board liveness (${TICKS} ticks, seed ${SEED}, medium)`, () => {
     // encounters — whose rows carry no boost at all and would filter to nothing.
     expect(boosts.length).toBeGreaterThan(20);
     expect(new Set(boosts.map(b => b.toFixed(6))).size).toBeGreaterThan(1);
+  });
+
+  /**
+   * The reported verdict must be the *floor-applied* one — the pin on the defect
+   * that made the cutover gate vacuous (THR-1301).
+   *
+   * `boardFamily` and the balance event's `shadowWinnerFamily` are what the census
+   * counts shares from. Both used to be `board.winner?.family ?? 'idle'`, which
+   * calls a decision non-idle whenever the board is merely *non-empty* — while the
+   * live branch idles on empty **or** below-floor. With `BOARD_SCORE_FLOOR`
+   * mis-scaled to `0.08` (a `[0,1]`-normalised threshold applied to an EVT-scaled
+   * quantity whose median winner is 0.0006), 91.8% of seed-42 decisions idled and
+   * the census reported `idle 0.0% — PASS` on every criterion, on both seeds.
+   *
+   * So this asserts the two channels cannot drift apart again: a sample whose best
+   * entry is below the floor must report `'idle'`, and one at or above it must not.
+   * Deliberately not a threshold on the idle *rate* — that is the census's
+   * measurement and pinning it here would fail on any legitimate retune.
+   */
+  it('reports the floor-applied verdict, not merely a non-empty board', () => {
+    const scored = samples.filter(s => s.topScore !== undefined);
+    // Vacuity trap, twice over: an empty sample set passes both implications, and
+    // so does a set in which no sample sits on either side of the floor.
+    expect(scored.length).toBeGreaterThan(50);
+
+    const belowFloor = scored.filter(s => (s.topScore as number) < BOARD_SCORE_FLOOR);
+    const atOrAbove = scored.filter(s => (s.topScore as number) >= BOARD_SCORE_FLOOR);
+    expect(atOrAbove.length).toBeGreaterThan(0);
+
+    expect(belowFloor.every(s => s.boardFamily === 'idle')).toBe(true);
+    expect(atOrAbove.every(s => s.boardFamily !== 'idle')).toBe(true);
   });
 
   it('the ambition boost is carried only on undertaking rows', () => {

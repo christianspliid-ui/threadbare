@@ -667,10 +667,10 @@ exit
 - **Intent:** Before one ranking replaces the three winner-take contests an agent’s decision passes through today, what that ranking *would* have chosen is on the record — so the swap is judged against a measured decision mix rather than against confidence.
 - **Producer → Consumer:** Encounters & Dilemmas → Strategic Projects & Control
 - **Module:** `src/engine/decisionBoard.ts`
-- **Production hits:** 11 total — 1 write, 1 read, 9 unclassified
+- **Production hits:** 10 total — 1 write, 1 read, 8 unclassified
 - **Write sites:** `src/engine/phaseAgentDecision.ts`
 - **Read sites:** `src/engine/balanceTelemetry.ts`
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/data/strategic-action-constants.ts`, `src/engine/agentSelection.ts`, `src/engine/decisionBoard.ts`, `src/engine/decisionBoardModeGuard.ts` +4 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/data/strategic-action-constants.ts`, `src/engine/agentSelection.ts`, `src/engine/decisionBoard.ts`, `src/engine/encounterScoring.ts` +3 more
 - **Verdict:** Verified 2026-08-29: THR-1302 re-ran `npm run census:undertakings` (seeds 42 + 99 × 150 ticks, medium) with the ambition-centrality term in place: the cutover gate now PASSES on BOTH seeds — 42 at undertaking 17.4% / encounter 63.8% / idle 18.8%, 99 at 13.7% / 75.2% / 11.1%, both inside [0.10, 0.35]. The mode nonetheless stays `shadow`; flipping it is THR-1301's call, not this row's. Supersedes the 2026-08-27 evidence (42 at 11.9% PASS, 99 at 4.1% FAIL), which had already gone stale under work that landed between the two runs — the census was green on both seeds BEFORE THR-1302 touched anything, so nothing here should be read as this term having closed that gap. The payload gained `ambitionBoost`: `desireMultiplier` varied throughout the shadow period while one of its two factors was a frozen constant, and no channel carried the factor, so the telemetry could not have shown it. decisionBoardLiveness.test.ts now pins that input directly (65/959 seed-42 and 110/1713 seed-99 undertaking rows score 0, p25 != p50 on both) rather than only the product it disappears into.
 
 ### `destroy-candidates-gated-on-motive` — 🟢 LIVE

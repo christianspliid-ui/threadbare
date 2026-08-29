@@ -98,7 +98,16 @@ export const STRATEGIC_CONTROL_RECLAIM_COOLDOWN_TICKS = 30;
 /** Score floor — strategic candidates below this are rejected */
 export const STRATEGIC_SCORE_FLOOR = 0.08;
 
-/** Normalization multiplier to bring strategic scores into encounter score range */
+/**
+ * Normalization multiplier bringing strategic scores into encounter score range.
+ *
+ * This is the entire commensurability story between two incommensurate scorers:
+ * it clamps the strategic score into `[0.08, 0.851]` so contest B can compare it
+ * against an encounter score that is unbounded above. The board (§4) replaces
+ * that comparison with one currency, and this constant is deleted in the same
+ * commit that sets `UNIFIED_DECISION_BOARD_MODE` to `'live'` — not before, since
+ * contest B is what still selects undertakings under `'shadow'`.
+ */
 export const STRATEGIC_ENCOUNTER_SCORE_BRIDGE = 0.85;
 
 // ─── Sacred routes (THR-1184) ───────────────────────────────────────
@@ -278,11 +287,11 @@ export const UNDERTAKING_SABOTAGE_FLAG = 'undertakingSabotaged';
 
 // ─── The one prioritization board (THR-1292 §4) ─────────────────────
 //
-// Today an agent's decision is three sequential winner-take contests between
-// scorers that are incommensurate by construction: the encounter score is
-// unbounded above while the strategic score is clamped to [0.08, 0.851] by
-// `STRATEGIC_ENCOUNTER_SCORE_BRIDGE`. One clamp and one constant are the entire
-// commensurability story, and the comparison itself has never been traced.
+// An agent's decision *was* three sequential winner-take contests between
+// scorers incommensurate by construction: the encounter score unbounded above,
+// the strategic score clamped into [0.08, 0.851] by a single bridge constant.
+// One clamp and one constant were the entire commensurability story, and the
+// comparison itself was never traced.
 //
 // The board replaces that with a single ranking in one currency — **expected
 // value per tick (EVT)** — which the encounter scorer already computes as
@@ -297,25 +306,71 @@ export const UNDERTAKING_SABOTAGE_FLAG = 'undertakingSabotaged';
 export type UnifiedDecisionBoardMode = 'off' | 'shadow' | 'live';
 
 /**
- * Board participation mode.
+ * Board participation mode. Still `'shadow'` — the live branch is implemented
+ * (`phaseAgentDecision.ts`) and inert, and the flip is one line plus deleting
+ * contest B and `STRATEGIC_ENCOUNTER_SCORE_BRIDGE` in the same commit.
  *
- * Ships `'shadow'` by the plan's binding obligation: the board is a redesign of
- * how agents choose, and a redesign that swaps in unmeasured is how a decision
- * mix silently collapses. In shadow the legacy contests still decide and the
- * board's ranking is recorded on two channels (the `decision_board_comparison`
- * trace and the balance-telemetry shadow fields) so the cutover gate below can be
- * evaluated from a log rather than asserted.
+ * It ships `'shadow'` by the plan's binding obligation: a redesign of how agents
+ * choose that swaps in unmeasured is how a decision mix silently collapses. The
+ * shadow period records the board's ranking on two channels (the
+ * `decision_board_comparison` trace and the balance-telemetry shadow fields) so
+ * the cutover gate below is *evaluated from a log rather than asserted*.
+ *
+ * **The gate has now been run three times, and the third run is why this is still
+ * `'shadow'`.** THR-1292 slice 6 measured it and it failed on seed 99 (4.1%
+ * undertaking share against a `[0.10, 0.35]` floor); the flip did not land, and
+ * that ticket closed on the gate-fail evidence rather than on a bridge constant
+ * picked to make the number pass. THR-1297 slice 5 and THR-1302 unpinned the two
+ * inputs behind that failure, and THR-1301 re-ran it green on both seeds —
+ * seed 42 undertaking 33.4% / encounter 33.8% / idle 32.8%, seed 99 21.1% /
+ * 43.6% / 35.3%.
+ *
+ * Green, and still not enough. THR-1301 also measured what the gate does *not*
+ * read: composition **within** a family. Under a live board, `trades_with` edges
+ * written over 150 ticks on seed 42 fall from non-zero to **zero** —
+ * `strategic_establish_trade_route` takes zero board wins and is never generated
+ * — because board score is `EVT × desire × temperament` and carries no variety
+ * term, while the legacy scorer's `STRATEGIC_VARIETY_PENALTY_WEIGHT` fed contest
+ * B directly. Three of the repo's world-simulation tests fail on that, and every
+ * §4 criterion reads green through it. The flip waits for a diversity term in the
+ * board's currency, which is its own slice with its own balance envelope.
  */
 export const UNIFIED_DECISION_BOARD_MODE: UnifiedDecisionBoardMode = 'shadow';
 
 /**
  * Live-mode idle threshold: a board whose best entry scores below this is empty.
  *
- * Deliberately equal to `STRATEGIC_SCORE_FLOOR` — in live mode the board is the
- * only floor there is, so the two cannot be allowed to drift apart and disagree
- * about what "nothing worth doing" means. Unused while the mode is `'shadow'`.
+ * **This is an epsilon, not a tuning knob, and the difference is the whole note.**
+ * Board score is expected value per tick. An option with *any* positive EVT is by
+ * that currency's own definition worth more than standing still, so the honest
+ * threshold is zero and this constant is only the float-noise guard around it.
+ * Raising it would not be "tuning idleness" — it would be asserting that some
+ * positive-value options are worth less than nothing, which the currency cannot
+ * express.
+ *
+ * It shipped as `0.08`, "deliberately equal to `STRATEGIC_SCORE_FLOOR`", and that
+ * was a **units error** — the same class the plan itself rejected when it refused
+ * an 8× bridge scale as "not a units conversion". `STRATEGIC_SCORE_FLOOR` gates a
+ * weighted score normalised to `[0, 1]`; board score is `EVT × desire ×
+ * temperament`, whose median winner on seed 42 / 150 ticks is **0.0006**. The two
+ * numbers were never in the same currency, so copying one across was arithmetic on
+ * unlike units, and 0.08 landed at roughly the 92nd percentile of the quantity it
+ * was gating.
+ *
+ * Measured at cutover (THR-1301), seed 42, 150 ticks, medium — idle share of all
+ * decisions, against a legacy baseline of **28.7%**:
+ *
+ * | floor | idle | undertakings started | checkpoints |
+ * |---|---|---|---|
+ * | `0.08`  | **91.8%** | 30  | 73  |
+ * | `0.001` | 64.2%     | 503 | 619 |
+ * | `1e-6`  | **30.3%** | 586 | 618 |
+ *
+ * The 0.08 row is what a green census looked like while 92% of the world stood
+ * still — see the `boardFamily` note in `phaseAgentDecision.ts` for why the gate
+ * could not see it.
  */
-export const BOARD_SCORE_FLOOR = 0.08;
+export const BOARD_SCORE_FLOOR = 1e-6;
 
 /**
  * Verb → payoff value, the v1 bridge until doc 2's per-kind rows land.
@@ -339,6 +394,32 @@ export const STRATEGIC_VERB_IMPACT_DEFAULT = 0.3;
 
 /** Verb-impact → `payoffValue` bridge scale. Doc 2's kind rows refine per kind. */
 export const UNDERTAKING_PAYOFF_SCALE = 1.0;
+
+/**
+ * Board variety: how much of an undertaking's board score a fully-repeated
+ * template gives up (THR-1349).
+ *
+ * The board's score is `EVT × desire × temperament` and carried no variety term
+ * at all, while the legacy contest-B scorer subtracted
+ * `STRATEGIC_VARIETY_PENALTY_WEIGHT × varietyPenalty` from a `[0, 1]` normalised
+ * score. Plan §4 asserted that penalty would "survive as a candidate-generation
+ * feature feeding EVT inputs"; it does not — `varietyPenalty` lands in
+ * `ScoredStrategicCandidate.finalScore`, which the board never reads.
+ *
+ * **It enters multiplicatively, not by subtraction, and that is not a stylistic
+ * choice.** `varietyPenalty` is a `[0, 1]` quantity and board score is an
+ * EVT-scaled one whose median strategic entry is `1.9e-3`; subtracting `0.18 ×
+ * penalty` from that would not discount a repeat, it would annihilate every
+ * undertaking on the board. Copying a constant across two currencies is precisely
+ * the units error `BOARD_SCORE_FLOOR` shipped and this file has now documented
+ * twice, so the term is expressed as the *fraction of its score* a maximally
+ * repeated candidate forfeits.
+ *
+ * At `0.18` a candidate at full penalty keeps 82% of its score — deliberately the
+ * same magnitude the legacy scorer applied, so the cutover moves the mechanism
+ * rather than also retuning it.
+ */
+export const BOARD_VARIETY_PENALTY_WEIGHT = 0.18;
 
 /** Board mix: weight of "the agent's active ambition names this kind/verb". */
 export const UNDERTAKING_TEMPERAMENT_AMBITION_WEIGHT = 0.3;
@@ -380,6 +461,45 @@ export const BOARD_ENCOUNTER_SHARE_FLOOR = 0.15;
 
 /** Idle share of spotlight decisions must stay at or below this ceiling. */
 export const BOARD_IDLE_SHARE_CEILING = 0.40;
+
+/**
+ * Composition floor: how many *distinct* undertaking templates a census run must
+ * actually start (THR-1349).
+ *
+ * The three share gates above read the mix *between* families and say nothing
+ * about composition *within* one: a board that starts a single template ten
+ * thousand times satisfies every one of them. This reads inside the undertaking
+ * family and is the anti-collapse floor.
+ *
+ * ## What it is sized against, and what it does *not* catch
+ *
+ * Measured, medium, 150 ticks, distinct templates started:
+ *
+ * | arm | seed 42 | seed 99 |
+ * | -- | -- | -- |
+ * | `'shadow'` (shipped) | 56 | 45 |
+ * | `'live'`, no variety term | 40 | 34 |
+ * | `'live'`, with the variety term | 41 | 33 |
+ *
+ * `30` sits under every arm measured, with the tightest margin against live seed
+ * 99 at 33. It is therefore a real tripwire for a *further* collapse and not a
+ * decoration — but it is stated plainly here that **it does not, by itself, catch
+ * the failure THR-1349 was filed on.** A live board still starts 33–41 distinct
+ * templates while writing zero trade routes; the loss is concentrated in *which*
+ * templates starve, not in how many.
+ *
+ * Setting it high enough to separate the shadow arm from the live one would put it
+ * at ~41–44, one point under seed 99's healthy 45, and it would then be measuring
+ * *throughput* rather than variety — the live arm starts 228–538 undertakings
+ * against shadow's 673–953, and distinct-template count tracks sample size. A gate
+ * that fails for a reason other than the one it names is the vacuity this file has
+ * already shipped twice (see `BOARD_SCORE_FLOOR`), so it is deliberately not that.
+ *
+ * The trade-route count that motivated the ticket is *reported* by the census
+ * rather than gated, because the healthy baseline is itself 2 and 0 on the two
+ * seeds — "non-zero" was one seed's luck, not a floor anything can hold.
+ */
+export const CENSUS_DISTINCT_TEMPLATE_FLOOR = 30;
 
 /** Control-deletion gate (§6): undertaking share must have *grown* past this floor. */
 export const DECISION_MIX_FLOOR_UNDERTAKING_SHARE = 0.12;
