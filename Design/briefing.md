@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-08-29 20:55 local (18:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-08-29 21:57 local (19:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -14,11 +14,10 @@ Then the brief: [the camp seven](https://github.com/christianspliid-ui/threadbar
 
 `shrine_offering` is encounter #1 of [your integrated slice checkpoint](https://linear.app/threadbare/issue/THR-1220) — the sitting where you play all five end to end. That checkpoint cannot invite you while these are below standard, so this one word is also what unlocks your own next review.
 
-## Also waiting (11)
+## Also waiting (10)
 
-- **NEW · [Round 5 — the last cleanup round](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-08-28-context-cleanup-rounds-runbook.md)** · rounds 1–4 all finished, the newest ([round 4](https://linear.app/threadbare/issue/THR-1361/context-cleanup-round-4-the-technical-architecture-layer-audit-sweep)) an hour ago. Round 5 is the **writing layer** — the prose skills, encounter-factory prompts, Tonal Bible, archetype pages. Its plan is written and waiting; the rounds start on your word, so no lane can begin it. Say ***"run context-cleanup round 5"***. Nothing in the game changes; when it lands the program is finished.
-- **[Design hours — the shelf is dry](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** · three items Ready for Dev, **all three clean-ups**, no new product work arriving. Sit [the card grammar](https://linear.app/threadbare/issue/THR-1002) or [traits wave 2](https://linear.app/threadbare/issue/THR-790), or say *"park it"* — four plan-doc sessions are behind them. Detail: [user-actions §2](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md).
-- **[THR-1314](https://linear.app/threadbare/issue/THR-1314/ul-proposal-work-holding-kind-row-christening-failure-name-register)** · two different things about to be called *holding*; the default (rename the new ownership word) is taken unless you say otherwise.
+- **[Design hours — the shelf is dry](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** · **two** items Ready for Dev now, both clean-ups, still no new product work arriving. Sit [the card grammar](https://linear.app/threadbare/issue/THR-1002) or [traits wave 2](https://linear.app/threadbare/issue/THR-790), or say *"park it"* — four plan-doc sessions are behind them. Detail: [user-actions §2](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md).
+- **[THR-1314](https://linear.app/threadbare/issue/THR-1314/ul-proposal-work-holding-kind-row-christening-failure-name-register)** · resolved and shipping: what a character owns now reads **freehold** to the player; *holding* stays the cohesion word. Veto open, four lines to reverse.
 - **[Physical Conflict map](https://linear.app/threadbare/issue/THR-1258/wayfinder-map-physical-conflict)** · nine questions open, all yours, every research question finished. Say *"work the fight map"*.
 - **[Twenty spells](https://linear.app/threadbare/issue/THR-1232) / [thirty items](https://linear.app/threadbare/issue/THR-1236)** · two sketches to build for you to react to. Say *"work the powers map"* or *"work the item map"*.
 - **[THR-876](https://linear.app/threadbare/issue/THR-876/regenerate-the-5-quarantined-meet-the-first-scene-assets-doctrine)** · the real question is whether image spends should be gated on you at all, or decided by a lane and reported after.
@@ -30,12 +29,14 @@ Then the brief: [the camp seven](https://github.com/christianspliid-ui/threadbar
 
 ## Queue
 
-**Ready for Dev: 3 — starved of product work, not of items.** All three are Low-priority clean-up: [a test de-flake](https://linear.app/threadbare/issue/THR-1328) and two glossary proposals ([THR-1314](https://linear.app/threadbare/issue/THR-1314), [THR-1316](https://linear.app/threadbare/issue/THR-1316)). The count fell by one this hour only because a clean-up was picked up, not because product work arrived — which is the evidence behind also-waiting item 2.
+**Round 5 started on your word — the cleanup program's last round is running now.** You said *"go"* in chat; [the round](https://linear.app/threadbare/issue/THR-1369/context-cleanup-round-5-the-content-and-narrative-layer-audit-sweep) opened at 19:44Z and is working its sweep tickets serially. Two are already in flight — [the skills sweep](https://linear.app/threadbare/issue/THR-1370) (PR [#1748](https://github.com/christianspliid-ui/threadbare/pull/1748) open) and [the brief-generator fix](https://linear.app/threadbare/issue/THR-1371). Nothing in the game changes; nothing further is needed from you.
 
-In Dev: 5 — two live and building ([THR-1368](https://linear.app/threadbare/issue/THR-1368) retired-Reach residue, [THR-1330](https://linear.app/threadbare/issue/THR-1330) hook chips), three deliberately `Parked` and unassigned ([THR-1130](https://linear.app/threadbare/issue/THR-1130) 26h, [THR-1133](https://linear.app/threadbare/issue/THR-1133) 24h, [THR-1168](https://linear.app/threadbare/issue/THR-1168) 26h). All three are parked on questions in your ask list, not on anything an agent can decide. Nothing stale, no orphaned claims.
+**Ready for Dev: 2 — still starved of product work, not of items.** Both are Low-priority clean-up: [a test de-flake](https://linear.app/threadbare/issue/THR-1328) and [a glossary proposal](https://linear.app/threadbare/issue/THR-1316). The count fell by one only because [THR-1314](https://linear.app/threadbare/issue/THR-1314) was picked up and shipped — again a clean-up leaving, not product work arriving. That is the evidence behind also-waiting item 1.
+
+In Dev: 7 — four live (the three round-5 tickets plus [THR-1314](https://linear.app/threadbare/issue/THR-1314)), three deliberately `Parked` and unassigned ([THR-1130](https://linear.app/threadbare/issue/THR-1130) 27h, [THR-1133](https://linear.app/threadbare/issue/THR-1133) 25h, [THR-1168](https://linear.app/threadbare/issue/THR-1168) 27h). All three are parked on questions in your ask list, not on anything an agent can decide. Nothing stale, no orphaned claims.
 
 ## Health
 
-- **Last hour's three-PR backlog cleared itself.** [#1735](https://github.com/christianspliid-ui/threadbare/pull/1735) and [#1743](https://github.com/christianspliid-ui/threadbare/pull/1743) merged; [#1731](https://github.com/christianspliid-ui/threadbare/pull/1731) is no longer failing. Both open PRs — #1731 and [#1746](https://github.com/christianspliid-ui/threadbare/pull/1746) — are armed and will merge on green. No session action needed.
+- **One open PR is failing its required check and will not merge on its own** — [#1747](https://github.com/christianspliid-ui/threadbare/pull/1747) (the freehold glossary change), armed for 33 minutes. Auto-merge stays armed and never fires, so it reads as shipped everywhere except the check rollup; a session must read the failing check and push a fix. Executor work, nothing for you. The other open PR, [#1748](https://github.com/christianspliid-ui/threadbare/pull/1748), is one minute old and still running its checks.
 - **Two overnight lane gaps recorded, both declined.** 11.4h and 10.6h of scheduled-lane silence on 22–23 and 23–24 August, both overnight-shaped. Declined per your 2026-08-08 ruling that overnight quiet is normal; noted only so the probe's finding is visible rather than swallowed.
 - Deploy, CI checks, scheduled background jobs, task heartbeats and the worktree reaper: all green. The live site is serving the current commit.
