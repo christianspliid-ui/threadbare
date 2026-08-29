@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-29 19:56 local (17:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-29 20:55 local (18:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -17,7 +17,7 @@
 
 ### 2. Design hours — the shelf has actually run dry now
 
-**What changed today:** for twelve runs the orchestrator reported that it *could not* stage new design work, and that was harmless because ready work still existed. As of this morning it does not. Four items sit Ready for Dev and **all four** are clean-up — one test de-flake, one retired-Reach residue sweep, two glossary proposals — with the last player-facing item having shipped at 17:23. **New product work has stopped arriving**, and the lane that would fix that is blocked. Eight hours later the count has not moved off four, and every item that entered the shelf in between was another clean-up.
+**What changed today:** for twelve runs the orchestrator reported that it *could not* stage new design work, and that was harmless because ready work still existed. As of this morning it does not. Three items sit Ready for Dev and **all three** are clean-up — one test de-flake and two glossary proposals — with the last player-facing item having shipped at 17:23. **New product work has stopped arriving**, and the lane that would fix that is blocked. The count fell from four only because the retired-Reach residue sweep was picked up, not because anything new arrived; every item that entered the shelf today was another clean-up.
 
 Roughly forty-seven items sit in Todo and **every one needs a plan doc before an executor can touch it**. The executor writes up problems it finds while building, which is what has been filling the shelf; that source produces engine fixes and clean-ups, never new designed features.
 
@@ -25,7 +25,15 @@ Roughly forty-seven items sit in Todo and **every one needs a plan doc before an
 
 **Unblocked and waiting:** the three remaining carve-up docs — [the reactive loop](https://linear.app/threadbare/issue/THR-1298) and [the calling & the surfaces](https://linear.app/threadbare/issue/THR-1299) in parallel, [the undertaking factory](https://linear.app/threadbare/issue/THR-1300) last. Then [your one-button snapshot](https://linear.app/threadbare/issue/THR-1134) (High, your own 16 August request, untouched 12 days); [a beast that can be a real character in a scene](https://linear.app/threadbare/issue/THR-1274) (only people can be cast today, capping four hunt encounters); and [nations and named areas](https://linear.app/threadbare/issue/THR-1155), the last wave-1 design.
 
-### 3. One word players see, in two places — [THR-1314](https://linear.app/threadbare/issue/THR-1314/ul-proposal-work-holding-kind-row-christening-failure-name-register)
+### 3. The last cleanup round starts on your word — [the rounds runbook](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-08-28-context-cleanup-rounds-runbook.md)
+
+You have been having agents clean up the material they read *before* they work — the skills, reference pages and vault notes — so they stop learning the game from documents nobody has updated in months. It has run in layers, and **four of five are done**: general, game design, UI/UX, and [technical architecture](https://linear.app/threadbare/issue/THR-1361/context-cleanup-round-4-the-technical-architecture-layer-audit-sweep) (closed 17:48).
+
+**Round 5 is the writing layer** — the prose skills, the encounter-factory prompts, the Tonal Bible, the content-strategy and archetype pages. It is the layer closest to the part of the game you actually read, and the runbook already names every file it covers and what round 4 handed it.
+
+**Say *"run context-cleanup round 5"* in chat when you want it to go.** The runbook specifies the rounds start on your word rather than on a queue pickup, which is why no lane can start this one. Nothing is broken and nothing waits on a fix — the program simply ran out of rounds it is allowed to begin. When it lands, the whole cleanup is finished and staying-fresh becomes an automatic weekly check rather than a project.
+
+### 4. One word players see, in two places — [THR-1314](https://linear.app/threadbare/issue/THR-1314/ul-proposal-work-holding-kind-row-christening-failure-name-register)
 
 Two different things are about to be called the same word. A company under strain currently reads as **holding** — one of four states a group's cohesion shows the player (*bound · holding · frayed · breaking*), quoted in the rulebook. The ownership work that just shipped wants **a holding** to mean a thing somebody owns: a mine, a road, a hall, seizable and inheritable.
 
@@ -33,7 +41,7 @@ Three ways to go: **let both stand** (different grammar, never side by side — 
 
 **Unless you say otherwise the third is taken and the reason recorded** — reversible later at low cost, which is why it is the default. The ticket is queued and will not sit waiting for an answer.
 
-### 4. One design map still has questions — and they are all yours
+### 5. One design map still has questions — and they are all yours
 
 **[Physical Conflict](https://linear.app/threadbare/issue/THR-1258/wayfinder-map-physical-conflict)** — **nine** open to you, and **every research question that map ever carried is now finished**, so it is entirely waiting on you. Two are the keystone, because settling them releases three of the rest: [how a duel ends](https://linear.app/threadbare/issue/THR-1264/agent-mode-fight-loop-opposed-band-pairs) and [what a wound costs](https://linear.app/threadbare/issue/THR-1263/npc-mode-fight-loop-the-stat-block-and-test-skeleton). Both are things to look at and react to, not conversations.
 
@@ -41,7 +49,7 @@ Five more are open now and independent: [when a fight starts on its own](https:/
 
 Nothing is stalled — the wayfinder machinery is waiting at the handover. Say *"work the fight map"* in a chat session and it takes them in keystone order.
 
-### 5. Two sketches ready to be built for you to react to
+### 6. Two sketches ready to be built for you to react to
 
 The [powers](https://linear.app/threadbare/issue/THR-1226) and [items](https://linear.app/threadbare/issue/THR-1227) maps have finished everything else — these two sketches are the single open question left on each. A session builds the sketch, you look, and your reaction is the design decision.
 
@@ -50,13 +58,13 @@ The [powers](https://linear.app/threadbare/issue/THR-1226) and [items](https://l
 
 Say **"work the powers map"** or **"work the item map"** in a chat session.
 
-### 6. Image credits — should the spend be gated on you at all?
+### 7. Image credits — should the spend be gated on you at all?
 
 **[THR-876](https://linear.app/threadbare/issue/THR-876/regenerate-the-5-quarantined-meet-the-first-scene-assets-doctrine) — five Meet-The-First scene images that break the art rule.** Two have words painted in, two show individual faces (reserved for portraits), one has old choice buttons as scenery. All five are switched off and substitutes cover the slots, so nothing is broken. Sizes, rules and acceptance are settled. It waits on you for one reason: **it spends image credits.**
 
 **The real question.** The opening beat's three missing plates ([THR-1170](https://linear.app/threadbare/issue/THR-1170)) were listed here for the same reason and a lane made them anyway; a later lane *overruled* a ticket outright ([THR-831](https://linear.app/threadbare/issue/THR-831)). Both judgements look right. So: **do you want image spends gated on you, or decided by the lane and reported after?** Your answer settles these five and every batch after. Until then the standing rule holds: *remap where a match is honest, come to you only when it is not.*
 
-### 7. What is a run *about*? — [THR-1198](https://linear.app/threadbare/issue/THR-1198/the-48-authored-mandate-strings-are-wired-but-unreachable-no-live-game)
+### 8. What is a run *about*? — [THR-1198](https://linear.app/threadbare/issue/THR-1198/the-48-authored-mandate-strings-are-wired-but-unreachable-no-live-game)
 
 Forty-eight authored lines narrate a campaign's milestones. They are wired and working, but written for **twelve named campaigns**, while every live game derives its spine from **what your god remembers**. Correct, connected, unreachable; the game falls back to generated text and nothing is broken.
 
@@ -64,25 +72,25 @@ Forty-eight authored lines narrate a campaign's milestones. They are wired and w
 
 Deliberately left with you: what the game means, not how to wire it. No urgency — [the wiring shipped](https://linear.app/threadbare/issue/THR-1197) and nothing downstream waits.
 
-### 8. One attended dev-server session — [THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server)
+### 9. One attended dev-server session — [THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server)
 
 One `npm run dev` and a browser at 1920×1080: shipped surfaces and the screenshots they owe. Each is a shipped UI change carrying test-level proof but no picture, because a scheduled run is refused a dev server and structurally cannot capture one. Nine passes now, nineteen captures. Newest include faction heraldry (does a subordinate charge at 0.42 scale read as *deliberately lesser* or as a broken asset?), the tooltip focus ring, and the aftermath screen as composed.
 
 It grows as more UI ships behind the same wall. Replaces four tickets (THR-1109, THR-1125, THR-1126, THR-1127), consolidated 2026-08-16 — a merge, not a prune. Get through part of it, say which, and the remainder is re-expanded rather than closed whole. Bundles into whichever sitting you approve a brief in.
 
-### 9. Should committing a nudge be followed by a held breath? — [THR-1168](https://linear.app/threadbare/issue/THR-1168/two-authored-encounter-audio-moments-have-no-live-caller-wire-or)
+### 10. Should committing a nudge be followed by a held breath? — [THR-1168](https://linear.app/threadbare/issue/THR-1168/two-authored-encounter-audio-moments-have-no-live-caller-wire-or)
 
 A finished, unused piece of sound design: on committing a nudge, roughly 1.6 seconds where a tone draws tight, holds, then releases — and only then does the outcome land. Nothing plays it today; the visual it accompanied was deleted, so what remains is the pacing alone.
 
 **Does committing feel better with that beat, or should the outcome land immediately?** Pure feel; no measurement settles it. Two lanes recommend **no** — unskippable on every commit turns tense into waiting, and the timings stay recoverable from history. **Unless you say otherwise an agent will retire it and report after**, per your 12 August rule.
 
-### 10. Chart the hub map
+### 11. Chart the hub map
 
 Two design maps closed 2026-08-24 ([typed game-state](https://linear.app/threadbare/issue/THR-1157), [vertical slice](https://linear.app/threadbare/issue/THR-902)) and Proactive Agent Actions closed 2026-08-26. The hub is still unchartered, and the slice map's charter names it as successor: **the player reaching factions, war, economy and divine actions from inside the encounter interface.**
 
 **Advice: wait one cycle.** Your [integrated slice checkpoint](https://linear.app/threadbare/issue/THR-1220) is this map's entry condition, so chartering from a validated base is the better order. **Only you can charter a map** — say *"chart the hub map"* whenever you want it.
 
-### 11. Parked option, no urgency: a Tenacious-style trait
+### 12. Parked option, no urgency: a Tenacious-style trait
 
 An open design option with no ticket behind it. Explicitly not urgent — the safe default is that it stays parked, and nothing downstream waits on it. Listed only so it is not silently forgotten; say the word and it gets a ticket and a design pass.
 
