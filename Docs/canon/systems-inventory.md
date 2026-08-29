@@ -265,7 +265,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `detail` (2) | `detailPageGenerator.ts`, `detailPageResolvers.ts` | `THR-577` |
 | `digest` (1) | `digestBuffer.ts` | — |
 | `disposition` (1) | `disposition.ts` | — |
-| `distance` (1) | `distanceMatrix.ts` | `TB-088` |
+| `distance` (1) | `distanceMatrix.ts` | `THR-1183`, `THR-1346` |
 | `divine` (1) | `divineAttention.ts` | — |
 | `domain` (1) | `domainCapability.ts` | — |
 | `doom` (2) | `doomClock.ts`, `doomIdentityMilestones.ts` | — |
