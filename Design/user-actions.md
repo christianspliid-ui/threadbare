@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-29 12:55 local (10:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-29 13:55 local (11:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -19,7 +19,7 @@
 
 Roughly twenty items sit in Todo and **every one needs a plan doc before an executor can touch it**. The shelf is full, so this is structural rather than urgent. The executor writes up problems it finds while building, which is what fills the shelf; that source produces engine fixes, never new designed features.
 
-**The block has two names on it** *(orchestrator lane, standing — twelve hours, ten days at the same two)*: **[unify the card grammar](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** (your 6 August note, untouched 10 days) and **[traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)** (assigned to you, untouched 14 days). That lane holds one design slot and will not walk either backwards out of the column on its own. **Sit one, or say *"park it"*** — four plan-doc sessions are unblocked behind them.
+**The block has two names on it** *(orchestrator lane, standing — thirteen hours, ten days at the same two)*: **[unify the card grammar](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card)** (your 6 August note, untouched 10 days) and **[traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)** (assigned to you, untouched 14 days). That lane holds one design slot and will not walk either backwards out of the column on its own. **Sit one, or say *"park it"*** — four plan-doc sessions are unblocked behind them.
 
 **Unblocked and waiting:** the three remaining carve-up docs — [the reactive loop](https://linear.app/threadbare/issue/THR-1298) and [the calling & the surfaces](https://linear.app/threadbare/issue/THR-1299) in parallel, [the undertaking factory](https://linear.app/threadbare/issue/THR-1300) last. Then [your one-button snapshot](https://linear.app/threadbare/issue/THR-1134) (High, your own 16 August request, untouched 12 days); [a beast that can be a real character in a scene](https://linear.app/threadbare/issue/THR-1274) (only people can be cast today, capping four hunt encounters); and [nations and named areas](https://linear.app/threadbare/issue/THR-1155), the last wave-1 design.
 
