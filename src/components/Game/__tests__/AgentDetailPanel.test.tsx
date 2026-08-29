@@ -25,7 +25,7 @@ const mockDetail: AgentDetail = {
     tradition_novelty: 0.0, humility_pride: 0.4, mercy_ruthlessness: -0.3, asceticism_extravagance: 0.1,
   },
   domainCapabilities: {
-    iron: 7, gold: 2, shadow: 5, veil: 3, heart: 4, eye: 1, stone: 3, star: 2, flesh: 1,
+    iron: 7, gold: 2, shadow: 5, veil: 3, heart: 4, eye: 1, stone: 3, star: 2,
   },
   topValues: [
     { pair: 'loyalty_ambition', value: 0.8, label: 'Deeply Ambitious' },

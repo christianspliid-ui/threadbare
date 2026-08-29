@@ -33,7 +33,6 @@ export const DOMAIN_COLORS: Record<string, string> = {
   eye: '#2E86AB',
   stone: '#8B6F47',
   star: '#FFD700',
-  flesh: '#D4826A',
 };
 
 /** Default agent dot color when domain is unknown */
