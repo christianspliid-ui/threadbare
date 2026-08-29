@@ -14,17 +14,16 @@ status: live
 
 Load this page once at session start when working on the hex map renderer, signifiers, agents-on-map, fog-of-war, zoom behavior, coastlines, region labels, or any Three.js code in `src/components/HexMapV2/`. Every link below is a pointer; the linked target is authoritative. When a pointer disagrees with the target, the target wins and the pointer needs an update — open a `drift-scan`-labeled Linear issue.
 
-**Three skills divide the hex-map work.** Pick one before you write — running the wrong skill fights the right one.
+**Two skills divide the hex-map work.** Pick one before you write — running the wrong skill fights the right one. *(A third, `hexmap-renderer`, was deleted 2026-08-29 (THR-1355): it was a strict subset of `hexmap-core` + `coastline-system.md` that loaded on the same triggers and described a "DO NOT retry" coastline approach as current.)*
 
 ## Authoring entrypoint — pick the skill that matches your task
 
 | If you are doing… | Load skill | Lives at |
 |---|---|---|
-| Architecture, coordinates, zoom, render order, color pipeline, performance — load BEFORE any HexMapV2 code work | [`hexmap-core`](../../.claude/skills/hexmap-core/SKILL.md) | `src/components/HexMapV2/` (root, scene setup, color pipeline) |
+| Architecture, coordinates, zoom, render order, color pipeline, performance, settled renderer decisions — load BEFORE any HexMapV2 code work | [`hexmap-core`](../../.claude/skills/hexmap-core/SKILL.md) | `src/components/HexMapV2/` (root, scene setup, color pipeline) |
 | Hands-on layer work — signifiers, agents, fog, labels, click handlers, trails. Load alongside `hexmap-core` | [`hexmap-layers`](../../.claude/skills/hexmap-layers/SKILL.md) | `src/components/HexMapV2/{signifiers,agents,overlay,interaction}/` |
-| Quick reference for settled renderer decisions and Phase 1–8 patterns | [`hexmap-renderer`](../../.claude/skills/hexmap-renderer/SKILL.md) | `src/components/HexMapV2/scene/`, camera modules |
 
-If your task crosses two skills (e.g. adding a new render layer), load `hexmap-core` first — architecture before features. The Blender → GLB pipeline is a separate skill ([`blender-to-hexmap`](../../.claude/skills/blender-to-hexmap/SKILL.md)) loaded only when authoring 3D model assets.
+If your task crosses both skills (e.g. adding a new render layer), load `hexmap-core` first — architecture before features. The Blender → GLB pipeline is a separate skill ([`blender-to-hexmap`](../../.claude/skills/blender-to-hexmap/SKILL.md)) loaded only when authoring 3D model assets.
 
 ## Current spec
 

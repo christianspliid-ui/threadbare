@@ -10,7 +10,7 @@ description: >
   "hex renderer", "d3-zoom", "hex coordinate", "hex grid", "coordinate
   system", "zoom tier", "render layer", "stencil", "InstancedMesh",
   "terrain palette".
-last_validated_against: 2026-07-30
+last_validated_against: 2026-08-29
 ---
 
 # HexMap Core — Architecture & Foundation
@@ -65,8 +65,10 @@ d3-zoom
 
 ### Props & Handle Contract
 
+**Illustrative core, not exhaustive** — the live `HexMapV2Props` at `HexMapV2.tsx` carries 25+ fields (armies, battles, anomalies, roadPaths, threadLines, companies, reachSignatureMarkers, rivalInfluenceMarkers, tradeRouteLines, onAgentClick/onArmyClick…). Read the interface in the source before extending it; this excerpt shows the shape only.
+
 ```typescript
-// Input: game state flows in via props
+// Input: game state flows in via props (core fields)
 interface HexMapV2Props {
   tiles: HexTile[];
   cols: number;
@@ -136,26 +138,39 @@ hexDistance(a: HexCoord, b: HexCoord): number  // Cube-based Manhattan distance
 
 ## 4. Render Layer System
 
-### 13 Named Layers (RenderLayers.ts)
+### 26 Named Layers (RenderLayers.ts)
 
 ```typescript
 RENDER_ORDER = {
-  STENCIL_WRITE:   -1,  // CoastlineMesh stencil buffer write pass
-  HEX_FILL:         0,  // Land & water InstancedMesh
-  COASTLINE:         1,  // Shallow band, lake shores
-  GRID:              2,  // Hex grid lines
-  ELEVATION_TICKS:   3,
-  RIVERS:            4,
-  ROADS:             5,
-  BORDERS:           6,  // Kingdom + barony political borders
-  SIGNIFIERS:        7,  // Terrain art sprites
-  LOCATIONS:         8,  // Settlement icons
-  AGENTS:            9,  // Portraits + dots + continental dots
-  EVENTS:           10,  // Event indicators
-  LABELS:           11,  // Region + location names (HTML overlay)
-  FOG:              12,  // Fog-of-war darkening
+  STENCIL_WRITE:  -1,   // CoastlineMesh stencil buffer write pass
+  HEX_FILL:        0,   // Land & water InstancedMesh
+  COASTLINE:       1,   // Shallow band, lake shores
+  GRID:            2,   // Hex grid lines
+  ELEVATION_TICKS: 3,
+  RIVERS:          4,
+  ROADS:           5,
+  GEO_BORDERS:     6,   // Geographic (region) borders
+  BORDERS:         7,   // Kingdom + barony political borders
+  HEX_PULSE:       7.5, // Ambient glow for tense/volatile hexes
+  SIGNIFIERS:      8,   // Terrain art sprites
+  ANOMALY_SHIMMER: 8.2, // Undiscovered-anomaly hint glow
+  ANOMALY_HALO:    8.5, // Discovered-anomaly ground ring
+  LOCATION_RARITY_SIGNIFIER: 8.7, // Rarity halo ring
+  REACH_SIGNATURE_SIGNIFIER: 8.8, // Ascendant reach-signature footprints
+  LOCATIONS:       9,   // Settlement icons
+  THREADS:         9.5, // Relationship thread lines
+  COMPANY_CLUSTER: 9.6, // Company ring + bond glyph (THR-74)
+  AGENTS:          10,  // Portraits + dots + continental dots
+  ARMIES:          10.5,
+  BATTLE_INDICATORS: 10.8,
+  ACTIVITY_ICONS:  10.9, // Reach micro-icons
+  EVENTS:          11,   // Event indicators
+  LABELS:          12,   // Region + location names (HTML overlay)
+  FOG:             13,   // Fog-of-war darkening
 }
 ```
+
+**`RenderLayers.ts` is the authority** — it also carries `LAYER_Z` (Z-positions, monotonic with render order; all meshes MUST use these instead of local Z constants). When this table and the file disagree, the file wins; re-sync the table in the same PR that adds a layer.
 
 ### Stencil Clipping Strategy
 
@@ -220,7 +235,7 @@ Key files: `src/engine/coastline.ts` (full pipeline), `src/types/coastline.ts` (
 
 ### Terrain Palette
 
-- `TERRAIN_PALETTE` in `palette/terrainPalette.ts`: 30 terrain types → hex color strings
+- `TERRAIN_PALETTE` in `palette/terrainPalette.ts`: 32 terrain types → hex color strings
 - Per-hex brightness noise: Seeded Simplex noise at `(col, row)` → ±5% multiplicative factor
 - Water colors extracted from reference image: deep ocean `#3A7AB8`, ocean `#5098D0`, shallows `#78BCE0`, lake `#4A8FC0`, river `#68B0D8`
 
@@ -267,8 +282,8 @@ All tunable values are named constants in their respective modules. Key constant
 | `ZOOM_TIER_THRESHOLDS` | `ZoomVisibilityMatrix.ts` | k values for each zoom tier |
 | `ZOOM_VISIBILITY_MATRIX` | `ZoomVisibilityMatrix.ts` | Layer visibility per tier |
 | `FADE_RANGE` | `ZoomVisibilityMatrix.ts` | Cross-fade zone width at tier boundaries |
-| `RENDER_ORDER` | `RenderLayers.ts` | Draw order for all 13 layers |
-| `TERRAIN_PALETTE` | `terrainPalette.ts` | 30 terrain type → color mappings |
+| `RENDER_ORDER` | `RenderLayers.ts` | Draw order for all 26 layers (+ `LAYER_Z` Z-positions) |
+| `TERRAIN_PALETTE` | `terrainPalette.ts` | 32 terrain type → color mappings |
 | `WATER_PALETTE` | `waterPalette.ts` | Water type → color + depth bands |
 | `COASTLINE_DEFAULTS` | `src/types/coastline.ts` | Contour generation parameters |
 | `DIAGNOSTICS_CONSTANTS` | `WebGLDiagnostics.ts` | Log buffer size, FPS sample window |

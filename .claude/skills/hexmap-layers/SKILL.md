@@ -10,7 +10,7 @@ description: >
   "visual verification", "hex click", "hex hover", "hex tooltip",
   "movement trail", "location icon", "border mesh", "river mesh",
   "road mesh", "label overlay".
-last_validated_against: 2026-07-30
+last_validated_against: 2026-08-29
 ---
 
 # HexMap Layers — Visual Layer Reference
@@ -100,7 +100,7 @@ Built from agent portrait images via CanvasTexture. `onerror` fallback renders a
 
 - `computeVisibilityFromSources()`: Computes LOS range from agent positions
 - Per-frame color override on InstancedMesh land/water colors
-- Enabled via `?fog` URL parameter (off by default)
+- **Fog is ON by default**; disabled via the `?nofog` URL parameter (there is no `?fog` parameter — `GameView.tsx` reads `has('nofog')` and passes `fogEnabled: !fogDisabled`). §6's dev-URL table has always been the correct half of this file.
 
 ---
 
