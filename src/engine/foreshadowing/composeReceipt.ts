@@ -107,6 +107,9 @@ export function composeReceiptForeshadowing(
   const pick = <T>(pool: readonly T[]): T => pool[Math.floor(rng() * pool.length)];
 
   const matter = locationName ? matterAtPlace(locationName) : pick(MATTER_NO_PLACE);
+  // Every matter phrase is lowercase by construction ("what stirs at Ashmarket"),
+  // so a clause that opens on the matter needs the capitalized form (THR-1360).
+  const Matter = matter.charAt(0).toUpperCase() + matter.slice(1);
 
   // Fixed pick order keeps the seed → prose mapping stable.
   const knowledgeTpl = pick(KNOWLEDGE_CLAUSES[tier]);
@@ -128,6 +131,7 @@ export function composeReceiptForeshadowing(
     object: objectForm,
     Object: ObjectForm,
     matter,
+    Matter,
     place: locationName,
   };
   const ctx = { number, slots };
