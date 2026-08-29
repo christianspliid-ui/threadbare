@@ -1282,6 +1282,37 @@ With the markers, `artifact.enchant` / `artifact.empower` charge 4 essence at di
 
 **Where to find the implementation:** `src/engine/effects/effectSuppression.ts` (the suppression pass), `getRevealRanges` / `isImmuneToAnyTag` / `normalizeTag` in `src/engine/effects/effectQueries.ts`, and the overlay reads in `src/engine/movementCost.ts` and `src/engine/encounterAwareness.ts`.
 
+### Capability 26: Settlement Genome NPC Roles — Naming Who Lives Here (THR-1347)
+
+**What it does:** the `npcRoles` you author in a sphere menu, a reach menu or a culture baseline — and the `capstoneNpcs` on an archetype — now become real `actor` nodes standing in the settlements that qualify for them.
+
+**Why you want it:** until THR-1347 they did not. Four of the settlement genome's five passes built an NPC roster, `NPC_BUDGET` sliced it, and `materializeGenome` stored it on the location where nobody read it. Every one of those tables was authored content that could not become a person. If you have ever added a role to `SPHERE_SUBLOCATION_MENU`, `REACH_SUBLOCATION_MENU`, `CULTURE_BASELINE_MAP` or `SETTLEMENT_ARCHETYPES` and never met that character in a world, this is why.
+
+**Where to author:**
+
+| Table | File | What it says |
+|---|---|---|
+| `INFRASTRUCTURE_NPCS` | `settlementGenome/infrastructure.ts` | Roles a tier owes regardless of character |
+| `CULTURE_BASELINE_MAP[...].npcRoles` | `settlementGenome/cultureBaseline.ts` | Roles a foundation's tradition puts here |
+| `SPHERE_SUBLOCATION_MENU[...].npcRoles` | `settlementGenome/sphereMenu.ts` | Roles a sphere's influence draws in |
+| `REACH_SUBLOCATION_MENU[...].npcRoles` | `settlementGenome/reachMenu.ts` | Roles the local factions' reaches imply |
+| `SETTLEMENT_ARCHETYPES[...].capstoneNpcs` | `settlementGenome/archetypes.ts` | The one figure that *is* the settlement's identity |
+
+Each entry is `{ role: NpcRole, minTier }` (capstones are bare roles). `role` must be one of the 56 in `NPC_ROLE_REACH_MAP` — the reach pair it maps to is what gives the seeded NPC its capability spread, so an invented string is not a new role, it is a missing one.
+
+**Four rules that decide whether your role reaches a world:**
+
+1. **It competes for a small number of slots.** `GENOME_NPC_TOPUP_CAP` (hamlet 2 → capital 5) bounds how many genome roles a settlement gains *beyond* its generic `LOCATION_ROLE_ROSTERS` draw. The cap is small on purpose: the roster is what makes every hamlet a hamlet, the genome is what makes *this* hamlet the one beside the mine.
+2. **Identity outranks baseline.** When more roles are authored than the cap admits, `GENOME_NPC_PASS_PRIORITY` decides — archetype, then culture, then sphere, then reach, then infrastructure. An archetype capstone is appended last by the genome and would otherwise be the first thing a cap discarded. A role authored only in `INFRASTRUCTURE_NPCS` at a tier whose roster already covers it will usually lose, which is correct.
+3. **A role the generic roster already seeds is skipped, not doubled.** The top-up seeds only what is missing at that settlement, counting NPCs placed in its sublocations as standing in it. So adding `innkeeper` to a sphere menu changes nothing — every tier roster already has one.
+4. **`minTier` gates it before any of the above.** A `city`-tier role never appears in a town, however strong the sphere.
+
+**Placement is inferred, not authored.** There is no `preferredSublocation` field — one existed, with no writer and no reader, and was removed. Where an NPC stands comes from `NPC_ROLE_SUBLOCATION_MAP` in `src/types/npc.ts`: add your role there to give it a home (a `librarian` goes to the library), or leave it out to have it stand at the settlement itself.
+
+**How to tell whether yours landed.** Seeded NPCs carry their provenance on the node: `npcSource: 'genome' | 'roster'` and, for genome ones, `genomeSourcePass`. In the CLI, `eval state.graph.getNodesByType('actor').filter(a => a.properties.npcSource === 'genome').length`. Do **not** check `location.properties.genomeResult.npcs` — that field is populated whether or not anything consumed it, which is the exact trap this capability exists to close.
+
+**Where to find the implementation:** `seedGenomeNpcsAtSettlements` in `src/engine/npcSeeding.ts` (sharing its `mintNpc` path with `seedNpcsAtLocations`, so both producers mint identical node shapes), called from the tail of `src/engine/worldSeed.ts` after the genome's second pass — which is the only point where the stored roster carries its culture and reach contributions.
+
 ---
 
 ---

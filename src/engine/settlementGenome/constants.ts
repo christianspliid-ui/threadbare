@@ -42,11 +42,61 @@ export const SUBLOCATION_BUDGET: Record<string, number> = {
 };
 
 // ── NPC Budget ──
+// The ceiling on `GenomeResult.npcs` — how long a roster one settlement may author.
+// Until THR-1347 this governed the length of an array nothing read: the genome built a
+// roster across four of its five passes, sliced it here, stored it on the location, and
+// no consumer existed. `seedGenomeNpcsAtSettlements` is that consumer, so these numbers
+// now bound real population.
+//
+// Deliberately loose. It is the *authoring* ceiling, not the seeding one — how many
+// roles a settlement's identity may name. What reaches a world is the much tighter
+// GENOME_NPC_TOPUP_CAP below, applied after the base roster has already run. Scaling on
+// `perSublocation` is the point: a settlement dense enough to hold thirty places has
+// enough going on to name more people than a three-building hamlet.
 export const NPC_BUDGET: Record<string, { base: number; perSublocation: number }> = {
   hamlet:  { base: 3,  perSublocation: 1 },
   town:    { base: 6,  perSublocation: 1.5 },
   city:    { base: 10, perSublocation: 2 },
   capital: { base: 15, perSublocation: 2.5 },
+};
+
+// ── Genome NPC Top-Up (THR-1347) ──
+// How many genome-authored roles a settlement may gain *beyond* the roles its generic
+// per-tier roster already produced.
+//
+// The two producers are deliberately unequal. `LOCATION_ROLE_ROSTERS` is background
+// texture: every hamlet on the map draws from the same eight entries, so it says what a
+// hamlet is. The genome roster says what *this* hamlet is — the one beside a mine names
+// a mason, the one under a shrine names a priest. The top-up is small on purpose: it
+// adds the settlement's signature without drowning the texture, and it never removes a
+// roster NPC, so this is additive (NFP #6) in output as well as in code.
+//
+// Measured on seed 42 / medium before this cap existed: 38 genome-tier settlements
+// authored 417 distinct roles between them, of which 232 had no matching NPC at their
+// own settlement. Admitting all 232 would have moved the world's NPC population from
+// 351 to 583 in one step. Tunable (NFP #1): settlement character is one edit here.
+export const GENOME_NPC_TOPUP_CAP: Record<string, number> = {
+  hamlet:  2,
+  town:    3,
+  city:    4,
+  capital: 5,
+};
+
+// Which genome pass gets the scarce top-up slots when a settlement authors more roles
+// than its cap admits. Higher wins; ties fall back to the roster's own order, which is
+// insertion-ordered and therefore deterministic (NFP #3).
+//
+// Ordered by how much the pass says about *this* settlement rather than about its tier.
+// An archetype capstone is the settlement's one recognised identity and is appended
+// last by `runSettlementGenome`, so without an explicit priority it would be the first
+// thing a cap discarded. Infrastructure sorts last for the opposite reason: it is what
+// every settlement of a tier owes, and the generic roster has usually seeded it already.
+export const GENOME_NPC_PASS_PRIORITY: Record<string, number> = {
+  archetype:      4,
+  culture:        3,
+  sphere:         2,
+  reach:          1,
+  infrastructure: 0,
 };
 
 // ── Reassessment Timing ──

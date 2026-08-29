@@ -43,7 +43,14 @@ export interface ArchetypeDef {
 
 export interface GenomeResult {
   sublocations: { id: string; sourcePass: 'infrastructure' | 'culture' | 'sphere' | 'reach' | 'archetype'; tags: SublocationTag[] }[];
-  npcs: { role: NpcRole; sourcePass: string; preferredSublocation?: string }[];
+  // `sourcePass` is load-bearing, not decoration: it is the priority key the genome
+  // top-up seeder orders by when a settlement authors more roles than its cap admits
+  // (GENOME_NPC_PASS_PRIORITY). A `preferredSublocation?: string` sat here until
+  // THR-1347 — no pass ever wrote it and no reader ever read it, so it was the same
+  // dead-field shape this ticket exists to remove, in miniature. Placement is resolved
+  // from `NPC_ROLE_SUBLOCATION_MAP` at seeding time instead, where the sublocation
+  // instances actually exist.
+  npcs: { role: NpcRole; sourcePass: string }[];
   archetypeId: string | null;
   archetypeName: string | null;
   archetypeProseFlavor: string | null;
