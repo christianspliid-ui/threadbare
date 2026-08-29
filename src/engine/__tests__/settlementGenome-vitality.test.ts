@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { computeSettlementReaches } from '../settlementGenome/runGenome';
 import { computeVitality } from '../settlementGenome/vitality';
+import { SUBLOCATION_BUDGET } from '../settlementGenome/constants';
 import { WorldGraph } from '../graph';
 import { initializeGameState, MAP_SIZE_PRESETS } from '../gameInit';
 import { runTick } from '../orchestrator';
@@ -179,21 +180,21 @@ describe('computeSettlementReaches — against a generated world (THR-1311)', ()
     expect(withReach.length).toBeGreaterThan(0);
   });
 
-  // CHARACTERIZATION, NOT AN ENDORSEMENT — this asserts a defect on purpose (THR-1344).
+  // THR-1344 — inverted from the characterization it replaced, which read
+  // `expect(reachSourced).toEqual([])` and was green for the entire life of the defect.
   //
-  // Storing the weights makes the *reader* live, which is all THR-1323 scoped. It does not
-  // make the genome's Reach pass live at worldgen, because of an ordering the fix cannot
-  // reach from `factionSeeding.ts`: `worldSeed.ts` runs the settlement genome at :1198 and
-  // seeds definition factions at :1648, so at genome time no faction node exists and
-  // `computeSettlementReaches` is still `{}` for every settlement being built. Re-running
-  // the genome after seeding (what `phaseSettlementReassessment` does) yields 230
-  // reach-sourced sublocations and 264 NPC roles on seed 42/medium — authored
-  // REACH_SUBLOCATION_MENU content that no *initial* world has ever contained.
+  // THR-1323 made the *reader* live; it could not make the Reach pass live, because the
+  // cause was an ordering no edit in `factionSeeding.ts` can reach. `worldSeed.ts` ran the
+  // settlement genome upstream of both culture assignment and faction seeding, so Passes 2
+  // and 4 evaluated against a graph holding neither, and contributed nothing to any world
+  // this seeder ever built. THR-1344 adds a second genome pass at the tail of the seeder,
+  // where those inputs finally exist.
   //
-  // Pinned so the gap is visible and so closing THR-1344 turns this red rather than landing
-  // silently. It is also the proof that THR-1323 moved no worldgen output: zero reach-sourced
-  // sublocations before the fix, zero after.
-  it('characterization: the genome Reach pass is still dead at worldgen (THR-1344)', () => {
+  // This has to read *materialized nodes*, never a return value. Calling
+  // `runSettlementGenome` by hand after seeding is exactly the condition worldgen did not
+  // meet, so a green assertion on its return would prove nothing about a generated world —
+  // the second-order form of the fixture trap that hid THR-1323 for its whole life.
+  it('the genome Reach pass contributes to generated worlds (THR-1344)', () => {
     const sublocations = state.graph
       .getNodesByType('location')
       .filter(n => n.properties.parentLocationId);
@@ -202,7 +203,77 @@ describe('computeSettlementReaches — against a generated world (THR-1311)', ()
     const reachSourced = sublocations.filter(
       s => s.properties.genomeSourcePass === 'reach',
     );
-    expect(reachSourced).toEqual([]); // THR-1344 flips this to .length toBeGreaterThan(0)
+    // Floor, not a count — the number moves with worldgen and a pinned count rots
+    // (THR-688 rule A). Measured 0 before this fix on every seed tried; 127 here.
+    expect(reachSourced.length).toBeGreaterThan(0);
+  });
+
+  // The same ordering starved Pass 2, which the THR-1344 ticket did not name because the
+  // measurement that found it was reading `genomeSourcePass === 'reach'`. Culture
+  // assignment runs ~35 lines *after* the eager genome pass, so `cultureId` was null for
+  // every settlement and CULTURE_BASELINE_MAP's substitutions and additions never applied.
+  // Pinned here so the second pass cannot be narrowed back to Reach alone without a red test.
+  it('the genome Culture pass contributes to generated worlds (THR-1344)', () => {
+    const sublocations = state.graph
+      .getNodesByType('location')
+      .filter(n => n.properties.parentLocationId);
+    expect(sublocations.length).toBeGreaterThan(0);
+
+    const cultureSourced = sublocations.filter(
+      s => s.properties.genomeSourcePass === 'culture',
+    );
+    expect(cultureSourced.length).toBeGreaterThan(0); // measured 0 before, 29 here
+  });
+
+  // `settlementReachProfile` is the field THR-1323 called dead. It was written on every
+  // genome result all along — always as `{}`, because Pass 4 computed it from a graph with
+  // no factions in it. Asserting the stored property rather than a fresh call is the point:
+  // this is what `proseResolvers` and any future reader actually see.
+  it('a generated world stores a non-empty settlementReachProfile (THR-1344)', () => {
+    const settlements = state.graph
+      .getNodesByType('location')
+      .filter(n => !n.properties.parentLocationId && n.properties.genomeResult);
+    expect(settlements.length).toBeGreaterThan(0);
+
+    const withProfile = settlements.filter(s => {
+      const result = s.properties.genomeResult as { settlementReachProfile?: object };
+      return Object.keys(result.settlementReachProfile ?? {}).length > 0;
+    });
+    expect(withProfile.length).toBeGreaterThan(0); // measured 0 before, 14 here
+  });
+
+  // THR-1344 — the volume gate. Passes 2–4 are additive by construction and nothing
+  // subtracted, which was invisible while two of the three were dead. Uncapped on
+  // seed 42 / medium the day the Reach pass went live: capitals at 38 sublocations.
+  //
+  // Two arms, because the bound alone would pass vacuously if enforcement were deleted and
+  // no settlement ever reached the cap. The second arm proves the trim branch actually
+  // executes on this world.
+  it('no settlement exceeds its tier sublocation budget, and the budget binds (THR-1344)', () => {
+    const settlements = state.graph
+      .getNodesByType('location')
+      .filter(n => !n.properties.parentLocationId && n.properties.genomeResult);
+    expect(settlements.length).toBeGreaterThan(0);
+
+    const rows = settlements.map(s => {
+      const tier = s.properties.locationSubtype as string;
+      const result = s.properties.genomeResult as {
+        sublocations: { sourcePass: string }[];
+      };
+      // Archetype capstones are added after enforcement and sit above the cap by design —
+      // a capstone is the settlement's identity, not a contribution competing for room.
+      const discretionary = result.sublocations.filter(x => x.sourcePass !== 'archetype').length;
+      return { tier, discretionary, cap: SUBLOCATION_BUDGET[tier] ?? SUBLOCATION_BUDGET.hamlet };
+    });
+
+    // Spans more than one tier, so a single-tier world cannot pass this by accident.
+    expect(new Set(rows.map(r => r.tier)).size).toBeGreaterThan(1);
+
+    expect(rows.filter(r => r.discretionary > r.cap)).toEqual([]);
+    // …and at least one settlement sits exactly at its cap, which only a settlement that
+    // was actually trimmed can do. Delete the enforcement block and this goes red even
+    // though the bound above would still hold.
+    expect(rows.some(r => r.discretionary === r.cap)).toBe(true);
   });
 
   it('no writer produces a location-targeted member_of edge', () => {
