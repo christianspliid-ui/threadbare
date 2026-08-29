@@ -2,6 +2,7 @@
 name: qa-orchestrator
 description: Use when running a QA sweep of Threadbearer UI. Trigger on "run QA", "check the UI", "visual audit", "find UI bugs", "frontend QA", "QA sweep", or after completing a major implementation phase. Dispatches specialist sub-agents for visual style, information architecture, interaction flows, and React code quality.
 last_validated_against: 2026-08-29
+validated_doctrine: ui-laws@1
 ---
 
 # QA Orchestrator

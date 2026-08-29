@@ -2,6 +2,7 @@
 name: playtest-interface
 description: Interface regression sweep for Threadbearer. Drives a Chrome MCP session through the game, asserts structural presence of every IA manifest surface via __DEBUG, and produces a structured finding report.
 last_validated_against: 2026-08-29
+validated_doctrine: ui-laws@1
 invocation: /playtest-interface [url]
 audience: claude-code
 ---
