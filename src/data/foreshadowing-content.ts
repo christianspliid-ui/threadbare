@@ -107,7 +107,7 @@ export const PULL_CLAUSES: Record<ReachDomain, readonly string[]> = {
     '{Subject} {v:build} toward {matter} the slow way, stone on stone.',
   ],
   star: [
-    '{Subject} {v:feel} {matter} as something owed — a duty more than a choice.',
+    '{Subject} {v:feel} {matter} as a debt owed — a duty more than a choice.',
     '{Subject} {v:believe} {matter} is part of a larger design.',
     '{Subject} {v:carry} {matter} like a charge laid down from above.',
   ],
@@ -194,7 +194,7 @@ export const MOTIVE_CLAUSES: Record<MotiveContributionKind, readonly string[]> =
     '{Subject} {v:answer} {matter} the way {subject} {v:answer} most things, plainly and soon.',
   ],
   intel: [
-    '{Subject} {v:know} something about {matter} that few others {v:hold}, and {subject} {v:mean} to use it.',
+    '{Subject} {v:know} what few others {v:hold} about {matter}, and {subject} {v:mean} to use it.',
     'What {subject} {v:know} of {matter} points one way, and {subject} {v:follow} it.',
     '{Subject} {v:have} the better account of {matter}, and {subject} {v:trust} it.',
     '{Subject} {v:move} on what {subject} {v:know}, not on what {subject} {v:hope}.',
@@ -207,7 +207,7 @@ export const MOTIVE_CLAUSES: Record<MotiveContributionKind, readonly string[]> =
   ],
   divine: [
     '{Subject} {v:feel} a hand at the back, steering toward {matter}.',
-    'Something {subject} {v:take} for a sign has settled on {matter}, and {subject} {v:heed} it.',
+    'A sign, or what {subject} {v:take} for one, has settled on {matter}, and {subject} {v:heed} it.',
     '{Subject} {v:believe} a power beyond reckoning wants {matter} done, and {subject} {v:mean} to do it.',
     'The pull toward {matter} came from somewhere outside, and {subject} {v:choose} not to question it.',
   ],
@@ -226,7 +226,7 @@ export const MOTIVE_CLAUSES: Record<MotiveContributionKind, readonly string[]> =
   resonance: [
     '{Subject} {v:feel} {matter} sit right, the way a true note sits right.',
     '{Matter} hums at a pitch {subject} {v:answer} to, and {subject} {v:follow} it.',
-    'Something in {matter} matches the grain of {name}, and {subject} {v:lean} toward it.',
+    '{Matter} runs with the same grain as {name}, and {subject} {v:lean} toward it.',
     '{Subject} {v:go} because {matter} rings true, and {subject} {v:trust} that over reasons.',
   ],
   rarity: [
@@ -238,7 +238,7 @@ export const MOTIVE_CLAUSES: Record<MotiveContributionKind, readonly string[]> =
   hunch: [
     '{Subject} could not give a reason for {matter} — only a feeling {subject} {v:trust}.',
     '{Subject} {v:have} a hunch about {matter}, and {subject} {v:know} better than to argue with it.',
-    'Something about {matter} sits wrong, or sits right; {subject} could not say which, only that {subject} {v:go}.',
+    '{Matter} sits wrong, or sits right; {subject} could not say which, only that {subject} {v:go}.',
     '{Subject} {v:go} on instinct here, and {subject} {v:reckon} instinct has earned its say.',
   ],
   doom_identity: [
@@ -249,7 +249,7 @@ export const MOTIVE_CLAUSES: Record<MotiveContributionKind, readonly string[]> =
   ],
   chain: [
     '{Matter} follows from what {subject} began, and {subject} {v:mean} to see it through.',
-    '{Subject} started something, and {matter} is where it leads.',
+    '{Subject} set this in motion, and {matter} is where it leads.',
     '{Subject} will not leave {matter} half-done, having come this far.',
     'One thing led to {matter}, and {subject} {v:follow} the thread to its end.',
   ],
@@ -340,7 +340,7 @@ export const MOTIVE_CLAUSES_BY_REACH: Partial<
     veil: [
       '{Subject} {v:read} a sign in {matter}, and {subject} {v:follow} where it points.',
       '{Subject} {v:feel} the unseen stir around {matter}, and {subject} {v:take} it for a call.',
-      'Something past the plain world has settled on {matter}, and {subject} {v:mean} to heed it.',
+      'A power past the plain world has settled on {matter}, and {subject} {v:mean} to heed it.',
     ],
     heart: [
       '{Subject} {v:feel} a higher will in {matter}, and it speaks to {name} in the tongue of mercy.',
