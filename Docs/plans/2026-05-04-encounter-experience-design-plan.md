@@ -1,5 +1,7 @@
 # Encounter Experience — Long-Form Design Plan (2026-05-04)
 
+> **lint_plan_doc:** exempt — historical May-era plan predating the plan-doc template; edited in place only for supersession markers (THR-1324/THR-1372).
+
 **Status:** **Historical — superseded in part. Not an implementation contract.** *(Amended 2026-08-29, THR-1324; the line previously read "Canonical design plan … Implementation contract for the executor," which reads as live to anyone landing mid-file.)* This was the May 2026 canonical plan; the **nudge pivot** (THR-772/THR-883) and **Prose Doctrine v2** (2026-08-25) have since retired its choice-card model and its prose contract. Sections carrying in-file supersession markers: **§3.2, §3.4, §4.1, §4.2, §5.3**, and Rule 3 in §1. Much of the structural design — scene state, cast attention priority, forecast bands, aftermath effect kinds, detection escalation — did ship and is still accurate.
 
 **Read instead, for anything you are about to build or author:** [`Docs/canon/encounters.md`](../canon/encounters.md) · [`Docs/canon/prose.md`](../canon/prose.md) · [`nudge-authoring-spec.md`](../../.claude/skills/encounter-pipeline/reference/nudge-authoring-spec.md). Where any of those disagree with this page, they win.
@@ -460,9 +462,9 @@ Per `Systems/Narrative Engine.md` three-tier model:
 
 **Voice:** *superseded 2026-08-25 — Prose Doctrine v2 governs: narrator mode, present tense, no second-person player address, no dramatic-present literary tier.* (Original: 3rd person past for world events; 2nd person for direct player addresses; dramatic present for Chronicle.)
 
-**Quality bar:** the Meeting-encounter prose. New encounter content fails editorial review if it falls below that bar. (Per taste-profile §"Meeting-encounter prose is the quality bar".)
+**Quality bar:** *superseded 2026-08-25, marked 2026-08-29 (THR-1372)* — the bar is now `src/data/__fixtures__/nudge-exemplar/swollen-ford-exemplar.ts` per `Docs/exemplars.md`; the Meeting-encounter prose predates Doctrine v2 and is no longer the editorial standard. (Original: the Meeting-encounter prose, per the taste profile of the day.)
 
-**No flowery drift.** Per the v6→v7 iteration's "less flowery, more action" feedback. Erikson coding: short punchy sentences, dialogue, dust and iron, italic reserved for one or two strikes per beat.
+**No flowery drift.** Per the v6→v7 iteration's "less flowery, more action" feedback — a direction Doctrine v2 completed: narrator mode, plain sentences, the irony/italic budget effectively zero unless a character speaks it.
 
 ### 4.4 Tooltip authoring (resolves to graph entities)
 
@@ -525,7 +527,7 @@ The four worked examples in the toolkit (§5.1 Eira at the Gate, §5.2 The Taver
 - Test scenes for the renderer
 - Quality bar examples for editorial pass
 
-Each must be authored to the contract in §4.1 with full prose, tooltipped terms wired to graph entities, and aftermath effect kinds enumerated.
+Each must be authored to the contract in §4.1 *(superseded — see §4.1's own marker; any revival of these examples authors them to the live nudge-authoring-spec instead)* with full prose, tooltipped terms wired to graph entities, and aftermath effect kinds enumerated.
 
 ### 4.10 Predecessor reference: the Gate Duty proto-encounter
 

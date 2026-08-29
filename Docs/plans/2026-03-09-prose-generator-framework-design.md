@@ -1,7 +1,9 @@
 # Graph-Walking Prose Generator Framework — Design Doc
 
+> **lint_plan_doc:** exempt — legacy plan doc predating the plan-doc template; edited in place only for its status correction (THR-1372).
+
 **Date:** 2026-03-09
-**Status:** Design complete, pending implementation
+**Status:** Shipped *(status corrected 2026-08-29, THR-1372 — the pipeline this doc designed has long been live: `src/engine/proseGenerator.ts` / `proseResolvers.ts` / `proseComposer.ts` with three UI consumers and `src/data/prose-layer-content.ts`. Note its `'atmosphere'` layer category serves entity descriptions — a non-encounter surface; encounter prose is governed by Prose Doctrine v2, narrator mode.)*
 
 ## Problem
 

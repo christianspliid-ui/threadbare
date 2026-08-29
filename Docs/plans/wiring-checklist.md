@@ -543,7 +543,7 @@ Authored prose responds to the same identity axes the surface key is computed fr
 | Inventory report | `src/engine/content-eval/surfaceFragmentReport.ts` | Pure, deterministic sweep across all fragment-carrying pools; shared by the debug tab, the bridge, and the volume model. |
 | Debug visibility | `src/components/Game/debug/FragmentsDebugTab.tsx`, `DebugTabContent.tsx`, `src/debug-bridge.ts`, `src/debug-bridge.d.ts` | "Fragments" tab: static inventory + live bindings from `surface_fragments_bound`. `window.__DEBUG.resolveSurfaceFragments('<agent>')` for the bound scene; no-arg form returns the static inventory. |
 | Measured volume mode | `scripts/encounter-volume-model.ts` | `npm run volume-model` reports authored surface counts per template alongside the arithmetic targets; two runs byte-identical. |
-| Authoring pipeline | `.claude/skills/template-context-rewrite/SKILL.md` | Four-pass skill: axis election → scene-first drafting → QA → merge. `encounter-pipeline` (Tier-1 bespoke) deliberately unchanged. |
+| Authoring pipeline | `.claude/skills/template-context-rewrite/SKILL.md` | Four-pass skill: axis election → design-first fragment drafting (narrator mode — the scene-first pass name retired 2026-08-25, Doctrine v2) → QA → merge. `encounter-pipeline` (Tier-1 bespoke) deliberately unchanged. |
 | Tests | `src/engine/__tests__/fragmentResolution.test.ts`, `src/engine/__tests__/recruitmentPitchFragments.test.ts` | Full fallback chain, `'*'`-required rule, enumeration caps/determinism; worked-example guards for converter pass-through, 20-surface count, scorer band, and end-to-end `enrichProse` render. |
 
 ## Encounter Surface Foundation (THR-475)

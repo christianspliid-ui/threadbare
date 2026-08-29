@@ -8,6 +8,8 @@ three_pillars: Engine (card library data model, unlock hooks, echo-card harvest)
 
 # The Repertoire — Card Format, Pip Vocabulary, and Progression
 
+> **lint_plan_doc:** exempt — live-session design record in the pre-template shape; edited in place only for supersession markers (THR-1372).
+
 **Origin:** THR-883 live design session, 2026-07-30 (continuation of `Docs/plans/2026-07-30-encounter-authoring-frameworks.md`). Every decision carries Christian's explicit chat approval (THR-608). This doc records the **communication pivot** (supersedes the per-card prose aspects of the frameworks doc's Decision 3) and the **Repertoire progression design** (all four verdicts blessed).
 
 ## Why this is load-bearing
@@ -56,7 +58,7 @@ Member cards per family (authored under THR-883 by Fable), 12 hunger uniques, ge
 
 ## UI pillar
 
-Card row rendering (mockups from the 2026-07-30 session are the spec: picture band, keyword chip, title, cost, effect, quote), pip rendering per the approved vocabulary, replacement of the shipped test panel. Filed as its own UI ticket when the engine substrate exists — not part of this doc's implementation ticket.
+Card row rendering (mockups from the 2026-07-30 session are the spec — picture band, keyword chip, title, cost, effect; the mockups' **quote** slot is retired, per Decision 4's 2026-08-25 banner: the effect line is the card's only prose), pip rendering per the approved vocabulary, replacement of the shipped test panel. Filed as its own UI ticket when the engine substrate exists — not part of this doc's implementation ticket.
 
 ## Wiring
 
