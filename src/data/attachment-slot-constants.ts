@@ -104,7 +104,8 @@ export const SLOT_TAG_DISPLAY_NAMES: Record<string, string> = {
   // THR-1297. Deliberately has NO `SLOT_CAPS` row above — an absent cap reads as
   // uncapped in `getSlotCap`, so holdings need no exemption logic anywhere. This row
   // also feeds the codex sidebar, which spreads this map into `SUBCATEGORY_DISPLAY`.
-  holding: 'Holdings',
+  // THR-1314: player-facing word is *Freeholds*; the `holding` key is the engine literal.
+  holding: 'Freeholds',
   weapon: 'Weapons',
   vestment: 'Vestment',
   ring: 'Rings',

@@ -74,6 +74,12 @@ Load this file at session start (referenced from CLAUDE.md). Load specific shard
 - **[Bless this Company](./Agents.md#bless-this-company)** — Ascendant action; boosts group cohesion and suppresses disputes for a window
 - **[Broken](./Agents.md#broken)** — behavioural state of a worn-out mortal: out of the story, drifting home, mendable; read via `isBrokenMortal()`
 - **[Dissolution Threshold](./Agents.md#dissolution-threshold)** — the `QuintessenceThresholdState` literal `'broken'` (ratio zero); renamed in prose to avoid colliding with Broken
+- **[Undertaking](./Agents.md#undertaking)** — a multi-tick project an agent takes on of its own motion; the proactive counterpart to an Encounter
+- **[Kind Row](./Agents.md#kind-row)** — registry entry declaring one undertaking kind; must name a reachable, motive-gated destroy — until a kind can be undone, it is not a kind
+- **[Work](./Agents.md#work)** — the named object a completed undertaking leaves behind; outlives its maker and its owner
+- **[Christening](./Agents.md#christening)** — naming at completion, and only at completion; a working possessive holds until then and failures are never christened
+- **[Failure-Name Register](./Agents.md#failure-name-register)** — where a *visible* failed undertaking is recorded on the ground; a register, not a name, and clean failures write nothing
+- **[Freehold](./Agents.md#freehold)** — the attachment category for an owned place or resource; engine literal `'holding'`, said *freehold* in prose so it never collides with the Group Cohesion band
 
 ### Encounters
 
