@@ -16,16 +16,20 @@ The communication pivot changes what card *content* is (no per-card scene prose;
 
 ## Decision 4 — The communication pivot (Christian: "we have tried and failed enough to pivot")
 
-**Prose does the scene; cards do the rules.** Scene opening (setting-variant), stake block, and post-roll outcome prose stay fully written under the 14-question checklist. The card itself carries **zero scene-bespoke prose**:
+**Prose does the scene; cards do the rules.** Scene opening (setting-variant), stake block, and post-roll outcome prose stay fully written under the narrator's checklist. The card itself carries **zero scene-bespoke prose**:
+
+> *Superseded in part 2026-08-25, marked 2026-08-29 (THR-1324).* **The pivot itself stands — this doc is still the origin of "prose does the scene, cards do the rules."** Three details below it were overtaken by Prose Doctrine v2 (`Docs/canon/prose.md` § Narrator mode), and this page is linked without caveat from live canon while its engine ticket is unshipped, so an executor could read the retired shape as the contract:
+> 1. **The flavor quote is retired.** The row previously read *"Flavor quote | One short generic line, serif voice — the card's only prose"*. A card's only prose is now its effect line.
+> 2. **Titles are spell-style, not merely short.** The row previously read *"2–3 generic words, reusable everywhere"*; the shape is now imperative verb + noun ("Inspire Courage").
+> 3. **The 14-question checklist is superseded** by the narrator's 12-question checklist in [`nudge-authoring-spec.md`](../../.claude/skills/encounter-pipeline/reference/nudge-authoring-spec.md) § Prose doctrine v2, which is authoritative over this page wherever the two disagree.
 
 | Card element | Content |
 |---|---|
 | Picture | Small generic image, one per library card; manifest + fallback chain (type icon on tinted band until painted) |
 | Keyword + icon | The card's type — player-facing vocabulary |
-| Title | 2–3 generic words, reusable everywhere |
+| Title | Spell-style: imperative verb + noun ("Inspire Courage"), reusable everywhere |
 | Cost | Essence pips · `Free` · alternate-cost icons (detection, doom, obligation) |
-| Effect | One plain mechanical sentence; odds in the pip vocabulary |
-| Flavor quote | One short generic line, serif voice — the card's only prose |
+| Effect | One or two plain mechanical sentences; odds in the pip vocabulary — **the card's only prose** |
 
 ## Decision 5 — The odds pip vocabulary (approved)
 
@@ -100,7 +104,7 @@ Rulebook § encounters gains the card format, pip vocabulary, and Repertoire pro
 | 2 Inspectability | Unlock + harvest traces; wiki catalog is the human surface |
 | 3 Determinism | Unlocks and echo selection are pure over run state |
 | 4 Fail-soft | Table above |
-| 5 Narrative first | Scene/outcome prose untouched; cards get flavor quotes |
+| 5 Narrative first | Scene/outcome prose untouched; cards carry an effect line only (*"cards get flavor quotes"* until the 2026-08-25 retirement — see the banner on Decision 4) |
 | 6 Additive | New data + optional fields; existing hands unaffected until authored against |
 | 7 Performance | Deal-time filtering only; no per-tick cost |
 

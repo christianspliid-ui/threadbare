@@ -15,7 +15,7 @@ description: >
   prose", "movement content", "content table", "write prose", "foreshadowing
   clause", "motive receipt".
 model: opus
-last_validated_against: 2026-08-25
+last_validated_against: 2026-08-29
 validated_doctrine: prose@2
 ---
 
@@ -49,7 +49,7 @@ If the Canon page disagrees with this skill, the Canon page wins until this skil
 
 1. **Does this create a human condition the player recognizes?** Not "trust_decay -0.02" but "exposed" or "indebted" or "unexpectedly grateful." If the prose describes a mechanical change without evoking a human experience, rewrite it.
 2. **Does this make the player want to know what happens next?** Every prose line should open a question, create a tension, or imply a future consequence. "The negotiation failed" is a dead end. "The negotiation failed — and the merchant's apprentice heard every word" is a hook.
-3. **Does this work as a *moment*, not just a label?** A complication prose that says "A rival noticed" is a label. "A figure at the edge of the market — one of the Thornweave scouts — paused mid-stride. Their eyes met. Then the scout turned and walked quickly toward the guild quarter" is a moment.
+3. **Is every fact stated, in narrator mode?** *(Amended 2026-08-25 — this question used to demand "a moment, not a label," and its exemplar was camera work ("Their eyes met."): it taught the in-situ mode Doctrine v2 retired, three lines above the paragraph retiring the workflow that produced it.)* A plainly stated fact is not a defect. "A rival noticed" fails for naming nobody and no consequence, not for being unliterary — "A Thornweave scout saw it happen and has left for the guild quarter" is the standard: named, direct, consequential.
 4. **Would the player sometimes prefer this outcome over success?** (For failure/complication content specifically.) The best complications make the player think "oh no — oh, that's actually interesting." If the failure content is just punishment, it's not cool failure.
 5. **Does this serve the three-beat loop?** Content surfaces during portfolio scan (Beat 1), curated moments (Beat 2), or aftermath (Beat 3). Which beat does this content serve? Is it pulling its weight in that beat?
 
@@ -297,7 +297,9 @@ Movement taxes influence where agents go, which determines what encounters they 
 
 **Files:** `src/data/foreshadowing-content.ts` (clause tables) · `src/engine/foreshadowing/` (composer, realizer)
 
-Foreshadowing is the 2–4 sentences the player reads about an encounter an agent is *moving toward* — written from inside the agent's head, before anything has happened. Two paths produce it:
+Foreshadowing is the 2–4 sentences the player reads about an encounter an agent is *moving toward*, before anything has happened: **a narrator's report of what the agent knows and what is pulling them, drawn from the Motive Receipt.**
+
+> **Ruling — no narrator-mode exemption here (2026-08-25 doctrine, recorded 2026-08-29, THR-1324).** This section used to say the passage is "written from inside the agent's head," which read as a silent carve-out from Doctrine v2's *narrate, never inhabit*. There is no such carve-out, and none is needed. Reporting a motive **is** narration: a GM says "she thinks the road ends somewhere worth standing" without ever entering her head. What the doctrine forbids is interior *sensation* and camera work — the felt texture from inside. So state the pull as a fact the narrator knows (which is literally what the receipt is), and never render how it feels from within.
 
 - **Authored variants** — per-encounter, hand-written. Use when a specific encounter's fiction matters. See Capability 10 in the systemic wiring guide.
 - **Receipt-driven clauses** — systemic, composed from the **Motive Receipt** (the real decision causality the scorer computed). This is the long tail, and it is where most of your clause-authoring effort goes.
@@ -331,13 +333,18 @@ Clause templates go through `realizer.ts`. Use the slots; they exist because two
 ```typescript
 // ✅ correct
 '{Subject} {v:believe} the road ends somewhere worth standing.'
-'Something about it {v:move} {object} closer than caution allows.'
+'The unpaid debt {v:draw} {object} back sooner than caution allows.'
 
 // ❌ agreement bug — renders "They believes"
 '{Subject} believes the road ends somewhere worth standing.'
 
-// ❌ case bug — renders "moves they closer"
-'Something about it moves {subject} closer than caution allows.'
+// ❌ case bug — renders "draws they back"
+'The unpaid debt draws {subject} back sooner than caution allows.'
+
+// ❌ evasive-lexicon violation — "Something about it…" opens on the flagship
+//    hedge, which `countVagueness` fails at zero in EVERY field class.
+//    (This was the ✅ exemplar here until 2026-08-29, THR-1324.) Name the pull.
+'Something about it {v:move} {object} closer than caution allows.'
 
 // ❌ category error — {place} is never an encounter title
 '{name} has heard of trouble in {place}.'   // ...when {place} got a title

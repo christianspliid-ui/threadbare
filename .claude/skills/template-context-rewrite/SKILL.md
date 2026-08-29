@@ -1,7 +1,8 @@
 ---
 name: template-context-rewrite
 description: Multiply an existing UnifiedActionTemplate family across context axes by authoring `contextFragments` — place and counterpart-role prose variants that make one skeleton read as many distinct scenes. Use for Tier-2 volume work. NOT for bespoke branching encounters (use `encounter-pipeline`) and NOT for format migration (use `template-encounter-rewrite`). Triggers on "context fragments", "multiply encounter", "Tier 2 surfaces", "surface multiplication", "{frag:", "context-multiplication".
-last_validated_against: 2026-07-23
+last_validated_against: 2026-08-29
+validated_doctrine: prose@2
 ---
 
 # Template Context Rewrite (Tier-2 surface multiplication)
@@ -45,21 +46,34 @@ For the family, elect **4–6 place values** and **4–6 role values** that earn
 Caps (enforced by `enumerateTemplateSurfaces`): `MAX_FRAGMENT_SLOTS_PER_TEMPLATE` = 4,
 `MAX_VARIANTS_PER_SLOT` = 8, `MAX_SURFACES_PER_TEMPLATE` = 24.
 
-## Pass 2 — Scene-first fragment drafting
+## Pass 2 — Design-first fragment drafting (narrator mode)
 
-Write the **paragraph first**, then extract the fragment. Drafting the table first
-produces labels; drafting the scene first produces prose.
+*Amended 2026-08-29 (THR-1324). This pass was titled "Scene-first fragment drafting" and
+opened "Write the **paragraph first**, then extract the fragment" — the named mechanism by
+which in-situ prose got into the corpus, retired 2026-08-25 with Prose Doctrine v2. Its
+"one earned concrete detail per fragment" rule is the retired picturable-anchor rule and
+goes with it. What that bullet was protecting — no interiority, no digits, no exclamation
+marks, no probability words — survives below, because narrator mode already forbids it.*
+
+**Decide what the axis changes, then state it.** A fragment's job is to name what is
+different about *this* place or *this* counterpart — plainly, as a narrator reporting it.
+Drafting the table mechanically produces labels; drafting a scene and mining it for
+fragments produces the in-situ prose the doctrine retired. Neither is the move: settle
+what the axis actually alters about the situation, then write that fact into the slot.
 
 - Pick slots where the axis actually shows: an *opening* is where the place shows, a
   *counter/hesitation* is where the person shows. Two slots is usually right.
-- Baseline register unless the surface is a designated peak (canon).
+- Baseline register — encounter surfaces never qualify for peak (canon, Doctrine v2).
+- **State the difference, don't encode it.** If the axis means the harbour office is
+  short-staffed, write that; do not hand the reader physical evidence to decode.
 - **Names come only from enrichment tokens** — `{name}`, `{cast:<key>}`, `{target}`.
   Never hardcode an entity name in a fragment.
-- The `'*'` default is a **real authored fragment**, not a stub. It is what the scene
+- The `'*'` default is a **real authored fragment**, not a stub. It is what the surface
   reads like when nothing is bound, and it is required — a missing default strips the
   token at render.
-- One earned concrete detail per fragment (a tide table, an open ledger). No interiority
-  ("X felt Y"), no digits, no exclamation marks, no probability words.
+- No interiority ("X felt Y"), no camera work, no digits, no exclamation marks, no
+  probability words. Every fragment serves challenge → test → outcome; one that serves
+  none of those is cut.
 
 ## Pass 3 — QA
 
