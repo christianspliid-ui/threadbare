@@ -19,7 +19,6 @@ import type { GameState, TickEvent } from '../types/gameState';
 import type { EncounterCacheManager } from './encounterCache';
 import type { EncounterCacheEntry } from './encounterCache';
 import type { DistanceMatrix } from './distanceMatrix';
-import { getDistance } from './distanceMatrix';
 import type { EncounterProgress } from '../types/encounter';
 import type { UnifiedAction } from '../types/unifiedAction';
 import {
