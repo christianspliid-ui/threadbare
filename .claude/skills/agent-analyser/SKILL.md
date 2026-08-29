@@ -1,7 +1,7 @@
 ---
 name: agent-analyser
 description: Analyse encounter log TSV exports to assess agent behavior, encounter balance, variety, movement patterns, capability growth, and pipeline health. Use this skill whenever the user uploads encounter logs, asks to analyse agent behavior, wants to check encounter balance or tuning, mentions "encounter logs", "agent analysis", "encounter analysis", "behaviour analysis", "tuning check", or wants to compare runs across seeds or patches. Also trigger when the user mentions idle rates, encounter variety, movement patterns, or repetition problems in the simulation.
-last_validated_against: 2026-07-30
+last_validated_against: 2026-08-29
 ---
 
 # Agent Analyser — Encounter Log Analysis Skill
@@ -126,7 +126,7 @@ For permanently idle agents, the key question is **why**. Read a sample of their
 Compare across all agents to find systemic issues:
 
 - **Location content coverage**: Which locations produced active agents? Which produced idle ones? This reveals content deserts in the encounter template pool.
-- **Encounter template utilization**: Of the 64+ location templates + 14 social + 10 faction templates, how many were actually used? High unused percentage suggests filter pipeline or prerequisite issues.
+- **Encounter template utilization**: Of the full `ENCOUNTER_TEMPLATES` corpus (read the live count from the export or `check:encounter --all` — never from a snapshot in this file), how many were actually used? High unused percentage suggests filter pipeline or prerequisite issues.
 - **Death clustering**: Do agents tend to die at similar ticks or locations? May indicate a difficulty spike.
 - **Score distribution**: Across all DECIDE events, what's the score range? Flat distribution suggests scoring isn't differentiating.
 
@@ -153,13 +153,13 @@ Group agents by their primary reach domain capabilities and check whether certai
 
 For each agent:
 - Identify the agent's strongest reach(es) from ENCOUNTER_STEP `cap` values or from world-model data
-- Map which encounter templates they could access (by reachPrimary/reachSecondary)
+- Map which encounter templates they could access (by the template's `reach` and per-step reaches — `UnifiedActionTemplate`; the old `reachPrimary`/`reachSecondary` fields died with `EncounterTemplate`, THR-108)
 - Check if agents with specific reach strengths are disproportionately idle
 
 **What to look for:**
 - All `veil`-primary agents idle while `iron`-primary agents are active → veil encounter content gap
 - Agents with high capability in a reach that has few templates → content/reach mismatch
-- Encounters attempted only use 2-3 of the 9 reaches → reach coverage gap in template pool
+- Encounters attempted only use 2-3 of the 8 Reaches → reach coverage gap in template pool
 
 ## Pipeline Diagnostic Checklist (Ordered by Impact)
 
@@ -169,14 +169,14 @@ Run this checklist in order when diagnosing why agents aren't moving between enc
 
 **Code:** `encounterCache.ts` → `buildEntriesForLocationAndSublocations()`
 
-The cache maps encounter templates to locations by matching `template.locationTypes` against `location.locationType`. If a location has sublocations, ONLY sublocation-matched templates are cached (line 212-225) — general location-type templates are skipped.
+The cache maps encounter templates to locations by matching the template's location-subtype list (`locationSubtypes`, derived from the setting envelope for `encounter.*` content) against `location.locationType`. If a location has sublocations, ONLY sublocation-matched templates are cached (line 212-225) — general location-type templates are skipped.
 
 **Check from logs:**
 - Agent DECIDEs encounter X at location Y, ARRIVEs, then gets `no_candidates_after_filter` forever
 - Multiple agents at the same location ALL idle → the location has no cached encounters
 
 **Check from code:**
-- Does the location's `locationType` or `locationSubtype` match any template's `locationTypes` array?
+- Does the location's `locationType` or `locationSubtype` match any template's `locationSubtypes` array?
 - Does the location have sublocations? If yes, does `getEncountersBySublocationAndLocation()` return templates for those sublocation types?
 - Is the location type `'location'` (generic)? These are skipped (line 241).
 
@@ -186,7 +186,7 @@ The cache maps encounter templates to locations by matching `template.locationTy
 
 **Code:** `encounterAwareness.ts` → `filterByAwareness()`
 
-Per-reach distance-limited visibility. Agent needs sufficient capability in the encounter's `reachPrimary` or `reachSecondary` to see it at the given distance. Distance 0 (same location) always passes if capability >= `AWARENESS_THRESHOLD` (0.05).
+Per-reach distance-limited visibility. Agent needs sufficient capability in the encounter's reach (template `reach` / step reaches) to see it at the given distance. Distance 0 (same location) always passes if capability >= `AWARENESS_THRESHOLD` (0.05).
 
 **Check from logs:**
 - Agent at location X is idle, but encounter templates exist for location X in the cache
