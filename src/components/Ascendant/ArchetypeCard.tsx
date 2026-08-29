@@ -7,9 +7,14 @@ const SPHERE_LABELS: Record<SphereName, string> = {
   mind: 'Mind', spirit: 'Spirit', time: 'Time', entropy: 'Entropy',
 };
 
+// THR-1359: dropped a `flesh: 'Flesh'` row. Keys come from
+// `archetype.startingDomainAffinities`, typed `Partial<Record<ReachDomain, number>>`,
+// so the retired 9th Reach was unreachable here. The `Record<string, string>`
+// annotation stays: the lookup below is indexed with a raw `Object.entries` key and
+// falls open to the key itself, which is the designed behaviour.
 const REACH_LABELS: Record<string, string> = {
   iron: 'Iron', gold: 'Gold', shadow: 'Shadow', veil: 'Veil',
-  heart: 'Heart', eye: 'Eye', stone: 'Stone', star: 'Star', flesh: 'Flesh',
+  heart: 'Heart', eye: 'Eye', stone: 'Stone', star: 'Star',
 };
 
 interface ArchetypeCardProps {

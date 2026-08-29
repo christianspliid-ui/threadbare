@@ -183,7 +183,11 @@ export function seedAttachments(graph: WorldGraph): void {
       target: 'starter_copper_market_rations',
       type: 'possesses',
       properties: {
-        modifiers: { flesh: 0.05 },
+        // THR-1359: carried `modifiers: { flesh: 0.05 }` — the retired 9th Reach.
+        // Dropped rather than remapped: `flesh` is not a `ReachDomain`, so the
+        // modifier already contributed nothing to `computeRawScore`, and removing
+        // it preserves today's behaviour exactly. Picking a live Reach would have
+        // *granted* this item 0.05 it never effectively had.
         tags: ['#food', '#consumable', '#travel'],
       },
     });

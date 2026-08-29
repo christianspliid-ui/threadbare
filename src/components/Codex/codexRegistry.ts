@@ -87,6 +87,23 @@ export interface CodexCategory {
 
 // ─── Reach Glyphs ────────────────────────────────────────────────
 
+/**
+ * THR-1359: the `flesh` rows in this map and in `REACH_DISPLAY` below are a
+ * **deliberate legacy mapping, not retired-Reach residue.** Both bags are keyed by
+ * a template's raw `reach` string and by world-model `reach.*` node suffix — not by
+ * `ReachDomain` — and `world-model.json` still ships `reach.flesh` as a live node.
+ * The `Record<string, string>` annotation is therefore correct here, and the same
+ * nine-member set is asserted by `TOOLTIP_BACKED_REACHES` in `engine/aftermathWords.ts`.
+ *
+ * Measured 2026-08-29: no live action template declares `reach: 'flesh'`, so these
+ * rows render nothing today — they are the fail-open path if one ever does, which is
+ * the designed behaviour (a reach with no display entry paints raw in the nav rail;
+ * see `SUBCATEGORY_DISPLAY` below). `time` and `life` carry display words with no
+ * world-model node and are the genuinely unbacked pair — see `TOOLTIP_BACKED_REACHES`.
+ *
+ * Removing the node and these rows is THR-1368, and they must land together: either one
+ * alone leaves the nine-vs-eight mismatch pointing the other way.
+ */
 const REACH_GLYPHS: Record<string, string> = {
   iron: '\u2694',    // ⚔
   gold: '\u2696',    // ⚖
