@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-08-29 11:55 local (09:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-08-29 12:55 local (10:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -14,12 +14,11 @@ About five minutes. Open the *good ending* links first:
 
 Your question: *are they worth meeting twice?* Then [the brief](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/retrofit-batch-2-brief.md) needs one word — *"batch 2, seven is fine"*, *"keep it six"*, or *"same rule — judge batch 2 on one first."*
 
-## Also waiting (11)
+## Also waiting (10)
 
 Detail in [user-actions.md](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md).
 
-- **New — how much of the world happens off-screen?** *(from tb-orchestrator)* Two tickets, one question, and they want answering together. [Merchants cannot build off-screen](https://linear.app/threadbare/issue/THR-1348/ambitions-held-below-the-spotlight-tier-have-no-agency-path-10-of-the): ten strategic pursuits are unreachable because only background characters ever hold them. [And a merchant barely wants its own trade route](https://linear.app/threadbare/issue/THR-1349/the-decision-board-has-no-variety-term-a-live-board-writes-zero-trade): a builder measured it at roughly **ninety times** the payoff needed to ever win, then stopped and handed the question back rather than tune a number. Either ambitions people hold get a floor on desire, or the game accepts that a whole category of thing quietly never happens. Nothing is blocked today.
-- **More design hours — still the constraint,** now the eleventh hour at the same two names. [Card-grammar unification](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card) (10 days) and [traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools) (14 days) hold the one design slot. **Sit one, or say "park it."** Four plan-doc sessions are behind them — including the fork above, which needs one. Longest waiting to be picked up: [a beast that can be a real character in a scene](https://linear.app/threadbare/issue/THR-1274/no-non-human-cast-primitive-a-beast-cannot-be-a-bound-scene-actor), which caps every hunt encounter.
+- **More design hours — still the constraint,** now the twelfth hour at the same two names. [Card-grammar unification](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card) (10 days) and [traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools) (14 days) hold the one design slot. **Sit one, or say "park it."** Four plan-doc sessions are behind them. Longest waiting to be picked up: [a beast that can be a real character in a scene](https://linear.app/threadbare/issue/THR-1274/no-non-human-cast-primitive-a-beast-cannot-be-a-bound-scene-actor), which caps every hunt encounter.
 - **One word players see — [THR-1314](https://linear.app/threadbare/issue/THR-1314/ul-proposal-work-holding-kind-row-christening-failure-name-register).** A strained company reads as **holding**; the ownership work wants **a holding** to be an owned thing. Unless you say otherwise the newer word moves. Reversible; the ticket does not wait.
 - **[The Physical Conflict map](https://linear.app/threadbare/issue/THR-1258/wayfinder-map-physical-conflict)** — nine questions, all yours; every research question it carried is finished. [How a duel ends](https://linear.app/threadbare/issue/THR-1264/agent-mode-fight-loop-opposed-band-pairs) and [what a wound costs](https://linear.app/threadbare/issue/THR-1263/npc-mode-fight-loop-the-stat-block-and-test-skeleton) release three more.
 - **[Twenty spells](https://linear.app/threadbare/issue/THR-1232/power-generator-sketch-twenty-generated-spells-to-react-to) and [thirty items](https://linear.app/threadbare/issue/THR-1236/item-generator-sketch-thirty-generated-items-to-react-to)** — sketches a session builds for you to react to. Cheapest of the maps.
@@ -30,16 +29,33 @@ Detail in [user-actions.md](https://github.com/christianspliid-ui/threadbare/blo
 - **Chart the hub map** — advice is still to wait one cycle, until your [integrated slice checkpoint](https://linear.app/threadbare/issue/THR-1220) validates the base.
 - **A Tenacious-style trait** — parked, no urgency, listed so it is not silently forgotten.
 
+## From Christian
+
+**You answered the off-screen question, and it is off your list.** Your words, 12:39:
+
+> *"so i think in the longer term we want other gods competing and so having threaded agents that are not the players. those would be able to do stuff 'off-screen'."*
+
+Read back to you and confirmed on Discord: **off-screen life comes from threading, not from opening the attention gate.** Rival gods hold their own threaded agents, and those act away from your eye — rather than background characters everywhere gaining agency by lowering the bar. Neither of the two readings the fork offered survives intact; you replaced the question with a mechanism.
+
+Two consequences follow, both agent calls, and neither returns to you:
+
+- **The attention gate stands.** Being threaded is what grants agency — so [THR-1348](https://linear.app/threadbare/issue/THR-1348/ambitions-held-below-the-spotlight-tier-have-no-agency-path-10-of-the) is no longer a defect to fix by widening it. It becomes an entry on the competing-gods direction, which has no ticket yet and is explicitly long-term.
+- **The merchant trade route is then a content fix.** [THR-1349](https://linear.app/threadbare/issue/THR-1349/the-decision-board-has-no-variety-term-a-live-board-writes-zero-trade)'s ~90× mismatch is the route's authored motivations being wrong for merchants, not the engine mis-weighing desire. A lane rewrites the motivations and reports; no number gets tuned to force the graph.
+
+Nothing to do. The design lanes pick this up from here.
+
 ## Queue
 
-**7 items Ready for Dev. Healthy; nothing here needs you.**
+**6 items Ready for Dev. Healthy; nothing here needs you.**
 
-- **Identical to last hour** — same seven, headed by [the prose doctrine sweep](https://linear.app/threadbare/issue/THR-1324/prose-doctrine-v2-remediation-sweep-10-operative-surfaces-still-teach) and [three tests that go red for no real reason](https://linear.app/threadbare/issue/THR-1328/de-flake-the-three-named-closeout-tests-impediment-id-allocation-5s), the rest small engine and content clean-ups builders found while building. Still no encounter writing on it — which is what the ask above changes. Nothing is stale; the oldest was filed two days ago.
-- **Round 3 of the agent-handbook cleanup is all but finished.** Five of its six pieces merged since last hour, including [the UI-laws doctrine registration](https://linear.app/threadbare/issue/THR-1358) that closes the round. The last piece — [code debts](https://linear.app/threadbare/issue/THR-1357/r3-t5-code-debts-delete-agentwheel-honest-removal-test-harvest) — is at the door in [PR #1729](https://github.com/christianspliid-ui/threadbare/pull/1729), waiting on green. Rounds 4–5 remain.
-- **In Dev: 5 — two live, three parked.** The two live are that last round-3 piece and [deleting a dead component](https://linear.app/threadbare/issue/THR-1351/delete-dead-agentwheeltsx-component-and-its-orphan-test-rejected), which the same PR appears to already cover; the executor lane owns sorting that out, not you. The three parked are your standing asks ([THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to), [THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server), [THR-1168](https://linear.app/threadbare/issue/THR-1168/two-authored-encounter-audio-moments-have-no-live-caller-wire-or)); park shape verified intact this run.
+- **One lighter than last hour**, headed by [the prose doctrine sweep](https://linear.app/threadbare/issue/THR-1324/prose-doctrine-v2-remediation-sweep-10-operative-surfaces-still-teach) and [three tests that go red for no real reason](https://linear.app/threadbare/issue/THR-1328/de-flake-the-three-named-closeout-tests-impediment-id-allocation-5s), the rest small engine and content clean-ups builders found while building. Still no encounter writing on it — which is what the ask above changes. Nothing is stale; the oldest was filed two days ago.
+- **Round 3 of the agent-handbook cleanup is finished.** Its last piece, [code debts](https://linear.app/threadbare/issue/THR-1357/r3-t5-code-debts-delete-agentwheel-honest-removal-test-harvest), merged to main — all six pieces are in. Rounds 4–5 remain. Nothing in the game changes.
+- **In Dev: 4 — one live, three parked.** The live one is [hook chips that go nowhere](https://linear.app/threadbare/issue/THR-1330/ascendant-bar-hook-chips-carry-a-tooltip-but-no-image-and-no-link-law) (see Health). The three parked are your standing asks ([THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to), [THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server), [THR-1168](https://linear.app/threadbare/issue/THR-1168/two-authored-encounter-audio-moments-have-no-live-caller-wire-or)); park shape verified intact this run.
 
 ## Health
 
-**All green.** Deploys current, automated checks running, all nine scheduled lanes on schedule, the git housekeeping run fresh at 11:40, and the one open PR is armed and waiting on its checks.
+**Green except one PR, which is the executor lane's to sort out — not yours.**
 
+- **[PR #1731](https://github.com/christianspliid-ui/threadbare/pull/1731)** (hook chips, THR-1330) has *both* a merge conflict and a failing required check, at 29 minutes old. Clearing the conflict alone will not make it mergeable; a session needs to read the failing check first. Flagged for the executor lane.
+- Deploys current (live site serving `41d6f08b`), automated checks running, all nine scheduled lanes on schedule, git housekeeping fresh at 12:40.
 - Two overnight quiet windows (22–23 and 23–24 August, ~11h each) still surface in the lane probe. **Declined as normal per your 8 August ruling**; noted for visibility only, no action.
