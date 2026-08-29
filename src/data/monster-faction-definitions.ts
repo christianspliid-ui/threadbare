@@ -27,7 +27,13 @@ export const MONSTER_FACTION_DEFINITIONS: FactionDefinition[] = [
     themeColor: '#8B0000',
     factionType: 'monster',
     isMonsterFaction: true,
-    reachWeights: { iron: 0.9, force: 0.7 },
+    // THR-1345: was `{ iron: 0.9, force: 0.7 }`. `force` is a live *Sphere*, not a
+    // Reach — the axes are orthogonal. Force's Reach equivalent is Iron, already the
+    // lead weight here, so the key was restating the lead on the wrong axis. The
+    // pack's second competence is the one its description names next — holding
+    // territory — which is Stone (endurance, preservation). Stone also keeps this
+    // faction's heraldry distinct from monster_energy, which leads Iron into Star.
+    reachWeights: { iron: 0.9, stone: 0.7 },
     locationTypes: ['lair'],
     rankTiers: [
       {
@@ -103,7 +109,11 @@ export const MONSTER_FACTION_DEFINITIONS: FactionDefinition[] = [
     themeColor: '#FFD700',
     factionType: 'monster',
     isMonsterFaction: true,
-    reachWeights: { force: 0.8, star: 0.6 },
+    // THR-1345: was `{ force: 0.8, star: 0.6 }`. `force` is a Sphere name on a
+    // Reach-typed bag; its Reach equivalent is Iron (strength, force, direct
+    // confrontation) — a storm flock strikes directly. Star already carries the
+    // riding-the-currents half, so it is unchanged.
+    reachWeights: { iron: 0.8, star: 0.6 },
     locationTypes: ['lair'],
     rankTiers: [
       {
@@ -141,7 +151,10 @@ export const MONSTER_FACTION_DEFINITIONS: FactionDefinition[] = [
     themeColor: '#228B22',
     factionType: 'monster',
     isMonsterFaction: true,
-    reachWeights: { flesh: 0.9, eye: 0.4 },
+    // THR-1345: was `{ flesh: 0.9, eye: 0.4 }`. Flesh is the retired 9th Reach;
+    // canon migrates its athletics content to Iron. A herd that "overwhelms through
+    // sheer biological mass" is doing exactly that — direct physical confrontation.
+    reachWeights: { iron: 0.9, eye: 0.4 },
     locationTypes: ['lair'],
     rankTiers: [
       {
@@ -293,7 +306,11 @@ export const MONSTER_FACTION_DEFINITIONS: FactionDefinition[] = [
     themeColor: '#556B2F',
     factionType: 'monster',
     isMonsterFaction: true,
-    reachWeights: { shadow: 0.8, flesh: 0.5 },
+    // THR-1345: was `{ shadow: 0.8, flesh: 0.5 }`. Flesh is the retired 9th Reach;
+    // canon migrates its body content to Stone. A plague shamble's competence is
+    // grinding persistence — it endures and keeps coming — which is Stone
+    // (endurance, preservation). Shadow keeps the creeping-contagion half.
+    reachWeights: { shadow: 0.8, stone: 0.5 },
     locationTypes: ['lair'],
     rankTiers: [
       {
