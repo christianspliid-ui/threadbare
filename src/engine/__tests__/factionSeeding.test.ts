@@ -133,8 +133,14 @@ describe('seedFactionFromDefinition', () => {
 
     // eye should be strong (0.8 weight) — capability > 50
     expect(caps.eye).toBeGreaterThan(40);
-    // star should be weak (0.1 weight) — capability < 30
-    expect(caps.star).toBeLessThan(30);
+    // heart should be weak (0.2 weight) — capability < 30.
+    // THR-1345: this bound used to be pinned on `star`, which sat at 0.1 only because
+    // the guild's field-hardiness weight was parked on the retired `flesh` Reach. Star
+    // now carries it at 0.4, so the weak-reach probe moved to the next-lowest live
+    // weight rather than being loosened to keep passing.
+    expect(caps.heart).toBeLessThan(30);
+    // ...and the remap is itself asserted: star must now read as a mid weight, not weak.
+    expect(caps.star).toBeGreaterThan(caps.heart);
 
     // Preferences should be normalized 0–1
     const maxPref = Math.max(...Object.values(prefs));

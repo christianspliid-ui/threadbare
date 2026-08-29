@@ -1,5 +1,5 @@
 {
-  "total": 2947,
+  "total": 2942,
   "command": "npx tsc -b --force --pretty false",
   "perFile": {
     "scripts/lint-encounter-content.ts": 2,
@@ -210,7 +210,6 @@
     "src/data/encounters/the-wall-of-the-mason-lord.ts": 2,
     "src/data/encounters/wandering-healer-shrine-access.ts": 1,
     "src/data/encounters/warlords-tribute.ts": 1,
-    "src/data/faction-definitions.ts": 1,
     "src/data/faction-encounter-content.ts": 5,
     "src/data/hex-vignette-content.ts": 1,
     "src/data/hidden-mark-prose.ts": 2,
@@ -219,7 +218,6 @@
     "src/data/mastery-trait-content.ts": 7,
     "src/data/mercenary-encounter-content.ts": 31,
     "src/data/monster-encounter-content.ts": 4,
-    "src/data/monster-faction-definitions.ts": 4,
     "src/data/movement-content.ts": 1,
     "src/data/narrative-content.ts": 1,
     "src/data/omenTemplates.ts": 24,

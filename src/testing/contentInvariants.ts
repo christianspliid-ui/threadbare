@@ -9,6 +9,7 @@ import type {
   UnifiedActionTemplate,
 } from '../types/unifiedAction';
 import { isActionStepBranch, isRouteDecision } from '../types/unifiedAction';
+import type { FactionDefinition } from '../types/faction';
 import { REACH_DOMAINS } from '../types/traits';
 import { VALUE_PAIRS } from '../types/agent';
 import { leansOnAxis, leansOnRoute } from '../engine/encounters/poleLean';
@@ -490,5 +491,31 @@ export function assertAllValidReaches(templates: readonly UnifiedActionTemplate[
     for (const step of template.steps) {
       assertValidStep(step, template.id);
     }
+  }
+}
+
+/**
+ * Every key of a faction's `reachWeights` must be a live `ReachDomain` (THR-1345).
+ *
+ * `reachWeights` is declared `Partial<Record<ReachDomain, number>>`, so excess-property
+ * checking already rejects a stale key on a directly-annotated literal — but that only
+ * holds for literals the typechecker still looks at. Five such errors sat unread in the
+ * THR-489 red baseline for the life of the defect, and a bag reached through a widened
+ * annotation (`Record<string, number>`) is invisible to `tsc` outright. This invariant
+ * closes both paths by reading the values the seeder will actually read.
+ *
+ * Stale keys are not inert: `factionSeeding` stores this bag on the faction node, from
+ * where `computeSettlementReaches` normalizes across *all* keys present — so a key no
+ * consumer can use still scales down every legitimate reach at that settlement.
+ */
+export function assertValidReachWeights(definition: FactionDefinition): void {
+  for (const key of Object.keys(definition.reachWeights)) {
+    expect(
+      VALID_REACHES.has(key),
+      `faction '${definition.id}' declares reachWeights key '${key}', which is not a ReachDomain. `
+        + `Valid: ${REACH_DOMAINS.join(', ')}. `
+        + `'flesh' is the retired 9th Reach (migrate per Docs/canon/cosmology.md); `
+        + `'force' is a Sphere name, not a Reach — the axes are orthogonal.`,
+    ).toBe(true);
   }
 }
