@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-29 23:55 local (21:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-30 00:55 local (22:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -13,15 +13,15 @@
 
 **Then approve [the brief](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/retrofit-batch-2-brief.md) — the camp seven:** shrine offering, sharpening blades, warding the camp, a prayer, rest, tending wounds, scouting. No typed consequences at all; the last encounters below standard. `shrine_offering` is #1 of [your slice checkpoint](https://linear.app/threadbare/issue/THR-1220), which cannot invite you until they are rewritten. The bar, live: [The Beast in the Granary](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.hunt.the_beast_in_the_granary). The brief proposes **seven** rather than six because the camp set is one family in one file.
 
-**Three ways to close it:** *"batch 2, seven is fine"* · *"keep it six"* · *"same rule — judge batch 2 on one first."* It is the only High-priority content work on the board and the fastest way to put real game work back on a shelf thinned to clean-ups (ask 2).
+**Three ways to close it:** *"batch 2, seven is fine"* · *"keep it six"* · *"same rule — judge batch 2 on one first."* It is the only High-priority content work on the board and — since the cleanup programme finished tonight — the fastest way to put real game work in front of builders who have none (ask 2).
 
 ### 2. Design hours — the shelf has run dry — [THR-1002](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card) + [THR-790](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)
 
-**Two** items sit Ready for Dev and **both** are clean-up — a test de-flake and a glossary proposal. **New product work has stopped arriving**; the count moves only when clean-ups are picked up. Roughly forty-seven items sit in Todo and every one needs a plan doc first. The executor writes up problems it finds while building — that source produces engine fixes and clean-ups, never new designed features.
+**Two** items sit Ready for Dev and **both** are clean-up — a test de-flake and a glossary proposal. Nothing is actively being built: the context-cleanup programme, which had been carrying the queue, closed out at 00:31 tonight. **New product work has stopped arriving**; roughly forty-seven items sit in Todo and every one needs a plan doc first. The executor writes up problems it finds while building — that source produces engine fixes and clean-ups, never new designed features.
 
 **The block has two names on it** *(orchestrator lane, standing — 10 and 14 days)*: [unify the card grammar](https://linear.app/threadbare/issue/THR-1002) (your 6 August note) and [traits wave 2](https://linear.app/threadbare/issue/THR-790) (assigned to you). That lane holds one design slot and will not walk either backwards out of the column on its own. **Sit one, or say *"park it"*** — four plan-doc sessions are unblocked behind them. Neither asks what the game should *be*; both need an attended session, not a decision.
 
-**Unblocked and waiting:** the three carve-up docs ([reactive loop](https://linear.app/threadbare/issue/THR-1298), [calling & surfaces](https://linear.app/threadbare/issue/THR-1299), then [undertaking factory](https://linear.app/threadbare/issue/THR-1300)); [your one-button snapshot](https://linear.app/threadbare/issue/THR-1134) (High, your own 16 August request, untouched 13 days); [a beast that can be a real character](https://linear.app/threadbare/issue/THR-1274); [nations and named areas](https://linear.app/threadbare/issue/THR-1155).
+**Unblocked and waiting:** the three carve-up docs ([reactive loop](https://linear.app/threadbare/issue/THR-1298), [calling & surfaces](https://linear.app/threadbare/issue/THR-1299), then [undertaking factory](https://linear.app/threadbare/issue/THR-1300)); [your one-button snapshot](https://linear.app/threadbare/issue/THR-1134) (High, your own 16 August request, untouched 14 days); [a beast that can be a real character](https://linear.app/threadbare/issue/THR-1274); [nations and named areas](https://linear.app/threadbare/issue/THR-1155).
 
 ### 3. A word players see, settled and now shipped — veto open — [THR-1314](https://linear.app/threadbare/issue/THR-1314/ul-proposal-work-holding-kind-row-christening-failure-name-register)
 
@@ -29,7 +29,7 @@ Two things were about to be called the same word: **holding** as one of four sta
 
 **It was resolved without waiting for you, and the answer is not the one you were told to expect.** The default on offer was "rename the new ownership word." A lane measured the collision first and found *holding* already reaches the player in **six** places, not two — cohesion, the mandate trend, an army's stance, the ascendant bar, a Fury tier word, a remembrance word. In five of the six it means *steady, enduring*. Ownership is the odd one out, the only one you can count. So the odd one moved: **what a character owns now reads *freehold* to the player**, and *holding* keeps every other sense. The engine's internal word is untouched — four lines of display text instead of five hundred edits.
 
-**Merged and live as of this evening.** The veto is still open and still cheap — four lines to reverse. Say the word if *freehold* is wrong to your ear.
+**Merged and live.** The veto is still open and still cheap — four lines to reverse. Say the word if *freehold* is wrong to your ear.
 
 ### 4. One design map still has questions — and they are all yours — [Physical Conflict](https://linear.app/threadbare/issue/THR-1258/wayfinder-map-physical-conflict)
 
@@ -86,7 +86,7 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
-- **You started the last cleanup round** (2026-08-29, chat: *"go"*) — [round 5](https://linear.app/threadbare/issue/THR-1369) opened 19:44Z; [skills sweep](https://linear.app/threadbare/issue/THR-1370) and [brief-generator fix](https://linear.app/threadbare/issue/THR-1371) merged, [the Flesh rename](https://linear.app/threadbare/issue/THR-1373) cancelled as already done. Two tasks left: [repo-docs](https://linear.app/threadbare/issue/THR-1372) armed as [#1751](https://github.com/christianspliid-ui/threadbare/pull/1751), [the vault pass](https://linear.app/threadbare/issue/THR-1374) in progress since 20:56Z.
+- **The cleanup programme you started is finished** (2026-08-29, chat: *"go"*) — [round 5](https://linear.app/threadbare/issue/THR-1369) ran start to finish in one evening and closed at 00:31 with [the last piece](https://github.com/christianspliid-ui/threadbare/pull/1754): *"round 5 complete, program complete."* Five rounds, eight doctrines registered. Staying fresh is now an automatic weekly check, so no further rounds will be proposed unless you ask.
 - **You settled how much of the world happens off-screen** (2026-08-29, Discord): off-screen life comes from **threading** — rival gods holding their own threaded agents — not from opening the attention gate; [THR-1348](https://linear.app/threadbare/issue/THR-1348) becomes long-term direction and [THR-1349](https://linear.app/threadbare/issue/THR-1349) a content fix.
 - **The afternoon's stuck pull requests were one cause, and it is fixed** — automated checks were being killed at a 20-minute ceiling, not failing; [raised to 35 minutes](https://github.com/christianspliid-ui/threadbare/pull/1740) at 18:04. Delivery machinery only.
 - **Four bits of prose stopped hedging** — [THR-1360](https://linear.app/threadbare/issue/THR-1360) merged 17:23; lines that hint at what is coming were opening on evasive words, so a promise of trouble read as a shrug. Players will read the difference.
