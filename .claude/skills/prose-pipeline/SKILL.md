@@ -13,7 +13,7 @@ description: >
   "prose composer", "prose pipeline", "prose architecture", "graph-walking",
   "resolver registry".
 model: opus
-last_validated_against: 2026-08-25
+last_validated_against: 2026-08-29
 validated_doctrine: prose@2
 ---
 
@@ -155,11 +155,28 @@ Each resolver calls `replacePlaceholder(template, key, value)` for substitution.
 
 All prose follows the project's aesthetic:
 - **Dark world, hidden magic, threads that break through**
-- Short, declarative sentences with one vivid detail
+- Short, declarative sentences. One concrete detail beats three — but a *stated fact* is
+  always allowed to stand on its own (see the mode note below; this bullet is not the
+  retired picturable-anchor rule)
 - No exclamation marks, no breathless enthusiasm
 - Wear and age over polish and perfection
 - The uncanny over the fantastic
-- Dry wit over comedy; irony over sentimentality
+- Dry wit over comedy; irony over sentimentality — a texture preference, never a licence
+  to be writerly where a plain sentence does the job
+
+### Mode: narrator, not inhabitant (Prose Doctrine v2, 2026-08-25)
+
+*Added 2026-08-29 (THR-1324) — this file taught register but never mode, while carrying a
+`prose@2` stamp. The aesthetic bullets above were the only prose instruction here, and
+read alone they invite exactly the in-situ habit the doctrine retired.*
+
+**Narrate, never inhabit.** Resolver output is a narrator's account — a game master
+describing a place, a person, a faction from outside. No interior sensation, no camera
+work, no atmosphere doing no job. **State facts, never encode them:** if the fact is that
+the shrine is avoided, write that sentence rather than the physical evidence a reader must
+decode. Two v1 rules are explicitly **reversed** — *foreshadow-never-announce* (announce
+plainly) and *show-don't-tell* (tell). Full text: [`Docs/canon/prose.md` § Narrator
+mode](../../../Docs/canon/prose.md), authoritative over this page.
 
 ### Register: plainspoken Malazan (THR-609)
 

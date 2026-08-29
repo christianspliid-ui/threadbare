@@ -2,7 +2,7 @@
 name: encounter-pipeline
 description: Automated encounter pipeline v3 — the Encounter Factory line. Runs brief → draft → bounded critic loop → machine gates → live proof → batch report for composition-complete encounter delivery, one encounter or a batch of six. Triggers on "encounter pipeline", "draft encounter", "run encounter pipeline", "author encounter", "encounter batch", "run a batch", or "/encounter-pipeline".
 model: opus
-last_validated_against: 2026-08-25
+last_validated_against: 2026-08-29
 validated_doctrine: prose@2
 ---
 
@@ -73,8 +73,10 @@ five-band ladder; prose pays the nudge off at *every* band, misfires included.
 **The communication pivot (THR-883, locked 2026-07-30): prose does the scene, cards do
 the rules.** The scene lives in the per-class openings, the setting-neutral spine, and
 the outcome prose. A card face is generic and reusable — 2–4 word title, one plain
-mechanical `effectLine` (what the god does and why that moves the odds), one short flavor
-quote — cut from the 21-type card library. Zero scene-bespoke prose on a card face.
+mechanical `effectLine` (what the god does and why that moves the odds) — cut from the
+21-type card library. Zero scene-bespoke prose on a card face. **Cards read like spells:
+imperative verb + noun, one or two direct sentences of effect, and no flavor quote at all**
+(retired 2026-08-25 with Prose Doctrine v2; REVISE trigger 16 below enforces it).
 
 Choosing between authored futures for a mortal ("Forge the truth" / "Temper the
 narrative") is the **rejected** model this replaced. A draft whose player-facing decision
@@ -135,7 +137,7 @@ Every encounter must meet its bar:
 - **Every card pays off in failure** — at least one failure-band fragment per nudge, both failure bands for a big-delta card
 - Aftermath with reflective prose, actor-centered consequences, and reaction choices (medium+)
 - **Cool failure at every band** — the failure path must be as narratively interesting as the success path. If the failure outcome reads like punishment, it's not done.
-- **Human conditions, not mechanical labels** — aftermath prose describes what the protagonist *feels* and *becomes*, not what numbers changed
+- **Human conditions, not mechanical labels** — aftermath prose names the condition the protagonist is now *in* (exposed, indebted, owed a favour, no longer welcome), not what numbers changed. *(Corrected 2026-08-29, THR-1324 — this read "describes what the protagonist *feels* and *becomes*", which is the interior sensation Doctrine v2 forbids. State the standing; never render the feeling from inside.)*
 
 If a draft reads like a functional template with structural bones but no experiential depth, the editorial agent will reject it.
 
@@ -487,7 +489,9 @@ in [`reference/nudge-authoring-spec.md`](reference/nudge-authoring-spec.md) in o
 
 Plus: all structural sections (inspiration anchors, pressure knot, cast, beat structure,
 branching profile, outcome ladder, support bundle, self-audit), a sample opening
-paragraph (continuous prose, fiction-grade), one branch-dependent later paragraph per
+paragraph (continuous prose, **narrator mode** — this read "fiction-grade" until
+2026-08-29, THR-1324, contradicting REVISE trigger 29's rule zero: game prose, not novel
+prose), one branch-dependent later paragraph per
 branch, an aftermath paragraph, concept art direction, and the Experience Differentiator
 Gate (14 YES/NO).
 
