@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-29 05:55 local (03:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-29 06:55 local (04:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -13,7 +13,7 @@
 
 **Then approve the brief — the camp seven:** shrine offering, sharpening blades, warding the camp, a small prayer, rest and reflection, tending wounds, scouting the perimeter. No typed consequences at all in that set; they are the last encounters below standard, and `shrine_offering` is encounter #1 of [your integrated slice checkpoint](https://linear.app/threadbare/issue/THR-1220), which cannot invite you until they are rewritten. The bar is live with no caveats: [The Beast in the Granary](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.hunt.the_beast_in_the_granary). [The brief](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/retrofit-batch-2-brief.md) proposes **seven** rather than your six, because the camp set is one family in one file and splitting the seventh costs a whole factory cycle. **Three ways to close it:** *"batch 2, seven is fine"*, *"keep it six"*, or *"same rule — judge batch 2 on one first."*
 
-**Why it still matters:** the shelf is not short of work — it holds seven items, all engine and clean-up found by builders while building. Take this on its own merit instead: it is the only High-priority content work on the board, it is written and waiting on one word, and **no encounter writing reaches the shelf until it clears.**
+**Why it still matters:** the shelf is not short of work — it holds seven items: the unified-decision-board cutover promoted this morning, plus six engine and content clean-ups found by builders while building. Take this on its own merit instead: it is the only High-priority content work on the board, it is written and waiting on one word, and **no encounter writing reaches the shelf until it clears.**
 
 ### 2. One word players see, in two places — [THR-1314](https://linear.app/threadbare/issue/THR-1314/ul-proposal-work-holding-kind-row-christening-failure-name-register)
 
