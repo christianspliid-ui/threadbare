@@ -7,6 +7,7 @@ description: >
   "responsive", "interaction", or when the task involves visual presentation.
   Also load when designing the **UI pillar** of any feature.
 last_validated_against: 2026-08-29
+validated_doctrine: ui-laws@1
 ---
 
 # Frontend & UI — Domain Context

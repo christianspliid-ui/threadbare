@@ -7,6 +7,7 @@ description: >
   "color palette", "sphere color", "lighting", "visual asset", "terrain tile",
   or when generating or evaluating game artwork.
 last_validated_against: 2026-08-29
+validated_doctrine: ui-laws@1
 ---
 
 # Art Direction — Domain Context

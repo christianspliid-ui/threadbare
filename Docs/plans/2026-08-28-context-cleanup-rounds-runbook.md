@@ -7,6 +7,12 @@ last_reviewed: 2026-08-28
 
 # Context-Cleanup Rounds — Runbook (rounds 2–5)
 
+> **lint_plan_doc:** exempt — process runbook, not a feature plan; the per-system required sections do not apply.
+
+> **Round 2 (game design) DONE** — THR-1337…THR-1343, shipped 2026-08-28; audit + outcome: https://claude.ai/code/artifact/e591d762-eef7-4baf-82fe-73f69e4c3a1d. Registered `rules-of-play`.
+>
+> **Round 3 (UI/UX) DONE** — THR-1350, THR-1353…THR-1358, PRs #1725–#1730, shipped 2026-08-29; audit + outcome: https://claude.ai/code/artifact/98713042-66d0-4a4e-8304-93339d0e3096. Registered `ui-laws`. Round-1 debts paid (index.html was already Threadbearer; AgentWheel deleted with an honest removal test; browser-verify law lists aligned). Style tile retired on Christian's call — registries are `?view=styleguide` + `src/data/hex-tile-assets.ts`. Pulled forward from round 5: the `scripts/rebuild-index.ts` title string (the vault Index regen depended on it). **Remaining: round 4 (technical architecture), round 5 (content & narrative)** — round 5's residue list shrinks to `world-model.json` `reach.flesh` removal + the bannered vault Flesh pages.
+
 > **Purpose:** the exact, self-contained procedure for running the remaining rounds of Christian's context-cleanup program — written at the end of round 1 (2026-08-28) so a fresh session can execute round 2 with zero context from the session that ran round 1. Christian's framing, verbatim: *"assess it to clean it up, remove or handle decisions made on different times in different documents so that everything is aligned and we get a clean, clear and simple context for agents at the highest level of abstraction … in later rounds we will do the same for the game design context, UI/UX context, Technical architecture context, and content and narrative context. the primary purpose of all of this is to clean up context files used by all our agents to get higher quality output in general."*
 >
 > **Round 1 (general/vision layer) is DONE** — THR-1331…THR-1336, PRs #1698–#1702 + #1704, all merged 2026-08-28. Its audit report (method + findings): https://claude.ai/code/artifact/654c5073-3c43-4b05-9b2e-b7dbd315923b. Round 1's yardstick facts (Threadbearer naming, Eight Reaches, single-authority rule, retirement status) are now IN the files — re-derive each new round's yardstick from live authorities, never from this doc.
