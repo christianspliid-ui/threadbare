@@ -1339,16 +1339,17 @@ describe('aftermath mode', () => {
   });
 
   it('falls back to the category glyph when neither entity nor reach resolves (THR-1082)', () => {
-    // `flesh` is tooltip-backed but has no icon in REACH_TO_SPHERE — the exact
-    // case that would render a glyph with an undefined sphere colour.
-    const fleshModel: EncounterStageModel = {
+    // `time` carries a display word but has no icon in REACH_TO_SPHERE — the exact
+    // case that would render a glyph with an undefined sphere colour. (It replaced
+    // `flesh` here when THR-1368 retired that Reach outright.)
+    const unbackedReachModel: EncounterStageModel = {
       ...compactModel,
       aftermath: {
         ...compactModel.aftermath!,
-        consequences: [{ ...compactModel.aftermath!.consequences![0], reachDomain: 'flesh' }],
+        consequences: [{ ...compactModel.aftermath!.consequences![0], reachDomain: 'time' }],
       },
     };
-    render(<EncounterVeil {...defaultProps} model={fleshModel} />);
+    render(<EncounterVeil {...defaultProps} model={unbackedReachModel} />);
     expect(screen.queryByTestId('consequence-chip-reach-boon')).not.toBeInTheDocument();
     expect(screen.getByTestId('consequence-chip-glyph-boon')).toBeInTheDocument();
   });

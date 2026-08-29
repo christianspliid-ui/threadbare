@@ -165,10 +165,18 @@ describe('resolveTooltip', () => {
       expect(tooltip?.label).toBe('Star');
     });
 
-    it('resolves reach.flesh', () => {
-      const tooltip = resolveTooltip('reach.flesh');
-      expect(tooltip).not.toBeNull();
-      expect(tooltip?.label).toBe('Flesh');
+    // THR-1368 retired the ninth Reach: `reach.flesh` and its six edges left
+    // `world-model.json`, so the resolver must now come back empty for it. Asserted
+    // as a negative rather than simply deleted — the deletion is the thing under
+    // test, and a removed case would prove nothing about it.
+    it('no longer resolves reach.flesh — the retired ninth Reach', () => {
+      expect(resolveTooltip('reach.flesh')).toBeNull();
+    });
+
+    it('still resolves all eight live reaches', () => {
+      for (const reach of ['iron', 'gold', 'shadow', 'veil', 'heart', 'eye', 'stone', 'star']) {
+        expect(resolveTooltip(`reach.${reach}`), reach).not.toBeNull();
+      }
     });
   });
 

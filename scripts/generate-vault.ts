@@ -332,10 +332,15 @@ export async function generateVault(options: GenerateVaultOptions = {}) {
 }
 
 // CLI mode
-if (
-  import.meta.url === `file://${process.argv[1]}` ||
-  process.argv[1]?.endsWith('generate-vault.ts')
-) {
+//
+// THR-1368: matched on `import.meta.url === `file://${argv[1]}`` or a `.ts` suffix.
+// Neither arm can fire once bundled and run on Windows — `argv[1]` is a backslashed
+// `C:\...\generate-vault.mjs` while `import.meta.url` is `file:///C:/...`, and the
+// bundle is `.mjs` — so `npm run generate-vault` exited 0 having written nothing.
+// Matching the entry basename fires for the bundle and for the `.ts` source, and
+// stays inert when this module is inlined into somebody else's bundle.
+const entryPath = (process.argv[1] ?? '').replace(/\\/g, '/');
+if (/\/generate-vault\.(ts|mjs|js)$/.test(entryPath)) {
   const args = process.argv.slice(2);
   const dryRun = args.includes('--dry-run');
   const validate = !args.includes('--no-validate');
