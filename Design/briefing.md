@@ -1,11 +1,11 @@
 # Briefing
-**Generated:** 2026-08-29 13:55 local (11:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-08-29 14:55 local (12:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
 **Play two encounters, then approve the batch-2 brief — [THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to) + [THR-1222](https://linear.app/threadbare/issue/THR-1222/run-retrofit-batch-2-the-camp-seven-through-the-factory-line-shrine).**
 
-Unchanged, and unchanged in reasoning: it is the only High-priority content work on the board, it is written, and **no encounter writing reaches the shelf until it clears.**
+Unchanged, and this hour it is also the cheapest fix for the queue below. The ready shelf has thinned to almost nothing anyone would call *making the game* — seven items, and six of them are clean-ups and glossary questions. **This ask is the one that puts written content work back on it, today, for one word.**
 
 About five minutes. Open the *good ending* links first:
 
@@ -18,7 +18,7 @@ Your question: *are they worth meeting twice?* Then [the brief](https://github.c
 
 Detail in [user-actions.md](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md).
 
-- **More design hours — still the constraint,** now the thirteenth hour at the same two names. [Card-grammar unification](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card) (10 days) and [traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools) (14 days) hold the one design slot. **Sit one, or say "park it."** Four plan-doc sessions are behind them. Longest waiting to be picked up: [a beast that can be a real character in a scene](https://linear.app/threadbare/issue/THR-1274/no-non-human-cast-primitive-a-beast-cannot-be-a-bound-scene-actor), which caps every hunt encounter.
+- **Design hours — this changed today: the shelf actually ran dry, not nearly.** For twelve runs the orchestrator reported it *could not* stage new design work while [card-grammar unification](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card) (10 days) and [traits wave 2](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools) (14 days) hold the one design slot. That was harmless while ready work existed. As of this morning it is not — new product work has stopped arriving. **Sit one, or say "park it."** Neither needs a decision about what the game *is*; they need an attended session. Longest waiting behind them: [a beast that can be a real character in a scene](https://linear.app/threadbare/issue/THR-1274/no-non-human-cast-primitive-a-beast-cannot-be-a-bound-scene-actor), which caps every hunt encounter.
 - **One word players see — [THR-1314](https://linear.app/threadbare/issue/THR-1314/ul-proposal-work-holding-kind-row-christening-failure-name-register).** A strained company reads as **holding**; the ownership work wants **a holding** to be an owned thing. Unless you say otherwise the newer word moves. Reversible; the ticket does not wait.
 - **[The Physical Conflict map](https://linear.app/threadbare/issue/THR-1258/wayfinder-map-physical-conflict)** — nine questions, all yours; every research question it carried is finished. [How a duel ends](https://linear.app/threadbare/issue/THR-1264/agent-mode-fight-loop-opposed-band-pairs) and [what a wound costs](https://linear.app/threadbare/issue/THR-1263/npc-mode-fight-loop-the-stat-block-and-test-skeleton) release three more.
 - **[Twenty spells](https://linear.app/threadbare/issue/THR-1232/power-generator-sketch-twenty-generated-spells-to-react-to) and [thirty items](https://linear.app/threadbare/issue/THR-1236/item-generator-sketch-thirty-generated-items-to-react-to)** — sketches a session builds for you to react to. Cheapest of the maps.
@@ -31,15 +31,15 @@ Detail in [user-actions.md](https://github.com/christianspliid-ui/threadbare/blo
 
 ## Queue
 
-**6 items Ready for Dev. Healthy; nothing here needs you.**
+**7 items Ready for Dev. Not starved by count — starved by kind.**
 
-- **Unchanged from last hour**, headed by [the prose doctrine sweep](https://linear.app/threadbare/issue/THR-1324/prose-doctrine-v2-remediation-sweep-10-operative-surfaces-still-teach) and [three tests that go red for no real reason](https://linear.app/threadbare/issue/THR-1328/de-flake-the-three-named-closeout-tests-impediment-id-allocation-5s), the rest small engine and content clean-ups builders found while building. Still no encounter writing on it — which is what the ask above changes. Nothing has been sitting long; every item moved within the last two days.
+- **Six of the seven are clean-up.** Two test/tooling fixes ([flaky closeout tests](https://linear.app/threadbare/issue/THR-1328/de-flake-the-three-named-closeout-tests-impediment-id-allocation-5s), [a worktree stub that lies about being ready](https://linear.app/threadbare/issue/THR-1326/fresh-worktree-node-modules-stub-find-the-producer-31-arrivalsweek-and)), two glossary proposals, two engine tidies. The seventh — [four bits of foreshadowing prose that hedge](https://linear.app/threadbare/issue/THR-1360/four-shipped-foreshadowing-clauses-open-on-the-evasive-lexicons) — is the only player-facing item, and it is Low. **No new content or feature work is arriving**, which is what both asks above address. Nothing is stale; everything moved today.
 - **In Dev: 4 — one live, three parked.** The live one is [hook chips that go nowhere](https://linear.app/threadbare/issue/THR-1330/ascendant-bar-hook-chips-carry-a-tooltip-but-no-image-and-no-link-law) (see Health). The three parked are your standing asks ([THR-1130](https://linear.app/threadbare/issue/THR-1130/encounter-factory-pilot-volume-retrofit-the-15-nudge-era-encounters-to), [THR-1133](https://linear.app/threadbare/issue/THR-1133/attended-pixel-pass-sweep-five-owed-19201080-captures-one-dev-server), [THR-1168](https://linear.app/threadbare/issue/THR-1168/two-authored-encounter-audio-moments-have-no-live-caller-wire-or)); park shape verified intact this run.
 
 ## Health
 
 **Green except one PR, which is the executor lane's to sort out — not yours.**
 
-- **[PR #1731](https://github.com/christianspliid-ui/threadbare/pull/1731)** (hook chips, THR-1330) still has *both* a merge conflict and a failing required check, now 89 minutes old — an hour longer than when it was first flagged. Clearing the conflict alone will not make it mergeable; a session needs to read the failing check first. Still the executor lane's, and it holds the only live In-Dev item.
-- Deploys current (live site serving `bd321486`, this morning's merge), automated checks running, all nine scheduled lanes on schedule, git housekeeping fresh at 13:40.
+- **[PR #1731](https://github.com/christianspliid-ui/threadbare/pull/1731)** (hook chips, THR-1330) still has *both* a merge conflict and a failing required check, now 150 minutes old — up from 89 an hour ago and 61 before that. It is the only live In-Dev item, and it is not moving on its own: clearing the conflict alone will not make it mergeable, so a session has to read the failing check first. Executor lane's, escalating.
+- Deploys current (live site serving `bd321486`; today's later merges were docs-only and correctly skipped a rebuild), automated checks running, both background jobs healthy, all nine scheduled lanes on schedule, git housekeeping fresh at 14:40.
 - Two overnight quiet windows (22–23 and 23–24 August, ~11h each) still surface in the lane probe. **Declined as normal per your 8 August ruling**; noted for visibility only, no action.
