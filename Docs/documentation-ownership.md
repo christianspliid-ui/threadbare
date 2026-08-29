@@ -11,7 +11,8 @@
 | **Repo** (`Docs/`, `.planning/`) | Implementation rationale, design plans, changelog, UI patterns, project status, milestone roadmaps | System definitions, issue tracking (that's Linear) |
 | **Linear** ([Threadbare team](https://linear.app/threadbare)) | Issue tracking, backlog prioritization, handoff comments, project milestones, agent coordination state | System definitions, implementation rationale |
 | **`CLAUDE.md`** | Session workflow, architectural decisions, non-functional priorities, skill routing, rejected approaches | Anything duplicated from the above — link, don't copy |
-| **Canon pages** (`Docs/canon/`) | Per-domain navigation layer: current spec pointers, rejected approaches, open questions, last-reviewed date. Agent Step 0 for authoring work. | Definitions (those live in UL), rationale (those live in plans) |
+| **Canon pages** (`Docs/canon/`) | Per-domain navigation layer: current spec pointers, rejected approaches, open questions, last-reviewed date. Agent Step 0 for authoring work. Also hosts **generated** artifacts (`systems-inventory.md`, `interface-map.generated.md`, `consumption-ledger.generated.md`, `setting-coverage.generated.md`) — never hand-edit those; edit their registries/generators (e.g. `scripts/interface-contracts.ts`) and regenerate. | Definitions (those live in UL), rationale (those live in plans) |
+| **AI index** (`Docs/ai-index/`) | Thin live runtime contracts for engine work — graph interpretation, tick-phase order, refactor footguns. The *detail* layer under `Docs/canon/engine.md`, which routes to it; registered as dependents of the `architecture` doctrine (guidance manifest), so an engine-authority edit flags them. Refreshed when `src/types/graph.ts` / `orchestrator.ts` / `phaseRegistry.ts` change shape. | Design rationale (plans), definitions (UL), gate law (canon/verification-gates.md) |
 
 ### Archived surfaces
 
@@ -73,6 +74,7 @@
 - `changelog.md` — append-only log of changes (date | where | what | why)
 - `ubiquitous-language/` — canonical terminology (UL wins on disagreements)
 - `canon/` — per-domain Canon pages (agent Step 0 for authoring tasks); schema in `canon/README.md`
+- `ai-index/` — live runtime contracts for engine work (graph-contract, tick-phases, invariants-and-footguns); routed to by `canon/engine.md`
 - `documentation-ownership.md` — this file
 
 ---

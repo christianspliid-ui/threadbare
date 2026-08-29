@@ -1,11 +1,16 @@
 # Tick Phases
 
-> Added 2026-04-02. Source of truth: `src/engine/orchestrator.ts`.
+> Added 2026-04-02; refreshed 2026-08-29 (THR-1363). Source of truth: `src/engine/orchestrator.ts`, `src/engine/phaseRegistry.ts`, `src/engine/phases/index.ts`. The generated `Docs/canon/systems-inventory.md` carries the authoritative per-phase wiring table.
 > Purpose: show the live order of operations and the integration assumptions between phases.
 
 ## Entry Point
 
 The simulation tick entry point is `runTick()` in `src/engine/orchestrator.ts`.
+
+**Two wiring modes coexist (THR-238, shipped 2026-04-29):**
+
+- **Registered phases** — `EnginePhase` descriptors under `src/engine/phases/`, listed in `src/engine/phases/index.ts` (`ENGINE_PHASES`), run by `runRegisteredPhases(state, ctx, slot, PHASE_PLAN)` at slot anchors inside `runTick`. Descriptors are reducer-shaped (`(state, ctx) => Partial<GameState>`), boot-validated, and exception-caught into `tick_crash` traces. **This is the required mode for new phases** — a new phase is a descriptor file plus an index entry, no `orchestrator.ts` edit.
+- **Inline legacy phases** — ~70 phases hand-inserted in `runTick` (~1,174 lines), predating the registry. They migrate opportunistically when touched for other reasons; no ticket forces it.
 
 Important implementation detail:
 
@@ -14,7 +19,7 @@ Important implementation detail:
 - some mutate the graph in place
 - some are side-effect helpers that emit traces or notifications without returning state
 
-Do not assume "phase function" means a pure transform.
+Do not assume "phase function" means a pure transform — but do write *new* phases as registered reducer-shaped descriptors.
 
 ## High-Level Order
 
@@ -122,9 +127,20 @@ Current important examples:
 
 This is intentionally coarse, not maximally precise.
 
+Two spatial facts phases frequently get wrong:
+
+- **Hexes live in `GameState.tiles[]`, not the graph** — hex changes are `HexMutation[]` applied in `phaseHexState`.
+- **The distance matrix indexes the place tier only** (THR-1346, via `getPlaceTierLocations`), caps at `MAX_DISTANCE_MATRIX_SIZE` (1200), and is walked row-wise on the per-tick path by social encounter generation and idle-ambition targeting. Encounter *awareness* never uses it — awareness is hex-coordinate distance (`encounterAwareness.ts`).
+
 ## Phase Style Variants
 
-There are three common styles in the current engine:
+There are four styles in the current engine. The first is the one to use for new work:
+
+### Registered `EnginePhase` descriptors (THR-238 — the required mode for new phases)
+
+Reducer-shaped `(state, ctx) => Partial<GameState>` descriptors under `src/engine/phases/`, boot-validated by `phaseRegistry.ts`, exception-caught into `tick_crash`. See Entry Point above.
+
+The remaining three are legacy inline styles:
 
 ### Partial-state phases
 
@@ -155,7 +171,9 @@ The orchestrator itself often performs extra graph updates around phases:
 
 ## Adding A New Phase
 
-Before inserting a phase, decide:
+**Default path: write a registered descriptor** — create the file under `src/engine/phases/`, export an `EnginePhase`, add it to `ENGINE_PHASES` in `src/engine/phases/index.ts`, and pick its slot. Duplicate ids and unknown slots fail at boot. Only extend `runTick` inline when the phase genuinely cannot fit the descriptor contract (needs mid-phase orchestration the slots don't offer) — and say why in the PR.
+
+Either way, before inserting a phase, decide:
 
 1. What data must already be up to date when it runs?
 2. Does it read pre-move or post-move world state?
