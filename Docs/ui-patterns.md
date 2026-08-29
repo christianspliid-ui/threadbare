@@ -42,7 +42,7 @@ Every list item in a sidebar or panel that references a map-located entity (agen
 - **Size:** `var(--text-xs)` — unobtrusive
 - **Hover:** opacity transition (not color change)
 - **Click:** `e.stopPropagation()` — prevents bubbling to parent row's select/click handler
-- **Tooltip:** add a Tooltip wrapper or `title` attribute with brief description
+- **Tooltip:** wrap in the shared `Tooltip` primitive; a `title` attribute may only duplicate the `aria-label` (Law 17 — raw-`title` explanations retired 2026-08-06)
 - **Prop shape:** `onZoomToLocation?: (locationId: string) => void` — the handler in GameView resolves locationId → hex coordinates via graph node properties (`hexCol`/`hexRow`) and calls `handleHexClick`
 - **AvatarHUD exception:** uses `onZoomToLocation?: () => void` (no param) since the ascendant's position is already known via `avatarPos`
 
@@ -389,17 +389,17 @@ return createPortal(content, document.body);
 
 ---
 
-## Panel Styling (Threadbare)
+## Panel Styling (Dark Tapestry)
 
-All sidebar panels and HUD elements follow the Threadbare dark aesthetic.
+All sidebar panels and HUD elements follow the Dark Tapestry aesthetic (always dark, tokens only — Laws 30/32).
 
-- **Background:** `bg-stone-800` or darker — never lighter than `bg-stone-700`
+- **Background:** `var(--bg-deep)` / `var(--bg-surface)` — never brighter than `var(--bg-surface)`
 - **Text primary:** `var(--text-primary)`
 - **Text secondary:** `var(--text-secondary)` for labels, locations, metadata
 - **Text tertiary:** `var(--text-tertiary)` for least-important info
 - **Accent:** sphere colors from `getSphereColor()` for sphere-related elements — never hardcoded hex values
 - **Gold accent:** `var(--accent-gold-dim)` for interactive affordances (eye icons, links)
-- **Borders:** subtle, `border-stone-700` or `border-stone-600` — never bright
+- **Borders:** `var(--border-subtle)` or `var(--border-medium)` — never bright
 
 ---
 
@@ -911,3 +911,4 @@ const toggle = (category: ThreadCategory) => {
 *(2026-03-10 — Added section 17: Disabled Action Feedback (Shake-No). FE-16.)*
 *(2026-03-15 — Added section 18: Hex Chronicle Pattern. HexChronicle redesign with four narrative layers, inline components, staggered animations, and fog-of-war awareness.)*
 *(2026-04-13 — Added sections 19-24: Tab navigation, Toast/alert notifications, Inline loading states, Dropdown menus, Context-sensitive action filtering, Accordion/collapsible sections. THR-48.)*
+*(2026-08-29 — R3 context-cleanup (THR-1353): Panel Styling renamed to Dark Tapestry and converted from Tailwind stone classes to tokens; §1 tooltip rule aligned with Law 17's raw-`title` retirement.)*

@@ -139,16 +139,19 @@ From lowest to highest:
 
 | Level | z-index | Used for |
 |-------|---------|---------|
-| Map | 0 | SVG hex map |
-| Map overlays | 10 | Agent dots, route lines, fog |
+| Map | 0 | HexMapV2 (Three.js canvas) |
+| Map overlays | 10 | HexTooltip, LocationLabelOverlay, fog |
 | HUD | 20 | AvatarHUD, NarrativeLog pill |
 | Top bar | 30 | Always above map |
-| Backdrop | 40 | Invisible click-catcher for popovers |
-| Popover / drawer | 50 | ActionDrawer, InterventionConfirm |
-| Full-screen overlay | 60 | ScryOverlay, StrandView, HarvestScreen |
-| Modal | 70 | AgentProfileModal, EventPopup |
+| Action drawer | 40 | ActionDrawer (card hand) |
+| Debug panel | 45 | DebugPanel |
+| Focused overlays | 50 | ActionDrawer backdrop, SettingsPanel, EncounterVeil, ScryOverlay, StrandView, HarvestScreen |
+| Modals | 60 | `Modal` (shared) — AgentProfileModal, EventPopup |
+| Tooltips | 70+ | `Tooltip` (70 + nesting depth) |
 | Portal dropdown | 9999 | Portaled dropdowns (RivalsButton etc.) — must portal to body |
 | Toast | 10000 | ToastStack — always on top |
+
+*(Table re-synced 2026-08-29 with `Docs/design-system/layout-zones.md`, which is the definitive stacking reference.)*
 
 **Rule:** Any element that needs to appear above the top bar (z-30) **must** use `createPortal(el, document.body)` with `position: fixed`. Never try to out-z-index a parent stacking context.
 

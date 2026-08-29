@@ -54,7 +54,7 @@
 
 | Need | Component | Notes |
 |------|-----------|-------|
-| Generic dialog (confirm, settings, detail) | `Modal` (shared primitive) | Compound: Modal.Header, Modal.Body, Modal.Footer. max-height 85vh. Escape to close. |
+| Generic dialog (confirm, settings, detail) | `Modal` (shared primitive) | Compound: Modal.Header, Modal.Body, Modal.Footer. max-height 75vh (stricter than Law 33's 85vh cap). Escape to close. |
 | Encounter dialogue with branching | `MeetingEncounterModal` | Auto-triggered on encounter. Full encounter UI. |
 | Journey flavor text | `JourneyVignetteModal` | Full-screen during movement. |
 | Obscured challenge preview | `EncounterVeil` | Unknown opponent. |
@@ -233,7 +233,7 @@ These live in `src/components/shared/` and are the building blocks. **Always che
 | Hex map canvas | Center | Fills remaining space | `HexMapV2` (Three.js) |
 | Right panel | Right edge | ~380px | `HexDetailView` / `AgentDetailPanel` / `ThreadDetailView` |
 | Bottom drawer | Bottom edge | Full width, slides up | `ActionDrawer` |
-| Modal layer | Centered overlay | max-width varies, max-height 85vh | `Modal` and custom modals |
+| Modal layer | Centered overlay | max-width varies, max-height ≤85vh (Law 33 cap; the shared `Modal` ships 75vh) | `Modal` and custom modals |
 | Toast/alert layer | Top center | Auto-width | `AlertBar` / `EventPopup` |
 
 See `Docs/design-system/layout-zones.md` for the full zone architecture with z-index stacking and insertion points.

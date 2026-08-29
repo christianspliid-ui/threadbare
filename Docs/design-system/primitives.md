@@ -36,7 +36,7 @@ are specified by this table plus their styleguide entry.
 | `IconButton` | `icon`, `badge?`, `active?`, `size?`, `variant?` | 32×32 icon-only. Badge slot for counts. ≥24px hit area regardless of visual size (Law 46). | #section-iconbutton |
 | `ListRow` | `accentColor?`, `selected?`, `onClick?`, `trailing?` | Compound: `.Title`, `.Subtitle`, `.Leading`. The universal selectable row. | #section-listrow |
 | `Medallion` | `size?`, `accentColor?`, `title?`, `children?` | Ringed clipping disc, sm 40 / md 64 / lg 96. **Frames** an already-resolved visual — never a second art path. | #section-medallion |
-| `Modal` | `open`, `onClose`, `maxWidth?`, `animation?` | Compound: `.Header`, `.Body`, `.Footer`. max-height 85vh, default max-width 600px. Escape closes topmost; focus moves in and returns (Law 50). | #section-modal |
+| `Modal` | `open`, `onClose`, `maxWidth?`, `animation?` | Compound: `.Header`, `.Body`, `.Footer`. max-height 75vh (`Modal.tsx` — stricter than Law 33's 85vh cap), default max-width 600px. Escape closes topmost; focus moves in and returns (Law 50). | #section-modal |
 | `OddsPips` / `CostPips` | `value` / `cost`, `size?`, `muted?`, `emphasised?`, `framed?` | The only sanctioned magnitude glyph language (Law 15). Odds = effect on odds; cost = framed badge, deliberately distinct (Law 10). `aria-label` states the reading in words. | #section-odds-pips |
 | `DeltaCluster` | `direction`, `count`, `label`, `color?`, `size?` | THR-1082 — how much a *state* changed, on the aftermath's consequence chips. Triangles (`▲`/`▼`, the encounter hand's own family), 1–3, or a gold `◆` for a way opening, which has no scale. Distinct from `OddsPips` by Law 10: pips mean effect on the odds, these mean realised change. `label` is the whole reading in words and becomes the `aria-label` (Law 11). | #section-delta-cluster |
 | `ProgressBand` | `label`, `value`, `prose?`, `color?` | Banded readout — use when the reading is a **word**, not a fraction. | #section-progressband |
@@ -195,7 +195,7 @@ interface IconButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> 
 
 **Badge:**
 - Position: absolute top-right
-- Font: monospace, 9px (exception to 16px min — badges are supplementary, not readable text)
+- Font: monospace, `var(--text-xs)` (`IconButton.tsx` — no sub-floor exception; the typography floor holds for badges too)
 - Color: inherits from icon state or `--negative` if icon has hostile context
 
 ### Rules
@@ -344,7 +344,7 @@ Modal.Footer  // { children: ReactNode }  — button row
 ### Behavior
 - Portals to `document.body`
 - Backdrop: `position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 60`
-- Panel: centered, `max-width` prop, `max-height: 85vh`, `overflow-y: auto` on Body
+- Panel: centered, `max-width` prop, `max-height: 75vh` (`Modal.tsx` — Law 33 caps modals at 85vh; the primitive ships stricter), `overflow-y: auto` on Body
 - Escape key closes (via `useEffect` listener)
 - Backdrop click closes (with `e.stopPropagation()` on panel)
 - Entry/exit via `AnimateMount`

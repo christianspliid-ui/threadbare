@@ -1,6 +1,6 @@
 # Design System — Index
 
-**Dark Tapestry** — the UI/UX design system for The Fantasy World Simulator.
+**Dark Tapestry** — the UI/UX design system for Threadbearer.
 
 This folder is the single source of truth for all UI decisions. It is structured for **agent-first use**: each file covers one domain, has a clear "when to read" header, and is written as directives + tables rather than prose.
 

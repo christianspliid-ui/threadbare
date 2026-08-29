@@ -6,7 +6,7 @@
 **Component:** `src/components/shared/EntityVisual.tsx` · **Resolver:** `src/components/shared/entityVisualResolver.ts` · **Fallbacks:** `src/data/entity-visual-fallbacks.ts`
 **Styleguide:** `?view=styleguide` → *EntityVisual (THR-637)*
 
-Every detail modal/panel opens with the **face of the thing it is about** — the subject's image, rendered through one shared primitive and one resolver instead of re-invented per surface. When no curated art exists, a *designed* fallback tile stands in (authored glyph on an id-hashed Threadbare gradient), never a broken state or placeholder gray.
+Every detail modal/panel opens with the **face of the thing it is about** — the subject's image, rendered through one shared primitive and one resolver instead of re-invented per surface. When no curated art exists, a *designed* fallback tile stands in (authored glyph on an id-hashed Dark Tapestry gradient), never a broken state or placeholder gray.
 
 ## Statement
 
@@ -43,7 +43,7 @@ Per-kind source chain (THR-638 art registries slot into `resolveSource` as one b
 
 ## Fallback tiers
 
-- The fallback tile is a **designed state**: an authored glyph (`⌂` place, `⚜` faction, `◆` artifact, `✦` encounter, or a person's name initial) on one of `ENTITY_GRADIENT_COUNT` (6) Threadbare-palette gradients.
+- The fallback tile is a **designed state**: an authored glyph (`⌂` place, `⚜` faction, `◆` artifact, `✦` encounter, or a person's name initial) on one of `ENTITY_GRADIENT_COUNT` (6) Dark Tapestry-palette gradients.
 - The gradient is chosen by `gradientIndexForId(id)` — a **stable hash**, so an entity keeps its colour identity across sessions and saves. Never random (NFP #3).
 - An art `<img>` that 404s swaps to the fallback tile **in place** (no broken-image icon, no layout shift), with one `console.warn` (NFP #4).
 

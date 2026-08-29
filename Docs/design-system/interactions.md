@@ -126,7 +126,7 @@ The `.interactive-row` utility class in `src/index.css` handles padding, radius,
 
 ## Tooltip Pattern
 
-Every icon-only button and truncated text element needs a tooltip. Use the `<Tooltip>` component (wrapper around portal-positioned div) rather than raw `title` attributes in game view — `title` doesn't render in the preview tool and has poor positioning.
+Every icon-only button and truncated text element needs a tooltip. Use the `<Tooltip>` component (wrapper around portal-positioned div), never a raw `title` attribute — Law 17 (amended 2026-08-06) retired the raw-`title` explanation pattern; a `title` may only duplicate an `aria-label` as an assistive-tech fallback.
 
 - Tooltip appears after 600ms hover delay
 - Dismissed immediately on mouse out

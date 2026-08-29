@@ -2,7 +2,7 @@
 
 > **Purpose:** Definitive reference for viewport zones, z-index stacking, responsive scaling, and insertion points. Load this when placing new UI elements.
 >
-> **Last updated:** 2026-04-13
+> **Last updated:** 2026-08-29 (metadata re-synced; body previously updated through THR-1139 without this line moving)
 
 ---
 
