@@ -1,6 +1,6 @@
 # Invariants And Footguns
 
-> Added 2026-04-02. Source of truth: current engine behavior, not design intent.
+> Added 2026-04-02; refreshed 2026-08-29 (THR-1363). Source of truth: current engine behavior, not design intent.
 > Purpose: prevent common mistakes during refactors and feature work.
 
 ## 1. The graph mutates in place
@@ -94,8 +94,17 @@ The orchestrator mixes:
 - returned partial state
 - direct graph mutation
 - helper phases with side effects
+- **registered `EnginePhase` descriptors** (THR-238) — the one mode that *is* reducer-shaped (`(state, ctx) => Partial<GameState>`), boot-validated, and exception-caught by `runRegisteredPhases`
 
-Do not refactor on the assumption that all phases behave like reducers.
+Do not refactor on the assumption that all phases behave like reducers — but write new phases as registered descriptors, which do (see `tick-phases.md` § Entry Point).
+
+## 7b. Awareness is hex distance; the distance matrix is place-tier only
+
+The single most-often-reintroduced rejected approach is location-hop awareness. The rules:
+
+- **Encounter awareness is hex-coordinate distance** (`encounterAwareness.ts`) — never location-graph hops, never the distance matrix.
+- **The distance matrix indexes the place tier only** (THR-1346, via `getPlaceTierLocations`), caps at `MAX_DISTANCE_MATRIX_SIZE` (1200), and IS live: `socialEncounterGeneration.findVisibleAgents` and `idleBehavior.deriveAmbitionTarget` walk whole rows per tick. Grepping for `getDistance` callers will tell you it is unused; it is not.
+- **Hexes are not graph nodes** — `GameState.tiles[]`, mutated via `HexMutation[]` in `phaseHexState`.
 
 ## 8. Structural invalidation is broader than reachability alone
 

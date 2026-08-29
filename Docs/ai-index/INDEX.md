@@ -11,6 +11,8 @@ When working on engine/runtime changes, read these first:
 2. `tick-phases.md`
 3. `invariants-and-footguns.md`
 
+These are the *detail* layer. Three canon gates still bind engine work and are not replaced by this folder: **`Docs/canon/systems-inventory.md`** (Step 0 for any engine design — grep it before drafting; extend/activate, never green-field a listed subsystem), **`Docs/canon/interface-map.md`** (contract stewardship — plans touching mapped subsystems carry an `## Interface impact` section), and **`Docs/canon/verification-gates.md`** (the gate law, including the 30-tick engine smoke). `Docs/canon/engine.md` is the routing surface above this folder.
+
 When working on specific features, then jump to the relevant design docs in `Docs/plans/`.
 
 ## What This Folder Owns
@@ -26,7 +28,7 @@ When working on specific features, then jump to the relevant design docs in `Doc
 - Canonical domain definitions that already live elsewhere
 
 For "why was this designed this way?", use `Docs/plans/`.
-For ongoing project state, use `Docs/project-status.md`.
+For ongoing project state, run `npm run generate-project-status` (`Docs/project-status.md` is generated and untracked since THR-1016) or read the fragments in `Docs/status/`.
 For documentation ownership rules, use `Docs/documentation-ownership.md`.
 
 ## Current Files
