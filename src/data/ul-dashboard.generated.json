@@ -14,7 +14,7 @@
       "filename": "Agents.md",
       "title": "Agents",
       "contentAdjacent": true,
-      "termCount": 35,
+      "termCount": 41,
       "blurb": "Content-adjacent shard. Terms covering entities in the simulation: agents, actors, Ascendant, factions, and their relationships."
     },
     {
@@ -1326,7 +1326,7 @@
       ],
       "status": "canonical",
       "oneLiner": "event-driven 0–1 aggregate on a group node; UI renders bound/holding/frayed/breaking, never the number",
-      "body": "The event-driven 0–1 aggregate on a group node measuring how well a company holds together — its health bar. Starts at `GROUP_COHESION_START_BASE` (currently 0.55, adjusted by formation quality) and moves on events rather than per-tick drift: shared encounter success `+0.06`, failure `−0.08`, a positive member-to-member social `+0.03`, a member's death `−0.15`, each registered dissent `−0.04`.\n\nUI renders a **prose state**, never the number (`getCohesionState`): `bound` at or above `GROUP_COHESION_BOUND_THRESHOLD` (0.75), which also earns the resolution bonus; `holding` at or above `GROUP_FRAY_THRESHOLD` (0.4); `frayed` at or above `GROUP_DISSOLUTION_THRESHOLD` (0.15), where the fray drama pool activates; and `breaking` below that, where dissolution triggers. The DebugPanel is the one surface that shows the raw value.\n\nThis is the group-scoped sense only. Army cohesion is a separate quantity on the sibling army system — do not conflate the two.\n\nCode anchors: `src/engine/groups/groupQueries.ts` (`getCohesionState`, `CohesionState`), `src/data/group-constants.ts`.",
+      "body": "The event-driven 0–1 aggregate on a group node measuring how well a company holds together — its health bar. Starts at `GROUP_COHESION_START_BASE` (currently 0.55, adjusted by formation quality) and moves on events rather than per-tick drift: shared encounter success `+0.06`, failure `−0.08`, a positive member-to-member social `+0.03`, a member's death `−0.15`, each registered dissent `−0.04`.\n\nUI renders a **prose state**, never the number (`getCohesionState`): `bound` at or above `GROUP_COHESION_BOUND_THRESHOLD` (0.75), which also earns the resolution bonus; `holding` at or above `GROUP_FRAY_THRESHOLD` (0.4); `frayed` at or above `GROUP_DISSOLUTION_THRESHOLD` (0.15), where the fray drama pool activates; and `breaking` below that, where dissolution triggers. The DebugPanel is the one surface that shows the raw value.\n\nThis is the group-scoped sense only. Army cohesion is a separate quantity on the sibling army system — do not conflate the two.\n\nThe `holding` band is a **participle** — the company *is holding*, one notch below `bound`. It is not the count noun \"a holding\"; that ownership sense is player-facing as `[[Freehold]]`, which see for the full disambiguation (THR-1314).\n\nCode anchors: `src/engine/groups/groupQueries.ts` (`getCohesionState`, `CohesionState`), `src/data/group-constants.ts`.",
       "seeAlso": [
         {
           "raw": "Group",
@@ -1342,6 +1342,11 @@
           "raw": "Bless this Company",
           "termName": "Bless this Company",
           "resolvedSlug": "agents#bless-this-company"
+        },
+        {
+          "raw": "Freehold",
+          "termName": "Freehold",
+          "resolvedSlug": "agents#freehold"
         }
       ],
       "sourcePath": "Docs/ubiquitous-language/Agents.md#group-cohesion",
@@ -1473,6 +1478,227 @@
         }
       ],
       "sourcePath": "Docs/ubiquitous-language/Agents.md#dissolution-threshold",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "agents",
+      "slug": "undertaking",
+      "name": "Undertaking",
+      "aliases": [
+        "strategic project",
+        "the `StrategicProjectRuntime` (engine)"
+      ],
+      "status": "canonical",
+      "oneLiner": "a multi-tick project an agent takes on of its own motion; the proactive counterpart to an Encounter",
+      "body": "A multi-tick project an agent takes on of its own motion — the proactive counterpart to an `[[Encounter]]`, which the world offers *to* an agent. An undertaking runs to completion or failure across ticks and, on completion, leaves a `[[Work]]` behind.\n\nThe word was settled by THR-1281's grammar verdict and used throughout THR-1297's six slices, but was never filed here; this entry closes that gap (THR-1314) rather than proposing anything new. Each undertaking is declared by a `[[Kind Row]]` and its verbs come from the strategic packs — a row declares what a verb *builds* and how the world can take it back, never whether the verb is offerable.\n\nCode anchors: `src/engine/strategicActionLifecycle.ts`, `src/types/strategicAction.ts` (`UndertakingKindId`, `UndertakingKindRow`), `src/data/undertaking-kinds.ts`.",
+      "seeAlso": [
+        {
+          "raw": "Work",
+          "termName": "Work",
+          "resolvedSlug": "agents#work"
+        },
+        {
+          "raw": "Kind Row",
+          "termName": "Kind Row",
+          "resolvedSlug": "agents#kind-row"
+        },
+        {
+          "raw": "Christening",
+          "termName": "Christening",
+          "resolvedSlug": "agents#christening"
+        },
+        {
+          "raw": "Failure-Name Register",
+          "termName": "Failure-Name Register",
+          "resolvedSlug": "agents#failure-name-register"
+        },
+        {
+          "raw": "Freehold",
+          "termName": "Freehold",
+          "resolvedSlug": "agents#freehold"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Agents.md#undertaking",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "agents",
+      "slug": "kind-row",
+      "name": "Kind Row",
+      "aliases": [
+        "undertaking kind row",
+        "a `UndertakingKindRow`"
+      ],
+      "status": "canonical",
+      "oneLiner": "registry entry declaring one undertaking kind; must name a reachable, motive-gated destroy — until a kind can be undone, it is not a kind",
+      "body": "A registry entry declaring one kind of `[[Undertaking]]`: the CRUD closure for one kind of `[[Work]]` — what builds it, what changes it, and, non-negotiably, what can undo it.\n\n**A row must name at least one reachable, motive-gated destroy.** This is the rule the registry exists to enforce, stated in THR-1297 §1 as *\"until a kind can be undone, it is not a kind\"* — the registry shipped deliberately **empty** in slice 2 rather than register rows against create verbs, and the rows arrived only in slice 5 alongside the destroy verbs that undo them. Registering a row whose destroy does not exist, or exists ungated, is the vacuous satisfaction the plan names as a kill criterion.\n\nAdding a kind is a row, not a code path (NFP #1). A malformed row is a build-time failure via the schema test, never a runtime throw; `validateKindRegistry` returns named problems rather than a boolean.\n\nCode anchors: `src/data/undertaking-kinds.ts` (`UNDERTAKING_KIND_ROWS`, `validateKindRegistry`, `getUndertakingKindRow`), `src/data/strategic-action-constants.ts` (`MOTIVE_GATE_KINDS`).",
+      "seeAlso": [
+        {
+          "raw": "Undertaking",
+          "termName": "Undertaking",
+          "resolvedSlug": "agents#undertaking"
+        },
+        {
+          "raw": "Work",
+          "termName": "Work",
+          "resolvedSlug": "agents#work"
+        },
+        {
+          "raw": "Freehold",
+          "termName": "Freehold",
+          "resolvedSlug": "agents#freehold"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Agents.md#kind-row",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "agents",
+      "slug": "work",
+      "name": "Work",
+      "aliases": [
+        "the work",
+        "a completed undertaking's object"
+      ],
+      "status": "canonical",
+      "oneLiner": "the named object a completed undertaking leaves behind; outlives its maker and its owner",
+      "body": "The named object a completed `[[Undertaking]]` leaves behind — the thing that outlives both its maker and its owner. A road, a hall, a mine, a network, a masterwork.\n\nA work is not a new node type: it is an ordinary world node (location, sublocation, resource, artifact) that has been through `[[Christening]]`. What makes it a work is that it carries an earned proper name and, usually, an `owns` edge naming whoever holds it — see `[[Freehold]]`.\n\nNames are a pure function of the named node's id (NFP #3), with phonetic flavour drawn from a *separately salted* stream so that whether a culture signature is available cannot shift the main sequence. The namer never throws, never returns blank, and never lets a raw template or kind id reach a player surface: the ladder is anchored name → flavoured name → possessive → terminal family noun.\n\n**One set of naming primitives, two grammars.** `generateWorkName` generalises the primitives the company namer already had (possessive, seed rule, fallback discipline); the company namer's own pattern set and draw sequence are deliberately untouched, since folding companies onto the work grammar would have re-rolled every company name in every existing world.\n\nCode anchors: `src/engine/naming/workNames.ts` (`generateWorkName`, `workingName`, `possessive`, `WorkNameContext`), `src/engine/naming/__tests__/groupNameStability.test.ts`.",
+      "seeAlso": [
+        {
+          "raw": "Undertaking",
+          "termName": "Undertaking",
+          "resolvedSlug": "agents#undertaking"
+        },
+        {
+          "raw": "Christening",
+          "termName": "Christening",
+          "resolvedSlug": "agents#christening"
+        },
+        {
+          "raw": "Kind Row",
+          "termName": "Kind Row",
+          "resolvedSlug": "agents#kind-row"
+        },
+        {
+          "raw": "Freehold",
+          "termName": "Freehold",
+          "resolvedSlug": "agents#freehold"
+        },
+        {
+          "raw": "Failure-Name Register",
+          "termName": "Failure-Name Register",
+          "resolvedSlug": "agents#failure-name-register"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Agents.md#work",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "agents",
+      "slug": "christening",
+      "name": "Christening",
+      "aliases": [
+        "the christening",
+        "naming-at-completion"
+      ],
+      "status": "canonical",
+      "oneLiner": "naming at completion, and only at completion; a working possessive holds until then and failures are never christened",
+      "body": "The moment a `[[Work]]` earns its proper name: **at completion, and only at completion.**\n\nUntil then the work carries a **working possessive** — `workingName` renders \"Corran's Road\", the maker's name plus a family noun — because an undertaking in progress belongs to whoever is doing it, while a finished one belongs to the world and takes a proper name (THR-1291 §2). **Failures are never christened**; what a visible failure leaves is a register entry, not a name — see `[[Failure-Name Register]]`.\n\nFail-soft (NFP #4): a christening that cannot resolve leaves the created node's minted name untouched and returns `undefined`. **A christening that cannot happen is not an error.** Where the same mutation already granted the work as a `[[Freehold]]`, the bearer-side face is refreshed in the same pass rather than at the next reconcile, so the character sheet and the world never disagree about what a thing is called even for one tick.\n\nCode anchors: `src/engine/strategicActionLifecycle.ts` (`christenCompletedWork`, `nounForCreatedNode`), `src/engine/naming/workNames.ts` (`workingName`).",
+      "seeAlso": [
+        {
+          "raw": "Work",
+          "termName": "Work",
+          "resolvedSlug": "agents#work"
+        },
+        {
+          "raw": "Undertaking",
+          "termName": "Undertaking",
+          "resolvedSlug": "agents#undertaking"
+        },
+        {
+          "raw": "Freehold",
+          "termName": "Freehold",
+          "resolvedSlug": "agents#freehold"
+        },
+        {
+          "raw": "Failure-Name Register",
+          "termName": "Failure-Name Register",
+          "resolvedSlug": "agents#failure-name-register"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Agents.md#christening",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "agents",
+      "slug": "failure-name-register",
+      "name": "Failure-Name Register",
+      "aliases": [
+        "failure scar",
+        "the register",
+        "`failureScars`"
+      ],
+      "status": "canonical",
+      "oneLiner": "where a *visible* failed undertaking is recorded on the ground; a register, not a name, and clean failures write nothing",
+      "body": "Where a **visible** failed `[[Undertaking]]` is recorded on the ground it failed on, so that failure leaves a story artifact rather than dead air — \"Corran's Folly\".\n\n**A register, not a name.** The distinction is deliberate (THR-1297 review ruling 2.2): the work earned nothing, but the ground remembers that someone tried here and it went badly. That is a fact about the place, not a name the work earned — which is why it is never a `[[Christening]]`.\n\n**Clean failures write nothing.** The caller gates on the residue class (`undertaking_failed_visible`), not the namer, so an undertaking that fails without visible residue leaves the site untouched.\n\nAdditive by construction (NFP #6): entries are a property array on an existing location node, so nothing is minted and no reader that does not know about scars is affected.\n\nCode anchors: `src/engine/strategicActionLifecycle.ts` (`recordFailureScar`), `src/engine/naming/workNames.ts` (`generateFailureScarName`, `FAILURE_SCAR_LEXICON`).",
+      "seeAlso": [
+        {
+          "raw": "Christening",
+          "termName": "Christening",
+          "resolvedSlug": "agents#christening"
+        },
+        {
+          "raw": "Work",
+          "termName": "Work",
+          "resolvedSlug": "agents#work"
+        },
+        {
+          "raw": "Undertaking",
+          "termName": "Undertaking",
+          "resolvedSlug": "agents#undertaking"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Agents.md#failure-name-register",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "agents",
+      "slug": "freehold",
+      "name": "Freehold",
+      "aliases": [
+        "the `'holding'` `AttachmentCategory` (engine literal only)"
+      ],
+      "status": "canonical",
+      "oneLiner": "the attachment category for an owned place or resource; engine literal `'holding'`, said *freehold* in prose so it never collides with the Group Cohesion band",
+      "body": "The attachment category for a place or resource an actor owns — a mine, a road, a hall. Seize-transferable and exempt from slot caps, and earned through an `[[Undertaking]]` rather than looted.\n\n**The `owns` edge is the authority; the freehold attachment is a face.** A freehold is three objects that must agree: the world object node (an existing type — the module never mints it), the `owns` edge actor → object, and the bearer-side attachment held via `possesses`, which is pure bookkeeping. Where edge and face disagree the edge wins and the face is re-minted — never the reverse. **Nothing downstream may decide ownership by reading the face.**\n\nDeliberately **not** a `PossessionSubcategory`: a freehold is a different *kind* of thing from an item in a bag, so `categoryWeights` stays freehold-free and `rewardCategoryNodeQuery` answers `null` for it on purpose. It is uncapped by construction — an absent `SLOT_CAPS` row reads as uncapped, so freeholds need no exemption logic anywhere.\n\n**This is a naming-collision fix, not a new mechanic (THR-1314).** The engine literal is `'holding'` and is **untouched**; the UL and every player surface say *freehold*, so the two never get conflated — the same engine-term/narrative-term split `[[Group]]`/`[[Company]]` and `[[Dissolution Threshold]]`/`[[Broken]]` already use. The word \"holding\" was measured as a **six-way** player-facing collision, not the two-way one the proposal assumed: it renders as the `[[Group Cohesion]]` band, the mandate trend, an army's defensive stance, the ascendant bar's steady state, a Fury tier word, and a `hunger.preserve` remembrance word. Every one of those is a **participle** meaning *steady, enduring*; the ownership sense was the lone count noun, so it is the sense that moved. Renaming the engine literal instead was measured at ~30 identifiers, five strategic verbs and ~500 sites — a destructive sweep (against NFP #6) that would still have left the other five senses colliding.\n\nWhen you read `'holding'` as an `AttachmentCategory`, that is this term. When you read \"the company is holding\", that is `[[Group Cohesion]]`.\n\nCode anchors: `src/engine/holdings.ts` (`grantHolding`, `reconcileHoldingFaces`, `refreshHoldingFaceNames`), `src/types/attachments.ts` (`AttachmentCategory`, `ATTACHMENT_CATEGORY_NAMES`), `src/data/attachment-slot-constants.ts` (`SLOT_TAG_DISPLAY_NAMES`).",
+      "seeAlso": [
+        {
+          "raw": "Work",
+          "termName": "Work",
+          "resolvedSlug": "agents#work"
+        },
+        {
+          "raw": "Undertaking",
+          "termName": "Undertaking",
+          "resolvedSlug": "agents#undertaking"
+        },
+        {
+          "raw": "Group Cohesion",
+          "termName": "Group Cohesion",
+          "resolvedSlug": "agents#group-cohesion"
+        },
+        {
+          "raw": "Companion",
+          "termName": "Companion",
+          "resolvedSlug": "agents#companion"
+        },
+        {
+          "raw": "Attachment",
+          "termName": "Attachment",
+          "resolvedSlug": "traits#attachment"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Agents.md#freehold",
       "contentAdjacent": true
     },
     {
