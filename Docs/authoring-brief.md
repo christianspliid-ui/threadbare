@@ -5,7 +5,7 @@
 >   - Docs/plans/2026-04-16-systemic-wiring-guide.md (sha1: 4deca80f26149d84fc3bd78be749e1e0353115e5)
 >   - Docs/plans/2026-04-16-game-design-direction.md (sha1: 5fbee6401d69a41bf5a14707df1ace997e8f5bd6)
 >   - .claude/skills/encounter-pipeline/SKILL.md (sha1: 536b365a7471a26b4ba6cfd25548bdf86d40bbf7)
->   - Sections A/D, hardcoded in the generator (sha1: 65befe901e88a7024492a94e7d79113ba112b52c)
+>   - Sections A/D, hardcoded in the generator (sha1: b67dc911038d4f3f021a617efa38ef9ec975b96b)
 > **Do not hand-edit.** Regenerate via `npm run build-authoring-brief`.
 
 ---
@@ -22,7 +22,7 @@ This section governs every other section in this brief. Where a design principle
 
 - **Baseline** — the large majority of the words the player reads: step narration, band base text, aftermath overviews. Plain, concrete, active. One idea per sentence. Concrete nouns and verbs over abstractions; dry understatement over ornament. Stacked metaphor, archaic diction and ornamental subordinate clauses are drift. If a word would send a reader to a dictionary, it does not belong here.
 - **Character** — dialogue and agent-attributed lines. Idiosyncratic per persona, but comprehension first. At most one florid voice per scene; the narration around it stays baseline.
-- **Peak** — rationed lyricism, and only on a declared peak surface: the final step's band prose, the fate-reveal line, major aftermath beats. At most one figurative image per paragraph even there.
+- **Peak** — rationed lyricism, and only on a designated **non-encounter** surface: doom stage transitions, the Twilight Phase, World-Soul / Echo prose. **No encounter surface qualifies** — final-step band prose, the fate-reveal line and aftermath beats were peak surfaces until 2026-08-25; Doctrine v2 retired peak lyricism for every encounter surface. At most one figurative image per paragraph even there.
 
 **Interactive text is always plain.** Card names, `effectLine`s, factor lines, purpose lines, buttons, tooltips: no metaphor, no ambiguity about what a click does. Card names are imperative verb + noun ("Inspire Courage", never "A Little More"); an effect line is one or two direct sentences. The card flavor quote is retired.
 

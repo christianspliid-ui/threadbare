@@ -9,8 +9,10 @@
   nudge card types: anatomy, odds-pip vocabulary, the 21 types with status badges,
   the binding model (text slots + target selectors), hand-building doctrine, and the
   open design space (roguelike progression + ascendant-type connections).
-  Spec authority: Docs/plans/2026-07-30-encounter-authoring-frameworks.md (Decision 3
-  + the communication pivot recorded in THR-883). Engine substrate: THR-885
+  Spec authority: .claude/skills/encounter-pipeline/reference/nudge-authoring-spec.md
+  (the communication pivot + § 3/3b hand rules; the 2026-07-30 frameworks plan is
+  superseded on card prose — its Decision 3 predates the quote retirement and the
+  dealt-hand model). Engine substrate: THR-885
   (src/engine/encounters/nudges.ts riders/filters; dispatch hooks). Iterate here —
   this page is deliberately the surface where the card repertoire is expanded and
   discussed before content is authored.
@@ -73,7 +75,6 @@
   .kw { font-family: 'Cinzel', Georgia, serif; letter-spacing: 0.06em; color: var(--blue); }
   .anatomy-title { font-family: 'Cinzel', Georgia, serif; font-size: 1.02rem; margin: 2px 0 6px; }
   .anatomy-effect { font-size: 0.88rem; margin-bottom: 8px; }
-  .anatomy-quote { font-style: italic; font-size: 0.82rem; color: var(--ink-faint); }
   .pips { letter-spacing: 2px; font-size: 0.95em; }
   .pip-g { color: var(--green); }
   .pip-b { color: var(--blue); }
@@ -132,7 +133,7 @@
   <div class="subtitle">Every choice the god can play into a mortal's moment — the types, the odds language, and the room left to grow</div>
 </div>
 
-<p><strong>Doctrine (THR-883, 2026-07-30):</strong> prose does the scene, cards do the rules. The scene opening, stake block, and post-roll outcome prose carry the storytelling; each choice is a <em>card</em> — generic, reusable, mechanically plain. This page is the library's home surface: iterate the repertoire here before any content is authored against it. Spec authority: <span class="mono">Docs/plans/2026-07-30-encounter-authoring-frameworks.md</span>; engine substrate: THR-885.</p>
+<p><strong>Doctrine (THR-883, 2026-07-30):</strong> prose does the scene, cards do the rules. The scene opening, stake block, and post-roll outcome prose carry the storytelling; each choice is a <em>card</em> — generic, reusable, mechanically plain. This page is the library's home surface: iterate the repertoire here before any content is authored against it. Spec authority: <span class="mono">.claude/skills/encounter-pipeline/reference/nudge-authoring-spec.md</span>; engine substrate: THR-885.</p>
 
 <h2>Card anatomy</h2>
 
@@ -230,7 +231,7 @@
   <li><strong>Supporting content ships with the card</strong> — a card granting an item, trait, ambition, or omen is only legal when that content exists; enforced by the grant-liveness build gate.</li>
 </ul>
 
-<h2>The Repertoire — progression design <span class="flag design">DESIGN</span></h2>
+<h2>The Repertoire — progression <span class="flag impl">IMPL</span></h2>
 
 <div class="callout open-space">
 <p><strong>Blessed by Christian, 2026-07-30</strong> (all four verdicts, chat session; spec: <span class="mono">Docs/plans/2026-07-30-nudge-card-repertoire.md</span>). The fantasy in one line: <em>your spheres decide what magic you have, your play decides what it becomes, and your past lives haunt your hand.</em></p>
