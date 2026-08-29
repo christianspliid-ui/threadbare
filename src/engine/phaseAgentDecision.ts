@@ -837,6 +837,9 @@ export function phaseAgentDecision(
               ...(e.advanceProbability !== undefined
                 ? { advanceProbability: e.advanceProbability }
                 : {}),
+              ...(e.ambitionBoost !== undefined
+                ? { ambitionBoost: e.ambitionBoost }
+                : {}),
             })),
             agreement,
             encounterCandidates: decision.topCandidates.length,

@@ -2043,6 +2043,8 @@ export interface DecisionBoardComparisonTrace extends TraceBase {
     desireMultiplier: number;
     temperamentWeight: number;
     advanceProbability?: number;
+    /** The ambition-centrality input to `desireMultiplier`; undertakings only. */
+    ambitionBoost?: number;
   }>;
   /** Whether legacy and the board agree on the winning *family*. */
   agreement: boolean;
