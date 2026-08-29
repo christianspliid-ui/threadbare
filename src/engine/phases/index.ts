@@ -12,8 +12,10 @@
  *  3. No edit to `orchestrator.ts` required — the slot anchor will pick it up.
  *
  * Validation: duplicate ids, cycles, unknown refs, and cross-slot dependencies all
- * throw at module load (CI catches them via `npx tsc --noEmit` and the unit tests
- * in `__tests__/phaseRegistry.test.ts`).
+ * throw at module load — caught by the unit tests in `__tests__/phaseRegistry.test.ts`
+ * (which CI runs via `npm test`). Note `npx tsc --noEmit` is a no-op in this repo
+ * (root tsconfig sets `files: []` — THR-686) and proves nothing; the type gate is
+ * `npm run check:typecheck`.
  *
  * Land 1 (THR-238): registry skeleton lands empty. Land 2 onward populates it.
  */

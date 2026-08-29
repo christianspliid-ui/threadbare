@@ -16,7 +16,7 @@ export interface GraphNode {
 /** Typed node categories */
 export type NodeType =
   | 'actor'              // individuals, groups, factions, cultures, gods
-  | 'location'           // hexes, regions, sub-locations
+  | 'location'           // both place tiers: settlements/wilds AND sublocations (parentLocationId, THR-1183). Hexes are NOT nodes — GameState.tiles[]
   | 'trait'              // trait definitions (category: innate/mastery/scar/etc.)
   | 'artifact'           // common artifacts
   | 'artifact_legendary' // legendary artifacts (have own trait graph)
@@ -25,17 +25,13 @@ export type NodeType =
   | 'event'              // resolved action records
   | 'cosmology'          // sphere/foundation nodes (imported from taxonomy)
   | 'region'             // geographic region clusters (terrain gen Phase 2)
-  // THR-1177: sublocations are minted two ways and this union only ever described one
-  // of them. `sublocation.ts` mints them as `location` nodes carrying
-  // `locationSubtype`/`parentLocationId`; `strategicGraphOps.createSublocation` mints
-  // `type: 'sublocation'` outright, and `encounterAftermath` (~701) and
-  // `buildUnifiedEncounterStageModel` (~113) both branch on that literal. So the type
-  // was live in production on both the write and read side while being off-union — the
-  // union is what drifted, not the writers. Three EDGE_SCHEMA rows already named it
-  // (`contains`, `has_trait`, `constructed_by`), each a type error parked in the
-  // typecheck baseline. Registering it here makes those rows legal and lets `located_at`
-  // widen honestly. The duplicate mint shape is a separate design question — THR-1183.
-  | 'sublocation'        // a place inside a location, minted directly by strategicGraphOps
+  // THR-1177 registered this member after it had been written and read in production
+  // while off-union. THR-1183 then unified the mint: every producer now writes
+  // sublocations as `location` nodes carrying `parentLocationId` (ask via
+  // `src/engine/sublocationShape.ts`), and `'sublocation'` remains registered so
+  // readers stay legal for saved worlds that still carry the bare type. No writer
+  // mints it — do not add one.
+  | 'sublocation'        // reader-accepted legacy shape (THR-1177); no producer writes it since THR-1183
   | 'ambition'           // ambition template instances assigned to actors
   | 'encounter_template' // encounter template graph node (design plan §3.8, B5)
   | 'relationship'       // reified relationship between two actors (design plan §3.9, B5)
