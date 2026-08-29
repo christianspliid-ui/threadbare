@@ -194,13 +194,27 @@ export function hasOpposingBand(graph: WorldGraph, actorId: string): boolean {
  * Derivation is unique by construction rather than by bookkeeping, which is why it
  * is preferred here over moving the sequence onto `SimulationRuntime`: relocating a
  * counter keeps a value that depends on *how many* counters were minted earlier,
- * while this one depends only on *what* is being answered. Three facts make it
- * total — `collectBandOppositions` mints at most one counter per initiator action,
- * a counter never becomes an initiator itself (`counterToActionId` short-circuits
- * the loop), and the pool holding them is local to a single tick.
+ * while this one depends only on *what* is being answered and *when*. Three facts
+ * make it total — `collectBandOppositions` mints at most one counter per initiator
+ * action per tick, a counter never becomes an initiator itself (`counterToActionId`
+ * short-circuits the loop), and the pool holding them is local to a single tick.
+ *
+ * **The tick is part of the derivation (THR-1347), and the three facts above are
+ * exactly why it has to be.** They establish uniqueness *within* a tick and say
+ * nothing across ticks — but a counter is synthesized fresh on every tick its
+ * initiator is still completing, so a multi-tick initiator produced a run of
+ * counters all sharing one id. Each carries `stepDuration: 1` and `currentStep: 0`,
+ * so each resolves step 1, and `unifiedActionResolution` keys that step's TickEvent
+ * on `ua_${actionId}_step${stepNum}` — an id the React event list assumes is unique
+ * for the run. Measured: `ua_ua_band_counter_ua_34_step1` minted on ticks 40 and 41.
+ *
+ * A counter genuinely *is* a per-tick object, so the tick belongs in its identity;
+ * this is the id telling the truth rather than a uniqueness patch. Determinism
+ * (NFP #3) is untouched — the tick is deterministic, and the id still depends on
+ * nothing that was minted before it.
  */
-export function bandCounterIdFor(initiatorActionId: string): string {
-  return `ua_band_counter_${initiatorActionId}`;
+export function bandCounterIdFor(initiatorActionId: string, tick: number): string {
+  return `ua_band_counter_t${tick}_${initiatorActionId}`;
 }
 
 /** The template id a band answers with, fail-soft for an unrecognized role. */
@@ -231,13 +245,15 @@ export function synthesizeBandCounter(
   band: GraphNode,
   companyGroupId: string,
   graph: WorldGraph,
+  /** The tick this counter is synthesized on — part of its identity, see {@link bandCounterIdFor}. */
+  tick: number,
 ): UnifiedAction | undefined {
   const leader = getGroupLeader(graph, band.id)
     ?? livingMembers(graph, band.id).sort((a, b) => a.id.localeCompare(b.id))[0];
   if (!leader || isAgentGone(leader)) return undefined;
 
   return {
-    actionId: bandCounterIdFor(action.actionId),
+    actionId: bandCounterIdFor(action.actionId, tick),
     actorId: leader.id,
     templateId: counterTemplateFor((band.properties as Record<string, unknown>).bandRole),
     // Same target as the action it answers — the fight is over the same thing.
@@ -286,7 +302,7 @@ export function collectBandOppositions(
       // One engagement per band per tick — a band cannot fight three companies at once.
       if (engagedBands.has(band.id)) continue;
 
-      const counter = synthesizeBandCounter(action, band, company.id, graph);
+      const counter = synthesizeBandCounter(action, band, company.id, graph, state.tick);
       if (!counter) continue;
 
       engagedBands.add(band.id);

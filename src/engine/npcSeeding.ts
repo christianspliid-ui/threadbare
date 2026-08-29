@@ -12,6 +12,9 @@
 
 import type { WorldGraph } from './graph';
 import { getFactionMembershipEdges } from './graphQueries';
+import { isPlaceTierLocation, resolveToParentLocation } from './sublocationShape';
+import { GENOME_NPC_TOPUP_CAP, GENOME_NPC_PASS_PRIORITY } from './settlementGenome/constants';
+import type { GenomeResult } from './settlementGenome/types';
 import {
   LOCATION_ROLE_ROSTERS,
   NPC_NAME_POOL,
@@ -37,6 +40,14 @@ export interface NpcSeededTrace {
   role: string;
   factionId: string | null;
   tick: 0;
+  /**
+   * Which producer minted this NPC (THR-1347). `roster` is the per-tier
+   * `LOCATION_ROLE_ROSTERS` draw; `genome` is the settlement's own authored roster.
+   * Optional so saved traces from before THR-1347 still read as valid.
+   */
+  source?: 'roster' | 'genome';
+  /** For `source: 'genome'`, the genome pass that named this role. */
+  sourcePass?: string;
 }
 
 export interface SeedNpcsResult {
@@ -178,6 +189,159 @@ export function _resetNpcCounter(): void {
   npcCounter = 0;
 }
 
+// ─── Shared minting path ──────────────────────────────────────────────────────
+
+interface MintNpcInput {
+  graph: WorldGraph;
+  /** The settlement the NPC belongs to — where the trace and faction edge anchor. */
+  locationId: string;
+  role: NpcRole;
+  cultureId: string | null;
+  /** sublocationTypeId → instance id, for role-preferred placement. */
+  sublocationByType: Map<string, string>;
+  factionId: string | null;
+  rng: () => number;
+  usedNpcNames: Set<string>;
+  source: 'roster' | 'genome';
+  sourcePass?: string;
+}
+
+/**
+ * Create one ambient NPC actor node with its placement, culture and faction edges.
+ *
+ * Extracted in THR-1347 because worldgen now seeds NPCs from two rosters — the per-tier
+ * `LOCATION_ROLE_ROSTERS` draw and the settlement's own genome roster. Two call sites
+ * hand-copying node shape is how the two producers drift into minting subtly different
+ * actors; one function is how they cannot. Every NPC in a generated world is born here.
+ */
+function mintNpc(input: MintNpcInput): { id: string; trace: NpcSeededTrace } {
+  const {
+    graph, locationId, role, cultureId, sublocationByType,
+    factionId, rng, usedNpcNames, source, sourcePass,
+  } = input;
+
+  const id = `npc_${npcCounter++}`;
+
+  // Culture-aware naming: resolve identity + phonetic signature from culture node (THR-15)
+  let name: string;
+  if (cultureId !== null) {
+    const cultureNode = graph.getNode(cultureId);
+    const identity = cultureNode?.properties.cultureIdentity as CultureIdentity | undefined;
+    const sig = cultureNode?.properties.culturePhoneticSignature as CulturePhoneticSignature | undefined;
+    name = pickCulturalName(
+      identity?.foundationBias ?? '',
+      identity?.veneratedSpheres[0] ?? '',
+      rng,
+      usedNpcNames,
+      sig,
+      cultureId,
+      0,
+    );
+  } else {
+    name = pickCulturalName('', '', rng, usedNpcNames);
+  }
+
+  graph.addNode({
+    id,
+    type: 'actor',
+    name,
+    properties: {
+      actorType: 'individual',
+      spotlightTier: 'ambient' as const,
+      npcRole: role,
+      importance: 0,
+      sphereAffinity: null,
+      // Provenance, stamped on the node rather than left only in a returned trace
+      // (NFP #2). Mirrors `genomeSourcePass` on sublocation nodes, and it is what makes
+      // "did the genome roster reach this world?" a question a generated graph can
+      // answer — the field this ticket exists to fix could not be asked that way.
+      npcSource: source,
+      ...(sourcePass ? { genomeSourcePass: sourcePass } : {}),
+    },
+  });
+
+  // ── located_at edge — prefer role's home sublocation, fallback to location ──
+  const preferredSublocationTypeId = NPC_ROLE_SUBLOCATION_MAP[role];
+  const placementId =
+    (preferredSublocationTypeId && sublocationByType.get(preferredSublocationTypeId))
+    ?? locationId;
+
+  graph.addEdge({
+    id: `${id}_located_at_${placementId}`,
+    source: id,
+    target: placementId,
+    type: 'located_at',
+    properties: {},
+  });
+
+  // ── belongs_to culture edge ───────────────────────────────────────────
+  if (cultureId !== null) {
+    graph.addEdge({
+      id: `edge_culture_${id}_${cultureId}`,
+      source: id,
+      target: cultureId,
+      type: 'belongs_to',
+      properties: { culturalStrength: 1.0 },
+    });
+  }
+
+  // ── member_of faction edge (if location is mapped to a faction) ───────
+  if (factionId !== null) {
+    const factionNode = graph.getNode(factionId);
+    graph.addEdge({
+      id: `${id}_member_of_${factionId}`,
+      source: id,
+      target: factionId,
+      type: 'member_of',
+      properties: {
+        role,
+        rank: 0.1,
+        joinedTick: 0,
+        reputation: 0.12,
+        factionDefId: factionNode?.properties.factionDefId as string | undefined,
+        lastFactionActivityTick: 0,
+      },
+    });
+  }
+
+  return {
+    id,
+    trace: {
+      type: 'npc_seeded',
+      actorId: id,
+      locationId,
+      role,
+      factionId,
+      tick: 0,
+      source,
+      ...(sourcePass ? { sourcePass } : {}),
+    },
+  };
+}
+
+/** sublocationTypeId → instance id for one settlement, for role-preferred placement. */
+function buildSublocationIndex(graph: WorldGraph, locationId: string): Map<string, string> {
+  const byType = new Map<string, string>();
+  for (const edge of graph.getOutgoingEdges(locationId, 'contains')) {
+    const child = graph.getNode(edge.target);
+    if (!child || child.type !== 'location') continue;
+    const childProps = child.properties as Partial<SublocationProperties>;
+    if (childProps.sublocationTypeId && childProps.parentLocationId === locationId) {
+      byType.set(childProps.sublocationTypeId, child.id);
+    }
+  }
+  return byType;
+}
+
+/** The culture a location belongs to, preferring the `current` layer. */
+function resolveLocationCulture(graph: WorldGraph, locationId: string): string | null {
+  const cultureEdges = graph.getOutgoingEdges(locationId, 'belongs_to');
+  for (const edge of cultureEdges) {
+    if ((edge.properties.cultureLayer as string | undefined) === 'current') return edge.target;
+  }
+  return cultureEdges.length > 0 ? cultureEdges[0].target : null;
+}
+
 // ─── Main function ────────────────────────────────────────────────────────────
 
 /**
@@ -216,133 +380,162 @@ export function seedNpcsAtLocations(
     const cap = ROSTER_KEY_TO_CAP[rosterKey] ?? 0;
     if (cap === 0) continue;
 
-    // Find the culture for this location (prefer cultureLayer === 'current')
-    const cultureEdges = graph.getOutgoingEdges(locationId, 'belongs_to');
-    let cultureId: string | null = null;
-    for (const edge of cultureEdges) {
-      const layer = edge.properties.cultureLayer as string | undefined;
-      if (layer === 'current') {
-        cultureId = edge.target;
-        break;
-      }
-    }
-    // Fallback: any belongs_to edge if no 'current' layer found
-    if (cultureId === null && cultureEdges.length > 0) {
-      cultureId = cultureEdges[0].target;
-    }
+    const cultureId = resolveLocationCulture(graph, locationId);
 
     // Faction for this location (optional)
     const factionId = factionLocationMap?.get(locationId) ?? null;
 
     // Build sublocation type → instance ID map for this location (fast lookup).
     // ensureSublocations() has already run before NPC seeding, so nodes exist.
-    const sublocationByType = new Map<string, string>();
-    for (const edge of graph.getOutgoingEdges(locationId, 'contains')) {
-      const child = graph.getNode(edge.target);
-      if (!child || child.type !== 'location') continue;
-      const childProps = child.properties as Partial<SublocationProperties>;
-      if (childProps.sublocationTypeId && childProps.parentLocationId === locationId) {
-        sublocationByType.set(childProps.sublocationTypeId, child.id);
-      }
-    }
+    const sublocationByType = buildSublocationIndex(graph, locationId);
 
     let count = 0;
     for (const entry of roster) {
       if (count >= cap) break;
       if (rng() > entry.chance) continue;
 
-      const id = `npc_${npcCounter++}`;
-
-      // Culture-aware naming: resolve identity + phonetic signature from culture node (THR-15)
-      let npcName: string;
-      if (cultureId !== null) {
-        const cultureNode = graph.getNode(cultureId);
-        const identity = cultureNode?.properties.cultureIdentity as CultureIdentity | undefined;
-        const sig = cultureNode?.properties.culturePhoneticSignature as CulturePhoneticSignature | undefined;
-        npcName = pickCulturalName(
-          identity?.foundationBias ?? '',
-          identity?.veneratedSpheres[0] ?? '',
-          rng,
-          usedNpcNames,
-          sig,
-          cultureId,
-          0,
-        );
-      } else {
-        npcName = pickCulturalName('', '', rng, usedNpcNames);
-      }
-      const name = npcName;
-
-      // ── Create actor node ─────────────────────────────────────────────────
-      graph.addNode({
-        id,
-        type: 'actor',
-        name,
-        properties: {
-          actorType: 'individual',
-          spotlightTier: 'ambient' as const,
-          npcRole: entry.role,
-          importance: 0,
-          sphereAffinity: null,
-        },
+      const { id, trace } = mintNpc({
+        graph, locationId, role: entry.role, cultureId, sublocationByType,
+        factionId, rng, usedNpcNames, source: 'roster',
       });
-
-      // ── located_at edge — prefer role's home sublocation, fallback to location ──
-      const preferredSublocationTypeId = NPC_ROLE_SUBLOCATION_MAP[entry.role];
-      const placementId =
-        (preferredSublocationTypeId && sublocationByType.get(preferredSublocationTypeId))
-        ?? locationId;
-
-      graph.addEdge({
-        id: `${id}_located_at_${placementId}`,
-        source: id,
-        target: placementId,
-        type: 'located_at',
-        properties: {},
-      });
-
-      // ── belongs_to culture edge ───────────────────────────────────────────
-      if (cultureId !== null) {
-        graph.addEdge({
-          id: `edge_culture_${id}_${cultureId}`,
-          source: id,
-          target: cultureId,
-          type: 'belongs_to',
-          properties: { culturalStrength: 1.0 },
-        });
-      }
-
-      // ── member_of faction edge (if location is mapped to a faction) ───────
-      if (factionId !== null) {
-        const factionNode = graph.getNode(factionId);
-        graph.addEdge({
-          id: `${id}_member_of_${factionId}`,
-          source: id,
-          target: factionId,
-          type: 'member_of',
-          properties: {
-            role: entry.role,
-            rank: 0.1,
-            joinedTick: 0,
-            reputation: 0.12,
-            factionDefId: factionNode?.properties.factionDefId as string | undefined,
-            lastFactionActivityTick: 0,
-          },
-        });
-      }
 
       npcIds.push(id);
-      traces.push({
-        type: 'npc_seeded',
-        actorId: id,
-        locationId,
-        role: entry.role,
-        factionId,
-        tick: 0,
-      });
+      traces.push(trace);
 
       count++;
     }
+  }
+
+  return { npcIds, traces };
+}
+
+// ─── Genome top-up (THR-1347) ─────────────────────────────────────────────────
+
+/** Tiers whose settlements run the genome and therefore carry an authored roster. */
+const GENOME_TIERS = new Set(['hamlet', 'town', 'city', 'capital']);
+
+/**
+ * Index every settlement by the NPC roles already standing in it — counting NPCs placed
+ * at one of its sublocations as standing in the settlement, since that is where a role
+ * actually lives once `NPC_ROLE_SUBLOCATION_MAP` has had its say.
+ */
+function indexRolesBySettlement(graph: WorldGraph): Map<string, Set<string>> {
+  const byLocation = new Map<string, Set<string>>();
+  for (const actor of graph.getNodesByType('actor')) {
+    if (actor.properties.actorType !== 'individual') continue;
+    const role = actor.properties.npcRole as string | undefined;
+    if (!role) continue;
+    const edge = graph.getOutgoingEdges(actor.id, 'located_at')[0];
+    if (!edge) continue;
+    const placement = resolveToParentLocation(graph, graph.getNode(edge.target));
+    if (!placement) continue;
+    let roles = byLocation.get(placement.id);
+    if (!roles) byLocation.set(placement.id, (roles = new Set()));
+    roles.add(role);
+  }
+  return byLocation;
+}
+
+/**
+ * Seed the roles a settlement's own genome authored and its generic roster missed.
+ *
+ * This is the live consumer `GenomeResult.npcs` never had (THR-1347). `runSettlementGenome`
+ * builds an NPC roster across four of its five passes and slices it to `NPC_BUDGET`;
+ * before this function that roster was stored on the location and read by nobody, so
+ * `INFRASTRUCTURE_NPCS`, every sphere and reach menu's `npcRoles`, every culture
+ * baseline's `npcRoles` and every archetype's `capstoneNpcs` were authored content that
+ * could not reach a world. Measured on seed 42 / medium: 38 settlements authored 417
+ * distinct roles, 232 of which had no matching NPC at their own settlement.
+ *
+ * **Additive by construction (NFP #6).** It runs *after* `seedNpcsAtLocations`, removes
+ * nothing it produced, and skips any role already standing at the settlement — so the
+ * two producers cannot double-seed a role at one place. Call it with its own PRNG stream
+ * so the base roster's draw stays bit-identical to what it was before this existed.
+ *
+ * **Must run after the genome's second worldgen pass.** The eager pass runs upstream of
+ * culture assignment and faction seeding, so the roster stored at that point is missing
+ * both the `culture` and `reach` contributions — on seed 42 that is 286 of 497 authored
+ * slots, the majority. Reading the eager result would consume the field while leaving
+ * most of the content it names just as unreachable.
+ *
+ * Deterministic (NFP #3): selection is a pure function of graph state — pass priority,
+ * then the genome's own insertion order — and RNG is drawn only for names.
+ */
+export function seedGenomeNpcsAtSettlements(
+  graph: WorldGraph,
+  locationIds: string[],
+  rng: () => number,
+): SeedNpcsResult {
+  const npcIds: string[] = [];
+  const traces: NpcSeededTrace[] = [];
+
+  // Seed the name pool with the names already in the world so a top-up NPC does not
+  // arrive sharing a name with the roster NPC standing next to it.
+  const usedNpcNames = new Set<string>(
+    graph.getNodesByType('actor')
+      .filter(a => a.properties.actorType === 'individual')
+      .map(a => a.name),
+  );
+
+  const rolesBySettlement = indexRolesBySettlement(graph);
+
+  for (const locationId of locationIds) {
+    const locationNode = graph.getNode(locationId);
+    if (!locationNode || !isPlaceTierLocation(locationNode)) continue;
+
+    const subtype = (locationNode.properties.locationSubtype as string | undefined) ?? '';
+    if (!GENOME_TIERS.has(subtype)) continue;
+
+    const cap = GENOME_NPC_TOPUP_CAP[subtype] ?? 0;
+    if (cap === 0) continue;
+
+    const genome = locationNode.properties.genomeResult as GenomeResult | undefined;
+    if (!genome || genome.npcs.length === 0) continue;
+
+    const standing = rolesBySettlement.get(locationId) ?? new Set<string>();
+
+    // Distinct authored roles this settlement is missing, best-identity-first.
+    const missing: { role: NpcRole; sourcePass: string; order: number }[] = [];
+    const seen = new Set<string>();
+    for (let i = 0; i < genome.npcs.length; i++) {
+      const entry = genome.npcs[i];
+      if (standing.has(entry.role) || seen.has(entry.role)) continue;
+      seen.add(entry.role);
+      missing.push({ role: entry.role, sourcePass: entry.sourcePass, order: i });
+    }
+    if (missing.length === 0) continue;
+
+    missing.sort((a, b) => {
+      const pa = GENOME_NPC_PASS_PRIORITY[a.sourcePass] ?? 0;
+      const pb = GENOME_NPC_PASS_PRIORITY[b.sourcePass] ?? 0;
+      return pb - pa || a.order - b.order;
+    });
+
+    const cultureId = resolveLocationCulture(graph, locationId);
+    const sublocationByType = buildSublocationIndex(graph, locationId);
+
+    for (const pick of missing.slice(0, cap)) {
+      const { id, trace } = mintNpc({
+        graph,
+        locationId,
+        role: pick.role,
+        cultureId,
+        sublocationByType,
+        // Faction membership is left to `assignFactionsToExistingNpcs`, which runs after
+        // this and routes on merit — a genome NPC has no location→faction mapping of its
+        // own to consult, and inventing one here would give it a second, unequal path.
+        factionId: null,
+        rng,
+        usedNpcNames,
+        source: 'genome',
+        sourcePass: pick.sourcePass,
+      });
+
+      npcIds.push(id);
+      traces.push(trace);
+      standing.add(pick.role);
+    }
+    rolesBySettlement.set(locationId, standing);
   }
 
   return { npcIds, traces };

@@ -51,7 +51,7 @@ import { AGENT_COUNT_BY_MAP_SIZE, AGENT_COUNT_FALLBACK } from '../data/agent-beh
 import { MC_COMPANY_NAMES } from '../data/mercenary-company-definition';
 import { pickCulturalName, GENERIC_NAMES, buildSettlementCultureRoots, getSettlementCultureSuffixes } from '../data/culture-name-pools';
 import { spawnArmy } from './armySpawning';
-import { assignFactionsToExistingNpcs, seedNpcsAtLocations } from './npcSeeding';
+import { assignFactionsToExistingNpcs, seedNpcsAtLocations, seedGenomeNpcsAtSettlements } from './npcSeeding';
 import type { GameState } from '../types/gameState';
 import { ensureSublocations } from './sublocation';
 import { runSettlementGenome } from './settlementGenome';
@@ -1784,7 +1784,6 @@ export function seedWorld(
   // Data-driven factions should visibly command the places where they operate.
   ensureFactionControlAtHomeLocations(graph, factionDefIds);
   const factionLocationMap = buildDataDrivenFactionLocationMap(graph, factionDefIds);
-  assignFactionsToExistingNpcs(graph, factionLocationMap);
 
   // ── Settlement genome — second pass (THR-1344) ───────────────────────
   // The eager pass above runs at the only point in this seeder where settlements
@@ -1818,6 +1817,43 @@ export function seedWorld(
     // Same PRNG derivation as the eager pass — the genome consumes no randomness today
     // (`seed` is destructured as `_seed`), so this is stream hygiene, not a live draw.
     runGenomeForSettlement(locationIds[i], subtype, seed + i * 7717);
+  }
+
+  // ── Genome NPC top-up (THR-1347) ─────────────────────────────────────
+  // `GenomeResult.npcs` had no consumer: four of the genome's five passes built an NPC
+  // roster, `NPC_BUDGET` sliced it, `materializeGenome` stored it on the location, and
+  // nothing ever read it. So `INFRASTRUCTURE_NPCS`, every sphere and reach menu's
+  // `npcRoles`, every culture baseline's `npcRoles` and every archetype's `capstoneNpcs`
+  // were authored content that could not reach a world. Measured on seed 42 / medium:
+  // 38 settlements authored 417 distinct roles between them, 232 of which had no
+  // matching NPC standing at their own settlement.
+  //
+  // It runs *here*, at the tail, for the same reason the second genome pass does: this
+  // is the first point where the stored roster is complete. `seedNpcsAtLocations` fires
+  // ~300 lines upstream, where only the eager genome exists — a roster missing its
+  // `culture` and `reach` contributions, 286 of 497 authored slots on seed 42. Consuming
+  // the field there would have discharged the ticket while leaving most of the content
+  // it names exactly as unreachable as before.
+  //
+  // Its own PRNG stream, not the shared `rng`: the top-up draws only for names, and an
+  // independent stream keeps `seedNpcsAtLocations`' draw bit-identical to what it was
+  // before this call existed. What changes in a generated world is the added NPCs and
+  // nothing else.
+  const genomeNpcResult = seedGenomeNpcsAtSettlements(
+    graph, locationIds, mulberry32(seed + 51043),
+  );
+
+  // Moved below the top-up (was directly after `buildDataDrivenFactionLocationMap`) so
+  // genome NPCs are routed to factions on the same merit-scored path as roster NPCs
+  // rather than being born faction-less. Safe to move past the genome pass: that pass
+  // reads faction `reachWeights` over `located_at` edges only, and this writes
+  // `member_of` — so nothing between the old and new positions observes the difference.
+  assignFactionsToExistingNpcs(graph, factionLocationMap);
+
+  if (genomeNpcResult.npcIds.length > 0) {
+    console.log(
+      `[WorldGen] Genome NPC top-up: +${genomeNpcResult.npcIds.length} settlement-authored NPCs`,
+    );
   }
 
   return { graph, individualIds, factionIds, guildIds, factionDefIds, locationIds, artifactIds, cultureIds, regionIds, historicalCultureIds };
