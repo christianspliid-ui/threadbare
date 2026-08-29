@@ -2,7 +2,7 @@
 
 Quick-lookup for agents designing attachment mechanics. Find the narrative pattern that fits your concept, then configure the primitive's fields to match.
 
-Types: `src/types/effects.ts` | Constants: `src/data/effect-constants.ts` | Caps: per-item 0.15, global 0.30
+Types: `src/types/effects.ts` | Constants: `src/data/effect-constants.ts` | Caps: per-item 0.15, global 0.30 · `MAX_EFFECTS_PER_ATTACHMENT` = 8 · `ACTION_TRIGGER_MAX_PER_ATTACHMENT` = 2
 
 ---
 
@@ -228,6 +228,51 @@ Good for: mounts (reduce movement cost), wounds (increase movement cost), magica
 **passive** `#item` `#trait` `#condition` `#power` `#agreement` — always-on, unconditional. Best used as one layer in a multi-effect composition, not as the sole effect.
 - `reach` — which domain
 - `value` — how much
+
+### "It lasts a while, then it's over"
+**duration** `#item` `#condition` `#power` — buff/debuff with a tick countdown. The workhorse for temporary states and the effect a `reactive` usually nests.
+- `ticks` — how long it lasts
+- `reach` — which domain
+- `value` — how much
+- `destroyOnExpiry` — remove the attachment when it runs out?
+
+### "Everyone near you feels it"
+**aura** `#item` `#power` `#trait` — modifier applies to *nearby agents*, not the bearer.
+- `radius` — hexes from the bearer (0 = same hex)
+- `target` — `allies` / `enemies` / `all`
+- `reach` — which domain
+- `value` — how much
+
+Good for: banners and standards (ally courage), dread presences (enemy penalty), saintly calm.
+
+### "It shows you what you couldn't see"
+**reveal** `#power` `#item` `#divine` — bypasses normal awareness range.
+- `target` — what becomes visible: `hexes`, `agent`, `encounters`, `attachments`
+- `range` — hex count, or `all`
+- `duration` — (optional) ticks before sight fades
+
+Good for: scrying tools, farseeing blessings, appraisal lenses (reveal attachments).
+
+### "It silences other magic for a while"
+**suppress** `#power` `#divine` — temporarily suppresses active effects without removing them (contrast `dispel`, which removes).
+- `target` — `spell` / `aura` / `all_effects`
+- `scope` — whose effects are suppressed
+- `ticks` — how long
+
+Good for: null wards, dampening fields, a binding that holds a curse dormant rather than curing it.
+
+### "It changes the land's rules of passage and sight"
+**alter_terrain** `#power` `#divine` — applies a terrain overlay to a hex (`warded`, `shrouded`, …) read by `movementCost` and `encounterAwareness`. This is also the *live* barrier mechanism — `create_barrier` was retired in THR-1242 as a second spelling of it.
+- `target` — `self_hex` / `target_hex`
+- `terrainEffect` — a `TerrainOverlayType`
+- `ticks` — number, or `'permanent'`
+
+### "It makes you genuinely better at the craft"
+**stat_contribution** `#item` — passive Domain Capability contribution while possessed/bonded. Feeds `computeRawScore` (moves capability *tiers*), NOT the resolution-roll modifier channel that `passive`/`conditional` feed. **The one stat substrate for item→tier influence** (THR-718 — never resurrect bare `domainContributions`). No charges, no duration; composition with `conditional`/`duration` wrappers is deliberately out of scope.
+- `contributions` — additive raw-score terms per Reach (band values in `item-stat-bands.ts`)
+
+### "The player (or fate) picks one of several outcomes"
+**choice_set** — **player-surface only (THR-1242): do not author on ordinary attachments.** Presents filtered options whose `consequences` fire on selection (`selectionMode: 'player' | 'ai_auto' | 'weighted_random'`). It renders a modal; on a background attachment it is a stall, not a choice. If a premise seems to demand it, FLAG for the systems pass.
 
 ---
 
