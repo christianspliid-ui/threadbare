@@ -2154,6 +2154,7 @@ export const CONTRACTS: readonly Contract[] = [
         'shadowWinnerFamily',
         'shadowWinnerId',
         'shadowAgreement',
+        'ambitionBoost',
       ],
       module: 'src/engine/decisionBoard.ts',
     },
@@ -2169,9 +2170,9 @@ export const CONTRACTS: readonly Contract[] = [
     // rollup and the CLI block, both of which exist and both of which were read
     // to produce the gate verdict below. Nothing here waits on a later doc.
     verifiedLive: {
-      date: '2026-08-27',
+      date: '2026-08-29',
       evidence:
-        'Two 150-tick medium CLI runs scored 1913 (seed 42) and 1809 (seed 99) decisions on the shadow board and printed the block via `balance summary`. The cutover gate PASSES on seed 42 (undertaking 11.9%, encounter 70.7%, idle 17.5%) and FAILS on seed 99 (undertaking 4.1%, below the 0.10 floor), so the mode stays `shadow` — which is the telemetry doing its job. decisionBoardLiveness.test.ts asserts both channels carry a varying signal on the real pipeline.',
+        'THR-1302 re-ran `npm run census:undertakings` (seeds 42 + 99 × 150 ticks, medium) with the ambition-centrality term in place: the cutover gate now PASSES on BOTH seeds — 42 at undertaking 17.4% / encounter 63.8% / idle 18.8%, 99 at 13.7% / 75.2% / 11.1%, both inside [0.10, 0.35]. The mode nonetheless stays `shadow`; flipping it is THR-1301\'s call, not this row\'s. Supersedes the 2026-08-27 evidence (42 at 11.9% PASS, 99 at 4.1% FAIL), which had already gone stale under work that landed between the two runs — the census was green on both seeds BEFORE THR-1302 touched anything, so nothing here should be read as this term having closed that gap. The payload gained `ambitionBoost`: `desireMultiplier` varied throughout the shadow period while one of its two factors was a frozen constant, and no channel carried the factor, so the telemetry could not have shown it. decisionBoardLiveness.test.ts now pins that input directly (65/959 seed-42 and 110/1713 seed-99 undertaking rows score 0, p25 != p50 on both) rather than only the product it disappears into.',
     },
   },
   {

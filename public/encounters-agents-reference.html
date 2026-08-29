@@ -1242,7 +1242,7 @@ const CHAPTERS = [
         table: {
           headers: ['Step', 'Live stage', 'What it does'],
           rows: [
-            ['<span class="num">1</span>', '<strong>Gather</strong>', 'Merge static encounter-cache entries with dynamic social, faction-quest, and faction-lifecycle candidates.'],
+            ['<span class="num">1</span>', '<strong>Gather</strong>', 'Merge static encounter-cache entries with dynamic social, faction-quest, and faction-lifecycle candidates. The <em>social</em> half depends on the hop-distance matrix: <code>findVisibleAgents</code> takes a row out of <code>distanceMatrix.distances</code> to collect the locations within <code>VISIBLE_AGENT_MAX_HOPS</code> and then the agents standing at them, so an actor whose location has no row generates no cross-location social candidates at all. That was the case for 235 settlements on <code>large</code> and 391 on <code>epic</code> until THR-1346 &mdash; the matrix indexed sublocations alongside settlements (~2:1) and they consumed its 1200 cap. Now scoped to the place tier; see The Mortals &sect; How a mortal decides.'],
             ['<span class="num">2</span>', '<strong>Awareness + faction</strong>', 'Keep only encounters visible through hex-range awareness or faction-network knowledge.'],
             ['<span class="num">3</span>', '<strong>Visibility</strong>', 'Apply <code>visibleTo</code> restrictions such as faction, culture, archetype, or agent-specific gating.'],
             ['<span class="num">4</span>', '<strong>Prerequisites + outgrowth</strong>', 'Drop locked chain stages, gated templates, and content the actor has significantly outgrown.'],
