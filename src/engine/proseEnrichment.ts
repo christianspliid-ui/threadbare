@@ -904,11 +904,6 @@ const MEETING_CALLBACKS: Partial<Record<ReachDomain, string[]>> = {
     '{name} counts allies the way they once counted coppers — with careful precision.',
     'From nothing to empire. The golden thread you wove did its work.',
   ],
-  flesh: [
-    'The body you found has become a weapon.',
-    '{name} endures everything now. You remember when they couldn\'t endure anything.',
-    'Survival was the first lesson. It remains the deepest.',
-  ],
 };
 
 // ─── Helpers ───────────────────────────────────────────────────────

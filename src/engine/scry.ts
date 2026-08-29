@@ -71,7 +71,6 @@ const SPHERE_DOMAIN_AFFINITY: Record<ReachDomain, SphereName> = {
   eye: 'mind',
   stone: 'matter',
   star: 'time',
-  flesh: 'life',
 };
 
 // ─── Task 3: State Creation and Initialization ──────────────────────────────

@@ -197,11 +197,11 @@ export const NODE_TYPE_ROWS: Readonly<Record<string, AnchorRow>> = {
     surface: 'The location sheet of its parent, and the hex it sits on',
     status: 'linked',
     note:
-      'Registered in `NodeType` by THR-1177, having been written and read in production ' +
-      'while off-union. Note the two mint shapes: `sublocation.ts` mints these as ' +
-      '`location` nodes carrying `locationSubtype`, while `strategicGraphOps` mints ' +
-      'the bare `sublocation` type — a chip anchoring one shape will not match the ' +
-      'other until THR-1183 unifies them.',
+      'Registered in `NodeType` by THR-1177 so readers stay legal for saved worlds; since ' +
+      'THR-1183 no producer writes the bare type — every sublocation is minted as a ' +
+      '`location` node carrying `parentLocationId`. Resolve and test the shape through ' +
+      '`src/engine/sublocationShape.ts` (`isSublocationNode` / `resolveToParentLocation`); ' +
+      'never hand-roll the two-shape check.',
   },
   companion: {
     anchor: 'Companion',

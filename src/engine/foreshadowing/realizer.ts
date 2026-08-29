@@ -14,6 +14,7 @@
  *
  * Slots:
  *   {name} {place} {matter} {person} {faction} {subject} {Subject}  — filled from `slots`
+ *   {Matter}                                                       — sentence-initial matter
  *   {object} {Object}                                              — object-case pronoun
  *   {v:lemma}                                                       — conjugated verb
  *
@@ -21,6 +22,13 @@
  * number axis: a clause that places a pronoun in object position ("moves {object}
  * closer") must use these slots, never the subject slots, or it renders "moves
  * they closer" (THR-640). `objectPronoun` maps the subject form to its object case.
+ *
+ * Capitalized variants are separate keys, not a transform: `NOUN_SLOT` looks the
+ * key up case-sensitively, so `{Matter}` resolves only because the composers bind
+ * it alongside `matter`. Six clauses opened on `{Matter}` for months while nothing
+ * bound it, and each rendered headless — "hums at a pitch they answer to" — because
+ * a missing slot fails soft to `''` (THR-1360). `foreshadowingSlotCoverage.test.ts`
+ * now fails on any clause whose slots are not all bound.
  *
  * Fail-soft: an unknown verb lemma is emitted unconjugated, and a missing noun
  * slot collapses to empty rather than throwing (NFP #4). The realizer never
