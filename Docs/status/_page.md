@@ -1,6 +1,6 @@
 # Project Status
 
-> **Generated — do not hand-edit.** Newest entry {UPDATED}. Assembled by `npm run generate-project-status` from the one-file-per-entry fragments in `Docs/status/` (THR-1016). To add an entry, write a new `Docs/status/YYYY-MM-DD-thr-XXXX.md` and regenerate. Newest first, capped by line budget: older fragments stay on disk in `Docs/status/`, and their one-liners live in `Docs/project-history.md`. Full rationale rows are in `Docs/changelog.md`; wiring detail in `Docs/plans/wiring-checklist.md`.
+> **Generated — do not hand-edit.** Newest entry {UPDATED}. Assembled by `npm run generate-project-status` from the one-file-per-entry fragments in `Docs/status/` (THR-1016). To add an entry, write a new `Docs/status/YYYY-MM-DD-thr-XXXX.md` and regenerate. Newest first, one line per entry — follow a link for the full narrative in `Docs/status/`, which holds every entry uncapped. One-liners also live in `Docs/project-history.md`. Full rationale rows are in `Docs/changelog.md`; wiring detail in `Docs/plans/wiring-checklist.md`.
 
 ## Current Focus
 
