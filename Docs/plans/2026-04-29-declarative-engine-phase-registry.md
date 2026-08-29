@@ -5,7 +5,7 @@
 **Project:** Continuous Improvement
 **Source council:** `Docs/design-councils/2026-04-22-workflow-easier-to-change.md` → Engine perspective item 2 (declarative phase registry)
 **Suggested model:** opus
-**Status:** Ready for Dev
+**Status:** Shipped 2026-04-29 (all three lands merged, PR #91; status corrected 2026-08-29, THR-1365 — it read "Ready for Dev" for four months). **Honest deltas vs the plan's own targets:** the registry is live and is the required mode for new phases (26 descriptors across 8 slots as of 2026-08-29), but `runTick` was never reduced to <200 lines — it spans ~1,174 lines with ~70 inline legacy phases that migrate opportunistically, not on a schedule. This doc is kept for rationale; the live contract is `Docs/ai-index/tick-phases.md` + `src/engine/phaseRegistry.ts`. Note: this plan predates THR-686 — its `npx tsc --noEmit` verification steps below are superseded (that command is a no-op in this repo; the gate is `npm run check:typecheck`).
 
 ---
 
@@ -232,7 +232,7 @@ No new categories. The registry deliberately reuses `tick_phase_profile` so exis
 | Failure | Behavior | Trace |
 |---|---|---|
 | Phase `run` throws | Skip phase output; continue to next | `tick_crash` with `phase: <id>`, `error: <message>` |
-| Duplicate `id` at module-load | Throw (boot fails — CI catches in `npx tsc --noEmit` and `npm test`) | N/A (compile/boot error) |
+| Duplicate `id` at module-load | Throw (boot fails — CI catches it via `npm test`; `npx tsc --noEmit` is a no-op here, THR-686) | N/A (compile/boot error) |
 | Cycle in `afterPhase`/`beforePhase` | Throw at module-load | N/A (compile/boot error) |
 | Unknown `afterPhase`/`beforePhase` reference | Throw at module-load with helpful message ("phase 'foo' references unknown afterPhase 'bar'; available ids in slot 'post-doom' are: …") | N/A |
 | Cross-slot dependency reference | Throw at module-load | N/A |
@@ -248,7 +248,7 @@ For each file-extracted phase migrated:
 3. Delete the inline call (`s = { ...s, ...phaseFoo(s) };` and its `phaseEventCounts` line) from `runTick`.
 4. Update `Docs/plans/wiring-checklist.md` § 1: move the phase from "Current phases in order" table to a new "Registered phases (declarative)" sub-table, noting `id`, `slot`, `afterPhase`, `beforePhase`.
 5. Run the equivalence baseline test; if order changed, update `phaseRegistry.baseline.json` deliberately.
-6. Verify `npm test`, `npx tsc --noEmit`, `npx vite build` still pass; run `npm run cli -- --seed 42 --map medium` then `tick 30; status` to sanity-check.
+6. Verify `npm test`, `npm run check:typecheck` (the ratchet — never `npx tsc --noEmit`, a no-op here), `npx vite build` still pass; run `npm run cli -- --seed 42 --map medium` then `tick 30; status` to sanity-check.
 
 #### Inline blocks stay inline
 
@@ -342,7 +342,7 @@ CC fills the rows as Land 3 advances.
 
 **Done when:**
 - `npm test` green; new `phaseRegistry.test.ts` passes (≥10 cases).
-- `npx tsc --noEmit` green.
+- `npm run check:typecheck` green (the ratchet; `npx tsc --noEmit` is a no-op in this repo).
 - `npx vite build` green.
 - DebugPanel "Phases" tab opens, shows empty-state copy.
 - `npm run cli -- --seed 42 --map medium` → `tick 30; status` matches output from `main` (deterministic regression check).
@@ -442,7 +442,7 @@ For phases that take extra args (`phaseUnifiedActionProgress`), the descriptor `
 - [ ] At least 2 phases migrated (Land 2 canaries) and visible in the DebugPanel "Phases" tab.
 - [ ] Land 3: ≥80% of file-extracted phases migrated; remaining phases listed with rationale in `wiring-checklist.md`.
 - [ ] `wiring-checklist.md` § 1 has a "Registered phases (declarative)" sub-table.
-- [ ] `Fixes THR-238` in the closing commit body, with verification evidence (raw `npm test`, `npx tsc --noEmit`, `npx vite build` output).
+- [x] Close keyword in the closing commit body (done — THR-238 auto-closed 2026-04-29), with verification evidence (raw `npm test`, `npm run check:typecheck`, `npx vite build` output).
 
 ---
 
