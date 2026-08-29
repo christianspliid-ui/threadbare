@@ -88,21 +88,18 @@ export interface CodexCategory {
 // ─── Reach Glyphs ────────────────────────────────────────────────
 
 /**
- * THR-1359: the `flesh` rows in this map and in `REACH_DISPLAY` below are a
- * **deliberate legacy mapping, not retired-Reach residue.** Both bags are keyed by
- * a template's raw `reach` string and by world-model `reach.*` node suffix — not by
- * `ReachDomain` — and `world-model.json` still ships `reach.flesh` as a live node.
- * The `Record<string, string>` annotation is therefore correct here, and the same
- * nine-member set is asserted by `TOOLTIP_BACKED_REACHES` in `engine/aftermathWords.ts`.
+ * THR-1368: the `flesh` rows are gone from this map and from `REACH_DISPLAY` below,
+ * in the same change that deleted the `reach.flesh` node from `world-model.json`.
+ * Both bags are keyed by a template's raw `reach` string and by world-model `reach.*`
+ * node suffix — not by `ReachDomain` — which is exactly why the row and the node had
+ * to retire together: either one alone leaves the mismatch pointing the other way.
  *
- * Measured 2026-08-29: no live action template declares `reach: 'flesh'`, so these
- * rows render nothing today — they are the fail-open path if one ever does, which is
- * the designed behaviour (a reach with no display entry paints raw in the nav rail;
- * see `SUBCATEGORY_DISPLAY` below). `time` and `life` carry display words with no
- * world-model node and are the genuinely unbacked pair — see `TOOLTIP_BACKED_REACHES`.
- *
- * Removing the node and these rows is THR-1368, and they must land together: either one
- * alone leaves the nine-vs-eight mismatch pointing the other way.
+ * `time` and `life` remain and are **not** retired-Reach residue: they carry display
+ * words for keys that never had a world-model node at all, and are excluded from
+ * `TOOLTIP_BACKED_REACHES` in `engine/aftermathWords.ts` so they offer no tooltip id.
+ * The `Record<string, string>` annotation is what keeps that legal, so it is still
+ * correct here rather than a widening hole. A reach with no display entry paints raw
+ * in the nav rail (see `SUBCATEGORY_DISPLAY` below) — the designed fail-open path.
  */
 const REACH_GLYPHS: Record<string, string> = {
   iron: '\u2694',    // ⚔
@@ -113,7 +110,6 @@ const REACH_GLYPHS: Record<string, string> = {
   eye: '\u25C9',     // ◉
   stone: '\u25A0',   // ■
   star: '\u2605',    // ★
-  flesh: '\u25CF',   // ●
   time: '\u231A',    // ⌚
   life: '\u2618',    // ☘
 };
@@ -121,7 +117,7 @@ const REACH_GLYPHS: Record<string, string> = {
 const REACH_DISPLAY: Record<string, string> = {
   iron: 'Iron', gold: 'Gold', shadow: 'Shadow', veil: 'Veil',
   heart: 'Heart', eye: 'Eye', stone: 'Stone', star: 'Star',
-  flesh: 'Flesh', time: 'Time', life: 'Life',
+  time: 'Time', life: 'Life',
 };
 
 /**

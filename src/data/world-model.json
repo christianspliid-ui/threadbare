@@ -2,8 +2,8 @@
   "meta": {
     "version": "1.0.0",
     "generated": "2026-03-08T09:22:00.283Z",
-    "nodeCount": 253,
-    "edgeCount": 371,
+    "nodeCount": 252,
+    "edgeCount": 370,
     "categories": [
       "action-template",
       "actor-type",
@@ -1865,16 +1865,6 @@
       }
     },
     {
-      "id": "reach.flesh",
-      "name": "Flesh",
-      "category": "reach",
-      "description": "Biology, healing, disease, life, death, and bodily transformation",
-      "properties": {
-        "sphereAlignment": "creation.life",
-        "theme": "Biology, healing, disease, life, death, and bodily transformation"
-      }
-    },
-    {
       "id": "actor.individual",
       "name": "Individual",
       "category": "actor-type",
@@ -2151,7 +2141,7 @@
         "effects": {
           "actionModifiers": {
             "reach.iron": 0.15,
-            "reach.flesh": 0.15
+            "reach.stone": 0.15
           }
         },
         "acquisition": {
@@ -3031,7 +3021,7 @@
       "category": "action-template",
       "description": "Cure ailments",
       "properties": {
-        "reach": "reach.flesh",
+        "reach": "reach.gold",
         "crudType": "CREATE"
       }
     },
@@ -3041,7 +3031,7 @@
       "category": "action-template",
       "description": "Identify illness",
       "properties": {
-        "reach": "reach.flesh",
+        "reach": "reach.eye",
         "crudType": "READ"
       }
     },
@@ -3051,7 +3041,7 @@
       "category": "action-template",
       "description": "Enhance vitality",
       "properties": {
-        "reach": "reach.flesh",
+        "reach": "reach.gold",
         "crudType": "UPDATE"
       }
     },
@@ -3061,7 +3051,7 @@
       "category": "action-template",
       "description": "Spread disease",
       "properties": {
-        "reach": "reach.flesh",
+        "reach": "reach.shadow",
         "crudType": "DELETE"
       }
     },
@@ -5359,12 +5349,6 @@
       "weight": 0.7
     },
     {
-      "source": "reach.flesh",
-      "target": "creation.life",
-      "type": "rel.aligned-with",
-      "weight": 1
-    },
-    {
       "source": "action.iron.raise-force",
       "target": "reach.iron",
       "type": "rel.belongs-to",
@@ -5558,25 +5542,25 @@
     },
     {
       "source": "action.flesh.heal",
-      "target": "reach.flesh",
+      "target": "reach.gold",
       "type": "rel.belongs-to",
       "weight": 1
     },
     {
       "source": "action.flesh.diagnose",
-      "target": "reach.flesh",
+      "target": "reach.eye",
       "type": "rel.belongs-to",
       "weight": 1
     },
     {
       "source": "action.flesh.cultivate",
-      "target": "reach.flesh",
+      "target": "reach.gold",
       "type": "rel.belongs-to",
       "weight": 1
     },
     {
       "source": "action.flesh.plague",
-      "target": "reach.flesh",
+      "target": "reach.shadow",
       "type": "rel.belongs-to",
       "weight": 1
     },
@@ -5642,7 +5626,7 @@
     },
     {
       "source": "trait.mastery.battle-hardened",
-      "target": "reach.flesh",
+      "target": "reach.stone",
       "type": "rel.boosts",
       "weight": 0.15
     },

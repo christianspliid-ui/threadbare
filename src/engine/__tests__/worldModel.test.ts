@@ -250,19 +250,29 @@ describe("World Model", () => {
   });
 
   describe("Reaches", () => {
-    it("should contain all 9 reaches", () => {
-      const reaches = model.nodes.filter((n) => n.category === "reach");
-      expect(reaches).toHaveLength(9);
-      const names = reaches.map((n) => n.name);
-      expect(names).toContain("Iron");
-      expect(names).toContain("Gold");
-      expect(names).toContain("Shadow");
-      expect(names).toContain("Veil");
-      expect(names).toContain("Heart");
-      expect(names).toContain("Eye");
-      expect(names).toContain("Stone");
-      expect(names).toContain("Star");
-      expect(names).toContain("Flesh");
+    // THR-1368 retired Flesh, the ninth Reach, from `world-model.json`. Asserted as
+    // an exact set rather than a length plus `toContain` calls: a length check alone
+    // passes if a Reach is renamed, and `toContain` alone passes if a tenth appears.
+    // Canon (`Docs/canon/cosmology.md`) is explicit that Flesh must not come back, so
+    // the negative below is the half that guards the retirement.
+    it("should contain exactly the 8 live reaches, and not Flesh", () => {
+      const names = model.nodes
+        .filter((n) => n.category === "reach")
+        .map((n) => n.name)
+        .sort();
+      expect(names).toEqual(
+        ["Eye", "Gold", "Heart", "Iron", "Shadow", "Star", "Stone", "Veil"],
+      );
+      expect(names).not.toContain("Flesh");
+    });
+
+    it("no node or edge still references the retired reach.flesh (THR-1368)", () => {
+      expect(model.nodes.filter((n) => n.id === "reach.flesh")).toEqual([]);
+      expect(
+        model.edges.filter(
+          (e) => e.source === "reach.flesh" || e.target === "reach.flesh",
+        ),
+      ).toEqual([]);
     });
 
     it("reaches should have sphereAlignment property", () => {

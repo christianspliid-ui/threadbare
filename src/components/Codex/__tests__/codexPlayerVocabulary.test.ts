@@ -124,7 +124,7 @@ const VISIBILITY_VALUES = ['public', 'known', 'hidden', 'discoverable', 'divine_
 
 /** The raw reach keys, as `REACH_GLYPHS` / `REACH_DISPLAY` key them. */
 const REACH_KEYS = [
-  'iron', 'gold', 'shadow', 'veil', 'heart', 'eye', 'stone', 'star', 'flesh', 'time', 'life',
+  'iron', 'gold', 'shadow', 'veil', 'heart', 'eye', 'stone', 'star', 'time', 'life',
 ] as const;
 
 /** Every player-visible string an entry paints, paired with where it paints. */
