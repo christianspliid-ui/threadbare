@@ -2048,6 +2048,17 @@ export interface DecisionBoardComparisonTrace extends TraceBase {
   }>;
   /** Whether legacy and the board agree on the winning *family*. */
   agreement: boolean;
+  /**
+   * The board's verdict **after `BOARD_SCORE_FLOOR` is applied** — `'idle'` when
+   * the board is empty *or* its best entry fails the floor. In `'live'` this is
+   * what the agent then did.
+   *
+   * Carried as its own field rather than left to be re-derived from `boardTop[0]`
+   * by every reader, because re-deriving it is exactly how the cutover gate went
+   * blind: the balance-telemetry copy of this value omitted the floor and so
+   * reported `idle 0.0%` on a run that idled 91.8% of the time (THR-1301).
+   */
+  boardFamily: DecisionFamily;
   encounterCandidates: number;
   undertakingCandidates: number;
 }

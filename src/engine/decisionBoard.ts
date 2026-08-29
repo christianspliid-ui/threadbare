@@ -137,6 +137,21 @@ export interface BoardEntry {
    * liveness assertion possible at all (NFP #2).
    */
   readonly ambitionBoost?: number;
+  /**
+   * Index of this entry's source candidate in its own family's input array —
+   * `encounterCandidates` for an encounter, `strategicCandidates` for an
+   * undertaking.
+   *
+   * Carried because in `'live'` mode the winner has to resolve back to the exact
+   * candidate object, and `id` cannot do that: two encounter candidates for the
+   * same template at different locations share a `templateId` but score
+   * differently here (board score is `valuePerTick × desire`, both per-instance).
+   * A `find` by id would silently execute the higher-ranked *legacy* instance
+   * whenever the board preferred the other one — a wrong-noun bug of exactly the
+   * kind the debugging protocol exists to catch, and invisible in every trace
+   * because both rows would print the same id.
+   */
+  readonly candidateIndex: number;
 }
 
 export interface BoardResult {
@@ -333,7 +348,7 @@ export function scoreUnifiedBoard(input: BoardInput): BoardResult {
   // recomputing is what makes this a genuine comparison: if the board and the
   // encounter scorer ever disagree about an encounter's value, the disagreement
   // is in the multipliers, which are visible on the entry.
-  for (const candidate of input.encounterCandidates) {
+  for (const [index, candidate] of input.encounterCandidates.entries()) {
     entries.push({
       family: 'encounter',
       id: candidate.entry.templateId,
@@ -341,11 +356,12 @@ export function scoreUnifiedBoard(input: BoardInput): BoardResult {
       desireMultiplier: candidate.desireMultiplier,
       temperamentWeight: 1,
       score: candidate.valuePerTick * candidate.desireMultiplier,
+      candidateIndex: index,
     });
   }
 
   // ── Undertakings ──
-  for (const candidate of input.strategicCandidates) {
+  for (const [index, candidate] of input.strategicCandidates.entries()) {
     const template = getStrategicTemplate(candidate.templateId);
     const reach = pickPrimaryReach(template);
 
@@ -381,10 +397,14 @@ export function scoreUnifiedBoard(input: BoardInput): BoardResult {
       advanceProbability,
       ambitionBoost,
       score: evt * desireMultiplier * temperamentWeight,
+      candidateIndex: index,
     });
   }
 
-  entries.sort((a, b) => b.score - a.score);
+  // Ties break on the input order both families already arrived in (each is
+  // pre-ranked by its own scorer), never on `sort`'s unspecified behaviour for
+  // equal keys — the board decides in live mode, and determinism is NFP #3.
+  entries.sort((a, b) => (b.score - a.score) || (a.candidateIndex - b.candidateIndex));
 
   return {
     entries,

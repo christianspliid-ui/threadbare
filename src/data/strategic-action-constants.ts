@@ -98,7 +98,16 @@ export const STRATEGIC_CONTROL_RECLAIM_COOLDOWN_TICKS = 30;
 /** Score floor — strategic candidates below this are rejected */
 export const STRATEGIC_SCORE_FLOOR = 0.08;
 
-/** Normalization multiplier to bring strategic scores into encounter score range */
+/**
+ * Normalization multiplier bringing strategic scores into encounter score range.
+ *
+ * This is the entire commensurability story between two incommensurate scorers:
+ * it clamps the strategic score into `[0.08, 0.851]` so contest B can compare it
+ * against an encounter score that is unbounded above. The board (§4) replaces
+ * that comparison with one currency, and this constant is deleted in the same
+ * commit that sets `UNIFIED_DECISION_BOARD_MODE` to `'live'` — not before, since
+ * contest B is what still selects undertakings under `'shadow'`.
+ */
 export const STRATEGIC_ENCOUNTER_SCORE_BRIDGE = 0.85;
 
 // ─── Sacred routes (THR-1184) ───────────────────────────────────────
@@ -278,11 +287,11 @@ export const UNDERTAKING_SABOTAGE_FLAG = 'undertakingSabotaged';
 
 // ─── The one prioritization board (THR-1292 §4) ─────────────────────
 //
-// Today an agent's decision is three sequential winner-take contests between
-// scorers that are incommensurate by construction: the encounter score is
-// unbounded above while the strategic score is clamped to [0.08, 0.851] by
-// `STRATEGIC_ENCOUNTER_SCORE_BRIDGE`. One clamp and one constant are the entire
-// commensurability story, and the comparison itself has never been traced.
+// An agent's decision *was* three sequential winner-take contests between
+// scorers incommensurate by construction: the encounter score unbounded above,
+// the strategic score clamped into [0.08, 0.851] by a single bridge constant.
+// One clamp and one constant were the entire commensurability story, and the
+// comparison itself was never traced.
 //
 // The board replaces that with a single ranking in one currency — **expected
 // value per tick (EVT)** — which the encounter scorer already computes as
@@ -297,25 +306,71 @@ export const UNDERTAKING_SABOTAGE_FLAG = 'undertakingSabotaged';
 export type UnifiedDecisionBoardMode = 'off' | 'shadow' | 'live';
 
 /**
- * Board participation mode.
+ * Board participation mode. Still `'shadow'` — the live branch is implemented
+ * (`phaseAgentDecision.ts`) and inert, and the flip is one line plus deleting
+ * contest B and `STRATEGIC_ENCOUNTER_SCORE_BRIDGE` in the same commit.
  *
- * Ships `'shadow'` by the plan's binding obligation: the board is a redesign of
- * how agents choose, and a redesign that swaps in unmeasured is how a decision
- * mix silently collapses. In shadow the legacy contests still decide and the
- * board's ranking is recorded on two channels (the `decision_board_comparison`
- * trace and the balance-telemetry shadow fields) so the cutover gate below can be
- * evaluated from a log rather than asserted.
+ * It ships `'shadow'` by the plan's binding obligation: a redesign of how agents
+ * choose that swaps in unmeasured is how a decision mix silently collapses. The
+ * shadow period records the board's ranking on two channels (the
+ * `decision_board_comparison` trace and the balance-telemetry shadow fields) so
+ * the cutover gate below is *evaluated from a log rather than asserted*.
+ *
+ * **The gate has now been run three times, and the third run is why this is still
+ * `'shadow'`.** THR-1292 slice 6 measured it and it failed on seed 99 (4.1%
+ * undertaking share against a `[0.10, 0.35]` floor); the flip did not land, and
+ * that ticket closed on the gate-fail evidence rather than on a bridge constant
+ * picked to make the number pass. THR-1297 slice 5 and THR-1302 unpinned the two
+ * inputs behind that failure, and THR-1301 re-ran it green on both seeds —
+ * seed 42 undertaking 33.4% / encounter 33.8% / idle 32.8%, seed 99 21.1% /
+ * 43.6% / 35.3%.
+ *
+ * Green, and still not enough. THR-1301 also measured what the gate does *not*
+ * read: composition **within** a family. Under a live board, `trades_with` edges
+ * written over 150 ticks on seed 42 fall from non-zero to **zero** —
+ * `strategic_establish_trade_route` takes zero board wins and is never generated
+ * — because board score is `EVT × desire × temperament` and carries no variety
+ * term, while the legacy scorer's `STRATEGIC_VARIETY_PENALTY_WEIGHT` fed contest
+ * B directly. Three of the repo's world-simulation tests fail on that, and every
+ * §4 criterion reads green through it. The flip waits for a diversity term in the
+ * board's currency, which is its own slice with its own balance envelope.
  */
 export const UNIFIED_DECISION_BOARD_MODE: UnifiedDecisionBoardMode = 'shadow';
 
 /**
  * Live-mode idle threshold: a board whose best entry scores below this is empty.
  *
- * Deliberately equal to `STRATEGIC_SCORE_FLOOR` — in live mode the board is the
- * only floor there is, so the two cannot be allowed to drift apart and disagree
- * about what "nothing worth doing" means. Unused while the mode is `'shadow'`.
+ * **This is an epsilon, not a tuning knob, and the difference is the whole note.**
+ * Board score is expected value per tick. An option with *any* positive EVT is by
+ * that currency's own definition worth more than standing still, so the honest
+ * threshold is zero and this constant is only the float-noise guard around it.
+ * Raising it would not be "tuning idleness" — it would be asserting that some
+ * positive-value options are worth less than nothing, which the currency cannot
+ * express.
+ *
+ * It shipped as `0.08`, "deliberately equal to `STRATEGIC_SCORE_FLOOR`", and that
+ * was a **units error** — the same class the plan itself rejected when it refused
+ * an 8× bridge scale as "not a units conversion". `STRATEGIC_SCORE_FLOOR` gates a
+ * weighted score normalised to `[0, 1]`; board score is `EVT × desire ×
+ * temperament`, whose median winner on seed 42 / 150 ticks is **0.0006**. The two
+ * numbers were never in the same currency, so copying one across was arithmetic on
+ * unlike units, and 0.08 landed at roughly the 92nd percentile of the quantity it
+ * was gating.
+ *
+ * Measured at cutover (THR-1301), seed 42, 150 ticks, medium — idle share of all
+ * decisions, against a legacy baseline of **28.7%**:
+ *
+ * | floor | idle | undertakings started | checkpoints |
+ * |---|---|---|---|
+ * | `0.08`  | **91.8%** | 30  | 73  |
+ * | `0.001` | 64.2%     | 503 | 619 |
+ * | `1e-6`  | **30.3%** | 586 | 618 |
+ *
+ * The 0.08 row is what a green census looked like while 92% of the world stood
+ * still — see the `boardFamily` note in `phaseAgentDecision.ts` for why the gate
+ * could not see it.
  */
-export const BOARD_SCORE_FLOOR = 0.08;
+export const BOARD_SCORE_FLOOR = 1e-6;
 
 /**
  * Verb → payoff value, the v1 bridge until doc 2's per-kind rows land.
