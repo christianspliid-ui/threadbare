@@ -4,7 +4,7 @@ run: 2026-08-29d
 promoted: 1
 filed: 0
 resolved: 1
-newFindings: 2
+newFindings: 4
 needsChristian: true
 ---
 # Orchestrator — 2026-08-29 (run d, ~04:30Z)
@@ -127,11 +127,13 @@ Nothing claimed, nothing assigned, no guessed resolution posted.
 | `generate-interface-map:dry` | **8 LEAKED**, 67 LIVE, 18 UNVERIFIED-OK, **95 contracts** (exit 0) | LEAKED **unchanged at 8, byte-identical membership.** Total 94 → 95, LIVE 65 → 67, UNVERIFIED 19 → 18 — **all three deltas fully attributed**, finding 3 |
 | `check:canon-staleness` | **18 warnings** (exit 0) | **22 → 18 — the first decrease this tier has recorded.** Two-thirds is real repair; one-third is not a repair at all — findings 1 and 2 |
 | `check:process` | exit 0. `check-design-wiki` OK; `check-wiki-freshness` OK; `check-guidance-freshness` OK (`mode=advisory`); four generators up to date; `check:authoring-brief` up to date | **Unchanged in every row.** Its `[WorldGen] Ocean fraction too low: 7.4%` incidental now fires a **fifth** consecutive day at the identical value — recurring, not new, not drifting |
-| `sweep:rank-reach` | **See the status line below** | — |
+| `sweep:rank-reach` | **PASS** — 60 rank-gated templates reachable, 0 blocked, 0 unowned; 13 apex holders at tick 900. *(Landed after the first publish of this report — see the correction note below)* | Verdict identical. **But its incidental `[DistanceMatrix]` warning is gone entirely — the five-day standing finding is closed, see finding 4** |
 
 `__DEBUG.validateTraitRefs()` is browser-only and cannot be invoked from a headless scheduled context. **Not run, and not reported as clean.**
 
-**`sweep:rank-reach` status: still executing at report-publication time, ~25 minutes in, with no output emitted.** It is recorded as **not measured this sweep**, not as passing. This is the same shape 08-28b hit (that run took ~40 minutes under sibling contention and was initially, correctly, recorded as unavailable). Carrying yesterday's PASS forward as today's result would be the exact pathology this tier exists to catch. If it lands before the next hourly run, that run diffs it; nothing here is inferred from its previous verdict.
+**Correction: this report was first published saying `sweep:rank-reach` was not measured, and that is now superseded.** At first publication it had been executing ~25 minutes with no output, and was recorded as **not measured, not as passing** — because carrying yesterday's PASS forward as today's result is the exact pathology this tier exists to catch. It completed at ~35 minutes (the same sibling-contention shape as 08-28b, which took ~40), and this file was re-published at the same path with the real result. The original call is left described here rather than quietly overwritten: recording a slow detector as unmeasured is the correct behaviour, and the record should show it happening rather than only its outcome.
+
+Its full verdict: `VERDICT: PASS — apex holders at tick 900: 13; blocked gated templates: 0`. Reputation gain census 825 increases (443 while `phase=playing`), total +57.603. Member-work resolution (THR-815) 3171 jobs resolved faction-side, 1453 succeeded, 204 promotions, 183 distinct memberships gained. Member-work cost 0.372 ms per pass, 0.062 ms/tick amortized — NFP #7 satisfied with room.
 
 ### The eight LEAKED contracts, listed in full so tomorrow's diff stays real
 
@@ -174,6 +176,39 @@ Nothing here is decay; it is recorded because "LIVE moved and the total moved" i
 - **Total 94 → 95.** One contract added: **`hunger-resonance-weighs-the-meeting-deal`**, by commit `a54bfb22` (THR-1213 slice 2, "the Hunger you chose finally decides what the meeting asks of your First"). Verified by diffing the contract-name list at `35de802c` (yesterday's sweep tip) against `ee2bad8b`: exactly one addition, no removals. It lands LIVE.
 - **UNVERIFIED-OK 19 → 18, LIVE 65 → 67.** The +1 total accounts for one LIVE gain; the other is a genuine **promotion** — commit `00f6ccc2` (THR-1321) added a `verifiedLive` block to the undertaking mint-valve row. That promotion is the strong form and deserves naming: it is a **controlled arm**, `origin/main` → 0 actors born through the valve, post-fix → 42, each carrying `mintedForProjectId` and a real placement, across two distinct feeding templates. Its own note says the row would otherwise have read LIVE off symbol presence while no mortal had ever been born through it. That is the downgrade-only rule doing exactly its job.
 - **Counting method unchanged from 08-28b** — unique `^### \`name\` — badge` headings, not raw badge occurrences. The two sweeps are like-for-like.
+
+### New finding 4 — the distance-matrix overrun is **closed**, and it is the first standing T3 finding this tier has ever retired
+
+This tier has tracked the `[DistanceMatrix]` overrun for five consecutive sweeps. 08-28b caught it growing *inside a single run* — 13 warnings, strictly increasing, 1685 → 1735 locations counted with **535 dropped** — and reported the day-over-day series 1555 / 1688 / 1442 / 1593 / 1735.
+
+**Today's 900-tick sweep, same seed, same map, same command, emitted zero `[DistanceMatrix]` lines.** Not fewer. None.
+
+Attributed, not assumed. `src/engine/distanceMatrix.ts:138` now reads `const locationNodes = getPlaceTierLocations(graph)`, landed by **THR-1346** (`c4773305`, *"the distance matrix was not dead, it was indexing the wrong tier"*). The overrun was never a content-volume problem: since THR-1183 a sublocation **is** a `location` node, so the bare `getNodesByType('location')` the builder used counted both tiers — roughly 2:1 against the place tier — and every completed economic undertaking permanently consumed a slot. Scoping the build to the place tier removes the growth mechanism rather than raising the cap, which is why the number went to zero instead of down.
+
+**Two corrections to the standing record follow, and both matter.**
+
+- **08-28b's mechanism reading was right and its remedy framing was wrong.** It argued correctly that the count grows with play because undertakings mint sublocations. What it did not see is that those sublocations had no business being in the index at all — so the fix was a scoping bug, not a capacity decision. Nobody had to choose a bigger `MAX_DISTANCE_MATRIX_SIZE`.
+- **The figures CLAUDE.md documented (`large ~584`, `epic ~805`) were never measurements of what the matrix indexed**, and the corrected place-tier counts are now recorded there: small 131, medium 214, large 542, epic 791 — every preset comfortably under the 1200 cap, with the headroom asserted on a generated world rather than a fixture.
+
+**Worth naming as a lane outcome, not just an engine one:** this finding was surfaced by T3, filed as a deferral, promoted by T1 at run b today (01:31Z), claimed within the hour, and is closed by the next daily sweep. That is the full loop this tier was built for, closing for the first time inside 24 hours.
+
+### New finding 5 — the sweep has been printing THR-1348's finding for weeks, pointed at a ticket that is already `Done`
+
+The sweep emits, unchanged from previous runs:
+
+```
+Draw-path eligibility: 0 of 13 members are individual+spotlight, i.e. can reach phaseAgentDecision at all
+  → 13 members are off the decision loop entirely (ambient/notable tier). No scoring or reward change can reach them — see THR-814.
+```
+
+**THR-814 closed 2026-07-27**, and its PR title says what it actually fixed: *"guild content dies at the cap stage, not in scoring."* The cap-stage half shipped. The **tier-aperture** half — that non-spotlight actors never reach `phaseAgentDecision` at all — survived it, and the sweep has kept printing a pointer to a resolved ticket ever since.
+
+This is directly relevant to [THR-1348](https://linear.app/threadbare/issue/THR-1348/ambitions-held-below-the-spotlight-tier-have-no-agency-path-10-of-the), filed 04:25Z today, and it **strengthens** that ticket rather than duplicating it:
+
+- **The faction half of this shape is already solved and measurably live.** THR-815 resolved guild work faction-side in `phaseFactionActions` instead of widening the decision loop, and today's sweep proves that path is working: **3171 jobs resolved faction-side, 1453 succeeded, 204 promotions, 183 distinct memberships gained.** Reputation gain is +57.603 over 900 ticks against the +0.000 THR-814 measured.
+- **THR-1348 is the *ambition* half of the identical shape, still open.** Same aperture, different content family — merchant and legend-crafting ambitions held by notable/ambient actors, unreachable for the same structural reason.
+
+So THR-1348's Reading 2 has more than a cited precedent: it has a **shipped, measured one in the same engine**, which is exactly what a design session needs to argue against widening the decision loop. Recorded here so the session does not re-derive it, and so the stale `see THR-814` pointer in `scripts/rank-reach-sweep.ts` is repointed at THR-1348 when someone next touches that file — a one-line repair, not worth a ticket under the throttle.
 
 ### Redundancy pass — assessed, and the largest one in the engine just got an unblocked exit
 
