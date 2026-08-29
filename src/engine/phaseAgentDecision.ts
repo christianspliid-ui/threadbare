@@ -1049,6 +1049,7 @@ export function phaseAgentDecision(
             tick: state.tick,
             agentId,
             candidateId: strategicWinner.candidateId,
+            templateId: strategicWinner.templateId,
             behaviorFamily: strategicWinner.behaviorFamily,
             verb: strategicWinner.verb,
             targetNodeId: strategicWinner.targetNodeId,

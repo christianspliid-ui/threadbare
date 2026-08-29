@@ -23,8 +23,14 @@
  * a third scale:
  *
  * ```
- * boardScore = EVT × desireMultiplier × temperamentFamilyWeight
+ * boardScore = EVT × desireMultiplier × temperamentFamilyWeight × varietyMultiplier
  * ```
+ *
+ * The fourth term arrived with THR-1349 and applies to undertakings only: it is
+ * the legacy scorer's `varietyPenalty`, relocated into this currency as a
+ * proportional discount. Plan §4 claimed the penalty would survive the cutover as
+ * an EVT input and it did not, so a live board had no variety mechanism of any
+ * kind. See `computeBoardVarietyMultiplier`.
  *
  * - **Encounters** contribute `valuePerTick` and `desireMultiplier` straight from
  *   `ScoredCandidate` — the same two numbers the live scorer multiplies — at
@@ -106,6 +112,7 @@ import {
   UNDERTAKING_AMBITION_CENTRALITY_BOOST,
   UNDERTAKING_TEMPERAMENT_AMBITION_WEIGHT,
   UNDERTAKING_TEMPERAMENT_REACH_WEIGHT,
+  BOARD_VARIETY_PENALTY_WEIGHT,
 } from '../data/strategic-action-constants';
 
 // ─── Contract ───────────────────────────────────────────────────
@@ -121,6 +128,16 @@ export interface BoardEntry {
   readonly evt: number;
   readonly desireMultiplier: number;
   readonly temperamentWeight: number;
+  /**
+   * The repetition discount, for an undertaking; `undefined` for an encounter,
+   * which has no repetition counter to read.
+   *
+   * On the entry rather than folded silently into `score` for the reason
+   * `ambitionBoost` is: a multiplier's *inputs* are where this family of defect
+   * hides, and the last variety mechanism to go missing did so by being asserted
+   * in a plan and present in no trace (THR-1349).
+   */
+  readonly varietyMultiplier?: number;
   /**
    * `P(advance-equivalent)` for an undertaking; `undefined` for an encounter,
    * whose EVT already folds its five-band expected utility.
@@ -327,6 +344,31 @@ export function computeTemperamentWeight(
     + UNDERTAKING_TEMPERAMENT_REACH_WEIGHT * clamp01(reachAffinity);
 }
 
+// ─── Variety ────────────────────────────────────────────────────
+
+/**
+ * The share of its score a candidate keeps given how repeated it is.
+ *
+ * `varietyPenalty` is already computed per candidate by `scoreStrategicCandidates`
+ * — `min(1, (boardCount - 1) × 0.2 + historyCount × 0.15)` over this agent's own
+ * board duplicates and its recent starts — so this consumes the existing signal
+ * rather than inventing a second one. That is the relocation plan §4 promised and
+ * did not perform.
+ *
+ * Returns a multiplier in `[1 - BOARD_VARIETY_PENALTY_WEIGHT, 1]`. An encounter
+ * entry has no analogue and is not discounted: `varietyPenalty` is defined over an
+ * actor's undertaking history, and there is no encounter-side counter to read.
+ * That asymmetry is deliberate and is the same one `temperamentWeight` already
+ * carries, where the encounter family sits at a flat `1.0` baseline.
+ *
+ * Fail-soft (NFP #4): a candidate whose `varietyPenalty` is absent or non-finite
+ * reads as unrepeated — an absent signal is never a penalty.
+ */
+export function computeBoardVarietyMultiplier(varietyPenalty: number | undefined): number {
+  if (varietyPenalty === undefined || !Number.isFinite(varietyPenalty)) return 1;
+  return 1 - BOARD_VARIETY_PENALTY_WEIGHT * clamp01(varietyPenalty);
+}
+
 // ─── The board ──────────────────────────────────────────────────
 
 /**
@@ -388,15 +430,20 @@ export function scoreUnifiedBoard(input: BoardInput): BoardResult {
       template, reach, ambitionPrefersVerb(candidate.ambitionId, template),
     );
 
+    const varietyMultiplier = computeBoardVarietyMultiplier(
+      candidate.scoreComponents?.varietyPenalty,
+    );
+
     entries.push({
       family: 'strategic_action',
       id: candidate.templateId,
       evt,
       desireMultiplier,
       temperamentWeight,
+      varietyMultiplier,
       advanceProbability,
       ambitionBoost,
-      score: evt * desireMultiplier * temperamentWeight,
+      score: evt * desireMultiplier * temperamentWeight * varietyMultiplier,
       candidateIndex: index,
     });
   }
