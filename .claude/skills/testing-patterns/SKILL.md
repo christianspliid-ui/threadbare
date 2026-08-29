@@ -6,7 +6,7 @@ description: >
   "movement test", "hexmap test", "regression test", or when implementing changes that touch
   3+ files across src/engine/ and src/components/. Also load when reviewing test coverage
   or diagnosing why a change broke downstream systems.
-last_validated_against: 2026-08-01
+last_validated_against: 2026-08-29
 ---
 
 # Testing Patterns — Domain Context
@@ -125,29 +125,23 @@ The `.contract.` in the filename makes them easy to run as a group: `npm test --
 
 ## Known Coverage Gaps (Priority Order)
 
-These are the highest-risk untested boundaries. Address them opportunistically when working in related code:
+These are the highest-risk untested boundaries. Address them opportunistically when working in related code. **Verify a gap still exists before working it** — three of the original "Critical" entries were found already-closed by the 2026-08-29 round-4 audit (`MovementTrailMesh.test.ts` exists, `movement-integration.test.ts` runs un-skipped, `agent-decision-pipeline.contract.test.ts` exists in a 20-file contracts dir) and had been sending agents to write tests that already existed.
 
 ### Critical (breaks are silent and hard to diagnose)
 
-1. **`MovementTrailMesh` has zero tests.** Any change to `MovementHistoryEntry` format, trail segment creation, or faction color lookup breaks trail rendering with no test failure. Write basic tests: history entries produce trail segments, faction colors resolve, fade timing matches constants.
-
-2. **Orchestrator doesn't test movement phases.** The 42K-line orchestrator has 19 tests — none run a full tick with agent movement. Add: "agent with movement queue advances after tick", "agent arrives and enters decision phase", "10-tick journey completes correctly."
-
-3. **`movement-integration.test.ts` is `describe.skip`.** 10 tests written for the old movement pipeline, never rewritten for `phaseAgentDecision`. Either rewrite for current architecture or delete. Skipped tests are worse than no tests — they imply coverage that doesn't exist.
+1. **Orchestrator doesn't test movement phases.** The 3,973-line orchestrator has few integration tests — none run a full tick with agent movement. Add: "agent with movement queue advances after tick", "agent arrives and enters decision phase", "10-tick journey completes correctly."
 
 ### High (breaks are visible but root cause is obscure)
 
-4. **No contract: `phaseAgentDecision` → `phaseMovement`.** Decision creates `MovementState`, movement ticks it. If decision produces state that movement can't tick (e.g., empty queue but non-empty destination), the agent freezes. Test the handoff.
+2. **No contract: movement state → animation.** `HexMapV2.tsx` detects hex changes by diffing agent props. If `MovementState` shape changes break the diff logic, agents stop animating. Test: movement state transition produces detectable hex change in agent props.
 
-5. **No contract: movement state → animation.** `HexMapV2.tsx` detects hex changes by diffing agent props. If `MovementState` shape changes break the diff logic, agents stop animating. Test: movement state transition produces detectable hex change in agent props.
-
-6. **Road network → pathfinding is mock-isolated.** `roadNetwork.test.ts` mocks `findHexPath` entirely. Real road generation + real pathfinding are never tested together. A bug in hex path format would pass road tests and fail pathfinding.
+3. **Road network → pathfinding is mock-isolated.** `roadNetwork.test.ts` mocks `findHexPath` entirely. Real road generation + real pathfinding are never tested together. A bug in hex path format would pass road tests and fail pathfinding.
 
 ### Medium (breaks are caught by visual QA but waste time)
 
-7. **No PRNG seed in phase tests.** `phaseMovement.test.ts` and `phaseAgentDecision.test.ts` don't seed the PRNG. Non-deterministic tests hide ordering-dependent bugs that appear only on certain seeds.
+4. **No PRNG seed in phase tests.** `phaseMovement.test.ts` and `phaseAgentDecision.test.ts` don't seed the PRNG. Non-deterministic tests hide ordering-dependent bugs that appear only on certain seeds.
 
-8. **Only tiny test graphs.** All movement tests use 2–5 node graphs. The real map is ~320 hexes with ~250 nodes. At minimum, one test per system should use a 20+ node graph to catch topology edge cases.
+5. **Only tiny test graphs.** Most movement tests use 2–5 node graphs; the real map runs hundreds of place-tier locations (seed 42: small 131 … epic 791). At minimum, one test per system should use a 20+ node graph to catch topology edge cases.
 
 ## Anti-Patterns to Watch For
 
@@ -260,6 +254,14 @@ What this changes for you, when you write a node test that does not mock:
 
 ## Checklist: Before Submitting Engine/HexMap Changes
 
+> **This checklist covers test discipline only. The full pre-commit gate law is
+> [`Docs/canon/verification-gates.md`](../../../Docs/canon/verification-gates.md)** — classify the
+> diff first (`npm run classify:diff`); any `src/engine/` touch also owes the **30-tick CLI engine
+> smoke** (`printf "tick 30\nstatus\nexit\n" | npm run cli -- --seed 42 --map medium`); and the
+> tree-diffing freshness gates (`check:generated-freshness`, `check:wiki-freshness:blocking`,
+> a ratchet `--update`) run **last, after every closeout edit, immediately before `git push`**.
+> Passing this checklist without that page's gates is not done.
+
 Run through this before marking a task as done:
 
 - [ ] All unit tests pass (`npm test`)
@@ -275,7 +277,7 @@ Run through this before marking a task as done:
 - [ ] Contract tests pass for affected boundaries (`npm test -- --grep "contract"`)
 - [ ] If phase ordering changed → orchestrator integration test exists and passes
 - [ ] If `MovementState` changed → verified all 15 consumer files handle new shape (see blast radius in road-aware-movement design doc)
-- [ ] If HexMapV2 data flow changed → visual verification at `?view=game&seeded` at all zoom tiers
+- [ ] If HexMapV2 data flow changed → visual verification at `?view=game&seeded&size=medium` at all zoom tiers (bare `&seeded` derives the `large` map that stalls the tick loop — THR-162/163/164/165; see hexmap-layers)
 - [ ] No new `describe.skip` blocks added without a tracking issue in Linear (Threadbare team)
 - [ ] No new `vi.mock` at integration boundaries without a corresponding contract test
 - [ ] PRNG is seeded in all new movement/decision tests
