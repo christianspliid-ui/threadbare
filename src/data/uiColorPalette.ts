@@ -1,5 +1,5 @@
 /**
- * Centralized UI color palette for The Fantasy World Simulator.
+ * Centralized UI color palette for Threadbearer.
  * Single source of truth for all hardcoded colors across components.
  * All named constants follow camelCase convention and are tunable.
  */

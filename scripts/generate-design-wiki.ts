@@ -245,7 +245,7 @@ ${nav}
   <main class="wiki-main">
     <header class="wiki-hero">
       <h1>Design Reference Wiki</h1>
-      <p>The browsable system-design pages for The Fantasy World Simulator. This hub and the nav on every page are generated from <code>public/wiki-manifest.json</code> by <code>scripts/generate-design-wiki.ts</code> on every build.</p>
+      <p>The browsable system-design pages for Threadbearer. This hub and the nav on every page are generated from <code>public/wiki-manifest.json</code> by <code>scripts/generate-design-wiki.ts</code> on every build.</p>
     </header>
 ${pageSections}
 ${backlogSection}

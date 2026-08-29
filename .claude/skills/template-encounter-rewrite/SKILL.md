@@ -9,7 +9,7 @@ description: >
   quality", "social encounter rewrite", "tavern encounter rewrite", "template
   encounter", "encounter quality pass", "prose quality pass", "write encounter".
 model: opus
-last_validated_against: 2026-08-25
+last_validated_against: 2026-08-29
 validated_doctrine: prose@2
 ---
 
@@ -189,7 +189,7 @@ All linear template encounters use this shape. You are responsible for authoring
 | `aftermathConfig.fallback.overview` | 1-2 sentences framing what the aftermath is about |
 | `aftermathConfig.fallback.reactions[].intent` | 2-3 sentences of narrative intent for the reaction |
 | `successAtCostAfterimage`, `criticalSuccessAfterimage`, `criticalFailureAfterimage` | Band-specific overrides. Author all three — absent, they fall back with a `[band]` debug prefix |
-| `steps[].nudges` | **Author the hand** — 4–8 `StepNudge`s: `name`, `sphere?`, `essenceCost`, `forecastDelta`, `fiction`, `effectLine`, `bandProse`, `imageTag`, `rider?` |
+| `steps[].nudges` | **Author the hand** — 4–8 `StepNudge`s: `name`, `sphere?`, `essenceCost`, `forecastDelta`, `effectLine`, `bandProse`, `imageTag`, `rider?`. **Do not author `fiction`** — that is the card flavor quote, retired 2026-08-25 with Doctrine v2; gate 0i below rejects it |
 | `traitVariants` | **Author the trait hook** — `traitId` (a live ref), `forecastDelta?`, `difficultyDelta?`, `factorLine`, `addNudgeIds?` |
 | `id`, `rarityTier`, `reach`, `difficulty`, `failBehavior`, `onSuccess`, `onFailure`, `successMetadata`, `failureMetadata` | Preserve — do not change the structural skeleton |
 
@@ -356,7 +356,7 @@ Before submitting rewritten prose, check every field against these questions. If
 
 2. **Does at least one step use a conditional block?** `{?has_faction}`, `{?has_ally}`, `{?has_artifact}` — at least one moment should read differently based on who the agent is.
 
-3. **Does success show behavioral change, not just label the outcome?** "The alliance is forged" → NO. "Something shifts in the way {target} holds {their} shoulders — not deference, but the particular attention people give to those they've decided to take seriously" → YES.
+3. **Does success state what is different now — plainly, and with a consequence?** (Amended 2026-08-25 — Doctrine v2 reverses show-don't-tell: *tell*. This question used to demand behavioral change shown rather than stated, and its model answer — *"Something shifts in the way {target} holds {their} shoulders…"* — both taught the retired in-situ mode and opened on the evasive lexicon's flagship word, which this file's own detector fails at zero.) "The alliance is forged" still fails, but for naming no consequence, not for being unliterary. Name the new standing and who carries it: "{target} has agreed to speak for {name} at the next council — and two of {target}'s rivals heard the promise" → YES.
 
 4. **Is failure story-generative?** Does the failure prose create a forward hook — a complication, a witnessed moment, a shifted relationship? Or does it just negate the success? "The attempt failed" → NO. "The lock held — and the sound carried further than {name} expected" → YES.
 
@@ -364,7 +364,7 @@ Before submitting rewritten prose, check every field against these questions. If
 
 6. **Is {adj} used for atmosphere, not emotional payload?** Check every `{adj}` usage. "The {adj} glow of the forge" → fine (atmospheric). "The {adj} accord takes root" → bad (the adjective is asked to carry the emotion).
 
-7. **Could a GM read it aloud and the player act on it? (Doctrine v2 — this question used to grade prose by novel standards, which is rule zero's literal inversion: game prose, not novel prose.)** The read-aloud test now checks *clarity and consequence*: after one read, does the player know what is happening, what is at stake, and what is being tested? A bare label ("Investigate the disturbance") still fails — not for being unliterary, but for stating no situation. "Something is taking sheep from the high pasture at night, and the shepherds have stopped going up" passes: plain, factual, actionable.
+7. **Could a GM read it aloud and the player act on it? (Doctrine v2 — this question used to grade prose by novel standards, which is rule zero's literal inversion: game prose, not novel prose.)** The read-aloud test now checks *clarity and consequence*: after one read, does the player know what is happening, what is at stake, and what is being tested? A bare label ("Investigate the disturbance") still fails — not for being unliterary, but for stating no situation. "Sheep are going missing from the high pasture at night, and the shepherds have stopped going up" passes: plain, factual, actionable. *(Exemplar corrected 2026-08-29, THR-1324 — it previously opened "Something is taking sheep from the high pasture…", which is the evasive lexicon's flagship word listed in this file's own Detectors line two questions above. The unknown predator is still the situation; you just do not need the banned word to say so.)*
 
 ---
 
@@ -401,7 +401,7 @@ Before submitting rewritten prose, check every field against these questions. If
 }
 ```
 
-**Problems:** Static strings (no `{name}`, no pronouns, no conditionals). Success is a label, not a scene. Failure is a negation of success. No sensory detail. No emotional stakes. No systemic wiring. Wrong difficulty scale (35, not 0.35). Missing required fields (`rarityTier`, `intrinsicTier`, `narrativeTemplates`, `aftermathConfig`). This reads the same for every agent in every context.
+**Problems:** Static strings (no `{name}`, no pronouns, no conditionals). Success names no consequence. Failure is a negation of success. No stated stakes — nothing the player could act on. No systemic wiring. *(This list read "Success is a label, not a scene … No sensory detail" until 2026-08-29, THR-1324; both are retired-mode defects. Under Doctrine v2 the fault is stating no consequence, never insufficient sensory texture.)* Wrong difficulty scale (35, not 0.35). Missing required fields (`rarityTier`, `intrinsicTier`, `narrativeTemplates`, `aftermathConfig`). This reads the same for every agent in every context.
 
 ### AFTER (UnifiedActionTemplate format — correctly authored)
 
