@@ -1,14 +1,16 @@
 ---
-status: current
+status: historical
 domain: process
 lint_plan_doc: exempt
-last_reviewed: 2026-08-28
+last_reviewed: 2026-08-30
 ---
 
 # Context-Cleanup Rounds — Runbook (rounds 2–5)
 
 > **lint_plan_doc:** exempt — process runbook, not a feature plan; the per-system required sections do not apply.
 
+> **PROGRAM COMPLETE — Round 5 (content & narrative) DONE** — THR-1369…THR-1375 (THR-1373 canceled as resolved-by-THR-1368), PRs #1748/#1750/#1751/#1753 + the T6 register PR, shipped 2026-08-29/30; audit + outcome: https://claude.ai/code/artifact/eb5c933d-0620-4aaf-9bd4-e9821b8d39ad. Registered `encounter-authoring` + extended `prose` (8 doctrines total). Findings shape: the operative chain teaching modes the doctrine retired — the rejected authoredChoices model as step-by-step authoring instructions (template-encounter-rewrite, systems-prompt "live primitive"), the scene-first/in-situ workflow in the mandatory wiring guide's own worked example and the unmarked frameworks doc the live card wiki cited as spec authority, and **the compiled brief's generator hardcoding the retired peak-surface list into Section A** — the THR-1250 polluted-preamble failure recurring inside its own fix. Round-5 residue re-scoped mid-round: THR-1368 (same day, another lane) had already removed the `reach.flesh` node, re-homed the four actions with ids deliberately kept, and fixed the vault generator's dead Windows guard — the executor deferred to that recorded decision and canceled the rename ticket. Vault: ~24 pages bannered/corrected, the THR-1342 Reaches-vs-Spheres fix applied to the 8 archetype pages it never reached, Threat Rating verified engine-accurate (the phantom culture weight is a dead constant — impediment #956), the last 5 Flesh pages deleted behind a flesh-free regeneration. **The completion criterion below is met: all rounds shipped, every layer registered, `/guidance-audit` green on the new doctrine at registration. This runbook is historical; the weekly retro's Step 5d owns freshness from here.**
+>
 > **Round 2 (game design) DONE** — THR-1337…THR-1343, shipped 2026-08-28; audit + outcome: https://claude.ai/code/artifact/e591d762-eef7-4baf-82fe-73f69e4c3a1d. Registered `rules-of-play`.
 >
 > **Round 4 (technical architecture) DONE** — THR-1361…THR-1367, PRs #1736–#1738 + #1741 + #1744 + the register PR, shipped 2026-08-29; audit + outcome: https://claude.ai/code/artifact/cba8307e-e4e5-4b4a-97ca-3ac07fa0866f. Registered `architecture`. Findings shape: shipped work still taught as future work (THR-238 registry, Control verb, success_at_cost, THR-1183/1346/1156 all absent from the teaching surfaces; CLAUDE.md codesight counts ~50% understated — now a pointer to the live file). Christian's calls: vault World Graph rewritten; `Docs/ai-index/` refreshed in place + registered as dependents. Round-1/round-4 debts paid (typed-gamestate vs docs; codesight staleness). Collateral: the CI job budget had decayed (suite alone 16m48s vs a 20-min budget) — raised to a dated 35 (PR #1740, impediment #948-class). **Remaining: round 5 (content & narrative)** — its residue list: `world-model.json` `reach.flesh` removal (partly addressed by THR-1359's sweep — verify), bannered vault Flesh pages, plus round-4 handovers: vault `Attachment System.md` (unbannered, no canon pointer), `Stealth System.md` under-banner, `Threat Rating.md` 0.9-weight arithmetic.
