@@ -10,6 +10,7 @@ import {
   buildHealthReport,
   formatHealthFingerprint,
   type HealthReport,
+  type HealthVerdict,
 } from "./node-modules-health.ts";
 
 type ProbeStatus = "yes" | "no" | "unknown";
@@ -19,6 +20,12 @@ type ProbeResult = {
   status: ProbeStatus;
   detail: string;
   durationMs?: number;
+  /**
+   * True when the probe declined to run because a prior probe already proved its
+   * answer would be meaningless. Distinct from `status: "unknown"` alone, which also
+   * covers "tried and could not tell" — the fingerprint separates the two.
+   */
+  abstained?: boolean;
 };
 
 type CommandResult = {
@@ -62,6 +69,50 @@ const TEST_PROBE_FILE_CANDIDATES = [
   "src/__tests__/debug-bridge.test.ts",
   "src/data/__tests__/encounter-content.test.ts",
 ] as const;
+
+/**
+ * Session-tree verdicts that make the `test:` probe's answer meaningless (THR-1326).
+ *
+ * `unknown` is deliberately absent: an unreadable health probe is not evidence of
+ * damage, and suppressing a real timing signal on it would trade one misleading line
+ * for another (NFP #4).
+ */
+export const INSTALL_UNUSABLE_VERDICTS: readonly HealthVerdict[] = [
+  "stub",
+  "absent",
+  "shim-stripped",
+];
+
+/**
+ * Decide whether the `test:` probe must abstain, and say why (THR-1326).
+ *
+ * ## Why a green here was worse than no line
+ *
+ * The `test:` probe shells out to `npm test`, and Node resolves `vitest` by walking
+ * *up* the directory tree. A session worktree lives at `<repo>/.claude/worktrees/<name>`,
+ * so `<repo>/node_modules` is an ancestor of it — the probe therefore passes using the
+ * **donor's** packages while the session tree holds no install at all. That is what
+ * produced the standing contradiction this fix removes: `test: yes (1.25s)` printed one
+ * line above `nm: no — session tree stub`, in the same run, both true in isolation.
+ *
+ * The green is not merely unhelpful, it is load-bearing in the wrong direction: it is
+ * the first health signal in the summary, so a session reads it, concludes the tree is
+ * fine, and proceeds into a tree where every `npm run` script that reaches for a `.bin`
+ * shim will fail — the `'esbuild' is not recognized` misdiagnosis, one probe earlier.
+ *
+ * Abstaining keeps the honest half (the tree cannot answer this) without inventing the
+ * dishonest half (a red that would claim the *suite* is broken, which it is not).
+ */
+export function testProbeAbstentionReason(report: HealthReport | null): string | null {
+  if (!report) return null;
+  const { verdict, role } = report.session;
+  if (!INSTALL_UNUSABLE_VERDICTS.includes(verdict)) return null;
+  return (
+    `abstained — ${role} tree node_modules is ${verdict}, so a timing here would measure ` +
+    `the donor's packages resolved through the parent directory, not this tree; ` +
+    `repair the install (see nm: below) and re-run`
+  );
+}
 
 const COMPUTER_USE_TRUE_VALUES = new Set(["1", "true", "yes", "enabled", "granted", "read"]);
 const COMPUTER_USE_FALSE_VALUES = new Set(["0", "false", "no", "disabled", "denied", "none"]);
@@ -187,7 +238,20 @@ function resolveSingleTestFile(): string | null {
   return null;
 }
 
-function probeNpmSingleTestTiming(): ProbeResult {
+export function probeNpmSingleTestTiming(health: HealthReport | null = null): ProbeResult {
+  // Ordered first: when the install cannot support the measurement, the honest answer
+  // is "not measured here", and spending ~1.3s to produce a misleading number is worse
+  // than spending none. See testProbeAbstentionReason for why the number misleads.
+  const abstentionReason = testProbeAbstentionReason(health);
+  if (abstentionReason) {
+    return {
+      name: "test",
+      status: "unknown",
+      detail: abstentionReason,
+      abstained: true,
+    };
+  }
+
   const testFile = resolveSingleTestFile();
   if (!testFile) {
     return {
@@ -261,15 +325,17 @@ function probeComputerUseGrantStatus(): ProbeResult {
 /**
  * `node_modules` health for this tree and the home-tree donor it junctions to (THR-1111).
  *
- * This probe exists because the `test:` line above **passes green against a broken
- * install** — it shells out to `npm test`, which resolves vitest through whichever
- * path happens to work, so a stub or shim-stripped tree can still answer `yes`.
- * CLAUDE.md § Known Sandbox Limitations says exactly that ("the session-precheck's
- * `test:` line passes green against a stub, so it is not a signal for install
- * health"), and until now nothing in the precheck answered the question it warns
- * about. A session therefore learned its install was gone ~20 minutes later, from
- * `'esbuild' is not recognized`, which reads as a missing dependency rather than as
- * a deleted install.
+ * This probe exists because the `test:` line **would otherwise pass green against a
+ * broken install** — it shells out to `npm test`, and Node resolves vitest by walking
+ * up the directory tree, so a worktree session finds the home tree's packages and a
+ * stub or shim-stripped tree still answers `yes`. A session therefore learned its
+ * install was gone ~20 minutes later, from `'esbuild' is not recognized`, which reads
+ * as a missing dependency rather than as a deleted install.
+ *
+ * Since THR-1326 this probe runs **before** the `test:` probe and its verdict is
+ * handed to it, so an unusable session tree makes `test:` abstain instead of printing
+ * a contradicting green (`testProbeAbstentionReason`). The two lines can no longer
+ * disagree; print order is unchanged.
  *
  * The donor half is the load-bearing one: 53 of 478 reaper runs found the home tree's
  * install damaged, in streaks up to 18 hours, and every session starting inside such
@@ -501,7 +567,12 @@ export function probeBranchStaleness(
   };
 }
 
-function formatFingerprintTestValue(result: ProbeResult): string {
+export function formatFingerprintTestValue(result: ProbeResult): string {
+  // `abstained` outranks the status read: it is the one value that tells a reader the
+  // probe declined on purpose rather than tried and failed to tell (THR-1326).
+  if (result.abstained) {
+    return "abstained";
+  }
   if (result.status === "yes" && typeof result.durationMs === "number") {
     return formatSeconds(result.durationMs);
   }
@@ -526,9 +597,12 @@ function main(): void {
   try {
     const ripgrep = probeRipgrepAvailability();
     const gitDryRun = probeGitPushDryRun();
-    const npmTestTiming = probeNpmSingleTestTiming();
-    const computerUse = probeComputerUseGrantStatus();
+    // node_modules health is resolved BEFORE the test probe and handed to it: the
+    // health verdict decides whether a timing measurement means anything at all
+    // (THR-1326). Print order is unchanged — only the evaluation order moved.
     const nodeModules = probeNodeModulesHealth();
+    const npmTestTiming = probeNpmSingleTestTiming(nodeModules.report);
+    const computerUse = probeComputerUseGrantStatus();
     const branchStaleness = probeBranchStaleness();
 
     console.log("session-precheck summary");
