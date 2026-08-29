@@ -160,7 +160,7 @@ All UI layout decisions — panel widths, font sizes, top bar density, sidebar p
 
 Hex map tiles use a **three-component compositable system**. Magic is never baked into terrain tiles — it is a separate overlay layer.
 
-> **Master Asset Registry:** The style tile (`Design/style-tile.html`) contains the authoritative visual legend of every hex terrain tile, clear hex fill, and location overlay icon in the game — including filenames, size tiers, and active/reserve status. If you need to know what hex assets exist or which version is in use, check the style tile's "Hex Asset Legend" section. Code mapping lives in `src/data/hex-tile-assets.ts`.
+> **Master Asset Registry:** `src/data/hex-tile-assets.ts` is the authoritative registry of every hex terrain tile, clear hex fill, and location overlay icon the game ships — if an asset isn't mapped there, it doesn't exist in the game. Shared UI components render with sample data at `?view=styleguide` (the living contract, UI Law 29). *(The rendered style tile `Design/style-tile.html` was retired 2026-08-29, THR-1354 — it lived untracked outside git and was lost; the code registry was already the ground truth.)*
 
 ### Pipeline
 
