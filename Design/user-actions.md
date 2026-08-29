@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-29 09:56 local (07:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-29 10:55 local (08:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -88,6 +88,7 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
+- **A missing ingredient built, and an honest "still not it"** — the [variety term](https://linear.app/threadbare/issue/THR-1349/the-decision-board-has-no-variety-term-a-live-board-writes-zero-trade) that kept characters from all chasing the same plan merged 10:54. The builder then measured the switch it was meant to unblock, found the real obstacle has moved again, and put the ticket back on the backlog rather than call it finished. Half shipped, honestly labelled.
 - **A faction you founded looked like a stranger everywhere** — [THR-1322](https://linear.app/threadbare/issue/THR-1322/a-run-founded-faction-renders-as-a-fallback-everywhere-in-the-ui) merged 09:21 after an 8.5-hour wait at the door; factions founded during a run now render as themselves instead of falling back to a generic look.
 - **A test time limit nobody had re-measured in months** — [THR-1352](https://linear.app/threadbare/issue/THR-1352) merged 09:34. It had quietly become too tight for a world that has grown since, and was failing finished work for no real reason. Found and fixed by a lane; nothing was lost and nothing in the game changes.
 - **The stuck chain broke** — [THR-1302](https://linear.app/threadbare/issue/THR-1302/the-boards-ambition-boost-is-true-by-construction-for-undertakings-a) merged 05:42; the [cutover behind it](https://linear.app/threadbare/issue/THR-1301) was then taken and correctly refused on measurement, and [the real blocker](https://linear.app/threadbare/issue/THR-1349/the-decision-board-has-no-variety-term-a-live-board-writes-zero-trade) is now on the shelf in front of it.
@@ -97,7 +98,6 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 - **A lane could resume work nobody had started** — [THR-1325](https://linear.app/threadbare/issue/THR-1325/pull-works-claim-predicates-miss-two-live-states-a-lane-resumes-a-live) merged 01:11; resuming now proves the previous session is actually gone.
 - **A warband nobody could be recruited into** — [THR-1321](https://linear.app/threadbare/issue/THR-1321/a-cast-on-strategic-recruit-warband-halts-it-completely-13-completions) merged 22:28; one line of scene-casting stopped the recruit action dead, on both save modes.
 - **Round 2 of the agent-handbook cleanup — complete** — all seven pieces under [THR-1337](https://linear.app/threadbare/issue/THR-1337/context-cleanup-round-2-the-game-design-layer-audit-sweep-per-the) merged 22:26–23:15. Rounds 3–5 remain, and round 3 started this morning.
-- **A work that is people, and the offer that takes them away** — [THR-1309](https://linear.app/threadbare/issue/THR-1309) merged 20:22; agents can now undertake to raise a warband and offer others a place in it.
 
 ---
 
