@@ -55,7 +55,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { CONTRACTS, validateRegistry, type Contract, type ContractBadge } from './interface-contracts.ts';
+import { CONTRACTS, TICKETED_BADGES, validateRegistry, type Contract, type ContractBadge } from './interface-contracts.ts';
 
 // ─── Tunable constants (NFP #1) ───────────────────────────────────────────────
 
@@ -72,6 +72,7 @@ const BADGE_LABEL: Record<ContractBadge, string> = {
   LIVE: '🟢 LIVE',
   PARTIAL: '🟠 PARTIAL',
   LEAKED: '🔴 LEAKED',
+  HOLLOW: '🟣 HOLLOW',
   UNWIRED: '⚫ UNWIRED',
   'UNVERIFIED-OK': '🔵 UNVERIFIED-OK',
 };
@@ -376,9 +377,9 @@ function render(rows: readonly Row[], registryErrors: readonly { contractId: str
     L.push('');
   }
 
-  const leakedNoTicket = rows.filter((r) => r.result.badge === 'LEAKED' && !ticketOf(r.contract));
+  const leakedNoTicket = rows.filter((r) => TICKETED_BADGES.includes(r.result.badge) && !ticketOf(r.contract));
   if (leakedNoTicket.length > 0) {
-    L.push('## ⚠️ LEAKED without a remediation ticket');
+    L.push('## ⚠️ LEAKED / HOLLOW without a remediation ticket');
     L.push('');
     L.push('These fail the build. Either fix the contract or file a `Deferral` issue and cite it.');
     L.push('');
@@ -458,14 +459,14 @@ function main(): void {
   }
 
   // ── The CI ratchet ──────────────────────────────────────────────────────────
-  const leakedNoTicket = rows.filter((r) => r.result.badge === 'LEAKED' && !ticketOf(r.contract));
+  const leakedNoTicket = rows.filter((r) => TICKETED_BADGES.includes(r.result.badge) && !ticketOf(r.contract));
   if (registryErrors.length > 0) {
     console.error(`generate-interface-map: FAIL — ${registryErrors.length} registry error(s):`);
     for (const err of registryErrors) console.error(`  - ${err.contractId}: ${err.problem}`);
     process.exit(1);
   }
   if (leakedNoTicket.length > 0) {
-    console.error(`generate-interface-map: FAIL — ${leakedNoTicket.length} contract(s) LEAKED without a remediation ticket:`);
+    console.error(`generate-interface-map: FAIL — ${leakedNoTicket.length} contract(s) LEAKED/HOLLOW without a remediation ticket:`);
     for (const row of leakedNoTicket) console.error(`  - ${row.contract.id}: ${row.result.reason}`);
     console.error('');
     console.error('Fix the contract, or file a `Deferral`-labeled Linear issue and set `deferralTicket` on the row.');

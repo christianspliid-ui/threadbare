@@ -42,8 +42,28 @@ tests, typecheck, and playtests.
 ## Badges
 
 🟢 LIVE · 🟠 PARTIAL (works but a stated gap) · 🔴 LEAKED (one side dead — feature silently
-lost) · ⚫ UNWIRED (neither side present) · 🔵 UNVERIFIED-OK (both sides grep clean, liveness
-unproven) · ⚪ UNAUDITED (no contract row yet).
+lost) · 🟣 HOLLOW (a claim with no referent) · ⚫ UNWIRED (neither side present) · 🔵
+UNVERIFIED-OK (both sides grep clean, liveness unproven) · ⚪ UNAUDITED (no contract row yet).
+
+**🟣 HOLLOW is defined by pointer, and the pointer is the point.** Its definition is the UL
+entry [`claim-without-anchor`](../ubiquitous-language/Process.md#claim-without-anchor) — alias
+*Law 56-hollow*, already in-tree at `src/types/unifiedAction.ts` — and the rule it violates is
+UI Law 56. This page does not restate it. That is the absorbed ruling from
+`Docs/plans/2026-08-27-shared-anchor-machinery.md` (THR-1212 ruling 3, seated by THR-1316):
+the UL is the authority for the three violation classes, this map points at it, and there is
+no third home. The other two classes need no new badge — `write-without-consumer` **is** 🔴
+LEAKED under a general name, and `render-private-pipeline` is covered only partially, which
+the UL entry states rather than this map pretending otherwise.
+
+**HOLLOW is pin-only, and no row carries it today.** It arrives solely via `badgeOverride`,
+because symbol matching cannot see the absence of a referent it was never told to look for —
+so unlike LEAKED there is no mechanical path to it. The class is real and measured, just not
+at *this* registry's granularity: `check:chip-anchors` counts it per template (clause 2 for
+chips that declare a referent, the `--baseline` ratchet for the 443 that declare none), and
+the encounter-factory retrofit line drains that population. Stated here rather than left as
+an apparent oversight — an unused badge with no note reads as vocabulary nobody wired.
+HOLLOW joins LEAKED in `TICKETED_BADGES`, so the first row ever pinned to it must carry a
+remediation ticket or the generator exits non-zero.
 
 **Classification is downgrade-only — this is the load-bearing invariant.** Static analysis
 can prove a contract dead; it can never prove one alive. Both headline leaks would have been

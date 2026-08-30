@@ -88,6 +88,7 @@ Load this file at session start (referenced from CLAUDE.md). Load specific shard
 - **[UnifiedActionTemplate (UAT)](./Encounters.md#unifiedactiontemplate)** — unified definition covering divine interventions and mortal encounter actions; replaces fixed action slots
 - **[Aftermath](./Encounters.md#aftermath)** — the resolution phase; presents Reactions, applies world-graph consequences
 - **[Reaction](./Encounters.md#reaction)** — a player/agent choice in the Aftermath phase; applies world-graph mutations
+- **[Consequence Chip](./Encounters.md#consequence-chip)** — one line in an ending reporting a single real state change; the surface SCAR/BOND/BOON/PATH are categories of; Law 56 forbids a chip nothing wrote
 - **[SCAR](./Encounters.md#scar)** — consequence category: what the encounter cost the character; absorbs TOLL + WOUND, and carries the four-category taxonomy note
 - **[BOND](./Encounters.md#bond)** — consequence category: who now stands with or against the character; absorbs STANDING; not Bond Reception
 - **[BOON](./Encounters.md#boon)** — consequence category: what they earned *and why*; absorbs PRIZE + growth chips
@@ -164,6 +165,7 @@ Load this file at session start (referenced from CLAUDE.md). Load specific shard
 - **[GameState](./Graph.md#gamestate)** — per-session simulation container; mutated in place per tick; UI reads via worldVersion
 - **[HexTile](./Graph.md#hextile)** — one cell on the world's hex grid; top tier of the three-tier position model
 - **[TerrainType](./Graph.md#terraintype)** — 42-value biome enum on every HexTile; drives encounter scoring and awareness
+- **[WorldRef](./Graph.md#worldref)** — the normalised reference to a world object (13 kinds); the membership spine the anchor catalog projects seven consumer vocabularies against; deliberately not called "anchor"
 
 ### Coordination
 
@@ -198,11 +200,14 @@ Load this file at session start (referenced from CLAUDE.md). Load specific shard
 - **[Retrospective](./Process.md#retrospective)** — weekly synthesis of impediment log + drift scan issues; run via `retrospective` skill
 - **[UL-proposal](./Process.md#ul-proposal)** — Linear issue label for proposed new terms or retirements; always human-approved, never auto-merged
 - **[Implementation Plan](./Process.md#implementation-plan)** — design-session-authored artifact in Docs/plans/; the executor's input
+- **[claim-without-anchor](./Process.md#claim-without-anchor)** — interface text names a simulation object without declaring a referent; alias *Law 56-hollow*; badged 🟣 HOLLOW on the interface map
+- **[write-without-consumer](./Process.md#write-without-consumer)** — a write nothing acts on; the interface map's 🔴 LEAKED class, now derived by the consumption ledger rather than asserted
+- **[render-private-pipeline](./Process.md#render-private-pipeline)** — a surface rendering from a pipeline no other consumer can reach; the map covers it only partially, stated rather than badged
 
 ---
 
-*v1.12 — 8 shards, **141 terms: 135 canonical, 4 deprecated, 1 rejected, 1 proposed** (Threadbearer added at THR-1333). Per-shard census: Agents 35, Encounters 32, Traits 15, Graph 14, Coordination 14, Process 14, Cosmology 9, Prose 8. **Recount after any term change** with `grep -h "^\*\*Status:\*\*" Docs/ubiquitous-language/*.md | sort | uniq -c` — count every `**Status:**` line, not only the statuses you expect (the tally has been caught stale three times, twice by an unexpected status). Coverage expands via the propose-new-term flow. UL wins on terminology disagreements.*
+*v1.13 — 8 shards, **161 terms: 153 canonical, 5 deprecated, 1 rejected, 1 proposed, 1 retired** (WorldRef, Consequence Chip, and the three violation classes added at THR-1316). Per-shard census: Agents 41, Encounters 36, Process 17, Traits 16, Graph 15, Coordination 14, Prose 13, Cosmology 9. **Recount after any term change** with `grep -h "^\*\*Status:\*\*" Docs/ubiquitous-language/*.md | sort | uniq -c` — count every `**Status:**` line, not only the statuses you expect (the tally has been caught stale three times, twice by an unexpected status). Coverage expands via the propose-new-term flow. UL wins on terminology disagreements.*
 
-*Index coverage: **141 of 141** — index every term in the same commit that seats it. Verify with the shard-vs-index diff (THR-806): slugify every shard `### ` heading with `slugifyHeading` from `scripts/generate-ul-dashboard-data.ts` and diff both directions against the anchors above. Use that function, never a hand-rolled slugifier (it collapses repeated hyphens, which a naive one misreports as two dead anchors), and never the dashboard generator's warning list (its one-liner fallback stays silent on unindexed terms). Self-detecting guard tracked as THR-959.*
+*Index coverage: **155 of 161** — index every term in the same commit that seats it. **Six terms are seated but unindexed** (`Traits#tag-namespace`, and the five Prose terms `narrator-mode`, `register`, `band-fragment`, `vagueness-field-class`, `register-compliance`), tracked as THR-1376; the number is recorded short rather than rounded up, because a coverage line that asserts an invariant it has not met is the drift this footer exists to catch — the previous `141 of 141` was stale in both numerator and denominator while 15 terms went unrecorded. Verify with the shard-vs-index diff (THR-806): slugify every shard `### ` heading with `slugifyHeading` from `scripts/generate-ul-dashboard-data.ts` and diff both directions against the anchors above. Use that function, never a hand-rolled slugifier (it collapses repeated hyphens, which a naive one misreports as two dead anchors), and never the dashboard generator's warning list (its one-liner fallback stays silent on unindexed terms). Self-detecting guard tracked as THR-959.*
 
 *Footer compressed at THR-1334 (2026-08-28, single-authority sweep): the full recount archaeology of v1.7–v1.12 — which additions landed when, and the three times the tally was caught stale and why — lives in this file's git history, where history belongs.*

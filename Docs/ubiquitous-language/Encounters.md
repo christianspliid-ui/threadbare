@@ -54,6 +54,22 @@ A follow-up response offered during the Aftermath phase, *after* fate has alread
 
 ---
 
+### Consequence Chip
+
+**Aliases:** Chip, aftermath chip
+**Also see:** `[[SCAR]]`, `[[BOND]]`, `[[BOON]]`, `[[PATH]]`, `[[Aftermath]]`, `[[claim-without-anchor]]`, `[[WorldRef]]`
+**Status:** canonical
+
+One line in an encounter ending reporting a single change the encounter made. Every chip carries a category — `[[SCAR]]`, `[[BOND]]`, `[[BOON]]` or `[[PATH]]` — and the four are categories *of this*: the chip is the surface, the category is what kind of change it reports.
+
+**A chip renders only a change the engine actually wrote** (UI Law 56). The backing may be a stat or standing moved, a relationship or agreement created, an object gained or lost, or a planted seed the simulation will act on later — but it must be a real game-state write. A chip whose claim nothing wrote is not a weak chip, it is a released defect of the same severity as a numeral leak; the class has a name, `[[claim-without-anchor]]`. Scene texture belongs in the `overview` and afterimages, which are prose surfaces and never claim state. Source: Christian, 2026-08-16, on The Unsafe Bridge's `PATH · The River Crossing`, which no state backed.
+
+**Two clauses pin the chip list from opposite sides.** Law 13's visibility-parity clause says a reported quantity must be player-inspectable; Law 56 says a report must have a real referent. Together they make the chip list exactly the inspectable state deltas of the ending — nothing hidden, nothing fictional.
+
+**A chip that names a simulation object should declare which one.** The referent vocabulary is `[[WorldRef]]`; `stateNoun` carries it on the authored shape. Chips that declare a referent are gated by `check:chip-anchors` clause 2; chips that declare none are outside that clause and counted by its `--baseline` ratchet instead, because green over an unmeasured population is not the same as clean.
+
+---
+
 ### SCAR
 
 **Aliases:** SCAR chip, scar consequence

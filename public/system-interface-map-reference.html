@@ -77,6 +77,7 @@
   .legend .swatch.leaked { border-color: var(--red); border-top-style: dashed; }
   .legend .swatch.partial { border-color: var(--orange); border-top-style: dashed; }
   .legend .swatch.unaudited { border-color: var(--ink-faint); border-top-width: 1.5px; }
+  .legend .swatch.hollow { border-color: var(--purple); border-top-style: dotted; }
 
   /* ── Contract strips (spotlights) ── */
   .contracts { list-style: none; margin: 12px 0 6px; }
@@ -92,6 +93,7 @@
   .chip.leaked { background: rgba(139,37,0,0.12); color: var(--red); }
   .chip.partial { background: rgba(138,74,0,0.13); color: var(--orange); }
   .chip.parked { background: rgba(74,45,106,0.12); color: var(--purple); }
+  .chip.hollow { background: rgba(74,45,106,0.12); color: var(--purple); }
 
   .callout { background: var(--card-bg); border-left: 4px solid var(--gold); border-radius: 0 6px 6px 0; padding: 12px 16px; margin: 16px 0; font-size: 0.95rem; }
   .callout strong { font-family: 'Cinzel', Georgia, serif; font-size: 0.85rem; letter-spacing: 0.06em; color: var(--gold); display: block; margin-bottom: 4px; }
@@ -154,8 +156,21 @@
       <span class="item"><span class="swatch live"></span> verified live</span>
       <span class="item"><span class="swatch leaked"></span> leaked — broken, repair ticketed</span>
       <span class="item"><span class="swatch partial"></span> partial — works, but a stated gap</span>
+      <span class="item"><span class="swatch hollow"></span> hollow — a claim with no referent</span>
       <span class="item"><span class="swatch unaudited"></span> orientation only — not yet audited</span>
     </div>
+
+    <p class="lead" style="max-width: 62ch; margin: 12px auto 0; text-align: center;">
+      <strong>Hollow</strong> is the newest badge and the only one defined somewhere else on purpose.
+      It means interface text names a thing in the simulation without saying <em>which</em> thing —
+      the player reads a claim, and nothing in the payload points at what it refers to. The
+      definition lives in the Ubiquitous Language as <code>claim-without-anchor</code> (alias
+      <em>Law 56-hollow</em>), and this page deliberately does not restate it: one authority,
+      pointers everywhere else. No interface row carries it today. That is not an oversight —
+      it is pin-only, because a symbol check cannot see the absence of a referent it was never
+      told to look for, and the class is counted where the referents actually live, by
+      <code>check:chip-anchors</code> over the consequence chips.
+    </p>
 
     <div class="diagram-frame">
       <svg viewBox="0 0 880 760" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Overview diagram of every Threadbearer subsystem and their interfaces">

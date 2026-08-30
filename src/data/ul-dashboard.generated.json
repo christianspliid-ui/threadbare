@@ -22,7 +22,7 @@
       "filename": "Encounters.md",
       "title": "Encounters",
       "contentAdjacent": true,
-      "termCount": 35,
+      "termCount": 36,
       "blurb": "Content-adjacent shard. Terms covering the encounter pipeline: templates, resolution, aftermath, awareness, and causation."
     },
     {
@@ -46,7 +46,7 @@
       "filename": "Graph.md",
       "title": "Graph",
       "contentAdjacent": false,
-      "termCount": 14,
+      "termCount": 15,
       "blurb": "Not content-adjacent. Terms covering the world graph data model: nodes, edges, versioning, position, and cache architecture."
     },
     {
@@ -62,7 +62,7 @@
       "filename": "Process.md",
       "title": "Process",
       "contentAdjacent": false,
-      "termCount": 14,
+      "termCount": 17,
       "blurb": "Not content-adjacent. Terms covering the development process: NFPs, design governance, definitions, and continuous improvement tooling — plus the project's identity terms."
     }
   ],
@@ -1842,6 +1842,57 @@
         }
       ],
       "sourcePath": "Docs/ubiquitous-language/Encounters.md#reaction",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "encounters",
+      "slug": "consequence-chip",
+      "name": "Consequence Chip",
+      "aliases": [
+        "Chip",
+        "aftermath chip"
+      ],
+      "status": "canonical",
+      "oneLiner": "one line in an ending reporting a single real state change; the surface SCAR/BOND/BOON/PATH are categories of; Law 56 forbids a chip nothing wrote",
+      "body": "One line in an encounter ending reporting a single change the encounter made. Every chip carries a category — `[[SCAR]]`, `[[BOND]]`, `[[BOON]]` or `[[PATH]]` — and the four are categories *of this*: the chip is the surface, the category is what kind of change it reports.\n\n**A chip renders only a change the engine actually wrote** (UI Law 56). The backing may be a stat or standing moved, a relationship or agreement created, an object gained or lost, or a planted seed the simulation will act on later — but it must be a real game-state write. A chip whose claim nothing wrote is not a weak chip, it is a released defect of the same severity as a numeral leak; the class has a name, `[[claim-without-anchor]]`. Scene texture belongs in the `overview` and afterimages, which are prose surfaces and never claim state. Source: Christian, 2026-08-16, on The Unsafe Bridge's `PATH · The River Crossing`, which no state backed.\n\n**Two clauses pin the chip list from opposite sides.** Law 13's visibility-parity clause says a reported quantity must be player-inspectable; Law 56 says a report must have a real referent. Together they make the chip list exactly the inspectable state deltas of the ending — nothing hidden, nothing fictional.\n\n**A chip that names a simulation object should declare which one.** The referent vocabulary is `[[WorldRef]]`; `stateNoun` carries it on the authored shape. Chips that declare a referent are gated by `check:chip-anchors` clause 2; chips that declare none are outside that clause and counted by its `--baseline` ratchet instead, because green over an unmeasured population is not the same as clean.",
+      "seeAlso": [
+        {
+          "raw": "SCAR",
+          "termName": "SCAR",
+          "resolvedSlug": "encounters#scar"
+        },
+        {
+          "raw": "BOND",
+          "termName": "BOND",
+          "resolvedSlug": "encounters#bond"
+        },
+        {
+          "raw": "BOON",
+          "termName": "BOON",
+          "resolvedSlug": "encounters#boon"
+        },
+        {
+          "raw": "PATH",
+          "termName": "PATH",
+          "resolvedSlug": "encounters#path"
+        },
+        {
+          "raw": "Aftermath",
+          "termName": "Aftermath",
+          "resolvedSlug": "encounters#aftermath"
+        },
+        {
+          "raw": "claim-without-anchor",
+          "termName": "claim-without-anchor",
+          "resolvedSlug": "process#claim-without-anchor"
+        },
+        {
+          "raw": "WorldRef",
+          "termName": "WorldRef",
+          "resolvedSlug": "graph#worldref"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Encounters.md#consequence-chip",
       "contentAdjacent": true
     },
     {
@@ -4181,6 +4232,42 @@
       "contentAdjacent": false
     },
     {
+      "shardId": "graph",
+      "slug": "worldref",
+      "name": "WorldRef",
+      "aliases": [
+        "WorldRefKind",
+        "world reference"
+      ],
+      "status": "canonical",
+      "oneLiner": "the normalised reference to a world object (13 kinds); the membership spine the anchor catalog projects seven consumer vocabularies against; deliberately not called \"anchor\"",
+      "body": "The normalised way anything in the game names a game-state object: a `kind` drawn from `WorldRefKind` plus the id that kind addresses. Thirteen kinds — `agent`, `faction`, `location`, `sublocation`, `hex`, `artifact`, `attachment`, `companion`, `army`, `encounter`, `journey`, `receipt`, `codex`. Definition: `src/types/worldRef.ts` (THR-1212 slice 1).\n\n**It is the membership spine, not a replacement format.** Seven consumer vocabularies name world objects and disagree with each other — the graph says `actor` where every UI layer says `agent`; `faction` is type-illegal in `TargetCategory`; `attachment` is legal in the aftermath concept vocabulary and deliberately illegal in the visual resolver it feeds. `WorldRefKind` is *the* kind vocabulary, and the generated anchor catalog projects each consumer union against it, failing by name on an unmapped member. `NavigationTarget`, `EntityVisualRef` and the rest keep the shapes their consumers already speak (hub-and-spoke / strangler, NFP #6); what unified immediately is the kind vocabulary, not the wire shapes.\n\n**Deliberately not called \"anchor\".** `EntityNotice` already owns that word on the interface side, and a second referent for it would collide on the surface where the distinction matters most. The violation class named for the missing referent keeps the anchor word (`[[claim-without-anchor]]`); the referent vocabulary itself is `WorldRef`.\n\n**The module is import-free by construction.** It is a membership source parsed by `scripts/generate-anchor-catalog.ts`, and a generator that must resolve an import graph to read a union breaks when an unrelated module moves. Adapters live in `worldRefAdapters`, which may import freely.\n\n`codex` is *reserved*, not live: `?view=codex` is a full-page navigation that tears down the running simulation, so no in-game codex destination exists for a link to open. `toNavigationTarget` returns `undefined` for it — the fail-soft every unroutable kind takes (NFP #4).",
+      "seeAlso": [
+        {
+          "raw": "Node",
+          "termName": "Node",
+          "resolvedSlug": "graph#node"
+        },
+        {
+          "raw": "NodeType",
+          "termName": "NodeType",
+          "resolvedSlug": "graph#nodetype"
+        },
+        {
+          "raw": "claim-without-anchor",
+          "termName": "claim-without-anchor",
+          "resolvedSlug": "process#claim-without-anchor"
+        },
+        {
+          "raw": "Consequence Chip",
+          "termName": "Consequence Chip",
+          "resolvedSlug": "encounters#consequence-chip"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Graph.md#worldref",
+      "contentAdjacent": false
+    },
+    {
       "shardId": "coordination",
       "slug": "cowork",
       "name": "Cowork",
@@ -4915,6 +5002,113 @@
         }
       ],
       "sourcePath": "Docs/ubiquitous-language/Process.md#implementation-plan",
+      "contentAdjacent": false
+    },
+    {
+      "shardId": "process",
+      "slug": "claim-without-anchor",
+      "name": "claim-without-anchor",
+      "aliases": [
+        "Law 56-hollow",
+        "hollow chip"
+      ],
+      "status": "canonical",
+      "oneLiner": "interface text names a simulation object without declaring a referent; alias *Law 56-hollow*; badged 🟣 HOLLOW on the interface map",
+      "body": "**Interface text names a simulation object without declaring a referent.** The surface tells the player something about the world; nothing in the payload says *which* world object it means, so no consumer can route to it, verify it, or notice when it stops being true. The canonical instance is a `[[Consequence Chip]]` reporting a change no game-state write backs — the violation UI Law 56 forbids (`Docs/design-system/laws.md`, law 56).\n\n**The alias is recorded rather than replaced.** \"Law-56-hollow\" was already in-tree at `src/types/unifiedAction.ts` before this entry existed. Minting a competing term would have left the code and the glossary naming the same defect two ways, which is the drift the UL exists to end — so `claim-without-anchor` is the UL head term and *Law 56-hollow* is its alias, not a rival.\n\n**Detected in two populations, because one gate cannot see both.** `check:chip-anchors` clause 2 fails a chip that *declares* a referent and anchors nothing. Chips declaring neither a `stateNoun` nor a `concepts` list are outside that clause by construction, and green there means **unmeasured, not clean** — so `check:chip-anchors -- --baseline` counts that population against the committed `chip-referent-baseline.json` and fails on an increase. Measured population at the ratchet's introduction (THR-1212 slice 3): **443 chips**, drained at batch cadence by the encounter-factory retrofit line rather than swept, because a gate red on arrival blocks every PR. The ratchet compares totals, so anchoring three chips while authoring three unanchored ones passes — a stated limitation, not coverage.\n\nThe referent vocabulary a chip should declare against is `[[WorldRef]]`. On the interface map this class carries its own badge (🟣 HOLLOW), defined by pointer to this entry — the map points here; it does not restate the definition.",
+      "seeAlso": [
+        {
+          "raw": "write-without-consumer",
+          "termName": "write-without-consumer",
+          "resolvedSlug": "process#write-without-consumer"
+        },
+        {
+          "raw": "render-private-pipeline",
+          "termName": "render-private-pipeline",
+          "resolvedSlug": "process#render-private-pipeline"
+        },
+        {
+          "raw": "Consequence Chip",
+          "termName": "Consequence Chip",
+          "resolvedSlug": "encounters#consequence-chip"
+        },
+        {
+          "raw": "WorldRef",
+          "termName": "WorldRef",
+          "resolvedSlug": "graph#worldref"
+        },
+        {
+          "raw": "Wiring Checklist",
+          "termName": "Wiring Checklist",
+          "resolvedSlug": "process#wiring-checklist"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Process.md#claim-without-anchor",
+      "contentAdjacent": false
+    },
+    {
+      "shardId": "process",
+      "slug": "write-without-consumer",
+      "name": "write-without-consumer",
+      "aliases": [
+        "unconsumed write",
+        "dead write"
+      ],
+      "status": "canonical",
+      "oneLiner": "a write nothing acts on; the interface map's 🔴 LEAKED class, now derived by the consumption ledger rather than asserted",
+      "body": "**A write nothing acts on.** A producer keeps writing a property, edge, event or trace whose consumer was rewritten away — or never existed. Tests still assert the write, typecheck passes, and the game silently loses the richness the write was for. This is the defect class the system interface map was built to catch, where it is badged 🔴 LEAKED; the two are the same class under two names, the UL term being the general one and the badge its expression on one registry.\n\n**It is now derived rather than asserted.** `Docs/canon/consumption-ledger.generated.md` (THR-1212 slice 4) classifies every aftermath effect kind and GraphOp by *what reads it*, so membership in this class falls out of each row's consumer list instead of being authored per row — a ledger that asks what the reader does, not whether one exists. An empty-consumer row is legal only with a cited `Deferral` ticket; the generator exits non-zero otherwise.\n\n**\"Something will read this later\" without a ticket is how features leak** — the interface map's second stewardship rule states the obligation directly: a plan that adds a write must name the production read site in the same plan, or open a `Deferral` issue and cite it in the contract row.",
+      "seeAlso": [
+        {
+          "raw": "claim-without-anchor",
+          "termName": "claim-without-anchor",
+          "resolvedSlug": "process#claim-without-anchor"
+        },
+        {
+          "raw": "render-private-pipeline",
+          "termName": "render-private-pipeline",
+          "resolvedSlug": "process#render-private-pipeline"
+        },
+        {
+          "raw": "Wiring Checklist",
+          "termName": "Wiring Checklist",
+          "resolvedSlug": "process#wiring-checklist"
+        },
+        {
+          "raw": "Definition of Done",
+          "termName": "Definition of Done",
+          "resolvedSlug": "process#definition-of-done"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Process.md#write-without-consumer",
+      "contentAdjacent": false
+    },
+    {
+      "shardId": "process",
+      "slug": "render-private-pipeline",
+      "name": "render-private-pipeline",
+      "aliases": [
+        "private-pipeline render"
+      ],
+      "status": "canonical",
+      "oneLiner": "a surface rendering from a pipeline no other consumer can reach; the map covers it only partially, stated rather than badged",
+      "body": "**A surface renders from a pipeline no other consumer can reach.** The display works, so nothing looks broken; but the data path feeding it is private to that one surface, so no other system can read the same state, no gate can verify it, and a second surface wanting the same fact must build a parallel path rather than share one. The failure is architectural rather than visible — it surfaces later as two surfaces disagreeing about the same world fact.\n\nThe interface map covers this class **partially**: a private pipeline whose producer and consumer are the same subsystem passes every symbol check, because both halves genuinely exist. What the map catches is the downstream shape — the second consumer that cannot reach the data — not the privacy itself. Recorded here with that gap stated, rather than badged as covered.",
+      "seeAlso": [
+        {
+          "raw": "claim-without-anchor",
+          "termName": "claim-without-anchor",
+          "resolvedSlug": "process#claim-without-anchor"
+        },
+        {
+          "raw": "write-without-consumer",
+          "termName": "write-without-consumer",
+          "resolvedSlug": "process#write-without-consumer"
+        },
+        {
+          "raw": "Wiring Checklist",
+          "termName": "Wiring Checklist",
+          "resolvedSlug": "process#wiring-checklist"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Process.md#render-private-pipeline",
       "contentAdjacent": false
     }
   ],
