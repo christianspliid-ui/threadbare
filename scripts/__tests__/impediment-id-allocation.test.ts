@@ -28,6 +28,8 @@ import path from 'node:path';
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 
+import { SUBPROCESS_TEST_TIMEOUT_MS } from '../../src/testing/testTimeouts.ts';
+
 import {
   COLLISION_BASE_REF,
   IMPEDIMENT_LOG_GIT_PATH,
@@ -135,8 +137,17 @@ describe('findLatentCollisions', () => {
  * `git` is available in every environment this suite runs in (the repo itself is a
  * clone), but the fixture still degrades to a skip rather than a failure if it is
  * not — an absent `git` is an environment fact, not a defect in the allocator.
+ *
+ * Timeout raised off vitest's 5000 ms default (THR-1328). These cases pay ~20 git
+ * spawns between the hook and the two tests, and process startup is the contended
+ * resource once the full suite runs 1100+ files — they finish in well under a
+ * second alone and have timed out in-suite against unrelated diffs five recorded
+ * times (impediments #527, #644, #779, #819, #869), costing ~3.5 min of two-arm
+ * triage each. `check-wiki-freshness` names this file as the sibling its own
+ * per-repo fixture starved. Hang detector, not a performance budget: see
+ * `src/testing/testTimeouts.ts`.
  */
-describe('two branches cut from the same base', () => {
+describe('two branches cut from the same base', { timeout: SUBPROCESS_TEST_TIMEOUT_MS }, () => {
   let repo: string | null = null;
 
   const git = (args: string[], cwd = repo as string): string =>
@@ -178,7 +189,9 @@ describe('two branches cut from the same base', () => {
     );
     git(['add', '-A']);
     git(['commit', '-m', 'base']);
-  });
+    // Hooks carry their own budget (vitest's 10 s `hookTimeout`), which the
+    // describe-level option above does not cover — and this one pays ~5 spawns.
+  }, SUBPROCESS_TEST_TIMEOUT_MS);
 
   afterAll(() => {
     if (repo) fs.rmSync(repo, { recursive: true, force: true });

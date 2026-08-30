@@ -3,6 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { execSync } from "node:child_process";
+import { SUBPROCESS_TEST_TIMEOUT_MS } from "../../src/testing/testTimeouts.ts";
 import { fileURLToPath } from "node:url";
 import {
   extractVisionFileRefs,
@@ -401,7 +402,13 @@ describe("parseCliArgs", () => {
   });
 });
 
-describe("CLI exit codes", () => {
+// Timeout raised off vitest's 5000 ms default (THR-1328). Every case here spawns
+// a fresh `node --experimental-strip-types`, which pays Node startup AND a TS
+// strip of the script's whole import graph — the most expensive shell-out shape
+// in `scripts/__tests__/`, and process startup is the contended resource once the
+// full suite runs 1100+ files. Hang detector, not a performance budget; see
+// `src/testing/testTimeouts.ts`.
+describe("CLI exit codes", { timeout: SUBPROCESS_TEST_TIMEOUT_MS }, () => {
   it("exits 1 when no plan doc argument is provided", () => {
     let exitCode: number | null = null;
     try {

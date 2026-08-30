@@ -46,12 +46,63 @@ describe('coastline integration', () => {
     }
   });
 
-  it('performance: computes in < 500ms for 20×15 grid', () => {
+  /**
+   * The budget is unchanged at 500 ms; what changed is that it is measured
+   * against the MEDIAN of several runs rather than one sample (THR-1328).
+   *
+   * ## Why one sample could not hold it
+   *
+   * Measured 2026-08-30, this machine, standalone, idle, 15 samples per run,
+   * three independent runs:
+   *
+   * | run | min | median | max |
+   * |-----|-----|--------|-----|
+   * | 1   | 81.99 | 101.54 | **528.02** |
+   * | 2   | 82.83 | 100.64 | **525.60** |
+   * | 3   | 84.82 | 108.69 | **618.24** |
+   *
+   * The distribution is not noisy around 500 — it is tight at ~100 ms with a
+   * long tail that clears 500 in roughly 2 of every 15 samples (GC/JIT, not
+   * work done). So the single-sample form failed ~13% of the time on an idle
+   * developer machine before any CI contention was applied at all. Impediment
+   * #871 recorded it as a 3.4% overshoot on a shared runner (516.77 ms, 41
+   * minutes of a blocked armed PR on PR #1676) and left the threshold
+   * unwidened pending a second occurrence; the measurement above shows the
+   * shared runner was not the cause and a wider threshold was never the fix.
+   *
+   * ## Why not simply raise the number
+   *
+   * `src/testing/testTimeouts.ts` names this case explicitly as the thing its
+   * hang-detector constants must NOT be used to silence: it is a real
+   * performance contract, and raising it would hide what it exists to measure.
+   * That objection is respected here. The median of N is what the assertion
+   * always meant by "computes in < 500ms", and it keeps the contract sharp —
+   * a genuine regression moves the median, while no single excursion, however
+   * large, can move it at all. Against a ~101 ms median the budget still holds
+   * a ~5× margin, matching the runner-spread doctrine in that same file.
+   *
+   * Done-when (THR-1328): a <10% wall-clock excursion cannot fail this — it
+   * moves the median to ~112 ms, four-fifths of the budget below the gate.
+   */
+  it('performance: median of runs computes in < 500ms for 20×15 grid', () => {
     const tiles = generateWorld(cosmology, DEFAULT_COLS, DEFAULT_ROWS, 42).tiles;
-    const start = performance.now();
-    computeCoastline(tiles, 30, DEFAULT_COLS, DEFAULT_ROWS, 42);
-    const elapsed = performance.now() - start;
-    expect(elapsed).toBeLessThan(500);
+
+    /** Odd, so the median is a real sample rather than an average of two. */
+    const PERF_SAMPLE_COUNT = 7;
+    /** Unchanged since the assertion was written; see the measurement above. */
+    const PERF_BUDGET_MS = 500;
+
+    const samples: number[] = [];
+    for (let i = 0; i < PERF_SAMPLE_COUNT; i++) {
+      const start = performance.now();
+      computeCoastline(tiles, 30, DEFAULT_COLS, DEFAULT_ROWS, 42);
+      samples.push(performance.now() - start);
+    }
+
+    samples.sort((a, b) => a - b);
+    const median = samples[(PERF_SAMPLE_COUNT - 1) / 2];
+
+    expect(median).toBeLessThan(PERF_BUDGET_MS);
   });
 
   it('deterministic across multiple calls', () => {

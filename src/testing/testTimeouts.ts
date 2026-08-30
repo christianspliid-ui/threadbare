@@ -47,6 +47,16 @@
  * asserts `computes in < 500ms` as an `expect`, which is a real performance
  * contract — a slow runner failing it is a signal, not noise, and raising it
  * would hide the thing it exists to measure. That class is THR-949's.
+ *
+ * That rule stands; the example under it has been resolved and is kept because
+ * the resolution is the point (THR-1328, 2026-08-30). The coastline case was
+ * failing ~13% of the time **standalone on an idle machine** — a tight ~101 ms
+ * median with a tail clearing 500 ms in ~2 of 15 samples — so it was measuring
+ * GC/JIT scheduling, not the coastline. It was fixed without touching the
+ * budget: it now asserts the **median of 7 runs** against the same 500 ms. The
+ * general form, for the next wall-clock assertion that goes flaky: when the
+ * signal is real but the sampling is not, fix the sampling. Reach for one of
+ * the constants above only when the assertion is a hang detector to begin with.
  */
 
 /**
