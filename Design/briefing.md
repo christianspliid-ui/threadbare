@@ -1,11 +1,11 @@
 # Briefing
-**Generated:** 2026-08-30 05:56 local (03:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-08-30 06:57 local (04:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
 **Play two encounters, then say one word about the next seven.** Six days open on the approval, thirteen on the sample.
 
-**The build lane has now woken to an empty board.** Last hour this was a prediction; at 03:00 UTC it happened. The build session woke on the hour, looked at the queue, and found nothing to pick up — the first time that has happened since these lanes started running. The orchestrator woke at 03:26 and promoted nothing, because there is nothing promotable. The board emptied by *succeeding* ([the test de-flake](https://github.com/christianspliid-ui/threadbare/pull/1756) at 01:42 UTC, [the glossary index gap](https://github.com/christianspliid-ui/threadbare/pull/1757) at 02:10), and nothing has replaced either. Your one word is the fastest way to put real game work back in front of builders.
+**The build lane has now woken to an empty board twice.** It happened at 03:00 UTC and again at 04:00 — the session wakes on the hour, looks at the queue, finds nothing to claim, and goes back to sleep. The orchestrator woke at 04:26 and promoted nothing, because there is nothing promotable. The board emptied by *succeeding* ([the test de-flake](https://github.com/christianspliid-ui/threadbare/pull/1756), [the glossary index gap](https://github.com/christianspliid-ui/threadbare/pull/1757)), and nothing has replaced either. Your one word is the fastest way to put real game work back in front of builders.
 
 First, the two-of-six sample from batch 1 — the question is yours alone: *are they worth meeting twice?* Both were re-prosed since you last saw them, so a replay is honest, and a no is as useful as a yes. Open the *good ending* links first (~5 minutes total).
 
@@ -31,14 +31,15 @@ Then the brief: [the camp seven](https://github.com/christianspliid-ui/threadbar
 
 ## Queue
 
-**Empty — 0 ready, nothing in build, and the build lane has now hit it.** The pickup session woke at 03:00 UTC to an empty queue and had nothing to claim; the orchestrator woke at 03:26 and promoted nothing, because there is nothing promotable. Confirmed by fresh query at 03:54, not carried over from the last run.
+**Empty — 0 ready, nothing in build, and the build lane has now hit it twice.** Confirmed by fresh query at 04:56, not carried over.
 
-- **Forty-four items sit in Todo and not one of them can start.** Fifteen are the questions on your fight-and-magic maps; of the remaining twenty-nine, every one either asks for a decision as its first step, waits on you, or is a heading rather than a task. The orchestrator re-checked five individually rather than trusting an earlier verdict — all five say a decision must be recorded before code can be written.
+- **Forty-four items sit in Todo and not one of them can start.** Fifteen are the questions on your fight-and-magic maps; of the remaining twenty-nine, every one either asks for a decision as its first step, waits on you, or is a heading rather than a task.
+- **One of those "waits on you" items did not, and it has been fixed.** The [off-screen ambitions ticket](https://linear.app/threadbare/issue/THR-1348/ambitions-held-below-the-spotlight-tier-have-no-agency-path-10-of-the) was being carried by another lane as an open question for you — *should a mortal pursue work their nature doesn't value?* **You already answered it**, on Discord at 12:39 on 29 August: *"in the longer term we want other gods competing and so having threaded agents that are not the players. those would be able to do stuff off-screen."* The ticket was last touched two hours **before** you said that, so nothing on it recorded your answer and the lane kept re-raising it. Your ruling is now written onto the ticket verbatim. **Nothing is being asked of you here** — this is a note that a settled question stopped being re-asked. Its sibling [THR-1349](https://linear.app/threadbare/issue/THR-1349/the-decision-board-has-no-variety-term-a-live-board-writes-zero-trade) now has a direction and an agent can take it without you.
 - Three items sit In Dev and all three are **deliberately parked**, not stalled: [the pixel-pass sweep](https://linear.app/threadbare/issue/THR-1133) (waits on your dev-server sitting), [the batch-2 sibling volume ticket](https://linear.app/threadbare/issue/THR-1130) (waits on the same approval as the lead ask), [the audio moments](https://linear.app/threadbare/issue/THR-1168) (waits on your feel call). Each is already on the list above; none needs freeing.
 - Nothing stale, and no In-Dev item is silently blocked.
 
 ## Health
 
-**All green.** The live site is serving [the latest commit](https://github.com/christianspliid-ui/threadbare/commit/744f35d10c6c41c62839ae681f48b7b27fe579a9), automated checks and both background jobs are healthy, all nine scheduled lanes are on time, no pull request is waiting to merge, and the branch reaper ran 14 minutes ago.
+**All green.** The live site is serving [the latest commit](https://github.com/christianspliid-ui/threadbare/commit/744f35d10c6c41c62839ae681f48b7b27fe579a9), automated checks and both background jobs are healthy, all nine scheduled lanes are on time, no pull request is waiting to merge, and the branch reaper ran 16 minutes ago.
 
 - *Visibility only, no action:* the lane-silence probe still reports the overnight 23–24 August gap (10.6h, 19:06→05:41 UTC, since recovered). Nightly-shaped, and declined per your 8 August ruling that overnight quiet is normal.
