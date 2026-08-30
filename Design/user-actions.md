@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-08-30 03:55 local (01:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-08-30 04:55 local (02:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -13,11 +13,11 @@
 
 **Then approve [the brief](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/retrofit-batch-2-brief.md) — the camp seven:** shrine offering, sharpening blades, warding the camp, a prayer, rest, tending wounds, scouting. No typed consequences at all; the last encounters below standard. `shrine_offering` is #1 of [your slice checkpoint](https://linear.app/threadbare/issue/THR-1220), which cannot invite you until they are rewritten. The bar, live: [The Beast in the Granary](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.hunt.the_beast_in_the_granary). The brief proposes **seven** rather than six because the camp set is one family in one file.
 
-**Three ways to close it:** *"batch 2, seven is fine"* · *"keep it six"* · *"same rule — judge batch 2 on one first."* It is the only High-priority content work on the board and, with the board now empty of anything in build, the fastest way to put real game work in front of builders (ask 2).
+**Three ways to close it:** *"batch 2, seven is fine"* · *"keep it six"* · *"same rule — judge batch 2 on one first."* It is the only High-priority content work on the board and, with the board now empty, the fastest way to put real game work in front of builders (ask 2).
 
 ### 2. Design hours — the shelf has run dry — [THR-1002](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card) + [THR-790](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)
 
-**One** item sits Ready for Dev and it is clean-up — a glossary index gap, four lines of markdown. **Nothing is in build at all**: the test de-flake merged at 01:42 and the glossary proposal before it at 00:31; nothing replaced either. The context-cleanup programme, which had been carrying the queue, closed the same evening. **New product work has stopped arriving**; roughly forty-seven items sit in Todo and every one needs a plan doc first. The executor writes up problems it finds while building — that source produces engine fixes and clean-ups, never new designed features.
+**The board is empty. Not thin — empty.** Zero items Ready for Dev, nothing in build, nothing for the build session to pick up when it wakes on the hour. It emptied by succeeding: the test de-flake merged at 01:42 and the glossary index gap at 02:10, and nothing replaced either. The context-cleanup programme, which had been carrying the queue, closed the same evening. **New product work has stopped arriving**; forty-four items sit in Todo and every one needs a decision or a plan doc before code can be written. The executor writes up problems it finds while building — that source produces engine fixes and clean-ups, never new designed features.
 
 **The block has two names on it** *(orchestrator lane, standing — 10 and 14 days)*: [unify the card grammar](https://linear.app/threadbare/issue/THR-1002) (your 6 August note) and [traits wave 2](https://linear.app/threadbare/issue/THR-790) (assigned to you). That lane holds one design slot and will not walk either backwards out of the column on its own. **Sit one, or say *"park it"*** — four plan-doc sessions are unblocked behind them. Neither asks what the game should *be*; both need an attended session, not a decision.
 
@@ -86,7 +86,7 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
-- **The last thing in build has landed, and the board is now empty** — [THR-1328](https://linear.app/threadbare/issue/THR-1328) merged 01:42; three tests that failed at random rather than on a real fault, two of them misdiagnosed. Delivery machinery only, nothing in the game changes — but it is why ask 2 is now the whole board.
+- **The last two things in build have landed, and the board is now empty** — [THR-1328](https://linear.app/threadbare/issue/THR-1328) merged 01:42 (three tests that failed at random rather than on a real fault, two of them misdiagnosed) and [THR-1376](https://linear.app/threadbare/issue/THR-1376) at 02:10 (six glossary terms defined but missing from the index). Delivery machinery and docs only, nothing in the game changes — but between them they are why ask 2 is now the whole board.
 - **The cleanup programme you started is finished** (2026-08-29, chat: *"go"*) — [round 5](https://linear.app/threadbare/issue/THR-1369) ran start to finish in one evening and closed at 00:31 with [the last piece](https://github.com/christianspliid-ui/threadbare/pull/1754): *"round 5 complete, program complete."* Five rounds, eight doctrines registered. Staying fresh is now an automatic weekly check, so no further rounds will be proposed unless you ask.
 - **You settled how much of the world happens off-screen** (2026-08-29, Discord): off-screen life comes from **threading** — rival gods holding their own threaded agents — not from opening the attention gate; [THR-1348](https://linear.app/threadbare/issue/THR-1348) becomes long-term direction and [THR-1349](https://linear.app/threadbare/issue/THR-1349) a content fix.
 - **The afternoon's stuck pull requests were one cause, and it is fixed** — automated checks were being killed at a 20-minute ceiling, not failing; [raised to 35 minutes](https://github.com/christianspliid-ui/threadbare/pull/1740) at 18:04. Delivery machinery only.
