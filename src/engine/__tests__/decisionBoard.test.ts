@@ -46,7 +46,9 @@ import {
   UNDERTAKING_PAYOFF_SCALE,
   UNDERTAKING_TEMPERAMENT_AMBITION_WEIGHT,
   UNDERTAKING_TEMPERAMENT_REACH_WEIGHT,
+  UNDERTAKING_NEUTRAL_DESIRE,
 } from '../../data/strategic-action-constants';
+import { MINIMUM_DESIRE, PERSONALITY_SCORE_EXPONENT } from '../../data/agent-behavior-constants';
 
 // ─── Fixtures ───────────────────────────────────────────────────
 
@@ -266,6 +268,40 @@ describe('computeBoardDesireMultiplier', () => {
     const withAmbition = computeBoardDesireMultiplier([], profileOf(), 0.5);
     const without = computeBoardDesireMultiplier([], profileOf(), 0);
     expect(withAmbition).toBeGreaterThan(without);
+  });
+
+  it('reads an unauthored motivation set as neutral, not as revulsion (THR-1349)', () => {
+    // `computeDesireScore([])` is `0`, which the shared floor mapped to
+    // `MINIMUM_DESIRE ** EXPONENT` — indistinguishable from an actor who actively
+    // wants none of what the option offers. Silence is not revulsion.
+    const silent = computeBoardDesireMultiplier([], profileOf(), 0);
+    expect(silent).toBeCloseTo(UNDERTAKING_NEUTRAL_DESIRE, 10);
+    expect(silent).toBeGreaterThan(Math.pow(MINIMUM_DESIRE, PERSONALITY_SCORE_EXPONENT));
+  });
+
+  it('does NOT loosen the mismatch case the neutral branch sits next to', () => {
+    // The whole point of the branch is that it separates "said nothing" from "said
+    // something this actor leans against". If an authored-but-opposed set ever rose
+    // to neutral, the branch would have stopped discriminating and mortals would
+    // pursue what they do not value — which is the design this ticket declined.
+    const opposed = computeBoardDesireMultiplier(
+      [VALUE_PAIRS[0] as ValuePair],
+      profileOf({ [VALUE_PAIRS[0] as ValuePair]: -0.9 }),
+      0,
+    );
+    expect(opposed).toBeLessThan(computeBoardDesireMultiplier([], profileOf(), 0));
+    expect(opposed).toBeCloseTo(Math.pow(MINIMUM_DESIRE, PERSONALITY_SCORE_EXPONENT), 10);
+  });
+
+  it('leaves a well-matched authored set ahead of silence', () => {
+    // Guards the other end: neutrality must not become the best available answer,
+    // or authoring motivations would be a strictly losing move for a content author.
+    const matched = computeBoardDesireMultiplier(
+      [VALUE_PAIRS[0] as ValuePair],
+      profileOf({ [VALUE_PAIRS[0] as ValuePair]: 0.9 }),
+      0,
+    );
+    expect(matched).toBeGreaterThan(computeBoardDesireMultiplier([], profileOf(), 0));
   });
 
   it('never returns NaN or a negative for a strongly opposed profile', () => {

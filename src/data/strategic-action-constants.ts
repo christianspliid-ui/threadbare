@@ -421,6 +421,24 @@ export const UNDERTAKING_PAYOFF_SCALE = 1.0;
  */
 export const BOARD_VARIETY_PENALTY_WEIGHT = 0.18;
 
+/**
+ * Desire multiplier for a candidate whose template authors **no** motivations.
+ *
+ * `1.0` because it is the identity of a multiplier: a template that states no
+ * axiological opinion should neither be preferred nor punished, it should simply
+ * not move on this term. Any other value would be an opinion the content declined
+ * to express, invented here.
+ *
+ * The alternative this replaced was not a choice anyone made — it was
+ * `computeDesireScore([]) === 0` falling through the shared floor to `0.0112`,
+ * which reads an unauthored set as active revulsion. See the note on
+ * `computeBoardDesireMultiplier` for why that is inert for encounters and
+ * ruinous for undertakings, where 35 of 64 templates are silent.
+ *
+ * @range 0.5–1.5 (below 1 taxes silence, above 1 rewards it; neither is intended)
+ */
+export const UNDERTAKING_NEUTRAL_DESIRE = 1.0;
+
 /** Board mix: weight of "the agent's active ambition names this kind/verb". */
 export const UNDERTAKING_TEMPERAMENT_AMBITION_WEIGHT = 0.3;
 
