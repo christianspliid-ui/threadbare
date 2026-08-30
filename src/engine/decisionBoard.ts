@@ -113,6 +113,7 @@ import {
   UNDERTAKING_TEMPERAMENT_AMBITION_WEIGHT,
   UNDERTAKING_TEMPERAMENT_REACH_WEIGHT,
   BOARD_VARIETY_PENALTY_WEIGHT,
+  UNDERTAKING_NEUTRAL_DESIRE,
 } from '../data/strategic-action-constants';
 
 // ─── Contract ───────────────────────────────────────────────────
@@ -218,14 +219,45 @@ export function resolveUndertakingPayoff(template: StrategicActionTemplate | und
  * through two implementations that agree today. The bond and behaviour-weight
  * terms stay at the encounter call site: both key off an encounter's target agent
  * and reach effects, and neither has an undertaking analogue to read.
+ *
+ * **Silence is neutrality, not revulsion (THR-1349).** `computeDesireScore` sums
+ * signed profile values, so an *unauthored* motivation set scores exactly `0` —
+ * indistinguishable, downstream, from an actor who actively wants none of what the
+ * option offers. The floor then maps both to `MINIMUM_DESIRE ** EXPONENT` =
+ * `0.0112`, roughly 250× below a matched candidate's `2.775`.
+ *
+ * That is harmless where this pipeline was calibrated and ruinous where the
+ * cutover moved it. Encounters cannot reach the branch at all: every one draws its
+ * motivations from `ENCOUNTER_TYPE_MOTIVATIONS`, a central table whose ten rows are
+ * uniformly arity-2, so no encounter is ever axiologically silent and the floor
+ * only ever catches a genuine *mismatch*. Undertakings are hand-authored per
+ * template and **35 of 64 name no motivations at all** — so importing the same
+ * floor pinned 55% of the corpus at the floor for declining to state an opinion,
+ * and contest B never read desire, which is why the cutover is what exposed it.
+ *
+ * So an empty set contributes neutrality where it used to contribute `0`, and an
+ * authored one is scored exactly as before. Neutral is the *axiological* term only,
+ * not the returned multiplier: the ambition boost still adds to it and the exponent
+ * still applies, so a silent template with a central ambition outranks a silent one
+ * without — the discrimination that survives is the one the content did not decline
+ * to express. This deliberately does **not** loosen the mismatch case: a template
+ * that names motivations its proposer leans against still floors, because mortals
+ * genuinely should not pursue what they do not value. Authoring the 35 silent
+ * templates is the content pass that retires this branch (TODO(THR-1377)).
  */
 export function computeBoardDesireMultiplier(
   motivations: readonly ValuePair[],
   profile: AxiologicalProfile,
   ambitionBoost: number,
 ): number {
-  const axiological = computeDesireScore(motivations as ValuePair[], profile);
-  const personalityBias = axiological * PERSONALITY_SELECTION_WEIGHT;
+  // The *only* divergence from the encounter pipeline, and it is confined to the
+  // axiological term: an unauthored set contributes neutrality instead of the `0`
+  // that `computeDesireScore` returns for it. Floor, ambition boost and exponent
+  // are untouched and still shared, so a silent template remains sensitive to
+  // ambition centrality rather than becoming a flat constant.
+  const personalityBias = motivations.length === 0
+    ? UNDERTAKING_NEUTRAL_DESIRE
+    : computeDesireScore(motivations as ValuePair[], profile) * PERSONALITY_SELECTION_WEIGHT;
   const base = Math.max(personalityBias + ambitionBoost, MINIMUM_DESIRE);
   return Math.pow(Math.max(base, 0.01), PERSONALITY_SCORE_EXPONENT);
 }
