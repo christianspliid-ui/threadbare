@@ -137,6 +137,7 @@ Load this file at session start (referenced from CLAUDE.md). Load specific shard
 - **[Spell](./Traits.md#spell)** — a Power learned from a magic tradition; carries an agency, an arena, and a price
 - **[Bestowal](./Traits.md#bestowal)** — a god-given Power; player-facing name for the `bestowed_power` kind, whose code identifier stays; not the `bestowed` trait category
 - **[Innate Power](./Traits.md#innate-power)** — a Power that is anatomy, stamped at seeding; no code anchor yet, and not the `innate` trait category
+- **[Tag Namespace](./Traits.md#tag-namespace)** — every content tag is written `#`-prefixed across one shared namespace; `normalizeTag` strips one leading `#` as a safety net, but the convention is the rule
 
 ### Prose
 
@@ -148,6 +149,11 @@ Load this file at session start (referenced from CLAUDE.md). Load specific shard
 - **[Chronicle Entry](./Prose.md#chronicle-entry)** — persistent record of a significant event in an agent or faction's history
 - **[Narrative Event](./Prose.md#narrative-event)** — `TickEvent` carrying a prose message; flows to the UI event feed
 - **[Thread Tug](./Prose.md#thread-tug)** — attention signal (`ThreadTug`) directing player focus to stressed divine threads
+- **[Narrator Mode](./Prose.md#narrator-mode)** — the binding encounter-prose mode since 2026-08-25: a GM reading a module aloud, reporting from outside the scene; reverses foreshadow-never-announce and show-don't-tell by name
+- **[Register](./Prose.md#register)** — the three-way classification of every player-facing string (`baseline` / `character` / `peak`); absent `register?` means baseline, and peak is rationed to non-encounter surfaces
+- **[Band Fragment (Prose)](./Prose.md#band-fragment)** — the authoring side of the term the Encounters shard owns mechanically: every nudge owes a failure-band fragment, and base band text must read with any subset of the hand active
+- **[Vagueness Field Class](./Prose.md#vagueness-field-class)** — the scope a prose field is linted under (`outcome` / `scene` / `interactive`); decides whether natural indefinites are a defect or correct prose
+- **[Register Compliance](./Prose.md#register-compliance)** — the deterministic prose-QA dimension measuring register drift; **report-only by settled verdict** (THR-1250) — it ranks, it does not identify defects
 
 ### Graph
 
@@ -206,8 +212,8 @@ Load this file at session start (referenced from CLAUDE.md). Load specific shard
 
 ---
 
-*v1.13 — 8 shards, **161 terms: 153 canonical, 5 deprecated, 1 rejected, 1 proposed, 1 retired** (WorldRef, Consequence Chip, and the three violation classes added at THR-1316). Per-shard census: Agents 41, Encounters 36, Process 17, Traits 16, Graph 15, Coordination 14, Prose 13, Cosmology 9. **Recount after any term change** with `grep -h "^\*\*Status:\*\*" Docs/ubiquitous-language/*.md | sort | uniq -c` — count every `**Status:**` line, not only the statuses you expect (the tally has been caught stale three times, twice by an unexpected status). Coverage expands via the propose-new-term flow. UL wins on terminology disagreements.*
+*v1.14 — 8 shards, **161 terms: 153 canonical, 5 deprecated, 1 rejected, 1 proposed, 1 retired** (term set unchanged since THR-1316; THR-1376 indexed the six seated-but-unindexed terms without seating any). Per-shard census: Agents 41, Encounters 36, Process 17, Traits 16, Graph 15, Coordination 14, Prose 13, Cosmology 9. **Recount after any term change** with `grep -h "^\*\*Status:\*\*" Docs/ubiquitous-language/*.md | sort | uniq -c` — count every `**Status:**` line, not only the statuses you expect (the tally has been caught stale three times, twice by an unexpected status). Coverage expands via the propose-new-term flow. UL wins on terminology disagreements.*
 
-*Index coverage: **155 of 161** — index every term in the same commit that seats it. **Six terms are seated but unindexed** (`Traits#tag-namespace`, and the five Prose terms `narrator-mode`, `register`, `band-fragment`, `vagueness-field-class`, `register-compliance`), tracked as THR-1376; the number is recorded short rather than rounded up, because a coverage line that asserts an invariant it has not met is the drift this footer exists to catch — the previous `141 of 141` was stale in both numerator and denominator while 15 terms went unrecorded. Verify with the shard-vs-index diff (THR-806): slugify every shard `### ` heading with `slugifyHeading` from `scripts/generate-ul-dashboard-data.ts` and diff both directions against the anchors above. Use that function, never a hand-rolled slugifier (it collapses repeated hyphens, which a naive one misreports as two dead anchors), and never the dashboard generator's warning list (its one-liner fallback stays silent on unindexed terms). Self-detecting guard tracked as THR-959.*
+*Index coverage: **161 of 161** — index every term in the same commit that seats it. The six terms recorded short at THR-1316 (`Traits#tag-namespace`, and the five Prose terms `narrator-mode`, `register`, `band-fragment`, `vagueness-field-class`, `register-compliance`) were indexed at THR-1376; `band-fragment` is shard-crossing and now carries one row per shard, so 161 headings resolve to 161 anchors. This line is still an assertion, not a guard — it was `141 of 141` while 15 terms went unrecorded, and only a measured diff can tell you which it is today. Verify with the shard-vs-index diff (THR-806): slugify every shard `### ` heading with `slugifyHeading` from `scripts/generate-ul-dashboard-data.ts` and diff both directions against the anchors above. Use that function, never a hand-rolled slugifier (it collapses repeated hyphens, which a naive one misreports as two dead anchors), and never the dashboard generator's warning list (its one-liner fallback stays silent on unindexed terms). Self-detecting guard tracked as THR-959.*
 
 *Footer compressed at THR-1334 (2026-08-28, single-authority sweep): the full recount archaeology of v1.7–v1.12 — which additions landed when, and the three times the tally was caught stale and why — lives in this file's git history, where history belongs.*
