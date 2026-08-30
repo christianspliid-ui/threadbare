@@ -24,6 +24,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { execFileSync } from 'node:child_process';
+import { SUBPROCESS_TEST_TIMEOUT_MS } from '../../src/testing/testTimeouts.ts';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -51,7 +52,11 @@ function tracked(relPath: string): boolean {
   }).trim() !== '';
 }
 
-describe('the rendered dashboard stays out of the tree', () => {
+// Timeout raised off vitest's 5000 ms default (THR-1328): `tracked()` shells
+// `git ls-files` per case, and process startup is the contended resource once the
+// full suite runs 1100+ files. Hang detector, not a performance budget; see
+// `src/testing/testTimeouts.ts`.
+describe('the rendered dashboard stays out of the tree', { timeout: SUBPROCESS_TEST_TIMEOUT_MS }, () => {
   it('git does not track the render', () => {
     // The guard against `git add -f` — impediment #139 is how it was committed the
     // first time, and #358 is the four-resolution treadmill that followed.
