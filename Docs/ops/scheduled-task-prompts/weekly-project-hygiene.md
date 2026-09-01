@@ -1,6 +1,6 @@
 ---
 name: weekly-project-hygiene
-description: Weekly structural hygiene sweep for Threadbare — Linear queue, skill tree, docs staleness, impediment patterns, three-pillar compliance; files findings + report to Docs/ops/ (CC-lane port, THR-677)
+description: Weekly structural hygiene sweep for Threadbare — Linear queue, skill tree, docs staleness, impediment patterns, three-pillar compliance; records findings in a dated report to Docs/ops/ (CC-lane port, THR-677)
 ---
 
 Run the weekly structural hygiene sweep for The Fantasy World Simulator (codename Threadbare).
@@ -8,19 +8,20 @@ Run the weekly structural hygiene sweep for The Fantasy World Simulator (codenam
 Repo: C:\Users\chris\Dev\Projects\TheFantasyWorldSimulator
 Linear team: Threadbare
 
-This is an automated run of a scheduled task. The user is not present to answer questions. Execute autonomously, make reasonable choices, and note them in the report. Prefer a thorough plain-language report over partial actions. Filing issues is the default for actionable findings — but only file; do not close, merge, or transition existing tickets as part of this sweep.
+This is an automated run of a scheduled task. The user is not present to answer questions. Execute autonomously, make reasonable choices, and note them in the report. Prefer a thorough plain-language report over partial actions. **The report is the deliverable — findings are recorded in it, not filed as tickets** (see § Recording findings). Do not close, merge, or transition existing tickets as part of this sweep.
 
 ## Your role — auditor, not executor
 
 - **Never claim an issue** (`assignee:"me"`) or move one to In Dev — the hourly `tb-opus-pickup` task owns the single WIP=1 executor slot.
 - **Never touch `src/`.**
-- You MAY: file new Linear issues, post explanatory comments, and write/commit your report.
+- **Do not file process/infrastructure tickets** — CLAUDE.md § Continuous Improvement (Christian, 2026-08-10) makes the weekly retro the single promotion point, and names a lane prompt that says otherwise as superseded. The one exception is a loss *actively corrupting work right now*.
+- You MAY: post explanatory comments, write/commit your report, and make durable corrections to lane prompts and registry docs on `main`.
 
 ## Objective
 
 A structural audit of the project every week. This sweep is the flagship workflow of the **Continuous Improvement** project (https://linear.app/threadbare/project/continuous-improvement-ae41f93bd369). Its own instructions must stay in sync with the protocol it audits — if you find this prompt asserting something CLAUDE.md no longer says, that is itself a finding.
 
-Output: a dated report in `Docs/ops/`, plus one Linear issue per actionable finding.
+Output: a dated report in `Docs/ops/`, with one entry per actionable finding written in the shape the Friday retro batches from.
 
 ## Christian's interface (THR-608)
 
@@ -137,7 +138,7 @@ For every issue **In Design** or **Implementation Planning**, check its plan doc
 - Has a constants table for tunable numbers?
 - Has a `## Substrate inventory` section, if it is an Engine-pillar plan (mandatory since THR-614 green-fielded a system that already existed and sat dormant)?
 
-Missing sections → a Continuous Improvement issue for the plan author to backfill.
+Missing sections → a `## Findings` entry naming the plan and the missing sections, for the retro to route back to the plan author.
 
 ### 9. Done-state smoke test
 
@@ -151,31 +152,27 @@ Spot-check 3–5 recently Done issues:
 
 The blocking wiki-freshness gate (`check:wiki-freshness:blocking` in CI) catches stale pages at PR time, but it has exactly two blind spots — both judgment calls, which is why they live here rather than in the script. Lookback window: **8 days** (the weekly cadence plus one day of slack).
 
-1. **Exemption audit.** `git log origin/main --since='8 days ago' --grep='Wiki-freshness-exempt'`. For each hit, read the stated reason against the commit's actual diff. An exemption is legitimate only for a behavior-neutral change (pure refactor, rename, type-only move) that matched a `sources` glob without altering documented behavior. An exemption on a change that plainly altered documented behavior is misuse → file a Continuous Improvement issue (`Infrastructure`) to update the page the exemption skipped. If zero exemptions in the window, record "PASS — no exemptions used."
-2. **Coverage sweep.** Files changed on `main` in the last 8 days under `src/engine/`, `src/data/`, `src/components/` that match **no** page's `sources` glob (cross-check against `public/wiki-manifest.json`). For a file that belongs to an already-documented system, file a ticket to extend that page's globs; for a genuinely undocumented system, add a `backlog` entry to `wiki-manifest.json` (or file a ticket to author the page). A gate that never fires because its globs miss the code is silent drift.
+1. **Exemption audit.** `git log origin/main --since='8 days ago' --grep='Wiki-freshness-exempt'`. For each hit, read the stated reason against the commit's actual diff. An exemption is legitimate only for a behavior-neutral change (pure refactor, rename, type-only move) that matched a `sources` glob without altering documented behavior. An exemption on a change that plainly altered documented behavior is misuse → record it as a finding naming the page the exemption skipped, so the retro can route the page update. If zero exemptions in the window, record "PASS — no exemptions used."
+2. **Coverage sweep.** Files changed on `main` in the last 8 days under `src/engine/`, `src/data/`, `src/components/` that match **no** page's `sources` glob (cross-check against `public/wiki-manifest.json`). For a file that belongs to an already-documented system, record a finding proposing the glob extension; for a genuinely undocumented system, add a `backlog` entry to `wiki-manifest.json` (or record a finding proposing the page). A gate that never fires because its globs miss the code is silent drift.
 
 Glob extensions and page-update tickets are agent-owned technical verdicts (THR-608); surface to Christian under `## Needs Christian` only when a genuinely undocumented system needs a creative call on whether/how to document it.
 
-## Filing findings
+## Recording findings
 
-Every actionable finding becomes a Linear issue in the **Continuous Improvement** project:
+**This lane does not file tickets** (CLAUDE.md § Continuous Improvement, Christian 2026-08-10). Measured that week: 32 of 35 Ready-for-Dev items were Low-priority process cleanup and zero were feature or content work, with the lanes still filing more. The materiality bar governed what *qualified*; nothing governed *who files*. So a scheduled lane logs what it finds and moves on, and the **weekly retro is the single promotion point** — it batches the log and files the few items that clear the bar, with the accumulated cost quoted.
 
-- **State:** `Ready for Dev` if clean enough for a cold pickup (fully scoped, obvious outcome, no grey zones); `Todo` if it needs a design pass first.
-- **Labels:** `Improvement` always. Add `Infrastructure` for CI/hooks/tooling. A `model:*` label is an optional work-type signal, not a routing directive.
-- **Priority:** Medium (3) for most hygiene fixes; High (2) for anything blocking other work or representing a correctness gap.
-- **Body:**
-  - `## Context` — what the sweep found and why it matters
-  - `## What to do` — numbered, specific actions
-  - `## Files to touch` — concrete paths
-  - `## Coordination block` (if Ready for Dev): `Suggested model:` / `Parallel-safe with:` / `Mutex with:`
-  - `## Done when` — checklist
-  - `## Why this lands in Continuous Improvement` — one line
+Findings therefore go in the report's `## Findings` section, one entry each, carrying what the retro needs to promote without re-deriving it:
 
-Prefer **predicates over counts** in ticket bodies (THR-688): "every stash whose message matches X" survives the gap between authoring and pickup; "the 12 stashes" rots before an executor sees it.
+- **What the sweep found**, with the evidence quotable — a count, a duration, a commit SHA, a log line.
+- **A cost line** — *"costs ~X to fix; not fixing costs ~Y per week"*. Every process ticket needs one, so supply it here rather than making the retro invent it.
+- **Whether it clears the materiality bar** — ≥ ~1 lane/human hour, a corrupted shipped artifact, or ≥3 recurrences in a week. Below the bar is an impediment-log row, not a future ticket; say so rather than leaving it ambiguous.
+- **Predicates, not counts** (THR-688 rule A): "every stash whose message matches X" survives the gap to pickup; "the 12 stashes" rots before anyone reads it.
 
-Group related findings (e.g. 4 plans each missing a constants table) into a single parent issue with a sub-checklist rather than atomising them.
+Group related findings into one entry with a sub-list rather than atomising them.
 
-**Do NOT** close, merge, or transition existing tickets as part of this sweep. The sweep files; others resolve.
+**The one exception — file immediately:** a loss *actively corrupting work right now* (a gate passing while broken, data being lost as it runs). That is the only case where waiting for Friday costs more than filing.
+
+**Do NOT** close, merge, or transition existing tickets as part of this sweep.
 
 ## Output report
 
@@ -190,7 +187,7 @@ Write to `Docs/ops/weekly-hygiene-YYYY-MM-DD.md`:
 ## Queue health
 (Ready for Dev count, In Dev count, oldest item in each)
 
-## Findings filed
+## Findings
 (THR-XXX — title, one line each)
 
 ## Clean checks
@@ -238,4 +235,4 @@ CC-lane port of the Cowork `weekly-project-hygiene` task (THR-677, Pure Claude C
 
 ## Rule-0 minting bar (2026-08-08):
 
-Before filing any process/infrastructure ticket, apply the materiality bar (CLAUDE.md § Prioritization, amended 2026-08-08): quotable loss ≥ ~1 lane/human hour, a corrupted shipped artifact, or ≥3 recurrences in a week. Below the bar: impediment-log row only — no ticket. Every ticket filed carries one cost/benefit line ("costs ~X to fix; not fixing costs ~Y per week"). Grooming additionally demotes any open process ticket lacking that line to Idea with a comment naming this rule. The goal is fewer, denser process tickets — not more receipts.
+This lane files nothing (§ Recording findings) — the bar below is what each finding must report against, and what the retro applies when it promotes. Before filing any process/infrastructure ticket, apply the materiality bar (CLAUDE.md § Prioritization, amended 2026-08-08): quotable loss ≥ ~1 lane/human hour, a corrupted shipped artifact, or ≥3 recurrences in a week. Below the bar: impediment-log row only — no ticket. Every ticket filed carries one cost/benefit line ("costs ~X to fix; not fixing costs ~Y per week"). Grooming additionally demotes any open process ticket lacking that line to Idea with a comment naming this rule. The goal is fewer, denser process tickets — not more receipts.
