@@ -519,6 +519,49 @@ export const BOARD_IDLE_SHARE_CEILING = 0.40;
  */
 export const CENSUS_DISTINCT_TEMPLATE_FLOOR = 30;
 
+/**
+ * Undertaking **throughput** floor: starts per seed over a 150-tick census run.
+ *
+ * The sibling gate above measures variety and says so; this one measures volume and
+ * says so. They are separate constants because `CENSUS_DISTINCT_TEMPLATE_FLOOR`'s own
+ * note refused to be raised to ~41–44 to separate the cutover arms — at that value it
+ * would have failed on *throughput* while naming *variety*, which is the vacuity this
+ * file has shipped twice. The answer to a gate that cannot name its own failure is a
+ * second gate that can, not a louder first one.
+ *
+ * ## What it is sized against
+ *
+ * Measured, medium, 150 ticks, undertaking starts (`strategic_action_started`):
+ *
+ * | arm | seed 42 | seed 99 |
+ * | -- | -- | -- |
+ * | `'shadow'` (shipped) | 892 | 891 |
+ * | `'live'` (THR-1349, after the variety term and the neutral-desire fix) | 567 | 495 |
+ *
+ * The shipped configuration is stable to within one start across two unrelated
+ * seeds, so `700` is ~21% of headroom under it rather than a number splitting a
+ * noisy pair.
+ *
+ * ## It separates the cutover arms, and that is the finding rather than the purpose
+ *
+ * Stated plainly because the opposite reading is available: a floor placed between a
+ * shipped arm and a proposed one can be a gate chosen to block the proposal. This one
+ * is not, and the distinction is testable — it names the quantity that actually moved.
+ * THR-1349's third pass measured the live board's cost as a **self-reinforcing
+ * contraction**: fewer undertakings complete, so less world content exists, so fewer
+ * candidates are generated, so fewer undertakings start. On seed 42, 466 of 522 live
+ * idle verdicts were boards with *no candidates at all*, concentrated in 14 of 36
+ * deciding agents who idled up to 73 of 150 ticks each.
+ *
+ * Every §4 criterion reads green throughout, because they are a floor at
+ * `BOARD_ENCOUNTER_SHARE_FLOOR` and a ceiling at `BOARD_IDLE_SHARE_CEILING` — wide
+ * enough to contain both a thriving world and a contracting one (seed 42 encounter
+ * share 61.1% → 34.1%, idle 18.2% → 32.5%, both inside the envelope). That blindness
+ * is the third instance of the failure class THR-1349 was filed on, and this constant
+ * is the tripwire for it.
+ */
+export const CENSUS_UNDERTAKING_START_FLOOR = 700;
+
 /** Control-deletion gate (§6): undertaking share must have *grown* past this floor. */
 export const DECISION_MIX_FLOOR_UNDERTAKING_SHARE = 0.12;
 

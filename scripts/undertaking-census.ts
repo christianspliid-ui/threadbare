@@ -52,6 +52,7 @@ import {
   BOARD_ENCOUNTER_SHARE_FLOOR,
   BOARD_IDLE_SHARE_CEILING,
   CENSUS_DISTINCT_TEMPLATE_FLOOR,
+  CENSUS_UNDERTAKING_START_FLOOR,
 } from '../src/data/strategic-action-constants';
 import { MERCHANT_STRATEGIC_TEMPLATES } from '../src/data/strategic-packs/merchantStrategicPack';
 import { BUILDER_STRATEGIC_TEMPLATES } from '../src/data/strategic-packs/builderStrategicPack';
@@ -342,6 +343,18 @@ function evaluateGates(c: SeedCensus): Record<string, { pass: boolean; detail: s
   gates[`distinct templates started ≥ ${CENSUS_DISTINCT_TEMPLATE_FLOOR}`] = {
     pass: comp.starts > 0 && comp.distinctTemplates >= CENSUS_DISTINCT_TEMPLATE_FLOOR,
     detail: `${comp.distinctTemplates} distinct of ${comp.starts} starts`,
+  };
+
+  // Throughput (THR-1349, third pass). The gate above reads *which* templates start
+  // and is satisfied by 39 distinct templates over 495 starts as readily as over 891
+  // — distinct-template count tracks sample size, so a corpus that keeps its variety
+  // while losing a third of its volume passes every gate above this line. That is the
+  // shape the cutover actually produces, and it is measured rather than feared: see
+  // `CENSUS_UNDERTAKING_START_FLOOR` for the two-arm table and the contraction
+  // mechanism behind it.
+  gates[`undertaking starts ≥ ${CENSUS_UNDERTAKING_START_FLOOR}`] = {
+    pass: comp.starts >= CENSUS_UNDERTAKING_START_FLOOR,
+    detail: `${comp.starts} starts over ${c.ticks} ticks`,
   };
   return gates;
 }
