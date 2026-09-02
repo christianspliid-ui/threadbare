@@ -2227,28 +2227,26 @@ export const CONTRACTS: readonly Contract[] = [
       'src/engine/undertakingMoments.ts',
     ],
     readSites: [
-      // Until plan doc 5 builds the arc panel and moment cards, the read side is
-      // the TickEvent stream and the trace buffer — stated rather than implied,
-      // because a row claiming a surface that does not exist is the leak this
-      // registry is for. Doc 5 adds the second consumer.
+      // The player-facing consumer (THR-1299 slice 3): GameView pops the queue into
+      // its `pendingMoment` slot and the card renders it. The trace buffer stays a
+      // read site — `moment_surface` is what a CLI sweep counts.
+      'src/components/Game/GameView.tsx',
+      'src/components/Game/MomentCard.tsx',
+      'src/components/Game/momentCardModel.ts',
       'src/engine/traceBuffer.ts',
     ],
-    // No `verifiedLive`: the producer is wired and measured, but the *player-facing*
-    // consumer is doc 5's. Badging LIVE would badge a path nothing travels.
-    // `presentation` currently resolves to 'badge' or 'none' in every CLI run,
-    // because a CLI world carries no `thread` edges and so follows nobody — the
-    // interrupt arm is covered by unit tests, not by the simulation.
-    //
-    // THR-1299 slice 1 moved the follow predicate to `src/engine/followedAgents.ts`
-    // and made it court-position-aware, so `dormant` and `watched` threads no
-    // longer resolve `interrupt`. Slice 2 gave the stream a consumable half: every
-    // moment now lands as a `UndertakingMomentRecord` in
-    // `state.pendingUndertakingMoments` (capped, traced as `moment_surface`), the
-    // completion class emits at last, foundings emit at badge tier, and an
-    // interrupt-tier moment clears the chronicle threshold. That is the queue the
-    // surfaces will read — it is still not a surface, so the row stays LEAKED and
-    // keeps its deferral. The consumer lands with the moment card (slice 3).
-    deferralTicket: 'THR-1293',
+    // Eight days LEAKED, on purpose. Slice 1 (THR-1299) made the follow predicate
+    // court-position-aware; slice 2 gave the stream its consumable half
+    // (`state.pendingUndertakingMoments`, `moment_surface`); neither added a
+    // surface, and the row said so each time rather than badging a path nothing
+    // travelled. Slice 3 is the surface. THR-1293's Done-when — a player-facing
+    // consumer, a second reader of `followedAgentIds`, this deferral dropped —
+    // is satisfied here and the ticket is closed by reference in the closeout.
+    verifiedLive: {
+      date: '2026-09-02',
+      evidence:
+        'THR-1299 slice 3. `MomentCard.tsx` renders the oldest unacknowledged interrupt-tier `UndertakingMomentRecord`; GameView fills its `pendingMoment` slot only while no other interrupt is open and renders the card only while that stays true, so collation (encounter first, never two modals) holds by construction rather than by a priority table. The card is in the interrupt registry (`interruptModalOpen`, `getDebugOpenModals` → `MomentCard`) so it auto-pauses with its cause named on the face. Acknowledge routes through `acknowledgeUndertakingMoment`, the queue\'s single writer, and traces `acknowledged`; the pop traces `opened`. Non-vacuous by `src/components/Game/__tests__/GameView-momentCard.test.tsx`, which renders the real GameView, follows every mortal with a live undertaking through the debug lever, drives real ticks through the tick bridge until an interrupt-tier record exists, and asserts the card is in `getDebugOpenModals`, that acknowledging it flips the record through the live state provider, and that the `opened` / `acknowledged` traces fired; plus `momentCardModel.test.ts` (chips are state-backed per class, the named-loss complication, the divine-hand chip, the forward drive link off a real outcome node, the action slot gated on a live project) and `MomentCard.test.tsx` (every class renders without numerals, acknowledge, the two-beat Inspire arm, an unaffordable verb fails inline). Browser proof at 1920×1080 on `?view=game&seeded&size=medium` via `__DEBUG.followAgent` + `__DEBUG.tick`, recorded on the closing PR.',
+    },
   },
   {
     id: 'decision-board-shadow-telemetry',
