@@ -95,20 +95,24 @@ export const STRATEGIC_CONTROL_RECLAIM_COOLDOWN_TICKS = 30;
 
 // ─── Normalization ──────────────────────────────────────────────────
 
-/** Score floor — strategic candidates below this are rejected */
-export const STRATEGIC_SCORE_FLOOR = 0.08;
-
 /**
- * Normalization multiplier bringing strategic scores into encounter score range.
+ * Score floor — strategic candidates below this are rejected at generation, on the
+ * family's own `[0, 1]` scale.
  *
- * This is the entire commensurability story between two incommensurate scorers:
- * it clamps the strategic score into `[0.08, 0.851]` so contest B can compare it
- * against an encounter score that is unbounded above. The board (§4) replaces
- * that comparison with one currency, and this constant is deleted in the same
- * commit that sets `UNIFIED_DECISION_BOARD_MODE` to `'live'` — not before, since
- * contest B is what still selects undertakings under `'shadow'`.
+ * Not the same quantity as `BOARD_SCORE_FLOOR`, and never pinned to it: this gates
+ * which undertakings reach the board at all (a normalised weighted sum of role fit,
+ * impact, travel and variety), while the board's floor gates whether the best entry
+ * of *either* family, in EVT currency, is worth acting on. A comment in
+ * `phaseAgentDecision.ts` used to say the two were pinned equal; they were `0.08`
+ * and `1e-6`, and the claim was corrected with the cutover (THR-1349).
+ *
+ * `STRATEGIC_ENCOUNTER_SCORE_BRIDGE` — the `0.85` that clamped this family's score
+ * into `[0.08, 0.851]` so contest B could compare it against an unbounded encounter
+ * score — was deleted in the cutover commit, as THR-1292 §4 scheduled: the board is
+ * the one currency, and the strategic family's `finalScore` is now only its own
+ * ordering plus tie-break jitter.
  */
-export const STRATEGIC_ENCOUNTER_SCORE_BRIDGE = 0.85;
+export const STRATEGIC_SCORE_FLOOR = 0.08;
 
 // ─── Sacred routes (THR-1184) ───────────────────────────────────────
 
@@ -386,36 +390,46 @@ export const CALLING_FALLBACK_TITLE = 'Wanderer';
 export type UnifiedDecisionBoardMode = 'off' | 'shadow' | 'live';
 
 /**
- * Board participation mode. Still `'shadow'` — the live branch is implemented
- * (`phaseAgentDecision.ts`) and inert, and the flip is one line plus deleting
- * contest B and `STRATEGIC_ENCOUNTER_SCORE_BRIDGE` in the same commit.
+ * Board participation mode. **`'live'` since THR-1349 slice 3** — the one
+ * prioritization board (THR-1292 §4) decides; contest B, its
+ * `STRATEGIC_ENCOUNTER_SCORE_BRIDGE` clamp and the strategic-vs-encounter
+ * comparison it performed were deleted in the same commit.
  *
- * It ships `'shadow'` by the plan's binding obligation: a redesign of how agents
- * choose that swaps in unmeasured is how a decision mix silently collapses. The
- * shadow period records the board's ranking on two channels (the
- * `decision_board_comparison` trace and the balance-telemetry shadow fields) so
- * the cutover gate below is *evaluated from a log rather than asserted*.
+ * It shipped `'shadow'` for a week by the plan's binding obligation — a redesign of
+ * how agents choose that swaps in unmeasured is how a decision mix silently
+ * collapses — and the cutover gate was run four times before this flipped:
  *
- * **The gate has now been run three times, and the third run is why this is still
- * `'shadow'`.** THR-1292 slice 6 measured it and it failed on seed 99 (4.1%
- * undertaking share against a `[0.10, 0.35]` floor); the flip did not land, and
- * that ticket closed on the gate-fail evidence rather than on a bridge constant
- * picked to make the number pass. THR-1297 slice 5 and THR-1302 unpinned the two
- * inputs behind that failure, and THR-1301 re-ran it green on both seeds —
- * seed 42 undertaking 33.4% / encounter 33.8% / idle 32.8%, seed 99 21.1% /
- * 43.6% / 35.3%.
+ * 1. THR-1292 slice 6: failed on seed 99 (4.1% undertaking share) — the undertaking
+ *    desire multiplier was a hard constant. THR-1297 slice 5 and THR-1302 unpinned
+ *    both of its inputs.
+ * 2. THR-1301: green on both seeds, and still declined — the gate reads the share
+ *    *between* families and could not see composition *within* one.
+ * 3. THR-1349 passes 1–3: the variety term shipped (`BOARD_VARIETY_PENALTY_WEIGHT`),
+ *    the neutral-desire branch shipped (`UNDERTAKING_NEUTRAL_DESIRE`), and a
+ *    throughput gate was sized against the shipped arm's 892 starts as the loss
+ *    the board could not afford.
+ * 4. THR-1349 pass 4 (the design session) read the column no pass had read — what
+ *    contest B actually *did*, which the census in `'shadow'` never reported because
+ *    it reads the board's preference — and found the 892-start baseline was contest
+ *    B choosing an undertaking on 42–46% of spotlight decisions (outside the
+ *    `BOARD_UNDERTAKING_SHARE_RANGE` envelope) while letting one mortal carry eight
+ *    to eleven concurrent undertakings. Against what the world did, the live board
+ *    sits inside the envelope on both seeds, starts *more* encounters (472 → 692,
+ *    389 → 627), idles the same or less (571 → 525, 847 → 417), and holds fewer
+ *    undertakings per mortal. The one real loss — variety at a fixed start sample —
+ *    was a knob (`BOARD_VARIETY_PENALTY_WEIGHT`, retuned in this commit). The
+ *    census gates were re-derived from the design rather than from either arm
+ *    (`CENSUS_STARTS_PER_MORTAL_PER_100_TICKS_FLOOR`, `CENSUS_DISTINCT_AT_SAMPLE_FLOOR`)
+ *    and pass on both seeds under `'live'`; the closing PR carries the run.
  *
- * Green, and still not enough. THR-1301 also measured what the gate does *not*
- * read: composition **within** a family. Under a live board, `trades_with` edges
- * written over 150 ticks on seed 42 fall from non-zero to **zero** —
- * `strategic_establish_trade_route` takes zero board wins and is never generated
- * — because board score is `EVT × desire × temperament` and carries no variety
- * term, while the legacy scorer's `STRATEGIC_VARIETY_PENALTY_WEIGHT` fed contest
- * B directly. Three of the repo's world-simulation tests fail on that, and every
- * §4 criterion reads green through it. The flip waits for a diversity term in the
- * board's currency, which is its own slice with its own balance envelope.
+ * `'shadow'` and `'off'` remain legal values for debugging only — **neither is a
+ * playable configuration any more.** With contest B gone there is no other selector
+ * for undertakings: under `'shadow'` the board records and nothing starts a single
+ * undertaking (measured: 0 starts on both seeds), and under `'off'` the board does
+ * not run at all. A future scorer proposed to replace the board would need its own
+ * shadow channel beside this one, not this mode.
  */
-export const UNIFIED_DECISION_BOARD_MODE: UnifiedDecisionBoardMode = 'shadow';
+export const UNIFIED_DECISION_BOARD_MODE: UnifiedDecisionBoardMode = 'live';
 
 /**
  * Live-mode idle threshold: a board whose best entry scores below this is empty.
@@ -495,11 +509,30 @@ export const UNDERTAKING_PAYOFF_SCALE = 1.0;
  * twice, so the term is expressed as the *fraction of its score* a maximally
  * repeated candidate forfeits.
  *
- * At `0.18` a candidate at full penalty keeps 82% of its score — deliberately the
- * same magnitude the legacy scorer applied, so the cutover moves the mechanism
- * rather than also retuning it.
+ * It shipped at `0.18` — the same magnitude the legacy scorer applied, so the
+ * relocation moved the mechanism without retuning it — and that value was never
+ * calibrated on the live arm: PR #1724 measured `trades_with`, not variety at a
+ * fixed sample. THR-1349's fourth pass measured it (distinct templates in the first
+ * 300 starts, both seeds, live board, 150 ticks, medium):
+ *
+ * | weight | distinct @150 | distinct @300 | starts | undertaking share |
+ * | -- | -- | -- | -- | -- |
+ * | 0.18 | 23 / 24 | 27 / 32 | 331 / 404 | 21.4% / 27.9% |
+ * | 0.35 | — | 32 / 32 | 345 / 370 | 22.2% / 26.6% |
+ * | 0.5 | 27 / 25 | 31–36 / 35–36 | 297–300 / 408–421 | 19.8% / 27.5% |
+ * | **0.7** | **27 / 27** | 36 / 36 | 303 / 324 | 18.3% / 24.8% |
+ *
+ * (seed 42 / seed 99; the 0.5 row spans two runs, which is the run-to-run spread.)
+ * Against contest B's 36 / 41 at 150 and 45 / 45 at 300, the shipped weight was a
+ * real loss; the term is a knob, and the family mix does not move with it — which
+ * is what lets this retune ship inside the cutover rather than as a balance pass of
+ * its own. The plan doc chose `0.5` on the 300-sample column, where the two upper
+ * rows tie; at the 150-sample the census actually gates on (see
+ * `CENSUS_VARIETY_SAMPLE_STARTS` for why 150), `0.7` is the plateau on both seeds
+ * and `0.5` sits on the floor on seed 99, so `0.7` shipped. A candidate at full
+ * penalty keeps 30% of its score.
  */
-export const BOARD_VARIETY_PENALTY_WEIGHT = 0.18;
+export const BOARD_VARIETY_PENALTY_WEIGHT = 0.7;
 
 /**
  * Desire multiplier for a candidate whose template authors **no** motivations.
@@ -609,31 +642,47 @@ export const CENSUS_STARTS_PER_MORTAL_PER_100_TICKS_FLOOR = 4;
  * The previous variety gate, `CENSUS_DISTINCT_TEMPLATE_FLOOR = 30`, counted distinct
  * templates over a whole run, and its own note conceded that distinct count tracks
  * sample size — 39 over 495 starts passed as readily as 48 over 891. Measured at a
- * *fixed* sample the two arms separate for the right reason: in the first 300 starts,
- * contest B reaches 45 / 45 distinct templates on seeds 42 / 99, the board at the
- * shipped `BOARD_VARIETY_PENALTY_WEIGHT` of 0.18 reaches only 27 / 32 — a real loss,
- * and the one the cutover has to answer. 300 is large enough that both arms have
- * cycled every active ambition's template list at least once and small enough that
- * the board's 331-start seed-42 run fills it.
+ * *fixed* sample the two arms separate for the right reason.
+ *
+ * **Why 150, and why it is derived rather than chosen.** The sample must be one that
+ * every arm passing the throughput floor beside it can *fill*, or the variety gate
+ * silently becomes a second throughput gate wearing the wrong name — the vacuity this
+ * file has shipped twice. `CENSUS_STARTS_PER_MORTAL_PER_100_TICKS_FLOOR = 4` over the
+ * ~27 autonomous mortals of a medium world across the 150-tick census guarantees
+ * ~162 starts, so 150 is the largest sample the throughput floor underwrites. The
+ * plan doc first wrote 300; the live board at its calibrated weight starts 297–324
+ * on seed 42 and the gate reported "sample never filled" while the throughput gate
+ * beside it passed — the exact double-counting this derivation rules out. Corrected
+ * at execution with the reasoning recorded on the plan and the ticket.
  */
-export const CENSUS_VARIETY_SAMPLE_STARTS = 300;
+export const CENSUS_VARIETY_SAMPLE_STARTS = 150;
 
 /**
  * Distinct undertaking templates among the first `CENSUS_VARIETY_SAMPLE_STARTS`
  * starts (THR-1349, fourth pass).
  *
- * Sized so that the shipped arm (45 / 45) and the board at the retuned weight
- * (36 / 36 at `BOARD_VARIETY_PENALTY_WEIGHT = 0.5`, sweep in that constant's note)
- * both pass with margin, and the board at the *uncalibrated* weight (27 / 32) fails
- * on seed 42 — a gate that can tell the calibrated board from the uncalibrated one
- * is the falsification this number needs. It is deliberately not placed to admit
- * the 0.18 arm: the variety loss at that weight was measured, and a gate that hides
- * a measured loss is the vacuity this file has shipped twice (see `BOARD_SCORE_FLOOR`).
+ * Measured, medium, 150 ticks, distinct templates in the first 150 starts, seeds
+ * 42 / 99:
+ *
+ * | arm | distinct @150 |
+ * | -- | -- |
+ * | contest B (the shipped path, before the cutover) | 36 / 41 |
+ * | the board, `BOARD_VARIETY_PENALTY_WEIGHT = 0.18` (uncalibrated) | 23 / 24 |
+ * | the board at `0.5` | 27 / 25 |
+ * | the board at `0.7` (shipped) | 27 / 27 |
+ *
+ * `25` is placed so the shipped path and the calibrated board pass, and the
+ * uncalibrated board fails on both seeds — a gate that can tell the calibrated board
+ * from the uncalibrated one is the falsification this number needs. It is deliberately
+ * not placed to admit the 0.18 arm: the variety loss at that weight was measured, and
+ * a gate that hides a measured loss is the vacuity this file has shipped twice (see
+ * `BOARD_SCORE_FLOOR`). The margin at the shipped weight is two templates on each seed;
+ * a retune that closes it is a retune the census should refuse.
  *
  * The trade-route count that motivated the ticket stays *reported*, never gated: the
  * healthy baseline is 1 and 0 on the two seeds, and THR-1348 owns the route economy.
  */
-export const CENSUS_DISTINCT_AT_SAMPLE_FLOOR = 30;
+export const CENSUS_DISTINCT_AT_SAMPLE_FLOOR = 25;
 
 /** Control-deletion gate (§6): undertaking share must have *grown* past this floor. */
 export const DECISION_MIX_FLOOR_UNDERTAKING_SHARE = 0.12;

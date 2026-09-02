@@ -23,6 +23,7 @@ green-field plan will silently duplicate them. This is the exact failure THR-614
 | Subsystem | Aliases | Domains | Note |
 |---|---|---|---|
 | Companies & Group Travel | company, companies, group, party, band, fellowship, companion, cohesion | `groups` | Small named companies of unique agents (THR-74): formation from colocated compatible agents, shared movement with dissent, event-driven cohesion, dissolution that persists as history. Distinct from War & Armies — armies are faction-scale with an abstract headcount, companies are <=10 named individuals who keep their own decision loops. |
+| Spheres & Quintessence | sphere, quintessence, foundation, creation, saturation, world-soul | `sphere`, `quintessence`, `saturation`, `cosmology` | Sphere pressure resolution, quintessence tick, global World-Soul aggregation, magical saturation. |
 
 ## Subsystem registry
 
@@ -57,7 +58,7 @@ names like `TB-073`) a premise might use.
 | **Effects & Conditions** | 🟢 ACTIVE | effect, condition, buff, debuff, status, possession, slot | `effect`, `effects`, `condition`, `conditiondecay`, `conditionoverflow` | `2a.4`, `2a.52`, `2a.85`, `6.625` |
 | **Agent Lifecycle** | 🟢 ACTIVE | lifecycle, birth, death, migration, graduation, apotheosis, npc | `agentlifecycle`, `agent`, `apotheosis`, `anointsuccessor` | `2a.78`, `2.38`, `6.75` |
 | **Intelligence, Knowledge & Familiarity** | 🟢 ACTIVE | intelligence, knowledge, familiarity, interaction, revelation, facet | `intelligence`, `interaction`, `familiarity`, `knowledge` | `2a.1`, `2.75`, `2.76`, `6.71` |
-| **Spheres & Quintessence** | 🟢 ACTIVE | sphere, quintessence, foundation, creation, saturation, world-soul | `sphere`, `quintessence`, `saturation`, `cosmology` | `2`, `6.638`, `6.639`, `6.6396`, `6.6395` |
+| **Spheres & Quintessence** | 🟠 DORMANT | sphere, quintessence, foundation, creation, saturation, world-soul | `sphere`, `quintessence`, `saturation`, `cosmology` | `2`, `6.638`, `6.639`, `6.6396`, `6.6395` |
 
 - **War, Armies & Battles** — Built March 2026 as "Phase 12: Conflict & Destruction" / TB-073; activated + reconciled by THR-614. **Do not design a green-field war system** — extend or tune this one.
 - **Factions & Succession** — Faction actions, ambitions, reputation, rank changes, succession, schism resolution.
@@ -399,4 +400,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 26 registered subsystems (1 dormant) · 99 tick phases · 180 engine domains · 531 modules._
+_Counts: 26 registered subsystems (2 dormant) · 99 tick phases · 180 engine domains · 531 modules._

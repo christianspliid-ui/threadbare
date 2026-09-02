@@ -1271,8 +1271,8 @@ const CHAPTERS = [
         tags: ['ranking inputs']
       },
       {
-        name: 'Shadow Board (THR-1292 §4)',
-        desc: 'The eight-stage pipeline above ranks <em>encounters</em>. A separate contest then compares its winner against the best strategic candidate — two scorers on incompatible scales, and until now the comparison itself was never recorded. <code>decisionBoard.ts</code> ranks both families on one currency and, in <code>shadow</code> mode, writes down what it would have chosen while the legacy contests still decide:',
+        name: 'The Decision Board (THR-1292 §4; live since THR-1349)',
+        desc: 'The eight-stage pipeline above ranks <em>encounters</em>. Until THR-1349 a separate contest then compared its winner against the best strategic candidate — two scorers on incompatible scales, with the strategic side clamped by a bridge constant that let it win 42–46% of spotlight decisions. <code>decisionBoard.ts</code> now ranks both families on one currency and <strong>decides</strong>: the encounter pipeline supplies its ranked candidates, the strategic pipeline supplies its own, and the board picks the winner across both (or idles when its best entry is below <code>BOARD_SCORE_FLOOR</code>). It shipped in <code>shadow</code> for a week, writing down what it would have chosen while the old contests still decided, and the cutover was judged from that trace:',
         table: {
           headers: ['Term', 'What it measures'],
           rows: [

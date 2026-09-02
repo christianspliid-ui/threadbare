@@ -106,15 +106,15 @@ function runAndCollect(): { samples: BoardSample[]; errors: number } {
   }
 }
 
-describe(`shadow board liveness (${TICKS} ticks, seed ${SEED}, medium)`, () => {
+describe(`decision board liveness (${TICKS} ticks, seed ${SEED}, medium)`, () => {
   const { samples, errors } = runAndCollect();
 
-  it('ships in shadow — the board must not decide anything yet', () => {
-    // Still shadow after THR-1301: the §4 criteria pass on both seeds, but the
-    // gate does not read composition *within* a family, and a live board writes
-    // zero trade routes over 150 ticks while reading green. See the mode
-    // constant's note for the measurement.
-    expect(UNIFIED_DECISION_BOARD_MODE).toBe('shadow');
+  it('ships live — the board decides (THR-1349 slice 3)', () => {
+    // Flipped after the fourth run of the cutover gate, once the census gates were
+    // re-derived from the design rather than from the contest the board replaces.
+    // The measurement and the four passes are on the mode constant's docblock; the
+    // cutover PR carries the census run on both seeds.
+    expect(UNIFIED_DECISION_BOARD_MODE).toBe('live');
   });
 
   it('emits a comparison on real decisions', () => {
@@ -131,16 +131,19 @@ describe(`shadow board liveness (${TICKS} ticks, seed ${SEED}, medium)`, () => {
     expect(families.has('strategic_action')).toBe(true);
   });
 
-  it('diverges from legacy at least once — otherwise the shadow period measures nothing', () => {
-    // Not a threshold on the divergence *rate*: that is what the cutover gate
-    // reads, and pinning it here would make an intended retune fail as a test
-    // regression. The identity is only that the board is a different scorer.
+  it('diverges from the encounter scorer at least once — otherwise it is not deciding anything', () => {
+    // Under `'live'` the trace's `legacyWinner` is the encounter scorer's own pick
+    // (the one legacy contest left), and `agreement` is the drift between that
+    // scorer and the board. A board that never picks an undertaking over the
+    // encounter scorer's choice would agree every time. Not a threshold on the
+    // rate: that is the census's measurement, and pinning it here would make an
+    // intended retune fail as a test regression.
     const disagreements = samples.filter(s => !s.agreement).length;
     expect(disagreements).toBeGreaterThan(0);
     expect(disagreements).toBeLessThan(samples.length);
   });
 
-  it('agrees with legacy at least once too — a board that never agrees is broken, not bold', () => {
+  it('agrees with the encounter scorer at least once too — a board that never agrees is broken, not bold', () => {
     expect(samples.filter(s => s.agreement).length).toBeGreaterThan(0);
   });
 
