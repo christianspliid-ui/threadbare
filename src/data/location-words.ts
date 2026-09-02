@@ -86,6 +86,8 @@ export const LOCATION_SUBTYPE_NAMES: Record<LocationSubtype, string> = {
   // ── Work identities (THR-1308) ──
   // The route's name-bearing face. Players read "Trade Route", never the raw key.
   trade_route: 'Trade Route',
+  // The bridge undertaking's built place (THR-1299, census new finding 1).
+  bridge: 'Bridge',
 };
 
 /**

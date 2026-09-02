@@ -68,6 +68,9 @@ export type LocationSubtype =
   | 'castle' | 'fort' | 'tower' | 'shrine' | 'temple'
   | 'mining' | 'ruins' | 'ruined_tower' | 'ruined_city' | 'ruined_village'
   | 'battleground' | 'oasis' | 'unexplored_poi'
+  // THR-1299 census — a crossing a mortal builds. Additive; renderers fall back to
+  // the generic location signifier until art exists.
+  | 'bridge'
   // ── Sphere-resonant wonder locations (spawn where sphere score >= 3) ──
   | 'healing_spring'   // Life + Spirit — land itself mends what's broken
   | 'master_forge'     // Matter + Force — craft reaching the sacred
