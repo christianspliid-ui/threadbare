@@ -20,7 +20,9 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { WorldGraph } from '../graph';
 import { executeGraphOps } from '../graphOpExecutor';
-import { createRelationEdge } from '../strategicGraphOps';
+import { createRelationEdge, createTradeRoute } from '../strategicGraphOps';
+import { getPlaceTierLocations } from '../sublocationShape';
+import { isAutonomousDecisionActor } from '../strategicKindReachability';
 import { getHighestFactionRank } from '../socialLeverage';
 import { joinFaction } from '../factionMembership';
 import { EDGE_SCHEMA, validateEdgeEndpoints } from '../../types/edgeSchema';
@@ -250,6 +252,13 @@ describe('THR-1177 — 150-tick seeded smoke', () => {
   let schemaWarnings: string[];
   /** Edge types written during the run, counted at creation — including ones later removed. */
   let writtenByType: Map<string, number>;
+  /**
+   * The constructed route (THR-1349 slice 2): the real `trades_with` writer driven
+   * once, after the organic run, between two place-tier endpoints the
+   * `strategic_establish_trade_route` template targets, by a real spotlight mortal.
+   * `null` when the construction found nothing to build with — asserted, never skipped.
+   */
+  let constructedRoute: { success: boolean; error?: string; reason: string } | null;
 
   beforeAll(() => {
     const runtime = createSimulationRuntime();
@@ -281,6 +290,36 @@ describe('THR-1177 — 150-tick seeded smoke', () => {
 
     try {
       for (let t = 0; t < 150; t++) state = runTick(state, [], runtime);
+
+      // THR-1349 slice 2 — the route claim's supply is constructed, not organic.
+      //
+      // The assertion below used to depend on the seeded world happening to found a
+      // trade route inside 150 ticks. THR-1329 measured that as one seed in twelve,
+      // from a single mortal; under the live decision board it is zero on this seed
+      // too (the mortal who founded them does not *want* to — THR-1349 pass 2), so
+      // the guard had become a vacuity guard on one seed's luck. What the claim
+      // actually needs is the REAL writer exercised on a generated world with the
+      // hooks still installed: `createTradeRoute` is the payoff
+      // `strategic_establish_trade_route` fires at completion (`mutationHint:
+      // create_trade_route`), so driving it here between two endpoints that template
+      // targets, by a mortal the decision loop runs, is the writer the organic run
+      // was standing in for. Whether mortals *choose* to found routes is the census's
+      // question (THR-1348 owns the route economy), not a schema question.
+      const founder = graph.getNodesByType('actor').find(isAutonomousDecisionActor);
+      const endpoints = getPlaceTierLocations(graph).filter((n) => {
+        const subtype = n.properties?.locationSubtype as string | undefined;
+        return subtype === 'town' || subtype === 'city' || subtype === 'market'
+          || subtype === 'trading_post' || subtype === 'port';
+      });
+      const [a, b] = endpoints;
+      if (!founder) {
+        constructedRoute = { success: false, reason: 'no autonomous spotlight mortal in the generated world' };
+      } else if (!a || !b) {
+        constructedRoute = { success: false, reason: `only ${endpoints.length} route-capable endpoint(s) in the generated world` };
+      } else {
+        const result = createTradeRoute(graph, a.id, b.id, founder.id, state.tick);
+        constructedRoute = { success: result.success, error: result.error, reason: `${a.id} → ${b.id} by ${founder.id}` };
+      }
     } finally {
       console.warn = realWarn;
       (graph as unknown as { addEdge: typeof graph.addEdge }).addEdge = realAddEdge;
@@ -330,19 +369,26 @@ describe('THR-1177 — 150-tick seeded smoke', () => {
    * THR-830. The three assertions are one claim in three parts, and each is here to
    * stop a specific way the other two could pass while saying nothing:
    *
-   *  1. `trades_with` routes really were created this run — otherwise "no warnings"
-   *     is the trivially-true statement of a world that never exercised the family
-   *     (the measured run writes 2 at 150 ticks — see the widening note above).
+   *  1. `trades_with` routes really were created with the hooks installed — otherwise
+   *     "no warnings" is the trivially-true statement of a world that never exercised
+   *     the family. Since THR-1349 slice 2 this is guaranteed by construction (the
+   *     real writer is driven once after the organic run, see `beforeAll`) rather
+   *     than by the seed's merchants happening to found one inside the window — a
+   *     supply that was one seed in twelve (THR-1329) and zero under the live board.
    *  2. No `trades_with` warning fired at creation time, which is the actual
-   *     Done-when. The final-graph test above cannot make this claim: these routes
+   *     Done-when. The final-graph test above cannot make this claim: organic routes
    *     are gone by tick 120.
    *  3. No *other* family started warning either, so a future row correction cannot
    *     be graded on the one family it was aimed at while breaking a neighbour.
    */
   it('writes trade routes without a single schema warning', () => {
-    // Measured 2 at 150 ticks on this seed (THR-1321). Thin, and deliberately still a
-    // `> 0` floor rather than a pinned count — pinning 2 would fail on every future
-    // world-shifting change while proving nothing extra.
+    // The construction itself must have succeeded — an empty world is a defect in the
+    // construction, never a pass (the constructed-assertion rule, THR-1349 plan
+    // § Fail-soft). The reason names what was missing when it fails.
+    expect(constructedRoute?.reason).toBeDefined();
+    expect(constructedRoute?.error).toBeUndefined();
+    expect(constructedRoute?.success).toBe(true);
+
     expect(writtenByType.get('trades_with') ?? 0).toBeGreaterThan(0);
     expect(schemaWarnings.filter((w) => w.includes('"trades_with"'))).toEqual([]);
     expect(schemaWarnings).toEqual([]);
