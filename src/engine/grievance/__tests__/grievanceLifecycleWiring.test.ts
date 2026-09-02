@@ -49,15 +49,24 @@ function makeState(graph: WorldGraph, tick: number): GameState {
   } as unknown as GameState;
 }
 
+/**
+ * A completed razing.
+ *
+ * Typed, not cast: `behaviorFamily` is a closed union and `'conquest'` — which the
+ * slice 1–4 fixture used — is not a member of it. An `as` cast over a literal with a
+ * spread hid that; a fixture describing a world the engine cannot produce is not
+ * evidence about the engine.
+ */
 function makeProject(): StrategicProjectRuntime {
-  return {
+  const project: StrategicProjectRuntime = {
     projectId: 'proj_raze_1', actorId: CULPRIT,
     templateId: 'strategic_raze_settlement', ambitionId: 'ambition_conquer_territory',
-    verb: 'destroy', behaviorFamily: 'conquest',
+    verb: 'destroy', behaviorFamily: 'warlord-expansion',
     targetNodeId: SITE, originLocationId: SITE,
     progress: 10, progressRequired: 10,
     startedTick: TICK - 15, lastProgressTick: TICK, status: 'completed',
-  } as StrategicProjectRuntime;
+  };
+  return project;
 }
 
 /**

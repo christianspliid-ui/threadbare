@@ -32,7 +32,9 @@ function makeProject(overrides: Partial<StrategicProjectRuntime> = {}): Strategi
     templateId: 'strategic_raze_settlement',
     ambitionId: 'ambition_conquer_territory',
     verb: 'destroy',
-    behaviorFamily: 'conquest',
+    // A real member of the closed `BehaviorFamily` union. This read 'conquest' until
+    // THR-1298 slice 5 — not a member of anything, kept alive by the `as` cast below.
+    behaviorFamily: 'warlord-expansion',
     targetNodeId: SITE,
     originLocationId: SITE,
     progress: 10,
