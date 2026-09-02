@@ -274,6 +274,23 @@ export interface GameState {
    */
   followedAgentIds?: readonly string[];
 
+  /**
+   * Agents the player has explicitly silenced (THR-1299 slice 1).
+   *
+   * The negative term `followedAgentIds` cannot express. A default-followed agent
+   * — one whose `thread` edge sits at `the_first` or `retinue` — is followed by
+   * construction, so un-following them by removing a list entry they were never in
+   * is a no-op. This array is where that un-follow lands.
+   *
+   * A mute drops the **interrupt upgrade only**: the agent's moments still queue
+   * and still badge, so nothing is hidden, it is merely made quiet. Kept separate
+   * from `courtPosition` on purpose — court position is the god's standing with a
+   * mortal, follow is the player's attention, and overloading the thread edge with
+   * both is how a mute-by-default ships. Optional so a pre-THR-1299 save behaves
+   * like a fresh one. Single writer: `src/engine/followedAgents.ts`.
+   */
+  mutedAgentIds?: readonly string[];
+
   // Narrative
   tickEvents: TickEvent[];           // events from the current tick (cleared each tick)
   recentEvents: TickEvent[];         // rolling buffer of last ~100 events for UI

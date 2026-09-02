@@ -2234,6 +2234,12 @@ export const CONTRACTS: readonly Contract[] = [
     // `presentation` currently resolves to 'badge' or 'none' in every CLI run,
     // because a CLI world carries no `thread` edges and so follows nobody — the
     // interrupt arm is covered by unit tests, not by the simulation.
+    //
+    // THR-1299 slice 1 moved the follow predicate to `src/engine/followedAgents.ts`
+    // and made it court-position-aware, so `dormant` and `watched` threads no
+    // longer resolve `interrupt`. That narrows *which* moments would reach a
+    // player; it does not add a player-facing reader, so the row stays LEAKED and
+    // keeps its deferral. The consumer lands with the moment card (slice 3).
     deferralTicket: 'THR-1293',
   },
   {

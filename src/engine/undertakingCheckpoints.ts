@@ -64,6 +64,7 @@ import { resolveLocationToHex } from './encounterAwareness';
 import { getStrategicTemplate } from './strategicActionCandidates';
 import { ambitionNodeIdCandidates } from './ambitionShape';
 import { emitTrace } from './traceBuffer';
+import { isFollowed } from './followedAgents';
 import {
   UNDERTAKING_CHECKPOINT_INTERVAL_TICKS,
   UNDERTAKING_PROGRESS_PER_ADVANCE,
@@ -179,7 +180,7 @@ export function resolveMomentPresentation(
   momentClass: UndertakingMomentClass,
   project: StrategicProjectRuntime,
 ): UndertakingMomentPresentation {
-  if (!isFollowedAgent(state, graph, actorId)) return 'badge';
+  if (!isFollowed(state, graph, actorId)) return 'badge';
 
   switch (momentClass) {
     case 'started':
@@ -195,36 +196,16 @@ export function resolveMomentPresentation(
 }
 
 /**
- * Whether the player is following this agent.
+ * Follow now lives in `src/engine/followedAgents.ts` (THR-1299 slice 1).
  *
- * The threaded retinue is followed **by construction** — a god who reached down to
- * a mortal is watching that mortal — and `followedAgentIds` is *additive* on top
- * of it, naming anyone else the player has chosen to follow.
- *
- * Additive rather than authoritative for one concrete reason: threads are minted
- * long after `initializeGameState` runs (The First is bonded later, and every
- * later thread later still), so a snapshot taken at init would be empty and an
- * authoritative reading of it would follow nobody for the whole run — the exact
- * silent-mute failure this affordance exists to avoid. The consequence is that v1
- * has no way to express *un*-following a threaded agent; that is doc 5's problem
- * to solve when it builds the affordance, and it is the right way round, because
- * a missing unfollow is a missing feature while a mute-by-default is a bug.
+ * The local `isFollowedAgent` this module carried tested bare `thread`-edge
+ * existence, while every attention predicate keyed on the edge's `courtPosition`
+ * — so a player who cast `thread.dormant` silenced a mortal's encounters and kept
+ * being interrupted by their undertaking news. The shared predicate closes that
+ * divergence and adds the mute term this module's own comment asked doc 5 for.
+ * Re-exported here so `gameInit`'s existing import site is untouched.
  */
-function isFollowedAgent(state: GameState, graph: WorldGraph, actorId: string): boolean {
-  if (state.followedAgentIds?.includes(actorId)) return true;
-  return graph.getOutgoingEdges(state.ascendantId, 'thread').some(e => e.target === actorId);
-}
-
-/**
- * The default-followed set at world init: the ascendant's threaded retinue.
- *
- * Usually empty at init — see `isFollowedAgent` for why that is harmless — but it
- * seeds the field so a save carries it, and it is the same query the live check
- * makes, so the two cannot answer differently.
- */
-export function defaultFollowedAgentIds(graph: WorldGraph, ascendantId: string): string[] {
-  return graph.getOutgoingEdges(ascendantId, 'thread').map(e => e.target);
-}
+export { defaultFollowedAgentIds } from './followedAgents';
 
 // ─── Gates (§5 per-verb flags) ──────────────────────────────────────
 

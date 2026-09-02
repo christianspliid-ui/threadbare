@@ -10,6 +10,8 @@ import { CAMERA_CONSTANTS } from '../HexMapV2/camera/D3ZoomCamera';
 import type { ScryState } from '../../types/scry';
 import { createScryState } from '../../engine/scry';
 import { resolveDebugAgent, isDebugAgentMiss } from '../../engine/debugAgentResolver';
+import { followAgent, unfollowAgent } from '../../engine/followedAgents';
+import type { GameState } from '../../types/gameState';
 import { useSimulation } from './hooks/useSimulation';
 import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 import type { CardPlayTallyEntry } from '../../types/gameState';
@@ -1907,6 +1909,34 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   // ^ Runs once — live deps accessed via refs (graphRef) or stable callbacks (handleAgentSelect, hexMapRef)
+
+  // ── Debug bridge: follow write levers (THR-1299) ─────────────────────────
+  // A write lever rather than a provider mutation: follow state is React state,
+  // and mutating the provider's GameState in place would flip the predicate
+  // without re-rendering the surfaces that read it — the change would be real and
+  // invisible, which is the worst shape for a lever whose whole job is to make a
+  // constructed proof observable.
+  useEffect(() => {
+    if (!import.meta.env.DEV || !window.__DEBUG) return;
+
+    const applyFollow = (
+      agentQuery: string,
+      apply: (state: GameState, agentId: string) => Pick<GameState, 'followedAgentIds' | 'mutedAgentIds'>,
+    ) => {
+      const resolved = resolveDebugAgent(_gameStateRef.current, agentQuery);
+      if (isDebugAgentMiss(resolved)) return { success: false, message: resolved.error };
+      const agentId = resolved.node.id;
+      setGameState(prev => ({ ...prev, ...apply(prev, agentId) }));
+      return { success: true, agentId };
+    };
+
+    window.__DEBUG._registerFollowBridge({
+      followAgent: (agentQuery: string) =>
+        applyFollow(agentQuery, (state, agentId) => followAgent(state, agentId, 'debug')),
+      unfollowAgent: (agentQuery: string) =>
+        applyFollow(agentQuery, (state, agentId) => unfollowAgent(state, state.graph, agentId, 'debug')),
+    });
+  }, [setGameState]);
 
   // ── Debug bridge: fog toggle ─────────────────────────────────────────────
   useEffect(() => {

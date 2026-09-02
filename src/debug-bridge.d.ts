@@ -870,6 +870,63 @@ export interface DebugBridge {
   setFog(enabled: boolean): void;
   /** @internal GameView registers its fog toggle callback here */
   _registerFogToggle(fn: (enabled?: boolean) => boolean): void;
+
+  // ── Follow affordance (THR-1299) ──────────────────────────────────────────
+  /**
+   * Who the player is watching, as the three terms that decide it.
+   *
+   * `explicit` is the affordance's list. `threaded` is derived from **live**
+   * `thread` edges filtered to the default-followed court positions
+   * (`the_first` / `retinue`; an unstamped edge reads as `retinue`) — so
+   * `dormant` and `watched` agents are absent here even though their edge
+   * exists. `muted` names default-followed agents whose interrupt upgrade the
+   * player dropped; their moments still queue and still badge.
+   *
+   * Async — `await` it. A forgotten `await` reads as an empty object rather
+   * than as a missing await.
+   */
+  getFollowedAgents(): Promise<{
+    explicit: readonly string[];
+    threaded: readonly string[];
+    muted: readonly string[];
+  }>;
+  /**
+   * Follow an agent by id, id prefix, partial name, or `@hero`.
+   *
+   * The sanctioned route for the constructed interrupt proof: CLI worlds carry
+   * no thread edges, so nothing is default-followed there and a moment can
+   * never resolve `interrupt` without this. Clears any mute as well as adding
+   * the explicit entry. Synchronous; the write lands in React state, so read it
+   * back with `getFollowedAgents()` on the next frame.
+   */
+  followAgent(agentRef: string): { success: boolean; agentId?: string; message?: string };
+  /**
+   * Un-follow an agent. Removes the explicit entry; if the agent is still
+   * default-followed by court position afterwards, records a mute instead —
+   * that is the only way to silence a retinue member without touching their
+   * court position.
+   */
+  unfollowAgent(agentRef: string): { success: boolean; agentId?: string; message?: string };
+  /** @internal GameView registers the follow write levers here */
+  _registerFollowBridge(callbacks: {
+    followAgent: (agentRef: string) => { success: boolean; agentId?: string; message?: string };
+    unfollowAgent: (agentRef: string) => { success: boolean; agentId?: string; message?: string };
+  }): void;
+
+  // ── Strategic action inspection (shipped THR-1292; declared THR-1299) ─────
+  /**
+   * Decision-board summary for one agent, or the whole board when omitted.
+   * Returns null when no game is loaded. Async — `await` it.
+   */
+  getStrategicDecisionSummary(agentId?: string): Promise<unknown>;
+  /** Every live `StrategicProjectRuntime` (undertaking) on the board. Async. */
+  getStrategicProjects(): Promise<unknown[]>;
+  /**
+   * Completed/abandoned undertaking history, narrowed to one actor id when
+   * given. Note this filters on an exact `actorId` — unlike most accessors it
+   * takes no name or `@hero` alias. Async.
+   */
+  getStrategicHistory(agentId?: string): Promise<unknown[]>;
   /** Structural scene snapshot for test/audit assertions without screenshots. */
   snapshotScene(): Promise<DebugSceneSnapshot>;
   /** Convert a hex coordinate to viewport pixels. Returns null when off-canvas. */
