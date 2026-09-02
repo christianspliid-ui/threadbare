@@ -231,10 +231,10 @@ export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata, k
           <AttachmentsTab card={card} knowledge={knowledge} onAttachmentClick={handleAttachmentClick} />
         )}
         {activeTab === 'bonds' && (
-          <BondsTab card={card} knowledge={knowledge} />
+          <BondsTab card={card} knowledge={knowledge} onOpenEntity={onOpenEntity} />
         )}
         {activeTab === 'journey' && (
-          <JourneyTab card={card} knowledge={knowledge} />
+          <JourneyTab card={card} knowledge={knowledge} onOpenEntity={onOpenEntity} />
         )}
         {activeTab === 'chronicle' && (
           <ChronicleTab

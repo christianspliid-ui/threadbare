@@ -49,6 +49,7 @@ import { ActivityIcon } from '../shared/ActivityIcon';
 import type { ActivityKind } from '../shared/ActivityIcon';
 import { ProgressBand } from '../shared/ProgressBand';
 import { Divider } from '../shared/Divider';
+import { EntityLink } from '../shared/EntityLink';
 import { DetailBreadcrumb } from '../shared/DetailBreadcrumb';
 import { DetailModal } from '../shared/DetailModal';
 import { Section } from '../shared/Section';
@@ -126,6 +127,7 @@ const SECTIONS = [
   { id: 'sectionheading', label: 'SectionHeading' },
   { id: 'animatemount', label: 'AnimateMount' },
   { id: 'entitycard', label: 'EntityCard' },
+  { id: 'entity-link', label: 'EntityLink (THR-1298)' },
   { id: 'entity-visual', label: 'EntityVisual (THR-637)' },
   { id: 'domaincard', label: 'DomainCard' },
   { id: 'activityicon', label: 'ActivityIcon' },
@@ -792,6 +794,29 @@ export default function StyleGuide() {
                 <Divider />
                 <Label>gold</Label>
                 <Divider gold />
+              </GameErrorBoundary>
+            </div>
+          </section>
+
+          {/* ── EntityLink (THR-1298) ──────────────────────────── */}
+          <section id="section-entity-link" style={{ marginBottom: SECTION_GAP }}>
+            <SectionHeading ornamental>EntityLink</SectionHeading>
+            <div style={{ marginTop: '1.25rem', maxWidth: '520px', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <GameErrorBoundary>
+                <Label>With a route — Law 21: a named entity is clickable where a page exists.</Label>
+                <p style={{ color: 'var(--text-secondary)' }}>
+                  There is blood between them and{' '}
+                  <EntityLink id="ind_0" name="Oswen" onOpenEntity={() => {}} />
+                  {' — an old wrong that never quite closed.'}
+                </p>
+                <Label>
+                  Without a route — the name still renders, as plain text. Law 25: a control that
+                  does nothing does not render, so the fallback is a span and never an inert button.
+                </Label>
+                <p style={{ color: 'var(--text-secondary)' }}>
+                  There is blood between them and <EntityLink id="ind_0" name="Oswen" />
+                  {' — an old wrong that never quite closed.'}
+                </p>
               </GameErrorBoundary>
             </div>
           </section>

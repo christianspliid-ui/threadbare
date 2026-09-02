@@ -95,6 +95,8 @@ import { REWARD_POSSESSIONS, REWARD_CONDITIONS, REWARD_BESTOWED_POWERS } from '.
 import { STARTER_POSSESSIONS, STARTER_CONDITIONS } from '../src/data/starter-attachments';
 import { getCompanions } from '../src/engine/companions';
 import { COMPANION_MAX } from '../src/data/companion-templates';
+import { getAgentGrudges } from '../src/engine/agentDetail';
+import { getGrievanceHeatWord } from '../src/data/grievance-prose';
 import {
   getAllGroups,
   getGroupCohesion,
@@ -350,6 +352,36 @@ function printAgent(partialId: string): void {
       const duration = c.ticksRemaining != null ? `, ${c.ticksRemaining} ticks left` : '';
       console.log(`    ${c.name} — ${c.profession} [${bonus || 'no bonus'}${duration}]`);
       console.log(`      ${c.goodFor}`);
+    }
+  }
+
+  // Grievances and grudges (THR-1298) — what was done to them, and what it left.
+  // The sheet shows heat as a word; here it shows both, because the raw number is what
+  // a tuning pass on GRIEVANCE_HEAT_DECAY_PER_CHECK actually needs to read.
+  const grievanceEdges = state.graph.getOutgoingEdges(match.id, 'pursues')
+    .filter(e => e.properties.grievance === true);
+  if (grievanceEdges.length > 0) {
+    console.log(`  Grievances (${grievanceEdges.length}):`);
+    for (const e of grievanceEdges) {
+      const p = e.properties;
+      const culpritId = typeof p.culpritAgentId === 'string' ? p.culpritAgentId : undefined;
+      const culprit = culpritId
+        ? ((state.graph.getNode(culpritId)?.properties.name as string | undefined)
+          ?? state.graph.getNode(culpritId)?.name ?? culpritId)
+        : 'nobody named';
+      const heat = typeof p.heat === 'number' ? p.heat : undefined;
+      const heatText = heat === undefined ? '—' : `${getGrievanceHeatWord(heat)} (${heat.toFixed(2)})`;
+      const depth = typeof p.chainDepth === 'number' ? p.chainDepth : 0;
+      console.log(`    vs ${culprit} — ${heatText}, chain depth ${depth}, ${String(p.status ?? 'active')}`);
+      if (typeof p.mintedByLabel === 'string') console.log(`      after ${p.mintedByLabel}`);
+    }
+  }
+
+  const grudges = getAgentGrudges(state.graph, match.id);
+  if (grudges.length > 0) {
+    console.log(`  Grudges (${grudges.length}):`);
+    for (const g of grudges) {
+      console.log(`    ${g.targetName} — ${g.causeClause}`);
     }
   }
 }

@@ -101,3 +101,22 @@ export const GRIEVANCE_CHAIN_DEPTH_MAX = 2;
  * it cools it competes fairly and eventually leaves the board on its own.
  */
 export const GRIEVANCE_URGENCY_WEIGHT = 0.4;
+
+// ─── Prose bands (THR-1298 slice 7) ───────────────────────────────
+//
+// Heat reaches the player as one of three words, never as a numeral. The bands are
+// constants and not a hardcoded ladder because they are the only place the decay curve
+// becomes something a player can read: move `GRIEVANCE_HEAT_DECAY_PER_CHECK` and these
+// decide how long each word is on screen.
+
+/** At or above this heat, a grievance reads **burning**. */
+export const GRIEVANCE_HEAT_BAND_BURNING = 0.7;
+
+/**
+ * At or above this heat (and below burning), a grievance reads **hot**.
+ *
+ * Below it reads **cooling** — which runs down to `GRIEVANCE_COOL_THRESHOLD`, where the
+ * drive demotes to a grudge and leaves the intent list entirely. So "cooling" is a real
+ * window an agent lives in, not a floor label nobody ever sees.
+ */
+export const GRIEVANCE_HEAT_BAND_HOT = 0.4;

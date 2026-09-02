@@ -451,6 +451,58 @@ export interface DebugBridge {
   } | null>;
 
   /**
+   * THR-1298: the reactive loop's readout — active vendettas and the standing grudges
+   * cooled ones left behind.
+   *
+   * `grievances` reads `pursues` edges carrying `grievance: true`; `grudges` reads
+   * agent→agent `hostile_to` edges. Both are edge state, not node state: two agents
+   * avenging two different harms pursue the *same* ambition node, so only the edge knows
+   * whose harm it was.
+   *
+   * **Scope.** Called with no argument, sweeps every actor. Called with a selector (id,
+   * id prefix, partial name, or `@hero`), scopes to that one agent — and a selector that
+   * matches nobody returns empty rather than widening back to the world, so a typo reads
+   * as "no match" and never as "the world has no grievances".
+   *
+   * `grudges` reads **outgoing edges only**. `writeGrudge` writes both directions, so a
+   * world sweep would otherwise report every pair twice; a one-sided edge written by
+   * another producer still appears on the side that holds it.
+   *
+   * `heat` is the engine's raw number and `heatWord` is the same value as the player
+   * reads it on the sheet — assert against `heatWord` when checking what a surface
+   * shows, and against `heat` when checking the decay curve.
+   */
+  getGrievances: (agentIdOrName?: string) => Promise<{
+    grievances: Array<{
+      agentId: string;
+      agentName: string;
+      /** The shared ambition node — not unique per grievance. */
+      ambitionId: string;
+      status: string | null;
+      /** `null` when the harm resolved no culprit (fail-soft path), not an error. */
+      culpritAgentId: string | null;
+      culpritName: string | null;
+      heat: number | null;
+      heatWord: 'burning' | 'hot' | 'cooling';
+      harmMagnitude: number | null;
+      chainDepth: number | null;
+      mintedByEventId: string | null;
+      mintedByLabel: string | null;
+    }>;
+    grudges: Array<{
+      agentId: string;
+      agentName: string;
+      targetId: string;
+      targetName: string;
+      /** Raw provenance value, read across the `cause`/`reason`/`basis` key divergence. */
+      provenance: string | null;
+      causeClause: string;
+      since: number | null;
+      sourceEventId: string | null;
+    }>;
+  }>;
+
+  /**
    * THR-479: list the ascendant's Aspects (apex milestone beyond the five tiers),
    * including living Aspects and mythic echoes. Empty array if none / not loaded.
    */
