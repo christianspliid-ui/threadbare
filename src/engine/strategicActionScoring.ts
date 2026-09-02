@@ -15,7 +15,6 @@ import {
   STRATEGIC_VARIETY_PENALTY_WEIGHT,
   STRATEGIC_CONTROL_PRESSURE_WEIGHT,
   STRATEGIC_SCORE_FLOOR,
-  STRATEGIC_ENCOUNTER_SCORE_BRIDGE,
   STRATEGIC_HISTORY_WINDOW_TICKS,
 } from '../data/strategic-action-constants';
 
@@ -78,11 +77,11 @@ export function scoreStrategicCandidates(
       c.travelPenalty * STRATEGIC_TRAVEL_PENALTY_WEIGHT -
       varietyPenalty * STRATEGIC_VARIETY_PENALTY_WEIGHT;
 
-    // Normalize to 0-1 range and bridge to encounter score range. The bridge is
-    // dropped in the same commit that flips the board to `'live'` — it exists only
-    // so contest B can compare this against an encounter score, and THR-1301 left
-    // that contest standing (see the mode constant).
-    const normalizedScore = Math.max(0, Math.min(1, rawScore)) * STRATEGIC_ENCOUNTER_SCORE_BRIDGE;
+    // Normalize to the family's own [0, 1] range. This score orders the family and
+    // feeds the board's `varietyPenalty` read; it is never compared against an
+    // encounter score any more — the `STRATEGIC_ENCOUNTER_SCORE_BRIDGE` that used to
+    // clamp it into contest B's range went with that contest (THR-1349 slice 3).
+    const normalizedScore = Math.max(0, Math.min(1, rawScore));
 
     // Add tiny deterministic jitter for stable tie-breaking
     const jitter = rng() * 0.001;

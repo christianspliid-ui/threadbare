@@ -612,7 +612,9 @@ function printEncounterDecisionSummary(summary: NonNullable<ReturnType<typeof bu
  */
 function printShadowBoardSummary(summary: NonNullable<ReturnType<typeof buildBalanceRunSummary>>): void {
   const shadow = summary.shadowBoard;
-  console.log(`  ${BOLD}Shadow board${RESET} (${UNIFIED_DECISION_BOARD_MODE}):`);
+  // Relabelled at the cutover (THR-1349 slice 3): the same counters now describe
+  // what mortals did, not what a shadow scorer would have preferred.
+  console.log(`  ${BOLD}Decision board${RESET} (${UNIFIED_DECISION_BOARD_MODE}):`);
   if (!shadow) {
     console.log(`    ${DIM}no decisions carried a board verdict this run${RESET}`);
     return;

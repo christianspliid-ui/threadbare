@@ -2186,7 +2186,13 @@ export interface DecisionBoardComparisonTrace extends TraceBase {
   category: 'decision_board_comparison';
   agentId: string;
   mode: 'shadow' | 'live';
-  /** What the legacy contests actually decided this tick. */
+  /**
+   * Under `'shadow'`, what the legacy contests decided this tick. Under `'live'`
+   * (THR-1349 slice 3) the only legacy contest left is the encounter scorer's own
+   * pick, so this is that pick — `'encounter'` with its template, or `'idle'` — and
+   * `agreement` reads as the drift between the encounter scorer and the board.
+   * Reported by the census, never gated.
+   */
   legacyWinner: { family: DecisionFamily; id: string | null; score: number };
   /** The board’s top `BOARD_TRACE_TOP_N`, descending. */
   boardTop: ReadonlyArray<{

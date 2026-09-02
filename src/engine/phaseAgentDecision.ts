@@ -727,21 +727,14 @@ export function phaseAgentDecision(
             );
             scoredStrategic = scored;
 
-            // The strategic-vs-encounter contest (THR-1292 §4 calls it contest B).
-            // It compares two scores that are only commensurable because one has
-            // been clamped into the other's range by `STRATEGIC_ENCOUNTER_SCORE_BRIDGE`,
-            // and the board below exists to replace it.
-            //
-            // It is still here because the cutover has **not** flipped (THR-1301).
-            // The board's live branch is implemented and inert under `'shadow'`;
-            // deleting this block is the same commit as setting the mode to
-            // `'live'`, never an earlier one, because in `'shadow'` nothing else
-            // would ever select a strategic action and undertakings would silently
-            // stop happening altogether.
-            const bestStrategicScore = scored.length > 0 ? scored[0].finalScore : 0;
-            const bestEncounterScore = decision.topCandidates.length > 0
-              ? decision.topCandidates[0].finalScore
-              : 0;
+            // The strategic-vs-encounter contest (THR-1292 §4's contest B) stood
+            // here until THR-1349 slice 3: `bestStrategicScore > bestEncounterScore`,
+            // comparing a score clamped into `[0.08, 0.851]` by
+            // `STRATEGIC_ENCOUNTER_SCORE_BRIDGE` against an unbounded encounter score.
+            // It chose an undertaking on 42–46% of spotlight decisions and let one
+            // mortal stack eight to eleven of them, because the clamp put most
+            // undertakings above most encounters. The board below is the one
+            // selector now; this block only generates, scores and traces the family.
 
             // Emit strategic candidate board trace
             emitTrace({
@@ -761,11 +754,6 @@ export function phaseAgentDecision(
                 .map(r => ({ templateId: r.templateId, reason: r.reason })),
               summary: `Strategic board: ${stratResult.candidates.length} generated, ${stratResult.rejections.length} rejected, top=${scored[0]?.finalScore.toFixed(3) ?? 'none'}`,
             } as StrategicCandidateBoardTrace & { summary: string });
-
-            if (bestStrategicScore > bestEncounterScore && scored.length > 0) {
-              strategicWinner = scored[0];
-              decisionFamily = 'strategic_action';
-            }
           }
         } catch {
           // Fail-soft: strategic generation failure → fall through to encounter path
@@ -825,18 +813,17 @@ export function phaseAgentDecision(
             : null;
           const boardFamily: DecisionFamily = boardWinner?.family ?? 'idle';
 
-          const legacyScore = decisionFamily === 'strategic_action'
-            ? (strategicWinner?.finalScore ?? 0)
-            : (decision.topCandidates.length > 0 ? decision.topCandidates[0].finalScore : 0);
-          const legacyId = decisionFamily === 'strategic_action'
-            ? (strategicWinner?.templateId ?? null)
-            : (decision.selected?.entry.templateId ?? null);
+          // With contest B gone (THR-1349 slice 3), the "legacy" side of the
+          // comparison is the encounter scorer's own pick — `'encounter'` with its
+          // selected template, or `'idle'` when `scoreAndSelect` declined. That is
+          // the one legacy contest left, and `agreement` is now the drift between
+          // it and the board: reported by the census, never gated.
+          const legacyScore = decision.topCandidates.length > 0 ? decision.topCandidates[0].finalScore : 0;
+          const legacyId = decision.selected?.entry.templateId ?? null;
 
           // Read *before* the live branch below mutates `decisionFamily`, which is
-          // what keeps the legacy baseline a baseline rather than a comparison of
-          // the board against itself. (Under `'shadow'` that branch is inert, so
-          // this ordering only starts mattering at the flip — which is exactly when
-          // getting it wrong would be invisible.)
+          // what keeps the encounter scorer's baseline a baseline rather than a
+          // comparison of the board against itself.
           const agreement = boardFamily === decisionFamily;
 
           shadowFields = {
@@ -878,36 +865,24 @@ export function phaseAgentDecision(
             summary: `Board (${UNIFIED_DECISION_BOARD_MODE}): legacy=${decisionFamily}, board=${boardFamily}${agreement ? '' : ' [DIVERGED]'}, top=${board.winner?.score.toFixed(3) ?? 'none'}`,
           });
 
-          // ── The cutover branch (THR-1301) — implemented, not yet flipped ──
+          // ── The cutover branch (THR-1301; live since THR-1349 slice 3) ──
           //
           // Everything above is measurement and runs in both modes. Below is the
           // only place the board's ranking touches behaviour, and it does three
-          // things the legacy contests did between them.
-          //
-          // **Why this ships inert.** The §4 gate passes on both seeds with the
-          // corrected floor (seed 42 undertaking 33.4% / encounter 33.8% / idle
-          // 32.8%; seed 99 21.1% / 43.6% / 35.3%). Flipping anyway is still wrong,
-          // because a third blind spot in that gate is now measured: the gate reads
-          // the *share between* families and says nothing about composition
-          // *within* one. Under a live board, `trades_with` edges written over 150
-          // ticks on seed 42 go from non-zero to **zero** —
-          // `strategic_establish_trade_route` takes zero board wins and is never
-          // generated as a candidate — while every criterion still reads green.
-          // The mechanism is that board score is `EVT × desire × temperament` and
-          // carries no variety term at all; the legacy scorer's
-          // `STRATEGIC_VARIETY_PENALTY_WEIGHT` was supposed to "survive as a
-          // candidate-generation feature feeding EVT inputs" (plan §4) and in fact
-          // feeds nothing the board reads. Adding a diversity term to the board's
-          // currency is a design change with its own balance envelope, so it is
-          // its own slice rather than a constant nudged here.
+          // things the legacy contests did between them. It shipped inert under
+          // `'shadow'` for a week and flipped once the census gates were re-derived
+          // from the design rather than from the contest it replaces — the story is
+          // on `UNIFIED_DECISION_BOARD_MODE`'s docblock.
           //
           // 1. **Idle is re-keyed to the board.** The legacy idle branch is
           //    encounter-only — a strategic winner `continue`s past it, so idle
           //    meant "no *encounter* worth doing" while an undertaking may have
           //    been available all along. Live idle is "the board is empty, or its
           //    best entry is below `BOARD_SCORE_FLOOR`" — one floor over both
-          //    families, which is why that constant is pinned equal to
-          //    `STRATEGIC_SCORE_FLOOR`.
+          //    families, in EVT currency. (An earlier version of this note said
+          //    that floor was pinned equal to `STRATEGIC_SCORE_FLOOR`; it never was
+          //    — `1e-6` against `0.08` — and they gate different quantities. See
+          //    `STRATEGIC_SCORE_FLOOR`'s docblock.)
           // 2. **The winner resolves by index, never by id.** `candidateIndex`
           //    exists for this line; see its contract note on `BoardEntry`.
           // 3. **The legacy encounter selection is overridden, not consulted.**

@@ -1,20 +1,25 @@
 /**
  * The one prioritization board — THR-1292 §4.
  *
- * ## What this replaces
+ * ## What this replaced
  *
- * An agent's decision is today **three sequential winner-take contests**:
- * encounter-internal selection (`scoreAndSelect`), then strategic-vs-encounter,
- * then — until slice 4 deleted it — initiative-vs-encounter. The scorers being
- * compared are incommensurate by construction: an encounter score is unbounded
- * above (multiplicative gates 1.3–2.5 stacked on additive bonuses) while a
- * strategic score is clamped into `[0.08, 0.851]` by
- * `STRATEGIC_ENCOUNTER_SCORE_BRIDGE`. One clamp and one constant are the entire
- * commensurability story, and the comparison itself has **never been traced** —
- * nothing anywhere records what the losing family's best was.
+ * An agent's decision used to be **three sequential winner-take contests**:
+ * encounter-internal selection (`scoreAndSelect`), then strategic-vs-encounter
+ * (contest B), then — until slice 4 deleted it — initiative-vs-encounter. The
+ * scorers being compared were incommensurate by construction: an encounter score
+ * is unbounded above (multiplicative gates 1.3–2.5 stacked on additive bonuses)
+ * while a strategic score was clamped into `[0.08, 0.851]` by
+ * `STRATEGIC_ENCOUNTER_SCORE_BRIDGE`. One clamp and one constant were the entire
+ * commensurability story, and the comparison itself was never traced — nothing
+ * recorded what the losing family's best was. Measured before the cutover
+ * (THR-1349), the clamp had contest B choosing an undertaking on 42–46% of
+ * spotlight decisions and stacking eight to eleven on one mortal.
  *
  * This module ranks every candidate an agent has, of every family, on one
- * currency, and says so on the record.
+ * currency, says so on the record, and — since THR-1349 slice 3 — decides.
+ * Contest B, the bridge and the clamp were deleted in that commit; the encounter
+ * scorer's own selection is the one legacy contest left, and only as the
+ * `legacyWinner` half of the comparison trace.
  *
  * ## The currency: expected value per tick (EVT)
  *
