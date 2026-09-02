@@ -78,6 +78,7 @@ import {
   type CheckpointBindingInput,
 } from './undertakingCheckpoints';
 import { runBindPass } from './binding/undertakingBindPass';
+import { recomputeCalling } from './calling';
 import { applyCreationEffects } from './binding/creationEffects';
 import { getBindings, releaseBindingsForProject } from './binding/bindingRegistry';
 import { ensureRoleCensus, type SimulationRuntime } from './simulationRuntime';
@@ -913,6 +914,13 @@ export function advanceStrategicProjects(
       releaseUndertakingBindings(state, checked.projectId, tick);
       updatedProjects.push({ ...checked, progress: newProgress, status: 'completed', lastProgressTick: tick });
       newHistory.push(createHistoryEntry(candidate, tick, ops, catalystSeeded));
+
+      // A finished work is a deed the calling reads (THR-1299 slice 5) — the
+      // second of its three event sites.
+      {
+        const callingChange = recomputeCalling(graph, project.actorId, tick, 'undertaking_complete');
+        if (callingChange?.event) events.push(callingChange.event);
+      }
 
       const actorNode = graph.getNode(project.actorId);
       // The completion moment carries the christened name instead of the template's

@@ -117,6 +117,8 @@ export interface TickEvent {
     | 'avatar_arrival'
   // Player choice resolution events (THR-73)
     | 'choice_set_resolved'
+  // The calling changed — a spotlight mortal's readable identity moved (THR-1299)
+    | 'calling_changed'
   // Omen agenda events (THR-19)
     | 'omen_started' | 'omen_expired' | 'omen_beat' | 'omen_forced_shift'
   // Complication outcome events (THR-20)

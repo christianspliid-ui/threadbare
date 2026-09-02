@@ -283,6 +283,27 @@ if (import.meta.env.DEV) {
       return node ? getPendingUndertakingMoments(state, node.id) : [];
     },
     /**
+     * The calling (THR-1299 slice 5): the stored title and when it was set, plus
+     * what a fresh derivation would say — so a verification run can see a
+     * challenger the hysteresis gate is holding back.
+     */
+    getCalling: async (agentRef: string) => {
+      const state = _gameStateProvider?.();
+      if (!state) return null;
+      const node = await resolveAgentNode(agentRef);
+      if (!node) return null;
+      const { readStoredCalling, deriveCalling } = await import('./engine/calling');
+      const stored = readStoredCalling(node);
+      const derived = deriveCalling(state.graph, node.id);
+      return {
+        agentId: node.id,
+        title: stored?.title ?? null,
+        titleKey: stored?.titleKey ?? null,
+        sinceTick: stored?.sinceTick ?? null,
+        derived: { title: derived.title, titleKey: derived.titleKey, score: derived.score },
+      };
+    },
+    /**
      * Test lever — the CLI world mints no thread edges, so the constructed
      * browser proof of the interrupt arm has no other way to make an agent
      * followed. Routes through GameView so the write lands in React state.

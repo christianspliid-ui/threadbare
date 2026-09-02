@@ -10,6 +10,7 @@ import type { AgentKnowledge } from '../../../types/agentKnowledge';
 import type { EncounterNotification } from '../../../types/encounterVisibility';
 import type { PendingVignette } from '../../../types/journeyEngine';
 import type { StrategicRuntimeState, BehaviorFamily } from '../../../types/strategicAction';
+import { getCallingPresentation } from '../../../engine/calling';
 import type { OmenState } from '../../../types/omen';
 import type { DoomIdentityMatrix } from '../../../types/doomIdentity';
 import type { HiddenMark, PendingEncounterSeed } from '../../../types/unifiedAction';
@@ -438,12 +439,12 @@ function StrategicDebugTab({
             <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>No strategic activity.</div>
           ) : (
             <>
-              {agentSummary.behaviorFamily && (() => {
-                const pres = getBehaviorFamilyPresentation(agentSummary.behaviorFamily);
+              {(() => {
+                const pres = agentSummary.calling;
                 return (
                   <div style={row}>
                     <span style={{ color: pres.color }}>{pres.glyph}</span>
-                    <span style={{ color: pres.color, fontWeight: 500 }}>{pres.label}</span>
+                    <span style={{ color: pres.color, fontWeight: 500 }}>{pres.title}</span>
                   </div>
                 );
               })()}
@@ -489,7 +490,7 @@ function StrategicDebugTab({
         <div style={sec}>
           <div style={sH}>Active Projects ({activeProjects.length})</div>
           {activeProjects.map(proj => {
-            const pres = getBehaviorFamilyPresentation(proj.behaviorFamily);
+            const pres = getCallingPresentation(graph?.getNode(proj.actorId), proj.behaviorFamily);
             const fraction = proj.progressRequired > 0 ? proj.progress / proj.progressRequired : 1;
             return (
               <div key={proj.projectId} style={{ ...row, borderLeft: `2px solid ${pres.color}`, paddingLeft: '6px', marginBottom: '1px' }}>
@@ -511,7 +512,7 @@ function StrategicDebugTab({
         <div style={sec}>
           <div style={sH}>Active Controls ({activeControls.length})</div>
           {activeControls.map(ctrl => {
-            const pres = getBehaviorFamilyPresentation(ctrl.behaviorFamily);
+            const pres = getCallingPresentation(graph?.getNode(ctrl.actorId), ctrl.behaviorFamily);
             const targetNode = graph?.getNode(ctrl.targetNodeId);
             return (
               <div key={ctrl.controlId} style={{ ...row, borderLeft: `2px solid ${pres.color}`, paddingLeft: '6px', marginBottom: '1px' }}>

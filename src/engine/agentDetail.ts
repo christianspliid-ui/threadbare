@@ -61,6 +61,7 @@ import {
   type CohesionState,
 } from './groups/groupQueries';
 import { getStrategicTemplate } from './strategicActionCandidates';
+import { readStoredCalling } from './calling';
 
 // ─── Seeded PRNG ─────────────────────────────────────────────────
 
@@ -397,6 +398,12 @@ export interface AgentInfoCardData {
   completedAmbitions?: CompletedAmbition[];
   /** Primary intent summary for compact AgentInfoCard (prototype: always visible) */
   primaryIntentSummary?: { displayName: string; category: AmbitionCategory };
+  /**
+   * The calling (THR-1299 slice 5) — what the world calls this mortal for what
+   * they do. Derived, never a stat; gated with the archetype label at
+   * `recognised`+, because a name the world uses is the same class of fact.
+   */
+  calling?: { title: string; titleKey: string; sinceTick: number };
   /** Portrait URL — only present if knowledge >= recognised */
   portraitUrl?: string;
   /** Active divine effects on this agent (always visible — player's own actions) */
@@ -1455,6 +1462,12 @@ export function getAgentInfoCard(
 
   if (activeEffects.length > 0) {
     card.activeEffects = activeEffects;
+  }
+
+  // The calling rides the same gate as the archetype label (THR-1299 slice 5).
+  if (knowledgeLevel !== 'stranger') {
+    const stored = readStoredCalling(agentNode);
+    if (stored) card.calling = { title: stored.title, titleKey: stored.titleKey, sinceTick: stored.sinceTick };
   }
 
   return card;

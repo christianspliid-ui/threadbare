@@ -28,7 +28,7 @@ import {
   getSelectedEncounterPoolCandidate,
 } from './encounterActivityPresentation';
 import type { AgentStrategicSummary } from '../../engine/strategicPresentation';
-import { getBehaviorFamilyPresentation, STRATEGIC_BADGE_BG_OPACITY } from '../../engine/strategicPresentation';
+import { STRATEGIC_BADGE_BG_OPACITY } from '../../engine/strategicPresentation';
 
 // ─── Section config ───────────────────────────────────────────────
 
@@ -342,9 +342,9 @@ function CompactThreadRow({
           : 'hourglass' as const)
     : null;
 
-  // Strategic badge
+  // Strategic badge — the calling replaces the family glyph (THR-1299 slice 5).
   const familyPresentation = strategicSummary
-    ? getBehaviorFamilyPresentation(strategicSummary.behaviorFamily)
+    ? { glyph: strategicSummary.calling.glyph, color: strategicSummary.calling.color, label: strategicSummary.calling.title }
     : null;
   const strategicBadgeText = strategicSummary
     ? (() => {

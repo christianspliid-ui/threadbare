@@ -19,6 +19,7 @@ import { getStrategicTemplate } from './strategicActionCandidates';
 import { resolveLocationToHex } from './encounterAwareness';
 import { getAgentLocationId } from './graphQueries';
 import { hexKey } from '../lib/hexKey';
+import { getCallingPresentation, type CallingPresentation } from './calling';
 
 // ─── Behavior Family Presentation ─────────────────────────────────────────────
 
@@ -118,6 +119,13 @@ export interface AgentStrategicSummary {
   agentId: string;
   /** Primary behavior family for glyph/color identification (from active project or latest history). */
   behaviorFamily: BehaviorFamily | null;
+  /**
+   * The calling — what the surfaces draw instead of the family glyph (THR-1299
+   * slice 5). The stored calling when one has been derived, else the persisted
+   * family's seed title, else the fallback; never absent, so no render site
+   * needs a branch.
+   */
+  calling: CallingPresentation;
   /** Active multi-tick project, if any. */
   activeProject: {
     displayName: string;      // activityProse[0] from the template
@@ -247,6 +255,7 @@ export function getAgentStrategicSummary(
   return {
     agentId,
     behaviorFamily,
+    calling: getCallingPresentation(graph.getNode(agentId), behaviorFamily),
     activeProject: projectInfo,
     controlCount: activeControls.length,
     primaryControl: primaryControlInfo,

@@ -117,6 +117,7 @@ import { phaseUnifiedActionProgress } from './unifiedActionResolution';
 import { phaseIdleSelection, resetPhaseEventCounter } from './unifiedActionPhases';
 import { UNIFIED_ACTION_TEMPLATES } from '../data/unified-action-templates';
 import { resetAmbitionEventCounter } from './ambitionTick';
+import { recomputeCalling } from './calling';
 import { phaseArmyAttrition } from './armyAttrition';
 import { phaseArmyMovement } from './armyMovement';
 import { phaseBattleDetection, phaseBattleTick } from './battleResolution';
@@ -1069,6 +1070,10 @@ export function phaseEncounterProgressionV2(state: GameState, runtime?: Simulati
         significance: 0.8,
         actorId: progress.actorId,
       });
+      // A reach tier crossing can move the leading reach pair — the calling's
+      // third event site (THR-1299 slice 5).
+      const callingChange = recomputeCalling(state.graph, progress.actorId, state.tick, 'tier_promotion');
+      if (callingChange?.event) events.push(callingChange.event);
     }
 
     // ── Rarity: Importance accumulation on encounter step resolution ──
