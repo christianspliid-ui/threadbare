@@ -1240,10 +1240,10 @@ exit
 - **Intent:** What happens to an agent’s undertaking reaches the player — the setback, the doubling-down, the abandonment — instead of progress silently accruing until a thing appears in the world with no story attached to it.
 - **Producer → Consumer:** Strategic Projects & Control → Attention, Chronicle & Narrative
 - **Module:** `src/engine/undertakingCheckpoints.ts`
-- **Production hits:** 5 total — 1 write, 0 read, 4 unclassified
+- **Production hits:** 7 total — 1 write, 0 read, 6 unclassified
 - **Write sites:** `src/engine/undertakingCheckpoints.ts`
 - **Read sites:** —
-- **Other hits:** `src/engine/gameInit.ts`, `src/types/gameState.ts`, `src/types/strategicAction.ts`, `src/types/trace.ts`
+- **Other hits:** `src/components/Game/GameView.tsx`, `src/engine/followedAgents.ts`, `src/engine/gameInit.ts`, `src/types/gameState.ts`, `src/types/strategicAction.ts` +1 more
 - **Verdict:** Tier 2: write sites present, declared read sites empty — the consumer is starving. — or the declared symbol does not appear at the declared site: grep 'undertaking_checkpoint' src/engine/traceBuffer.ts before treating this as a leak.
 
 ### `undertaking-creation-effects` — 🔵 UNVERIFIED-OK
