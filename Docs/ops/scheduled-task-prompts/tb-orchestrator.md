@@ -61,9 +61,22 @@ Wayfinder maps (THR-900, `wayfinder` skill) chart multi-session design efforts a
 
 Trigger: fewer than `ORCH_PROGRAM_WORK_FLOOR` (2) **non-`Deferral`** items in Ready for Dev. Excluding deferrals is the point — the executor files them under itself, which is what let the shelf read "healthy" while authored program work sat in Todo indefinitely.
 
-Bound: never hold more than `ORCH_MAX_IN_DESIGN` (1) issues in `In Design`.
+Bound: never hold more than `ORCH_MAX_IN_DESIGN` (1) **live** issues in `In Design` — liveness, not occupancy (THR-1382).
 
-Take the top agreed-but-undesigned item and **stage it for design — never author the plan doc in this lane** (Christian's ruling 2026-08-06: this lane deliberately runs Sonnet; plan-doc authoring is Opus-session work). Staging = post a design-request comment on the issue (why now, shelf depth, what makes it agreed, the canon/Step-0 loads a design session needs), move it to `In Design`, and put `design session wanted: <title>` under `## Needs Christian` in the run report so the briefing carries it to an attended session. The `ORCH_MAX_IN_DESIGN` bound counts staged items; an item still unpicked after 48h is re-surfaced in the report, not re-staged.
+**Which `In Design` items count.** An issue is **excluded** from the bound when it carries `Parked`, **or** when it has no assignee and no activity for more than `ORCH_IN_DESIGN_STALE_DAYS` (7). Everything else counts.
+
+| Shape | Counts? | Sweep does |
+|---|---|---|
+| `Parked` | No | nothing |
+| Unassigned, stale > 7d | **No** — nobody is waiting on it | warns; both exits (`Parked` or `Todo`) |
+| **Assigned**, stale > 7d | **Yes** — a person is waiting on it | warns; `Parked` is the exit, never demotion |
+| Newer than 7d | Yes | nothing |
+
+The asymmetry is the repair: counting occupancy barred this tier for twenty-one consecutive runs and drove the build shelf to zero on 2026-08-30. An *assigned* item still counts, or the lane would stage a second item on top of a person's staged work.
+
+**Excluding from a count is not a state change — you mutate neither kind.** Applying `Parked` or demoting to `Todo` is the grooming lane's remit and Christian's call. The executable copy of this predicate is `classifyInDesignItem` in `scripts/stale-claim-sweep/index.ts`; when this prose and that function disagree, the function is what ran.
+
+Take the top agreed-but-undesigned item and **stage it for design — never author the plan doc in this lane** (Christian's ruling 2026-08-06: this lane deliberately runs Sonnet; plan-doc authoring is Opus-session work). Staging = post a design-request comment on the issue (why now, shelf depth, what makes it agreed, the canon/Step-0 loads a design session needs), move it to `In Design`, and put `design session wanted: <title>` under `## Needs Christian` in the run report so the briefing carries it to an attended session. The `ORCH_MAX_IN_DESIGN` bound counts staged items still live by the predicate above; an item still unpicked after 48h is re-surfaced in the report, not re-staged.
 
 There is deliberately **no `agreed` label**. An item belonging to a program Christian has blessed, or a bug, is agreed; a new direction is not. When unsure, ask well rather than guess.
 
@@ -86,10 +99,11 @@ npm run check:canon-staleness         # canon pages aged past their sources
 
 Report **new** findings only, diffed against the previous `Docs/ops/orchestrator-*.md` — read from `origin/ops` (`git show origin/ops:<path>`), not the working tree (THR-947). A tier that re-lists the same forty findings daily trains its reader to skip it; diffing against the frozen archive would re-report the whole standing set as new every run.
 
-Two things no detector does, both of which you own:
+Three things no detector does, all of which you own:
 
 - **Redundancy, not reachability.** Two implementations doing one job — both reachable, so no reachability sweep can flag them. This is a judgement pass over `Docs/canon/interface-map.md` and `Docs/canon/systems-inventory.md`. **Never label a reachability result as a redundancy result.** If the judgement pass did not happen, write "redundancy: not assessed this sweep".
 - **Stalled work.** An issue with `ORCH_STALLED_PICKUP_THRESHOLD` (3) or more `Ready for Dev → In Dev` transitions in `stateHistory` and no `Done` is failing repeatedly and nothing else notices.
+- **Stale `In Design` (THR-1382).** Apply the T2 liveness predicate to the column and report the split, so the staging budget's state lands in a run report rather than only in a comment nobody reads. Line: `In Design: N live, M excluded (THR-XXXX unassigned Nd → excluded; THR-YYYY assigned <name> Nd → warned, still counted).` **Print a `0 live` line too** — it is the signal that T2 is free to stage, and its absence is indistinguishable from a tier that did not run.
 
 `__DEBUG.validateTraitRefs()` is browser-only and **cannot run headless** — do not report it as run.
 
