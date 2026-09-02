@@ -270,6 +270,19 @@ if (import.meta.env.DEV) {
       return getFollowState(state, state.graph);
     },
     /**
+     * The moment queue (THR-1299 slice 2): every record the checkpoints have said
+     * to the player and the cap has not yet evicted, acknowledged ones included,
+     * narrowed to one agent when a ref is given.
+     */
+    getUndertakingMoments: async (agentRef?: string) => {
+      const state = _gameStateProvider?.();
+      if (!state) return [];
+      const { getPendingUndertakingMoments } = await import('./engine/undertakingMoments');
+      if (!agentRef) return getPendingUndertakingMoments(state);
+      const node = await resolveAgentNode(agentRef);
+      return node ? getPendingUndertakingMoments(state, node.id) : [];
+    },
+    /**
      * Test lever — the CLI world mints no thread edges, so the constructed
      * browser proof of the interrupt arm has no other way to make an agent
      * followed. Routes through GameView so the write lands in React state.

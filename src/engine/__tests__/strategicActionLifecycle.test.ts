@@ -457,4 +457,77 @@ describe('strategicActionLifecycle', () => {
       expect(result.strategicState.bindings).toBeUndefined();
     });
   });
+
+  // ─── Moment records (THR-1299 slice 2) ────────────────────────────
+
+  describe('moment records', () => {
+    it('starting a multi-tick project mints a badge-tier founding record', () => {
+      // The `started` class had a presentation branch and no emitter. The record is
+      // what the thread-row badge will count; the decision phase's own TickEvent
+      // already says it began, so no event rides here — one founding, one line.
+      const graph = buildTestGraph();
+      const state = buildMinimalState(graph);
+      const candidate = makeCandidate({
+        templateId: 'strategic_establish_trade_route',
+        verb: 'create',
+        executionMode: 'multi_tick_project',
+        displayName: 'Establish Trade Route',
+        targetNodeId: 'loc_town',
+      });
+
+      const result = executeStrategicAction(state, graph, candidate, state.tick, mulberry32(42));
+
+      expect(result.moments?.length).toBe(1);
+      const founding = result.moments![0];
+      expect(founding.momentClass).toBe('started');
+      expect(founding.presentation).toBe('badge');
+      expect(founding.projectId).toBe(result.strategicState.projects[0].projectId);
+      expect(founding.acknowledged).toBe(false);
+    });
+
+    it('an instant action mints no moment', () => {
+      const graph = buildTestGraph();
+      const state = buildMinimalState(graph);
+      const result = executeStrategicAction(state, graph, makeCandidate(), state.tick, mulberry32(42));
+      expect(result.moments).toBeUndefined();
+    });
+
+    it('a completing project queues ONE completion moment whose id is the completion event', () => {
+      // The checkpoint holds the completion record back and the lifecycle re-labels
+      // it after christening, so the card and the chronicle line describe the same
+      // finish under the same id — and there is exactly one completion event, not a
+      // template-named one from the checkpoint beside a christened one from here.
+      const graph = buildTestGraph();
+      const state = buildMinimalState(graph);
+      state.strategicState = {
+        projects: [{
+          projectId: 'proj_1',
+          actorId: 'actor_1',
+          templateId: 'strategic_build_warehouse',
+          ambitionId: 'ambition_dominate_trade',
+          verb: 'create',
+          behaviorFamily: 'merchant-expansion',
+          targetNodeId: 'loc_market',
+          progress: 7,
+          progressRequired: 8,
+          startedTick: 2,
+          lastProgressTick: 9,
+          status: 'active',
+        }],
+        controls: [],
+        history: [],
+      };
+
+      const result = advanceStrategicProjects(state, graph, 10, mulberry32(42));
+      expect(result.strategicState.projects[0].status).toBe('completed');
+
+      const completions = result.moments.filter(m => m.momentClass === 'completion');
+      expect(completions.length).toBe(1);
+      const completionEvents = result.events.filter(e => e.message.includes('completes'));
+      expect(completionEvents.length).toBe(1);
+      expect(completionEvents[0].id).toBe(completions[0].id);
+      expect(completionEvents[0].message).toBe(completions[0].label);
+      expect(completions[0].undertakingName.length).toBeGreaterThan(0);
+    });
+  });
 });

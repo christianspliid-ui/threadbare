@@ -25,6 +25,7 @@ import { createBalancedCosmology } from '../cosmology';
 import { generateArchetypes } from '../ascendant';
 import { createSimulationRuntime } from '../simulationRuntime';
 import { enableTracing, clearTraces, getTraces } from '../traceBuffer';
+import { MOMENT_QUEUE_MAX } from '../../data/strategic-action-constants';
 
 const SEED = 42;
 const TICKS = 60;
@@ -62,5 +63,17 @@ describe('undertaking checkpoints run in the live simulation', () => {
 
     // And the ladder is genuinely being exercised, not pinned to one band.
     expect(new Set(rolled.map(t => t.band)).size).toBeGreaterThan(1);
+
+    // The moment queue (THR-1299 slice 2) is wired into the same run — the failure
+    // this guards is a producer that builds records nobody merges into GameState,
+    // which every unit test on `resolveUndertakingCheckpoint` would pass through.
+    // A CLI world follows nobody, so the interrupt arm is unreachable here by
+    // construction and asserted in the unit tests; what this proves is that the
+    // records land, the cap holds, and nothing resolves louder than a badge.
+    const queue = state.pendingUndertakingMoments ?? [];
+    expect(queue.length, 'no moment ever queued — the phases do not merge the records').toBeGreaterThan(0);
+    expect(queue.length).toBeLessThanOrEqual(MOMENT_QUEUE_MAX);
+    expect(queue.every(m => m.presentation !== 'interrupt')).toBe(true);
+    expect(queue.some(m => m.momentClass === 'started'), 'no founding queued — the dead started branch is still dead').toBe(true);
   }, 120_000);
 });

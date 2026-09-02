@@ -753,10 +753,68 @@ export interface StrategicProjectRuntime {
     readonly probability: number;
     readonly tick: number;
   };
+  /**
+   * The most recent divine act that moved one of this undertaking's checkpoints
+   * (THR-1299 slice 2 — scapegoat provenance, THR-1282 §6). Stamped where the
+   * Inspire/Sabotage rider is consumed, so the moment that checkpoint produced can
+   * name the god's hand in it. Absent until a rider lands.
+   */
+  divineInfluence?: UndertakingDivineInfluence;
 }
 
 /** What a checkpoint band does to an undertaking (THR-1292 §2). */
 export type UndertakingCheckpointEffect = 'advance' | 'advance_at_cost' | 'halt';
+
+/**
+ * A divine act's fingerprint on an undertaking (THR-1299 slice 2).
+ *
+ * `tick` is the checkpoint the rider moved, which is what lets a moment record
+ * claim the influence only when it was *this* checkpoint the god touched. The
+ * shipped rider flags carry a magnitude, not an action id, so `actionId` is
+ * optional until a writer records one — the provenance chip renders unlinked text
+ * without it (Law 17: no dead-end click).
+ */
+export interface UndertakingDivineInfluence {
+  readonly verb: 'inspire' | 'sabotage';
+  readonly tick: number;
+  readonly actionId?: string;
+}
+
+/**
+ * One moment, as the player-facing surfaces consume it (THR-1299 slice 2).
+ *
+ * The producer half of the moment stream shipped with doc 1 and died in the
+ * trace buffer; this record is what the moment card, the thread-row badge and
+ * the arc panel read. `id` is the TickEvent id, so a card can be reached from a
+ * chronicle line and vice versa. `presentation` is stamped at push time from
+ * `resolveMomentPresentation`, never recomputed — the follow state at the moment
+ * the thing happened is the honest one.
+ *
+ * `acknowledged` is the idempotency flag (the receipts idiom): an interrupt-tier
+ * record the player dismissed stops being offered as an interrupt but stays in
+ * the queue for the badge to count until it ages out.
+ */
+export interface UndertakingMomentRecord {
+  readonly id: string;
+  readonly projectId: string;
+  readonly actorId: string;
+  readonly templateId: string;
+  readonly momentClass: UndertakingMomentClass;
+  readonly presentation: UndertakingMomentPresentation;
+  readonly tick: number;
+  /** The one-line narrator label — the same text as the TickEvent message. */
+  readonly label: string;
+  /** The undertaking's player-facing name: christened where one exists, else the display name. */
+  readonly undertakingName: string;
+  /** The checkpoint band that produced this moment; absent on a founding. */
+  readonly band?: import('./unifiedAction').StepOutcome;
+  readonly effect?: UndertakingCheckpointEffect;
+  /** The must-persist cast member a complication lost (THR-1296 §3). */
+  readonly lostCastName?: string;
+  /** Set only when a divine rider moved the checkpoint this moment came from. */
+  readonly divineInfluence?: UndertakingDivineInfluence;
+  acknowledged: boolean;
+}
 
 /**
  * Moment classes emitted by checkpoint resolution and read by

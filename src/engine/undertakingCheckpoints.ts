@@ -46,8 +46,10 @@ import type {
   StrategicActionTemplate,
   StrategicProjectRuntime,
   UndertakingCheckpointEffect,
+  UndertakingDivineInfluence,
   UndertakingMomentClass,
   UndertakingMomentPresentation,
+  UndertakingMomentRecord,
 } from '../types/strategicAction';
 import type { AxiologicalProfile } from '../types/agent';
 import type { ReachDomain } from '../types/traits';
@@ -84,6 +86,9 @@ import {
   UNDERTAKING_DEFAULT_CAN_RUN_BESIDE,
   UNDERTAKING_INSPIRE_MODIFIER,
   UNDERTAKING_SABOTAGE_MODIFIER,
+  MOMENT_INTERRUPT_SIGNIFICANCE,
+  MOMENT_SETBACK_SIGNIFICANCE,
+  MOMENT_BADGE_SIGNIFICANCE,
   UNDERTAKING_INSPIRE_FLAG,
   UNDERTAKING_SABOTAGE_FLAG,
 } from '../data/strategic-action-constants';
@@ -345,6 +350,14 @@ export interface CheckpointResult {
   readonly verdict: CheckpointVerdict;
   readonly project: StrategicProjectRuntime;
   readonly events: readonly TickEvent[];
+  /**
+   * The moment records this checkpoint produced (THR-1299 slice 2) — what the
+   * player-facing surfaces consume. Absent on a deferral or a not-due pass, which
+   * say nothing to anyone. A `completion` record rides here **without** its
+   * TickEvent: the lifecycle emits that one, because only it knows the christened
+   * name, and it re-labels the record to match before queueing it.
+   */
+  readonly moments?: readonly UndertakingMomentRecord[];
 }
 
 /**
@@ -482,7 +495,18 @@ export function resolveUndertakingCheckpoint(
   // the actor; it is consumed here, so a god's nudge lands on exactly one checkpoint
   // rather than tilting the whole undertaking. Escalation stakes are folded into
   // `difficulty` above and deliberately not double-counted here.
-  const modifiers = consumeUndertakingRider(graph, project.actorId);
+  const rider = consumeUndertakingRiders(graph, project.actorId);
+  const modifiers = rider.modifier;
+  // Scapegoat provenance (THR-1299 slice 2, THR-1282 §6): the moment this checkpoint
+  // produces can name the god's hand in it. With both riders present the verb
+  // follows the net sign — that is what actually moved the roll — and a dead-even
+  // pair keeps the first one read, since "the god touched this" is still true.
+  const divineInfluence: UndertakingDivineInfluence | undefined = rider.verbs.length > 0
+    ? {
+      verb: rider.modifier < 0 ? 'sabotage' : rider.modifier > 0 ? 'inspire' : rider.verbs[0],
+      tick,
+    }
+    : undefined;
 
   const rng = checkpointRng(state.seed, tick, project.projectId);
   const core = resolveStepCore(
@@ -558,6 +582,7 @@ export function resolveUndertakingCheckpoint(
     atCostMomentFired: project.atCostMomentFired || atCost,
     everInterrupted: project.everInterrupted || presentation === 'interrupt',
     lastCheckpoint: { band, effect, roll: core.roll, probability: core.probability, tick },
+    ...(divineInfluence ? { divineInfluence } : {}),
   };
 
   emitCheckpointTrace({
@@ -567,13 +592,22 @@ export function resolveUndertakingCheckpoint(
     presentation, halts: nextHalts,
   });
 
-  if (momentClass && momentClass !== 'completion') {
-    events.push(buildMomentEvent(
-      graph, project, momentClass, tick, template?.displayName, bindingLoss?.lostName,
-    ));
+  const moments: UndertakingMomentRecord[] = [];
+  if (momentClass) {
+    const moment = buildMoment({
+      graph, project: advanced, momentClass, presentation, tick,
+      displayName: template?.displayName, lostName: bindingLoss?.lostName, band, effect,
+    });
+    moments.push(moment.record);
+    // The completion gate, kept for one reason only (THR-1299 slice 2): the
+    // lifecycle already emits the completion TickEvent, with the *christened* name
+    // this module cannot know. Emitting a second one here would put "completes
+    // Establish Trade Network" beside "completes The Saltway Ring" in the same
+    // chronicle. The record still rides `moments` — the lifecycle re-labels it.
+    if (momentClass !== 'completion') events.push(moment.event);
   }
 
-  return { verdict: completing ? 'completed' : 'continues', project: advanced, events };
+  return { verdict: completing ? 'completed' : 'continues', project: advanced, events, moments };
 }
 
 // ─── Fork resolution ────────────────────────────────────────────────
@@ -634,8 +668,12 @@ function resolveFork(
       everInterrupted: project.everInterrupted || presentation === 'interrupt',
       lastProgressTick: tick,
     };
-    events.push(buildMomentEvent(graph, project, 'fork', tick, template?.displayName));
-    return { verdict: 'continues', project: escalated, events };
+    const fork = buildMoment({
+      graph, project: escalated, momentClass: 'fork', presentation, tick,
+      displayName: template?.displayName,
+    });
+    events.push(fork.event);
+    return { verdict: 'continues', project: escalated, events, moments: [fork.record] };
   }
 
   const abandoned: StrategicProjectRuntime = {
@@ -645,8 +683,12 @@ function resolveFork(
     everInterrupted: project.everInterrupted || presentation === 'interrupt',
     lastProgressTick: tick,
   };
-  events.push(buildMomentEvent(graph, project, 'abandoned', tick, template?.displayName));
-  return { verdict: 'ended', project: abandoned, events };
+  const abandon = buildMoment({
+    graph, project: abandoned, momentClass: 'abandoned', presentation, tick,
+    displayName: template?.displayName,
+  });
+  events.push(abandon.event);
+  return { verdict: 'ended', project: abandoned, events, moments: [abandon.record] };
 }
 
 // ─── Residue (§2.2 — failure residue follows visibility) ────────────
@@ -723,15 +765,37 @@ export function buildAbandonMintEvent(
 
 // ─── Event + trace helpers ──────────────────────────────────────────
 
-function buildMomentEvent(
-  graph: WorldGraph,
-  project: StrategicProjectRuntime,
-  momentClass: UndertakingMomentClass,
-  tick: number,
-  displayName?: string,
+export interface BuildMomentArgs {
+  graph: WorldGraph;
+  project: StrategicProjectRuntime;
+  momentClass: UndertakingMomentClass;
+  presentation: UndertakingMomentPresentation;
+  tick: number;
+  displayName?: string;
   /** The must-persist cast member this undertaking just lost (THR-1296 §3). */
-  lostName?: string,
-): TickEvent {
+  lostName?: string;
+  band?: StepOutcome;
+  effect?: UndertakingCheckpointEffect;
+}
+
+/**
+ * One moment, as both halves the stream needs (THR-1299 slice 2): the TickEvent
+ * the chronicle reads and the record the surfaces read. Built together so their
+ * `id` and label can never disagree — a card reached from a chronicle line must be
+ * the card that line describes.
+ *
+ * Significance follows presentation, not class: an interrupt-tier moment clears
+ * the chronicle threshold (`MOMENT_INTERRUPT_SIGNIFICANCE`), because a moment loud
+ * enough to stop the player is a chronicle line by definition; badge-tier keeps the
+ * doc-1 sub-threshold values. That one constant is the whole "interrupts reach the
+ * chronicle" mechanism — no orchestrator threshold moves.
+ *
+ * `divineInfluence` is claimed only when the rider landed on *this* checkpoint
+ * (`tick` matches): the runtime remembers the god's latest touch for the arc panel,
+ * but a moment three checkpoints later was not "because of" it.
+ */
+export function buildMoment(args: BuildMomentArgs): { event: TickEvent; record: UndertakingMomentRecord } {
+  const { graph, project, momentClass, presentation, tick, displayName, lostName, band, effect } = args;
   const actorName = graph.getNode(project.actorId)?.name ?? project.actorId;
   const label = displayName ?? project.templateId;
   const message =
@@ -744,15 +808,43 @@ function buildMomentEvent(
         : momentClass === 'complication' ? `${actorName} hits serious trouble with ${label}`
           : momentClass === 'fork' ? `${actorName} doubles down on ${label}`
             : momentClass === 'abandoned' ? `${actorName} abandons ${label}`
-              : `${actorName} begins ${label}`;
+              : momentClass === 'completion' ? `${actorName} completes ${label}`
+                : `${actorName} begins ${label}`;
+
+  const significance = presentation === 'interrupt'
+    ? MOMENT_INTERRUPT_SIGNIFICANCE
+    : momentClass === 'complication' || momentClass === 'abandoned'
+      ? MOMENT_SETBACK_SIGNIFICANCE
+      : MOMENT_BADGE_SIGNIFICANCE;
+
+  const id = `undertaking_${momentClass}_${project.projectId}_${tick}`;
+  const influence = project.divineInfluence?.tick === tick ? project.divineInfluence : undefined;
 
   return {
-    id: `undertaking_${momentClass}_${project.projectId}_${tick}`,
-    tick,
-    type: 'agent_action',
-    message,
-    significance: momentClass === 'complication' || momentClass === 'abandoned' ? 0.55 : 0.4,
-    actorId: project.actorId,
+    event: {
+      id,
+      tick,
+      type: 'agent_action',
+      message,
+      significance,
+      actorId: project.actorId,
+    },
+    record: {
+      id,
+      projectId: project.projectId,
+      actorId: project.actorId,
+      templateId: project.templateId,
+      momentClass,
+      presentation,
+      tick,
+      label: message,
+      undertakingName: label,
+      ...(band ? { band } : {}),
+      ...(effect ? { effect } : {}),
+      ...(lostName ? { lostCastName: lostName } : {}),
+      ...(influence ? { divineInfluence: influence } : {}),
+      acknowledged: false,
+    },
   };
 }
 
@@ -825,22 +917,42 @@ function clamp01(v: number): number {
  * same way an encounter's modifiers do rather than through a bespoke path.
  */
 export function consumeUndertakingRider(graph: WorldGraph, actorId: string): number {
+  return consumeUndertakingRiders(graph, actorId).modifier;
+}
+
+/** What `consumeUndertakingRiders` read: the folded modifier and which verbs it came from. */
+export interface ConsumedRiders {
+  readonly modifier: number;
+  /** In read order — inspire before sabotage — so a caller can name the first when they cancel. */
+  readonly verbs: readonly UndertakingDivineInfluence['verb'][];
+}
+
+/**
+ * The structured form of `consumeUndertakingRider` (THR-1299 slice 2): the same
+ * one-shot read, but it also says *which* divine verbs it consumed, so the
+ * checkpoint can stamp `divineInfluence` for the moment's provenance chip. The
+ * number-returning wrapper above stays for every existing caller.
+ */
+export function consumeUndertakingRiders(graph: WorldGraph, actorId: string): ConsumedRiders {
   const actor = graph.getNode(actorId);
-  if (!actor) return 0;
+  if (!actor) return { modifier: 0, verbs: [] };
   const props = actor.properties as Record<string, unknown>;
 
   let modifier = 0;
+  const verbs: UndertakingDivineInfluence['verb'][] = [];
 
   const inspire = props[UNDERTAKING_INSPIRE_FLAG];
   if (inspire != null) {
     modifier += typeof inspire === 'number' ? inspire : UNDERTAKING_INSPIRE_MODIFIER;
     props[UNDERTAKING_INSPIRE_FLAG] = undefined;
+    verbs.push('inspire');
   }
 
   if (props[UNDERTAKING_SABOTAGE_FLAG] === true) {
     modifier -= UNDERTAKING_SABOTAGE_MODIFIER;
     props[UNDERTAKING_SABOTAGE_FLAG] = undefined;
+    verbs.push('sabotage');
   }
 
-  return modifier;
+  return { modifier, verbs };
 }

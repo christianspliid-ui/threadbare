@@ -891,6 +891,21 @@ export interface DebugBridge {
     muted: readonly string[];
   }>;
   /**
+   * The moment queue — `state.pendingUndertakingMoments` (THR-1299 slice 2).
+   *
+   * Every record the checkpoints have produced and the cap (`MOMENT_QUEUE_MAX`)
+   * has not evicted, **acknowledged ones included** — the badge model decides
+   * what it counts, this does not pre-decide. Each carries the `presentation`
+   * stamped at emission (`interrupt` / `badge` / `none`), so a constructed proof
+   * can assert the interrupt arm without a card on screen. Pass an id, id
+   * prefix, partial name or `@hero` to narrow to one actor; an unknown ref
+   * returns `[]`, never throws.
+   *
+   * In a CLI or unfollowed world every record reads `badge` or `none` — the
+   * interrupt arm needs `followAgent()` first. Async — `await` it.
+   */
+  getUndertakingMoments(agentRef?: string): Promise<readonly import('./types/strategicAction').UndertakingMomentRecord[]>;
+  /**
    * Follow an agent by id, id prefix, partial name, or `@hero`.
    *
    * The sanctioned route for the constructed interrupt proof: CLI worlds carry

@@ -44,6 +44,8 @@ import {
   resolveUndertakingCheckpoint,
   classifyFailureResidue,
   defaultFollowedAgentIds,
+  buildMoment,
+  consumeUndertakingRiders,
 } from '../undertakingCheckpoints';
 import {
   UNDERTAKING_CHECKPOINT_INTERVAL_TICKS,
@@ -52,6 +54,11 @@ import {
   UNDERTAKING_ESCALATE_DIFFICULTY_DELTA,
   UNDERTAKING_ABSENCE_DEFERRAL_LIMIT,
   UNDERTAKING_PROGRESS_PER_ADVANCE,
+  UNDERTAKING_INSPIRE_FLAG,
+  UNDERTAKING_SABOTAGE_FLAG,
+  MOMENT_INTERRUPT_SIGNIFICANCE,
+  MOMENT_BADGE_SIGNIFICANCE,
+  MOMENT_SETBACK_SIGNIFICANCE,
 } from '../../data/strategic-action-constants';
 
 // ─── Fixtures ───────────────────────────────────────────────────────
@@ -637,5 +644,165 @@ describe('stage presence resolves through nested sublocations', () => {
 
     expect(result.verdict).toBe('deferred');
     expect(result.project.deferrals).toBe(1);
+  });
+});
+
+// ─── Moment records (THR-1299 slice 2) ──────────────────────────────
+
+describe('moment records', () => {
+  const due = { nextCheckpointTick: 10, checkpointIndex: 0 };
+
+  /** The first tick in range whose roll advances — so an outcome is observable. */
+  function findAdvancingTick(graph: WorldGraph, overrides: Partial<StrategicProjectRuntime> = {}): number {
+    for (let t = 10; t < 400; t += UNDERTAKING_CHECKPOINT_INTERVAL_TICKS) {
+      const p = buildProject({ ...due, ...overrides, nextCheckpointTick: t });
+      const r = resolveUndertakingCheckpoint(buildState(graph, { tick: t }), graph, p, t);
+      if (r.project.progress > (overrides.progress ?? 0)) return t;
+    }
+    throw new Error('no advancing checkpoint found in range');
+  }
+
+  it('a completing checkpoint returns a completion RECORD and no completion event', () => {
+    // The three-line defect the plan names: the completion gate dropped the moment.
+    // What actually needs to reach the surfaces is the record — the TickEvent is the
+    // lifecycle's, because only it knows the christened name, and a second one from
+    // here would be a duplicate chronicle line. Both halves of that are asserted.
+    const graph = buildGraph();
+    const nearly = { progress: 18 - UNDERTAKING_PROGRESS_PER_ADVANCE, progressRequired: 18 };
+    const t = findAdvancingTick(graph, nearly);
+    const result = resolveUndertakingCheckpoint(
+      buildState(graph, { tick: t }), graph, buildProject({ ...due, ...nearly, nextCheckpointTick: t }), t,
+    );
+
+    expect(result.verdict).toBe('completed');
+    const record = result.moments?.find(m => m.momentClass === 'completion');
+    expect(record).toBeDefined();
+    expect(record!.id).toBe(`undertaking_completion_proj_1_${t}`);
+    expect(record!.band).toBeDefined();
+    expect(record!.acknowledged).toBe(false);
+    expect(result.events.some(e => e.id === record!.id)).toBe(false);
+  });
+
+  it('stamps presentation at emission — followed interrupts, unfollowed badges', () => {
+    const graph = buildGraph();
+    const nearly = { progress: 18 - UNDERTAKING_PROGRESS_PER_ADVANCE, progressRequired: 18 };
+    const t = findAdvancingTick(graph, nearly);
+    const project = () => buildProject({ ...due, ...nearly, nextCheckpointTick: t });
+
+    const quiet = resolveUndertakingCheckpoint(buildState(graph, { tick: t }), graph, project(), t);
+    const loud = resolveUndertakingCheckpoint(
+      buildState(graph, { tick: t, followedAgentIds: ['actor_1'] }), graph, project(), t,
+    );
+
+    expect(quiet.moments?.[0].presentation).toBe('badge');
+    expect(loud.moments?.[0].presentation).toBe('interrupt');
+    expect(loud.project.everInterrupted).toBe(true);
+    expect(quiet.project.everInterrupted ?? false).toBe(false);
+  });
+
+  it('a complication names the lost cast member on the record, not only in the message', () => {
+    const graph = buildGraph();
+    const t = findAdvancingTick(graph);
+    const withLoss = resolveUndertakingCheckpoint(
+      buildState(graph, { tick: t }), graph, buildProject({ ...due, nextCheckpointTick: t }), t,
+      { loss: { castKey: '$steward', lostName: 'Old Maerin', singular: false } },
+    );
+
+    const record = withLoss.moments?.[0];
+    expect(record?.momentClass).toBe('complication');
+    expect(record?.lostCastName).toBe('Old Maerin');
+    expect(record?.label).toContain('Old Maerin');
+    // Event and record are one moment: same id, same words.
+    expect(withLoss.events.find(e => e.id === record!.id)?.message).toBe(record!.label);
+  });
+
+  it('interrupt-tier moments clear the chronicle threshold; badge-tier stay under it', () => {
+    // The whole "interrupts reach the chronicle" mechanism is one constant on the
+    // event, so it is asserted against the threshold it exists to clear rather than
+    // against its own value — a constant lowered to 0.7 would still equal itself.
+    const CHRONICLE_THRESHOLD = 0.8;
+    const graph = buildGraph();
+    const project = buildProject();
+
+    const loud = buildMoment({ graph, project, momentClass: 'complication', presentation: 'interrupt', tick: 10 });
+    const quietSetback = buildMoment({ graph, project, momentClass: 'complication', presentation: 'badge', tick: 10 });
+    const quietPress = buildMoment({ graph, project, momentClass: 'at_cost', presentation: 'badge', tick: 10 });
+
+    expect(loud.event.significance).toBe(MOMENT_INTERRUPT_SIGNIFICANCE);
+    expect(loud.event.significance).toBeGreaterThan(CHRONICLE_THRESHOLD);
+    expect(quietSetback.event.significance).toBe(MOMENT_SETBACK_SIGNIFICANCE);
+    expect(quietPress.event.significance).toBe(MOMENT_BADGE_SIGNIFICANCE);
+    expect(quietSetback.event.significance).toBeLessThan(CHRONICLE_THRESHOLD);
+    expect(quietPress.event.significance).toBeLessThan(CHRONICLE_THRESHOLD);
+  });
+
+  it('the fork and the abandonment each ride out as a record', () => {
+    const graph = buildGraph();
+    // Brave and still chasing the ambition → escalate; forced re-trip → abandon.
+    graph.getNode('actor_1')!.properties.axiologicalProfile = { courage_prudence: 1 };
+    const tripped = { ...due, halts: UNDERTAKING_HALT_RATCHET_N };
+
+    const fork = resolveUndertakingCheckpoint(buildState(graph), graph, buildProject(tripped), 10);
+    expect(fork.moments?.map(m => m.momentClass)).toEqual(['fork']);
+    expect(fork.events.some(e => e.id === fork.moments![0].id)).toBe(true);
+
+    const abandon = resolveUndertakingCheckpoint(
+      buildState(graph), graph, buildProject({ ...tripped, escalated: true }), 10,
+    );
+    expect(abandon.verdict).toBe('ended');
+    expect(abandon.moments?.map(m => m.momentClass)).toEqual(['abandoned']);
+  });
+
+  it('a deferral says nothing — no records', () => {
+    const graph = buildGraph();
+    const deferred = resolveUndertakingCheckpoint(
+      buildState(graph), graph, buildProject(due), 10, { awaitingMint: true },
+    );
+    expect(deferred.verdict).toBe('deferred');
+    expect(deferred.moments ?? []).toEqual([]);
+  });
+});
+
+// ─── Scapegoat provenance: the divine rider is remembered (THR-1299 slice 2) ──
+
+describe('divine influence stamp', () => {
+  const due = { nextCheckpointTick: 10, checkpointIndex: 0 };
+
+  it('consumeUndertakingRiders names the verbs it folded, and the old wrapper still returns the number', () => {
+    const graph = buildGraph();
+    const props = graph.getNode('actor_1')!.properties as Record<string, unknown>;
+    props[UNDERTAKING_INSPIRE_FLAG] = 0.15;
+    props[UNDERTAKING_SABOTAGE_FLAG] = true;
+
+    const both = consumeUndertakingRiders(graph, 'actor_1');
+    expect(both.verbs).toEqual(['inspire', 'sabotage']);
+    expect(both.modifier).toBeCloseTo(0);
+    // One-shot: the second read finds nothing.
+    expect(consumeUndertakingRiders(graph, 'actor_1')).toEqual({ modifier: 0, verbs: [] });
+  });
+
+  it('a checkpoint the god moved stamps the runtime and the moment it produced', () => {
+    const graph = buildGraph();
+    const props = graph.getNode('actor_1')!.properties as Record<string, unknown>;
+    props[UNDERTAKING_SABOTAGE_FLAG] = true;
+
+    const result = resolveUndertakingCheckpoint(buildState(graph), graph, buildProject(due), 10);
+
+    expect(result.project.divineInfluence).toEqual({ verb: 'sabotage', tick: 10 });
+    // Whichever moment class the roll produced (or none), a record from THIS
+    // checkpoint carries the influence — and a later one would not.
+    for (const record of result.moments ?? []) {
+      expect(record.divineInfluence).toEqual({ verb: 'sabotage', tick: 10 });
+    }
+    const later = buildMoment({
+      graph, project: result.project, momentClass: 'fork', presentation: 'badge', tick: 16,
+    });
+    expect(later.record.divineInfluence).toBeUndefined();
+  });
+
+  it('an untouched checkpoint stamps nothing', () => {
+    const graph = buildGraph();
+    const result = resolveUndertakingCheckpoint(buildState(graph), graph, buildProject(due), 10);
+    expect(result.project.divineInfluence).toBeUndefined();
   });
 });
