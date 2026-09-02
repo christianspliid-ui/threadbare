@@ -27,7 +27,7 @@ THR-794 found one miss in each of directions 1 and 2 (`website-code-work`, `Thre
 |------|---------|------|------|-------|--------|
 | **:00** | Hourly | CC pickup (`tb-opus-pickup` — single Opus executor lane) | `0 * * * *` | ~:00:53 | — |
 | **:25** | Hourly | `tb-orchestrator` (decides what happens next — T1 unblock sweep, T2 design authoring, T3 daily architecture health) | `25 * * * *` | ~:26:16 | `Docs/ops/orchestrator-<date>.md` + Linear `Todo`→`Ready for Dev` promotions |
-| **:45** | Hourly | `keep-work-flowing-cc` (CC PM brief — refreshes `Design/briefing.md` + `Design/user-actions.md`) | `45 * * * *` | ~:53:13 | briefing + user-actions |
+| **:45** | Hourly | `keep-work-flowing-cc` (CC PM brief — refreshes `Design/briefing.md` + `Design/user-actions.md`; since THR-1385 also measures engine tick cost and appends the trend row) | `45 * * * *` | ~:53:13 | briefing + user-actions + `Docs/ops/tick-cost-trend.tsv` |
 | **Fri 17:00** | Weekly | `weekly-retro` | `0 17 * * 5` | ~17:09 | retro via `retrospective` skill |
 | **Sun 16:03** | Weekly | `weekly-memory-grooming` | `3 16 * * 0` | ~16:10 | memory files |
 | **09:07** | Daily | `daily-backlog-grooming` | `7 9 * * *` | ~09:16 | `Docs/ops/backlog-grooming-<date>.md` + Linear queue fixes |

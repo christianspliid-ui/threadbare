@@ -1,7 +1,7 @@
 ---
 name: keep-work-flowing-cc
 description: Hourly headless Claude Code PM brief — reads Christian's Discord replies, scans the Linear queue, runs the health probes, and rewrites Design/briefing.md + Design/user-actions.md on the ops branch. The briefing leads with ONE ask. Simplified 2026-08-10 on Christian's direction (THR-1077, THR-954); rule rationale lives in this file's git history and the tickets it names.
-last_validated_against: 2026-08-13
+last_validated_against: 2026-09-02
 ---
 
 # Keep Work Flowing (CC)
@@ -49,7 +49,13 @@ npm run check:armed-prs --silent -- --json
 npm run check:task-heartbeat --silent -- --input <tasks.json> --json   # tasks.json from list_scheduled_tasks
 npm run check:lane-silence --silent -- --json
 grep '^SUMMARY:' "C:/Users/chris/Dev/Projects/clean-stale-git.log" | tail -1   # reaper; flag if newest run header >2h old
+# tick cost (THR-1385): ~1–2 min of engine on this machine, then the trend row. Measurement
+# first so a crash in it is one line; the probe reads the JSON file, never re-runs it.
+npm run measure:tick-cost --silent -- --json > .cache/tick-cost.json
+npm run check:tick-cost --silent -- --input .cache/tick-cost.json --write Docs/ops/tick-cost-trend.tsv --json
 ```
+
+**Tick cost is the one probe whose signal is a slope, not a state.** `check:tick-cost` compares steady ms/tick against the 7-day median from `origin/ops:Docs/ops/tick-cost-trend.tsv` and answers `drift` (+ `needsSession`) only past `TICK_COST_DRIFT_FRACTION` (25%). `drift` → one § Health line carrying the probe's `summary` verbatim — it already names the median, the window's first commit and the `git log --merges` command that lists the merges in between. `baseline` (fewer than three rows in the window) and `healthy` → silence. It never fails the run and never reaches the ask list: engine speed is the executor's job. A measurement that throws → skip the probe, one line, continue; do not publish a trend row you did not measure.
 
 **Uniform rule** — every probe returns `{verdict, summary, needsChristian, …}` and gets identical treatment:
 
@@ -97,8 +103,10 @@ From this session worktree's repository root:
 
 ```bash
 bash scripts/ops-publish.sh -m "docs(briefing): refresh (<date> <time>)" \
-  Design/briefing.md Design/user-actions.md
+  Design/briefing.md Design/user-actions.md Docs/ops/tick-cost-trend.tsv
 ```
+
+`Docs/ops/tick-cost-trend.tsv` is the file step 3's `check:tick-cost --write` produced this run (the full trend, prior rows from `origin/ops` plus today's). If the measurement was skipped, leave it off the list — `ops-publish.sh` refuses a missing file, and a row that was not measured must not be published.
 
 The substantive-change gate is **retired for this lane** (THR-954, 2026-08-10): `ops` commits cost nothing, and the gate's digest keyed on the briefing while also suppressing corrections to `user-actions.md`. `ops-publish.sh` already no-ops on byte-identical content. Never push to `main`, never open a PR for these files, never fall back to one. Publish failure → one line, stop; the next run reconciles.
 
@@ -136,4 +144,5 @@ Linear unreachable → brief carries a loud stale-queue banner, rest of the run 
 | Stale Ready-for-Dev item | 7 days |
 | Queue starved / backed up | ≤1 / >15 ready |
 | Sibling report max age | 36 h |
+| Tick-cost drift line | steady ms/tick > 25% above the 7-day median (`TICK_COST_DRIFT_FRACTION`, `scripts/check-tick-cost.ts`); trend at `origin/ops:Docs/ops/tick-cost-trend.tsv` |
 | `user-actions.md` cap | ~150 lines |
