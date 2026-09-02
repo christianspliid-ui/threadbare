@@ -120,6 +120,8 @@ export type TraceCategory =
   // Undertaking checkpoints (THR-1292)
   | 'undertaking_checkpoint'
   | 'undertaking_fork'
+  // Follow affordance (THR-1299)
+  | 'follow_change'
   // The one prioritization board (THR-1292 §4)
   | 'decision_board_comparison'
   | 'decision_board_error'
@@ -514,6 +516,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'grievance_transition',
   'undertaking_checkpoint',
   'undertaking_fork',
+  'follow_change',
   'decision_board_comparison',
   'decision_board_error',
   'omen_selection',
@@ -2104,6 +2107,25 @@ export interface UndertakingForkTrace extends TraceBase {
 }
 
 /**
+ * Trace: the player changed who they are watching (THR-1299 slice 1).
+ *
+ * Four actions rather than two because follow state has two layers: `follow` /
+ * `unfollow` move the explicit list, while `mute` / `unmute` move the negative
+ * term that expresses un-following a **default**-followed agent. A trace that
+ * collapsed them would make the most interesting question — did the player set
+ * down a mortal the god had reached for? — unanswerable from the buffer.
+ *
+ * `source` distinguishes the two shipped affordances from an init seed and a
+ * debug lever, so a constructed browser proof is never mistaken for play.
+ */
+export interface FollowChangeTrace extends TraceBase {
+  category: 'follow_change';
+  agentId: string;
+  action: 'follow' | 'unfollow' | 'mute' | 'unmute';
+  source: 'arc_panel' | 'encounter_ui' | 'init' | 'debug';
+}
+
+/**
  * Trace: what the one prioritization board would have chosen (THR-1292 §4).
  *
  * The cross-family comparison this records has **never been traced** — nothing
@@ -3153,6 +3175,7 @@ export type TraceEntry =
   | GrievanceTransitionTrace
   | UndertakingCheckpointTrace
   | UndertakingForkTrace
+  | FollowChangeTrace
   | DecisionBoardComparisonTrace
   | DecisionBoardErrorTrace
   | StrategicWorldChangeTrace

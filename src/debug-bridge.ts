@@ -118,6 +118,16 @@ if (import.meta.env.DEV) {
   let _encounterBridge: Record<string, (...args: unknown[]) => unknown> | null = null;
   // GameView registers its fog toggle callback here
   let _fogToggle: ((enabled?: boolean) => boolean) | null = null;
+  // GameView registers the follow/unfollow writers here (THR-1299). A write lever,
+  // not a provider: follow state is React state, so a direct mutation of the
+  // provider's GameState would change the predicate without re-rendering the
+  // surfaces that read it.
+  let _followBridge:
+    | {
+        followAgent: (agentRef: string) => { success: boolean; agentId?: string; message?: string };
+        unfollowAgent: (agentRef: string) => { success: boolean; agentId?: string; message?: string };
+      }
+    | null = null;
   // GameView registers scene and viewport projection callbacks here
   let _sceneSnapshot: (() => SceneSnapshot) | null = null;
   let _viewportForHex: ((col: number, row: number) => ViewportHexProjection | null) | null = null;
@@ -246,6 +256,33 @@ if (import.meta.env.DEV) {
     toggleFog: () => _fogToggle?.() ?? false,
     setFog: (enabled: boolean) => { _fogToggle?.(enabled); },
     _registerFogToggle: (fn: (enabled?: boolean) => boolean) => { _fogToggle = fn; },
+
+    // ── Follow affordance (THR-1299) ─────────────────────────────────────
+    /**
+     * The three-way follow read. `threaded` comes off live thread edges, filtered
+     * to the default-followed court positions, so it answers for agents threaded
+     * long after init — which every agent is.
+     */
+    getFollowedAgents: async () => {
+      const state = _gameStateProvider?.();
+      if (!state) return { explicit: [], threaded: [], muted: [] };
+      const { getFollowState } = await import('./engine/followedAgents');
+      return getFollowState(state, state.graph);
+    },
+    /**
+     * Test lever — the CLI world mints no thread edges, so the constructed
+     * browser proof of the interrupt arm has no other way to make an agent
+     * followed. Routes through GameView so the write lands in React state.
+     */
+    followAgent: (agentRef: string) =>
+      _followBridge?.followAgent(agentRef) ?? { success: false, message: 'Game not loaded' },
+    unfollowAgent: (agentRef: string) =>
+      _followBridge?.unfollowAgent(agentRef) ?? { success: false, message: 'Game not loaded' },
+    /** @internal GameView registers the follow write levers here */
+    _registerFollowBridge: (cb: {
+      followAgent: (agentRef: string) => { success: boolean; agentId?: string; message?: string };
+      unfollowAgent: (agentRef: string) => { success: boolean; agentId?: string; message?: string };
+    }) => { _followBridge = cb; },
 
     // ── Schism inspection (THR-430) ──────────────────────────────────────
     schism: {

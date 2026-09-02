@@ -469,8 +469,16 @@ describe('moment presentation', () => {
   it('follows the threaded retinue even when followedAgentIds does not name them', () => {
     // The additive reading: threads are minted long after init, so an
     // authoritative snapshot would follow nobody for the whole run.
+    //
+    // THR-1299: the edge now carries a court position, because default-follow reads
+    // `courtPosition` rather than bare edge existence — a dormant thread no longer
+    // interrupts. The unstamped-edge and dormant/watched arms live in
+    // `followedAgents.test.ts`, which owns the full matrix.
     const graph = buildGraph();
-    graph.addEdge({ id: 'e_thread', source: 'ascendant', target: 'actor_1', type: 'thread', properties: {} });
+    graph.addEdge({
+      id: 'e_thread', source: 'ascendant', target: 'actor_1', type: 'thread',
+      properties: { courtPosition: 'retinue' },
+    });
     const state = buildState(graph, { followedAgentIds: [] });
 
     expect(resolveMomentPresentation(state, graph, 'actor_1', 'completion', buildProject())).toBe('interrupt');
