@@ -276,6 +276,9 @@ function censusOneSeed(seed: number, ticks: number, map: MapSizePreset): SeedCen
         const a = t as unknown as Record<string, unknown>;
 
         if (a.category === 'strategic_action_started') {
+          // A review-lever start (THR-1300 slice 2) is a reviewer's act, not the
+          // board's; counting it would let a review session read as throughput.
+          if (a.startedBy === 'review_lever') continue;
           const id = a.templateId as string | undefined;
           if (id) {
             startsByTemplate.set(id, (startsByTemplate.get(id) ?? 0) + 1);

@@ -170,6 +170,15 @@ import {
 import { toggleAttentionMode } from '../../engine/encounterVisibility';
 import { setForceFullEncounterVisibility } from '../../engine/debugVisibilityOverride';
 import { clearOutcomePin, setOutcomePin } from '../../engine/debugOutcomePin';
+import {
+  startUndertakingForReview,
+  setUndertakingBandPin,
+  clearUndertakingBandPin,
+  setForceMoments,
+  REVIEW_LEVER_MAX_ATTEMPTS,
+} from '../../engine/undertakingReviewLevers';
+import { enqueueUndertakingMoments } from '../../engine/undertakingMoments';
+import { isAutonomousDecisionActor } from '../../engine/strategicKindReachability';
 import { useTopBarHotkeys } from './hooks/useTopBarHotkeys';
 import { computeEssenceIncome } from '../../engine/essenceIncome';
 import { setHomeSeat as setHomeSeatEngine } from '../../engine/influence';
@@ -348,13 +357,30 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     const params = new URLSearchParams(window.location.search);
     const band = params.get('outcome');
     const spawnTemplateId = params.get('spawn');
+    // THR-1300 slice 2: `?outcome=` is reused for undertakings. When `?undertaking=` is
+    // present the pin targets that template's checkpoints; when both `?spawn=` and
+    // `?undertaking=` are present `?spawn` wins and says so — precedence stated, never
+    // silent, and no third flag.
+    const undertakingTemplateId = params.get('undertaking');
     if (!band) {
       clearOutcomePin();
-    } else if (!spawnTemplateId) {
-      console.warn('[?outcome] needs a `?spawn=<templateId>` to pin — the band is scoped to one encounter. Resolving normally.');
-    } else {
+      clearUndertakingBandPin();
+    } else if (spawnTemplateId) {
+      if (undertakingTemplateId) {
+        console.warn('[?outcome] both `?spawn=` and `?undertaking=` are present — `?spawn` wins; the undertaking resolves normally.');
+      }
       setOutcomePin(spawnTemplateId, band);
+      clearUndertakingBandPin();
+    } else if (undertakingTemplateId) {
+      clearOutcomePin();
+      setUndertakingBandPin(undertakingTemplateId, band);
+    } else {
+      console.warn('[?outcome] needs a `?spawn=<templateId>` or `?undertaking=<templateId>` to pin — the band is scoped to one template. Resolving normally.');
     }
+    // `?forcemoments`: the `?forceencounters` analog — every followed mortal's founding
+    // interrupts for the flag's lifetime. Follow scope itself is widened in the effect
+    // below once the world is ready.
+    setForceMoments(params.has('forcemoments'));
     return null;
   });
 
@@ -2278,6 +2304,110 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // essence floor in all twelve spheres) so review is not skewed by the seeded
   // identity's reach spread (Christian, 2026-07-31). `?testavatar` applies the
   // same stamp without spawning, for balanced free play.
+  // ── Debug: the undertaking review levers (THR-1300 slice 2) ──
+  // The `?spawn` analog for undertakings. Resolves the agent the way the CLI does
+  // (`@first` → the bonded First, `@hero` → the ascendant, else id/name), starts the
+  // template through the board's own path, and applies the returned runtime state
+  // and founding moment exactly as the decision phase would.
+  const debugStartUndertaking = useCallback(
+    (agentRef: string, templateId: string, options?: { target?: string; band?: string }) => {
+      const current = _gameStateRef.current;
+      const graph = current.graph;
+      const resolveAgent = (): string | null => {
+        if (agentRef === '@hero') return current.ascendantId ?? null;
+        if (agentRef === '@first') {
+          const first = graph.getEdgesByType('thread')
+            .find(e => e.properties.courtPosition === 'the_first');
+          return first?.target ?? null;
+        }
+        const q = agentRef.toLowerCase();
+        return graph.getNodesByType('actor').find(n => n.id === agentRef
+          || n.id.includes(agentRef) || (n.name ?? '').toLowerCase().includes(q))?.id ?? null;
+      };
+      const actorId = resolveAgent();
+      if (!actorId) return { ok: false, reason: 'unknown_actor' as const, message: `No agent matching "${agentRef}"` };
+      const result = startUndertakingForReview(current, graph, actorId, templateId, {
+        targetId: options?.target,
+        band: options?.band,
+      });
+      if (result.ok) {
+        const nextStrategic = result.strategicState;
+        const moments = result.moments ?? [];
+        touchWorld(runtime);
+        setGameState(prev => ({
+          ...prev,
+          strategicState: nextStrategic ?? prev.strategicState,
+          pendingUndertakingMoments: moments.length
+            ? enqueueUndertakingMoments(prev.pendingUndertakingMoments, moments, prev.tick)
+            : prev.pendingUndertakingMoments,
+        }));
+      }
+      return {
+        ok: result.ok,
+        reason: result.reason,
+        refusals: result.refusals,
+        projectId: result.projectId,
+        bypassedGates: result.bypassedGates,
+        belowSpotlight: result.belowSpotlight,
+        targetOwned: result.targetOwned,
+        message: result.message,
+      };
+    },
+    [],
+  );
+
+  const urlUndertakingDoneRef = useRef(false);
+  const urlUndertakingAttemptsRef = useRef(0);
+  useEffect(() => {
+    if (urlUndertakingDoneRef.current) return;
+    const params = new URLSearchParams(window.location.search);
+    const templateId = params.get('undertaking');
+    const wantsForceMoments = params.has('forcemoments');
+    if (!templateId && !wantsForceMoments) {
+      urlUndertakingDoneRef.current = true;
+      return;
+    }
+    if (params.get('spawn') && templateId) {
+      // `?spawn` wins (stated in the pin block above); the undertaking flag is dropped.
+      urlUndertakingDoneRef.current = true;
+      return;
+    }
+    if (urlUndertakingAttemptsRef.current >= REVIEW_LEVER_MAX_ATTEMPTS) return;
+    urlUndertakingAttemptsRef.current += 1;
+
+    const current = _gameStateRef.current;
+    const hasFirst = current.graph.getEdgesByType('thread').some(e => e.properties.courtPosition === 'the_first');
+    if (!hasFirst) {
+      if (urlUndertakingAttemptsRef.current === REVIEW_LEVER_MAX_ATTEMPTS) {
+        console.warn(`[?undertaking] gave up after ${REVIEW_LEVER_MAX_ATTEMPTS} attempts: no bonded First to stage on`);
+      }
+      return;
+    }
+
+    if (wantsForceMoments) {
+      // Follow every spotlight individual through the single writer, never a
+      // parallel follow set. Unfollowed (ambient) mortals stay invisible.
+      const spotlight = current.graph.getNodesByType('actor')
+        .filter(n => n.properties.actorType === 'individual' && isAutonomousDecisionActor(n))
+        .map(n => n.id);
+      setGameState(prev => {
+        let next = prev;
+        for (const id of spotlight) next = { ...next, ...followAgent(next, id, 'debug') };
+        return next;
+      });
+    }
+
+    if (templateId) {
+      const result = debugStartUndertaking('@first', templateId, {});
+      if (!result.ok && urlUndertakingAttemptsRef.current === REVIEW_LEVER_MAX_ATTEMPTS) {
+        console.warn(`[?undertaking] gave up after ${REVIEW_LEVER_MAX_ATTEMPTS} attempts: ${result.message}`);
+      }
+      if (!result.ok) return;
+      console.info(`[?undertaking] ${result.message}`);
+    }
+    urlUndertakingDoneRef.current = true;
+  }, [debugStartUndertaking, gameState]);
+
   const urlSpawnDoneRef = useRef(false);
   const urlSpawnAttemptsRef = useRef(0);
   useEffect(() => {
@@ -2328,6 +2458,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     window.__DEBUG._registerEncounterBridge({
       spawnEncounter: (agentId: string, templateId: string, options) =>
         debugSpawnEncounter(agentId, templateId, options),
+      // THR-1300 slice 2 — the undertaking review lever's state-mutating half.
+      startUndertaking: (agentRef, templateId, options) =>
+        debugStartUndertaking(agentRef as string, templateId as string, options as { target?: string; band?: string } | undefined),
       spawnEncounterContext: (templateId, options) => {
         // THR-1305: same scored board as live play. No actorId — this site stages an
         // encounter at a place before any agent is chosen.

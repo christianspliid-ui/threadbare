@@ -1926,6 +1926,39 @@ if (import.meta.env.DEV) {
       return pin ? { ...pin, status: 'pending' as const } : null;
     },
 
+    // ── Undertaking review levers (THR-1300 slice 2) ──────────────────────
+    // The start lever mutates state, so it is delegated to the encounter bridge
+    // GameView registers (the `spawnEncounter` shape); the pin and the force flag
+    // are module state and are reached directly.
+    startUndertaking: (agentRef: string, templateId: string, options?: { target?: string; band?: string }) => {
+      type ReviewStartSummary = {
+        readonly ok: boolean;
+        readonly reason?: 'unknown_template' | 'unknown_actor' | 'no_target' | 'refused';
+        readonly refusals?: readonly string[];
+        readonly projectId?: string;
+        readonly bypassedGates?: readonly string[];
+        readonly belowSpotlight?: boolean;
+        readonly targetOwned?: boolean;
+        readonly message: string;
+      };
+      const start = _encounterBridge?.startUndertaking as ((...a: unknown[]) => ReviewStartSummary) | undefined;
+      return start?.(agentRef, templateId, options)
+        ?? { ok: false, reason: 'unknown_actor' as const, message: 'Encounter bridge not registered' };
+    },
+    pinUndertakingBand: async (templateId: string | null, band?: string) => {
+      const levers = await import('./engine/undertakingReviewLevers');
+      if (templateId === null || band === undefined) { levers.clearUndertakingBandPin(); return false; }
+      return levers.setUndertakingBandPin(templateId, band);
+    },
+    getUndertakingPinVerdict: async () => {
+      const levers = await import('./engine/undertakingReviewLevers');
+      return levers.getUndertakingPinVerdict();
+    },
+    forceMoments: async (on: boolean) => {
+      const levers = await import('./engine/undertakingReviewLevers');
+      levers.setForceMoments(on);
+    },
+
     /**
      * THR-1212 — every `WorldRef` that resolved to nothing, newest last.
      *

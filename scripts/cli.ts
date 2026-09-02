@@ -40,6 +40,10 @@ import * as path from 'path';
 import { initializeGameState, MAP_SIZE_PRESETS } from '../src/engine/gameInit';
 import type { MapSizePreset } from '../src/engine/gameInit';
 import { runTick, resetEventCounter } from '../src/engine/orchestrator';
+import { startUndertakingForReview, setUndertakingBandPin, getUndertakingPinVerdict } from '../src/engine/undertakingReviewLevers';
+import { enqueueUndertakingMoments } from '../src/engine/undertakingMoments';
+import { followAgent as followAgentWrite, isFollowed as isFollowedRead } from '../src/engine/followedAgents';
+import { isAutonomousDecisionActor as isSpotlightActor } from '../src/engine/strategicKindReachability';
 import { prepareEncounterSupportBundle } from '../src/engine/encounterSupportBundle';
 import { buildEncounterBinderContext } from '../src/engine/binding/encounterBinderContext';
 import { createBalancedCosmology } from '../src/engine/cosmology';
@@ -1265,6 +1269,9 @@ function printHelp(): void {
   console.log(`  ${BOLD}kpi --json${RESET}       KPI report as raw JSON`);
   console.log(`  ${BOLD}kpi branching-audit${RESET}  Phase A diagnostic: run ${BRANCHING_AUDIT_SEEDS.length} seeds × ${BRANCHING_AUDIT_TICKS} ticks, write Docs/audits/ report`);
   console.log(`  ${BOLD}spawn encounter${RESET} <agent|@hero> <templateId>  Spawn an encounter on an agent`);
+  console.log(`  ${BOLD}spawn undertaking${RESET} <agent|@first> <templateId> [--target <location|actor>] [--band <band>]  Start an undertaking for review (THR-1300)`);
+  console.log(`  ${BOLD}undertakings${RESET} [agent|@first]  Active undertakings, with the review pin's verdict when one is set`);
+  console.log(`  ${BOLD}follow${RESET} <agent|@first>       Follow a mortal (their moments interrupt)`);
   console.log(`  ${BOLD}spawn attachment${RESET} <agent|@hero> <templateId> Attach an item/trait to an agent`);
   console.log(`  ${BOLD}spawn band${RESET} <faction> [--role raider|defender]  Force a faction to field an NPC band`);
   console.log(`  ${BOLD}aftermath list${RESET} <agent|@hero>   List pending aftermath reactions for an agent`);
@@ -1470,6 +1477,21 @@ function resolveAgentNode(agentQuery: string): GraphNode | null {
     if (!heroNode) return null;
     resolvedQuery = heroNode.id;
   }
+  // `@first` (THR-1300 slice 2): the bonded First. The CLI world has no thread edges,
+  // so it falls back to the first autonomous decision actor and says so — the
+  // noun-before-verb rule: never let a fuzzy alias resolve silently.
+  if (agentQuery === '@first') {
+    const first = state.graph.getEdgesByType('thread').find(e => e.properties.courtPosition === 'the_first');
+    if (first) {
+      resolvedQuery = first.target;
+    } else {
+      const fallback = state.graph.getNodesByType('actor')
+        .find(n => n.properties.actorType === 'individual' && isSpotlightActor(n));
+      if (!fallback) return null;
+      console.log(`${DIM}@first: no bonded First in this world — resolved to the first spotlight mortal, ${fallback.name} (${fallback.id})${RESET}`);
+      resolvedQuery = fallback.id;
+    }
+  }
 
   const agents = state.graph.getNodesByType('actor')
     .filter(node => node.properties.actorType === 'individual' || node.properties.actorType === 'ascendant');
@@ -1636,6 +1658,71 @@ function handleSpawnAttachment(agentQuery: string, templateQuery: string): void 
     : ' (legacy reachBonus)';
 
   console.log(`${GREEN}✓${RESET} Attached ${BOLD}${template.name}${RESET} to ${agent.name ?? agent.id} via ${edgeType}${effectInfo}`);
+}
+
+/** `spawn undertaking <agent|@first> <templateId> [--target x] [--band b]` (THR-1300 slice 2). */
+function handleSpawnUndertaking(agentQuery: string, templateId: string, flags: string[]): void {
+  const match = resolveAgentNode(agentQuery);
+  if (!match) {
+    console.log(`${RED}No agent matching "${agentQuery}"${RESET}`);
+    return;
+  }
+  let target: string | undefined;
+  let band: string | undefined;
+  for (let i = 0; i < flags.length; i += 1) {
+    if (flags[i] === '--target' && flags[i + 1]) { target = flags[++i]; }
+    else if (flags[i] === '--band' && flags[i + 1]) { band = flags[++i]; }
+    else { console.log(`${RED}Unknown flag '${flags[i]}'${RESET}`); return; }
+  }
+  const targetId = target ? (resolveAgentNode(target)?.id ?? state.graph.getNodesByType('location').find(n => n.id === target || n.name.toLowerCase().includes(target.toLowerCase()))?.id) : undefined;
+  if (target && !targetId) { console.log(`${RED}No location or actor matching "${target}"${RESET}`); return; }
+  console.log(`${DIM}resolved: ${match.name} (${match.id})${targetId ? ` → ${targetId}` : ''}${RESET}`);
+  const result = startUndertakingForReview(state, state.graph, match.id, templateId, { targetId, band });
+  if (!result.ok) {
+    console.log(`${RED}Not started (${result.reason}): ${result.message}${RESET}`);
+    if (result.refusals?.length) console.log(`  refusals: ${result.refusals.join(', ')}`);
+    return;
+  }
+  state = {
+    ...state,
+    strategicState: result.strategicState ?? state.strategicState,
+    pendingUndertakingMoments: result.moments?.length
+      ? enqueueUndertakingMoments(state.pendingUndertakingMoments, result.moments, state.tick)
+      : state.pendingUndertakingMoments,
+  };
+  console.log(`${GREEN}✓ ${result.message}${RESET}`);
+  console.log(`  project: ${result.projectId} · bypassed: ${result.bypassedGates?.join(', ')}`);
+  if (result.belowSpotlight) console.log(`  ${YELLOW}note: actor is below the spotlight — checkpoints roll only when the phase visits them${RESET}`);
+  if (result.targetOwned === false) console.log(`  ${YELLOW}note: destroy target has no owner — no victim, no harm${RESET}`);
+  if (band) console.log(`  band pinned: ${band} (read \`undertakings\` after ticking for the verdict)`);
+}
+
+/** `undertakings [agent|@first]` — active undertakings and the pin verdict (THR-1300 slice 2). */
+function handleUndertakings(agentQuery: string): void {
+  const projects = state.strategicState?.projects.filter(p => p.status === 'active') ?? [];
+  let filterId: string | undefined;
+  if (agentQuery) {
+    const match = resolveAgentNode(agentQuery);
+    if (!match) { console.log(`${RED}No agent matching "${agentQuery}"${RESET}`); return; }
+    filterId = match.id;
+  }
+  const rows = filterId ? projects.filter(p => p.actorId === filterId) : projects;
+  console.log(`\n${BOLD}Active undertakings${RESET}: ${rows.length}${filterId ? ` for ${filterId}` : ''}`);
+  for (const p of rows.slice(0, 40)) {
+    const actor = state.graph.getNode(p.actorId);
+    const lc = p.lastCheckpoint;
+    console.log(`  ${p.projectId}  ${CYAN}${p.templateId}${RESET}  ${actor?.name ?? p.actorId}  ${p.progress}/${p.progressRequired}${lc ? `  last: ${lc.band} → ${lc.effect}` : ''}${p.halts ? `  halts ${p.halts}` : ''}${isFollowedRead(state, state.graph, p.actorId) ? '  [followed]' : ''}`);
+  }
+  const verdict = getUndertakingPinVerdict();
+  if (verdict) console.log(`  ${BOLD}pin${RESET} ${verdict.templateId} → ${verdict.requestedBand}: ${verdict.status} — ${verdict.message}`);
+}
+
+/** `follow <agent|@first>` — the single follow writer, from the CLI (THR-1300 slice 2). */
+function handleFollow(agentQuery: string): void {
+  const match = resolveAgentNode(agentQuery);
+  if (!match) { console.log(`${RED}No agent matching "${agentQuery}"${RESET}`); return; }
+  state = { ...state, ...followAgentWrite(state, match.id, 'debug') };
+  console.log(`${GREEN}✓ following ${match.name} (${match.id})${RESET}`);
 }
 
 function handleSpawnEncounter(agentQuery: string, templateId: string): void {
@@ -1920,6 +2007,12 @@ function handleCommand(line: string): boolean {
     case 'essence':
       printEssence();
       break;
+    case 'undertakings':
+      handleUndertakings(arg);
+      break;
+    case 'follow':
+      handleFollow(arg);
+      break;
     case 'encounters':
     case 'actions':
       printEncounters();
@@ -2003,6 +2096,8 @@ function handleCommand(line: string): boolean {
       const subParts = arg.split(/\s+/);
       if (subParts[0] === 'encounter' && subParts.length >= 3) {
         handleSpawnEncounter(subParts[1], subParts.slice(2).join(' '));
+      } else if (subParts[0] === 'undertaking' && subParts.length >= 3) {
+        handleSpawnUndertaking(subParts[1], subParts[2], subParts.slice(3));
       } else if (subParts[0] === 'attachment' && subParts.length >= 3) {
         handleSpawnAttachment(subParts[1], subParts.slice(2).join(' '));
       } else if (subParts[0] === 'band' && subParts.length >= 2) {

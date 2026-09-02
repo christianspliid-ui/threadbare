@@ -1946,6 +1946,14 @@ export interface StrategicActionStartedTrace extends TraceBase {
   targetNodeId?: string;
   targetHex?: { col: number; row: number };
   executionMode: StrategicExecutionMode;
+  /**
+   * Who started it (THR-1300 slice 2). Absent or `'board'` is an organic start; a
+   * `'review_lever'` start bypassed the gates in `bypassedGates` and is excluded from
+   * the census, so a review session cannot masquerade as throughput.
+   */
+  startedBy?: 'board' | 'review_lever';
+  /** The generation gates a review start skipped — always the closed list, named. */
+  bypassedGates?: readonly string[];
 }
 
 /** Trace: multi-tick strategic project progress update */
@@ -2092,6 +2100,8 @@ export interface UndertakingCheckpointTrace extends TraceBase {
   difficulty?: number;
   /** Inspire/sabotage riders and escalation stakes, folded into one additive term */
   modifiers?: number;
+  /** Set when a review pin substituted this band after an honest roll (THR-1300 slice 2). */
+  bandPinned?: StepOutcome;
   halts: number;
   atCost: boolean;
   progress: number;

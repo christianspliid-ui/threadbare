@@ -95,6 +95,34 @@ export interface StrategicCandidateGenerationResult {
  * @param tick - Current game tick
  * @param rng - Seeded PRNG for deterministic tie-breaking
  */
+/**
+ * The generation gates a review start may skip (THR-1300 slice 2) — a closed list.
+ * `ambition_profile` is satisfied by the caller passing the ambitions whose profiles
+ * name the template; `active_cap` and `motive_gate` are skipped inside the walk.
+ */
+export type ReviewBypassableGate = 'ambition_profile' | 'active_cap' | 'motive_gate';
+
+/**
+ * A review start's narrowing of the ordinary walk (THR-1300 slice 2). The walk is
+ * the same — same helpers, same refusals, same candidate shape — restricted to one
+ * template, with the named gates skipped and, for a destroy, the targets ordered so
+ * one with an owner comes first: a destroy with no victim is the vacuous proof the
+ * live-proof stage must not launder.
+ */
+export interface ReviewCandidateOptions {
+  readonly templateId: string;
+  readonly targetId?: string;
+  readonly bypass: ReadonlySet<ReviewBypassableGate>;
+  readonly preferOwnedTarget: boolean;
+}
+
+/** Ambition template ids whose strategic profile names `templateId` — the third registration, read back. */
+export function profiledAmbitionIdsFor(templateId: string): string[] {
+  return [...AMBITION_TEMPLATES, ...GRIEVANCE_AMBITION_TEMPLATES]
+    .filter(a => a.strategicProfile?.templateIds.includes(templateId))
+    .map(a => a.id);
+}
+
 export function generateStrategicCandidates(
   graph: WorldGraph,
   actorId: string,
@@ -102,6 +130,7 @@ export function generateStrategicCandidates(
   strategicState: StrategicRuntimeState | undefined,
   tick: number,
   rng: () => number,
+  review?: ReviewCandidateOptions,
 ): StrategicCandidateGenerationResult {
   const candidates: StrategicActionCandidate[] = [];
   const rejections: StrategicCandidateRejection[] = [];
@@ -154,7 +183,8 @@ export function generateStrategicCandidates(
       // mortal at the cap with a valid target is refused for the cap, not for the
       // target. Same shape as `no_eligible_apprentice` — a decision nobody can act
       // on is not a decision (THR-1292 §3).
-      if (activeCount >= UNDERTAKING_MAX_ACTIVE_PER_ACTOR) {
+      if (review && templateId !== review.templateId) continue;
+      if (activeCount >= UNDERTAKING_MAX_ACTIVE_PER_ACTOR && !review?.bypass.has('active_cap')) {
         rejections.push({ templateId, reason: `active_cap:${activeCount}` });
         continue;
       }
@@ -188,7 +218,14 @@ export function generateStrategicCandidates(
       }
 
       // Find valid targets
-      const targets = findValidTargets(graph, actorId, template, locationId, actorHex);
+      let targets = findValidTargets(graph, actorId, template, locationId, actorHex);
+      if (review?.targetId) targets = targets.filter(t => t.id === review.targetId);
+      if (review?.preferOwnedTarget) {
+        // Owned first, stable otherwise: the motive gate already knows how to count
+        // owners, so the ordering reads the same answer it would refuse on.
+        const owned = new Map(targets.map(t => [t.id, evaluateMotiveGate(graph, actorId, t.id, template).ownerCount > 0]));
+        targets = [...targets].sort((a, b) => Number(owned.get(b.id)) - Number(owned.get(a.id)));
+      }
       if (targets.length === 0) {
         rejections.push({ templateId, reason: 'no_valid_targets' });
         continue;
@@ -246,7 +283,7 @@ export function generateStrategicCandidates(
         // whoever does" are different worlds and want different fixes. Both share the
         // `no_motive` prefix so a sweep can match either.
         const motiveGate = evaluateMotiveGate(graph, actorId, target.id, template);
-        if (!motiveGate.allowed) {
+        if (!motiveGate.allowed && !review?.bypass.has('motive_gate')) {
           const reason = motiveGate.ownerCount === 0
             ? `no_motive_unowned:${target.id}`
             : `no_motive:${target.id}`;

@@ -815,10 +815,10 @@ exit
 - **Intent:** Faction ambitions drive faction action and render on the faction sheet.
 - **Producer → Consumer:** Ambitions & Undertakings → Factions & Succession
 - **Module:** `src/engine/factionAmbitions.ts`
-- **Production hits:** 10 total — 1 write, 3 read, 6 unclassified
+- **Production hits:** 11 total — 1 write, 3 read, 7 unclassified
 - **Write sites:** `src/engine/phases/factionAmbitions.ts`
 - **Read sites:** `src/engine/factionGovernanceVerbs.ts`, `src/engine/phaseControlEffects.ts`, `src/engine/phases/index.ts`
-- **Other hits:** `src/components/Game/ArmySheet.tsx`, `src/data/faction-action-constants.ts`, `src/engine/ambitionShape.ts`, `src/engine/effects/conditionProxyEvents.ts`, `src/engine/phaseMovement.ts` +1 more
+- **Other hits:** `src/components/Game/ArmySheet.tsx`, `src/data/faction-action-constants.ts`, `src/engine/ambitionShape.ts`, `src/engine/effects/conditionProxyEvents.ts`, `src/engine/phaseMovement.ts` +2 more
 - **Verdict:** Verified 2026-07-23: FactionSheet.activeAmbition renders; faction phases consume. Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified)
 
 ### `grievance-reaches-the-mortal-sheet` — 🟢 LIVE
@@ -1045,10 +1045,10 @@ exit
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 256 total — 1 write, 1 read, 254 unclassified
+- **Production hits:** 257 total — 1 write, 1 read, 255 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts` +249 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts` +250 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `relocation-intent-steers-agent-movement` — 🔵 UNVERIFIED-OK
@@ -1181,10 +1181,10 @@ exit
 - **Producer → Consumer:** Strategic Projects & Control → Encounters & Dilemmas
 - **UL terms:** *Outcome Band*
 - **Module:** `src/engine/stepResolutionCore.ts`
-- **Production hits:** 6 total — 1 write, 2 read, 3 unclassified
+- **Production hits:** 7 total — 1 write, 2 read, 4 unclassified
 - **Write sites:** `src/engine/stepResolutionCore.ts`
 - **Read sites:** `src/engine/undertakingCheckpoints.ts`, `src/engine/unifiedActionResolution.ts`
-- **Other hits:** `src/engine/decisionBoard.ts`, `src/engine/encounter.ts`, `src/engine/meetingEncounter.ts`
+- **Other hits:** `src/engine/decisionBoard.ts`, `src/engine/encounter.ts`, `src/engine/meetingEncounter.ts`, `src/engine/undertakingReviewLevers.ts`
 - **Verdict:** Verified 2026-08-27: stepResolutionCore.contract.test.ts pins the permitted direct-caller set and asserts the encounter entry point and a direct core call agree on band/roll/probability; the second caller is exercised in the live simulation by undertakingCheckpointLiveness.test.ts (630 rolled checkpoints across all six bands on a 150-tick seed-42 run).
 
 ### `sunder-window-amplifies-company-decay` — 🟢 LIVE
@@ -1252,10 +1252,10 @@ exit
 - **Intent:** What happens to an agent’s undertaking reaches the player — the setback, the doubling-down, the abandonment — instead of progress silently accruing until a thing appears in the world with no story attached to it.
 - **Producer → Consumer:** Strategic Projects & Control → Attention, Chronicle & Narrative
 - **Module:** `src/engine/undertakingCheckpoints.ts`
-- **Production hits:** 16 total — 3 write, 2 read, 11 unclassified
+- **Production hits:** 17 total — 3 write, 2 read, 12 unclassified
 - **Write sites:** `src/engine/strategicActionLifecycle.ts`, `src/engine/undertakingCheckpoints.ts`, `src/engine/undertakingMoments.ts`
 - **Read sites:** `src/components/Game/GameView.tsx`, `src/components/Game/MomentCard.tsx`
-- **Other hits:** `src/components/Game/FollowToggle.tsx`, `src/components/Game/momentBadgeModel.ts`, `src/data/strategic-action-constants.ts`, `src/engine/agentArc.ts`, `src/engine/followedAgents.ts` +6 more
+- **Other hits:** `src/components/Game/FollowToggle.tsx`, `src/components/Game/momentBadgeModel.ts`, `src/data/strategic-action-constants.ts`, `src/engine/agentArc.ts`, `src/engine/followedAgents.ts` +7 more
 - **Verdict:** Verified 2026-09-02: THR-1299 slice 3. `MomentCard.tsx` renders the oldest unacknowledged interrupt-tier `UndertakingMomentRecord`; GameView fills its `pendingMoment` slot only while no other interrupt is open and renders the card only while that stays true, so collation (encounter first, never two modals) holds by construction rather than by a priority table. The card is in the interrupt registry (`interruptModalOpen`, `getDebugOpenModals` → `MomentCard`) so it auto-pauses with its cause named on the face. Acknowledge routes through `acknowledgeUndertakingMoment`, the queue's single writer, and traces `acknowledged`; the pop traces `opened`. Non-vacuous by `src/components/Game/__tests__/GameView-momentCard.test.tsx`, which renders the real GameView, follows every mortal with a live undertaking through the debug lever, drives real ticks through the tick bridge until an interrupt-tier record exists, and asserts the card is in `getDebugOpenModals`, that acknowledging it flips the record through the live state provider, and that the `opened` / `acknowledged` traces fired; plus `momentCardModel.test.ts` (chips are state-backed per class, the named-loss complication, the divine-hand chip, the forward drive link off a real outcome node, the action slot gated on a live project) and `MomentCard.test.tsx` (every class renders without numerals, acknowledge, the two-beat Inspire arm, an unaffordable verb fails inline). Browser proof at 1920×1080 on `?view=game&seeded&size=medium` via `__DEBUG.followAgent` + `__DEBUG.tick`, recorded on the closing PR.
 
 ### `undertaking-creation-effects` — 🔵 UNVERIFIED-OK
