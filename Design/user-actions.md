@@ -1,8 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-01 19:06 local (17:06 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
-
-> Nothing on this list moved between 2026-08-30 09:03 and 2026-09-01 19:24 — the machine was asleep and every lane was stopped. Ages below have advanced; the asks have not changed.
+**Last updated:** 2026-09-02 07:42 local (05:42 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -15,15 +13,15 @@
 
 **Then approve [the brief](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/retrofit-batch-2-brief.md) — the camp seven:** shrine offering, sharpening blades, warding the camp, a prayer, rest, tending wounds, scouting. No typed consequences at all; the last encounters below standard. `shrine_offering` is #1 of [your slice checkpoint](https://linear.app/threadbare/issue/THR-1220), which cannot invite you until they are rewritten. The bar, live: [The Beast in the Granary](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.hunt.the_beast_in_the_granary). The brief proposes **seven** rather than six because the camp set is one family in one file.
 
-**Three ways to close it:** *"batch 2, seven is fine"* · *"keep it six"* · *"same rule — judge batch 2 on one first."* It is the only High-priority content work waiting, and with an empty board it is the fastest way to put real game work in front of builders (ask 2).
+**Three ways to close it:** *"batch 2, seven is fine"* · *"keep it six"* · *"same rule — judge batch 2 on one first."* It is the only High-priority content work waiting.
 
-### 2. Design hours — the shelf has run dry — [THR-1002](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card) + [THR-790](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)
+### 2. Design hours — the shelf is jammed — [THR-1002](https://linear.app/threadbare/issue/THR-1002/unify-the-card-grammar-action-cards-adopt-the-encounter-card) + [THR-790](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)
 
-**The board is empty and has been since Saturday.** It emptied by succeeding — the last built ticket's pull request merged Sunday morning — and nothing replaced it. **New product work has stopped arriving**; forty-four items sit in Todo and nearly every one needs a decision or a plan doc before code can be written. The executor writes up problems it finds while building — that source produces engine fixes and clean-ups, never new designed features.
+**The block has two names on it** *(standing — 14 and 18 days)*: [unify the card grammar](https://linear.app/threadbare/issue/THR-1002) (your 6 August note, nobody assigned) and [traits wave 2](https://linear.app/threadbare/issue/THR-790) (assigned to you). The orchestrator holds one design slot and will not walk either backwards out of the column on its own. **Sit one, or say *"drop them back to the queue"***. Neither asks what the game should *be*; both need an attended session, not a decision.
 
-**The block has two names on it** *(orchestrator lane, standing — 13 and 17 days)*: [unify the card grammar](https://linear.app/threadbare/issue/THR-1002) (your 6 August note, nobody assigned) and [traits wave 2](https://linear.app/threadbare/issue/THR-790) (assigned to you). That lane holds one design slot and will not walk either backwards out of the column on its own. **Sit one, or say *"drop them back to the queue"*** — four plan-doc sessions are unblocked behind them. Neither asks what the game should *be*; both need an attended session, not a decision.
+**New product work is still not arriving.** The build shelf holds two items, both written by lanes reporting on their own work ([THR-1377](https://linear.app/threadbare/issue/THR-1377/35-of-64-undertaking-templates-author-no-motivations-the-content-pass), [THR-1378](https://linear.app/threadbare/issue/THR-1378/rulebook-review-2026-09-10-findings)). Forty-odd items sit in Todo and nearly every one needs a decision or a plan doc before code can be written.
 
-**Unblocked and waiting:** the three carve-up docs ([reactive loop](https://linear.app/threadbare/issue/THR-1298), [calling & surfaces](https://linear.app/threadbare/issue/THR-1299), then [undertaking factory](https://linear.app/threadbare/issue/THR-1300)); [your one-button snapshot](https://linear.app/threadbare/issue/THR-1134) (High, your own 16 August request, untouched 16 days); [a beast that can be a real character](https://linear.app/threadbare/issue/THR-1274); [nations and named areas](https://linear.app/threadbare/issue/THR-1155).
+**Unblocked and waiting:** [the reactive loop](https://linear.app/threadbare/issue/THR-1298/the-reactive-loop-proactive-agent-actions-plan-doc-46) *(designed overnight 2026-09-01; its plan doc is written but uncommitted — an agent's job to land, not yours)*, then [calling & surfaces](https://linear.app/threadbare/issue/THR-1299) and [undertaking factory](https://linear.app/threadbare/issue/THR-1300); [your one-button snapshot](https://linear.app/threadbare/issue/THR-1134) (High, your own 16 August request, untouched 17 days); [a beast that can be a real character](https://linear.app/threadbare/issue/THR-1274); [nations and named areas](https://linear.app/threadbare/issue/THR-1155).
 
 ### 3. A word players see, settled and now shipped — veto open — [THR-1314](https://linear.app/threadbare/issue/THR-1314/ul-proposal-work-holding-kind-row-christening-failure-name-register)
 
@@ -88,7 +86,8 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
-- **The engine was reading silence as refusal** — [pull request #1758](https://github.com/christianspliid-ui/threadbare/pull/1758) merged 2026-08-30. An undertaking that names no motivations scored identically to one an agent actively wants nothing to do with, pinning 35 of 64 templates; [THR-1349](https://linear.app/threadbare/issue/THR-1349) stays open for the rest, and the content follow-on is [THR-1377](https://linear.app/threadbare/issue/THR-1377).
+- **The variety term the live decision board was missing** — [pull request #1760](https://github.com/christianspliid-ui/threadbare/pull/1760) merged 2026-09-01, and [THR-1349](https://linear.app/threadbare/issue/THR-1349)'s stale claim on your name cleared with it. The ticket stays open for the remaining cutover checks.
+- **The engine was reading silence as refusal** — [pull request #1758](https://github.com/christianspliid-ui/threadbare/pull/1758) merged 2026-08-30. An undertaking that names no motivations scored identically to one an agent actively wants nothing to do with, pinning 35 of 64 templates; the content follow-on is [THR-1377](https://linear.app/threadbare/issue/THR-1377).
 - **The last two things in build landed and emptied the board** — [THR-1328](https://linear.app/threadbare/issue/THR-1328) (three tests failing at random rather than on a real fault) and [THR-1376](https://linear.app/threadbare/issue/THR-1376) (six glossary terms defined but missing from the index). Delivery machinery and docs only — but between them they are why ask 2 became urgent.
 - **The encounter writing brief stopped teaching a look you retired** — [THR-1250](https://linear.app/threadbare/issue/THR-1250) merged 2026-08-30. Writers were being pointed at the old prose mode before they wrote a line. Directly upstream of the camp seven in ask 1.
 
