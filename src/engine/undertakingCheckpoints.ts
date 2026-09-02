@@ -67,6 +67,7 @@ import { getStrategicTemplate } from './strategicActionCandidates';
 import { ambitionNodeIdCandidates } from './ambitionShape';
 import { emitTrace } from './traceBuffer';
 import { isFollowed } from './followedAgents';
+import { isForceMomentsOn, recordUndertakingPinLanding, undertakingBandPinFor } from './undertakingReviewLevers';
 import {
   UNDERTAKING_CHECKPOINT_INTERVAL_TICKS,
   UNDERTAKING_PROGRESS_PER_ADVANCE,
@@ -189,7 +190,11 @@ export function resolveMomentPresentation(
 
   switch (momentClass) {
     case 'started':
-      return 'badge';
+      // Ruling 2.1: a founding is badge-tier. `?forcemoments` (THR-1300 slice 2)
+      // promotes it to an interrupt for the flag's lifetime only — what
+      // `?forceencounters` does for encounters, this does for moments: every
+      // followed mortal's undertaking interrupts; unfollowed mortals stay invisible.
+      return isForceMomentsOn() ? 'interrupt' : 'badge';
     case 'at_cost':
       return project.atCostMomentFired ? 'badge' : 'interrupt';
     case 'completion':
@@ -509,6 +514,12 @@ export function resolveUndertakingCheckpoint(
     : undefined;
 
   const rng = checkpointRng(state.seed, tick, project.projectId);
+  // The review pin (THR-1300 slice 2): doc 1's `bandOverride` seam, read at the one
+  // place this module calls the resolver. The roll, floors and riders all run and
+  // trace for real; only the band is substituted, so every downstream consequence —
+  // creation effects, halts, forks, moments, the failure residue — fires as a real
+  // resolution's would. Inert unless a URL flag or `__DEBUG` armed it.
+  const bandPinned = undertakingBandPinFor(project.templateId);
   const core = resolveStepCore(
     {
       actorId: project.actorId,
@@ -521,11 +532,13 @@ export function resolveUndertakingCheckpoint(
       quintessencePolicy: 'none',
       tick,
       sourceLabel: 'undertaking',
+      bandOverride: bandPinned,
     },
     rng,
   );
 
   const band = core.outcome;
+  if (bandPinned) recordUndertakingPinLanding(template, band);
   const effect = CHECKPOINT_EFFECT_BY_BAND[band];
 
   // ─── Apply the effect ─────────────────────────────────────────────
@@ -589,7 +602,7 @@ export function resolveUndertakingCheckpoint(
     project: advanced, tick, reach, checkpointIndex,
     band, effect, roll: core.roll, probability: core.probability,
     capability, difficulty, modifiers, atCost,
-    presentation, halts: nextHalts,
+    presentation, halts: nextHalts, bandPinned,
   });
 
   const moments: UndertakingMomentRecord[] = [];
@@ -866,6 +879,8 @@ interface CheckpointTraceArgs {
   deferred?: 'actor_absent' | 'actor_busy' | 'awaiting_mint';
   /** Terminal, not deferred: the actor is gone and no retry follows. */
   ended?: 'actor_lost';
+  /** The review pin's band, when one substituted the roll (THR-1300 slice 2). */
+  bandPinned?: StepOutcome;
 }
 
 function emitCheckpointTrace(args: CheckpointTraceArgs): void {
@@ -891,6 +906,7 @@ function emitCheckpointTrace(args: CheckpointTraceArgs): void {
     progressRequired: project.progressRequired,
     deferred: args.deferred,
     ended: args.ended,
+    bandPinned: args.bandPinned,
     presentation,
     summary: args.deferred
       ? `Checkpoint ${checkpointIndex} on ${project.templateId} deferred (${args.deferred})`

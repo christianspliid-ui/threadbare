@@ -4,6 +4,7 @@ import type { BandRole } from './groups/groupQueries';
 
 export type ParsedDebugCommand =
   | { kind: 'spawn-encounter'; agentQuery: string; templateId: string; courtPosition?: CourtPosition }
+  | { kind: 'spawn-undertaking'; agentQuery: string; templateId: string; target?: string; band?: string }
   | { kind: 'spawn-encounter-context'; templateId: string; agentQuery?: string; locationQuery?: string; col?: number; row?: number; moveAgent?: boolean }
   | { kind: 'spawn-attachment'; agentQuery: string; templateQuery: string; tick?: number }
   | { kind: 'spawn-location'; subtype: string; col: number; row: number; name?: string }
@@ -55,6 +56,23 @@ export function parseDebugCommand(input: string): ParsedDebugCommand | { error: 
     }
 
     return { kind: 'spawn-encounter', agentQuery, templateId, courtPosition };
+  }
+
+  // THR-1300 slice 2 — the `?undertaking=` lever from the in-game CLI.
+  if (head === 'spawn' && second === 'undertaking') {
+    if (rest.length < 2) {
+      return { error: 'Usage: spawn undertaking <agent|@first> <templateId> [--target <location|actor>] [--band <band>]' };
+    }
+    const [agentQuery, templateId, ...flags] = rest;
+    let target: string | undefined;
+    let band: string | undefined;
+    for (let i = 0; i < flags.length; i += 1) {
+      const flag = flags[i];
+      if (flag === '--target' && flags[i + 1] !== undefined) { target = flags[i + 1]; i += 1; }
+      else if (flag === '--band' && flags[i + 1] !== undefined) { band = flags[i + 1]; i += 1; }
+      else return { error: `Unknown flag '${flag}'.` };
+    }
+    return { kind: 'spawn-undertaking', agentQuery, templateId, target, band };
   }
 
   if (head === 'spawn' && second === 'encounter-context') {

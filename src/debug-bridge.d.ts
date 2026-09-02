@@ -1316,6 +1316,55 @@ export interface DebugBridge {
     }
   >;
 
+  /** THR-1300 slice 2 — start an undertaking on an agent for review, through the board's
+   *  own candidate helpers and start path. Bypasses exactly three generation gates
+   *  (`ambition_profile`, `active_cap`, `motive_gate`), each named on the
+   *  `strategic_action_started` trace as `bypassedGates` with `startedBy: 'review_lever'`,
+   *  so the census excludes it. Every other refusal (reach floor, apprentice, control,
+   *  remote anchor, duplicate window) still applies and comes back in `refusals`.
+   *
+   *  A destroy prefers a target with an owner; `targetOwned: false` means the start is a
+   *  raze of nothing. `belowSpotlight: true` means the actor is not an autonomous decision
+   *  actor — the undertaking exists but its checkpoints roll only when the phase visits
+   *  them, and a live-proof claim on such a start is a failed claim. `band` arms
+   *  `pinUndertakingBand` for the template in the same call. `@first` resolves to the
+   *  bonded First. Returns `{ ok: false, reason }` rather than throwing. */
+  startUndertaking: (agentRef: string, templateId: string, options?: { target?: string; band?: string }) => {
+    readonly ok: boolean;
+    readonly reason?: 'unknown_template' | 'unknown_actor' | 'no_target' | 'refused';
+    readonly refusals?: readonly string[];
+    readonly projectId?: string;
+    readonly bypassedGates?: readonly string[];
+    readonly belowSpotlight?: boolean;
+    readonly targetOwned?: boolean;
+    readonly message: string;
+  };
+
+  /** THR-1300 slice 2 — pin every checkpoint of `templateId`'s projects to `band` while
+   *  set (the `?outcome=` analog for undertakings). Roll, floors and riders still run and
+   *  trace; only the band is substituted, so creation effects, halts, forks and moments
+   *  fire as a real resolution's would. Pass `null` to clear. Returns whether it armed. */
+  pinUndertakingBand: (templateId: string | null, band?: string) => Promise<boolean>;
+
+  /** THR-1300 slice 2 — what the pin has done. `not_reached` until a checkpoint of the
+   *  template resolves; `band_landed` when it landed on a band the template authors
+   *  `creationEffects` for; `no_effect_on_band` when it landed but the base checkpoint
+   *  texture is on screen — do not mistake that for authored content. `null` when no pin.
+   *  **Async** (`await` it) — the levers module is pulled in on call. */
+  getUndertakingPinVerdict: () => Promise<{
+    readonly templateId: string;
+    readonly requestedBand: string;
+    readonly status: 'band_landed' | 'no_effect_on_band' | 'not_reached';
+    readonly landed: number;
+    readonly message: string;
+  } | null>;
+
+  /** THR-1300 slice 2 — the `?forceencounters` analog for moments: while on, every
+   *  followed mortal's `started` moment interrupts instead of badging. Follow scope is
+   *  unchanged — an unfollowed mortal stays invisible. Headless twin of `?forcemoments`.
+   *  Async — `await` it before the next `tick(n)`. */
+  forceMoments: (on: boolean) => Promise<void>;
+
   /** THR-1212 — every `WorldRef` that resolved to nothing, newest last.
    *
    *  A reference that fails to resolve is *supposed* to fall soft: the surface draws

@@ -120,6 +120,22 @@ export function CommandTab({ retinueAgents = [], followAgentId }: CommandTabProp
       ].filter(Boolean).join('\n');
     }
 
+    if (parsed.kind === 'spawn-undertaking') {
+      const result = window.__DEBUG.startUndertaking(parsed.agentQuery, parsed.templateId, {
+        target: parsed.target,
+        band: parsed.band,
+      });
+      return [
+        result.ok ? 'Undertaking started for review.' : `Undertaking not started (${result.reason}).`,
+        result.message,
+        result.projectId ? `project: ${result.projectId}` : null,
+        result.bypassedGates?.length ? `bypassed: ${result.bypassedGates.join(', ')}` : null,
+        result.belowSpotlight ? 'note: actor is below the spotlight' : null,
+        result.targetOwned === false ? 'note: destroy target has no owner' : null,
+        result.refusals?.length ? `refusals: ${result.refusals.join(', ')}` : null,
+      ].filter(Boolean).join('\n');
+    }
+
     if (parsed.kind === 'spawn-encounter-context') {
       const result = window.__DEBUG.spawnEncounterContext(parsed.templateId, {
         agentQuery: parsed.agentQuery,
