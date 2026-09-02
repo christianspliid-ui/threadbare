@@ -1,3 +1,4 @@
+// @vitest-lane heavy — builds a world and drives it 60 ticks (THR-1384)
 /**
  * Sublocation category art (THR-638, sublocation batch).
  *

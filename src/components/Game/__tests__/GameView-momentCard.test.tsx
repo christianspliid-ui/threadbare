@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+// @vitest-lane heavy — a real world driven up to 96 ticks through the debug bridge; 10–84 s on CI run 33653898091 (THR-1384)
 //
 // THR-1299 slice 3 — the moment queue has a consumer, and it is wired.
 //

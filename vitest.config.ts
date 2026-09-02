@@ -11,7 +11,7 @@ const rootDir = path.dirname(fileURLToPath(import.meta.url));
  * `@vitest-environment` docblock and its use of `vi.mock`.
  * See `scripts/vitest-test-partition.ts` for why this is not a path convention.
  */
-const { dom, isolatedNode } = partitionTestFiles(rootDir);
+const { dom, isolatedNode, heavy } = partitionTestFiles(rootDir);
 
 /** Applied to every project — paths that are never test sources. */
 const sharedExclude = [
@@ -30,14 +30,17 @@ const baseTest = {
 } as const;
 
 /**
- * Three projects, one `vitest run` (THR-940). `npm test` still runs the whole
- * suite as a single command — CI's `Test · Typecheck · Build` job and the
- * pre-commit gate both depend on that, and the job name is a required status
- * check that must not move.
+ * Four projects, two commands (THR-940, THR-1384). `npm test` runs the three
+ * fast projects — CI's `Test · Typecheck · Build` job and the pre-commit gate
+ * both depend on that command, and the job name is a required status check
+ * that must not move. `npm run test:heavy` runs the fourth, in the non-required
+ * `Heavy simulation tests` workflow after a merge, nightly, and on dispatch;
+ * `npm run test:all` runs everything, which is what `npm test` used to mean.
  *
- * Only the first project drops isolation. The other two exist precisely because
- * they cannot: jsdom tests leak DOM and timer state, and `vi.mock` is defeated
- * by a shared module registry.
+ * Only the first project drops isolation. The others exist precisely because
+ * they cannot: jsdom tests leak DOM and timer state, `vi.mock` is defeated by
+ * a shared module registry, and the heavy world-simulation files carry
+ * module-scope engine state across a run.
  */
 export default defineConfig({
   test: {
@@ -52,7 +55,7 @@ export default defineConfig({
           // module graph is imported once per worker instead of once per file.
           pool: 'threads',
           isolate: false,
-          exclude: [...sharedExclude, ...dom, ...isolatedNode],
+          exclude: [...sharedExclude, ...dom, ...isolatedNode, ...heavy],
         },
       },
       {
@@ -76,6 +79,21 @@ export default defineConfig({
           // Isolation left at the default `true`: component tests mutate
           // document, timers, and module-level React state.
           include: dom,
+          exclude: sharedExclude,
+        },
+      },
+      {
+        plugins: [react()],
+        test: {
+          ...baseTest,
+          name: 'heavy',
+          // The project default; a heavy jsdom file's own `@vitest-environment`
+          // docblock overrides it per file, which is why the partition routes
+          // the tag ahead of the environment.
+          environment: 'node',
+          // Isolated by default: these files run hundreds of ticks against
+          // module-scope engine state, and two of them are THR-949 pins.
+          include: heavy,
           exclude: sharedExclude,
         },
       },

@@ -1,3 +1,4 @@
+// @vitest-lane heavy — hand-built world driven 100 ticks per case; 10–84 s on CI run 33653898091 (THR-1384)
 /**
  * Pipeline Liveness Contract Test
  *

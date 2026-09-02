@@ -1,3 +1,4 @@
+// @vitest-lane heavy — builds a medium world and drives it 150 ticks (225 s on CI run 33653898091) (THR-1384)
 /**
  * THR-1177 — edge integrity at the two generic writer chokepoints.
  *

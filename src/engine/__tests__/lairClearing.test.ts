@@ -1,3 +1,4 @@
+// @vitest-lane heavy — builds a medium world and drives it 150 ticks (240 s on CI run 33653898091) (THR-1384)
 /**
  * Lair clearing — end-to-end on a generated world (THR-1319).
  *

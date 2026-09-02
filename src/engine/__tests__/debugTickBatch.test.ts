@@ -1,3 +1,4 @@
+// @vitest-lane heavy — the clamp case drives a world 200 ticks (376 s on CI run 33653898091) (THR-1384)
 /**
  * Synchronous tick batch tests (THR-689).
  *

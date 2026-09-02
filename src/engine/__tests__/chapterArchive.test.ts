@@ -1,3 +1,4 @@
+// @vitest-lane heavy — builds a world and drives it 26 ticks; 10–84 s on CI run 33653898091 (THR-1384)
 /**
  * Chapter Archive tests (THR-603).
  *

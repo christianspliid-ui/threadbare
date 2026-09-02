@@ -1,3 +1,4 @@
+// @vitest-lane heavy — builds a world and drives it 60 ticks (THR-1384)
 /**
  * Possession subcategory vocabulary (THR-857).
  *
