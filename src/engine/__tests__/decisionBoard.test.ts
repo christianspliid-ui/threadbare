@@ -262,9 +262,10 @@ describe('computeBoardDesireMultiplier', () => {
   });
 
   it('responds to the ambition boost with no authored motivations at all', () => {
-    // This is the v1 state of every shipped template, so if it were flat the
-    // desire term would be dead on arrival for undertakings — live-looking on the
-    // trace, contributing nothing to the ranking.
+    // This was the v1 state of 35 of 64 shipped templates until THR-1377 authored
+    // them; the branch is retained for the templates the *type* still admits. If it
+    // were flat the desire term would be dead on arrival for any of them —
+    // live-looking on the trace, contributing nothing to the ranking.
     const withAmbition = computeBoardDesireMultiplier([], profileOf(), 0.5);
     const without = computeBoardDesireMultiplier([], profileOf(), 0);
     expect(withAmbition).toBeGreaterThan(without);

@@ -24,6 +24,7 @@ export const BUILDER_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     ],
     targetRule: { type: 'location_subtype', subtypes: ['town', 'city', 'capital', 'hamlet', 'camp'] },
     resourceHint: { reachFloor: { eye: 0.2 } },
+    motivations: ['revelation_discretion', 'preservation_transformation'],
     mutationHint: { type: 'record_intelligence', intelligenceType: 'construction_survey' },
   },
 
@@ -44,6 +45,7 @@ export const BUILDER_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     ],
     targetRule: { type: 'location_subtype', subtypes: ['town', 'city', 'capital', 'castle', 'fort'] },
     resourceHint: { reachFloor: { stone: 0.3 } },
+    motivations: ['preservation_transformation', 'revelation_discretion'],
     mutationHint: { type: 'record_intelligence', intelligenceType: 'building_plans' },
   },
 
@@ -66,6 +68,7 @@ export const BUILDER_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     catalystEncounterIds: ['encounter_labor_dispute', 'encounter_building_collapse'],
     targetRule: { type: 'location_subtype', subtypes: ['town', 'city', 'capital'] },
     resourceHint: { wealthCost: 60, reachFloor: { stone: 0.4, gold: 0.2 } },
+    motivations: ['preservation_transformation', 'asceticism_extravagance'],
     mutationHint: { type: 'create_sublocation', sublocationTypeId: 'workshop', nameTemplate: "{actor}'s Workshop at {location}" },
   },
 
@@ -88,6 +91,7 @@ export const BUILDER_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     catalystEncounterIds: ['encounter_siege_preparation'],
     targetRule: { type: 'location_subtype', subtypes: ['town', 'city', 'capital', 'castle', 'fort'] },
     resourceHint: { wealthCost: 50, reachFloor: { stone: 0.3, iron: 0.2 } },
+    motivations: ['preservation_transformation', 'mercy_ruthlessness'],
     mutationHint: { type: 'modify_location_property', property: 'defense', delta: 15, clamp: [0, 100] },
   },
 
@@ -109,6 +113,7 @@ export const BUILDER_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     ],
     targetRule: { type: 'location_subtype', subtypes: ['town', 'city', 'capital', 'hamlet'] },
     resourceHint: { wealthCost: 40, reachFloor: { stone: 0.3 } },
+    motivations: ['preservation_transformation', 'loyalty_ambition'],
     mutationHint: { type: 'create_sublocation', sublocationTypeId: 'granary', nameTemplate: "Granary at {location}" },
   },
 
@@ -129,6 +134,7 @@ export const BUILDER_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     ],
     targetRule: { type: 'location_subtype', subtypes: ['town', 'city', 'capital'] },
     resourceHint: { reachFloor: { heart: 0.3 } },
+    motivations: ['loyalty_ambition', 'preservation_transformation'],
     mutationHint: { type: 'no_mutation' },
   },
 

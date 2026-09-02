@@ -24,6 +24,7 @@ export const ZEALOT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     ],
     targetRule: { type: 'location_subtype', subtypes: ['town', 'city', 'capital', 'hamlet', 'shrine', 'temple'] },
     resourceHint: { reachFloor: { star: 0.2 } },
+    motivations: ['sacrifice_survival', 'revelation_discretion'],
     mutationHint: { type: 'record_intelligence', intelligenceType: 'faith_survey' },
   },
 
@@ -44,6 +45,7 @@ export const ZEALOT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     ],
     targetRule: { type: 'location_subtype', subtypes: ['town', 'city', 'capital', 'hamlet'] },
     resourceHint: { reachFloor: { star: 0.3, heart: 0.2 } },
+    motivations: ['sacrifice_survival', 'loyalty_ambition'],
     mutationHint: { type: 'modify_location_property', property: 'magicalSaturation', delta: 0.08, clamp: [0, 1] },
   },
 
@@ -66,6 +68,7 @@ export const ZEALOT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     catalystEncounterIds: ['encounter_shrine_desecration', 'encounter_pilgrimage'],
     targetRule: { type: 'location_subtype', subtypes: ['town', 'city', 'capital', 'hamlet', 'camp'] },
     resourceHint: { wealthCost: 40, reachFloor: { star: 0.3, stone: 0.2 } },
+    motivations: ['sacrifice_survival', 'preservation_transformation'],
     mutationHint: { type: 'create_sublocation', sublocationTypeId: 'shrine', nameTemplate: "Shrine of {actor} at {location}" },
   },
 
@@ -88,6 +91,7 @@ export const ZEALOT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     catalystEncounterIds: ['encounter_divine_manifestation'],
     targetRule: { type: 'location_subtype', subtypes: ['shrine', 'temple', 'town', 'city', 'ruins'] },
     resourceHint: { reachFloor: { star: 0.4, veil: 0.2 } },
+    motivations: ['sacrifice_survival', 'tradition_novelty'],
     mutationHint: { type: 'modify_location_property', property: 'magicalSaturation', delta: 0.15, clamp: [0, 1] },
   },
 
@@ -110,6 +114,7 @@ export const ZEALOT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     catalystEncounterIds: ['encounter_bandit_pilgrimage', 'encounter_sacred_vision'],
     targetRule: { type: 'location_subtype', subtypes: ['shrine', 'temple', 'town', 'city'] },
     resourceHint: { wealthCost: 30, reachFloor: { star: 0.3 } },
+    motivations: ['sacrifice_survival', 'preservation_transformation'],
     mutationHint: { type: 'create_relation_edge', edgeType: 'sacred_route', direction: 'actor_to_target', properties: { routeType: 'pilgrimage' } },
   },
 
@@ -130,6 +135,7 @@ export const ZEALOT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     ],
     targetRule: { type: 'location_subtype', subtypes: ['town', 'city', 'capital', 'shrine', 'temple'] },
     resourceHint: { reachFloor: { star: 0.4 } },
+    motivations: ['sacrifice_survival', 'mercy_ruthlessness'],
     mutationHint: { type: 'no_mutation' },
   },
 
@@ -155,6 +161,7 @@ export const ZEALOT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     catalystEncounterIds: ['encounter_shrine_desecration', 'encounter_sacred_vision'],
     targetRule: { type: 'location_subtype', subtypes: ['ruins', 'shrine', 'temple', 'town', 'hamlet'] },
     resourceHint: { wealthCost: 12, reachFloor: { star: 0.3, veil: 0.2 } },
+    motivations: ['sacrifice_survival', 'tradition_novelty'],
     mutationHint: { type: 'create_sublocation', sublocationTypeId: 'shrine', nameTemplate: "Consecrated Ground at {location}" },
   },
 ];
