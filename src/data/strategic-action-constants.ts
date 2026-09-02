@@ -18,6 +18,28 @@ export const STRATEGIC_MAX_CANDIDATES_PER_ACTOR = 12;
 /** Prevent a single ambition from flooding the board */
 export const STRATEGIC_MAX_CANDIDATES_PER_AMBITION = 5;
 
+/**
+ * How many undertakings one mortal may have running at once (THR-1387).
+ *
+ * Until this constant, nothing but "this same template is already running for me"
+ * (`project_already_active`) gated a start, and the decision loop never marks a
+ * mortal busy for an undertaking (the substrate plan's addendum — an undertaking
+ * runs *beside* encounters by design). So a spotlight mortal stacked them: measured
+ * at tick 150 on a medium world, the busiest mortal held **8** (seed 42) and **11**
+ * (seed 99) under contest B, and 4 / 5 under the live board. A mortal juggling
+ * eleven works is the dashboard failure in miniature (Vision tension #5).
+ *
+ * Enforced at **candidate generation** — a mortal at the cap is offered no
+ * undertaking, refused as `active_cap` on `strategic_candidate_board.refusals` —
+ * and never at the busy-gate, which would also stop their encounters. Three is a
+ * pair of hands full: the arc panel and the calling's ambition weight both read
+ * best on a handful, and the board's per-mortal start rate (`CENSUS_STARTS_PER_
+ * MORTAL_PER_100_TICKS_FLOOR`) is unaffected until a mortal is actually at the
+ * cap. Doc 6's kind-row schema is where a per-kind cap belongs if a flat one
+ * proves wrong (a builder may run two builds but one expedition).
+ */
+export const UNDERTAKING_MAX_ACTIVE_PER_ACTOR = 3;
+
 // ─── Scoring Weights ────────────────────────────────────────────────
 // These sum > 1.0 intentionally — they are relative weights, not a partition.
 
@@ -683,6 +705,16 @@ export const CENSUS_VARIETY_SAMPLE_STARTS = 150;
  * healthy baseline is 1 and 0 on the two seeds, and THR-1348 owns the route economy.
  */
 export const CENSUS_DISTINCT_AT_SAMPLE_FLOOR = 25;
+
+/**
+ * Census ceiling on the busiest mortal's active undertakings at run end (THR-1387).
+ *
+ * Equal to `UNDERTAKING_MAX_ACTIVE_PER_ACTOR` by construction — the census reads
+ * the number the cap enforces, so a cap that stopped enforcing (a new start path
+ * that bypasses candidate generation, say) reds the census rather than printing a
+ * larger number nobody reads. Reported as max + top-8 + mean either way.
+ */
+export const CENSUS_MAX_ACTIVE_PER_MORTAL_CEILING = UNDERTAKING_MAX_ACTIVE_PER_ACTOR;
 
 /** Control-deletion gate (§6): undertaking share must have *grown* past this floor. */
 export const DECISION_MIX_FLOOR_UNDERTAKING_SHARE = 0.12;
