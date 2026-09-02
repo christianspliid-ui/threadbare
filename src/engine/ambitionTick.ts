@@ -29,10 +29,14 @@ import {
   type MintRelation,
 } from '../data/ambition-minting-rules';
 import type { UndertakingHarmClass } from '../types/strategicAction';
+// Opening heat is no longer computed here: `resolveGrievanceDisposition` owns it, so
+// that the re-ignition boost and the one-slot rules cannot be applied by one caller and
+// skipped by another (THR-1298 slice 5).
 import {
-  GRIEVANCE_HEAT_INITIAL_MAX,
-  GRIEVANCE_HEAT_INITIAL_SCALE,
-} from '../data/grievance-constants';
+  decayGrievance,
+  resolveGrievanceDisposition,
+  type GrievanceEdgeProperties,
+} from './grievance/grievanceLifecycle';
 import { emitTrace } from './traceBuffer';
 import type { AmbitionMintedTrace } from '../types/trace';
 import { selectAmbitions, type AmbitionAgentSnapshot } from './ambitionSelection';
@@ -485,6 +489,11 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
   let mintedCount = 0;
   const mintedByEventClass: Record<string, number> = {};
   const mintedSampleAgentIds: string[] = [];
+  // Grievance mints are a subset of the above (THR-1298): how many of this tick's
+  // drives are vendettas, and against whom. Sampled to the same cap so a raid that
+  // wrongs a whole village cannot grow the trace unboundedly.
+  let grievanceMintCount = 0;
+  const grievanceCulpritIds: string[] = [];
   // Cross-agent per-event cap: one razed town mints for a handful, not everyone.
   const perEventMintCount = new Map<string, number>();
 
@@ -518,6 +527,13 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
 
     // ── Evaluate each active ambition ──
     for (const edge of activeEdges) {
+      // ── Cool any grievance first (THR-1298 slice 5) ──
+      //
+      // Before evaluation, so a vendetta that goes cold this pass closes as a grudge
+      // rather than being scored for milestones it is no longer pursuing. Rides this
+      // existing walk — no new phase, no second traversal (NFP #7).
+      if (decayGrievance(graph, edge, actor.id, tick)) continue;
+
       const ambitionNode = graph.getNode(edge.target);
       // No tripwire on this branch: `addEdge` refuses a dangling target and
       // `removeNode` cascades its incident edges, so a `pursues` edge pointing at a
@@ -683,10 +699,50 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
               },
             });
           }
-          const priority: AmbitionPriority = currentActiveCount === 0 ? 'primary' : 'secondary';
+          // ── Grievance routing (THR-1298 slice 5) ──
+          //
+          // A harm does not become a drive unconditionally. The lifecycle decides —
+          // one slot per agent, ambient victims get grudges rather than drives they
+          // could never act on, dead victims pass the vendetta to their closest bond,
+          // and deep chains stop. It applies the grudge writes and heat feeds itself;
+          // what comes back is only whether a `pursues` edge is still owed, and to whom.
+          let holderId = actor.id;
+          let grievanceProperties: GrievanceEdgeProperties | undefined;
+          if (minted.grievance) {
+            const disposition = resolveGrievanceDisposition(
+              graph,
+              actor.id,
+              { ...minted.grievance, sourceEventId: minted.mintedByEventId },
+              tick,
+            );
+            if (!disposition.write) {
+              // Settled without a drive. The source event still counts against its cap:
+              // one razing must not re-offer itself to the same agent every pass just
+              // because the first answer was a grudge.
+              perEventMintCount.set(
+                minted.mintedByEventId,
+                (perEventMintCount.get(minted.mintedByEventId) ?? 0) + 1,
+              );
+              continue;
+            }
+            holderId = disposition.holderId;
+            grievanceProperties = disposition.properties;
+            grievanceMintCount++;
+            if (grievanceCulpritIds.length < MINT_TRACE_SAMPLE_CAP) {
+              grievanceCulpritIds.push(disposition.properties.culpritAgentId);
+            }
+          }
+
+          // Succession can move the drive onto a different agent, so priority is read
+          // from whoever actually ends up holding it — not from the loop's own actor.
+          const holderActiveCount = holderId === actor.id
+            ? currentActiveCount
+            : graph.getOutgoingEdges(holderId, 'pursues')
+                .filter(e => (e.properties.status as string) === 'active').length;
+          const priority: AmbitionPriority = holderActiveCount === 0 ? 'primary' : 'secondary';
           graph.addEdge({
-            id: `pursues_${actor.id}_${ambitionNodeId}`,
-            source: actor.id,
+            id: `pursues_${holderId}_${ambitionNodeId}`,
+            source: holderId,
             target: ambitionNodeId,
             type: 'pursues',
             properties: {
@@ -700,16 +756,7 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
               // shared per `templateId`, so two agents avenging different harms would
               // otherwise overwrite each other's culprit. This is the same reason
               // `mintedByEventId` lives here (THR-726).
-              ...(minted.grievance && {
-                grievance: true as const,
-                culpritAgentId: minted.grievance.culpritAgentId,
-                harmMagnitude: minted.grievance.harmMagnitude,
-                chainDepth: minted.grievance.chainDepth,
-                heat: Math.min(
-                  GRIEVANCE_HEAT_INITIAL_MAX,
-                  minted.grievance.harmMagnitude * GRIEVANCE_HEAT_INITIAL_SCALE,
-                ),
-              }),
+              ...(grievanceProperties ?? {}),
             },
           });
 
@@ -718,8 +765,14 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
           mintedByEventClass[minted.eventClass] = (mintedByEventClass[minted.eventClass] ?? 0) + 1;
           if (mintedSampleAgentIds.length < MINT_TRACE_SAMPLE_CAP) mintedSampleAgentIds.push(actor.id);
           perEventMintCount.set(minted.mintedByEventId, (perEventMintCount.get(minted.mintedByEventId) ?? 0) + 1);
-          existingTemplateIds.add(minted.templateId);
-          currentActiveCount++;
+          // Only the loop's own actor advances its bookkeeping. An heir's slot count is
+          // re-read when the walk reaches them, and their pursued-template set is built
+          // fresh there — crediting this actor for an edge somebody else holds would let
+          // them mint a second drive this pass.
+          if (holderId === actor.id) {
+            existingTemplateIds.add(minted.templateId);
+            currentActiveCount++;
+          }
         }
       }
 
@@ -828,6 +881,8 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
       mintedCount,
       byEventClass: mintedByEventClass,
       sampleAgentIds: mintedSampleAgentIds,
+      grievanceCount: grievanceMintCount,
+      sampleCulpritAgentIds: grievanceCulpritIds,
     };
     emitTrace(mintTrace);
   }

@@ -1377,7 +1377,15 @@ export const CONTRACTS: readonly Contract[] = [
       symbols: ['hostile_to', 'rivals'],
       module: 'src/engine/agentDetail.ts',
     },
-    writeSites: ['src/engine/groups/bandOpposition.ts'],
+    // The writer moved in THR-1298 slice 5: `writeGrudge` left `bandOpposition.ts` for
+    // the shared `grievance/grudgeEdge.ts` when the grievance lifecycle needed the same
+    // edge. `bandOpposition.ts` stays a write site — it is still the caller that decides
+    // a company engagement earns a grudge — but the `hostile_to` literal now lives in
+    // the helper, which is why the declared site had to follow it.
+    writeSites: [
+      'src/engine/grievance/grudgeEdge.ts',
+      'src/engine/groups/bandOpposition.ts',
+    ],
     readSites: ['src/engine/agentDetail.ts', 'src/components/Game/tabs/OverviewTab.tsx'],
     verifiedLive: {
       date: '2026-07-25',

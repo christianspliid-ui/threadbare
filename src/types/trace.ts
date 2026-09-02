@@ -116,6 +116,7 @@ export type TraceCategory =
   | 'strategic_control_lifecycle'
   // Undertaking harm outcomes (THR-1298)
   | 'undertaking_outcome_event'
+  | 'grievance_transition'
   // Undertaking checkpoints (THR-1292)
   | 'undertaking_checkpoint'
   | 'undertaking_fork'
@@ -510,6 +511,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'strategic_world_change',
   'strategic_control_lifecycle',
   'undertaking_outcome_event',
+  'grievance_transition',
   'undertaking_checkpoint',
   'undertaking_fork',
   'decision_board_comparison',
@@ -1986,6 +1988,43 @@ export interface UndertakingOutcomeEventTrace extends TraceBase {
   answersGrievance?: boolean;
 }
 
+/** Every state a grievance can move through (THR-1298 slice 5). */
+export type GrievanceTransition =
+  | 'minted'
+  | 'heat_fed'
+  | 'replaced'
+  | 'demoted_to_grudge'
+  | 'succeeded_to_bond'
+  | 'reignited'
+  | 'grudge_only'
+  | 'chain_ended';
+
+/**
+ * Trace: a grievance changed state (THR-1298 slice 5).
+ *
+ * The reactive loop's whole causal story is *why this agent still wants this*, and
+ * every answer to that is a transition here: it opened, another harm fed it, a worse
+ * harm displaced it, it cooled into a grudge, or it passed to the dead victim's closest
+ * bond. Without this trace the heat number on the edge is a value with no history, and
+ * "why is everyone in this town pursuing revenge" has no read path (NFP #2).
+ *
+ * Volume is bounded by mint cadence (≥ 75 ticks) and the 15-tick decay pass, on which
+ * only *crossing* the cool threshold emits — decay itself is silent. Comfortably under
+ * the 1/tick budget.
+ */
+export interface GrievanceTransitionTrace extends TraceBase {
+  category: 'grievance_transition';
+  /** The agent holding (or about to hold) the grievance. */
+  agentId: string;
+  transition: GrievanceTransition;
+  /** Absent when the harm named no hand — an unattributed loss mints no vendetta. */
+  culpritAgentId?: string;
+  /** Heat after the transition, when the grievance still exists. */
+  heat?: number;
+  /** Human-readable reason — the replacement's "names the turn" line, or a skip cause. */
+  detail?: string;
+}
+
 /**
  * Trace: one undertaking checkpoint resolved (THR-1292 §2).
  *
@@ -3101,6 +3140,7 @@ export type TraceEntry =
   | StrategicActionStartedTrace
   | StrategicProjectProgressTrace
   | UndertakingOutcomeEventTrace
+  | GrievanceTransitionTrace
   | UndertakingCheckpointTrace
   | UndertakingForkTrace
   | DecisionBoardComparisonTrace
@@ -3487,6 +3527,14 @@ export interface AmbitionMintedTrace extends TraceBase {
   byEventClass: Record<string, number>;
   /** Capped sample of agent ids that received a minted ambition. */
   sampleAgentIds: string[];
+  /**
+   * How many of this tick's mints were grievances rather than ordinary wants
+   * (THR-1298). The ratio against `mintedCount` is the vendetta-monoculture reading the
+   * plan's kill criterion is measured on.
+   */
+  grievanceCount?: number;
+  /** Capped sample of the hands those grievances are held against. */
+  sampleCulpritAgentIds?: string[];
 }
 
 /**

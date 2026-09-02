@@ -36,6 +36,7 @@ import { emitTrace } from '../traceBuffer';
 import { getUnifiedTemplateById } from '../../data/unified-action-templates';
 import { resolveLocationToHex } from '../encounterAwareness';
 import { applyCohesionDelta } from './groupCohesion';
+import { writeGrudge } from '../grievance/grudgeEdge';
 import {
   getActiveGroups,
   getGroupLeader,
@@ -372,28 +373,6 @@ function applyCasualty(
   return graph.getNode(victim.id) ?? victim;
 }
 
-/** Write the standing rivalry both ways, idempotently. */
-function writeGrudge(graph: WorldGraph, a: string, b: string, tick: number): boolean {
-  let wrote = false;
-  for (const [from, to] of [[a, b], [b, a]] as const) {
-    const existing = graph.getOutgoingEdges(from, 'hostile_to').find(e => e.target === to);
-    if (existing) continue;
-    try {
-      graph.addEdge({
-        id: `e_hostile_to_${from}_${to}`,
-        source: from,
-        target: to,
-        type: 'hostile_to',
-        properties: { since: tick, cause: 'group_engagement' },
-      });
-      wrote = true;
-    } catch {
-      // Fail-soft: a missing grudge costs prose, never correctness.
-    }
-  }
-  return wrote;
-}
-
 /**
  * Whether the template that opened this contest forbids a casualty (THR-731 PR 3).
  *
@@ -442,7 +421,7 @@ export function applyContestConsequences(
   // Mutual failure: both sides came off badly and nobody won. No cohesion swing,
   // no casualty — but they have still met, and that is enough for a grudge.
   if (!initiatorWon && !counterWon) {
-    const grudgeWritten = writeGrudge(graph, opposition.initiatorGroupId, opposition.bandGroupId, state.tick);
+    const grudgeWritten = writeGrudge(graph, opposition.initiatorGroupId, opposition.bandGroupId, state.tick, 'group_engagement');
     emitContestTrace(state, opposition, undefined, undefined, 0, 0, undefined, grudgeWritten, 'mutual_failure');
     return undefined;
   }
@@ -465,7 +444,7 @@ export function applyContestConsequences(
     casualty = applyCasualty(graph, loserGroupId, rng, state.tick);
   }
 
-  const grudgeWritten = writeGrudge(graph, opposition.initiatorGroupId, opposition.bandGroupId, state.tick);
+  const grudgeWritten = writeGrudge(graph, opposition.initiatorGroupId, opposition.bandGroupId, state.tick, 'group_engagement');
 
   emitContestTrace(
     state, opposition, winnerGroupId, loserGroupId,
