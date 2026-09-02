@@ -221,18 +221,18 @@ describe('THR-800 — authored trait refs resolve against shipped definitions', 
     // ambition") rather than only the sweep's bookkeeping, and so a future wave that
     // mints one of these concepts for real is forced to update this list deliberately.
     // All THREE pools — the file exports `AMBITION_TEMPLATES`,
-    // `REACTIVE_AMBITION_TEMPLATES` and `EVENT_MINTED_AMBITION_TEMPLATES`, and the
+    // `GRIEVANCE_AMBITION_TEMPLATES` and `EVENT_MINTED_AMBITION_TEMPLATES`, and the
     // retired keys were spread across all three. A sweep that misses a pool reports a
     // clean PASS over content it never read.
     const {
       AMBITION_TEMPLATES,
-      REACTIVE_AMBITION_TEMPLATES,
+      GRIEVANCE_AMBITION_TEMPLATES,
       EVENT_MINTED_AMBITION_TEMPLATES,
     } = await import('../../data/ambition-templates');
     const authored = new Set<string>();
     for (const t of [
       ...AMBITION_TEMPLATES,
-      ...REACTIVE_AMBITION_TEMPLATES,
+      ...GRIEVANCE_AMBITION_TEMPLATES,
       ...EVENT_MINTED_AMBITION_TEMPLATES,
     ]) {
       for (const ref of [...(t.blockingTraits ?? []), ...(t.boostingTraits ?? []), ...(t.requiredTraits ?? [])]) {
@@ -262,7 +262,7 @@ describe('THR-800 — authored trait refs resolve against shipped definitions', 
     // this ticket's reasoning stale.
     const {
       AMBITION_TEMPLATES,
-      REACTIVE_AMBITION_TEMPLATES,
+      GRIEVANCE_AMBITION_TEMPLATES,
       EVENT_MINTED_AMBITION_TEMPLATES,
     } = await import('../../data/ambition-templates');
     const report = await validateTraitRefs(graphWithShippedDefinitions());
@@ -270,7 +270,7 @@ describe('THR-800 — authored trait refs resolve against shipped definitions', 
     const byId = new Map(
       [
         ...AMBITION_TEMPLATES,
-        ...REACTIVE_AMBITION_TEMPLATES,
+        ...GRIEVANCE_AMBITION_TEMPLATES,
         ...EVENT_MINTED_AMBITION_TEMPLATES,
       ].map(t => [t.id, t]),
     );

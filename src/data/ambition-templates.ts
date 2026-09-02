@@ -1,6 +1,7 @@
 // src/data/ambition-templates.ts
 //
-// Starter ambition content library — 10 standard templates and 4 reactive templates.
+// Starter ambition content library — 10 standard templates, 3 grievance templates,
+// and 7 event-minted templates.
 //
 // ─── THR-813 — retired selection keys, and why ────────────────────────────────
 //
@@ -87,7 +88,7 @@
 // wants loss *history* (bonds that existed and ended), which nothing records. See the
 // `KNOWN_DEAD` block in `src/engine/__tests__/traitRefReconciliation.test.ts`.
 
-import type { AmbitionTemplate, ReactiveAmbitionTemplate } from '../types/ambition';
+import type { AmbitionTemplate } from '../types/ambition';
 import type { AmbitionStrategicProfile } from '../types/strategicAction';
 import { SETTLED_DWELL_TICKS, EXILE_ACCEPTED_DWELL_TICKS } from '../engine/agentResidence';
 
@@ -806,16 +807,35 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
   },
 ] as const;
 
-// ─── Reactive Ambition Templates ─────────────────────────────────────────────
+// ─── Grievance Ambition Templates (THR-1298) ─────────────────────────────────
+//
+// The drives a *harm* mints — see `UNDERTAKING_MINTING_RULES`
+// (ambition-minting-rules.ts) for which harm class offers which.
+//
+// These were the reactive pool, and the reactive pool never assigned anything: it
+// declared a `triggerEvent` vocabulary (`betrayal`, `loss_of_home`, …) that no code
+// ever dispatched, so all four templates sat unreachable for their whole life —
+// runtime population 0 (THR-812). They are now ordinary funnel-gated
+// `AmbitionTemplate`s supplied as candidates by the mint lane, exactly like the
+// event-minted pool below, and `selectAmbitions` still decides. `skipFilters` died
+// with the pool: a drive that bypasses the personality funnel is a drive the agent
+// did not choose.
+//
+// They stay a SEPARATE pool from the event-minted templates because only these carry
+// a culprit — the mint lane writes a grievance block on the `pursues` edge for these
+// and plain provenance for the others.
+//
+// Their `strategicProfile` blocks carry over verbatim, which is what makes seven
+// otherwise-unreachable strategic templates reachable (`strategic_expose_mark`,
+// `strategic_suborn_warband`, `strategic_sever_network`, `strategic_destroy_masterwork`,
+// `strategic_expose_cache`, `strategic_burn_the_charts`, `strategic_cultivate_informant`).
 
-export const REACTIVE_AMBITION_TEMPLATES: readonly ReactiveAmbitionTemplate[] = [
+export const GRIEVANCE_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
   // 1. Seek Revenge (vengeance, triggered by betrayal)
   {
     id: 'ambition_seek_revenge',
     displayName: 'Seek Revenge',
     category: 'vengeance',
-    triggerEvent: 'betrayal',
-    skipFilters: false,
     reachFloors: { iron: 0.3, shadow: 0.3 },
     requiredTraits: [],
     blockingTraits: ['trait.core.core_forgiveness.virtue'],
@@ -905,13 +925,11 @@ export const REACTIVE_AMBITION_TEMPLATES: readonly ReactiveAmbitionTemplate[] = 
     ],
   },
 
-  // 2. Reclaim Homeland (dominion, triggered by loss_of_home)
+  // 2. Reclaim Homeland (dominion) — minted by `holding_seized`
   {
     id: 'ambition_reclaim_homeland',
     displayName: 'Reclaim the Homeland',
     category: 'dominion',
-    triggerEvent: 'loss_of_home',
-    skipFilters: false,
     reachFloors: { iron: 0.3, heart: 0.3 },
     requiredTraits: [],
     blockingTraits: [],
@@ -989,13 +1007,11 @@ export const REACTIVE_AMBITION_TEMPLATES: readonly ReactiveAmbitionTemplate[] = 
     ],
   },
 
-  // 3. Avenge the Fallen (vengeance, triggered by death_of_bond_partner)
+  // 3. Avenge the Fallen (vengeance) — minted by `named_death`
   {
     id: 'ambition_avenge_fallen',
     displayName: 'Avenge the Fallen',
     category: 'vengeance',
-    triggerEvent: 'death_of_bond_partner',
-    skipFilters: true,
     reachFloors: { iron: 0.2 },
     requiredTraits: [],
     blockingTraits: [],
@@ -1042,13 +1058,20 @@ export const REACTIVE_AMBITION_TEMPLATES: readonly ReactiveAmbitionTemplate[] = 
     ],
   },
 
-  // 4. Fulfill Destiny (devotion, triggered by destiny_assigned)
-  {
-    id: 'ambition_fulfill_destiny',
-    displayName: 'Fulfill the Destiny',
-    category: 'devotion',
-    triggerEvent: 'destiny_assigned',
-    skipFilters: true,
+] as const;
+
+/**
+ * Fulfill the Destiny — wonder-class, not grievance-class (THR-1298).
+ *
+ * It rode the reactive pool because it shared that pool's "assigned by an event"
+ * shape, but nothing about a destiny is a *harm*: it has no culprit, no victim and
+ * nothing to avenge. So it joins the event-minted pool below rather than the
+ * grievance one above, and the `wonder` mint class is what supplies it.
+ */
+const DESTINY_AMBITION_TEMPLATE: AmbitionTemplate = {
+  id: 'ambition_fulfill_destiny',
+  displayName: 'Fulfill the Destiny',
+  category: 'devotion',
     reachFloors: { star: 0.2 },
     requiredTraits: [],
     blockingTraits: [],
@@ -1096,8 +1119,7 @@ export const REACTIVE_AMBITION_TEMPLATES: readonly ReactiveAmbitionTemplate[] = 
     abandonmentProse: [
       'The destiny hung in the air, unclaimed. The stars found another.',
     ],
-  },
-] as const;
+};
 
 // ─── Event-Minted Ambition Templates (THR-726) ───────────────────────────────
 //
@@ -1463,13 +1485,17 @@ export const EVENT_MINTED_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
       'The wonder receded past reach. The world went ordinary again.',
     ],
   },
+
+  // 7. Fulfill the Destiny (devotion) — arrived here from the retired reactive pool
+  // (THR-1298); wonder-class, no culprit, nothing to avenge.
+  DESTINY_AMBITION_TEMPLATE,
 ] as const;
 
 /** Count of event-minted templates authored in v1 (THR-726). */
 export const MINT_TEMPLATE_COUNT = EVENT_MINTED_AMBITION_TEMPLATES.length;
 
 /**
- * Resolve an ambition template id across all three pools — standard, reactive, and
+ * Resolve an ambition template id across all three pools — standard, grievance, and
  * event-minted. Consumers that only searched `AMBITION_TEMPLATES` miss minted
  * ambitions (milestone eval, agent-detail display); use this instead. (THR-726)
  */
@@ -1479,6 +1505,6 @@ export function findAmbitionTemplateById(
   return (
     AMBITION_TEMPLATES.find((t) => t.id === templateId) ??
     EVENT_MINTED_AMBITION_TEMPLATES.find((t) => t.id === templateId) ??
-    REACTIVE_AMBITION_TEMPLATES.find((t) => t.id === templateId)
+    GRIEVANCE_AMBITION_TEMPLATES.find((t) => t.id === templateId)
   );
 }

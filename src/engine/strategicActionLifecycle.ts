@@ -60,6 +60,7 @@ import { getAgentLocationId } from './graphQueries';
 import { getPlaceTierLocations } from './sublocationShape';
 import { hexDistance } from '../lib/hexMath';
 import { getStrategicTemplate } from './strategicActionCandidates';
+import { createUndertakingOutcomeNode } from './grievance/undertakingOutcomeNode';
 import {
   resolveUndertakingCheckpoint,
   buildResidueEvent,
@@ -433,6 +434,9 @@ export function executeStrategicAction(
         // Carried from the gate that approved this candidate (THR-1296 §6). Absent on
         // every local undertaking; the bind pass binds it as `$anchor` when set.
         anchorNodeId: candidate.anchorNodeId,
+        // Who the undertaking is aimed at, carried from the motive gate (THR-1298).
+        // Read at the terminal paths to attribute the harm to a victim.
+        victimAgentId: candidate.victimAgentId,
         progress: 0,
         progressRequired: duration,
         startedTick: tick,
@@ -735,6 +739,20 @@ export function advanceStrategicProjects(
         // The THR-726 lane's candidate mint. Doc 4 authors the minting rule; this
         // doc guarantees only that the event fires with owner + undertaking identity.
         events.push(buildAbandonMintEvent(graph, checked, tick, displayName));
+        // …and the graph node the mint lane can actually read (THR-1298). The
+        // TickEvent above stays for the chronicle; a flat TickEvent is invisible to
+        // `gatherMintTuples`, which walks event *nodes*. Self-facing: the owner is
+        // both actor and victim, so `createUndertakingOutcomeNode` writes no culprit
+        // edge opposite them and the drives this mints are all soft ones.
+        createUndertakingOutcomeNode({
+          graph,
+          project: checked,
+          harmClass: 'undertaking_abandoned',
+          tick,
+          victimAgentId: checked.actorId,
+          ascendantId: state.ascendantId,
+          selfFacing: true,
+        });
       }
       newHistory.push({
         tick,
@@ -791,6 +809,27 @@ export function advanceStrategicProjects(
       // bindings BEFORE releasing them: the ledger is what knows the ground this
       // undertaking actually stood on, and release is what forgets it.
       const christened = christenCompletedWork(state, graph, project, ops, tick);
+
+      // The harm this completion did, if it did one (THR-1298). Emitted after the
+      // mutation so the outcome node describes a world that has already changed, and
+      // read from the template rather than the verb: `harmClass` is authored, so a
+      // destroy that severs a network and one that razes a settlement mint different
+      // drives instead of both reading as generic violence.
+      //
+      // The victim rides the runtime from the motive gate that licensed the verb —
+      // re-deriving ownership here would read the graph *after* the razing, where the
+      // owner's claim no longer exists.
+      const completedTemplate = getStrategicTemplate(project.templateId);
+      if (completedTemplate?.harmClass) {
+        createUndertakingOutcomeNode({
+          graph,
+          project: checked,
+          harmClass: completedTemplate.harmClass,
+          tick,
+          victimAgentId: checked.victimAgentId,
+          ascendantId: state.ascendantId,
+        });
+      }
 
       releaseUndertakingBindings(state, checked.projectId, tick);
       updatedProjects.push({ ...checked, progress: newProgress, status: 'completed', lastProgressTick: tick });

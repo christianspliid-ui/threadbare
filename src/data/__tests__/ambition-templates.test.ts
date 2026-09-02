@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   AMBITION_TEMPLATES,
-  REACTIVE_AMBITION_TEMPLATES,
+  GRIEVANCE_AMBITION_TEMPLATES,
   EVENT_MINTED_AMBITION_TEMPLATES,
   MINT_TEMPLATE_COUNT,
   findAmbitionTemplateById,
@@ -176,7 +176,7 @@ describe('EVENT_MINTED_AMBITION_TEMPLATES', () => {
 describe('no ambition pool authors an unbindable $-ref target (THR-812)', () => {
   const POOLS = {
     AMBITION_TEMPLATES,
-    REACTIVE_AMBITION_TEMPLATES,
+    GRIEVANCE_AMBITION_TEMPLATES,
     EVENT_MINTED_AMBITION_TEMPLATES,
   } as const;
 
@@ -227,27 +227,70 @@ describe('findAmbitionTemplateById', () => {
     expect(findAmbitionTemplateById(EVENT_MINTED_AMBITION_TEMPLATES[0].id)?.id).toBe(
       EVENT_MINTED_AMBITION_TEMPLATES[0].id,
     );
-    expect(findAmbitionTemplateById(REACTIVE_AMBITION_TEMPLATES[0].id)?.id).toBe(
-      REACTIVE_AMBITION_TEMPLATES[0].id,
+    expect(findAmbitionTemplateById(GRIEVANCE_AMBITION_TEMPLATES[0].id)?.id).toBe(
+      GRIEVANCE_AMBITION_TEMPLATES[0].id,
     );
     expect(findAmbitionTemplateById('nonexistent_id')).toBeUndefined();
   });
 });
 
-describe('REACTIVE_AMBITION_TEMPLATES', () => {
+describe('GRIEVANCE_AMBITION_TEMPLATES', () => {
   it('has at least 3 templates', () => {
-    expect(REACTIVE_AMBITION_TEMPLATES.length).toBeGreaterThanOrEqual(3);
-  });
-
-  it('each has a triggerEvent', () => {
-    for (const t of REACTIVE_AMBITION_TEMPLATES) {
-      expect(t.triggerEvent).toBeDefined();
-    }
+    expect(GRIEVANCE_AMBITION_TEMPLATES.length).toBeGreaterThanOrEqual(3);
   });
 
   it('has unique IDs', () => {
-    const ids = REACTIVE_AMBITION_TEMPLATES.map((t) => t.id);
+    const ids = GRIEVANCE_AMBITION_TEMPLATES.map((t) => t.id);
     expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  /**
+   * THR-1298 — the reactive pool's retirement, pinned.
+   *
+   * `triggerEvent` named a dispatch vocabulary nothing ever dispatched, and
+   * `skipFilters` let a drive bypass the personality funnel that is supposed to decide
+   * it. Both died with the pool. This asserts across *every* pool, not just this one,
+   * because the failure mode is a template reintroducing the field somewhere else and
+   * a pool-local sweep never looking there.
+   */
+  it('no pool reintroduces the retired reactive fields', () => {
+    const allTemplates = [
+      ...AMBITION_TEMPLATES,
+      ...GRIEVANCE_AMBITION_TEMPLATES,
+      ...EVENT_MINTED_AMBITION_TEMPLATES,
+    ];
+    // Guard against the vacuous arm: an empty sweep would pass this trivially.
+    expect(allTemplates.length).toBeGreaterThan(15);
+    for (const t of allTemplates) {
+      expect('triggerEvent' in t).toBe(false);
+      expect('skipFilters' in t).toBe(false);
+    }
+  });
+
+  /**
+   * THR-1298 — the conversion's payload: seven strategic templates that were reachable
+   * only through the unreachable reactive pool's `strategicProfile`s.
+   *
+   * Because nothing ever assigned a reactive ambition, every one of these was dead
+   * content — authored, registered, and impossible to fire. Carrying the profiles over
+   * verbatim is what makes them reachable, so this pins the actual reason the
+   * conversion was worth doing rather than merely that the rename happened.
+   */
+  it('carries over the strategic profiles that make seven verbs reachable', () => {
+    const reachable = new Set(
+      GRIEVANCE_AMBITION_TEMPLATES.flatMap((t) => t.strategicProfile?.templateIds ?? []),
+    );
+    for (const id of [
+      'strategic_expose_mark',
+      'strategic_suborn_warband',
+      'strategic_sever_network',
+      'strategic_destroy_masterwork',
+      'strategic_expose_cache',
+      'strategic_burn_the_charts',
+      'strategic_cultivate_informant',
+    ]) {
+      expect(reachable.has(id)).toBe(true);
+    }
   });
 });
 
@@ -268,7 +311,7 @@ describe('REACTIVE_AMBITION_TEMPLATES', () => {
 describe('THR-841 — region conditions are not authorable as literals', () => {
   const ALL_POOLS = [
     ['AMBITION_TEMPLATES', AMBITION_TEMPLATES],
-    ['REACTIVE_AMBITION_TEMPLATES', REACTIVE_AMBITION_TEMPLATES],
+    ['GRIEVANCE_AMBITION_TEMPLATES', GRIEVANCE_AMBITION_TEMPLATES],
     ['EVENT_MINTED_AMBITION_TEMPLATES', EVENT_MINTED_AMBITION_TEMPLATES],
   ] as const;
 

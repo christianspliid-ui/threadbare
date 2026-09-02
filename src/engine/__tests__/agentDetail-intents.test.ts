@@ -171,17 +171,13 @@ describe('getAgentInfoCard — intent aggregation', () => {
     expect(card!.primaryIntentSummary!.category).toBe(AMBITION_TEMPLATES[0].category);
   });
 
-  it('detects reactive trigger on reactive templates', () => {
-    const graph = makeGraph();
-    addAgent(graph, AGENT_ID, ASC_ID);
-
-    // Find a reactive template (has triggerEvent)
-    const reactiveTemplate = AMBITION_TEMPLATES.find(t => 'triggerEvent' in t);
-    if (!reactiveTemplate) return; // skip if no reactive templates loaded
-
-    addPursues(graph, AGENT_ID, reactiveTemplate.id, 'primary');
-
-    const card = getAgentInfoCard(graph, AGENT_ID, ASC_ID, 'intimate');
-    expect(card!.intents![0].reactiveTrigger).toBeTruthy();
-  });
+  // THR-1298 retired the reactive pool, and with it `ActiveIntent.reactiveTrigger`.
+  //
+  // The test that stood here ("detects reactive trigger on reactive templates") never
+  // asserted anything: it searched `AMBITION_TEMPLATES` — the *standard* pool — for a
+  // member carrying `triggerEvent`, and only the reactive pool ever carried one. The
+  // find returned undefined on every run, the guard below it returned early, and the
+  // expectation was unreachable for the test's whole life. It is deleted rather than
+  // repointed because the field it guarded no longer exists: drives now carry mint
+  // provenance instead, which is asserted where that provenance is written.
 });

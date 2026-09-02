@@ -175,6 +175,9 @@ export const WANDERER_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = 
     id: 'strategic_burn_the_charts',
     displayName: 'Burn the Charts',
     verb: 'destroy',
+    // THR-1298: what this harm registers as, so the outcome mints the right drive.
+    // the charts were the property; burning them is the harm.
+    harmClass: 'property_destroyed',
     executionMode: 'instant',
     behaviorFamily: 'wanderer-explorer',
     reachProfile: { shadow: 0.5, eye: 0.3, iron: 0.2 },

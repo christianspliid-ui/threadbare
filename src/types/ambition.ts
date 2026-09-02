@@ -146,19 +146,6 @@ export interface AmbitionTemplate {
   readonly abandonmentProse: readonly string[];
 }
 
-// ─── Reactive Ambition Template ─────────────────────────────────
-export type ReactiveEventType =
-  | 'betrayal'
-  | 'loss_of_home'
-  | 'death_of_bond_partner'
-  | 'scar_acquired'
-  | 'destiny_assigned'
-  | 'divine_intervention';
-
-export interface ReactiveAmbitionTemplate extends AmbitionTemplate {
-  readonly triggerEvent: ReactiveEventType;
-  readonly skipFilters: boolean;
-}
 
 // ─── Active Ambition (on an agent) ──────────────────────────────
 export type AmbitionPriority = 'primary' | 'secondary';
@@ -184,4 +171,22 @@ export interface PursuesEdgeProperties {
   readonly mintedByEventId?: string;
   /** Prose stem naming the minting event, for motive-receipt provenance (THR-726). */
   readonly mintedByLabel?: string;
+
+  // ─── Grievance state (THR-1298) ─────────────────────────────────
+  //
+  // Per-instance, so it lives on the edge rather than the ambition node: ambition nodes
+  // are shared per `templateId`, and two agents avenging two different harms pursue the
+  // same node. Every field is optional — a drive without them is an ordinary ambition,
+  // which is most of them.
+
+  /** `true` marks this drive as a vendetta rather than a want. */
+  readonly grievance?: true;
+  /** Who the grievance is held against. */
+  readonly culpritAgentId?: string;
+  /** How badly the founding harm landed, on the `HARM_MAGNITUDE_BY_CLASS` scale. */
+  readonly harmMagnitude?: number;
+  /** Current heat; decays on the milestone pass and demotes to a grudge when cold. */
+  readonly heat?: number;
+  /** How far down a revenge chain this sits — capped so chains stay spotlight-only. */
+  readonly chainDepth?: number;
 }

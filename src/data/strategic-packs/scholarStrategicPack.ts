@@ -188,6 +188,9 @@ export const SCHOLAR_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     id: 'strategic_expose_cache',
     displayName: 'Expose the Cache',
     verb: 'destroy',
+    // THR-1298: what this harm registers as, so the outcome mints the right drive.
+    // a hidden store is lost to its owner once it is not hidden.
+    harmClass: 'property_destroyed',
     executionMode: 'instant',
     behaviorFamily: 'scholar-seeker',
     reachProfile: { eye: 0.45, shadow: 0.3, heart: 0.25 },

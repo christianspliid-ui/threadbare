@@ -26,17 +26,6 @@ const secondaryIntent: ActiveIntent = {
   reachAffinity: {},
 };
 
-const reactiveIntent: ActiveIntent = {
-  templateId: 'path_of_vengeance',
-  displayName: 'Path of Vengeance',
-  category: 'vengeance',
-  priority: 'primary',
-  completedMilestones: 0,
-  requiredMilestones: 3,
-  reachAffinity: {},
-  reactiveTrigger: 'betrayal',
-};
-
 // ─── Tests ────────────────────────────────────────────────────────
 
 describe('IntentSection (modal variant)', () => {
@@ -71,15 +60,6 @@ describe('IntentSection (modal variant)', () => {
     expect(screen.getByText('Forge Mastery')).toBeTruthy();
   });
 
-  it('renders reactive trigger text', () => {
-    render(<IntentSection intents={[reactiveIntent]} variant="modal" />);
-    expect(screen.getByText(/Triggered by: betrayal/)).toBeTruthy();
-  });
-
-  it('omits reactive trigger row when not present', () => {
-    render(<IntentSection intents={[primaryIntent]} variant="modal" />);
-    expect(screen.queryByText(/Triggered by/)).toBeNull();
-  });
 });
 
 describe('IntentSection (panel variant)', () => {
@@ -93,8 +73,4 @@ describe('IntentSection (panel variant)', () => {
     expect(screen.getByText('Conquer Territory')).toBeTruthy();
   });
 
-  it('renders reactive trigger in panel variant', () => {
-    render(<IntentSection intents={[reactiveIntent]} variant="panel" />);
-    expect(screen.getByText(/betrayal/)).toBeTruthy();
-  });
 });

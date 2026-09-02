@@ -5,7 +5,7 @@
  * dead is instructive: `validateTraitRefs` could see the ref was unsatisfiable, but no
  * test ever asked whether the *ambition* could resolve. So this file asserts the thing
  * that was missing rather than the thing that was already covered — it drives the real
- * `AMBITION_TEMPLATES` / `REACTIVE_AMBITION_TEMPLATES` entries through the real
+ * `AMBITION_TEMPLATES` / `GRIEVANCE_AMBITION_TEMPLATES` entries through the real
  * `evaluateAmbitionProgress`, with residence written by the real `observeResidence`.
  *
  * Each ambition gets both assertions, because either one alone is satisfiable by a

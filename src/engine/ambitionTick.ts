@@ -15,15 +15,23 @@ import { assignInitialAmbitions } from './ambitionAssignment';
 import {
   AMBITION_TEMPLATES,
   EVENT_MINTED_AMBITION_TEMPLATES,
+  GRIEVANCE_AMBITION_TEMPLATES,
   findAmbitionTemplateById,
 } from '../data/ambition-templates';
 import {
   AMBITION_MINTING_RULES,
+  UNDERTAKING_MINTING_RULES,
   MINT_CLASS_LABELS,
+  HARM_CLASS_LABELS,
   classifyMintEvent,
   type MintEventClass,
   type MintRelation,
 } from '../data/ambition-minting-rules';
+import type { UndertakingHarmClass } from '../types/strategicAction';
+import {
+  GRIEVANCE_HEAT_INITIAL_MAX,
+  GRIEVANCE_HEAT_INITIAL_SCALE,
+} from '../data/grievance-constants';
 import { emitTrace } from './traceBuffer';
 import type { AmbitionMintedTrace } from '../types/trace';
 import { selectAmbitions, type AmbitionAgentSnapshot } from './ambitionSelection';
@@ -157,12 +165,40 @@ function mintRng(seed: number): () => number {
   };
 }
 
-/** One event the agent can mint a want from, already classified. */
-interface MintTuple {
-  eventId: string;
-  eventClass: MintEventClass;
-  relation: MintRelation;
-  locationName?: string;
+/**
+ * One event the agent can mint a want from, already classified.
+ *
+ * Two shapes, discriminated by `kind` (THR-1298). They share a lane but never a
+ * vocabulary: an encounter is classified by the Reach it tested, an undertaking by the
+ * harm its template authored. Collapsing them into one `eventClass` field is what would
+ * let a razing get routed through the encounter rules table by whichever Reach the verb
+ * happened to test.
+ */
+type MintTuple =
+  | {
+      kind: 'encounter';
+      eventId: string;
+      eventClass: MintEventClass;
+      relation: MintRelation;
+      locationName?: string;
+    }
+  | {
+      kind: 'undertaking';
+      eventId: string;
+      harmClass: UndertakingHarmClass;
+      relation: MintRelation;
+      locationName?: string;
+      culpritAgentId?: string;
+      culpritName?: string;
+      harmMagnitude: number;
+      chainDepth: number;
+    };
+
+/** The grievance a harm-minted drive carries — absent on soft drives. */
+export interface MintedGrievance {
+  culpritAgentId: string;
+  harmMagnitude: number;
+  chainDepth: number;
 }
 
 /** The single ambition a minting pass produced for one agent. */
@@ -170,7 +206,14 @@ export interface MintedAmbition {
   templateId: string;
   mintedByEventId: string;
   mintedByLabel: string;
-  eventClass: MintEventClass;
+  /** Class of the source event, for the aggregate trace — a Reach class or a harm class. */
+  eventClass: string;
+  /**
+   * Set when the winning candidate was flagged `grievance` in the rules table AND the
+   * source harm named a culprit. A drive with this block gets a vendetta; one without
+   * gets provenance only.
+   */
+  grievance?: MintedGrievance;
 }
 
 /** Name of the location an event occurred at, for provenance prose. */
@@ -184,6 +227,23 @@ function eventLocationName(graph: WorldGraph, eventId: string): string | undefin
 function composeMintLabel(eventClass: MintEventClass, locationName?: string): string {
   const stem = MINT_CLASS_LABELS[eventClass];
   return locationName ? `${stem} at ${locationName}` : stem;
+}
+
+/**
+ * Provenance label for a harm — names the place and, when known, the hand behind it.
+ *
+ * "the razing of Dunmar — Hesk's work". Naming the culprit is the point: it is what
+ * turns a minted drive from weather into a grudge the chronicle can follow, and it is
+ * what the arc line reads back as *"Seek revenge · because of the razing of Dunmar"*.
+ */
+function composeHarmLabel(
+  harmClass: UndertakingHarmClass,
+  locationName?: string,
+  culpritName?: string,
+): string {
+  const stem = HARM_CLASS_LABELS[harmClass];
+  const placed = locationName ? `${stem} of ${locationName}` : stem;
+  return culpritName ? `${placed} — ${culpritName}'s work` : placed;
 }
 
 /**
@@ -206,15 +266,60 @@ function gatherMintTuples(
     return typeof evTick === 'number' && evTick >= minTick && evTick <= tick;
   };
 
+  /**
+   * Build the undertaking-side tuple, or null when the node is not a usable harm.
+   *
+   * Reads `harmClass` straight off the node. `classifyMintEvent` is deliberately never
+   * called here — it maps a *Reach* to a class, and an undertaking node carries no
+   * meaningful `reachTested`.
+   */
+  const undertakingTuple = (
+    ev: { id: string; properties: Record<string, unknown> },
+    relation: MintRelation,
+  ): MintTuple | null => {
+    const harmClass = ev.properties.harmClass as UndertakingHarmClass | undefined;
+    if (!harmClass || !UNDERTAKING_MINTING_RULES[harmClass]) return null;
+    const culpritAgentId = ev.properties.culpritAgentId as string | undefined;
+    // A victim never becomes their own culprit — the self-facing `undertaking_abandoned`
+    // node names its owner as the actor, and a drive to avenge yourself on yourself is
+    // the one grievance the world must not mint.
+    const culpritIsSelf = culpritAgentId === actorId;
+    return {
+      kind: 'undertaking',
+      eventId: ev.id,
+      harmClass,
+      relation,
+      locationName: eventLocationName(graph, ev.id),
+      culpritAgentId: culpritIsSelf ? undefined : culpritAgentId,
+      culpritName: culpritIsSelf || !culpritAgentId
+        ? undefined
+        : graph.getNode(culpritAgentId)?.name,
+      harmMagnitude: (ev.properties.harmMagnitude as number | undefined) ?? 0,
+      chainDepth: (ev.properties.chainDepth as number | undefined) ?? 0,
+    };
+  };
+
   // Direct participation — role decides victim vs participant.
   for (const e of graph.getOutgoingEdges(actorId, 'participated_in')) {
     const ev = graph.getNode(e.target);
-    if (!ev || ev.properties.eventType !== 'encounter_outcome' || !inWindow(ev)) continue;
-    const cls = classifyMintEvent(ev.properties.reachTested as string | undefined);
-    if (!cls) continue;
+    if (!ev || !inWindow(ev)) continue;
     const relation: MintRelation = (e.properties.role as string) === 'target' ? 'victim' : 'participant';
-    out.push({ eventId: ev.id, eventClass: cls, relation, locationName: eventLocationName(graph, ev.id) });
-    seen.add(ev.id);
+    if (ev.properties.eventType === 'encounter_outcome') {
+      const cls = classifyMintEvent(ev.properties.reachTested as string | undefined);
+      if (!cls) continue;
+      out.push({ kind: 'encounter', eventId: ev.id, eventClass: cls, relation, locationName: eventLocationName(graph, ev.id) });
+      seen.add(ev.id);
+    } else if (ev.properties.eventType === 'undertaking_outcome') {
+      // The culprit is the `primary` on their own harm. They participated, but a harm
+      // does not mint a want in the hand that dealt it — only the self-facing
+      // abandonment node mints for its actor, and that node carries no victim edge, so
+      // it reaches this lane as the owner's own `victim` relation instead.
+      if (relation !== 'victim') continue;
+      const tuple = undertakingTuple(ev, relation);
+      if (!tuple) continue;
+      out.push(tuple);
+      seen.add(ev.id);
+    }
   }
 
   // Witnessed at the agent's current location (not already counted).
@@ -222,12 +327,22 @@ function gatherMintTuples(
   if (locId) {
     for (const oe of graph.getIncomingEdges(locId, 'occurred_at')) {
       const ev = graph.getNode(oe.source);
-      if (!ev || seen.has(ev.id)) continue;
-      if (ev.properties.eventType !== 'encounter_outcome' || !inWindow(ev)) continue;
-      const cls = classifyMintEvent(ev.properties.reachTested as string | undefined);
-      if (!cls) continue;
-      out.push({ eventId: ev.id, eventClass: cls, relation: 'witness', locationName: eventLocationName(graph, ev.id) });
-      seen.add(ev.id);
+      if (!ev || seen.has(ev.id) || !inWindow(ev)) continue;
+      if (ev.properties.eventType === 'encounter_outcome') {
+        const cls = classifyMintEvent(ev.properties.reachTested as string | undefined);
+        if (!cls) continue;
+        out.push({ kind: 'encounter', eventId: ev.id, eventClass: cls, relation: 'witness', locationName: eventLocationName(graph, ev.id) });
+        seen.add(ev.id);
+      } else if (ev.properties.eventType === 'undertaking_outcome') {
+        // The hand that did it is standing at the site too. Without this the culprit
+        // witnesses their own razing and is offered a drive to guard the home they
+        // just burned.
+        if ((ev.properties.culpritAgentId as string | undefined) === actorId) continue;
+        const tuple = undertakingTuple(ev, 'witness');
+        if (!tuple) continue;
+        out.push(tuple);
+        seen.add(ev.id);
+      }
     }
   }
 
@@ -255,20 +370,56 @@ export function mintAmbitionsFromEvents(
 
   // Expand (class × relation) rules into candidates, dropping already-pursued
   // templates and events already at their per-event cap.
-  interface Candidate { templateId: string; weight: number; eventId: string; eventClass: MintEventClass; label: string; }
+  interface Candidate {
+    templateId: string;
+    weight: number;
+    eventId: string;
+    eventClass: string;
+    label: string;
+    grievance?: MintedGrievance;
+  }
   const candidates: Candidate[] = [];
   for (const t of tuples) {
     if ((perEventMintCount.get(t.eventId) ?? 0) >= MINT_MAX_PER_EVENT) continue;
-    const entries = AMBITION_MINTING_RULES[t.eventClass][t.relation];
+
+    if (t.kind === 'encounter') {
+      const entries = AMBITION_MINTING_RULES[t.eventClass][t.relation];
+      if (!entries) continue;
+      for (const entry of entries) {
+        if (existingTemplateIds.has(entry.templateId)) continue;
+        candidates.push({
+          templateId: entry.templateId,
+          weight: entry.weight,
+          eventId: t.eventId,
+          eventClass: t.eventClass,
+          label: composeMintLabel(t.eventClass, t.locationName),
+        });
+      }
+      continue;
+    }
+
+    const entries = UNDERTAKING_MINTING_RULES[t.harmClass][t.relation];
     if (!entries) continue;
+    const label = composeHarmLabel(t.harmClass, t.locationName, t.culpritName);
     for (const entry of entries) {
       if (existingTemplateIds.has(entry.templateId)) continue;
       candidates.push({
         templateId: entry.templateId,
         weight: entry.weight,
         eventId: t.eventId,
-        eventClass: t.eventClass,
-        label: composeMintLabel(t.eventClass, t.locationName),
+        eventClass: t.harmClass,
+        label,
+        // A grievance needs both halves: the rules row must flag it AND the harm must
+        // have named a hand. An unattributed razing still mints the drive to rebuild;
+        // it cannot mint the drive to avenge, because there is nobody to avenge it on
+        // (fail-soft row 1 — the drive degrades, the mint does not fail).
+        grievance: entry.grievance && t.culpritAgentId
+          ? {
+              culpritAgentId: t.culpritAgentId,
+              harmMagnitude: t.harmMagnitude,
+              chainDepth: t.chainDepth,
+            }
+          : undefined,
       });
     }
   }
@@ -278,9 +429,15 @@ export function mintAmbitionsFromEvents(
   const rng = mintRng(seed);
   if (rng() >= MINT_BASE_CHANCE) return null;
 
-  // Personality funnel over the unique candidate templates.
+  // Personality funnel over the unique candidate templates. Both minted pools are
+  // searched: the grievance templates arrived here when the reactive pool retired
+  // (THR-1298), and a table row naming one would resolve to nothing if only the
+  // event-minted pool were consulted — a weight that fires zero times.
   const candidateTemplateIds = new Set(candidates.map(c => c.templateId));
-  const candidateTemplates = EVENT_MINTED_AMBITION_TEMPLATES.filter(t => candidateTemplateIds.has(t.id));
+  const candidateTemplates = [
+    ...EVENT_MINTED_AMBITION_TEMPLATES,
+    ...GRIEVANCE_AMBITION_TEMPLATES,
+  ].filter(t => candidateTemplateIds.has(t.id));
   const selections = selectAmbitions(candidateTemplates, snapshot, {
     maxAmbitions: candidateTemplates.length,
     threshold: 0,
@@ -300,6 +457,7 @@ export function mintAmbitionsFromEvents(
     mintedByEventId: source.eventId,
     mintedByLabel: source.label,
     eventClass: source.eventClass,
+    grievance: source.grievance,
   };
 }
 
@@ -529,6 +687,20 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
               completedMilestones: [],
               mintedByEventId: minted.mintedByEventId,
               mintedByLabel: minted.mintedByLabel,
+              // Grievance state is edge-side, never node-side: ambition nodes are
+              // shared per `templateId`, so two agents avenging different harms would
+              // otherwise overwrite each other's culprit. This is the same reason
+              // `mintedByEventId` lives here (THR-726).
+              ...(minted.grievance && {
+                grievance: true as const,
+                culpritAgentId: minted.grievance.culpritAgentId,
+                harmMagnitude: minted.grievance.harmMagnitude,
+                chainDepth: minted.grievance.chainDepth,
+                heat: Math.min(
+                  GRIEVANCE_HEAT_INITIAL_MAX,
+                  minted.grievance.harmMagnitude * GRIEVANCE_HEAT_INITIAL_SCALE,
+                ),
+              }),
             },
           });
 

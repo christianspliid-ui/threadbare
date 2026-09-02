@@ -201,7 +201,39 @@ export interface StrategicActionTemplate {
    * counter-play as a verb anyone may fire for no reason.
    */
   readonly motiveGate?: readonly MotiveKind[];
+
+  /**
+   * What kind of harm this undertaking does when it completes (THR-1298).
+   *
+   * Present ⇒ the terminal path writes an `undertaking_outcome` event node, which is
+   * what the mint lane reads to turn a harm into somebody's next drive. Absent ⇒ the
+   * undertaking is harmless in the grievance sense and mints nothing.
+   *
+   * **Authored, never inferred from the verb.** A `destroy` verb is not automatically
+   * a `property_destroyed`: severing a network and razing a settlement are different
+   * wounds that want different drives, and the schema stays the authority on which is
+   * which. Seizure routes through the holding-transfer emission site instead of this
+   * field, because the victim there is the displaced owner rather than the target's.
+   */
+  readonly harmClass?: UndertakingHarmClass;
 }
+
+// ─── Harm classes (THR-1298) ────────────────────────────────────────
+
+/**
+ * The kinds of harm an undertaking outcome can register as.
+ *
+ * This is the shared vocabulary between the template schema (which authors it) and
+ * `UNDERTAKING_MINTING_RULES` (which keys candidate drives off it). Both halves must
+ * name the same members or the weight fires zero times — the `hungerResonance`
+ * failure class. A schema test pins every authored value to this union.
+ */
+export type UndertakingHarmClass =
+  | 'property_destroyed'      // a thing they owned is rubble
+  | 'holding_seized'          // a thing they owned now answers to someone else
+  | 'network_severed'         // the ties they worked through are cut
+  | 'named_death'             // someone bound to them is dead
+  | 'undertaking_abandoned';  // their own work was walked away from (self-facing, culprit-less)
 
 // ─── Motives (THR-1281 §4) ──────────────────────────────────────────
 // The vocabulary a destroy verb may name as its licence. Each member maps to a
@@ -559,6 +591,20 @@ export interface StrategicActionCandidate {
   readonly behaviorFamily: BehaviorFamily;
   readonly displayName: string;
 
+  /**
+   * Who this undertaking is aimed *at* (THR-1298) — the owner the motive gate named
+   * when it licensed a destroy verb.
+   *
+   * The gate already computes this (`MotiveGateResult.ownerId`) and, before this
+   * field existed, discarded it one line later. Carrying it forward is what lets a
+   * completed harm say whose thing it was: the grievance mint needs a victim, and
+   * re-deriving ownership at completion time reads a graph the undertaking has
+   * already mutated (the razed node may be gone, the seized one already retargeted).
+   *
+   * Absent on every ungated template, which is most of them.
+   */
+  readonly victimAgentId?: string;
+
   /** Origin anchor for completion-time mutations (THR-669) — see StrategicProjectRuntime.originLocationId. */
   readonly originLocationId?: string;
 
@@ -623,6 +669,13 @@ export interface StrategicProjectRuntime {
   readonly behaviorFamily: BehaviorFamily;
   readonly targetNodeId?: string;
   readonly targetHex?: { col: number; row: number };
+
+  /**
+   * Who this undertaking is aimed at (THR-1298), carried from the candidate the
+   * motive gate approved. Read at the terminal paths to attribute the harm.
+   * Absent on every ungated undertaking.
+   */
+  readonly victimAgentId?: string;
   /**
    * Where the project was undertaken (THR-669): the actor's resolved,
    * non-transient location at project start. Trade routes must anchor here —
