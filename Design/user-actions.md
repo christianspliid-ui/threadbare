@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-02 07:42 local (05:42 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-09-02 08:05 local (06:05 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -21,7 +21,7 @@
 
 **New product work is still not arriving.** The build shelf holds two items, both written by lanes reporting on their own work ([THR-1377](https://linear.app/threadbare/issue/THR-1377/35-of-64-undertaking-templates-author-no-motivations-the-content-pass), [THR-1378](https://linear.app/threadbare/issue/THR-1378/rulebook-review-2026-09-10-findings)). Forty-odd items sit in Todo and nearly every one needs a decision or a plan doc before code can be written.
 
-**Unblocked and waiting:** [the reactive loop](https://linear.app/threadbare/issue/THR-1298/the-reactive-loop-proactive-agent-actions-plan-doc-46) *(designed overnight 2026-09-01; its plan doc is written but uncommitted — an agent's job to land, not yours)*, then [calling & surfaces](https://linear.app/threadbare/issue/THR-1299) and [undertaking factory](https://linear.app/threadbare/issue/THR-1300); [your one-button snapshot](https://linear.app/threadbare/issue/THR-1134) (High, your own 16 August request, untouched 17 days); [a beast that can be a real character](https://linear.app/threadbare/issue/THR-1274); [nations and named areas](https://linear.app/threadbare/issue/THR-1155).
+**Moving this morning, and it is one session deep.** [The reactive loop](https://linear.app/threadbare/issue/THR-1298/the-reactive-loop-proactive-agent-actions-plan-doc-46) is designed, committed and on the build shelf, and a session has started [calling & surfaces](https://linear.app/threadbare/issue/THR-1299) behind it. Nothing can queue up behind *that* while the two tickets above hold the column. **Still waiting:** [undertaking factory](https://linear.app/threadbare/issue/THR-1300); [your one-button snapshot](https://linear.app/threadbare/issue/THR-1134) (High, your own 16 August request, untouched 17 days); [a beast that can be a real character](https://linear.app/threadbare/issue/THR-1274); [nations and named areas](https://linear.app/threadbare/issue/THR-1155).
 
 ### 3. A word players see, settled and now shipped — veto open — [THR-1314](https://linear.app/threadbare/issue/THR-1314/ul-proposal-work-holding-kind-row-christening-failure-name-register)
 
@@ -86,6 +86,7 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
+- **A finished design document that existed in only one place is now safe** — [pull request #1761](https://github.com/christianspliid-ui/threadbare/pull/1761) merged 2026-09-02. The reactive-loop plan doc was written overnight and the machine slept before it was committed; it is now on `main` and [THR-1298](https://linear.app/threadbare/issue/THR-1298/the-reactive-loop-proactive-agent-actions-plan-doc-46) is on the build shelf. No decision of yours was involved.
 - **The variety term the live decision board was missing** — [pull request #1760](https://github.com/christianspliid-ui/threadbare/pull/1760) merged 2026-09-01, and [THR-1349](https://linear.app/threadbare/issue/THR-1349)'s stale claim on your name cleared with it. The ticket stays open for the remaining cutover checks.
 - **The engine was reading silence as refusal** — [pull request #1758](https://github.com/christianspliid-ui/threadbare/pull/1758) merged 2026-08-30. An undertaking that names no motivations scored identically to one an agent actively wants nothing to do with, pinning 35 of 64 templates; the content follow-on is [THR-1377](https://linear.app/threadbare/issue/THR-1377).
 - **The last two things in build landed and emptied the board** — [THR-1328](https://linear.app/threadbare/issue/THR-1328) (three tests failing at random rather than on a real fault) and [THR-1376](https://linear.app/threadbare/issue/THR-1376) (six glossary terms defined but missing from the index). Delivery machinery and docs only — but between them they are why ask 2 became urgent.
