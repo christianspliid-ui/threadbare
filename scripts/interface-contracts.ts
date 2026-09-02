@@ -2215,12 +2215,16 @@ export const CONTRACTS: readonly Contract[] = [
       'What happens to an agent’s undertaking reaches the player — the setback, the doubling-down, the abandonment — instead of progress silently accruing until a thing appears in the world with no story attached to it.',
     mechanism: {
       kind: 'event',
-      symbols: ['undertaking_checkpoint', 'undertaking_fork', 'resolveMomentPresentation', 'followedAgentIds'],
+      symbols: [
+        'undertaking_checkpoint', 'undertaking_fork', 'resolveMomentPresentation',
+        'followedAgentIds', 'pendingUndertakingMoments', 'moment_surface',
+      ],
       module: 'src/engine/undertakingCheckpoints.ts',
     },
     writeSites: [
       'src/engine/undertakingCheckpoints.ts',
       'src/engine/strategicActionLifecycle.ts',
+      'src/engine/undertakingMoments.ts',
     ],
     readSites: [
       // Until plan doc 5 builds the arc panel and moment cards, the read side is
@@ -2237,8 +2241,12 @@ export const CONTRACTS: readonly Contract[] = [
     //
     // THR-1299 slice 1 moved the follow predicate to `src/engine/followedAgents.ts`
     // and made it court-position-aware, so `dormant` and `watched` threads no
-    // longer resolve `interrupt`. That narrows *which* moments would reach a
-    // player; it does not add a player-facing reader, so the row stays LEAKED and
+    // longer resolve `interrupt`. Slice 2 gave the stream a consumable half: every
+    // moment now lands as a `UndertakingMomentRecord` in
+    // `state.pendingUndertakingMoments` (capped, traced as `moment_surface`), the
+    // completion class emits at last, foundings emit at badge tier, and an
+    // interrupt-tier moment clears the chronicle threshold. That is the queue the
+    // surfaces will read — it is still not a surface, so the row stays LEAKED and
     // keeps its deferral. The consumer lands with the moment card (slice 3).
     deferralTicket: 'THR-1293',
   },

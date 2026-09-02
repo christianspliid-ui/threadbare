@@ -37,7 +37,7 @@ import type {
 } from './attention';
 import type { CourtPosition } from './influence';
 import type { BeatKind, BeatTrigger } from './ascendantBeat';
-import type { BehaviorFamily, DecisionFamily, StrategicVerb, StrategicExecutionMode, UndertakingHarmClass } from './strategicAction';
+import type { BehaviorFamily, DecisionFamily, StrategicVerb, StrategicExecutionMode, UndertakingHarmClass, UndertakingMomentClass } from './strategicAction';
 import type { ComplicationSeverity } from './complication';
 import type { SyllableTemplate } from './culture';
 import type { ReliabilityBand } from '../engine/intelligence';
@@ -122,6 +122,8 @@ export type TraceCategory =
   | 'undertaking_fork'
   // Follow affordance (THR-1299)
   | 'follow_change'
+  // Moment queue lifecycle (THR-1299 slice 2)
+  | 'moment_surface'
   // The one prioritization board (THR-1292 §4)
   | 'decision_board_comparison'
   | 'decision_board_error'
@@ -517,6 +519,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'undertaking_checkpoint',
   'undertaking_fork',
   'follow_change',
+  'moment_surface',
   'decision_board_comparison',
   'decision_board_error',
   'omen_selection',
@@ -2126,6 +2129,25 @@ export interface FollowChangeTrace extends TraceBase {
 }
 
 /**
+ * Trace: one moment record moved through the queue (THR-1299 slice 2).
+ *
+ * `queued` fires once per record pushed; `dropped` when the cap evicts one that
+ * nobody acknowledged; `opened` / `acknowledged` when a surface pops it and when
+ * the player dismisses it. The four events together answer the one question the
+ * checkpoint trace cannot — not *what presentation was computed* but *whether
+ * anything ever showed it* — which is the exact gap `undertaking-checkpoint-events`
+ * was registered LEAKED for.
+ */
+export interface MomentSurfaceTrace extends TraceBase {
+  category: 'moment_surface';
+  event: 'queued' | 'opened' | 'acknowledged' | 'dropped';
+  projectId: string;
+  actorId: string;
+  momentClass: UndertakingMomentClass;
+  presentation: 'interrupt' | 'badge' | 'none';
+}
+
+/**
  * Trace: what the one prioritization board would have chosen (THR-1292 §4).
  *
  * The cross-family comparison this records has **never been traced** — nothing
@@ -3176,6 +3198,7 @@ export type TraceEntry =
   | UndertakingCheckpointTrace
   | UndertakingForkTrace
   | FollowChangeTrace
+  | MomentSurfaceTrace
   | DecisionBoardComparisonTrace
   | DecisionBoardErrorTrace
   | StrategicWorldChangeTrace

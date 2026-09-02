@@ -78,8 +78,9 @@ import {
 import { isAutonomousDecisionActor } from './strategicKindReachability';
 import { scoreStrategicCandidates } from './strategicActionScoring';
 import { executeStrategicAction } from './strategicActionLifecycle';
+import { enqueueUndertakingMoments } from './undertakingMoments';
 import type { StrategicCandidateBoardTrace, StrategicActionStartedTrace } from '../types/trace';
-import type { DecisionFamily } from '../types/strategicAction';
+import type { DecisionFamily, UndertakingMomentRecord } from '../types/strategicAction';
 import type { BalanceEvent } from '../types/balanceEval';
 import { scoreUnifiedBoard } from './decisionBoard';
 import { UNIFIED_DECISION_BOARD_MODE, BOARD_SCORE_FLOOR } from '../data/strategic-action-constants';
@@ -252,6 +253,8 @@ export function phaseAgentDecision(
     ? new Map(state.clearanceGateStates)
     : undefined;
   let accumulatedStrategicState = state.strategicState;
+  // Founding moments minted by project starts this tick (THR-1299 slice 2).
+  const newMoments: UndertakingMomentRecord[] = [];
 
   // Mutable novelty record for this tick — updated as agents commit to encounters (THR-453).
   // Clone shallowly so we don't mutate the previous state's object.
@@ -1033,6 +1036,7 @@ export function phaseAgentDecision(
           if (stratResult.strategicState) {
             accumulatedStrategicState = stratResult.strategicState;
           }
+          if (stratResult.moments?.length) newMoments.push(...stratResult.moments);
 
           // THR-1184: an instant mutation can mint an edge that changes what a location
           // can host. Refresh that location's encounter pool now, or it waits for an
@@ -1843,5 +1847,8 @@ export function phaseAgentDecision(
     premonitionQueue: [...existingPremonitions, ...newPremonitions],
     encounterNoveltyRecord: noveltyRecord,
     ...(accumulatedStrategicState ? { strategicState: accumulatedStrategicState } : {}),
+    ...(newMoments.length > 0
+      ? { pendingUndertakingMoments: enqueueUndertakingMoments(state.pendingUndertakingMoments, newMoments, state.tick) }
+      : {}),
   };
 }

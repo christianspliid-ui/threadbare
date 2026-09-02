@@ -14,6 +14,7 @@ import type {
   StrategicControlState,
   StrategicHistoryEntry,
   StrategicRuntimeState,
+  UndertakingMomentRecord,
 } from '../types/strategicAction';
 import type { PendingEncounterSeed } from '../types/unifiedAction';
 import {
@@ -31,6 +32,8 @@ import {
   WARBAND_RECRUIT_CAST_KEY,
   FOUNDED_SETTLEMENT_INITIAL_PROSPERITY,
   FOUNDED_SETTLEMENT_SITE_SEARCH_RADIUS,
+  MOMENT_INTERRUPT_SIGNIFICANCE,
+  MOMENT_COMPLETION_SIGNIFICANCE,
 } from '../data/strategic-action-constants';
 import {
   createTradeRoute,
@@ -69,7 +72,9 @@ import {
   resolveUndertakingCheckpoint,
   buildResidueEvent,
   buildAbandonMintEvent,
+  buildMoment,
   classifyFailureResidue,
+  resolveMomentPresentation,
   type CheckpointBindingInput,
 } from './undertakingCheckpoints';
 import { runBindPass } from './binding/undertakingBindPass';
@@ -374,6 +379,13 @@ export interface StrategicExecutionResult {
    * are unaffected.
    */
   poolInvalidatedLocationIds?: string[];
+  /**
+   * Moment records this execution produced (THR-1299 slice 2) — today only the
+   * `started` founding of a multi-tick project, at badge tier. The caller queues
+   * them through `enqueueUndertakingMoments`; this module returns patches and does
+   * not write GameState. Optional and absent on every other execution mode.
+   */
+  moments?: UndertakingMomentRecord[];
 }
 
 /**
@@ -448,6 +460,17 @@ export function executeStrategicAction(
         status: 'active',
       };
 
+      // The founding moment (THR-1299 slice 2). `'started'` sat in the class union
+      // with a presentation branch and no emitter — the dead branch the plan names.
+      // Badge tier by ruling 2.1 ("foundings badge until nudge cards ship, so no
+      // interrupt is ever card-less"); the decision phase's own TickEvent already
+      // says it began, so only the record is minted here — no second chronicle line.
+      const founding = buildMoment({
+        graph, project, momentClass: 'started', tick,
+        presentation: resolveMomentPresentation(state, graph, project.actorId, 'started', project),
+        displayName: template?.displayName,
+      });
+
       return {
         strategicState: {
           ...currentState,
@@ -455,6 +478,7 @@ export function executeStrategicAction(
         },
         graphOps,
         catalystSeeded: false,
+        moments: [founding.record],
       };
     }
 
@@ -563,6 +587,11 @@ export function advanceStrategicProjects(
    * seeds used to be planted by the retired phase 2.33.
    */
   pendingEncounterSeeds: PendingEncounterSeed[];
+  /**
+   * Moment records the checkpoints produced this tick (THR-1299 slice 2), in
+   * emission order. The phase queues them; this module returns patches.
+   */
+  moments: UndertakingMomentRecord[];
 } {
   const currentState = state.strategicState ?? { projects: [], controls: [], history: [] };
   const updatedProjects: StrategicProjectRuntime[] = [];
@@ -571,6 +600,7 @@ export function advanceStrategicProjects(
   const newHistory: StrategicHistoryEntry[] = [];
   const events: import('../types/gameState').TickEvent[] = [];
   const pendingEncounterSeeds: PendingEncounterSeed[] = [];
+  const moments: UndertakingMomentRecord[] = [];
 
   // Divine `Sever the Bond` sets a flag on an agent; translating it onto the edge is
   // a once-per-tick sweep, not per-project work (rehomed from phase 2.33).
@@ -668,6 +698,13 @@ export function advanceStrategicProjects(
     const checkpoint = resolveUndertakingCheckpoint(state, graph, boundProject, tick, bindingInput);
     events.push(...checkpoint.events);
     const checked = checkpoint.project;
+    // Every moment but the completion queues as the checkpoint built it. The
+    // completion record is held back until the christening below has named the
+    // work, so the card and the chronicle line agree on what got finished.
+    const completionMoment = checkpoint.moments?.find(m => m.momentClass === 'completion');
+    for (const moment of checkpoint.moments ?? []) {
+      if (moment.momentClass !== 'completion') moments.push(moment);
+    }
 
     // ─── Mentorship arc, driven by the band this checkpoint produced ──
     // The retired phase read a checkpoint array for a record stamped with the
@@ -881,12 +918,24 @@ export function advanceStrategicProjects(
       // The completion moment carries the christened name instead of the template's
       // display name — "Kael completes The Saltway Ring", not "…completes Establish
       // Trade Network". The name is the payoff; the template id never reaches a player.
+      //
+      // THR-1299 slice 2: this is the completion moment's one TickEvent. It takes the
+      // record's id, so the card is reachable from the chronicle line, and its
+      // significance follows the record's presentation — an interrupt-tier completion
+      // is the chronicle moment the plan names, a badge-tier one keeps the old value.
+      const finishedName = christened?.name ?? candidate.displayName;
+      const completionMessage = `${actorNode?.name ?? project.actorId} completes: ${finishedName}`;
+      if (completionMoment) {
+        moments.push({ ...completionMoment, label: completionMessage, undertakingName: finishedName });
+      }
       events.push({
-        id: `strategic_complete_${project.projectId}_${tick}`,
+        id: completionMoment?.id ?? `strategic_complete_${project.projectId}_${tick}`,
         tick,
         type: 'agent_action',
-        message: `${actorNode?.name ?? project.actorId} completes: ${christened?.name ?? candidate.displayName}`,
-        significance: 0.6,
+        message: completionMessage,
+        significance: completionMoment?.presentation === 'interrupt'
+          ? MOMENT_INTERRUPT_SIGNIFICANCE
+          : MOMENT_COMPLETION_SIGNIFICANCE,
         actorId: project.actorId,
       });
 
@@ -986,6 +1035,7 @@ export function advanceStrategicProjects(
     events,
     poolInvalidatedLocationIds,
     pendingEncounterSeeds,
+    moments,
   };
 }
 

@@ -285,6 +285,41 @@ export const UNDERTAKING_INSPIRE_FLAG = 'undertakingInspireBonus';
 /** Actor property carrying a pending sabotage rider. */
 export const UNDERTAKING_SABOTAGE_FLAG = 'undertakingSabotaged';
 
+// ─── Moment surfaces (THR-1299 slice 2) ─────────────────────────────
+//
+// A moment is what a checkpoint *says* to the player — the setback, the
+// doubling-down, the abandonment, the finish. Every moment lands as a TickEvent
+// and as a record in `state.pendingUndertakingMoments`; these constants decide
+// how loud each one is and how many the queue keeps.
+
+/**
+ * FIFO cap on `pendingUndertakingMoments`. Overflow drops the oldest record with a
+ * `moment_surface{dropped}` trace — the `playerReceipts` idiom — so a headless run
+ * where nothing acknowledges never grows unbounded.
+ */
+export const MOMENT_QUEUE_MAX = 8;
+
+/**
+ * TickEvent significance for an interrupt-tier moment. Sits above `phaseNarrative`'s
+ * 0.8 chronicle threshold on purpose: a moment loud enough to interrupt the player
+ * is a chronicle line by definition, and this is the one constant that makes it so —
+ * no orchestrator threshold is touched.
+ */
+export const MOMENT_INTERRUPT_SIGNIFICANCE = 0.85;
+
+/** Significance of a badge-tier setback (complication, abandonment) — chronicle-silent. */
+export const MOMENT_SETBACK_SIGNIFICANCE = 0.55;
+
+/** Significance of any other badge-tier moment (at-cost, fork, founding). */
+export const MOMENT_BADGE_SIGNIFICANCE = 0.4;
+
+/**
+ * Significance of a badge-tier completion — the one moment class whose TickEvent
+ * the lifecycle emits (it alone knows the christened name), not the checkpoint.
+ * Was the literal `0.6` on that event before slice 2 named it.
+ */
+export const MOMENT_COMPLETION_SIGNIFICANCE = 0.6;
+
 // ─── The one prioritization board (THR-1292 §4) ─────────────────────
 //
 // An agent's decision *was* three sequential winner-take contests between

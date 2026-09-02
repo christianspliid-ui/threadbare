@@ -36,7 +36,7 @@ import type { VisibilityMap } from './visibility';
 import type { FamiliarityMap } from './familiarity';
 import type { AgentKnowledge } from './agentKnowledge';
 import type { DigestEntry, ThreadTug, QueuedStoryBeat } from './attention';
-import type { StrategicRuntimeState } from './strategicAction';
+import type { StrategicRuntimeState, UndertakingMomentRecord } from './strategicAction';
 import type { OmenState, EmittedOmen } from './omen';
 import type { EncounterNoveltyRecord } from '../engine/encounterScoring';
 
@@ -290,6 +290,20 @@ export interface GameState {
    * like a fresh one. Single writer: `src/engine/followedAgents.ts`.
    */
   mutedAgentIds?: readonly string[];
+
+  /**
+   * The moment queue (THR-1299 slice 2) — what an undertaking said to the player
+   * and has not yet been acknowledged.
+   *
+   * Producers are the checkpoint pass (`phaseStrategicProjects`) and project
+   * activation (`phaseAgentDecision`); the single writer for the array itself is
+   * `src/engine/undertakingMoments.ts`, which caps it at `MOMENT_QUEUE_MAX` and
+   * traces every push, drop and acknowledgement. Consumers are doc 5's surfaces:
+   * the moment card pops the oldest unacknowledged `interrupt` record, the thread-row
+   * badge counts the rest. Optional/additive — a save without it loads as an empty
+   * queue, and a headless run that acknowledges nothing stays bounded by the cap.
+   */
+  pendingUndertakingMoments?: readonly UndertakingMomentRecord[];
 
   // Narrative
   tickEvents: TickEvent[];           // events from the current tick (cleared each tick)

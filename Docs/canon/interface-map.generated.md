@@ -193,7 +193,7 @@ remediation ticket or the build fails.
 |---|---|---|---|---|---|
 | `mentorship-rides-undertaking-checkpoints` | A mentorship is a relationship that a piece of work drives. Folding it onto the undertaking checkpoint means the bond moves when the teaching actually goes well or badly, instead of a second phase inferring how it went from the leftovers of a first one. | edge-prop: `mentors`, `undertakingId` | Ambitions & Undertakings | 🟢 LIVE | — |
 | `shared-step-resolution-two-callers` | One band ladder decides every outcome in the game. An encounter step and an undertaking checkpoint that disagreed about what a critical failure is would be two games wearing one vocabulary — the same roll reading as disaster in a scene and a shrug in a project. | function: `resolveStepCore`, `mapResolverOutcomeToStep` | Encounters & Dilemmas | 🟢 LIVE | — |
-| `undertaking-checkpoint-events` | What happens to an agent’s undertaking reaches the player — the setback, the doubling-down, the abandonment — instead of progress silently accruing until a thing appears in the world with no story attached to it. | event: `undertaking_checkpoint`, `undertaking_fork`, `resolveMomentPresentation`, `followedAgentIds` | Attention, Chronicle & Narrative | 🔴 LEAKED | THR-1293 |
+| `undertaking-checkpoint-events` | What happens to an agent’s undertaking reaches the player — the setback, the doubling-down, the abandonment — instead of progress silently accruing until a thing appears in the world with no story attached to it. | event: `undertaking_checkpoint`, `undertaking_fork`, `resolveMomentPresentation`, `followedAgentIds`, `pendingUndertakingMoments`, `moment_surface` | Attention, Chronicle & Narrative | 🔴 LEAKED | THR-1293 |
 
 ### War, Armies & Battles
 
@@ -1240,10 +1240,10 @@ exit
 - **Intent:** What happens to an agent’s undertaking reaches the player — the setback, the doubling-down, the abandonment — instead of progress silently accruing until a thing appears in the world with no story attached to it.
 - **Producer → Consumer:** Strategic Projects & Control → Attention, Chronicle & Narrative
 - **Module:** `src/engine/undertakingCheckpoints.ts`
-- **Production hits:** 7 total — 1 write, 0 read, 6 unclassified
-- **Write sites:** `src/engine/undertakingCheckpoints.ts`
+- **Production hits:** 12 total — 3 write, 0 read, 9 unclassified
+- **Write sites:** `src/engine/strategicActionLifecycle.ts`, `src/engine/undertakingCheckpoints.ts`, `src/engine/undertakingMoments.ts`
 - **Read sites:** —
-- **Other hits:** `src/components/Game/GameView.tsx`, `src/engine/followedAgents.ts`, `src/engine/gameInit.ts`, `src/types/gameState.ts`, `src/types/strategicAction.ts` +1 more
+- **Other hits:** `src/components/Game/GameView.tsx`, `src/data/strategic-action-constants.ts`, `src/engine/followedAgents.ts`, `src/engine/gameInit.ts`, `src/engine/phaseAgentDecision.ts` +4 more
 - **Verdict:** Tier 2: write sites present, declared read sites empty — the consumer is starving. — or the declared symbol does not appear at the declared site: grep 'undertaking_checkpoint' src/engine/traceBuffer.ts before treating this as a leak.
 
 ### `undertaking-creation-effects` — 🔵 UNVERIFIED-OK

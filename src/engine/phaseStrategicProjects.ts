@@ -13,6 +13,7 @@ import {
   LOCATION_BOOST_EXPIRY_SUFFIX,
 } from '../data/strategic-action-constants';
 import { advanceStrategicProjects } from './strategicActionLifecycle';
+import { enqueueUndertakingMoments } from './undertakingMoments';
 import { applyEncounterCacheUpdate, type SimulationRuntime } from './simulationRuntime';
 
 /**
@@ -102,6 +103,13 @@ export function phaseStrategicProjects(
       ...(state.pendingEncounterSeeds ?? []),
       ...result.pendingEncounterSeeds,
     ];
+  }
+  // The moment queue (THR-1299 slice 2): what the checkpoints said to the player
+  // this tick, capped and traced by the one writer.
+  if (result.moments.length > 0) {
+    out.pendingUndertakingMoments = enqueueUndertakingMoments(
+      state.pendingUndertakingMoments, result.moments, state.tick,
+    );
   }
   return out;
 }
