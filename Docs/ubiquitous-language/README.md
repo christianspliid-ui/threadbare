@@ -80,6 +80,9 @@ Load this file at session start (referenced from CLAUDE.md). Load specific shard
 - **[Christening](./Agents.md#christening)** — naming at completion, and only at completion; a working possessive holds until then and failures are never christened
 - **[Failure-Name Register](./Agents.md#failure-name-register)** — where a *visible* failed undertaking is recorded on the ground; a register, not a name, and clean failures write nothing
 - **[Freehold](./Agents.md#freehold)** — the attachment category for an owned place or resource; engine literal `'holding'`, said *freehold* in prose so it never collides with the Group Cohesion band
+- **[Grievance](./Agents.md#grievance)** — a drive minted from a harm, naming its culprit; a `grievance` block on a `pursues` edge, one slot per agent, per-instance not per-ambition
+- **[Grudge](./Agents.md#grudge)** — standing blood as a bidirectional `hostile_to` edge with provenance; relationship colour, never a driver — one edge, band and grievance senses reconciled
+- **[Heat](./Agents.md#heat)** — a grievance's decaying urgency on the one decision board; player-facing only as *burning · hot · cooling*, never a number
 
 ### Encounters
 

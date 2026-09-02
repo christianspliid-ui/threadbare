@@ -546,3 +546,61 @@ Deliberately **not** a `PossessionSubcategory`: a freehold is a different *kind*
 When you read `'holding'` as an `AttachmentCategory`, that is this term. When you read "the company is holding", that is `[[Group Cohesion]]`.
 
 Code anchors: `src/engine/holdings.ts` (`grantHolding`, `reconcileHoldingFaces`, `refreshHoldingFaceNames`), `src/types/attachments.ts` (`AttachmentCategory`, `ATTACHMENT_CATEGORY_NAMES`), `src/data/attachment-slot-constants.ts` (`SLOT_TAG_DISPLAY_NAMES`).
+
+---
+
+### Grievance
+
+**Aliases:** vendetta (prose), the `grievance` block on a `pursues` edge (engine)
+**Also see:** `[[Grudge]]`, `[[Heat]]`, `[[Undertaking]]`, `[[Broken]]`, `[[AxiologicalProfile]]`
+**Status:** canonical
+
+A drive minted from a harm — an ambition that names *who it is against*. Where an ordinary ambition says what an agent wants, a grievance says what they want **and because of whom**.
+
+**Not a node type and not a new ambition.** A grievance is the optional `grievance` block on an ordinary `pursues` edge: `grievance: true`, `culpritAgentId`, `harmMagnitude`, `heat`, `chainDepth`. It is therefore **per-instance, not per-ambition** — two mortals avenging two different harms pursue the same ambition, and only their own edge knows whose harm it was. Milestone conditions read the culprit off the edge they are being evaluated for (`grievance_culprit_eliminated` carries no fields for exactly this reason), which is what makes a vengeance beat authorable without an author naming a target nobody can know at authoring time.
+
+**One slot per agent.** A repeat harm from the same hand *feeds* the standing grievance's heat (`GRIEVANCE_HEAT_FEED`, below 1.0 so a second injury reignites rather than stacks); only a decisively heavier harm takes the slot (`GRIEVANCE_REPLACE_RATIO`, above 1.0 so ties and near-ties never displace and the agent never trades the slot back and forth pursuing neither). Nobody queues vendettas.
+
+**Who can hold one.** A victim who cannot carry it — dead, or `[[Broken]]` — passes it to kin or closest sworn bond. An **ambient** victim gets a `[[Grudge]]` instead of a drive: an agent who never consults the decision board would otherwise carry a promise the world cannot keep. Chains stay shallow — past `GRIEVANCE_CHAIN_DEPTH_MAX` (2), further victims get grudge edges only, whatever their tier, so one razed village does not end with every agent in the region pursuing somebody. **The god is never a party:** no mortal holds a grievance against the Ascendant.
+
+**Four ways an account closes**, and the asymmetry between them is why the loop terminates rather than compounding. *Satisfaction* (the grievance's own ambition completes, or the culprit dies) and *settlement* (somebody buys the quarrel off) deliberately write **no** grudge edge; *cooling* (see `[[Heat]]`) and replacement both do. A grudge is what remembers an account that was never closed — writing one after a successful revenge would leave the pair *more* hostile than the harm did, and no chain could ever end. *Suppression* is the fourth: a **proportionate** reprisal mints nothing back, and only an answer overshooting `GRIEVANCE_OVERSHOOT_RATIO` re-opens the account, which is what ends most feuds at one round by construction rather than by a cap.
+
+Code anchors: `src/engine/grievance/grievanceLifecycle.ts` (`GrievanceSeed`, `resolveGrievanceDisposition`, `findActiveGrievanceEdge`, `satisfyGrievance`, `settleGrievance`, `demoteGrievanceToGrudge`), `src/types/ambition.ts` (the `grievance` block, `grievance_culprit_eliminated`), `src/data/grievance-constants.ts`, `src/data/ambition-minting-rules.ts`.
+
+---
+
+### Grudge
+
+**Aliases:** standing blood, a `hostile_to` edge with provenance
+**Also see:** `[[Grievance]]`, `[[Heat]]`, `[[Falling Out]]`, `[[Company]]`, `[[Group]]`
+**Status:** canonical
+
+The standing hostility between two actors: a **bidirectional** `hostile_to` edge stamped with the tick it began and a `cause`. Relationship colour, **not a driver** — a grudge never puts anything on the decision board. Bidirectional because a grudge is a state of the relationship rather than of one party: having razed someone's home puts you at odds with them whether or not you feel wronged in return.
+
+**One edge with a provenance field, not two senses.** The word already appeared in canon prose for band contests — *"There is blood between them and …"* — before the reactive loop existed, and the two uses are the same mechanism, not a collision. Band opposition has written this edge since THR-731 with `cause: 'group_engagement'`; a cooled grievance writes the *same* edge with `cause: 'grievance_cooled'`, through the *same* single writer. The mortal sheet renders both through one clause map, so the sentence a player reads is identical in shape and differs only in why. Reconciled, not forked (THR-1379).
+
+**Actors of any kind.** Bands write grudges between `[[Group]]` nodes; grievances write them between individuals. The edge does not care which.
+
+**It never fades, and it makes the next harm worse.** A fresh harm from a culprit who already holds a grudge edge with the victim opens hotter (`GRIEVANCE_REIGNITION_BOOST`) — this is what makes the second betrayal worse than the first. Writing is idempotent and leaves an existing edge exactly as it is: refreshing `since` on every pass would make an old grudge indistinguishable from a fresh one, and the re-ignition rule reads the edge's *existence*, not its age.
+
+**Provenance is a closed set, and its key diverges by writer.** `GrudgeCause` is an enum rather than a free string because motive gates classify it to decide whether a destroy verb is licensed, and a typo in a free-form cause would silently read as "no grudge" — a gate that fails open on a misspelling is worse than one that fails closed on an unknown enum. Three older writers stamp provenance under three *different* keys (band opposition `cause`, excommunication `reason`, mentorship severance `basis`); the grievance writer joined the `cause` camp rather than widening a documented divergence, and readers must still handle all three. A feud declared by a notable writes the edge with no provenance key at all, which the prose reports honestly as *"something neither of them speaks of"* rather than guessing.
+
+Code anchors: `src/engine/grievance/grudgeEdge.ts` (`writeGrudge`, `hasGrudge`, `GrudgeCause`), `src/engine/groups/bandOpposition.ts`, `src/data/grievance-prose.ts` (`GRUDGE_CAUSE_CLAUSES`, `getGrudgeCauseClause`), `src/engine/undertakingMotive.ts` (`GRUDGE_PROVENANCE`).
+
+---
+
+### Heat
+
+**Aliases:** grievance heat
+**Also see:** `[[Grievance]]`, `[[Grudge]]`
+**Status:** canonical
+
+A `[[Grievance]]`'s decaying urgency. It opens at the founding harm's magnitude scaled by `GRIEVANCE_HEAT_INITIAL_SCALE` and clamped to `GRIEVANCE_HEAT_INITIAL_MAX`, loses `GRIEVANCE_HEAT_DECAY_PER_CHECK` on each 15-tick milestone pass, and at or below `GRIEVANCE_COOL_THRESHOLD` the drive demotes to a `[[Grudge]]` and leaves the board.
+
+**Heat *is* the urgency mechanism — there is no revenge scheduler.** It contributes `GRIEVANCE_URGENCY_WEIGHT` scaled by `heat / GRIEVANCE_HEAT_INITIAL_MAX` to the strategic candidate's weight on the one shared decision board, so a fresh vendetta outranks ordinary ambitions, competes fairly as it cools, and eventually leaves on its own. Urgency is the decay curve rather than a scheduling special case.
+
+**The demotion floor sits above zero deliberately.** A drive decaying to exactly nothing would sit at the bottom of the board forever — technically active, never chosen, the starved-shelf shape. Demoting at a floor means a cold grievance leaves the board outright and keeps existing as relationship colour instead.
+
+**Player-facing as three words, never a numeral:** *burning* (≥ `GRIEVANCE_HEAT_BAND_BURNING`) · *hot* (≥ `GRIEVANCE_HEAT_BAND_HOT`) · *cooling* (below it, down to the demotion threshold — a real window an agent lives in, not a floor label nobody sees). Heat is a real quantity in the engine and the player has no instrument that reads it. The thresholds live in tuning and the words in content, so moving a threshold moves which word is on screen without either file learning the other's job. The band function fails soft over the whole real line rather than the 0–1 band alone: an over-ceiling heat reads `burning`, a negative or non-finite one reads `cooling` — a grievance rendering no word at all would be worse than one rendering the mildest, since the drive is on the board either way.
+
+Code anchors: `src/data/grievance-constants.ts` (the tuning constants plus the two band thresholds), `src/data/grievance-prose.ts` (`getGrievanceHeatWord`, `GrievanceHeatWord`), `src/engine/grievance/grievanceLifecycle.ts` (`decayGrievance`, `grievanceHeat01`, `demoteGrievanceToGrudge`).
