@@ -251,10 +251,10 @@ remediation ticket or the build fails.
 
 - **Intent:** Completed ambitions accumulate into a readable history of who an agent became.
 - **Producer → Consumer:** Ambitions & Undertakings → Attention, Chronicle & Narrative
-- **Production hits:** 3 total — 1 write, 1 read, 1 unclassified
+- **Production hits:** 4 total — 1 write, 1 read, 2 unclassified
 - **Write sites:** `src/engine/agentDetail.ts`
 - **Read sites:** `src/components/Game/tabs/ChronicleTab.tsx`
-- **Other hits:** `src/engine/journeyEngine.ts`
+- **Other hits:** `src/engine/agentArc.ts`, `src/engine/journeyEngine.ts`
 - **Verdict:** Verified 2026-07-24: THR-721: getCompletedAmbitions (agentDetail.ts) walks completed `pursues` edges and populates AgentInfoCardData.completedAmbitions; ChronicleTab §Completed Ambitions renders it (replacing the "will appear here" placeholder). The missing consumer this row named now exists; browser-verified at 1920×1080.
 
 ### `ambition-motive-receipts` — 🟢 LIVE
@@ -1033,10 +1033,10 @@ exit
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 253 total — 1 write, 1 read, 251 unclassified
+- **Production hits:** 254 total — 1 write, 1 read, 252 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts` +246 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts` +247 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `relocation-intent-steers-agent-movement` — 🔵 UNVERIFIED-OK
@@ -1240,10 +1240,10 @@ exit
 - **Intent:** What happens to an agent’s undertaking reaches the player — the setback, the doubling-down, the abandonment — instead of progress silently accruing until a thing appears in the world with no story attached to it.
 - **Producer → Consumer:** Strategic Projects & Control → Attention, Chronicle & Narrative
 - **Module:** `src/engine/undertakingCheckpoints.ts`
-- **Production hits:** 13 total — 3 write, 2 read, 8 unclassified
+- **Production hits:** 16 total — 3 write, 2 read, 11 unclassified
 - **Write sites:** `src/engine/strategicActionLifecycle.ts`, `src/engine/undertakingCheckpoints.ts`, `src/engine/undertakingMoments.ts`
 - **Read sites:** `src/components/Game/GameView.tsx`, `src/components/Game/MomentCard.tsx`
-- **Other hits:** `src/data/strategic-action-constants.ts`, `src/engine/followedAgents.ts`, `src/engine/gameInit.ts`, `src/engine/phaseAgentDecision.ts`, `src/engine/phaseStrategicProjects.ts` +3 more
+- **Other hits:** `src/components/Game/FollowToggle.tsx`, `src/components/Game/momentBadgeModel.ts`, `src/data/strategic-action-constants.ts`, `src/engine/agentArc.ts`, `src/engine/followedAgents.ts` +6 more
 - **Verdict:** Verified 2026-09-02: THR-1299 slice 3. `MomentCard.tsx` renders the oldest unacknowledged interrupt-tier `UndertakingMomentRecord`; GameView fills its `pendingMoment` slot only while no other interrupt is open and renders the card only while that stays true, so collation (encounter first, never two modals) holds by construction rather than by a priority table. The card is in the interrupt registry (`interruptModalOpen`, `getDebugOpenModals` → `MomentCard`) so it auto-pauses with its cause named on the face. Acknowledge routes through `acknowledgeUndertakingMoment`, the queue's single writer, and traces `acknowledged`; the pop traces `opened`. Non-vacuous by `src/components/Game/__tests__/GameView-momentCard.test.tsx`, which renders the real GameView, follows every mortal with a live undertaking through the debug lever, drives real ticks through the tick bridge until an interrupt-tier record exists, and asserts the card is in `getDebugOpenModals`, that acknowledging it flips the record through the live state provider, and that the `opened` / `acknowledged` traces fired; plus `momentCardModel.test.ts` (chips are state-backed per class, the named-loss complication, the divine-hand chip, the forward drive link off a real outcome node, the action slot gated on a live project) and `MomentCard.test.tsx` (every class renders without numerals, acknowledge, the two-beat Inspire arm, an unaffordable verb fails inline). Browser proof at 1920×1080 on `?view=game&seeded&size=medium` via `__DEBUG.followAgent` + `__DEBUG.tick`, recorded on the closing PR.
 
 ### `undertaking-creation-effects` — 🔵 UNVERIFIED-OK

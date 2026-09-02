@@ -158,6 +158,20 @@ export function IntentSection({ intents, variant = 'modal', onOpenEntity }: Inte
                     {CATEGORY_LABELS[intent.category]}
                   </div>
 
+                  {/* Row 2b: the flavor line — the ambition's own authored prose,
+                      surfaced rather than re-written (THR-1299 slice 4, THR-1279
+                      verdict 2: NAME + flavor). Absent when the template authored
+                      none; the name stands alone. */}
+                  {intent.flavorText && (
+                    <p
+                      data-testid={`intent-flavor-${intent.templateId}`}
+                      className="text-xs italic mb-1.5"
+                      style={{ color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}
+                    >
+                      {intent.flavorText}
+                    </p>
+                  )}
+
                   {/* Row 3: milestone pips */}
                   <MilestonePips
                     completed={intent.completedMilestones}
