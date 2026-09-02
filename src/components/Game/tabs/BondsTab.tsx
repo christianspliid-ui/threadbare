@@ -2,6 +2,7 @@ import type { AgentInfoCardData } from '../../../engine/agentDetail';
 import type { AgentKnowledge } from '../../../types/agentKnowledge';
 import { SectionHeading } from '../../shared/SectionHeading';
 import { Tooltip } from '../../shared/Tooltip';
+import { EntityLink } from '../../shared/EntityLink';
 
 // ─── Knowledge level helpers ──────────────────────────────────────
 
@@ -57,9 +58,11 @@ const SOURCE_LABELS: Record<string, string> = {
 interface BondsTabProps {
   card: AgentInfoCardData;
   knowledge?: AgentKnowledge;
+  /** Opens the other party's sheet from a grudge line (THR-1298). */
+  onOpenEntity?: (id: string) => void;
 }
 
-export function BondsTab({ card, knowledge }: BondsTabProps) {
+export function BondsTab({ card, knowledge, onOpenEntity }: BondsTabProps) {
   const showFaction = hasKnowledge(card.knowledgeLevel, 'recognised') && card.factionName && card.factionRank;
 
   // Bonds to show — revealed bonds augmented by knowledgeLevel fallback
@@ -148,6 +151,25 @@ export function BondsTab({ card, knowledge }: BondsTabProps) {
           </p>
         )}
       </section>
+
+      {/* Standing grudges (THR-1298). Rendered only when blood exists — an agent who
+          has wronged nobody gets no heading, so the section's presence is itself the
+          signal. Separate from Relationships because a soured bond can sweeten and a
+          grudge is a fact about what happened. */}
+      {(card.grudges?.length ?? 0) > 0 && (
+        <section data-testid="modal-grudges">
+          <SectionHeading as="h2">Blood</SectionHeading>
+          <div className="space-y-2">
+            {card.grudges!.map(grudge => (
+              <p key={grudge.targetId} className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                {'There is blood between them and '}
+                <EntityLink id={grudge.targetId} name={grudge.targetName} onOpenEntity={onOpenEntity} />
+                {` — ${grudge.causeClause}.`}
+              </p>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Agreements — placeholder */}
       <section>

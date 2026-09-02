@@ -428,6 +428,34 @@ Why: TheFantasyWorldSimulator/Vision/02-non-negotiables.md (§1 — the god read
 
 ---
 
+## 10.7 The Reactive Loop — how harm becomes somebody's next drive
+
+**A harm done to someone becomes what they want next.** When a mortal's undertaking ends in a way that costs another party — a holding razed, a network severed, a name killed, or the actor's own work abandoned — the world writes an outcome event naming the **culprit** and the **victim**, and that event offers the wronged party a set of drives shaped by their temperament [IMPL — THR-1298; `grievance/undertakingOutcomeNode.ts` emits at the four undertaking terminals, `UNDERTAKING_MINTING_RULES` supplies the candidates, and the existing THR-726 event-minted lane picks one through the personality funnel]. The candidate set is a *set*: the same razing offers vengeance, rebuilding, guarding, and flight, and which one takes hold is the victim's character rather than the world's verdict. **The god is not a party to any of it** — every emission site is a mortal-driven undertaking terminal, and a defensive guard drops an outcome that would name the ascendant as culprit [IMPL — THR-1282 ruling, asserted rather than trusted].
+
+A drive minted from a harm is a **grievance**: it names its culprit, carries **heat**, and reads on the sheet as one sentence — *"burning · against Oswen, after the razing of Thornhall"* — never as a number [IMPL — `grievance` block on the `pursues` edge; heat bands `burning / hot / cooling`]. A grievance is **per-instance, not per-ambition**: two mortals avenging two different harms pursue the same ambition, and only their own edge knows whose harm it was.
+
+**A grievance ends.** Four ways, and the design is that most feuds die at one round rather than growing:
+
+- **It cools.** Heat decays on the ordinary milestone pass, and below the threshold the vendetta leaves the board and becomes a permanent **grudge** — relationship colour, no longer a drive [IMPL — `GRIEVANCE_HEAT_DECAY_PER_CHECK`, `GRIEVANCE_COOL_THRESHOLD`]. Urgency *is* that decay curve: a fresh vendetta outranks ordinary wants on the decision board and competes fairly as it cools. There is no revenge scheduler anywhere.
+- **It is answered.** An undertaking that completes the grievance's own ambition, or the culprit's death, satisfies it — and matching is on the *ambition*, so avenging a razed hall by burning the culprit's charts has still answered the harm [IMPL — the completion terminal and the `grievance_culprit_eliminated` milestone condition].
+- **It is displaced.** One active grievance per mortal. A repeat harm feeds the standing one's heat; only a decisively heavier harm takes the slot, and the displaced grievance closes as a grudge rather than vanishing [IMPL — `GRIEVANCE_REPLACE_RATIO`].
+- **It passes on.** A dead or Broken victim's vendetta goes to their strongest positive bond, the culprit excluded. No bond ends the chain [IMPL — succession in `grievanceLifecycle.ts`].
+
+**Answering is not the same as wronging.** A proportionate reprisal mints nothing back at the party it lands on — only an answer that *overshoots* re-opens the account, which is what ends most chains by construction rather than by a cap [IMPL — `GRIEVANCE_OVERSHOOT_RATIO`]. Past two links, further victims get grudges only, so chains stay spotlight-only. And a mortal below the spotlight — who structurally cannot pursue a drive — gets the grudge without the vendetta, rather than a promise the world could not keep.
+
+**What a grudge is.** Not a soured bond: a bond that has soured can sweeten, and a grudge is a fact about what happened. It never decays, it renders as prose on the mortal sheet — *"There is blood between them and Oswen — an old wrong that never quite closed"* — and it is what a cold vendetta leaves behind [IMPL — the Blood section on the character sheet's Bonds tab, reading the `hostile_to` edges]. It also licenses: a standing grudge is one of the motives that lets a mortal aim a destroy verb at someone's holdings in the first place.
+
+**Honest gap.** The lane is proved end to end on a constructed scenario, but in 300 ticks of ordinary play on seeds 42 and 99 it minted **zero** grievances: every culprit-carrying harm landed either on a faction (which holds no drives) or on a mortal already carrying two wants, and the free-slot gate admits no third [DESIGN — supply, not mechanism; measured 2026-09-02, tracked as [THR-1383](https://linear.app/threadbare/issue/THR-1383)]. A vendetta cannot currently displace an ordinary want, only another vendetta.
+
+```
+Owns: synthesis only.
+Definitions: Docs/ubiquitous-language/Agents.md (Ambition) — grievance/grudge/heat proposed in THR-1379
+Spec: Docs/plans/2026-09-01-thr-1298-reactive-loop.md
+Why: TheFantasyWorldSimulator/Vision/00-north-star.md (§2 — the causal chain a player can follow)
+```
+
+---
+
 ## 11. Winning and Losing
 
 A run ends one of two ways. **The Mandate completes** — your declared win-state is satisfied. The Doom Clock had not yet culminated, so the world survives and *you* shaped what survives. **The Doom Clock culminates** — the Unmaking arrives before the Mandate is satisfied. The world is remade or unmade, depending on the archetype.

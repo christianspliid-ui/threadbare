@@ -11,6 +11,7 @@
 import type { ChapterRecord } from '../../types/chapterRecord';
 import type { StepOutcome, UnifiedActionOutcome } from '../../types/unifiedAction';
 import { outcomePhrase } from '../../engine/aftermathWords';
+import { EntityLink } from '../shared/EntityLink';
 
 interface ChapterViewProps {
   chapter: ChapterRecord;
@@ -62,38 +63,6 @@ const FINAL_OUTCOME_TONE: Record<UnifiedActionOutcome, string> = {
 
 /** The two rare-tier bands a god notices — get a heavier accent weight in the header. */
 const RARE_OUTCOMES: ReadonlySet<UnifiedActionOutcome> = new Set(['critical_success', 'critical_failure']);
-
-function EntityLink({
-  id,
-  name,
-  onOpenEntity,
-}: {
-  id: string;
-  name: string;
-  onOpenEntity?: (id: string) => void;
-}) {
-  if (!onOpenEntity) return <span style={{ color: 'var(--text-primary)' }}>{name}</span>;
-  return (
-    <button
-      type="button"
-      onClick={() => onOpenEntity(id)}
-      style={{
-        background: 'none',
-        border: 'none',
-        padding: 0,
-        margin: 0,
-        cursor: 'pointer',
-        color: 'var(--accent-gold, #d4af37)',
-        textDecoration: 'underline',
-        textUnderlineOffset: '2px',
-        font: 'inherit',
-      }}
-      aria-label={`${name} — open profile`}
-    >
-      {name}
-    </button>
-  );
-}
 
 function Prose({ text }: { text: string }) {
   const paragraphs = text.split('\n\n').map(p => p.trim()).filter(Boolean);

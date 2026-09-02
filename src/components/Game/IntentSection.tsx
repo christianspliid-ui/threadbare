@@ -12,11 +12,60 @@ import { useEffect, useRef, useState } from 'react';
 import type { ActiveIntent } from '../../engine/agentDetail';
 import { CATEGORY_GLYPHS, CATEGORY_COLORS, CATEGORY_LABELS } from '../../data/ambition-categories';
 import { SectionHeading } from '../shared/SectionHeading';
+import { EntityLink } from '../shared/EntityLink';
 
 interface IntentSectionProps {
   intents: ActiveIntent[];
   /** 'modal' uses CSS var tokens; 'panel' uses amber/stone Tailwind palette */
   variant?: 'modal' | 'panel';
+  /** Opens the culprit's own sheet from a vendetta's provenance line (THR-1298). */
+  onOpenEntity?: (id: string) => void;
+}
+
+/**
+ * Where a drive came from, when it did not come from the agent (THR-1298 slice 7).
+ *
+ * Renders nothing for a self-chosen ambition, which is most of them — the line exists to
+ * mark the ones the world put there, so printing it universally would erase the
+ * distinction it is for.
+ *
+ * A vendetta reads as one sentence rather than a labelled field: "burning · against
+ * Kael Thornweaver, after the razing of Thornhall" is the same three facts as three
+ * key:value rows and is a thing a player can read (Laws 13/14; key:value is unfinished
+ * UX). The heat is a word — the numeral stays in the engine.
+ */
+function ProvenanceLine({
+  intent,
+  color,
+  onOpenEntity,
+}: {
+  intent: ActiveIntent;
+  color: string;
+  onOpenEntity?: (id: string) => void;
+}) {
+  const { grievance, mintedByLabel } = intent;
+  if (!grievance && !mintedByLabel) return null;
+
+  return (
+    <div className="text-xs mt-1.5 italic" style={{ color: 'var(--text-tertiary)' }}>
+      {grievance ? (
+        <>
+          <span style={{ color, fontStyle: 'normal' }}>{grievance.heatWord}</span>
+          {grievance.culpritName && (
+            <>
+              {' · against '}
+              {grievance.culpritId
+                ? <EntityLink id={grievance.culpritId} name={grievance.culpritName} onOpenEntity={onOpenEntity} />
+                : <span style={{ color: 'var(--text-primary)' }}>{grievance.culpritName}</span>}
+            </>
+          )}
+          {mintedByLabel && `, after ${mintedByLabel}`}
+        </>
+      ) : (
+        `Because of ${mintedByLabel}`
+      )}
+    </div>
+  );
 }
 
 /** Returns a string key summarising current intent state for change-detection */
@@ -24,7 +73,7 @@ function intentKey(intents: ActiveIntent[]): string {
   return intents.map(i => `${i.templateId}:${i.completedMilestones}`).join('|');
 }
 
-export function IntentSection({ intents, variant = 'modal' }: IntentSectionProps) {
+export function IntentSection({ intents, variant = 'modal', onOpenEntity }: IntentSectionProps) {
   // ── Pulse animation on intent change ────────────────────────────
   const prevKeyRef = useRef<string>(intentKey(intents));
   const [pulsedTemplateIds, setPulsedTemplateIds] = useState<Set<string>>(new Set());
@@ -124,6 +173,9 @@ export function IntentSection({ intents, variant = 'modal' }: IntentSectionProps
                     />
                   )}
 
+                  {/* Row 5: where this drive came from (THR-1298) */}
+                  <ProvenanceLine intent={intent} color={categoryColor} onOpenEntity={onOpenEntity} />
+
                 </div>
               );
             })}
@@ -194,6 +246,9 @@ export function IntentSection({ intents, variant = 'modal' }: IntentSectionProps
                     size="sm"
                   />
                 )}
+
+                {/* Row 4: where this drive came from (THR-1298) */}
+                <ProvenanceLine intent={intent} color={categoryColor} onOpenEntity={onOpenEntity} />
 
               </div>
             );
