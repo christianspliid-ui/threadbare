@@ -43,6 +43,7 @@ written, without anyone amending this page. When in doubt, durable stays.
 | `Docs/ops/backlog-grooming-<date>.md` | `daily-backlog-grooming` |
 | `Docs/ops/weekly-hygiene-<date>.md` | `weekly-project-hygiene` |
 | `Docs/ops/test-suite-health-<date>.md` | `tb-orchestrator` T3 (weekly) |
+| `Docs/ops/tick-cost-trend.tsv` | `keep-work-flowing-cc` (hourly, THR-1385 — one appended row per run, read back by `check:tick-cost` for the 7-day median) |
 
 ### Stays on `main` (and why)
 
