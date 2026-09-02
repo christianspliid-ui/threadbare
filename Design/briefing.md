@@ -1,7 +1,7 @@
 # Briefing
-**Generated:** 2026-09-02 09:56 local (07:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-02 10:55 local (08:55 UTC) · keep-work-flowing-cc
 
-> **A builder picked up the first of your two overnight documents and is already merging it.** One item is left on the shelf behind it. Nothing new needs you this hour — the list below is the same list as last hour, one hour more urgent.
+> **The reactive loop's first four slices are merged and live.** Nothing new needs you this hour. The list below is last hour's list, unchanged — and the lead ask is now one item away from biting.
 
 ## The one thing
 
@@ -14,7 +14,7 @@ Unchanged, and now **14 and 18 days** old. Two items sit in the design column wi
 
 **Either sit one of them, or say *"drop them back to the queue"* and an agent clears the jam.** One word either way. Neither asks what the game should *be* — both just need an attended session.
 
-**Why it is sharper than an hour ago.** At 08:55 both of your overnight documents sat unclaimed on the build shelf. Since then a builder claimed [the reactive loop](https://linear.app/threadbare/issue/THR-1298/the-reactive-loop-proactive-agent-actions-plan-doc-46) and its first four slices are already in [a pull request waiting to merge](https://github.com/christianspliid-ui/threadbare/pull/1765). That leaves exactly **one** item on the shelf — [the calling & the surfaces](https://linear.app/threadbare/issue/THR-1299/the-calling-and-the-surfaces-proactive-agent-actions-plan-doc-56) — and when a builder takes that one, **the shelf is empty**, because the design column that would refill it is held by the two tickets above. Still waiting further back: [the undertaking factory](https://linear.app/threadbare/issue/THR-1300/the-undertaking-factory-proactive-agent-actions-plan-doc-66), and [the one-button incident bundle](https://linear.app/threadbare/issue/THR-1134/shareable-game-state-snapshot-one-button-incident-bundle-that-works-in) you asked for on 16 August, untouched 17 days.
+**Why it is sharper than an hour ago.** [The reactive loop](https://linear.app/threadbare/issue/THR-1298/the-reactive-loop-proactive-agent-actions-plan-doc-46)'s first four slices [merged](https://github.com/christianspliid-ui/threadbare/pull/1765) and are on the live site; its fifth and last is [in a pull request](https://github.com/christianspliid-ui/threadbare/pull/1766) waiting on green. That leaves exactly **one** unclaimed item on the build shelf — [the calling & the surfaces](https://linear.app/threadbare/issue/THR-1299/the-calling-and-the-surfaces-proactive-agent-actions-plan-doc-56) — and when a builder takes it, **the shelf is empty**, because the design column that would refill it is held by the two tickets above. Still waiting further back: [the undertaking factory](https://linear.app/threadbare/issue/THR-1300/the-undertaking-factory-proactive-agent-actions-plan-doc-66), and [the one-button incident bundle](https://linear.app/threadbare/issue/THR-1134/shareable-game-state-snapshot-one-button-incident-bundle-that-works-in) you asked for on 16 August, untouched 17 days.
 
 ## Also waiting (10)
 
@@ -31,16 +31,16 @@ Unchanged, and now **14 and 18 days** old. Two items sit in the design column wi
 
 ## Queue
 
-**One item on the build shelf, one being built, nothing needing you.**
+**One item on the build shelf, one finishing, nothing needing you.**
 
-- **Being built now:** [the reactive loop](https://linear.app/threadbare/issue/THR-1298/the-reactive-loop-proactive-agent-actions-plan-doc-46) — how outcomes give mortals new drives: grudges, grievances, the culprit who caused it. Claimed since the last brief; slices 1–4 are in [PR #1765](https://github.com/christianspliid-ui/threadbare/pull/1765), waiting on the automated checks and set to merge itself on green.
-- **On the shelf, unclaimed:** [the calling & the surfaces](https://linear.app/threadbare/issue/THR-1299/the-calling-and-the-surfaces-proactive-agent-actions-plan-doc-56). Fresh, unblocked; the pickup lane runs at the top of the hour.
+- **Finishing now:** [the reactive loop](https://linear.app/threadbare/issue/THR-1298/the-reactive-loop-proactive-agent-actions-plan-doc-46) — how outcomes give mortals new drives: grudges, grievances, the culprit who caused it. Slices 1–4 merged this hour and are live; [slice 5](https://github.com/christianspliid-ui/threadbare/pull/1766) (a vendetta cools, holds one slot, and outlives its victim) is armed and set to merge itself on green.
+- **On the shelf, unclaimed:** [the calling & the surfaces](https://linear.app/threadbare/issue/THR-1299/the-calling-and-the-surfaces-proactive-agent-actions-plan-doc-56). It reached the shelf at 10:03 local, two minutes after the pickup lane's hourly run — so the next run at the top of the hour is its first real chance, not a miss.
 - Three items sit In Dev and all three are **deliberately parked**, not stalled: [the pixel-pass sweep](https://linear.app/threadbare/issue/THR-1133) (waits on your dev-server sitting), [the batch-2 sibling volume ticket](https://linear.app/threadbare/issue/THR-1130) (waits on the batch-2 approval), [the audio moments](https://linear.app/threadbare/issue/THR-1168) (waits on your feel call). Each is already on the list above; none needs freeing.
 - Nothing stale beyond the two design-column items in the lead ask, and no In-Dev item is silently blocked.
 
 ## Health
 
-**Green.** The live site is serving the newest commit, automated checks and both background jobs are healthy, the one open pull request is armed and waiting on green, and all nine scheduled tasks are on schedule. The branch reaper ran at 09:40.
+**Green.** The live site is serving the newest commit (`abc7cb7f`), automated checks and both background jobs are healthy, the one open pull request is armed and waiting on green, and all nine scheduled tasks are on schedule. The branch reaper ran at 10:40.
 
-- **The lane-silence probe still reads red for the two sleep gaps, and both are closed.** The 58-hour gap (Sunday morning → Tuesday evening) and last night's 11.7 hours are the same cause: the machine was off. Windows' own power log and every lane's last-run time agree, and two lanes reached that reading independently. Per your 8 August ruling that overnight quiet is normal, **neither is a question for you** — this line is visibility only.
+- **The lane-silence probe still reads red for the two sleep gaps, and both are closed.** The 58-hour gap (Sunday morning → Tuesday evening) and Monday night's 11.7 hours are the same cause: the machine was off. Windows' own power log and every lane's last-run time agree, and two lanes reached that reading independently. Per your 8 August ruling that overnight quiet is normal, **neither is a question for you** — this line is visibility only.
 - One piece of agent-side tidying, still outstanding: the pause marker the probe reads holds an expired window from 3 August, which is why it keeps reporting *"no pause recorded"* against sleeps that were never pauses. Housekeeping for a lane, not a decision for you.
