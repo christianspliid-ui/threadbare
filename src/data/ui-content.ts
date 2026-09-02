@@ -440,6 +440,32 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'Strategic Behavior',
     desc: 'The long game this thread is playing — the standing intent behind its move-to-move choices.',
   },
+
+  // ─── Moments (THR-1299) ─────────────────────────────────────────
+  'ui.moment_card': {
+    label: 'Moment',
+    desc: 'A turn in a followed mortal\'s long work — a costly step, trouble, a doubling-down, an abandonment or a finish. Following is what makes their moments interrupt you.',
+  },
+  'ui.moment_band': {
+    label: 'How the checkpoint went',
+    desc: 'The work rolls against a checkpoint on the same ladder an encounter uses. A clean success advances it, a costly one advances it and leaves a mark, and anything worse halts it.',
+  },
+  'ui.moment_checkpoints': {
+    label: 'Where the work stands',
+    desc: 'Each dot is a checkpoint the work must pass. Filled dots are steps already earned; the work finishes when they all are.',
+  },
+  'ui.moment_divine_hand': {
+    label: 'Your hand in it',
+    desc: 'Your Inspire or Sabotage landed on this checkpoint and moved its roll. One nudge, one roll — consumed on use.',
+  },
+  'ui.moment_set_in_motion': {
+    label: 'Set in motion',
+    desc: 'This outcome gave someone a new want. Follow the link to see the drive it became.',
+  },
+  'ui.moment_pause': {
+    label: 'Time holds',
+    desc: 'The simulation is paused while this moment is open, and resumes when you acknowledge it — unless you had paused it yourself.',
+  },
 };
 
 /** Lookup a UI tooltip by ID. Returns null if not found. */

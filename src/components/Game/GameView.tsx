@@ -11,6 +11,13 @@ import type { ScryState } from '../../types/scry';
 import { createScryState } from '../../engine/scry';
 import { resolveDebugAgent, isDebugAgentMiss } from '../../engine/debugAgentResolver';
 import { followAgent, unfollowAgent } from '../../engine/followedAgents';
+import {
+  acknowledgeUndertakingMoment,
+  markUndertakingMomentOpened,
+  nextInterruptMoment,
+} from '../../engine/undertakingMoments';
+import { canAfford } from '../../engine/influence';
+import type { UndertakingMomentRecord } from '../../types/strategicAction';
 import type { GameState } from '../../types/gameState';
 import { useSimulation } from './hooks/useSimulation';
 import type { UnifiedActionTemplate } from '../../types/unifiedAction';
@@ -132,6 +139,8 @@ import { NUDGE_REJECT_TOAST_MS } from '../../data/nudge-stage-content';
 import { buildSimpleEncounterStageModel } from './encounter-stage/adapters/buildSimpleEncounterStageModel';
 import { EncounterVeil } from './EncounterVeil';
 import { DivineReceiptModal } from './DivineReceiptModal';
+import { MomentCard } from './MomentCard';
+import { buildMomentCardModel } from './momentCardModel';
 import {
   buildActiveEncounterDisplayFromLegacyProgress,
   buildActiveEncounterDisplayFromUnifiedAction,
@@ -413,6 +422,11 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // Modal-tier receipts auto-open (oldest unacknowledged); this only holds an explicitly
   // opened toast-tier receipt. Cleared on acknowledge.
   const [openedReceiptId, setOpenedReceiptId] = useState<string | null>(null);
+  // ── Moment card (THR-1299 slice 3): the one interrupt-tier moment record on screen. ──
+  // Filled from the queue only while no other interrupt is open (encounter first,
+  // never two modals — review M4); held across an encounter that opens on top of
+  // it; released on acknowledge.
+  const [pendingMoment, setPendingMoment] = useState<UndertakingMomentRecord | null>(null);
   const handlePushToast = useCallback((toast: import('../../types/notification').ToastItem) => {
     setActionToasts(prev => {
       const now = Date.now();
@@ -2956,6 +2970,64 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     handleAcknowledgeReceipt();
   }, [activeReceipt, applyAftermathReactionForAgent, gameState.ascendantId, handleAcknowledgeReceipt]);
 
+  // ── Moment card (THR-1299 slice 3) ──
+  // The read-model is rebuilt when the tick, the projects or the pool move: the
+  // action slot's affordability and the checkpoint dots both read live state, and
+  // the forward link reads the graph, which is mutated in place — so the tick is
+  // the version signal here, never the graph object's identity.
+  const momentCardModel = useMemo(
+    () => (pendingMoment ? buildMomentCardModel(gameState, pendingMoment) : null),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [pendingMoment, gameState.strategicState, gameState.essencePool, gameState.tick],
+  );
+
+  const handleAcknowledgeMoment = useCallback(() => {
+    if (!pendingMoment) return;
+    const id = pendingMoment.id;
+    setGameState(prev => ({
+      ...prev,
+      pendingUndertakingMoments: acknowledgeUndertakingMoment(prev.pendingUndertakingMoments, id, prev.tick),
+    }));
+    setPendingMoment(null);
+  }, [pendingMoment, setGameState]);
+
+  /**
+   * The card's action slot — Inspire / Sabotage on the mortal whose moment this
+   * is. A real player cast on the shared path (THR-739): buffs apply, the pool is
+   * charged, the rider lands on the next checkpoint. Affordability is checked
+   * here so a blocked act fails fast inline (Law 48) rather than committing a
+   * cast the pool cannot pay for.
+   */
+  const handleMomentDivineAct = useCallback((templateId: string, targetAgentId: string) => {
+    const template = getUnifiedTemplateById(templateId);
+    if (!template) return { success: false, message: 'No such working.' };
+    const sphere = template.sphereAffinity ?? null;
+    const essenceCost = template.essenceCost ?? 0;
+    if (sphere && !canAfford(gameState.essencePool, sphere, essenceCost)) {
+      return { success: false, message: `Not enough ${sphere} essence.` };
+    }
+    const cast = preparePlayerCast({
+      graph: gameState.graph,
+      ascendantId: gameState.ascendantId,
+      template,
+      templateId: template.id,
+      targetId: targetAgentId,
+      tick: gameState.tick,
+      seed: gameState.seed,
+      sphere,
+      runtime,
+    });
+    setGameState(prev => commitPlayerCast(prev, {
+      cast,
+      event: {
+        idPrefix: 'evt_moment_act',
+        message: `The Ascendant ${template.narrativeTemplates?.initiation ?? template.name}.${cast.buffParenthetical}`,
+        isInterventionBeat: true,
+      },
+    }));
+    return { success: true, message: `${template.name} is cast. It lands on the next checkpoint.` };
+  }, [gameState.essencePool, gameState.graph, gameState.ascendantId, gameState.tick, gameState.seed, runtime, setGameState]);
+
   useEffect(() => {
     if (!import.meta.env.DEV || !window.__DEBUG) return;
 
@@ -3582,7 +3654,12 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // pause stays manual). Each term mirrors the surface's render condition —
   // pausing for a modal that cannot render would hold the sim behind an
   // invisible gate. Add new interrupt surfaces here AND to getDebugOpenModals.
-  const interruptModalOpen =
+  //
+  // `otherInterruptOpen` is every surface except the moment card, and is what
+  // gates the card (THR-1299 slice 3): the card fills its slot only when this is
+  // false and renders only while it stays false, so an encounter that opens in the
+  // same tick wins the race and a card never co-renders with anything.
+  const otherInterruptOpen =
     tieredEncounterState !== null
     || (meetingState !== null && !!ascendantIdentity)
     || (activePremonition !== null && !interruptsSuppressed)
@@ -3592,6 +3669,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     || !!pendingChoice
     || !!gameState.pendingEmergenceDecision
     || activeReceipt !== null;
+  const interruptModalOpen = otherInterruptOpen || pendingMoment !== null;
 
   useInterruptAutoPause({
     interruptOpen: interruptModalOpen,
@@ -3599,6 +3677,24 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     setRunning,
     forceResumeRef: forceResumeAfterInterruptsRef,
   });
+
+  // ── Moment queue consumer (THR-1299 slice 3) ──
+  // Pops the oldest unacknowledged interrupt-tier record into the slot when nothing
+  // else is up. Deliberately NOT gated on `interruptsSuppressed`: `suppressBeats`
+  // exists so a verification run can drive ticks past narrative beats, and a moment
+  // card is one of the things such a run is there to observe. The opened-trace is
+  // deduped by id because StrictMode runs effects twice in dev.
+  const openedMomentTraceRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (pendingMoment || otherInterruptOpen) return;
+    const next = nextInterruptMoment(gameState.pendingUndertakingMoments);
+    if (!next) return;
+    if (openedMomentTraceRef.current !== next.id) {
+      openedMomentTraceRef.current = next.id;
+      markUndertakingMomentOpened(next, gameState.tick);
+    }
+    setPendingMoment(next);
+  }, [pendingMoment, otherInterruptOpen, gameState.pendingUndertakingMoments, gameState.tick]);
 
   const getDebugOpenModals = useCallback((): string[] => {
     const openModals: string[] = [];
@@ -3627,6 +3723,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     if (pendingChoice) openModals.push('ChoiceSetModal');
     if (gameState.pendingEmergenceDecision) openModals.push('EmergenceDilemmaModal');
     if (activeReceipt) openModals.push('DivineReceiptModal');
+    if (pendingMoment && !otherInterruptOpen) openModals.push('MomentCard');
     if (activePremonition && !interruptsSuppressed) openModals.push('PremonitionModal');
     if (ascendantSheetOpen) openModals.push('AscendantSheet');
     if (doomDetailOpen) openModals.push('DoomClockDetail');
@@ -3669,6 +3766,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     pendingChoice,
     gameState.pendingEmergenceDecision,
     activeReceipt,
+    pendingMoment,
+    otherInterruptOpen,
   ]);
 
   const getDebugActiveUIState = useCallback(() => {
@@ -4692,6 +4791,20 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
           receipt={activeReceipt}
           onAcknowledge={handleAcknowledgeReceipt}
           onReaction={handleReceiptReaction}
+        />
+      )}
+
+      {/* Moment card — a followed mortal's undertaking said something (THR-1299 slice 3).
+          Render-gated on the other interrupts so it waits behind an encounter rather
+          than stacking on it; the slot survives, the card returns when the veil closes. */}
+      {pendingMoment && momentCardModel && !otherInterruptOpen && (
+        <MomentCard
+          open={true}
+          model={momentCardModel}
+          graph={gameState.graph}
+          onAcknowledge={handleAcknowledgeMoment}
+          onSelectAgent={openAgentProfileForId}
+          onDivineAct={handleMomentDivineAct}
         />
       )}
 
