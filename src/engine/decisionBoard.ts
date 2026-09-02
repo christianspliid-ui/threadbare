@@ -96,6 +96,11 @@ import { CHECKPOINT_EFFECT_BY_BAND, pickPrimaryReach } from './undertakingCheckp
 import { computeCapability } from './domainCapability';
 import { findAmbitionTemplate, getStrategicTemplate } from './strategicActionCandidates';
 import {
+  findGrievanceForAmbitionTemplate,
+  grievanceHeat01,
+} from './grievance/grievanceLifecycle';
+import { GRIEVANCE_URGENCY_WEIGHT } from '../data/grievance-constants';
+import {
   MINIMUM_DESIRE,
   PERSONALITY_SCORE_EXPONENT,
   PERSONALITY_SELECTION_WEIGHT,
@@ -368,23 +373,29 @@ export function ambitionPrefersVerb(
 /**
  * The family mix the THR-1280 verdict requires.
  *
- * `1 + 0.3 × [the ambition prefers this verb] + 0.2 × reachAffinity`. An
- * encounter candidate sits at a flat `1.0`, so these two weights are the whole of
+ * `1 + 0.3 × [the ambition prefers this verb] + 0.2 × reachAffinity + 0.4 × heat`.
+ * An encounter candidate sits at a flat `1.0`, so these weights are the whole of
  * how an undertaking's pull is tuned *relative* to an encounter's — the tunable
  * the plan asks for, in one place (NFP #1).
  *
- * Doc 4's grievance candidates arrive on this same board with an `urgencyWeight`
- * term; the slot is this function's third weight, declared here and filled there.
+ * The third weight is the grievance urgency term THR-1298 declared here and slice 6
+ * filled. `grievanceHeat01` is the candidate's own vendetta heat on `[0, 1]`, zero
+ * for every ordinary candidate — so a fresh vendetta outranks an ordinary ambition
+ * and, as its heat decays, competes fairly and eventually leaves the board on its
+ * own. Urgency *is* the decay curve: there is no grievance scheduler anywhere, and
+ * the plan's substrate ruling is that the one board is the competition surface.
  */
 export function computeTemperamentWeight(
   template: StrategicActionTemplate | undefined,
   reach: ReachDomain,
   ambitionNamesThisKind: boolean,
+  grievanceHeat01 = 0,
 ): number {
   const reachAffinity = template?.reachProfile?.[reach] ?? 0;
   return 1
     + UNDERTAKING_TEMPERAMENT_AMBITION_WEIGHT * (ambitionNamesThisKind ? 1 : 0)
-    + UNDERTAKING_TEMPERAMENT_REACH_WEIGHT * clamp01(reachAffinity);
+    + UNDERTAKING_TEMPERAMENT_REACH_WEIGHT * clamp01(reachAffinity)
+    + GRIEVANCE_URGENCY_WEIGHT * clamp01(grievanceHeat01);
 }
 
 // ─── Variety ────────────────────────────────────────────────────
@@ -469,8 +480,17 @@ export function scoreUnifiedBoard(input: BoardInput): BoardResult {
       ambitionBoost,
     );
 
+    // The grievance this candidate would pursue, if any (THR-1298 slice 6). Resolved
+    // per candidate rather than once per board because a board carries candidates from
+    // several ambitions and only the ones under the vendetta may claim its urgency —
+    // the lookup is two edge reads against an agent holding at most one grievance, and
+    // an agent with none exits on the first.
+    const grievanceHeat = grievanceHeat01(
+      findGrievanceForAmbitionTemplate(graph, candidate.actorId, candidate.ambitionId),
+    );
+
     const temperamentWeight = computeTemperamentWeight(
-      template, reach, ambitionPrefersVerb(candidate.ambitionId, template),
+      template, reach, ambitionPrefersVerb(candidate.ambitionId, template), grievanceHeat,
     );
 
     const varietyMultiplier = computeBoardVarietyMultiplier(

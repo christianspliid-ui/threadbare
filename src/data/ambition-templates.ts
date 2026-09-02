@@ -903,8 +903,18 @@ export const GRIEVANCE_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
         condition: { type: 'agent_reach_above', reach: 'iron', threshold: 0.6 },
         prose: ['Strong enough now. The debt comes due in the only coin that matters.'],
       },
+      {
+        // THR-1298 slice 6 — the beat `revenge_target` was originally written for,
+        // now that there is a bindable way to say it. The three reach milestones above
+        // stay as alternates: this ambition is 2-of-4, so a betrayer who dies of
+        // something else closes the account, and one who never does is still answered
+        // by the vengeful growing capable enough to have done it.
+        id: 'revenge_answered',
+        condition: { type: 'grievance_culprit_eliminated' },
+        prose: ['The one who did it is gone. The world is quieter, and no better.'],
+      },
     ],
-    completion: { requires: 2, of: 3 },
+    completion: { requires: 2, of: 4 },
     abandonmentTriggers: [
       {
         condition: { type: 'agent_has_trait', trait: 'trait.core.core_forgiveness.virtue' },
@@ -920,6 +930,7 @@ export const GRIEVANCE_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
       revenge_track: ['Found. Only a matter of time now.'],
       revenge_shadow: ['Silent and sure. The shadow closes.'],
       revenge_target: ['The hand is steady enough now. The scales will balance.'],
+      revenge_answered: ['The account closes. Whoever kept it, the ledger is shut.'],
     },
     completionProse: [
       'Revenge, taken. Whether it brought peace — that was another question.',
@@ -1045,8 +1056,17 @@ export const GRIEVANCE_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
         condition: { type: 'agent_reach_above', reach: 'iron', threshold: 0.55 },
         prose: ['The arm is ready. For the one who can no longer strike.'],
       },
+      {
+        // THR-1298 slice 6. Widening 2-of-2 to 2-of-3 matters more here than on
+        // `seek_revenge`: at 2-of-2 both reach milestones were *required*, so the
+        // killer dying could not close the account at all — the avenger went on
+        // training for a strike against nobody.
+        id: 'avenge_answered',
+        condition: { type: 'grievance_culprit_eliminated' },
+        prose: ['The killer is dead. It does not bring anyone back.'],
+      },
     ],
-    completion: { requires: 2, of: 2 },
+    completion: { requires: 2, of: 3 },
     abandonmentTriggers: [
       {
         condition: { type: 'agent_has_trait', trait: 'trait.core.core_hope.virtue' },
@@ -1061,6 +1081,7 @@ export const GRIEVANCE_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     milestoneProse: {
       avenge_culprit: ['A name. A face. A direction to walk.'],
       avenge_strike: ['Strong enough to answer it. The living must find new purpose.'],
+      avenge_answered: ['Answered. The grief stays; only the errand is over.'],
     },
     completionProse: [
       'Justice, or something shaped like it. The dead are silent on the matter.',

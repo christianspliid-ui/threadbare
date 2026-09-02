@@ -71,6 +71,17 @@ export function checkAbandonment(
  * settledness trigger measures time *under this ambition* rather than the agent's whole
  * stationary history — the guarantee that keeps such a trigger from firing on tick one.
  * Omit it and those conditions fail soft to `false`, leaving pre-THR-822 behaviour.
+ *
+ * `pursuesProperties` is the property bag of the `pursues` edge this ambition is held
+ * by (THR-1298 slice 6). Edge-reading conditions — today only
+ * `grievance_culprit_eliminated` — need it, because a minted drive's culprit lives on
+ * the edge and not on the shared ambition node. Omit it and those conditions fail soft
+ * to `false`, which is why an ambition evaluated outside an edge walk simply never
+ * satisfies them rather than erroring.
+ *
+ * Note the context is now built whenever *either* input is present, not only when
+ * there is a clock: an edge-reading condition must still work in a caller that passes
+ * no tick.
  */
 export function evaluateAmbitionProgress(
   template: AmbitionTemplate,
@@ -78,10 +89,18 @@ export function evaluateAmbitionProgress(
   graph: ConditionGraph,
   agentId: string,
   currentTick?: number,
+  pursuesProperties?: Record<string, unknown>,
 ): AmbitionProgressResult {
-  const context: ConditionContext | undefined = currentTick === undefined
-    ? undefined
-    : { currentTick, windowStartTick: active.assignedTick };
+  const context: ConditionContext | undefined =
+    currentTick === undefined && pursuesProperties === undefined
+      ? undefined
+      : {
+          ...(currentTick !== undefined && {
+            currentTick,
+            windowStartTick: active.assignedTick,
+          }),
+          ...(pursuesProperties !== undefined && { pursuesProperties }),
+        };
 
   // Abandonment takes priority
   if (checkAbandonment(template, graph, agentId, context)) {

@@ -215,9 +215,34 @@ describe('no ambition pool authors an unbindable $-ref target (THR-812)', () => 
     expect(revengeTarget?.condition.type).toBe('agent_reach_above');
     expect(avengeStrike?.condition.type).toBe('agent_reach_above');
 
-    // `avenge_fallen` is requires-2-of-2, so this milestone is half the completion bar —
-    // the reason its auto-complete mattered more than the other one's.
-    expect(avengeFallen!.completion).toEqual({ requires: 2, of: 2 });
+    // THR-1298 slice 6 widened both bars to make room for the satisfaction milestone
+    // the `$`-ref was originally reaching for. `avenge_fallen` mattered most: at 2-of-2
+    // both reach milestones were *required*, so the killer dying could not close the
+    // account at all and the avenger went on training for a strike against nobody.
+    expect(avengeFallen!.completion).toEqual({ requires: 2, of: 3 });
+    expect(seekRevenge!.completion).toEqual({ requires: 2, of: 4 });
+
+    // The bindable replacement, named explicitly for the same reason the two above are:
+    // widening the bar without the milestone that justifies it would only make both
+    // vengeance ambitions easier to finish for no reason.
+    expect(
+      avengeFallen!.milestones.find((m) => m.condition.type === 'grievance_culprit_eliminated'),
+      'avenge_fallen lost its satisfaction milestone',
+    ).toBeDefined();
+    expect(
+      seekRevenge!.milestones.find((m) => m.condition.type === 'grievance_culprit_eliminated'),
+      'seek_revenge lost its satisfaction milestone',
+    ).toBeDefined();
+
+    // Every milestone still carries prose — a 2-of-N bar whose new alternate renders
+    // nothing would close accounts silently.
+    for (const t of [seekRevenge!, avengeFallen!]) {
+      for (const m of t.milestones) {
+        expect(t.milestoneProse[m.id]?.length, `${t.id}/${m.id} has no prose`)
+          .toBeGreaterThan(0);
+      }
+      expect(t.milestones.length).toBe(t.completion.of);
+    }
   });
 });
 

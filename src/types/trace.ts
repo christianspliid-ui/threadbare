@@ -1997,7 +1997,17 @@ export type GrievanceTransition =
   | 'succeeded_to_bond'
   | 'reignited'
   | 'grudge_only'
-  | 'chain_ended';
+  | 'chain_ended'
+  // ── Closure doors (THR-1298 slice 6) ──
+  //
+  // Three ways an account closes, and they are deliberately three transitions rather
+  // than one: `satisfied` is the victim getting what they wanted, `settled` is somebody
+  // buying the quarrel off, and `suppressed_countermint` is the *other* party's harm
+  // declining to become a vendetta because it was the answer rather than a fresh
+  // injury. Collapsing them would make "why did this chain stop" unanswerable.
+  | 'satisfied'
+  | 'settled'
+  | 'suppressed_countermint';
 
 /**
  * Trace: a grievance changed state (THR-1298 slice 5).

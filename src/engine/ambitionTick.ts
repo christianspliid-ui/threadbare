@@ -34,11 +34,13 @@ import type { UndertakingHarmClass } from '../types/strategicAction';
 // skipped by another (THR-1298 slice 5).
 import {
   decayGrievance,
+  noteGrievanceSatisfied,
   resolveGrievanceDisposition,
   type GrievanceEdgeProperties,
 } from './grievance/grievanceLifecycle';
+import { GRIEVANCE_OVERSHOOT_RATIO } from '../data/grievance-constants';
 import { emitTrace } from './traceBuffer';
-import type { AmbitionMintedTrace } from '../types/trace';
+import type { AmbitionMintedTrace, GrievanceTransitionTrace } from '../types/trace';
 import { selectAmbitions, type AmbitionAgentSnapshot } from './ambitionSelection';
 import { collectGrantedTraits, GRANTED_TRAIT_EFFECTIVE_LEVEL } from './effects/effectQueries';
 import { collectBearerTraitRefs } from './traitRefIndex';
@@ -293,6 +295,42 @@ function gatherMintTuples(
     const harmClass = ev.properties.harmClass as UndertakingHarmClass | undefined;
     if (!harmClass || !UNDERTAKING_MINTING_RULES[harmClass]) return null;
     const culpritAgentId = ev.properties.culpritAgentId as string | undefined;
+
+    // ── Counter-mint suppression (THR-1298 slice 6) ──
+    //
+    // Answered is not the same as wronged. When this harm was the *answer* to a
+    // grievance, the party it landed on is the one who started it, and minting them a
+    // fresh vendetta would make every revenge the first link of an endless chain — the
+    // world where one razed village ends with a region of avengers.
+    //
+    // So a proportionate answer mints nothing back, and only an overshoot re-opens the
+    // account. That is why most chains end at one round *by construction* rather than
+    // by a depth cap: the cap (`GRIEVANCE_CHAIN_DEPTH_MAX`) is the backstop for the
+    // ones that do overshoot, not the ordinary terminator.
+    //
+    // Scoped to the victim relation on purpose. A witness to a reprisal was answered
+    // for nothing and still gets their bystander drives; only the answered party is
+    // suppressed.
+    if (relation === 'victim' && ev.properties.answersGrievance === true) {
+      const answered = ev.properties.answeredMagnitude;
+      const magnitude = (ev.properties.harmMagnitude as number | undefined) ?? 0;
+      const overshot = typeof answered === 'number'
+        && magnitude > answered * GRIEVANCE_OVERSHOOT_RATIO;
+      if (!overshot) {
+        emitTrace({
+          tick,
+          category: 'grievance_transition',
+          summary: `${actorId} counter-mint suppressed — the answer was proportionate`,
+          agentId: actorId,
+          transition: 'suppressed_countermint',
+          culpritAgentId,
+          detail: `answered ${typeof answered === 'number' ? answered.toFixed(2) : 'unknown'}`
+            + ` with ${magnitude.toFixed(2)}`,
+        } satisfies Omit<GrievanceTransitionTrace, 'id' | 'timestamp'>);
+        return null;
+      }
+    }
+
     // A victim never becomes their own culprit — the self-facing `undertaking_abandoned`
     // node names its owner as the actor, and a drive to avenge yourself on yourself is
     // the one grievance the world must not mint.
@@ -328,10 +366,17 @@ function gatherMintTuples(
       // abandonment node mints for its actor, and that node carries no victim edge, so
       // it reaches this lane as the owner's own `victim` relation instead.
       if (relation !== 'victim') continue;
+      // Marked seen before the tuple is examined, not after: the victim's relation to
+      // an event is decided *here*, and a `null` is a decision — "this harm offers
+      // this agent nothing" — not an absence. Without the early mark, a victim
+      // standing at the site of their own harm falls through to the witness walk below
+      // and is re-offered the same event as a bystander, which both re-classifies the
+      // wronged party and lets a suppressed counter-mint (slice 6) come back through
+      // the side door.
+      seen.add(ev.id);
       const tuple = undertakingTuple(ev, relation);
       if (!tuple) continue;
       out.push(tuple);
-      seen.add(ev.id);
     }
   }
 
@@ -581,7 +626,12 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
 
       // `tick` supplies the clock durational conditions need; `active.assignedTick`
       // becomes their measurement window inside `evaluateAmbitionProgress` (THR-822).
-      const result = evaluateAmbitionProgress(template, active, graph, actor.id, tick);
+      // The edge's own properties come along so edge-reading conditions can bind —
+      // `grievance_culprit_eliminated` reads the `culpritAgentId` written at mint time
+      // (THR-1298 slice 6). This walk is the only place both are in scope at once.
+      const result = evaluateAmbitionProgress(
+        template, active, graph, actor.id, tick, edge.properties,
+      );
 
       // ── Status changed: completion or abandonment ──
       if (result.status !== 'active') {
@@ -593,6 +643,16 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
             resolvedTick: tick,
           },
         });
+
+        // A vendetta that completed was *satisfied* — today only by the culprit's
+        // death, which is the one grievance milestone (THR-1298 slice 6). Traced as
+        // its own transition rather than left to `ambition_progress`, because "the
+        // account closed and how" is the question the reactive loop's read path is
+        // built around; a completion trace alone cannot tell satisfaction from an
+        // ordinary ambition finishing.
+        if (edge.properties.grievance === true && result.status === 'completed') {
+          noteGrievanceSatisfied(edge, actor.id, tick, 'culprit eliminated');
+        }
 
         const eventType = result.status === 'completed'
           ? 'ambition_completed'

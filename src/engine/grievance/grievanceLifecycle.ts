@@ -354,3 +354,141 @@ export function decayGrievance(
   graph.updateEdge(edge.id, { properties: { ...edge.properties, heat: cooled } });
   return false;
 }
+
+// ─── Closure doors (THR-1298 slice 6) ────────────────────────────
+//
+// Three ways an account closes, and the difference between them is the whole reason
+// the reactive loop terminates rather than compounding:
+//
+// - **Satisfaction** — the victim got what they wanted. Two triggers: an undertaking
+//   pursued *under* the grievance completes, or the culprit dies (the
+//   `grievance_culprit_eliminated` milestone). Closes as `completed`.
+// - **Settlement** — somebody bought the quarrel off. Engine hook only in this slice;
+//   the authored encounter family that calls it is future content (THR-1282 §5).
+// - **Suppression** — the answering harm declines to mint a counter-vendetta in the
+//   party who was answered. Lives in the mint lane, because that is where the
+//   would-be second link is read; `answersGrievance` on the outcome node is the
+//   message this module sends it.
+//
+// Satisfaction and settlement deliberately do **not** write a grudge edge, where
+// cooling and replacement both do. That asymmetry is the design: a grudge is what
+// remembers an account that was never closed. An answered one has nothing left to
+// remember — and writing one anyway would mean a successful revenge left the pair
+// *more* hostile than the harm did, so no chain could ever end.
+
+/** How a grievance was bought off. The vocabulary authored content will select from. */
+export type GrievanceSettlementMeans = 'restitution' | 'mediation' | 'oath' | 'coercion';
+
+/**
+ * Close a grievance because the victim got what they wanted.
+ *
+ * Closes as `completed`, not `abandoned`: the arc panel partitions on exactly those
+ * two, and a satisfied vendetta belongs in the fulfilled list. (The demotion path's
+ * `abandoned` is the same reasoning read the other way — see `demoteGrievanceToGrudge`.)
+ *
+ * The grievance block stays on the closed edge, which is what lets a provenance read
+ * still answer "what did they want, and because of whom" after the fact.
+ */
+export function satisfyGrievance(
+  graph: WorldGraph,
+  edge: GraphEdge,
+  holderId: string,
+  tick: number,
+  detail: string,
+): void {
+  graph.updateEdge(edge.id, {
+    properties: { ...edge.properties, status: 'completed', resolvedTick: tick },
+  });
+  noteGrievanceSatisfied(edge, holderId, tick, detail);
+}
+
+/**
+ * Trace a satisfaction whose edge write the caller already performed.
+ *
+ * The milestone door closes its edge inside `phaseAmbitionProgress`'s own generic
+ * status write — which also carries `completedMilestones`, so re-closing it here from
+ * a stale edge handle would drop them. That caller owns the write and borrows only
+ * the trace; every other caller wants `satisfyGrievance` and both halves.
+ */
+export function noteGrievanceSatisfied(
+  edge: GraphEdge,
+  holderId: string,
+  tick: number,
+  detail: string,
+): void {
+  trace({
+    tick, agentId: holderId, transition: 'satisfied',
+    culpritAgentId: edge.properties.culpritAgentId as string | undefined,
+    heat: edge.properties.heat as number | undefined,
+    detail,
+  });
+}
+
+/**
+ * Settle a grievance by means other than answering it — the hook content will call.
+ *
+ * Shipped without a caller on purpose (plan § Satisfaction and settlement doors): the
+ * authored encounter family that offers restitution is future content, and authoring
+ * the hook ahead of it is what makes that content a data change rather than an engine
+ * change. It is a real function over real state, not a stub — the settlement it
+ * performs is the one a caller would get today.
+ *
+ * @returns true when a matching grievance was found and closed.
+ */
+export function settleGrievance(
+  graph: WorldGraph,
+  victimId: string,
+  culpritId: string,
+  means: GrievanceSettlementMeans,
+  tick: number,
+): boolean {
+  const edge = findActiveGrievanceEdge(graph, victimId);
+  // Settling the wrong quarrel is worse than settling none: an agent holds one
+  // grievance, and paying off a debt owed to somebody else would close an account
+  // that nobody answered.
+  if (!edge || edge.properties.culpritAgentId !== culpritId) return false;
+
+  graph.updateEdge(edge.id, {
+    properties: { ...edge.properties, status: 'completed', resolvedTick: tick, settledBy: means },
+  });
+  trace({
+    tick, agentId: victimId, transition: 'settled',
+    culpritAgentId: culpritId,
+    heat: edge.properties.heat as number | undefined,
+    detail: `settled by ${means}`,
+  });
+  return true;
+}
+
+/**
+ * The active grievance an agent holds *for* a given ambition template, if any.
+ *
+ * The board and the completion path both ask this question, and both ask it with a
+ * template id in hand rather than an ambition node id — `StrategicActionCandidate` and
+ * `StrategicProjectRuntime` both carry `ambitionId` as the *template* id. One slot per
+ * agent means this resolves to at most one edge without ranking.
+ */
+export function findGrievanceForAmbitionTemplate(
+  graph: WorldGraph,
+  agentId: string,
+  ambitionTemplateId: string,
+): GraphEdge | undefined {
+  const edge = findActiveGrievanceEdge(graph, agentId);
+  if (!edge) return undefined;
+  const node = graph.getNode(edge.target);
+  return node?.properties.templateId === ambitionTemplateId ? edge : undefined;
+}
+
+/**
+ * How urgent a grievance is, on `[0, 1]` — the board's third-term input.
+ *
+ * Urgency *is* the decay curve (plan § Board urgency term): a fresh vendetta outranks
+ * ordinary ambitions and a cooling one competes fairly, with no scheduling special
+ * case anywhere. Fail-soft (NFP #4): an absent or non-finite heat reads `0`, an absent
+ * signal rather than a maximal one.
+ */
+export function grievanceHeat01(edge: GraphEdge | undefined): number {
+  const heat = edge?.properties.heat;
+  if (typeof heat !== 'number' || !Number.isFinite(heat)) return 0;
+  return Math.max(0, Math.min(1, heat / GRIEVANCE_HEAT_INITIAL_MAX));
+}

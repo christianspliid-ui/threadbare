@@ -62,6 +62,10 @@ import { hexDistance } from '../lib/hexMath';
 import { getStrategicTemplate } from './strategicActionCandidates';
 import { createUndertakingOutcomeNode } from './grievance/undertakingOutcomeNode';
 import {
+  findGrievanceForAmbitionTemplate,
+  satisfyGrievance,
+} from './grievance/grievanceLifecycle';
+import {
   resolveUndertakingCheckpoint,
   buildResidueEvent,
   buildAbandonMintEvent,
@@ -819,6 +823,27 @@ export function advanceStrategicProjects(
       // The victim rides the runtime from the motive gate that licensed the verb —
       // re-deriving ownership here would read the graph *after* the razing, where the
       // owner's claim no longer exists.
+      // ── Satisfaction door (THR-1298 slice 6) ──
+      //
+      // The first of the two: an undertaking pursued *under* a grievance completing is
+      // the victim getting what they wanted. Read before the outcome node is written,
+      // because the answer's own node has to carry the fact — that stamp is the whole
+      // message the mint lane reads to suppress the counter-vendetta.
+      //
+      // Matched on `ambitionId`, not on the target: an agent who avenges themselves by
+      // burning the culprit's charts rather than their hall has still answered the
+      // grievance, and demanding the harm land on the original target would close only
+      // the vendettas that happened to pick the symmetrical verb.
+      const grievanceAnswered = findGrievanceForAmbitionTemplate(
+        graph, checked.actorId, checked.ambitionId,
+      );
+      const answeredMagnitude = grievanceAnswered
+        ? (grievanceAnswered.properties.harmMagnitude as number | undefined)
+        : undefined;
+      const answeredChainDepth = grievanceAnswered
+        ? ((grievanceAnswered.properties.chainDepth as number | undefined) ?? 0)
+        : 0;
+
       const completedTemplate = getStrategicTemplate(project.templateId);
       if (completedTemplate?.harmClass) {
         createUndertakingOutcomeNode({
@@ -828,7 +853,24 @@ export function advanceStrategicProjects(
           tick,
           victimAgentId: checked.victimAgentId,
           ascendantId: state.ascendantId,
+          // An answer sits one link further down the chain than the harm it answers,
+          // so an overshoot that *does* re-open the account opens it at the right
+          // depth and the cap can eventually stop it.
+          ...(grievanceAnswered && {
+            answersGrievance: true,
+            answeredMagnitude,
+            chainDepth: answeredChainDepth + 1,
+          }),
         });
+      }
+
+      // Closed after the node is written: the node describes the world at the moment
+      // the harm landed, and the grievance was still standing then.
+      if (grievanceAnswered) {
+        satisfyGrievance(
+          graph, grievanceAnswered, checked.actorId, tick,
+          `answered by ${checked.templateId}`,
+        );
       }
 
       releaseUndertakingBindings(state, checked.projectId, tick);
