@@ -2,10 +2,10 @@
 
 > **Generated:** 2026-09-02 by scripts/build-authoring-brief.ts
 > **Sources:**
->   - Docs/plans/2026-04-16-systemic-wiring-guide.md (sha1: d6cd5de4bb25009e0eb430e2fc104f90f14f6ff2)
+>   - Docs/plans/2026-04-16-systemic-wiring-guide.md (sha1: 270cf4df03b4cfefb50628265f46ef595a721115)
 >   - Docs/plans/2026-04-16-game-design-direction.md (sha1: 5fbee6401d69a41bf5a14707df1ace997e8f5bd6)
 >   - .claude/skills/encounter-pipeline/SKILL.md (sha1: 536b365a7471a26b4ba6cfd25548bdf86d40bbf7)
->   - Docs/canon/undertakings.md (sha1: e510d6f619b9f3cf5d049f30ccb469ed8b0c0f37)
+>   - Docs/canon/undertakings.md (sha1: 109462798fe127e993b098754ce91b6d2ef3ce60)
 >   - Sections A/D, hardcoded in the generator (sha1: b67dc911038d4f3f021a617efa38ef9ec975b96b)
 > **Do not hand-edit.** Regenerate via `npm run build-authoring-brief`.
 

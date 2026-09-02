@@ -217,6 +217,50 @@ function rowFor(template: StrategicActionTemplate): UndertakingKindRow | undefin
   return kind ? getUndertakingKindRow(kind) : undefined;
 }
 
+/**
+ * The template's **write set** — everything it declares it will change in the world
+ * (THR-1300, Law 56's inverse). One predicate, two consumers: the contract's creation
+ * block counts it and the live proof (`check:undertaking-live`) gates its claims on
+ * it, so a template that declares nothing is never failed for delivering nothing and
+ * a template that declares a write cannot pass by delivering none. A third hand-rolled
+ * "does it write" predicate would drift from both.
+ */
+export interface UndertakingWriteSet {
+  /** The mutation the completion terminal performs, by type. */
+  readonly mutation?: string;
+  /** Outcome bands with at least one authored creation effect. */
+  readonly creationBands: readonly ('onAdvance' | 'onAtCost' | 'onCritFailure')[];
+  /** The harm a completed destroy emits for the reactive loop. */
+  readonly harmClass?: string;
+  /** The kind row the template sits in — a christening and, when `ownable`, a freehold. */
+  readonly kind?: { readonly kindId: string; readonly ownable: boolean; readonly lexicon: string };
+  /** `must-persist` cast slots, which bind or mint a named person or place. */
+  readonly persistentCast: readonly string[];
+  /** Encounter templates the work may seed. */
+  readonly catalysts: readonly string[];
+  /** True when the set is empty beyond prose — the work whose only product is a sentence. */
+  readonly empty: boolean;
+}
+
+export function undertakingWriteSet(template: StrategicActionTemplate, row = rowFor(template)): UndertakingWriteSet {
+  const creationBands = (['onAdvance', 'onAtCost', 'onCritFailure'] as const)
+    .filter(b => (template.creationEffects?.[b]?.length ?? 0) > 0);
+  const persistentCast = (template.cast ?? []).filter(s => s.persistence === 'must-persist').map(s => s.key);
+  const catalysts = [...(template.catalystEncounterIds ?? [])];
+  const set = {
+    mutation: template.mutationHint?.type,
+    creationBands,
+    harmClass: template.harmClass,
+    kind: row ? { kindId: row.kindId, ownable: row.ownable, lexicon: row.lexicon } : undefined,
+    persistentCast,
+    catalysts,
+  };
+  return {
+    ...set,
+    empty: !set.mutation && creationBands.length === 0 && !set.harmClass && !set.kind && persistentCast.length === 0 && catalysts.length === 0,
+  };
+}
+
 function kindColumnCount(template: StrategicActionTemplate, rows: readonly UndertakingKindRow[]): number {
   let n = 0;
   for (const r of rows) {
@@ -285,17 +329,13 @@ export function checkUndertakingContract(
   }
 
   // ── Creation (the write-set non-vacuity rule, Law 56's inverse) ──
-  if (template.verb === 'create') {
-    const bands = template.creationEffects
-      ? (['onAdvance', 'onAtCost', 'onCritFailure'] as const).filter(b => (template.creationEffects![b]?.length ?? 0) > 0).length
-      : 0;
-    if (bands === 0 && !template.mutationHint) {
-      fail('creation', 'a create verb whose only product is prose — declare creationEffects for at least one band or a mutationHint producing the kind\'s object');
-    }
+  const row = rowFor(template);
+  const writes = undertakingWriteSet(template, row);
+  if (template.verb === 'create' && writes.creationBands.length === 0 && !writes.mutation) {
+    fail('creation', 'a create verb whose only product is prose — declare creationEffects for at least one band or a mutationHint producing the kind\'s object');
   }
 
   // ── Band tables ──
-  const row = rowFor(template);
   if (row) {
     const [dMin, dMax] = UNDERTAKING_TIER_DIFFICULTY_BANDS[row.tier];
     const [pMin, pMax] = UNDERTAKING_TIER_PAYOFF_BANDS[row.tier];

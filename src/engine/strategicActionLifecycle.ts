@@ -288,7 +288,9 @@ function christenCompletedWork(
   ops: readonly GraphOpResult[],
   tick: number,
 ): { nodeId: string; name: string } | undefined {
-  const createdId = ops.find(o => o.success && o.createdId)?.createdId;
+  // The created *node* — an edge op (a route, a mark) can precede the node op that
+  // christening names, so the pick must skip ids the graph has no node for (THR-1300).
+  const createdId = ops.find(o => o.success && o.createdId && graph.getNode(o.createdId))?.createdId;
   if (!createdId) return undefined;
   const created = graph.getNode(createdId);
   if (!created) return undefined;
