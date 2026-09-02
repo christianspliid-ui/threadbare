@@ -47,12 +47,14 @@ import { createSimulationRuntime } from '../src/engine/simulationRuntime';
 import { resetReputationTraitInit } from '../src/engine/phaseReputationTraits';
 import { buildBalanceRunSummary } from '../src/engine/balanceSummary';
 import { enableTracing, disableTracing, getTraces, clearTraces } from '../src/engine/traceBuffer';
+import { isAutonomousDecisionActor } from '../src/engine/strategicKindReachability';
 import {
   BOARD_UNDERTAKING_SHARE_RANGE,
   BOARD_ENCOUNTER_SHARE_FLOOR,
   BOARD_IDLE_SHARE_CEILING,
-  CENSUS_DISTINCT_TEMPLATE_FLOOR,
-  CENSUS_UNDERTAKING_START_FLOOR,
+  CENSUS_STARTS_PER_MORTAL_PER_100_TICKS_FLOOR,
+  CENSUS_VARIETY_SAMPLE_STARTS,
+  CENSUS_DISTINCT_AT_SAMPLE_FLOOR,
 } from '../src/data/strategic-action-constants';
 import { MERCHANT_STRATEGIC_TEMPLATES } from '../src/data/strategic-packs/merchantStrategicPack';
 import { BUILDER_STRATEGIC_TEMPLATES } from '../src/data/strategic-packs/builderStrategicPack';
@@ -78,6 +80,13 @@ const WANDERER_FAMILY = 'wanderer-explorer';
 
 /** How many templates the composition line names. Reporting only — not a gate. */
 const CENSUS_COMPOSITION_REPORT_TOP_N = 6;
+
+/**
+ * How many mortals the concurrency line names, busiest first. Reporting only — the
+ * gate on this number belongs to THR-1387 (the per-mortal cap), sequenced after the
+ * cutover because it moves the same throughput the cutover is judged on.
+ */
+const CENSUS_CONCURRENCY_REPORT_TOP_N = 8;
 
 // ─── Template → family index ──────────────────────────────────────
 
@@ -124,9 +133,23 @@ interface RolledSplit {
 interface Composition {
   starts: number;
   distinctTemplates: number;
+  /**
+   * Distinct templates among the first `CENSUS_VARIETY_SAMPLE_STARTS` starts — the
+   * variety measure that does not track sample size (THR-1349, fourth pass).
+   */
+  distinctInSample: number;
   /** Start count per template, descending — the shape a collapse is visible in. */
   topTemplates: (readonly [string, number])[];
   tradeRouteEdges: number;
+  /** Mean count of `isAutonomousDecisionActor` mortals sampled at each tick start. */
+  meanAutonomousMortals: number;
+  /** `starts / meanAutonomousMortals / (ticks / 100)` — the per-mortal throughput. */
+  startsPerMortalPer100Ticks: number;
+  /**
+   * Active undertakings per mortal, reported never gated (THR-1387 owns the cap):
+   * the busiest mortals at run end, and the mean active count over all ticks.
+   */
+  concurrency: { maxAtEnd: number; topAtEnd: number[]; meanActive: number };
 }
 
 interface SeedCensus {
@@ -216,6 +239,10 @@ function censusOneSeed(seed: number, ticks: number, map: MapSizePreset): SeedCen
   const established = emptySplit();
   const allBands = new Set<string>();
   const startsByTemplate = new Map<string, number>();
+  const sampleTemplates = new Set<string>();
+  let starts = 0;
+  let autonomousSum = 0;
+  let activeSum = 0;
 
   try {
     const runtime = createSimulationRuntime();
@@ -226,6 +253,12 @@ function censusOneSeed(seed: number, ticks: number, map: MapSizePreset): SeedCen
     );
 
     for (let i = 0; i < ticks; i++) {
+      // The population the decision loop runs over, sampled at tick start with the
+      // same predicate the loop uses (THR-1329), so the per-mortal rate below is a
+      // rate over the mortals who could have started anything.
+      autonomousSum += state.graph.getNodesByType('actor').filter(isAutonomousDecisionActor).length;
+      activeSum += (state.strategicState?.projects ?? []).filter(p => p.status === 'active').length;
+
       // Drained per tick. The trace buffer is a ring; an end-of-run read reports
       // only the tail, which under-counted a prior census by 15× (impediment #822).
       clearTraces();
@@ -235,7 +268,11 @@ function censusOneSeed(seed: number, ticks: number, map: MapSizePreset): SeedCen
 
         if (a.category === 'strategic_action_started') {
           const id = a.templateId as string | undefined;
-          if (id) startsByTemplate.set(id, (startsByTemplate.get(id) ?? 0) + 1);
+          if (id) {
+            startsByTemplate.set(id, (startsByTemplate.get(id) ?? 0) + 1);
+            starts += 1;
+            if (starts <= CENSUS_VARIETY_SAMPLE_STARTS) sampleTemplates.add(id);
+          }
           continue;
         }
 
@@ -253,13 +290,29 @@ function censusOneSeed(seed: number, ticks: number, map: MapSizePreset): SeedCen
 
     [overall, wanderer, established].forEach(finalize);
 
+    const meanAutonomousMortals = ticks > 0 ? autonomousSum / ticks : 0;
+    const perMortal = new Map<string, number>();
+    for (const p of (state.strategicState?.projects ?? []).filter(p => p.status === 'active')) {
+      perMortal.set(p.actorId, (perMortal.get(p.actorId) ?? 0) + 1);
+    }
+    const topAtEnd = [...perMortal.values()].sort((a, b) => b - a).slice(0, CENSUS_CONCURRENCY_REPORT_TOP_N);
+
     const composition: Composition = {
-      starts: [...startsByTemplate.values()].reduce((a, b) => a + b, 0),
+      starts,
       distinctTemplates: startsByTemplate.size,
+      distinctInSample: sampleTemplates.size,
       topTemplates: [...startsByTemplate.entries()]
         .sort((a, b) => b[1] - a[1])
         .slice(0, CENSUS_COMPOSITION_REPORT_TOP_N),
       tradeRouteEdges: state.graph.getEdgesByType('trades_with').length,
+      meanAutonomousMortals,
+      startsPerMortalPer100Ticks:
+        meanAutonomousMortals > 0 && ticks > 0 ? starts / meanAutonomousMortals / (ticks / 100) : 0,
+      concurrency: {
+        maxAtEnd: topAtEnd[0] ?? 0,
+        topAtEnd,
+        meanActive: ticks > 0 ? activeSum / ticks : 0,
+      },
     };
 
     const summary = buildBalanceRunSummary(runtime, state.tick);
@@ -328,33 +381,41 @@ function evaluateGates(c: SeedCensus): Record<string, { pass: boolean; detail: s
     detail: m ? pct(m.idleShare) : 'no board verdicts',
   };
 
-  // Composition (THR-1349). The three gates above are ratios *between* families
-  // and are all satisfiable by an undertaking family that has collapsed onto one
-  // template. This one reads inside that family.
+  // Composition (THR-1349, fourth pass). The three gates above are ratios *between*
+  // families and are all satisfiable by an undertaking family that has collapsed
+  // onto one template. This one reads inside that family — at a FIXED start sample,
+  // because the run-total distinct count the earlier gate used tracks sample size
+  // (39 over 495 starts passed as readily as 48 over 891). See
+  // `CENSUS_VARIETY_SAMPLE_STARTS` / `CENSUS_DISTINCT_AT_SAMPLE_FLOOR`.
   //
-  // Zero starts fails rather than passes, for the same reason the liveness gate
-  // treats an empty population as a failure: "0 distinct templates" is not a
-  // variety verdict, it is the absence of one.
+  // A run that never fills the sample fails rather than passes, for the same reason
+  // the liveness gate treats an empty population as a failure: variety over a
+  // half-filled sample is not a variety verdict, it is a throughput one wearing the
+  // wrong name — and the throughput gate below is where that belongs.
   //
-  // `tradeRouteEdges` is deliberately **reported and not gated** — see
-  // `CENSUS_DISTINCT_TEMPLATE_FLOOR`. Gating it would red the census on the
-  // currently shipped `'shadow'` configuration, where seed 99 already writes zero.
+  // `tradeRouteEdges` is deliberately **reported and not gated**: the healthy
+  // baseline is 1 and 0 on the two seeds, and THR-1348 owns the route economy.
   const comp = c.composition;
-  gates[`distinct templates started ≥ ${CENSUS_DISTINCT_TEMPLATE_FLOOR}`] = {
-    pass: comp.starts > 0 && comp.distinctTemplates >= CENSUS_DISTINCT_TEMPLATE_FLOOR,
-    detail: `${comp.distinctTemplates} distinct of ${comp.starts} starts`,
+  gates[`distinct templates in first ${CENSUS_VARIETY_SAMPLE_STARTS} starts ≥ ${CENSUS_DISTINCT_AT_SAMPLE_FLOOR}`] = {
+    pass: comp.starts >= CENSUS_VARIETY_SAMPLE_STARTS && comp.distinctInSample >= CENSUS_DISTINCT_AT_SAMPLE_FLOOR,
+    detail: comp.starts >= CENSUS_VARIETY_SAMPLE_STARTS
+      ? `${comp.distinctInSample} distinct in the first ${CENSUS_VARIETY_SAMPLE_STARTS} of ${comp.starts} starts`
+      : `only ${comp.starts} starts — sample of ${CENSUS_VARIETY_SAMPLE_STARTS} never filled`,
   };
 
-  // Throughput (THR-1349, third pass). The gate above reads *which* templates start
-  // and is satisfied by 39 distinct templates over 495 starts as readily as over 891
-  // — distinct-template count tracks sample size, so a corpus that keeps its variety
-  // while losing a third of its volume passes every gate above this line. That is the
-  // shape the cutover actually produces, and it is measured rather than feared: see
-  // `CENSUS_UNDERTAKING_START_FLOOR` for the two-arm table and the contraction
-  // mechanism behind it.
-  gates[`undertaking starts ≥ ${CENSUS_UNDERTAKING_START_FLOOR}`] = {
-    pass: comp.starts >= CENSUS_UNDERTAKING_START_FLOOR,
-    detail: `${comp.starts} starts over ${c.ticks} ticks`,
+  // Throughput (THR-1349, fourth pass), stated per spotlight mortal rather than as
+  // an absolute count. The absolute floor this replaces (`700`) was sized against
+  // contest B's 892 starts, which the design session measured as a stacking
+  // artefact — one mortal carrying up to eleven concurrent undertakings. A rate
+  // over the mortals the decision loop actually runs is a statement about a life;
+  // see `CENSUS_STARTS_PER_MORTAL_PER_100_TICKS_FLOOR` for the derivation. A zero
+  // population fails loudly rather than dividing to a pass.
+  gates[`starts per mortal per 100 ticks ≥ ${CENSUS_STARTS_PER_MORTAL_PER_100_TICKS_FLOOR}`] = {
+    pass: comp.meanAutonomousMortals > 0
+      && comp.startsPerMortalPer100Ticks >= CENSUS_STARTS_PER_MORTAL_PER_100_TICKS_FLOOR,
+    detail: comp.meanAutonomousMortals > 0
+      ? `${comp.startsPerMortalPer100Ticks.toFixed(1)} (${comp.starts} starts over ${comp.meanAutonomousMortals.toFixed(1)} mortals × ${c.ticks} ticks)`
+      : 'no autonomous mortals sampled',
   };
   return gates;
 }
@@ -393,10 +454,12 @@ function report(all: SeedCensus[]): boolean {
 
     console.log('\nUndertaking composition');
     const comp = c.composition;
-    console.log(`  ${comp.starts} starts across ${comp.distinctTemplates} distinct templates · ${comp.tradeRouteEdges} trades_with edges`);
+    console.log(`  ${comp.starts} starts across ${comp.distinctTemplates} distinct templates (${comp.distinctInSample} in the first ${CENSUS_VARIETY_SAMPLE_STARTS}) · ${comp.tradeRouteEdges} trades_with edges`);
     console.log(`  top: ${comp.topTemplates.length
       ? comp.topTemplates.map(([id, n]) => `${id} ${n}`).join(', ')
       : '—'}`);
+    console.log(`  per mortal: ${comp.startsPerMortalPer100Ticks.toFixed(1)} starts per 100 ticks over ${comp.meanAutonomousMortals.toFixed(1)} autonomous mortals`);
+    console.log(`  concurrency (reported, not gated — THR-1387): max ${comp.concurrency.maxAtEnd} active at run end, busiest [${comp.concurrency.topAtEnd.join(', ')}], mean ${comp.concurrency.meanActive.toFixed(1)} active per tick`);
 
     console.log('\nGates');
     for (const [name, g] of Object.entries(c.gates)) {

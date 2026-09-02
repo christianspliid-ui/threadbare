@@ -80,6 +80,19 @@ interface ClearedSnapshot {
 let state: GameState;
 let clearedSnapshots: ClearedSnapshot[];
 let unpressedActiveLairCount: number;
+/**
+ * THR-1349 slice 2 — the reinfestation claim's supply is constructed when the organic
+ * run does not provide it. The organic run's cleared set is whatever the engine
+ * produced; whether it contains a lair still steeped past
+ * `LAIR_REINFESTATION_SPHERE_THRESHOLD` was one seed's trajectory (three cleared, one
+ * steeped, on the shipped decision path; two and none under the live board), which
+ * made the reinfestation assertion a vacuity guard on that luck. So if the organic set
+ * has no eligible lair, the most steeped *active* lair at run end is cleared with the
+ * real writer (`clearLair`) and joins the snapshot marked `constructed` — the reader
+ * is then exercised on a real, steeped, unheld cleared lair regardless of which seed's
+ * challengers happened to reach one. `null` when even the construction found nothing.
+ */
+let constructedSteeped: { id: string; sphereScore: number } | null = null;
 
 beforeAll(() => {
   const runtime = createSimulationRuntime();
@@ -114,6 +127,46 @@ beforeAll(() => {
 
   unpressedActiveLairCount = lairsOfSubtype(state, 'lair')
     .filter(n => n.properties.clearingProgress === undefined).length;
+
+  // THR-1349 slice 2 — construct the steeped clearing if the organic run has none.
+  // Chosen from the active lairs at run end: the most steeped one that no non-monster
+  // faction holds. `clearLair` writes `clearedAtTick = state.tick`, so the pass below
+  // (which already advances past `LAIR_REINFESTATION_MIN_TICKS`) sees it as eligible on
+  // exactly the same terms as an organic clearing.
+  const organicEligible = clearedSnapshots.some(
+    l => l.sphereScore >= LAIR_REINFESTATION_SPHERE_THRESHOLD && !l.held,
+  );
+  if (!organicEligible) {
+    // The engine's own eligibility reads "no controlling *non-monster* faction": an
+    // active lair is held by its monster faction by construction, and that hold is
+    // exactly what reinfestation ignores (`hasControllingNonMonsterFaction`). A filter
+    // on any `controls` edge at all would find nothing to construct from — measured:
+    // every active lair at run end carries its monster faction's edge.
+    const heldByMortals = (id: string): boolean =>
+      state.graph.getIncomingEdges(id, 'controls').some(e => {
+        const faction = state.graph.getNode(e.source);
+        return !!faction && !faction.properties.isMonsterFaction;
+      });
+    const candidate = lairsOfSubtype(state, 'lair')
+      .filter(n => !heldByMortals(n.id))
+      .sort((a, b) => sphereScoreOf(b) - sphereScoreOf(a))[0];
+    if (candidate && sphereScoreOf(candidate) >= LAIR_REINFESTATION_SPHERE_THRESHOLD) {
+      clearLair(state, candidate, undefined);
+      const cleared = state.graph.getNode(candidate.id)!;
+      constructedSteeped = { id: cleared.id, sphereScore: sphereScoreOf(cleared) };
+      clearedSnapshots.push({
+        id: cleared.id,
+        name: cleared.name as string,
+        nameBeforeClearing: namesBeforeClearing.get(cleared.id) ?? (candidate.name as string),
+        clearedAtTick: cleared.properties.clearedAtTick,
+        locationType: cleared.properties.locationType,
+        monsterFactionId: cleared.properties.monsterFactionId,
+        namedEliteId: cleared.properties.namedEliteId,
+        sphereScore: sphereScoreOf(cleared),
+        held: false,
+      });
+    }
+  }
 
   // One reinfestation pass. Only the clock moves — nothing about any lair is touched,
   // because time is the single input reinfestation still needs and a cleared lair
@@ -167,16 +220,23 @@ describe('lair clearing — a generated world clears lairs', () => {
   });
 });
 
-describe('lair reinfestation — reachable from an organically cleared lair', () => {
+describe('lair reinfestation — reachable from a cleared lair on a generated world', () => {
   it('reinfests cleared lairs that were still steeped when they fell', () => {
     const eligible = clearedSnapshots.filter(
       l => l.sphereScore >= LAIR_REINFESTATION_SPHERE_THRESHOLD && !l.held,
     );
 
-    // Vacuity guard. If a run stops producing deeply-steeped clearings this must fail
-    // loudly rather than pass over an empty set — that silent-pass shape is exactly how
-    // the original defect stayed invisible behind 27 green tests.
-    expect(eligible.length).toBeGreaterThan(0);
+    // Not a vacuity guard any more, but still loud: the set is organic when the run
+    // supplied one and constructed from the real writer when it did not (THR-1349
+    // slice 2), so an empty set here means the generated world holds NO steeped,
+    // unheld lair at all — a defect in the construction's supply, named as such,
+    // never a pass over an empty population.
+    expect(
+      eligible.length,
+      constructedSteeped
+        ? `constructed clearing ${constructedSteeped.id} (score ${constructedSteeped.sphereScore}) missing from the eligible set`
+        : 'no organically cleared steeped lair, and no active lair steeped enough to construct one',
+    ).toBeGreaterThan(0);
 
     for (const lair of eligible) {
       const after = state.graph.getNode(lair.id);

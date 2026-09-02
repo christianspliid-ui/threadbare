@@ -568,86 +568,72 @@ export const BOARD_ENCOUNTER_SHARE_FLOOR = 0.15;
 export const BOARD_IDLE_SHARE_CEILING = 0.40;
 
 /**
- * Composition floor: how many *distinct* undertaking templates a census run must
- * actually start (THR-1349).
+ * Undertaking **throughput** floor, stated per spotlight mortal: starts per
+ * autonomous mortal per 100 ticks (THR-1349, fourth pass — the design session).
  *
- * The three share gates above read the mix *between* families and say nothing
- * about composition *within* one: a board that starts a single template ten
- * thousand times satisfies every one of them. This reads inside the undertaking
- * family and is the anti-collapse floor.
+ * ## What the number it replaces was made of
  *
- * ## What it is sized against, and what it does *not* catch
+ * This file previously carried `CENSUS_UNDERTAKING_START_FLOOR = 700`, an absolute
+ * count sized against the shipped `'shadow'` arm's 892 / 891 starts. The design
+ * session read the `legacyWinner` column of `decision_board_comparison` — what
+ * contest B actually *did*, which the census in `'shadow'` never reported because it
+ * reads the board's preference — and found those starts were contest B choosing an
+ * undertaking on **42–46% of spotlight decisions** (outside the
+ * `BOARD_UNDERTAKING_SHARE_RANGE` envelope above) and letting one mortal carry
+ * **eight to eleven concurrent undertakings**, because nothing but
+ * `project_already_active` gates a start. The floor protected a stacking artefact.
  *
- * Measured, medium, 150 ticks, distinct templates started:
+ * ## Why per mortal, and why 4
+ *
+ * An absolute floor is a statement about population size as much as behaviour. A
+ * per-mortal rate is a statement about a life: a spotlight mortal begins a new
+ * undertaking about every two days (12 ticks a day; the calling's own hold is 36
+ * ticks), which is one every ~25 ticks, or 4 per 100. Measured, 150 ticks, medium:
  *
  * | arm | seed 42 | seed 99 |
  * | -- | -- | -- |
- * | `'shadow'` (shipped) | 56 | 45 |
- * | `'live'`, no variety term | 40 | 34 |
- * | `'live'`, with the variety term | 41 | 33 |
+ * | `'shadow'` (contest B) | 21.9 | 22.0 |
+ * | `'live'` (the board) | 8.1 | 10.0 |
  *
- * `30` sits under every arm measured, with the tightest margin against live seed
- * 99 at 33. It is therefore a real tripwire for a *further* collapse and not a
- * decoration — but it is stated plainly here that **it does not, by itself, catch
- * the failure THR-1349 was filed on.** A live board still starts 33–41 distinct
- * templates while writing zero trade routes; the loss is concentrated in *which*
- * templates starve, not in how many.
- *
- * Setting it high enough to separate the shadow arm from the live one would put it
- * at ~41–44, one point under seed 99's healthy 45, and it would then be measuring
- * *throughput* rather than variety — the live arm starts 228–538 undertakings
- * against shadow's 673–953, and distinct-template count tracks sample size. A gate
- * that fails for a reason other than the one it names is the vacuity this file has
- * already shipped twice (see `BOARD_SCORE_FLOOR`), so it is deliberately not that.
- *
- * The trade-route count that motivated the ticket is *reported* by the census
- * rather than gated, because the healthy baseline is itself 2 and 0 on the two
- * seeds — "non-zero" was one seed's luck, not a floor anything can hold.
+ * The floor sits at roughly half the board's rate and a fifth of the artefact's —
+ * headroom in the direction the gate guards, derived from the design rather than
+ * from either arm. The census divides starts by the mean count of
+ * `isAutonomousDecisionActor` mortals it sampled per tick, so the gate reads the
+ * same population the decision loop runs.
  */
-export const CENSUS_DISTINCT_TEMPLATE_FLOOR = 30;
+export const CENSUS_STARTS_PER_MORTAL_PER_100_TICKS_FLOOR = 4;
 
 /**
- * Undertaking **throughput** floor: starts per seed over a 150-tick census run.
+ * The fixed start sample **variety** is measured at (THR-1349, fourth pass).
  *
- * The sibling gate above measures variety and says so; this one measures volume and
- * says so. They are separate constants because `CENSUS_DISTINCT_TEMPLATE_FLOOR`'s own
- * note refused to be raised to ~41–44 to separate the cutover arms — at that value it
- * would have failed on *throughput* while naming *variety*, which is the vacuity this
- * file has shipped twice. The answer to a gate that cannot name its own failure is a
- * second gate that can, not a louder first one.
- *
- * ## What it is sized against
- *
- * Measured, medium, 150 ticks, undertaking starts (`strategic_action_started`):
- *
- * | arm | seed 42 | seed 99 |
- * | -- | -- | -- |
- * | `'shadow'` (shipped) | 892 | 891 |
- * | `'live'` (THR-1349, after the variety term and the neutral-desire fix) | 567 | 495 |
- *
- * The shipped configuration is stable to within one start across two unrelated
- * seeds, so `700` is ~21% of headroom under it rather than a number splitting a
- * noisy pair.
- *
- * ## It separates the cutover arms, and that is the finding rather than the purpose
- *
- * Stated plainly because the opposite reading is available: a floor placed between a
- * shipped arm and a proposed one can be a gate chosen to block the proposal. This one
- * is not, and the distinction is testable — it names the quantity that actually moved.
- * THR-1349's third pass measured the live board's cost as a **self-reinforcing
- * contraction**: fewer undertakings complete, so less world content exists, so fewer
- * candidates are generated, so fewer undertakings start. On seed 42, 466 of 522 live
- * idle verdicts were boards with *no candidates at all*, concentrated in 14 of 36
- * deciding agents who idled up to 73 of 150 ticks each.
- *
- * Every §4 criterion reads green throughout, because they are a floor at
- * `BOARD_ENCOUNTER_SHARE_FLOOR` and a ceiling at `BOARD_IDLE_SHARE_CEILING` — wide
- * enough to contain both a thriving world and a contracting one (seed 42 encounter
- * share 61.1% → 34.1%, idle 18.2% → 32.5%, both inside the envelope). That blindness
- * is the third instance of the failure class THR-1349 was filed on, and this constant
- * is the tripwire for it.
+ * The previous variety gate, `CENSUS_DISTINCT_TEMPLATE_FLOOR = 30`, counted distinct
+ * templates over a whole run, and its own note conceded that distinct count tracks
+ * sample size — 39 over 495 starts passed as readily as 48 over 891. Measured at a
+ * *fixed* sample the two arms separate for the right reason: in the first 300 starts,
+ * contest B reaches 45 / 45 distinct templates on seeds 42 / 99, the board at the
+ * shipped `BOARD_VARIETY_PENALTY_WEIGHT` of 0.18 reaches only 27 / 32 — a real loss,
+ * and the one the cutover has to answer. 300 is large enough that both arms have
+ * cycled every active ambition's template list at least once and small enough that
+ * the board's 331-start seed-42 run fills it.
  */
-export const CENSUS_UNDERTAKING_START_FLOOR = 700;
+export const CENSUS_VARIETY_SAMPLE_STARTS = 300;
+
+/**
+ * Distinct undertaking templates among the first `CENSUS_VARIETY_SAMPLE_STARTS`
+ * starts (THR-1349, fourth pass).
+ *
+ * Sized so that the shipped arm (45 / 45) and the board at the retuned weight
+ * (36 / 36 at `BOARD_VARIETY_PENALTY_WEIGHT = 0.5`, sweep in that constant's note)
+ * both pass with margin, and the board at the *uncalibrated* weight (27 / 32) fails
+ * on seed 42 — a gate that can tell the calibrated board from the uncalibrated one
+ * is the falsification this number needs. It is deliberately not placed to admit
+ * the 0.18 arm: the variety loss at that weight was measured, and a gate that hides
+ * a measured loss is the vacuity this file has shipped twice (see `BOARD_SCORE_FLOOR`).
+ *
+ * The trade-route count that motivated the ticket stays *reported*, never gated: the
+ * healthy baseline is 1 and 0 on the two seeds, and THR-1348 owns the route economy.
+ */
+export const CENSUS_DISTINCT_AT_SAMPLE_FLOOR = 30;
 
 /** Control-deletion gate (§6): undertaking share must have *grown* past this floor. */
 export const DECISION_MIX_FLOOR_UNDERTAKING_SHARE = 0.12;
