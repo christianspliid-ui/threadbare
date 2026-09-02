@@ -1,4 +1,9 @@
 // src/engine/__tests__/regression/encounter-tuning.regression.test.ts
+//
+// @vitest-lane heavy — runs three seeded worlds for 100 ticks inside `describe()`,
+// which vitest books as *collect* (import) time: 117 s of the node pool's 451 s
+// "import" was this one file (THR-1386). The mechanical predicate cannot see it
+// because the world-build lives in `runMultiSeed`, not in this file's text.
 
 import { describe, it, expect } from 'vitest';
 import {
