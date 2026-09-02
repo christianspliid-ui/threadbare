@@ -2022,6 +2022,83 @@ if (import.meta.env.DEV) {
       };
     },
 
+    // THR-1298: the reactive loop's readout — who is carrying a vendetta, against whom,
+    // and what the cooled ones left behind.
+    getGrievances: async (agentIdOrName?: string) => {
+      const graph = _graphProvider?.();
+      if (!graph) return { grievances: [], grudges: [] };
+
+      const [{ getGrievanceHeatWord, getGrudgeCauseClause }] = await Promise.all([
+        import('./data/grievance-prose'),
+      ]);
+
+      // A selector that matches nobody returns empty rather than falling through to the
+      // whole world — silently widening a filtered query into a world sweep is how a
+      // typo reads as "no grievances exist anywhere" (impediment #405's shape).
+      let scope: string[] | null = null;
+      if (agentIdOrName !== undefined) {
+        const match = await resolveAgentNode(agentIdOrName);
+        scope = match ? [match.id] : [];
+      }
+
+      const nameOf = (id: string) => graph.getNode(id)?.name ?? id;
+      const actors = scope ?? graph.getNodesByType('actor').map(n => n.id);
+
+      // Shape borrowed from the declaration rather than restated: the two drifting apart
+      // is exactly the failure a hand-written literal here would hide.
+      type Grievances = Awaited<ReturnType<import('./debug-bridge.d').DebugBridge['getGrievances']>>;
+      const grievances: Grievances['grievances'] = [];
+      const grudges: Grievances['grudges'] = [];
+
+      for (const agentId of actors) {
+        for (const edge of graph.getOutgoingEdges(agentId, 'pursues')) {
+          const p = edge.properties;
+          if (p.grievance !== true) continue;
+          const culpritId = typeof p.culpritAgentId === 'string' ? p.culpritAgentId : null;
+          grievances.push({
+            agentId,
+            agentName: nameOf(agentId),
+            ambitionId: edge.target,
+            status: typeof p.status === 'string' ? p.status : null,
+            culpritAgentId: culpritId,
+            culpritName: culpritId ? nameOf(culpritId) : null,
+            /** Raw heat — the engine number, which the UI never shows. */
+            heat: typeof p.heat === 'number' ? p.heat : null,
+            /** The same value as the player reads it. */
+            heatWord: getGrievanceHeatWord(p.heat as number | undefined),
+            harmMagnitude: typeof p.harmMagnitude === 'number' ? p.harmMagnitude : null,
+            chainDepth: typeof p.chainDepth === 'number' ? p.chainDepth : null,
+            mintedByEventId: typeof p.mintedByEventId === 'string' ? p.mintedByEventId : null,
+            mintedByLabel: typeof p.mintedByLabel === 'string' ? p.mintedByLabel : null,
+          });
+        }
+
+        // Outgoing only. `writeGrudge` writes both directions, so reading both would
+        // report every pair twice; a one-sided edge from another writer still appears
+        // on whichever side holds it.
+        for (const edge of graph.getOutgoingEdges(agentId, 'hostile_to')) {
+          if (graph.getNode(edge.target)?.type !== 'actor') continue;
+          const provenance = ['cause', 'reason', 'basis']
+            .map(k => edge.properties[k])
+            .find((v): v is string => typeof v === 'string');
+          grudges.push({
+            agentId,
+            agentName: nameOf(agentId),
+            targetId: edge.target,
+            targetName: nameOf(edge.target),
+            provenance: provenance ?? null,
+            causeClause: getGrudgeCauseClause(provenance),
+            since: typeof edge.properties.since === 'number' ? edge.properties.since : null,
+            sourceEventId: typeof edge.properties.sourceEventId === 'string'
+              ? edge.properties.sourceEventId
+              : null,
+          });
+        }
+      }
+
+      return { grievances, grudges };
+    },
+
     // THR-66: rival scheme inspection — reads the denormalized RivalState.schemes summaries.
     getRivalSchemes: () => {
       const state = _gameStateProvider?.();

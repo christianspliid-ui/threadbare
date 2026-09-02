@@ -27,9 +27,11 @@ function hasKnowledge(level: string, minimum: string): boolean {
 interface JourneyTabProps {
   card: AgentInfoCardData;
   knowledge?: AgentKnowledge;
+  /** Opens another agent's sheet — used by a vendetta's culprit link (THR-1298). */
+  onOpenEntity?: (id: string) => void;
 }
 
-export function JourneyTab({ card, knowledge }: JourneyTabProps) {
+export function JourneyTab({ card, knowledge, onOpenEntity }: JourneyTabProps) {
   // Whether to show ambitions — either via interaction depth OR knowledge level
   const showAmbitions =
     (knowledge != null && knowledge.interactionDepth >= AMBITION_PRIMARY_INTERACTIONS)
@@ -66,7 +68,7 @@ export function JourneyTab({ card, knowledge }: JourneyTabProps) {
       <section>
         <SectionHeading as="h2">Ambitions</SectionHeading>
         {showAmbitions && visibleIntents.length > 0 ? (
-          <IntentSection intents={visibleIntents} variant="modal" />
+          <IntentSection intents={visibleIntents} variant="modal" onOpenEntity={onOpenEntity} />
         ) : (
           <p className="text-stone-400 italic text-sm">
             You don&apos;t yet know what drives {card.name}.

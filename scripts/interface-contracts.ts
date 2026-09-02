@@ -930,6 +930,71 @@ export const CONTRACTS: readonly Contract[] = [
     },
   },
 
+  // ── The reactive loop reaches the player (THR-1298 slice 7) ────────────────
+  {
+    id: 'grievance-reaches-the-mortal-sheet',
+    producerSystem: AMBITIONS,
+    consumerSystem: NARRATIVE,
+    intent:
+      'A vendetta says on the character sheet whose it is and how hot it burns — "burning · against Oswen, after the razing of Thornhall" — so a drive the world minted from a harm is legible as such rather than as an ordinary want.',
+    ulTerms: ['Ambition'],
+    // Extends `minted-ambition-provenance` rather than adding a channel: the same
+    // `pursues` edge, the same provenance keys, a second consumer. The grievance block
+    // lives on the *edge* because the ambition node is shared per templateId — two
+    // agents avenging two different harms pursue one node, and only the edge knows
+    // whose harm it was.
+    mechanism: {
+      kind: 'edge-prop',
+      symbols: ['grievance', 'culpritAgentId', 'heat', 'heatWord'],
+      module: 'src/engine/agentDetail.ts',
+    },
+    writeSites: ['src/engine/ambitionTick.ts', 'src/engine/grievance/grievanceLifecycle.ts'],
+    readSites: [
+      'src/engine/agentDetail.ts',
+      'src/components/Game/IntentSection.tsx',
+      'src/debug-bridge.ts',
+      'scripts/cli.ts',
+    ],
+    verifiedLive: {
+      date: '2026-09-02',
+      evidence:
+        'Constructed proof against the real pipeline (seed 42, medium): `createUndertakingOutcomeNode` wrote evt_und_proof_60 (property_destroyed, culprit ind_0 "Oswen", victim agent_mc_cmdr_1), the tick-75 mint pass wrote the `pursues` edge {grievance:true, culpritAgentId:"ind_0", harmMagnitude:0.8, heat:0.8, mintedByLabel:"the razing of Wilderness (13, 6) — Oswen\'s work"}, and `getAgentInfoCard` rendered it as `Seek Revenge -> burning · against Oswen, after the razing of Wilderness (13, 6) — Oswen\'s work`. Locked by src/engine/__tests__/agentDetail-grievance.test.ts and src/components/Game/__tests__/grievance-surfaces.test.tsx, each guard falsified by a reverted mutation.',
+    },
+  },
+  {
+    id: 'agent-grudge-reaches-the-mortal-sheet',
+    producerSystem: AMBITIONS,
+    consumerSystem: NARRATIVE,
+    intent:
+      'Blood between two people is standing relationship colour on the character sheet — "There is blood between them and Oswen — an old wrong that never quite closed."',
+    ulTerms: ['Agent'],
+    // The agent-scale sibling of `group-grudge-reaches-the-mortal-sheet`, which reads the
+    // same edge type at *company* scale. Two contracts rather than one because they have
+    // different consumers (BondsTab vs OverviewTab) and different membership: this one
+    // deliberately excludes collective actors, which is the whole of that one's subject.
+    mechanism: {
+      kind: 'edge-prop',
+      symbols: ['hostile_to', 'grudges', 'causeClause'],
+      module: 'src/engine/agentDetail.ts',
+    },
+    writeSites: [
+      'src/engine/grievance/grudgeEdge.ts',
+      'src/engine/groups/bandOpposition.ts',
+      'src/engine/mentorshipOutcomes.ts',
+    ],
+    readSites: [
+      'src/engine/agentDetail.ts',
+      'src/components/Game/tabs/BondsTab.tsx',
+      'src/debug-bridge.ts',
+      'scripts/cli.ts',
+    ],
+    verifiedLive: {
+      date: '2026-09-02',
+      evidence:
+        'Constructed proof (seed 42, medium): `writeGrudge(second, ind_0, cause "grievance_cooled")` — the cooling path\'s own writer — surfaced through `getAgentGrudges` as "There is blood between them and Oswen — an old wrong that never quite closed." The reader crosses the documented three-key provenance divergence (`cause`/`reason`/`basis`) and excludes collective actors, both pinned by src/engine/__tests__/agentDetail-grievance.test.ts; the rendered Blood section and its absence arm are pinned by src/components/Game/__tests__/grievance-surfaces.test.tsx.',
+    },
+  },
+
   // ── Divine Receipt — player action resolution feedback (THR-727) ───────────
   {
     id: 'player-action-aftermath-read',

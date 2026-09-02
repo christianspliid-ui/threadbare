@@ -30,6 +30,7 @@ are specified by this table plus their styleguide entry.
 | `DomainCard` | `reach`, `tier`, `agentName`, `gender?`, `revealed` | Reach art + tier prose. `revealed: false` renders the unknown state, not a blank. | #section-domaincard |
 | `Dropdown` | `trigger`, `open`, `onOpenChange`, `align?` | Portal-based (z 9999). Compound: `.Item`. Escape / outside-click close. | #section-dropdown |
 | `EntityCard` | `header`, `sections`, `onBack`, `onViewCodex`, `onZoomToLocation?` | Structured block renderer: member_list, keyword_cloud, trait_grid, bond_list, domain_grid, timeline. Not for plain text. | #section-entitycard |
+| `EntityLink` | `id`, `name`, `onOpenEntity?` | A named entity inside prose, clickable where the surface can route (Law 21) and plain text where it cannot (Law 25). Lifted out of `ChapterView` by THR-1298. | #section-entity-link |
 | `EntityVisual` | `size`, `descriptor?`, `entity?`, `graph?`, `shape?`, `onClick?` | **The one art path** (Law 3). `hero` 16:9 · `portrait` 3:4 · `chip` 40px. Missing art → authored glyph on id-hashed gradient (Law 4). Person art knowledge-gated, fail-open (Law 8). | #section-entity-visual |
 | `FlavorQuote` | `children?`, `attribution?`, `divider?` | Inset quote well. Renders **nothing** when empty — safe to leave unconditional. | #section-flavorquote |
 | `GameErrorBoundary` | `children` | Error fallback. Wrap any subtree that might crash (NFP #4). Used around every styleguide sample. | used throughout |

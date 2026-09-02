@@ -25,6 +25,11 @@ import type { AmbitionCategory } from '../types/ambition';
 import { generateTieredBackstory } from './backstoryGenerator';
 import type { BackstoryResult } from '../types/prose';
 import { findAmbitionTemplateById } from '../data/ambition-templates';
+import {
+  getGrievanceHeatWord,
+  getGrudgeCauseClause,
+  type GrievanceHeatWord,
+} from '../data/grievance-prose';
 import { COMPLETED_AMBITIONS_MAX_DISPLAY } from '../types/agentKnowledge';
 import { getAgentPortraitUrlFromProperties } from '../data/portrait-assets';
 import { getCompanions, type CompanionEntry } from './companions';
@@ -89,6 +94,30 @@ export const PROTOTYPE_INTENT_VISIBLE = true;
 
 // ─── Active Intent (aggregated for display) ───────────────────────
 
+/**
+ * The vendetta half of an `ActiveIntent` (THR-1298 slice 7).
+ *
+ * Present only on a drive the world minted from a harm. Its absence is the ordinary
+ * case — most drives are wants, and a want has no culprit.
+ */
+export interface IntentGrievance {
+  /**
+   * Graph node id of the culprit, for the click-through (UI Law 17). Absent when the
+   * edge names nobody — which the fail-soft table admits: a harm whose culprit could
+   * not be resolved still mints a drive, it just has no one to point at.
+   */
+  culpritId?: string;
+  /** Culprit's display name; falls back to the id when the node is gone (killed, purged). */
+  culpritName?: string;
+  /**
+   * `burning` · `hot` · `cooling` — the heat as a word (UI Laws 13/14).
+   *
+   * The numeral never leaves the engine: a player cannot inspect `0.62`, and a grievance
+   * that says "cooling" tells them the thing the number was for.
+   */
+  heatWord: GrievanceHeatWord;
+}
+
 export interface ActiveIntent {
   templateId: string;
   displayName: string;
@@ -98,6 +127,27 @@ export interface ActiveIntent {
   requiredMilestones: number;
   milestoneDescriptions?: string[];
   reachAffinity: Partial<Record<ReachDomain, number>>;
+  /**
+   * Prose stem naming the event the world minted this drive from (THR-726), e.g.
+   * "the razing of Thornhall". Absent on a drive the agent chose for themselves.
+   */
+  mintedByLabel?: string;
+  /** Set when this drive is a vendetta rather than a want (THR-1298). */
+  grievance?: IntentGrievance;
+}
+
+/**
+ * A standing `hostile_to` edge between two agents, shaped for the BondsTab (THR-1298).
+ *
+ * Distinct from a `relates_to` bond with negative sentiment: a bond that has soured can
+ * sweeten again, while a grudge is a fact about what happened. It never decays — the
+ * cooled vendetta that wrote it is gone from the board, and this is what it left behind.
+ */
+export interface GrudgeSummary {
+  targetId: string;
+  targetName: string;
+  /** Prose clause naming why the blood stands, e.g. "an old wrong that never closed". */
+  causeClause: string;
 }
 
 /**
@@ -307,6 +357,12 @@ export interface AgentInfoCardData {
   /** Agent gender for pronoun resolution in prose (e.g. 'male', 'female'). Defaults to neutral. */
   gender?: string;
   topBonds?: { name: string; strengthWord: string; sentiment: string }[];
+  /**
+   * Standing blood with other agents (THR-1298). Gated with `topBonds` at `known`+ —
+   * a grudge is the same class of fact as a bond, and learning one before the other
+   * would tell the player who someone hates before they know who they trust.
+   */
+  grudges?: GrudgeSummary[];
   quotes?: string[];
   cooperationStrategy?: string;
   reputationWord?: string;
@@ -892,6 +948,27 @@ function getAgentIntents(graph: WorldGraph, agentId: string): ActiveIntent[] {
     const completedMilestoneIds = (entry.edge.properties.completedMilestones as string[]) ?? [];
     const priority = (entry.edge.properties.priority as 'primary' | 'secondary') ?? 'secondary';
 
+    // Provenance and grievance state live on the *edge*, not the ambition node: the node
+    // is shared per templateId, so two agents avenging two different harms pursue the
+    // same node and only the edge knows whose harm it was (THR-1298).
+    const props = entry.edge.properties;
+    const mintedByLabel = typeof props.mintedByLabel === 'string' ? props.mintedByLabel : undefined;
+
+    let grievance: IntentGrievance | undefined;
+    if (props.grievance === true) {
+      const culpritId = typeof props.culpritAgentId === 'string' ? props.culpritAgentId : undefined;
+      // Fall back to the id, never to silence: a culprit whose node is gone is exactly
+      // the case where the player most wants to know a vendetta is still being carried.
+      const culpritName = culpritId
+        ? (graph.getNode(culpritId)?.name ?? culpritId)
+        : undefined;
+      grievance = {
+        ...(culpritId && { culpritId }),
+        ...(culpritName && { culpritName }),
+        heatWord: getGrievanceHeatWord(props.heat as number | undefined),
+      };
+    }
+
     intents.push({
       templateId,
       displayName: template.displayName,
@@ -900,6 +977,8 @@ function getAgentIntents(graph: WorldGraph, agentId: string): ActiveIntent[] {
       completedMilestones: completedMilestoneIds.length,
       requiredMilestones: template.completion.requires,
       reachAffinity: { ...template.reachAffinity },
+      ...(mintedByLabel && { mintedByLabel }),
+      ...(grievance && { grievance }),
     });
   }
 
@@ -944,6 +1023,76 @@ export function getCompletedAmbitions(graph: WorldGraph, agentId: string): Compl
   results.sort((a, b) => (b.resolvedTick ?? -Infinity) - (a.resolvedTick ?? -Infinity));
 
   return results.slice(0, COMPLETED_AMBITIONS_MAX_DISPLAY);
+}
+
+/**
+ * The three keys a `hostile_to` edge stamps its provenance under.
+ *
+ * Duplicated from `undertakingMotive.ts` rather than shared, deliberately: that copy
+ * gates a *verb* and this one renders a *line*, and a future migration that unifies the
+ * spellings should be free to retire one reader without the other silently inheriting
+ * its behaviour. The divergence itself is documented in `grievance/grudgeEdge.ts`.
+ */
+const HOSTILE_PROVENANCE_KEYS = ['cause', 'reason', 'basis'] as const;
+
+/**
+ * Actor kinds that are not a *person* you can have history with.
+ *
+ * Factions, cultures and companies are all `type: 'actor'` — the node type does not
+ * separate them, only `actorType` does — and every one of them writes or receives
+ * `hostile_to`. An excommunication edge points from a guild at a member; a band's
+ * opposition edge points between companies. Neither belongs in a list of people, and
+ * filtering on `type === 'actor'` would have admitted all of them.
+ *
+ * Stated as an exclusion rather than an `=== 'individual'` allowlist so an actor whose
+ * `actorType` is missing or new still renders their name. On a prose surface, a
+ * stranger's name is a better failure than a real grudge silently disappearing.
+ */
+const COLLECTIVE_ACTOR_TYPES: ReadonlySet<string> = new Set(['faction', 'culture', 'group']);
+
+/**
+ * Standing grudges between this agent and other agents (THR-1298 slice 7).
+ *
+ * Read in both directions because `writeGrudge` writes the pair but the other two
+ * writers do not: a one-sided edge from a mentorship falling-out still means blood, and
+ * reading only outgoing would make the line depend on which half happened to be written.
+ *
+ * **Agent-to-agent only.** A faction's excommunication edge points at this agent too,
+ * and it belongs on the Faction section rather than in a list of people — a guild is not
+ * somebody you have history *with* in the sense this line means.
+ *
+ * Deterministic order (NFP #3): node-id sorted, so the prose never reshuffles between
+ * two reads of an unchanged graph. Pure and fail-soft — a missing node is skipped, never
+ * thrown on.
+ */
+export function getAgentGrudges(graph: WorldGraph, agentId: string): GrudgeSummary[] {
+  // Map rather than Set: a pair written from both directions carries provenance on
+  // whichever half its writer stamped, and first-seen wins so the reading is stable.
+  const byTarget = new Map<string, string | undefined>();
+
+  const record = (otherId: string, properties: Record<string, unknown>): void => {
+    if (otherId === agentId || byTarget.has(otherId)) return;
+    const other = graph.getNode(otherId);
+    if (!other || other.type !== 'actor') return;
+    if (COLLECTIVE_ACTOR_TYPES.has(String(other.properties.actorType))) return;
+    let provenance: string | undefined;
+    for (const key of HOSTILE_PROVENANCE_KEYS) {
+      const value = properties[key];
+      if (typeof value === 'string') { provenance = value; break; }
+    }
+    byTarget.set(otherId, provenance);
+  };
+
+  for (const edge of graph.getOutgoingEdges(agentId, 'hostile_to')) record(edge.target, edge.properties);
+  for (const edge of graph.getIncomingEdges(agentId, 'hostile_to')) record(edge.source, edge.properties);
+
+  return [...byTarget.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([targetId, provenance]) => ({
+      targetId,
+      targetName: graph.getNode(targetId)?.name ?? targetId,
+      causeClause: getGrudgeCauseClause(provenance),
+    }));
 }
 
 /**
@@ -1135,6 +1284,11 @@ export function getAgentInfoCard(
         sentiment: bond.sentiment >= 0 ? 'positive' : 'negative',
       }));
     }
+
+    // Standing grudges (THR-1298). Set only when at least one exists, so an agent who
+    // has never wronged anyone renders no section at all rather than an empty heading.
+    const grudges = getAgentGrudges(graph, agentId);
+    if (grudges.length > 0) card.grudges = grudges;
 
     // Known level: exactly 1 quote
     if (knowledgeLevel === 'known') {

@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 67 |
+| 🟢 LIVE | 69 |
 | 🟠 PARTIAL | 2 |
 | 🔴 LEAKED | 8 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 18 |
-| **Total** | **95** |
+| **Total** | **97** |
 
 ## Contracts by producing subsystem
 
@@ -36,6 +36,7 @@ remediation ticket or the build fails.
 
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
+| `agent-grudge-reaches-the-mortal-sheet` | Blood between two people is standing relationship colour on the character sheet — "There is blood between them and Oswen — an old wrong that never quite closed." | edge-prop: `hostile_to`, `grudges`, `causeClause` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 | `ambition-biases-encounter-choice` | An agent's ambitions bias which encounters they choose — motive drives action. | function: `applyAmbitionBoost` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `ambition-completed-history` | Completed ambitions accumulate into a readable history of who an agent became. | function: `completedAmbitions`, `getCompletedAmbitions` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 | `ambition-motive-receipts` | Ambitions explain motives — receipts carry ambition provenance into foreshadowing. | trace: `ambitionBoost` | Omens & Atmospheric Pressure | 🟢 LIVE | — |
@@ -44,6 +45,7 @@ remediation ticket or the build fails.
 | `binder-decision-traced` | Every casting decision an undertaking makes reaches the narrative surface: the trace answers "why is this moment generic?" after the fact (it fires on a slot that bound nobody as loudly as on one that bound somebody), and a lost must-persist cast member is carried into the checkpoint moment by name — "loses Old Maerin" rather than the anonymous "hits serious trouble" the complication class produced before. | trace: `binding_decision`, `resolveBinding`, `runBindPass` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | THR-1297 |
 | `binder-mint-valve` | When an undertaking needs a person the world does not have, that person is born the way every other mortal is born — through the lifecycle’s one-per-tick gate — instead of appearing on the spot. An unmetered spawn path is how a large map reached ~1010 agents by tick 72 (THR-814/THR-162), and the budget is what stops the binder becoming a second one. | state-field: `mintQueue`, `drainMintQueue`, `BINDER_MINT_BUDGET_PER_TICK`, `binder_mint` | Agent Lifecycle | 🟢 LIVE | — |
 | `faction-ambitions-drive-action` | Faction ambitions drive faction action and render on the faction sheet. | function: `factionAmbitions` | Factions & Succession | 🟢 LIVE | — |
+| `grievance-reaches-the-mortal-sheet` | A vendetta says on the character sheet whose it is and how hot it burns — "burning · against Oswen, after the razing of Thornhall" — so a drive the world minted from a harm is legible as such rather than as an ordinary want. | edge-prop: `grievance`, `culpritAgentId`, `heat`, `heatWord` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 | `holdings-single-writer-owns-edge` | What a mortal owns is written in exactly one place. The `owns` edge is the authority; the bearer-side attachment is its face, and both are minted, moved and retired by `holdings.ts` alone. | edge-prop: `owns` | Attachments, Items & Possessions | 🟢 LIVE | — |
 | `minted-ambition-provenance` | Motive receipts name the origin of a minted want — "she seeks vengeance for the blighted fields." | edge-prop: `mintedByEventId` | Omens & Atmospheric Pressure | 🟢 LIVE | — |
 | `one-namer-shared-primitives` | There is one rule for how an id becomes a seed and one rule for English possessives. `naming/workNames.ts` owns both; every other namer imports them rather than minting its own. | module-export: `possessive`, `hashSeed`, `pickFrom`, `generateWorkName` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
@@ -212,6 +214,18 @@ remediation ticket or the build fails.
 - **Read sites:** `src/engine/groups/groupDissolution.ts`
 - **Other hits:** `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/debug/HiddenMarksTab.tsx`, `src/components/Game/DebugPanel.tsx`, `src/components/Game/GameView.tsx`, `src/engine/ascendantExpression.ts` +9 more
 - **Verdict:** Verified 2026-08-18: src/engine/groups/__tests__/groupLifecycle.test.ts § "betrayal dissolution (THR-1174)" drives the reason through runGroupUpkeep and reads it off the result — never by passing the literal to selectPartingVariant, which is how this contract sat consumer-only for months. Disabling the trigger fails 3 of its rows; the negative rows (floor, category, former member, holding company) stay green by design.
+
+### `agent-grudge-reaches-the-mortal-sheet` — 🟢 LIVE
+
+- **Intent:** Blood between two people is standing relationship colour on the character sheet — "There is blood between them and Oswen — an old wrong that never quite closed."
+- **Producer → Consumer:** Ambitions & Undertakings → Attention, Chronicle & Narrative
+- **UL terms:** *Agent*
+- **Module:** `src/engine/agentDetail.ts`
+- **Production hits:** 40 total — 2 write, 3 read, 35 unclassified
+- **Write sites:** `src/engine/grievance/grudgeEdge.ts`, `src/engine/mentorshipOutcomes.ts`
+- **Read sites:** `src/components/Game/tabs/BondsTab.tsx`, `src/debug-bridge.ts`, `src/engine/agentDetail.ts`
+- **Other hits:** `src/components/Game/encounter-stage/adapters/buildAftermathConsequences.ts`, `src/data/army-encounter-content.ts`, `src/data/content-eval/plotHooks.ts`, `src/data/encounters/company-drama.ts`, `src/data/encounters/one-body-short.ts` +30 more
+- **Verdict:** Verified 2026-09-02: Constructed proof (seed 42, medium): `writeGrudge(second, ind_0, cause "grievance_cooled")` — the cooling path's own writer — surfaced through `getAgentGrudges` as "There is blood between them and Oswen — an old wrong that never quite closed." The reader crosses the documented three-key provenance divergence (`cause`/`reason`/`basis`) and excludes collective actors, both pinned by src/engine/__tests__/agentDetail-grievance.test.ts; the rendered Blood section and its absence arm are pinned by src/components/Game/__tests__/grievance-surfaces.test.tsx.
 
 ### `ambition-acquisition` — 🟢 LIVE
 
@@ -795,16 +809,28 @@ exit
 - **Other hits:** `src/components/Game/ArmySheet.tsx`, `src/data/faction-action-constants.ts`, `src/engine/ambitionShape.ts`, `src/engine/effects/conditionProxyEvents.ts`, `src/engine/phaseMovement.ts` +1 more
 - **Verdict:** Verified 2026-07-23: FactionSheet.activeAmbition renders; faction phases consume. Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified)
 
+### `grievance-reaches-the-mortal-sheet` — 🟢 LIVE
+
+- **Intent:** A vendetta says on the character sheet whose it is and how hot it burns — "burning · against Oswen, after the razing of Thornhall" — so a drive the world minted from a harm is legible as such rather than as an ordinary want.
+- **Producer → Consumer:** Ambitions & Undertakings → Attention, Chronicle & Narrative
+- **UL terms:** *Ambition*
+- **Module:** `src/engine/agentDetail.ts`
+- **Production hits:** 65 total — 2 write, 3 read, 60 unclassified
+- **Write sites:** `src/engine/ambitionTick.ts`, `src/engine/grievance/grievanceLifecycle.ts`
+- **Read sites:** `src/components/Game/IntentSection.tsx`, `src/debug-bridge.ts`, `src/engine/agentDetail.ts`
+- **Other hits:** `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts`, `src/components/Game/FactionSheet.tsx`, `src/components/shared/EntityLink.tsx`, `src/data/agenda-content.ts`, `src/data/ambition-minting-rules.ts` +55 more
+- **Verdict:** Verified 2026-09-02: Constructed proof against the real pipeline (seed 42, medium): `createUndertakingOutcomeNode` wrote evt_und_proof_60 (property_destroyed, culprit ind_0 "Oswen", victim agent_mc_cmdr_1), the tick-75 mint pass wrote the `pursues` edge {grievance:true, culpritAgentId:"ind_0", harmMagnitude:0.8, heat:0.8, mintedByLabel:"the razing of Wilderness (13, 6) — Oswen's work"}, and `getAgentInfoCard` rendered it as `Seek Revenge -> burning · against Oswen, after the razing of Wilderness (13, 6) — Oswen's work`. Locked by src/engine/__tests__/agentDetail-grievance.test.ts and src/components/Game/__tests__/grievance-surfaces.test.tsx, each guard falsified by a reverted mutation.
+
 ### `group-grudge-reaches-the-mortal-sheet` — 🟢 LIVE
 
 - **Intent:** A company that has fought someone carries it visibly — the mortal sheet names the rival in prose, so blood between companies is legible without a trace viewer.
 - **Producer → Consumer:** Companies & Group Travel → Attention, Chronicle & Narrative
 - **UL terms:** *Company*
 - **Module:** `src/engine/agentDetail.ts`
-- **Production hits:** 55 total — 1 write, 2 read, 52 unclassified
+- **Production hits:** 57 total — 1 write, 2 read, 54 unclassified
 - **Write sites:** `src/engine/grievance/grudgeEdge.ts`
 - **Read sites:** `src/components/Game/tabs/OverviewTab.tsx`, `src/engine/agentDetail.ts`
-- **Other hits:** `src/components/Game/Encounter/DetectionThread.tsx`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/HexMapV2/HexMapV2.tsx`, `src/components/icons/CoatOfArms.tsx`, `src/data/action-template-content.ts` +47 more
+- **Other hits:** `src/components/Game/Encounter/DetectionThread.tsx`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/HexMapV2/HexMapV2.tsx`, `src/components/icons/CoatOfArms.tsx`, `src/data/action-template-content.ts` +49 more
 - **Verdict:** Verified 2026-07-25: Live CLI run, seed 42 medium: a company relocated into a Great Silverhold guild hall resolved encounter.confront_guild_falls against a colocated Arcane Circle defender band at t61 — company cohesion 0.54 → 0.70, band 0.70 → 0.46 — and the contest wrote mutual grudges, read straight off the graph: "The Watch of the Nameless Road -> The Errant Keys of The Arcane Circle since t61 (group_engagement)" and the reverse. agentDetail reads both edge directions off the group node and dedupes the mutual pair; OverviewTab renders it as one sentence with no numbers and no `since` tick. Locked by src/engine/groups/__tests__/bandDebugSurfaces.test.ts § "Company panel — Rivals" (7 tests: absent when no grudge, outgoing, incoming-only, mutual-dedupe, dangling-target drop, deterministic multi-rival order).
 
 ### `guild-rank-gates-senior-content` — 🟢 LIVE
@@ -915,10 +941,10 @@ exit
 
 - **Intent:** Motive receipts name the origin of a minted want — "she seeks vengeance for the blighted fields."
 - **Producer → Consumer:** Ambitions & Undertakings → Omens & Atmospheric Pressure
-- **Production hits:** 5 total — 1 write, 1 read, 3 unclassified
+- **Production hits:** 6 total — 1 write, 1 read, 4 unclassified
 - **Write sites:** `src/engine/ambitionTick.ts`
 - **Read sites:** `src/engine/foreshadowing/motiveReceipt.ts`
-- **Other hits:** `src/engine/grievance/grievanceLifecycle.ts`, `src/types/ambition.ts`, `src/types/trace.ts`
+- **Other hits:** `src/debug-bridge.ts`, `src/engine/grievance/grievanceLifecycle.ts`, `src/types/ambition.ts`, `src/types/trace.ts`
 - **Verdict:** Verified 2026-07-24: THR-726: `ambitionTick.ts` writes `mintedByEventId`/`mintedByLabel` on the minted `pursues` edge; `motiveReceipt.ts` `resolveMintedAmbitionProvenance` reads them and overrides the ambition contribution's provenance detail so the receipt names the origin event.
 
 ### `nudge-card-cost-channels-detection-and-doom` — 🔴 LEAKED
@@ -1007,10 +1033,10 @@ exit
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 249 total — 1 write, 1 read, 247 unclassified
+- **Production hits:** 250 total — 1 write, 1 read, 248 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts` +242 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts` +243 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `relocation-intent-steers-agent-movement` — 🔵 UNVERIFIED-OK

@@ -173,6 +173,7 @@ These live in `src/components/shared/` and are the building blocks. **Always che
 | `ProgressBar` | Horizontal progress | Any 0-1 progress display. |
 | `StepDots` | Step indicator | Multi-step flows (encounters, wizards). |
 | `EntityCard` | Structured entity display | Sidebar entity details with flexible block sections. |
+| `EntityLink` | A named entity inside a sentence | Prose that names an agent, faction or artifact and should click through to it. Renders plain text when the surface passes no `onOpenEntity`, so a caller that forgets the handler loses the click and never the name. |
 | `DomainCard` | Reach tier card | Domain/reach display with art. |
 | `RarityBorderBox` | Rarity accent wrapper | Wrap anything that should show rarity visually. |
 | `RarityBadge` | Rarity tier label | Inline tag showing rarity. |

@@ -9,6 +9,7 @@ export { DetailModal } from './DetailModal';
 export { DomainCard } from './DomainCard';
 export { Dropdown } from './Dropdown';
 export { EntityCard } from './EntityCard';
+export { EntityLink } from './EntityLink';
 export {
   EntityVisual,
   ENTITY_VISUAL_HERO_ASPECT,
