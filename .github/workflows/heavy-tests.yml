@@ -1,0 +1,80 @@
+name: Heavy simulation tests
+
+# The post-merge lane for the world-simulation tests (THR-1384).
+#
+# Thirteen files that build a world and drive it for 50–300 ticks were 89% of
+# the test suite's CPU (1,452 s of 1,629 s on run 33653898091) and, as part of
+# the required `Test · Typecheck · Build` check, produced more false reds — a
+# heavy file timing out on its own slowness, blocking an unrelated PR — than
+# genuine catches (3 to 2 over the last 200 PR runs). They now run here, after
+# the merge, where a red costs a follow-up PR rather than a stalled lane.
+#
+# Membership is not listed here: `npm run test:heavy` runs vitest's `heavy`
+# project, whose files carry a `@vitest-lane heavy` docblock tag that
+# `scripts/vitest-test-partition.ts` routes on and its partition test enforces.
+#
+# What is lost, stated plainly: a heavy-only regression lands on `main` before
+# it is detected. The window is bounded — the next push to `main` or the
+# nightly run — and the conclusion is READ (the THR-834 lesson) by
+# `scripts/check-workflow-health.ts`, which the hourly briefing lane runs: a
+# red here reaches `## Needs Christian` only once it has stayed red for
+# `PUSH_LANE_RED_GRACE_HOURS`; before that it is a line in the health block and
+# an impediment row for the next session.
+#
+# This workflow is deliberately NOT a required status check and must not
+# become one — that would put the 25-minute gate back.
+
+on:
+  push:
+    branches: [main]
+    # A docs-only push has nothing for the simulation to disagree with. Same
+    # four doc paths `ci.yml`'s `detect` job filters on, plus the two
+    # doc-sourced artifacts THR-922 excludes there; the canonical copy of the
+    # predicate is `ci.yml` and `scripts/generated-artifact-sources.ts`.
+    paths-ignore:
+      - '**/*.md'
+      - 'Docs/**'
+      - '.planning/**'
+      - 'Design/**'
+      - 'src/data/ul-dashboard.generated.json'
+      - 'public/system-interface-map-reference.html'
+  schedule:
+    # Nightly at 03:17 UTC — clear of every registered lane's fire time
+    # (`Docs/ops/scheduled-tasks-registry.md`), and the run that catches a
+    # regression a docs-only day never pushed code for.
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: heavy-tests-${{ github.ref }}
+  # A newer push supersedes an older one's verdict; the nightly and a dispatch
+  # share the ref with pushes and are equally superseded, which is fine — the
+  # point of this lane is the latest tree's verdict, not every tree's.
+  cancel-in-progress: true
+
+jobs:
+  heavy:
+    name: Heavy simulation tests
+    runs-on: ubuntu-latest
+    # The heavy project measured ~24 min of test CPU on a hosted runner at the
+    # split (the sum of the per-file durations in THR-1384's table), running
+    # across vitest's default worker count. 45 gives the same ~1.6× headroom
+    # the required check's budget carries. Re-measure before changing
+    # (impediments #941/#948 — undated budgets decay in silence).
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Run heavy simulation tests
+        run: npm run test:heavy

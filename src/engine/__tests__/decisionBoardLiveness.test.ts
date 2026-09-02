@@ -1,3 +1,4 @@
+// @vitest-lane heavy — builds a medium world and drives it 60 ticks (THR-1384)
 /**
  * Shadow-board liveness (THR-1292 §4) — a canary, not a balance measurement.
  *

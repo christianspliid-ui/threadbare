@@ -1,3 +1,4 @@
+// @vitest-lane heavy — builds three small worlds and drives each 50 ticks (118 s on CI run 33653898091) (THR-1384)
 import { describe, it, expect, beforeEach } from 'vitest';
 import { initializeGameState, MAP_SIZE_PRESETS } from '../../gameInit';
 import { runTick, resetDecisionCache, resetEventCounter } from '../../orchestrator';

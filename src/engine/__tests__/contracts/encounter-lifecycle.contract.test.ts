@@ -1,3 +1,4 @@
+// @vitest-lane heavy — builds a world and drives it 100 ticks (THR-1384)
 /**
  * Encounter Lifecycle Contract Test
  *

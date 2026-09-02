@@ -135,11 +135,57 @@ export const DISABLED_STATES: ReadonlySet<string> = new Set([
   "disabled_inactivity",
 ]);
 
+/**
+ * Post-merge lanes (THR-1384). A workflow that runs on `push` to `main` — the
+ * heavy simulation tests, moved off the required check because they were 89% of
+ * its CPU — has no merge to block, so its red has to be *read* or it is the
+ * THR-834 shape again. How many recent push runs of each such lane to judge.
+ */
+export const PUSH_RUN_LOOKBACK = 5;
+
+/**
+ * How long a post-merge lane may stay red before it is Christian's problem
+ * rather than the next session's. Under this, a red is a line in the briefing's
+ * health block and an impediment row — a heavy-only regression on `main` is a
+ * follow-up PR, which is the trade THR-1384 made deliberately. Past it, nobody
+ * has picked the follow-up up, and that is what the `## Needs Christian`
+ * section is for.
+ */
+export const PUSH_LANE_RED_GRACE_HOURS = 24;
+
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
 export type WorkflowVerdict = "healthy" | "all-red" | "never-run" | "disabled" | "unknown";
+
+/**
+ * `red` — the newest conclusive push run failed, less than
+ * `PUSH_LANE_RED_GRACE_HOURS` ago; `red-stale` — it has been red longer than that.
+ */
+export type PushLaneVerdict = "healthy" | "red" | "red-stale" | "never-run" | "unknown";
+
+export interface PushLaneInput {
+  /** Display name, e.g. "Heavy simulation tests". */
+  name: string;
+  /** Basename inside `.github/workflows`, e.g. "heavy-tests.yml". */
+  file: string;
+  /** Push-to-main runs, newest first. `null` when the fetch failed. */
+  runs: WorkflowRunRecord[] | null;
+}
+
+export interface PushLaneReport {
+  name: string;
+  file: string;
+  verdict: PushLaneVerdict;
+  needsChristian: boolean;
+  /** Conclusive runs considered, newest first, as raw conclusions. */
+  considered: string[];
+  /** When the current unbroken red streak began, or `null` when not red. */
+  redSinceMs: number | null;
+  /** One plain-language sentence about this lane. */
+  detail: string;
+}
 
 export interface WorkflowRunRecord {
   conclusion: string | null;
@@ -175,7 +221,15 @@ export interface WorkflowHealthResult {
   summary: string;
   /** Whether this belongs in the briefing's `## Needs Christian` section. */
   needsChristian: boolean;
+  /**
+   * A post-merge lane is red but still inside its grace period (THR-1384): a
+   * session's job, not Christian's — the hourly lane's uniform rule renders it
+   * as one § Health line, the same treatment `check:armed-prs` gets.
+   */
+  needsSession: boolean;
   workflows: WorkflowReport[];
+  /** Post-merge lanes, judged on their push-to-main runs (THR-1384). */
+  postMerge: PushLaneReport[];
 }
 
 /** Worst-first severity, used to fold per-workflow verdicts into one. */
@@ -211,6 +265,29 @@ export function hasScheduleTrigger(yamlText: string): boolean {
   const cronEntry = /^[ \t]*-[ \t]*cron:/m.test(withoutComments);
 
   return scheduleKey && cronEntry;
+}
+
+/**
+ * True when a workflow file declares a `push:` trigger on `main` — the
+ * post-merge lane predicate (THR-1384). Same narrow text scan, same
+ * comment-stripping, for the same reasons. Requires the `push:` key *and* a
+ * `branches:` entry naming `main` (flow or block form), so a workflow that
+ * pushes on every branch, or one that only lists `push` under `paths`, does not
+ * read as a post-merge lane.
+ */
+export function hasPushMainTrigger(yamlText: string): boolean {
+  const withoutComments = yamlText
+    .split("\n")
+    .map((line) => (line.trimStart().startsWith("#") ? "" : line))
+    .join("\n");
+
+  const pushKey = /^[ \t]{0,4}push:[ \t]*$/m.test(withoutComments);
+  const mainInFlow = /^[ \t]*branches:[ \t]*\[[^\]]*\bmain\b[^\]]*\]/m.test(withoutComments);
+  const mainInBlock = /^[ \t]*branches:[ \t]*\n(?:[ \t]*-[ \t]*['"]?[\w./*-]+['"]?[ \t]*\n)*?[ \t]*-[ \t]*['"]?main['"]?[ \t]*$/m.test(
+    withoutComments,
+  );
+
+  return pushKey && (mainInFlow || mainInBlock);
 }
 
 // ---------------------------------------------------------------------------
@@ -297,20 +374,113 @@ function classifyOne(workflow: ScheduledWorkflowInput): WorkflowReport {
 }
 
 /**
+ * Classify one post-merge lane on its push-to-main runs (THR-1384).
+ *
+ * The question differs from the scheduled one. A scheduled lane is judged on
+ * *how many* recent runs failed, because each run is an independent attempt at
+ * the same job. A post-merge lane is judged on *how long* `main` has been red,
+ * because every push is a different tree and the newest verdict is the one that
+ * describes the code people are building on. So: newest conclusive run green →
+ * healthy; red → the unbroken red streak's age against the grace period.
+ */
+export function classifyPushLane(lane: PushLaneInput, nowMs: number): PushLaneReport {
+  const { name, file, runs } = lane;
+
+  if (runs === null) {
+    return {
+      name,
+      file,
+      verdict: "unknown",
+      needsChristian: false,
+      considered: [],
+      redSinceMs: null,
+      detail: `Could not read the run history for "${name}".`,
+    };
+  }
+
+  const conclusive = runs.filter(
+    (r) =>
+      r.status === "completed" &&
+      typeof r.conclusion === "string" &&
+      (RED_CONCLUSIONS.has(r.conclusion) || GREEN_CONCLUSIONS.has(r.conclusion)),
+  );
+  const considered = conclusive.map((r) => r.conclusion as string);
+
+  if (conclusive.length === 0) {
+    return {
+      name,
+      file,
+      verdict: "never-run",
+      needsChristian: false,
+      considered,
+      redSinceMs: null,
+      detail: `"${name}" has not completed a run on main yet, so there is nothing to judge.`,
+    };
+  }
+
+  if (GREEN_CONCLUSIONS.has(conclusive[0].conclusion as string)) {
+    return {
+      name,
+      file,
+      verdict: "healthy",
+      needsChristian: false,
+      considered,
+      redSinceMs: null,
+      detail: `"${name}" is green on the latest main.`,
+    };
+  }
+
+  // Newest is red: walk back to where the streak began.
+  let redSinceMs = conclusive[0].createdAtMs;
+  for (const r of conclusive) {
+    if (!RED_CONCLUSIONS.has(r.conclusion as string)) break;
+    redSinceMs = r.createdAtMs;
+  }
+  const redHours = Math.max(0, (nowMs - redSinceMs) / (60 * 60 * 1000));
+  const stale = redHours >= PUSH_LANE_RED_GRACE_HOURS;
+
+  return {
+    name,
+    file,
+    verdict: stale ? "red-stale" : "red",
+    needsChristian: stale,
+    considered,
+    redSinceMs,
+    detail: stale
+      ? `"${name}" has been failing on main for ${Math.round(redHours)} hours and nobody has picked it up — the code on main has a problem the merge gate does not check.`
+      : `"${name}" is red on the latest main (${Math.round(redHours)} h) — a follow-up fix is owed; log it as an impediment row if no session has claimed it.`,
+  };
+}
+
+/**
  * Classify scheduled-workflow health. Pure: no IO, no clock, no network.
  *
  * Folds per-workflow verdicts into one by worst-severity. `needsChristian` is the
  * disjunction — one dead lane is worth surfacing even when every other is green.
+ * Post-merge lanes (THR-1384) fold into the same `needsChristian` and `summary`,
+ * so the hourly lane's uniform probe rule reads them without a second branch.
  */
 export function classifyWorkflowHealth(
   workflows: ScheduledWorkflowInput[],
+  postMergeLanes: PushLaneInput[] = [],
+  nowMs: number = Date.now(),
 ): WorkflowHealthResult {
+  const postMerge = postMergeLanes.map((lane) => classifyPushLane(lane, nowMs));
+  const postMergeFlagged = postMerge.filter((r) => r.needsChristian);
+  const postMergeNoisy = postMerge.filter((r) => !r.needsChristian && r.verdict === "red");
+
   if (workflows.length === 0) {
     return {
       verdict: "unknown",
-      summary: "No scheduled workflows were found, so none could be checked.",
-      needsChristian: false,
+      summary: [
+        "No scheduled workflows were found, so none could be checked.",
+        ...postMergeFlagged.map((r) => r.detail),
+        ...postMergeNoisy.map((r) => r.detail),
+      ].join(" "),
+      needsChristian: postMergeFlagged.length > 0,
+      needsSession: postMergeNoisy.length > 0,
       workflows: [],
+      postMerge,
     };
   }
 
@@ -321,8 +491,8 @@ export function classifyWorkflowHealth(
     "healthy",
   );
 
-  const needsChristian = reports.some((r) => r.needsChristian);
-  const flagged = reports.filter((r) => r.needsChristian);
+  const needsChristian = reports.some((r) => r.needsChristian) || postMergeFlagged.length > 0;
+  const flagged = [...reports.filter((r) => r.needsChristian), ...postMergeFlagged];
 
   let summary: string;
   if (flagged.length > 0) {
@@ -335,8 +505,20 @@ export function classifyWorkflowHealth(
       .map((r) => r.detail)
       .join(" ");
   }
+  // A recent post-merge red is not an ask, but it is not silence either: the
+  // sentence is what the next session logs as the impediment row.
+  if (postMergeNoisy.length > 0) {
+    summary = `${summary} ${postMergeNoisy.map((r) => r.detail).join(" ")}`.trim();
+  }
 
-  return { verdict: worst, summary, needsChristian, workflows: reports };
+  return {
+    verdict: worst,
+    summary,
+    needsChristian,
+    needsSession: postMergeNoisy.length > 0,
+    workflows: reports,
+    postMerge,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -394,6 +576,32 @@ export function findScheduledWorkflowFiles(repoRoot: string): string[] | null {
   return scheduled;
 }
 
+/** Basenames of workflow files in the tree that declare a `push:` trigger on `main`. */
+export function findPushMainWorkflowFiles(repoRoot: string): string[] | null {
+  const dir = path.join(repoRoot, WORKFLOW_DIR);
+  let entries: string[];
+  try {
+    entries = fs.readdirSync(dir);
+  } catch {
+    return null;
+  }
+
+  const lanes: string[] = [];
+  for (const entry of entries) {
+    if (!/\.ya?ml$/.test(entry)) {
+      continue;
+    }
+    try {
+      if (hasPushMainTrigger(fs.readFileSync(path.join(dir, entry), "utf8"))) {
+        lanes.push(entry);
+      }
+    } catch {
+      // Unreadable file — skip it rather than failing the whole probe.
+    }
+  }
+  return lanes;
+}
+
 interface GhWorkflow {
   name: string;
   path: string;
@@ -432,6 +640,30 @@ function fetchScheduledRuns(file: string, beforeMs: number | null): WorkflowRunR
     .slice(0, WORKFLOW_RUN_LOOKBACK);
 }
 
+/** Push-to-main runs of one post-merge lane, newest first (THR-1384). */
+function fetchPushRuns(file: string, beforeMs: number | null): WorkflowRunRecord[] | null {
+  const perPage = beforeMs === null ? PUSH_RUN_LOOKBACK : PUSH_RUN_LOOKBACK * 20;
+
+  const body = ghJson<{
+    workflow_runs?: Array<{ conclusion: string | null; status: string; created_at: string }>;
+  }>(
+    `repos/${GH_REPO}/actions/workflows/${file}/runs?event=push&branch=main&per_page=${perPage}`,
+  );
+
+  if (!body?.workflow_runs) {
+    return null;
+  }
+
+  return body.workflow_runs
+    .map((r) => ({
+      conclusion: r.conclusion,
+      status: r.status,
+      createdAtMs: Date.parse(r.created_at),
+    }))
+    .filter((r) => beforeMs === null || r.createdAtMs < beforeMs)
+    .slice(0, PUSH_RUN_LOOKBACK);
+}
+
 function main(): void {
   const argv = process.argv.slice(2);
   const strict = argv.includes("--strict");
@@ -446,6 +678,7 @@ function main(): void {
   const cutoffMs = beforeMs !== null && !Number.isNaN(beforeMs) ? beforeMs : null;
 
   const files = findScheduledWorkflowFiles(REPO_ROOT);
+  const pushFiles = findPushMainWorkflowFiles(REPO_ROOT) ?? [];
   const registered = fetchWorkflows();
 
   let result: WorkflowHealthResult;
@@ -455,14 +688,18 @@ function main(): void {
       verdict: "unknown",
       summary: `Could not read ${WORKFLOW_DIR} — scheduled background jobs not checked.`,
       needsChristian: false,
+      needsSession: false,
       workflows: [],
+      postMerge: [],
     };
   } else if (registered === null) {
     result = {
       verdict: "unknown",
       summary: "Could not reach GitHub's Actions API — scheduled background jobs not checked.",
       needsChristian: false,
+      needsSession: false,
       workflows: [],
+      postMerge: [],
     };
   } else {
     const inputs: ScheduledWorkflowInput[] = files.map((file) => {
@@ -477,7 +714,16 @@ function main(): void {
       };
     });
 
-    result = classifyWorkflowHealth(inputs);
+    const postMergeInputs: PushLaneInput[] = pushFiles.map((file) => {
+      const meta = registered.find((w) => path.basename(w.path) === file);
+      return {
+        name: meta?.name ?? file,
+        file,
+        runs: fetchPushRuns(file, cutoffMs),
+      };
+    });
+
+    result = classifyWorkflowHealth(inputs, postMergeInputs, cutoffMs ?? Date.now());
   }
 
   if (asJson) {
@@ -490,6 +736,10 @@ function main(): void {
     for (const w of result.workflows) {
       const runs = w.considered.length > 0 ? ` [${w.considered.join(",")}]` : "";
       console.log(`[workflow-health]   ${w.file}: ${w.verdict}${runs}`);
+    }
+    for (const lane of result.postMerge) {
+      const runs = lane.considered.length > 0 ? ` [${lane.considered.join(",")}]` : "";
+      console.log(`[workflow-health]   post-merge ${lane.file}: ${lane.verdict}${runs}`);
     }
     console.log(`[workflow-health] ${result.summary}`);
   }

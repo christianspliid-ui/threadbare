@@ -1,3 +1,4 @@
+// @vitest-lane heavy — builds four generated worlds, one per map preset; 10–84 s on CI run 33653898091 (THR-1384)
 import { describe, it, expect } from 'vitest';
 import { WorldGraph } from '../graph';
 import {

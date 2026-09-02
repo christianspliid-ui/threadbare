@@ -1,3 +1,4 @@
+// @vitest-lane heavy — builds a medium world and drives it 60 ticks (THR-1384)
 /**
  * Undertaking checkpoints — liveness in the real simulation (THR-1292 §2).
  *

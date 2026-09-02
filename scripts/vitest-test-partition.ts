@@ -93,6 +93,86 @@ export const ISOLATED_PINS: readonly string[] = [
   'src/engine/__tests__/coastline-integration.test.ts',
 ];
 
+// ─── The heavy lane (THR-1384) ──────────────────────────────────────────
+//
+// The three pools above split the suite by *how* a file may run. This splits it
+// by *cost*. Thirteen world-simulation files were 89% of the suite's test CPU
+// (1,452 s of 1,629 s on run 33653898091) and, as a PR gate, produced more false
+// reds — heavy files timing out on their own slowness — than true catches. They
+// now run in a fourth project, `heavy`, which `npm test` does not include; the
+// non-required `Heavy simulation tests` workflow runs it on push to `main`,
+// nightly, and on dispatch.
+//
+// Routing is by an explicit docblock tag, so a reader of the file sees which lane
+// it runs in and why. The tag is *enforced* mechanically: `isMechanicallyHeavy`
+// scans every test file for a world build (`initializeGameState*`) driven for
+// `HEAVY_TICK_THRESHOLD` or more ticks in one case, and the partition test fails
+// if such a file is untagged — so a new heavy test cannot silently land in the
+// fast lane. Files tagged on measured CI duration alone (≥ 10 s, the ticket's
+// second clause) carry the tag with the measurement as its reason.
+
+/**
+ * The docblock tag that routes a file into the heavy project — a line comment
+ * (`// @vitest-lane heavy …`) or a docblock line (` * @vitest-lane heavy …`),
+ * anchored at the start of its line. Anchored deliberately: the partition's own
+ * test quotes the tag inside a string literal, and an unanchored scan routed
+ * that test file into the heavy lane on first contact (the source-text-lint
+ * trap, impediment #960).
+ */
+export const HEAVY_LANE_TAG = /^(?:\/\/|[ \t]*\*)[ \t]*@vitest-lane[ \t]+heavy\b/m;
+
+/** A file that builds a real world rather than a hand-made graph. */
+export const WORLD_BUILD_CALL = /\binitializeGameState(?:FromIdentity)?\s*\(/;
+
+/**
+ * Ticks driven in a single case at or above which a world-building test is
+ * heavy by construction. From THR-1384's predicate; below it a world build
+ * costs seconds, above it tens of seconds on a hosted runner.
+ */
+export const HEAVY_TICK_THRESHOLD = 50;
+
+/** `const NAME = 123` — the local constants a loop bound may resolve through. */
+const NUMERIC_CONST = /\b(?:const|let)\s+([A-Za-z_$][\w$]*)\s*=\s*(\d[\d_]*)\b/g;
+
+/** Counting loops, `for (let i = 0; i < N` and `while (ticks < N`. */
+const LOOP_BOUND =
+  /\b(?:for\s*\(\s*(?:let|var|const)?\s*[\w$]+\s*=\s*[\w$]+\s*;\s*[\w$]+|while\s*\(\s*[\w$]+)\s*<=?\s*([A-Za-z_$][\w$.]*|\d[\d_]*)/g;
+
+/**
+ * Tick helpers that take the count as their last argument — the local
+ * `runTicks(state, n)` idiom, the debug bridge's `runTickBatch(state, n, …)`,
+ * and the browser bridge's `tick(n)`.
+ */
+const TICK_HELPER_CALL =
+  /\b(?:runTicks|runTickBatch|advanceTicks|tickBridge|tick)\s*\(\s*(?:[^,()]+,\s*)?([A-Za-z_$][\w$.]*|\d[\d_]*)\s*[,)]/g;
+
+function toCount(token: string, consts: ReadonlyMap<string, number>): number {
+  if (/^\d/.test(token)) return Number(token.replace(/_/g, ''));
+  return consts.get(token) ?? 0;
+}
+
+/**
+ * The largest tick count one case in this file drives, as far as a text scan can
+ * tell: numeric loop bounds and tick-helper arguments, resolved through the
+ * file's own numeric constants. An identifier the file does not define locally
+ * (an imported constant, a function parameter) resolves to 0 — the conservative
+ * direction here is *not* heavy, because that keeps the file on the PR gate.
+ */
+export function detectTickBudget(source: string): number {
+  const consts = new Map<string, number>();
+  for (const m of source.matchAll(NUMERIC_CONST)) consts.set(m[1], Number(m[2].replace(/_/g, '')));
+
+  let max = 0;
+  for (const m of source.matchAll(LOOP_BOUND)) max = Math.max(max, toCount(m[1], consts));
+  for (const m of source.matchAll(TICK_HELPER_CALL)) max = Math.max(max, toCount(m[1], consts));
+  return max;
+}
+
+/** The predicate the partition test enforces the tag against. */
+export function isMechanicallyHeavy(source: string): boolean {
+  return WORLD_BUILD_CALL.test(source) && detectTickBudget(source) >= HEAVY_TICK_THRESHOLD;
+}
+
 /** What the scan learned about one test file. */
 export interface TestFileFacts {
   /** Repo-relative, POSIX-separated path. */
@@ -101,9 +181,13 @@ export interface TestFileFacts {
   environment: string | null;
   /** Whether the file calls `vi.mock` / `vi.doMock`. */
   usesModuleMocks: boolean;
+  /** Whether the file carries the `@vitest-lane heavy` tag. */
+  heavyTag: boolean;
+  /** Whether the scan finds a world build driven ≥ `HEAVY_TICK_THRESHOLD` ticks. */
+  mechanicallyHeavy: boolean;
 }
 
-/** The three pools, disjoint and jointly exhaustive. */
+/** The four pools, disjoint and jointly exhaustive. */
 export interface TestPartition {
   /** jsdom tests — isolated. */
   dom: string[];
@@ -111,6 +195,12 @@ export interface TestPartition {
   isolatedNode: string[];
   /** Node tests that share a worker — the fast path, and the large majority. */
   sharedNode: string[];
+  /**
+   * World-simulation tests too costly for the PR gate (THR-1384). Isolated,
+   * any environment (each file's own docblock still applies), run by
+   * `npm run test:heavy` and the post-merge workflow rather than `npm test`.
+   */
+  heavy: string[];
 }
 
 function walk(dir: string, rootDir: string, acc: string[]): string[] {
@@ -149,14 +239,24 @@ export function collectTestFileFacts(rootDir: string): TestFileFacts[] {
     } catch {
       // Fail-soft: an unreadable file falls through to the isolated pool below,
       // because `environment: null` + `usesModuleMocks: false` is the fast path.
-      // Guard that explicitly rather than relying on the default.
-      return { file, environment: null, usesModuleMocks: true };
+      // Guard that explicitly rather than relying on the default. It is not
+      // routed heavy: an unreadable file must stay on the PR gate, where its
+      // failure is loud, rather than in the lane that runs after the merge.
+      return {
+        file,
+        environment: null,
+        usesModuleMocks: true,
+        heavyTag: false,
+        mechanicallyHeavy: false,
+      };
     }
     const match = source.match(ENVIRONMENT_DOCBLOCK);
     return {
       file,
       environment: match ? match[1] : null,
       usesModuleMocks: MODULE_MOCK_CALL.test(source),
+      heavyTag: HEAVY_LANE_TAG.test(source),
+      mechanicallyHeavy: isMechanicallyHeavy(source),
     };
   });
 }
@@ -164,15 +264,20 @@ export function collectTestFileFacts(rootDir: string): TestFileFacts[] {
 /**
  * Routes every collected test file into exactly one pool.
  *
- * The conservative direction is isolation: anything unrecognised keeps the
- * current behaviour rather than being opted into shared workers.
+ * The heavy tag is read first, so a heavy jsdom file or a heavy module-mocking
+ * file lands in the heavy project (which is isolated and honours per-file
+ * environment docblocks) rather than in the fast pool its other facts would
+ * pick. The conservative direction for everything else is isolation: anything
+ * unrecognised keeps the current behaviour rather than being opted into shared
+ * workers.
  */
 export function partitionTestFiles(rootDir: string): TestPartition {
   const pinned = new Set(ISOLATED_PINS);
-  const partition: TestPartition = { dom: [], isolatedNode: [], sharedNode: [] };
+  const partition: TestPartition = { dom: [], isolatedNode: [], sharedNode: [], heavy: [] };
 
-  for (const { file, environment, usesModuleMocks } of collectTestFileFacts(rootDir)) {
-    if (environment !== null && environment !== 'node') partition.dom.push(file);
+  for (const { file, environment, usesModuleMocks, heavyTag } of collectTestFileFacts(rootDir)) {
+    if (heavyTag) partition.heavy.push(file);
+    else if (environment !== null && environment !== 'node') partition.dom.push(file);
     else if (usesModuleMocks || pinned.has(file)) partition.isolatedNode.push(file);
     else partition.sharedNode.push(file);
   }

@@ -1,3 +1,4 @@
+// @vitest-lane heavy — builds a medium world and drives it 300 ticks (THR-1384)
 /**
  * TickEvent id uniqueness across a long run (THR-853).
  *

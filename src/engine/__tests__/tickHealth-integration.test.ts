@@ -1,3 +1,4 @@
+// @vitest-lane heavy — hand-built world driven 200 ticks; 10–84 s on CI run 33653898091 (THR-1384)
 import { describe, it, expect, beforeEach } from 'vitest';
 import { runTick, resetDecisionCache, resetEventCounter } from '../orchestrator';
 import { seedWorld } from '../worldSeed';

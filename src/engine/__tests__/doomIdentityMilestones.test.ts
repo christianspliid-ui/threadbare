@@ -1,3 +1,4 @@
+// @vitest-lane heavy — three world builds; 10–84 s on CI run 33653898091 (THR-1384)
 /**
  * THR-293 — Headless archetype-pinned 30-tick doom milestone smoke.
  *
