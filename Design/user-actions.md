@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-09-02 08:55 local (06:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-09-02 09:56 local (07:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
@@ -19,7 +19,7 @@
 
 **The block has two names on it** *(standing — 14 and 18 days)*: [unify the card grammar](https://linear.app/threadbare/issue/THR-1002) (your 6 August note, nobody assigned) and [traits wave 2](https://linear.app/threadbare/issue/THR-790) (assigned to you). The orchestrator holds one design slot and will not walk either backwards out of the column on its own. **Sit one, or say *"drop them back to the queue"***. Neither asks what the game should *be*; both need an attended session, not a decision.
 
-**The shelf is now down to your two overnight documents.** The two lane-written items that were being built this morning both finished ([THR-1377](https://linear.app/threadbare/issue/THR-1377/35-of-64-undertaking-templates-author-no-motivations-the-content-pass), [THR-1378](https://linear.app/threadbare/issue/THR-1378/rulebook-review-2026-09-10-findings)). What remains is [the reactive loop](https://linear.app/threadbare/issue/THR-1298/the-reactive-loop-proactive-agent-actions-plan-doc-46) and [the calling & the surfaces](https://linear.app/threadbare/issue/THR-1299) — real product work, and the pipeline's whole output. Once built, nothing refills behind them while the two tickets above hold the column.
+**The shelf is now down to one item.** [The reactive loop](https://linear.app/threadbare/issue/THR-1298/the-reactive-loop-proactive-agent-actions-plan-doc-46) was claimed within the hour and its first four slices are in [a pull request waiting to merge](https://github.com/christianspliid-ui/threadbare/pull/1765). What is left unclaimed is [the calling & the surfaces](https://linear.app/threadbare/issue/THR-1299) — real product work, and the pipeline's whole remaining output. Once that is built, nothing refills behind it while the two tickets above hold the column.
 
 **Still waiting:** [undertaking factory](https://linear.app/threadbare/issue/THR-1300); [your one-button snapshot](https://linear.app/threadbare/issue/THR-1134) (High, your own 16 August request, untouched 17 days); [a beast that can be a real character](https://linear.app/threadbare/issue/THR-1274); [nations and named areas](https://linear.app/threadbare/issue/THR-1155). Forty-odd items sit in Todo and nearly every one needs a decision or a plan doc before code can be written.
 

@@ -1,7 +1,7 @@
 # Briefing
-**Generated:** 2026-09-02 08:55 local (06:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-09-02 09:56 local (07:56 UTC) · keep-work-flowing-cc
 
-> **Both things that were being built this morning are finished.** The build shelf now holds the two design documents you wrote overnight, waiting for a builder to pick up. The machine is working. What is below it is empty.
+> **A builder picked up the first of your two overnight documents and is already merging it.** One item is left on the shelf behind it. Nothing new needs you this hour — the list below is the same list as last hour, one hour more urgent.
 
 ## The one thing
 
@@ -14,7 +14,7 @@ Unchanged, and now **14 and 18 days** old. Two items sit in the design column wi
 
 **Either sit one of them, or say *"drop them back to the queue"* and an agent clears the jam.** One word either way. Neither asks what the game should *be* — both just need an attended session.
 
-**Why this hour makes the point sharper than last hour did.** At 08:05 the build shelf held two items and two more were being worked. Both of those finished in the last hour — [the undertaking motivations pass](https://linear.app/threadbare/issue/THR-1377/35-of-64-undertaking-templates-author-no-motivations-the-content-pass) and [the rulebook-review findings](https://linear.app/threadbare/issue/THR-1378/rulebook-review-2026-09-10-findings) are both done. What is left on the shelf is exactly the two plan docs you wrote overnight: [the reactive loop](https://linear.app/threadbare/issue/THR-1298/the-reactive-loop-proactive-agent-actions-plan-doc-46) and [the calling & the surfaces](https://linear.app/threadbare/issue/THR-1299/the-calling-and-the-surfaces-proactive-agent-actions-plan-doc-56). They will be picked up within the hour and built. **Then the shelf is empty**, because the design column that would refill it is held by the two tickets above. Still waiting further back: [the undertaking factory](https://linear.app/threadbare/issue/THR-1300/the-undertaking-factory-proactive-agent-actions-plan-doc-66), and [the one-button incident bundle](https://linear.app/threadbare/issue/THR-1134/shareable-game-state-snapshot-one-button-incident-bundle-that-works-in) you asked for on 16 August, untouched 17 days.
+**Why it is sharper than an hour ago.** At 08:55 both of your overnight documents sat unclaimed on the build shelf. Since then a builder claimed [the reactive loop](https://linear.app/threadbare/issue/THR-1298/the-reactive-loop-proactive-agent-actions-plan-doc-46) and its first four slices are already in [a pull request waiting to merge](https://github.com/christianspliid-ui/threadbare/pull/1765). That leaves exactly **one** item on the shelf — [the calling & the surfaces](https://linear.app/threadbare/issue/THR-1299/the-calling-and-the-surfaces-proactive-agent-actions-plan-doc-56) — and when a builder takes that one, **the shelf is empty**, because the design column that would refill it is held by the two tickets above. Still waiting further back: [the undertaking factory](https://linear.app/threadbare/issue/THR-1300/the-undertaking-factory-proactive-agent-actions-plan-doc-66), and [the one-button incident bundle](https://linear.app/threadbare/issue/THR-1134/shareable-game-state-snapshot-one-button-incident-bundle-that-works-in) you asked for on 16 August, untouched 17 days.
 
 ## Also waiting (10)
 
@@ -31,16 +31,16 @@ Unchanged, and now **14 and 18 days** old. Two items sit in the design column wi
 
 ## Queue
 
-**Two on the build shelf, nothing in progress, nothing needing you.** The pickup lane runs at the top of the hour and will claim one.
+**One item on the build shelf, one being built, nothing needing you.**
 
-- **Two builds finished in the last hour.** [The undertaking motivations content pass](https://linear.app/threadbare/issue/THR-1377/35-of-64-undertaking-templates-author-no-motivations-the-content-pass) — 35 of 64 templates that said nothing about what an agent wants — closed at 08:31 local, and [the rulebook-review findings](https://linear.app/threadbare/issue/THR-1378/rulebook-review-2026-09-10-findings) closed at 08:46. Both landed clean.
-- **On the shelf, unclaimed:** [THR-1298](https://linear.app/threadbare/issue/THR-1298/the-reactive-loop-proactive-agent-actions-plan-doc-46) (the reactive loop — how outcomes give mortals new drives: grudges, grievances, the culprit who caused it) and [THR-1299](https://linear.app/threadbare/issue/THR-1299/the-calling-and-the-surfaces-proactive-agent-actions-plan-doc-56) (the calling & the surfaces). Both handed off this morning, both fresh, neither blocked.
+- **Being built now:** [the reactive loop](https://linear.app/threadbare/issue/THR-1298/the-reactive-loop-proactive-agent-actions-plan-doc-46) — how outcomes give mortals new drives: grudges, grievances, the culprit who caused it. Claimed since the last brief; slices 1–4 are in [PR #1765](https://github.com/christianspliid-ui/threadbare/pull/1765), waiting on the automated checks and set to merge itself on green.
+- **On the shelf, unclaimed:** [the calling & the surfaces](https://linear.app/threadbare/issue/THR-1299/the-calling-and-the-surfaces-proactive-agent-actions-plan-doc-56). Fresh, unblocked; the pickup lane runs at the top of the hour.
 - Three items sit In Dev and all three are **deliberately parked**, not stalled: [the pixel-pass sweep](https://linear.app/threadbare/issue/THR-1133) (waits on your dev-server sitting), [the batch-2 sibling volume ticket](https://linear.app/threadbare/issue/THR-1130) (waits on the batch-2 approval), [the audio moments](https://linear.app/threadbare/issue/THR-1168) (waits on your feel call). Each is already on the list above; none needs freeing.
 - Nothing stale beyond the two design-column items in the lead ask, and no In-Dev item is silently blocked.
 
 ## Health
 
-**Green.** The live site is up to date, automated checks and both background jobs are healthy, no pull request is waiting to merge, and all nine scheduled tasks are on schedule. The branch reaper ran at 08:40.
+**Green.** The live site is serving the newest commit, automated checks and both background jobs are healthy, the one open pull request is armed and waiting on green, and all nine scheduled tasks are on schedule. The branch reaper ran at 09:40.
 
 - **The lane-silence probe still reads red for the two sleep gaps, and both are closed.** The 58-hour gap (Sunday morning → Tuesday evening) and last night's 11.7 hours are the same cause: the machine was off. Windows' own power log and every lane's last-run time agree, and two lanes reached that reading independently. Per your 8 August ruling that overnight quiet is normal, **neither is a question for you** — this line is visibility only.
 - One piece of agent-side tidying, still outstanding: the pause marker the probe reads holds an expired window from 3 August, which is why it keeps reporting *"no pause recorded"* against sleeps that were never pauses. Housekeeping for a lane, not a decision for you.
