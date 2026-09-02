@@ -10,6 +10,11 @@
 //
 // Calibrated 2026-04-12 against seeds 1-10, 100 ticks, small map.
 // Bounds set at ~2x observed range to avoid flakiness.
+//
+// @vitest-lane heavy — runs three seeded worlds for 100 ticks inside `describe()`,
+// which vitest books as *collect* (import) time: 118 s of the node pool's 451 s
+// "import" was this one file (THR-1386). The mechanical predicate cannot see it
+// because the world-build lives in `runMultiSeed`, not in this file's text.
 
 import { describe, it, expect } from 'vitest';
 import {
