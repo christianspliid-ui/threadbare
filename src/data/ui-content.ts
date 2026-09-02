@@ -466,6 +466,18 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'Time holds',
     desc: 'The simulation is paused while this moment is open, and resumes when you acknowledge it — unless you had paused it yourself.',
   },
+  'ui.follow_toggle': {
+    label: 'Follow',
+    desc: 'A followed mortal\'s moments interrupt you. Your thread to a mortal follows them by itself; muting keeps the thread and stops the interruptions.',
+  },
+  'ui.moment_badge': {
+    label: 'Their work turned',
+    desc: 'Moments of this mortal\'s long work you have not yet read. Opening one clears nothing until you acknowledge it.',
+  },
+  'ui.arc_strip': {
+    label: 'The arc so far',
+    desc: 'What this mortal has finished, failed and been through, oldest first — read from what the world remembers, not from the day\'s digest.',
+  },
 };
 
 /** Lookup a UI tooltip by ID. Returns null if not found. */

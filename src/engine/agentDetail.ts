@@ -134,6 +134,13 @@ export interface ActiveIntent {
   mintedByLabel?: string;
   /** Set when this drive is a vendetta rather than a want (THR-1298). */
   grievance?: IntentGrievance;
+  /**
+   * The ambition's own authored flavor line (THR-1299 slice 4, THR-1279 verdict
+   * 2: `AMBITION: name` + flavor). The template's first `selectionProse` line —
+   * the same one the assignment event narrates with — so the sheet and the
+   * chronicle tell one story. Absent when the template authored none.
+   */
+  flavorText?: string;
 }
 
 /**
@@ -979,6 +986,7 @@ function getAgentIntents(graph: WorldGraph, agentId: string): ActiveIntent[] {
       reachAffinity: { ...template.reachAffinity },
       ...(mintedByLabel && { mintedByLabel }),
       ...(grievance && { grievance }),
+      ...(template.selectionProse?.[0] && { flavorText: template.selectionProse[0] }),
     });
   }
 

@@ -320,6 +320,17 @@ export const MOMENT_BADGE_SIGNIFICANCE = 0.4;
  */
 export const MOMENT_COMPLETION_SIGNIFICANCE = 0.6;
 
+/**
+ * How long an unacknowledged moment stays countable on a thread row's badge
+ * (THR-1299 slice 4). Four days: long enough that a player who stepped away
+ * finds the news, short enough that the badge is about what is happening now
+ * rather than a ledger — the arc panel is the ledger.
+ */
+export const MOMENT_BADGE_RETENTION_TICKS = 48;
+
+/** Most entries on the JourneyTab's arc-so-far strip (THR-1299 slice 4). */
+export const MOMENT_ARC_STRIP_MAX = 12;
+
 // ─── The one prioritization board (THR-1292 §4) ─────────────────────
 //
 // An agent's decision *was* three sequential winner-take contests between

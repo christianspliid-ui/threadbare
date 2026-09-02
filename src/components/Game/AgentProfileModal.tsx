@@ -54,9 +54,12 @@ export interface AgentProfileModalProps {
    * otherwise win the equal-z tie.
    */
   zIndex?: number;
+  /** THR-1299 slice 4 — the arc panel's follow toggle: current state and its flip. */
+  followState?: import('./FollowToggle').FollowDescriptor;
+  onToggleFollow?: (agentId: string) => void;
 }
 
-export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata, knowledge, gameState, runtime, onOpenEntity, onOpenFaction, zIndex }: AgentProfileModalProps) {
+export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata, knowledge, gameState, runtime, onOpenEntity, onOpenFaction, zIndex, followState, onToggleFollow }: AgentProfileModalProps) {
   const [activeTab, setActiveTab] = useState<TabId>(
     scrollToNewStrata ? 'chronicle' : 'overview'
   );
@@ -234,7 +237,14 @@ export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata, k
           <BondsTab card={card} knowledge={knowledge} onOpenEntity={onOpenEntity} />
         )}
         {activeTab === 'journey' && (
-          <JourneyTab card={card} knowledge={knowledge} onOpenEntity={onOpenEntity} />
+          <JourneyTab
+            card={card}
+            knowledge={knowledge}
+            onOpenEntity={onOpenEntity}
+            gameState={gameState}
+            followState={followState}
+            onToggleFollow={onToggleFollow}
+          />
         )}
         {activeTab === 'chronicle' && (
           <ChronicleTab

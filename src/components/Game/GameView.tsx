@@ -141,6 +141,8 @@ import { EncounterVeil } from './EncounterVeil';
 import { DivineReceiptModal } from './DivineReceiptModal';
 import { MomentCard } from './MomentCard';
 import { buildMomentCardModel } from './momentCardModel';
+import { selectMomentBadges, type MomentBadgeModel } from './momentBadgeModel';
+import { describeFollow } from './FollowToggle';
 import {
   buildActiveEncounterDisplayFromLegacyProgress,
   buildActiveEncounterDisplayFromUnifiedAction,
@@ -1450,6 +1452,11 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     () => selectEntityNoticeBadges(notificationState.entityNotices),
     [notificationState.entityNotices],
   );
+  // THR-1299 slice 4: the moment badge — unacknowledged, unexpired records per mortal.
+  const momentBadges = useMemo(
+    () => selectMomentBadges(gameState.pendingUndertakingMoments, gameState.tick),
+    [gameState.pendingUndertakingMoments, gameState.tick],
+  );
 
   /**
    * Resolve the node the thread-detail surface will render for a selection, or
@@ -1534,6 +1541,18 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     handleThreadNodeSelect(badge.anchorId, badge.anchorKind);
     handleClearEntityNotices(badge.anchorId);
   }, [resolveThreadDetailNode, handleThreadNodeSelect, handleClearEntityNotices]);
+
+  /**
+   * Moment badge click (THR-1299 slice 4) — put the badge's newest record in the
+   * card's slot. Nothing is acknowledged here (Law 40: the click shows what the
+   * badge counted; only the card's Acknowledge clears it). If another interrupt
+   * is up the slot fills and the card waits behind it, exactly as an interrupt
+   * would — a badge-opened card and an interrupt-opened card are one surface.
+   */
+  const handleOpenMomentBadge = useCallback((badge: MomentBadgeModel) => {
+    markUndertakingMomentOpened(badge.primary, _gameStateRef.current.tick);
+    setPendingMoment(badge.primary);
+  }, []);
 
   /**
    * Badge click — open the encounter modal, then mark that notification read so
@@ -3028,6 +3047,26 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     return { success: true, message: `${template.name} is cast. It lands on the next checkpoint.` };
   }, [gameState.essencePool, gameState.graph, gameState.ascendantId, gameState.tick, gameState.seed, runtime, setGameState]);
 
+  // ── Follow affordance (THR-1299 slice 4) — one state, two surfaces ──
+  // The JourneyTab header and the EncounterVeil context strip both render the
+  // three-way read and both write through the single writer. Un-following a
+  // bond-followed mortal is a mute, decided by the writer from the state of the
+  // world, never by the surface.
+  const describeFollowFor = useCallback(
+    (agentId: string) => describeFollow(gameState, gameState.graph, agentId),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [gameState.followedAgentIds, gameState.mutedAgentIds, gameState.ascendantId, gameState.graph, gameState.tick],
+  );
+  const handleToggleFollow = useCallback((agentId: string, source: 'arc_panel' | 'encounter_ui') => {
+    setGameState(prev => {
+      const d = describeFollow(prev, prev.graph, agentId);
+      const patch = d.followed
+        ? unfollowAgent(prev, prev.graph, agentId, source)
+        : followAgent(prev, agentId, source);
+      return { ...prev, ...patch };
+    });
+  }, [setGameState]);
+
   useEffect(() => {
     if (!import.meta.env.DEV || !window.__DEBUG) return;
 
@@ -4472,6 +4511,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                   onAttendTugBadge={attendThreadTug}
                   noticeBadges={noticeBadges}
                   onOpenNoticeBadge={handleOpenNoticeBadge}
+                  momentBadges={momentBadges}
+                  onOpenMomentBadge={handleOpenMomentBadge}
                   sustainedControls={sustainedControls}
                   onChampionChipClick={openAgentProfileForId}
                 />
@@ -4583,6 +4624,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
             // Opens above a modal-tier interrupt (THR-1139) — the premonition
             // renders later in this file and would otherwise win the equal-z tie.
             zIndex={MODAL_Z_ABOVE_INTERRUPT}
+            // THR-1299 slice 4 — the arc panel's follow toggle.
+            followState={profileModalAgentId ? describeFollowFor(profileModalAgentId) : undefined}
+            onToggleFollow={(agentId) => handleToggleFollow(agentId, 'arc_panel')}
           />
         )}
       </AnimateMount>
@@ -4741,6 +4785,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
             open={true}
             model={encounterVeilModel}
             threadTier={tieredEncounterState.threadTier}
+            // THR-1299 slice 4 — follow the encounter's subject from the veil.
+            followState={describeFollowFor(tieredEncounterState.agentId)}
+            onToggleFollow={(agentId) => handleToggleFollow(agentId, 'encounter_ui')}
             essence={SPHERE_NAMES.reduce((sum, s) => sum + gameState.essencePool[s], 0)}
             tick={gameState.tick}
             autoResolveTick={tieredEncounterState.notification.autoResolveTick}

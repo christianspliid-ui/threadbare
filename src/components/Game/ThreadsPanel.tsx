@@ -13,6 +13,8 @@ import { ThreadTugBadge } from './ThreadTugBadge';
 import type { ThreadTugBadgeModel } from './threadTugBadgeModel';
 import { EntityNoticeBadge } from './EntityNoticeBadge';
 import type { EntityNoticeBadgeModel } from './entityNoticeBadgeModel';
+import { MomentBadge } from './MomentBadge';
+import type { MomentBadgeModel } from './momentBadgeModel';
 import { SphereIcon, sphereFromReach } from '../shared/SphereIcon';
 import {
   getSustainedStatusLabel,
@@ -112,6 +114,14 @@ interface ThreadsPanelProps {
   /** Opens the anchor's thread and clears its pending notices. */
   onOpenNoticeBadge?: (badge: EntityNoticeBadgeModel) => void;
   /**
+   * THR-1299 slice 4: unacknowledged moments of a mortal's long work keyed by
+   * agent id. The recovery route for what an interrupt already showed, and the
+   * only route for badge-tier moments (foundings, a muted mortal's news).
+   */
+  momentBadges?: Map<string, MomentBadgeModel>;
+  /** Opens the badge's newest record in the moment card. Clears nothing. */
+  onOpenMomentBadge?: (badge: MomentBadgeModel) => void;
+  /**
    * Sustained-control rows from `getSustainedControlNodes`. THR-418 — renders Hexes
    * and Sources sections in the right-bar plus a folded "claim status" line on
    * location rows when an effect targets a thread'd location.
@@ -150,6 +160,10 @@ interface CompactThreadRowProps {
   noticeBadge?: EntityNoticeBadgeModel;
   /** Opens the anchor's thread and clears its pending notices. */
   onOpenNoticeBadge?: (badge: EntityNoticeBadgeModel) => void;
+  /** THR-1299: unacknowledged moments of this mortal's long work, if any. */
+  momentBadge?: MomentBadgeModel;
+  /** Opens the badge's newest record in the moment card. */
+  onOpenMomentBadge?: (badge: MomentBadgeModel) => void;
   /**
    * THR-418: optional click handler for the champion chip on agent rows.
    * When omitted, the chip renders as a static badge with no click affordance.
@@ -284,6 +298,8 @@ function CompactThreadRow({
   onAttendTugBadge,
   noticeBadge,
   onOpenNoticeBadge,
+  momentBadge,
+  onOpenMomentBadge,
   onChampionChipClick,
   locationClaimStatus,
 }: CompactThreadRowProps) {
@@ -492,6 +508,13 @@ function CompactThreadRow({
                 rows carry the same badge, for shifts inside the faction. */}
             {noticeBadge && onOpenNoticeBadge && (
               <EntityNoticeBadge badge={noticeBadge} onOpen={onOpenNoticeBadge} />
+            )}
+
+            {/* THR-1299: moment badge — their long work turned. The recovery route
+                for a moment the interrupt already showed, and the only route for
+                badge-tier ones. Opens the same card; clears nothing. */}
+            {momentBadge && onOpenMomentBadge && (
+              <MomentBadge badge={momentBadge} onOpen={onOpenMomentBadge} />
             )}
 
             {/* Zoom to location */}
@@ -866,6 +889,8 @@ export const ThreadsPanel = React.memo(function ThreadsPanel({
   onAttendTugBadge,
   noticeBadges,
   onOpenNoticeBadge,
+  momentBadges,
+  onOpenMomentBadge,
   sustainedControls,
   onChampionChipClick,
 }: ThreadsPanelProps) {
@@ -1040,6 +1065,8 @@ export const ThreadsPanel = React.memo(function ThreadsPanel({
                             onAttendTugBadge={onAttendTugBadge}
                             noticeBadge={NOTICE_BADGE_CATEGORIES.has(node.category) ? noticeBadges?.get(node.id) : undefined}
                             onOpenNoticeBadge={onOpenNoticeBadge}
+                            momentBadge={node.category === 'agent' ? momentBadges?.get(node.id) : undefined}
+                            onOpenMomentBadge={onOpenMomentBadge}
                             onChampionChipClick={onChampionChipClick}
                             locationClaimStatus={claimStatus}
                           />

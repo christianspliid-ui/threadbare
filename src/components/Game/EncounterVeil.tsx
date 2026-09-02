@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo, useSyncExternalStore } from 'react';
 import { createPortal } from 'react-dom';
 import { EntityVisual } from '../shared/EntityVisual';
+import { FollowToggle, type FollowDescriptor } from './FollowToggle';
 import { Tooltip } from '../shared/Tooltip';
 import { DeltaCluster } from '../shared/DeltaCluster';
 import { ReachIcon, REACH_TO_SPHERE } from '../icons';
@@ -68,6 +69,14 @@ export interface EncounterVeilProps {
   onSelectEntity?: (entityId: string, kind: 'faction' | 'artifact' | 'attachment' | 'location') => void;
   /** THR-636 — "Show on map": close the veil and pan the camera to the encounter hex. */
   onShowOnMap?: (col: number, row: number) => void;
+  /**
+   * THR-1299 slice 4 — the follow affordance on the encounter's subject (ruling
+   * 2.1 + Christian's extension: one state, two surfaces). Absent on a host with
+   * no follow state to show; the context strip then renders no toggle.
+   */
+  followState?: import('./FollowToggle').FollowDescriptor;
+  /** Flips follow state for the encounter's focal agent. */
+  onToggleFollow?: (agentId: string) => void;
   /**
    * THR-775 — commit the selected nudge hand and let the step resolve. Called
    * only from the nudge stage; the legacy choice path still goes through
@@ -281,6 +290,8 @@ export function EncounterVeil({
   onShowOnMap,
   onCommitNudges,
   onOpenMotive,
+  followState,
+  onToggleFollow,
 }: EncounterVeilProps) {
   /**
    * Law 44 (THR-1010). The veil's ceremonial motion is entirely inline, so a
@@ -626,6 +637,8 @@ export function EncounterVeil({
               onSelectAgent={onSelectAgent}
               onShowOnMap={onShowOnMap}
               onDisregard={onDisregard}
+              followState={followState}
+              onToggleFollow={onToggleFollow}
             />
           </div>
 
@@ -1998,6 +2011,8 @@ export function EncounterVeil({
             onSelectAgent={onSelectAgent}
             onShowOnMap={onShowOnMap}
             onDisregard={onDisregard}
+            followState={followState}
+            onToggleFollow={onToggleFollow}
           />
         </div>
 
@@ -2836,15 +2851,22 @@ function ContextStrip({
   onSelectAgent,
   onShowOnMap,
   onDisregard,
+  followState,
+  onToggleFollow,
 }: {
   header: EncounterStageHeaderModel;
   threadTier: ThreadTier;
   onSelectAgent?: (agentId: string) => void;
   onShowOnMap?: (col: number, row: number) => void;
   onDisregard: () => void;
+  followState?: FollowDescriptor;
+  onToggleFollow?: (agentId: string) => void;
 }) {
   const name = header.agentName ?? header.familyLabel;
   const canSelectAgent = Boolean(header.focalActorId && onSelectAgent);
+  // THR-1299 slice 4 — the follow toggle on the encounter's subject. Only a real
+  // focal actor can be followed; a family-labelled scene has nobody to follow.
+  const canToggleFollow = Boolean(header.focalActorId && followState && onToggleFollow);
   const hasHex = header.hexCol !== undefined && header.hexRow !== undefined;
   const canShowOnMap = hasHex && Boolean(onShowOnMap);
   const hasLocation = Boolean(header.locationLabel) && header.locationLabel !== 'Unknown Location';
@@ -2901,6 +2923,16 @@ function ContextStrip({
             {name}
           </span>
         </button>
+      )}
+
+      {/* THR-1299 slice 4 — follow this mortal from the encounter itself. */}
+      {canToggleFollow && (
+        <FollowToggle
+          descriptor={followState!}
+          onToggle={() => onToggleFollow!(header.focalActorId!)}
+          surface="encounter_ui"
+          compact
+        />
       )}
 
       {/* Reach chip — current step's reach */}
