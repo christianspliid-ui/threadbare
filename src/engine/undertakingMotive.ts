@@ -36,7 +36,7 @@ import { areFactionsHostile } from './factionNetwork';
  * writers; it is read around here rather than migrated, because renaming a live edge
  * property is a destructive change and this gate only needs to classify.
  */
-const GRUDGE_PROVENANCE = new Set(['group_engagement', 'mentorship_break']);
+const GRUDGE_PROVENANCE = new Set(['group_engagement', 'mentorship_break', 'grievance_cooled']);
 
 const HOSTILE_PROVENANCE_KEYS = ['cause', 'reason', 'basis'] as const;
 
