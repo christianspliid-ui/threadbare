@@ -3510,3 +3510,37 @@ in the same pass: only 7 of ~25 ambitions carried one, so the rest generated not
 Note there are **three** ambition arrays (`AMBITION_TEMPLATES`, `REACTIVE_AMBITION_TEMPLATES`,
 `EVENT_MINTED_AMBITION_TEMPLATES`), and candidate generation resolves against the first two.
 A reachability check that reads only the base array reports false negatives.
+
+## Capability: Undertaking content packages — `compile:undertaking` (THR-1300 slice 3)
+
+An undertaking template no longer has to be hand-placed in three files. Author an
+**Undertaking Content Package** — the real `StrategicActionTemplate` plus `slug`, `kind`,
+`profiles`, `docComment` (`src/data/content-eval/undertakingPackage.ts`; the human reading is
+`.claude/skills/undertaking-pipeline/reference/undertaking-package-format.md`) — and run:
+
+```bash
+npm run compile:undertaking -- Docs/plans/undertakings/<slug>.package.json   # --dry-run to print, --force to overwrite
+```
+
+The compiler writes `src/data/strategic-packs/factory/<slug>.ts` (prose byte-identical, the
+literal annotated with the real type so `check:typecheck` is the deep validator) and
+`factory/__tests__/<slug>.test.ts`, then registers **all three places** idempotently: the
+export in `FACTORY_STRATEGIC_TEMPLATES` (joined last into `TEMPLATE_REGISTRY`), the id in the
+kind row's `create|update|destroyTemplateIds` column, and the id in each named ambition's
+`strategicProfile.templateIds`. A template registered in two of the three is unreachable by
+luck; the compiler exists so that cannot happen.
+
+Two rules the tool enforces so content cannot route around them:
+
+- **A kind with no row is opened only by its first destroy**, carrying `kind.row`. A create or
+  update for a row-less kind is refused — until a kind can be undone it is not a kind.
+- **The write set must be real.** `undertakingWriteSet(template)` is what the template
+  declares it will change (mutation hint, creation-effect bands with entries, harm class, kind
+  row, must-persist cast, catalysts). The contract counts it; `check:undertaking-live` proves
+  it in a seeded world and reports **`vacuous`** when nothing was declared or nothing landed.
+  A package whose only product is prose compiles, passes structure, and then cannot ship.
+
+After compile, the gates in order: `check:typecheck` → `check:undertaking -- <id>` →
+`check:undertaking-live -- <id> --seed 42 --seed 99` → the emitted test →
+`generate-kind-row-catalog`. The compiled file is the canonical, hand-editable artifact from
+then on.

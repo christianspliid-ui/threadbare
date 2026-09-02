@@ -2,7 +2,7 @@
 name: undertaking-pipeline
 description: The undertaking factory line (THR-1300) — brief keyed on the kind × CRUD grid → draft → bounded critic loop → machine gate (`check:undertaking`) → live proof → compiler → batch report, for contract-complete undertaking templates, one or a batch of six. Triggers on "undertaking pipeline", "draft undertaking", "author undertaking", "undertaking batch", "run the undertaking line", or "/undertaking-pipeline".
 model: opus
-last_validated_against: 2026-09-02
+last_validated_against: 2026-09-03
 ---
 
 > **Step 0, always:** `Docs/canon/undertakings.md` — the current spec, the kind registry, the gate, the levers, the words. Then `Docs/canon/rulebook-quick-reference.md`. Load `Docs/canon/prose.md` before drafting a single line of prose: undertaking prose is held to the encounter standard (Prose Doctrine v2, narrator mode).
@@ -18,11 +18,12 @@ The production line for **undertakings** — the long works a mortal chooses on 
 | Stage | What | Where | Ships in |
 |---|---|---|---|
 | 0 | **Batch brief**, keyed on the kind × CRUD grid, gap-weighted toward empty cells, the mechanical fix before any premise; Christian-approved in chat | `reference/batch-brief-format.md`, `reference/kind-row-catalog.generated.md` | slice 1 |
-| 1 | **Draft** (Fable) against the Undertaking Contract as skeleton | `agents/draft-prompt.md` | slice 3 |
-| 2 | **Critic loop**, bounded at two passes, then park | `agents/editorial-prompt.md`, `agents/systems-prompt.md` | slice 3 |
+| 1 | **Draft** (Fable) against the Undertaking Contract as skeleton — game design before fiction | `agents/draft-prompt.md` | **slice 3** |
+| 2 | **Critic loop**, bounded at two passes, then park: systems (the write set is real), editorial (the register), package (assemble, dry-run, refuse) | `agents/systems-prompt.md`, `agents/editorial-prompt.md`, `agents/package-prompt.md` | **slice 3** |
 | 3 | **Machine gate** — `npm run check:undertaking -- <id> \| --all` | `scripts/check-undertaking.ts`, `src/data/content-eval/undertakingContract.ts` | **slice 1** |
-| 4 | **Live proof** — `npm run check:undertaking-live -- <id> [--seed N] [--band <band>]`, non-vacuous by construction | `scripts/undertaking-live-proof.ts` | slice 3 |
-| 4b | **Compiler** — `npm run compile:undertaking -- <package.json>`: package → `strategic-packs/factory/` module, rows and profiles registered idempotently | `scripts/compile-undertaking.ts`, `reference/undertaking-package-format.md` | slice 3 |
+| 4 | **Live proof** — `npm run check:undertaking-live -- <id>... [--seed N]... [--band <band>\|none]`, non-vacuous by construction; pins `success` by default | `scripts/undertaking-live-proof.ts` | **slice 3** |
+| 4b | **Compiler** — `npm run compile:undertaking -- <package.json> [--dry-run] [--force]`: package → `strategic-packs/factory/` module + test, factory aggregate, kind row and profiles registered idempotently; a row-less kind opens only on its first destroy | `scripts/compile-undertaking.ts`, `src/data/content-eval/undertakingPackage.ts`, `reference/undertaking-package-format.md` | **slice 3** |
+| 4c | **Implementation** — compile, then the gates in order (typecheck → contract → live proof on seeds 42 + 99 → emitted test → catalog refresh), evidence block quoted from output | `agents/implementation-prompt.md` | **slice 3** |
 | 5 | **Batch report** — `npm run undertaking:batch-report`, grid coverage first | `scripts/undertaking-batch-report.ts` | slice 4 |
 
 Stages marked for a later slice are named here so the shape of the line is one document; do not invent a stand-in for a stage that has not shipped.
@@ -53,5 +54,6 @@ Stages marked for a later slice are named here so the shape of the line is one d
 
 - `reference/batch-brief-format.md` — Stage 0's skeleton and rules.
 - `reference/kind-row-catalog.generated.md` — the grid as data (`npm run generate-kind-row-catalog`; under `check:generated-freshness`).
-- `reference/undertaking-package-format.md` — slice 3.
+- `reference/undertaking-package-format.md` — the package the compiler consumes: the real template plus `kind` / `profiles` / `docComment`, and the row-less-kind rule.
+- `agents/*.md` — the five prompts of the line: draft, systems, editorial, package, implementation.
 - `Docs/canon/undertakings.md` — Step 0.

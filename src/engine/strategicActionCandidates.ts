@@ -27,6 +27,7 @@ import { ZEALOT_STRATEGIC_TEMPLATES } from '../data/strategic-packs/zealotStrate
 import { COURT_STRATEGIC_TEMPLATES } from '../data/strategic-packs/courtStrategicPack';
 import { WARLORD_STRATEGIC_TEMPLATES } from '../data/strategic-packs/warlordStrategicPack';
 import { WANDERER_STRATEGIC_TEMPLATES } from '../data/strategic-packs/wandererStrategicPack';
+import { FACTORY_STRATEGIC_TEMPLATES } from '../data/strategic-packs/factory/index';
 import {
   STRATEGIC_MAX_CANDIDATES_PER_ACTOR,
   STRATEGIC_MAX_CANDIDATES_PER_AMBITION,
@@ -63,6 +64,9 @@ const ALL_PACKS: readonly (readonly StrategicActionTemplate[])[] = [
   COURT_STRATEGIC_TEMPLATES,
   WARLORD_STRATEGIC_TEMPLATES,
   WANDERER_STRATEGIC_TEMPLATES,
+  // The undertaking factory's output (THR-1300 slice 3) — compiled packages, never a
+  // hand-written pack. Joined last so a factory template cannot shadow an authored id.
+  FACTORY_STRATEGIC_TEMPLATES,
 ];
 for (const pack of ALL_PACKS) {
   for (const t of pack) {
