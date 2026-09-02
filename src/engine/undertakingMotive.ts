@@ -60,10 +60,17 @@ const ALLOWED_UNGATED: MotiveGateResult = { allowed: true, ownerCount: 0 };
 /**
  * Who has a claim on this node today.
  *
- * Reads the two claim edges that exist at slice 2: `controls` (faction territory and
- * strategic control) and `commanded_by` (group-family leadership). Slice 3 adds the
- * `owns` edge and this is the single place that learns about it — every caller asks
- * through here rather than walking edges itself.
+ * Reads the three claim edges: `controls` (faction territory and strategic control),
+ * `commanded_by` (group-family leadership), and `owns` (personal holdings). This is the
+ * single place that knows about them — every caller asks through here rather than
+ * walking edges itself.
+ *
+ * The `owns` arm landed with THR-1298, closing the gap this docblock had promised since
+ * slice 2. Without it an agent-owned holding was invisible to the motive gate *and* to
+ * grievance attribution: a razing of someone's own workshop resolved to "nobody owns
+ * this", which both refused the destroy and left the harm with no victim to mint from.
+ * `owns` runs actor → node (single writer, `holdings.ts`), so owners are the sources of
+ * the *incoming* edges — the opposite direction from `commanded_by` below it.
  *
  * Returns actor ids in graph edge order, deduplicated.
  */
@@ -75,6 +82,9 @@ export function resolveTargetOwners(graph: WorldGraph, targetNodeId: string): re
     }
     for (const edge of graph.getOutgoingEdges(targetNodeId, 'commanded_by')) {
       if (edge.target !== targetNodeId) owners.add(edge.target);
+    }
+    for (const edge of graph.getIncomingEdges(targetNodeId, 'owns')) {
+      if (edge.source !== targetNodeId) owners.add(edge.source);
     }
   } catch {
     // Fail-soft: an unreadable graph answers "unowned", which refuses the destroy.

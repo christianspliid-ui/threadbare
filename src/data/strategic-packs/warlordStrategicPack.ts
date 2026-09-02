@@ -148,6 +148,9 @@ export const WARLORD_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     id: 'strategic_raid_supply_lines',
     displayName: 'Raid Supply Lines',
     verb: 'destroy',
+    // THR-1298: what this harm registers as, so the outcome mints the right drive.
+    // stores burned rather than taken.
+    harmClass: 'property_destroyed',
     executionMode: 'instant',
     behaviorFamily: 'warlord-expansion',
     reachProfile: { iron: 0.5, shadow: 0.3, eye: 0.2 },
@@ -230,6 +233,9 @@ export const WARLORD_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     id: 'strategic_blockade_route',
     displayName: 'Blockade the Road',
     verb: 'destroy',
+    // THR-1298: what this harm registers as, so the outcome mints the right drive.
+    // the route still exists; what is cut is the use of it.
+    harmClass: 'network_severed',
     executionMode: 'multi_tick_project',
     behaviorFamily: 'warlord-expansion',
     reachProfile: { iron: 0.5, eye: 0.3, shadow: 0.2 },
@@ -261,6 +267,9 @@ export const WARLORD_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     id: 'strategic_raze_settlement',
     displayName: 'Put It to the Torch',
     verb: 'destroy',
+    // THR-1298: what this harm registers as, so the outcome mints the right drive.
+    // a settlement in ashes — the plan's canonical razing.
+    harmClass: 'property_destroyed',
     executionMode: 'multi_tick_project',
     behaviorFamily: 'warlord-expansion',
     reachProfile: { iron: 0.6, shadow: 0.3, heart: 0.1 },

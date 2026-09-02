@@ -21,7 +21,7 @@ import { DEFAULT_REPUTATION } from '../types/disposition';
 import type { KnowledgeLevel } from '../types/familiarity';
 import { getDomainWord, getDomainTier, getValueWord, getReputationWord, getBondStrengthWord } from '../data/domain-words';
 import { generateQuotes, generateBackstory, humanizeDescriptor } from './profileGenerator';
-import type { AmbitionCategory, ReactiveAmbitionTemplate } from '../types/ambition';
+import type { AmbitionCategory } from '../types/ambition';
 import { generateTieredBackstory } from './backstoryGenerator';
 import type { BackstoryResult } from '../types/prose';
 import { findAmbitionTemplateById } from '../data/ambition-templates';
@@ -98,7 +98,6 @@ export interface ActiveIntent {
   requiredMilestones: number;
   milestoneDescriptions?: string[];
   reachAffinity: Partial<Record<ReachDomain, number>>;
-  reactiveTrigger?: string;
 }
 
 /**
@@ -893,9 +892,6 @@ function getAgentIntents(graph: WorldGraph, agentId: string): ActiveIntent[] {
     const completedMilestoneIds = (entry.edge.properties.completedMilestones as string[]) ?? [];
     const priority = (entry.edge.properties.priority as 'primary' | 'secondary') ?? 'secondary';
 
-    // Detect reactive templates by presence of triggerEvent field
-    const isReactive = 'triggerEvent' in template;
-
     intents.push({
       templateId,
       displayName: template.displayName,
@@ -904,9 +900,6 @@ function getAgentIntents(graph: WorldGraph, agentId: string): ActiveIntent[] {
       completedMilestones: completedMilestoneIds.length,
       requiredMilestones: template.completion.requires,
       reachAffinity: { ...template.reachAffinity },
-      reactiveTrigger: isReactive
-        ? (template as ReactiveAmbitionTemplate).triggerEvent
-        : undefined,
     });
   }
 

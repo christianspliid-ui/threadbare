@@ -915,10 +915,10 @@ exit
 
 - **Intent:** Motive receipts name the origin of a minted want — "she seeks vengeance for the blighted fields."
 - **Producer → Consumer:** Ambitions & Undertakings → Omens & Atmospheric Pressure
-- **Production hits:** 3 total — 1 write, 1 read, 1 unclassified
+- **Production hits:** 4 total — 1 write, 1 read, 2 unclassified
 - **Write sites:** `src/engine/ambitionTick.ts`
 - **Read sites:** `src/engine/foreshadowing/motiveReceipt.ts`
-- **Other hits:** `src/types/ambition.ts`
+- **Other hits:** `src/types/ambition.ts`, `src/types/trace.ts`
 - **Verdict:** Verified 2026-07-24: THR-726: `ambitionTick.ts` writes `mintedByEventId`/`mintedByLabel` on the minted `pursues` edge; `motiveReceipt.ts` `resolveMintedAmbitionProvenance` reads them and overrides the ambition contribution's provenance detail so the receipt names the origin event.
 
 ### `nudge-card-cost-channels-detection-and-doom` — 🔴 LEAKED

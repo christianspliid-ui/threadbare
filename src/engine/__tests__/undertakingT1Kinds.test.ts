@@ -30,7 +30,7 @@ import { getAllStrategicTemplates, getStrategicTemplate } from '../strategicActi
 import { UNDERTAKING_KIND_ROWS } from '../../data/undertaking-kinds';
 import {
   AMBITION_TEMPLATES,
-  REACTIVE_AMBITION_TEMPLATES,
+  GRIEVANCE_AMBITION_TEMPLATES,
   EVENT_MINTED_AMBITION_TEMPLATES,
 } from '../../data/ambition-templates';
 import { EDGE_SCHEMA } from '../../types/edgeSchema';
@@ -279,7 +279,7 @@ describe('the T1 corpus is reachable', () => {
    * Every template id any ambition profile can offer.
    *
    * **All three arrays, and the omission was a real finding.** Ambitions live in
-   * `AMBITION_TEMPLATES`, `REACTIVE_AMBITION_TEMPLATES` (grief, revenge, exile — minted
+   * `AMBITION_TEMPLATES`, `GRIEVANCE_AMBITION_TEMPLATES` (grief, revenge, exile — minted
    * by what happens to an agent) and `EVENT_MINTED_AMBITION_TEMPLATES`; candidate
    * generation resolves a pursued ambition against the first two
    * (`strategicActionCandidates.ts:570`) and `ambitionTick` mints from the third. A
@@ -294,7 +294,7 @@ describe('the T1 corpus is reachable', () => {
    */
   const offerable = new Set([
     ...AMBITION_TEMPLATES,
-    ...REACTIVE_AMBITION_TEMPLATES,
+    ...GRIEVANCE_AMBITION_TEMPLATES,
     ...EVENT_MINTED_AMBITION_TEMPLATES,
   ].flatMap(a => a.strategicProfile?.templateIds ?? []));
 

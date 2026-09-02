@@ -37,7 +37,7 @@ import type {
 } from './attention';
 import type { CourtPosition } from './influence';
 import type { BeatKind, BeatTrigger } from './ascendantBeat';
-import type { BehaviorFamily, DecisionFamily, StrategicVerb, StrategicExecutionMode } from './strategicAction';
+import type { BehaviorFamily, DecisionFamily, StrategicVerb, StrategicExecutionMode, UndertakingHarmClass } from './strategicAction';
 import type { ComplicationSeverity } from './complication';
 import type { SyllableTemplate } from './culture';
 import type { ReliabilityBand } from '../engine/intelligence';
@@ -114,6 +114,8 @@ export type TraceCategory =
   | 'strategic_project_progress'
   | 'strategic_world_change'
   | 'strategic_control_lifecycle'
+  // Undertaking harm outcomes (THR-1298)
+  | 'undertaking_outcome_event'
   // Undertaking checkpoints (THR-1292)
   | 'undertaking_checkpoint'
   | 'undertaking_fork'
@@ -507,6 +509,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'strategic_project_progress',
   'strategic_world_change',
   'strategic_control_lifecycle',
+  'undertaking_outcome_event',
   'undertaking_checkpoint',
   'undertaking_fork',
   'decision_board_comparison',
@@ -1958,6 +1961,32 @@ export interface StrategicProjectProgressTrace extends TraceBase {
 }
 
 /**
+ * Trace: a harm-carrying undertaking outcome was written as a graph event node
+ * (THR-1298).
+ *
+ * This is the causal seam the reactive loop turns on — it is the record of *who did
+ * what to whom*, emitted at the moment the harm becomes durable and before anything has
+ * minted from it. An inspector reading a vendetta backwards lands here: the grievance's
+ * `mintedByEventId` names the node this trace announced.
+ *
+ * Volume is bounded by harm outcomes, which are rare — most undertakings carry no
+ * `harmClass` at all, so this stays far under the 1/tick budget rather than competing
+ * with the per-tick categories that overflow the ring buffer.
+ */
+export interface UndertakingOutcomeEventTrace extends TraceBase {
+  category: 'undertaking_outcome_event';
+  projectId: string;
+  harmClass: UndertakingHarmClass;
+  culpritAgentId: string;
+  /** Absent when no owner could be resolved — the harm still registers for witnesses. */
+  victimAgentId?: string;
+  harmMagnitude: number;
+  chainDepth: number;
+  /** Set when this outcome answers a standing grievance rather than opening one. */
+  answersGrievance?: boolean;
+}
+
+/**
  * Trace: one undertaking checkpoint resolved (THR-1292 §2).
  *
  * Emitted once per checkpoint *attempt*, including the deferred ones — a
@@ -3071,6 +3100,7 @@ export type TraceEntry =
   | StrategicCandidateBoardTrace
   | StrategicActionStartedTrace
   | StrategicProjectProgressTrace
+  | UndertakingOutcomeEventTrace
   | UndertakingCheckpointTrace
   | UndertakingForkTrace
   | DecisionBoardComparisonTrace

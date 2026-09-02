@@ -42,7 +42,7 @@ import { getAllStrategicTemplates, getStrategicTemplate } from '../strategicActi
 import { UNDERTAKING_KIND_ROWS } from '../../data/undertaking-kinds';
 import {
   AMBITION_TEMPLATES,
-  REACTIVE_AMBITION_TEMPLATES,
+  GRIEVANCE_AMBITION_TEMPLATES,
   EVENT_MINTED_AMBITION_TEMPLATES,
 } from '../../data/ambition-templates';
 import { ROUTE_IDENTITY_SUBTYPE } from '../../data/strategic-action-constants';
@@ -456,7 +456,7 @@ describe('the T2 rows', () => {
     // profile is unreachable by construction, not merely rare, so this is the gate
     // between "authored" and "in the game".
     const registered = new Set(
-      [...AMBITION_TEMPLATES, ...REACTIVE_AMBITION_TEMPLATES, ...EVENT_MINTED_AMBITION_TEMPLATES]
+      [...AMBITION_TEMPLATES, ...GRIEVANCE_AMBITION_TEMPLATES, ...EVENT_MINTED_AMBITION_TEMPLATES]
         .flatMap(a => a.strategicProfile?.templateIds ?? []),
     );
     const orphans = t2

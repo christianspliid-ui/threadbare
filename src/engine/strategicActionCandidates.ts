@@ -19,7 +19,7 @@ import type {
 import type { AmbitionStrategicProfile } from '../types/strategicAction';
 import type { AmbitionTemplate } from '../types/ambition';
 import { AMBITION_TEMPLATES } from '../data/ambition-templates';
-import { REACTIVE_AMBITION_TEMPLATES } from '../data/ambition-templates';
+import { GRIEVANCE_AMBITION_TEMPLATES } from '../data/ambition-templates';
 import { MERCHANT_STRATEGIC_TEMPLATES } from '../data/strategic-packs/merchantStrategicPack';
 import { BUILDER_STRATEGIC_TEMPLATES } from '../data/strategic-packs/builderStrategicPack';
 import { SCHOLAR_STRATEGIC_TEMPLATES } from '../data/strategic-packs/scholarStrategicPack';
@@ -281,6 +281,11 @@ export function generateStrategicCandidates(
           targetNodeId: target.id,
           targetHex: targetHex ?? undefined,
           anchorNodeId: anchorGate.anchorNodeId,
+          // The victim the motive gate already named (THR-1298). Stamped here because
+          // this is the one point where the gate's answer is still in scope — by
+          // completion time the undertaking has mutated the very ownership this was
+          // read from, so re-deriving it there reads the world after the harm.
+          victimAgentId: motiveGate.ownerId,
           scoreComponents: {
             ambitionAlignment: computeAmbitionAlignment(template, profile),
             blockerRelief: 0, // Computed in scoring phase with full context
@@ -717,5 +722,5 @@ function determineGenerationReason(
 
 export function findAmbitionTemplate(templateId: string): AmbitionTemplate | undefined {
   return AMBITION_TEMPLATES.find(t => t.id === templateId)
-    ?? REACTIVE_AMBITION_TEMPLATES.find(t => t.id === templateId);
+    ?? GRIEVANCE_AMBITION_TEMPLATES.find(t => t.id === templateId);
 }

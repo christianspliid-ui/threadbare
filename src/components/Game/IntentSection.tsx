@@ -124,15 +124,6 @@ export function IntentSection({ intents, variant = 'modal' }: IntentSectionProps
                     />
                   )}
 
-                  {/* Row 5: reactive trigger */}
-                  {intent.reactiveTrigger && (
-                    <div
-                      className="text-xs mt-1.5 italic"
-                      style={{ color: 'var(--text-tertiary)' }}
-                    >
-                      Triggered by: {intent.reactiveTrigger.replace(/_/g, ' ')}
-                    </div>
-                  )}
                 </div>
               );
             })}
@@ -204,12 +195,6 @@ export function IntentSection({ intents, variant = 'modal' }: IntentSectionProps
                   />
                 )}
 
-                {/* Row 4: reactive trigger */}
-                {intent.reactiveTrigger && (
-                  <div className="text-xs italic mt-1" style={{ color: `${categoryColor}bb` }}>
-                    ↳ {intent.reactiveTrigger.replace(/_/g, ' ')}
-                  </div>
-                )}
               </div>
             );
           })}

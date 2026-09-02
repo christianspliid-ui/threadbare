@@ -9,6 +9,14 @@
 import type { AmbitionTemplate } from '../types/ambition';
 import type { ReachDomain } from '../types/traits';
 import type { SphereName } from '../types/index';
+import type { AxiologicalProfile } from '../types/agent';
+import { signedToCanonical01 } from '../types/axisRegistry';
+import {
+  AMBITION_CULTURAL_SPHERE_WEIGHT,
+  AMBITION_BOOSTING_TRAIT_WEIGHT,
+  AMBITION_SELECTION_JITTER,
+  POLE_AFFINITY_WEIGHT,
+} from '../data/ambition-selection-constants';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
 function mulberry32(seed: number): () => number {
@@ -28,6 +36,14 @@ export interface AmbitionAgentSnapshot {
   readonly traits: readonly string[];
   readonly culturalSpheres: readonly SphereName[];
   readonly bonds: readonly { bondType: string }[];
+  /**
+   * The agent's value standings, in **signed ±1** storage (THR-1298).
+   *
+   * Optional so an older caller or a fixture without one scores exactly as before —
+   * the pole term simply contributes nothing rather than reading zeroes as maximum
+   * vice, which is what a `Record` defaulted to `{}` would have done.
+   */
+  readonly axiologicalProfile?: AxiologicalProfile;
 }
 
 // ─── Selection Options ──────────────────────────────────────────
@@ -79,10 +95,10 @@ export function scoreDesirability(
 ): number {
   let score = 0;
 
-  // Sphere affinity: +0.2 per matching cultural sphere
+  // Sphere affinity: one step per matching cultural sphere
   for (const sphere of template.sphereAffinities) {
     if (agent.culturalSpheres.includes(sphere)) {
-      score += 0.2;
+      score += AMBITION_CULTURAL_SPHERE_WEIGHT;
     }
   }
 
@@ -92,10 +108,10 @@ export function scoreDesirability(
     score += matchCount * bm.modifier;
   }
 
-  // Boosting traits: +0.15 per matching trait
+  // Boosting traits: one step per matching trait
   for (const trait of template.boostingTraits) {
     if (agent.traits.includes(trait)) {
-      score += 0.15;
+      score += AMBITION_BOOSTING_TRAIT_WEIGHT;
     }
   }
 
@@ -110,8 +126,29 @@ export function scoreDesirability(
     score += affinitySum / affinityEntries.length;
   }
 
+  // Value-pole affinity: does this drive sound like who they are? (THR-1298)
+  //
+  // **The two-scale mapping, pinned.** `AxiologicalProfile` stores **signed ±1**
+  // (virtue +1, vice −1). The canonical axis scale is **0–1 with 0.5 neutral**. The
+  // only legal bridge between them is `signedToCanonical01` — an open-coded
+  // `(v + 1) / 2` here would be a defect even though it computes the same number,
+  // because the clamping and the single point of truth are the reason the bridge
+  // exists. A `vice` lean is the complement of the virtue reading, so both poles are
+  // scored off one conversion rather than two sign conventions.
+  if (template.poleAffinities && agent.axiologicalProfile) {
+    for (const affinity of template.poleAffinities) {
+      const signed = agent.axiologicalProfile[affinity.valuePair];
+      // A pair the profile does not carry contributes nothing — never a default of 0,
+      // which would read on the canonical scale as 0.5 and quietly award half credit.
+      if (typeof signed !== 'number') continue;
+      const virtue01 = signedToCanonical01(signed);
+      const alignment01 = affinity.pole === 'virtue' ? virtue01 : 1 - virtue01;
+      score += POLE_AFFINITY_WEIGHT * affinity.weight * alignment01;
+    }
+  }
+
   // Small random jitter to break ties
-  score += rng() * 0.05;
+  score += rng() * AMBITION_SELECTION_JITTER;
 
   return score;
 }

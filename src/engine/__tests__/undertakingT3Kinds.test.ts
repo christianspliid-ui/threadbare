@@ -39,7 +39,7 @@ import { getAllStrategicTemplates, getStrategicTemplate } from '../strategicActi
 import { UNDERTAKING_KIND_ROWS } from '../../data/undertaking-kinds';
 import {
   AMBITION_TEMPLATES,
-  REACTIVE_AMBITION_TEMPLATES,
+  GRIEVANCE_AMBITION_TEMPLATES,
   EVENT_MINTED_AMBITION_TEMPLATES,
 } from '../../data/ambition-templates';
 import {
@@ -670,7 +670,7 @@ describe('the suborn chain resolves, gate included', () => {
 
 describe('the T3 templates are reachable', () => {
   const ALL_PROFILE_TEMPLATE_IDS = new Set(
-    [...AMBITION_TEMPLATES, ...REACTIVE_AMBITION_TEMPLATES, ...EVENT_MINTED_AMBITION_TEMPLATES]
+    [...AMBITION_TEMPLATES, ...GRIEVANCE_AMBITION_TEMPLATES, ...EVENT_MINTED_AMBITION_TEMPLATES]
       .flatMap(a => a.strategicProfile?.templateIds ?? []),
   );
 

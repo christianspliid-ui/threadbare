@@ -314,6 +314,9 @@ export const COURT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     id: 'strategic_sever_network',
     displayName: 'Sever the Network',
     verb: 'destroy',
+    // THR-1298: what this harm registers as, so the outcome mints the right drive.
+    // the plan's canonical severing.
+    harmClass: 'network_severed',
     executionMode: 'multi_tick_project',
     behaviorFamily: 'court-political',
     reachProfile: { shadow: 0.5, iron: 0.3, eye: 0.2 },
@@ -445,6 +448,9 @@ export const COURT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     id: 'strategic_expose_mark',
     displayName: 'Expose the Hold',
     verb: 'destroy',
+    // THR-1298: what this harm registers as, so the outcome mints the right drive.
+    // the mark's standing and the ties it bought are what break.
+    harmClass: 'network_severed',
     executionMode: 'instant',
     behaviorFamily: 'court-political',
     reachProfile: { eye: 0.4, shadow: 0.35, heart: 0.25 },
@@ -480,6 +486,9 @@ export const COURT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     id: 'strategic_suborn_warband',
     displayName: 'Buy the Captains',
     verb: 'destroy',
+    // THR-1298: what this harm registers as, so the outcome mints the right drive.
+    // the warband survives and answers to someone else — the class definition.
+    harmClass: 'holding_seized',
     executionMode: 'multi_tick_project',
     behaviorFamily: 'court-political',
     reachProfile: { gold: 0.5, shadow: 0.3, heart: 0.2 },

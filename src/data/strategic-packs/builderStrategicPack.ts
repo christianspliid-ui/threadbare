@@ -211,6 +211,9 @@ export const BUILDER_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     id: 'strategic_destroy_masterwork',
     displayName: 'Break the Work',
     verb: 'destroy',
+    // THR-1298: what this harm registers as, so the outcome mints the right drive.
+    // the work itself is gone.
+    harmClass: 'property_destroyed',
     executionMode: 'instant',
     behaviorFamily: 'builder-civic',
     reachProfile: { iron: 0.5, shadow: 0.3, stone: 0.2 },
