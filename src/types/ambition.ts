@@ -55,6 +55,21 @@ export type GraphCondition =
   | { type: 'agent_away_from_origin'; minTicks: number }
   | { type: 'target_agent_eliminated'; targetRef: string }
   /**
+   * The culprit named by *this* grievance is dead (THR-1298 slice 6).
+   *
+   * The THR-812-safe shape of the beat both vengeance ambitions were originally
+   * authored for. `target_agent_eliminated` needed the author to name the target, and
+   * every shipped authoring named an unbindable `$`-ref because nobody can know at
+   * authoring time who will do the harm. This names nobody: it reads `culpritAgentId`
+   * off the `pursues` edge the milestone is being evaluated *for*, which is a real node
+   * id the mint lane wrote at mint time.
+   *
+   * Carries no fields for the same reason — the edge is the binding. It fails soft to
+   * `false` without an edge context or on a non-grievance ambition, so authoring it on
+   * an ordinary template is inert rather than wrong.
+   */
+  | { type: 'grievance_culprit_eliminated' }
+  /**
    * The agent is currently in the region it originated from — or is not (THR-841).
    *
    * The region-relative twins of `agent_away_from_origin`, and the pair authored

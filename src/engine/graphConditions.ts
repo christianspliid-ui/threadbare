@@ -147,6 +147,21 @@ export interface ConditionContext {
    * header of `agentResidence.ts` for the full argument.
    */
   readonly windowStartTick?: number;
+  /**
+   * Properties of the `pursues` edge being evaluated (THR-1298 slice 6).
+   *
+   * The edge is where a minted drive's per-agent state lives — `culpritAgentId`,
+   * `harmMagnitude`, `heat` — because ambition *nodes* are shared per `templateId`, so
+   * two agents avenging different harms would otherwise overwrite each other. A
+   * condition that needs to know *whose* harm this is has to be handed the edge; there
+   * is no way to derive it from `(template, agentId)` alone.
+   *
+   * Passed as the whole property bag rather than a single extracted id so the next
+   * edge-reading condition needs no signature change. Absent for every caller that
+   * evaluates a condition outside an edge walk, and every condition that reads it
+   * fails soft to `false` there.
+   */
+  readonly pursuesProperties?: Record<string, unknown>;
 }
 
 /**
@@ -316,6 +331,23 @@ export function evaluateGraphCondition(
       const target = graph.getNode(condition.targetRef);
       if (!target) return false; // unresolvable ref is not evidence of death
       return isDeceased(target);
+    }
+
+    // The satisfaction door THR-812 could not build (THR-1298 slice 6). Same death
+    // flag and the same fail-soft polarity as its two siblings above; the only
+    // difference is where the target comes from — the edge under evaluation rather
+    // than an authored literal, which is what makes it bindable at all.
+    //
+    // Three separate absences each read `false`, and each is a genuine "we do not
+    // know" rather than a measured negative: no edge context, an edge with no
+    // grievance block, or a culprit whose node is gone. Absence must never complete a
+    // milestone — that is the exact auto-complete THR-812 removed.
+    case 'grievance_culprit_eliminated': {
+      const culpritId = context?.pursuesProperties?.culpritAgentId;
+      if (typeof culpritId !== 'string') return false;
+      const culprit = graph.getNode(culpritId);
+      if (!culprit) return false;
+      return isDeceased(culprit);
     }
 
     default: {
