@@ -7,7 +7,9 @@ resolved: 0
 newFindings: 3
 needsChristian: true
 ---
-# Orchestrator — 2026-09-02 (run a, ~05:37–06:05Z)
+# Orchestrator — 2026-09-02 (run a, ~05:37–06:05Z; amended ~06:25Z)
+
+> **Amendment, same run.** `sweep:rank-reach` completed after this report was first published and returned `PASS`. The T3 table row and its note are updated, and the Escalations bullet that called it unmeasured is retracted in place. Nothing else changed — no counter, no decline, no Christian item. Amended rather than deferred to the next run because the stale line asserted an absence of measurement that this run in fact had.
 
 First run to publish since [`orchestrator-2026-08-30c.md`](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-08-30c.md), ~72 hours ago. **That gap is mostly explained and is not a lane failure:** this machine was asleep from 2026-08-30 09:03 to 2026-09-01 19:24 local (58 h, recorded in Windows' power log and corroborated by every scheduled lane's last-run time clustering after the wake). The ~12 hours since the wake are runs that correctly wrote nothing — declines are not substantive. Today's sweep is the first with new findings, so it is the first to publish.
 
@@ -110,11 +112,23 @@ Seam 2 is a well-specified single commit sitting behind a design question nobody
 | `generate-interface-map:dry` | **8 LEAKED**, 95 total (exit 0) | **Identical, LEAKED membership member-for-member.** Tenth consecutive day at eight |
 | `check:canon-staleness` | **25 warnings** (exit 0) | **Identical, row-for-row.** 0 new, 0 departed — across three days |
 | `check:process` | exit 0 overall; **`rebuild-plans-index:check` reports `Docs/plans/INDEX.md is STALE`** | **Changed.** All four generator rows were "up to date" on 08-30b. Finding 1 |
-| `sweep:rank-reach` | did not finish inside this run's window | Verdict **unknown**, not `PASS`. Deliberately not carried forward |
+| `sweep:rank-reach` | **`PASS`** — 60 rank-gated templates reachable, 0 blocked, 0 unowned; **16** apex holders at tick 900 (exit 0) | **First measured result in three sweeps.** Landed ~45 min in, after this report was first published; amended below. Apex holders **13 → 16** vs 08-29d |
 
 `__DEBUG.validateTraitRefs()` is browser-only and cannot be invoked from a headless scheduled context. **Not run, and not reported as clean.**
 
-**`sweep:rank-reach` — not measured, third sweep running.** Started at the top of this run and still producing no output when the report was written (~35 min on 08-29d, ~40 on 08-28b — the same sibling-contention shape, with ~185 worktrees on this box). Its verdict is **unknown**. The last green (`PASS — 60 rank-gated templates reachable, 0 blocked, 0 unowned` on 08-29d) is **not** restated as today's result.
+**`sweep:rank-reach` — amended after publication: it landed, and it is the first real result this column has carried in three sweeps.** This report was first published at ~06:05Z stating the verdict was **unknown**, because the sweep had produced no output ~30 minutes in. It completed at ~06:22Z, exit 0. Amending rather than leaving the stale line standing: a published `unknown` that the same run later resolved is exactly the "green on an unmeasured check" pathology this tier exists to catch, wearing the opposite face.
+
+```
+Rank-gated templates at tick 900 — 60 reachable, 0 blocked, 0 unowned
+VERDICT: PASS — apex holders at tick 900: 16; blocked gated templates: 0
+Member-work cost (NFP #7): 0.261 ms/pass over 429 memberships = 0.044 ms/tick amortized
+```
+
+**The one cell that moved: apex holders at tick 900, 13 on 08-29d → 16 today.** Reachability is unchanged (60/0/0, identical member-for-member to the last green), so this is a population shift, not a coverage change, and `PASS` does not depend on it. Recorded so tomorrow's diff is against a real number rather than a four-day-old one. **Not attributed** — three engine PRs landed in the window (#1724, #1758, #1760, all THR-1349) and any of them could move a seeded 900-tick population; naming one without measuring would be a guess.
+
+**Two standing readings the sweep restates, neither new.** `0 of 16 members are individual+spotlight, i.e. can reach phaseAgentDecision at all` — the ambient-tier agency gap owned by THR-814 and re-argued this week on [THR-1348](https://linear.app/threadbare/issue/THR-1348/ambitions-held-below-the-spotlight-tier-have-no-agency-path-10-of-the), where the standing director verdict is that the aperture is correct and the sweep reporting the narrowness is the honest response. And `37 faction-template action instances, 0 of them drawn by a member of the owning faction` — unchanged, THR-816's territory. Both are reported by the detector every run; neither is a finding of this one.
+
+**The timing observation survives the PASS, and is the part worth carrying.** Three consecutive sweeps have now had this detector outrun the report: ~35 min on 08-29d, ~40 on 08-28b, ~45 today. It is not that it fails to finish — it is that it finishes *after* the tier that consumes it has written its output. On a strictly hourly lane that makes its column structurally stale by one run unless a run deliberately waits for it, as this one did only by accident of a long T3.
 
 **The eight LEAKED contracts, listed again so tomorrow's diff stays real:** `attachment-activated-effects` · `attachment-edge-modifiers` · `branch-decision-writes-archetype-drift` · `compulsion-card-plants-agent-decision-bias` · `nudge-card-cost-channels-detection-and-doom` · `trait-ref-authoring-vocabulary` · `undertaking-checkpoint-events` · `undertow-card-drifts-mortal-values`. All eight carry a remediation ticket, so `generate-interface-map` exits 0 by design.
 
@@ -181,5 +195,5 @@ Everything the retirement was waiting on has now shipped and is inert: the varie
 
 - **Nothing asked on Discord this run.** Non-negotiable #3's trigger is *agreed work exhausted*; agreed work is not exhausted, it is **unstageable** — a different condition with a different channel. The three Christian items route through `## Needs Christian` and the hourly briefing, which is the sanctioned non-blocking path. Adding a Discord ping would duplicate the doorbell `keep-work-flowing-cc` owns.
 - **Parked, not escalated: the T2 bound.** Twenty-fourth consecutive barred run, now holding an explicitly addressed inbound request (THR-1349 seam 1). Belongs to the weekly retro's batch, not to a lane's unilateral change.
-- **Parked: `sweep:rank-reach` unmeasured for a third consecutive sweep.** Three data points now share one shape — it does not finish inside an hourly window on this box. That is a lane-tooling observation for the retro, logged here rather than filed (process-work throttle). Until it is addressed, this detector's column is structurally `unknown`, and the tier should stop implying otherwise.
+- **Parked: `sweep:rank-reach` finishes after the report that consumes it.** Amended — it did land this run (`PASS`, above), so the previous framing of "unmeasured for a third consecutive sweep" was wrong within an hour of being written and is retracted here rather than left standing. The durable observation is narrower and still true: ~35 / ~40 / ~45 minutes across three sweeps, against a lane that publishes well inside the hour. A retro-batched lane-tooling item (process-work throttle — recorded, not filed); the cheap shapes are to start it at the top of T1 rather than T3, or to let the following run diff a result file it writes. Today's PASS was caught only because this run's T3 happened to be long.
 - **Two items recorded for the retro rather than filed:** the worldgen constant divergence (finding 2) and the unsaved-plan-doc failure mode (finding 1). Neither is a loss actively corrupting work as it runs, so neither qualifies for the immediate-filing exception.
