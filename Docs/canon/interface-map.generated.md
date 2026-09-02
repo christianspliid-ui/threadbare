@@ -706,10 +706,10 @@ exit
 - **Producer → Consumer:** Factions & Succession → Ambitions & Undertakings
 - **UL terms:** *Undertaking*, *Faction*
 - **Module:** `src/engine/undertakingMotive.ts`
-- **Production hits:** 11 total — 1 write, 3 read, 7 unclassified
+- **Production hits:** 12 total — 1 write, 3 read, 8 unclassified
 - **Write sites:** `src/data/strategic-packs/warlordStrategicPack.ts`
 - **Read sites:** `src/data/undertaking-kinds.ts`, `src/engine/strategicActionCandidates.ts`, `src/engine/undertakingMotive.ts`
-- **Other hits:** `src/data/ambition-templates.ts`, `src/data/strategic-action-constants.ts`, `src/data/strategic-packs/builderStrategicPack.ts`, `src/data/strategic-packs/courtStrategicPack.ts`, `src/data/strategic-packs/scholarStrategicPack.ts` +2 more
+- **Other hits:** `src/data/ambition-templates.ts`, `src/data/content-eval/undertakingContract.ts`, `src/data/strategic-action-constants.ts`, `src/data/strategic-packs/builderStrategicPack.ts`, `src/data/strategic-packs/courtStrategicPack.ts` +3 more
 - **Verdict:** Verified 2026-08-27: THR-1297 slice 2. The corpus held exactly one `verb: 'destroy'` template in 43 — `strategic_raid_supply_lines` — and it was offerable against any town/city/camp/fort in range with no quarrel behind it, while its own completion prose said "the enemy will feel the lack" about people who were not the actor's enemy. It now declares `motiveGate: ['rivalry','grudge','faction_war']` and generation refuses it unless the actor holds one of those toward a holder of the target. Every motive reads a relation the world already wrote, so nothing new is recorded: `hostile_to` (bare ⇒ rivalry, injury-stamped ⇒ grudge, read across all three provenance keys the three writers each chose independently — `cause`/`reason`/`basis`), a shared `active` `pursues` ambition node, and `relates_to.isRival` via the existing `areFactionsHostile`. Two refusal reasons kept distinct because they want different fixes: `no_motive` (held, no quarrel) and `no_motive_unowned` (nobody holds it). Both reach a trace through the candidate-board trace's new capped `refusals` field — before this the board reported a bare rejection *count*, so every generation gate including `no_eligible_apprentice` was invisible from a run dump. Non-vacuous by `src/engine/__tests__/undertakingMotiveGate.test.ts` (21 tests): each refusal is paired with the same fixture offering the same candidate once the motive exists, so a gate that simply always refused would fail; falsified 8-of-21 red with `evaluateMotiveGate` stubbed to allow. Live measurement, seed 42/medium at tick 60: all 21 raidable settlements carry a controlling faction (so the `unowned` arm is not the common case), against 30 `hostile_to` edges and 12 declared faction rivalries across 49 factions — the verb stays reachable and grows more so as grudges accumulate. Full suite 18569 green; 30-tick seed-42 smoke reached tick 30, 377 agents, 49 events.
 
 ### `draw-together-carries-caster-sphere-to-the-name` — 🟢 LIVE
@@ -1045,10 +1045,10 @@ exit
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 254 total — 1 write, 1 read, 252 unclassified
+- **Production hits:** 256 total — 1 write, 1 read, 254 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts` +247 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts` +249 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `relocation-intent-steers-agent-movement` — 🔵 UNVERIFIED-OK

@@ -93,6 +93,7 @@ and (when relevant) `superseded_by: <path>`. A plan with no status is treated as
 | [verification-gates.md](verification-gates.md) | Verification gates + browser-verify (authoritative, THR-1336) | live | 2026-08-28 |
 | [cosmology.md](cosmology.md) | Cosmology | live | 2026-08-28 |
 | [encounters.md](encounters.md) | Encounters | live | 2026-05-05 |
+| [undertakings.md](undertakings.md) | Undertakings (the factory line's Step 0, THR-1300) | live | 2026-09-02 |
 | [agents.md](agents.md) | Agents | live | 2026-05-06 |
 | [attachments.md](attachments.md) | Attachments | live | 2026-05-05 |
 | [engine.md](engine.md) | Engine | live | 2026-05-05 |

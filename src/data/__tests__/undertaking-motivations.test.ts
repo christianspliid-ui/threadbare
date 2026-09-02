@@ -21,9 +21,9 @@
  * reason: a sweep over an empty corpus passes every assertion in this file.
  */
 import { describe, it, expect } from 'vitest';
-import { VALUE_PAIRS } from '../../types/agent';
 import type { ValuePair } from '../../types/agent';
 import { getAllStrategicTemplates } from '../../engine/strategicActionCandidates';
+import { findMotivationDefects } from '../content-eval/undertakingContract';
 
 /**
  * The convention `ENCOUNTER_TYPE_MOTIVATIONS` sets and this corpus follows: at
@@ -33,8 +33,6 @@ import { getAllStrategicTemplates } from '../../engine/strategicActionCandidates
  * at 3 before this pass and are not defects — `computeDesireScore` averages over
  * the set, so a third pair narrows the read rather than breaking it.
  */
-const MIN_MOTIVATION_ARITY = 2;
-
 /**
  * Non-vacuity floor for the corpus sweep. Not an identity pin — new packs may
  * raise it. It exists so that a sweep over an accidentally-empty
@@ -42,35 +40,9 @@ const MIN_MOTIVATION_ARITY = 2;
  */
 const CORPUS_FLOOR = 64;
 
-type Defect = { id: string; problem: string };
-
-function findMotivationDefects(
-  templates: readonly { id: string; motivations?: readonly ValuePair[] }[],
-): Defect[] {
-  const defects: Defect[] = [];
-  for (const t of templates) {
-    const m = t.motivations;
-    if (m === undefined || m.length === 0) {
-      defects.push({ id: t.id, problem: 'silent' });
-      continue;
-    }
-    if (m.length < MIN_MOTIVATION_ARITY) {
-      defects.push({ id: t.id, problem: `arity ${m.length} < ${MIN_MOTIVATION_ARITY}` });
-    }
-    if (new Set(m).size !== m.length) {
-      defects.push({ id: t.id, problem: 'duplicate pair' });
-    }
-    for (const pair of m) {
-      // A non-member reads `profile[pair] ?? 0` downstream and contributes
-      // nothing, silently and forever — the field's own doc says so. Typos are
-      // the realistic way this happens.
-      if (!VALUE_PAIRS.includes(pair)) {
-        defects.push({ id: t.id, problem: `not a ValuePair: ${pair}` });
-      }
-    }
-  }
-  return defects;
-}
+// `findMotivationDefects` was lifted out of this file into the Undertaking Contract
+// (`content-eval/undertakingContract.ts`, THR-1300 slice 1) so the gate and this
+// pin share one rule; the arity floor it enforces is `UNDERTAKING_MOTIVATION_MIN_ARITY`.
 
 /**
  * A near-miss spelling, assembled at runtime rather than written as a literal.

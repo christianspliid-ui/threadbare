@@ -453,6 +453,17 @@ jobs:
       - name: Encounter composition gate
         run: npm run check:encounter -- --all
 
+      # The undertaking factory's machine gate (THR-1300 slice 1) — the same
+      # shape over the strategic template corpus: identity, kind membership,
+      # counter-play, cast, creation, tier bands, board authoring, reachability,
+      # register, tokens. Fails on a template that is NOT on
+      # `UNDERTAKING_RETROFIT_PENDING` and on a ratchet entry that has started
+      # passing. Unconditional for the same reason as the step above: the sweep
+      # is sub-second over 64 templates and the population is the registry,
+      # not a directory.
+      - name: Undertaking contract gate
+        run: npm run check:undertaking -- --all
+
       # Law 56 clause 2 over the WHOLE action catalog (THR-1164), which the step
       # above cannot reach: `check:encounter --all` is scoped to the `encounter.`
       # prefix by design, and 19 of the clause's original 48 violations sat under

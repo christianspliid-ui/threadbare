@@ -105,16 +105,35 @@ function makeSkill(triggerCount = 3): string {
 
 const GENERATED_AT = "2026-08-25";
 
+/** A canon page with the seams block Section F compiles from (THR-1300). */
+function makeUndertakingsCanon(): string {
+  return [
+    "# Canon — Undertakings",
+    "",
+    "## Current spec",
+    "",
+    "### The template and its authored seams",
+    "",
+    "- **Identity** — `id`, `displayName`, `verb`.",
+    "- **Kind membership** — one row, one column.",
+    "",
+    "### The kind registry",
+    "",
+    "Eight rows.",
+  ].join("\n");
+}
+
 /** Build a brief from the fakes, overriding whichever source the test is about. */
 function build(overrides: Partial<BriefSourceContents> = {}): string {
   const sources: BriefSourceContents = {
     wiringGuide: makeWiringGuide(),
     directionDoc: makeDirectionDoc(),
     skill: makeSkill(),
+    undertakingsCanon: makeUndertakingsCanon(),
     ...overrides,
   };
   const hashes = AUTHORING_BRIEF_SOURCES.map((relPath, idx) =>
-    hashBriefSource(relPath, [sources.wiringGuide, sources.directionDoc, sources.skill][idx]),
+    hashBriefSource(relPath, [sources.wiringGuide, sources.directionDoc, sources.skill, sources.undertakingsCanon][idx]),
   );
   return buildBrief(sources, hashes, GENERATED_AT);
 }
@@ -292,10 +311,20 @@ describe("buildBrief", () => {
       wiringGuide: makeWiringGuide(),
       directionDoc: makeDirectionDoc(),
       skill: makeSkill(),
+      undertakingsCanon: makeUndertakingsCanon(),
     };
     expect(() => buildBrief(sources, ["a".repeat(40)], GENERATED_AT)).toThrow(
-      "expected 3 source hashes",
+      `expected ${AUTHORING_BRIEF_SOURCES.length} source hashes`,
     );
+  });
+
+  it("compiles Section F from the canon page's seams block, and refuses an empty one (THR-1300)", () => {
+    const brief = build();
+    expect(brief).toContain("## Section F: Undertakings");
+    expect(brief).toContain("- **Kind membership** — one row, one column.");
+    expect(brief).not.toContain("Eight rows.");
+    expect(() => build({ undertakingsCanon: "# Canon — Undertakings\n\n### The template and its authored seams\n\n### The kind registry\n" }))
+      .toThrow("Section F would compile empty");
   });
 
   it("includes all 7 capability headings", () => {
