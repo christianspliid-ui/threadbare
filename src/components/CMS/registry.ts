@@ -152,6 +152,7 @@ import { QUINTESSENCE_LEXICON, QUINTESSENCE_TOOLTIPS } from '../../data/quintess
 
 // Unified Actions
 import { UNIFIED_ACTION_TEMPLATES } from '../../data/unified-action-templates';
+import { getAllStrategicTemplates } from '../../engine/strategicActionCandidates';
 
 // Traits
 import { REPUTATION_TRAIT_DEFINITIONS } from '../../data/reputation-trait-content';
@@ -610,6 +611,20 @@ export const CONTENT_REGISTRY: ContentRegistryEntry[] = [
     viewer: 'encounter-package',
     searchFields: ['id', 'name'],
     sourceFile: 'src/data/unified-action-templates.ts',
+  },
+  {
+    // THR-1300 slice 4 — the Undertaking Package View, the undertaking factory's
+    // review surface. `data` is the strategic template registry; packages build on
+    // demand, and the contract context (the registry-wide validation) builds once.
+    id: 'undertaking-packages',
+    label: 'Undertaking Packages',
+    category: 'Encounters',
+    description:
+      'Every block of one undertaking, resolved — the kind row and the cell it fills with its counter-play linked, the board values as words, cast, every band’s creation effects, the mutation it leaves in the world, harm and motive gates, the prose, the write set, and the contract verdict. Tick two or more to compare a batch side by side.',
+    data: getAllStrategicTemplates(),
+    viewer: 'undertaking-package',
+    searchFields: ['id', 'displayName'],
+    sourceFile: 'src/engine/strategicActionCandidates.ts',
   },
   {
     id: 'encounter-difficulty-tiers',

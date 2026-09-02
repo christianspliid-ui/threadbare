@@ -2440,6 +2440,33 @@ export const CONTRACTS: readonly Contract[] = [
     deferralTicket: 'THR-1297',
   },
   {
+    id: 'factory-pack-registry',
+    producerSystem: 'Ambitions & Undertakings',
+    consumerSystem: 'Strategic Projects & Control',
+    intent:
+      'A template the undertaking factory compiles reaches the one decision board the same way a hand-written one does — through the template registry — without an author ever editing a pack array. The compiler writes `strategic-packs/factory/<slug>.ts` and registers the export in the factory aggregate, the id in its kind row and in each ambition profile it names; the registry joins the aggregate last so factory output can never shadow an authored id. A template registered in two of the three places is unreachable by luck, which is the defect the compiler exists to make impossible.',
+    // Keyed on the aggregate, not on the compiler: the durable thing crossing the
+    // boundary is the array the registry joins. How a file gets into it is the
+    // compiler's business.
+    mechanism: {
+      kind: 'function',
+      symbols: ['FACTORY_STRATEGIC_TEMPLATES', 'ALL_PACKS', 'registerInFactoryIndex'],
+      module: 'src/data/strategic-packs/factory/index.ts',
+    },
+    writeSites: [
+      'src/data/content-eval/undertakingPackage.ts',
+    ],
+    readSites: [
+      'src/engine/strategicActionCandidates.ts',
+    ],
+    // UNVERIFIED-OK rather than LIVE: the join is real and the compiler round-trip
+    // is proven on a fixture (registered ×3, re-run identical, emitted test green,
+    // live proof of the compiled copy proved on seed 42 — then reverted), but the
+    // aggregate ships empty until the pilot batch (slice 5) compiles the first
+    // template a live game can start. A green badge has to mean traffic.
+    deferralTicket: 'THR-1300',
+  },
+  {
     id: 'binder-decision-traced',
     producerSystem: 'Ambitions & Undertakings',
     consumerSystem: 'Attention, Chronicle & Narrative',

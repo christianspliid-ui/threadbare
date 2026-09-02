@@ -14,6 +14,7 @@ import { TreeViewer } from './viewers/TreeViewer';
 import { ConfigManager } from './viewers/ConfigManager';
 import { IASurfaceViewer } from './viewers/IASurfaceViewer';
 import { EncounterPackageViewer } from './encounter-package/EncounterPackageViewer';
+import { UndertakingPackageViewer } from './undertaking-package/UndertakingPackageViewer';
 import type { IASurface } from '../../data/ia-manifest';
 
 interface Props {
@@ -154,6 +155,15 @@ function renderViewer(
           batch={routeParams?.batch}
           // Fail-soft: a host that wires no route handler still renders the
           // picker — navigation is inert rather than throwing (NFP #4).
+          onNavigate={onRouteChange ?? (() => undefined)}
+        />
+      );
+    case 'undertaking-package':
+      return (
+        <UndertakingPackageViewer
+          searchQuery={searchQuery}
+          templateId={routeParams?.template}
+          batch={routeParams?.batch}
           onNavigate={onRouteChange ?? (() => undefined)}
         />
       );

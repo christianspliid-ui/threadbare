@@ -24,9 +24,10 @@ The production line for **undertakings** — the long works a mortal chooses on 
 | 4 | **Live proof** — `npm run check:undertaking-live -- <id>... [--seed N]... [--band <band>\|none]`, non-vacuous by construction; pins `success` by default | `scripts/undertaking-live-proof.ts` | **slice 3** |
 | 4b | **Compiler** — `npm run compile:undertaking -- <package.json> [--dry-run] [--force]`: package → `strategic-packs/factory/` module + test, factory aggregate, kind row and profiles registered idempotently; a row-less kind opens only on its first destroy | `scripts/compile-undertaking.ts`, `src/data/content-eval/undertakingPackage.ts`, `reference/undertaking-package-format.md` | **slice 3** |
 | 4c | **Implementation** — compile, then the gates in order (typecheck → contract → live proof on seeds 42 + 99 → emitted test → catalog refresh), evidence block quoted from output | `agents/implementation-prompt.md` | **slice 3** |
-| 5 | **Batch report** — `npm run undertaking:batch-report`, grid coverage first | `scripts/undertaking-batch-report.ts` | slice 4 |
+| 5 | **Batch report** — `npm run undertaking:batch-report -- <ids…> [--seed N]… [--brief <path>]`: a renderer over the two checks' JSON, batch table then the kind × CRUD grid with this batch marked (a C-only batch is flagged in the report), spread, per-template claims, census pointers | `scripts/undertaking-batch-report.ts` | **slice 4** |
+| 5b | **Package View** — `?view=cms#undertaking-packages?template=<id>` (`?batch=` compares six): every block resolved, the board as words, the row's other cells linked, the write set, the contract verdict | `src/components/CMS/undertaking-package/` | **slice 4** |
 
-Stages marked for a later slice are named here so the shape of the line is one document; do not invent a stand-in for a stage that has not shipped.
+Every stage of the line has shipped; the pilot (slice 5) is the first batch through it.
 
 ## The gate (slice 1, live)
 

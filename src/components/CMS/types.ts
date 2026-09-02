@@ -18,7 +18,9 @@ export type ViewerType =
   | 'config-manager'
   | 'ia-surface'
   /** THR-1046 — the Package View. Reads its own hash parameters (`template`, `batch`). */
-  | 'encounter-package';
+  | 'encounter-package'
+  /** THR-1300 — the Undertaking Package View. Same hash parameters. */
+  | 'undertaking-package';
 
 // ── Column Definitions ───────────────────────────────────────────
 

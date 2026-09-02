@@ -120,6 +120,7 @@
     "draw:hooks": "esbuild scripts/draw-plot-hooks.ts --bundle --platform=node --format=esm --outfile=.cache/draw-plot-hooks.mjs --external:fs --external:path --external:process --external:url && node .cache/draw-plot-hooks.mjs",
     "draw:packet": "esbuild scripts/draw-packet.ts --bundle --platform=node --format=esm --outfile=.cache/draw-packet.mjs --external:fs --external:path --external:process --external:url && node .cache/draw-packet.mjs",
     "encounter:batch-report": "esbuild scripts/encounter-batch-report.ts --bundle --platform=node --format=esm --outfile=.cache/encounter-batch-report.mjs --external:fs --external:path --external:process --external:url --external:child_process && node .cache/encounter-batch-report.mjs",
+    "undertaking:batch-report": "esbuild scripts/undertaking-batch-report.ts --bundle --platform=node --format=esm --outfile=.cache/undertaking-batch-report.mjs --external:fs --external:path --external:process --external:url --external:child_process && node .cache/undertaking-batch-report.mjs",
     "check:node-modules": "node --experimental-strip-types scripts/node-modules-health.ts",
     "repair:donor-node-modules": "node --experimental-strip-types scripts/repair-donor-node-modules.ts",
     "check:cast-targets": "esbuild scripts/check-cast-targets.ts --bundle --platform=node --format=esm --outfile=.cache/check-cast-targets.mjs --external:fs --external:path --external:process --external:url && node .cache/check-cast-targets.mjs",

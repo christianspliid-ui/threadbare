@@ -664,6 +664,17 @@
   </div>
 
   <div class="section">
+    <h2>Spotlight &mdash; A work that arrives already wired
+      <span class="lead">Audited 2026-09-03 (audit-on-touch, THR-1300 slices 3&ndash;4). The undertaking factory's output reaches the board through the registry, and the registry is joined last.</span>
+    </h2>
+
+    <ul class="contracts">
+      <li class="partial"><span class="flow">Factory pack <span class="arrow">&#10230;</span> Strategic template registry &mdash; a compiled undertaking is offered by the one decision board the way a hand-written one is</span><span class="chip partial">UNVERIFIED-OK</span>
+        <span class="note">THR-1300. An undertaking used to be registered in <strong>three</strong> places by hand &mdash; a pack array, a kind row's C/U/D column, and each ambition profile that names it &mdash; and a template landing in two of the three was reachable only by luck. <code>compile:undertaking</code> writes <code>strategic-packs/factory/&lt;slug&gt;.ts</code> from a content package (the real template plus <code>kind</code> / <code>profiles</code>), registers all three idempotently, and refuses to open a kind row for anything but that kind's first <em>destroy</em> &mdash; the registry's own rule, honoured by the tool that writes rows. <code>FACTORY_STRATEGIC_TEMPLATES</code> is joined <em>last</em> into <code>TEMPLATE_REGISTRY</code>, so factory output can never shadow an authored id. The write set a template declares (<code>undertakingWriteSet</code>: mutation, creation bands, harm, kind row, must-persist cast, catalysts) is one predicate read by both the contract and the live proof, so a template that declares nothing is never failed for delivering nothing and one that declares a write cannot pass by delivering none. <strong>Badged UNVERIFIED-OK, not LIVE, on purpose:</strong> the round-trip is proven on a fixture (registered &times;3, a second run identical, the emitted test green, the compiled copy proved live on seed 42, then reverted), but the aggregate ships empty until the pilot batch compiles the first template a live game can start. The proof found one defect while it was there: christening took the first created <em>id</em>, which for a trade route is the edge, so no opened road had ever been named; it takes the first created <em>node</em> now.</span></li>
+    </ul>
+  </div>
+
+  <div class="section">
     <h2>How this map stays true
       <span class="lead">A hand-drawn diagram is a lie waiting to happen. This one is designed to become a projection.</span>
     </h2>

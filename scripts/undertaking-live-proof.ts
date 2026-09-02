@@ -388,5 +388,5 @@ if (isMain) {
     console.error(`\n${bad.length}/${runs.length} run(s) not proved (${bad.map(r => `${r.templateId}@${r.seed}:${r.verdict}`).join(', ')})`);
     process.exit(1);
   }
-  console.log(`\nall ${runs.length} run(s) proved`);
+  (json ? console.error : console.log)(`\nall ${runs.length} run(s) proved`);
 }
