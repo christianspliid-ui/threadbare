@@ -1,10 +1,20 @@
 # User Action Required
 
-**Last updated:** 2026-09-02 14:58 local (12:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
+**Last updated:** 2026-09-02 15:53 local (13:53 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Run measurements, findings and narration live in the history: `git log -p origin/ops -- Design/user-actions.md`.
 
 ## Standing asks
 
-### 1. One sitting: sample batch 1, approve batch 2 — [THR-1130](https://linear.app/threadbare/issue/THR-1130) + [THR-1222](https://linear.app/threadbare/issue/THR-1222/run-retrofit-batch-2-the-camp-seven-through-the-factory-line-shrine)
+### 1. Are you still planning to design Traits wave 2? — [THR-790](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)
+
+**One word, and it is the cheapest thing on this page.** The ticket has sat In Design since 15 August, assigned to you, with no plan doc. **Yes** and nothing changes — it stays where it is, waiting for you. **No, not getting to it** and it is set aside, which frees the design pipeline completely.
+
+**Why it is genuinely yours and not a lane's call.** The design-staging budget was jammed for three weeks and you were repeatedly asked to unjam it. That was the machine's fault and [the repair](https://linear.app/threadbare/issue/THR-1382) merged this morning: an unworked design item now times out and stops holding a slot. It released [unify the card grammar](https://linear.app/threadbare/issue/THR-1002) automatically. It deliberately does **not** release this one, because an assigned item means a person may be about to pick it up — and no lane can know whether you are. That is the whole question.
+
+**What it opens.** Four pieces of work are written up and waiting for a design pass that cannot start while the slot is held: [the grievance supply problem](https://linear.app/threadbare/issue/THR-1383), [the twilight authorship split](https://linear.app/threadbare/issue/THR-1381), [the undertaking factory](https://linear.app/threadbare/issue/THR-1300), [the decision-board re-scope](https://linear.app/threadbare/issue/THR-1349). Each becomes buildable work once designed.
+
+The work itself, if you do want it: location traits going live, artifact traits, and draw-by-trait pools ("gain a random #relic"). Nothing downstream is blocked on the *work* either way — only on the answer.
+
+### 2. One sitting: sample batch 1, approve batch 2 — [THR-1130](https://linear.app/threadbare/issue/THR-1130) + [THR-1222](https://linear.app/threadbare/issue/THR-1222/run-retrofit-batch-2-the-camp-seven-through-the-factory-line-shrine)
 
 **First, play two — the batch-1 2-of-6 sample, open since 17 August.** The question is your own: *are they worth meeting twice?* Both were re-prosed since you last saw them, so a replay is honest; a no is as useful as a yes.
 
@@ -13,15 +23,7 @@
 
 **Then approve [the brief](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/encounters/retrofit-batch-2-brief.md) — the camp seven:** shrine offering, sharpening blades, warding the camp, a prayer, rest, tending wounds, scouting. No typed consequences at all; the last encounters below standard. `shrine_offering` is #1 of [your slice checkpoint](https://linear.app/threadbare/issue/THR-1220), which cannot invite you until they are rewritten. The bar, live: [The Beast in the Granary](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.hunt.the_beast_in_the_granary). The brief proposes **seven** rather than six because the camp set is one family in one file.
 
-**Three ways to close it:** *"batch 2, seven is fine"* · *"keep it six"* · *"same rule — judge batch 2 on one first."* The only ask with downstream cost; three hours running, both lanes named it independently.
-
-### 2. Are you still planning to design Traits wave 2? — [THR-790](https://linear.app/threadbare/issue/THR-790/traits-wave-2-locations-artifacts-and-draw-by-trait-pools)
-
-**One word, and it is the cheapest thing on this page.** The ticket has sat In Design since 15 August, assigned to you, with no plan doc. **Yes** and nothing changes — it stays where it is, waiting for you. **No, not getting to it** and it is set aside, which frees the design pipeline completely.
-
-**Why it is genuinely yours and not a lane's call.** The design-staging budget was jammed for three weeks and you were repeatedly asked to unjam it. That was the machine's fault and [the repair](https://linear.app/threadbare/issue/THR-1382) merged this morning: an unworked design item now times out and stops holding a slot. It released [unify the card grammar](https://linear.app/threadbare/issue/THR-1002) automatically. It deliberately does **not** release this one, because an assigned item means a person may be about to pick it up — and no lane can know whether you are. That is the whole question.
-
-The work itself, if you do want it: location traits going live, artifact traits, and draw-by-trait pools ("gain a random #relic"). Nothing downstream is blocked on it either way.
+**Three ways to close it:** *"batch 2, seven is fine"* · *"keep it six"* · *"same rule — judge batch 2 on one first."* Four hours running, both lanes naming it independently. It is the only ask that puts product work straight back on an empty shelf.
 
 ### 3. A word players see, settled and now shipped — veto open — [THR-1314](https://linear.app/threadbare/issue/THR-1314/ul-proposal-work-holding-kind-row-christening-failure-name-register)
 
@@ -66,7 +68,7 @@ Deliberately left with you: what the game means, not how to wire it. No urgency 
 
 One `npm run dev` and a browser at 1920×1080: shipped surfaces and the screenshots they owe. Each is a shipped UI change carrying test-level proof but no picture, because a scheduled run is refused a dev server and structurally cannot capture one. Nine passes now, nineteen captures. Newest include faction heraldry (does a subordinate charge at 0.42 scale read as *deliberately lesser* or as a broken asset?), the tooltip focus ring, and the aftermath screen as composed.
 
-It grows as more UI ships behind the same wall. Replaces four tickets (THR-1109, THR-1125, THR-1126, THR-1127), consolidated 2026-08-16 — a merge, not a prune. Get through part of it, say which, and the remainder is re-expanded rather than closed whole. Bundles into the sitting in ask 1.
+It grows as more UI ships behind the same wall. Replaces four tickets (THR-1109, THR-1125, THR-1126, THR-1127), consolidated 2026-08-16 — a merge, not a prune. Get through part of it, say which, and the remainder is re-expanded rather than closed whole. Bundles into the sitting in ask 2.
 
 ### 9. Should committing a nudge be followed by a held breath? — [THR-1168](https://linear.app/threadbare/issue/THR-1168/two-authored-encounter-audio-moments-have-no-live-caller-wire-or)
 
@@ -86,7 +88,8 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 
 ## Resolved this period
 
-- **The design-shelf ask — withdrawn, then half of it corrected back** *(2026-09-02)*. For three weeks every briefing asked you to sit [THR-1002](https://linear.app/threadbare/issue/THR-1002) or [THR-790](https://linear.app/threadbare/issue/THR-790) to unjam the design column. [The repair](https://linear.app/threadbare/issue/THR-1382) merged 12:29 ([PR #1770](https://github.com/christianspliid-ui/threadbare/pull/1770)) and released THR-1002 automatically. THR-790 is assigned to you, so it is deliberately still held — that residue is now ask 2, and it is one word.
+- **The shelf's last item went from claimed to live inside one hour** *(2026-09-02)*. [THR-1299](https://linear.app/threadbare/issue/THR-1299) was picked up at 15:01 and its first slice — one follow predicate, court-position-aware — merged as [PR #1772](https://github.com/christianspliid-ui/threadbare/pull/1772) and deployed before the hour was out. The work continues on its next slice; no decision of yours was involved.
+- **The design-shelf ask — withdrawn, then half of it corrected back** *(2026-09-02)*. For three weeks every briefing asked you to sit [THR-1002](https://linear.app/threadbare/issue/THR-1002) or [THR-790](https://linear.app/threadbare/issue/THR-790) to unjam the design column. [The repair](https://linear.app/threadbare/issue/THR-1382) merged 12:29 ([PR #1770](https://github.com/christianspliid-ui/threadbare/pull/1770)) and released THR-1002 automatically. THR-790 is assigned to you, so it is deliberately still held — that residue is now ask 1, and it is one word.
 - **The grievance/grudge vocabulary is live** — [THR-1379](https://linear.app/threadbare/issue/THR-1379), [PR #1771](https://github.com/christianspliid-ui/threadbare/pull/1771) merged 12:18. Promoted 11:29, claimed 12:07, merged 12:18: fifty minutes shelf-to-live with no human in the loop.
 - **The reactive loop is complete and live** — [#1765](https://github.com/christianspliid-ui/threadbare/pull/1765), [#1766](https://github.com/christianspliid-ui/threadbare/pull/1766), [#1768](https://github.com/christianspliid-ui/threadbare/pull/1768), [#1769](https://github.com/christianspliid-ui/threadbare/pull/1769), all merged 2026-09-02. Harm mints a drive that leans on who a mortal *is*; a vendetta cools, holds one slot, outlives its victim, and says whose it is; a grievance can be answered, so a feud can end rather than only grow.
 - **The two things being built this morning both landed** — [THR-1377](https://linear.app/threadbare/issue/THR-1377) (35 of 64 undertaking templates that authored no motivations) closed 08:31, and [THR-1378](https://linear.app/threadbare/issue/THR-1378) (ten rulebook-review findings) closed 08:46. No decision of yours was involved.
@@ -94,7 +97,7 @@ An open design option with no ticket behind it. Explicitly not urgent — the sa
 - **The variety term the live decision board was missing** — [PR #1760](https://github.com/christianspliid-ui/threadbare/pull/1760) merged 2026-09-01, and [THR-1349](https://linear.app/threadbare/issue/THR-1349)'s stale claim on your name cleared with it. The ticket stays open for the remaining cutover checks.
 - **The engine was reading silence as refusal** — [PR #1758](https://github.com/christianspliid-ui/threadbare/pull/1758) merged 2026-08-30. An undertaking that names no motivations scored identically to one an agent actively wants nothing to do with, pinning 35 of 64 templates.
 - **The last two things in build landed and emptied the board** — [THR-1328](https://linear.app/threadbare/issue/THR-1328) (three tests failing at random rather than on a real fault) and [THR-1376](https://linear.app/threadbare/issue/THR-1376) (six glossary terms defined but missing from the index).
-- **The encounter writing brief stopped teaching a look you retired** — [THR-1250](https://linear.app/threadbare/issue/THR-1250) merged 2026-08-30. Writers were being pointed at the old prose mode before they wrote a line. Directly upstream of the camp seven in ask 1.
+- **The encounter writing brief stopped teaching a look you retired** — [THR-1250](https://linear.app/threadbare/issue/THR-1250) merged 2026-08-30. Writers were being pointed at the old prose mode before they wrote a line. Directly upstream of the camp seven in ask 2.
 
 ---
 
