@@ -304,7 +304,9 @@ export function extractChips(gameState: GameState): {
   // the world, not a hook pulling on the player, and this bar shows what is tugging at
   // them. Stated rather than left to a silence, so a later author wondering why
   // holdings never appear here finds an answer. They render on the character sheet
-  // (`AttachmentsTab`); a holdings row on the bar, if ever wanted, is THR-1299.
+  // (`AttachmentsTab`, as Freeholds) and on the arc panel. THR-1299 decided against a
+  // freehold row on the bar (Law 53's HUD budget) with a veto invited; if Christian
+  // wants an at-a-glance count here, that is a small new ticket, not this block.
   const agreementEdges = [
     ...graph.getOutgoingEdges(ascendantId, 'relates_to'),
     ...graph.getIncomingEdges(ascendantId, 'relates_to'),

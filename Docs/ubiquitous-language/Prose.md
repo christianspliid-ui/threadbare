@@ -57,10 +57,10 @@ The 10-tier, per-Reach vocabulary table (`NARRATIVE_LEXICON` in `src/types/trait
 ### Chronicle Entry
 
 **Aliases:** Chronicle, History Entry
-**Also see:** `[[Narrative Event]]`
+**Also see:** `[[Narrative Event]]`, `[[Moment]]`, `[[Calling]]`
 **Status:** canonical
 
-A persistent record of a significant event in an agent or faction's history (`ChronicleEntry` type). Chronicle entries accumulate as agents participate in encounters and world events, forming a personal narrative history. The Great Chronicle collects entries world-wide. The UI exposes agent chronicles through the agent detail panel.
+A persistent record of a significant event in an agent or faction's history (`ChronicleEntry` type). An interrupt-tier `[[Moment]]` and a spotlight mortal's `[[Calling]]` change both reach the chronicle by significance (THR-1299). Chronicle entries accumulate as agents participate in encounters and world events, forming a personal narrative history. The Great Chronicle collects entries world-wide. The UI exposes agent chronicles through the agent detail panel.
 
 ---
 

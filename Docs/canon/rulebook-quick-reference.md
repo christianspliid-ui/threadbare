@@ -84,6 +84,12 @@ Factions field **bands** of their own named people — a band is a company in ev
 
 Your seat stays the intervention seat: **Bless this Company** (Heart / Spirit) steadies a band's bonds; **Draw Together** (Heart / Spirit) tilts scattered threaded mortals toward one hex until a company gathers on its own; **Reunite** (Heart / Spirit) calls a company that has *already disbanded* back toward one another, re-forming under a variant of its old name — or lapsing unanswered; **Sunder** (Shadow / Entropy) is Bless's mirror, doubling dissent and desertion and forcing the fray drama pool open. Bless and Sunder may both be open at once and neither cancels the other. You never command a company.
 
+## Following a Mortal
+
+**Follow** a mortal and their long work interrupts you: a costly step, trouble, a doubling-down, an abandonment, a finish opens a **moment** card — plain narration, the state that moved, and *Inspire the Work* / *Sow Doubt* while the work is live. Your thread's First and retinue are followed by themselves; un-following one is a **mute**. Everything else, and every founding, waits as a badge on the thread row for four days. An encounter always opens first.
+
+Every mortal carries a **calling** — *Trader, Reaver, Mender* — derived from their strongest reaches, the ambition they pursue and their temperament. It changes only when their life does, holds at least three days, and a change in the spotlight is a chronicle moment.
+
 ## When Someone Is Wronged
 
 A harm becomes the victim's next drive. An undertaking that razes a holding, severs a network, or kills a name writes an outcome naming **culprit** and **victim**, and offers the wronged party a temperament-shaped *set* of drives — vengeance, rebuilding, guarding, flight — with their character picking, not the world. The god is never a party: no mortal can hold a grievance against you.

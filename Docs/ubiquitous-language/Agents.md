@@ -549,6 +549,52 @@ Code anchors: `src/engine/holdings.ts` (`grantHolding`, `reconcileHoldingFaces`,
 
 ---
 
+### Calling
+
+**Aliases:** the `calling` / `callingTitleKey` / `callingSinceTick` node properties (engine); "what the world calls them"
+**Also see:** `[[Undertaking]]`, `[[Ambition]]`, `[[AxiologicalProfile]]`, `[[Moment]]`, `[[Chronicle Entry]]`
+**Status:** canonical (seated by THR-1380 with the THR-1299 implementation)
+
+The player-visible identity title a mortal carries for what they do — *Trader*, *Reaver*, *Mender*, *Spider*. **Derived, never stored as a stat**: a deterministic argmax over the naming table (`src/data/calling-content.ts`) from the mortal's leading reach pair, their active `[[Ambition]]` (its category and the undertaking kinds its templates build — the volatile input, weighted heaviest), and their personality lean. It replaces the retired `BehaviorFamily` as the readable pattern (THR-1281 §7b): the family enum survives as mechanics for the docs 4/6 conversion, but no player surface renders a family word.
+
+A calling **recomputes only on a life-change** — an ambition taken up, completed or abandoned; an undertaking finished; a reach tier crossed — never per tick, and a challenger replaces the incumbent only past both hysteresis gates (`CALLING_MIN_HOLD_TICKS`, `CALLING_SCORE_MARGIN`). A change on a spotlight mortal is a `[[Chronicle Entry]]` (`calling_changed`); every derivation traces `calling_change` with both scores. A mortal the scorer cannot place — no capabilities, no ambition — stays unnamed and renders the fallback title.
+
+**Disambiguation.** The faction verb *Kindle a Calling* (`factionGovernanceVerbs.ts`, THR-433) biases a faction's latent ambition candidates and is unrelated to this term; the agent sense is the primary UL entry, and the verb keeps its authored name as a fixed phrase.
+
+Code anchors: `src/engine/calling.ts` (`deriveCalling`, `recomputeCalling`, `getCallingPresentation`), `src/data/calling-content.ts` (`CALLING_ROWS`, `BEHAVIOR_FAMILY_TO_CALLING`), `src/data/strategic-action-constants.ts` (`CALLING_*`), `window.__DEBUG.getCalling`.
+
+---
+
+### Moment
+
+**Aliases:** undertaking moment, `UndertakingMomentRecord` (engine), moment card / moment badge (surfaces)
+**Also see:** `[[Undertaking]]`, `[[Follow]]`, `[[Chronicle Entry]]`, `[[Encounter]]`
+**Status:** canonical (seated by THR-1380 with the THR-1299 implementation)
+
+What a long work says to the player — one of six turns of an `[[Undertaking]]`: `started` (its founding), `at_cost` (a step dearly bought), `complication` (serious trouble, naming the lost cast member where the binder lost one), `fork` (doubling down after repeated halts), `abandoned`, and `completion`. Every moment lands as a `TickEvent` **and** as a record in `state.pendingUndertakingMoments`, a capped queue with one writer, and traces `moment_surface` as it is queued, opened, acknowledged or dropped.
+
+A moment has a **presentation** stamped at emission and never recomputed — *interrupt*, *badge* or *none* (THR-1279 ruling 2.1). An interrupt stops the world and opens the moment card; a badge waits on the mortal's thread row as the recovery route and opens the same card; acknowledging never destroys the record, the badge counts it until it ages out. Only a `[[Follow]]`ed mortal's moments interrupt, and only the first at-cost step per work does; foundings always badge.
+
+**Disambiguation.** Not the retired encounter concept *Defining Moment* (a rejected authored-choice scene, see Encounters.md): a moment is reported, never chosen.
+
+Code anchors: `src/engine/undertakingCheckpoints.ts` (`buildMoment`, `resolveMomentPresentation`), `src/engine/undertakingMoments.ts` (the queue's writer), `src/components/Game/MomentCard.tsx`, `src/components/Game/momentBadgeModel.ts`, `src/data/moment-card-content.ts`.
+
+---
+
+### Follow
+
+**Aliases:** followed / following, `followedAgentIds` + `mutedAgentIds` (engine), the follow toggle (surfaces); **mute** is its negative
+**Also see:** `[[Thread]]`, `[[Court Position]]`, `[[Retinue]]`, `[[Moment]]`, `[[Ascendant]]`
+**Status:** canonical (seated by THR-1380 with the THR-1299 implementation)
+
+The attention the player confers on a mortal, which upgrades that mortal's `[[Moment]]`s from badge to interrupt. One predicate, three terms: a mortal is followed when they are on the explicit list *or* the Ascendant's `[[Thread]]` to them sits at the `the_first` or `retinue` `[[Court Position]]` — and in both cases not muted. A `dormant` or `watched` thread does **not** follow, so `thread.dormant` means what its text says on both channels. **Mute** is the un-follow of a bond-followed mortal: it drops the interrupt upgrade and nothing else — the thread stays, the moments still queue and badge. Follow state is game state, per save, never a preference.
+
+The affordance renders the three-way read honestly — *Following*, *Followed by bond*, *Muted* — on the arc panel and on the encounter that concerns the mortal, and the single writer decides mute-versus-unfollow from the state of the world, never the surface. Copy on the affordance keeps *retinue* in its court sense only (THR-1099 arbitration); it never means travelling companions.
+
+Code anchors: `src/engine/followedAgents.ts` (`isFollowed`, `followAgent`, `unfollowAgent`, `getFollowState`), `src/components/Game/FollowToggle.tsx`, `window.__DEBUG.followAgent` / `unfollowAgent` / `getFollowedAgents`.
+
+---
+
 ### Grievance
 
 **Aliases:** vendetta (prose), the `grievance` block on a `pursues` edge (engine)

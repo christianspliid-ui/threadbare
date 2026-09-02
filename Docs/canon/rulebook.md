@@ -456,6 +456,25 @@ Why: TheFantasyWorldSimulator/Vision/00-north-star.md (§2 — the causal chain 
 
 ---
 
+## 10.8 Following, Moments and the Calling — how a long work reaches you
+
+**Following is the attention you confer, and it is what makes a mortal's work interrupt you.** A mortal is followed by construction while your thread to them sits at `the_first` or `retinue`; any other mortal is followed when you press *Follow* on their sheet or on the encounter that concerns them. Un-following a bond-followed mortal is a **mute** — the thread stays, the interruptions stop — and the toggle says which gesture it is making rather than showing a lying unchecked box [IMPL — THR-1299; `src/engine/followedAgents.ts` is the single writer, `FollowToggle.tsx` on the arc panel and the encounter veil; a `dormant` or `watched` thread does *not* follow, so setting a mortal down silences their undertaking news as it silences their encounters]. Follow state is game state, saved with the world — not a preference.
+
+**A moment is what a long work says to you.** Its founding, a costly step, serious trouble, a doubling-down, an abandonment, its finish — each lands as a record in a short queue [IMPL — `state.pendingUndertakingMoments`, `MOMENT_QUEUE_MAX` 8, single writer `undertakingMoments.ts`]. A followed mortal's costly step, trouble, doubling-down, abandonment or finish **stops the world** and opens the moment card — the encounter family's chrome, two lines of plain narration, then only the state that moved as chips, then *Inspire the Work* / *Sow Doubt*, armed then fired, while the work is live [IMPL — `MomentCard.tsx`; interrupt-tier significance clears the chronicle threshold on one constant, `MOMENT_INTERRUPT_SIGNIFICANCE`]. Foundings, and every moment of an unfollowed or muted mortal, **badge** on the thread row instead — the recovery route, counting what you have not yet acknowledged for four days, opening the same card and clearing nothing until you do [IMPL — `MomentBadge.tsx`, `MOMENT_BADGE_RETENTION_TICKS`]. An encounter always opens first; two interrupts never co-render [IMPL — GameView's `pendingMoment` slot fills only while no other interrupt is open]. The mortal's sheet carries the whole arc — the work under way, what drives them, and what they have finished and failed — read from what the world remembers, never from the day's digest [IMPL — `JourneyTab.tsx`, `getAgentArc`].
+
+**The calling is the word the world uses for what a mortal does.** *Trader, Reaver, Mender* — derived, never a stat, from their two strongest reaches, the ambition they pursue and the kinds of work it wants built, and the way their temperament leans, scored against an open naming table seeded from the ten retired behaviour families [IMPL — `src/engine/calling.ts`, `src/data/calling-content.ts`, twenty-three titles; `BehaviorFamily` retired as presentation, its enum and template fields kept for the docs 4/6 conversion]. It changes only when their life does — a drive taken up or set down, a long work finished, a reach mastered — and a challenger replaces the name only after the old one has been held three days *and* beats it by a clear margin, so a calling neither flickers nor fossilises [IMPL — `CALLING_MIN_HOLD_TICKS` 36, `CALLING_SCORE_MARGIN` 0.15, event-driven at three sites, never per tick]. For a mortal in the spotlight, a change of calling is itself a chronicle moment [IMPL — `calling_changed` at `CALLING_CHANGE_SIGNIFICANCE` 0.85; the narratable-band gate `npm run telemetry:calling` measured seed 42 × 150 ticks at two changes across seventy-two named mortals, sixteen titles in use — inside the band]. Every surface that names a mortal says the same word, and old history reads through each family's seed title.
+
+**No named calendar.** Moment and chronicle prose says *two days past*, never an invented date; a calendar is a whole system for one flourish, and the veto was invited [DESIGN — THR-1299 census, build-or-drop: dropped].
+
+```
+Owns: synthesis only.
+Definitions: Docs/ubiquitous-language/Agents.md (Calling, Moment, Follow) — THR-1380
+Spec: Docs/plans/2026-09-02-thr-1299-calling-and-surfaces.md
+Why: TheFantasyWorldSimulator/Vision/00-north-star.md (follow any agent's story)
+```
+
+---
+
 ## 11. Winning and Losing
 
 A run ends one of two ways. **The Mandate completes** — your declared win-state is satisfied. The Doom Clock had not yet culminated, so the world survives and *you* shaped what survives. **The Doom Clock culminates** — the Unmaking arrives before the Mandate is satisfied. The world is remade or unmade, depending on the archetype.
