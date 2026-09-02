@@ -50,6 +50,7 @@ import { getOriginPortraitUrl } from '../data/avatar-portrait-assets';
 import { MEETING_SETTLED_LOCATION_SUBTYPES } from './meetingEncounter';
 import { AMBITION_KIND_KEY, AMBITION_KIND_TEMPLATE } from './ambitionShape';
 import { defaultFollowedAgentIds } from './undertakingCheckpoints';
+import { recomputeCalling } from './calling';
 import { publishDynamicFactionDefinitions } from '../data/faction-definition-lookup';
 
 /** PRNG offset for pre-worldgen culture identity generation. Unique prime — no collision with worldgen passes. */
@@ -316,6 +317,14 @@ export function initializeGameState(
   const visibilityMap = recalcVisibility(new Map(), losSources, graph, 0, cols, rows);
 
   // Assemble final GameState
+  // The calling's first derivation (THR-1299 slice 5). Every mortal gets a name
+  // at birth from what the seed gave them — reaches, ambition, temperament — so no
+  // surface ever renders the fallback for a living agent. `cause: 'initial'`
+  // stamps without a change event; the three event sites take it from here.
+  for (const node of graph.getNodesByType('actor')) {
+    if (node.properties?.actorType === 'individual') recomputeCalling(graph, node.id, 0, 'initial');
+  }
+
   const state: GameState = {
     cycle: 1,
     tick: 0,
@@ -685,6 +694,10 @@ export function devSeedTheFirst(state: GameState): string {
       },
     });
   }
+
+  // The First is seeded after the world-init pass has already named everyone
+  // else, so they take their first derivation here (THR-1299 slice 5).
+  recomputeCalling(graph, agentId, 0, 'initial');
 
   // ── Seed possessions ────────────────────────────────────────────
   const possessions = [

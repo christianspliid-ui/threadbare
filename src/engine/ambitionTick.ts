@@ -53,6 +53,7 @@ import {
   getAmbitionTemplateId,
   traceUnevaluableAmbition,
 } from './ambitionShape';
+import { recomputeCalling } from './calling';
 
 // ─── Tunable Constants ───────────────────────────────────────────
 
@@ -658,6 +659,13 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
           ? 'ambition_completed'
           : 'ambition_abandoned';
 
+        // The calling recomputes on the ambition change (THR-1299 slice 5) — one
+        // of its three event sites, never per tick.
+        {
+          const callingChange = recomputeCalling(graph, actor.id, tick, 'ambition_change');
+          if (callingChange?.event) newEvents.push(callingChange.event);
+        }
+
         const prose = result.status === 'completed'
           ? template.completionProse[0] ?? `${actor.name} completed: ${template.displayName}`
           : template.abandonmentProse[0] ?? `${actor.name} abandoned: ${template.displayName}`;
@@ -884,6 +892,12 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
             const template = AMBITION_TEMPLATES.find(t => t.id === assignment.templateId);
             const prose = template?.selectionProse[0]
               ?? `${actor.name} takes up a new ambition: ${assignment.templateId}`;
+
+            // A new drive is the calling's most volatile input (THR-1299 slice 5).
+            {
+              const callingChange = recomputeCalling(graph, actor.id, tick, 'ambition_change');
+              if (callingChange?.event) newEvents.push(callingChange.event);
+            }
 
             newEvents.push({
               id: nextAmbitionEventId(tick),

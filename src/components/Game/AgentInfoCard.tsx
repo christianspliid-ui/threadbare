@@ -13,7 +13,6 @@ import { BACKSTORY_CONSTANTS } from '../../types/prose';
 import {
   getAgentStrategicSummary,
   getAgentStrategicHistory,
-  getBehaviorFamilyPresentation,
 } from '../../engine/strategicPresentation';
 
 interface AgentInfoCardProps {
@@ -464,7 +463,7 @@ export const AgentInfoCard = React.memo(function AgentInfoCard({
 
             {/* Active project */}
             {strategicSummary.activeProject && (() => {
-              const fp = getBehaviorFamilyPresentation(strategicSummary.behaviorFamily);
+              const fp = strategicSummary.calling;
               return (
                 <div
                   className="rounded px-2 py-1.5 mb-1.5"
@@ -488,7 +487,7 @@ export const AgentInfoCard = React.memo(function AgentInfoCard({
               <div className="mb-1.5">
                 <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginBottom: '2px' }}>Holds:</div>
                 {strategicSummary.primaryControl && (() => {
-                  const fp = getBehaviorFamilyPresentation(strategicSummary.behaviorFamily);
+                  const fp = strategicSummary.calling;
                   const healthColor =
                     strategicSummary.primaryControl.healthLabel === 'firm'      ? 'var(--text-secondary)'
                     : strategicSummary.primaryControl.healthLabel === 'weakening' ? '#aa8a5a'

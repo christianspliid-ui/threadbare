@@ -2249,6 +2249,38 @@ export const CONTRACTS: readonly Contract[] = [
     },
   },
   {
+    id: 'calling-derivation',
+    producerSystem: 'Strategic Projects & Control',
+    consumerSystem: NARRATIVE,
+    intent:
+      'A mortal has a readable name for what they do — Trader, Reaver, Mender — that follows their deeds rather than a stat, and every surface that names them says the same word.',
+    mechanism: {
+      kind: 'property',
+      symbols: ['calling', 'callingTitleKey', 'callingSinceTick', 'recomputeCalling', 'getCallingPresentation', 'calling_change'],
+      module: 'src/engine/calling.ts',
+    },
+    writeSites: [
+      'src/engine/calling.ts',
+      'src/engine/ambitionTick.ts',
+      'src/engine/strategicActionLifecycle.ts',
+      'src/engine/orchestrator.ts',
+    ],
+    readSites: [
+      'src/engine/strategicPresentation.ts',
+      'src/engine/agentDetail.ts',
+      'src/components/Game/ThreadsPanel.tsx',
+      'src/components/Game/AgentInfoCard.tsx',
+      'src/components/Game/ThreadDetailView.tsx',
+      'src/components/Game/tabs/OverviewTab.tsx',
+      'src/components/Game/debug/DebugTabContent.tsx',
+    ],
+    verifiedLive: {
+      date: '2026-09-02',
+      evidence:
+        'THR-1299 slice 5. `recomputeCalling` runs at three event sites — ambition assignment/completion/abandonment (`ambitionTick.ts`), undertaking completion (`strategicActionLifecycle.ts`), reach tier promotion (`orchestrator.ts`) — never per tick, and writes the title onto the agent node behind a two-gate hysteresis (`CALLING_MIN_HOLD_TICKS`, `CALLING_SCORE_MARGIN`). Every reader goes through `getCallingPresentation`, which falls back to the persisted `behaviorFamily`’s seed title, so the four former family render sites swapped in one edit. Non-vacuous by `src/engine/__tests__/calling.test.ts` (deterministic argmax, each hysteresis gate shown to block a change that would otherwise fire and to admit one past both, the legacy map total over `BehaviorFamily`) and by `npm run telemetry:calling`, the narratable-band instrument recorded on the closing PR.',
+    },
+  },
+  {
     id: 'decision-board-shadow-telemetry',
     // Producer is the decision pipeline (phase 2b, ENCOUNTERS); the consumer named
     // here is the subsystem whose go-live this telemetry gates, not the module that

@@ -18,7 +18,6 @@ import { STORY_SO_FAR_DIGEST_ENABLED } from '../../data/attention-constants';
 import {
   getAgentStrategicSummary,
   getAgentStrategicHistory,
-  getBehaviorFamilyPresentation,
 } from '../../engine/strategicPresentation';
 import {
   isNudgeDesignerViewEnabled,
@@ -765,7 +764,7 @@ function AgentDetailBody({
               Designs
             </div>
             {strategicSummary.activeProject && (() => {
-              const pres = getBehaviorFamilyPresentation(strategicSummary.behaviorFamily);
+              const pres = strategicSummary.calling;
               return (
                 <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', fontFamily: 'var(--font-body)' }}>
                   <span style={{ color: pres.color }}>{pres.glyph}</span>

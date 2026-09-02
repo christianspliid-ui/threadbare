@@ -376,6 +376,14 @@ export function OverviewTab({ card, profile: _profile, knowledge, onOpenEntity, 
               ) : card.archetypeLabel}
             </p>
           )}
+          {/* The calling — what the world calls them for what they do (THR-1299 slice 5). */}
+          {hasKnowledge(card.knowledgeLevel, 'recognised') && card.calling && (
+            <p className="text-sm" data-testid="identity-calling" style={{ color: 'var(--text-secondary)' }}>
+              <Tooltip id="ui.calling">
+                <span className="underline decoration-dotted cursor-help">Called {card.calling.title}</span>
+              </Tooltip>
+            </p>
+          )}
           {hasKnowledge(card.knowledgeLevel, 'recognised') && (card.factionName || card.cultureName) && (
             <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
               {[card.factionName, card.cultureName].filter(Boolean).join(' · ')}

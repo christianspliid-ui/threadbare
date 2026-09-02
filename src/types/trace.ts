@@ -124,6 +124,8 @@ export type TraceCategory =
   | 'follow_change'
   // Moment queue lifecycle (THR-1299 slice 2)
   | 'moment_surface'
+  // The calling (THR-1299 slice 5)
+  | 'calling_change'
   // The one prioritization board (THR-1292 §4)
   | 'decision_board_comparison'
   | 'decision_board_error'
@@ -520,6 +522,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'undertaking_fork',
   'follow_change',
   'moment_surface',
+  'calling_change',
   'decision_board_comparison',
   'decision_board_error',
   'omen_selection',
@@ -2148,6 +2151,24 @@ export interface MomentSurfaceTrace extends TraceBase {
 }
 
 /**
+ * Trace: a mortal's calling was derived or changed (THR-1299 slice 5).
+ *
+ * Carries both scores, because the hysteresis gate is first-guess calibration
+ * the plan explicitly invites retuning — and a change without its margin cannot
+ * be retuned from a log (NFP #2). `cause: 'initial'` is the first derivation,
+ * which stamps a name without a change; the telemetry gate counts the rest.
+ */
+export interface CallingChangeTrace extends TraceBase {
+  category: 'calling_change';
+  agentId: string;
+  fromTitleKey: string | null;
+  toTitleKey: string;
+  cause: 'ambition_change' | 'undertaking_complete' | 'tier_promotion' | 'initial';
+  incumbentScore: number;
+  challengerScore: number;
+}
+
+/**
  * Trace: what the one prioritization board would have chosen (THR-1292 §4).
  *
  * The cross-family comparison this records has **never been traced** — nothing
@@ -3199,6 +3220,7 @@ export type TraceEntry =
   | UndertakingForkTrace
   | FollowChangeTrace
   | MomentSurfaceTrace
+  | CallingChangeTrace
   | DecisionBoardComparisonTrace
   | DecisionBoardErrorTrace
   | StrategicWorldChangeTrace

@@ -478,6 +478,10 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'The arc so far',
     desc: 'What this mortal has finished, failed and been through, oldest first — read from what the world remembers, not from the day\'s digest.',
   },
+  'ui.calling': {
+    label: 'The calling',
+    desc: 'What the world calls this mortal for what they do — read from their strongest reaches, the ambition they pursue and their temperament. It changes only when their life does.',
+  },
 };
 
 /** Lookup a UI tooltip by ID. Returns null if not found. */

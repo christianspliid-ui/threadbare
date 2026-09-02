@@ -906,6 +906,21 @@ export interface DebugBridge {
    */
   getUndertakingMoments(agentRef?: string): Promise<readonly import('./types/strategicAction').UndertakingMomentRecord[]>;
   /**
+   * The calling (THR-1299 slice 5) — the stored title on the agent node and the
+   * tick it was set, plus `derived`: what a fresh derivation says right now.
+   * When `derived.titleKey` differs from `titleKey`, the hysteresis gate is
+   * holding a challenger back (hold floor or margin); the trace buffer's
+   * `calling_change` rows carry both scores. `null` for an unknown ref or no
+   * game. Async — `await` it.
+   */
+  getCalling(agentRef: string): Promise<{
+    agentId: string;
+    title: string | null;
+    titleKey: string | null;
+    sinceTick: number | null;
+    derived: { title: string; titleKey: string; score: number };
+  } | null>;
+  /**
    * Follow an agent by id, id prefix, partial name, or `@hero`.
    *
    * The sanctioned route for the constructed interrupt proof: CLI worlds carry

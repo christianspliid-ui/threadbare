@@ -331,6 +331,40 @@ export const MOMENT_BADGE_RETENTION_TICKS = 48;
 /** Most entries on the JourneyTab's arc-so-far strip (THR-1299 slice 4). */
 export const MOMENT_ARC_STRIP_MAX = 12;
 
+// ─── The calling (THR-1299 slice 5, THR-1281 §7b) ───────────────────
+//
+// A mortal's readable identity, derived — never stored as a stat — from their
+// leading reach pair, their active ambition and their personality lean, scored
+// against the naming table in `src/data/calling-content.ts`. Recompute is
+// event-driven at three sites (ambition change, undertaking completion, tier
+// promotion), never per tick, and a challenger replaces the incumbent only past
+// both hysteresis gates below. Retune the feel here, not in the scorer.
+
+/** Ambition term weight — the volatile input leads (review M1: deeds move it). */
+export const CALLING_AMBITION_WEIGHT = 0.5;
+
+/** Leading reach-pair term weight. */
+export const CALLING_REACH_WEIGHT = 0.35;
+
+/** Personality-lean term weight. */
+export const CALLING_PERSONALITY_WEIGHT = 0.15;
+
+/** Hysteresis floor — a calling holds at least this long before any challenger wins. */
+export const CALLING_MIN_HOLD_TICKS = 36;
+
+/** A challenger must beat the incumbent's *current* score by this margin. */
+export const CALLING_SCORE_MARGIN = 0.15;
+
+/**
+ * TickEvent significance for a spotlight mortal's calling change — clears the
+ * chronicle threshold, because a calling change IS a chronicle moment (ruling).
+ * Set to 0 to apply the plan's kill criterion (static title, no chronicle claim).
+ */
+export const CALLING_CHANGE_SIGNIFICANCE = 0.85;
+
+/** Title when no naming-table row matches the profile. */
+export const CALLING_FALLBACK_TITLE = 'Wanderer';
+
 // ─── The one prioritization board (THR-1292 §4) ─────────────────────
 //
 // An agent's decision *was* three sequential winner-take contests between
