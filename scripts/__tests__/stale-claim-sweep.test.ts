@@ -19,8 +19,23 @@ import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { sweep, type GqlFn, type IssueDetail } from "../stale-claim-sweep/index.ts";
-import { GRACE_PERIOD_HOURS, HOUR_MS, PARKED_LABEL_NAME } from "../stale-claim-sweep/constants.ts";
+import {
+  sweep,
+  classifyInDesignItem,
+  lastInDesignActivityMs,
+  type GqlFn,
+  type IssueDetail,
+  type InDesignIssue,
+} from "../stale-claim-sweep/index.ts";
+import {
+  GRACE_PERIOD_HOURS,
+  HOUR_MS,
+  DAY_MS,
+  PARKED_LABEL_NAME,
+  QUEUE_STATE_NAME,
+  DESIGN_STATE_NAME,
+  ORCH_IN_DESIGN_STALE_DAYS,
+} from "../stale-claim-sweep/constants.ts";
 
 const NOW_MS = new Date("2026-08-22T12:51:18.000Z").getTime();
 
@@ -55,7 +70,7 @@ function parked(base: IssueDetail = detail()): IssueDetail {
   return { ...base, labels: { nodes: [...base.labels.nodes, { name: PARKED_LABEL_NAME }] } };
 }
 
-function makeHarness(fresh: IssueDetail | null): Harness {
+function makeHarness(fresh: IssueDetail | null, inDesign: InDesignIssue[] = []): Harness {
   const mutations: Mutation[] = [];
   const detailQueries: string[] = [];
 
@@ -74,12 +89,20 @@ function makeHarness(fresh: IssueDetail | null): Harness {
     if (query.includes("team(id: $teamId)")) {
       return { team: { states: { nodes: [{ id: "state-rfd", name: "Ready for Dev" }] } } };
     }
-    // Both list queries select `issues(` — the filter clause disambiguates them.
+    // Three list queries now select `issues(`. The queue and In Design queries
+    // are textually near-identical — both filter `state: { name: { eq: $state } }`
+    // — so they are disambiguated on the bound VARIABLE, not on query text.
+    // Matching them by substring is how a stub silently answers the wrong
+    // question: the In Design pass is fail-soft, so an unstubbed throw there
+    // would be swallowed and its assertions would go vacuous.
     if (query.includes('state: { name: { eq: "In Dev" } }')) {
       return { issues: { nodes: [] } };
     }
-    if (query.includes("assignee: { null: false }")) {
+    if (variables.state === QUEUE_STATE_NAME) {
       return { issues: { nodes: [] } };
+    }
+    if (variables.state === DESIGN_STATE_NAME) {
+      return { issues: { nodes: inDesign } };
     }
     if (query.includes("issue(id: $id)")) {
       detailQueries.push(query);
@@ -118,8 +141,12 @@ function tracesFrom(spy: ReturnType<typeof vi.spyOn>): Array<Record<string, unkn
     .map((line) => JSON.parse(line) as Record<string, unknown>);
 }
 
-async function run(fresh: IssueDetail | null, dryRun = false): Promise<Harness & { traces: Array<Record<string, unknown>> }> {
-  const harness = makeHarness(fresh);
+async function run(
+  fresh: IssueDetail | null,
+  dryRun = false,
+  inDesign: InDesignIssue[] = [],
+): Promise<Harness & { traces: Array<Record<string, unknown>> }> {
+  const harness = makeHarness(fresh, inDesign);
   await sweep({ dryRun, trackedListPath, gql: harness.gql, nowMs: NOW_MS });
   return { ...harness, traces: tracesFrom(logSpy) };
 }
@@ -223,5 +250,336 @@ describe("stale-claim sweep — activity window reads the newest comments (THR-1
     const { detailQueries } = await run(detail());
 
     expect(detailQueries[0]!).toMatch(/labels \{ nodes \{ name \} \}/);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// In Design liveness (THR-1382)
+// ---------------------------------------------------------------------------
+
+/**
+ * `In Design` occupant, aged in whole days back from the harness clock.
+ *
+ * **`updatedAt` is deliberately set to `NOW` — not to the age.** That is the
+ * real board's shape, not a convenience: Linear bumps `updatedAt` when another
+ * issue merely links to this one, and filing THR-1382 bumped both real
+ * occupants to the filing timestamp while they sat 14 and 18 days untouched. A
+ * fixture that let `updatedAt` agree with the true age would verify a fiction
+ * and pass whichever signal the predicate read. Here the two disagree
+ * maximally, so only the correct signal produces the expected verdict.
+ *
+ * The age is carried by the state transition into the column, which is what
+ * `lastInDesignActivityMs` actually reads.
+ */
+function inDesignStub(overrides: Partial<InDesignIssue> & { ageDays: number }): InDesignIssue {
+  const { ageDays, ...rest } = overrides;
+  const enteredAt = new Date(NOW_MS - ageDays * DAY_MS).toISOString();
+  return {
+    id: `in-design-${ageDays}`,
+    identifier: `THR-${900 + ageDays}`,
+    updatedAt: new Date(NOW_MS).toISOString(),
+    assignee: null,
+    labels: { nodes: [] },
+    comments: { nodes: [] },
+    history: { nodes: [{ createdAt: enteredAt, toState: { name: DESIGN_STATE_NAME } }] },
+    ...rest,
+  };
+}
+
+/**
+ * The two occupants that actually jammed the column, at their measured ages.
+ * Named after the real issues so a future reader can check the verdict against
+ * the board rather than against the fixture.
+ */
+const THR_1002_UNASSIGNED_14D = inDesignStub({
+  ageDays: 14,
+  id: "0120265a-f645-4b91-9234-251bbf4db1af",
+  identifier: "THR-1002",
+  assignee: null,
+});
+
+const THR_790_ASSIGNED_18D = inDesignStub({
+  ageDays: 18,
+  id: "e62f1eeb-9e2b-4cdb-8f49-e45e028f6c47",
+  identifier: "THR-790",
+  assignee: { id: "user-1", displayName: "Christian Spliid" },
+});
+
+describe("In Design liveness predicate (THR-1382)", () => {
+  it("REGRESSION: a fresh updatedAt does not make a 14-day-dead item look live", () => {
+    // The trap this ticket nearly shipped. THR-1382 proposed `updatedAt` as the
+    // activity signal; both real occupants came back carrying the ticket's own
+    // filing timestamp, because Linear bumps updatedAt when another issue links
+    // to it. Reading updatedAt would classify both as `live` on day one and the
+    // whole feature would be a no-op — while passing any fixture whose
+    // updatedAt was set to agree with its age.
+    expect(THR_1002_UNASSIGNED_14D.updatedAt).toBe(new Date(NOW_MS).toISOString());
+
+    const v = classifyInDesignItem(THR_1002_UNASSIGNED_14D, NOW_MS);
+    expect(v.ageDays).toBe(14);
+    expect(v.countsAgainstBound).toBe(false);
+  });
+
+  it("counts a real comment as activity, so a worked item stays live", () => {
+    // The other half: the signal must not be "entered the column" alone, or an
+    // item under active discussion would be excluded for not having moved.
+    const discussedYesterday = inDesignStub({
+      ageDays: 30,
+      comments: { nodes: [{ createdAt: new Date(NOW_MS - 1 * DAY_MS).toISOString() }] },
+    });
+
+    expect(classifyInDesignItem(discussedYesterday, NOW_MS)).toMatchObject({
+      reason: "live",
+      countsAgainstBound: true,
+    });
+  });
+
+  it("falls back to updatedAt when no activity signal exists at all", () => {
+    const noSignals: InDesignIssue = {
+      ...inDesignStub({ ageDays: 20 }),
+      comments: { nodes: [] },
+      history: { nodes: [] },
+      updatedAt: new Date(NOW_MS - 20 * DAY_MS).toISOString(),
+    };
+
+    expect(lastInDesignActivityMs(noSignals)).toBeNull();
+    expect(classifyInDesignItem(noSignals, NOW_MS).ageDays).toBe(20);
+  });
+
+  it("excludes an unassigned item that has gone stale — the arm that unjams T2", () => {
+    const v = classifyInDesignItem(THR_1002_UNASSIGNED_14D, NOW_MS);
+
+    expect(v).toMatchObject({ reason: "stale-unassigned", countsAgainstBound: false, warn: true });
+    expect(v.ageDays).toBe(14);
+  });
+
+  it("FALSIFICATION: the same unassigned item one day INSIDE the threshold still counts", () => {
+    // Sweeps the measured boundary rather than the type range: at exactly the
+    // threshold the item is still live, and only strictly past it is excluded.
+    // Without this arm the predicate could return `false` unconditionally and
+    // the test above would not notice.
+    const atThreshold = inDesignStub({ ageDays: ORCH_IN_DESIGN_STALE_DAYS, assignee: null });
+    const v = classifyInDesignItem(atThreshold, NOW_MS);
+
+    expect(v).toMatchObject({ reason: "live", countsAgainstBound: true, warn: false });
+  });
+
+  it("warns an ASSIGNED stale item but keeps counting it — someone is waiting on it", () => {
+    const v = classifyInDesignItem(THR_790_ASSIGNED_18D, NOW_MS);
+
+    expect(v).toMatchObject({ reason: "stale-assigned", countsAgainstBound: true, warn: true });
+    expect(v.ageDays).toBe(18);
+  });
+
+  it("FALSIFICATION: the identical item with the assignee removed IS excluded", () => {
+    // Exactly one field differs from the arm above. If assignment stopped
+    // mattering, these two would agree and both would still pass their own
+    // `countsAgainstBound` assertion in isolation — so they are asserted as a pair.
+    const unassigned = { ...THR_790_ASSIGNED_18D, assignee: null };
+
+    expect(classifyInDesignItem(unassigned, NOW_MS).countsAgainstBound).toBe(false);
+    expect(classifyInDesignItem(THR_790_ASSIGNED_18D, NOW_MS).countsAgainstBound).toBe(true);
+  });
+
+  it("excludes a Parked item without warning it, assigned or not", () => {
+    const parkedAssigned: InDesignIssue = {
+      ...THR_790_ASSIGNED_18D,
+      labels: { nodes: [{ name: PARKED_LABEL_NAME }] },
+    };
+
+    expect(classifyInDesignItem(parkedAssigned, NOW_MS)).toMatchObject({
+      reason: "parked",
+      countsAgainstBound: false,
+      warn: false,
+    });
+  });
+
+  it("reports a stale park as parked, not stale-assigned — the more specific diagnosis wins", () => {
+    const bothArms: InDesignIssue = {
+      ...THR_790_ASSIGNED_18D,
+      labels: { nodes: [{ name: PARKED_LABEL_NAME }] },
+    };
+
+    expect(classifyInDesignItem(bothArms, NOW_MS).reason).toBe("parked");
+  });
+});
+
+describe("In Design sweep pass — warn-only (THR-1382)", () => {
+  it("NEVER mutates an In Design issue, in the same run that DOES release an In Dev claim", async () => {
+    // The load-bearing test of this ticket, written to dodge the vacuous-probe
+    // trap. "No issueUpdate fired" passes trivially when the mutation path is
+    // unreachable for any unrelated reason, so this run deliberately arms the
+    // In Dev release path too: `detail()` is a live stale claim. The assertion
+    // is therefore not "nothing was written" but "exactly one thing was
+    // written, and it was the OTHER issue" — which can only hold if the
+    // mutation machinery is live and the In Design pass declined to use it.
+    const { traces, mutations } = await run(detail(), false, [
+      THR_1002_UNASSIGNED_14D,
+      THR_790_ASSIGNED_18D,
+    ]);
+
+    // Guard against an empty population silently passing everything below.
+    const classified = traces.filter((t) => t.kind === "in-design-classified");
+    expect(classified).toHaveLength(2);
+
+    const updates = mutations.filter((m) => m.kind === "issueUpdate");
+    expect(updates).toHaveLength(1);
+    expect(updates[0]!.variables.id).toBe(ISSUE_ID);
+
+    const touchedIds = updates.map((m) => m.variables.id);
+    expect(touchedIds).not.toContain(THR_1002_UNASSIGNED_14D.id);
+    expect(touchedIds).not.toContain(THR_790_ASSIGNED_18D.id);
+  });
+
+  it("classifies the two real board occupants exactly as the ticket's Done-when states", async () => {
+    const { traces } = await run(null, false, [THR_1002_UNASSIGNED_14D, THR_790_ASSIGNED_18D]);
+
+    expect(traces.find((t) => t.identifier === "THR-1002" && t.kind === "in-design-classified")).toMatchObject({
+      classification: "stale-unassigned",
+      countsAgainstBound: false,
+      ageDays: 14,
+    });
+    expect(traces.find((t) => t.identifier === "THR-790" && t.kind === "in-design-classified")).toMatchObject({
+      classification: "stale-assigned",
+      countsAgainstBound: true,
+      ageDays: 18,
+      assignee: "Christian Spliid",
+    });
+    expect(traces.find((t) => t.kind === "scan-end")).toMatchObject({
+      inDesignLive: 1,
+      inDesignExcluded: 1,
+    });
+  });
+
+  it("names Parked as the exit for an assigned item, and never implies demotion", async () => {
+    const { mutations } = await run(null, false, [THR_790_ASSIGNED_18D]);
+
+    const comments = mutations.filter((m) => m.kind === "commentCreate");
+    expect(comments).toHaveLength(1);
+    const body = String(comments[0]!.variables.body);
+
+    expect(body).toContain("Christian Spliid");
+    expect(body).toContain("`Parked`");
+    expect(body).toContain("18 days");
+    // The whole of item 3: an assigned item must not be told to go back to Todo.
+    expect(body).toContain("not a candidate for demotion");
+  });
+
+  it("offers BOTH exits for an unassigned item — Parked or back to Todo", async () => {
+    const { mutations } = await run(null, false, [THR_1002_UNASSIGNED_14D]);
+
+    const body = String(mutations.find((m) => m.kind === "commentCreate")!.variables.body);
+    expect(body).toContain("`Parked`");
+    expect(body).toContain("`Todo`");
+  });
+
+  it("does not re-warn an item it already warned — the tracked list is the memory", async () => {
+    // Seed the warn-memory as a previous run would have left it.
+    fs.writeFileSync(
+      trackedListPath,
+      JSON.stringify([
+        {
+          issueId: THR_1002_UNASSIGNED_14D.id,
+          identifier: "THR-1002",
+          firstSeenAt: FIRST_SEEN_MS,
+          phase: "in-design",
+        },
+      ]),
+      "utf8",
+    );
+
+    const { traces, mutations } = await run(null, false, [THR_1002_UNASSIGNED_14D]);
+
+    expect(kinds(traces)).toContain("in-design-already-warned");
+    expect(mutations.filter((m) => m.kind === "commentCreate")).toHaveLength(0);
+  });
+
+  it("an in-design tracked entry survives the grace pass instead of being released or dropped", async () => {
+    // Regression pin: the grace pass reads the same tracked list. Before the
+    // phase guard, an In Design entry reaching it would be dropped as a
+    // "manual-release" — erasing the warn-memory and re-posting the same
+    // comment every 12 hours forever.
+    fs.writeFileSync(
+      trackedListPath,
+      JSON.stringify([
+        {
+          issueId: THR_1002_UNASSIGNED_14D.id,
+          identifier: "THR-1002",
+          firstSeenAt: FIRST_SEEN_MS,
+          phase: "in-design",
+        },
+      ]),
+      "utf8",
+    );
+
+    const { traces, mutations } = await run(null, false, [THR_1002_UNASSIGNED_14D]);
+
+    expect(kinds(traces)).not.toContain("grace-dropped");
+    expect(kinds(traces)).not.toContain("released");
+    expect(mutations.filter((m) => m.kind === "issueUpdate")).toHaveLength(0);
+
+    const persisted = JSON.parse(fs.readFileSync(trackedListPath, "utf8")) as Array<Record<string, unknown>>;
+    expect(persisted).toHaveLength(1);
+    expect(persisted[0]).toMatchObject({ identifier: "THR-1002", phase: "in-design" });
+  });
+
+  it("prunes warn-memory for an item that has left the column", async () => {
+    fs.writeFileSync(
+      trackedListPath,
+      JSON.stringify([
+        { issueId: "gone-from-column", identifier: "THR-999", firstSeenAt: FIRST_SEEN_MS, phase: "in-design" },
+      ]),
+      "utf8",
+    );
+
+    await run(null, false, []);
+
+    const persisted = JSON.parse(fs.readFileSync(trackedListPath, "utf8")) as unknown[];
+    expect(persisted).toHaveLength(0);
+  });
+
+  it("writes nothing in a dry run", async () => {
+    const { traces, mutations } = await run(null, true, [THR_1002_UNASSIGNED_14D]);
+
+    expect(kinds(traces)).toContain("dry-run-would-warn-in-design");
+    expect(mutations).toHaveLength(0);
+  });
+
+  it("reports an empty column rather than staying silent about it", async () => {
+    const { traces } = await run(null, false, []);
+
+    expect(traces.find((t) => t.kind === "in-design-clean")).toMatchObject({ state: DESIGN_STATE_NAME });
+  });
+
+  it("asks Linear for In Design WITHOUT an updatedAt filter — the bound must see live occupants too", async () => {
+    // A liveness count that only queries stale items is an occupancy count
+    // wearing a liveness label: it can never observe the occupants that
+    // legitimately hold the slot, so `inDesignLive` would be 0 by construction.
+    const seen: Array<{ query: string; variables: Record<string, unknown> }> = [];
+    const base = makeHarness(null, [THR_1002_UNASSIGNED_14D]);
+    const gql = (async (query: string, variables: Record<string, unknown> = {}) => {
+      seen.push({ query, variables });
+      return base.gql(query, variables);
+    }) as GqlFn;
+
+    await sweep({ dryRun: true, trackedListPath, gql, nowMs: NOW_MS });
+
+    const designQuery = seen.find((s) => s.variables.state === DESIGN_STATE_NAME);
+    expect(designQuery).toBeDefined();
+
+    // `updatedAt` must appear in the SELECTION set — the classifier reads it —
+    // and must NOT appear as a filter clause. Asserting on the bare word would
+    // fail on the selection and prove nothing about the filter, so this pins the
+    // filter-clause form specifically: `updatedAt: { lt: $before }`, which is
+    // exactly what the In Dev detection query does and this one must not.
+    expect(designQuery!.query).toMatch(/\n\s+updatedAt\n/);
+    expect(designQuery!.query).not.toMatch(/updatedAt:\s*\{/);
+    expect(designQuery!.variables.state).toBe(DESIGN_STATE_NAME);
+    expect(designQuery!.variables.state).not.toBe(QUEUE_STATE_NAME);
+
+    // And the In Dev query in the same run DOES filter that way — so the
+    // assertion above is a real distinction, not a property every query has.
+    const inDevQuery = seen.find((s) => s.query.includes('eq: "In Dev"'));
+    expect(inDevQuery!.query).toMatch(/updatedAt:\s*\{/);
   });
 });

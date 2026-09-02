@@ -5,7 +5,7 @@
  *
  * Run via: node --experimental-strip-types scripts/stale-claim-sweep/index.ts
  *
- * Algorithm (three passes per run):
+ * Algorithm (four passes per run):
  * 1. Detection: find In Dev issues stale for > STALE_THRESHOLD_HOURS, post warning.
  * 2. Grace check: for tracked issues past GRACE_PERIOD_HOURS, re-query Linear;
  *    release if no activity arrived; drop if activity found or state changed.
@@ -13,6 +13,11 @@
  *    issue carrying one. No warning, no grace — an assignee on the queue is not
  *    a claim (claims are In Dev), it is an invisibility bug, because pull-work
  *    selects candidates with `assignee:null`.
+ * 4. In Design staleness (THR-1382): classify every In Design issue against the
+ *    orchestrator's liveness predicate and warn the stale ones. **Warn-only —
+ *    this pass never writes to an issue's state, assignee, or labels.** It is
+ *    the only pass in this file that cannot mutate what it inspects, and that
+ *    asymmetry is deliberate: see the `DESIGN_STATE_NAME` note in constants.ts.
  *
  * Persistence: tracked-list JSON file, cached between GitHub Action runs via
  * actions/cache@v4 (same pattern as drift-scan-baseline.json).
@@ -42,7 +47,12 @@ import {
   MAX_QUEUE_ASSIGNEE_REPAIRS_PER_RUN,
   ACTIVITY_COMMENT_PAGE_SIZE,
   ACTIVITY_HISTORY_PAGE_SIZE,
+  DESIGN_STATE_NAME,
+  ORCH_IN_DESIGN_STALE_DAYS,
+  DAY_MS,
+  MAX_IN_DESIGN_ISSUES_PER_RUN,
   buildWarningComment,
+  buildInDesignStalenessComment,
 } from "./constants.ts";
 
 // ---------------------------------------------------------------------------
@@ -64,7 +74,22 @@ type TrackedEntry = {
   issueId: string;
   identifier: string;
   firstSeenAt: number; // unix ms — when warning was first posted
+  /**
+   * Which pass owns this entry (THR-1382). **Absent means `"in-dev"`** — the
+   * cached artifact from every run before THR-1382 is a bare array of In Dev
+   * claims, and reading one must not reclassify them.
+   *
+   * An `"in-design"` entry is warn-memory only: it exists so the twice-daily
+   * sweep does not re-post the same staleness comment every 12 hours. The grace
+   * pass skips it, so it can never reach `releaseClaim`.
+   */
+  phase?: "in-dev" | "in-design";
 };
+
+/** An entry the grace/release pass owns. Absent `phase` is legacy In Dev. */
+function isInDevEntry(entry: TrackedEntry): boolean {
+  return entry.phase !== "in-design";
+}
 
 type SweepTrace =
   | { kind: "scan-start"; dryRun: boolean; now: string }
@@ -85,7 +110,35 @@ type SweepTrace =
   | { kind: "queue-assignee-found"; issueId: string; identifier: string; assignee: string | null }
   | { kind: "queue-assignee-cleared"; issueId: string; identifier: string; previousAssignee: string | null }
   | { kind: "queue-assignee-clean"; state: string }
-  | { kind: "scan-end"; warnedCount: number; releasedCount: number; trackedSurvivors: number; queueAssigneesCleared: number }
+  // ---- In Design liveness pass (THR-1382) ----
+  // One line per occupant of the column, carrying the orchestrator's own
+  // verdict. `countsAgainstBound` is the field the T2 bound reads: the whole
+  // defect was a bound that counted occupancy, so the classification — not the
+  // occupancy — is what a run log has to make legible.
+  | {
+      kind: "in-design-classified";
+      issueId: string;
+      identifier: string;
+      ageDays: number;
+      assignee: string | null;
+      classification: InDesignClassification["reason"];
+      countsAgainstBound: boolean;
+    }
+  | { kind: "in-design-warned"; issueId: string; identifier: string; ageDays: number }
+  | { kind: "in-design-already-warned"; issueId: string; identifier: string }
+  | { kind: "in-design-clean"; state: string }
+  | { kind: "dry-run-would-warn-in-design"; issueId: string; identifier: string }
+  | {
+      kind: "scan-end";
+      warnedCount: number;
+      releasedCount: number;
+      trackedSurvivors: number;
+      queueAssigneesCleared: number;
+      /** In Design occupants the T2 bound should still count (THR-1382). */
+      inDesignLive: number;
+      /** In Design occupants excluded from the bound — parked or stale-unassigned. */
+      inDesignExcluded: number;
+    }
   | { kind: "error"; message: string };
 
 function trace(t: SweepTrace): void {
@@ -96,7 +149,8 @@ function trace(t: SweepTrace): void {
 // Linear API helpers
 // ---------------------------------------------------------------------------
 
-type IssueStub = {
+/** Exported so `classifyInDesignItem` is directly testable (THR-1382). */
+export type IssueStub = {
   id: string;
   identifier: string;
   updatedAt: string;
@@ -165,6 +219,183 @@ async function listAssignedQueueIssues(gql: GqlFn): Promise<IssueStub[]> {
   );
 
   return data.issues.nodes;
+}
+
+/**
+ * Every occupant of `In Design` (THR-1382).
+ *
+ * Deliberately **unfiltered by `updatedAt`**, unlike the In Dev detection query
+ * above. That query only has to find things to act on; this one has to answer
+ * "what does the T2 bound actually count?", and an answer that silently omits
+ * the live occupants is not an answer to that question — it is the occupancy
+ * count wearing a liveness label. The column holds single digits, so reading it
+ * whole costs one query.
+ */
+async function listInDesignIssues(gql: GqlFn): Promise<InDesignIssue[]> {
+  const data = await gql<{
+    issues: { nodes: InDesignIssue[] };
+  }>(
+    `query($teamKey: String!, $state: String!, $first: Int!, $commentPage: Int!, $historyPage: Int!) {
+      issues(
+        first: $first,
+        filter: {
+          state: { name: { eq: $state } },
+          team: { key: { eq: $teamKey } }
+        }
+      ) {
+        nodes {
+          id
+          identifier
+          updatedAt
+          assignee { id displayName }
+          labels { nodes { name } }
+          comments(first: $commentPage, orderBy: createdAt) {
+            nodes { createdAt }
+          }
+          history(first: $historyPage) {
+            nodes { createdAt toState { name } }
+          }
+        }
+      }
+    }`,
+    {
+      teamKey: LINEAR_TEAM_KEY,
+      state: DESIGN_STATE_NAME,
+      first: MAX_IN_DESIGN_ISSUES_PER_RUN,
+      commentPage: ACTIVITY_COMMENT_PAGE_SIZE,
+      historyPage: ACTIVITY_HISTORY_PAGE_SIZE,
+    },
+  );
+
+  return data.issues.nodes;
+}
+
+// ---------------------------------------------------------------------------
+// In Design liveness (THR-1382)
+// ---------------------------------------------------------------------------
+
+/** An `In Design` occupant with the activity signals the predicate needs. */
+export type InDesignIssue = IssueStub & {
+  comments: { nodes: Array<{ createdAt: string }> };
+  history: { nodes: Array<{ createdAt: string; toState: { name: string } | null }> };
+};
+
+export type InDesignClassification = {
+  /** Does this occupant still consume a slot of `ORCH_MAX_IN_DESIGN`? */
+  countsAgainstBound: boolean;
+  /** Should the sweep post a staleness warning on it this run? */
+  warn: boolean;
+  ageDays: number;
+  reason: "parked" | "stale-unassigned" | "stale-assigned" | "live";
+};
+
+/**
+ * When this issue was last genuinely *worked on* — **not** its `updatedAt`.
+ *
+ * ## Why `updatedAt` is the wrong signal here, measured
+ *
+ * `updatedAt` is the signal the In Dev detection pass uses, and THR-1382's own
+ * text proposed it for this pass too. It is wrong for this column, and the
+ * proof arrived while implementing the ticket:
+ *
+ * **Linear bumps `updatedAt` when an issue is merely *referenced* by another
+ * issue's relations.** THR-1382 was filed at 2026-09-02T09:22:57.769Z and
+ * cross-linked THR-1002 and THR-790 as related. Both of those issues — the two
+ * dead occupants the ticket exists to unjam, sitting 14 and 18 days untouched —
+ * came back from the API with `updatedAt` equal to that same timestamp, to the
+ * millisecond. Filing the complaint reset the clock on the thing complained
+ * about. An `updatedAt` predicate would have classified both as `live` on day
+ * one and changed nothing, while every test built on a synthetic fixture passed.
+ *
+ * So activity is the newest of two signals that only a human working the issue
+ * can produce:
+ *
+ * - **the newest comment**, and
+ * - **the newest state transition** — which, for an issue *currently* in
+ *   `In Design`, is its entry into the column. Any later transition would mean
+ *   it had left.
+ *
+ * That second signal is what makes the numbers match the board: THR-1002
+ * entered on 2026-08-19 and THR-790 on 2026-08-15, which are exactly the 14 and
+ * 18 days the ticket's Context quotes and its Done-when expects.
+ *
+ * Returns `null` when neither signal is present (a fresh issue, or a history
+ * page too small to contain the entry). Callers fall back to `updatedAt` — a
+ * conservative fallback, since a bumped `updatedAt` reads as *newer*, so the
+ * failure mode is declining to warn rather than warning wrongly.
+ */
+export function lastInDesignActivityMs(issue: InDesignIssue): number | null {
+  const stamps: number[] = [];
+
+  for (const c of issue.comments.nodes) stamps.push(new Date(c.createdAt).getTime());
+  for (const h of issue.history.nodes) {
+    if (h.toState !== null) stamps.push(new Date(h.createdAt).getTime());
+  }
+
+  const valid = stamps.filter((n) => Number.isFinite(n));
+  return valid.length > 0 ? Math.max(...valid) : null;
+}
+
+/**
+ * The orchestrator's design-staging liveness predicate, in one place (THR-1382).
+ *
+ * An `In Design` issue is **excluded** from `ORCH_MAX_IN_DESIGN` when it carries
+ * `Parked`, **or** when it has no assignee and no activity for more than
+ * `ORCH_IN_DESIGN_STALE_DAYS`. Everything else still counts.
+ *
+ * The two arms are not symmetric, and the asymmetry is the point:
+ *
+ * - **Unassigned + stale → excluded.** Nobody is waiting on it. Barring the
+ *   staging path on an item no human is attached to is how T2 stayed jammed for
+ *   twenty-one runs.
+ * - **Assigned + stale → warned, but still counted.** Someone *is* waiting on
+ *   it, and a bound that silently stops counting a person's staged work would
+ *   let the lane stage a second item on top of it. The exit is `Parked`, which
+ *   is a human's deliberate act, and which the first arm then honours.
+ *
+ * Activity comes from `lastInDesignActivityMs`, **not** `updatedAt` — read that
+ * function's note before changing it. `updatedAt` is bumped by another issue
+ * merely linking to this one, which is not activity on this issue at all, and
+ * using it would have made this entire predicate a no-op on the exact two items
+ * it was written for.
+ */
+export function classifyInDesignItem(issue: InDesignIssue, nowMs: number): InDesignClassification {
+  const lastActivity = lastInDesignActivityMs(issue) ?? new Date(issue.updatedAt).getTime();
+  const ageDays = Math.floor((nowMs - lastActivity) / DAY_MS);
+  const isParked = issue.labels.nodes.some((l) => l.name === PARKED_LABEL_NAME);
+  const isStale = ageDays > ORCH_IN_DESIGN_STALE_DAYS;
+
+  // Parked first: a parked item is already recorded as deliberately waiting, so
+  // warning it again is noise, and it is excluded whether or not it is stale.
+  if (isParked) {
+    return { countsAgainstBound: false, warn: false, ageDays, reason: "parked" };
+  }
+
+  if (!isStale) {
+    return { countsAgainstBound: true, warn: false, ageDays, reason: "live" };
+  }
+
+  if (issue.assignee === null) {
+    return { countsAgainstBound: false, warn: true, ageDays, reason: "stale-unassigned" };
+  }
+
+  return { countsAgainstBound: true, warn: true, ageDays, reason: "stale-assigned" };
+}
+
+async function postInDesignStalenessComment(
+  gql: GqlFn,
+  issueId: string,
+  ageDays: number,
+  assigneeName: string | null,
+): Promise<void> {
+  await gql(
+    `mutation($issueId: String!, $body: String!) {
+      commentCreate(input: { issueId: $issueId, body: $body }) {
+        success
+      }
+    }`,
+    { issueId, body: buildInDesignStalenessComment(ageDays, assigneeName) },
+  );
 }
 
 export type IssueDetail = {
@@ -437,6 +668,17 @@ export async function sweep(opts: SweepOptions): Promise<void> {
   let releasedCount = 0;
 
   for (const entry of trackedList) {
+    // In Design warn-memory never enters the release machinery (THR-1382). The
+    // state guard below would also catch it — an In Design issue fails
+    // `state.name !== "In Dev"` — but that path *drops* the entry, which would
+    // erase the memory and re-post the same warning every 12 hours. Skipping
+    // here preserves it. It is also the structural guarantee that no code path
+    // exists from an In Design entry to `releaseClaim`.
+    if (!isInDevEntry(entry)) {
+      survivors.push(entry);
+      continue;
+    }
+
     const ageMs = now - entry.firstSeenAt;
 
     if (ageMs < GRACE_PERIOD_HOURS * HOUR_MS) {
@@ -499,8 +741,82 @@ export async function sweep(opts: SweepOptions): Promise<void> {
     // Either way, drop from tracking (released or dry-run).
   }
 
+  // ---- In Design liveness pass (THR-1382) ----
+  //
+  // Warn-only, and structurally so: this block calls exactly one mutation,
+  // `postInDesignStalenessComment`. It never touches state, assignee, or labels.
+  // `In Design` has no claim to release, and an unassigned item here is a
+  // *stage*, not a park — copying the In Dev release semantics across is the
+  // inversion THR-1283 had to undo, and it must not be re-introduced by the
+  // door this pass opens.
+  //
+  // Fail-soft like the repair pass below (NFP #4): this is strictly additive to
+  // a job whose existing passes are the load-bearing ones, so a schema mismatch
+  // here becomes one logged line rather than a red run that also takes the
+  // stale-claim release with it.
+  let inDesignLive = 0;
+  let inDesignExcluded = 0;
+  try {
+    const inDesignIssues = await listInDesignIssues(gql);
+
+    if (inDesignIssues.length === 0) {
+      trace({ kind: "in-design-clean", state: DESIGN_STATE_NAME });
+    }
+
+    // Prune warn-memory for anything no longer in the column at all, so an item
+    // that leaves and later returns is warned again rather than silently muted.
+    const stillPresent = new Set(inDesignIssues.map((i) => i.id));
+    const prunedSurvivors = survivors.filter((e) => isInDevEntry(e) || stillPresent.has(e.issueId));
+    survivors.length = 0;
+    survivors.push(...prunedSurvivors);
+
+    for (const issue of inDesignIssues) {
+      const verdict = classifyInDesignItem(issue, now);
+      const assigneeName = issue.assignee?.displayName ?? null;
+
+      trace({
+        kind: "in-design-classified",
+        issueId: issue.id,
+        identifier: issue.identifier,
+        ageDays: verdict.ageDays,
+        assignee: assigneeName,
+        classification: verdict.reason,
+        countsAgainstBound: verdict.countsAgainstBound,
+      });
+
+      if (verdict.countsAgainstBound) inDesignLive++;
+      else inDesignExcluded++;
+
+      if (!verdict.warn) continue;
+
+      if (survivors.find((e) => e.issueId === issue.id && !isInDevEntry(e))) {
+        trace({ kind: "in-design-already-warned", issueId: issue.id, identifier: issue.identifier });
+        continue;
+      }
+
+      if (opts.dryRun) {
+        trace({ kind: "dry-run-would-warn-in-design", issueId: issue.id, identifier: issue.identifier });
+        continue;
+      }
+
+      await postInDesignStalenessComment(gql, issue.id, verdict.ageDays, assigneeName);
+      trace({ kind: "in-design-warned", issueId: issue.id, identifier: issue.identifier, ageDays: verdict.ageDays });
+      survivors.push({
+        issueId: issue.id,
+        identifier: issue.identifier,
+        firstSeenAt: now,
+        phase: "in-design",
+      });
+    }
+  } catch (err: unknown) {
+    trace({
+      kind: "error",
+      message: `in-design liveness pass failed (non-fatal, THR-1382): ${err instanceof Error ? err.message : String(err)}`,
+    });
+  }
+
   // Persist before the repair pass below, not after: the tracked list is the only
-  // cross-run state the first two passes produce, and losing it would re-warn every
+  // cross-run state the passes above produce, and losing it would re-warn every
   // issue next run. The repair pass must not be able to cost us that.
   writeTrackedList(opts.trackedListPath, survivors);
 
@@ -547,7 +863,15 @@ export async function sweep(opts: SweepOptions): Promise<void> {
     });
   }
 
-  trace({ kind: "scan-end", warnedCount, releasedCount, trackedSurvivors: survivors.length, queueAssigneesCleared });
+  trace({
+    kind: "scan-end",
+    warnedCount,
+    releasedCount,
+    trackedSurvivors: survivors.length,
+    queueAssigneesCleared,
+    inDesignLive,
+    inDesignExcluded,
+  });
 }
 
 // ---------------------------------------------------------------------------

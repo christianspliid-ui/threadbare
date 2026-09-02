@@ -57,6 +57,75 @@ export const QUEUE_STATE_NAME = "Ready for Dev";
 export const MAX_QUEUE_ASSIGNEE_REPAIRS_PER_RUN = 50;
 
 /**
+ * The design-staging state (THR-1382).
+ *
+ * **Warn-only. This sweep never mutates an issue in this state** — not its
+ * state, not its assignee, not its labels. `In Design` has no claim to release,
+ * and an unassigned item here is a *stage*, not a park, so the `In Dev` release
+ * semantics must not be copied across. Copying them is precisely the inversion
+ * THR-1283 had to undo for `In Dev`.
+ */
+export const DESIGN_STATE_NAME = "In Design";
+
+/**
+ * Days an unassigned `In Design` issue may sit without activity before it stops
+ * counting against the orchestrator's design-staging budget (THR-1382).
+ *
+ * **Deliberately shares its name with the orchestrator's own constant table**
+ * (`.claude/skills/orchestrator/SKILL.md` § Constants, and its prompt mirror
+ * `Docs/ops/scheduled-task-prompts/tb-orchestrator.md`) rather than following
+ * this file's unprefixed house style. One bound is applied by two different
+ * kinds of reader — an LLM lane counting occupants of the column, and this
+ * script classifying them — and a single greppable token across all three
+ * surfaces is worth more than local naming consistency. Change it in one place
+ * and the grep finds the other two.
+ *
+ * Why a bound was needed at all: `ORCH_MAX_IN_DESIGN` counted *occupancy*, so
+ * two items that had not moved in 14 and 18 days barred the orchestrator's T2
+ * staging every run — "jammed for twenty-one runs straight" — and nothing in
+ * the machine could clear it, because the stale-claim sweep was hard-scoped to
+ * `In Dev`. The build shelf reached zero on 2026-08-30 as a direct result.
+ */
+export const ORCH_IN_DESIGN_STALE_DAYS = 7;
+
+/** Milliseconds per day. */
+export const DAY_MS = 24 * HOUR_MS;
+
+/** Hard cap on In Design issues inspected per run. Bounds API usage. */
+export const MAX_IN_DESIGN_ISSUES_PER_RUN = 50;
+
+/**
+ * Staleness warning for an `In Design` issue (THR-1382).
+ *
+ * Names the age and the two exits, and **names the right exit for an assigned
+ * item**. An assigned item is genuinely awaiting a person, so `Parked` is its
+ * correct shape — the warning must not imply demotion to `Todo`, which would
+ * throw away a human's staged work. An unassigned item has nobody waiting on
+ * it, so both exits are open.
+ *
+ * @param ageDays      Whole days since the issue's last recorded activity.
+ * @param assigneeName Display name of the assignee, or null when unassigned.
+ */
+export function buildInDesignStalenessComment(ageDays: number, assigneeName: string | null): string {
+  const exits = assigneeName
+    ? `This issue is assigned to **${assigneeName}**, so it is presumed to be genuinely awaiting a person rather than abandoned. The right exit is the \`Parked\` label — that records the wait explicitly and stops it consuming the staging budget. **It is not a candidate for demotion to \`Todo\`** while it is assigned.`
+    : `This issue has no assignee, so nothing is known to be waiting on it. Two exits:
+
+- Apply the \`Parked\` label if it is deliberately awaiting a human.
+- Move it back to \`Todo\` if the design intent has gone cold, so it can be re-scoped.`;
+
+  return `## 🕗 Stale \`In Design\` item — ${ageDays} days without activity
+
+This issue has been in **In Design** with no recorded activity for **${ageDays} days** (threshold: ${ORCH_IN_DESIGN_STALE_DAYS}).
+
+${exits}
+
+**Nothing has been changed on this issue.** This sweep is warn-only in \`In Design\`: it never edits state, assignee, or labels here. Past ${ORCH_IN_DESIGN_STALE_DAYS} days an *unassigned* item stops counting against \`ORCH_MAX_IN_DESIGN\`, so the orchestrator's design staging is no longer barred by it either way — but the item itself still needs one of the exits above to leave the column.
+
+_Posted by the stale-claim-sweep GitHub Action (THR-1382). Warn-only — no writes._`;
+}
+
+/**
  * Warning comment posted when a stale claim is first detected.
  * @param lastActivity ISO string of the issue's last updatedAt.
  * @param releaseAt   ISO string of when auto-release will fire if no activity.

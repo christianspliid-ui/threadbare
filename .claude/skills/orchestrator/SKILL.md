@@ -1,7 +1,7 @@
 ---
 name: orchestrator
 description: The lane that decides what happens next — reads the Blocked by half of coordination blocks and promotes unblocked work to Ready for Dev (T1), stages design requests when the program shelf runs thin (T2; Sonnet lane by Christian's ruling 2026-08-06 — never authors plan docs), and owns architecture-health surfacing as a standing daily duty (T3). Runs hourly as tb-orchestrator. Never claims an issue, never sets In Dev, never writes Design/briefing.md.
-last_validated_against: 2026-08-29
+last_validated_against: 2026-09-02
 ---
 
 # Orchestrator
@@ -36,7 +36,8 @@ These four are the difference between an orchestrator and a second executor. Bre
 |----------|---------|---------|
 | `ORCH_CRON` | `25 * * * *` | Hourly, clear of the `:01` executor and `:45` briefing |
 | `ORCH_PROGRAM_WORK_FLOOR` | `2` | Non-`Deferral` items in Ready for Dev below which T2 authors more |
-| `ORCH_MAX_IN_DESIGN` | `1` | Concurrent `In Design` issues this lane may hold |
+| `ORCH_MAX_IN_DESIGN` | `1` | Concurrent **live** `In Design` issues this lane may hold — see § *Which `In Design` items count* for the liveness predicate |
+| `ORCH_IN_DESIGN_STALE_DAYS` | `7` | Days without activity after which an **unassigned** `In Design` item stops counting against `ORCH_MAX_IN_DESIGN` (THR-1382) |
 | `ORCH_PROMOTE_BATCH_MAX` | `5` | Promotions per run; caps the blast radius of a parsing bug |
 | `ORCH_HEALTH_SWEEP_HOUR` | `6` | Local hour after which the daily T3 sweep runs once |
 | `ORCH_STALLED_PICKUP_THRESHOLD` | `3` | Claims without a merge before an issue is surfaced as stalled |
@@ -207,9 +208,26 @@ Open a chat and say 'work the map' when ready."* The existing briefing link
 
 **Trigger:** fewer than `ORCH_PROGRAM_WORK_FLOOR` non-`Deferral` items in `Ready for Dev`. Deferrals are excluded deliberately — the executor files them under itself, so counting them is what let the shelf read "healthy" (19–23 all week) while authored program work sat in `Todo` indefinitely. Counting only program work is the measurement that closes that loop.
 
-**Bound:** never hold more than `ORCH_MAX_IN_DESIGN` issues in `In Design` at once.
+**Bound:** never hold more than `ORCH_MAX_IN_DESIGN` **live** issues in `In Design` at once — where *live* means the predicate below, **not** mere occupancy of the column.
 
-**Procedure (amended 2026-08-06 — Christian keeps this lane on Sonnet deliberately, so it stages rather than authors):** take the top agreed-but-undesigned item and post a design-request comment (why now, shelf depth, what makes it agreed, the canon/Step-0 loads the design session will need), move it to `In Design`, and surface `design session wanted: <title>` under `## Needs Christian` in the run report — the briefing carries it to an attended Opus session, which runs `design-session` proper (plan doc via `docs/plan-*` PR, path in description + handoff comment, coordination block). An item still unpicked after 48h is re-surfaced, not re-staged; `ORCH_MAX_IN_DESIGN` counts staged items.
+#### Which `In Design` items count (THR-1382)
+
+An `In Design` issue is **excluded** from the bound when it carries `Parked`, **or** when it has no assignee and no activity for more than `ORCH_IN_DESIGN_STALE_DAYS`. Everything else counts.
+
+| Shape | Counts against the bound? | What the sweep does |
+|---|---|---|
+| Carries `Parked` | **No** — the wait is already recorded | Nothing |
+| Unassigned, stale > `ORCH_IN_DESIGN_STALE_DAYS` | **No** — nobody is waiting on it | Warns; names both exits (`Parked` or back to `Todo`) |
+| **Assigned**, stale > `ORCH_IN_DESIGN_STALE_DAYS` | **Yes** — a person is waiting on it | Warns; names `Parked` as the exit, **never** demotion |
+| Anything newer than the threshold | **Yes** | Nothing |
+
+The two stale arms are deliberately asymmetric. Excluding an *unassigned* dead item is the whole repair: counting occupancy is what barred this tier for twenty-one consecutive runs and drove the build shelf to zero on 2026-08-30. But an *assigned* item still counts, because a bound that silently stopped counting a person's staged work would let this lane stage a second item on top of it. Its exit is `Parked` — a human's deliberate act, which the first row then honours.
+
+**You do not mutate either kind.** Excluding an item from a count is not a state change; the sweep's warning is the only nudge, and it is warn-only. Applying `Parked` or demoting to `Todo` is the grooming lane's remit and Christian's call.
+
+**The executable copy of this predicate is `classifyInDesignItem` in `scripts/stale-claim-sweep/index.ts`**, which the twice-daily sweep runs against the live board and reports as `in-design-classified` trace lines with a `countsAgainstBound` field. When this prose and that function disagree, the function is what actually ran — reconcile rather than re-deriving the count by hand.
+
+**Procedure (amended 2026-08-06 — Christian keeps this lane on Sonnet deliberately, so it stages rather than authors):** take the top agreed-but-undesigned item and post a design-request comment (why now, shelf depth, what makes it agreed, the canon/Step-0 loads the design session will need), move it to `In Design`, and surface `design session wanted: <title>` under `## Needs Christian` in the run report — the briefing carries it to an attended Opus session, which runs `design-session` proper (plan doc via `docs/plan-*` PR, path in description + handoff comment, coordination block). An item still unpicked after 48h is re-surfaced, not re-staged; `ORCH_MAX_IN_DESIGN` counts staged items that are still live by the predicate above.
 
 **What counts as agreed** (D2, verbatim): *"expanding on already agreed designs and patterns and fixing bugs is within the remit... we create the vision, the patterns, the overarching architecture, the prototypes, the game systems together, but when that context is clear i am not interested in second guessing."*
 
@@ -245,6 +263,12 @@ Report **new** findings only, diffed against the previous `orchestrator-*.md` �
    **Do not ship a reachability result labelled as a redundancy result.** That is a green check on an uncovered condition — the pathology this repo has logged eleven times in four days. When the judgement pass did not happen in a given sweep, the report says *"redundancy: not assessed this sweep"*. Accept that this is the weaker half and say so, rather than implying coverage.
 
 2. **Stalled-work detection.** An issue claimed `ORCH_STALLED_PICKUP_THRESHOLD` times without a merge is failing repeatedly and nothing currently notices. Read `stateHistory` for repeated `Ready for Dev → In Dev` transitions with no `Done`, and surface the count.
+
+   **Stale `In Design` items belong in this same report line (THR-1382).** Apply the § *Which `In Design` items count* predicate to the column and report the split, so the staging budget's state is visible in a run report rather than only in a comment on an issue nobody is reading. This is the tier that would have made twenty-one barred runs countable at the time instead of in hindsight.
+
+   Report line: `In Design: N live, M excluded (THR-XXXX unassigned Nd → excluded; THR-YYYY assigned <name> Nd → warned, still counted).`
+
+   A `0 live` line is worth printing, not skipping — it is the signal that T2 is free to stage, and its absence is indistinguishable from a tier that did not run.
 
 3. **Hand-created `In Dev` tickets — surface them, never normalise them (ruling, THR-1325 item 3).** A ticket created *directly* into `In Dev` never passed through `Ready for Dev`, so it skipped both the claim step — the mutual-exclusion primitive — and this lane's T1 promotion, and therefore carries no coordination block and no Rule 0 classification. That is how THR-1245 came to be **implemented twice, concurrently, by two sessions** (impediment #763, ~1 full session lost).
 
