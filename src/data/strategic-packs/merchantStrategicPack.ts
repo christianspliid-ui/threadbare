@@ -23,6 +23,7 @@ export const MERCHANT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = 
     ],
     targetRule: { type: 'location_subtype', subtypes: ['market', 'town', 'city', 'trading_post'] },
     resourceHint: { reachFloor: { eye: 0.2 } },
+    motivations: ['revelation_discretion', 'asceticism_extravagance'],
     mutationHint: { type: 'record_intelligence', intelligenceType: 'market_survey' },
   },
 
@@ -43,6 +44,7 @@ export const MERCHANT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = 
     ],
     targetRule: { type: 'location_subtype', subtypes: ['market', 'town', 'city', 'trading_post', 'port'] },
     resourceHint: { wealthCost: 20, reachFloor: { gold: 0.3 } },
+    motivations: ['asceticism_extravagance', 'loyalty_ambition'],
     mutationHint: { type: 'record_intelligence', intelligenceType: 'storage_rights' },
   },
 
@@ -124,6 +126,7 @@ export const MERCHANT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = 
     catalystEncounterIds: ['encounter_warehouse_sabotage', 'encounter_labor_dispute'],
     targetRule: { type: 'location_subtype', subtypes: ['market', 'town', 'city', 'trading_post', 'port'] },
     resourceHint: { wealthCost: 80, reachFloor: { gold: 0.4, stone: 0.2 } },
+    motivations: ['asceticism_extravagance', 'preservation_transformation'],
     mutationHint: { type: 'create_sublocation', sublocationTypeId: 'warehouse', nameTemplate: "{actor}'s Warehouse at {location}" },
   },
 
@@ -146,6 +149,7 @@ export const MERCHANT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = 
     catalystEncounterIds: ['encounter_guild_rivalry', 'encounter_charter_challenge'],
     targetRule: { type: 'location_subtype', subtypes: ['town', 'city'] },
     resourceHint: { wealthCost: 120, reachFloor: { gold: 0.5, heart: 0.3 } },
+    motivations: ['asceticism_extravagance', 'loyalty_ambition'],
     mutationHint: { type: 'create_sublocation', sublocationTypeId: 'guild_chapter', nameTemplate: "{actor}'s Guild Chapter at {location}" },
   },
 
@@ -166,6 +170,7 @@ export const MERCHANT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = 
     ],
     targetRule: { type: 'location_subtype', subtypes: ['market', 'town', 'city', 'trading_post'] },
     resourceHint: { reachFloor: { gold: 0.5 } },
+    motivations: ['asceticism_extravagance', 'honesty_cunning'],
     mutationHint: { type: 'no_mutation' },
   },
 
@@ -190,6 +195,7 @@ export const MERCHANT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = 
     catalystEncounterIds: ['commissioned-quest.generic'],
     targetRule: { type: 'location_subtype', subtypes: ['town', 'city', 'capital', 'hamlet'] },
     resourceHint: { wealthCost: 8, reachFloor: { gold: 0.2 } },
+    motivations: ['asceticism_extravagance', 'loyalty_ambition'],
     mutationHint: { type: 'no_mutation' },
   },
 ];

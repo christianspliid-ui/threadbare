@@ -242,8 +242,19 @@ export function resolveUndertakingPayoff(template: StrategicActionTemplate | und
  * without — the discrimination that survives is the one the content did not decline
  * to express. This deliberately does **not** loosen the mismatch case: a template
  * that names motivations its proposer leans against still floors, because mortals
- * genuinely should not pursue what they do not value. Authoring the 35 silent
- * templates is the content pass that retires this branch (TODO(THR-1377)).
+ * genuinely should not pursue what they do not value.
+ *
+ * **THR-1377 authored all 35 and the branch was deliberately kept.** It is now
+ * unreachable from the shipped corpus — `undertaking-motivations.test.ts` pins
+ * that, and would fail the moment it were not. It is retained because
+ * `motivations` is still *optional* on `StrategicActionTemplate` and this function
+ * takes a bare `readonly ValuePair[]`, so an empty set remains constructible by
+ * every caller the type admits: a template added between two test runs, a pack
+ * authored downstream, a candidate assembled at runtime. Deleting the branch would
+ * restore "silence is revulsion" for exactly those, silently, which is the failure
+ * this pair of tickets exists to close. A guard whose population is empty costs one
+ * comparison and is the only thing standing between the corpus invariant and the
+ * next silent template.
  */
 export function computeBoardDesireMultiplier(
   motivations: readonly ValuePair[],

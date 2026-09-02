@@ -433,7 +433,14 @@ export const BOARD_VARIETY_PENALTY_WEIGHT = 0.18;
  * `computeDesireScore([]) === 0` falling through the shared floor to `0.0112`,
  * which reads an unauthored set as active revulsion. See the note on
  * `computeBoardDesireMultiplier` for why that is inert for encounters and
- * ruinous for undertakings, where 35 of 64 templates are silent.
+ * ruinous for undertakings, where 35 of 64 templates were silent.
+ *
+ * THR-1377 authored those 35, so no *shipped* template reaches this value any
+ * more (pinned by `undertaking-motivations.test.ts`). It is kept rather than
+ * deleted because `motivations` remains optional on `StrategicActionTemplate` —
+ * see the retention note on `computeBoardDesireMultiplier`. Treat a trace showing
+ * this value as a signal that something authored a silent template, not as
+ * routine.
  *
  * @range 0.5–1.5 (below 1 taxes silence, above 1 rewards it; neither is intended)
  */

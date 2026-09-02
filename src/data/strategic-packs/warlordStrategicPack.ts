@@ -24,6 +24,7 @@ export const WARLORD_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     ],
     targetRule: { type: 'location_subtype', subtypes: ['castle', 'fort', 'town', 'city', 'capital'] },
     resourceHint: { reachFloor: { eye: 0.2 } },
+    motivations: ['revelation_discretion', 'mercy_ruthlessness'],
     mutationHint: { type: 'record_intelligence', intelligenceType: 'defense_scouting' },
   },
 
@@ -115,6 +116,7 @@ export const WARLORD_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     catalystEncounterIds: ['encounter_siege_preparation', 'encounter_supply_raid'],
     targetRule: { type: 'location_subtype', subtypes: ['town', 'city', 'camp', 'fort', 'castle'] },
     resourceHint: { wealthCost: 60, reachFloor: { iron: 0.3, stone: 0.3 } },
+    motivations: ['preservation_transformation', 'mercy_ruthlessness'],
     mutationHint: { type: 'modify_location_property', property: 'defense', delta: 20, clamp: [0, 100] },
   },
 
@@ -137,6 +139,7 @@ export const WARLORD_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     catalystEncounterIds: ['encounter_garrison_mutiny', 'encounter_civilian_unrest'],
     targetRule: { type: 'location_subtype', subtypes: ['town', 'city', 'capital', 'castle', 'fort'] },
     resourceHint: { wealthCost: 80, reachFloor: { iron: 0.4, heart: 0.2 } },
+    motivations: ['mercy_ruthlessness', 'loyalty_ambition'],
     mutationHint: { type: 'create_sublocation', sublocationTypeId: 'garrison', nameTemplate: "{actor}'s Garrison at {location}" },
   },
 
@@ -157,6 +160,7 @@ export const WARLORD_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     ],
     targetRule: { type: 'location_subtype', subtypes: ['town', 'city', 'camp', 'fort'] },
     resourceHint: { reachFloor: { iron: 0.3, shadow: 0.2 } },
+    motivations: ['mercy_ruthlessness', 'honesty_cunning'],
     mutationHint: { type: 'modify_location_property', property: 'prosperity', delta: -8, clamp: [0, 100] },
     // THR-1297 §2 — the corpus' one destroy verb, and until now it could be fired at
     // any town in range with no quarrel behind it: a warlord starving a settlement
@@ -182,6 +186,7 @@ export const WARLORD_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     ],
     targetRule: { type: 'location_subtype', subtypes: ['town', 'city', 'capital', 'castle', 'fort'] },
     resourceHint: { reachFloor: { iron: 0.4 } },
+    motivations: ['mercy_ruthlessness', 'loyalty_ambition'],
     mutationHint: { type: 'no_mutation' },
   },
 
@@ -205,6 +210,7 @@ export const WARLORD_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     catalystEncounterIds: ['encounter_companion_test'],
     targetRule: { type: 'location_subtype', subtypes: ['town', 'city', 'capital', 'hamlet', 'camp'] },
     resourceHint: { wealthCost: 3, reachFloor: { heart: 0.2 } },
+    motivations: ['loyalty_ambition', 'courage_prudence'],
     mutationHint: { type: 'create_relation_edge', edgeType: 'relates_to', direction: 'actor_to_target', properties: { basis: 'sworn_ally', sentiment: 0.6 } },
   },
 

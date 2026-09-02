@@ -97,6 +97,7 @@ export const SCHOLAR_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     catalystEncounterIds: ['encounter_academic_rivalry', 'encounter_heretical_discovery'],
     targetRule: { type: 'location_subtype', subtypes: ['city', 'capital'] },
     resourceHint: { wealthCost: 80, reachFloor: { eye: 0.4, heart: 0.2 } },
+    motivations: ['revelation_discretion', 'loyalty_ambition'],
     mutationHint: { type: 'create_sublocation', sublocationTypeId: 'research_circle', nameTemplate: "{actor}'s Research Circle at {location}" },
   },
 
@@ -142,6 +143,7 @@ export const SCHOLAR_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     ],
     targetRule: { type: 'location_subtype', subtypes: ['city', 'capital', 'temple', 'ruins'] },
     resourceHint: { reachFloor: { eye: 0.4 } },
+    motivations: ['revelation_discretion', 'tradition_novelty'],
     mutationHint: { type: 'no_mutation' },
   },
 
@@ -170,6 +172,7 @@ export const SCHOLAR_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     // Mentorship advances through conversation and proximity, not at a fixed stage —
     // the separation check in the fold is the real spatial constraint.
     requiresLocation: false,
+    motivations: ['loyalty_ambition', 'revelation_discretion'],
     mutationHint: { type: 'no_mutation' },
   },
 

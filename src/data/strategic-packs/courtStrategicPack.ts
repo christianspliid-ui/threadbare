@@ -28,6 +28,7 @@ export const COURT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     ],
     targetRule: { type: 'location_subtype', subtypes: ['city', 'capital', 'castle', 'town'] },
     resourceHint: { reachFloor: { eye: 0.2 } },
+    motivations: ['revelation_discretion', 'loyalty_ambition'],
     mutationHint: { type: 'record_intelligence', intelligenceType: 'political_survey' },
   },
 
@@ -48,6 +49,7 @@ export const COURT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     ],
     targetRule: { type: 'location_subtype', subtypes: ['city', 'capital', 'castle'] },
     resourceHint: { wealthCost: 30, reachFloor: { gold: 0.3 } },
+    motivations: ['asceticism_extravagance', 'loyalty_ambition'],
     mutationHint: { type: 'record_intelligence', intelligenceType: 'influence_purchased' },
   },
 
@@ -70,6 +72,7 @@ export const COURT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     catalystEncounterIds: ['encounter_political_rival', 'encounter_court_intrigue'],
     targetRule: { type: 'location_subtype', subtypes: ['city', 'capital', 'castle'] },
     resourceHint: { wealthCost: 60, reachFloor: { heart: 0.3, gold: 0.2 } },
+    motivations: ['loyalty_ambition', 'asceticism_extravagance'],
     mutationHint: { type: 'record_intelligence', intelligenceType: 'office_secured' },
   },
 
@@ -92,6 +95,7 @@ export const COURT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     catalystEncounterIds: ['encounter_betrayal', 'encounter_loyalty_test'],
     targetRule: { type: 'location_subtype', subtypes: ['city', 'capital'] },
     resourceHint: { wealthCost: 80, reachFloor: { heart: 0.3, gold: 0.3 } },
+    motivations: ['loyalty_ambition', 'asceticism_extravagance'],
     mutationHint: { type: 'create_sublocation', sublocationTypeId: 'court', nameTemplate: "{actor}'s Court at {location}" },
   },
 
@@ -114,6 +118,7 @@ export const COURT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     catalystEncounterIds: ['encounter_succession_crisis', 'encounter_rival_claim'],
     targetRule: { type: 'location_subtype', subtypes: ['city', 'capital', 'town'] },
     resourceHint: { wealthCost: 100, reachFloor: { gold: 0.4, stone: 0.2 } },
+    motivations: ['asceticism_extravagance', 'preservation_transformation'],
     mutationHint: { type: 'create_sublocation', sublocationTypeId: 'estate', nameTemplate: "House of {actor} at {location}" },
   },
 
@@ -134,6 +139,7 @@ export const COURT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     ],
     targetRule: { type: 'location_subtype', subtypes: ['city', 'capital', 'castle'] },
     resourceHint: { reachFloor: { heart: 0.3 } },
+    motivations: ['loyalty_ambition', 'honesty_cunning'],
     mutationHint: { type: 'no_mutation' },
   },
 
@@ -224,6 +230,7 @@ export const COURT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
     resourceHint: { wealthCost: 10, reachFloor: { heart: 0.25 } },
     // The boost expires via `EXPIRING_LOCATION_PROPERTIES`, swept in phaseStrategicProjects —
     // the retired initiative phase owned the only expiry for it (THR-1292 §3).
+    motivations: ['loyalty_ambition', 'asceticism_extravagance'],
     mutationHint: {
       type: 'modify_location_property',
       property: 'festivalBoost',
