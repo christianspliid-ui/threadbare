@@ -146,6 +146,13 @@ const EXTERNAL_GENERATED_ARTIFACTS: readonly ExternalArtifact[] = [
   // rule the drifting prose kept breaking. Listing it here makes staleness blocking in
   // the `Docs gates` job, which is the job a SKILL or canon edit actually runs.
   { path: "Docs/authoring-brief.md", command: "npm run build-authoring-brief" },
+  // ~2s, boots the template registry. The kind × CRUD grid a batch brief is
+  // gap-weighted against (THR-1300 slice 1); a stale grid is a brief aimed at a
+  // cell that was filled last week.
+  {
+    path: ".claude/skills/undertaking-pipeline/reference/kind-row-catalog.generated.md",
+    command: "npm run generate-kind-row-catalog",
+  },
 ];
 
 /**

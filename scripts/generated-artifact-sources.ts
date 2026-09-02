@@ -165,7 +165,20 @@ export const STATIC_ARTIFACT_SOURCES: Readonly<Record<string, readonly string[]>
     "Docs/plans/2026-04-16-systemic-wiring-guide.md",
     "Docs/plans/2026-04-16-game-design-direction.md",
     ".claude/skills/encounter-pipeline/SKILL.md",
+    // THR-1300 slice 1 — Section F compiles from the undertaking canon page's seams block.
+    "Docs/canon/undertakings.md",
     "scripts/build-authoring-brief.ts",
+  ],
+  // generate-kind-row-catalog (THR-1300 slice 1): code in, doc out — the harmless
+  // direction, so no DOC_TO_CODE_ALLOWLIST entry is needed. The grid a batch brief is
+  // gap-weighted against; a row or pack edit must re-run it or the brief aims at a cell
+  // that was filled last week. The packs are listed by directory because the registry
+  // is the union of every file in it.
+  ".claude/skills/undertaking-pipeline/reference/kind-row-catalog.generated.md": [
+    "src/data/undertaking-kinds.ts",
+    "src/data/strategic-packs/",
+    "src/engine/strategicActionCandidates.ts",
+    "scripts/generate-kind-row-catalog.ts",
   ],
 };
 

@@ -16,11 +16,16 @@ export const AUTHORING_BRIEF_PRINCIPLE_SECTION_MAX_LINES = 15;
 export const WIRING_GUIDE_RELPATH = "Docs/plans/2026-04-16-systemic-wiring-guide.md";
 export const DIRECTION_DOC_RELPATH = "Docs/plans/2026-04-16-game-design-direction.md";
 export const ENCOUNTER_PIPELINE_SKILL_RELPATH = ".claude/skills/encounter-pipeline/SKILL.md";
+/** The undertaking line's Step 0 (THR-1300 slice 1); Section F compiles from its seams list. */
+export const UNDERTAKINGS_CANON_RELPATH = "Docs/canon/undertakings.md";
 export const AUTHORING_BRIEF_SOURCES = [
   WIRING_GUIDE_RELPATH,
   DIRECTION_DOC_RELPATH,
   ENCOUNTER_PIPELINE_SKILL_RELPATH,
+  UNDERTAKINGS_CANON_RELPATH,
 ] as const;
+/** Lines Section F may run to — the seams list is a dozen bullets; a longer one is drift. */
+export const AUTHORING_BRIEF_UNDERTAKING_SECTION_MAX_LINES = 30;
 
 // Sections A and D are content from the encounter-pipeline skill and the prose canon —
 // hardcoded here so generation does not depend on parsing prose out of those files.
@@ -180,7 +185,39 @@ export type BriefSourceContents = {
   wiringGuide: string;
   directionDoc: string;
   skill: string;
+  /** `Docs/canon/undertakings.md` — Section F's source (THR-1300). */
+  undertakingsCanon: string;
 };
+
+/**
+ * Section F — the undertaking template's authored seams, lifted from the canon page's
+ * "The template and its authored seams" block: heading plus its bullet list, verbatim,
+ * up to the next `###`. Sha-pinned through the source stamp like every other section, so
+ * a canon edit regenerates the brief (`check:authoring-brief`) instead of drifting behind it.
+ */
+export function buildUndertakingSection(canonLines: string[]): string {
+  const block = extractSection(canonLines, /^### The template and its authored seams/, /^### |^## /);
+  const body = block.slice(1).filter((l, i, arr) => !(l.trim() === "" && (i === 0 || i === arr.length - 1)));
+  if (body.length === 0) {
+    throw new Error(`Section F would compile empty — the seams list is missing from ${UNDERTAKINGS_CANON_RELPATH}.`);
+  }
+  const lines = [
+    "## Section F: Undertakings — the template's authored seams",
+    "",
+    "An undertaking is authored inside its mechanics; the prose comes last and is held to Section A. These are the seams the machine gate (`npm run check:undertaking`) reads, structural first:",
+    "",
+    ...body,
+    "",
+    `> Source: ${UNDERTAKINGS_CANON_RELPATH} § The template and its authored seams (extracted at generation time)`,
+  ];
+  if (lines.length > AUTHORING_BRIEF_UNDERTAKING_SECTION_MAX_LINES) {
+    throw new Error(
+      `Section F: ${lines.length} lines, exceeds budget of ${AUTHORING_BRIEF_UNDERTAKING_SECTION_MAX_LINES} ` +
+        `(AUTHORING_BRIEF_UNDERTAKING_SECTION_MAX_LINES). Tighten the canon page's seams list or raise the cap.`,
+    );
+  }
+  return lines.join("\n");
+}
 
 /**
  * Hash the part of a source the brief actually compiles from.
@@ -379,6 +416,7 @@ export function buildBrief(
 
   const principlesSections = extractPrinciplesSections(directionLines);
   const rejectionTriggerSection = buildRejectionTriggerSection(skillLines);
+  const undertakingSection = buildUndertakingSection(sources.undertakingsCanon.split(/\r?\n/));
 
   const sourceStamps = AUTHORING_BRIEF_SOURCES.map(
     (relPath, idx) => `>   - ${relPath} (${AUTHORING_BRIEF_HASH_ALGORITHM}: ${sourceHashes[idx]})`,
@@ -421,6 +459,10 @@ export function buildBrief(
     "---",
     "",
     rejectionTriggerSection,
+    "",
+    "---",
+    "",
+    undertakingSection,
   ];
 
   const totalLines = lines.length;
@@ -477,9 +519,9 @@ export function readSources(rootDir: string): {
     return fs.readFileSync(absPath, "utf8");
   });
 
-  const [wiringGuide, directionDoc, skill] = raw;
+  const [wiringGuide, directionDoc, skill, undertakingsCanon] = raw;
   return {
-    contents: { wiringGuide, directionDoc, skill },
+    contents: { wiringGuide, directionDoc, skill, undertakingsCanon },
     hashes: AUTHORING_BRIEF_SOURCES.map((relPath, idx) => hashBriefSource(relPath, raw[idx])),
   };
 }

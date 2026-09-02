@@ -1,10 +1,11 @@
 # Authoring Brief
 
-> **Generated:** 2026-08-29 by scripts/build-authoring-brief.ts
+> **Generated:** 2026-09-02 by scripts/build-authoring-brief.ts
 > **Sources:**
 >   - Docs/plans/2026-04-16-systemic-wiring-guide.md (sha1: d6cd5de4bb25009e0eb430e2fc104f90f14f6ff2)
 >   - Docs/plans/2026-04-16-game-design-direction.md (sha1: 5fbee6401d69a41bf5a14707df1ace997e8f5bd6)
 >   - .claude/skills/encounter-pipeline/SKILL.md (sha1: 536b365a7471a26b4ba6cfd25548bdf86d40bbf7)
+>   - Docs/canon/undertakings.md (sha1: 71cb5106a6199f027c91d704f74ac27fe55170e2)
 >   - Sections A/D, hardcoded in the generator (sha1: b67dc911038d4f3f021a617efa38ef9ec975b96b)
 > **Do not hand-edit.** Regenerate via `npm run build-authoring-brief`.
 
@@ -260,3 +261,24 @@ The following trigger **REVISE BEFORE CONTINUING** (non-negotiable — address b
 31. **Invented game state in base prose** — a relationship, debt, prior visit, or standing between the agent and the world asserted in scene prose with no backing state read (prose rule 7: consume state through a gate or placeholder, produce it through grants/aftermath, never declare it in narration)
 
 > Source: encounter-pipeline SKILL.md — Automatic REVISE triggers (extracted at generation time)
+
+---
+
+## Section F: Undertakings — the template's authored seams
+
+An undertaking is authored inside its mechanics; the prose comes last and is held to Section A. These are the seams the machine gate (`npm run check:undertaking`) reads, structural first:
+
+`StrategicActionTemplate` (`src/types/strategicAction.ts`) is the whole authored surface. The fields that carry design, in the order the machine gate reads them:
+
+- **Identity** — `id` (`strategic_` prefix), `displayName` (words, never numerals), `verb` (`gather_info | create | change | control | destroy`), `executionMode` (`instant | multi_tick_project | claim_control`), `behaviorFamily`, `reachProfile`.
+- **Kind membership** — every `multi_tick_project` sits in exactly one kind row's C, U or D column (`src/data/undertaking-kinds.ts`); a row-less `instant` verb must carry a `mutationHint`.
+- **Counter-play** — a `destroy` verb carries a `motiveGate` (⊆ `MOTIVE_GATE_KINDS`: `rivalry`, `grudge`, `contested_ambition`, `faction_war`), a `harmClass` (`named_death`, `property_destroyed`, `holding_seized`, `network_severed`, `undertaking_abandoned`), and a `targetRule` that can resolve an ownable or commanded thing. **Until a kind can be undone, it is not a kind** — `validateKindRegistry` refuses a row with an empty D column.
+- **Cast** — a create/update project declares `cast` slots (`UndertakingCastSpec`): a `must-persist` slot carries `mintRole` and an `identityRequirement`; a reuse slot names `acceptedRoles` (an any-role slot cannot be scarce).
+- **Creation** — a `create` verb declares `creationEffects` for at least one outcome band, or a `mutationHint` producing the kind's `objectShape`. A work whose only product is prose is not a work (Law 56's inverse: chips are engine-derived, so the leak is prose claiming state).
+- **Bands** — `checkpointDifficulty` and `payoffValue` inside the tier's band (`UNDERTAKING_TIER_DIFFICULTY_BANDS`, `UNDERTAKING_TIER_PAYOFF_BANDS` in `src/data/content-eval/undertakingConstants.ts`, derived from the shipped corpus per tier); `projectDuration` set on every project.
+- **Board authoring** — `motivations`: at least `UNDERTAKING_MOTIVATION_MIN_ARITY` (2) distinct `VALUE_PAIRS` members; `payoffValue` present. One currency ranks encounters and undertakings together (`UNIFIED_DECISION_BOARD_MODE = 'live'`, THR-1349); a template with no desire signal scores nothing, silently.
+- **Reachability** — the id appears in at least one ambition's `strategicProfile.templateIds` (`src/data/ambition-templates.ts`). The third registration, and the silent one.
+- **Register** — `activityProse` and `completionProse` at the encounter standard (Prose Doctrine v2, `Docs/canon/prose.md`): present tense, third person, the agent named, no evasive vagueness, no second person, no numerals, no exclamation marks. Abstraction and intensifiers rank; they do not gate.
+- **Tokens** — the strategic prose path renders `activityProse[0]` and `completionProse[0]` verbatim; no `{token}` resolves there today (`STRATEGIC_PROSE_TOKENS` is empty and is where a substitution chain is declared when one is added).
+
+> Source: Docs/canon/undertakings.md § The template and its authored seams (extracted at generation time)
