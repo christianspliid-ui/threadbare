@@ -1,6 +1,6 @@
 ---
 domain: rulebook
-last_reviewed: 2026-07-21
+last_reviewed: 2026-09-02
 reviewer: claude-code
 ul_shards: [Cosmology, Agents, Encounters, Prose, Graph]
 status: live
@@ -60,7 +60,7 @@ Resolution: **sigmoid → d100**, unified. No alternative dice. Outcomes land on
 
 **Sphere attunement**: the run counts the essence you have ever drawn *through* each sphere — spending never un-earns it. Cross a mark (`[20, 60]`) and that sphere's attunement cards join your repertoire: siblings of cards you already play, never stronger ones. **Depth, not a key** — your sphere identity still decides which families you may touch at all, so attuning to a sphere you do not hold gains you nothing. You start at the essence ceiling, so nothing is earned until you spend.
 
-**Meet The First** [IMPL engine+UI / DESIGN content — THR-868, conversion in THR-875]: the run's opening encounter and the only guaranteed one. Five beats, **three fate rolls** — two *formative tests* and the *bond test* as climax. A meeting card may carry a **pole lean**: the played hand's net lean picks which pole of the reach's value pair a *success* writes, and fate picks the band. Success writes the leaned pole; failure writes the **opposite** one plus a scar; the middle band writes a tempered shift. So *you nudged toward mercy, fate landed ruthlessness* is a real result — and you never have to seek a failure to get the pole you want. The bond **always** forms; the roll picks its reception (*awe · devotion · bargain · doubt · defiance*), and a defiant First bonds and defies you. A First can never start Broken (floor-clamped), and every card is affordable when offered (cost-capped — it fires on turn one). Most runs still show the pre-nudge beat until the dilemma-library conversion lands.
+**Meet The First** [IMPL — THR-868; Batch A conversion THR-875]: the run's opening encounter and the only guaranteed one. Five beats, **three fate rolls** — two *formative tests* and the *bond test* as climax. A meeting card may carry a **pole lean**: the played hand's net lean picks which pole of the reach's value pair a *success* writes, and fate picks the band. Success writes the leaned pole; failure writes the **opposite** one plus a scar; the middle band writes a tempered shift. So *you nudged toward mercy, fate landed ruthlessness* is a real result — and you never have to seek a failure to get the pole you want. The bond **always** forms; the roll picks its reception (*awe · devotion · bargain · doubt · defiance*), and a defiant First bonds and defies you. A First can never start Broken (floor-clamped), and every card is affordable when offered (cost-capped — it fires on turn one). **Your first formative test is always a nudge beat** — slot 1 can only draw from the converted Batch A set. A meeting draws two or three dilemmas, and a later slot can still land on an unconverted template and render the legacy choice scene; a wholly pre-nudge meeting cannot happen.
 
 **Broken** [DESIGN — consequences ship disabled until the rebuild road exists]: failing erodes quintessence, scaled by band, step difficulty, and whether you were watching. Worn far enough a mortal goes *Broken* — not dead, not hurt, **out of the story**: no ordinary draws, drifting toward tended ground, for one to two in-game weeks. Erosion alone never reaches zero; death stays zero-state-owned. *Rekindle the Thread* (Spirit) is the expensive exception — the rebuild road is the primary recovery.
 
@@ -84,6 +84,10 @@ Factions field **bands** of their own named people — a band is a company in ev
 
 Your seat stays the intervention seat: **Bless this Company** (Heart / Spirit) steadies a band's bonds; **Draw Together** (Heart / Spirit) tilts scattered threaded mortals toward one hex until a company gathers on its own; **Reunite** (Heart / Spirit) calls a company that has *already disbanded* back toward one another, re-forming under a variant of its old name — or lapsing unanswered; **Sunder** (Shadow / Entropy) is Bless's mirror, doubling dissent and desertion and forcing the fray drama pool open. Bless and Sunder may both be open at once and neither cancels the other. You never command a company.
 
+## Where You Stand With People
+
+**Reputation** is the social score modifying interactions between any two parties — a mortal and a town, a mortal and a guild, a mortal and another mortal. One concept, one vocabulary, wherever two parties stand in some regard. It is **directional** (a's standing with b is not b's with a) and always reads as a **word, never a number**: *Distrusted · Unknown · Accepted · Respected · Revered*. Note the neutral default already bands as **Accepted**, so a gate meaning "this person has earned something" must test *Respected* or above. Standing opens doors, gives a known name leverage in a parley, and fades toward unremarkable when nothing feeds it. Faction rank is reputation's ladder inside a membership; a stranger can earn a name in a place without joining anything. You read it and nudge the deeds that move it — you never set it.
+
 ## The Clocks and the Ending
 
 Two clocks pressure the run. **Doom** (7 archetypes × 5 stages: Whispers, Signs, Tremors, Crisis, Culmination) ticks toward an Unmaking. **Victory Mandate** (3 stages, graph-state win) runs in parallel. They pressure each other — essence spent on one is essence not spent on the other.
@@ -93,6 +97,15 @@ Either clock ending triggers the **Twilight Phase**: the run's closing chapter, 
 The game is not, structurally, about winning. It is about what kind of being you chose to be toward a world you could not save unconditionally.
 
 ---
+
+## What this card deliberately leaves out
+
+Recorded so a future review does not re-raise it as drift (decision 2026-09-02, THR-1378). Two rules of play live in the full rulebook and are **kept off this card on purpose**:
+
+- **Companions** (§6) — a mortal's resource, capped at 3, never silently vanishing. Left off because the card is written from *your* seat, and companions are a bonus the mortal carries that you neither spend nor command; a player reading this card needs to know what *they* can do.
+- **Items answering back** (§4) — break/spend/charges/rule-overrides. Left off because all four are consequences that happen *to* a mortal's gear at resolution, with no decision attached for you to make.
+
+Both are real rules and both are on the full page. **Reputation earned its place here** where they did not, because standing gates encounters and shifts scenes you are choosing whether to nudge. If either of the two ever grows a player-facing decision, that is the trigger to revisit — not their mere absence.
 
 For the full rulebook (with status flags, source citations, and open questions): [rulebook.md](rulebook.md).
 For terms: [Ubiquitous Language index](../ubiquitous-language/README.md).

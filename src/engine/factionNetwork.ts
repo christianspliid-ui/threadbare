@@ -663,7 +663,7 @@ export function refreshFactionDerivedFlags(
  * Derived faction prosperity — the faction's war chest: SUM of settlement
  * `prosperity` across its holdings (`controls` edges plus guild-hall parent
  * locations), scaled by /100 so the existing 0–1-scale gate
- * (EXPANSION_PROSPERITY_THRESHOLD = 0.6 → 60 raw prosperity points across
+ * (EXPANSION_PROSPERITY_THRESHOLD = 0.3 → 30 raw prosperity points across
  * holdings) compares correctly. Deliberately breadth-weighted (sum, not
  * mean): an empire of modest towns can fund expansion; a single prosperous
  * guild hall cannot. Measured on seed 42/99 at t169: the two landed empires
