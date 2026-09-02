@@ -213,6 +213,12 @@ export interface PursuesEdgeProperties {
   readonly assignedTick: number;
   readonly completedMilestones: string[];
   readonly resolvedTick?: number;
+  /**
+   * Why an `abandoned` edge closed, when the reason is one the chronicle names
+   * (THR-1383). Absent on an ordinary abandonment. `displaced_by_grievance`: a heavy
+   * enough harm took this secondary want's slot for a vendetta.
+   */
+  readonly abandonedReason?: 'displaced_by_grievance';
   /** Present when the world minted this ambition from an event node (THR-726). */
   readonly mintedByEventId?: string;
   /** Prose stem naming the minting event, for motive-receipt provenance (THR-726). */

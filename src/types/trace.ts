@@ -117,6 +117,7 @@ export type TraceCategory =
   // Undertaking harm outcomes (THR-1298)
   | 'undertaking_outcome_event'
   | 'grievance_transition'
+  | 'ambition_displaced'
   // Undertaking checkpoints (THR-1292)
   | 'undertaking_checkpoint'
   | 'undertaking_fork'
@@ -518,6 +519,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'strategic_control_lifecycle',
   'undertaking_outcome_event',
   'grievance_transition',
+  'ambition_displaced',
   'undertaking_checkpoint',
   'undertaking_fork',
   'follow_change',
@@ -2045,6 +2047,28 @@ export interface GrievanceTransitionTrace extends TraceBase {
 }
 
 /**
+ * Trace: a vendetta took a full mortal's secondary want (THR-1383).
+ *
+ * Emitted once per displacement, from the mint-block gate in `ambitionTick`. The
+ * `pursues` edge it closes carries `abandonedReason: 'displaced_by_grievance'`, but an
+ * edge property is a value with no history — this is the read path for "why did Oswen
+ * stop building the granary" (NFP #2). Volume is bounded by the mint cadence (one pass
+ * per `MINT_LOOKBACK_TICKS`) and by one displacement per mortal per pass.
+ */
+export interface AmbitionDisplacedTrace extends TraceBase {
+  category: 'ambition_displaced';
+  /** The mortal whose want was set aside. */
+  agentId: string;
+  /** Template of the want that yielded its slot. */
+  displacedTemplateId: string;
+  /** Template of the vendetta that took it. */
+  grievanceTemplateId: string;
+  culpritAgentId: string;
+  /** Magnitude of the founding harm — at or above `GRIEVANCE_DISPLACE_MIN_MAGNITUDE`. */
+  harmMagnitude: number;
+}
+
+/**
  * Trace: one undertaking checkpoint resolved (THR-1292 §2).
  *
  * Emitted once per checkpoint *attempt*, including the deferred ones — a
@@ -3222,6 +3246,7 @@ export type TraceEntry =
   | StrategicProjectProgressTrace
   | UndertakingOutcomeEventTrace
   | GrievanceTransitionTrace
+  | AmbitionDisplacedTrace
   | UndertakingCheckpointTrace
   | UndertakingForkTrace
   | FollowChangeTrace
@@ -3619,6 +3644,8 @@ export interface AmbitionMintedTrace extends TraceBase {
   grievanceCount?: number;
   /** Capped sample of the hands those grievances are held against. */
   sampleCulpritAgentIds?: string[];
+  /** How many of this tick's grievance mints took a full mortal's secondary want (THR-1383). */
+  displacedCount?: number;
 }
 
 /**

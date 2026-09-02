@@ -96,7 +96,7 @@ A harm becomes the victim's next drive. An undertaking that razes a holding, sev
 
 A drive minted from a harm is a **grievance**: it names its culprit and carries **heat**, read as *burning · hot · cooling*, never a number. One per mortal — a repeat harm feeds the standing one, only a decisively heavier harm takes the slot. Heat decays, and below the threshold the vendetta leaves the board and becomes a permanent **grudge** (relationship colour, not a drive; it never fades). It also ends when *answered* — the grievance's own ambition completing, or the culprit dying. A **proportionate** reprisal mints nothing back; only an answer that overshoots re-opens the account, which is what ends most feuds at one round. Past two links, further victims get grudges only. A mortal below the spotlight gets the grudge without the vendetta — no promise the world cannot keep.
 
-*Supply gap:* proven end-to-end, but no grievance mints in ordinary play yet — harms land on factions or on mortals whose two ambition slots are full ([THR-1383](https://linear.app/threadbare/issue/THR-1383)).
+A heavy enough harm may take a full mortal's **secondary** want — the vendetta sets it aside, and the chronicle says so; the primary is never displaced, and a lesser harm offers a full mortal nothing. A harm done to a **faction** reaches its leader, with the faction's name in the provenance. Every harm is offered to exactly one mint pass; none falls between.
 
 ## Where You Stand With People
 

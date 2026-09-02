@@ -359,7 +359,7 @@ export const EDGE_SCHEMA: Record<EdgeType, EdgeSchema> = {
     direction: 'directed',
     cardinality: 'many-to-many',
     requiredProperties: ['role', 'outcome', 'tick'],
-    description: 'Actor participated in an encounter outcome event. Properties: role (primary/target), outcome, tick.',
+    description: 'Actor participated in an encounter or undertaking outcome event. Properties: role (primary/target), outcome, tick; viaFactionId when a faction victim\'s harm is routed to its leader (THR-1383).',
   },
   occurred_at: {
     type: 'occurred_at',

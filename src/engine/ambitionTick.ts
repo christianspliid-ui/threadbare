@@ -12,7 +12,7 @@ import type { SphereName } from '../types/index';
 import type { AxiologicalProfile } from '../types/agent';
 import type { WorldGraph } from './graph';
 import { evaluateAmbitionProgress } from './ambitionLifecycle';
-import { assignInitialAmbitions } from './ambitionAssignment';
+import { assignInitialAmbitions, MAX_ACTIVE_AMBITIONS } from './ambitionAssignment';
 import {
   AMBITION_TEMPLATES,
   EVENT_MINTED_AMBITION_TEMPLATES,
@@ -38,9 +38,13 @@ import {
   resolveGrievanceDisposition,
   type GrievanceEdgeProperties,
 } from './grievance/grievanceLifecycle';
-import { GRIEVANCE_OVERSHOOT_RATIO } from '../data/grievance-constants';
+import {
+  GRIEVANCE_OVERSHOOT_RATIO,
+  GRIEVANCE_DISPLACE_MIN_MAGNITUDE,
+  GRIEVANCE_DISPLACE_EVENT_SIGNIFICANCE,
+} from '../data/grievance-constants';
 import { emitTrace } from './traceBuffer';
-import type { AmbitionMintedTrace, GrievanceTransitionTrace } from '../types/trace';
+import type { AmbitionMintedTrace, AmbitionDisplacedTrace, GrievanceTransitionTrace } from '../types/trace';
 import { selectAmbitions, type AmbitionAgentSnapshot } from './ambitionSelection';
 import { collectGrantedTraits, GRANTED_TRAIT_EFFECTIVE_LEVEL } from './effects/effectQueries';
 import { collectBearerTraitRefs } from './traitRefIndex';
@@ -65,13 +69,36 @@ export const AMBITION_REEVAL_INTERVAL = 25;
 
 // ─── World-Minted Ambition Constants (THR-726) ───────────────────
 
-/** Event window scanned at each re-eval (matches AMBITION_REEVAL_INTERVAL). */
-export const MINT_LOOKBACK_TICKS = 25;
+/** Least common multiple — the tick period on which two cadences coincide. */
+function lcm(a: number, b: number): number {
+  const gcd = (x: number, y: number): number => (y === 0 ? x : gcd(y, x % y));
+  return a === 0 || b === 0 ? 0 : Math.abs(a * b) / gcd(a, b);
+}
+
+/**
+ * Event window scanned at each mint pass — **derived**, never a literal (THR-1383).
+ *
+ * The mint pass runs inside the milestone pass, so it fires only on ticks divisible by
+ * both `MILESTONE_CHECK_INTERVAL` and `AMBITION_REEVAL_INTERVAL`: every 75 ticks at the
+ * shipped values, not every 25. The window used to be 25 (`AMBITION_REEVAL_INTERVAL`,
+ * copied), so two harms in three fell between passes and were never offered to anyone —
+ * the THR-1298 observation run's zero-mint baseline was mostly this. The lcm makes the
+ * windows tile the timeline: every event node is inside exactly one pass's window,
+ * whatever either interval is retuned to. `MINT_MAX_PER_EVENT` and the one-mint-per-agent
+ * rule are unchanged, so a wider window means more candidates per pass, not more mints.
+ */
+export const MINT_LOOKBACK_TICKS = lcm(MILESTONE_CHECK_INTERVAL, AMBITION_REEVAL_INTERVAL);
 
 /** Cap on agents minting from one event — a razed town makes a handful, not fifty. */
 export const MINT_MAX_PER_EVENT = 4;
 
-/** Chance a qualifying candidate is offered into the personality funnel. */
+/**
+ * Chance a qualifying *soft* candidate set is offered into the personality funnel.
+ *
+ * Not applied when the offer carries a grave harm (a grievance-class candidate at or
+ * above `GRIEVANCE_DISPLACE_MIN_MAGNITUDE`, THR-1383): a razing is offered exactly once
+ * and must reach the funnel every time, or the seed decides whether a vendetta exists.
+ */
 export const MINT_BASE_CHANCE = 0.6;
 
 /** Distinct PRNG stream offset so minting rolls don't shadow spontaneous re-eval. */
@@ -206,6 +233,8 @@ type MintTuple =
       locationName?: string;
       culpritAgentId?: string;
       culpritName?: string;
+      /** Set when the harm was done to a faction and reached this agent as its leader (THR-1383). */
+      viaFactionName?: string;
       harmMagnitude: number;
       chainDepth: number;
     };
@@ -256,10 +285,14 @@ function composeHarmLabel(
   harmClass: UndertakingHarmClass,
   locationName?: string,
   culpritName?: string,
+  viaFactionName?: string,
 ): string {
   const stem = HARM_CLASS_LABELS[harmClass];
   const placed = locationName ? `${stem} of ${locationName}` : stem;
-  return culpritName ? `${placed} — ${culpritName}'s work` : placed;
+  // "the razing of Thornhall, done to the Ironwrights — Hesk's work": a leader carrying
+  // their guild's wound reads whose it was, or the drive looks like a personal loss.
+  const owned = viaFactionName ? `${placed}, done to ${viaFactionName}` : placed;
+  return culpritName ? `${owned} — ${culpritName}'s work` : owned;
 }
 
 /**
@@ -277,9 +310,12 @@ function gatherMintTuples(
   const seen = new Set<string>();
   const minTick = tick - MINT_LOOKBACK_TICKS;
 
+  // Half-open on the far side: `(tick − window, tick]`. With the window equal to the
+  // pass cadence (THR-1383) the passes tile the timeline, and an inclusive lower bound
+  // would hand the event that landed exactly on a pass tick to the next pass as well.
   const inWindow = (ev: { properties: Record<string, unknown> }): boolean => {
     const evTick = ev.properties.tick;
-    return typeof evTick === 'number' && evTick >= minTick && evTick <= tick;
+    return typeof evTick === 'number' && evTick > minTick && evTick <= tick;
   };
 
   /**
@@ -292,6 +328,7 @@ function gatherMintTuples(
   const undertakingTuple = (
     ev: { id: string; properties: Record<string, unknown> },
     relation: MintRelation,
+    viaFactionId?: string,
   ): MintTuple | null => {
     const harmClass = ev.properties.harmClass as UndertakingHarmClass | undefined;
     if (!harmClass || !UNDERTAKING_MINTING_RULES[harmClass]) return null;
@@ -346,6 +383,7 @@ function gatherMintTuples(
       culpritName: culpritIsSelf || !culpritAgentId
         ? undefined
         : graph.getNode(culpritAgentId)?.name,
+      viaFactionName: viaFactionId ? graph.getNode(viaFactionId)?.name : undefined,
       harmMagnitude: (ev.properties.harmMagnitude as number | undefined) ?? 0,
       chainDepth: (ev.properties.chainDepth as number | undefined) ?? 0,
     };
@@ -375,7 +413,7 @@ function gatherMintTuples(
       // wronged party and lets a suppressed counter-mint (slice 6) come back through
       // the side door.
       seen.add(ev.id);
-      const tuple = undertakingTuple(ev, relation);
+      const tuple = undertakingTuple(ev, relation, e.properties.viaFactionId as string | undefined);
       if (!tuple) continue;
       out.push(tuple);
     }
@@ -423,6 +461,12 @@ export function mintAmbitionsFromEvents(
   snapshot: AmbitionAgentSnapshot,
   existingTemplateIds: ReadonlySet<string>,
   perEventMintCount: ReadonlyMap<string, number>,
+  /**
+   * `false` when the agent's want slots are full (THR-1383). A full mortal is offered
+   * only grievance-class candidates whose harm clears `GRIEVANCE_DISPLACE_MIN_MAGNITUDE`
+   * — a vendetta may take a want's slot; a drive to rebuild or to guard may not.
+   */
+  slotsFree = true,
 ): MintedAmbition | null {
   const tuples = gatherMintTuples(graph, actorId, tick);
   if (tuples.length === 0) return null;
@@ -459,7 +503,7 @@ export function mintAmbitionsFromEvents(
 
     const entries = UNDERTAKING_MINTING_RULES[t.harmClass][t.relation];
     if (!entries) continue;
-    const label = composeHarmLabel(t.harmClass, t.locationName, t.culpritName);
+    const label = composeHarmLabel(t.harmClass, t.locationName, t.culpritName, t.viaFactionName);
     for (const entry of entries) {
       if (existingTemplateIds.has(entry.templateId)) continue;
       candidates.push({
@@ -482,17 +526,35 @@ export function mintAmbitionsFromEvents(
       });
     }
   }
-  if (candidates.length === 0) return null;
+  // A full mortal is never offered a rebuild or a guard drive into a slot they do not
+  // have — only a heavy enough vendetta earns eviction (THR-1383). Filtered *before*
+  // the base-chance roll so a full mortal's stream consumes the same draw a free one
+  // would: the filter changes what is on offer, not the dice.
+  const offered = slotsFree
+    ? candidates
+    : candidates.filter(c => c.grievance && c.grievance.harmMagnitude >= GRIEVANCE_DISPLACE_MIN_MAGNITUDE);
+  if (offered.length === 0) return null;
 
-  // Base-chance gate (seeded, deterministic).
-  const rng = mintRng(seed);
-  if (rng() >= MINT_BASE_CHANCE) return null;
+  // Base-chance gate (seeded, deterministic) — for soft drives only. A grave harm is
+  // never a coin flip (THR-1383): with the passes tiling the timeline a harm is offered
+  // exactly once, and a 40% chance of it minting nothing at all would lose two razings
+  // in five forever. The disposition already decides whether the vendetta is *carried*
+  // (tier, chain depth, the one-slot rule); the temperament funnel below still decides
+  // whether revenge is what this mortal takes from it. Measured on seed 123: one full
+  // mortal, three harms in one window, the pass's own seed on the miss — zero mints.
+  const graveHarm = offered.some(
+    c => c.grievance !== undefined && c.grievance.harmMagnitude >= GRIEVANCE_DISPLACE_MIN_MAGNITUDE,
+  );
+  if (!graveHarm) {
+    const rng = mintRng(seed);
+    if (rng() >= MINT_BASE_CHANCE) return null;
+  }
 
   // Personality funnel over the unique candidate templates. Both minted pools are
   // searched: the grievance templates arrived here when the reactive pool retired
   // (THR-1298), and a table row naming one would resolve to nothing if only the
   // event-minted pool were consulted — a weight that fires zero times.
-  const candidateTemplateIds = new Set(candidates.map(c => c.templateId));
+  const candidateTemplateIds = new Set(offered.map(c => c.templateId));
   const candidateTemplates = [
     ...EVENT_MINTED_AMBITION_TEMPLATES,
     ...GRIEVANCE_AMBITION_TEMPLATES,
@@ -506,7 +568,7 @@ export function mintAmbitionsFromEvents(
 
   const winnerId = selections[0].templateId;
   // Attach provenance from the highest-weight source event for the winning theme.
-  const source = candidates
+  const source = offered
     .filter(c => c.templateId === winnerId)
     .sort((a, b) => b.weight - a.weight)[0];
   if (!source) return null;
@@ -540,6 +602,8 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
   // wrongs a whole village cannot grow the trace unboundedly.
   let grievanceMintCount = 0;
   const grievanceCulpritIds: string[] = [];
+  /** Grievance mints that took a full mortal's secondary want this pass (THR-1383). */
+  let displacedCount = 0;
   // Cross-agent per-event cap: one razed town mints for a handful, not everyone.
   const perEventMintCount = new Map<string, number>();
 
@@ -744,11 +808,21 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
 
       // ── World-minted ambitions (THR-726): events write desire into free slots
       //    BEFORE spontaneous drift, so a razed hometown mints avengers/refugees. ──
-      if (currentActiveCount < 2) {
+      //
+      // The mint pass runs for a *full* mortal too (THR-1383) — this is the one gate of
+      // the two that opens. `slotsFree: false` narrows what they are offered to a
+      // heavy enough vendetta, which then takes the secondary want's slot below. The
+      // spontaneous re-evaluation gate further down stays closed for a full mortal.
+      const slotsFree = currentActiveCount < MAX_ACTIVE_AMBITIONS;
+      {
         const mintSeed = state.seed + tick + actor.id.length + MINT_SEED_OFFSET;
         const minted = mintAmbitionsFromEvents(
-          graph, actor.id, tick, mintSeed, agentSnapshot, existingTemplateIds, perEventMintCount,
+          graph, actor.id, tick, mintSeed, agentSnapshot, existingTemplateIds, perEventMintCount, slotsFree,
         );
+        // Belt and braces: a full mortal's only route in is a grievance. The filter in
+        // `mintAmbitionsFromEvents` already guarantees it; this keeps the write below
+        // honest if that filter is ever loosened.
+        if (minted && !slotsFree && !minted.grievance) continue;
         if (minted) {
           const tmpl = findAmbitionTemplateById(minted.templateId);
           const ambitionNodeId = `ambition.${minted.templateId}`;
@@ -801,6 +875,72 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
             }
           }
 
+          // ── Displacement (THR-1383) ──
+          //
+          // A vendetta may take a full mortal's secondary want. Read the holder's slots
+          // fresh here rather than trusting `currentActiveCount`: the disposition above
+          // may have *replaced* a standing grievance (freeing a slot on its own), and
+          // succession may have moved the drive onto an heir whose slots this loop has
+          // never counted. Only a grievance displaces; only the secondary yields; the
+          // primary — the identity drive the calling reads — is never touched. A full
+          // holder with no displaceable secondary (both slots vendettas cannot happen,
+          // but a lone primary can) mints nothing and the event still counts against
+          // its cap, so it does not re-offer itself every pass.
+          if (grievanceProperties) {
+            const holderActive = graph.getOutgoingEdges(holderId, 'pursues')
+              .filter(e => (e.properties.status as string) === 'active');
+            if (holderActive.length >= MAX_ACTIVE_AMBITIONS) {
+              const yielding = holderActive.find(
+                e => e.properties.priority === 'secondary' && e.properties.grievance !== true,
+              );
+              if (!yielding) {
+                perEventMintCount.set(
+                  minted.mintedByEventId,
+                  (perEventMintCount.get(minted.mintedByEventId) ?? 0) + 1,
+                );
+                continue;
+              }
+              graph.updateEdge(yielding.id, {
+                properties: {
+                  ...yielding.properties,
+                  status: 'abandoned',
+                  resolvedTick: tick,
+                  abandonedReason: 'displaced_by_grievance',
+                },
+              });
+              const displacedTemplateId = getAmbitionTemplateId(graph.getNode(yielding.target)) ?? yielding.target;
+              const displacedName = (graph.getNode(yielding.target)?.properties.displayName as string | undefined)
+                ?? displacedTemplateId;
+              const holderName = graph.getNode(holderId)?.name ?? holderId;
+              const culpritName = graph.getNode(grievanceProperties.culpritAgentId)?.name
+                ?? grievanceProperties.culpritAgentId;
+              const displacedTrace: Omit<AmbitionDisplacedTrace, 'id' | 'timestamp'> = {
+                tick,
+                category: 'ambition_displaced',
+                summary: `${holderName} sets aside ${displacedName} for a vendetta against ${culpritName}`,
+                agentId: holderId,
+                displacedTemplateId,
+                grievanceTemplateId: minted.templateId,
+                culpritAgentId: grievanceProperties.culpritAgentId,
+                harmMagnitude: grievanceProperties.harmMagnitude,
+              };
+              emitTrace(displacedTrace);
+              // The one line the chronicle gets: the harm's own line carries the news;
+              // this one names what it cost.
+              newEvents.push({
+                id: nextAmbitionEventId(tick),
+                tick,
+                type: 'ambition_abandoned',
+                message: `${holderName} sets aside ${displacedName} — a vendetta against ${culpritName} takes its place.`,
+                significance: GRIEVANCE_DISPLACE_EVENT_SIGNIFICANCE,
+                actorId: holderId,
+                notification: { channel: 'alert', icon: 'dilemma' },
+              });
+              displacedCount++;
+              if (holderId === actor.id) currentActiveCount--;
+            }
+          }
+
           // Succession can move the drive onto a different agent, so priority is read
           // from whoever actually ends up holding it — not from the loop's own actor.
           const holderActiveCount = holderId === actor.id
@@ -844,13 +984,13 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
         }
       }
 
-      if (currentActiveCount < 2) {
+      if (currentActiveCount < MAX_ACTIVE_AMBITIONS) {
         const availableTemplates = AMBITION_TEMPLATES.filter(
           t => !existingTemplateIds.has(t.id),
         );
 
         if (availableTemplates.length > 0) {
-          const slotsNeeded = 2 - currentActiveCount;
+          const slotsNeeded = MAX_ACTIVE_AMBITIONS - currentActiveCount;
           const seed = state.seed + tick + actor.id.length;
           const assignments = assignInitialAmbitions(availableTemplates, agentSnapshot, seed);
 
@@ -957,6 +1097,7 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
       sampleAgentIds: mintedSampleAgentIds,
       grievanceCount: grievanceMintCount,
       sampleCulpritAgentIds: grievanceCulpritIds,
+      displacedCount,
     };
     emitTrace(mintTrace);
   }
