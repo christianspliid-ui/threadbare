@@ -7,6 +7,7 @@ import {
   computeRouteFormationBias,
 } from '../strategicActionCandidates';
 import { scoreRoutePairBalance, ROUTE_FORMATION_BALANCE_BIAS } from '../tradeRoute';
+import { UNDERTAKING_MAX_ACTIVE_PER_ACTOR } from '../../data/strategic-action-constants';
 import { mulberry32 } from '../../lib/prng';
 import type { GraphNode } from '../../types/graph';
 import type { ResourceInstance } from '../../types/resource';
@@ -143,6 +144,50 @@ describe('strategicActionCandidates', () => {
       expect(result.rejections.length).toBeGreaterThan(0);
       const reachRejections = result.rejections.filter(r => r.reason.startsWith('reach_floor_unmet'));
       expect(reachRejections.length).toBeGreaterThan(0);
+    });
+
+    /**
+     * The per-mortal cap (THR-1387). Enforced at generation, never at the busy-gate,
+     * so a capped mortal still decides encounters. The fixture's runtime state holds
+     * only the three fields the generator reads (`actorId`, `templateId`, `status`);
+     * the cast is deliberate and the test fails loudly if the reader widens.
+     */
+    it('offers nothing to a mortal already at UNDERTAKING_MAX_ACTIVE_PER_ACTOR, and names the cap', () => {
+      const graph = buildTestGraph();
+      const rng = mulberry32(42);
+      const running = (n: number) => ({
+        projects: Array.from({ length: n }, (_, i) => ({
+          actorId: 'actor_merchant', templateId: `strategic_other_${i}`, status: 'active',
+        })),
+        controls: [],
+        history: [],
+      }) as unknown as Parameters<typeof generateStrategicCandidates>[3];
+
+      const atCap = generateStrategicCandidates(
+        graph, 'actor_merchant', ['ambition_dominate_trade'], running(UNDERTAKING_MAX_ACTIVE_PER_ACTOR), 10, rng,
+      );
+      expect(atCap.candidates).toHaveLength(0);
+      expect(atCap.rejections.length).toBeGreaterThan(0);
+      expect(atCap.rejections.every(r => r.reason === `active_cap:${UNDERTAKING_MAX_ACTIVE_PER_ACTOR}`)).toBe(true);
+
+      // One below the cap: the same mortal, the same world, offered undertakings.
+      const belowCap = generateStrategicCandidates(
+        graph, 'actor_merchant', ['ambition_dominate_trade'], running(UNDERTAKING_MAX_ACTIVE_PER_ACTOR - 1), 10, mulberry32(42),
+      );
+      expect(belowCap.candidates.length).toBeGreaterThan(0);
+      expect(belowCap.rejections.some(r => r.reason.startsWith('active_cap'))).toBe(false);
+
+      // Completed and failed projects do not count as hands in use.
+      const finished = {
+        projects: Array.from({ length: UNDERTAKING_MAX_ACTIVE_PER_ACTOR + 2 }, (_, i) => ({
+          actorId: 'actor_merchant', templateId: `strategic_done_${i}`, status: i % 2 ? 'completed' : 'failed',
+        })),
+        controls: [], history: [],
+      } as unknown as Parameters<typeof generateStrategicCandidates>[3];
+      const afterFinishing = generateStrategicCandidates(
+        graph, 'actor_merchant', ['ambition_dominate_trade'], finished, 10, mulberry32(42),
+      );
+      expect(afterFinishing.candidates.length).toBeGreaterThan(0);
     });
 
     it('returns empty for ambitions without strategic profiles', () => {

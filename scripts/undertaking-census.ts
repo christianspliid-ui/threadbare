@@ -55,6 +55,7 @@ import {
   CENSUS_STARTS_PER_MORTAL_PER_100_TICKS_FLOOR,
   CENSUS_VARIETY_SAMPLE_STARTS,
   CENSUS_DISTINCT_AT_SAMPLE_FLOOR,
+  CENSUS_MAX_ACTIVE_PER_MORTAL_CEILING,
 } from '../src/data/strategic-action-constants';
 import { MERCHANT_STRATEGIC_TEMPLATES } from '../src/data/strategic-packs/merchantStrategicPack';
 import { BUILDER_STRATEGIC_TEMPLATES } from '../src/data/strategic-packs/builderStrategicPack';
@@ -82,9 +83,9 @@ const WANDERER_FAMILY = 'wanderer-explorer';
 const CENSUS_COMPOSITION_REPORT_TOP_N = 6;
 
 /**
- * How many mortals the concurrency line names, busiest first. Reporting only — the
- * gate on this number belongs to THR-1387 (the per-mortal cap), sequenced after the
- * cutover because it moves the same throughput the cutover is judged on.
+ * How many mortals the concurrency line names, busiest first. The gate on the
+ * busiest one is `CENSUS_MAX_ACTIVE_PER_MORTAL_CEILING` (THR-1387); the list is
+ * so a reader sees the shape, not only the maximum.
  */
 const CENSUS_CONCURRENCY_REPORT_TOP_N = 8;
 
@@ -417,6 +418,16 @@ function evaluateGates(c: SeedCensus): Record<string, { pass: boolean; detail: s
       ? `${comp.startsPerMortalPer100Ticks.toFixed(1)} (${comp.starts} starts over ${comp.meanAutonomousMortals.toFixed(1)} mortals × ${c.ticks} ticks)`
       : 'no autonomous mortals sampled',
   };
+
+  // Concurrency (THR-1387). The cap is enforced at candidate generation
+  // (`UNDERTAKING_MAX_ACTIVE_PER_ACTOR`); this reads the number it enforces, so a
+  // start path that bypasses generation reds the census instead of quietly printing
+  // a larger top-8. A run with no starts passes vacuously here and fails the
+  // throughput gate above, which is the gate that owns that failure.
+  gates[`active undertakings per mortal ≤ ${CENSUS_MAX_ACTIVE_PER_MORTAL_CEILING}`] = {
+    pass: comp.concurrency.maxAtEnd <= CENSUS_MAX_ACTIVE_PER_MORTAL_CEILING,
+    detail: `max ${comp.concurrency.maxAtEnd} at run end, busiest [${comp.concurrency.topAtEnd.join(', ')}]`,
+  };
   return gates;
 }
 
@@ -459,7 +470,7 @@ function report(all: SeedCensus[]): boolean {
       ? comp.topTemplates.map(([id, n]) => `${id} ${n}`).join(', ')
       : '—'}`);
     console.log(`  per mortal: ${comp.startsPerMortalPer100Ticks.toFixed(1)} starts per 100 ticks over ${comp.meanAutonomousMortals.toFixed(1)} autonomous mortals`);
-    console.log(`  concurrency (reported, not gated — THR-1387): max ${comp.concurrency.maxAtEnd} active at run end, busiest [${comp.concurrency.topAtEnd.join(', ')}], mean ${comp.concurrency.meanActive.toFixed(1)} active per tick`);
+    console.log(`  concurrency (cap ${CENSUS_MAX_ACTIVE_PER_MORTAL_CEILING}, THR-1387): max ${comp.concurrency.maxAtEnd} active at run end, busiest [${comp.concurrency.topAtEnd.join(', ')}], mean ${comp.concurrency.meanActive.toFixed(1)} active per tick`);
 
     console.log('\nGates');
     for (const [name, g] of Object.entries(c.gates)) {

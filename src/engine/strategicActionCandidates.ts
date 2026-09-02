@@ -30,6 +30,7 @@ import { WANDERER_STRATEGIC_TEMPLATES } from '../data/strategic-packs/wandererSt
 import {
   STRATEGIC_MAX_CANDIDATES_PER_ACTOR,
   STRATEGIC_MAX_CANDIDATES_PER_AMBITION,
+  UNDERTAKING_MAX_ACTIVE_PER_ACTOR,
   STRATEGIC_VERB_IMPACT,
   STRATEGIC_VERB_IMPACT_DEFAULT,
   STRATEGIC_CONTROL_RECLAIM_COOLDOWN_TICKS,
@@ -119,6 +120,15 @@ export function generateStrategicCandidates(
   // → zero bias). Fetched once per actor since it is constant across candidates.
   const sourceLocationNode = graph.getNode(locationId);
 
+  // A mortal's hands: how many undertakings they already have running (THR-1387).
+  // Counted once per actor, before the template walk, so every template this pass
+  // sees the same number. Read from the accumulated strategic state the caller
+  // passes — the same source `project_already_active` reads — so a start earlier in
+  // the same tick counts.
+  const activeCount = strategicState?.projects.filter(
+    p => p.actorId === actorId && p.status === 'active',
+  ).length ?? 0;
+
   // Collect active ambitions with strategic profiles
   for (const ambitionTemplateId of activeAmbitionTemplateIds) {
     const ambitionTemplate = findAmbitionTemplate(ambitionTemplateId);
@@ -134,6 +144,18 @@ export function generateStrategicCandidates(
       const template = TEMPLATE_REGISTRY.get(templateId);
       if (!template) {
         rejections.push({ templateId, reason: 'template_not_found' });
+        continue;
+      }
+
+      // At the cap, no undertaking is offered at all — refused here, at proposal,
+      // never by marking the mortal busy (the substrate plan's addendum: an
+      // undertaking runs beside encounters, and the busy-gate would stop those too).
+      // Checked before every other gate so the refusal names the real reason: a
+      // mortal at the cap with a valid target is refused for the cap, not for the
+      // target. Same shape as `no_eligible_apprentice` — a decision nobody can act
+      // on is not a decision (THR-1292 §3).
+      if (activeCount >= UNDERTAKING_MAX_ACTIVE_PER_ACTOR) {
+        rejections.push({ templateId, reason: `active_cap:${activeCount}` });
         continue;
       }
 
