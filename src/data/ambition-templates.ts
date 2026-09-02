@@ -843,6 +843,10 @@ export const GRIEVANCE_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     bondModifiers: [{ bondType: 'enemy', modifier: 0.5 }],
     boostingTraits: ['trait.core.core_forgiveness.vice', 'trait.personality.iron.vice'],
     reachAffinity: { iron: 0.6, shadow: 0.8, eye: 0.3 },
+    poleAffinities: [
+      { valuePair: 'mercy_ruthlessness', pole: 'vice', weight: 1 },
+      { valuePair: 'honesty_cunning', pole: 'vice', weight: 0.5 },
+    ],
     // THR-1297 slice 5 — the counter-play's home ambition, and the reason every one
     // of these verbs is reachable rather than dead content.
     //
@@ -939,6 +943,10 @@ export const GRIEVANCE_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     // modifier above already steer this ambition toward the dispossessed.
     boostingTraits: ['trait.mastery.steadfast'],
     reachAffinity: { iron: 0.7, heart: 0.6, stone: 0.3 },
+    poleAffinities: [
+      { valuePair: 'loyalty_ambition', pole: 'virtue', weight: 0.8 },
+      { valuePair: 'preservation_transformation', pole: 'virtue', weight: 0.6 },
+    ],
     // THR-1297 slice 5: you cannot reclaim what you cannot find your way back to.
     // The chart verbs are the approach; the network is how an exile reaches into a
     // place they cannot yet stand in — the case `remote` was drawn around.
@@ -1019,6 +1027,10 @@ export const GRIEVANCE_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     bondModifiers: [],
     boostingTraits: ['trait.core.core_hope.vice', 'trait.personality.heart.virtue'],
     reachAffinity: { iron: 0.7, shadow: 0.5, heart: 0.3 },
+    poleAffinities: [
+      { valuePair: 'mercy_ruthlessness', pole: 'vice', weight: 0.9 },
+      { valuePair: 'loyalty_ambition', pole: 'virtue', weight: 0.8 },
+    ],
     milestones: [
       {
         id: 'avenge_culprit',
@@ -1079,6 +1091,10 @@ const DESTINY_AMBITION_TEMPLATE: AmbitionTemplate = {
     bondModifiers: [{ bondType: 'fated_companion', modifier: 0.3 }],
     boostingTraits: ['destiny_marked', 'trait.mastery.steadfast'],
     reachAffinity: { star: 0.8, heart: 0.4, veil: 0.3 },
+    poleAffinities: [
+      { valuePair: 'sacrifice_survival', pole: 'virtue', weight: 0.9 },
+      { valuePair: 'courage_prudence', pole: 'virtue', weight: 0.5 },
+    ],
     milestones: [
       {
         id: 'destiny_understanding',
@@ -1154,6 +1170,10 @@ export const EVENT_MINTED_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     bondModifiers: [{ bondType: 'enemy', modifier: 0.4 }],
     boostingTraits: ['trait.core.core_forgiveness.vice', 'trait.personality.iron.vice', 'trait.core.core_humility.vice'],
     reachAffinity: { iron: 0.7, shadow: 0.6, eye: 0.3 },
+    poleAffinities: [
+      { valuePair: 'mercy_ruthlessness', pole: 'vice', weight: 1 },
+      { valuePair: 'courage_prudence', pole: 'virtue', weight: 0.4 },
+    ],
     milestones: [
       {
         id: 'avenge_resolve',
@@ -1208,6 +1228,10 @@ export const EVENT_MINTED_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     bondModifiers: [{ bondType: 'kin', modifier: 0.4 }],
     boostingTraits: ['trait.core.core_warmth.virtue', 'trait.personality.heart.virtue', 'trait.mastery.steadfast'],
     reachAffinity: { heart: 0.6, iron: 0.6, stone: 0.4 },
+    poleAffinities: [
+      { valuePair: 'mercy_ruthlessness', pole: 'virtue', weight: 1 },
+      { valuePair: 'preservation_transformation', pole: 'virtue', weight: 0.8 },
+    ],
     milestones: [
       {
         id: 'protect_kin',
@@ -1272,6 +1296,10 @@ export const EVENT_MINTED_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     bondModifiers: [{ bondType: 'fellow_refugee', modifier: 0.3 }],
     boostingTraits: ['trait.mastery.steadfast', 'trait.condition.exhausted', 'trait.condition.terrified'],
     reachAffinity: { star: 0.6, stone: 0.5, shadow: 0.4 },
+    poleAffinities: [
+      { valuePair: 'courage_prudence', pole: 'vice', weight: 1 },
+      { valuePair: 'sacrifice_survival', pole: 'vice', weight: 0.9 },
+    ],
     milestones: [
       {
         id: 'flee_endurance',
@@ -1324,6 +1352,10 @@ export const EVENT_MINTED_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     bondModifiers: [{ bondType: 'labor', modifier: 0.3 }],
     boostingTraits: ['trait.reputation.stone.positive', 'trait.mastery.steadfast', 'trait.personality.star.virtue'],
     reachAffinity: { stone: 0.6, gold: 0.5, iron: 0.4 },
+    poleAffinities: [
+      { valuePair: 'preservation_transformation', pole: 'virtue', weight: 1 },
+      { valuePair: 'tradition_novelty', pole: 'virtue', weight: 0.5 },
+    ],
     milestones: [
       {
         id: 'rebuild_hands',
@@ -1379,6 +1411,10 @@ export const EVENT_MINTED_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     // THR-813: retired `pioneer`; two live boosts carry this ambition.
     boostingTraits: ['trait.personality.star.virtue', 'trait.mastery.silver-tongue'],
     reachAffinity: { heart: 0.6, gold: 0.5, star: 0.4 },
+    poleAffinities: [
+      { valuePair: 'preservation_transformation', pole: 'vice', weight: 0.9 },
+      { valuePair: 'tradition_novelty', pole: 'vice', weight: 0.7 },
+    ],
     milestones: [
       {
         id: 'found_followers',
@@ -1429,6 +1465,10 @@ export const EVENT_MINTED_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     // THR-813: retired `obsessive`; the live `#eye` / `#veil` tag boosts carry this one.
     boostingTraits: ['#eye', '#veil'],
     reachAffinity: { eye: 0.7, veil: 0.6, star: 0.4 },
+    poleAffinities: [
+      { valuePair: 'revelation_discretion', pole: 'virtue', weight: 1 },
+      { valuePair: 'tradition_novelty', pole: 'vice', weight: 0.4 },
+    ],
     // THR-1297 slice 5: the wanderer pack's home ambition. Chasing a wonder is the
     // explorer arc stated as a desire, and until this profile existed the ambition
     // generated no undertakings at all — presence of `strategicProfile` is the

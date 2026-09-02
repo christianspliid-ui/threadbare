@@ -2,6 +2,7 @@
 import type { ReachDomain } from './traits';
 import type { SphereName } from './index';
 import type { AmbitionStrategicProfile } from './strategicAction';
+import type { ValuePair } from './agent';
 
 // ─── Ambition Categories ─────────────────────────────────────────
 export type AmbitionCategory =
@@ -111,6 +112,19 @@ export interface BondModifier {
   readonly modifier: number;
 }
 
+/**
+ * One value-axis lean an ambition template declares (THR-1298).
+ *
+ * `pole` names which end of the pair the drive belongs to. `virtue` is the pair's
+ * first-named pole (the `+1` end in signed storage), `vice` the second.
+ */
+export interface PoleAffinity {
+  readonly valuePair: ValuePair;
+  readonly pole: 'virtue' | 'vice';
+  /** Relative pull, multiplied by `POLE_AFFINITY_WEIGHT`. */
+  readonly weight: number;
+}
+
 // ─── Ambition Template ──────────────────────────────────────────
 export interface AmbitionTemplate {
   readonly id: string;
@@ -129,6 +143,23 @@ export interface AmbitionTemplate {
 
   // Behavior — biases action selection
   readonly reachAffinity: Partial<Record<ReachDomain, number>>;
+
+  /**
+   * Which end of a value axis this drive speaks to (THR-1298).
+   *
+   * Revenge leans the vice pole of mercy; protection leans the virtue pole. With this,
+   * two agents handed the same harm want different things because of who they *are*
+   * rather than only what they can do — the reach terms above answer "can I", this
+   * answers "is this me".
+   *
+   * A consequence named in the ruling and embraced: the god's fork-lean drifts these
+   * poles, so pressing a mortal toward ruthlessness changes which drive their next
+   * wound mints, with no further wiring.
+   *
+   * Every `valuePair` must be a member of `VALUE_PAIRS` — a schema test pins it, since
+   * an unknown pair contributes 0 forever and reads as mistuning rather than a typo.
+   */
+  readonly poleAffinities?: readonly PoleAffinity[];
 
   // Progress
   readonly milestones: readonly Milestone[];

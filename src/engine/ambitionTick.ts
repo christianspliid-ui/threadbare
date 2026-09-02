@@ -9,6 +9,7 @@ import type { GameState, TickEvent } from '../types/gameState';
 import type { ActiveAmbition, AmbitionPriority } from '../types/ambition';
 import type { ReachDomain } from '../types/traits';
 import type { SphereName } from '../types/index';
+import type { AxiologicalProfile } from '../types/agent';
 import type { WorldGraph } from './graph';
 import { evaluateAmbitionProgress } from './ambitionLifecycle';
 import { assignInitialAmbitions } from './ambitionAssignment';
@@ -138,7 +139,15 @@ export function buildAmbitionAgentSnapshot(
     bondType: (e.properties.basis as string) ?? 'unknown',
   }));
 
-  return { domainCapabilities: caps, traits, culturalSpheres, bonds };
+  // Value standings for the pole term (THR-1298). Read once, here, because this is the
+  // single funnel all three selection callers pass through — the mint lane, the
+  // spontaneous re-eval, and initial assignment. Adding it at any one call site would
+  // have given the other two a scorer running with the term silently disabled.
+  const axiologicalProfile = actor?.properties.axiologicalProfile as
+    | AxiologicalProfile
+    | undefined;
+
+  return { domainCapabilities: caps, traits, culturalSpheres, bonds, axiologicalProfile };
 }
 
 /** Template ids the agent already pursues (active or resolved) — never re-mint. */
