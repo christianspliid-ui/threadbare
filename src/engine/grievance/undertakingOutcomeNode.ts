@@ -22,6 +22,7 @@
 import type { WorldGraph } from '../graph';
 import type { StrategicProjectRuntime, UndertakingHarmClass } from '../../types/strategicAction';
 import { HARM_MAGNITUDE_BY_CLASS } from '../../data/ambition-minting-rules';
+import { getFactionLeaderId } from '../factionNetwork';
 import { emitTrace } from '../traceBuffer';
 import type { TraceEntry } from '../../types/trace';
 
@@ -154,6 +155,35 @@ export function createUndertakingOutcomeNode(
       });
     } catch (err) {
       console.warn(`[UndertakingOutcomeNode] Failed to add victim edge for ${victimAgentId}:`, err);
+    }
+  }
+
+  // ── participated_in: faction victim's leader → event (role 'target') (THR-1383) ──
+  //
+  // A faction holds no `pursues` edges and the ambition phase walks individuals only,
+  // so a harm done to a guild used to reach nobody — six of the thirteen culprit-carrying
+  // harms on the observation run evaporated this way. The leader carries it: a second
+  // target edge, tagged `viaFactionId` so the provenance prose can say whose hall it was
+  // and so the tuple builder can tell the two relations apart. The faction's own edge
+  // stays — it is the honest record of who was harmed. A leaderless faction, or one led
+  // by the culprit, routes nowhere (fail-soft: the harm still registers for witnesses).
+  if (victimAgentId) {
+    const victim = graph.getNode(victimAgentId);
+    if (victim?.type === 'actor' && victim.properties.actorType === 'faction') {
+      const leaderId = getFactionLeaderId(graph, victimAgentId);
+      if (leaderId && leaderId !== culpritAgentId && leaderId !== victimAgentId) {
+        try {
+          graph.addEdge({
+            id: `${leaderId}_participated_in_${eventNodeId}`,
+            source: leaderId,
+            target: eventNodeId,
+            type: 'participated_in',
+            properties: { role: 'target', outcome: 'success', harmClass, tick, viaFactionId: victimAgentId },
+          });
+        } catch (err) {
+          console.warn(`[UndertakingOutcomeNode] Failed to add leader edge for ${leaderId}:`, err);
+        }
+      }
     }
   }
 

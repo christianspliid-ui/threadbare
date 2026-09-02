@@ -102,6 +102,43 @@ export const GRIEVANCE_CHAIN_DEPTH_MAX = 2;
  */
 export const GRIEVANCE_URGENCY_WEIGHT = 0.4;
 
+// ─── Supply (THR-1383) ────────────────────────────────────────────
+//
+// The 300-tick observation run that closed THR-1298 minted zero grievances on both
+// seeds while every emission site fired: the harms landed on mortals whose two want
+// slots were full, or on factions, and aged out of a mint window that did not cover
+// the mint cadence. These three numbers are the supply side of the reactive loop.
+
+/**
+ * A harm at or above this magnitude may take a full mortal's *secondary* want.
+ *
+ * On the `HARM_MAGNITUDE_BY_CLASS` scale: a razing (1.0) and a seizure (0.8) qualify, a
+ * spoiled deal (0.3) does not. Below the bar a full mortal is offered nothing — the
+ * ordinary mint gate applies unchanged — so the number decides how bad a wound must
+ * be before it is allowed to change what someone was already doing. The primary want
+ * is never displaced at any magnitude; only the secondary yields.
+ */
+export const GRIEVANCE_DISPLACE_MIN_MAGNITUDE = 0.5;
+
+/**
+ * Chronicle significance of the line that says a want was set aside for a vendetta.
+ *
+ * Between an ordinary abandonment (0.5) and a completed ambition (0.8): the mortal
+ * chose it, so it is a chapter rather than weather, but it is the harm's line that
+ * carries the news — this one only names what it cost.
+ */
+export const GRIEVANCE_DISPLACE_EVENT_SIGNIFICANCE = 0.6;
+
+/**
+ * Census ceiling on the share of active wants that are vendettas (kill criterion).
+ *
+ * The plan's monoculture guard: at a third, a world where every third drive is
+ * revenge reads as a feud, not a society. The census reports the share and fails above
+ * this; the lever to pull when it trips is `GRIEVANCE_DISPLACE_MIN_MAGNITUDE`, upward —
+ * never this ceiling.
+ */
+export const GRIEVANCE_SHARE_CEILING = 0.35;
+
 // ─── Prose bands (THR-1298 slice 7) ───────────────────────────────
 //
 // Heat reaches the player as one of three words, never as a numeral. The bands are

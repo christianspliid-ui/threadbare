@@ -703,6 +703,15 @@ export const CENSUS_VARIETY_SAMPLE_STARTS = 150;
  *
  * The trade-route count that motivated the ticket stays *reported*, never gated: the
  * healthy baseline is 1 and 0 on the two seeds, and THR-1348 owns the route economy.
+ *
+ * **Applied to the mean over the census seeds, not per seed** (THR-1383 amendment,
+ * 2026-09-02). A mint-lane change that touched nothing on the board moved seed 99 from
+ * 26 to 24 while seed 42 stayed at 28; the same build reads 31 on seed 123 and 17 on
+ * seed 7. A single seed's count carries ±2 of chaos, which is the whole margin above.
+ * The mean over the default pair (26) still separates the calibrated board from the
+ * uncalibrated one (23.5) and from contest B (38.5), which is the discrimination the
+ * floor exists for; the per-seed number is reported beside it so a collapse on one
+ * seed is still visible.
  */
 export const CENSUS_DISTINCT_AT_SAMPLE_FLOOR = 25;
 

@@ -57,6 +57,7 @@ import {
   CENSUS_DISTINCT_AT_SAMPLE_FLOOR,
   CENSUS_MAX_ACTIVE_PER_MORTAL_CEILING,
 } from '../src/data/strategic-action-constants';
+import { GRIEVANCE_SHARE_CEILING } from '../src/data/grievance-constants';
 import { MERCHANT_STRATEGIC_TEMPLATES } from '../src/data/strategic-packs/merchantStrategicPack';
 import { BUILDER_STRATEGIC_TEMPLATES } from '../src/data/strategic-packs/builderStrategicPack';
 import { SCHOLAR_STRATEGIC_TEMPLATES } from '../src/data/strategic-packs/scholarStrategicPack';
@@ -151,6 +152,13 @@ interface Composition {
    * the busiest mortals at run end, and the mean active count over all ticks.
    */
   concurrency: { maxAtEnd: number; topAtEnd: number[]; meanActive: number };
+  /**
+   * The reactive loop's supply (THR-1383): vendettas minted over the run (any status),
+   * how many took a full mortal's secondary want, the share of *active* wants that are
+   * vendettas at run end (gated by `GRIEVANCE_SHARE_CEILING`), and the revenge-chain
+   * depth distribution — reported even when it is all zeros.
+   */
+  grievance: { minted: number; displaced: number; activeShare: number; chainDepths: Record<string, number> };
 }
 
 interface SeedCensus {
@@ -314,6 +322,23 @@ function censusOneSeed(seed: number, ticks: number, map: MapSizePreset): SeedCen
         topAtEnd,
         meanActive: ticks > 0 ? activeSum / ticks : 0,
       },
+      grievance: (() => {
+        const pursues = state.graph.getEdgesByType('pursues');
+        const vendettas = pursues.filter(e => e.properties.grievance === true);
+        const active = pursues.filter(e => e.properties.status === 'active');
+        const activeVendettas = active.filter(e => e.properties.grievance === true);
+        const chainDepths: Record<string, number> = {};
+        for (const e of vendettas) {
+          const d = String((e.properties.chainDepth as number | undefined) ?? 0);
+          chainDepths[d] = (chainDepths[d] ?? 0) + 1;
+        }
+        return {
+          minted: vendettas.length,
+          displaced: pursues.filter(e => e.properties.abandonedReason === 'displaced_by_grievance').length,
+          activeShare: active.length > 0 ? activeVendettas.length / active.length : 0,
+          chainDepths,
+        };
+      })(),
     };
 
     const summary = buildBalanceRunSummary(runtime, state.tick);
@@ -396,11 +421,20 @@ function evaluateGates(c: SeedCensus): Record<string, { pass: boolean; detail: s
   //
   // `tradeRouteEdges` is deliberately **reported and not gated**: the healthy
   // baseline is 1 and 0 on the two seeds, and THR-1348 owns the route economy.
+  //
+  // The floor is applied to the **mean over the census seeds**, in `report()`, not per
+  // seed (THR-1383 amendment). Measured 2026-09-02 on four seeds at 150 ticks under
+  // the same build: 28 / 24 / 31 / 17 (seeds 42 / 99 / 123 / 7) — a single seed's
+  // count moves by two from a mint-lane change that alters nothing on the board, so a
+  // per-seed floor derived on two seeds was one seed's luck. The mean over the default
+  // pair still separates the calibrated board (26+) from the uncalibrated one (23.5)
+  // and from contest B's stacking (38.5). Per seed, the sample must still *fill*: a
+  // half-filled sample is a throughput failure wearing the wrong name.
   const comp = c.composition;
-  gates[`distinct templates in first ${CENSUS_VARIETY_SAMPLE_STARTS} starts ≥ ${CENSUS_DISTINCT_AT_SAMPLE_FLOOR}`] = {
-    pass: comp.starts >= CENSUS_VARIETY_SAMPLE_STARTS && comp.distinctInSample >= CENSUS_DISTINCT_AT_SAMPLE_FLOOR,
+  gates[`variety sample of ${CENSUS_VARIETY_SAMPLE_STARTS} starts filled`] = {
+    pass: comp.starts >= CENSUS_VARIETY_SAMPLE_STARTS,
     detail: comp.starts >= CENSUS_VARIETY_SAMPLE_STARTS
-      ? `${comp.distinctInSample} distinct in the first ${CENSUS_VARIETY_SAMPLE_STARTS} of ${comp.starts} starts`
+      ? `${comp.distinctInSample} distinct in the first ${CENSUS_VARIETY_SAMPLE_STARTS} of ${comp.starts} starts (floor applies to the cross-seed mean)`
       : `only ${comp.starts} starts — sample of ${CENSUS_VARIETY_SAMPLE_STARTS} never filled`,
   };
 
@@ -427,6 +461,19 @@ function evaluateGates(c: SeedCensus): Record<string, { pass: boolean; detail: s
   gates[`active undertakings per mortal ≤ ${CENSUS_MAX_ACTIVE_PER_MORTAL_CEILING}`] = {
     pass: comp.concurrency.maxAtEnd <= CENSUS_MAX_ACTIVE_PER_MORTAL_CEILING,
     detail: `max ${comp.concurrency.maxAtEnd} at run end, busiest [${comp.concurrency.topAtEnd.join(', ')}]`,
+  };
+
+  // Grievance share (THR-1383) — the reactive loop's monoculture kill criterion. The
+  // *count* is reported, not gated, here: the supply floor is the plan's 300-tick
+  // acceptance (non-zero on both seeds), and a 150-tick census run sees only two mint
+  // passes. The share is the ceiling that stops a world of avengers; when it trips,
+  // the lever is `GRIEVANCE_DISPLACE_MIN_MAGNITUDE` upward, never this number.
+  const g = comp.grievance;
+  const depths = Object.entries(g.chainDepths).sort((a, b) => Number(a[0]) - Number(b[0]))
+    .map(([d, n]) => `depth ${d}: ${n}`).join(', ') || 'none';
+  gates[`vendetta share of active wants ≤ ${GRIEVANCE_SHARE_CEILING}`] = {
+    pass: g.activeShare <= GRIEVANCE_SHARE_CEILING,
+    detail: `${pct(g.activeShare)} — ${g.minted} vendetta(s) minted, ${g.displaced} displaced a want; chains: ${depths}`,
   };
   return gates;
 }
@@ -478,6 +525,18 @@ function report(all: SeedCensus[]): boolean {
       console.log(`  ${g.pass ? 'PASS' : 'FAIL'}  ${name.padEnd(32)} ${g.detail}`);
     }
   }
+
+  // Cross-seed gates — the one reading that a single seed cannot be trusted to give
+  // (see the variety comment in `buildGates`). The mean is over every seed that filled
+  // its sample; a seed that did not fill it has already failed above.
+  const filled = all.filter(c => c.composition.starts >= CENSUS_VARIETY_SAMPLE_STARTS);
+  const meanDistinct = filled.length
+    ? filled.reduce((sum, c) => sum + c.composition.distinctInSample, 0) / filled.length
+    : 0;
+  const varietyPass = filled.length > 0 && meanDistinct >= CENSUS_DISTINCT_AT_SAMPLE_FLOOR;
+  if (!varietyPass) allPass = false;
+  console.log(`\n─── cross-seed ───────────────────────────────────────────`);
+  console.log(`  ${varietyPass ? 'PASS' : 'FAIL'}  ${`distinct templates in first ${CENSUS_VARIETY_SAMPLE_STARTS} starts, mean over seeds ≥ ${CENSUS_DISTINCT_AT_SAMPLE_FLOOR}`.padEnd(32)} ${meanDistinct.toFixed(1)} (${filled.map(c => `seed ${c.seed}: ${c.composition.distinctInSample}`).join(', ') || 'no seed filled the sample'})`);
   console.log(`\n═══ census verdict: ${allPass ? 'PASS' : 'FAIL'} (all seeds, all gates) ═══\n`);
   return allPass;
 }
