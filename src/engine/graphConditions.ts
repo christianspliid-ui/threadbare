@@ -267,7 +267,14 @@ export function evaluateGraphCondition(
       ];
       return edges.some((edge) => {
         const locNode = graph.getNode(edge.target);
-        return locNode?.properties.locationType === condition.locationType;
+        // THR-1394: a holding is a Location (`locationSubtype`, older worlds `locationType`)
+        // or a Place (`sublocationTypeId`, compared bare) — the world-object catalogue's two
+        // place tiers. Before this the Place branch could never match: a held market Place
+        // carries no `locationType`, so "does this agent hold a market?" was always false.
+        if (!locNode) return false;
+        const p = locNode.properties;
+        const typeId = typeof p.sublocationTypeId === 'string' ? p.sublocationTypeId.replace(/^sublocation-type./, '') : undefined;
+        return p.locationSubtype === condition.locationType || p.locationType === condition.locationType || typeId === condition.locationType;
       });
     }
 

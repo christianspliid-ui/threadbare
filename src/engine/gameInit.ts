@@ -18,6 +18,7 @@ import type { RegionData } from './regionTypes';
 import { createAscendant } from './ascendant';
 import { createInitialAscendantBeatState } from './ascendantBeat';
 import { seedWorld } from './worldSeed';
+import { resetNodeSchemaWarnings } from '../types/nodeSchema';
 import { generateRivals, createRivalState } from './rival';
 import { generateDoomClock, createDoomClockState } from './doomClock';
 import type { DoomClockArchetype } from '../types/doomClock';
@@ -115,7 +116,10 @@ export function initializeGameState(
   cols: number = DEFAULT_COLS,
   rows: number = DEFAULT_ROWS,
   doomArchetype?: DoomClockArchetype,
-): { state: GameState; tiles: HexTile[]; riverPaths: RiverPath[]; lakeIds: Int16Array; regionData?: RegionData } {
+): {
+  state: GameState; tiles: HexTile[]; riverPaths: RiverPath[]; lakeIds: Int16Array; regionData?: RegionData } {
+  // THR-1394: the write-time world-object guard warns once per (type, value) per world.
+  resetNodeSchemaWarnings();
   // 1. Generate culture identities BEFORE worldgen (needed for province seeding)
   const cultureRng = mulberry32(seed + CULTURE_SEED_OFFSET);
   const fundament = createDefaultFundament();

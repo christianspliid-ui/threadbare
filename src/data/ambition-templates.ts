@@ -241,7 +241,7 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
       },
       {
         id: 'conquer_hold',
-        condition: { type: 'agent_controls_location', locationType: 'fortress' },
+        condition: { type: 'agent_controls_location', locationType: 'castle' },
         prose: ['Stone walls. A banner. The beginning of something.'],
       },
       {
@@ -812,7 +812,7 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
       },
       {
         id: 'work_site',
-        condition: { type: 'agent_controls_location', locationType: 'construction_site' },
+        condition: { type: 'agent_controls_location', locationType: 'camp' },
         prose: ['The ground is staked. The plans unfurled against the wind.'],
       },
       {
@@ -1377,7 +1377,7 @@ export const EVENT_MINTED_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
       },
       {
         id: 'protect_ward',
-        condition: { type: 'agent_controls_location', locationType: 'fortress' },
+        condition: { type: 'agent_controls_location', locationType: 'castle' },
         prose: ['Somewhere with walls now. Somewhere that can be held.'],
       },
       {
@@ -1501,7 +1501,7 @@ export const EVENT_MINTED_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
       },
       {
         id: 'rebuild_ground',
-        condition: { type: 'agent_controls_location', locationType: 'construction_site' },
+        condition: { type: 'agent_controls_location', locationType: 'camp' },
         prose: ['The ground is staked again. Foundations where ash had settled.'],
       },
       {

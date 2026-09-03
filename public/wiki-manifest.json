@@ -142,6 +142,17 @@
       ]
     },
     {
+      "id": "world-objects",
+      "file": "world-objects-reference.html",
+      "title": "World Objects",
+      "blurb": "Every kind of thing the world keeps, in game words — Area, Hex, Location, Place, Route; Mortal, Faction, Culture, Company, Army; Item, Holding, Power, Condition, Trait, Agreement, Standing; Ambition, Undertaking, Event — each with its graph shape, its classes and a two-seed census badge. Generated from the world-object registry; the drift section names any value the world writes that no kind claims.",
+      "section": "Deep Reference",
+      "sources": [
+        "src/data/world-objects.ts",
+        "scripts/generate-world-objects.ts"
+      ]
+    },
+    {
       "id": "agents-reference",
       "file": "agents-reference.html",
       "title": "The Mortals",

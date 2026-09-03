@@ -102,6 +102,32 @@ export const STATIC_ARTIFACT_SOURCES: Readonly<Record<string, readonly string[]>
   // generator sits outside `prebuild` (~20s, boots worldgen), which is the same blind
   // spot THR-948 closed for setting-coverage. It had already drifted — the committed
   // copy was missing the whole Companies & Group Travel subsystem (THR-74).
+  // generate-world-objects (THR-1394): code in, doc out. The registry and the unions it
+  // covers are listed because the generator fails by name on a union member no kind
+  // claims, so an edit to either must re-run it; the content target files are listed
+  // because a phantom target name is a drift finding the generator counts.
+  "Docs/canon/world-objects.generated.md": [
+    "src/data/world-objects.ts",
+    "src/types/graph.ts",
+    "src/types/index.ts",
+    "src/types/worldRef.ts",
+    "src/data/sublocation-category-art.ts",
+    "src/data/strategic-packs/",
+    "src/data/ambition-templates.ts",
+    "src/data/undertaking-cells.ts",
+    "scripts/generate-world-objects.ts",
+  ],
+  "public/world-objects-reference.html": [
+    "src/data/world-objects.ts",
+    "src/types/graph.ts",
+    "src/types/index.ts",
+    "src/types/worldRef.ts",
+    "src/data/sublocation-category-art.ts",
+    "src/data/strategic-packs/",
+    "src/data/ambition-templates.ts",
+    "src/data/undertaking-cells.ts",
+    "scripts/generate-world-objects.ts",
+  ],
   "Docs/canon/systems-inventory.md": [
     "src/engine/orchestrator.ts",
     "src/engine/",

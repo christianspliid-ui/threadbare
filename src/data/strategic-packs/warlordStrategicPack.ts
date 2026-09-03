@@ -248,7 +248,7 @@ export const WARLORD_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
       'Nothing moves. The ledger at the far end starts saying things the owner does not want to read.',
     ],
     catalystEncounterIds: ['encounter_route_ambush', 'encounter_toll_dispute'],
-    targetRule: { type: 'location_subtype', subtypes: ['market', 'town', 'city', 'trading_post', 'port'] },
+    targetRule: { type: 'location_subtype', subtypes: ['town', 'city', 'capital'] },
     resourceHint: { wealthCost: 20, reachFloor: { iron: 0.3, eye: 0.2 } },
     checkpointDifficulty: 0.5,
     // Same measured reason as every other multi-tick verb in the corpus — see the

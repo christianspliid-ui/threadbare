@@ -6,6 +6,7 @@
  */
 import type { GraphNode, GraphEdge, GraphMutation, NodeType, EdgeType } from '../types/graph';
 import { EDGE_SCHEMA, matchesNodeType, GRAPH_SCHEMA_VALIDATION_ENABLED } from '../types/edgeSchema';
+import { WORLD_OBJECT_VALIDATION_ENABLED, validateNodeAgainstRegistry, reportNodeSchemaViolation } from '../types/nodeSchema';
 
 export class WorldGraph {
   private nodes = new Map<string, GraphNode>();
@@ -38,6 +39,12 @@ export class WorldGraph {
   addNode(node: GraphNode): void {
     if (this.nodes.has(node.id)) {
       throw new Error(`Duplicate node ID: ${node.id}`);
+    }
+    // THR-1394: the write-time half of the world-object model. Dev-mode only, warn-once,
+    // never blocks the write (see src/types/nodeSchema.ts for the posture).
+    if (WORLD_OBJECT_VALIDATION_ENABLED && import.meta.env?.DEV) {
+      const violation = validateNodeAgainstRegistry(node);
+      if (violation) reportNodeSchemaViolation(violation);
     }
     this.nodes.set(node.id, { ...node, properties: { ...node.properties } });
     this.outgoing.set(node.id, new Set());

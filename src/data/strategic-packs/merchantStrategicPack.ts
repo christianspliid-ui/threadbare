@@ -21,7 +21,7 @@ export const MERCHANT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = 
     completionProse: [
       'The shape of commerce here is clear now — and the gaps in it.',
     ],
-    targetRule: { type: 'location_subtype', subtypes: ['market', 'town', 'city', 'trading_post'] },
+    targetRule: { type: 'location_subtype', subtypes: ['town', 'city', 'capital'] },
     resourceHint: { reachFloor: { eye: 0.2 } },
     motivations: ['revelation_discretion', 'asceticism_extravagance'],
     mutationHint: { type: 'record_intelligence', intelligenceType: 'market_survey' },
@@ -42,7 +42,7 @@ export const MERCHANT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = 
     completionProse: [
       'Storage rights secured. The first foothold in a larger plan.',
     ],
-    targetRule: { type: 'location_subtype', subtypes: ['market', 'town', 'city', 'trading_post', 'port'] },
+    targetRule: { type: 'location_subtype', subtypes: ['town', 'city', 'capital'] },
     resourceHint: { wealthCost: 20, reachFloor: { gold: 0.3 } },
     motivations: ['asceticism_extravagance', 'loyalty_ambition'],
     mutationHint: { type: 'record_intelligence', intelligenceType: 'storage_rights' },
@@ -65,7 +65,7 @@ export const MERCHANT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = 
       'The route is open. Goods flow where none flowed before.',
     ],
     catalystEncounterIds: ['encounter_route_ambush', 'encounter_toll_dispute'],
-    targetRule: { type: 'location_subtype', subtypes: ['market', 'town', 'city', 'trading_post', 'port'] },
+    targetRule: { type: 'location_subtype', subtypes: ['town', 'city', 'capital'] },
     resourceHint: { wealthCost: 40, reachFloor: { gold: 0.4 } },
     // ── T2 seams (THR-1308) ──
     checkpointDifficulty: 0.5,
@@ -98,7 +98,7 @@ export const MERCHANT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = 
       'What was a track is a road. The cargo doubles and the season stops mattering so much.',
     ],
     catalystEncounterIds: ['encounter_toll_dispute'],
-    targetRule: { type: 'location_subtype', subtypes: ['market', 'town', 'city', 'trading_post', 'port'] },
+    targetRule: { type: 'location_subtype', subtypes: ['town', 'city', 'capital'] },
     resourceHint: { wealthCost: 30, reachFloor: { gold: 0.35 } },
     checkpointDifficulty: 0.45,
     requiresLocation: false,
@@ -124,7 +124,7 @@ export const MERCHANT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = 
       'The warehouse stands. Goods have a home, and the merchant has a foothold.',
     ],
     catalystEncounterIds: ['encounter_warehouse_sabotage', 'encounter_labor_dispute'],
-    targetRule: { type: 'location_subtype', subtypes: ['market', 'town', 'city', 'trading_post', 'port'] },
+    targetRule: { type: 'location_subtype', subtypes: ['town', 'city', 'capital'] },
     resourceHint: { wealthCost: 80, reachFloor: { gold: 0.4, stone: 0.2 } },
     motivations: ['asceticism_extravagance', 'preservation_transformation'],
     mutationHint: { type: 'create_sublocation', sublocationTypeId: 'warehouse', nameTemplate: "{actor}'s Warehouse at {location}" },
@@ -168,7 +168,7 @@ export const MERCHANT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = 
     completionProse: [
       'The market answers to one voice. For now.',
     ],
-    targetRule: { type: 'location_subtype', subtypes: ['market', 'town', 'city', 'trading_post'] },
+    targetRule: { type: 'location_subtype', subtypes: ['town', 'city', 'capital'] },
     resourceHint: { reachFloor: { gold: 0.5 } },
     motivations: ['asceticism_extravagance', 'honesty_cunning'],
     mutationHint: { type: 'no_mutation' },

@@ -135,6 +135,11 @@ type ExternalArtifact = {
 const EXTERNAL_GENERATED_ARTIFACTS: readonly ExternalArtifact[] = [
   // ~20s, boots worldgen. Required Step-0 load for Engine-pillar design work.
   { path: "Docs/canon/systems-inventory.md", command: "npm run generate-systems-inventory" },
+  // ~40s, boots two seeded worlds. The world-object catalogue (THR-1394): a stale copy
+  // reports a drift verdict the code no longer has, which is the one failure worse than
+  // no catalogue. Both outputs come from one generator; listing both keeps either honest.
+  { path: "Docs/canon/world-objects.generated.md", command: "npm run generate-world-objects" },
+  { path: "public/world-objects-reference.html", command: "npm run generate-world-objects" },
   // ~1s. THR-807 regenerated it and deliberately left its gate advisory "pending
   // THR-987" rather than building a bespoke one, so this ticket owns its recurrence
   // prevention; observed drift rate is ~2 plans/week, which re-rots it continuously.

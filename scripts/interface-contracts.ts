@@ -2440,6 +2440,33 @@ export const CONTRACTS: readonly Contract[] = [
     deferralTicket: 'THR-1297',
   },
   {
+    id: 'world-object-registry',
+    producerSystem: 'Agent Lifecycle',
+    consumerSystem: 'Strategic Projects & Control',
+    intent:
+      'Every kind of thing the world keeps has one name, in game words, and one registered shape — a node type (or edge type, or GameState slice) plus the subtype the game names — so a system that mints one and a system that targets one agree on what it is without reading each other. The registry derives the node schema that dev-mode addNode checks (an unregistered value is named the tick it is first written, warn-once, never a crash), the contract test pins it against every union and every WorldRefKind, and the generator badges each kind from a two-seed census and fails by name on drift. Adding a kind, class or subtype is one PR: registry row, UL term, canon row (THR-1394).',
+    ulTerms: ['World Object', 'Location', 'Place', 'Route', 'Area'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['WORLD_OBJECT_KINDS', 'validateNodeAgainstRegistry', 'getNodeSchema', 'locationClassOf', 'placeClassOf'],
+      module: 'src/data/world-objects.ts',
+    },
+    writeSites: [
+      'src/data/world-objects.ts',
+    ],
+    readSites: [
+      'src/types/nodeSchema.ts',
+      'src/engine/graph.ts',
+      'scripts/generate-world-objects.ts',
+      'scripts/cli.ts',
+    ],
+    verifiedLive: {
+      date: '2026-09-03',
+      evidence:
+        "THR-1394 slice 1. The registry claims every NodeType, every LocationSubtype (each in exactly one of seven Location classes, or the Route identity subtype), every SUBLOCATION_TYPE_CATEGORY id (as a Place class member), and every non-reserved WorldRefKind; src/data/__tests__/worldObjects.test.ts pins each claim against the union itself through the anchor catalog's parser, never a copy, and runs a 20-tick seed-42 small world through validateNodeAgainstRegistry asserting zero unregistered values. The write-time guard is wired in WorldGraph.addNode behind import.meta.env.DEV and WORLD_OBJECT_VALIDATION_ENABLED, warn-once per (type, value) per world (reset in initializeGameState), WORLD_OBJECT_THROW_ON_UNKNOWN consulted. The first census (seeds 42 + 99, medium, tick 30) found one unregistered value — actor actorType=group, the group kinds had been registered on a key the writers do not use — and five phantom content target names (market, port, trading_post in three packs and the cells' FOUND_SITE_RULE; fortress and construction_site in ambition-templates), all fixed in the same PR; --check is green at zero drift.",
+    },
+  },
+  {
     id: 'undertaking-object-types',
     producerSystem: 'Ambitions & Undertakings',
     consumerSystem: 'Strategic Projects & Control',

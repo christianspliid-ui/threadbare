@@ -46,11 +46,14 @@ function buildMerchantWorld() {
     },
   });
 
-  graph.addNode({ id: 'loc_market_central', name: 'Central Market', type: 'location', properties: { locationSubtype: 'market', hexCol: 5, hexRow: 5 } });
+  // THR-1394: no Location carries `market`, `port` or `trading_post` — the world-object
+  // registry rejects them at write time and the packs no longer target them. The
+  // fixture uses subtypes the world mints (a capital is the market town).
+  graph.addNode({ id: 'loc_market_central', name: 'Central Market', type: 'location', properties: { locationSubtype: 'capital', hexCol: 5, hexRow: 5 } });
   graph.addNode({ id: 'loc_town_east', name: 'Eastwatch', type: 'location', properties: { locationSubtype: 'town', hexCol: 8, hexRow: 5 } });
   graph.addNode({ id: 'loc_city_south', name: 'Southgate', type: 'location', properties: { locationSubtype: 'city', hexCol: 5, hexRow: 9 } });
-  graph.addNode({ id: 'loc_port_west', name: 'Harborside', type: 'location', properties: { locationSubtype: 'port', hexCol: 2, hexRow: 5 } });
-  graph.addNode({ id: 'loc_trading_post', name: 'Crossroads Post', type: 'location', properties: { locationSubtype: 'trading_post', hexCol: 5, hexRow: 3 } });
+  graph.addNode({ id: 'loc_port_west', name: 'Harborside', type: 'location', properties: { locationSubtype: 'town', hexCol: 2, hexRow: 5 } });
+  graph.addNode({ id: 'loc_trading_post', name: 'Crossroads Post', type: 'location', properties: { locationSubtype: 'city', hexCol: 5, hexRow: 3 } });
 
   graph.addEdge({ id: 'loc_merchant_a', source: 'merchant_a', target: 'loc_market_central', type: 'located_at', properties: {} });
 

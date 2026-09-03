@@ -298,7 +298,7 @@ export const COURT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
       'The network answers from further out than it did. Nobody travelled to make that true.',
     ],
     catalystEncounterIds: ['encounter_informant_exposed'],
-    targetRule: { type: 'location_subtype', subtypes: ['city', 'capital', 'town', 'port'] },
+    targetRule: { type: 'location_subtype', subtypes: ['city', 'capital', 'town'] },
     resourceHint: { wealthCost: 12, reachFloor: { shadow: 0.3 } },
     checkpointDifficulty: 0.5,
     // The one field that makes this the gate's first live subject.

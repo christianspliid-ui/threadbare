@@ -46,7 +46,7 @@
       "filename": "Graph.md",
       "title": "Graph",
       "contentAdjacent": false,
-      "termCount": 15,
+      "termCount": 20,
       "blurb": "Not content-adjacent. Terms covering the world graph data model: nodes, edges, versioning, position, and cache architecture."
     },
     {
@@ -4074,6 +4074,185 @@
     },
     {
       "shardId": "graph",
+      "slug": "world-object",
+      "name": "World Object",
+      "aliases": [
+        "World-object kind",
+        "Kind",
+        "Object kind"
+      ],
+      "status": "canonical",
+      "oneLiner": "a kind of thing the world keeps, in game words: a node/edge/state shape plus a named subtype; registry `src/data/world-objects.ts`, catalogue `Docs/canon/world-objects.md`",
+      "body": "A kind of thing the world keeps, named in game words: a node type (or an edge type, or a slice of `GameState`) plus a subtype the game names. A *variant* is a subtype or a class, never a new node type. The registry is `src/data/world-objects.ts`; the catalogue and the one-PR rule for adding a kind (registry row + UL term + canon row) are `Docs/canon/world-objects.md` (THR-1394, ratified 2026-09-03). Every kind names the `[[WorldRef]]` kind it projects onto — the two are one vocabulary seen from two sides.",
+      "seeAlso": [
+        {
+          "raw": "Node",
+          "termName": "Node",
+          "resolvedSlug": "graph#node"
+        },
+        {
+          "raw": "NodeType",
+          "termName": "NodeType",
+          "resolvedSlug": "graph#nodetype"
+        },
+        {
+          "raw": "Location",
+          "termName": "Location",
+          "resolvedSlug": "graph#location"
+        },
+        {
+          "raw": "Place",
+          "termName": "Place",
+          "resolvedSlug": "graph#place"
+        },
+        {
+          "raw": "Route",
+          "termName": "Route",
+          "resolvedSlug": "graph#route"
+        },
+        {
+          "raw": "WorldRef",
+          "termName": "WorldRef",
+          "resolvedSlug": "graph#worldref"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Graph.md#world-object",
+      "contentAdjacent": false
+    },
+    {
+      "shardId": "graph",
+      "slug": "area",
+      "name": "Area",
+      "aliases": [
+        "Region (code word)",
+        "`region` node"
+      ],
+      "status": "canonical",
+      "oneLiner": "a multi-hex terrain cluster containing its Locations; the `region` node; geographic, never political",
+      "body": "A multi-hex cluster by dominant terrain feature, containing its Locations. Geographic only: political territory is a Faction's `controls` edges, never a second region kind. The code word is *region*; the game word is Area.",
+      "seeAlso": [
+        {
+          "raw": "World Object",
+          "termName": "World Object",
+          "resolvedSlug": "graph#world-object"
+        },
+        {
+          "raw": "HexTile",
+          "termName": "HexTile",
+          "resolvedSlug": "graph#hextile"
+        },
+        {
+          "raw": "Location",
+          "termName": "Location",
+          "resolvedSlug": "graph#location"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Graph.md#area",
+      "contentAdjacent": false
+    },
+    {
+      "shardId": "graph",
+      "slug": "location",
+      "name": "Location",
+      "aliases": [
+        "Place-tier location",
+        "Settlement (one class of it)"
+      ],
+      "status": "canonical",
+      "oneLiner": "the outer place tier: a `location` node without `parentLocationId`; seven classes over `locationSubtype`",
+      "body": "The outer place tier: a `location` node **without** `parentLocationId`, told apart by `locationSubtype`. Seven classes over the existing subtypes — settlement, stronghold, holy_place, ruin, wild, wonder, deposit — each a game word. Resources are stocks on a Location (`properties.resources`); Deposit is the Location class over the six extraction subtypes, and nothing mints a `resource` node.",
+      "seeAlso": [
+        {
+          "raw": "World Object",
+          "termName": "World Object",
+          "resolvedSlug": "graph#world-object"
+        },
+        {
+          "raw": "Place",
+          "termName": "Place",
+          "resolvedSlug": "graph#place"
+        },
+        {
+          "raw": "Three-tier Position Model",
+          "termName": "Three-tier Position Model",
+          "resolvedSlug": "graph#three-tier-position-model"
+        },
+        {
+          "raw": "Area",
+          "termName": "Area",
+          "resolvedSlug": "graph#area"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Graph.md#location",
+      "contentAdjacent": false
+    },
+    {
+      "shardId": "graph",
+      "slug": "place",
+      "name": "Place",
+      "aliases": [
+        "Sublocation (code word)",
+        "`sublocation` (legacy node type",
+        "reader-accepted only)"
+      ],
+      "status": "canonical",
+      "oneLiner": "the inner place tier inside a Location: a `location` node with `parentLocationId`; the code word is *sublocation*; never \"room\" or \"structure\"",
+      "body": "The inner place tier — an inn, a granary, a gatehouse, a grove, a spring — inside a Location: a `location` node **with** `parentLocationId`, told apart by `sublocationTypeId`, classed by the sublocation tag (military, scholarly, arcane, commerce, religious, cultural, underworld, nature, authority, borderlands). Not always built, which is why it is not a *structure*; never a *room* (Christian, 2026-09-03). The code word stays *sublocation* (`src/engine/sublocationShape.ts`); the game word is Place.",
+      "seeAlso": [
+        {
+          "raw": "World Object",
+          "termName": "World Object",
+          "resolvedSlug": "graph#world-object"
+        },
+        {
+          "raw": "Location",
+          "termName": "Location",
+          "resolvedSlug": "graph#location"
+        },
+        {
+          "raw": "Three-tier Position Model",
+          "termName": "Three-tier Position Model",
+          "resolvedSlug": "graph#three-tier-position-model"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Graph.md#place",
+      "contentAdjacent": false
+    },
+    {
+      "shardId": "graph",
+      "slug": "route",
+      "name": "Route",
+      "aliases": [
+        "Road",
+        "Trade route",
+        "Pilgrim way",
+        "Portal"
+      ],
+      "status": "canonical",
+      "oneLiner": "an edge between two Locations (`road`, `trades_with`, `sacred_route`) that grows an identity node when nameable or ownable; classes road · trail · trade_lane · pilgrim_way · portal",
+      "body": "An edge between two Locations — `road`, `trades_with`, `sacred_route` — that traversal walks, and that grows an identity node (`location:trade_route` today) the moment it becomes nameable, ownable, blockadable or consecrated. Five ratified classes: road, trail, trade_lane, pilgrim_way, portal; a portal is a route edge with an empty hex path and its own cost. Trail and portal have no edge type yet (THR-1394 slice 2 adds `routeKind`).",
+      "seeAlso": [
+        {
+          "raw": "World Object",
+          "termName": "World Object",
+          "resolvedSlug": "graph#world-object"
+        },
+        {
+          "raw": "Location",
+          "termName": "Location",
+          "resolvedSlug": "graph#location"
+        },
+        {
+          "raw": "Edge",
+          "termName": "Edge",
+          "resolvedSlug": "graph#edge"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Graph.md#route",
+      "contentAdjacent": false
+    },
+    {
+      "shardId": "graph",
       "slug": "node",
       "name": "Node",
       "aliases": [
@@ -4268,7 +4447,7 @@
         {
           "raw": "Location",
           "termName": "Location",
-          "resolvedSlug": null
+          "resolvedSlug": "graph#location"
         },
         {
           "raw": "Sublocation",
@@ -5504,12 +5683,6 @@
       "shardId": "prose",
       "termSlug": "resolver",
       "detail": "See-Also \"Prose Pipeline\" did not resolve to a known term."
-    },
-    {
-      "kind": "unresolved_see_also",
-      "shardId": "graph",
-      "termSlug": "three-tier-position-model",
-      "detail": "See-Also \"Location\" did not resolve to a known term."
     },
     {
       "kind": "unresolved_see_also",

@@ -101,6 +101,8 @@ import { REWARD_POSSESSIONS, REWARD_CONDITIONS, REWARD_BESTOWED_POWERS } from '.
 import { STARTER_POSSESSIONS, STARTER_CONDITIONS } from '../src/data/starter-attachments';
 import { getCompanions } from '../src/engine/companions';
 import { COMPANION_MAX } from '../src/data/companion-templates';
+import { WORLD_OBJECT_KINDS, barePlaceTypeId } from '../src/data/world-objects';
+import { nodeSchemaWarningsSoFar } from '../src/types/nodeSchema';
 import { getAgentGrudges } from '../src/engine/agentDetail';
 import { getGrievanceHeatWord } from '../src/data/grievance-prose';
 import {
@@ -1285,6 +1287,7 @@ function printHelp(): void {
   console.log(`  ${BOLD}spawn encounter${RESET} <agent|@hero> <templateId>  Spawn an encounter on an agent`);
   console.log(`  ${BOLD}spawn undertaking${RESET} <agent|@first> <templateId> [--target <location|actor>] [--band <band>]  Start an undertaking for review (THR-1300)`);
   console.log(`  ${BOLD}undertakings${RESET} [agent|@first]  Active undertakings, with the review pin's verdict when one is set`);
+  console.log(`  ${BOLD}objects${RESET} [kind]          World-object kinds with their live counts in this world, and the write-time guard's warnings (THR-1394)`);
   console.log(`  ${BOLD}follow${RESET} <agent|@first>       Follow a mortal (their moments interrupt)`);
   console.log(`  ${BOLD}spawn attachment${RESET} <agent|@hero> <templateId> Attach an item/trait to an agent`);
   console.log(`  ${BOLD}spawn band${RESET} <faction> [--role raider|defender]  Force a faction to field an NPC band`);
@@ -1711,6 +1714,48 @@ function handleSpawnUndertaking(agentQuery: string, templateId: string, flags: s
   if (band) console.log(`  band pinned: ${band} (read \`undertakings\` after ticking for the verdict)`);
 }
 
+/** `objects [kind]` — every world-object kind with its count in the running world (THR-1394). */
+function handleObjects(kindQuery: string): void {
+  const graph = state.graph;
+  const nodes = graph.getAllNodes();
+  const edges = graph.getAllEdges();
+  const rows = WORLD_OBJECT_KINDS.filter(k => !kindQuery || k.id === kindQuery || k.gameWord.toLowerCase() === kindQuery.toLowerCase());
+  if (rows.length === 0) { console.log(`${RED}No world-object kind matching "${kindQuery}"${RESET}`); return; }
+  console.log(`
+${BOLD}World objects${RESET} — ${rows.length} kind${rows.length === 1 ? '' : 's'} (registry: src/data/world-objects.ts)`);
+  for (const k of rows) {
+    let count: number | null = null;
+    const s = k.shape;
+    if (s.kind === 'edge') count = edges.filter(e => (s.edgeTypes as readonly string[]).includes(String(e.type))).length;
+    else if (s.kind === 'node') {
+      count = nodes.filter(n => {
+        if (String(n.type) !== s.nodeType) return false;
+        const hasParent = typeof n.properties.parentLocationId === 'string' && n.properties.parentLocationId.length > 0;
+        if (s.requires === 'parentLocationId' && !hasParent) return false;
+        if (s.requires === 'no-parentLocationId' && hasParent) return false;
+        if (s.refines && String(n.properties[s.refines.key]) !== s.refines.value) return false;
+        if (!s.discriminator) return true;
+        const raw = n.properties[s.discriminator.key] ?? (s.discriminator.fallbackKey ? n.properties[s.discriminator.fallbackKey] : undefined);
+        if (raw === undefined || raw === null) return false;
+        const v = s.discriminator.key === 'sublocationTypeId' ? barePlaceTypeId(String(raw)) : String(raw);
+        return (s.discriminator.values as readonly string[]).includes(v);
+      }).length;
+    }
+    const shape = s.kind === 'state' ? `state ${s.path}` : s.kind === 'edge' ? `edge ${s.edgeTypes.join('/')}` : `node ${s.nodeType}${s.discriminator ? ` · ${s.discriminator.key}` : ''}`;
+    const badge = count === null ? DIM + '—' + RESET : count > 0 ? GREEN + String(count) + RESET : YELLOW + '0' + RESET;
+    console.log(`  ${BOLD}${k.gameWord.padEnd(20)}${RESET} ${badge.padEnd(16)} ${DIM}${shape}${RESET}`);
+    if (kindQuery) {
+      console.log(`    ${DIM}${k.note}${RESET}`);
+      if (k.classes) for (const [c, m] of Object.entries(k.classes)) console.log(`    ${c}: ${m.length ? m.join(', ') : '(no value yet)'}`);
+      console.log(`    writers: ${k.writers.join(', ') || '—'} · status: ${k.status} · UL: ${k.ulTerm}${k.worldRef ? ` · chip: ${k.worldRef}` : ''}`);
+    }
+  }
+  const warned = nodeSchemaWarningsSoFar();
+  console.log(`
+${BOLD}Write-time guard${RESET}: ${warned.length === 0 ? GREEN + 'no unregistered values written this world' + RESET : YELLOW + String(warned.length) + ' unregistered value(s)' + RESET}`);
+  for (const w of warned) console.log(`  ${YELLOW}${w}${RESET}`);
+}
+
 /** `undertakings [agent|@first]` — active undertakings and the pin verdict (THR-1300 slice 2). */
 function handleUndertakings(agentQuery: string): void {
   const projects = state.strategicState?.projects.filter(p => p.status === 'active') ?? [];
@@ -2028,6 +2073,9 @@ function handleCommand(line: string): boolean {
       break;
     case 'undertakings':
       handleUndertakings(arg);
+      break;
+    case 'objects':
+      handleObjects(arg);
       break;
     case 'follow':
       handleFollow(arg);
