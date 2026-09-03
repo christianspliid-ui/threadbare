@@ -110,6 +110,17 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     strategicProfile: {
       behaviorFamily: 'merchant-expansion',
       preferredVerbs: ['gather_info', 'create', 'control', 'change'],
+      // THR-1392 slice 2 — the verb × object cells this ambition walks under the
+      // `cells` model, ahead of `templateIds` (cells lead so the per-ambition cap
+      // cannot starve them). Ignored while `UNDERTAKING_MODEL` is `templates`.
+      cells: [
+        'cell.found.route',
+        'cell.control_claim.route',
+        'cell.control_seize.route',
+        'cell.found.room',
+        'cell.improve.settlement',
+        'cell.undo.route',
+      ],
       templateIds: [
         'strategic_survey_market',
         'strategic_negotiate_storage',
@@ -184,6 +195,18 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     strategicProfile: {
       behaviorFamily: 'warlord-expansion',
       preferredVerbs: ['gather_info', 'create', 'destroy', 'control'],
+      // THR-1392 slice 2 — the verb × object cells this ambition walks under the
+      // `cells` model, ahead of `templateIds` (cells lead so the per-ambition cap
+      // cannot starve them). Ignored while `UNDERTAKING_MODEL` is `templates`.
+      cells: [
+        'cell.undo.settlement',
+        'cell.control_seize.settlement',
+        'cell.found.company',
+        'cell.improve.company',
+        'cell.undo.company',
+        'cell.undo.route',
+        'cell.control_seize.room',
+      ],
       templateIds: [
         'strategic_scout_defenses',
         // THR-1388 — the profile's three destroys sit ahead of the always-available verbs,
@@ -271,6 +294,16 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     strategicProfile: {
       behaviorFamily: 'builder-civic',
       preferredVerbs: ['create', 'change', 'gather_info'],
+      // THR-1392 slice 2 — the verb × object cells this ambition walks under the
+      // `cells` model, ahead of `templateIds` (cells lead so the per-ambition cap
+      // cannot starve them). Ignored while `UNDERTAKING_MODEL` is `templates`.
+      cells: [
+        'cell.found.attachment',
+        'cell.found.room',
+        'cell.found.settlement',
+        'cell.improve.settlement',
+        'cell.control_claim.room',
+      ],
       templateIds: [
         'strategic_craft_masterwork',
         'strategic_improve_masterwork',
@@ -337,6 +370,15 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     strategicProfile: {
       behaviorFamily: 'scholar-seeker',
       preferredVerbs: ['gather_info', 'create', 'control'],
+      // THR-1392 slice 2 — the verb × object cells this ambition walks under the
+      // `cells` model, ahead of `templateIds` (cells lead so the per-ambition cap
+      // cannot starve them). Ignored while `UNDERTAKING_MODEL` is `templates`.
+      cells: [
+        'cell.found.attachment',
+        'cell.found.room',
+        'cell.use.mark',
+        'cell.undo.mark',
+      ],
       templateIds: [
         'strategic_research_archive',
         'strategic_investigate_anomaly',
@@ -410,6 +452,17 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     strategicProfile: {
       behaviorFamily: 'court-political',
       preferredVerbs: ['create', 'control', 'change', 'gather_info'],
+      // THR-1392 slice 2 — the verb × object cells this ambition walks under the
+      // `cells` model, ahead of `templateIds` (cells lead so the per-ambition cap
+      // cannot starve them). Ignored while `UNDERTAKING_MODEL` is `templates`.
+      cells: [
+        'cell.control_claim.room',
+        'cell.control_seize.room',
+        'cell.undo.faction',
+        'cell.use.mark',
+        'cell.undo.mark',
+        'cell.control_seize.attachment',
+      ],
       templateIds: [
         'strategic_assess_politics',
         'strategic_buy_influence',
@@ -485,6 +538,14 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     strategicProfile: {
       behaviorFamily: 'wanderer-explorer',
       preferredVerbs: ['gather_info', 'change', 'create'],
+      // THR-1392 slice 2 — the verb × object cells this ambition walks under the
+      // `cells` model, ahead of `templateIds` (cells lead so the per-ambition cap
+      // cannot starve them). Ignored while `UNDERTAKING_MODEL` is `templates`.
+      cells: [
+        'cell.found.attachment',
+        'cell.found.route',
+        'cell.found.settlement',
+      ],
       templateIds: [
         'strategic_walk_the_unmapped',
         'strategic_chart_the_wilds',
@@ -555,6 +616,15 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     strategicProfile: {
       behaviorFamily: 'scholar-seeker',
       preferredVerbs: ['gather_info', 'create', 'control'],
+      // THR-1392 slice 2 — the verb × object cells this ambition walks under the
+      // `cells` model, ahead of `templateIds` (cells lead so the per-ambition cap
+      // cannot starve them). Ignored while `UNDERTAKING_MODEL` is `templates`.
+      cells: [
+        'cell.use.mark',
+        'cell.undo.mark',
+        'cell.found.attachment',
+        'cell.control_seize.attachment',
+      ],
       templateIds: [
         'strategic_research_archive',
         'strategic_investigate_anomaly',
@@ -633,6 +703,15 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     strategicProfile: {
       behaviorFamily: 'zealot-mission',
       preferredVerbs: ['gather_info', 'change', 'create', 'control'],
+      // THR-1392 slice 2 — the verb × object cells this ambition walks under the
+      // `cells` model, ahead of `templateIds` (cells lead so the per-ambition cap
+      // cannot starve them). Ignored while `UNDERTAKING_MODEL` is `templates`.
+      cells: [
+        'cell.found.room',
+        'cell.control_claim.room',
+        'cell.improve.settlement',
+        'cell.undo.faction',
+      ],
       templateIds: [
         'strategic_survey_faithful',
         'strategic_preach_masses',
@@ -701,6 +780,16 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     strategicProfile: {
       behaviorFamily: 'builder-civic',
       preferredVerbs: ['gather_info', 'create', 'change', 'control'],
+      // THR-1392 slice 2 — the verb × object cells this ambition walks under the
+      // `cells` model, ahead of `templateIds` (cells lead so the per-ambition cap
+      // cannot starve them). Ignored while `UNDERTAKING_MODEL` is `templates`.
+      cells: [
+        'cell.found.room',
+        'cell.found.settlement',
+        'cell.improve.settlement',
+        'cell.found.attachment',
+        'cell.found.route',
+      ],
       templateIds: [
         'strategic_survey_site',
         'strategic_draft_plans',
@@ -863,6 +952,17 @@ export const GRIEVANCE_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     strategicProfile: {
       behaviorFamily: 'court-political',
       preferredVerbs: ['destroy', 'gather_info', 'change'],
+      // THR-1392 slice 2 — the verb × object cells this ambition walks under the
+      // `cells` model, ahead of `templateIds` (cells lead so the per-ambition cap
+      // cannot starve them). Ignored while `UNDERTAKING_MODEL` is `templates`.
+      cells: [
+        'cell.undo.attachment',
+        'cell.undo.room',
+        'cell.undo.settlement',
+        'cell.undo.mark',
+        'cell.undo.company',
+        'cell.control_seize.attachment',
+      ],
       templateIds: [
         'strategic_expose_mark',
         // THR-1309 — the `warband` kind's counter-play. This is its natural home
@@ -969,6 +1069,15 @@ export const GRIEVANCE_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     strategicProfile: {
       behaviorFamily: 'wanderer-explorer',
       preferredVerbs: ['gather_info', 'change', 'create'],
+      // THR-1392 slice 2 — the verb × object cells this ambition walks under the
+      // `cells` model, ahead of `templateIds` (cells lead so the per-ambition cap
+      // cannot starve them). Ignored while `UNDERTAKING_MODEL` is `templates`.
+      cells: [
+        'cell.control_seize.settlement',
+        'cell.control_claim.room',
+        'cell.found.settlement',
+        'cell.found.route',
+      ],
       templateIds: [
         'strategic_walk_the_unmapped',
         'strategic_follow_the_chart',
@@ -1502,6 +1611,14 @@ export const EVENT_MINTED_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     strategicProfile: {
       behaviorFamily: 'wanderer-explorer',
       preferredVerbs: ['gather_info', 'create', 'change'],
+      // THR-1392 slice 2 — the verb × object cells this ambition walks under the
+      // `cells` model, ahead of `templateIds` (cells lead so the per-ambition cap
+      // cannot starve them). Ignored while `UNDERTAKING_MODEL` is `templates`.
+      cells: [
+        'cell.found.attachment',
+        'cell.found.route',
+        'cell.use.mark',
+      ],
       templateIds: [
         'strategic_walk_the_unmapped',
         'strategic_chart_the_wilds',

@@ -56,7 +56,10 @@ import {
   enumerateObjectHandles,
   objectPlaceNodeId,
 } from '../data/undertaking-objects';
-import { ownershipOf, ownershipSatisfies } from './undertakingResolver';
+import { ownershipOf, ownershipSatisfies, readObjectTier } from './undertakingResolver';
+import { getCellTemplate } from '../data/undertaking-cells';
+import { UNDERTAKING_MODEL, type UndertakingModel } from '../data/strategic-action-constants';
+import type { AmbitionStrategicProfile as StrategicProfileForCells } from '../types/strategicAction';
 import { evaluateMotiveGate } from './undertakingMotive';
 
 // ─── Template Registry ──────────────────────────────────────────────
@@ -82,7 +85,48 @@ for (const pack of ALL_PACKS) {
 }
 
 export function getStrategicTemplate(id: string): StrategicActionTemplate | undefined {
-  return TEMPLATE_REGISTRY.get(id);
+  // Cells are resolvable by id at all times (a project started under the cells model
+  // must always find its template); they are walked only under that model.
+  return TEMPLATE_REGISTRY.get(id) ?? getCellTemplate(id);
+}
+
+/**
+ * The work ids an ambition profile offers under a model (THR-1392 slice 2) — the one
+ * reader every consumer of `strategicProfile.templateIds` goes through. Cells lead
+ * so the per-ambition cap cannot starve them (the THR-1388 ordering lesson).
+ */
+export function profileWorkIds(profile: StrategicProfileForCells, model: UndertakingModel = UNDERTAKING_MODEL): readonly string[] {
+  if (model !== 'cells') return profile.templateIds;
+  return [...(profile.cells ?? []), ...profile.templateIds];
+}
+
+/**
+ * Cells already traced unreachable in this world — once per world per cell (NFP #2:
+ * a cell nobody can ever take is the new "variant that never fires", and one line
+ * says it). Keyed weakly on the graph so a new world starts clean and nothing leaks.
+ */
+const CELLS_TRACED_UNREACHABLE = new WeakMap<WorldGraph, Set<string>>();
+
+function traceCellUnreachableOnce(
+  graph: WorldGraph,
+  template: StrategicActionTemplate,
+  reason: 'no_object_exists' | 'no_owned_object',
+  tick: number,
+): void {
+  if (!template.undertakingVerb || !template.objectTypeId) return;
+  let seen = CELLS_TRACED_UNREACHABLE.get(graph);
+  if (!seen) { seen = new Set(); CELLS_TRACED_UNREACHABLE.set(graph, seen); }
+  const key = `${template.id}:${reason}`;
+  if (seen.has(key)) return;
+  seen.add(key);
+  emitTrace({
+    category: 'undertaking_cell_unreachable',
+    tick,
+    verb: template.undertakingVerb,
+    objectTypeId: template.objectTypeId,
+    reason,
+    summary: `${template.id}: ${reason === 'no_object_exists' ? 'no object of the type exists' : 'no object under the ownership rule'}`,
+  });
 }
 
 export function getAllStrategicTemplates(): StrategicActionTemplate[] {
@@ -130,7 +174,7 @@ export interface ReviewCandidateOptions {
 /** Ambition template ids whose strategic profile names `templateId` — the third registration, read back. */
 export function profiledAmbitionIdsFor(templateId: string): string[] {
   return [...AMBITION_TEMPLATES, ...GRIEVANCE_AMBITION_TEMPLATES]
-    .filter(a => a.strategicProfile?.templateIds.includes(templateId))
+    .filter(a => a.strategicProfile && profileWorkIds(a.strategicProfile).includes(templateId))
     .map(a => a.id);
 }
 
@@ -142,6 +186,8 @@ export function generateStrategicCandidates(
   tick: number,
   rng: () => number,
   review?: ReviewCandidateOptions,
+  /** The undertaking model to walk under; defaults to the flag. A test may pass `cells`. */
+  model: UndertakingModel = UNDERTAKING_MODEL,
 ): StrategicCandidateGenerationResult {
   const candidates: StrategicActionCandidate[] = [];
   const rejections: StrategicCandidateRejection[] = [];
@@ -177,11 +223,12 @@ export function generateStrategicCandidates(
     const profile = ambitionTemplate.strategicProfile;
     let ambitionCandidateCount = 0;
 
-    for (const templateId of profile.templateIds) {
+    const workIds = profileWorkIds(profile, model);
+    for (const templateId of workIds) {
       if (ambitionCandidateCount >= STRATEGIC_MAX_CANDIDATES_PER_AMBITION) break;
       if (candidates.length >= STRATEGIC_MAX_CANDIDATES_PER_ACTOR) break;
 
-      const template = TEMPLATE_REGISTRY.get(templateId);
+      const template = getStrategicTemplate(templateId);
       if (!template) {
         rejections.push({ templateId, reason: 'template_not_found' });
         continue;
@@ -231,7 +278,8 @@ export function generateStrategicCandidates(
       // Find valid targets. For the `object` rule (THR-1392) the handle each target
       // stands for rides beside the node — an edge object has no node of its own.
       const objectHandles = new Map<string, UndertakingObjectHandle>();
-      let targets = findValidTargets(graph, actorId, template, locationId, actorHex, objectHandles);
+      const objectSweep = { enumerated: 0 };
+      let targets = findValidTargets(graph, actorId, template, locationId, actorHex, objectHandles, objectSweep);
       if (review?.targetId) targets = targets.filter(t => t.id === review.targetId);
       if (review?.preferOwnedTarget) {
         // Owned first, stable otherwise: the motive gate already knows how to count
@@ -240,12 +288,19 @@ export function generateStrategicCandidates(
         targets = [...targets].sort((a, b) => Number(owned.get(b.id)) - Number(owned.get(a.id)));
       }
       if (targets.length === 0) {
-        rejections.push({ templateId, reason: 'no_valid_targets' });
+        if (template.targetRule.type === 'object') {
+          // The cell's own refusal (THR-1392): distinguishes a world with no such
+          // object from one where every object of the type fails the ownership rule.
+          traceCellUnreachableOnce(graph, template, objectSweep.enumerated === 0 ? 'no_object_exists' : 'no_owned_object', tick);
+          rejections.push({ templateId, reason: `no_object_in_range:${template.targetRule.objectTypeId}` });
+        } else {
+          rejections.push({ templateId, reason: 'no_valid_targets' });
+        }
         continue;
       }
 
       // Generate a candidate for the best targets (cap per-template to ensure variety)
-      const maxPerTemplate = Math.min(2, Math.max(1, Math.floor(STRATEGIC_MAX_CANDIDATES_PER_AMBITION / profile.templateIds.length)));
+      const maxPerTemplate = Math.min(2, Math.max(1, Math.floor(STRATEGIC_MAX_CANDIDATES_PER_AMBITION / Math.max(1, workIds.length))));
       let templateCandidateCount = 0;
       for (const target of targets) {
         if (templateCandidateCount >= maxPerTemplate) break;
@@ -357,6 +412,10 @@ export function generateStrategicCandidates(
           objectHandle,
           objectTypeId: objectHandle && template.targetRule.type === 'object'
             ? template.targetRule.objectTypeId as UndertakingObjectTypeId
+            : undefined,
+          // The object's tier at proposal (slice 2): difficulty and payoff scale on it.
+          objectTier: objectHandle && template.targetRule.type === 'object'
+            ? readObjectTier(graph, getUndertakingObjectType(template.targetRule.objectTypeId)!, objectHandle, tick)
             : undefined,
           anchorNodeId: anchorGate.anchorNodeId,
           // The victim the motive gate already named (THR-1298). Stamped here because
@@ -474,6 +533,8 @@ function findValidTargets(
   actorHex: { col: number; row: number } | null,
   /** Out: the object handle behind each returned node, for the `object` rule (THR-1392). */
   objectHandles?: Map<string, UndertakingObjectHandle>,
+  /** Out: how many objects of the type existed before the ownership rule (slice 2's unreachable reason). */
+  objectSweep?: { enumerated: number },
 ): GraphNode[] {
   const rule = template.targetRule;
 
@@ -489,8 +550,14 @@ function findValidTargets(
       if (!type) return [];
       const nodes: GraphNode[] = [];
       const seen = new Set<string>();
-      for (const handle of enumerateObjectHandles(graph, type)) {
-        if (!ownershipSatisfies(rule.ownership, ownershipOf(graph, actorId, type, handle))) continue;
+      const handles = enumerateObjectHandles(graph, type);
+      if (objectSweep) objectSweep.enumerated = handles.length;
+      for (const handle of handles) {
+        const ownership = ownershipOf(graph, actorId, type, handle);
+        if (!ownershipSatisfies(rule.ownership, ownership)) continue;
+        // A `control` cell under `any` never targets what the actor already holds —
+        // the resolver would refuse it at completion, so refuse it here, at proposal.
+        if (template.undertakingVerb === 'control' && ownership === 'own') continue;
         const placeId = objectPlaceNodeId(graph, handle);
         const node = placeId ? graph.getNode(placeId) : undefined;
         if (!node || seen.has(node.id)) continue;

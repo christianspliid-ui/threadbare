@@ -56,7 +56,7 @@ import {
 } from '../data/strategic-action-constants';
 import { getAgentAmbitions } from './graphQueries';
 import { findAmbitionTemplateById } from '../data/ambition-templates';
-import { getStrategicTemplate } from './strategicActionCandidates';
+import { getStrategicTemplate, profileWorkIds } from './strategicActionCandidates';
 import { emitTrace } from './traceBuffer';
 
 export type CallingChangeCause = 'ambition_change' | 'undertaking_complete' | 'tier_promotion' | 'initial';
@@ -110,7 +110,7 @@ export function activeAmbitionInput(graph: WorldGraph, agentId: string): Ambitio
   const template = templateId ? findAmbitionTemplateById(templateId) : undefined;
   if (!template) return null;
   const kinds = new Set<UndertakingKindId>();
-  for (const id of template.strategicProfile?.templateIds ?? []) {
+  for (const id of template.strategicProfile ? profileWorkIds(template.strategicProfile) : []) {
     const kindId = (getStrategicTemplate(id) as { kindId?: UndertakingKindId } | undefined)?.kindId;
     if (kindId) kinds.add(kindId);
   }

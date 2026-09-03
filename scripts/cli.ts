@@ -33,6 +33,8 @@
  */
 
 import * as readline from 'readline';
+import { getStrategicTemplate } from '../src/engine/strategicActionCandidates';
+import { objectDisplayName } from '../src/engine/undertakingProse';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -1723,7 +1725,12 @@ function handleUndertakings(agentQuery: string): void {
   for (const p of rows.slice(0, 40)) {
     const actor = state.graph.getNode(p.actorId);
     const lc = p.lastCheckpoint;
-    console.log(`  ${p.projectId}  ${CYAN}${p.templateId}${RESET}  ${actor?.name ?? p.actorId}  ${p.progress}/${p.progressRequired}${lc ? `  last: ${lc.band} → ${lc.effect}` : ''}${p.halts ? `  halts ${p.halts}` : ''}${isFollowedRead(state, state.graph, p.actorId) ? '  [followed]' : ''}`);
+    // A cell shows its verb × object and the object's own name (THR-1392 slice 2).
+    const cell = getStrategicTemplate(p.templateId);
+    const cellLabel = cell?.cellVariant && p.objectTypeId
+      ? `  ${cell.cellVariant} × ${p.objectTypeId}: ${objectDisplayName(state.graph, p.objectTypeId, p.objectHandle) ?? '?'}${p.objectTier ? ` (T${p.objectTier})` : ''}`
+      : '';
+    console.log(`  ${p.projectId}  ${CYAN}${p.templateId}${RESET}${cellLabel}  ${actor?.name ?? p.actorId}  ${p.progress}/${p.progressRequired}${lc ? `  last: ${lc.band} → ${lc.effect}` : ''}${p.halts ? `  halts ${p.halts}` : ''}${isFollowedRead(state, state.graph, p.actorId) ? '  [followed]' : ''}`);
   }
   const verdict = getUndertakingPinVerdict();
   if (verdict) console.log(`  ${BOLD}pin${RESET} ${verdict.templateId} → ${verdict.requestedBand}: ${verdict.status} — ${verdict.message}`);

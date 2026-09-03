@@ -92,6 +92,7 @@ import {
   MOMENT_BADGE_SIGNIFICANCE,
   UNDERTAKING_INSPIRE_FLAG,
   UNDERTAKING_SABOTAGE_FLAG,
+  UNDERTAKING_VERB_DIFFICULTY,
 } from '../data/strategic-action-constants';
 
 // ─── Band → effect ──────────────────────────────────────────────────
@@ -493,7 +494,10 @@ export function resolveUndertakingCheckpoint(
 
   // ─── The roll ─────────────────────────────────────────────────────
   const capability = computeCapability(graph, project.actorId, reach);
-  const authored = template?.checkpointDifficulty ?? UNDERTAKING_DEFAULT_CHECKPOINT_DIFFICULTY;
+  // A cell's difficulty scales on the object's tier (THR-1392 slice 2); a template's is authored.
+  const authored = template?.cellVariant && project.objectTier
+    ? UNDERTAKING_VERB_DIFFICULTY[template.cellVariant][project.objectTier - 1]
+    : template?.checkpointDifficulty ?? UNDERTAKING_DEFAULT_CHECKPOINT_DIFFICULTY;
   const difficulty = clamp01(authored + (project.checkpointDifficultyDelta ?? 0));
 
   // The Inspire/Sabotage rider (§3). Both divine actions stamp a one-shot flag on

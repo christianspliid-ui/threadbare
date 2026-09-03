@@ -16,6 +16,7 @@ import type {
 } from '../types/strategicAction';
 import type { WorldGraph } from './graph';
 import { getStrategicTemplate } from './strategicActionCandidates';
+import { cellActivityProse } from './undertakingProse';
 import { resolveLocationToHex } from './encounterAwareness';
 import { getAgentLocationId } from './graphQueries';
 import { hexKey } from '../lib/hexKey';
@@ -207,8 +208,11 @@ export function getAgentStrategicSummary(
       activeProject.progressRequired > 0
         ? Math.min(1, activeProject.progress / activeProject.progressRequired)
         : 1;
-    const displayName =
-      (template?.activityProse?.length ?? 0) > 0
+    // A cell's line is composed from the world (THR-1392 slice 2); a template's is
+    // its first authored activity line, verbatim, as before.
+    const displayName = template?.cellVariant && activeProject.objectTypeId
+      ? cellActivityProse(graph, activeProject, template.cellVariant).text
+      : (template?.activityProse?.length ?? 0) > 0
         ? template!.activityProse[0]
         : (template?.displayName ?? activeProject.templateId);
 
