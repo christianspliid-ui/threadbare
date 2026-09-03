@@ -2,7 +2,7 @@
 
 # Undertakings × world objects — the grid
 
-> Every world-object kind × every undertaking verb. **42 live cells** (the registry declares a semantic), **36 open cells** (the model admits it, no operation yet — a named decision), the rest not an object of undertakings with the reason. 15 of 34 kinds carry a cell. Verbs: create · change · use · control · destroy · observe; change and control split into raise | lower and claim | seize. Regenerate: `npm run generate-undertaking-grid`; the generator fails by name on a live cell without a note, a non-live cell without a disposition, or a stale disposition.
+> Every world-object kind × every undertaking verb. **42 live cells** (the registry declares a semantic; 9 of them still owe a decided consequence nothing reads), **20 wanted cells** (decided yes, the operation named, not yet built), **7 later cells** (decided, waiting on a named precondition), **0 open cells** (the model admits it, nobody has decided), the rest not an object of undertakings with the reason. 15 of 34 kinds carry a cell. Verbs: create · change · use · control · destroy · observe; change and control split into raise | lower and claim | seize. Regenerate: `npm run generate-undertaking-grid`; the generator fails by name on a live cell without a note, a non-live cell without a disposition, a verdict without its decider, or a stale disposition.
 
 ## The grid
 
@@ -10,28 +10,28 @@
 |---|---|---|---|---|---|---|---|---|
 | **Area** `area` | · | · | · | · | · | · | · | 🟢 `record_intelligence` |
 | **Hex** `hex` | · | · | · | · | · | · | · | · |
-| **Location** `location` | 🟢 `create_location` | 🟢 `modify_location_property (+)` | 🟢 `modify_location_property (−)` | 🟡 open | 🟢 `claim_control (mode)` | 🟢 `transfer_holding` | 🟢 `ruin_settlement` | 🟢 `record_intelligence` |
-| **Place** `place` | 🟢 `create_sublocation` | 🟡 open | 🟡 open | 🟡 open | 🟢 `grant_holding` | 🟢 `transfer_holding` | 🟢 `raze_holding` | 🟢 `record_intelligence` |
-| **Route** `route` | 🟢 `create_trade_route` | 🟡 open | 🟢 `blockade_route` | 🟢 `conduct_trade` | 🟢 `grant_holding` | 🟢 `transfer_holding + tax_trade_route` | 🟡 open | 🟢 `record_intelligence` |
-| **Mortal** `mortal` | · | · | · | · | · | · | · | · |
+| **Location** `location` | 🟢 `create_location` | 🟢 `modify_location_property (+)` | 🟢 `modify_location_property (−)` | 🔵 wanted | 🟢 `claim_control (mode)` | 🟢 `transfer_holding` | 🟢 `ruin_settlement` | 🟢 `record_intelligence` |
+| **Place** `place` | 🟢 `create_sublocation` | ⏳ later | ⏳ later | · | 🟢 `grant_holding` | 🟢 `transfer_holding` | 🟢 `raze_holding` | 🟢 `record_intelligence` |
+| **Route** `route` | 🟢 `create_trade_route` | 🔵 wanted | 🟢 `blockade_route` | 🟢 `conduct_trade` | 🟢 `grant_holding` | 🟢 `transfer_holding + tax_trade_route` | · | 🟢 `record_intelligence` |
+| **Mortal** `mortal` | · | · | · | · | · | · | 🔵 wanted | · |
 | **Ascendant** `ascendant` | · | · | · | · | · | · | · | · |
 | **God / Spirit** `god` | · | · | · | · | · | · | · | · |
-| **Faction** `faction` | 🟢 `found_faction` | 🟡 open | 🟡 open | 🟡 open | 🟡 open | 🟡 open | 🟢 `plant_schism` | 🟢 `record_intelligence` |
+| **Faction** `faction` | 🟢 `found_faction` | · | · | · | 🔵 wanted | 🔵 wanted | 🟢 `plant_schism` | 🟢 `record_intelligence` |
 | **Culture** `culture` | · | · | · | · | · | · | · | · |
-| **Company** `company` | 🟢 `raise_warband` | 🟢 `reinforce_group` | 🟡 open | · | 🟡 open | 🟡 open | 🟢 `disband_group` | · |
-| **Army** `army` | 🟢 `raise_warhost` | 🟢 `reinforce_group` | 🟡 open | · | 🟡 open | 🟡 open | 🟢 `disband_group` | 🟡 open |
-| **Network** `network` | 🟡 open | 🟡 open | 🟡 open | 🟡 open | · | 🟡 open | 🟢 `disband_group` | · |
+| **Company** `company` | 🟢 `raise_warband` | 🟢 `reinforce_group` | 🔵 wanted | · | 🔵 wanted | 🔵 wanted | 🟢 `disband_group` | · |
+| **Army** `army` | 🟢 `raise_warhost` | 🟢 `reinforce_group` | · | · | 🔵 wanted | 🔵 wanted | 🟢 `disband_group` | 🔵 wanted |
+| **Network** `network` | 🔵 wanted | 🔵 wanted | ⏳ later | 🔵 wanted | · | ⏳ later | 🟢 `disband_group` | · |
 | **Battle** `battle` | · | · | · | · | · | · | · | · |
 | **Companion** `companion` | 🟢 `mint_companion` | · | · | · | · | · | 🟢 `remove_companion` | · |
-| **Item** `item` | 🟢 `mint_masterwork` | 🟡 open | 🟡 open | 🟡 open | 🟡 open | 🟢 `seize_item` | 🟢 `destroy_item` | 🟡 open |
+| **Item** `item` | 🟢 `mint_masterwork` | ⏳ later | ⏳ later | · | 🔵 wanted | 🟢 `seize_item` | 🟢 `destroy_item` | ⏳ later |
 | **Legendary artifact** `legendary_artifact` | · | · | · | · | · | · | · | · |
 | **Holding** `holding` | · | · | · | · | · | · | · | · |
-| **Power** `power` | 🟡 open | 🟡 open | 🟡 open | 🟢 `activate_spell` | · | · | 🟡 open | · |
-| **Condition** `condition` | 🟡 open | · | · | · | · | · | 🟢 `cure_condition` | · |
+| **Power** `power` | 🔵 wanted | · | · | 🟢 `activate_spell` | · | · | 🔵 wanted | · |
+| **Condition** `condition` | 🔵 wanted | · | · | · | · | · | 🟢 `cure_condition` | · |
 | **Trait** `trait` | · | · | · | · | · | · | · | · |
-| **Agreement** `agreement` | 🟢 `mint_leverage_mark` | · | · | 🟢 `press_the_mark` | · | 🟡 open | 🟢 `expose_mark` | · |
-| **Standing** `standing` | · | 🟢 `apply_reputation_with_delta (+)` | 🟢 `apply_reputation_with_delta (−)` | 🟡 open | · | · | 🟢 `create_relation_edge hostile_to` | · |
-| **Ambition** `ambition` | · | · | · | · | · | · | 🟡 open | · |
+| **Agreement** `agreement` | 🟢 `mint_leverage_mark` | · | · | 🟢 `press_the_mark` | · | 🔵 wanted | 🟢 `expose_mark` | · |
+| **Standing** `standing` | · | 🟢 `apply_reputation_with_delta (+)` | 🟢 `apply_reputation_with_delta (−)` | 🔵 wanted | · | · | 🟢 `create_relation_edge hostile_to` | · |
+| **Ambition** `ambition` | · | · | · | · | · | · | · | · |
 | **Undertaking** `undertaking` | · | · | · | · | · | · | · | · |
 | **Event** `event` | · | · | · | · | · | · | · | · |
 | **Journey** `journey` | · | · | · | · | · | · | · | · |
@@ -43,30 +43,38 @@
 | **(cosmology node — dormant)** `cosmology_node` | · | · | · | · | · | · | · | · |
 | **(sublocation node — legacy)** `sublocation_node` | · | · | · | · | · | · | · | · |
 
+## Standing riders
+
+_Rules that bind every cell rather than one._
+
+- A completed undertaking grows capability in the Reach it leaned on — a successful work means the mortal learned something (Christian, 2026-09-03). Every cell, not only observe.
+- Wealth — the 0–100 score every mortal and faction already carries (`src/engine/wealth.ts`) — appears on the mortal sheet and the faction view as a banded word before any yield cell ships: an aftermath may only move what the player can inspect.
+- Holding a thing yields passively at a trickle the economy phase pays (a seized route's toll, a controlled Location's tithe — the unpaid `WEALTH_*_INCOME` constants); use × Location is the active harvest on top of it.
+
 ## Live cells
 
-- **Observe × area** — `record_intelligence` — Walk the unmapped: the old exploration templates become one observe cell whose object is the area. _(absorbs: walk_the_unmapped, mount_expedition)_
+- **Observe × area** — `record_intelligence` — Walk the unmapped: the old exploration templates become one observe cell whose object is the area. _(absorbs: walk_the_unmapped, mount_expedition)_ **Owes:** Repoint at `seedKnowsOf` — `strategicIntelligence` has no reader, so today the scout learns nothing the game can use. A strong result may double into a `knows_secret_of` mark about someone there. On an unmapped area it may also mint a treasure map (`mintTreasureMap`, the chart parameter of create × Item) — the treasure hunt's first step.
 - **Create × location** — `create_location` — A settlement-class Location at the site's hex with founding prosperity; the subtype is the parameter (a hamlet, a camp). _(absorbs: found_settlement)_
 - **Raise × location** — `modify_location_property (+)` — Prosperity by default; the old property changes are this cell with the property as a parameter. Reaches every class. _(absorbs: grow_settlement, fortify_defenses, fortify_position, organize_festival, consecrate_site, preach_masses)_
-- **Lower × location** — `modify_location_property (−)` — Sabotage: the same op with a negative delta, motive-gated against another's Location.
-- **Claim × location** — `claim_control (mode)` — Establishing control is the sustained claim_control mode — upkeep, degradation, collapse — never a one-tick completion. Any class.
+- **Lower × location** — `modify_location_property (−)` — Sabotage: the same op with a negative delta, motive-gated against another's Location. A plague on a town is this cell, not create × Condition.
+- **Claim × location** — `claim_control (mode)` — Establishing control is the sustained claim_control mode — upkeep, degradation, collapse — never a one-tick completion. Any class. **Owes:** The passive half of yield: a controlled Location pays a small tithe to its holder each economy tick. And a fix, not a design call: `armySupply` reads the first `controls` source as a faction, so a mortal claimant is misread as an army's provisioning faction.
 - **Seize × location** — `transfer_holding` — Another's Location changes hands; motive-gated, holding_seized harm.
-- **Destroy × location** — `ruin_settlement` — The prosperity floor plus the ruins subtype the battle aftermath already reads — not a deletion. Settlement and stronghold classes; ruining a wonder or a deposit is refused.
-- **Observe × location** — `record_intelligence` — Learn a Location: its holders, its stocks, its Places. _(absorbs: scout_settlement)_
+- **Destroy × location** — `ruin_settlement` — The prosperity floor plus the ruins subtype the battle aftermath already reads — not a deletion. Settlement and stronghold classes; ruining a wonder or a deposit is refused. **Owes:** The Ruins & Delves layer reads the `ruins` subtype and `ruinedTick`: a mortal-ruined settlement joins the delve layer after a decay window, so a warlord's destruction feeds a wanderer's exploration a season later. Today the layer keys only on worldgen's elder ruins.
+- **Observe × location** — `record_intelligence` — Learn a Location: its holders, its stocks, its Places. _(absorbs: scout_settlement)_ **Owes:** Repoint at `seedKnowsOf` — `strategicIntelligence` has no reader, so today the scout learns nothing the game can use. A strong result may double into a `knows_secret_of` mark about someone there. On a ruin or wonder class it also spawns a clue (`spawnClue`) — the treasure hunt: observe a ruin → clue → treasure map → delve → claim × Item.
 - **Create × place** — `create_sublocation` — A Place inside a Location; the type is the parameter the ambition supplies — a merchant founds a warehouse, a zealot a shrine. _(absorbs: build_granary, build_warehouse, civic_construction, consecrate_holy_site, establish_dynasty_seat, establish_garrison, establish_research_circle, found_guild_chapter, found_shrine, organize_patronage)_
 - **Claim × place** — `grant_holding` — A freehold on an unheld Place.
 - **Seize × place** — `transfer_holding` — Another's Place changes hands; motive-gated.
 - **Destroy × place** — `raze_holding` — The Place is razed: its holding face and the node go.
-- **Observe × place** — `record_intelligence` — What a Place holds and who keeps it.
+- **Observe × place** — `record_intelligence` — What a Place holds and who keeps it. **Owes:** Repoint at `seedKnowsOf` — `strategicIntelligence` has no reader, so today the scout learns nothing the game can use. A strong result may double into a `knows_secret_of` mark about someone there.
 - **Create × route** — `create_trade_route` — A trade lane between the durable origin and the far end; both must stand. _(absorbs: establish_trade_route)_
-- **Lower × route** — `blockade_route` — A blockade: the route suspended, not deleted — the trade phases already honour it. _(absorbs: disrupt_trade_route)_
+- **Lower × route** — `blockade_route` — A blockade: the route suspended, not deleted — the trade phases already honour it. The hostile verb on a route; there is no destroy. _(absorbs: disrupt_trade_route)_
 - **Use × route** — `conduct_trade` — Trading along one's own route — the catalog op, anchored at the near end. _(absorbs: conduct_trade)_
 - **Claim × route** — `grant_holding` — A freehold on an unheld route's identity node.
-- **Seize × route** — `transfer_holding + tax_trade_route` — Another's route changes hands and the seizer starts tolling it; motive-gated. _(absorbs: tax_trade_route)_
-- **Observe × route** — `record_intelligence` — Charting a route: its ends, its traffic, who taxes it.
+- **Seize × route** — `transfer_holding + tax_trade_route` — Another's route changes hands and the seizer starts tolling it; motive-gated. _(absorbs: tax_trade_route)_ **Owes:** The toll reader: `taxRate` is written and collected by nobody. The trade phase pays the seizer a cut of route volume each trade tick — `WEALTH_ROUTE_CONTROL_INCOME` exists and is paid by no phase.
+- **Observe × route** — `record_intelligence` — Charting a route: its ends, its traffic, who taxes it. **Owes:** Repoint at `seedKnowsOf` — `strategicIntelligence` has no reader, so today the scout learns nothing the game can use. A strong result may double into a `knows_secret_of` mark about someone there.
 - **Create × faction** — `found_faction` — A mortal founds an order — a chapter, a cult, a company of arms — with the default seed unless an override names one. _(absorbs: found_faction)_
-- **Destroy × faction** — `plant_schism` — A schism the world resolves in its own phase. _(absorbs: plant_schism)_
-- **Observe × faction** — `record_intelligence` — Intelligence on a faction: its leader, its holdings, its rivals.
+- **Destroy × faction** — `plant_schism` — A schism the world resolves in its own phase. Also the third outcome of a failed usurpation (seize × Faction). _(absorbs: plant_schism)_
+- **Observe × faction** — `record_intelligence` — Intelligence on a faction: its leader, its holdings, its rivals. **Owes:** Repoint at `seedKnowsOf` — `strategicIntelligence` has no reader, so today the scout learns nothing the game can use. A strong result may double into a `knows_secret_of` mark about someone there.
 - **Create × company** — `raise_warband` — A company raised from the cast bound during the work. _(absorbs: raise_warband)_
 - **Raise × company** — `reinforce_group` — The roster grows. _(absorbs: reinforce_warband)_
 - **Destroy × company** — `disband_group` — Disbanded; the node persists as history. _(absorbs: disband_warband)_
@@ -79,58 +87,55 @@
 - **Create × item** — `mint_masterwork` — A masterwork where the maker stands; a chart is the same cell with the kind as a parameter. _(absorbs: craft_masterwork)_
 - **Seize × item** — `seize_item` — The possesses edge moves; motive-gated.
 - **Destroy × item** — `destroy_item` — The bearer edges, then the node.
-- **Use × power** — `activate_spell` — Casting: the spell op, its costs and its backlash. A bestowed power that names no spell template is refused — this cell measures how often one can be cast at all (the Power kind is dormant).
-- **Destroy × condition** — `cure_condition` — Curing: the removal funnel the expiry phase uses, taken as work — a healer's undertaking.
+- **Use × power** — `activate_spell` — Casting: the spell op, its costs and its backlash. A bestowed power that names no spell template is refused — this cell measures how often one can be cast at all (the Power kind is dormant until create × Power writes `knows_spell`). **Owes:** Two of its costs land nowhere: `exhaustedUntilTick` has no reader (the cell should refuse while it is ahead), and the spell's soul-price is charged to the `doom` health meter where the game's live existential price is quintessence — move it there, where the threshold gates already bite.
+- **Destroy × condition** — `cure_condition` — Curing: the removal funnel the expiry phase uses, taken as work — a healer's undertaking. The counter-play to the curse (create × Condition).
 - **Create × agreement** — `mint_leverage_mark` — Digging up a secret: a mark on the mortal the work was done about.
-- **Use × agreement** — `press_the_mark` — Pressing a mark is the self-spend the kind row called a use. Calling in a favour is the favor class's use — open. _(absorbs: press_the_mark)_
-- **Destroy × agreement** — `expose_mark` — Exposing a mark: the edge stays, revealed, and loses its leverage. Forgiving a favour is the favor class's destroy — open.
+- **Use × agreement** — `press_the_mark` — Pressing a mark is the self-spend the kind row called a use. Spending a favour owed is the same cell on the favour class (the favour is minted by use × Standing). _(absorbs: press_the_mark)_
+- **Destroy × agreement** — `expose_mark` — Exposing a mark: the edge stays, revealed, and loses its leverage. Forgiving a favour is the same cell on the favour class.
 - **Raise × standing** — `apply_reputation_with_delta (+)` — Cultivating one's own standing with a person, a faction or a place.
 - **Lower × standing** — `apply_reputation_with_delta (−)` — Smearing another's standing — the same op, signed — motive-gated.
-- **Destroy × standing** — `create_relation_edge hostile_to` — A quarrel: the standing broken and a hostile_to edge standing in its place — motive-gated.
+- **Destroy × standing** — `create_relation_edge hostile_to` — A quarrel: the standing broken and a hostile_to edge standing in its place — motive-gated. The seed of a duel, which is an encounter, never a work.
+
+## Wanted cells — decided yes, not yet built
+
+- **Use × location** — Yield is a verb: the active harvest of a held Location — holding court, taxing a market, drawing a tithe. Op needed: `draw_yield`, moving a lump of the Location's stock into the holder's wealth at a cost to the Location's prosperity or the holder's standing there; the Location's productive Places (warehouse, counting house, granary) are the multiplier. Ships only once wealth is visible on the sheet (standing rider). _(THR-1397, Christian in chat, 2026-09-03)_
+- **Raise × route** — A merchant's expansion work writing a lump of volume onto the lane. Op needed: `raise_route_volume` on the trades_with edge; the yield trickle makes volume worth raising. _(THR-1397, Christian in chat, 2026-09-03)_
+- **Destroy × mortal** — The plot — a premeditated killing (an assassination, a manhunt), never the duel (an encounter seeded off a quarrel, destroy × Standing) or the slaying (battle, the delve). The sovereignty non-negotiable binds the god, not one mortal against another. Motive-gated harder than any other cell (an existing hostility or a grievance on the books, never opportunism); the heaviest harm class so the vendetta is minted; writes `deceased` — never a node removal — so the dead stay in the chronicle and their echoes survive. When the target is a mortal the player holds a thread to, the attempt surfaces as a moment before it resolves, so the god can spend and intervene. Its stages are the world's own verbs: observe (where the target is, who guards them), positioning (a company, a ring, a favour called in), the strike. Op needed: `plot_death`; retires the crude `action.shadow.assassinate`, which deletes the node. _(THR-1397, Christian in chat, 2026-09-03)_
+- **Claim × faction** — A candidacy, not a coronation: the work hands the succession phase a named candidate weighted by its outcome, and the phase stays the one arbiter, so a mortal's bid and the world's own succession never race. Op needed: `nominate_successor`, gated on the faction having no living leader. _(THR-1397, Christian in chat, 2026-09-03)_
+- **Seize × faction** — Usurping — a forced succession, never a coronation. Motive-gated against the sitting leader (hostility or a grievance); the work ends by running the succession phase early with the usurper as a weighted candidate against the leader's own standing with the faction. Three outcomes from what exists: `leads` moves; the usurper loses and takes a quarrel and a standing loss with the faction; or the faction splits through the live schism op with the usurper as the breakaway. The deposed leader is not killed — that is the plot's business. Op needed: `force_succession`. _(THR-1397, Christian in chat, 2026-09-03)_
+- **Lower × company** — Desertion as work — the mirror of the mutiny, reading the same cohesion number; the cheap hostile verb that thins a band before it ever meets you. Op needed: `thin_group` (reinforce with a negative roster delta), motive-gated. _(THR-1397, Christian in chat, 2026-09-03)_
+- **Claim × company** — Taking command of a leaderless company — one op shared with claim × Army, `take_command`, writing `commanded_by`, gated on the group having no living commander. Turns a commander's death into a succession moment rather than a leak. _(THR-1397, Christian in chat, 2026-09-03)_
+- **Seize × company** — A mutiny: motive-gated against the commander (hostility or a grievance), preconditioned on the group's cohesion being low — the cohesion system already tracks it — and rewriting `commanded_by`. Op: `take_command` under the seize gate. _(THR-1397, Christian in chat, 2026-09-03)_
+- **Claim × army** — Taking command of a leaderless army: the same `take_command` op as the company, plus the claimant must belong to the army's faction. The warlord's tier-one work. _(THR-1397, Christian in chat, 2026-09-03)_
+- **Seize × army** — A coup against a commander of one's own faction — the usurping fork one rank down, resolved by the faction through `force_succession`'s shape rather than by the blade; motive-gated. _(THR-1397, Christian in chat, 2026-09-03)_
+- **Observe × army** — Scouting an army: writes `knows_of` familiarity with the army and its commander (`seedKnowsOf`), so the scout's work feeds intelligence and encounters rather than a dead record. The war readout already computes the strength. _(THR-1397, Christian in chat, 2026-09-03)_
+- **Create × network** — Founding a ring — `raise_warband` with the network kind; the cell that wakes the dormant kind. _(THR-1397, Christian in chat, 2026-09-03)_
+- **Raise × network** — Recruiting into the ring — `reinforce_group`. _(THR-1397, Christian in chat, 2026-09-03)_
+- **Use × network** — Running the ring: each completion does what one observe or one seize × Agreement would, against a target the ring has members near — the ring is the multiplier on the two verbs already decided. Mortal surveillance does not feed the god's detection pressure: those are the god's fingerprints. _(THR-1397, Christian in chat, 2026-09-03)_
+- **Claim × item** — Picking up an unowned item: the possesses edge, one line. Op needed: `claim_item`. The payoff of the treasure hunt — observe a ruin → clue → treasure map → delve → this — and the reason a found relic on the ground is reachable at all. _(THR-1397, Christian in chat, 2026-09-03)_
+- **Create × power** — Learning a spell — the first writer of the `knows_spell` edge (registered in the schema, written by nothing) to an existing spell template; use × Power then reads it as one way of being able to cast. Wakes the kind; the scholar's tier-one work. Op needed: `learn_spell`. _(THR-1397, Christian in chat, 2026-09-03)_
+- **Destroy × power** — Stripping another's power inherits the curse: a curse-class condition that suppresses the power, motive-gated — create × Condition's op with a suppression sign. Unlearning one's own is not worth a work. _(THR-1397, Christian in chat, 2026-09-03)_
+- **Create × condition** — One signed cell. Against another it is a curse: motive-gated, Veil-leaning, a signed condition with a duration on the bearer's edge, and its counter-play ships in the same commit because destroy × Condition (curing) is live. For oneself or an ally it is a blessing, the same cell un-gated. Op: the reward-pool condition mint with the target as the site. The first cell whose object is made against a person. A plague on a town is lower × Location, not this. _(THR-1397, Christian in chat, 2026-09-03)_
+- **Seize × agreement** — Stealing a secret — the `knows_secret_of` edge moves from holder to thief (the seize × Item shape), motive-gated against the holder. The holder loses it, never a copy, or theft is free. The spy's signature verb; use × Network does it at scale. Op needed: `steal_mark`. _(THR-1397, Christian in chat, 2026-09-03)_
+- **Use × standing** — Calling in a favour: a work that spends some standing with a person or faction to mint an `owes_favor` edge — the favour class of Agreement, which the secrets system already has and the binder already anchors on. Spending it is use × Agreement, forgiving it destroy × Agreement, both live: the favour class gets its whole life cycle from this one new op. Op needed: `mint_favor`. _(THR-1397, Christian in chat, 2026-09-03)_
+
+## Later — decided, waiting on a precondition
+
+- **Raise × place** — Waits for Places to carry a yield grade, and that grade comes out of the yield work (use × Location) — never invented ahead of it. _(THR-1397, Christian in chat, 2026-09-03)_
+- **Lower × place** — The hostile mirror of raising; waits with it. _(THR-1397, Christian in chat, 2026-09-03)_
+- **Lower × network** — Turning members of another's ring — desertion one kind over; waits until rings live long enough in a run to be worth attacking (the census on cells will show). _(THR-1397, Christian in chat, 2026-09-03)_
+- **Seize × network** — Turning a ring — the mutiny one kind over; waits with lower × Network. _(THR-1397, Christian in chat, 2026-09-03)_
+- **Raise × item** — Enchanting or refining waits until items carry a tier a work can move. _(THR-1397, Christian in chat, 2026-09-03)_
+- **Lower × item** — Spoiling another's item waits with raise × Item. _(THR-1397, Christian in chat, 2026-09-03)_
+- **Observe × item** — Appraising what one holds waits until items carry hidden properties. Searching for treasure is not this cell: you cannot observe an item you do not hold — it is observe × Location / observe × Area with the treasure map as the guiding item. _(THR-1397, Christian in chat, 2026-09-03)_
 
 ## Open cells — the decisions
 
-- **Use × location** — Holding court, taxing a market, drawing a tithe — the yield of a held Location. No op today; the economy's stocks are the natural read. Decide whether yield is a verb or the holding's upkeep.
-- **Raise × place** — A Place has no graded property today (a granary is a granary). Open until Places carry a stock or a quality.
-- **Lower × place** — The hostile mirror of raising it; open with it.
-- **Use × place** — Working a Place is what agents do there in idle behaviour, not an undertaking, unless a Place yields something a work can bank.
-- **Raise × route** — Raising a route's volume. The trades_with edge carries volume; no op writes it as work.
-- **Destroy × route** — Tearing up a road or breaking a trade lane for good — no op; a blockade lifts. Open whether a route can be destroyed at all.
-- **Raise × faction** — Strengthening a faction — recruiting members, raising its rank — is joinOrUpdateMembership from the joiner's side; as a work aimed at the faction it needs an op that raises the faction.
-- **Lower × faction** — Weakening a faction short of a schism — no op.
-- **Use × faction** — Calling on a faction's strength (a levy, a favour) — no op; overlaps with Standing use.
-- **Claim × faction** — Taking leadership of a leaderless faction — the leads edge exists; no op writes it as work.
-- **Seize × faction** — Usurping a leader — the succession system has its own phase; a seize cell would hand it a candidate. Decide whether succession is an undertaking or stays emergent.
-- **Lower × company** — Thinning another's company — desertion as work; no op.
-- **Claim × company** — Taking command of a leaderless company — commanded_by exists; no op as work.
-- **Seize × company** — Taking another's company — a mutiny. Overlaps with the group cohesion system's own dissolution.
-- **Lower × army** — Bleeding another's army short of battle — no op.
-- **Claim × army** — Taking command of a leaderless army.
-- **Seize × army** — Usurping a commander.
-- **Observe × army** — Scouting an army's strength — the war readout exists; as intelligence work it needs the op.
-- **Create × network** — A spy ring or a cabal founded as work — the kind is dormant: strategicGraphOps can mint one, nothing asks it to. This is the cell that would wake it.
-- **Raise × network** — Recruiting into the ring.
-- **Lower × network** — Turning members of another's ring.
-- **Use × network** — Running the ring — intelligence gathering; overlaps observe × Faction.
-- **Seize × network** — Turning a ring.
-- **Raise × item** — Enchanting or refining an item — no op raises an item's tier.
-- **Lower × item** — Spoiling another's item short of destroying it — no op.
-- **Use × item** — Spending what an item gives — its activated ability is one tick, an action rather than a work. Probably stays an action.
-- **Claim × item** — Picking up an unowned item: the possesses edge, one line. Worth declaring — a found relic on the ground is unowned today and unreachable.
-- **Observe × item** — Appraising an item — learning its tier and hidden properties.
-- **Create × power** — Learning a spell — knows_spell has no writer. The cell that gives Power a shape.
-- **Raise × power** — Mastering a power.
-- **Lower × power** — Weakening another's power — no op.
-- **Destroy × power** — Unlearning, or stripping another's power — motive-gated.
-- **Create × condition** — Inflicting a condition on another — a curse, a plague — is an attack: motive-gated create × Condition with the target as the site. The reward-pool mint exists; declaring it is a design call because it is the first cell whose object is made against someone.
-- **Seize × agreement** — Stealing a secret — taking another's mark. The secrets system has a reveal but no theft.
-- **Use × standing** — Calling on standing — leverage. reputationLeverageTerm reads it in encounters; as a work it would spend standing for a concession.
-- **Destroy × ambition** — Abandoning one's own ambition — undertaking_abandoned harm exists. Open whether it is a work or a decision.
+_None — every admitted cell has a verdict._
 
 ## Not an object of undertakings
 
 - **Hex** — Terrain. Work happens at a Location on the hex; surveying is the Area's cell.
-- **Mortal** — Sovereign (Vision non-negotiable): never claimed, seized or held. Training (mentorship), assassination and surveillance are named below as open cells on the kinds they act through — a trained mortal is a Standing/Company matter, a killed mortal is the one design fork left to Christian.
 - **Ascendant** — The player, and rivals: not a thing a mortal's work is aimed at; progression is the beat system.
 - **God / Spirit** — Dormant kind; not a thing a mortal's work is aimed at.
 - **Culture** — A people. Spreading faith improves a Location or a Standing, not a culture.
