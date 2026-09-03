@@ -68,6 +68,7 @@ import { derivePlantedCompulsionEncounterBias } from './plantedCompulsion';
 import { IDENTITY_ENCOUNTER_BIAS_CAP } from '../types/doomIdentity';
 import { ENABLE_STRATEGIC_ACTIONS, STRATEGIC_BOARD_TRACE_REFUSAL_CAP } from '../data/strategic-action-constants';
 import { generateStrategicCandidates } from './strategicActionCandidates';
+import { recordCovetRefusals } from './grievance/covetRivalry';
 import {
   AMBITION_KIND_FACTION,
   AMBITION_KIND_TEMPLATE,
@@ -754,6 +755,9 @@ export function phaseAgentDecision(
                 .map(r => ({ templateId: r.templateId, reason: r.reason })),
               summary: `Strategic board: ${stratResult.candidates.length} generated, ${stratResult.rejections.length} rejected, top=${scored[0]?.finalScore.toFixed(3) ?? 'none'}`,
             } as StrategicCandidateBoardTrace & { summary: string });
+            // THR-1388 — the covet rivalry: the refusals already in hand feed the counter;
+            // at the threshold the world writes the quarrel the motive gate was asking for.
+            recordCovetRefusals(graph, agentId, stratResult.rejections, activeAmbitionTemplateIds, state.tick, state.ascendantId);
           }
         } catch {
           // Fail-soft: strategic generation failure → fall through to encounter path

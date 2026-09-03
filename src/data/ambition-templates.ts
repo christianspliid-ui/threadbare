@@ -186,6 +186,15 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
       preferredVerbs: ['gather_info', 'create', 'destroy', 'control'],
       templateIds: [
         'strategic_scout_defenses',
+        // THR-1388 — the profile's three destroys sit ahead of the always-available verbs,
+        // the THR-1309 pattern: the walk breaks at STRATEGIC_MAX_CANDIDATES_PER_AMBITION,
+        // and at positions 9–10 of 10 blockade and raze were proposed zero times in 300 ticks on
+        // seeds 42 and 99 (the THR-1388 probe). Both are motive-gated and self-gating —
+        // with no licensed target the slot passes straight on — so the always-available
+        // verbs lose nothing they would otherwise have had.
+        'strategic_raid_supply_lines',
+        'strategic_blockade_route',
+        'strategic_raze_settlement',
         'strategic_recruit_warband',
         // THR-1309: placed beside the verb it continues, not appended. The cap is
         // `min(2, max(1, floor(5 / templateIds.length)))` = 1 candidate per template
@@ -196,12 +205,8 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
         'strategic_reinforce_warband',
         'strategic_fortify_position',
         'strategic_establish_garrison',
-        'strategic_raid_supply_lines',
         'strategic_claim_territory',
         'strategic_recruit_companions',
-        // THR-1308 T2 counter-play — appended for the ordering reason above.
-        'strategic_blockade_route',
-        'strategic_raze_settlement',
       ],
       reachEmphasis: { iron: 0.8, heart: 0.6, eye: 0.3 },
     },
