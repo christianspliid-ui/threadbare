@@ -50,11 +50,11 @@ describe('the contract on cells', () => {
   });
 });
 
-const CELL = cellTemplateId('undo', 'attachment');
+const CELL = cellTemplateId('destroy', 'item');
 
 const pkg: UndertakingContentPackage = {
   slug: 'burn-the-charts',
-  cell: { variant: 'undo', objectTypeId: 'attachment' },
+  cell: { variant: 'destroy', objectTypeId: 'item' },
   override: {
     displayName: 'Burn the charts',
     activityProse: ['{Actor} feeds {object} to the fire a page at a time while {owner} sleeps.'],
@@ -70,15 +70,15 @@ describe('a cell package', () => {
     const t = resolvePackageTemplate(pkg)!;
     expect(t.id).toBe(`${CELL}.burn-the-charts`);
     expect(t.baseCellId).toBe(CELL);
-    expect(t.cellVariant).toBe('undo');
-    expect(t.objectTypeId).toBe('attachment');
+    expect(t.cellVariant).toBe('destroy');
+    expect(t.objectTypeId).toBe('item');
     expect(t.displayName).toBe('Burn the charts');
     expect(t.activityProse).toEqual(pkg.override!.activityProse);
-    expect(t.targetRule).toEqual({ type: 'object', objectTypeId: 'attachment', ownership: 'other' });
+    expect(t.targetRule).toEqual({ type: 'object', objectTypeId: 'item', ownership: 'other' });
     expect(t.motiveGate?.length).toBeGreaterThan(0);
     expect(t.harmClass).toBe('property_destroyed');
 
-    expect(undertakingPackageViolations({ ...pkg, cell: { variant: 'survey', objectTypeId: 'attachment' } })).toContainEqual(expect.stringContaining('does not exist'));
+    expect(undertakingPackageViolations({ ...pkg, cell: { variant: 'observe', objectTypeId: 'item' } })).toContainEqual(expect.stringContaining('does not exist'));
     expect(undertakingPackageViolations({ ...pkg, override: { ...pkg.override, targetRule: 'x' } as never })).toContainEqual(expect.stringContaining("override names 'targetRule'"));
     expect(undertakingPackageViolations({ ...pkg, kind: { kindId: 'chart_find', role: 'destroy' } })).toContainEqual(expect.stringContaining('carries no kind'));
     expect(undertakingPackageViolations({ ...pkg, profiles: [] })).toContainEqual(expect.stringContaining('profiles is empty'));
@@ -95,7 +95,7 @@ describe('a cell package', () => {
   });
 
   it('registers in the ambition\'s cells (opening the list when absent) and never in a kind row', () => {
-    const withCells = `    id: 'ambition_seek_revenge',\n    strategicProfile: {\n      cells: [\n        'cell.undo.attachment',\n      ],\n      templateIds: [\n        'strategic_x',\n      ],\n    },\n`;
+    const withCells = `    id: 'ambition_seek_revenge',\n    strategicProfile: {\n      cells: [\n        'cell.destroy.item',\n      ],\n      templateIds: [\n        'strategic_x',\n      ],\n    },\n`;
     const edit = registerInProfiles(withCells, pkg);
     expect(edit.changed).toBe(true);
     expect(edit.source).toContain(`'${CELL}.burn-the-charts',`);
@@ -104,7 +104,7 @@ describe('a cell package', () => {
     const without = `    id: 'ambition_seek_revenge',\n    strategicProfile: {\n      templateIds: [\n        'strategic_x',\n      ],\n    },\n`;
     const opened = registerInProfiles(without, pkg);
     expect(opened.changed).toBe(true);
-    expect(opened.source).toMatch(/cells: \[\s*'cell\.undo\.attachment\.burn-the-charts'\s*\],\n\s*templateIds:/);
+    expect(opened.source).toMatch(/cells: \[\s*'cell.destroy.item\.burn-the-charts'\s*\],\n\s*templateIds:/);
 
     expect(registerInKindRows('anything', pkg)).toEqual({ source: 'anything', changed: false });
   });
@@ -122,9 +122,9 @@ describe('the Package View on a cell', () => {
     const cell = undertakingTemplateById(CELL)!;
     const view = buildUndertakingPackage(cell);
     expect(view.kind).toBeUndefined();
-    expect(view.object).toMatchObject({ objectTypeId: 'attachment', variant: 'undo', ownership: "another's", baseCellId: undefined });
-    expect(view.object!.siblings).toContain('cell.control_seize.attachment');
-    expect(view.writeSet.object).toEqual({ verb: 'undo', objectTypeId: 'attachment' });
+    expect(view.object).toMatchObject({ objectTypeId: 'item', variant: 'destroy', ownership: "another's", baseCellId: undefined });
+    expect(view.object!.siblings).toContain('cell.control_seize.item');
+    expect(view.writeSet.object).toEqual({ verb: 'destroy', objectTypeId: 'item' });
     expect(view.verdict.passed).toBe(true);
     expect(undertakingPackageIndex().some(r => r.templateId === CELL)).toBe(true);
 

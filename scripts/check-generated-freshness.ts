@@ -140,6 +140,13 @@ const EXTERNAL_GENERATED_ARTIFACTS: readonly ExternalArtifact[] = [
   // no catalogue. Both outputs come from one generator; listing both keeps either honest.
   { path: "Docs/canon/world-objects.generated.md", command: "npm run generate-world-objects" },
   { path: "public/world-objects-reference.html", command: "npm run generate-world-objects" },
+  // ~2s. The undertaking grid (THR-1392 slice 4): every world-object kind × every verb,
+  // live cells from the registry, the rest curated. Christian asked for this map to be
+  // kept current as undertakings are developed; a stale committed copy would be the
+  // map saying "open" about a cell that shipped. The generator itself fails on a cell
+  // it cannot classify, so the freshness diff is the second lock, not the first.
+  { path: "Docs/canon/undertaking-grid.generated.md", command: "npm run generate-undertaking-grid" },
+  { path: "public/undertaking-grid-reference.html", command: "npm run generate-undertaking-grid" },
   // ~1s. THR-807 regenerated it and deliberately left its gate advisory "pending
   // THR-987" rather than building a bespoke one, so this ticket owns its recurrence
   // prevention; observed drift rate is ~2 plans/week, which re-rots it continuously.

@@ -105,6 +105,7 @@ and (when relevant) `superseded_by: <path>`. A plan with no status is treated as
 | [systems-inventory.md](systems-inventory.md) | Systems inventory (Engine-pillar Step 0) | generated | — |
 | [world-objects.md](world-objects.md) | World objects (the catalogue of kinds, in game words) | live | 2026-09-03 |
 | [world-objects.generated.md](world-objects.generated.md) | World objects (generated census + drift) | generated | — |
+| [undertaking-grid.generated.md](undertaking-grid.generated.md) | Undertaking grid (every kind × every verb; live / open / not an object) | generated | — |
 | [consumption-ledger.generated.md](consumption-ledger.generated.md) | Consumption ledger | generated | — |
 | [setting-coverage.generated.md](setting-coverage.generated.md) | Setting coverage | generated | — |
 

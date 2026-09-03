@@ -410,7 +410,7 @@ export function generateStrategicCandidates(
           targetHex: targetHex ?? undefined,
           // The object the cell acts on (THR-1392); absent on every legacy rule. A
           // `found` cell's handle is its site — the object does not exist yet.
-          objectHandle: objectHandle ?? (template.undertakingVerb === 'found' && template.objectTypeId ? { kind: 'node', nodeId: target.id } : undefined),
+          objectHandle: objectHandle ?? (template.undertakingVerb === 'create' && template.objectTypeId ? { kind: 'node', nodeId: target.id } : undefined),
           objectTypeId: template.objectTypeId ?? (objectHandle && template.targetRule.type === 'object'
             ? template.targetRule.objectTypeId as UndertakingObjectTypeId
             : undefined),
@@ -418,7 +418,7 @@ export function generateStrategicCandidates(
           // A found cell's object has no tier yet; it takes the default without a trace.
           objectTier: objectHandle && template.targetRule.type === 'object'
             ? readObjectTier(graph, getUndertakingObjectType(template.targetRule.objectTypeId)!, objectHandle, tick)
-            : template.undertakingVerb === 'found' && template.objectTypeId ? UNDERTAKING_DEFAULT_TIER : undefined,
+            : template.undertakingVerb === 'create' && template.objectTypeId ? UNDERTAKING_DEFAULT_TIER : undefined,
           anchorNodeId: anchorGate.anchorNodeId,
           // The victim the motive gate already named (THR-1298). Stamped here because
           // this is the one point where the gate's answer is still in scope — by

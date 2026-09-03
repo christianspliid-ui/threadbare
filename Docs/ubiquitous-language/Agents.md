@@ -447,6 +447,16 @@ When you read `'broken'` in a `QuintessenceThresholdState` comparison, that is t
 
 ---
 
+### Undertaking Verb
+
+**Aliases:** verb × object, cell (a verb on one object type), `UndertakingVerb` / `UndertakingVerbVariant` (engine)
+**Also see:** `[[Undertaking]]`, `[[Work]]`, `[[World Object]]`
+**Status:** canonical
+
+The six things a mortal's work can do to a thing the world keeps (Christian, 2026-09-03): **Create** makes one; **Change** alters one — *raise* one's own, *lower* another's; **Use** spends what one gives; **Control** takes one — *claim* an unheld one, *seize* another's; **Destroy** unmakes one (the object as it was is gone — ruined, razed, disbanded, split, exposed); **Observe** learns one. The four data verbs plus the two the game adds, ownership and yield. Lower, seize and destroy are motive-gated. A *cell* is one verb on one `[[World Object]]` kind; the grid of every kind × every verb is generated (`Docs/canon/undertaking-grid.generated.md`). The plain verb is the model's; the word the player reads is the object's (a warband is *raised*, a masterwork *crafted*).
+
+---
+
 ### Undertaking
 
 **Aliases:** strategic project, the `StrategicProjectRuntime` (engine)

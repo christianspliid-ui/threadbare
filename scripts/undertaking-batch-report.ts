@@ -157,7 +157,7 @@ function cellOf(templateId: string): { kindId: string; cell: 'C' | 'U' | 'D'; ti
   // variant and its object type as the kind (THR-1392 slice 3).
   const asCell = getStrategicTemplate(templateId);
   if (asCell?.cellVariant && asCell.objectTypeId) {
-    const cell = asCell.cellVariant === 'undo' || asCell.cellVariant === 'control:seize' ? 'D' : asCell.cellVariant === 'found' ? 'C' : 'U';
+    const cell = asCell.cellVariant === 'destroy' || asCell.cellVariant === 'control:seize' || asCell.cellVariant === 'change:lower' ? 'D' : asCell.cellVariant === 'create' ? 'C' : 'U';
     return { kindId: `${asCell.cellVariant} × ${asCell.objectTypeId}`, cell, tier: 2 };
   }
   const kindId = getUndertakingKindForTemplate(templateId);

@@ -114,12 +114,16 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
       // `cells` model, ahead of `templateIds` (cells lead so the per-ambition cap
       // cannot starve them). Ignored while `UNDERTAKING_MODEL` is `templates`.
       cells: [
-        'cell.found.route',
+        'cell.use.route',
+        'cell.change_lower.route',
+        'cell.observe.route',
+        'cell.observe.location',
+        'cell.create.route',
         'cell.control_claim.route',
         'cell.control_seize.route',
-        'cell.found.room',
-        'cell.improve.settlement',
-        'cell.undo.route',
+        'cell.create.place',
+        'cell.change_raise.location',
+        'cell.destroy.route',
       ],
       templateIds: [
         'strategic_survey_market',
@@ -199,13 +203,18 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
       // `cells` model, ahead of `templateIds` (cells lead so the per-ambition cap
       // cannot starve them). Ignored while `UNDERTAKING_MODEL` is `templates`.
       cells: [
-        'cell.undo.settlement',
-        'cell.control_seize.settlement',
-        'cell.found.company',
-        'cell.improve.company',
-        'cell.undo.company',
-        'cell.undo.route',
-        'cell.control_seize.room',
+        'cell.create.army',
+        'cell.change_raise.army',
+        'cell.destroy.army',
+        'cell.change_lower.location',
+        'cell.observe.location',
+        'cell.destroy.location',
+        'cell.control_seize.location',
+        'cell.create.company',
+        'cell.change_raise.company',
+        'cell.destroy.company',
+        'cell.destroy.route',
+        'cell.control_seize.place',
       ],
       templateIds: [
         'strategic_scout_defenses',
@@ -298,11 +307,13 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
       // `cells` model, ahead of `templateIds` (cells lead so the per-ambition cap
       // cannot starve them). Ignored while `UNDERTAKING_MODEL` is `templates`.
       cells: [
-        'cell.found.attachment',
-        'cell.found.room',
-        'cell.found.settlement',
-        'cell.improve.settlement',
-        'cell.control_claim.room',
+        'cell.create.companion',
+        'cell.change_raise.standing',
+        'cell.create.item',
+        'cell.create.place',
+        'cell.create.location',
+        'cell.change_raise.location',
+        'cell.control_claim.place',
       ],
       templateIds: [
         'strategic_craft_masterwork',
@@ -374,10 +385,12 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
       // `cells` model, ahead of `templateIds` (cells lead so the per-ambition cap
       // cannot starve them). Ignored while `UNDERTAKING_MODEL` is `templates`.
       cells: [
-        'cell.found.attachment',
-        'cell.found.room',
-        'cell.use.mark',
-        'cell.undo.mark',
+        'cell.use.power',
+        'cell.observe.place',
+        'cell.create.item',
+        'cell.create.place',
+        'cell.use.agreement',
+        'cell.destroy.agreement',
       ],
       templateIds: [
         'strategic_research_archive',
@@ -456,13 +469,16 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
       // `cells` model, ahead of `templateIds` (cells lead so the per-ambition cap
       // cannot starve them). Ignored while `UNDERTAKING_MODEL` is `templates`.
       cells: [
-        'cell.control_claim.settlement',
-        'cell.control_claim.room',
-        'cell.control_seize.room',
-        'cell.undo.faction',
-        'cell.use.mark',
-        'cell.undo.mark',
-        'cell.control_seize.attachment',
+        'cell.create.faction',
+        'cell.change_raise.standing',
+        'cell.observe.faction',
+        'cell.control_claim.location',
+        'cell.control_claim.place',
+        'cell.control_seize.place',
+        'cell.destroy.faction',
+        'cell.use.agreement',
+        'cell.destroy.agreement',
+        'cell.control_seize.item',
       ],
       templateIds: [
         'strategic_assess_politics',
@@ -543,9 +559,11 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
       // `cells` model, ahead of `templateIds` (cells lead so the per-ambition cap
       // cannot starve them). Ignored while `UNDERTAKING_MODEL` is `templates`.
       cells: [
-        'cell.found.attachment',
-        'cell.found.route',
-        'cell.found.settlement',
+        'cell.observe.area',
+        'cell.destroy.condition',
+        'cell.create.item',
+        'cell.create.route',
+        'cell.create.location',
       ],
       templateIds: [
         'strategic_walk_the_unmapped',
@@ -621,10 +639,14 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
       // `cells` model, ahead of `templateIds` (cells lead so the per-ambition cap
       // cannot starve them). Ignored while `UNDERTAKING_MODEL` is `templates`.
       cells: [
-        'cell.use.mark',
-        'cell.undo.mark',
-        'cell.found.attachment',
-        'cell.control_seize.attachment',
+        'cell.create.agreement',
+        'cell.observe.faction',
+        'cell.observe.place',
+        'cell.destroy.network',
+        'cell.use.agreement',
+        'cell.destroy.agreement',
+        'cell.create.item',
+        'cell.control_seize.item',
       ],
       templateIds: [
         'strategic_research_archive',
@@ -708,10 +730,13 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
       // `cells` model, ahead of `templateIds` (cells lead so the per-ambition cap
       // cannot starve them). Ignored while `UNDERTAKING_MODEL` is `templates`.
       cells: [
-        'cell.found.room',
-        'cell.control_claim.room',
-        'cell.improve.settlement',
-        'cell.undo.faction',
+        'cell.create.faction',
+        'cell.change_raise.standing',
+        'cell.destroy.condition',
+        'cell.create.place',
+        'cell.control_claim.place',
+        'cell.change_raise.location',
+        'cell.destroy.faction',
       ],
       templateIds: [
         'strategic_survey_faithful',
@@ -785,11 +810,12 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
       // `cells` model, ahead of `templateIds` (cells lead so the per-ambition cap
       // cannot starve them). Ignored while `UNDERTAKING_MODEL` is `templates`.
       cells: [
-        'cell.found.room',
-        'cell.found.settlement',
-        'cell.improve.settlement',
-        'cell.found.attachment',
-        'cell.found.route',
+        'cell.observe.area',
+        'cell.create.place',
+        'cell.create.location',
+        'cell.change_raise.location',
+        'cell.create.item',
+        'cell.create.route',
       ],
       templateIds: [
         'strategic_survey_site',
@@ -957,12 +983,18 @@ export const GRIEVANCE_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
       // `cells` model, ahead of `templateIds` (cells lead so the per-ambition cap
       // cannot starve them). Ignored while `UNDERTAKING_MODEL` is `templates`.
       cells: [
-        'cell.undo.attachment',
-        'cell.undo.room',
-        'cell.undo.settlement',
-        'cell.undo.mark',
-        'cell.undo.company',
-        'cell.control_seize.attachment',
+        'cell.change_lower.location',
+        'cell.change_lower.standing',
+        'cell.destroy.standing',
+        'cell.destroy.companion',
+        'cell.change_lower.route',
+        'cell.destroy.army',
+        'cell.destroy.item',
+        'cell.destroy.place',
+        'cell.destroy.location',
+        'cell.destroy.agreement',
+        'cell.destroy.company',
+        'cell.control_seize.item',
       ],
       templateIds: [
         'strategic_expose_mark',
@@ -1074,11 +1106,14 @@ export const GRIEVANCE_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
       // `cells` model, ahead of `templateIds` (cells lead so the per-ambition cap
       // cannot starve them). Ignored while `UNDERTAKING_MODEL` is `templates`.
       cells: [
-        'cell.control_claim.settlement',
-        'cell.control_seize.settlement',
-        'cell.control_claim.room',
-        'cell.found.settlement',
-        'cell.found.route',
+        'cell.create.army',
+        'cell.change_raise.army',
+        'cell.observe.location',
+        'cell.control_claim.location',
+        'cell.control_seize.location',
+        'cell.control_claim.place',
+        'cell.create.location',
+        'cell.create.route',
       ],
       templateIds: [
         'strategic_walk_the_unmapped',
@@ -1617,9 +1652,12 @@ export const EVENT_MINTED_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
       // `cells` model, ahead of `templateIds` (cells lead so the per-ambition cap
       // cannot starve them). Ignored while `UNDERTAKING_MODEL` is `templates`.
       cells: [
-        'cell.found.attachment',
-        'cell.found.route',
-        'cell.use.mark',
+        'cell.observe.area',
+        'cell.observe.location',
+        'cell.create.companion',
+        'cell.create.item',
+        'cell.create.route',
+        'cell.use.agreement',
       ],
       templateIds: [
         'strategic_walk_the_unmapped',

@@ -31,19 +31,33 @@ export type StrategicVerb =
 // alias every importer compiles against until the flag flips
 // (`STRATEGIC_VERB_OF_UNDERTAKING_VERB` maps between them).
 
-/** found · improve · use · control · undo · survey. */
-export type UndertakingVerb = 'found' | 'improve' | 'use' | 'control' | 'undo' | 'survey';
+/**
+ * create · change · use · control · destroy · observe (Christian, 2026-09-03 — the four
+ * data verbs plus the two the game adds: ownership and yield). `change` and `control`
+ * each split into two variants that differ in what a cell carries.
+ */
+export type UndertakingVerb = 'create' | 'change' | 'use' | 'control' | 'destroy' | 'observe';
 
 /**
  * A verb as a cell names it. `control` has two variants decided by what the resolved
  * object's ownership actually is: `claim` (nobody holds it) or `seize` (someone else
- * does) — Christian, 2026-09-03.
+ * does). `change` has two the same way: `raise` one's own, `lower` another's —
+ * motive-gated like seize, because it is the hostile mirror (Christian, 2026-09-03).
  */
-export type UndertakingVerbVariant = Exclude<UndertakingVerb, 'control'> | 'control:claim' | 'control:seize';
+export type UndertakingVerbVariant =
+  | Exclude<UndertakingVerb, 'control' | 'change'>
+  | 'control:claim' | 'control:seize'
+  | 'change:raise' | 'change:lower';
 
-/** The seven object types the world already has. */
+/**
+ * The object types an undertaking may act on — the world-object catalogue's kinds
+ * (`src/data/world-objects.ts`, THR-1394), in the catalogue's words. Every id here
+ * is a `WorldObjectKindId`; the contract test pins it.
+ */
 export type UndertakingObjectTypeId =
-  | 'attachment' | 'room' | 'settlement' | 'route' | 'company' | 'faction' | 'mark';
+  | 'area' | 'location' | 'place' | 'route'
+  | 'faction' | 'company' | 'army' | 'network' | 'companion'
+  | 'item' | 'power' | 'condition' | 'agreement' | 'standing';
 
 /**
  * The object an undertaking acts on. Node objects by node id; edge objects (a mark

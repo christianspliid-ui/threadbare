@@ -10,7 +10,7 @@ import { describe, it, expect } from 'vitest';
 import { WorldGraph } from '../../engine/graph';
 import {
   UNDERTAKING_OBJECT_TYPES,
-  HARM_ON_UNDO,
+  HARM_ON_DESTROY,
   getUndertakingObjectType,
   enumerateObjectHandles,
   resolveObjectOwners,
@@ -30,27 +30,29 @@ import {
 } from '../strategic-action-constants';
 import { UNDERTAKING_TIER_PAYOFF_BANDS } from '../content-eval/undertakingConstants';
 
-const TYPE_IDS = ['attachment', 'room', 'settlement', 'route', 'company', 'faction', 'mark'] as const;
+const TYPE_IDS = ['area', 'location', 'place', 'route', 'faction', 'company', 'army', 'network', 'companion', 'item', 'power', 'condition', 'agreement', 'standing'] as const;
 
 describe('the object-type registry', () => {
-  it('registers the seven types once each, with a shape, a lexicon and a harm class', () => {
+  it('registers the fourteen catalogue kinds once each, with a shape, a lexicon and a harm class', () => {
     expect(UNDERTAKING_OBJECT_TYPES.map(t => t.id).sort()).toEqual([...TYPE_IDS].sort());
     for (const t of UNDERTAKING_OBJECT_TYPES) {
       expect(!!t.shape.nodeType !== !!t.shape.edgeType, `${t.id} is a node or an edge object, not both`).toBe(true);
       expect(t.lexicon.length).toBeGreaterThan(0);
-      expect(HARM_ON_UNDO[t.id]).toBe(t.harmOnUndo);
+      expect(HARM_ON_DESTROY[t.id]).toBe(t.harmOnDestroy);
     }
-    expect(Object.keys(HARM_ON_UNDO).sort()).toEqual([...TYPE_IDS].sort());
+    expect(Object.keys(HARM_ON_DESTROY).sort()).toEqual([...TYPE_IDS].sort());
   });
 
-  it('declares verbs only from the closed variant set, and every type declares undo', () => {
+  it('declares verbs only from the closed variant set, and every type that can be made can be unmade', () => {
     for (const t of UNDERTAKING_OBJECT_TYPES) {
       const declared = Object.keys(t.verbs);
       expect(declared.length, `${t.id} declares at least one verb`).toBeGreaterThan(0);
       for (const v of declared) expect(UNDERTAKING_VERB_VARIANTS, `${t.id}.${v}`).toContain(v);
-      // The counter-play column: a kind with no destroy was the no-destroy-no-kind rule.
-      expect(t.verbs.undo, `${t.id} has an undo`).toBeDefined();
+      // The counter-play column: a kind with a create and no destroy was the no-destroy-no-kind rule.
+      if (t.verbs.create && t.id !== 'route') expect(t.verbs.destroy, `${t.id} has a destroy`).toBeDefined();
     }
+    // The route is the one exception, recorded on the grid: a blockade lifts (change:lower); tearing a route up is an open cell.
+    expect(getUndertakingObjectType('route')!.verbs['change:lower']).toBeDefined();
   });
 
   it('keeps the verb tables inside the tier bands and the gate on the two counter-play verbs', () => {
@@ -66,6 +68,7 @@ describe('the object-type registry', () => {
       }
     }
     for (const gated of MOTIVE_GATED_VERBS) expect(OWNERSHIP_BY_VERB[gated]).toBe('other');
+    expect(MOTIVE_GATED_VERBS).toEqual(['control:seize', 'change:lower', 'destroy']);
     expect(OWNERSHIP_BY_VERB['control:claim']).toBe('unowned');
     expect(UNDERTAKING_VERBS).toContain('control');
     expect(UNDERTAKING_VERB_VARIANTS).not.toContain('control');
@@ -86,22 +89,22 @@ describe('the readers', () => {
     g.addNode({ id: 'untiered', name: 'Trinket', type: 'artifact', properties: {} });
     g.addNode({ id: 'holder', name: 'Holder', type: 'actor', properties: { actorType: 'individual' } });
     g.addNode({ id: 'subject', name: 'Subject', type: 'actor', properties: { actorType: 'individual' } });
-    g.addEdge({ id: 'mark', source: 'holder', target: 'subject', type: 'knows_secret_of', properties: { magnitude: 0.9, revealed: false, secretType: 'affair', discoveredTick: 0, source: 'observed' } });
+    g.addEdge({ id: 'agreement', source: 'holder', target: 'subject', type: 'knows_secret_of', properties: { magnitude: 0.9, revealed: false, secretType: 'affair', discoveredTick: 0, source: 'observed' } });
 
     const tier = (typeId: typeof TYPE_IDS[number], handle: Parameters<typeof tierOfObject>[2]) =>
       tierOfObject(g, getUndertakingObjectType(typeId)!, handle);
 
-    expect(tier('settlement', { kind: 'node', nodeId: 'town' })).toEqual({ tier: 2, defaulted: false });
-    expect(tier('settlement', { kind: 'node', nodeId: 'capital' })).toEqual({ tier: 3, defaulted: false });
-    expect(tier('room', { kind: 'node', nodeId: 'court' })).toEqual({ tier: 3, defaulted: false });
-    expect(tier('room', { kind: 'node', nodeId: 'granary' })).toEqual({ tier: 1, defaulted: false });
-    expect(tier('room', { kind: 'node', nodeId: 'oddroom' })).toEqual({ tier: UNDERTAKING_DEFAULT_TIER, defaulted: true });
+    expect(tier('location', { kind: 'node', nodeId: 'town' })).toEqual({ tier: 2, defaulted: false });
+    expect(tier('location', { kind: 'node', nodeId: 'capital' })).toEqual({ tier: 3, defaulted: false });
+    expect(tier('place', { kind: 'node', nodeId: 'court' })).toEqual({ tier: 3, defaulted: false });
+    expect(tier('place', { kind: 'node', nodeId: 'granary' })).toEqual({ tier: 1, defaulted: false });
+    expect(tier('place', { kind: 'node', nodeId: 'oddroom' })).toEqual({ tier: UNDERTAKING_DEFAULT_TIER, defaulted: true });
     expect(tier('route', { kind: 'node', nodeId: 'route' })).toEqual({ tier: 2, defaulted: false }); // 5 hexes: > 3, ≤ 6
-    expect(tier('attachment', { kind: 'node', nodeId: 'chart' })).toEqual({ tier: 1, defaulted: false });
-    expect(tier('attachment', { kind: 'node', nodeId: 'relic' })).toEqual({ tier: 3, defaulted: false }); // 4 clamps to the ladder
-    expect(tier('attachment', { kind: 'node', nodeId: 'untiered' })).toEqual({ tier: UNDERTAKING_DEFAULT_TIER, defaulted: true });
-    expect(tier('mark', { kind: 'edge', edgeId: 'mark' })).toEqual({ tier: 3, defaulted: false });
-    expect(tier('mark', { kind: 'edge', edgeId: 'nope' })).toEqual({ tier: UNDERTAKING_DEFAULT_TIER, defaulted: true });
+    expect(tier('item', { kind: 'node', nodeId: 'chart' })).toEqual({ tier: 1, defaulted: false });
+    expect(tier('item', { kind: 'node', nodeId: 'relic' })).toEqual({ tier: 3, defaulted: false }); // 4 clamps to the ladder
+    expect(tier('item', { kind: 'node', nodeId: 'untiered' })).toEqual({ tier: UNDERTAKING_DEFAULT_TIER, defaulted: true });
+    expect(tier('agreement', { kind: 'edge', edgeId: 'agreement' })).toEqual({ tier: 3, defaulted: false });
+    expect(tier('agreement', { kind: 'edge', edgeId: 'nope' })).toEqual({ tier: UNDERTAKING_DEFAULT_TIER, defaulted: true });
   });
 
   it('enumerates objects by shape — never holding faces, disbanded companies or revealed marks', () => {
@@ -119,10 +122,10 @@ describe('the readers', () => {
     const ids = (typeId: typeof TYPE_IDS[number]) =>
       enumerateObjectHandles(g, getUndertakingObjectType(typeId)!).map(h => (h.kind === 'node' ? h.nodeId : h.edgeId));
 
-    expect(ids('attachment')).toEqual(['chart']);
+    expect(ids('item')).toEqual(['chart']);
     expect(ids('company')).toEqual(['band']);
     expect(ids('faction')).toEqual(['guild']);
-    expect(ids('mark')).toEqual(['m1']);
+    expect(ids('agreement')).toEqual(['m1']);
     expect(objectPlaceNodeId(g, { kind: 'edge', edgeId: 'm1' })).toBe('b');
   });
 
@@ -140,9 +143,9 @@ describe('the readers', () => {
     const owners = (typeId: typeof TYPE_IDS[number], handle: Parameters<typeof resolveObjectOwners>[2]) =>
       resolveObjectOwners(g, getUndertakingObjectType(typeId)!, handle);
 
-    expect(owners('attachment', { kind: 'node', nodeId: 'chart' })).toEqual(['a']);
+    expect(owners('item', { kind: 'node', nodeId: 'chart' })).toEqual(['a']);
     expect(owners('company', { kind: 'node', nodeId: 'band' })).toEqual(['b']);
-    expect(owners('mark', { kind: 'edge', edgeId: 'm' })).toEqual(['b']);
-    expect(owners('settlement', { kind: 'node', nodeId: 'town' })).toEqual([]);
+    expect(owners('agreement', { kind: 'edge', edgeId: 'm' })).toEqual(['b']);
+    expect(owners('location', { kind: 'node', nodeId: 'town' })).toEqual([]);
   });
 });

@@ -24,7 +24,7 @@ function world(): WorldGraph {
   g.addNode({ id: 'chart', name: 'Chart', type: 'artifact', properties: { tier: 1 } });
   g.addEdge({ id: 'p_chart', source: RIVAL, target: 'chart', type: 'possesses', properties: { active: true } });
   g.addEdge({ id: 'owns_mill', source: RIVAL, target: 'mill', type: 'owns', properties: { acquiredTick: 0, via: 'grant' } });
-  g.addEdge({ id: 'mark', source: RIVAL, target: SUBJECT, type: 'knows_secret_of', properties: { magnitude: 0.5, revealed: false, secretType: 'affair', discoveredTick: 0, source: 'observed' } });
+  g.addEdge({ id: 'agreement', source: RIVAL, target: SUBJECT, type: 'knows_secret_of', properties: { magnitude: 0.5, revealed: false, secretType: 'affair', discoveredTick: 0, source: 'observed' } });
   g.addEdge({ id: 'located', source: ME, target: 'town', type: 'located_at', properties: {} });
   return g;
 }
@@ -37,20 +37,20 @@ describe('resolveUndertakingCompletion', () => {
   it('undo × mark exposes the mark and names the edge on the world-change trace', () => {
     const g = world();
     const r = resolveUndertakingCompletion({
-      state: stateOf(g), graph: g, actorId: ME, verb: 'undo', objectTypeId: 'mark',
-      handle: { kind: 'edge', edgeId: 'mark' }, tick: 10, projectId: 'proj_1',
+      state: stateOf(g), graph: g, actorId: ME, verb: 'destroy', objectTypeId: 'agreement',
+      handle: { kind: 'edge', edgeId: 'agreement' }, tick: 10, projectId: 'proj_1',
     });
-    expect(r.variant).toBe('undo');
+    expect(r.variant).toBe('destroy');
     expect(r.ops).toEqual([{ success: true, op: 'expose_mark' }]);
-    expect(g.getEdge('mark')?.properties.revealed).toBe(true);
+    expect(g.getEdge('agreement')?.properties.revealed).toBe(true);
     const trace = getTraces().find(t => t.category === 'strategic_world_change') as Record<string, unknown> | undefined;
-    expect(trace).toMatchObject({ actorId: ME, verb: 'destroy', undertakingVerb: 'undo', objectTypeId: 'mark', objectId: 'mark', projectId: 'proj_1' });
+    expect(trace).toMatchObject({ actorId: ME, verb: 'destroy', undertakingVerb: 'destroy', objectTypeId: 'agreement', objectId: 'agreement', projectId: 'proj_1' });
   });
 
   it('control picks claim on the unheld room and seize on the rival\'s, and refuses on one\'s own', () => {
     const g = world();
     const claim = resolveUndertakingCompletion({
-      state: stateOf(g), graph: g, actorId: ME, verb: 'control', objectTypeId: 'room',
+      state: stateOf(g), graph: g, actorId: ME, verb: 'control', objectTypeId: 'place',
       handle: { kind: 'node', nodeId: 'shop' }, tick: 10,
     });
     expect(claim.variant).toBe('control:claim');
@@ -58,7 +58,7 @@ describe('resolveUndertakingCompletion', () => {
     expect(g.getIncomingEdges('shop', 'owns').map(e => e.source)).toEqual([ME]);
 
     const seize = resolveUndertakingCompletion({
-      state: stateOf(g), graph: g, actorId: ME, verb: 'control', objectTypeId: 'room',
+      state: stateOf(g), graph: g, actorId: ME, verb: 'control', objectTypeId: 'place',
       handle: { kind: 'node', nodeId: 'mill' }, tick: 11,
     });
     expect(seize.variant).toBe('control:seize');
@@ -66,7 +66,7 @@ describe('resolveUndertakingCompletion', () => {
     expect(g.getIncomingEdges('mill', 'owns').map(e => e.source)).toEqual([ME]);
 
     const own = resolveUndertakingCompletion({
-      state: stateOf(g), graph: g, actorId: ME, verb: 'control', objectTypeId: 'room',
+      state: stateOf(g), graph: g, actorId: ME, verb: 'control', objectTypeId: 'place',
       handle: { kind: 'node', nodeId: 'shop' }, tick: 12,
     });
     expect(own.refused).toBe('not_applicable');
@@ -76,10 +76,10 @@ describe('resolveUndertakingCompletion', () => {
   it('undo × attachment removes the attachment and its bearer edge', () => {
     const g = world();
     const r = resolveUndertakingCompletion({
-      state: stateOf(g), graph: g, actorId: ME, verb: 'undo', objectTypeId: 'attachment',
+      state: stateOf(g), graph: g, actorId: ME, verb: 'destroy', objectTypeId: 'item',
       handle: { kind: 'node', nodeId: 'chart' }, tick: 10,
     });
-    expect(r.ops).toEqual([{ success: true, op: 'destroy_attachment' }]);
+    expect(r.ops).toEqual([{ success: true, op: 'destroy_item' }]);
     expect(g.getNode('chart')).toBeUndefined();
     expect(g.getOutgoingEdges(RIVAL, 'possesses')).toHaveLength(0);
   });
@@ -87,7 +87,7 @@ describe('resolveUndertakingCompletion', () => {
   it('control:seize × attachment moves the possesses edge to the actor', () => {
     const g = world();
     const r = resolveUndertakingCompletion({
-      state: stateOf(g), graph: g, actorId: ME, verb: 'control', objectTypeId: 'attachment',
+      state: stateOf(g), graph: g, actorId: ME, verb: 'control', objectTypeId: 'item',
       handle: { kind: 'node', nodeId: 'chart' }, tick: 10,
     });
     expect(r.variant).toBe('control:seize');
@@ -97,7 +97,7 @@ describe('resolveUndertakingCompletion', () => {
   it('undo × settlement ruins the place: prosperity floored, subtype ruins, nothing deleted', () => {
     const g = world();
     const r = resolveUndertakingCompletion({
-      state: stateOf(g), graph: g, actorId: ME, verb: 'undo', objectTypeId: 'settlement',
+      state: stateOf(g), graph: g, actorId: ME, verb: 'destroy', objectTypeId: 'location',
       handle: { kind: 'node', nodeId: 'town' }, tick: 10,
     });
     expect(r.ops[0]).toMatchObject({ success: true, op: 'ruin_settlement' });
@@ -110,13 +110,13 @@ describe('resolveUndertakingCompletion', () => {
   it('an undeclared semantic refuses and traces the cell as unreachable', () => {
     const g = world();
     const r = resolveUndertakingCompletion({
-      state: stateOf(g), graph: g, actorId: ME, verb: 'survey', objectTypeId: 'room',
+      state: stateOf(g), graph: g, actorId: ME, verb: 'use', objectTypeId: 'place',
       handle: { kind: 'node', nodeId: 'shop' }, tick: 10,
     });
     expect(r.refused).toBe('no_semantic_declared');
-    expect(r.ops[0]).toMatchObject({ success: false, error: 'no_semantic_declared:room.survey' });
+    expect(r.ops[0]).toMatchObject({ success: false, error: 'no_semantic_declared:place.use' });
     expect(getTraces().find(t => t.category === 'undertaking_cell_unreachable')).toMatchObject({
-      verb: 'survey', objectTypeId: 'room', reason: 'no_semantic_declared',
+      verb: 'use', objectTypeId: 'place', reason: 'no_semantic_declared',
     });
     expect(getTraces().find(t => t.category === 'strategic_world_change')).toBeUndefined();
   });
@@ -124,14 +124,14 @@ describe('resolveUndertakingCompletion', () => {
   it('a sustained mode and a vanished object each refuse without running anything', () => {
     const g = world();
     const sustained = resolveUndertakingCompletion({
-      state: stateOf(g), graph: g, actorId: ME, verb: 'control', objectTypeId: 'settlement',
+      state: stateOf(g), graph: g, actorId: ME, verb: 'control', objectTypeId: 'location',
       handle: { kind: 'node', nodeId: 'town' }, tick: 10,
     });
     expect(sustained.variant).toBe('control:claim');
     expect(sustained.refused).toBe('sustained_mode');
 
     const gone = resolveUndertakingCompletion({
-      state: stateOf(g), graph: g, actorId: ME, verb: 'undo', objectTypeId: 'attachment',
+      state: stateOf(g), graph: g, actorId: ME, verb: 'destroy', objectTypeId: 'item',
       handle: { kind: 'node', nodeId: 'no_such_chart' }, tick: 10,
     });
     expect(gone.refused).toBe('object_gone');
@@ -141,10 +141,10 @@ describe('resolveUndertakingCompletion', () => {
   it('readObjectTier traces a defaulted tier and stays silent on a read one', () => {
     const g = world();
     g.addNode({ id: 'trinket', name: 'Trinket', type: 'artifact', properties: {} });
-    const attachment = getUndertakingObjectType('attachment')!;
+    const attachment = getUndertakingObjectType('item')!;
     expect(readObjectTier(g, attachment, { kind: 'node', nodeId: 'chart' }, 10)).toBe(1);
     expect(getTraces().filter(t => t.category === 'undertaking_tier_defaulted')).toHaveLength(0);
     expect(readObjectTier(g, attachment, { kind: 'node', nodeId: 'trinket' }, 10)).toBe(2);
-    expect(getTraces().find(t => t.category === 'undertaking_tier_defaulted')).toMatchObject({ objectTypeId: 'attachment', objectId: 'trinket', tier: 2 });
+    expect(getTraces().find(t => t.category === 'undertaking_tier_defaulted')).toMatchObject({ objectTypeId: 'item', objectId: 'trinket', tier: 2 });
   });
 });

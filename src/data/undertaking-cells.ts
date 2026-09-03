@@ -30,7 +30,7 @@ import type {
 } from '../types/strategicAction';
 import type { ReachDomain } from '../types/traits';
 import type { ValuePair } from '../types/agent';
-import { UNDERTAKING_OBJECT_TYPES, HARM_ON_UNDO, type UndertakingObjectType } from './undertaking-objects';
+import { UNDERTAKING_OBJECT_TYPES, HARM_ON_DESTROY, type UndertakingObjectType } from './undertaking-objects';
 import { UNDERTAKING_VERB_PROSE, UNDERTAKING_VERB_WORDS } from './undertaking-verb-prose';
 import {
   UNDERTAKING_VERB_VARIANTS,
@@ -42,6 +42,7 @@ import {
   MOTIVE_GATED_VERBS,
   MOTIVE_GATE_KINDS,
   HARM_ON_SEIZE,
+  HARM_ON_LOWER,
   UNDERTAKING_PROGRESS_PER_ADVANCE,
   UNDERTAKING_DEFAULT_TIER,
 } from './strategic-action-constants';
@@ -61,62 +62,81 @@ export function isCellTemplateId(id: string): boolean {
   return id.startsWith(CELL_TEMPLATE_ID_PREFIX);
 }
 
-/** The base verb of a variant (`control:seize` → `control`). */
+/** The base verb of a variant (`control:seize` → `control`, `change:lower` → `change`). */
 export function baseVerbOf(variant: UndertakingVerbVariant): UndertakingVerb {
-  return variant.startsWith('control') ? 'control' : (variant as UndertakingVerb);
+  const colon = variant.indexOf(':');
+  return (colon === -1 ? variant : variant.slice(0, colon)) as UndertakingVerb;
 }
 
 /** The family a cell reports for role-fit and history, by the object it acts on. */
 export const CELL_FAMILY_BY_TYPE: Readonly<Record<UndertakingObjectTypeId, BehaviorFamily>> = {
-  attachment: 'artist-crafter',
-  room: 'builder-civic',
-  settlement: 'builder-civic',
+  area: 'merchant-expansion',
+  location: 'builder-civic',
+  place: 'builder-civic',
   route: 'merchant-expansion',
-  company: 'warlord-expansion',
   faction: 'court-political',
-  mark: 'court-political',
+  company: 'warlord-expansion',
+  army: 'warlord-expansion',
+  network: 'court-political',
+  companion: 'court-political',
+  item: 'artist-crafter',
+  power: 'artist-crafter',
+  condition: 'court-political',
+  agreement: 'court-political',
+  standing: 'court-political',
 };
 
-/** Undoing and seizing read as the warlord's family whatever the object — the counter-play column. */
+/** Destroying, seizing and lowering read as the warlord's family whatever the object — the counter-play columns. */
 const COUNTER_PLAY_FAMILY: BehaviorFamily = 'warlord-expansion';
 
 /** The reaches a verb leans on, whatever the object. */
 export const CELL_REACH_BY_VERB: Readonly<Record<UndertakingVerb, Partial<Record<ReachDomain, number>>>> = {
-  found: { stone: 0.6, gold: 0.4 },
-  improve: { stone: 0.5, heart: 0.5 },
+  create: { stone: 0.6, gold: 0.4 },
+  change: { stone: 0.5, heart: 0.5 },
   use: { eye: 0.5, veil: 0.5 },
   control: { heart: 0.5, iron: 0.5 },
-  undo: { iron: 0.6, shadow: 0.4 },
-  survey: { eye: 0.6, star: 0.4 },
+  destroy: { iron: 0.6, shadow: 0.4 },
+  observe: { eye: 0.6, star: 0.4 },
 };
 
 /** Two value pairs per verb — the board's desire signal (`UNDERTAKING_MOTIVATION_MIN_ARITY`). */
 export const CELL_MOTIVATIONS_BY_VERB: Readonly<Record<UndertakingVerb, readonly ValuePair[]>> = {
-  found: ['preservation_transformation', 'tradition_novelty'],
-  improve: ['preservation_transformation', 'loyalty_ambition'],
+  create: ['preservation_transformation', 'tradition_novelty'],
+  change: ['preservation_transformation', 'loyalty_ambition'],
   use: ['honesty_cunning', 'revelation_discretion'],
   control: ['loyalty_ambition', 'courage_prudence'],
-  undo: ['mercy_ruthlessness', 'courage_prudence'],
-  survey: ['revelation_discretion', 'honesty_cunning'],
+  destroy: ['mercy_ruthlessness', 'courage_prudence'],
+  observe: ['revelation_discretion', 'honesty_cunning'],
 };
 
 /**
- * Where a `found` cell is done (THR-1392 slice 3). The object does not exist yet, so
- * the target is the **site** — the settlement a room is built in, the far end a route
- * is opened to, the place a settlement is founded from — and the candidate carries
- * the site as its handle. Mirrors the sites the shipped found-style templates name.
- * A found cell with no site rule targets the actor (`self`): a masterwork or a company
- * is made where its maker stands.
+ * Where a `create` cell is done (THR-1392 slice 3). The object does not exist yet, so
+ * the target is the **site** — the Location a Place is built in, the far end a route
+ * is opened to, the Location a new one is founded from, the mortal a mark is dug up
+ * about — and the candidate carries the site as its handle. Mirrors the sites the
+ * shipped found-style templates name. A create cell with no site rule targets the
+ * actor (`self`): a masterwork, a company or an army is made where its maker stands.
+ * Kinds with no create cell name `self` so the table stays total.
  */
-export const FOUND_SITE_RULE: Readonly<Record<UndertakingObjectTypeId, StrategicTargetRule>> = {
-  attachment: { type: 'self' },
-  room: { type: 'location_subtype', subtypes: ['town', 'city', 'capital', 'hamlet'] },
-  settlement: { type: 'location_subtype', subtypes: ['town', 'city', 'capital', 'hamlet', 'farmland'] },
+export const CREATE_SITE_RULE: Readonly<Record<UndertakingObjectTypeId, StrategicTargetRule>> = {
+  area: { type: 'self' },
+  location: { type: 'location_subtype', subtypes: ['town', 'city', 'capital', 'hamlet', 'farmland'] },
+  place: { type: 'location_subtype', subtypes: ['town', 'city', 'capital', 'hamlet'] },
   route: { type: 'location_subtype', subtypes: ['town', 'city', 'capital'] },
-  company: { type: 'location_subtype', subtypes: ['town', 'city', 'capital', 'camp', 'fort'] },
   faction: { type: 'location_subtype', subtypes: ['town', 'city', 'capital'] },
-  mark: { type: 'colocated_actor' },
+  company: { type: 'location_subtype', subtypes: ['town', 'city', 'capital', 'camp', 'fort'] },
+  army: { type: 'location_subtype', subtypes: ['town', 'city', 'capital', 'camp', 'fort', 'castle'] },
+  network: { type: 'self' },
+  companion: { type: 'self' },
+  item: { type: 'self' },
+  power: { type: 'self' },
+  condition: { type: 'colocated_actor' },
+  agreement: { type: 'colocated_actor' },
+  standing: { type: 'self' },
 };
+
+/** @deprecated THR-1392 slice 4 — the verb is `create`; kept one release for callers cut before the rename. */
+export const FOUND_SITE_RULE = CREATE_SITE_RULE;
 
 /** "an attachment", "a room" — the display name is a player word (UI Law 14). */
 function withArticle(noun: string): string {
@@ -133,7 +153,7 @@ function synthesiseCell(type: UndertakingObjectType, variant: UndertakingVerbVar
   const verb = baseVerbOf(variant);
   const tierIndex = UNDERTAKING_DEFAULT_TIER - 1;
   const gated = MOTIVE_GATED_VERBS.includes(variant);
-  const counterPlay = variant === 'undo' || variant === 'control:seize';
+  const counterPlay = variant === 'destroy' || variant === 'control:seize' || variant === 'change:lower';
   const executionMode = executionModeOf(type, variant);
   const prose = UNDERTAKING_VERB_PROSE[variant];
   return {
@@ -154,11 +174,11 @@ function synthesiseCell(type: UndertakingObjectType, variant: UndertakingVerbVar
     motivations: CELL_MOTIVATIONS_BY_VERB[verb],
     activityProse: prose.activity,
     completionProse: prose.completion,
-    targetRule: variant === 'found'
-      ? FOUND_SITE_RULE[type.id]
+    targetRule: variant === 'create'
+      ? CREATE_SITE_RULE[type.id]
       : { type: 'object', objectTypeId: type.id, ownership: OWNERSHIP_BY_VERB[variant] },
     motiveGate: gated ? [...MOTIVE_GATE_KINDS] : undefined,
-    harmClass: variant === 'undo' ? HARM_ON_UNDO[type.id] : variant === 'control:seize' ? HARM_ON_SEIZE : undefined,
+    harmClass: variant === 'destroy' ? HARM_ON_DESTROY[type.id] : variant === 'control:seize' ? HARM_ON_SEIZE : variant === 'change:lower' ? HARM_ON_LOWER : undefined,
     // A cell's mutation is the resolver's, never a hint; declared so the legacy
     // instant path, if ever reached with the flag off, does nothing rather than guess.
     mutationHint: { type: 'no_mutation' },

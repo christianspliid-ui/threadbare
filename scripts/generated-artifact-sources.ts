@@ -117,6 +117,26 @@ export const STATIC_ARTIFACT_SOURCES: Readonly<Record<string, readonly string[]>
     "src/data/undertaking-cells.ts",
     "scripts/generate-world-objects.ts",
   ],
+  // generate-undertaking-grid (THR-1392 slice 4): code in, doc out. The registry, the
+  // catalogue, the verb tables and the curated dispositions are its inputs; an edit to
+  // any of them changes the grid with no other file moving.
+  "Docs/canon/undertaking-grid.generated.md": [
+    "src/data/undertaking-objects.ts",
+    "src/data/world-objects.ts",
+    "src/data/strategic-action-constants.ts",
+    "src/data/undertaking-verb-prose.ts",
+    "scripts/undertaking-grid-dispositions.ts",
+    "scripts/generate-undertaking-grid.ts",
+  ],
+  "public/undertaking-grid-reference.html": [
+    "src/data/undertaking-objects.ts",
+    "src/data/world-objects.ts",
+    "src/data/strategic-action-constants.ts",
+    "src/data/undertaking-verb-prose.ts",
+    "scripts/undertaking-grid-dispositions.ts",
+    "scripts/generate-undertaking-grid.ts",
+    "public/wiki-manifest.json",
+  ],
   "public/world-objects-reference.html": [
     "src/data/world-objects.ts",
     "src/types/graph.ts",

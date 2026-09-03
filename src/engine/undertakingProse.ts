@@ -80,7 +80,7 @@ export function objectDisplayName(
   const edge = graph.getEdge(handle.edgeId);
   if (!edge) return undefined;
   const subject = nameOf(graph, edge.target);
-  if (objectTypeId === 'mark') return subject ? `the hold on ${subject}` : 'the hold';
+  if (objectTypeId === 'agreement') return subject ? `the hold on ${subject}` : 'the hold';
   return subject;
 }
 
