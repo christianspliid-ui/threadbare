@@ -18,6 +18,8 @@ import { getPlaceTierLocations } from '../sublocationShape';
 const SEED = 42;
 const TICKS = 60;
 const STARTS = 8;
+/** Worldgen + 60 ticks + 8 sweeps took 4.4 s alone; the default 5 s timed out under the full heavy lane. */
+const TEST_TIMEOUT_MS = 120_000;
 /**
  * One single-source run must beat the per-destination sweep it replaces by at least this
  * factor, measured in the same process so machine load cancels out (a wall-clock ceiling
@@ -67,5 +69,5 @@ describe('single-source shortest paths on a seeded world (THR-1389)', () => {
     }
     expect(compared, 'at least one start must reach something').toBeGreaterThan(STARTS);
     expect(sweepMs / Math.max(singleSourceMs, 1e-6), `sweep ${sweepMs.toFixed(1)} ms vs single-source ${singleSourceMs.toFixed(2)} ms`).toBeGreaterThan(MIN_SPEEDUP);
-  });
+  }, TEST_TIMEOUT_MS);
 });
