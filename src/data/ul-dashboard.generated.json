@@ -14,7 +14,7 @@
       "filename": "Agents.md",
       "title": "Agents",
       "contentAdjacent": true,
-      "termCount": 48,
+      "termCount": 49,
       "blurb": "Content-adjacent shard. Terms covering entities in the simulation: agents, actors, Ascendant, factions, and their relationships."
     },
     {
@@ -22,7 +22,7 @@
       "filename": "Encounters.md",
       "title": "Encounters",
       "contentAdjacent": true,
-      "termCount": 36,
+      "termCount": 37,
       "blurb": "Content-adjacent shard. Terms covering the encounter pipeline: templates, resolution, aftermath, awareness, and causation."
     },
     {
@@ -1735,13 +1735,53 @@
     },
     {
       "shardId": "agents",
+      "slug": "undertaking-contract",
+      "name": "Undertaking Contract",
+      "aliases": [
+        "the undertaking contract; `check:undertaking` (the command that runs it)"
+      ],
+      "status": "canonical",
+      "oneLiner": "the authoring-time contract a strategic action template must satisfy; ten structural-first blocks, a shrinking ratchet instead of exemptions; not the encounter line's Composition Contract",
+      "body": "*Seated 2026-09-03 (THR-1390); the implementation is THR-1300 slice 1.*\n\nThe authoring-time contract a strategic action template must satisfy to be **contract-complete** — the undertaking factory's machine gate. Ten blocks, ordered structural-first so a template missing its `[[Kind Row]]` is told that before it is told about a weak sentence: `identity`, `kind_membership`, `counter_play`, `cast`, `creation`, `bands`, `board`, `reachability`, `register`, `tokens`.\n\n**It composes the validators that already exist rather than restating them** — kind membership and counter-play through `validateKindRegistry`, board authoring through `findMotivationDefects`, register through the encounter line's own `countVagueness` / `countSecondPerson` detectors at the encounter standard. A gate that re-implements one of those is a second rule that will drift.\n\n**A named, shrinking ratchet instead of exemptions.** `UNDERTAKING_RETROFIT_PENDING` holds the templates that predate the contract; there are no exemptions and no per-template escape hatch. The runner exits non-zero when an unlisted template fails **and equally when a listed one now passes** — a stale ratchet entry is a lie about the corpus, and that second exit condition is what makes the list shrink.\n\n**Not the Composition Contract.** That is the encounter line's sibling gate (`src/data/content-eval/compositionContract.ts`), and it decided this one's shape: same blocks-and-violations structure, same warn channel that prints without failing, different substrate. **Passing one says nothing about the other.** Law 56 also inverts between them — undertaking chips are engine-derived, so chip backing holds by construction and the leak is prose *claiming* state, which the `creation` write-set rule gates.\n\nCode anchors: `src/data/content-eval/undertakingContract.ts` (`UNDERTAKING_BLOCKS`, `checkUndertakingContract`, `buildUndertakingContractContext`), `src/data/content-eval/undertakingRetrofitPending.ts` (`UNDERTAKING_RETROFIT_PENDING`), `scripts/check-undertaking.ts`, `Docs/canon/undertakings.md`.",
+      "seeAlso": [
+        {
+          "raw": "Undertaking",
+          "termName": "Undertaking",
+          "resolvedSlug": "agents#undertaking"
+        },
+        {
+          "raw": "Kind Row",
+          "termName": "Kind Row",
+          "resolvedSlug": "agents#kind-row"
+        },
+        {
+          "raw": "Batch Brief",
+          "termName": "Batch Brief",
+          "resolvedSlug": "encounters#batch-brief"
+        },
+        {
+          "raw": "Work",
+          "termName": "Work",
+          "resolvedSlug": "agents#work"
+        },
+        {
+          "raw": "Undertaking Verb",
+          "termName": "Undertaking Verb",
+          "resolvedSlug": "agents#undertaking-verb"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Agents.md#undertaking-contract",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "agents",
       "slug": "calling",
       "name": "Calling",
       "aliases": [
         "the `calling` / `callingTitleKey` / `callingSinceTick` node properties (engine); \"what the world calls them\""
       ],
       "status": "unknown",
-      "oneLiner": "The player-visible identity title a mortal carries for what they do — *Trader*, *Reaver*, *Mender*, *Spider*.",
+      "oneLiner": "the player-visible identity title a mortal carries for what they do; derived on life-changes, never stored as a stat",
       "body": "The player-visible identity title a mortal carries for what they do — *Trader*, *Reaver*, *Mender*, *Spider*. **Derived, never stored as a stat**: a deterministic argmax over the naming table (`src/data/calling-content.ts`) from the mortal's leading reach pair, their active `[[Ambition]]` (its category and the undertaking kinds its templates build — the volatile input, weighted heaviest), and their personality lean. It replaces the retired `BehaviorFamily` as the readable pattern (THR-1281 §7b): the family enum survives as mechanics for the docs 4/6 conversion, but no player surface renders a family word.\n\nA calling **recomputes only on a life-change** — an ambition taken up, completed or abandoned; an undertaking finished; a reach tier crossed — never per tick, and a challenger replaces the incumbent only past both hysteresis gates (`CALLING_MIN_HOLD_TICKS`, `CALLING_SCORE_MARGIN`). A change on a spotlight mortal is a `[[Chronicle Entry]]` (`calling_changed`); every derivation traces `calling_change` with both scores. A mortal the scorer cannot place — no capabilities, no ambition — stays unnamed and renders the fallback title.\n\n**Disambiguation.** The faction verb *Kindle a Calling* (`factionGovernanceVerbs.ts`, THR-433) biases a faction's latent ambition candidates and is unrelated to this term; the agent sense is the primary UL entry, and the verb keeps its authored name as a fixed phrase.\n\nCode anchors: `src/engine/calling.ts` (`deriveCalling`, `recomputeCalling`, `getCallingPresentation`), `src/data/calling-content.ts` (`CALLING_ROWS`, `BEHAVIOR_FAMILY_TO_CALLING`), `src/data/strategic-action-constants.ts` (`CALLING_*`), `window.__DEBUG.getCalling`.",
       "seeAlso": [
         {
@@ -1783,7 +1823,7 @@
         "moment card / moment badge (surfaces)"
       ],
       "status": "unknown",
-      "oneLiner": "What a long work says to the player — one of six turns of an `[[Undertaking]]`: `started` (its founding), `at_cost` (a step dearly bought), `complication` (serious trouble, naming the lost cast member where the binder lost one), `fork` (doubling down after repeated halts), `abandoned`, and `completion`.",
+      "oneLiner": "one of six turns of an Undertaking a long work reports to the player; presentation (interrupt / badge / none) stamped at emission",
       "body": "What a long work says to the player — one of six turns of an `[[Undertaking]]`: `started` (its founding), `at_cost` (a step dearly bought), `complication` (serious trouble, naming the lost cast member where the binder lost one), `fork` (doubling down after repeated halts), `abandoned`, and `completion`. Every moment lands as a `TickEvent` **and** as a record in `state.pendingUndertakingMoments`, a capped queue with one writer, and traces `moment_surface` as it is queued, opened, acknowledged or dropped.\n\nA moment has a **presentation** stamped at emission and never recomputed — *interrupt*, *badge* or *none* (THR-1279 ruling 2.1). An interrupt stops the world and opens the moment card; a badge waits on the mortal's thread row as the recovery route and opens the same card; acknowledging never destroys the record, the badge counts it until it ages out. Only a `[[Follow]]`ed mortal's moments interrupt, and only the first at-cost step per work does; foundings always badge.\n\n**Disambiguation.** Not the retired encounter concept *Defining Moment* (a rejected authored-choice scene, see Encounters.md): a moment is reported, never chosen.\n\nCode anchors: `src/engine/undertakingCheckpoints.ts` (`buildMoment`, `resolveMomentPresentation`), `src/engine/undertakingMoments.ts` (the queue's writer), `src/components/Game/MomentCard.tsx`, `src/components/Game/momentBadgeModel.ts`, `src/data/moment-card-content.ts`.",
       "seeAlso": [
         {
@@ -1820,7 +1860,7 @@
         "the follow toggle (surfaces); **mute** is its negative"
       ],
       "status": "unknown",
-      "oneLiner": "The attention the player confers on a mortal, which upgrades that mortal's `[[Moment]]`s from badge to interrupt.",
+      "oneLiner": "the attention the player confers on a mortal, upgrading that mortal's Moments from badge to interrupt; mute is its negative",
       "body": "The attention the player confers on a mortal, which upgrades that mortal's `[[Moment]]`s from badge to interrupt. One predicate, three terms: a mortal is followed when they are on the explicit list *or* the Ascendant's `[[Thread]]` to them sits at the `the_first` or `retinue` `[[Court Position]]` — and in both cases not muted. A `dormant` or `watched` thread does **not** follow, so `thread.dormant` means what its text says on both channels. **Mute** is the un-follow of a bond-followed mortal: it drops the interrupt upgrade and nothing else — the thread stays, the moments still queue and badge. Follow state is game state, per save, never a preference.\n\nThe affordance renders the three-way read honestly — *Following*, *Followed by bond*, *Muted* — on the arc panel and on the encounter that concerns the mortal, and the single writer decides mute-versus-unfollow from the state of the world, never the surface. Copy on the affordance keeps *retinue* in its court sense only (THR-1099 arbitration); it never means travelling companions.\n\nCode anchors: `src/engine/followedAgents.ts` (`isFollowed`, `followAgent`, `unfollowAgent`, `getFollowState`), `src/components/Game/FollowToggle.tsx`, `window.__DEBUG.followAgent` / `unfollowAgent` / `getFollowedAgents`.",
       "seeAlso": [
         {
@@ -3227,6 +3267,42 @@
         }
       ],
       "sourcePath": "Docs/ubiquitous-language/Encounters.md#unset-weave",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "encounters",
+      "slug": "batch-brief",
+      "name": "Batch Brief",
+      "aliases": [
+        "the brief",
+        "Stage 0 brief"
+      ],
+      "status": "canonical",
+      "oneLiner": "the Stage 0 planning doc opening a factory batch of six; names variance (reaches/shapes/settings, or the kind × CRUD grid), never content; agent-drafted, chat-approved",
+      "body": "*Seated 2026-09-03 (THR-1390). Shard-crossing in substance but seated once here: the encounter line is the senior sense, and the undertaking sense is a variance-axis swap, not a second concept.*\n\nThe short planning document that opens a factory batch — **the one place a human steers *what gets made***, where everything downstream (draft, critics, the gate, live proof, the compiler) steers only *how well*. A batch is six. A brief is short enough to read in two minutes and specific enough that two authoring runs against it produce recognisably the same batch.\n\n**A brief names variance, not content** — and *which axes* it names is the whole difference between the two senses:\n\n- **Encounter sense** (the senior line, THR-1047): variance across **reaches, shapes and settings**.\n- **Undertaking sense:** variance across the **kind × CRUD grid** — which `[[Kind Row]]`s and which create / update / destroy cells the six templates fill, gap-weighted toward the empty cells. A brief that fills only create cells is a brief for works nobody can take back, and is rejected on sight: it is the grammar's own rule (*until a kind can be undone, it is not a kind*) applied at planning time.\n\n**Game design first, in both senses.** Every slot's mechanical fix — verb, tier, difficulty and payoff bands, target rule, cast, effects, motive gate — is decided **before any premise** (director ruling 2026-08-24). The prose is written *inside* the mechanics; a brief whose fiction came first is rejected on sight.\n\n**Agent-drafted, Christian-approved in chat** — the one HITL gate on either line, presented per THR-608 as the grid, the six mechanical fixes one line each, two links and one yes/no question. A brief he has not approved is a suggestion, not a batch.\n\nCode anchors: `.claude/skills/undertaking-pipeline/reference/batch-brief-format.md` (undertaking sense), `.claude/skills/encounter-pipeline/reference/batch-brief-format.md` (encounter sense), `Docs/plans/2026-09-02-thr-1300-undertaking-factory.md` § Stage 0.",
+      "seeAlso": [
+        {
+          "raw": "UnifiedActionTemplate",
+          "termName": "UnifiedActionTemplate",
+          "resolvedSlug": "encounters#unifiedactiontemplate"
+        },
+        {
+          "raw": "Undertaking Contract",
+          "termName": "Undertaking Contract",
+          "resolvedSlug": "agents#undertaking-contract"
+        },
+        {
+          "raw": "Undertaking",
+          "termName": "Undertaking",
+          "resolvedSlug": "agents#undertaking"
+        },
+        {
+          "raw": "Kind Row",
+          "termName": "Kind Row",
+          "resolvedSlug": "agents#kind-row"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Encounters.md#batch-brief",
       "contentAdjacent": true
     },
     {

@@ -467,3 +467,26 @@ Rejected by Christian in favour of **present-tense trials**: the moment happens 
 Recorded here rather than left in the brainstorm doc because the rejected framing is *more* evocative than the one that shipped, which is exactly why a later session reading the exploratory draft would reintroduce it.
 
 **This term was never canonical — `rejected` means "considered and refused", not "retired from canon".** That is the distinction `deprecated` cannot carry.
+
+---
+
+### Batch Brief
+
+**Aliases:** the brief, Stage 0 brief
+**Also see:** `[[UnifiedActionTemplate]]`, `[[Undertaking Contract]]`, `[[Undertaking]]`, `[[Kind Row]]`
+**Status:** canonical
+
+*Seated 2026-09-03 (THR-1390). Shard-crossing in substance but seated once here: the encounter line is the senior sense, and the undertaking sense is a variance-axis swap, not a second concept.*
+
+The short planning document that opens a factory batch — **the one place a human steers *what gets made***, where everything downstream (draft, critics, the gate, live proof, the compiler) steers only *how well*. A batch is six. A brief is short enough to read in two minutes and specific enough that two authoring runs against it produce recognisably the same batch.
+
+**A brief names variance, not content** — and *which axes* it names is the whole difference between the two senses:
+
+- **Encounter sense** (the senior line, THR-1047): variance across **reaches, shapes and settings**.
+- **Undertaking sense:** variance across the **kind × CRUD grid** — which `[[Kind Row]]`s and which create / update / destroy cells the six templates fill, gap-weighted toward the empty cells. A brief that fills only create cells is a brief for works nobody can take back, and is rejected on sight: it is the grammar's own rule (*until a kind can be undone, it is not a kind*) applied at planning time.
+
+**Game design first, in both senses.** Every slot's mechanical fix — verb, tier, difficulty and payoff bands, target rule, cast, effects, motive gate — is decided **before any premise** (director ruling 2026-08-24). The prose is written *inside* the mechanics; a brief whose fiction came first is rejected on sight.
+
+**Agent-drafted, Christian-approved in chat** — the one HITL gate on either line, presented per THR-608 as the grid, the six mechanical fixes one line each, two links and one yes/no question. A brief he has not approved is a suggestion, not a batch.
+
+Code anchors: `.claude/skills/undertaking-pipeline/reference/batch-brief-format.md` (undertaking sense), `.claude/skills/encounter-pipeline/reference/batch-brief-format.md` (encounter sense), `Docs/plans/2026-09-02-thr-1300-undertaking-factory.md` § Stage 0.
