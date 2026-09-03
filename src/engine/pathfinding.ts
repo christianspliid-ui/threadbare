@@ -40,13 +40,132 @@ export interface PathResult {
 }
 
 /**
- * Find the shortest path from startId to endId using Dijkstra's algorithm.
+ * The one Dijkstra (THR-1389). Both public entry points run this: the per-destination
+ * `findShortestPath` (an early exit at `endId`) and the single-source
+ * `findAllShortestPaths` (no exit — every reachable location priced once).
  *
- * @param graph — the world graph
- * @param agentId — the actor traveling (used for speed modifier calculation)
- * @param startId — starting location node ID
- * @param endId — destination location node ID
- * @returns PathResult with path and totalCost, or null if unreachable
+ * **Why single-source exists.** `generateMovementCandidates` used to call
+ * `findShortestPath` once per location node in the world — on the seed-42 small map at
+ * tick 120 that was 812 full runs per company member, ~80% of them to unreachable
+ * nodes that each exhausted the whole frontier before returning null, repeated for every
+ * member every `DECISION_REEVALUATION_TICKS`. Measured: 169 ms per member, 2150 ms per
+ * tick of company re-decisions, the 2.5 s worst tick THR-1385 recorded. One run from the
+ * member's position prices every reachable destination in 0.44 ms with identical costs
+ * (0 mismatches on 2108 destination pairs across two seeded worlds).
+ *
+ * The frontier is a binary heap keyed on cost; the previous linear scan of an unvisited
+ * set was O(n²) and is what put `findShortestPath`'s self time at 38% of a tick.
+ * Relaxation is unchanged: `adjacent` and `contains` edges priced by `computeEdgeCost`
+ * (agent-aware — traits and range effects), road edges both ways by
+ * `computeRoadEdgeCost`. Costs are identical to the old implementation; tie-breaking
+ * between equal-cost parents follows heap order, which is deterministic for the same
+ * graph and the same start (NFP #3).
+ */
+interface DijkstraState {
+  distance: Map<string, number>;
+  parent: Map<string, string>;
+  roadEdgeUsed: Map<string, { roadType: 'major' | 'trail'; hexPath: HexCoord[]; discountedCost: number }>;
+}
+
+class CostHeap {
+  private items: { id: string; cost: number }[] = [];
+  get size(): number { return this.items.length; }
+  push(id: string, cost: number): void {
+    const a = this.items;
+    a.push({ id, cost });
+    let i = a.length - 1;
+    while (i > 0) {
+      const p = (i - 1) >> 1;
+      if (a[p].cost <= a[i].cost) break;
+      [a[p], a[i]] = [a[i], a[p]];
+      i = p;
+    }
+  }
+  pop(): { id: string; cost: number } {
+    const a = this.items;
+    const top = a[0];
+    const last = a.pop()!;
+    if (a.length > 0) {
+      a[0] = last;
+      let i = 0;
+      for (;;) {
+        const l = 2 * i + 1;
+        const r = l + 1;
+        let m = i;
+        if (l < a.length && a[l].cost < a[m].cost) m = l;
+        if (r < a.length && a[r].cost < a[m].cost) m = r;
+        if (m === i) break;
+        [a[m], a[i]] = [a[i], a[m]];
+        i = m;
+      }
+    }
+    return top;
+  }
+}
+
+function runDijkstra(
+  graph: WorldGraph,
+  agentId: string,
+  startId: string,
+  endId: string | null,
+): DijkstraState & { reachedEnd: boolean } {
+  const distance = new Map<string, number>([[startId, 0]]);
+  const parent = new Map<string, string>();
+  const roadEdgeUsed: DijkstraState['roadEdgeUsed'] = new Map();
+  const settled = new Set<string>();
+  const heap = new CostHeap();
+  heap.push(startId, 0);
+
+  const relax = (
+    from: string,
+    to: string,
+    cost: number,
+    road: { roadType: 'major' | 'trail'; hexPath: HexCoord[]; discountedCost: number } | null,
+  ): void => {
+    const newDist = distance.get(from)! + cost;
+    if (newDist < (distance.get(to) ?? Infinity)) {
+      distance.set(to, newDist);
+      parent.set(to, from);
+      if (road) roadEdgeUsed.set(`${from}→${to}`, road);
+      else roadEdgeUsed.delete(`${from}→${to}`);
+      heap.push(to, newDist);
+    }
+  };
+
+  while (heap.size > 0) {
+    const { id: current, cost } = heap.pop();
+    if (settled.has(current) || cost > (distance.get(current) ?? Infinity)) continue;
+    settled.add(current);
+    if (endId !== null && current === endId) {
+      return { distance, parent, roadEdgeUsed, reachedEnd: true };
+    }
+
+    for (const edge of [...graph.getOutgoingEdges(current, 'adjacent'), ...graph.getOutgoingEdges(current, 'contains')]) {
+      const neighborNode = graph.getNode(edge.target);
+      if (!neighborNode || neighborNode.type !== 'location') continue;
+      const edgeCost = computeEdgeCost(graph, agentId, current, edge.target);
+      if (edgeCost.totalCost === Infinity) continue;
+      relax(current, edge.target, edgeCost.totalCost, null);
+    }
+    for (const edge of graph.getOutgoingEdges(current, 'road')) {
+      const roadCost = computeRoadEdgeCost(edge);
+      if (roadCost === null) continue; // Fail-soft: skip corrupt road edge
+      relax(current, edge.target, roadCost.discountedCost, roadCost);
+    }
+    for (const edge of graph.getIncomingEdges(current, 'road')) {
+      const roadCost = computeRoadEdgeCost(edge);
+      if (roadCost === null) continue;
+      relax(current, edge.source, roadCost.discountedCost, { ...roadCost, hexPath: [...roadCost.hexPath].reverse() });
+    }
+  }
+  return { distance, parent, roadEdgeUsed, reachedEnd: false };
+}
+
+/**
+ * Find the shortest path from a location to a location, as an agent.
+ *
+ * @returns the path (excluding the start), its cost and any road segments — or null
+ *          when either end is not a location node or no path exists.
  */
 export function findShortestPath(
   graph: WorldGraph,
@@ -54,157 +173,38 @@ export function findShortestPath(
   startId: string,
   endId: string,
 ): PathResult | null {
-  // Special case: already at destination
-  if (startId === endId) {
-    return {
-      path: [],
-      totalCost: 0,
-    };
-  }
-
-  // Validate start and end nodes exist and are locations
+  if (startId === endId) return { path: [], totalCost: 0 };
   const startNode = graph.getNode(startId);
   const endNode = graph.getNode(endId);
+  if (!startNode || !endNode) return null;
+  if (startNode.type !== 'location' || endNode.type !== 'location') return null;
+  const run = runDijkstra(graph, agentId, startId, endId);
+  if (!run.reachedEnd) return null;
+  return reconstructPath(run.parent, endId, run.distance, run.roadEdgeUsed);
+}
 
-  if (!startNode || !endNode) {
-    return null;
+/**
+ * Every reachable location's shortest path from `startId`, as an agent, in one run.
+ *
+ * The map is keyed by destination id and excludes the start. Each entry is exactly what
+ * `findShortestPath(graph, agentId, startId, id)` returns for that destination. Callers
+ * that price many destinations from one spot — movement candidates, company
+ * re-decisions — read this instead of calling the per-destination function in a loop.
+ */
+export function findAllShortestPaths(
+  graph: WorldGraph,
+  agentId: string,
+  startId: string,
+): ReadonlyMap<string, PathResult> {
+  const out = new Map<string, PathResult>();
+  const startNode = graph.getNode(startId);
+  if (!startNode || startNode.type !== 'location') return out;
+  const run = runDijkstra(graph, agentId, startId, null);
+  for (const id of run.distance.keys()) {
+    if (id === startId) continue;
+    out.set(id, reconstructPath(run.parent, id, run.distance, run.roadEdgeUsed));
   }
-
-  if (startNode.type !== 'location' || endNode.type !== 'location') {
-    return null;
-  }
-
-  // --- Dijkstra's Algorithm ---
-
-  // Distance map: nodeId → lowest cost found so far
-  const distance = new Map<string, number>();
-  distance.set(startId, 0);
-
-  // Parent map: nodeId → previous nodeId on shortest path
-  const parent = new Map<string, string>();
-
-  // Track road edges used in the shortest path: "from→to" → road edge info
-  const roadEdgeUsed = new Map<string, { roadType: 'major' | 'trail'; hexPath: HexCoord[]; discountedCost: number }>();
-
-  // Priority queue: array of unvisited nodeIds (we'll sort manually)
-  // For ~320 hexes, O(n²) sorting is acceptable
-  const unvisited = new Set<string>();
-
-  // Initialize unvisited set with start node
-  unvisited.add(startId);
-
-  while (unvisited.size > 0) {
-    // Find unvisited node with minimum distance
-    let current: string | null = null;
-    let minDist = Infinity;
-
-    for (const nodeId of unvisited) {
-      const d = distance.get(nodeId) ?? Infinity;
-      if (d < minDist) {
-        minDist = d;
-        current = nodeId;
-      }
-    }
-
-    if (current === null || minDist === Infinity) {
-      // No path found
-      break;
-    }
-
-    // If we reached the end, we can return early (Dijkstra property)
-    if (current === endId) {
-      return reconstructPath(parent, endId, distance, roadEdgeUsed);
-    }
-
-    unvisited.delete(current);
-
-    // Examine all outgoing edges from current
-    // Include 'adjacent', 'contains', and 'road' edge types
-    const outgoingEdges = [
-      ...graph.getOutgoingEdges(current, 'adjacent'),
-      ...graph.getOutgoingEdges(current, 'contains'),
-    ];
-
-    for (const edge of outgoingEdges) {
-      const neighborId = edge.target;
-      const neighborNode = graph.getNode(neighborId);
-
-      // Skip non-location nodes (only traverse locations)
-      if (!neighborNode || neighborNode.type !== 'location') {
-        continue;
-      }
-
-      // Compute edge cost (includes terrain and location entry taxes)
-      const edgeCost = computeEdgeCost(graph, agentId, current, neighborId);
-
-      // Skip impassable edges (Infinity cost)
-      if (edgeCost.totalCost === Infinity) {
-        continue;
-      }
-
-      const currentDist = distance.get(current)!;
-      const newDist = currentDist + edgeCost.totalCost;
-      const neighborDist = distance.get(neighborId) ?? Infinity;
-
-      // If we found a shorter path, update it
-      if (newDist < neighborDist) {
-        distance.set(neighborId, newDist);
-        parent.set(neighborId, current);
-        // Clear any road edge for this neighbor (non-road edge won)
-        roadEdgeUsed.delete(`${current}→${neighborId}`);
-        // Add to unvisited if not already present
-        unvisited.add(neighborId);
-      }
-    }
-
-    // Road edges: check both outgoing and incoming (roads are canonically ordered by ID)
-    const roadOutgoing = graph.getOutgoingEdges(current, 'road');
-    const roadIncoming = graph.getIncomingEdges(current, 'road');
-
-    for (const edge of roadOutgoing) {
-      const neighborId = edge.target;
-      const roadCost = computeRoadEdgeCost(edge);
-      if (roadCost === null) continue; // Fail-soft: skip corrupt road edge
-
-      const currentDist = distance.get(current)!;
-      const newDist = currentDist + roadCost.discountedCost;
-      const neighborDist = distance.get(neighborId) ?? Infinity;
-
-      if (newDist < neighborDist) {
-        distance.set(neighborId, newDist);
-        parent.set(neighborId, current);
-        roadEdgeUsed.set(`${current}→${neighborId}`, roadCost);
-        unvisited.add(neighborId);
-      }
-    }
-
-    for (const edge of roadIncoming) {
-      // For incoming edges, the neighbor is the source (we're at the target)
-      const neighborId = edge.source;
-      const roadCost = computeRoadEdgeCost(edge);
-      if (roadCost === null) continue;
-
-      const currentDist = distance.get(current)!;
-      const newDist = currentDist + roadCost.discountedCost;
-      const neighborDist = distance.get(neighborId) ?? Infinity;
-
-      if (newDist < neighborDist) {
-        distance.set(neighborId, newDist);
-        parent.set(neighborId, current);
-        // Reverse hexPath: edge stores source→target, but travel direction
-        // is current→neighbor (target→source). hexPath must match key direction
-        // so reconstructPath produces correctly-oriented road segments.
-        roadEdgeUsed.set(`${current}→${neighborId}`, {
-          ...roadCost,
-          hexPath: [...roadCost.hexPath].reverse(),
-        });
-        unvisited.add(neighborId);
-      }
-    }
-  }
-
-  // If we exit the loop without reaching endId, no path exists
-  return null;
+  return out;
 }
 
 /**
