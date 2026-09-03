@@ -675,6 +675,17 @@
   </div>
 
   <div class="section">
+    <h2>Spotlight &mdash; A verb on a thing the world has
+      <span class="lead">Audited 2026-09-03 (audit-on-touch, THR-1392 slices 1&ndash;3). An undertaking is a verb acted on an object the world already keeps, and each object type says once what its verbs do.</span>
+    </h2>
+
+    <ul class="contracts">
+      <li class="partial"><span class="flow">Object-type registry <span class="arrow">&#10230;</span> The one resolver &mdash; every cell completion runs the semantic its object type declared, and names the object on the world-change trace (<code>undertaking-object-types</code>)</span><span class="chip partial">UNVERIFIED-OK</span>
+        <span class="note">THR-1392. Six verbs &mdash; found &middot; improve &middot; use &middot; control (claim what nobody holds, seize what someone else does) &middot; undo &middot; survey &mdash; over seven object types the world already has: an attachment, a room, a settlement, a route, a company, a faction, a mark. Each type registers once in <code>src/data/undertaking-objects.ts</code>: its graph shape, the edges that say who holds one, a tier read off the object, the harm class the grievance lane reads, and what each verb does to it &mdash; the graph op its owning system already had, re-homed under the object rather than under the template that mentioned it. <code>resolveUndertakingCompletion</code> is the one reader: ownership read in one place, the control variant picked from it, the declared semantic dispatched; a verb a type does not declare is refused and traced <code>undertaking_cell_unreachable</code>, never faked. A <em>cell</em> is one derived template per declared (verb, type); an ambition lists the cells it walks in <code>strategicProfile.cells</code>; the contract, the live proof, the compiler (an <em>override</em> on a cell, at most three per cell) and the Package View all read cells the way they read packs. <strong>Badged UNVERIFIED-OK, not LIVE, on purpose:</strong> the registry, the resolver, the walk and the line are wired and tested end to end, and the live proof completes cells on seeds 42 and 99 &mdash; but <code>UNDERTAKING_MODEL</code> stays on <code>templates</code> until the census passes on cells (slice 4), so no cell travels a path the simulation takes by itself today. The first live run found what a unit test could not: a completed cell never reached the resolver under the template flag, <em>found</em> cells targeted existing objects instead of a site, and a siege razed a site mid-project &mdash; a <em>found</em> whose site is gone now lands where the builder stands.</span></li>
+    </ul>
+  </div>
+
+  <div class="section">
     <h2>How this map stays true
       <span class="lead">A hand-drawn diagram is a lie waiting to happen. This one is designed to become a projection.</span>
     </h2>

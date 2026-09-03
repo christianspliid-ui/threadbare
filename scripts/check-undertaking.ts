@@ -20,6 +20,7 @@
  */
 
 import { getAllStrategicTemplates } from '../src/engine/strategicActionCandidates';
+import { UNDERTAKING_CELL_TEMPLATES } from '../src/data/undertaking-cells';
 import {
   buildUndertakingContractContext,
   checkUndertakingContract,
@@ -42,7 +43,9 @@ if (!wantsAll && explicitIds.length === 0) {
   process.exit(1);
 }
 
-const corpus = getAllStrategicTemplates();
+// The cells are contract-checked with the packs (THR-1392 slice 3): they exist in the
+// repo whatever the flag says, and a cell that fails the contract is a defect now.
+const corpus = [...getAllStrategicTemplates(), ...UNDERTAKING_CELL_TEMPLATES];
 const ctx = buildUndertakingContractContext(corpus);
 const byId = new Map(corpus.map(t => [t.id, t]));
 

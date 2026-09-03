@@ -273,7 +273,28 @@ export function proveTemplate(templateId: string, seed: number, map: MapSizePres
     claims.push({ name: 'creation_effect', status: 'not_declared', detail: 'no creationEffects' });
   }
 
-  if (writes.mutation && final?.status === 'completed') {
+  if (writes.object && final?.status === 'completed') {
+    // A cell's mutation is read off the **history entry** the completion wrote —
+    // durable state, like the graph reads the per-hint claims make — not off the
+    // trace ring, which a seeded world evicts many times per tick (the first draft of
+    // this claim read the resolver's trace and measured nothing for that reason).
+    // The entry's `graphOps` carry `<op>:ok` / `<op>:fail` from the semantic that ran.
+    const entry = (state.strategicState?.history ?? [])
+      .filter(h => h.actorId === actorId && h.templateId === templateId && h.tick >= startTick && h.outcome === 'completed')
+      .sort((a, b) => b.tick - a.tick)[0];
+    const ops = entry?.graphOps ?? [];
+    const ok = ops.filter(o => o.endsWith(':ok'));
+    const objectId = final?.objectHandle ? (final.objectHandle.kind === 'node' ? final.objectHandle.nodeId : final.objectHandle.edgeId) : '?';
+    claims.push({
+      name: 'mutation_object',
+      status: ok.length > 0 ? 'pass' : 'fail',
+      detail: ok.length > 0
+        ? `${writes.object.verb} × ${writes.object.objectTypeId} on ${objectId} (${ok.join(', ')})`
+        : ops.length > 0
+          ? `the semantic ran and failed: ${ops.join(', ')}`
+          : 'no completed history entry with a graph op for the project',
+    });
+  } else if (writes.mutation && final?.status === 'completed') {
     claims.push(mutationClaim(state, template, actorId, startTick, affected));
   } else {
     claims.push({ name: 'mutation_object', status: 'not_declared', detail: writes.mutation ? `mutationHint ${writes.mutation} fires on completion; run ended ${final?.status}` : 'no mutationHint' });
@@ -281,12 +302,12 @@ export function proveTemplate(templateId: string, seed: number, map: MapSizePres
 
   // Christening names a created *node*; an edge-only completion (a route, a mark) has nothing to name.
   const createdNode = affected.some(id => state.graph.getNode(id) !== undefined);
-  if (writes.kind && final?.status === 'completed' && createdNode) {
+  if ((writes.kind || writes.object) && final?.status === 'completed' && createdNode) {
     const progress = forProject<TraceEntry & { christenedName?: string }>('strategic_project_progress');
     const christened = progress.find(p => (p as { christenedName?: string }).christenedName);
-    claims.push({ name: 'christened', status: christened ? 'pass' : 'fail', detail: christened ? `"${(christened as { christenedName?: string }).christenedName}"` : `kind ${writes.kind.kindId} completed and created a node without a christening` });
+    claims.push({ name: 'christened', status: christened ? 'pass' : 'fail', detail: christened ? `"${(christened as { christenedName?: string }).christenedName}"` : `${writes.kind ? `kind ${writes.kind.kindId}` : `cell ${writes.object!.verb} × ${writes.object!.objectTypeId}`} completed and created a node without a christening` });
   } else {
-    claims.push({ name: 'christened', status: 'not_declared', detail: !writes.kind ? 'no kind row' : final?.status !== 'completed' ? `run ended ${final?.status}` : 'completion created no node to name (edge-only mutation)' });
+    claims.push({ name: 'christened', status: 'not_declared', detail: !(writes.kind || writes.object) ? 'no kind row' : final?.status !== 'completed' ? `run ended ${final?.status}` : 'completion created no node to name (edge-only mutation)' });
   }
 
   if (writes.harmClass && final?.status === 'completed') {

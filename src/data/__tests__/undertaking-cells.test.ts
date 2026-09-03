@@ -12,6 +12,7 @@ import {
   isCellTemplateId,
   cellsOfType,
   baseVerbOf,
+  FOUND_SITE_RULE,
 } from '../undertaking-cells';
 import { UNDERTAKING_OBJECT_TYPES } from '../undertaking-objects';
 import { UNDERTAKING_VERB_PROSE } from '../undertaking-verb-prose';
@@ -43,7 +44,9 @@ describe('cell synthesis', () => {
     for (const cell of UNDERTAKING_CELL_TEMPLATES) {
       const variant = cell.cellVariant!;
       expect(cell.undertakingVerb).toBe(baseVerbOf(variant));
-      expect(cell.targetRule).toEqual({ type: 'object', objectTypeId: cell.objectTypeId, ownership: OWNERSHIP_BY_VERB[variant] });
+      // A found cell targets its site (the object does not exist yet); every other cell the object.
+      if (variant === 'found') expect(cell.targetRule).toEqual(FOUND_SITE_RULE[cell.objectTypeId!]);
+      else expect(cell.targetRule).toEqual({ type: 'object', objectTypeId: cell.objectTypeId, ownership: OWNERSHIP_BY_VERB[variant] });
       expect(cell.activityProse.length).toBeGreaterThanOrEqual(3);
       expect(cell.completionProse.length).toBeGreaterThanOrEqual(3);
       expect(cell.activityProse).toEqual(UNDERTAKING_VERB_PROSE[variant].activity);

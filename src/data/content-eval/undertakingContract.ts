@@ -28,6 +28,10 @@
 
 import type { StrategicActionTemplate, UndertakingKindRow } from '../../types/strategicAction';
 import { UNDERTAKING_PROSE_TOKENS } from '../../engine/undertakingProse';
+import { getUndertakingObjectType } from '../undertaking-objects';
+import { isCellTemplateId } from '../undertaking-cells';
+import { UNDERTAKING_DEFAULT_TIER } from '../strategic-action-constants';
+import type { UndertakingObjectTypeId, UndertakingVerbVariant } from '../../types/strategicAction';
 import type { AmbitionTemplate } from '../../types/ambition';
 import type { ValuePair } from '../../types/agent';
 import { VALUE_PAIRS } from '../../types/agent';
@@ -155,6 +159,8 @@ export function profiledTemplateIds(
   const ids = new Set<string>();
   for (const a of ambitions) {
     for (const id of a.strategicProfile?.templateIds ?? []) ids.add(id);
+    // A cell's reachability is its `cells` registration (THR-1392 slice 3).
+    for (const id of a.strategicProfile?.cells ?? []) ids.add(id);
   }
   return ids;
 }
@@ -201,6 +207,7 @@ const ID_PREFIX = 'strategic_';
 export const OWNABLE_TARGET_RULE_TYPES: ReadonlySet<string> = new Set([
   'location_subtype', 'any_location', 'actor_with_trait', 'faction', 'trade_route',
   'hex_region', 'sublocation_type', 'colocated_actor',
+  'object', // THR-1392: every object of a registered type, under an ownership rule
 ]);
 
 /**
@@ -227,6 +234,8 @@ function rowFor(template: StrategicActionTemplate): UndertakingKindRow | undefin
  * "does it write" predicate would drift from both.
  */
 export interface UndertakingWriteSet {
+  /** A cell's write is its object type's declared semantic (THR-1392 slice 3). */
+  readonly object?: { readonly verb: UndertakingVerbVariant; readonly objectTypeId: UndertakingObjectTypeId };
   /** The mutation the completion terminal performs, by type. */
   readonly mutation?: string;
   /** Outcome bands with at least one authored creation effect. */
@@ -248,7 +257,11 @@ export function undertakingWriteSet(template: StrategicActionTemplate, row = row
     .filter(b => (template.creationEffects?.[b]?.length ?? 0) > 0);
   const persistentCast = (template.cast ?? []).filter(s => s.persistence === 'must-persist').map(s => s.key);
   const catalysts = [...(template.catalystEncounterIds ?? [])];
+  const object = template.cellVariant && template.objectTypeId
+    ? { verb: template.cellVariant, objectTypeId: template.objectTypeId }
+    : undefined;
   const set = {
+    object,
     mutation: template.mutationHint?.type,
     creationBands,
     harmClass: template.harmClass,
@@ -258,7 +271,7 @@ export function undertakingWriteSet(template: StrategicActionTemplate, row = row
   };
   return {
     ...set,
-    empty: !set.mutation && creationBands.length === 0 && !set.harmClass && !set.kind && persistentCast.length === 0 && catalysts.length === 0,
+    empty: !set.object && !set.mutation && creationBands.length === 0 && !set.harmClass && !set.kind && persistentCast.length === 0 && catalysts.length === 0,
   };
 }
 
@@ -281,7 +294,8 @@ export function checkUndertakingContract(
   const fail = (block: UndertakingBlock, message: string) => v.push({ block, message, rule: RULE });
 
   // ── Identity ──
-  if (!template.id.startsWith(ID_PREFIX)) fail('identity', `id '${template.id}' lacks the '${ID_PREFIX}' prefix`);
+  const isCell = template.cellVariant !== undefined && template.objectTypeId !== undefined;
+  if (!template.id.startsWith(ID_PREFIX) && !isCellTemplateId(template.id)) fail('identity', `id '${template.id}' lacks the '${ID_PREFIX}' prefix`);
   if (!template.displayName?.trim()) fail('identity', 'displayName is empty');
   else if (/\d/.test(template.displayName)) fail('identity', `displayName '${template.displayName}' carries a numeral — interactive text is words`);
   if (!template.verb) fail('identity', 'verb is missing');
@@ -292,7 +306,14 @@ export function checkUndertakingContract(
   // ── Kind membership ──
   const columns = kindColumnCount(template, ctx.rows);
   const isProject = template.executionMode === 'multi_tick_project';
-  if (isProject) {
+  if (isCell) {
+    // A cell's membership is the registry's: its object type must declare the
+    // variant (a semantic or a sustained mode). A cell nobody can complete is not a
+    // cell — the resolver would trace it unreachable at every completion.
+    const type = getUndertakingObjectType(template.objectTypeId!);
+    if (!type) fail('kind_membership', `object type '${template.objectTypeId}' is not registered`);
+    else if (type.verbs[template.cellVariant!] === undefined) fail('kind_membership', `object type '${type.id}' declares no semantic for '${template.cellVariant}' — the resolver cannot complete this cell`);
+  } else if (isProject) {
     if (columns === 0) fail('kind_membership', 'a multi_tick_project template is named in no kind row — until a kind can be undone it is not a kind, and a work outside every kind cannot be undone');
     else if (columns > 1) fail('kind_membership', `named in ${columns} kind columns; exactly one is the rule`);
   } else if (columns === 0 && !template.mutationHint) {
@@ -317,7 +338,9 @@ export function checkUndertakingContract(
   if (isProject && (template.verb === 'create' || template.verb === 'change')) {
     const cast = template.cast ?? [];
     if (cast.length === 0) {
-      fail('cast', 'a multi_tick create/update template declares no cast — scarcity and identity are the batch floors and this slot count is zero');
+      // A cell declares no cast by default (THR-1392): the object handle is the identity the
+      // floor guards, and a cell override is where a cast goes when a cell earns one.
+      if (!isCell) fail('cast', 'a multi_tick create/update template declares no cast — scarcity and identity are the batch floors and this slot count is zero');
     }
     for (const slot of cast) {
       if (slot.persistence === 'must-persist') {
@@ -332,19 +355,22 @@ export function checkUndertakingContract(
   // ── Creation (the write-set non-vacuity rule, Law 56's inverse) ──
   const row = rowFor(template);
   const writes = undertakingWriteSet(template, row);
-  if (template.verb === 'create' && writes.creationBands.length === 0 && !writes.mutation) {
+  if (template.verb === 'create' && writes.creationBands.length === 0 && !writes.mutation && !writes.object) {
     fail('creation', 'a create verb whose only product is prose — declare creationEffects for at least one band or a mutationHint producing the kind\'s object');
   }
 
   // ── Band tables ──
-  if (row) {
-    const [dMin, dMax] = UNDERTAKING_TIER_DIFFICULTY_BANDS[row.tier];
-    const [pMin, pMax] = UNDERTAKING_TIER_PAYOFF_BANDS[row.tier];
+  // A cell's authored numbers are the verb tables at the default tier; the board
+  // and the checkpoints re-scale them on the resolved object's tier.
+  const bandTier = row?.tier ?? (isCell ? UNDERTAKING_DEFAULT_TIER : undefined);
+  if (bandTier) {
+    const [dMin, dMax] = UNDERTAKING_TIER_DIFFICULTY_BANDS[bandTier];
+    const [pMin, pMax] = UNDERTAKING_TIER_PAYOFF_BANDS[bandTier];
     if (typeof template.checkpointDifficulty === 'number' && (template.checkpointDifficulty < dMin || template.checkpointDifficulty > dMax)) {
-      fail('bands', `checkpointDifficulty ${template.checkpointDifficulty} outside tier ${row.tier} band [${dMin}, ${dMax}]`);
+      fail('bands', `checkpointDifficulty ${template.checkpointDifficulty} outside tier ${bandTier} band [${dMin}, ${dMax}]`);
     }
     if (typeof template.payoffValue === 'number' && (template.payoffValue < pMin || template.payoffValue > pMax)) {
-      fail('bands', `payoffValue ${template.payoffValue} outside tier ${row.tier} band [${pMin}, ${pMax}]`);
+      fail('bands', `payoffValue ${template.payoffValue} outside tier ${bandTier} band [${pMin}, ${pMax}]`);
     }
   }
   if (isProject && typeof template.projectDuration !== 'number') fail('bands', 'a multi_tick_project template sets no projectDuration');
@@ -355,7 +381,9 @@ export function checkUndertakingContract(
 
   // ── Reachability ──
   if (!ctx.profiledTemplateIds.has(template.id)) {
-    fail('reachability', 'no ambition template names this id in its strategicProfile.templateIds — the silent third registration');
+    fail('reachability', isCell
+      ? 'no ambition template names this cell in its strategicProfile.cells — the silent third registration'
+      : 'no ambition template names this id in its strategicProfile.templateIds — the silent third registration');
   }
 
   // ── Register (outcome field class, the encounter standard) ──

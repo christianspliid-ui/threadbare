@@ -91,6 +91,7 @@ const modulePath = path.join(FACTORY_DIR_RELPATH, `${pkg.slug}.ts`);
 const testPath = path.join(FACTORY_DIR_RELPATH, '__tests__', `${pkg.slug}.test.ts`);
 
 const index = registerInFactoryIndex(readFileSync(FACTORY_INDEX_FILE_RELPATH, 'utf8'), pkg);
+// A cell package registers no kind row (the object type is its membership).
 const rows = registerInKindRows(readFileSync(KIND_ROWS_FILE_RELPATH, 'utf8'), pkg);
 const profiles = registerInProfiles(readFileSync(AMBITION_TEMPLATES_FILE_RELPATH, 'utf8'), pkg);
 
@@ -114,5 +115,5 @@ if (rows.changed) writeFileSync(KIND_ROWS_FILE_RELPATH, rows.source, 'utf8');
 if (profiles.changed) writeFileSync(AMBITION_TEMPLATES_FILE_RELPATH, profiles.source, 'utf8');
 
 console.log(`compile:undertaking: wrote ${modulePath} and ${testPath}`);
-console.log(`  factory index: ${index.changed ? 'registered' : 'already registered'} · kind row ${pkg.kind.kindId}.${pkg.kind.role}: ${rows.changed ? 'registered' : 'already registered'} · profiles: ${profiles.changed ? 'registered' : 'already registered'}`);
+console.log(`  factory index: ${index.changed ? 'registered' : 'already registered'} · kind row ${pkg.cell ? '(cell — none)' : `${pkg.kind!.kindId}.${pkg.kind!.role}: ${rows.changed ? 'registered' : 'already registered'}`} · profiles: ${profiles.changed ? 'registered' : 'already registered'}`);
 console.log('  next: npm run check:typecheck · npm run check:undertaking -- ' + pkg.template.id + ' · npm run check:undertaking-live -- ' + pkg.template.id);

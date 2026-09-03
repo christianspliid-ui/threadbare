@@ -171,6 +171,7 @@ export function resolveUndertakingCompletion(input: UndertakingResolutionInput):
     undertakingVerb: variant,
     objectTypeId,
     objectId: objectIdOf(handle),
+    succeeded: result.success,
     graphOps: [result.op],
     catalystSeeded: false,
     affectedNodeIds: [objectIdOf(handle), ...(result.createdId ? [result.createdId] : [])],

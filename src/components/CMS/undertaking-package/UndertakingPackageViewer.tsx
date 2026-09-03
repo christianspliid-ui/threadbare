@@ -217,13 +217,49 @@ function PackageBody({ pkg, onOpenTemplate, compact = false }: { pkg: Undertakin
         </a>
       </header>
 
-      <Block title="Kind row" count={pkg.kind ? 1 : 0} tone={pkg.kind ? 'neutral' : 'warn'}>
-        {pkg.kind ? <KindRowBlock pkg={pkg} onOpenTemplate={onOpenTemplate} /> : (
-          <p className="text-xs" style={{ color: 'var(--negative)' }}>
-            In no kind row — {pkg.board.executionMode === 'multi_tick_project' ? 'a multi-tick project outside the registry is unreachable by the counter-play rule.' : 'an instant carries only its mutation hint.'}
-          </p>
-        )}
-      </Block>
+      {pkg.object ? (
+        <Block title="The object" count={1}>
+          <div className="flex flex-col gap-1 text-xs">
+            <div className="flex items-center gap-2 flex-wrap">
+              <Id>{pkg.object.variant}</Id>
+              <span style={{ color: 'var(--text-secondary) ' }}>×</span>
+              <Id>{pkg.object.objectTypeId}</Id>
+              <span style={{ color: 'var(--text-primary)' }}>{pkg.object.displayName}</span>
+            </div>
+            <p style={{ margin: 0, color: 'var(--text-secondary)' }}>
+              {pkg.object.shape}; held via {pkg.object.heldVia}; aimed at {pkg.object.ownership}. The object is resolved at proposal — whichever one the mortal finds in the world — and its own name fills the prose.
+            </p>
+            {pkg.object.baseCellId && (
+              <p style={{ margin: 0, color: 'var(--text-tertiary)' }}>
+                an override of{' '}
+                <button type="button" className="focus-ring" onClick={() => onOpenTemplate(pkg.object!.baseCellId!)}
+                  style={{ color: 'var(--accent-gold-dim)', background: 'none', border: 'none', padding: 0, cursor: 'pointer', font: 'inherit' }}>
+                  {pkg.object.baseCellId}
+                </button>
+              </p>
+            )}
+            {pkg.object.siblings.length > 0 && (
+              <div className="flex items-center gap-1 flex-wrap">
+                <span style={{ color: 'var(--text-tertiary)' }}>the type&apos;s other cells:</span>
+                {pkg.object.siblings.map(id => (
+                  <button key={id} type="button" className="focus-ring" onClick={() => onOpenTemplate(id)}
+                    style={{ color: 'var(--accent-gold-dim)', background: 'none', border: 'none', padding: 0, cursor: 'pointer', font: 'inherit' }}>
+                    {id}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </Block>
+      ) : (
+        <Block title="Kind row" count={pkg.kind ? 1 : 0} tone={pkg.kind ? 'neutral' : 'warn'}>
+          {pkg.kind ? <KindRowBlock pkg={pkg} onOpenTemplate={onOpenTemplate} /> : (
+            <p className="text-xs" style={{ color: 'var(--negative)' }}>
+              In no kind row — {pkg.board.executionMode === 'multi_tick_project' ? 'a multi-tick project outside the registry is unreachable by the counter-play rule.' : 'an instant carries only its mutation hint.'}
+            </p>
+          )}
+        </Block>
+      )}
 
       <Block title="The board">
         <dl className="grid gap-x-4 gap-y-1 text-xs" style={{ gridTemplateColumns: 'max-content 1fr', margin: 0 }}>
@@ -253,7 +289,8 @@ function PackageBody({ pkg, onOpenTemplate, compact = false }: { pkg: Undertakin
           <p className="text-xs" style={{ color: 'var(--negative)' }}>Nothing — the work whose only product is a sentence. The live proof reports this vacuous.</p>
         ) : (
           <ul className="text-xs flex flex-col gap-1" style={{ margin: 0, paddingLeft: '1rem', color: 'var(--text-primary)' }}>
-            {pkg.mutation && <li>on completion: <Id>{pkg.mutation.type}</Id> — {pkg.mutation.detail}</li>}
+            {pkg.writeSet.object && <li>on completion: the <Id>{pkg.writeSet.object.objectTypeId}</Id> type&apos;s <Id>{pkg.writeSet.object.verb}</Id> semantic, on the resolved object</li>}
+            {pkg.mutation && !pkg.writeSet.object && <li>on completion: <Id>{pkg.mutation.type}</Id> — {pkg.mutation.detail}</li>}
             {pkg.creation.filter(b => b.effects.length > 0).map(b => (
               <li key={b.band}>{b.label}: {b.effects.map((e, i) => <Id key={i}>{describeEffect(e)}</Id>)}</li>
             ))}

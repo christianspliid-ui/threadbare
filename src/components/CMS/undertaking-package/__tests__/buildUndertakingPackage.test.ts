@@ -18,13 +18,15 @@ import {
 } from '../buildUndertakingPackage';
 import { getAllStrategicTemplates } from '../../../../engine/strategicActionCandidates';
 import { UNDERTAKING_TIER_PAYOFF_BANDS } from '../../../../data/content-eval/undertakingConstants';
+import { UNDERTAKING_CELL_TEMPLATES } from '../../../../data/undertaking-cells';
 
 const NUMERAL = /\d/;
 
 describe('undertaking package index', () => {
   it('has one row per registry template, kind-sorted, with cell and tier where a row exists', () => {
     const index = undertakingPackageIndex();
-    const all = getAllStrategicTemplates();
+    // The index lists the packs and the derived cells (THR-1392 slice 3).
+    const all = [...getAllStrategicTemplates(), ...UNDERTAKING_CELL_TEMPLATES];
     expect(index.length).toBe(all.length);
     expect(new Set(index.map(r => r.templateId)).size).toBe(all.length);
     const warband = index.find(r => r.templateId === 'strategic_recruit_warband')!;

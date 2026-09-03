@@ -58,7 +58,7 @@ import {
 } from '../data/undertaking-objects';
 import { ownershipOf, ownershipSatisfies, readObjectTier } from './undertakingResolver';
 import { getCellTemplate } from '../data/undertaking-cells';
-import { UNDERTAKING_MODEL, type UndertakingModel } from '../data/strategic-action-constants';
+import { UNDERTAKING_MODEL, UNDERTAKING_DEFAULT_TIER, type UndertakingModel } from '../data/strategic-action-constants';
 import type { AmbitionStrategicProfile as StrategicProfileForCells } from '../types/strategicAction';
 import { evaluateMotiveGate } from './undertakingMotive';
 
@@ -172,9 +172,9 @@ export interface ReviewCandidateOptions {
 }
 
 /** Ambition template ids whose strategic profile names `templateId` — the third registration, read back. */
-export function profiledAmbitionIdsFor(templateId: string): string[] {
+export function profiledAmbitionIdsFor(templateId: string, model: UndertakingModel = UNDERTAKING_MODEL): string[] {
   return [...AMBITION_TEMPLATES, ...GRIEVANCE_AMBITION_TEMPLATES]
-    .filter(a => a.strategicProfile && profileWorkIds(a.strategicProfile).includes(templateId))
+    .filter(a => a.strategicProfile && profileWorkIds(a.strategicProfile, model).includes(templateId))
     .map(a => a.id);
 }
 
@@ -408,15 +408,17 @@ export function generateStrategicCandidates(
           displayName: template.displayName,
           targetNodeId: target.id,
           targetHex: targetHex ?? undefined,
-          // The object the cell acts on (THR-1392); absent on every legacy rule.
-          objectHandle,
-          objectTypeId: objectHandle && template.targetRule.type === 'object'
+          // The object the cell acts on (THR-1392); absent on every legacy rule. A
+          // `found` cell's handle is its site — the object does not exist yet.
+          objectHandle: objectHandle ?? (template.undertakingVerb === 'found' && template.objectTypeId ? { kind: 'node', nodeId: target.id } : undefined),
+          objectTypeId: template.objectTypeId ?? (objectHandle && template.targetRule.type === 'object'
             ? template.targetRule.objectTypeId as UndertakingObjectTypeId
-            : undefined,
+            : undefined),
           // The object's tier at proposal (slice 2): difficulty and payoff scale on it.
+          // A found cell's object has no tier yet; it takes the default without a trace.
           objectTier: objectHandle && template.targetRule.type === 'object'
             ? readObjectTier(graph, getUndertakingObjectType(template.targetRule.objectTypeId)!, objectHandle, tick)
-            : undefined,
+            : template.undertakingVerb === 'found' && template.objectTypeId ? UNDERTAKING_DEFAULT_TIER : undefined,
           anchorNodeId: anchorGate.anchorNodeId,
           // The victim the motive gate already named (THR-1298). Stamped here because
           // this is the one point where the gate's answer is still in scope — by

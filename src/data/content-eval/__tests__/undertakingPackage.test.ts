@@ -114,7 +114,7 @@ describe('undertaking package — registration is idempotent', () => {
     const source = readFileSync(KIND_ROWS_FILE_RELPATH, 'utf8');
     const destroy: UndertakingContentPackage = {
       ...pkg,
-      template: { ...pkg.template, verb: 'destroy' },
+      template: { ...pkg.template!, verb: 'destroy' },
       kind: { kindId: 'salted_field', role: 'destroy', row: { tier: 1, displayName: 'Salted field', objectShape: 'location.properties.salted', ownable: true, lexicon: 'place' } },
     };
     const opened = registerInKindRows(source, destroy);

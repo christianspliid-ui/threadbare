@@ -134,7 +134,10 @@ export function startUndertakingForReview(
   // The ambitions whose profiles name this template. Passing them keeps the
   // `ambition_profile` bypass honest: the candidate still carries a real ambition id,
   // it just does not require the actor to *hold* that ambition.
-  const ambitionIds = profiledAmbitionIdsFor(templateId);
+  // A cell is walked under the cells model whatever the flag says (THR-1392 slice 3):
+  // the review lever is how a cell is proven before the flag flips.
+  const model = template.cellVariant ? 'cells' : undefined;
+  const ambitionIds = profiledAmbitionIdsFor(templateId, model);
   const review: ReviewCandidateOptions = {
     templateId,
     targetId: opts.targetId,
@@ -143,12 +146,12 @@ export function startUndertakingForReview(
   };
   const rng = mulberry32(state.seed + tick + REVIEW_LEVER_SEED_OFFSET + actorId.length);
   const generated = generateStrategicCandidates(
-    graph, actorId, ambitionIds, state.strategicState, tick, rng, review,
+    graph, actorId, ambitionIds, state.strategicState, tick, rng, review, model,
   );
   const candidate = generated.candidates[0];
   if (!candidate) {
     const refusals = generated.rejections.map(r => r.reason);
-    const noTarget = refusals.every(r => r === 'no_valid_targets' || r.startsWith('no_valid_targets'));
+    const noTarget = refusals.every(r => r === 'no_valid_targets' || r.startsWith('no_valid_targets') || r.startsWith('no_object_in_range'));
     return {
       ok: false,
       reason: noTarget ? 'no_target' : 'refused',

@@ -48,7 +48,8 @@ import {
 } from '../engine/strategicGraphOps';
 import { grantHolding, transferHolding, razeHolding } from '../engine/holdings';
 import { applyPlantSchism } from '../engine/schismPlant';
-import { isSublocationNode, isPlaceTierLocation } from '../engine/sublocationShape';
+import { isSublocationNode, isPlaceTierLocation, resolveToParentLocation } from '../engine/sublocationShape';
+import { resolveDurableActorLocation } from '../engine/tradeRouteOps';
 import { getGroupKind } from '../engine/groupShape';
 import { hexDistance } from '../lib/hexMath';
 import { SUBLOCATION_TYPE_CATEGORY } from './sublocation-category-art';
@@ -157,6 +158,32 @@ function holdingCtx(ctx: ObjectVerbContext) {
 }
 
 const fail = (op: string, error: string): GraphOpResult => ({ success: false, op, error });
+
+/**
+ * The site a `found` verb lands on. A site chosen at proposal can be gone by
+ * completion — a siege razes the hamlet the room was to be built in (measured: seed 42
+ * medium, tick 23, the first live proof of `found × room`) — and a work whose site
+ * the world took is not a work that failed: it lands where the builder now stands.
+ * Order: the place of the work, the handle, the durable origin, the actor's current
+ * place-tier location. Returns null only when none of them exists.
+ */
+function foundSite(ctx: ObjectVerbContext): string | null {
+  const candidates = [
+    ctx.targetNodeId,
+    nodeIdOf(ctx.handle),
+    ctx.originLocationId,
+    resolveDurableActorLocation(ctx.graph, ctx.actorId),
+  ];
+  for (const id of candidates) {
+    if (!id) continue;
+    const node = ctx.graph.getNode(id);
+    if (!node || node.type !== 'location') continue;
+    // A room's parent must be a place; a site that is itself a room resolves up.
+    const place = isSublocationNode(node) ? resolveToParentLocation(ctx.graph, node) : node;
+    if (place && ctx.graph.getNode(place.id)) return place.id;
+  }
+  return null;
+}
 
 /** A number property read fail-soft. */
 function num(props: Record<string, unknown>, key: string): number | null {
@@ -311,7 +338,7 @@ const ROOM: UndertakingObjectType = {
   harmOnUndo: 'property_destroyed',
   verbs: {
     found: (ctx) => {
-      const parentId = ctx.targetNodeId ?? nodeIdOf(ctx.handle);
+      const parentId = foundSite(ctx);
       if (!parentId) return fail('create_sublocation', 'no_parent');
       const typeId = typeof ctx.params?.sublocationTypeId === 'string'
         ? ctx.params.sublocationTypeId : UNDERTAKING_DEFAULT_ROOM_TYPE_ID;
@@ -346,7 +373,8 @@ const SETTLEMENT: UndertakingObjectType = {
   harmOnUndo: 'property_destroyed',
   verbs: {
     found: (ctx) => {
-      const site = ctx.graph.getNode(ctx.targetNodeId ?? nodeIdOf(ctx.handle) ?? '');
+      const siteId = foundSite(ctx);
+      const site = siteId ? ctx.graph.getNode(siteId) : undefined;
       const col = site ? num(site.properties, 'hexCol') : null;
       const row = site ? num(site.properties, 'hexRow') : null;
       if (col === null || row === null) return fail('create_location', 'no_site_hex');
@@ -400,9 +428,15 @@ const ROUTE: UndertakingObjectType = {
   harmOnUndo: 'network_severed',
   verbs: {
     found: (ctx) => {
+      // A route needs both ends standing: the far end is the site chosen at proposal
+      // and cannot be substituted (a route to a razed town is no route); the near end
+      // is the durable origin, else where the actor now stands.
       const far = ctx.targetNodeId ?? nodeIdOf(ctx.handle);
-      if (!ctx.originLocationId || !far) return fail('create_trade_route', 'no_endpoints');
-      return createTradeRoute(ctx.graph, ctx.originLocationId, far, ctx.actorId, ctx.tick);
+      if (!far || !ctx.graph.getNode(far)) return fail('create_trade_route', 'far_end_gone');
+      const near = [ctx.originLocationId, resolveDurableActorLocation(ctx.graph, ctx.actorId)]
+        .find(id => id && id !== far && ctx.graph.getNode(id));
+      if (!near) return fail('create_trade_route', 'no_endpoints');
+      return createTradeRoute(ctx.graph, near, far, ctx.actorId, ctx.tick);
     },
     'control:claim': (ctx) => {
       const nodeId = nodeIdOf(ctx.handle);

@@ -17,6 +17,8 @@
  * go unwritten.
  */
 import { getAllStrategicTemplates } from '../../../engine/strategicActionCandidates';
+import { getUndertakingObjectType } from '../../../data/undertaking-objects';
+import { UNDERTAKING_CELL_TEMPLATES, cellsOfType, getCellTemplate } from '../../../data/undertaking-cells';
 import { difficultyWord } from '../../../engine/encounters/nudges';
 import {
   getAllUndertakingKindRows,
@@ -115,8 +117,26 @@ export interface PackageVerdict {
   readonly warnings: readonly string[];
 }
 
+/** The object a cell acts on (THR-1392 slice 3) — the block a cell shows instead of a kind row. */
+export interface PackageObjectBlock {
+  readonly objectTypeId: string;
+  readonly displayName: string;
+  /** The graph shape, in words. */
+  readonly shape: string;
+  /** Whose object the verb may be aimed at. */
+  readonly ownership: string;
+  readonly variant: string;
+  /** The base cell, when this is a compiled override. */
+  readonly baseCellId: string | undefined;
+  /** The type's other cells, so the counter-play is one click away (Law 21). */
+  readonly siblings: readonly string[];
+  /** Who holds one, in words. */
+  readonly heldVia: string;
+}
+
 export interface UndertakingPackage {
   readonly templateId: string;
+  readonly object: PackageObjectBlock | undefined;
   readonly displayName: string;
   readonly verb: string;
   readonly family: string;
@@ -264,6 +284,7 @@ export function buildUndertakingPackage(template: StrategicActionTemplate): Unde
     .map(band => ({ band, label: BAND_LABEL[band], effects: template.creationEffects?.[band] ?? [] }));
   return {
     templateId: template.id,
+    object: objectBlock(template),
     displayName: template.displayName,
     verb: template.verb,
     family: template.behaviorFamily,
@@ -290,9 +311,36 @@ export function buildUndertakingPackage(template: StrategicActionTemplate): Unde
   };
 }
 
+const OWNERSHIP_WORD: Readonly<Record<string, string>> = {
+  own: 'one\'s own', other: 'another\'s', unowned: 'nobody\'s yet', any: 'anyone\'s',
+};
+
+function objectBlock(template: StrategicActionTemplate): PackageObjectBlock | undefined {
+  if (!template.objectTypeId || !template.cellVariant) return undefined;
+  const type = getUndertakingObjectType(template.objectTypeId);
+  if (!type) return undefined;
+  const rule = template.targetRule.type === 'object' ? template.targetRule.ownership : 'any';
+  const article = (w: string) => (/^[aeiou]/i.test(w) ? 'an' : 'a');
+  const shape = type.shape.nodeType
+    ? `${article(type.shape.nodeType)} ${type.shape.nodeType} node${type.shape.discriminator ? ' of the type\'s shape' : ''}`
+    : `${article(type.shape.edgeType!)} ${type.shape.edgeType} edge`;
+  const heldVia = type.ownedVia.length === 0 ? 'the edge\'s own source' : type.ownedVia.join(', ');
+  return {
+    objectTypeId: type.id,
+    displayName: type.displayName,
+    shape,
+    ownership: OWNERSHIP_WORD[rule] ?? rule,
+    variant: template.cellVariant,
+    baseCellId: template.baseCellId,
+    siblings: cellsOfType(type.id).map(c => c.id).filter(id => id !== template.id && id !== template.baseCellId),
+    heldVia,
+  };
+}
+
 export function undertakingPackageIndex(): readonly UndertakingPackageIndexRow[] {
   const rows = getAllUndertakingKindRows();
-  return getAllStrategicTemplates()
+  // Cells sit in the index beside the packs (THR-1392 slice 3), whatever the flag says.
+  return [...getAllStrategicTemplates(), ...UNDERTAKING_CELL_TEMPLATES]
     .map((t): UndertakingPackageIndexRow => {
       const kindId = getUndertakingKindForTemplate(t.id);
       const row = kindId ? rows.find(r => r.kindId === kindId) : undefined;
@@ -313,5 +361,5 @@ export function undertakingPackageIndex(): readonly UndertakingPackageIndexRow[]
 }
 
 export function undertakingTemplateById(templateId: string): StrategicActionTemplate | undefined {
-  return getAllStrategicTemplates().find(t => t.id === templateId);
+  return getAllStrategicTemplates().find(t => t.id === templateId) ?? getCellTemplate(templateId);
 }
