@@ -138,12 +138,6 @@ export const NODE_TYPE_ROWS: Readonly<Record<string, AnchorRow>> = {
       + 'the tier is chosen by the effect and is not the author\'s to name. Legendary ones '
       + 'carry their own trait graph.',
   },
-  resource: {
-    anchor: 'Resource',
-    declare: '`entityId` = the resource node id; no `visualKind` member',
-    surface: 'The controlling faction\'s holdings, and the hex it sits on',
-    status: 'named',
-  },
   action_template: NOT_AN_ANCHOR(
     'Action template',
     'a definition, not an object in the world the player can be pointed at',
@@ -181,16 +175,6 @@ export const NODE_TYPE_ROWS: Readonly<Record<string, AnchorRow>> = {
     'the encounter itself. A planted seed anchors through its **carrier** — the agent or ' +
       'location it was planted on — never through the template id',
   ),
-  relationship: {
-    anchor: 'Bond (reified relationship)',
-    declare: '`entityId` = the relationship node id; no `visualKind` member',
-    surface: 'The cast tile and both participants\' sheets',
-    status: 'named',
-    note:
-      'The director\'s "bond". Prefer this over the bare `relates_to` edge when the ' +
-      'relationship has an arc worth naming — the node carries `arc`, `tension_axis` and ' +
-      'a history the player can see change.',
-  },
   sublocation: {
     anchor: 'Sublocation',
     declare: '`entityId` = the sublocation node id, `visualKind: \'location\'`',
@@ -200,7 +184,7 @@ export const NODE_TYPE_ROWS: Readonly<Record<string, AnchorRow>> = {
       'Registered in `NodeType` by THR-1177 so readers stay legal for saved worlds; since ' +
       'THR-1183 no producer writes the bare type — every sublocation is minted as a ' +
       '`location` node carrying `parentLocationId`. Resolve and test the shape through ' +
-      '`src/engine/sublocationShape.ts` (`isSublocationNode` / `resolveToParentLocation`); ' +
+      '`src/engine/sublocationShape.ts` (`isPlaceNode` / `resolveToParentLocation`); ' +
       'never hand-roll the two-shape check.',
   },
   companion: {

@@ -40,6 +40,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Bronze Spear',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'arms',
       tier: 1,
       tags: ['#iron', '#weapon', '#melee', '#combat'],
@@ -61,6 +62,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Hunting Bow',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'arms',
       tier: 1,
       tags: ['#iron', '#weapon', '#ranged', '#combat'],
@@ -82,6 +84,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Rusted Mace',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'arms',
       tier: 1,
       tags: ['#iron', '#weapon', '#melee', '#combat'],
@@ -103,6 +106,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Bone Knife',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'arms',
       tier: 1,
       tags: ['#iron', '#weapon', '#melee', '#survival', '#combat', '#wilderness'],
@@ -126,6 +130,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Blackiron Blade',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'arms',
       tier: 2,
       tags: ['#iron', '#weapon', '#melee', '#combat'],
@@ -147,6 +152,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Crossbow of the Watch',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'arms',
       tier: 2,
       tags: ['#iron', '#weapon', '#ranged', '#eye', '#combat'],
@@ -169,6 +175,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Gate Seal Case',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'tools_instruments',
       tier: 1,
       tags: ['#checkpoint', '#order', '#eye', '#gold'],
@@ -191,6 +198,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Thornwood Staff',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'arms',
       tier: 2,
       tags: ['#iron', '#weapon', '#melee', '#stone', '#combat'],
@@ -215,6 +223,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Hollowfang',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'arms',
       tier: 3,
       tags: ['#iron', '#weapon', '#melee', '#cursed', '#combat'],
@@ -240,6 +249,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Starfall Longbow',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'arms',
       tier: 3,
       tags: ['#iron', '#weapon', '#ranged', '#star', '#combat'],
@@ -267,6 +277,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'The Quiet Blade',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'arms',
       tier: 4,
       tags: ['#iron', '#weapon', '#melee', '#shadow', '#ancient', '#combat'],
@@ -296,6 +307,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: "Grave-Robber's Stiletto",
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'arms',
       tier: 1,
       tags: ['#shadow', '#weapon', '#melee', '#stealth', '#assassination'],
@@ -317,6 +329,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Cracked Brass Horn',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'arms',
       tier: 1,
       tags: ['#heart', '#weapon', '#instrument', '#command', '#social'],
@@ -338,6 +351,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: "Spotter's Marking Bolt",
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'arms',
       tier: 1,
       tags: ['#eye', '#weapon', '#ranged', '#precision', '#reconnaissance'],
@@ -359,6 +373,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Basalt Maul',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'arms',
       tier: 1,
       tags: ['#stone', '#weapon', '#melee', '#heavy', '#combat'],
@@ -381,6 +396,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: "Strangler's Cord",
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'arms',
       tier: 2,
       tags: ['#shadow', '#weapon', '#melee', '#stealth', '#assassination'],
@@ -403,6 +419,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Hazel Switch',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'arms',
       tier: 2,
       tags: ['#veil', '#weapon', '#implement', '#mystical'],
@@ -425,6 +442,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Banner of the Lost Company',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'arms',
       tier: 2,
       tags: ['#heart', '#iron', '#weapon', '#command', '#combat'],
@@ -448,6 +466,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Lens-Sighted Arbalest',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'arms',
       tier: 2,
       tags: ['#eye', '#iron', '#weapon', '#ranged', '#precision', '#combat'],
@@ -471,6 +490,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Petrified Ironwood Glaive',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'arms',
       tier: 2,
       tags: ['#stone', '#iron', '#weapon', '#melee', '#heavy', '#combat', '#ancient'],
@@ -493,6 +513,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: "Assessor's Weighted Scales",
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'arms',
       tier: 2,
       tags: ['#gold', '#weapon', '#melee', '#commercial', '#social'],
@@ -518,6 +539,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Padded Jerkin',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'vestments',
       tier: 1,
       tags: ['#iron', '#armor', '#cloth', '#combat'],
@@ -539,6 +561,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Merchant Silks',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'vestments',
       tier: 1,
       tags: ['#gold', '#cloth', '#commercial', '#trade'],
@@ -559,6 +582,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: "Pilgrim's Robe",
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'vestments',
       tier: 1,
       tags: ['#star', '#cloth', '#divine'],
@@ -581,6 +605,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Chainmail Hauberk',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'vestments',
       tier: 2,
       tags: ['#iron', '#armor', '#combat'],
@@ -603,6 +628,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Shadowweave Cloak',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'vestments',
       tier: 2,
       tags: ['#shadow', '#cloth', '#stealth'],
@@ -629,6 +655,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Mantle of the Unremembered',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'vestments',
       tier: 3,
       tags: ['#shadow', '#cloth', '#veil', '#cursed', '#stealth'],
@@ -658,6 +685,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'The Woven Sky',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'vestments',
       tier: 4,
       tags: ['#star', '#cloth', '#divine', '#ancient'],
@@ -686,6 +714,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Field Journal',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'tomes_scrolls',
       tier: 1,
       tags: ['#eye', '#tome', '#knowledge'],
@@ -706,6 +735,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Prayer Scroll',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'tomes_scrolls',
       tier: 1,
       tags: ['#star', '#scroll', '#divine'],
@@ -727,6 +757,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: "Merchant's Ledger",
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'tomes_scrolls',
       tier: 1,
       tags: ['#gold', '#tome', '#commercial'],
@@ -747,6 +778,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Letters of Introduction',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'tomes_scrolls',
       tier: 1,
       tags: ['#gold', '#scroll', '#service', '#social', '#patronage'],
@@ -775,6 +807,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Chronicle of the Falling',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'tomes_scrolls',
       tier: 2,
       tags: ['#eye', '#tome', '#knowledge'],
@@ -796,6 +829,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Veilscript Fragment',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'tomes_scrolls',
       tier: 2,
       tags: ['#veil', '#scroll', '#knowledge', '#arcane'],
@@ -820,6 +854,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'The Silent Testament',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'tomes_scrolls',
       tier: 3,
       tags: ['#star', '#tome', '#knowledge', '#ancient', '#ruins'],
@@ -845,6 +880,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Codex of Unmaking',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'tomes_scrolls',
       tier: 4,
       tags: ['#veil', '#tome', '#knowledge', '#ancient', '#cursed', '#arcane', '#ruins'],
@@ -871,6 +907,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Iron Tongs',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'tools_instruments',
       tier: 1,
       tags: ['#stone', '#tool', '#craft'],
@@ -891,6 +928,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: "Herbalist's Pouch",
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'tools_instruments',
       tier: 1,
       tags: ['#heart', '#tool', '#survival', '#craft', '#wilderness', '#healing'],
@@ -911,6 +949,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: "Surveyor's Glass",
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'tools_instruments',
       tier: 1,
       tags: ['#eye', '#tool', '#craft'],
@@ -934,6 +973,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: "Alchemist's Crucible",
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'tools_instruments',
       tier: 2,
       tags: ['#veil', '#tool', '#knowledge', '#craft', '#arcane'],
@@ -956,6 +996,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Master Chisel',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'tools_instruments',
       tier: 2,
       tags: ['#stone', '#tool', '#craft', '#ruins'],
@@ -977,6 +1018,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Chronoscope',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'tools_instruments',
       tier: 2,
       tags: ['#eye', '#veil', '#temporal', '#tool'],
@@ -1002,6 +1044,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Astrolabe of Yven',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'tools_instruments',
       tier: 3,
       tags: ['#star', '#tool', '#ancient', '#knowledge', '#craft'],
@@ -1027,6 +1070,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: "Wayfarer's Charm",
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'relics_talismans',
       tier: 1,
       tags: ['#heart', '#talisman', '#travel'],
@@ -1047,6 +1091,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Bone Ward',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'relics_talismans',
       tier: 1,
       tags: ['#iron', '#talisman', '#survival'],
@@ -1067,6 +1112,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: "Duelist's Luck Token",
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'relics_talismans',
       tier: 1,
       tags: ['#iron', '#talisman', '#combat', '#precision'],
@@ -1102,6 +1148,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Ember Sigil',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'relics_talismans',
       tier: 2,
       tags: ['#star', '#relic', '#divine'],
@@ -1125,6 +1172,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Shadowglass Pendant',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'relics_talismans',
       tier: 2,
       tags: ['#shadow', '#relic', '#stealth'],
@@ -1146,6 +1194,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Hearthglass Ward',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'relics_talismans',
       tier: 2,
       tags: ['#star', '#relic', '#ward', '#quintessence', '#survival'],
@@ -1171,6 +1220,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Stasis Pearl',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'relics_talismans',
       tier: 2,
       tags: ['#veil', '#temporal', '#relic', '#preservation'],
@@ -1195,6 +1245,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Heart of the Barrow',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'relics_talismans',
       tier: 3,
       tags: ['#stone', '#relic', '#ancient', '#ruins'],
@@ -1218,6 +1269,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'The Weeping Icon',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'relics_talismans',
       tier: 3,
       tags: ['#heart', '#relic', '#divine', '#cursed'],
@@ -1243,6 +1295,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Hourglass of the Unraveling',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'relics_talismans',
       tier: 3,
       tags: ['#veil', '#shadow', '#temporal', '#relic', '#ancient'],
@@ -1270,6 +1323,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'The Fulcrum',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'relics_talismans',
       tier: 4,
       tags: ['#veil', '#relic', '#ancient', '#divine', '#arcane', '#ruins'],
@@ -1296,6 +1350,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Draft Pony',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'mounts_beasts',
       tier: 1,
       tags: ['#beast', '#mount', '#travel', '#wilderness'],
@@ -1314,6 +1369,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Tracking Hound',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'mounts_beasts',
       tier: 1,
       tags: ['#beast', '#eye', '#survival', '#wilderness'],
@@ -1332,6 +1388,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Pack Goat',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'mounts_beasts',
       tier: 1,
       tags: ['#beast', '#travel', '#survival', '#wilderness'],
@@ -1352,6 +1409,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'War Hound',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'mounts_beasts',
       tier: 2,
       tags: ['#beast', '#iron', '#weapon', '#combat', '#wilderness'],
@@ -1372,6 +1430,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Steppe Mare',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'mounts_beasts',
       tier: 2,
       tags: ['#beast', '#mount', '#travel', '#wilderness'],
@@ -1396,6 +1455,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Ashenmane Destrier',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'mounts_beasts',
       tier: 3,
       tags: ['#beast', '#mount', '#iron', '#combat', '#wilderness'],
@@ -1419,6 +1479,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Dustwalker',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'mounts_beasts',
       tier: 2,
       tags: ['#beast', '#mount', '#shadow', '#stealth', '#wilderness'],
@@ -1438,6 +1499,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Smoke-Tooth',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'mounts_beasts',
       tier: 3,
       tags: ['#beast', '#mount', '#shadow', '#combat', '#intimidation'],
@@ -1459,6 +1521,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Shimmer Hart',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'mounts_beasts',
       tier: 2,
       tags: ['#beast', '#mount', '#veil', '#mystical', '#exploration'],
@@ -1478,6 +1541,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Glimmermoth',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'mounts_beasts',
       tier: 3,
       tags: ['#beast', '#mount', '#veil', '#mystical', '#arcane'],
@@ -1499,6 +1563,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Hearthbound Hound',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'mounts_beasts',
       tier: 2,
       tags: ['#beast', '#heart', '#loyalty', '#social', '#companion'],
@@ -1521,6 +1586,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Sorrowheart Mare',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'mounts_beasts',
       tier: 3,
       tags: ['#beast', '#mount', '#heart', '#empathy', '#social', '#healing'],
@@ -1542,6 +1608,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Dawnfeather Kestrel',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'mounts_beasts',
       tier: 3,
       tags: ['#beast', '#star', '#prophecy', '#awareness', '#companion'],
@@ -1565,6 +1632,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'The Pale Pilgrim',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'mounts_beasts',
       tier: 4,
       tags: ['#beast', '#mount', '#star', '#veil', '#legendary', '#celestial'],
@@ -1589,6 +1657,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Hardtack and Salt',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'provisions',
       tier: 1,
       tags: ['#food', '#provision', '#survival', '#wilderness', '#trade'],
@@ -1607,6 +1676,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Full Waterskin',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'provisions',
       tier: 1,
       tags: ['#drink', '#provision', '#survival', '#wilderness'],
@@ -1624,6 +1694,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Firestarter Kit',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'provisions',
       tier: 1,
       tags: ['#tool', '#provision', '#survival', '#wilderness'],
@@ -1642,6 +1713,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: "Traveler's Wine",
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'provisions',
       tier: 1,
       tags: ['#drink', '#provision', '#heart', '#trade'],
@@ -1659,6 +1731,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: "Berserker's Draught",
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'provisions',
       tier: 1,
       tags: ['#iron', '#consumable', '#combat', '#alchemy'],
@@ -1681,6 +1754,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Healing Poultice',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'provisions',
       tier: 2,
       tags: ['#potion', '#provision', '#heart', '#healing', '#wilderness'],
@@ -1698,6 +1772,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Sanctuary Incense',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'provisions',
       tier: 2,
       tags: ['#star', '#provision', '#divine', '#healing'],
@@ -1716,6 +1791,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: "Timekeeper's Last Vial",
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'provisions',
       tier: 2,
       tags: ['#veil', '#consumable', '#temporal', '#alchemy'],
@@ -1737,6 +1813,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Vessen Shrine Map',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'tomes_scrolls',
       tier: 2,
       tags: ['#shadow', '#intelligence', '#shrine_location', '#rival_god'],
@@ -1762,6 +1839,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Trade Route Dossier',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'tomes_scrolls',
       tier: 2,
       tags: ['#shadow', '#intelligence', '#trade', '#economic'],
@@ -1788,6 +1866,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Veilwater Flask',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'provisions',
       tier: 3,
       tags: ['#veil', '#potion', '#provision', '#arcane'],
@@ -1840,6 +1919,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Ember Edge',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'arms',
       tier: 2,
       tags: ['#iron', '#weapon', '#melee', '#combat', '#force'],
@@ -1857,6 +1937,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Moonstone Pendant',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'relics_talismans',
       tier: 2,
       tags: ['#veil', '#relic', '#magic', '#spirit'],
@@ -1874,6 +1955,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: "Veteran's Shield",
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'arms',
       tier: 2,
       tags: ['#iron', '#weapon', '#shield', '#combat'],
@@ -1891,6 +1973,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Battle Salve',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'provisions',
       tier: 1,
       tags: ['#flesh', '#consumable', '#healing', '#life'],
@@ -1914,6 +1997,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Fading Ward',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'tomes_scrolls',
       tier: 2,
       tags: ['#veil', '#scroll', '#magic', '#ward', '#entropy'],
@@ -1931,6 +2015,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Double-Edged Blade',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'arms',
       tier: 3,
       tags: ['#iron', '#shadow', '#weapon', '#melee', '#combat'],
@@ -1952,6 +2037,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'The Hush Stone',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'relics_talismans',
       tier: 1,
       tags: ['#veil', '#talisman', '#ward', '#anti-magic'],
@@ -1973,6 +2059,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: "Gambler's Last Copper",
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'relics_talismans',
       tier: 2,
       tags: ['#star', '#talisman', '#luck', '#fate'],
@@ -1993,6 +2080,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Null Circlet',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'relics_talismans',
       tier: 3,
       tags: ['#veil', '#shadow', '#relic', '#anti-magic', '#ancient'],
@@ -2021,6 +2109,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: "Wardwright's Compass",
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'tools_instruments',
       tier: 2,
       tags: ['#stone', '#tool', '#ward', '#craft', '#territorial'],
@@ -2042,6 +2131,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Fatesight Lens',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'tools_instruments',
       tier: 3,
       tags: ['#eye', '#star', '#tool', '#divination', '#fate'],
@@ -2070,6 +2160,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Ward Incense',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'provisions',
       tier: 1,
       tags: ['#stone', '#consumable', '#ward', '#territorial'],
@@ -2091,6 +2182,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Book of Sealing',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'tomes_scrolls',
       tier: 2,
       tags: ['#veil', '#stone', '#tome', '#ward', '#ritual'],
@@ -2114,6 +2206,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Spring Water Vial',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'provisions',
       tier: 1,
       tags: ['#star', '#provision', '#divine', '#restoration'],
@@ -2132,6 +2225,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Meditation Stones',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'provisions',
       tier: 1,
       tags: ['#star', '#provision', '#divine', '#calm', '#restoration'],
@@ -2152,6 +2246,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'The Quiet Cup',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'provisions',
       tier: 4,
       tags: ['#star', '#heart', '#provision', '#divine', '#ancient', '#healing', '#celestial'],
@@ -2179,6 +2274,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'The Last Harvest',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'provisions',
       tier: 4,
       tags: ['#iron', '#stone', '#provision', '#ancient', '#cursed', '#survival', '#fortification'],
@@ -2205,6 +2301,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'The Black Mead',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'provisions',
       tier: 4,
       tags: ['#veil', '#shadow', '#provision', '#cursed', '#arcane', '#ancient', '#prophecy'],
@@ -2234,6 +2331,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'River Clay Bead',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'relics_talismans',
       tier: 2,
       tags: ['#star', '#relic', '#divine', '#restoration', '#faith'],
@@ -2252,6 +2350,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Tarnished Draw-Tube',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'relics_talismans',
       tier: 2,
       tags: ['#veil', '#relic', '#arcane', '#parasitic'],
@@ -2270,6 +2369,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'The Sweating Vessel',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'relics_talismans',
       tier: 3,
       tags: ['#veil', '#relic', '#arcane', '#ancient', '#restoration'],
@@ -2296,6 +2396,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Leather Bandolier',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'tools_instruments',
       tier: 1,
       tags: ['#iron', '#tool', '#equipment', '#carrying'],
@@ -2314,6 +2415,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Scroll Case',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'tools_instruments',
       tier: 1,
       tags: ['#veil', '#tool', '#equipment', '#carrying', '#scholarly'],
@@ -2332,6 +2434,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: "Quartermaster's Harness",
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'tools_instruments',
       tier: 2,
       tags: ['#stone', '#gold', '#tool', '#equipment', '#carrying', '#trade'],
@@ -2352,6 +2455,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Salvage Kit',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'tools_instruments',
       tier: 2,
       tags: ['#stone', '#tool', '#scavenging', '#discovery', '#wilderness'],
@@ -2381,6 +2485,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Bag of Conveyance',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'tools_instruments',
       slotTag: 'utility',
       tier: 3,
@@ -2410,6 +2515,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'The Trembling Needle',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'tools_instruments',
       tier: 4,
       tags: ['#eye', '#veil', '#tool', '#divination', '#ancient', '#exploration'],
@@ -2436,6 +2542,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'The Anvilbone',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'tools_instruments',
       tier: 4,
       tags: ['#stone', '#star', '#tool', '#craft', '#ancient', '#divine', '#creation'],
@@ -2464,6 +2571,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Sealed Bounty Scroll',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'tomes_scrolls',
       tier: 2,
       tags: ['#gold', '#scroll', '#reward', '#discovery'],
@@ -2494,6 +2602,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Tithe Box',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'tomes_scrolls',
       slotTag: 'utility',
       tier: 2,
@@ -2526,6 +2635,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: "Pilgrim's Wayfinding Stone",
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'relics_talismans',
       tier: 1,
       tags: ['#quintessence', '#travel', '#mystical'],
@@ -2548,6 +2658,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Battle Spoils Talisman',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'relics_talismans',
       tier: 1,
       tags: ['#essence', '#combat', '#consumable'],
@@ -3645,6 +3756,7 @@ export const TREASURE_MAPS: GraphNode[] = [
     type: 'artifact',
     name: 'Faded Treasure Map',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'tomes_scrolls',
       tier: 1,
       tags: ['#eye', '#map', '#ruin_seeker', '#ancient'],
@@ -3665,6 +3777,7 @@ export const TREASURE_MAPS: GraphNode[] = [
     type: 'artifact',
     name: "Smuggler's Chart",
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'tomes_scrolls',
       tier: 1,
       tags: ['#shadow', '#map', '#ruin_seeker', '#ancient'],
@@ -3685,6 +3798,7 @@ export const TREASURE_MAPS: GraphNode[] = [
     type: 'artifact',
     name: "Cartographer's Survey",
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'tomes_scrolls',
       tier: 2,
       tags: ['#eye', '#map', '#ruin_seeker', '#ancient', '#professional'],
@@ -3705,6 +3819,7 @@ export const TREASURE_MAPS: GraphNode[] = [
     type: 'artifact',
     name: "Tomb Raider's Journal",
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'tomes_scrolls',
       tier: 2,
       tags: ['#eye', '#shadow', '#map', '#ruin_seeker', '#ancient'],
@@ -3726,6 +3841,7 @@ export const TREASURE_MAPS: GraphNode[] = [
     type: 'artifact',
     name: 'Ancient Waystone Rubbing',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'tomes_scrolls',
       tier: 3,
       tags: ['#eye', '#map', '#ruin_seeker', '#ancient', '#elder'],

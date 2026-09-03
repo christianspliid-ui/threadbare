@@ -19,10 +19,10 @@ import { WorldGraph } from '../graph';
 import { createSublocation } from '../strategicGraphOps';
 import { checkDissolutions } from '../sublocation';
 import {
-  isSublocationNode,
-  isPlaceTierLocation,
-  getSublocationNodes,
-  getPlaceTierLocations,
+  isPlaceNode,
+  isLocationNode,
+  getPlaceNodes,
+  getLocationNodes,
   resolveToParentLocation,
   LEGACY_SUBLOCATION_NODE_TYPE,
 } from '../sublocationShape';
@@ -144,7 +144,7 @@ describe('THR-1183 — one sublocation mint shape', () => {
   });
 
   describe('the sweep finds every tier member, whatever shape it arrived in', () => {
-    it('getSublocationNodes counts canonical AND legacy in one graph', () => {
+    it('getPlaceNodes counts canonical AND legacy in one graph', () => {
       const graph = new WorldGraph();
       addParentLocation(graph, 'loc.haven');
       addParentLocation(graph, 'loc.reach');
@@ -152,7 +152,7 @@ describe('THR-1183 — one sublocation mint shape', () => {
       addCanonicalSublocation(graph, 'sub.shrine', 'loc.reach');
       addLegacySublocation(graph, 'sub.legacy', 'loc.haven');
 
-      const found = getSublocationNodes(graph).map(n => n.id).sort();
+      const found = getPlaceNodes(graph).map(n => n.id).sort();
 
       // Both shapes present in the same world — the tally that makes this non-vacuous.
       expect(found).toEqual(['sub.legacy', 'sub.shrine', 'sub.tavern']);
@@ -160,13 +160,13 @@ describe('THR-1183 — one sublocation mint shape', () => {
       expect(graph.getNodesByType(LEGACY_SUBLOCATION_NODE_TYPE).map(n => n.id)).toEqual(['sub.legacy']);
     });
 
-    it('getPlaceTierLocations excludes sublocations of both shapes', () => {
+    it('getLocationNodes excludes sublocations of both shapes', () => {
       const graph = new WorldGraph();
       addParentLocation(graph, 'loc.haven');
       addCanonicalSublocation(graph, 'sub.tavern', 'loc.haven');
       addLegacySublocation(graph, 'sub.legacy', 'loc.haven');
 
-      expect(getPlaceTierLocations(graph).map(n => n.id)).toEqual(['loc.haven']);
+      expect(getLocationNodes(graph).map(n => n.id)).toEqual(['loc.haven']);
     });
 
     it('the two sweeps partition the location tier with no overlap and no gap', () => {
@@ -175,44 +175,44 @@ describe('THR-1183 — one sublocation mint shape', () => {
       addCanonicalSublocation(graph, 'sub.tavern', 'loc.haven');
       addLegacySublocation(graph, 'sub.legacy', 'loc.haven');
 
-      const subs = getSublocationNodes(graph).map(n => n.id);
-      const places = getPlaceTierLocations(graph).map(n => n.id);
+      const subs = getPlaceNodes(graph).map(n => n.id);
+      const places = getLocationNodes(graph).map(n => n.id);
 
       expect(subs.filter(id => places.includes(id))).toEqual([]);
       expect([...subs, ...places].sort()).toEqual(['loc.haven', 'sub.legacy', 'sub.tavern']);
     });
   });
 
-  describe('isSublocationNode — the single discriminator', () => {
+  describe('isPlaceNode — the single discriminator', () => {
     it('accepts the canonical shape', () => {
       const graph = new WorldGraph();
       addParentLocation(graph, 'loc.haven');
       addCanonicalSublocation(graph, 'sub.tavern', 'loc.haven');
-      expect(isSublocationNode(graph.getNode('sub.tavern'))).toBe(true);
-      expect(isPlaceTierLocation(graph.getNode('sub.tavern'))).toBe(false);
+      expect(isPlaceNode(graph.getNode('sub.tavern'))).toBe(true);
+      expect(isLocationNode(graph.getNode('sub.tavern'))).toBe(false);
     });
 
     it('accepts the legacy shape, so a saved world degrades to visible not invisible', () => {
       const graph = new WorldGraph();
       addParentLocation(graph, 'loc.haven');
       addLegacySublocation(graph, 'sub.legacy', 'loc.haven');
-      expect(isSublocationNode(graph.getNode('sub.legacy'))).toBe(true);
+      expect(isPlaceNode(graph.getNode('sub.legacy'))).toBe(true);
     });
 
     it('rejects a place-tier location', () => {
       const graph = new WorldGraph();
       addParentLocation(graph, 'loc.haven');
-      expect(isSublocationNode(graph.getNode('loc.haven'))).toBe(false);
-      expect(isPlaceTierLocation(graph.getNode('loc.haven'))).toBe(true);
+      expect(isPlaceNode(graph.getNode('loc.haven'))).toBe(false);
+      expect(isLocationNode(graph.getNode('loc.haven'))).toBe(true);
     });
 
     it('rejects non-location nodes and missing nodes', () => {
       const graph = new WorldGraph();
       graph.addNode({ id: 'actor.a', type: 'actor', name: 'A', properties: { parentLocationId: 'loc.haven' } });
       // An actor carrying the property is still not a place — the type is checked too.
-      expect(isSublocationNode(graph.getNode('actor.a'))).toBe(false);
-      expect(isSublocationNode(undefined)).toBe(false);
-      expect(isPlaceTierLocation(undefined)).toBe(false);
+      expect(isPlaceNode(graph.getNode('actor.a'))).toBe(false);
+      expect(isPlaceNode(undefined)).toBe(false);
+      expect(isLocationNode(undefined)).toBe(false);
     });
 
     it('does not accept the fixture-only spellings no writer emits', () => {
@@ -223,7 +223,7 @@ describe('THR-1183 — one sublocation mint shape', () => {
       });
       // Both spellings appear in old test fixtures and in no production writer.
       // Accepting them would let a fixture define the shape (see the module doc).
-      expect(isSublocationNode(graph.getNode('sub.fake'))).toBe(false);
+      expect(isPlaceNode(graph.getNode('sub.fake'))).toBe(false);
     });
   });
 

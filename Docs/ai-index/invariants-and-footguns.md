@@ -103,7 +103,7 @@ Do not refactor on the assumption that all phases behave like reducers — but w
 The single most-often-reintroduced rejected approach is location-hop awareness. The rules:
 
 - **Encounter awareness is hex-coordinate distance** (`encounterAwareness.ts`) — never location-graph hops, never the distance matrix.
-- **The distance matrix indexes the place tier only** (THR-1346, via `getPlaceTierLocations`), caps at `MAX_DISTANCE_MATRIX_SIZE` (1200), and IS live: `socialEncounterGeneration.findVisibleAgents` and `idleBehavior.deriveAmbitionTarget` walk whole rows per tick. Grepping for `getDistance` callers will tell you it is unused; it is not.
+- **The distance matrix indexes the place tier only** (THR-1346, via `getLocationNodes`), caps at `MAX_DISTANCE_MATRIX_SIZE` (1200), and IS live: `socialEncounterGeneration.findVisibleAgents` and `idleBehavior.deriveAmbitionTarget` walk whole rows per tick. Grepping for `getDistance` callers will tell you it is unused; it is not.
 - **Hexes are not graph nodes** — `GameState.tiles[]`, mutated via `HexMutation[]` in `phaseHexState`.
 
 ## 8. Structural invalidation is broader than reachability alone

@@ -17,9 +17,9 @@ import {
 } from '../hexActionBridge';
 import { executeGraphOps } from '../graphOpExecutor';
 import {
-  isSublocationNode,
-  getSublocationNodes,
-  getPlaceTierLocations,
+  isPlaceNode,
+  getPlaceNodes,
+  getLocationNodes,
   resolveToParentLocation,
   LEGACY_SUBLOCATION_NODE_TYPE,
 } from '../sublocationShape';
@@ -131,12 +131,12 @@ describe('hex.restore_fragment — mints a sublocation (THR-1193)', () => {
     const { batch } = castRestoreFragment(graph);
 
     expect(batch.allSucceeded).toBe(true);
-    const subs = getSublocationNodes(graph);
+    const subs = getPlaceNodes(graph);
     expect(subs).toHaveLength(1);
 
     const fragment = subs[0];
     expect(fragment.type).toBe('location');
-    expect(isSublocationNode(fragment)).toBe(true);
+    expect(isPlaceNode(fragment)).toBe(true);
     expect(fragment.properties.parentLocationId).toBe('loc_ruin');
     expect(fragment.properties.sublocationTypeId).toBe(RESTORE_FRAGMENT_SUBLOCATION_TYPE_ID);
     // Required by SublocationProperties — omitting it is what crashed checkDissolutions
@@ -149,13 +149,13 @@ describe('hex.restore_fragment — mints a sublocation (THR-1193)', () => {
     castRestoreFragment(graph);
     // `executeAddNode` falls back to the generated id for the top-level `name`, so a
     // properties-only name shows as `gen_location_1` everywhere `node.name` is read.
-    expect(getSublocationNodes(graph)[0].name).toBe(RESTORE_FRAGMENT_NAME);
+    expect(getPlaceNodes(graph)[0].name).toBe(RESTORE_FRAGMENT_NAME);
   });
 
   it('attaches by contains from the parent, the convention every other sublocation uses', () => {
     const graph = worldWithRuin();
     castRestoreFragment(graph);
-    const fragment = getSublocationNodes(graph)[0];
+    const fragment = getPlaceNodes(graph)[0];
 
     const contains = graph.getOutgoingEdges('loc_ruin', 'contains');
     expect(contains).toHaveLength(1);
@@ -168,7 +168,7 @@ describe('hex.restore_fragment — mints a sublocation (THR-1193)', () => {
   it('produces a fragment whose parent resolves through the shared predicate', () => {
     const graph = worldWithRuin();
     castRestoreFragment(graph);
-    const fragment = getSublocationNodes(graph)[0];
+    const fragment = getPlaceNodes(graph)[0];
     // The failure this guards is a *dangling* parent — the shape a naive
     // `parentLocationId: '$location'` substitution would have written, since a hex
     // action's `$location` is `hex_3_5` and hexes are not graph nodes.
@@ -185,7 +185,7 @@ describe('hex.restore_fragment — mints a sublocation (THR-1193)', () => {
     const graph = worldWithRuin();
     castRestoreFragment(graph);
     // A settlement sweep must not pick the fragment up as a settlement.
-    expect(getPlaceTierLocations(graph).map(n => n.id)).toEqual(['loc_ruin']);
+    expect(getLocationNodes(graph).map(n => n.id)).toEqual(['loc_ruin']);
   });
 
   it('prefers a ruins location over another place on the same hex', () => {
@@ -197,7 +197,7 @@ describe('hex.restore_fragment — mints a sublocation (THR-1193)', () => {
       properties: { hexCol: 3, hexRow: 5, locationSubtype: 'town' },
     });
     castRestoreFragment(graph);
-    expect(getSublocationNodes(graph)[0].properties.parentLocationId).toBe('loc_ruin');
+    expect(getPlaceNodes(graph)[0].properties.parentLocationId).toBe('loc_ruin');
   });
 
   it('never parents the fragment to another sublocation', () => {
@@ -228,7 +228,7 @@ describe('hex.restore_fragment — mints a sublocation (THR-1193)', () => {
     });
 
     castRestoreFragment(graph);
-    const fragment = getSublocationNodes(graph).find(n => n.name === RESTORE_FRAGMENT_NAME)!;
+    const fragment = getPlaceNodes(graph).find(n => n.name === RESTORE_FRAGMENT_NAME)!;
     expect(fragment.properties.parentLocationId).toBe('loc_town');
   });
 
@@ -238,7 +238,7 @@ describe('hex.restore_fragment — mints a sublocation (THR-1193)', () => {
     const { ops, batch } = castRestoreFragment(graph, 9, 9);
     expect(ops).toEqual([]);
     expect(batch.allSucceeded).toBe(true);
-    expect(getSublocationNodes(graph)).toHaveLength(0);
+    expect(getPlaceNodes(graph)).toHaveLength(0);
   });
 
   it('emits nothing on failure', () => {

@@ -34,7 +34,7 @@ import { ITEM_ART } from '../item-art-registry';
 const TEST_SEED = 42;
 
 /** Node types that `deriveKind` maps to the `artifact` visual kind. */
-const ARTIFACT_NODE_TYPES = ['artifact', 'artifact_legendary', 'resource'] as const;
+const ARTIFACT_NODE_TYPES = ['artifact', 'artifact_legendary'] as const;
 
 describe('artifact category art — registry', () => {
   it('registers a plate for every canonical possession subcategory', () => {

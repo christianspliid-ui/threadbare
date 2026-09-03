@@ -13,57 +13,17 @@ function makeActorNode(id: string) {
   };
 }
 
-function makeRelationshipNode(id: string, a: string, b: string, arc: string, tensionDrift: number) {
-  return {
-    id,
-    type: 'relationship' as const,
-    name: `Rel ${id}`,
-    properties: {
-      participants: [a, b] as [string, string],
-      arc,
-      tension_axis: 'loyalty under strain',
-      tension_drift: tensionDrift,
-      history: [],
-      last_invoked_tick: 0,
-    },
-  };
-}
-
 function makeRelatesTo(id: string, source: string, target: string, sentiment: number) {
   return { id, type: 'relates_to' as const, source, target, properties: { sentiment } };
 }
 
 // ─── Tests ────────────────────────────────────────────────────────────────────
 
-describe('getRelationship — relationship node lookup', () => {
-  it('returns node data when a relationship node exists for the pair', () => {
-    const graph = new WorldGraph();
-    graph.addNode(makeActorNode('a1'));
-    graph.addNode(makeActorNode('a2'));
-    graph.addNode(makeRelationshipNode('r1', 'a1', 'a2', 'fraying', -0.4));
+// The reified `relationship` node lookup retired with the node type (THR-1394 slice 2):
+// a relationship is the `relates_to` edge, the one shape.
 
-    const result = getRelationship(graph, 'a1', 'a2');
-    expect(result.source).toBe('node');
-    if (result.source === 'node') {
-      expect(result.data.arc).toBe('fraying');
-      expect(result.data.tension_drift).toBe(-0.4);
-      expect(result.data.participants).toEqual(['a1', 'a2']);
-    }
-  });
-
-  it('finds the node regardless of participant order', () => {
-    const graph = new WorldGraph();
-    graph.addNode(makeActorNode('a1'));
-    graph.addNode(makeActorNode('a2'));
-    graph.addNode(makeRelationshipNode('r1', 'a2', 'a1', 'improving', 0.6));
-
-    const result = getRelationship(graph, 'a1', 'a2');
-    expect(result.source).toBe('node');
-  });
-});
-
-describe('getRelationship — relates_to edge fallback', () => {
-  it('falls back to edge_sentiment when no relationship node exists', () => {
+describe('getRelationship — relates_to edge', () => {
+  it('reads edge_sentiment off the relates_to edge', () => {
     const graph = new WorldGraph();
     graph.addNode(makeActorNode('a1'));
     graph.addNode(makeActorNode('a2'));
@@ -111,7 +71,7 @@ describe('getRelationship — relates_to edge fallback', () => {
 });
 
 describe('getRelationship — no data', () => {
-  it('returns none when neither a relationship node nor a relates_to edge exists', () => {
+  it('returns none when no relates_to edge exists', () => {
     const graph = new WorldGraph();
     graph.addNode(makeActorNode('a1'));
     graph.addNode(makeActorNode('a2'));

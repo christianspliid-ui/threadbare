@@ -21,7 +21,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { WorldGraph } from '../graph';
 import { executeGraphOps } from '../graphOpExecutor';
 import { createRelationEdge, createTradeRoute } from '../strategicGraphOps';
-import { getPlaceTierLocations } from '../sublocationShape';
+import { getLocationNodes } from '../sublocationShape';
 import { isAutonomousDecisionActor } from '../strategicKindReachability';
 import { getHighestFactionRank } from '../socialLeverage';
 import { joinFaction } from '../factionMembership';
@@ -306,7 +306,7 @@ describe('THR-1177 — 150-tick seeded smoke', () => {
       // was standing in for. Whether mortals *choose* to found routes is the census's
       // question (THR-1348 owns the route economy), not a schema question.
       const founder = graph.getNodesByType('actor').find(isAutonomousDecisionActor);
-      const endpoints = getPlaceTierLocations(graph).filter((n) => {
+      const endpoints = getLocationNodes(graph).filter((n) => {
         const subtype = n.properties?.locationSubtype as string | undefined;
         return subtype === 'town' || subtype === 'city' || subtype === 'market'
           || subtype === 'trading_post' || subtype === 'port';

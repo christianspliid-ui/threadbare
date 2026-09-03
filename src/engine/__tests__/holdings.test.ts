@@ -55,7 +55,7 @@ describe('owns — schema', () => {
     const row = EDGE_SCHEMA.owns;
     expect(row).toBeDefined();
     expect(row.sourceNodeType).toBe('actor');
-    expect(row.targetNodeType).toEqual(['location', 'resource']);
+    expect(row.targetNodeType).toEqual(['location']);
     // Pinned against the writer's own constant so the schema row and holdings.ts
     // cannot drift apart into an edge that violates its own contract.
     expect(row.requiredProperties).toEqual([...OWNS_EDGE_REQUIRED_PROPS]);

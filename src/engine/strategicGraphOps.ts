@@ -581,6 +581,7 @@ export function mintTreasureMap(
       type: 'artifact',
       name: `Chart to ${target.name ?? 'an unmarked place'}`,
       properties: {
+        attachmentCategory: 'possession',
         // Canonical `PossessionSubcategory` — the art resolver keys off it, and a
         // non-canonical value resolves to no plate at all (caught by the seeded-world
         // art coverage test, which is why it is not merely cosmetic). A chart is a
@@ -808,8 +809,8 @@ export function mintMasterwork(
  *
  * **Place-tier by construction, not by convention.** The node carries `hexCol` /
  * `hexRow` and deliberately no `parentLocationId`, which is exactly what
- * `isPlaceTierLocation` tests — so a founded settlement is visible to
- * `getPlaceTierLocations` sweeps and invisible to `getSublocationNodes` ones,
+ * `isLocationNode` tests — so a founded settlement is visible to
+ * `getLocationNodes` sweeps and invisible to `getPlaceNodes` ones,
  * without either having to learn a new shape.
  *
  * `locationType` is written alongside `locationSubtype` because `worldSeed` writes

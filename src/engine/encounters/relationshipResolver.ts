@@ -1,19 +1,16 @@
 /**
- * Relationship Resolver — reads reified relationship nodes or falls back to edge sentiment.
+ * Relationship Resolver — reads the `relates_to` edge between two actors.
  *
  * The cast tile's "to her: ..." line reads relationship data from this resolver.
- * When a `relationship` node exists for the actor pair, returns its typed properties.
- * When no node exists, falls back to the `relates_to` edge sentiment between the actors.
+ * A relationship is the `relates_to` edge (the Standing kind, THR-1394); the reified
+ * `relationship` node this once read first was never minted and retired in THR-1394
+ * slice 2, so the edge is the one shape.
  *
  * Design plan: Docs/plans/2026-05-04-encounter-experience-design-plan.md §3.9
  * THR-327 (Phase B5)
- *
- * Mutation note: callers that create or update relationship nodes must call
- * touchWorld(runtime) after the mutation per CLAUDE.md graph mutation discipline.
  */
 
 import type { WorldGraph } from '../graph';
-import type { RelationshipNodeProperties } from '../../types/graph';
 
 // ─── Public API ──────────────────────────────────────────────────────────────
 
@@ -22,7 +19,6 @@ import type { RelationshipNodeProperties } from '../../types/graph';
  * `source` indicates whether data came from a relationship node or a relates_to edge fallback.
  */
 export type RelationshipResult =
-  | { source: 'node'; data: RelationshipNodeProperties }
   | { source: 'edge_sentiment'; arc: 'improving' | 'stable' | 'fraying' | 'severed'; sentiment: number }
   | { source: 'none' };
 
@@ -30,34 +26,15 @@ export type RelationshipResult =
  * Get relationship data between two actors.
  *
  * Priority:
- *   1. `relationship` node where participants includes both actorIdA and actorIdB.
- *   2. `relates_to` edge between the actors — maps sentiment to an arc label.
- *   3. `{ source: 'none' }` when no relationship data exists.
- *
- * Actor order in `participants` is not significant — both orderings are checked.
+ *   1. `relates_to` edge between the actors (either direction) — maps sentiment to an arc label.
+ *   2. `{ source: 'none' }` when no relationship data exists.
  */
 export function getRelationship(
   graph: WorldGraph,
   actorIdA: string,
   actorIdB: string,
 ): RelationshipResult {
-  // 1. Check for a relationship node covering this pair
-  const relationshipNodes = graph.getNodesByType('relationship');
-  for (const node of relationshipNodes) {
-    const participants = node.properties.participants as [string, string] | undefined;
-    if (!participants || participants.length !== 2) continue;
-    if (
-      (participants[0] === actorIdA && participants[1] === actorIdB) ||
-      (participants[0] === actorIdB && participants[1] === actorIdA)
-    ) {
-      return {
-        source: 'node',
-        data: node.properties as unknown as RelationshipNodeProperties,
-      };
-    }
-  }
-
-  // 2. Fall back to relates_to edge sentiment
+  // 1. The relates_to edge, outgoing first
   const outgoing = graph.getOutgoingEdges(actorIdA, 'relates_to');
   for (const edge of outgoing) {
     if (edge.target !== actorIdB) continue;

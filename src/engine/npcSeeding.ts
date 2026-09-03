@@ -12,7 +12,7 @@
 
 import type { WorldGraph } from './graph';
 import { getFactionMembershipEdges } from './graphQueries';
-import { isPlaceTierLocation, resolveToParentLocation } from './sublocationShape';
+import { isLocationNode, resolveToParentLocation } from './sublocationShape';
 import { GENOME_NPC_TOPUP_CAP, GENOME_NPC_PASS_PRIORITY } from './settlementGenome/constants';
 import type { GenomeResult } from './settlementGenome/types';
 import {
@@ -481,7 +481,7 @@ export function seedGenomeNpcsAtSettlements(
 
   for (const locationId of locationIds) {
     const locationNode = graph.getNode(locationId);
-    if (!locationNode || !isPlaceTierLocation(locationNode)) continue;
+    if (!locationNode || !isLocationNode(locationNode)) continue;
 
     const subtype = (locationNode.properties.locationSubtype as string | undefined) ?? '';
     if (!GENOME_TIERS.has(subtype)) continue;

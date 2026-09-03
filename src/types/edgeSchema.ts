@@ -107,16 +107,16 @@ export const EDGE_SCHEMA: Record<EdgeType, EdgeSchema> = {
   controls: {
     type: 'controls',
     sourceNodeType: 'actor',
-    targetNodeType: ['resource', 'location'],
+    targetNodeType: ['location'],
     direction: 'directed',
     cardinality: 'many-to-many',
     requiredProperties: [],
-    description: 'Faction/actor controls a resource or location (jurisdiction).',
+    description: 'Faction/actor controls a location (jurisdiction). A resource is a stock on a Location, never a node (THR-1394).',
   },
   owns: {
     type: 'owns',
     sourceNodeType: 'actor',
-    targetNodeType: ['location', 'resource'],
+    targetNodeType: ['location'],
     direction: 'directed',
     cardinality: 'many-to-many',
     requiredProperties: ['acquiredTick', 'via'],
@@ -308,7 +308,7 @@ export const EDGE_SCHEMA: Record<EdgeType, EdgeSchema> = {
     direction: 'directed',
     cardinality: 'many-to-many',
     requiredProperties: [],
-    description: 'Road/trail between locations. Edge properties: roadType, hexPath, totalCost, pathLength.',
+    description: 'Road/trail between locations. Edge properties: roadType, routeKind, hexPath, totalCost, pathLength.',
   },
 
   // ── Encounter ──────────────────────────────────────────────
@@ -463,7 +463,7 @@ export const EDGE_SCHEMA: Record<EdgeType, EdgeSchema> = {
   // Both had live writers and no registry entry at all, so `EDGE_SCHEMA[type]` was
   // undefined and every edge they minted skipped validation silently. Endpoints read
   // off the writers: the quest and bounty nodes are `event` nodes carrying a
-  // `nodeSubtype` discriminator, not node types of their own.
+  // `eventType` discriminator (the one event kind key, THR-1394), not node types of their own.
   commissions: {
     type: 'commissions',
     sourceNodeType: 'actor',
@@ -471,7 +471,7 @@ export const EDGE_SCHEMA: Record<EdgeType, EdgeSchema> = {
     direction: 'directed',
     cardinality: 'one-to-many',
     requiredProperties: ['expiryTick'],
-    description: 'Faction commissions a quest. Source = faction actor, target = event node with nodeSubtype "faction_quest" (phaseFactionActions).',
+    description: 'Faction commissions a quest. Source = faction actor, target = event node with eventType "faction_quest" (phaseFactionActions).',
   },
   issues: {
     type: 'issues',
@@ -480,7 +480,7 @@ export const EDGE_SCHEMA: Record<EdgeType, EdgeSchema> = {
     direction: 'directed',
     cardinality: 'one-to-many',
     requiredProperties: ['expiryTick'],
-    description: 'Faction issues a bounty. Source = faction actor, target = event node with nodeSubtype "bounty" (phaseFactionActions).',
+    description: 'Faction issues a bounty. Source = faction actor, target = event node with eventType "bounty" (phaseFactionActions).',
   },
 
   // ── Pilgrimage routes (THR-1177) ──────────────────────────────────────────

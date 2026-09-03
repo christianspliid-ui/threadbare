@@ -43,6 +43,7 @@ export const STARTER_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Iron Blade',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'arms',
       tier: 1,
       tags: ['#iron', '#weapon', '#melee'],
@@ -100,6 +101,7 @@ export const STARTER_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Road-Worn Mule',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'mounts_beasts',
       tier: 1,
       tags: ['#beast', '#mount', '#travel'],
@@ -118,6 +120,7 @@ export const STARTER_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Ashenmane Horse',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'mounts_beasts',
       tier: 2,
       tags: ['#beast', '#mount', '#cavalry'],
@@ -142,6 +145,7 @@ export const STARTER_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: "Traveler's Cloak",
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'vestments',
       tier: 1,
       tags: ['#cloth', '#travel', '#weather'],
@@ -162,6 +166,7 @@ export const STARTER_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Copper Market Rations',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'provisions',
       tier: 1,
       tags: ['#food', '#consumable', '#travel'],
@@ -181,6 +186,7 @@ export const STARTER_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'The Whispering Eye',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'relics_talismans',
       tier: 3,
       tags: ['#eye', '#cursed', '#supernatural'],
@@ -222,6 +228,7 @@ export const STARTER_POSSESSIONS: GraphNode[] = [
     type: 'artifact',
     name: 'Burned Codex',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'tomes_scrolls',
       tier: 2,
       tags: ['#star', '#tome', '#knowledge'],

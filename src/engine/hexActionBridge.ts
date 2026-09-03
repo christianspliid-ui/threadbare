@@ -20,7 +20,7 @@ import type { WorldGraph } from './graph';
 import type { GraphOp } from '../types/graphOp';
 import { getLocationsInHex } from './hexZoom';
 import { getAgentsAtLocation } from './graphQueries';
-import { isPlaceTierLocation } from './sublocationShape';
+import { isLocationNode } from './sublocationShape';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -447,7 +447,7 @@ const HEX_ACTION_GRAPH_OP_GENERATORS: Readonly<Record<string, GraphOpGenerator>>
     // Place-tier only. `getLocationsInHex` returns BOTH tiers (it sweeps a bare
     // `getNodesByType('location')`, the THR-1183 trap), so an unfiltered pick could
     // parent a sublocation to a sublocation.
-    const places = getLocationsInHex(graph, col, row).filter(isPlaceTierLocation);
+    const places = getLocationsInHex(graph, col, row).filter(isLocationNode);
     if (places.length === 0) return [];
 
     // Prefer ruins — this is a *restoration*, and the template's `narrativeLayer` is
@@ -509,7 +509,7 @@ const HEX_ACTION_GRAPH_OP_GENERATORS: Readonly<Record<string, GraphOpGenerator>>
    * a located-nowhere herald is the very orphan this fixes, so refusing beats shipping.
    */
   'hex.send_herald': (graph, col, row) => {
-    const places = getLocationsInHex(graph, col, row).filter(isPlaceTierLocation);
+    const places = getLocationsInHex(graph, col, row).filter(isLocationNode);
     if (places.length === 0) return [];
     const destination = places[0];
 

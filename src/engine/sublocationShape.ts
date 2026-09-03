@@ -51,7 +51,7 @@ export const LEGACY_SUBLOCATION_NODE_TYPE: NodeType = 'sublocation';
  * legacy shape (`type: 'sublocation'`, whatever its properties carry — a legacy node
  * that lost its `parentLocationId` is still a sublocation, just an unresolvable one).
  */
-export function isSublocationNode(node: GraphNode | undefined | null): boolean {
+export function isPlaceNode(node: GraphNode | undefined | null): boolean {
   if (!node) return false;
   // `node.type` is widened to string: the legacy literal is a registered NodeType, but
   // saved worlds predate the registration and the property bag is untyped either way.
@@ -66,9 +66,9 @@ export function isSublocationNode(node: GraphNode | undefined | null): boolean {
  * The complement of {@link isSublocationNode} within location nodes, not its negation:
  * an actor node is neither.
  */
-export function isPlaceTierLocation(node: GraphNode | undefined | null): boolean {
+export function isLocationNode(node: GraphNode | undefined | null): boolean {
   if (!node) return false;
-  return node.type === 'location' && !isSublocationNode(node);
+  return node.type === 'location' && !isPlaceNode(node);
 }
 
 /**
@@ -78,7 +78,7 @@ export function isPlaceTierLocation(node: GraphNode | undefined | null): boolean
  * Use this in place of `graph.getNodesByType('sublocation')`, which since THR-1183
  * returns only legacy nodes and so reports an empty world on a normally-generated map.
  */
-export function getSublocationNodes(graph: WorldGraph): GraphNode[] {
+export function getPlaceNodes(graph: WorldGraph): GraphNode[] {
   const canonical = graph.getNodesByType('location').filter(isSublocationNode);
   const legacy = graph.getNodesByType(LEGACY_SUBLOCATION_NODE_TYPE);
   return [...canonical, ...legacy];
@@ -93,7 +93,7 @@ export function getSublocationNodes(graph: WorldGraph): GraphNode[] {
  * the canonical writer has always minted `type: 'location'` — so this is a
  * long-standing trap this function names rather than a new one.)
  */
-export function getPlaceTierLocations(graph: WorldGraph): GraphNode[] {
+export function getLocationNodes(graph: WorldGraph): GraphNode[] {
   return graph.getNodesByType('location').filter(isPlaceTierLocation);
 }
 
@@ -111,8 +111,22 @@ export function resolveToParentLocation(
   node: GraphNode | undefined | null,
 ): GraphNode | undefined {
   if (!node) return undefined;
-  if (!isSublocationNode(node)) return node;
+  if (!isPlaceNode(node)) return node;
   const parentId = node.properties?.parentLocationId;
   if (typeof parentId !== 'string' || parentId.length === 0) return undefined;
   return graph.getNode(parentId);
 }
+
+// ─── Deprecated aliases (THR-1394 slice 2) ─────────────────────────────────────
+// The game words are Location (outer tier) and Place (inner tier) — see
+// `Docs/canon/world-objects.md`. The code-word names below stay for one release so a
+// branch cut before the rename still compiles; new code uses the game-word names.
+
+/** @deprecated use `isPlaceNode` */
+export const isSublocationNode = isPlaceNode;
+/** @deprecated use `isLocationNode` */
+export const isPlaceTierLocation = isLocationNode;
+/** @deprecated use `getPlaceNodes` */
+export const getSublocationNodes = getPlaceNodes;
+/** @deprecated use `getLocationNodes` */
+export const getPlaceTierLocations = getLocationNodes;

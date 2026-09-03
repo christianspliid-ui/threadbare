@@ -12,7 +12,7 @@ import type { GraphNode, GraphEdge } from '../../types/graph';
 import { initializeGameState, MAP_SIZE_PRESETS, type MapSizePreset } from '../gameInit';
 import { generateArchetypes } from '../ascendant';
 import { createBalancedCosmology } from '../cosmology';
-import { getPlaceTierLocations, isSublocationNode } from '../sublocationShape';
+import { getLocationNodes, isPlaceNode } from '../sublocationShape';
 
 // --- Helpers ---
 
@@ -312,7 +312,7 @@ describe('distanceMatrix — generated worlds (THR-1346)', () => {
   for (const preset of presets) {
     it(`${preset}: every place-tier location is indexed, with headroom under the cap`, () => {
       const graph = generate(preset);
-      const placeTier = getPlaceTierLocations(graph);
+      const placeTier = getLocationNodes(graph);
       const matrix = buildDistanceMatrix(graph);
 
       // The preset must fit. If this fails, the world outgrew the cap and agents at the
@@ -330,7 +330,7 @@ describe('distanceMatrix — generated worlds (THR-1346)', () => {
     it(`${preset}: sublocations are excluded, and they are what used to overflow the cap`, () => {
       const graph = generate(preset);
       const allLocationNodes = graph.getNodesByType('location');
-      const subs = allLocationNodes.filter((n) => isSublocationNode(n));
+      const subs = allLocationNodes.filter((n) => isPlaceNode(n));
       const matrix = buildDistanceMatrix(graph);
 
       // The tier really is mixed under `getNodesByType('location')` — if this ever goes
@@ -358,7 +358,7 @@ describe('distanceMatrix — generated worlds (THR-1346)', () => {
     // costing `large` its social encounters. `?view=game&seeded` derives a `large` map.
     const graph = generate('large');
     const allLocationNodes = graph.getNodesByType('location');
-    const placeTier = getPlaceTierLocations(graph);
+    const placeTier = getLocationNodes(graph);
 
     expect(allLocationNodes.length).toBeGreaterThan(MAX_DISTANCE_MATRIX_SIZE);
 

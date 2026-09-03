@@ -24,7 +24,7 @@ import { applyActionTriggerPayloads } from './effects/actionTriggerPayloads';
 import { collectAttachmentEffects } from './effects/effectWalker';
 import { getRevealRanges } from './effects/effectQueries';
 import { raiseEffectEvent } from './effects/effectEventDispatch';
-import { getPlaceTierLocations } from './sublocationShape';
+import { getLocationNodes } from './sublocationShape';
 import { hexDistance } from '../lib/hexMath';
 import { mulberry32 } from '../lib/prng';
 import { hashString } from './factionAmbitions';
@@ -210,7 +210,7 @@ export function phaseMovement(state: GameState): Partial<GameState> {
           const revealed: Record<string, number> = {};
           if (revealHexRange > 0) {
             const originHex = { col: arrHexCol, row: arrHexRow };
-            for (const loc of getPlaceTierLocations(state.graph)) {
+            for (const loc of getLocationNodes(state.graph)) {
               if (existingExploration.visitedLocations[loc.id] !== undefined) continue;
               const col = loc.properties?.hexCol as number | undefined;
               const row = loc.properties?.hexRow as number | undefined;

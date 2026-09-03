@@ -121,7 +121,6 @@ function deriveKind(node: GraphNode | null): EntityVisualKind {
     }
     case 'artifact':
     case 'artifact_legendary':
-    case 'resource':
       return 'artifact';
     case 'companion':
       return 'companion';

@@ -23,6 +23,14 @@ import { findHexPath } from './pathfinding';
 
 export type RoadType = 'major' | 'trail';
 
+/**
+ * The Route class a road edge belongs to (THR-1394): `road` for a major road, `trail`
+ * for a trail. The world-object catalogue's Route kind reads it; `roadType` stays for
+ * movement cost. Other route kinds (`trade_lane`, `pilgrim_way`, `portal`) live on their
+ * own edge types — see `ROUTE_KINDS` in `src/data/world-objects.ts`.
+ */
+export const ROAD_ROUTE_KIND: Readonly<Record<RoadType, 'road' | 'trail'>> = { major: 'road', trail: 'trail' };
+
 export interface RoadPath {
   path: HexCoord[];
   roadType: RoadType;
@@ -310,6 +318,7 @@ export function generateRoadEdges(
         type: 'road',
         properties: {
           roadType: 'major' as RoadType,
+          routeKind: ROAD_ROUTE_KIND.major,
           hexPath: edge.path.map(c => ({ col: c.col, row: c.row })),
           totalCost: edge.cost,
           pathLength: edge.path.length,
@@ -335,6 +344,7 @@ export function generateRoadEdges(
           type: 'road',
           properties: {
             roadType: 'trail' as RoadType,
+            routeKind: ROAD_ROUTE_KIND.trail,
             hexPath: edge.path.map(c => ({ col: c.col, row: c.row })),
             totalCost: edge.cost,
             pathLength: edge.path.length,

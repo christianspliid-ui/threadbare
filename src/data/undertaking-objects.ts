@@ -48,7 +48,7 @@ import {
 } from '../engine/strategicGraphOps';
 import { grantHolding, transferHolding, razeHolding } from '../engine/holdings';
 import { applyPlantSchism } from '../engine/schismPlant';
-import { isSublocationNode, isPlaceTierLocation, resolveToParentLocation } from '../engine/sublocationShape';
+import { isPlaceNode, isLocationNode, resolveToParentLocation } from '../engine/sublocationShape';
 import { resolveDurableActorLocation } from '../engine/tradeRouteOps';
 import { getGroupKind } from '../engine/groupShape';
 import { hexDistance } from '../lib/hexMath';
@@ -179,7 +179,7 @@ function foundSite(ctx: ObjectVerbContext): string | null {
     const node = ctx.graph.getNode(id);
     if (!node || node.type !== 'location') continue;
     // A room's parent must be a place; a site that is itself a room resolves up.
-    const place = isSublocationNode(node) ? resolveToParentLocation(ctx.graph, node) : node;
+    const place = isPlaceNode(node) ? resolveToParentLocation(ctx.graph, node) : node;
     if (place && ctx.graph.getNode(place.id)) return place.id;
   }
   return null;
@@ -240,7 +240,7 @@ function attachmentTier(graph: WorldGraph, handle: UndertakingObjectHandle): Und
 }
 
 function isSettlementObject(n: GraphNode): boolean {
-  if (!isPlaceTierLocation(n)) return false;
+  if (!isLocationNode(n)) return false;
   const subtype = (n.properties.locationSubtype ?? n.properties.locationType) as string | undefined;
   return subtype !== undefined && SETTLEMENT_TIER[subtype] !== undefined;
 }
@@ -331,7 +331,7 @@ const ATTACHMENT: UndertakingObjectType = {
 const ROOM: UndertakingObjectType = {
   id: 'room',
   displayName: 'Room',
-  shape: { nodeType: 'location', discriminator: isSublocationNode },
+  shape: { nodeType: 'location', discriminator: isPlaceNode },
   ownedVia: ['owns'],
   tierOf: roomTier,
   lexicon: 'place',

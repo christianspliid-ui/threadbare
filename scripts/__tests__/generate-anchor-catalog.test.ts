@@ -154,7 +154,9 @@ describe('anchor catalog — the findings it records', () => {
   it('keeps location a lawful anchor, so a critic cannot fold chips for being unclickable', () => {
     // The expensive misreading: treating "cannot be clicked" as "not anchored"
     // would strip most legitimate consequences out of the corpus, since culture
-    // and bond are `named` rather than `linked` and are anchored all the same.
+    // is `named` rather than `linked` and is anchored all the same. (The reified
+    // `relationship` node that was the other `named` example retired in THR-1394 —
+    // a bond is the `relates_to` edge, a relational surface, not an anchor.)
     //
     // `location` moved to `linked` in THR-1221: `visualKind` genuinely carries a
     // `'location'` member (`src/types/unifiedAction.ts` — the union is
@@ -165,7 +167,6 @@ describe('anchor catalog — the findings it records', () => {
     // file, so the artifact was simultaneously fresh and wrong.
     expect(NODE_TYPE_ROWS.location.status).toBe('linked');
     expect(ACTOR_TYPE_ROWS.culture.status).toBe('named');
-    expect(NODE_TYPE_ROWS.relationship.status).toBe('named');
   });
 });
 

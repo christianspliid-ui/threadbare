@@ -38,5 +38,4 @@ export type TargetCategory =
   | 'sublocation'
   | 'hex'
   | 'artifact'
-  | 'artifact_legendary'
-  | 'resource';
+  | 'artifact_legendary';

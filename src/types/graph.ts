@@ -20,7 +20,9 @@ export type NodeType =
   | 'trait'              // trait definitions (category: innate/mastery/scar/etc.)
   | 'artifact'           // common artifacts
   | 'artifact_legendary' // legendary artifacts (have own trait graph)
-  | 'resource'           // steady or consumable resource nodes
+  // `resource` retired (THR-1394 slice 2) — no writer ever minted one, resources are stocks on a Location
+  // (`properties.resources`) and Deposit is a Location class. `relationship` retired the same way,
+  // a relationship is the `relates_to` edge. Kinds in game words: src/data/world-objects.ts.
   | 'action_template'    // CRUD action definitions
   | 'event'              // resolved action records
   | 'cosmology'          // sphere/foundation nodes (imported from taxonomy)
@@ -34,7 +36,6 @@ export type NodeType =
   | 'sublocation'        // reader-accepted legacy shape (THR-1177); no producer writes it since THR-1183
   | 'ambition'           // ambition template instances assigned to actors
   | 'encounter_template' // encounter template graph node (design plan §3.8, B5)
-  | 'relationship'       // reified relationship between two actors (design plan §3.9, B5)
   | 'companion';         // a named person who walks with a mortal (THR-1096) — NOT an actor
 
 /** Actor subtypes stored in properties.actorType */
@@ -96,7 +97,7 @@ export type EdgeType =
   // Ambition
   | 'pursues'          // actor → ambition (priority, status, milestones)
   // Infrastructure
-  | 'road'             // location ↔ location road/trail (roadType, hexPath, totalCost, pathLength)
+  | 'road'             // location ↔ location road/trail (roadType, routeKind, hexPath, totalCost, pathLength)
   // Encounter
   | 'encounter_at'     // encounter_template → location (encounter available at location)
   // Encounter template graph (THR-327, design plan §3.8)
@@ -166,14 +167,6 @@ export interface EncounterTemplateNodeProperties {
  * falls back to relates_to edge sentiment when absent.
  * Callers must call touchWorld(runtime) after mutating these nodes.
  */
-export interface RelationshipNodeProperties {
-  participants: [string, string];    // [ActorId, ActorId]
-  arc: 'improving' | 'stable' | 'fraying' | 'severed';
-  tension_axis: string;              // human-readable, e.g. "loyalty under strain"
-  tension_drift: number;             // -1.0 to +1.0; positive toward repair, negative toward severance
-  history: string[];                 // EventId[]
-  last_invoked_tick: number;
-}
 
 /**
  * Typed properties for `mentors` edges (THR-75).

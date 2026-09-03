@@ -236,14 +236,12 @@ export const EncounterCacheView = React.memo(function EncounterCacheView({
     });
   }, [encounterProgress, currentTick]);
 
-  // Graph node state for encounter_template and relationship nodes (THR-327)
+  // Graph node state for encounter_template nodes (THR-327; the `relationship` node retired in THR-1394)
   const graphNodeState = useMemo(() => {
     if (!graph) return null;
     const templateNodes = graph.getNodesByType('encounter_template');
-    const relationshipNodes = graph.getNodesByType('relationship');
     return {
       templateCount: templateNodes.length,
-      relationshipCount: relationshipNodes.length,
       templates: templateNodes.map(n => ({
         id: n.id,
         templateId: n.properties.template_id as string | undefined,
@@ -264,16 +262,12 @@ export const EncounterCacheView = React.memo(function EncounterCacheView({
   return (
     <div data-testid="encounter-cache-view">
       {/* Encounter Template Graph Nodes (THR-327, Phase B5) */}
-      {graphNodeState && (graphNodeState.templateCount > 0 || graphNodeState.relationshipCount > 0) && (
+      {graphNodeState && graphNodeState.templateCount > 0 && (
         <div style={SECTION_STYLE} data-testid="encounter-graph-node-state">
           <div style={HEADING_STYLE}>Graph Nodes</div>
           <div style={ROW_STYLE}>
             <span style={LABEL_STYLE}>encounter_template</span>
             <span style={VALUE_STYLE}>{graphNodeState.templateCount}</span>
-          </div>
-          <div style={ROW_STYLE}>
-            <span style={LABEL_STYLE}>relationship</span>
-            <span style={VALUE_STYLE}>{graphNodeState.relationshipCount}</span>
           </div>
           {graphNodeState.templates.length > 0 && (
             <div style={{ marginTop: '6px' }}>

@@ -92,7 +92,7 @@ export type WorldObjectKindId =
   | 'ambition' | 'undertaking' | 'event' | 'journey' | 'divine_receipt'
   | 'sphere' | 'reach'
   | 'action_template' | 'encounter_template'
-  | 'resource_node' | 'cosmology_node' | 'relationship_node' | 'sublocation_node';
+  | 'cosmology_node' | 'sublocation_node';
 
 export interface WorldObjectKind {
   readonly id: WorldObjectKindId;
@@ -210,7 +210,7 @@ export const WORLD_OBJECT_KINDS: readonly WorldObjectKind[] = [
     shape: { kind: 'edge', edgeTypes: ['road', 'trades_with', 'sacred_route'], identityNode: { nodeType: 'location', key: 'locationSubtype', value: ROUTE_IDENTITY_LOCATION_SUBTYPE } },
     classes: { road: ['road'], trail: [], trade_lane: ['trades_with'], pilgrim_way: ['sacred_route'], portal: [] },
     owningSystem: 'Trade routes', writers: ['roadNetwork', 'tradeRoute', 'strategicGraphOps'], status: 'live',
-    note: 'An edge between two Locations — traversal walks edges — that grows an identity node the moment it is nameable, ownable, blockadable or consecrated (the trade route\'s pattern, generalised). Trail and portal are ratified classes with no edge type yet (a trail is a `road` with `roadType: trail` today; a portal is a route edge with an empty hex path and its own cost) — slice 2 gives both a `routeKind`.',
+    note: 'An edge between two Locations — traversal walks edges — that grows an identity node the moment it is nameable, ownable, blockadable or consecrated (the trade route\'s pattern, generalised). A trail is a `road` edge with `routeKind: trail` (stamped by the road network); a portal is a route edge with an empty hex path and its own cost, ratified with no writer yet.',
   }),
 
   // ── People and collectives ──
@@ -278,10 +278,10 @@ export const WORLD_OBJECT_KINDS: readonly WorldObjectKind[] = [
   // ── Things a mortal carries or is under ──
   K({
     id: 'item', gameWord: 'Item', ulTerm: 'Traits.md#attachment', worldRef: 'artifact',
-    shape: { kind: 'node', nodeType: 'artifact', discriminator: { key: 'subcategory', values: POSSESSION_SUBCATEGORIES } },
+    shape: { kind: 'node', nodeType: 'artifact', refines: { key: 'attachmentCategory', value: 'possession' }, discriminator: { key: 'subcategory', values: POSSESSION_SUBCATEGORIES } },
     classes: ITEM_CLASSES,
     owningSystem: 'Attachments, items & possessions', writers: ['rewardPool', 'resourceSeeding', 'strategicGraphOps', 'gameInit'], status: 'live',
-    note: 'A possession: arms, a mount, a tome, a relic, tools, provisions; charts and masterworks are items with a subtype. Told apart by `subcategory` (the possession subcategory); slice 2 adds the `attachmentCategory: possession` stamp every mint should carry.',
+    note: 'A possession: arms, a mount, a tome, a relic, tools, provisions; charts and masterworks are items with a subtype. Every mint stamps `attachmentCategory: possession` (THR-1394 slice 2) and is told apart by `subcategory`.',
   }),
   K({
     id: 'legendary_artifact', gameWord: 'Legendary artifact', ulTerm: 'Traits.md#attachment', worldRef: 'artifact',
@@ -392,23 +392,14 @@ export const WORLD_OBJECT_KINDS: readonly WorldObjectKind[] = [
   }),
 
   // ── Union members with no world behind them ──
-  K({
-    id: 'resource_node', gameWord: '(resource node — retired)', ulTerm: 'Graph.md#nodetype', worldRef: null,
-    shape: { kind: 'node', nodeType: 'resource' },
-    owningSystem: 'Economy', writers: [], status: 'retired',
-    note: 'No writer anywhere. Resources are stocks on a Location (`properties.resources`) and Deposit is a Location class; the member retires in slice 2 with its five type-level readers repointed.',
-  }),
+  // `resource` and `relationship` retired from the union in THR-1394 slice 2 with their
+  // readers repointed; resources are stocks on a Location, a relationship is the
+  // `relates_to` edge (the Standing kind).
   K({
     id: 'cosmology_node', gameWord: '(cosmology node — dormant)', ulTerm: 'Graph.md#nodetype', worldRef: null,
     shape: { kind: 'node', nodeType: 'cosmology' },
     owningSystem: 'Cosmology', writers: [], status: 'dormant',
-    note: 'Never minted; `contextBuilder` reads it by value at two sites. Retires only if those reads repoint at `GameState.cosmology` with their tests green.',
-  }),
-  K({
-    id: 'relationship_node', gameWord: '(relationship node — retired)', ulTerm: 'Graph.md#nodetype', worldRef: null,
-    shape: { kind: 'node', nodeType: 'relationship' },
-    owningSystem: 'Reputation & standing', writers: [], status: 'retired',
-    note: 'A reified pair with readers and no writer; the `relates_to` edge is the one shape. Retires in slice 2 with its two readers repointed.',
+    note: 'Never minted; `contextBuilder` reads it by value at two sites that are dead in a live world (no `aligned_with` edge targets a cosmology node). Kept DORMANT: the repoint at `GameState.cosmology` needs its integration test rewritten, which is its own ticket, not a green-test flip.',
   }),
   K({
     id: 'sublocation_node', gameWord: '(sublocation node — legacy)', ulTerm: 'Graph.md#place', worldRef: 'sublocation',

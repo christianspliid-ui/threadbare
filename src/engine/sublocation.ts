@@ -15,7 +15,7 @@ import type { AxiologicalProfile, ValuePair } from '../types/agent';
 import type { SublocationProperties, SublocationPersistence, DivineOrigin } from '../types/sublocation';
 import { mulberry32 } from '../lib/prng';
 import { generateTavernName } from '../data/tavern-names';
-import { getSublocationNodes } from './sublocationShape';
+import { getPlaceNodes } from './sublocationShape';
 
 /** Sublocation type ID for taverns — used by social encounter generation. */
 export const TAVERN_SUBLOCATION_TYPE_ID = 'sublocation-type.tavern';
@@ -634,7 +634,7 @@ export function checkDissolutions(
 
   // Find all sublocation instance nodes — both mint shapes (THR-1183), so a legacy
   // node out of a saved world is dissolvable rather than immortal.
-  const sublocations = getSublocationNodes(graph);
+  const sublocations = getPlaceNodes(graph);
 
   for (const sublocation of sublocations) {
     const props = sublocation.properties as Partial<SublocationProperties>;

@@ -148,6 +148,7 @@ function seedThreadedArtifact(state: GameState, ascendantId: string, turn: numbe
     type: 'artifact',
     name: 'A Thing Left Behind',
     properties: {
+      attachmentCategory: 'possession',
       effects,
       source: 'beat.spine.thing_left_behind',
       threadedBy: ascendantId,

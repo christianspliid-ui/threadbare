@@ -22,7 +22,7 @@ The full `NodeType` union in `src/types/graph.ts` (15 types — this list is the
 - `actor`
   - `ActorType`: `god`, `ascendant`, `faction`, `culture`, `group`, `individual`, `place_spirit`
 - `location`
-  - **both place tiers**: settlements/wilds AND sublocations. The sublocation tier is one node shape — `type: 'location'` carrying `parentLocationId` (THR-1183). Ask through `src/engine/sublocationShape.ts` (`isSublocationNode` / `getPlaceTierLocations` / `resolveToParentLocation`); a bare `getNodesByType('location')` returns both tiers.
+  - **both place tiers**: settlements/wilds AND sublocations. The sublocation tier is one node shape — `type: 'location'` carrying `parentLocationId` (THR-1183). Ask through `src/engine/sublocationShape.ts` (`isPlaceNode` / `getLocationNodes` / `resolveToParentLocation`); a bare `getNodesByType('location')` returns both tiers.
 - `sublocation`
   - registered by THR-1177 so readers stay legal for saved worlds; **no producer writes it** since THR-1183 — do not mint it
 - `trait`

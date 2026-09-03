@@ -18,7 +18,7 @@ import { describe, it, expect } from 'vitest';
 import { initializeGameState, MAP_SIZE_PRESETS } from '../gameInit';
 import { generateArchetypes } from '../ascendant';
 import { createBalancedCosmology } from '../cosmology';
-import { isPlaceTierLocation, resolveToParentLocation } from '../sublocationShape';
+import { isLocationNode, resolveToParentLocation } from '../sublocationShape';
 import { GENOME_NPC_TOPUP_CAP, GENOME_NPC_PASS_PRIORITY } from '../settlementGenome/constants';
 import type { GenomeResult } from '../settlementGenome/types';
 import { LOCATION_ROLE_ROSTERS } from '../../types/npc';
@@ -56,7 +56,7 @@ function generate(seed: number): WorldGraph {
 function settlementTiers(graph: WorldGraph): Map<string, string> {
   const tiers = new Map<string, string>();
   for (const node of graph.getNodesByType('location')) {
-    if (!isPlaceTierLocation(node)) continue;
+    if (!isLocationNode(node)) continue;
     const tier = node.properties.locationSubtype as string | undefined;
     if (tier && TIER_ROSTER_KEY[tier]) tiers.set(node.id, tier);
   }
