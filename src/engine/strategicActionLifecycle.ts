@@ -58,7 +58,6 @@ import {
   type GraphOpResult,
 } from './strategicGraphOps';
 import { resolveDurableActorLocation } from './tradeRouteOps';
-import { UNDERTAKING_MODEL } from '../data/strategic-action-constants';
 import { resolveUndertakingCompletion } from './undertakingResolver';
 import { cellCompletionProse } from './undertakingProse';
 import { getUndertakingObjectType } from '../data/undertaking-objects';
@@ -1176,13 +1175,15 @@ function executeInstantMutation(
   const poolInvalidatedLocationIds: string[] = [];
   const targetId = candidate.targetNodeId;
 
-  // ── The one resolver (THR-1392), behind the flag ──
+  // ── The one resolver (THR-1392) ──
   // A candidate that names an object acts through its object type's declared verb
   // semantic; the per-template switch below is the template model and is deleted
-  // when the flag flips. With `UNDERTAKING_MODEL === 'templates'` (the default) this
-  // branch is never taken, and nothing the player sees changes.
+  // when the flag flips. `UNDERTAKING_MODEL` gates *enumeration* (which cells the
+  // board walks), not completion: a cell that is running — the review lever starts
+  // one under `templates` to prove it — must resolve as a cell, or the proof
+  // measures nothing (slice 3's live run found exactly that).
   const template = getStrategicTemplate(candidate.templateId);
-  if (UNDERTAKING_MODEL === 'cells' && candidate.objectTypeId && candidate.objectHandle && template?.undertakingVerb) {
+  if (candidate.objectTypeId && candidate.objectHandle && template?.undertakingVerb) {
     const resolution = resolveUndertakingCompletion({
       state, graph,
       actorId: candidate.actorId,

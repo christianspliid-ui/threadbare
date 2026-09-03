@@ -34,6 +34,10 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { getStrategicTemplate } from '../src/engine/strategicActionCandidates';
 import { getAllUndertakingKindRows, getUndertakingKindForTemplate } from '../src/data/undertaking-kinds';
+import { UNDERTAKING_CELL_TEMPLATES } from '../src/data/undertaking-cells';
+import { UNDERTAKING_OBJECT_TYPES } from '../src/data/undertaking-objects';
+import { UNDERTAKING_VERB_VARIANTS } from '../src/data/strategic-action-constants';
+import { FACTORY_STRATEGIC_TEMPLATES } from '../src/data/strategic-packs/factory/index';
 import { undertakingWriteSet } from '../src/data/content-eval/undertakingContract';
 
 const BATCH_SIZE = 6;
@@ -149,6 +153,13 @@ function liveBadge(list: LiveRun[] | undefined): string {
   return list.map(r => `${{ proved: '✅', failed: '❌', vacuous: '⚪' }[r.verdict]} ${r.seed}`).join(' · ');
 }
 function cellOf(templateId: string): { kindId: string; cell: 'C' | 'U' | 'D'; tier: number } | undefined {
+  // A verb × object cell (or a compiled override of one) reports its cell as the
+  // variant and its object type as the kind (THR-1392 slice 3).
+  const asCell = getStrategicTemplate(templateId);
+  if (asCell?.cellVariant && asCell.objectTypeId) {
+    const cell = asCell.cellVariant === 'undo' || asCell.cellVariant === 'control:seize' ? 'D' : asCell.cellVariant === 'found' ? 'C' : 'U';
+    return { kindId: `${asCell.cellVariant} × ${asCell.objectTypeId}`, cell, tier: 2 };
+  }
   const kindId = getUndertakingKindForTemplate(templateId);
   const row = rows.find(r => r.kindId === kindId);
   if (!row) return undefined;
@@ -199,6 +210,25 @@ const cells = ids.map(id => cellOf(id)?.cell).filter(Boolean);
 const onlyC = cells.length > 0 && cells.every(c => c === 'C');
 lines.push('');
 if (onlyC) lines.push('> ⚠️ **This batch fills only C cells** — REVISE trigger 1. Rejected on sight.');
+lines.push('');
+
+// ── Grid coverage — verbs × objects (THR-1392 slice 3) ──
+lines.push('## Grid coverage — verbs × objects');
+lines.push('');
+lines.push('Each cell the registry can complete, with the compiled overrides it carries; `+n` marks this batch. A dash is a verb the object type declares no semantic for — a slice-2 decision, never a gap to fill with prose.');
+lines.push('');
+lines.push(`| Object | ${UNDERTAKING_VERB_VARIANTS.join(' | ')} |`);
+lines.push(`|---|${UNDERTAKING_VERB_VARIANTS.map(() => '---').join('|')}|`);
+for (const type of UNDERTAKING_OBJECT_TYPES) {
+  const row = UNDERTAKING_VERB_VARIANTS.map(variant => {
+    const cell = UNDERTAKING_CELL_TEMPLATES.find(c => c.objectTypeId === type.id && c.cellVariant === variant);
+    if (!cell) return '—';
+    const overrides = FACTORY_STRATEGIC_TEMPLATES.filter(t => t.baseCellId === cell.id);
+    const added = [cell, ...overrides].filter(t => batch.has(t.id)).length;
+    return `${1 + overrides.length}${added ? ` (+${added})` : ''}`;
+  });
+  lines.push(`| \`${type.id}\` | ${row.join(' | ')} |`);
+}
 lines.push('');
 
 // ── Spread ──

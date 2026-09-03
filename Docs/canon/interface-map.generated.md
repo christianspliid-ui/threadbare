@@ -20,8 +20,8 @@ remediation ticket or the build fails.
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
-| 🔵 UNVERIFIED-OK | 19 |
-| **Total** | **99** |
+| 🔵 UNVERIFIED-OK | 20 |
+| **Total** | **100** |
 
 ## Contracts by producing subsystem
 
@@ -52,6 +52,7 @@ remediation ticket or the build fails.
 | `one-namer-shared-primitives` | There is one rule for how an id becomes a seed and one rule for English possessives. `naming/workNames.ts` owns both; every other namer imports them rather than minting its own. | module-export: `possessive`, `hashSeed`, `pickFrom`, `generateWorkName` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 | `t1-undertaking-objects-feed-existing-economies` | A tier-1 undertaking's product is written into an economy that already has consumers — never into a private score only the producing system reads. | edge-prop: `knows_clue_of`, `knows_secret_of`, `owes_favor`, `consumeOnEvent`, `possesses` | Attachments, Items & Possessions | 🟢 LIVE | — |
 | `undertaking-creation-effects` | A long work now puts things into the world as it runs rather than only at completion: an advancing checkpoint builds what the step earned, an at-cost one builds the cost besides, and a critical failure builds the disaster. A person the work must keep is born through the mint valve; a face that exists for one scene is written by the encounter support bundle’s own walk-on writer, which this contract shares rather than copies. Routing every spawn through the valve would spend the one-per-tick birth budget on faces; copying the node shape instead is how the two writers drift. | function: `materializeWalkOnActor`, `applyCreationEffects`, `selectCreationBand` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | THR-1297 |
+| `undertaking-object-types` | An undertaking is a verb acted on an object the world already has. Each object type registers once — its graph shape, the edges that say who holds one, its tier source, its harm class, and what each verb does to it, which is the graph op its owning system already had — and the one resolver dispatches every cell completion through that registry, naming the object on the world-change trace. A verb a type does not declare is refused and traced unreachable, never faked: the grammar does not write the consequences, and a cell nobody can complete is a measurement rather than a silent hole (THR-1392). | function: `UNDERTAKING_OBJECT_TYPES`, `resolveUndertakingCompletion`, `resolveObjectOwners`, `undertaking_cell_unreachable` | Strategic Projects & Control | 🔵 UNVERIFIED-OK | THR-1392 |
 
 ### Ascendant Beats & Progression
 
@@ -1279,6 +1280,17 @@ exit
 - **Write sites:** `src/engine/binding/creationEffects.ts`, `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/engine/encounterSupportBundle.ts`
 - **Other hits:** `src/engine/binding/applyBinding.ts`
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
+### `undertaking-object-types` — 🔵 UNVERIFIED-OK
+
+- **Intent:** An undertaking is a verb acted on an object the world already has. Each object type registers once — its graph shape, the edges that say who holds one, its tier source, its harm class, and what each verb does to it, which is the graph op its owning system already had — and the one resolver dispatches every cell completion through that registry, naming the object on the world-change trace. A verb a type does not declare is refused and traced unreachable, never faked: the grammar does not write the consequences, and a cell nobody can complete is a measurement rather than a silent hole (THR-1392).
+- **Producer → Consumer:** Ambitions & Undertakings → Strategic Projects & Control
+- **Module:** `src/data/undertaking-objects.ts`
+- **Production hits:** 9 total — 2 write, 4 read, 3 unclassified
+- **Write sites:** `src/data/undertaking-cells.ts`, `src/data/undertaking-objects.ts`
+- **Read sites:** `src/engine/strategicActionCandidates.ts`, `src/engine/strategicActionLifecycle.ts`, `src/engine/undertakingMotive.ts`, `src/engine/undertakingResolver.ts`
+- **Other hits:** `src/engine/undertakingProse.ts`, `src/types/strategicAction.ts`, `src/types/trace.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `undertaking-remote-anchor` — 🔵 UNVERIFIED-OK

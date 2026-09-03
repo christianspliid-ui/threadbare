@@ -106,6 +106,12 @@ export interface StrategicActionTemplate {
   readonly objectTypeId?: UndertakingObjectTypeId;
   /** The variant a synthesised cell is (`control` splits into claim and seize cells). */
   readonly cellVariant?: UndertakingVerbVariant;
+  /**
+   * The cell a compiled override was derived from (THR-1392 slice 3) — what
+   * `CELL_OVERRIDE_MAX_PER_CELL` counts. Absent on the cell itself and on every
+   * authored template.
+   */
+  readonly baseCellId?: string;
   readonly executionMode: StrategicExecutionMode;
   readonly behaviorFamily: BehaviorFamily;
 

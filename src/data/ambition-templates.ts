@@ -456,6 +456,7 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
       // `cells` model, ahead of `templateIds` (cells lead so the per-ambition cap
       // cannot starve them). Ignored while `UNDERTAKING_MODEL` is `templates`.
       cells: [
+        'cell.control_claim.settlement',
         'cell.control_claim.room',
         'cell.control_seize.room',
         'cell.undo.faction',
@@ -1073,6 +1074,7 @@ export const GRIEVANCE_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
       // `cells` model, ahead of `templateIds` (cells lead so the per-ambition cap
       // cannot starve them). Ignored while `UNDERTAKING_MODEL` is `templates`.
       cells: [
+        'cell.control_claim.settlement',
         'cell.control_seize.settlement',
         'cell.control_claim.room',
         'cell.found.settlement',

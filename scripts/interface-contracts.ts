@@ -2440,6 +2440,37 @@ export const CONTRACTS: readonly Contract[] = [
     deferralTicket: 'THR-1297',
   },
   {
+    id: 'undertaking-object-types',
+    producerSystem: 'Ambitions & Undertakings',
+    consumerSystem: 'Strategic Projects & Control',
+    intent:
+      'An undertaking is a verb acted on an object the world already has. Each object type registers once — its graph shape, the edges that say who holds one, its tier source, its harm class, and what each verb does to it, which is the graph op its owning system already had — and the one resolver dispatches every cell completion through that registry, naming the object on the world-change trace. A verb a type does not declare is refused and traced unreachable, never faked: the grammar does not write the consequences, and a cell nobody can complete is a measurement rather than a silent hole (THR-1392).',
+    // Keyed on the registry and the resolver together: the registry is what crosses
+    // the boundary (an object system declares its verbs there), the resolver is the
+    // one reader that turns a declaration into a world change.
+    mechanism: {
+      kind: 'function',
+      symbols: ['UNDERTAKING_OBJECT_TYPES', 'resolveUndertakingCompletion', 'resolveObjectOwners', 'undertaking_cell_unreachable'],
+      module: 'src/data/undertaking-objects.ts',
+    },
+    writeSites: [
+      'src/data/undertaking-objects.ts',
+      'src/data/undertaking-cells.ts',
+    ],
+    readSites: [
+      'src/engine/undertakingResolver.ts',
+      'src/engine/undertakingMotive.ts',
+      'src/engine/strategicActionCandidates.ts',
+      'src/engine/strategicActionLifecycle.ts',
+    ],
+    // UNVERIFIED-OK rather than LIVE: the registry, the resolver, the cells and the
+    // walk are wired and tested end to end, and the live proof completes a cell on a
+    // seeded world — but `UNDERTAKING_MODEL` stays on `templates` until the census
+    // passes on cells (slice 4), so no cell travels a path the simulation takes by
+    // itself today. The flip is what turns this badge green.
+    deferralTicket: 'THR-1392',
+  },
+  {
     id: 'factory-pack-registry',
     producerSystem: 'Ambitions & Undertakings',
     consumerSystem: 'Strategic Projects & Control',

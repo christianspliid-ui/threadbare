@@ -21,7 +21,10 @@
  * from then on: a configurator, not a build step.
  */
 
-import type { StrategicActionTemplate, UndertakingKindId } from '../../types/strategicAction';
+import type { StrategicActionTemplate, UndertakingKindId, UndertakingObjectTypeId, UndertakingVerbVariant } from '../../types/strategicAction';
+import { applyCellOverride, cellTemplateId, getCellTemplate, type UndertakingCellOverride } from '../undertaking-cells';
+import { CELL_OVERRIDE_MAX_PER_CELL } from '../strategic-action-constants';
+import { FACTORY_STRATEGIC_TEMPLATES } from '../strategic-packs/factory/index';
 import {
   AMBITION_TEMPLATES,
   EVENT_MINTED_AMBITION_TEMPLATES,
@@ -32,7 +35,7 @@ import { printTsString } from './encounterPackage';
 
 // ─── Shape ────────────────────────────────────────────────────────
 
-export const UNDERTAKING_PACKAGE_TOP_LEVEL_KEYS = ['slug', 'template', 'kind', 'profiles', 'docComment'] as const;
+export const UNDERTAKING_PACKAGE_TOP_LEVEL_KEYS = ['slug', 'template', 'kind', 'profiles', 'docComment', 'cell', 'override'] as const;
 
 export const KIND_ROWS_FILE_RELPATH = 'src/data/undertaking-kinds.ts';
 export const AMBITION_TEMPLATES_FILE_RELPATH = 'src/data/ambition-templates.ts';
@@ -57,12 +60,25 @@ export interface UndertakingPackageKind {
   };
 }
 
+/**
+ * A cell package (THR-1392 slice 3): an authored override on a derived cell instead
+ * of a whole template. `template` and `kind` are absent — the cell supplies both —
+ * and `profiles` registers the override in each ambition's `cells`.
+ */
+export interface UndertakingCellPackageSpec {
+  readonly variant: UndertakingVerbVariant;
+  readonly objectTypeId: UndertakingObjectTypeId;
+}
+
 export interface UndertakingContentPackage {
   /** kebab-case; names the files. */
   readonly slug: string;
   /** The real type. Prose verbatim. */
-  readonly template: StrategicActionTemplate;
-  readonly kind: UndertakingPackageKind;
+  readonly template?: StrategicActionTemplate;
+  readonly kind?: UndertakingPackageKind;
+  /** Present on a cell package; `template` and `kind` are then derived. */
+  readonly cell?: UndertakingCellPackageSpec;
+  readonly override?: UndertakingCellOverride;
   /** Ambition template ids whose `strategicProfile.templateIds` gain this id. */
   readonly profiles: readonly string[];
   /** Optional file header lines. */
@@ -96,7 +112,52 @@ export function knownAmbitionIds(): ReadonlySet<string> {
  * business (`check:undertaking` runs after compile); these are the ones that would
  * make registration itself wrong.
  */
+/** Whether the package is a cell package. */
+export function isCellPackage(pkg: UndertakingContentPackage): boolean {
+  return pkg.cell !== undefined;
+}
+
+/** The base cell id a cell package overrides. */
+export function packageCellId(pkg: UndertakingContentPackage): string | undefined {
+  return pkg.cell ? cellTemplateId(pkg.cell.variant, pkg.cell.objectTypeId) : undefined;
+}
+
+/**
+ * The template a package stands for: its own, or the cell with the override applied.
+ * Returns undefined when a cell package names a cell that does not exist.
+ */
+export function resolvePackageTemplate(pkg: UndertakingContentPackage): StrategicActionTemplate | undefined {
+  if (pkg.cell) {
+    const cellId = packageCellId(pkg)!;
+    if (!getCellTemplate(cellId)) return undefined;
+    return applyCellOverride(cellId, pkg.slug, pkg.override ?? {});
+  }
+  return pkg.template;
+}
+
+/** How many compiled overrides a cell already carries in the factory aggregate. */
+export function compiledOverrideCount(cellId: string, factory: readonly StrategicActionTemplate[] = FACTORY_STRATEGIC_TEMPLATES): number {
+  return factory.filter(t => t.baseCellId === cellId).length;
+}
+
 export function undertakingPackageViolations(pkg: UndertakingContentPackage): readonly string[] {
+  if (pkg.cell) {
+    const v: string[] = [];
+    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(pkg.slug ?? '')) v.push(`slug '${pkg.slug}' is not kebab-case`);
+    const cellId = packageCellId(pkg)!;
+    if (!getCellTemplate(cellId)) v.push(`cell '${cellId}' does not exist — the object type declares no '${pkg.cell.variant}' semantic`);
+    if (pkg.template) v.push('a cell package carries no template — the cell supplies it');
+    if (pkg.kind) v.push('a cell package carries no kind — the object type supplies it');
+    const legalOverride = ['displayName', 'activityProse', 'completionProse', 'cast', 'creationEffects', 'executionMode', 'projectDuration', 'catalystEncounterIds', 'reachProfile'];
+    for (const k of Object.keys(pkg.override ?? {})) if (!legalOverride.includes(k)) v.push(`override names '${k}', which is not an override a cell accepts (${legalOverride.join(', ')})`);
+    if (getCellTemplate(cellId) && compiledOverrideCount(cellId) >= CELL_OVERRIDE_MAX_PER_CELL) {
+      v.push(`cell '${cellId}' already carries ${CELL_OVERRIDE_MAX_PER_CELL} compiled overrides (CELL_OVERRIDE_MAX_PER_CELL) — one more is a pack again`);
+    }
+    if (!Array.isArray(pkg.profiles) || pkg.profiles.length === 0) v.push('profiles is empty — the override would be unreachable (no ambition names it)');
+    const known = knownAmbitionIds();
+    for (const id of pkg.profiles ?? []) if (!known.has(id)) v.push(`profiles names '${id}', which is not an ambition template`);
+    return v;
+  }
   const v: string[] = [];
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(pkg.slug ?? '')) v.push(`slug '${pkg.slug}' is not kebab-case`);
   const t = pkg.template;
@@ -105,7 +166,7 @@ export function undertakingPackageViolations(pkg: UndertakingContentPackage): re
   if (t.id !== `strategic_${(pkg.slug ?? '').replace(/-/g, '_')}`) v.push(`template.id '${t.id}' does not match the slug (expected 'strategic_${(pkg.slug ?? '').replace(/-/g, '_')}')`);
   if (!pkg.kind?.kindId) v.push('kind.kindId is missing');
   const legal = ROLE_FOR_VERB[t.verb] ?? [];
-  if (!legal.includes(pkg.kind?.role)) v.push(`kind.role '${pkg.kind?.role}' is not legal for verb '${t.verb}' (expected ${legal.join(' | ') || 'none'})`);
+  if (!pkg.kind?.role || !legal.includes(pkg.kind.role)) v.push(`kind.role '${pkg.kind?.role}' is not legal for verb '${t.verb}' (expected ${legal.join(' | ') || 'none'})`);
   const rows = getAllUndertakingKindRows();
   const row = rows.find(r => r.kindId === pkg.kind?.kindId);
   if (!row) {
@@ -156,20 +217,77 @@ function printValue(value: unknown, indent: string): string {
 
 export function emitUndertakingModule(pkg: UndertakingContentPackage): string {
   const constName = deriveUndertakingConstName(pkg.slug);
+  const template = resolvePackageTemplate(pkg);
+  if (!template) throw new Error(`emitUndertakingModule: package '${pkg.slug}' resolves to no template`);
   const docLines = pkg.docComment?.length
     ? pkg.docComment
-    : [`${pkg.template.displayName} — compiled from its content package by compile:undertaking (THR-1300).`];
+    : [`${template.displayName} — compiled from its content package by compile:undertaking (${pkg.cell ? 'THR-1392' : 'THR-1300'}).`];
   const doc = ['/**', ...docLines.map(l => ` * ${l.replace(/\*\//g, '*\\/')}`), ' */'].join('\n');
+  if (pkg.cell) {
+    // A cell override is emitted as the call, not the flattened template: the cell's
+    // tables and rule stay the registry's, so a later retune of the verb tables
+    // reaches every compiled override without recompiling it.
+    return `${doc}
+import type { StrategicActionTemplate } from '../../../types/strategicAction';
+import { applyCellOverride } from '../../undertaking-cells';
+
+export const ${constName}: StrategicActionTemplate = applyCellOverride(
+  ${JSON.stringify(packageCellId(pkg))},
+  ${JSON.stringify(pkg.slug)},
+  ${printValue(pkg.override ?? {}, '')},
+);
+`;
+  }
   return `${doc}
 import type { StrategicActionTemplate } from '../../../types/strategicAction';
 
-export const ${constName}: StrategicActionTemplate = ${printValue(pkg.template, '')};
+export const ${constName}: StrategicActionTemplate = ${printValue(template, '')};
 `;
 }
 
 export function emitUndertakingTest(pkg: UndertakingContentPackage): string {
   const constName = deriveUndertakingConstName(pkg.slug);
-  const t = pkg.template;
+  const t = resolvePackageTemplate(pkg)!;
+  if (pkg.cell) {
+    return `/**
+ * ${t.displayName} — structural pins baked from its cell package by
+ * compile:undertaking (THR-1392). The contract and the live proof own quality;
+ * this file owns the shape: the override applies to its cell, the prose round-trips
+ * byte-identically, and the two registrations (factory aggregate, ambition cells)
+ * hold.
+ */
+import { describe, it, expect } from 'vitest';
+import { ${constName} } from '../${pkg.slug}';
+import { FACTORY_STRATEGIC_TEMPLATES } from '../index';
+import { getStrategicTemplate } from '../../../../engine/strategicActionCandidates';
+import { AMBITION_TEMPLATES, EVENT_MINTED_AMBITION_TEMPLATES, GRIEVANCE_AMBITION_TEMPLATES } from '../../../ambition-templates';
+
+describe('${t.id} (compiled cell override)', () => {
+  it('is its cell with the override applied, prose verbatim', () => {
+    expect(${constName}.id).toBe(${JSON.stringify(t.id)});
+    expect(${constName}.baseCellId).toBe(${JSON.stringify(packageCellId(pkg))});
+    expect(${constName}.cellVariant).toBe(${JSON.stringify(t.cellVariant)});
+    expect(${constName}.objectTypeId).toBe(${JSON.stringify(t.objectTypeId)});
+    expect(${constName}.displayName).toBe(${JSON.stringify(t.displayName)});
+    expect(${constName}.activityProse).toEqual(${JSON.stringify(t.activityProse)});
+    expect(${constName}.completionProse).toEqual(${JSON.stringify(t.completionProse)});
+  });
+
+  it('is registered in the factory aggregate and the template registry', () => {
+    expect(FACTORY_STRATEGIC_TEMPLATES.some(x => x.id === ${constName}.id)).toBe(true);
+    expect(getStrategicTemplate(${constName}.id)?.id).toBe(${constName}.id);
+  });
+
+  it('is reachable through every profile the package named, in its cells', () => {
+    const all = [...AMBITION_TEMPLATES, ...EVENT_MINTED_AMBITION_TEMPLATES, ...GRIEVANCE_AMBITION_TEMPLATES];
+    for (const ambitionId of ${JSON.stringify(pkg.profiles)}) {
+      const ambition = all.find(a => a.id === ambitionId);
+      expect(ambition?.strategicProfile?.cells, ambitionId).toContain(${constName}.id);
+    }
+  });
+});
+`;
+  }
   return `/**
  * ${t.displayName} — structural pins baked from its content package by
  * compile:undertaking (THR-1300). The contract and the live proof own quality;
@@ -198,10 +316,10 @@ describe('${t.id} (compiled)', () => {
     expect(getStrategicTemplate(${constName}.id)?.id).toBe(${constName}.id);
   });
 
-  it('sits in the ${pkg.kind.role} column of its kind row', () => {
-    expect(getUndertakingKindForTemplate(${constName}.id)).toBe(${JSON.stringify(pkg.kind.kindId)});
-    const row = getUndertakingKindRow(${JSON.stringify(pkg.kind.kindId)})!;
-    expect(row.${pkg.kind.role}TemplateIds).toContain(${constName}.id);
+  it('sits in the ${pkg.kind!.role} column of its kind row', () => {
+    expect(getUndertakingKindForTemplate(${constName}.id)).toBe(${JSON.stringify(pkg.kind!.kindId)});
+    const row = getUndertakingKindRow(${JSON.stringify(pkg.kind!.kindId)})!;
+    expect(row.${pkg.kind!.role}TemplateIds).toContain(${constName}.id);
   });
 
   it('is reachable through every profile the package named', () => {
@@ -277,6 +395,8 @@ function insertIntoStringArray(source: string, arrayStartAt: number, id: string,
  * refused — the registry's rule, honoured by the tool that writes rows.
  */
 export function registerInKindRows(source: string, pkg: UndertakingContentPackage): SourceEdit {
+  // A cell has no row; the object type is its membership (THR-1392 slice 3).
+  if (pkg.cell || !pkg.kind) return { source, changed: false };
   const { kindId, role } = pkg.kind;
   const column = `${role}TemplateIds`;
   const rowAt = source.indexOf(`kindId: '${kindId}'`);
@@ -293,7 +413,7 @@ export function registerInKindRows(source: string, pkg: UndertakingContentPackag
     if (closeAt === -1) throw new Error(`${KIND_ROWS_FILE_RELPATH}: registry has no closing '];'`);
     const rowText = [
       '',
-      `  // ── Opened by the undertaking factory (THR-1300): first destroy \`${pkg.template.id}\` ──`,
+      `  // ── Opened by the undertaking factory (THR-1300): first destroy \`${pkg.template!.id}\` ──`,
       '  {',
       `    kindId: '${kindId}',`,
       `    tier: ${spec.tier},`,
@@ -302,7 +422,7 @@ export function registerInKindRows(source: string, pkg: UndertakingContentPackag
       `    ownable: ${spec.ownable},`,
       '    createTemplateIds: [],',
       '    updateTemplateIds: [],',
-      `    destroyTemplateIds: ['${pkg.template.id}'],`,
+      `    destroyTemplateIds: ['${pkg.template!.id}'],`,
       `    lexicon: '${spec.lexicon}',`,
       '  },',
     ].join('\n');
@@ -313,7 +433,7 @@ export function registerInKindRows(source: string, pkg: UndertakingContentPackag
   if (columnAt === -1 || (rowEnd !== -1 && columnAt > rowEnd)) {
     throw new Error(`${KIND_ROWS_FILE_RELPATH}: row '${kindId}' has no '${column}' — register by hand`);
   }
-  return insertIntoStringArray(source, columnAt, pkg.template.id, KIND_ROWS_FILE_RELPATH, `${kindId}.${column}`);
+  return insertIntoStringArray(source, columnAt, pkg.template!.id, KIND_ROWS_FILE_RELPATH, `${kindId}.${column}`);
 }
 
 /** Append the template id to each named ambition's `strategicProfile.templateIds`, idempotently. */
@@ -330,7 +450,23 @@ export function registerInProfiles(source: string, pkg: UndertakingContentPackag
     }
     const idsAt = out.indexOf('templateIds:', profileAt);
     if (idsAt === -1) throw new Error(`${AMBITION_TEMPLATES_FILE_RELPATH}: ambition '${ambitionId}' profile has no templateIds`);
-    const edit = insertIntoStringArray(out, idsAt, pkg.template.id, AMBITION_TEMPLATES_FILE_RELPATH, `${ambitionId}.templateIds`);
+    const templateId = resolvePackageTemplate(pkg)!.id;
+    if (pkg.cell) {
+      // A cell override registers in the profile's `cells` list (THR-1392 slice 3),
+      // opened just above `templateIds` when the profile has none yet.
+      let cellsAt = out.indexOf('cells:', profileAt);
+      if (cellsAt === -1 || cellsAt > idsAt) {
+        const lineStart = out.lastIndexOf('\n', idsAt) + 1;
+        const indent = out.slice(lineStart, idsAt);
+        out = `${out.slice(0, lineStart)}${indent}cells: [],\n${out.slice(lineStart)}`;
+        cellsAt = out.indexOf('cells:', profileAt);
+      }
+      const edit = insertIntoStringArray(out, cellsAt, templateId, AMBITION_TEMPLATES_FILE_RELPATH, `${ambitionId}.cells`);
+      out = edit.source;
+      changed = changed || edit.changed;
+      continue;
+    }
+    const edit = insertIntoStringArray(out, idsAt, templateId, AMBITION_TEMPLATES_FILE_RELPATH, `${ambitionId}.templateIds`);
     out = edit.source;
     changed = changed || edit.changed;
   }

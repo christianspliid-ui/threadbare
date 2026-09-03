@@ -2339,6 +2339,8 @@ export interface StrategicWorldChangeTrace extends TraceBase {
   undertakingVerb?: UndertakingVerbVariant;
   objectTypeId?: UndertakingObjectTypeId;
   objectId?: string;
+  /** Whether the cell's semantic reported success (the live proof's `mutation_object` reads it). */
+  succeeded?: boolean;
   graphOps: string[];
   catalystSeeded: boolean;
   affectedNodeIds: string[];
