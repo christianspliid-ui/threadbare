@@ -761,10 +761,10 @@ exit
 
 - **Intent:** The four granted economic verbs (bless_harvest, blight, open_markets, reveal_vein) get a visible story response — player-loop link 4.
 - **Producer → Consumer:** Mortal Economy & Prosperity → Encounters & Dilemmas
-- **Production hits:** 70 total — 1 write, 1 read, 68 unclassified
+- **Production hits:** 71 total — 1 write, 1 read, 69 unclassified
 - **Write sites:** `src/data/unified-action-templates.ts`
 - **Read sites:** `src/engine/economicContext.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DecisionBreakdown.tsx`, `src/components/Game/LocationProfileModal.tsx` +63 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DecisionBreakdown.tsx`, `src/components/Game/LocationProfileModal.tsx` +64 more
 - **Verdict:** Verified 2026-07-23: THR-725: end-to-end in the CLI (seed 42, medium) — applied `loc.blight`'s -10 prosperity write to Thornhaven at tick 20; tick 21 emitted `econ_shock_seeded` (bust, -10.0) planting `encounter.debt_collection` and `encounter.aid_refugees`; by tick 27 both had matured into live scenes on the seeded agents. The verb now produces story, not just a number.
 
 ### `effect-executor-overlay-persistence` — 🟢 LIVE
@@ -839,10 +839,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Attention, Chronicle & Narrative
 - **UL terms:** *Ambition*
 - **Module:** `src/engine/agentDetail.ts`
-- **Production hits:** 69 total — 2 write, 3 read, 64 unclassified
+- **Production hits:** 71 total — 2 write, 3 read, 66 unclassified
 - **Write sites:** `src/engine/ambitionTick.ts`, `src/engine/grievance/grievanceLifecycle.ts`
 - **Read sites:** `src/components/Game/IntentSection.tsx`, `src/debug-bridge.ts`, `src/engine/agentDetail.ts`
-- **Other hits:** `src/components/CMS/undertaking-package/UndertakingPackageViewer.tsx`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts`, `src/components/Game/FactionSheet.tsx`, `src/components/Game/momentCardModel.ts`, `src/components/shared/EntityLink.tsx` +59 more
+- **Other hits:** `src/components/CMS/undertaking-package/UndertakingPackageViewer.tsx`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts`, `src/components/Game/FactionSheet.tsx`, `src/components/Game/momentCardModel.ts`, `src/components/shared/EntityLink.tsx` +61 more
 - **Verdict:** Verified 2026-09-02: Constructed proof against the real pipeline (seed 42, medium): `createUndertakingOutcomeNode` wrote evt_und_proof_60 (property_destroyed, culprit ind_0 "Oswen", victim agent_mc_cmdr_1), the tick-75 mint pass wrote the `pursues` edge {grievance:true, culpritAgentId:"ind_0", harmMagnitude:0.8, heat:0.8, mintedByLabel:"the razing of Wilderness (13, 6) — Oswen's work"}, and `getAgentInfoCard` rendered it as `Seek Revenge -> burning · against Oswen, after the razing of Wilderness (13, 6) — Oswen's work`. Locked by src/engine/__tests__/agentDetail-grievance.test.ts and src/components/Game/__tests__/grievance-surfaces.test.tsx, each guard falsified by a reverted mutation.
 
 ### `group-grudge-reaches-the-mortal-sheet` — 🟢 LIVE
@@ -875,10 +875,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Attachments, Items & Possessions
 - **UL terms:** *Attachment*, *Undertaking*
 - **Module:** `src/engine/holdings.ts`
-- **Production hits:** 112 total — 3 write, 7 read, 102 unclassified
+- **Production hits:** 113 total — 3 write, 7 read, 103 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`, `src/engine/graphOpExecutor.ts`, `src/engine/holdings.ts`
 - **Read sites:** `src/engine/effects/effectPredicates.ts`, `src/engine/graphConditions.ts`, `src/engine/graphQueries.ts`, `src/engine/notableAgendas.ts`, `src/engine/orchestrator.ts` +2 more
-- **Other hits:** `src/components/Game/attachmentGlyphs.ts`, `src/components/Game/encounter-stage/adapters/buildAftermathConsequences.ts`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts`, `src/components/Game/encounter-stage/nudgeCommit.ts`, `src/components/Game/encounterHandoff.ts` +97 more
+- **Other hits:** `src/components/Game/attachmentGlyphs.ts`, `src/components/Game/encounter-stage/adapters/buildAftermathConsequences.ts`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts`, `src/components/Game/encounter-stage/nudgeCommit.ts`, `src/components/Game/encounterHandoff.ts` +98 more
 - **Verdict:** Verified 2026-08-27: THR-1297 slice 3. `owns` ships as a NEW edge beside `controls` rather than a reuse, on the inventory's measured ground: exactly one of ~30 production `controls` read sites discriminates by any property (`releaseControl`'s `controlType === 'strategic'` filter), `influence` is write-only, and reuse would have broken seven faction-territory consumers outright plus five `[0]?.source` sites that would have become nondeterministic (NFP #3) — including `battleAftermath`'s power vacuum, which would have deleted an agent's holdings on a razing. Both un-flagged agent writers migrated: `encounterAftermath`'s `spawn_unique_location` (`via: 'creation'`) and the two authored `add_edge` templates `action.iron.conquer` / `action.shadow.establish-network`, the latter routed through `grantHolding` from inside `executeAddEdge` so content-authored ownership obeys the single writer too — a raw `addEdge` there would have produced an `owns` edge violating its own `requiredProperties` and carrying no bearer-side face at all. Seize is one atomic call built on a new `WorldGraph.retargetEdgeSource`, because `updateEdge` rewrites the edge record without touching the `outgoing`/`incoming` adjacency maps and would have silently orphaned the edge (~30 existing `updateEdge` callers all pass `properties` only, so nothing depended on that). Non-vacuous by `src/engine/__tests__/holdings.test.ts` (18 tests) and `holdingsIntegration.test.ts` (9): the atomicity test wraps every graph mutator and asserts the place is never ownerless and never faceless at ANY observed instant, not just at the endpoints — falsified 2-of-18 red by replacing the atomic body with a release-then-grant, which is exactly the implementation the plan's kill criterion forbids and which the first draft of this module actually had. Home-ground scoring on your own holding ships as the handoff specified (Christian's veto invited, not exercised), paired with its negative: a non-owner in the same place gets no bonus, and an owner's title now overrides a hostile faction verdict on the same hex — the gap where an owner read as an enemy on their own land. Full suite 18601 green; 30-tick seed-42 smoke reached tick 30.
 
 ### `hunger-resonance-weighs-the-meeting-deal` — 🟢 LIVE
@@ -1057,10 +1057,10 @@ exit
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 260 total — 1 write, 1 read, 258 unclassified
+- **Production hits:** 261 total — 1 write, 1 read, 259 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +253 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +254 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `relocation-intent-steers-agent-movement` — 🔵 UNVERIFIED-OK
@@ -1217,10 +1217,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Attachments, Items & Possessions
 - **UL terms:** *Undertaking*
 - **Module:** `src/engine/strategicGraphOps.ts`
-- **Production hits:** 92 total — 2 write, 4 read, 86 unclassified
+- **Production hits:** 94 total — 2 write, 4 read, 88 unclassified
 - **Write sites:** `src/engine/strategicActionLifecycle.ts`, `src/engine/strategicGraphOps.ts`
 - **Read sites:** `src/engine/agentAttachments.ts`, `src/engine/ruins/clueLifecycle.ts`, `src/engine/socialLeverage.ts`, `src/engine/treasureMapConsumption.ts`
-- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/adapters/buildUnifiedEncounterStageModel.ts`, `src/data/action-technical-effects.ts` +81 more
+- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/adapters/buildUnifiedEncounterStageModel.ts`, `src/data/action-technical-effects.ts` +83 more
 - **Verdict:** Verified 2026-08-27: THR-1297 slice 5. Six ops carry the five T1 kinds' objects, and each writes a shape an existing system consumes rather than a property only the producer reads. `mintLeverageMark` is a dedicated op rather than a `create_relation_edge` call precisely because that primitive stamps only `establishedTick` while `knows_secret_of` declares five required properties — a mark routed through the generic maker would warn on the schema every time and arrive without the fields the economy presses. Proven live on seed 99 at 150 ticks, the whole arc organically: cultivate 8 completed → 5 marks minted → press 7 completed → 6 `owes_favor` debts → burn 7; plus 4 treasure maps and 2 clues from the chart arc and 18 cache exposures. Non-vacuous by `src/engine/__tests__/undertakingT1Kinds.test.ts` (21 tests), which asserts every property each edge's schema row declares required rather than merely that an edge appeared — falsified 2-of-19 red by dropping `revealed` from the mark and by stubbing `pressTheMark`'s no-mark guard, and 1-of-21 by restoring a non-canonical `subcategory`. **Two findings recorded on the row because they are the reason it is worded around destinations.** Both artifact writers first shipped `subcategory: 'tool'` with a string `tier`; neither value exists (`PossessionSubcategory` has seven members, `AttachmentTier` is numeric 1–4), nothing threw, and `getAttachmentArtUrl` simply returned `null` forever — the items would have rendered as blank plates on every possession surface, and the seeded-world coverage test caught it only because that world happened to mint a chart and no masterwork. And `press_the_mark` completed 3 times against 3 strangers minting 0 debts, because its target rule selected on role while its resolution required a held mark: selection and resolution disagreeing silently, fixed by a `withEdgeFromActor` filter on the target rule. Full suite 18713 green; ratchet 2973 unchanged; build 10.44s; 30-tick seed-42 smoke reached tick 30, 377 agents.
 
 ### `trait-predicate-resolution` — 🟢 LIVE
@@ -1286,10 +1286,10 @@ exit
 - **Intent:** A work done *through* others — a garrison established, supply lines raided — must reach the site through something its owner actually commands, and is not offered at all when nothing is there. Refusing at proposal is the `no_eligible_apprentice` doctrine: an undertaking nobody can foot is not a decision, and starting one only to stall it teaches the player their armies are decorative. The winning anchor joins the cast as `$anchor` must-persist, so severing an army is a named complication for everything it was footing.
 - **Producer → Consumer:** War, Armies & Battles → Ambitions & Undertakings
 - **Module:** `src/engine/binding/remoteAnchor.ts`
-- **Production hits:** 25 total — 1 write, 2 read, 22 unclassified
+- **Production hits:** 26 total — 1 write, 2 read, 23 unclassified
 - **Write sites:** `src/engine/armySpawning.ts`
 - **Read sites:** `src/engine/binding/remoteAnchor.ts`, `src/engine/strategicActionCandidates.ts`
-- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/GameView.tsx`, `src/data/battle-spotlight-content.ts`, `src/data/strategic-packs/warlordStrategicPack.ts`, `src/data/undertaking-kinds.ts` +17 more
+- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/GameView.tsx`, `src/data/battle-spotlight-content.ts`, `src/data/strategic-packs/warlordStrategicPack.ts`, `src/data/undertaking-kinds.ts` +18 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `undertow-card-drifts-mortal-values` — 🔴 LEAKED

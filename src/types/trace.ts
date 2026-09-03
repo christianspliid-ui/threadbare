@@ -37,7 +37,12 @@ import type {
 } from './attention';
 import type { CourtPosition } from './influence';
 import type { BeatKind, BeatTrigger } from './ascendantBeat';
-import type { BehaviorFamily, DecisionFamily, StrategicVerb, StrategicExecutionMode, UndertakingHarmClass, UndertakingMomentClass } from './strategicAction';
+import type {
+  BehaviorFamily, DecisionFamily, StrategicVerb, StrategicExecutionMode, UndertakingHarmClass, UndertakingMomentClass,
+  UndertakingVerb,
+  UndertakingVerbVariant,
+  UndertakingObjectTypeId,
+} from './strategicAction';
 import type { ComplicationSeverity } from './complication';
 import type { SyllableTemplate } from './culture';
 import type { ReliabilityBand } from '../engine/intelligence';
@@ -119,6 +124,9 @@ export type TraceCategory =
   | 'grievance_transition'
   | 'ambition_displaced'
   | 'covet_rivalry_seeded'
+  // Verb × object undertakings (THR-1392)
+  | 'undertaking_cell_unreachable'
+  | 'undertaking_tier_defaulted'
   // Undertaking checkpoints (THR-1292)
   | 'undertaking_checkpoint'
   | 'undertaking_fork'
@@ -522,6 +530,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'grievance_transition',
   'ambition_displaced',
   'covet_rivalry_seeded',
+  'undertaking_cell_unreachable',
+  'undertaking_tier_defaulted',
   'undertaking_checkpoint',
   'undertaking_fork',
   'follow_change',
@@ -2097,6 +2107,30 @@ export interface CovetRivalrySeededTrace extends TraceBase {
 }
 
 /**
+ * Trace: a verb × object cell nobody can complete (THR-1392). Emitted by the resolver
+ * when a type declares no semantic for the variant, and by cell enumeration (slice 2)
+ * when no object of the type exists or none is under the rule's ownership. A cell
+ * nobody can ever take is the new "variant that never fires" (NFP #2).
+ */
+export interface UndertakingCellUnreachableTrace extends TraceBase {
+  category: 'undertaking_cell_unreachable';
+  verb: UndertakingVerb;
+  objectTypeId: UndertakingObjectTypeId;
+  reason: 'no_object_exists' | 'no_owned_object' | 'no_semantic_declared';
+}
+
+/**
+ * Trace: an object's tier source was missing and it fell to the default (THR-1392).
+ * The acceptance counts these per type against `TIER_DEFAULT_SHARE_MAX`.
+ */
+export interface UndertakingTierDefaultedTrace extends TraceBase {
+  category: 'undertaking_tier_defaulted';
+  objectTypeId: UndertakingObjectTypeId;
+  objectId: string;
+  tier: 1 | 2 | 3;
+}
+
+/**
  * Trace: one undertaking checkpoint resolved (THR-1292 §2).
  *
  * Emitted once per checkpoint *attempt*, including the deferred ones — a
@@ -2298,6 +2332,13 @@ export interface StrategicWorldChangeTrace extends TraceBase {
   actorId: string;
   projectId?: string;
   verb: StrategicVerb;
+  /**
+   * The cell that completed (THR-1392): the verb variant, the object type and the
+   * object's id. Set by `undertakingResolver`; absent on the template model's path.
+   */
+  undertakingVerb?: UndertakingVerbVariant;
+  objectTypeId?: UndertakingObjectTypeId;
+  objectId?: string;
   graphOps: string[];
   catalystSeeded: boolean;
   affectedNodeIds: string[];
@@ -3278,6 +3319,8 @@ export type TraceEntry =
   | GrievanceTransitionTrace
   | AmbitionDisplacedTrace
   | CovetRivalrySeededTrace
+  | UndertakingCellUnreachableTrace
+  | UndertakingTierDefaultedTrace
   | UndertakingCheckpointTrace
   | UndertakingForkTrace
   | FollowChangeTrace

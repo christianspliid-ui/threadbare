@@ -1319,6 +1319,34 @@ Each entry is `{ role: NpcRole, minTier }` (capstones are bare roles). `role` mu
 
 ---
 
+### Capability 27: Verb × Object Undertakings — A Work Is a Verb on a Thing the World Has (THR-1392)
+
+**What it does:** an undertaking can be authored as a **verb** (found · improve · use · control · undo · survey) on an **object type** the world already has (attachment, room, settlement, route, company, faction, mark) instead of as a bespoke template with its own `mutationHint`. The object is whichever one the actor resolves in the world; the flavour comes from *that* object's name and lore and the actor's calling, not from a fiction the template invented.
+
+**Why you want it:** the shipped corpus had 64 templates, 58 of which targeted a settlement rather than the thing they acted on, 15 of which changed nothing on completion, and 28–29 of which fired in 300 ticks. "Burn the charts" is a template defined by something that does not systemically exist; `undo × attachment` is a cell, and the chart is an attachment. One cell covers every attachment the world will ever mint.
+
+**Where to author (slice 1, behind `UNDERTAKING_MODEL`):**
+
+| Surface | File | What it says |
+|---|---|---|
+| The object type | `src/data/undertaking-objects.ts` | Shape, `ownedVia`, `tierOf`, `harmOnUndo`, and the semantic each verb variant runs on this type |
+| The `object` target rule | `targetRule: { type: 'object', objectTypeId, ownership: 'own' | 'other' | 'unowned' | 'any' }` on a template | Every object of the type in the world under the ownership rule, nearest first |
+| The cell on a template | `undertakingVerb` + `objectTypeId` on `StrategicActionTemplate` | What the resolver dispatches when the flag is `cells` |
+| The verb tables | `UNDERTAKING_VERB_DIFFICULTY` / `_PAYOFF` / `_DURATION`, `OWNERSHIP_BY_VERB`, `MOTIVE_GATED_VERBS` in `strategic-action-constants.ts` | Difficulty, payoff and length by verb variant and object tier; which variants need a quarrel |
+
+**Four rules:**
+
+1. **`control` has two variants and you do not pick them.** The resolver reads the object's ownership: nobody holds it → `control:claim` (for a settlement, the sustained `claim_control` mode; for anything else, `grantHolding`); someone else holds it → `control:seize` (`transferHolding`, motive-gated, harm `holding_seized`); the actor holds it → refused.
+2. **A verb a type does not declare is not a cell.** The resolver refuses it and traces `undertaking_cell_unreachable` (`no_semantic_declared`). Declare the semantic in the registry — an authored decision made once — or accept the cell does not exist. Never fake it in prose.
+3. **Owners come through the object.** An attachment is held by `possesses`, a mark by its edge's source; the motive gate reads them through the handle. Before slice 1 both read as unowned and every `undo` against them was refused by construction.
+4. **Tier comes off the object, and a missing source is traced.** `tierOf` defaults to T2 and emits `undertaking_tier_defaulted`; the acceptance fails a type that defaults on more than `TIER_DEFAULT_SHARE_MAX` of its objects.
+
+**How to tell whether yours landed.** With tracing on, `strategic_world_change` carries `undertakingVerb`, `objectTypeId` and `objectId` for every cell completion; `undertaking_cell_unreachable` names every cell that could not. In the CLI: `traces 50` after a completion, or `eval` over `getTraces()`.
+
+**Where to find the implementation:** `src/engine/undertakingResolver.ts` (`resolveUndertakingCompletion`, `ownershipOf`, `resolveVerbVariant`), dispatched from `executeInstantMutation` in `strategicActionLifecycle.ts` when `UNDERTAKING_MODEL === 'cells'`. Slice 2 adds cell enumeration on the board and the verb prose line-sets; slice 4 migrates the 64 and flips the flag. Plan: `Docs/plans/2026-09-03-thr-1392-verb-object-undertakings.md`.
+
+---
+
 ## Part 3: The Wiring Checklist — Ask These Before You Write
 
 Before writing any encounter, answer these questions. If the answer to most of them is "not applicable," you may be writing a book page, not game content.

@@ -24,6 +24,39 @@ export type StrategicVerb =
   | 'control'
   | 'destroy';
 
+// ─── Verb × object type (THR-1392) ──────────────────────────────────
+// An undertaking is a verb acted on an object the world already has. The verb set
+// is closed; the object types are registered once each in
+// `src/data/undertaking-objects.ts`. `StrategicVerb` above stays as the legacy
+// alias every importer compiles against until the flag flips
+// (`STRATEGIC_VERB_OF_UNDERTAKING_VERB` maps between them).
+
+/** found · improve · use · control · undo · survey. */
+export type UndertakingVerb = 'found' | 'improve' | 'use' | 'control' | 'undo' | 'survey';
+
+/**
+ * A verb as a cell names it. `control` has two variants decided by what the resolved
+ * object's ownership actually is: `claim` (nobody holds it) or `seize` (someone else
+ * does) — Christian, 2026-09-03.
+ */
+export type UndertakingVerbVariant = Exclude<UndertakingVerb, 'control'> | 'control:claim' | 'control:seize';
+
+/** The seven object types the world already has. */
+export type UndertakingObjectTypeId =
+  | 'attachment' | 'room' | 'settlement' | 'route' | 'company' | 'faction' | 'mark';
+
+/**
+ * The object an undertaking acts on. Node objects by node id; edge objects (a mark
+ * is a `knows_secret_of` edge) by edge id. Carried beside `targetNodeId`, which stays
+ * the *place* of the work for distance and moments.
+ */
+export type UndertakingObjectHandle =
+  | { readonly kind: 'node'; readonly nodeId: string }
+  | { readonly kind: 'edge'; readonly edgeId: string };
+
+/** A cell's ownership rule: whose object the verb may be aimed at. */
+export type UndertakingOwnership = 'own' | 'other' | 'unowned' | 'any';
+
 // ─── Execution Modes ────────────────────────────────────────────────
 
 export type StrategicExecutionMode =
@@ -64,6 +97,13 @@ export interface StrategicActionTemplate {
   readonly id: string;
   readonly displayName: string;
   readonly verb: StrategicVerb;
+  /**
+   * The verb × object cell this template is (THR-1392): the undertaking verb and
+   * the object type it acts on. Set on cells and on migrated templates; absent on
+   * every legacy template, which the resolver never sees.
+   */
+  readonly undertakingVerb?: UndertakingVerb;
+  readonly objectTypeId?: UndertakingObjectTypeId;
   readonly executionMode: StrategicExecutionMode;
   readonly behaviorFamily: BehaviorFamily;
 
@@ -527,6 +567,13 @@ export type StrategicTargetRule =
   | { type: 'hex_region' }    // Targets a hex area
   | { type: 'sublocation_type'; subtypeIds: readonly string[] }
   /**
+   * Every object of a registered type in the world, filtered by the cell's
+   * ownership rule (THR-1392). The one rule the verb × object model needs: the
+   * registry's `shape` enumerates the handles, `resolveObjectOwners` classifies
+   * them, and the candidate carries the handle it chose.
+   */
+  | { type: 'object'; objectTypeId: UndertakingObjectTypeId; ownership: UndertakingOwnership }
+  /**
    * People standing where the actor is standing (THR-1297 §5).
    *
    * The `leverage_mark` kind needed an actor-shaped target and the only one that
@@ -613,6 +660,14 @@ export interface StrategicActionCandidate {
   readonly targetHex?: { col: number; row: number };
 
   /**
+   * The object this undertaking acts on (THR-1392), beside `targetNodeId` (the place
+   * of the work). Set only by the `object` target rule; absent on every template
+   * that names a legacy rule.
+   */
+  readonly objectHandle?: UndertakingObjectHandle;
+  readonly objectTypeId?: UndertakingObjectTypeId;
+
+  /**
    * The commanded entity this remote undertaking reaches through (THR-1296 §6).
    *
    * Set by the remote-anchor gate at proposal time, and only for a target beyond
@@ -669,6 +724,10 @@ export interface StrategicProjectRuntime {
   readonly behaviorFamily: BehaviorFamily;
   readonly targetNodeId?: string;
   readonly targetHex?: { col: number; row: number };
+
+  /** The object this undertaking acts on (THR-1392), carried from the candidate. */
+  readonly objectHandle?: UndertakingObjectHandle;
+  readonly objectTypeId?: UndertakingObjectTypeId;
 
   /**
    * Who this undertaking is aimed at (THR-1298), carried from the candidate the

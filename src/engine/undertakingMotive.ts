@@ -21,7 +21,8 @@
 //   resolve to a refusal reason — never a throw.
 
 import type { WorldGraph } from './graph';
-import type { MotiveKind, StrategicActionTemplate } from '../types/strategicAction';
+import type { MotiveKind, StrategicActionTemplate, UndertakingObjectHandle } from '../types/strategicAction';
+import { getUndertakingObjectType, resolveObjectOwners } from '../data/undertaking-objects';
 import { getAgentFaction } from './graphQueries';
 import { areFactionsHostile } from './factionNetwork';
 
@@ -86,6 +87,12 @@ export function resolveTargetOwners(graph: WorldGraph, targetNodeId: string): re
     for (const edge of graph.getIncomingEdges(targetNodeId, 'owns')) {
       if (edge.source !== targetNodeId) owners.add(edge.source);
     }
+    // THR-1392: an attachment is held by `possesses`, not `owns` — without this arm
+    // every attachment read as unowned and `undo × attachment` was refused by
+    // construction. Holder → object, like `owns`.
+    for (const edge of graph.getIncomingEdges(targetNodeId, 'possesses')) {
+      if (edge.source !== targetNodeId) owners.add(edge.source);
+    }
   } catch {
     // Fail-soft: an unreadable graph answers "unowned", which refuses the destroy.
     // Refusing a razing we cannot justify is the safe direction of this failure.
@@ -144,11 +151,19 @@ export function evaluateMotiveGate(
   actorId: string,
   targetNodeId: string,
   template: StrategicActionTemplate,
+  /**
+   * The object the undertaking acts on (THR-1392). When set, owners are read through
+   * the object type's own `ownedVia` — an edge object (a mark) is held by its source,
+   * which no node walk can answer.
+   */
+  objectHandle?: UndertakingObjectHandle,
 ): MotiveGateResult {
   const gate = template.motiveGate;
   if (!gate || gate.length === 0) return ALLOWED_UNGATED;
 
-  const owners = resolveTargetOwners(graph, targetNodeId);
+  const owners = objectHandle
+    ? resolveHandleOwners(graph, objectHandle, template)
+    : resolveTargetOwners(graph, targetNodeId);
   if (owners.length === 0) {
     // Nobody holds this, so there is nobody the destruction is aimed at. A gated verb
     // asked for a reason and the world supplied none, so it is refused — a destroy
@@ -166,6 +181,21 @@ export function evaluateMotiveGate(
   }
 
   return { allowed: false, ownerCount: owners.length };
+}
+
+/**
+ * Owners of an object handle, through its type when the template names one and
+ * through the node walk otherwise (a node handle on a legacy template).
+ */
+function resolveHandleOwners(
+  graph: WorldGraph,
+  handle: UndertakingObjectHandle,
+  template: StrategicActionTemplate,
+): readonly string[] {
+  const rule = template.targetRule;
+  const type = rule.type === 'object' ? getUndertakingObjectType(rule.objectTypeId) : undefined;
+  if (type) return resolveObjectOwners(graph, type, handle);
+  return handle.kind === 'node' ? resolveTargetOwners(graph, handle.nodeId) : [];
 }
 
 // ─── Readers ────────────────────────────────────────────────────────
