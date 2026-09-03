@@ -113,15 +113,88 @@ describe('applyEncounterGrowth', () => {
     expect(result.growthApplied).toBeGreaterThan(0);
 
     // Check that the experience trait node was created
-    const traitNode = graph.getNode('encounter_experience_iron_agent_1');
+    const traitNode = graph.getNode('trait.experience.iron');
     expect(traitNode).toBeDefined();
     expect(traitNode!.name).toBe('Experience (iron)');
 
     // Check edge exists
     const edges = graph.getOutgoingEdges('agent_1', 'has_trait');
-    const expEdge = edges.find(e => e.target === 'encounter_experience_iron_agent_1');
+    const expEdge = edges.find(e => e.target === 'trait.experience.iron');
     expect(expEdge).toBeDefined();
     expect((expEdge!.properties.level as number)).toBeGreaterThan(0);
+  });
+
+  // ─── THR-1395: one definition, many bearers ──────────────────────
+  //
+  // The point of the change, stated as the thing that used to be false: two agents who
+  // both fight now hold ONE "Experience (iron)" between them. Before, the trait pool grew
+  // by one node per (agent, domain) — 44 nodes for 44 bearers on a seeded medium world.
+  it('mints one shared experience definition however many agents earn it', () => {
+    const graph = makeGraphWithAgent('agent_1');
+    graph.addNode({
+      id: 'agent_2', type: 'actor', name: 'Second Agent',
+      properties: { actorType: 'individual' },
+    });
+
+    applyEncounterGrowth(graph, 'agent_1', 'iron', 50, true, false);
+    applyEncounterGrowth(graph, 'agent_2', 'iron', 50, true, false);
+
+    // One node, not two — and no node carries either agent's id.
+    const expNodes = graph.getNodesByType('trait')
+      .filter(n => n.properties.subcategory === 'experience');
+    expect(expNodes.map(n => n.id)).toEqual(['trait.experience.iron']);
+
+    // Both agents bear it, on their own edges, each with its own level.
+    for (const agentId of ['agent_1', 'agent_2']) {
+      const edges = graph.getOutgoingEdges(agentId, 'has_trait')
+        .filter(e => e.target === 'trait.experience.iron');
+      expect(edges).toHaveLength(1);
+      expect(edges[0].properties.level as number).toBeGreaterThan(0);
+    }
+  });
+
+  it('keeps a per-domain definition per domain, not a shared one across domains', () => {
+    const graph = makeGraphWithAgent('agent_1');
+    applyEncounterGrowth(graph, 'agent_1', 'iron', 50, true, false);
+    applyEncounterGrowth(graph, 'agent_1', 'veil', 50, true, false);
+
+    const ids = graph.getNodesByType('trait')
+      .filter(n => n.properties.subcategory === 'experience')
+      .map(n => n.id)
+      .sort();
+    expect(ids).toEqual(['trait.experience.iron', 'trait.experience.veil']);
+  });
+
+  // Saved worlds hold the pre-THR-1395 per-bearer node. Growth must land on the edge that
+  // already exists, not open a second one — two edges for one trait double-count capability.
+  it('accrues onto a legacy per-bearer experience edge instead of minting a second', () => {
+    const graph = makeGraphWithAgent('agent_1');
+    const legacyId = 'encounter_experience_iron_agent_1';
+    graph.addNode({
+      id: legacyId, type: 'trait', name: 'Experience (iron)',
+      properties: {
+        subcategory: 'experience', description: 'legacy', importance: 0.3, maxLevel: 100,
+        visibility: 'discoverable', domainContributions: { iron: 1.0 } as DomainContributions,
+        tags: ['experience'], flavorText: 'legacy',
+      },
+    });
+    graph.addEdge({
+      id: 'edge_experience_iron_agent_1', source: 'agent_1', target: legacyId,
+      type: 'has_trait',
+      properties: {
+        level: 5, acquiredTick: 0, lastReinforcedTick: 0,
+        source: 'encounter_growth', visibility: 'discoverable',
+      },
+    });
+
+    applyEncounterGrowth(graph, 'agent_1', 'iron', 50, true, false);
+
+    const edges = graph.getOutgoingEdges('agent_1', 'has_trait');
+    expect(edges).toHaveLength(1);
+    expect(edges[0].target).toBe(legacyId);
+    expect(edges[0].properties.level as number).toBeGreaterThan(5);
+    // The new shared definition is not minted alongside the legacy one.
+    expect(graph.getNode('trait.experience.iron')).toBeUndefined();
   });
 
   it('accumulates on existing experience trait', () => {
@@ -136,7 +209,7 @@ describe('applyEncounterGrowth', () => {
 
     // Check edge level accumulated
     const edges = graph.getOutgoingEdges('agent_1', 'has_trait');
-    const expEdge = edges.find(e => e.target === 'encounter_experience_iron_agent_1');
+    const expEdge = edges.find(e => e.target === 'trait.experience.iron');
     expect(expEdge).toBeDefined();
     const totalLevel = expEdge!.properties.level as number;
     expect(totalLevel).toBeGreaterThan(firstLevel);

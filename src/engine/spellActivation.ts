@@ -27,6 +27,7 @@
 import type { WorldGraph } from './graph';
 import { collectGrantedTraits, GRANTED_TRAIT_EFFECTIVE_LEVEL } from './effects/effectQueries';
 import { collectBearerTraitRefs, bearerMatchesPredicate } from './traitRefIndex';
+import { conditionTraitId } from './traitShape';
 import type { ReachDomain } from '../types/traits';
 import type {
   SpellTemplate,
@@ -71,7 +72,9 @@ export interface ActivationResult {
   trace: EffectActivationTrace;
 }
 
-// ─── Condition ID counter (deterministic, no Date.now()) ────────────
+// ─── Condition edge-id counter (deterministic, no Date.now()) ───────
+// Keys the `has_trait` edge, not the trait node: since THR-1395 the node is one shared
+// definition per condition template, and it is the bearing that is per-application.
 let conditionCounter = 0;
 export function resetConditionCounter(): void { conditionCounter = 0; }
 
@@ -245,16 +248,22 @@ export function payCosts(
         break;
       }
       case 'condition_inflict': {
-        // Create a condition trait on the agent
-        const condId = `cond_${agentId}_${cost.template}_${conditionCounter++}`;
-        graph.addNode({
-          id: condId,
-          type: 'trait',
-          name: cost.template,
-          properties: { subcategory: 'condition', tags: [cost.template] },
-        });
+        // Inflict a condition on the agent (THR-1395). The condition *definition* is one
+        // shared node per template — every bearer of "burned" points at the same "burned",
+        // which is what lets the codex name a wound once — and the bearing is the edge.
+        // The counter still keys the edge id, so one bearer can carry the same condition
+        // twice (two edges, one definition) and the ids stay deterministic (NFP #3).
+        const condId = conditionTraitId(cost.template);
+        if (!graph.getNode(condId)) {
+          graph.addNode({
+            id: condId,
+            type: 'trait',
+            name: cost.template,
+            properties: { subcategory: 'condition', tags: [cost.template] },
+          });
+        }
         graph.addEdge({
-          id: `e_${condId}`,
+          id: `e_cond_${agentId}_${cost.template}_${conditionCounter++}`,
           type: 'has_trait',
           source: agentId,
           target: condId,
