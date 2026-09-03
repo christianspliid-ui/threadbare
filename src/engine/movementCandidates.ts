@@ -9,7 +9,8 @@
 import type { WorldGraph } from './graph';
 import type { AxiologicalProfile } from '../types/agent';
 import type { MovementCandidate } from '../types/movement';
-import { findShortestPath } from './pathfinding';
+import { findAllShortestPaths } from './pathfinding';
+import { getPlaceTierLocations } from './sublocationShape';
 import {
   DISTANCE_DECAY_FACTOR,
   P0_BASE_MOTIVATION_PULL,
@@ -58,22 +59,22 @@ export function generateMovementCandidates(
 ): MovementCandidate[] {
   const candidates: MovementCandidate[] = [];
 
-  const allLocations = graph.getNodesByType('location');
-
-  for (const loc of allLocations) {
+  // THR-1389: price every reachable destination in ONE single-source run, and only
+  // the place tier — a company does not travel to a tavern in another town, and the
+  // per-destination sweep that priced 812 nodes (80% unreachable) per member is the
+  // 2.5-second tick THR-1385 measured. Pull is read before the price so a destination
+  // with nothing to offer never costs a path lookup either.
+  const paths = findAllShortestPaths(graph, agentId, currentLocationId);
+  for (const loc of getPlaceTierLocations(graph)) {
     if (loc.id === currentLocationId) continue;
-
-    const pathResult = findShortestPath(graph, agentId, currentLocationId, loc.id);
-    if (!pathResult || pathResult.totalCost > MAX_CANDIDATE_DISTANCE) continue;
-    if (pathResult.path.length === 0) continue;
-
     const { pull: basePull, bestTemplateId } = computeBasePull(graph, loc.id, agentId, profile);
     if (basePull <= 0) continue;
-
+    const pathResult = paths.get(loc.id);
+    if (!pathResult || pathResult.totalCost > MAX_CANDIDATE_DISTANCE) continue;
+    if (pathResult.path.length === 0) continue;
     const threat = computeHexThreatRating(graph, loc.id);
     const threatMod = computeThreatModifier(threat, profile.courage_prudence);
     const score = scoreMovementCandidate(basePull * threatMod, pathResult.totalCost);
-
     candidates.push({
       destinationId: loc.id,
       bestTemplateId,
@@ -84,7 +85,6 @@ export function generateMovementCandidates(
       path: pathResult.path,
     });
   }
-
   candidates.sort((a, b) => b.score - a.score);
   return candidates;
 }

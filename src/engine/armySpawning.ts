@@ -24,7 +24,7 @@ import {
 import { requiresMilitaryForce } from '../types/faction';
 import type { FactionAmbitionType } from '../types/faction';
 import { computeCapability, computeTier } from './domainCapability';
-import { findShortestPath } from './pathfinding';
+import { findAllShortestPaths } from './pathfinding';
 import { emitTrace } from './traceBuffer';
 
 // ─── Eligibility ────────────────────────────────────────────────────────
@@ -146,6 +146,8 @@ export function selectArmyObjective(
   if (!startNode || startNode.type !== 'location') return null;
 
   const candidates: { id: string; hops: number }[] = [];
+  // One single-source run prices every hostile settlement at once (THR-1389).
+  const paths = findAllShortestPaths(graph, armyId, startId);
   for (const loc of graph.getNodesByType('location')) {
     const subtype = loc.properties.locationSubtype as string | undefined;
     if (!subtype || !SETTLEMENT_TARGET_SUBTYPES.includes(subtype)) continue;
@@ -160,7 +162,7 @@ export function selectArmyObjective(
       candidates.push({ id: loc.id, hops: 0 });
       continue;
     }
-    const path = findShortestPath(graph, armyId, startId, loc.id);
+    const path = paths.get(loc.id);
     if (!path) continue;
     candidates.push({ id: loc.id, hops: path.path.length });
   }
