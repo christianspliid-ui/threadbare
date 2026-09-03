@@ -1,2 +1,3 @@
 measuredAt	commit	seed	map	ticks	agentsAtEnd	msPerTickWarmup	msPerTickSteady	totalMs	topPhase	node
 2026-09-02T20:49:53.442Z	b95996df	42	small	200	505	75.5	355.3	57082	groups	v24.14.0
+2026-09-03T17:57:30.712Z	1c725457	42	small	200	511	39.4	72.9	12917	agent_decision	v24.14.0
