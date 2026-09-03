@@ -38,7 +38,7 @@ import type {
 } from '../../../types/unifiedAction';
 import { expandSettings } from '../../settingClasses';
 import { WorldGraph } from '../../../engine/graph';
-import { getPlaceTierLocations, isPlaceTierLocation } from '../../../engine/sublocationShape';
+import { getLocationNodes, isLocationNode } from '../../../engine/sublocationShape';
 import { nudgeCardMember } from '../../nudge-card-library';
 import { ENCOUNTER_IMAGE_LIBRARY } from '../../encounter-image-library';
 import { checkNudgeHand } from '../../content-eval/nudgeHandChecklist';
@@ -184,10 +184,10 @@ describe('One Body Short — setting envelope', () => {
       });
     });
 
-    const placeTierNodes = getPlaceTierLocations(graph);
+    const placeTierNodes = getLocationNodes(graph);
     expect(placeTierNodes).toHaveLength(subtypes.length);
     for (const node of placeTierNodes) {
-      expect(isPlaceTierLocation(node)).toBe(true);
+      expect(isLocationNode(node)).toBe(true);
     }
   });
 });

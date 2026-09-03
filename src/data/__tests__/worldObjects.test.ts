@@ -128,7 +128,12 @@ describe('world-object registry — internal consistency', () => {
     for (const k of WORLD_OBJECT_KINDS) {
       if (k.shape.kind !== 'node' || !k.shape.discriminator) continue;
       const refines = k.shape.refines;
-      if (refines) expect(kindsForNodeType(k.shape.nodeType).some(o => o.shape.kind === 'node' && o.shape.discriminator?.key === refines.key), `${k.id} refines a key no sibling kind discriminates on`).toBe(true);
+      if (refines) {
+        const nodeType = k.shape.nodeType;
+        const siblingKey = kindsForNodeType(nodeType).some(o => o.shape.kind === 'node' && o.shape.discriminator?.key === refines.key);
+        const identityKey = WORLD_OBJECT_KINDS.some(o => o.shape.kind === 'edge' && o.shape.identityNode?.nodeType === nodeType && o.shape.identityNode.key === refines.key);
+        expect(siblingKey || identityKey, `${k.id} refines a key no sibling kind or identity node uses`).toBe(true);
+      }
       for (const v of k.shape.discriminator.values) {
         const key = `${k.shape.nodeType}|${k.shape.discriminator.key}=${v}`;
         expect(seen.has(key), `${key} claimed by both ${seen.get(key)} and ${k.id}`).toBe(false);

@@ -13,7 +13,7 @@ import { createBalancedCosmology } from '../cosmology';
 import { generateArchetypes } from '../ascendant';
 import { createSimulationRuntime } from '../simulationRuntime';
 import { findShortestPath, findAllShortestPaths } from '../pathfinding';
-import { getPlaceTierLocations } from '../sublocationShape';
+import { getLocationNodes } from '../sublocationShape';
 
 const SEED = 42;
 const TICKS = 60;
@@ -35,7 +35,7 @@ describe('single-source shortest paths on a seeded world (THR-1389)', () => {
     let { state } = initializeGameState(archetype, 'thr-1389', createBalancedCosmology(), SEED, preset.cols, preset.rows);
     for (let i = 0; i < TICKS; i++) state = runTick(state, [], runtime);
     const graph = state.graph;
-    const place = getPlaceTierLocations(graph).map(n => n.id).sort();
+    const place = getLocationNodes(graph).map(n => n.id).sort();
     const agentId = graph.getNodesByType('actor').find(n => (n.properties.actorType ?? 'individual') === 'individual')!.id;
     const starts = place.filter((_, i) => i % Math.max(1, Math.floor(place.length / STARTS)) === 0).slice(0, STARTS);
     expect(starts.length).toBeGreaterThan(0);

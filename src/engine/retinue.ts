@@ -12,7 +12,7 @@ import type { InfluenceTier, ThreadEdgeProperties, CourtPosition } from '../type
 import { TIER_NAMES } from '../types/influence';
 import { getAgentPortraitUrlFromProperties } from '../data/portrait-assets';
 import { getAgentFaction, getFactionMembershipEdges } from './graphQueries';
-import { isSublocationNode } from './sublocationShape';
+import { isPlaceNode } from './sublocationShape';
 import type { ControlEffect } from '../types/controlEffect';
 import type { SphereName } from '../types/index';
 
@@ -822,7 +822,7 @@ export function getSustainedControlNodes(
       // locations rather than sources.
       const typeAsString = targetNode.type as string;
 
-      if (isSublocationNode(targetNode)) {
+      if (isPlaceNode(targetNode)) {
         category = 'source';
         displayName = targetNode.name || '(unnamed source)';
       } else if (typeAsString === 'location') {

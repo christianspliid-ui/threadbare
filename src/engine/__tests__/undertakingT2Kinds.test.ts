@@ -8,9 +8,9 @@
  * the kind rows alone cannot:
  *
  * 1. **The minted place is place-tier, by the discriminator the codebase shares.**
- *    `isPlaceTierLocation` is the test (THR-1183), not a subtype string and not a
- *    node type — so a founded settlement is visible to `getPlaceTierLocations`
- *    sweeps and absent from `getSublocationNodes` ones, without either learning a
+ *    `isLocationNode` is the test (THR-1183), not a subtype string and not a
+ *    node type — so a founded settlement is visible to `getLocationNodes`
+ *    sweeps and absent from `getPlaceNodes` ones, without either learning a
  *    new shape.
  * 2. **The blockade lands in an economy that already reads it.** Asserting the
  *    `threatened` flag alone would be the write-without-consumer failure the plan's
@@ -37,7 +37,7 @@ import {
   findRouteIdentityNode,
 } from '../strategicGraphOps';
 import { findUnclaimedSite } from '../strategicActionLifecycle';
-import { isPlaceTierLocation, isSublocationNode, getPlaceTierLocations } from '../sublocationShape';
+import { isLocationNode, isPlaceNode, getLocationNodes } from '../sublocationShape';
 import { getAllStrategicTemplates, getStrategicTemplate } from '../strategicActionCandidates';
 import { UNDERTAKING_KIND_ROWS } from '../../data/undertaking-kinds';
 import {
@@ -88,10 +88,10 @@ describe('create_location', () => {
     // The point of the whole op: place-tier, not a sublocation. Asserted through the
     // shared predicate rather than by reading `type` — a test that hand-rolled the
     // check could pass while the sweeps that matter disagreed (THR-1183).
-    expect(isPlaceTierLocation(node)).toBe(true);
-    expect(isSublocationNode(node)).toBe(false);
+    expect(isLocationNode(node)).toBe(true);
+    expect(isPlaceNode(node)).toBe(false);
     expect(node.properties.parentLocationId).toBeUndefined();
-    expect(getPlaceTierLocations(graph).map(n => n.id)).toContain(node.id);
+    expect(getLocationNodes(graph).map(n => n.id)).toContain(node.id);
   });
 
   it('writes both subtype keys, because readers are split across them', () => {

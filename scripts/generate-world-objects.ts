@@ -133,11 +133,18 @@ function runSeed(seed: number, ticks: number): GameState {
 /** The discriminator keys the census counts, per node type — every key a registered kind reads. */
 function discriminatorKeys(): Map<string, { key: string; fallbackKey?: string }[]> {
   const out = new Map<string, { key: string; fallbackKey?: string }[]>();
+  const add = (nodeType: string, key: string, fallbackKey?: string) => {
+    const list = out.get(nodeType) ?? [];
+    if (!list.some(d => d.key === key)) list.push({ key, fallbackKey });
+    out.set(nodeType, list);
+  };
   for (const k of WORLD_OBJECT_KINDS) {
-    if (k.shape.kind !== 'node' || !k.shape.discriminator) continue;
-    const list = out.get(k.shape.nodeType) ?? [];
-    if (!list.some(d => d.key === k.shape.discriminator!.key)) list.push({ key: k.shape.discriminator.key, fallbackKey: k.shape.discriminator.fallbackKey });
-    out.set(k.shape.nodeType, list);
+    if (k.shape.kind === 'edge' && k.shape.identityNode) add(k.shape.identityNode.nodeType, k.shape.identityNode.key);
+    if (k.shape.kind !== 'node') continue;
+    // A refined key (artifact `attachmentCategory`) is counted too, so a value written
+    // there that no kind claims surfaces as UNREGISTERED like any other.
+    if (k.shape.refines) add(k.shape.nodeType, k.shape.refines.key);
+    if (k.shape.discriminator) add(k.shape.nodeType, k.shape.discriminator.key, k.shape.discriminator.fallbackKey);
   }
   return out;
 }

@@ -134,7 +134,7 @@ describe('phaseFactionActions', () => {
       // Event node must exist
       expect(questAction.targetId).toBeTruthy();
       const eventNode = graph.getNode(questAction.targetId!);
-      expect(eventNode?.properties?.nodeSubtype).toBe('faction_quest');
+      expect(eventNode?.properties?.eventType).toBe('faction_quest');
     }
   });
 

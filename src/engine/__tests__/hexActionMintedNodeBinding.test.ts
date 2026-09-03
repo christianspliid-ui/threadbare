@@ -25,7 +25,7 @@ import {
 } from '../hexActionBridge';
 import { executeGraphOps } from '../graphOpExecutor';
 import { EDGE_SCHEMA } from '../../types/edgeSchema';
-import { getPlaceTierLocations } from '../sublocationShape';
+import { getLocationNodes } from '../sublocationShape';
 import type { GraphOpContext } from '../../types/graphOp';
 
 const COL = 3;
@@ -148,7 +148,7 @@ describe('hex.send_herald places its herald at a real location (THR-1194)', () =
     expect(located[0].target).not.toBe(`hex_${COL}_${ROW}`);
 
     const destination = graph.getNode(located[0].target);
-    expect(getPlaceTierLocations(graph).map(l => l.id)).toContain(destination?.id);
+    expect(getLocationNodes(graph).map(l => l.id)).toContain(destination?.id);
   });
 
   it('the herald carries its display name at the top level', () => {

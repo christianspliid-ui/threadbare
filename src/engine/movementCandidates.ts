@@ -10,7 +10,7 @@ import type { WorldGraph } from './graph';
 import type { AxiologicalProfile } from '../types/agent';
 import type { MovementCandidate } from '../types/movement';
 import { findAllShortestPaths } from './pathfinding';
-import { getPlaceTierLocations } from './sublocationShape';
+import { getLocationNodes } from './sublocationShape';
 import {
   DISTANCE_DECAY_FACTOR,
   P0_BASE_MOTIVATION_PULL,
@@ -65,7 +65,7 @@ export function generateMovementCandidates(
   // 2.5-second tick THR-1385 measured. Pull is read before the price so a destination
   // with nothing to offer never costs a path lookup either.
   const paths = findAllShortestPaths(graph, agentId, currentLocationId);
-  for (const loc of getPlaceTierLocations(graph)) {
+  for (const loc of getLocationNodes(graph)) {
     if (loc.id === currentLocationId) continue;
     const { pull: basePull, bestTemplateId } = computeBasePull(graph, loc.id, agentId, profile);
     if (basePull <= 0) continue;

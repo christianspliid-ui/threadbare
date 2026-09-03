@@ -47,9 +47,7 @@
 | `reach` | Reach | state · `ReachDomain (a type union; capability per reach on the actor)` | — | Cosmology | `capabilityGrowth` | live | — | 🟢 LIVE |
 | `action_template` | (action template) | node · `action_template` | — | Encounters & dilemmas | `gameInit` | content | 88 | 🟢 LIVE |
 | `encounter_template` | (encounter template) | node · `encounter_template` | — | Encounters & dilemmas | — | content | 0 | ⚪ DORMANT |
-| `resource_node` | (resource node — retired) | node · `resource` | — | Economy | — | retired | 0 | ⚪ DORMANT |
 | `cosmology_node` | (cosmology node — dormant) | node · `cosmology` | — | Cosmology | — | dormant | 0 | ⚪ DORMANT |
-| `relationship_node` | (relationship node — retired) | node · `relationship` | — | Reputation & standing | — | retired | 0 | ⚪ DORMANT |
 | `sublocation_node` | (sublocation node — legacy) | node · `sublocation` | — | Sublocations | — | legacy | 0 | ⚪ DORMANT |
 
 ## Classes
@@ -139,7 +137,7 @@
 - **Hex** (`hex`, UL `Graph.md#hextile`, chip kind `hex`) — The one thing that is not a node — terrain, features, fog. The settled exception.
 - **Location** (`location`, UL `Graph.md#location`, chip kind `location`) — The outer tier: where mortals live, hold, ruin and wonder. Seven classes over the existing subtypes; nothing joins the union.
 - **Place** (`place`, UL `Graph.md#place`, chip kind `sublocation`) — The inner tier — an inn, a granary, a gatehouse, a grove, a spring — inside a Location. Not always built. The code word is *sublocation*; the game word is Place (Christian, 2026-09-03).
-- **Route** (`route`, UL `Graph.md#route`) — An edge between two Locations — traversal walks edges — that grows an identity node the moment it is nameable, ownable, blockadable or consecrated (the trade route's pattern, generalised). Trail and portal are ratified classes with no edge type yet (a trail is a `road` with `roadType: trail` today; a portal is a route edge with an empty hex path and its own cost) — slice 2 gives both a `routeKind`.
+- **Route** (`route`, UL `Graph.md#route`) — An edge between two Locations — traversal walks edges — that grows an identity node the moment it is nameable, ownable, blockadable or consecrated (the trade route's pattern, generalised). A trail is a `road` edge with `routeKind: trail` (stamped by the road network); a portal is a route edge with an empty hex path and its own cost, ratified with no writer yet.
 - **Mortal** (`mortal`, UL `Agents.md#agent`, chip kind `agent`) — The game word for an individual actor; "agent" is the engine word. Roles, callings and spotlight tiers are variants.
 - **Ascendant** (`ascendant`, UL `Agents.md#ascendant`, chip kind `agent`) — The player, and rival ascendants: architecturally an ordinary actor.
 - **God / Spirit** (`god`, UL `Agents.md#actortype`, chip kind `agent`) — Gods and place-spirits share the actor shape; neither is minted on the census seeds.
@@ -150,7 +148,7 @@
 - **Network** (`network`, UL `Agents.md#group`) — A company kind that does not travel — a ring, a spy network.
 - **Battle** (`battle`, UL `Agents.md#group`) — An engine detail kept as an actor node so participants can `participates_in` it; not a player object.
 - **Companion** (`companion`, UL `Agents.md#companion`, chip kind `companion`) — A face that walks with one mortal and grants small always-on bonuses; never an agent.
-- **Item** (`item`, UL `Traits.md#attachment`, chip kind `artifact`) — A possession: arms, a mount, a tome, a relic, tools, provisions; charts and masterworks are items with a subtype. Told apart by `subcategory` (the possession subcategory); slice 2 adds the `attachmentCategory: possession` stamp every mint should carry.
+- **Item** (`item`, UL `Traits.md#attachment`, chip kind `artifact`) — A possession: arms, a mount, a tome, a relic, tools, provisions; charts and masterworks are items with a subtype. Every mint stamps `attachmentCategory: possession` (THR-1394 slice 2) and is told apart by `subcategory`.
 - **Legendary artifact** (`legendary_artifact`, UL `Traits.md#attachment`, chip kind `artifact`) — An item with its own trait graph, bonded rather than possessed.
 - **Holding** (`holding`, UL `Agents.md#work`) — Not a thing — the ownership of a Location, Place or Route. The `owns` edge is the truth; the mirror artifact face (`attachmentCategory: 'holding'`) is a sheet convenience and never a target. The player word is *freehold*.
 - **Power** (`power`, UL `Traits.md#power`, chip kind `attachment`) — Spell · bestowal · innate — the UL family. No node shape of its own yet: a cast spell mints a condition trait and `knows_spell` has no writer. A later ticket gives it a shape; the registry records the family and the gap.
@@ -167,9 +165,7 @@
 - **Reach** (`reach`, UL `Cosmology.md#reach`) — An axis, not an object. Eight.
 - **(action template)** (`action_template`, UL `Encounters.md#template`) — Authored content imported as nodes; not a thing a player points at.
 - **(encounter template)** (`encounter_template`, UL `Encounters.md#template`, chip kind `encounter`) — A template graph node (design plan §3.8); no writer on the census seeds.
-- **(resource node — retired)** (`resource_node`, UL `Graph.md#nodetype`) — No writer anywhere. Resources are stocks on a Location (`properties.resources`) and Deposit is a Location class; the member retires in slice 2 with its five type-level readers repointed.
-- **(cosmology node — dormant)** (`cosmology_node`, UL `Graph.md#nodetype`) — Never minted; `contextBuilder` reads it by value at two sites. Retires only if those reads repoint at `GameState.cosmology` with their tests green.
-- **(relationship node — retired)** (`relationship_node`, UL `Graph.md#nodetype`) — A reified pair with readers and no writer; the `relates_to` edge is the one shape. Retires in slice 2 with its two readers repointed.
+- **(cosmology node — dormant)** (`cosmology_node`, UL `Graph.md#nodetype`) — Never minted; `contextBuilder` reads it by value at two sites that are dead in a live world (no `aligned_with` edge targets a cosmology node). Kept DORMANT: the repoint at `GameState.cosmology` needs its integration test rewritten, which is its own ticket, not a green-test flip.
 - **(sublocation node — legacy)** (`sublocation_node`, UL `Graph.md#place`, chip kind `sublocation`) — Reader-accepted for saved worlds (THR-1177); no producer since THR-1183. A Place is a `location` node with `parentLocationId`.
 
 ## Chip vocabulary coverage

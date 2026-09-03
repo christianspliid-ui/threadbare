@@ -63,7 +63,7 @@ import {
 } from '../src/engine/undertakingReviewLevers';
 import { enqueueUndertakingMoments } from '../src/engine/undertakingMoments';
 import { getGroupKind } from '../src/engine/groupShape';
-import { isSublocationNode } from '../src/engine/sublocationShape';
+import { isPlaceNode } from '../src/engine/sublocationShape';
 import { undertakingWriteSet } from '../src/data/content-eval/undertakingContract';
 import type { GameState } from '../src/types/gameState';
 import type { StrategicActionTemplate, StrategicProjectRuntime } from '../src/types/strategicAction';
@@ -333,11 +333,11 @@ function mutationClaim(state: GameState, template: StrategicActionTemplate, acto
       return { name: 'mutation_object', status: edges.length > 0 ? 'pass' : 'fail', detail: `${edges.length} trades_with edge(s) established by ${actorId} (actor has ${routes} out-edges)` };
     }
     case 'create_sublocation': {
-      const made = g.getNodesByType('location').filter(n => isSublocationNode(n) && n.properties.createdBy === actorId && since(n));
+      const made = g.getNodesByType('location').filter(n => isPlaceNode(n) && n.properties.createdBy === actorId && since(n));
       return { name: 'mutation_object', status: made.length > 0 ? 'pass' : 'fail', detail: made.length > 0 ? `${made[0].id} "${made[0].name}"` : 'no sublocation created by the actor' };
     }
     case 'create_location': {
-      const made = g.getNodesByType('location').filter(n => !isSublocationNode(n) && n.properties.createdBy === actorId && since(n));
+      const made = g.getNodesByType('location').filter(n => !isPlaceNode(n) && n.properties.createdBy === actorId && since(n));
       return { name: 'mutation_object', status: made.length > 0 ? 'pass' : 'fail', detail: made.length > 0 ? `${made[0].id} "${made[0].name}"` : 'no place-tier location created by the actor' };
     }
     case 'create_group': {

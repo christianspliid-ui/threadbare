@@ -38,7 +38,7 @@ When in tension, higher priorities win.
 - **Encounter awareness is hex-granular.** Hex distance (not location-hop BFS) determines awareness. Cross-hex visibility computed via per-reach awareness hops.
 - **The world graph is mutated in place.** Never depend on graph object identity for change detection. Use `touchWorld()` / `touchStructure()` version counters.
 - **Engine caches must be owned per session, not stored at module scope.** Module-level singletons persist across game sessions; use `SimulationRuntime` scoped to the current playthrough.
-- **The distance matrix indexes the place tier only and caps at `MAX_DISTANCE_MATRIX_SIZE` (1200).** THR-1346 scoped the build to `getPlaceTierLocations` (measured place-tier counts, seed 42: small 131, medium 214, large 542, epic 791). It is live on the per-tick path — social encounter generation and idle-ambition targeting walk whole rows — while encounter *awareness* never uses it (hex distance only).
+- **The distance matrix indexes the place tier only and caps at `MAX_DISTANCE_MATRIX_SIZE` (1200).** THR-1346 scoped the build to `getLocationNodes` (measured place-tier counts, seed 42: small 131, medium 214, large 542, epic 791). It is live on the per-tick path — social encounter generation and idle-ambition targeting walk whole rows — while encounter *awareness* never uses it (hex distance only).
 
 > **Canonical source:** CLAUDE.md § "Load-Bearing Architectural Decisions" is the primary ledger. This shard mirrors the settled subset; if they diverge, CLAUDE.md wins.
 

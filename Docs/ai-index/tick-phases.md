@@ -130,7 +130,7 @@ This is intentionally coarse, not maximally precise.
 Two spatial facts phases frequently get wrong:
 
 - **Hexes live in `GameState.tiles[]`, not the graph** — hex changes are `HexMutation[]` applied in `phaseHexState`.
-- **The distance matrix indexes the place tier only** (THR-1346, via `getPlaceTierLocations`), caps at `MAX_DISTANCE_MATRIX_SIZE` (1200), and is walked row-wise on the per-tick path by social encounter generation and idle-ambition targeting. Encounter *awareness* never uses it — awareness is hex-coordinate distance (`encounterAwareness.ts`).
+- **The distance matrix indexes the place tier only** (THR-1346, via `getLocationNodes`), caps at `MAX_DISTANCE_MATRIX_SIZE` (1200), and is walked row-wise on the per-tick path by social encounter generation and idle-ambition targeting. Encounter *awareness* never uses it — awareness is hex-coordinate distance (`encounterAwareness.ts`).
 
 ## Phase Style Variants
 

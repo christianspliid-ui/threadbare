@@ -90,7 +90,7 @@ The central data structure containing all nodes and edges. The world graph is mu
 **Also see:** `[[Node]]`, `[[ActorType]]`
 **Status:** canonical
 
-The typed categories of nodes in the world graph — the full union in `src/types/graph.ts` (15 types): `actor`, `location`, `trait`, `artifact`, `artifact_legendary`, `resource`, `action_template`, `event`, `cosmology`, `region`, `sublocation`, `ambition`, `encounter_template`, `relationship`, `companion`. `sublocation` is reader-accepted only (registered by THR-1177 for saved worlds; no producer writes it since THR-1183 — sublocations are minted as `location` nodes carrying `parentLocationId`). Do not invent new node types without verifying none of the existing types covers the concept — check the union itself, not this list, when in doubt. New types require full design before any code changes.
+The typed categories of nodes in the world graph — the full union in `src/types/graph.ts` (13 types): `actor`, `location`, `trait`, `artifact`, `artifact_legendary`, `action_template`, `event`, `cosmology`, `region`, `sublocation`, `ambition`, `encounter_template`, `companion`. `resource` and `relationship` retired 2026-09-03 (THR-1394): no writer ever minted either — resources are stocks on a Location and a relationship is the `relates_to` edge. Every node type is claimed by a [[World Object]] kind, in game words. `sublocation` is reader-accepted only (registered by THR-1177 for saved worlds; no producer writes it since THR-1183 — sublocations are minted as `location` nodes carrying `parentLocationId`). Do not invent new node types without verifying none of the existing types covers the concept — check the union itself, not this list, when in doubt. New types require full design before any code changes.
 
 ---
 
@@ -120,7 +120,7 @@ The governing rule: relationships between entities are graph edges, never string
 **Also see:** `[[located_at Edge]]`, `[[Hex]]`, `[[Location]]`, `[[Sublocation]]`
 **Status:** canonical
 
-The spatial hierarchy: **hex → location → sublocation**. An agent always occupies exactly one tier via a single `located_at` edge pointing to the most specific node they occupy. Resolution upward: sublocation → parent location → hex. All systems needing spatial reasoning must resolve to hex level. An agent at a sublocation sees all encounters on their hex automatically. **The sublocation tier is one node shape** (THR-1183): a `location` node carrying `parentLocationId` — ask through `src/engine/sublocationShape.ts` (`isSublocationNode` / `getPlaceTierLocations` / `resolveToParentLocation`), never hand-roll the test; a bare `getNodesByType('location')` returns *both* tiers, so a sweep that means settlements must use `getPlaceTierLocations`.
+The spatial hierarchy: **hex → location → sublocation**. An agent always occupies exactly one tier via a single `located_at` edge pointing to the most specific node they occupy. Resolution upward: sublocation → parent location → hex. All systems needing spatial reasoning must resolve to hex level. An agent at a sublocation sees all encounters on their hex automatically. **The sublocation tier is one node shape** (THR-1183): a `location` node carrying `parentLocationId` — ask through `src/engine/sublocationShape.ts` (`isPlaceNode` / `getLocationNodes` / `resolveToParentLocation`), never hand-roll the test; a bare `getNodesByType('location')` returns *both* tiers, so a sweep that means settlements must use `getLocationNodes`.
 
 ---
 

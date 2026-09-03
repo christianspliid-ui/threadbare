@@ -34,7 +34,6 @@ const ALL_NODE_TYPES: NodeType[] = [
   'trait',
   'artifact',
   'artifact_legendary',
-  'resource',
   'action_template',
   'event',
   'cosmology',

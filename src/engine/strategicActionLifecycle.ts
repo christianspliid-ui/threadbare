@@ -64,7 +64,7 @@ import { getUndertakingObjectType } from '../data/undertaking-objects';
 import { OBJECT_TYPE_NOUNS, OBJECT_TYPE_NAMING_KIND } from '../data/work-name-content';
 import { resolveLocationToHex } from './encounterAwareness';
 import { getAgentLocationId } from './graphQueries';
-import { getPlaceTierLocations } from './sublocationShape';
+import { getLocationNodes } from './sublocationShape';
 import { hexDistance } from '../lib/hexMath';
 import { getStrategicTemplate } from './strategicActionCandidates';
 import { createUndertakingOutcomeNode } from './grievance/undertakingOutcomeNode';
@@ -165,7 +165,7 @@ export function findUnclaimedSite(
   radius: number = FOUNDED_SETTLEMENT_SITE_SEARCH_RADIUS,
 ): { col: number; row: number } | null {
   const occupied = new Set<string>();
-  for (const node of getPlaceTierLocations(graph)) {
+  for (const node of getLocationNodes(graph)) {
     const col = node.properties.hexCol;
     const row = node.properties.hexRow;
     if (typeof col === 'number' && typeof row === 'number') occupied.add(`${col},${row}`);

@@ -7,7 +7,7 @@
 
 **What this is for.** Law 56's second clause requires a chip's referent to be an existing graph object, resolvable in the live world the player is in, and requires the chip's prose to name *that particular object*. This catalog is the list of objects that sentence can be about. THR-1153's anchor-resolution gate checks the declaration forms in the fourth column.
 
-**Totals.** 65 anchorable members across 82 classified.
+**Totals.** 63 anchorable members across 80 classified.
 
 ## How to read the status column
 
@@ -193,7 +193,6 @@ Members: `agent`, `faction`
 | `trait` | Trait | 📍 named | `tooltipId` on the concept; no `entityId` | The tooltip, and the bearer's trait list on their sheet |
 | `artifact` | Artifact (common) | 🔗 linked | `entityId: '$artifact'`, `visualKind: 'artifact'` | The artifact sheet, and the bearer's possessions |
 | `artifact_legendary` | Artifact (legendary) | 🔗 linked | `entityId: '$artifact'`, `visualKind: 'artifact'` | The artifact sheet, and the bearer's possessions |
-| `resource` | Resource | 📍 named | `entityId` = the resource node id; no `visualKind` member | The controlling faction's holdings, and the hex it sits on |
 | `action_template` | — | — not an anchor | — | — |
 | `event` | — | — not an anchor | — | — |
 | `cosmology` | Sphere / foundation | 📍 named | `tooltipId` on the concept; no `entityId` | The tooltip, and the cosmology readouts |
@@ -201,7 +200,6 @@ Members: `agent`, `faction`
 | `sublocation` | Sublocation | 🔗 linked | `entityId` = the sublocation node id, `visualKind: 'location'` | The location sheet of its parent, and the hex it sits on |
 | `ambition` | Ambition | 📍 named | `entityId` = the ambition node id; no `visualKind` member | The pursuing actor's sheet |
 | `encounter_template` | — | — not an anchor | — | — |
-| `relationship` | Bond (reified relationship) | 📍 named | `entityId` = the relationship node id; no `visualKind` member | The cast tile and both participants' sheets |
 | `companion` | Companion | 📍 named | `entityId` = the companion node id, `visualKind: 'companion'` | The Companions row on the bearer's own surface |
 
 - **`actor`** — The umbrella row. `actorType` decides the anchor kind and the route.
@@ -212,9 +210,8 @@ Members: `agent`, `faction`
 - **`action_template`** — Action template — a definition, not an object in the world the player can be pointed at
 - **`event`** — Event — the record of a resolution. A chip *is* a report of one; pointing a chip at its own event record says nothing new
 - **`region`** — This is the director's "named area", and it is real: `worldSeed` flood-fills regions, then names them from historical culture ownership, so a region has a name a player can read. It has no page and no click route. See the borders gap note below for what is still missing.
-- **`sublocation`** — Registered in `NodeType` by THR-1177 so readers stay legal for saved worlds; since THR-1183 no producer writes the bare type — every sublocation is minted as a `location` node carrying `parentLocationId`. Resolve and test the shape through `src/engine/sublocationShape.ts` (`isSublocationNode` / `resolveToParentLocation`); never hand-roll the two-shape check.
+- **`sublocation`** — Registered in `NodeType` by THR-1177 so readers stay legal for saved worlds; since THR-1183 no producer writes the bare type — every sublocation is minted as a `location` node carrying `parentLocationId`. Resolve and test the shape through `src/engine/sublocationShape.ts` (`isPlaceNode` / `resolveToParentLocation`); never hand-roll the two-shape check.
 - **`encounter_template`** — Encounter template — the encounter itself. A planted seed anchors through its **carrier** — the agent or location it was planted on — never through the template id
-- **`relationship`** — The director's "bond". Prefer this over the bare `relates_to` edge when the relationship has an arc worth naming — the node carries `arc`, `tension_axis` and a history the player can see change.
 - **`companion`** — The one kind that is in the `visualKind` union and still does not click, on purpose: a companion is a person but not an agent node, so both the agent drawer and the stub-modal path would open the wrong sheet. Its tile renders; the click is withheld because non-interactive beats wrong.
 
 ## Actors, by `actorType`

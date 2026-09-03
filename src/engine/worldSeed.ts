@@ -1622,6 +1622,7 @@ export function seedWorld(
       type: 'artifact',
       name: ARTIFACT_NAMES[nameIdx],
       properties: {
+        attachmentCategory: 'possession',
         subcategory: ARTIFACT_SUBCATEGORY[ARTIFACT_NAMES[nameIdx]],
         sphereAffinity,
         locationId: pickRandom(rng, locationIds),

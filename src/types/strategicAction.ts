@@ -371,7 +371,7 @@ export type StrategicMutationHint =
    * inside somewhere that already exists (`parentLocationId` is required, and that
    * field is the sublocation discriminator, THR-1183); this mints the somewhere.
    * The node is place-tier by construction: it carries `hexCol`/`hexRow` and no
-   * `parentLocationId`, which is exactly what `isPlaceTierLocation` tests.
+   * `parentLocationId`, which is exactly what `isLocationNode` tests.
    *
    * `anchor` decides whose hex it lands on. `actor_hex` founds where the founder
    * stands — the settlement case, and the reason this is not simply the target's

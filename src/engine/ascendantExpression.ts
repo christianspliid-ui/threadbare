@@ -293,6 +293,7 @@ export function applyBestowPower(
     type: 'artifact',
     name: 'Divine Gift',
     properties: {
+      attachmentCategory: 'possession',
       effects,
       source: 'bestow_power',
       bestowedBy: ascendantId,

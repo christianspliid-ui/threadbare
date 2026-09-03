@@ -104,9 +104,7 @@
 <tr class="badge-live"><td><code>reach</code></td><td><strong>Reach</strong></td><td>state · ReachDomain (a type union; capability per reach on the actor)</td><td>—</td><td>Cosmology</td><td>live</td><td>—</td><td>🟢 LIVE</td></tr>
 <tr class="badge-live"><td><code>action_template</code></td><td><strong>(action template)</strong></td><td>node · action_template</td><td>—</td><td>Encounters &amp; dilemmas</td><td>content</td><td>88</td><td>🟢 LIVE</td></tr>
 <tr class="badge-dormant"><td><code>encounter_template</code></td><td><strong>(encounter template)</strong></td><td>node · encounter_template</td><td>—</td><td>Encounters &amp; dilemmas</td><td>content</td><td>0</td><td>⚪ DORMANT</td></tr>
-<tr class="badge-dormant"><td><code>resource_node</code></td><td><strong>(resource node — retired)</strong></td><td>node · resource</td><td>—</td><td>Economy</td><td>retired</td><td>0</td><td>⚪ DORMANT</td></tr>
 <tr class="badge-dormant"><td><code>cosmology_node</code></td><td><strong>(cosmology node — dormant)</strong></td><td>node · cosmology</td><td>—</td><td>Cosmology</td><td>dormant</td><td>0</td><td>⚪ DORMANT</td></tr>
-<tr class="badge-dormant"><td><code>relationship_node</code></td><td><strong>(relationship node — retired)</strong></td><td>node · relationship</td><td>—</td><td>Reputation &amp; standing</td><td>retired</td><td>0</td><td>⚪ DORMANT</td></tr>
 <tr class="badge-dormant"><td><code>sublocation_node</code></td><td><strong>(sublocation node — legacy)</strong></td><td>node · sublocation</td><td>—</td><td>Sublocations</td><td>legacy</td><td>0</td><td>⚪ DORMANT</td></tr>
 </tbody></table></div>
 <h2>Notes</h2>
@@ -115,7 +113,7 @@
 <li><strong>Hex</strong> <code>hex</code> — The one thing that is not a node — terrain, features, fog. The settled exception.</li>
 <li><strong>Location</strong> <code>location</code> — The outer tier: where mortals live, hold, ruin and wonder. Seven classes over the existing subtypes; nothing joins the union.</li>
 <li><strong>Place</strong> <code>place</code> — The inner tier — an inn, a granary, a gatehouse, a grove, a spring — inside a Location. Not always built. The code word is *sublocation*; the game word is Place (Christian, 2026-09-03).</li>
-<li><strong>Route</strong> <code>route</code> — An edge between two Locations — traversal walks edges — that grows an identity node the moment it is nameable, ownable, blockadable or consecrated (the trade route's pattern, generalised). Trail and portal are ratified classes with no edge type yet (a trail is a `road` with `roadType: trail` today; a portal is a route edge with an empty hex path and its own cost) — slice 2 gives both a `routeKind`.</li>
+<li><strong>Route</strong> <code>route</code> — An edge between two Locations — traversal walks edges — that grows an identity node the moment it is nameable, ownable, blockadable or consecrated (the trade route's pattern, generalised). A trail is a `road` edge with `routeKind: trail` (stamped by the road network); a portal is a route edge with an empty hex path and its own cost, ratified with no writer yet.</li>
 <li><strong>Mortal</strong> <code>mortal</code> — The game word for an individual actor; "agent" is the engine word. Roles, callings and spotlight tiers are variants.</li>
 <li><strong>Ascendant</strong> <code>ascendant</code> — The player, and rival ascendants: architecturally an ordinary actor.</li>
 <li><strong>God / Spirit</strong> <code>god</code> — Gods and place-spirits share the actor shape; neither is minted on the census seeds.</li>
@@ -126,7 +124,7 @@
 <li><strong>Network</strong> <code>network</code> — A company kind that does not travel — a ring, a spy network.</li>
 <li><strong>Battle</strong> <code>battle</code> — An engine detail kept as an actor node so participants can `participates_in` it; not a player object.</li>
 <li><strong>Companion</strong> <code>companion</code> — A face that walks with one mortal and grants small always-on bonuses; never an agent.</li>
-<li><strong>Item</strong> <code>item</code> — A possession: arms, a mount, a tome, a relic, tools, provisions; charts and masterworks are items with a subtype. Told apart by `subcategory` (the possession subcategory); slice 2 adds the `attachmentCategory: possession` stamp every mint should carry.</li>
+<li><strong>Item</strong> <code>item</code> — A possession: arms, a mount, a tome, a relic, tools, provisions; charts and masterworks are items with a subtype. Every mint stamps `attachmentCategory: possession` (THR-1394 slice 2) and is told apart by `subcategory`.</li>
 <li><strong>Legendary artifact</strong> <code>legendary_artifact</code> — An item with its own trait graph, bonded rather than possessed.</li>
 <li><strong>Holding</strong> <code>holding</code> — Not a thing — the ownership of a Location, Place or Route. The `owns` edge is the truth; the mirror artifact face (`attachmentCategory: 'holding'`) is a sheet convenience and never a target. The player word is *freehold*.</li>
 <li><strong>Power</strong> <code>power</code> — Spell · bestowal · innate — the UL family. No node shape of its own yet: a cast spell mints a condition trait and `knows_spell` has no writer. A later ticket gives it a shape; the registry records the family and the gap.</li>
@@ -143,9 +141,7 @@
 <li><strong>Reach</strong> <code>reach</code> — An axis, not an object. Eight.</li>
 <li><strong>(action template)</strong> <code>action_template</code> — Authored content imported as nodes; not a thing a player points at.</li>
 <li><strong>(encounter template)</strong> <code>encounter_template</code> — A template graph node (design plan §3.8); no writer on the census seeds.</li>
-<li><strong>(resource node — retired)</strong> <code>resource_node</code> — No writer anywhere. Resources are stocks on a Location (`properties.resources`) and Deposit is a Location class; the member retires in slice 2 with its five type-level readers repointed.</li>
-<li><strong>(cosmology node — dormant)</strong> <code>cosmology_node</code> — Never minted; `contextBuilder` reads it by value at two sites. Retires only if those reads repoint at `GameState.cosmology` with their tests green.</li>
-<li><strong>(relationship node — retired)</strong> <code>relationship_node</code> — A reified pair with readers and no writer; the `relates_to` edge is the one shape. Retires in slice 2 with its two readers repointed.</li>
+<li><strong>(cosmology node — dormant)</strong> <code>cosmology_node</code> — Never minted; `contextBuilder` reads it by value at two sites that are dead in a live world (no `aligned_with` edge targets a cosmology node). Kept DORMANT: the repoint at `GameState.cosmology` needs its integration test rewritten, which is its own ticket, not a green-test flip.</li>
 <li><strong>(sublocation node — legacy)</strong> <code>sublocation_node</code> — Reader-accepted for saved worlds (THR-1177); no producer since THR-1183. A Place is a `location` node with `parentLocationId`.</li>
 </ul>
 </main>

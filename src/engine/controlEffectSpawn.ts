@@ -211,6 +211,7 @@ function mintUpkeepRelicArtifact(
     type: 'artifact',
     name: spec.relicName,
     properties: {
+      attachmentCategory: 'possession',
       source: 'consecrate_relic',
       lossCondition: 'permanent',
       consecratedBy: ownerId,

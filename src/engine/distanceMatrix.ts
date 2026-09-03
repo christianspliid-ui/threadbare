@@ -11,7 +11,7 @@
  *
  * Both run inside `phaseAgentDecision`, i.e. on the per-tick path.
  *
- * THR-1346: the index is scoped to the **place tier** — `getPlaceTierLocations`,
+ * THR-1346: the index is scoped to the **place tier** — `getLocationNodes`,
  * not the bare `getNodesByType('location')`, which since the THR-1183 tier
  * unification returns sublocations too. Two reasons, and the second is the bug:
  *
@@ -30,7 +30,7 @@
  * `distanceMatrix.test.ts` § 'sublocation rows'.
  */
 import type { WorldGraph } from './graph';
-import { getPlaceTierLocations } from './sublocationShape';
+import { getLocationNodes } from './sublocationShape';
 
 // --- Constants ---
 
@@ -132,10 +132,10 @@ function bfsFrom(
  * measurement and the behaviour-neutrality argument.
  *
  * If the graph has more than MAX_DISTANCE_MATRIX_SIZE place-tier locations, only
- * the first N (by insertion order from getPlaceTierLocations) are indexed.
+ * the first N (by insertion order from getLocationNodes) are indexed.
  */
 export function buildDistanceMatrix(graph: WorldGraph): DistanceMatrix {
-  const locationNodes = getPlaceTierLocations(graph);
+  const locationNodes = getLocationNodes(graph);
 
   // TB-088: Warn if cap is reached instead of silently truncating
   if (locationNodes.length > MAX_DISTANCE_MATRIX_SIZE) {

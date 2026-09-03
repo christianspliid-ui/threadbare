@@ -285,7 +285,7 @@ function executeCommissionQuest(
     type: 'event',
     name: `${faction.name} Commission`,
     properties: {
-      nodeSubtype: 'faction_quest',
+      eventType: 'faction_quest',
       factionId: faction.id,
       factionDefId,
       expiryTick: expiry,
@@ -632,7 +632,7 @@ function executeIssueBounty(
     type: 'event',
     name: `Bounty on ${target.name}`,
     properties: {
-      nodeSubtype: 'bounty',
+      eventType: 'bounty',
       issuingFactionId: faction.id,
       targetAgentId: target.id,
       reward: BOUNTY_REWARD,

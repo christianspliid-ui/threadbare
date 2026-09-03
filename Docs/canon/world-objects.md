@@ -42,14 +42,15 @@ Two words for one thing is the drift this page exists to stop. Where the code wo
 | **Event** | What happened; the chronicle's substrate. One key: `eventType`. | `event` node | — |
 | **Sphere · Reach** | Axes of the cosmos, not objects. | `GameState.cosmology` · `ReachDomain` | — |
 
-Templates (`action_template`, `encounter_template`) are authored content that happens to live in the graph — registered as `content`, never a thing a player points at. Three union members have no world behind them: `resource` and `relationship` retire in slice 2 with their readers repointed; `cosmology` stays DORMANT unless its two `contextBuilder` reads repoint green. `sublocation` is reader-accepted legacy (THR-1177).
+Templates (`action_template`, `encounter_template`) are authored content that happens to live in the graph — registered as `content`, never a thing a player points at. `resource` and `relationship` were retired from the union in slice 2 with their readers repointed (resources are stocks on a Location; a relationship is the `relates_to` edge). `cosmology` stays DORMANT: its two `contextBuilder` reads are dead in a live world and repointing them is its own ticket. `sublocation` is reader-accepted legacy (THR-1177).
 
 ## What the model settles
 
 - **Resources are stocks, not nodes.** A Location carries `properties.resources`; **Deposit** is a Location class over the six extraction subtypes. The economy reads stocks; nothing mints a `resource` node.
-- **Traits are shared definitions with edge state.** The `has_trait` edge carries per-bearer state. Conditions and experience are minted one node per bearer today — that is drift, and its repair is its own ticket.
+- **Traits are shared definitions with edge state.** The `has_trait` edge carries per-bearer state. Conditions and experience are minted one node per bearer today — that is drift, and its repair is [THR-1395](https://linear.app/threadbare/issue/THR-1395).
 - **Attachment is a code umbrella, not a world object.** It spans three graph shapes; the catalogue names each shape by its game word — Item, Condition, Power, Agreement — and never "attachment".
-- **A Route is an edge first.** Traversal walks edges. The identity node is grown, never minted first, and only the trade route grows one today.
+- **A Route is an edge first.** Traversal walks edges. The identity node is grown, never minted first, and only the trade route grows one today. A `road` edge carries `routeKind` (`road` or `trail`); the other classes are their own edge types.
+- **The helpers speak the game words.** `isLocationNode` / `isPlaceNode` / `getLocationNodes` / `getPlaceNodes` in `src/engine/sublocationShape.ts`; the code-word names are deprecated aliases for one release.
 - **Holding is ownership, not a thing.** The undertaking model targets the Location, Place or Route; the Holding is what a `hold` verb creates.
 
 ## The four guards

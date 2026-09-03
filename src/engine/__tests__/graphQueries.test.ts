@@ -107,7 +107,7 @@ function buildGraph(): WorldGraph {
   g.addEdge({ id: 'e.a1_action', source: 'agent.1', target: 'action.1', type: 'performing', properties: {} });
 
   // Controls
-  g.addNode({ id: 'resource.1', type: 'resource', name: 'Iron Mine', properties: {} });
+  g.addNode({ id: 'resource.1', type: 'location', name: 'Iron Mine', properties: { locationSubtype: 'mining' } });
   g.addEdge({ id: 'e.f1_ctrl', source: 'faction.1', target: 'resource.1', type: 'controls', properties: {} });
 
   return g;
@@ -444,7 +444,7 @@ describe('getControllers', () => {
 
   it('returns empty for uncontrolled resource', () => {
     const g = buildGraph();
-    g.addNode({ id: 'resource.2', type: 'resource', name: 'Empty Mine', properties: {} });
+    g.addNode({ id: 'resource.2', type: 'location', name: 'Empty Mine', properties: { locationSubtype: 'mining' } });
     expect(getControllers(g, 'resource.2')).toEqual([]);
   });
 });

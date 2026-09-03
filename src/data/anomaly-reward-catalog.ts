@@ -48,6 +48,7 @@ export const ANOMALY_SIGNATURE_ARTIFACTS: GraphNode[] = [
     type: 'artifact',
     name: 'Uncut Ruby',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'relics_talismans',
       tier: 2,
       tags: ['#gem', '#wealth', '#anomaly'],
@@ -70,6 +71,7 @@ export const ANOMALY_SIGNATURE_ARTIFACTS: GraphNode[] = [
     type: 'artifact',
     name: 'Resonance Shard',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'relics_talismans',
       tier: 3,
       tags: ['#crystal', '#arcane', '#anomaly'],
@@ -102,6 +104,7 @@ export const ANOMALY_SIGNATURE_ARTIFACTS: GraphNode[] = [
     type: 'artifact',
     name: 'Amber Phial',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'provisions',
       tier: 2,
       tags: ['#nature', '#healing', '#anomaly'],
@@ -129,6 +132,7 @@ export const ANOMALY_SIGNATURE_ARTIFACTS: GraphNode[] = [
     type: 'artifact',
     name: 'Herb Bundle',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'provisions',
       tier: 1,
       tags: ['#herb', '#healing', '#anomaly'],
@@ -155,6 +159,7 @@ export const ANOMALY_SIGNATURE_ARTIFACTS: GraphNode[] = [
     type: 'artifact',
     name: 'Sealed Codex',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'tomes_scrolls',
       tier: 3,
       tags: ['#ancient', '#relic', '#anomaly'],
@@ -186,6 +191,7 @@ export const ANOMALY_SIGNATURE_ARTIFACTS: GraphNode[] = [
     type: 'artifact',
     name: 'Corroded Crown',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'relics_talismans',
       tier: 2,
       tags: ['#gold', '#cursed', '#anomaly'],
@@ -216,6 +222,7 @@ export const ANOMALY_SIGNATURE_ARTIFACTS: GraphNode[] = [
     type: 'artifact',
     name: 'Fossilized Eye',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'relics_talismans',
       tier: 2,
       tags: ['#ancient', '#bone', '#anomaly'],
@@ -238,6 +245,7 @@ export const ANOMALY_SIGNATURE_ARTIFACTS: GraphNode[] = [
     type: 'artifact',
     name: 'Star Metal Shard',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'arms',
       tier: 3,
       tags: ['#star_metal', '#fate', '#anomaly'],
@@ -259,6 +267,7 @@ export const ANOMALY_SIGNATURE_ARTIFACTS: GraphNode[] = [
     type: 'artifact',
     name: 'Moonpearl Strand',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'vestments',
       tier: 2,
       tags: ['#pearl', '#devotion', '#anomaly'],
@@ -280,6 +289,7 @@ export const ANOMALY_SIGNATURE_ARTIFACTS: GraphNode[] = [
     type: 'artifact',
     name: 'Spore Lantern',
     properties: {
+      attachmentCategory: 'possession',
       subcategory: 'tools_instruments',
       tier: 2,
       tags: ['#fungus', '#vision', '#anomaly'],

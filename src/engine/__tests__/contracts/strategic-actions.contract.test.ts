@@ -15,7 +15,7 @@ import { scoreStrategicCandidates } from '../../strategicActionScoring';
 import { executeStrategicAction, advanceStrategicProjects } from '../../strategicActionLifecycle';
 import type { GameState } from '../../../types/gameState';
 import { mulberry32 } from '../../../lib/prng';
-import { getSublocationNodes } from '../../sublocationShape';
+import { getPlaceNodes } from '../../sublocationShape';
 
 function buildMerchantWorld() {
   const graph = new WorldGraph();
@@ -181,7 +181,7 @@ describe('merchant proving slice contract', () => {
     // 'sublocation')` — the strategic writer now mints the canonical `location` shape,
     // so the old sweep would report an empty result and this contract would fail for a
     // reason that has nothing to do with the project completing.
-    const sublocations = getSublocationNodes(graph);
+    const sublocations = getPlaceNodes(graph);
     const warehouse_subloc = sublocations.find(s => s.name.includes('Goldvein'));
     expect(warehouse_subloc).toBeDefined();
   });
