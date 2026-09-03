@@ -62,7 +62,7 @@ B, as the plan's verdict. The debate did not change the destination; it changed 
 
 ## Open questions
 
-None left for the executor. Two are Christian's, asked in chat with the plan: does the six-verb set read right in game terms (found · improve · use · seize · undo · survey — `hold` was dropped on the critic's finding that control is its own execution mode, and `use` added for the self-spends the kind rows already distinguished), and does he want the retirement list before or after slice 1 lands.
+None left for the executor. Christian answered the verb-set question in chat on 2026-09-03: seize and establishing control are one verb, `control`, in two variants — *claim* (what nobody holds) and *seize* (what someone else does). That reads better in game terms than the critic's "drop hold" fix and keeps the same engine truth: control over a settlement stays the sustained mode it already is. The retirement list is shown before anything is deleted (slice 4's first deliverable).
 
 ## What the independent critic changed
 
